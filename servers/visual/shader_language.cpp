@@ -1328,726 +1328,726 @@ bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type
 
 const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	//constructors
-	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID } },
-	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_VOID } },
-	{ "bvec2", TYPE_BVEC2, { TYPE_BOOL, TYPE_BOOL, TYPE_VOID } },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_VOID } },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_VOID } },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BVEC2, TYPE_BOOL, TYPE_VOID } },
-	{ "bvec3", TYPE_BVEC3, { TYPE_BOOL, TYPE_BVEC2, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_BOOL, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BVEC2, TYPE_BOOL, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC2, TYPE_BOOL, TYPE_BOOL, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BOOL, TYPE_BVEC2, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BOOL, TYPE_BVEC3, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC3, TYPE_BOOL, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID } },
+	{ "bool", TYPE_BOOL, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec2", TYPE_BVEC2, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec2", TYPE_BVEC2, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_BVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BVEC3), BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_VOID } },
-	{ "vec2", TYPE_VEC2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_VOID } },
-	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "vec3", TYPE_VEC3, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "vec3", TYPE_VEC3, { TYPE_FLOAT, TYPE_VEC2, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC2, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC2, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC3, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
+	{ "float", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec2", TYPE_VEC2, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec2", TYPE_VEC2, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID } },
-	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_VOID } },
-	{ "ivec2", TYPE_IVEC2, { TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_VOID } },
-	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "ivec3", TYPE_IVEC3, { TYPE_IVEC2, TYPE_INT, TYPE_VOID } },
-	{ "ivec3", TYPE_IVEC3, { TYPE_INT, TYPE_IVEC2, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_IVEC2, TYPE_INT, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_INT, TYPE_IVEC2, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_INT, TYPE_IVEC3, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
+	{ "int", TYPE_INT, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec2", TYPE_IVEC2, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec2", TYPE_IVEC2, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_IVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC3), BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID } },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_VOID } },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_VOID } },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID } },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UINT, TYPE_UVEC2, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC2, TYPE_UINT, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UINT, TYPE_UVEC2, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UINT, TYPE_UVEC3, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
+	{ "uint", TYPE_UINT, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec2", TYPE_UVEC2, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec2", TYPE_UVEC2, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_UVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC3), BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "mat2", TYPE_MAT2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "mat3", TYPE_MAT3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "mat4", TYPE_MAT4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "mat2", TYPE_MAT2, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat3", TYPE_MAT3, { BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat4", TYPE_MAT4, { BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "mat2", TYPE_MAT2, { TYPE_FLOAT, TYPE_VOID } },
-	{ "mat3", TYPE_MAT3, { TYPE_FLOAT, TYPE_VOID } },
-	{ "mat4", TYPE_MAT4, { TYPE_FLOAT, TYPE_VOID } },
+	{ "mat2", TYPE_MAT2, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat3", TYPE_MAT3, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat4", TYPE_MAT4, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
 
 	//conversion scalars
 
-	{ "int", TYPE_INT, { TYPE_BOOL, TYPE_VOID } },
-	{ "int", TYPE_INT, { TYPE_INT, TYPE_VOID } },
-	{ "int", TYPE_INT, { TYPE_UINT, TYPE_VOID } },
-	{ "int", TYPE_INT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "int", TYPE_INT, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "int", TYPE_INT, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "int", TYPE_INT, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "int", TYPE_INT, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "float", TYPE_FLOAT, { TYPE_BOOL, TYPE_VOID } },
-	{ "float", TYPE_FLOAT, { TYPE_INT, TYPE_VOID } },
-	{ "float", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID } },
-	{ "float", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "float", TYPE_FLOAT, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "float", TYPE_FLOAT, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "float", TYPE_FLOAT, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "float", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "uint", TYPE_UINT, { TYPE_BOOL, TYPE_VOID } },
-	{ "uint", TYPE_UINT, { TYPE_INT, TYPE_VOID } },
-	{ "uint", TYPE_UINT, { TYPE_UINT, TYPE_VOID } },
-	{ "uint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID } },
+	{ "uint", TYPE_UINT, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uint", TYPE_UINT, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uint", TYPE_UINT, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uint", TYPE_UINT, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "bool", TYPE_BOOL, { TYPE_BOOL, TYPE_VOID } },
-	{ "bool", TYPE_BOOL, { TYPE_INT, TYPE_VOID } },
-	{ "bool", TYPE_BOOL, { TYPE_UINT, TYPE_VOID } },
-	{ "bool", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
+	{ "bool", TYPE_BOOL, { BuiltinParam(TYPE_BOOL), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bool", TYPE_BOOL, { BuiltinParam(TYPE_INT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bool", TYPE_BOOL, { BuiltinParam(TYPE_UINT), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bool", TYPE_BOOL, { BuiltinParam(TYPE_FLOAT), BuiltinParam(TYPE_VOID) }, "" },
 
 	//conversion vectors
 
-	{ "ivec2", TYPE_IVEC2, { TYPE_BVEC2, TYPE_VOID } },
-	{ "ivec2", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID } },
-	{ "ivec2", TYPE_IVEC2, { TYPE_UVEC2, TYPE_VOID } },
-	{ "ivec2", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "ivec2", TYPE_IVEC2, { BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec2", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec2", TYPE_IVEC2, { BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec2", TYPE_IVEC2, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "vec2", TYPE_VEC2, { TYPE_BVEC2, TYPE_VOID } },
-	{ "vec2", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID } },
-	{ "vec2", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID } },
-	{ "vec2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "vec2", TYPE_VEC2, { BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec2", TYPE_VEC2, { BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec2", TYPE_VEC2, { BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec2", TYPE_VEC2, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "uvec2", TYPE_UVEC2, { TYPE_BVEC2, TYPE_VOID } },
-	{ "uvec2", TYPE_UVEC2, { TYPE_IVEC2, TYPE_VOID } },
-	{ "uvec2", TYPE_UVEC2, { TYPE_UVEC2, TYPE_VOID } },
-	{ "uvec2", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "uvec2", TYPE_UVEC2, { BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec2", TYPE_UVEC2, { BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec2", TYPE_UVEC2, { BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec2", TYPE_UVEC2, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "bvec2", TYPE_BVEC2, { TYPE_BVEC2, TYPE_VOID } },
-	{ "bvec2", TYPE_BVEC2, { TYPE_IVEC2, TYPE_VOID } },
-	{ "bvec2", TYPE_BVEC2, { TYPE_UVEC2, TYPE_VOID } },
-	{ "bvec2", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "bvec2", TYPE_BVEC2, { BuiltinParam(TYPE_BVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec2", TYPE_BVEC2, { BuiltinParam(TYPE_IVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec2", TYPE_BVEC2, { BuiltinParam(TYPE_UVEC2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec2", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "ivec3", TYPE_IVEC3, { TYPE_BVEC3, TYPE_VOID } },
-	{ "ivec3", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID } },
-	{ "ivec3", TYPE_IVEC3, { TYPE_UVEC3, TYPE_VOID } },
-	{ "ivec3", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_BVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_UVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec3", TYPE_IVEC3, { BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "vec3", TYPE_VEC3, { TYPE_BVEC3, TYPE_VOID } },
-	{ "vec3", TYPE_VEC3, { TYPE_IVEC3, TYPE_VOID } },
-	{ "vec3", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID } },
-	{ "vec3", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_BVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_IVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_UVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec3", TYPE_VEC3, { BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "uvec3", TYPE_UVEC3, { TYPE_BVEC3, TYPE_VOID } },
-	{ "uvec3", TYPE_UVEC3, { TYPE_IVEC3, TYPE_VOID } },
-	{ "uvec3", TYPE_UVEC3, { TYPE_UVEC3, TYPE_VOID } },
-	{ "uvec3", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_BVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_IVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec3", TYPE_UVEC3, { BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "bvec3", TYPE_BVEC3, { TYPE_BVEC3, TYPE_VOID } },
-	{ "bvec3", TYPE_BVEC3, { TYPE_IVEC3, TYPE_VOID } },
-	{ "bvec3", TYPE_BVEC3, { TYPE_UVEC3, TYPE_VOID } },
-	{ "bvec3", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_BVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_IVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_UVEC3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec3", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "ivec4", TYPE_IVEC4, { TYPE_BVEC4, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_UVEC4, TYPE_VOID } },
-	{ "ivec4", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_BVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_UVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ivec4", TYPE_IVEC4, { BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "vec4", TYPE_VEC4, { TYPE_BVEC4, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_IVEC4, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID } },
-	{ "vec4", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_BVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_IVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_UVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "vec4", TYPE_VEC4, { BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "uvec4", TYPE_UVEC4, { TYPE_BVEC4, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_IVEC4, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_UVEC4, TYPE_VOID } },
-	{ "uvec4", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_BVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_IVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uvec4", TYPE_UVEC4, { BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "bvec4", TYPE_BVEC4, { TYPE_BVEC4, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_IVEC4, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_UVEC4, TYPE_VOID } },
-	{ "bvec4", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_BVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_IVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_UVEC4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "bvec4", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4), BuiltinParam(TYPE_VOID) }, "" },
 
 	//conversion between matrixes
 
-	{ "mat2", TYPE_MAT2, { TYPE_MAT3, TYPE_VOID } },
-	{ "mat2", TYPE_MAT2, { TYPE_MAT4, TYPE_VOID } },
-	{ "mat3", TYPE_MAT3, { TYPE_MAT2, TYPE_VOID } },
-	{ "mat3", TYPE_MAT3, { TYPE_MAT4, TYPE_VOID } },
-	{ "mat4", TYPE_MAT4, { TYPE_MAT2, TYPE_VOID } },
-	{ "mat4", TYPE_MAT4, { TYPE_MAT3, TYPE_VOID } },
+	{ "mat2", TYPE_MAT2, { BuiltinParam(TYPE_MAT3), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat2", TYPE_MAT2, { BuiltinParam(TYPE_MAT4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat3", TYPE_MAT3, { BuiltinParam(TYPE_MAT2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat3", TYPE_MAT3, { BuiltinParam(TYPE_MAT4), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat4", TYPE_MAT4, { BuiltinParam(TYPE_MAT2), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mat4", TYPE_MAT4, { BuiltinParam(TYPE_MAT3), BuiltinParam(TYPE_VOID) }, "" },
 
 	//builtins - trigonometry
 
-	{ "radians", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "radians", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "radians", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "radians", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "radians", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "degrees"), BuiltinParam(TYPE_VOID) }, TTR("Converts a quantity in degrees to radians.") },
+	{ "radians", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "degrees"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "radians", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "degrees"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "radians", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "degrees"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "degrees", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "degrees", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "degrees", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "degrees", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "degrees", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "radians"), BuiltinParam(TYPE_VOID) }, TTR("Converts a quantity in radians to degrees.") },
+	{ "degrees", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "radians"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "degrees", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "radians"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "degrees", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "radians"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "sin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "sin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "sin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "sin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "sin", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "angle"), BuiltinParam(TYPE_VOID) }, TTR("Returns the sine of the parameter.") },
+	{ "sin", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "angle"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sin", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "angle"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sin", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "angle"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "cos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "cos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "cos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "cos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "cos", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "angle"), BuiltinParam(TYPE_VOID) }, TTR("Returns the cosine of the parameter.") },
+	{ "cos", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "angle"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "cos", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "angle"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "cos", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "angle"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "tan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "tan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "tan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "tan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "tan", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "angle"), BuiltinParam(TYPE_VOID) }, TTR("Returns the tangent of the parameter.") },
+	{ "tan", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "angle"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "tan", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "angle"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "tan", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "angle"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "asin", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "asin", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "asin", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "asin", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "asin", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the arc-sine of the parameter.") },
+	{ "asin", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "asin", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "asin", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "acos", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "acos", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "acos", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "acos", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "acos", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the arc-cosine of the parameter.") },
+	{ "acos", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "acos", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "acos", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "atan", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "atan", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "atan", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "atan", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "atan", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "y_over_x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the arc-tangent of the parameters.") },
+	{ "atan", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "y_over_x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atan", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "y_over_x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atan", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "y_over_x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atan", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "y"), BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atan", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atan", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atan", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "sinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "sinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "sinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "sinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "sinh", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the hyperbolic sine of the parameter.") },
+	{ "sinh", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sinh", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sinh", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "cosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "cosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "cosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "cosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "cosh", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the hyperbolic cosine of the parameter.") },
+	{ "cosh", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "cosh", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "cosh", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "tanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "tanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "tanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "tanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "tanh", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the hyperbolic tangent of the parameter.") },
+	{ "tanh", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "tanh", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "tanh", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "asinh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "asinh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "asinh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "asinh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "asinh", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the inverse hyperbolic sine of the parameter.") },
+	{ "asinh", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "asinh", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "asinh", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "acosh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "acosh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "acosh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "acosh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "acosh", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the inverse hyperbolic cosine of the parameter.") },
+	{ "acosh", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "acosh", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "acosh", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "atanh", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "atanh", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "atanh", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "atanh", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "atanh", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the inverse hyperbolic tangent of the parameter.") },
+	{ "atanh", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atanh", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "atanh", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
 	//builtins - exponential
-	{ "pow", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "pow", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "pow", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "pow", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "exp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "exp", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "exp", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "exp", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "log", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "log", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "log", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "log", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "exp2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "exp2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "exp2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "exp2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "log2", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "log2", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "log2", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "log2", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "sqrt", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "sqrt", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "sqrt", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "sqrt", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "inversesqrt", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "inversesqrt", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "inversesqrt", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "inversesqrt", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "pow", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_FLOAT, "power"), BuiltinParam(TYPE_VOID) }, TTR("Returns the value of the first parameter raised to the power of the second.") },
+	{ "pow", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "power"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "pow", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "power"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "pow", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "power"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "exp", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the natural exponentiation of the parameter.") },
+	{ "exp", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "exp", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "exp", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "log", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the natural logarithm of the parameter.") },
+	{ "log", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "log", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "log", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "exp2", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns 2 raised to the power of the parameter.") },
+	{ "exp2", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "exp2", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "exp2", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "log2", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the base 2 logarithm of the parameter.") },
+	{ "log2", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "log2", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "log2", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "sqrt", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the square root of the parameter.") },
+	{ "sqrt", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sqrt", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sqrt", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "inversesqrt", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the inverse square root of the parameter.") },
+	{ "inversesqrt", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "inversesqrt", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "inversesqrt", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
 	//builtins - common
-	{ "abs", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "abs", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "abs", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "abs", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "abs", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Returns the absolute value of the parameter.") },
+	{ "abs", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "abs", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "abs", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "abs", TYPE_INT, { TYPE_INT, TYPE_VOID } },
-	{ "abs", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID } },
-	{ "abs", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID } },
-	{ "abs", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID } },
+	{ "abs", TYPE_INT, { BuiltinParam(TYPE_INT, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "abs", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "abs", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "abs", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "sign", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "sign", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "sign", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "sign", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "sign", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Extracts the sign of the parameter.") },
+	{ "sign", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sign", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sign", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "sign", TYPE_INT, { TYPE_INT, TYPE_VOID } },
-	{ "sign", TYPE_IVEC2, { TYPE_IVEC2, TYPE_VOID } },
-	{ "sign", TYPE_IVEC3, { TYPE_IVEC3, TYPE_VOID } },
-	{ "sign", TYPE_IVEC4, { TYPE_IVEC4, TYPE_VOID } },
+	{ "sign", TYPE_INT, { BuiltinParam(TYPE_INT, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sign", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sign", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "sign", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "floor", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "floor", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "floor", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "floor", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "trunc", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "trunc", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "trunc", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "trunc", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "round", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "round", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "round", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "round", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "roundEven", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "roundEven", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "roundEven", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "roundEven", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "ceil", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "ceil", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "ceil", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "ceil", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "fract", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "fract", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "fract", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "fract", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "floor", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Finds the nearest integer less than or equal to the parameter.") },
+	{ "floor", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "floor", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "floor", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "mod", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "mod", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "mod", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "mod", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "mod", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "mod", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "mod", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
+	{ "trunc", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Finds the truncated value of the parameter.") },
+	{ "trunc", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "trunc", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "trunc", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "modf", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "modf", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "modf", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "modf", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "round", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Finds the nearest integer to the parameter.") },
+	{ "round", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "round", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "round", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "min", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "min", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "min", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "min", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "min", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "min", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "min", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
+	{ "roundEven", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Finds the nearest even integer to the parameter.") },
+	{ "roundEven", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "roundEven", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "roundEven", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "min", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "min", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "min", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_VOID } },
-	{ "min", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "min", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
-	{ "min", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID } },
+	{ "ceil", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Finds the nearest integer that is greater than or equal to the parameter.") },
+	{ "ceil", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ceil", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "ceil", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "min", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "min", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID } },
-	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "min", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID } },
-	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
-	{ "min", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID } },
+	{ "fract", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Computes the fractional part of the argument.") },
+	{ "fract", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "fract", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "fract", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "max", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "max", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "max", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "max", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "max", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "max", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "max", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
+	{ "mod", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_FLOAT, "y"), BuiltinParam(TYPE_VOID) }, TTR("Computes value of one parameter modulo another.") },
+	{ "mod", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mod", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_FLOAT, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mod", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mod", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_FLOAT, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mod", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mod", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_FLOAT, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "max", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "max", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "max", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_VOID } },
-	{ "max", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "max", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
-	{ "max", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_VOID } },
+	{ "modf", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_FLOAT, "i"), BuiltinParam(TYPE_VOID) }, TTR("Separates a value into its integer and fractional components.") },
+	{ "modf", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "i"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "modf", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "i"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "modf", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "i"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "max", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "max", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_VOID } },
-	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "max", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_VOID } },
-	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
-	{ "max", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_VOID } },
+	{ "min", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, TTR("Returns the lesser of two values.") },
+	{ "min", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_VEC2, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_VEC3, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_VEC4, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "clamp", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "clamp", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "clamp", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "clamp", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "clamp", TYPE_VEC2, { TYPE_VEC2, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "clamp", TYPE_VEC3, { TYPE_VEC3, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "clamp", TYPE_VEC4, { TYPE_VEC4, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
+	{ "min", TYPE_INT, { BuiltinParam(TYPE_INT, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "a"), BuiltinParam(TYPE_IVEC2, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "a"), BuiltinParam(TYPE_IVEC3, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "a"), BuiltinParam(TYPE_IVEC4, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "clamp", TYPE_INT, { TYPE_INT, TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "clamp", TYPE_IVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "clamp", TYPE_IVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "clamp", TYPE_IVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
-	{ "clamp", TYPE_IVEC2, { TYPE_IVEC2, TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "clamp", TYPE_IVEC3, { TYPE_IVEC3, TYPE_INT, TYPE_INT, TYPE_VOID } },
-	{ "clamp", TYPE_IVEC4, { TYPE_IVEC4, TYPE_INT, TYPE_INT, TYPE_VOID } },
+	{ "min", TYPE_UINT, { BuiltinParam(TYPE_UINT, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_UVEC2, { BuiltinParam(TYPE_UVEC2, "a"), BuiltinParam(TYPE_UVEC2, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_UVEC2, { BuiltinParam(TYPE_UVEC2, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC3, "a"), BuiltinParam(TYPE_UVEC3, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC3, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC4, "a"), BuiltinParam(TYPE_UVEC4, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "min", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC4, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "clamp", TYPE_UINT, { TYPE_UINT, TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
-	{ "clamp", TYPE_UVEC2, { TYPE_UVEC2, TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "clamp", TYPE_UVEC3, { TYPE_UVEC3, TYPE_UINT, TYPE_UINT, TYPE_VOID } },
-	{ "clamp", TYPE_UVEC4, { TYPE_UVEC4, TYPE_UINT, TYPE_UINT, TYPE_VOID } },
+	{ "max", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, TTR("Returns the greater of two values.") },
+	{ "max", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_VEC2, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_VEC3, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_VEC4, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "mix", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "mix", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_BOOL, TYPE_VOID } },
-	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_BOOL, TYPE_VOID } },
-	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_BVEC2, TYPE_VOID } },
-	{ "mix", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_BOOL, TYPE_VOID } },
-	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_BVEC3, TYPE_VOID } },
-	{ "mix", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_BOOL, TYPE_VOID } },
-	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_BVEC4, TYPE_VOID } },
-	{ "mix", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "max", TYPE_INT, { BuiltinParam(TYPE_INT, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "a"), BuiltinParam(TYPE_IVEC2, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "a"), BuiltinParam(TYPE_IVEC3, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "a"), BuiltinParam(TYPE_IVEC4, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "a"), BuiltinParam(TYPE_INT, "b"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "step", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "step", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "step", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "step", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "step", TYPE_VEC2, { TYPE_FLOAT, TYPE_VEC2, TYPE_VOID } },
-	{ "step", TYPE_VEC3, { TYPE_FLOAT, TYPE_VEC3, TYPE_VOID } },
-	{ "step", TYPE_VEC4, { TYPE_FLOAT, TYPE_VEC4, TYPE_VOID } },
-	{ "smoothstep", TYPE_FLOAT, { TYPE_FLOAT, TYPE_FLOAT, TYPE_FLOAT, TYPE_VOID } },
-	{ "smoothstep", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "smoothstep", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "smoothstep", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "smoothstep", TYPE_VEC2, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC2, TYPE_VOID } },
-	{ "smoothstep", TYPE_VEC3, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC3, TYPE_VOID } },
-	{ "smoothstep", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC4, TYPE_VOID } },
+	{ "max", TYPE_UINT, { BuiltinParam(TYPE_UINT, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_UVEC2, { BuiltinParam(TYPE_UVEC2, "a"), BuiltinParam(TYPE_UVEC2, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_UVEC2, { BuiltinParam(TYPE_UVEC2, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC3, "a"), BuiltinParam(TYPE_UVEC3, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC3, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC4, "a"), BuiltinParam(TYPE_UVEC4, "b"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "max", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC4, "a"), BuiltinParam(TYPE_UINT, "b"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "isnan", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isnan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "isnan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "isnan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "clamp", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_FLOAT, "min"), BuiltinParam(TYPE_FLOAT, "max"), BuiltinParam(TYPE_VOID) }, TTR("Constrains a value to lie between two further values.") },
+	{ "clamp", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "min"), BuiltinParam(TYPE_VEC2, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "min"), BuiltinParam(TYPE_VEC3, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "min"), BuiltinParam(TYPE_VEC4, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_FLOAT, "min"), BuiltinParam(TYPE_FLOAT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_FLOAT, "min"), BuiltinParam(TYPE_FLOAT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_FLOAT, "min"), BuiltinParam(TYPE_FLOAT, "max"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "isinf", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isinf", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "isinf", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "isinf", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "clamp", TYPE_INT, { BuiltinParam(TYPE_INT, "x"), BuiltinParam(TYPE_INT, "min"), BuiltinParam(TYPE_INT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_IVEC2, "min"), BuiltinParam(TYPE_IVEC2, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_IVEC3, "min"), BuiltinParam(TYPE_IVEC3, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_IVEC4, "min"), BuiltinParam(TYPE_IVEC4, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_IVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_INT, "min"), BuiltinParam(TYPE_INT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_IVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_INT, "min"), BuiltinParam(TYPE_INT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_IVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_INT, "min"), BuiltinParam(TYPE_INT, "max"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "floatBitsToInt", TYPE_INT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "floatBitsToInt", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "floatBitsToInt", TYPE_IVEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "floatBitsToInt", TYPE_IVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "clamp", TYPE_UINT, { BuiltinParam(TYPE_UINT, "x"), BuiltinParam(TYPE_UINT, "min"), BuiltinParam(TYPE_UINT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_UVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UVEC2, "min"), BuiltinParam(TYPE_UVEC2, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UVEC3, "min"), BuiltinParam(TYPE_UVEC3, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UVEC4, "min"), BuiltinParam(TYPE_UVEC4, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_UVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UINT, "min"), BuiltinParam(TYPE_UINT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_UVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UINT, "min"), BuiltinParam(TYPE_UINT, "max"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "clamp", TYPE_UVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UINT, "min"), BuiltinParam(TYPE_UINT, "max"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "floatBitsToUint", TYPE_UINT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "floatBitsToUint", TYPE_UVEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "floatBitsToUint", TYPE_UVEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "floatBitsToUint", TYPE_UVEC4, { TYPE_VEC4, TYPE_VOID } },
+	{ "mix", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_FLOAT, "c"), BuiltinParam(TYPE_VOID) }, TTR("Linearly interpolates between two values.") },
+	{ "mix", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "a"), BuiltinParam(TYPE_FLOAT, "b"), BuiltinParam(TYPE_BOOL, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_VEC2, "b"), BuiltinParam(TYPE_FLOAT, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_VEC2, "b"), BuiltinParam(TYPE_BOOL, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_VEC2, "b"), BuiltinParam(TYPE_BVEC2, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "a"), BuiltinParam(TYPE_VEC2, "b"), BuiltinParam(TYPE_VEC2, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_VEC3, "b"), BuiltinParam(TYPE_FLOAT, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_VEC3, "b"), BuiltinParam(TYPE_BOOL, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_VEC3, "b"), BuiltinParam(TYPE_BVEC3, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "a"), BuiltinParam(TYPE_VEC3, "b"), BuiltinParam(TYPE_VEC3, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_VEC4, "b"), BuiltinParam(TYPE_FLOAT, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_VEC4, "b"), BuiltinParam(TYPE_BOOL, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_VEC4, "b"), BuiltinParam(TYPE_BVEC4, "c"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "mix", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "a"), BuiltinParam(TYPE_VEC4, "b"), BuiltinParam(TYPE_VEC4, "c"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "intBitsToFloat", TYPE_FLOAT, { TYPE_INT, TYPE_VOID } },
-	{ "intBitsToFloat", TYPE_VEC2, { TYPE_IVEC2, TYPE_VOID } },
-	{ "intBitsToFloat", TYPE_VEC3, { TYPE_IVEC3, TYPE_VOID } },
-	{ "intBitsToFloat", TYPE_VEC4, { TYPE_IVEC4, TYPE_VOID } },
+	{ "step", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "edge"), BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Generates a step function by comparing two values.") },
+	{ "step", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "edge"), BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "step", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "edge"), BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "step", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "edge"), BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "step", TYPE_VEC2, { BuiltinParam(TYPE_FLOAT, "edge"), BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "step", TYPE_VEC3, { BuiltinParam(TYPE_FLOAT, "edge"), BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "step", TYPE_VEC4, { BuiltinParam(TYPE_FLOAT, "edge"), BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "uintBitsToFloat", TYPE_FLOAT, { TYPE_UINT, TYPE_VOID } },
-	{ "uintBitsToFloat", TYPE_VEC2, { TYPE_UVEC2, TYPE_VOID } },
-	{ "uintBitsToFloat", TYPE_VEC3, { TYPE_UVEC3, TYPE_VOID } },
-	{ "uintBitsToFloat", TYPE_VEC4, { TYPE_UVEC4, TYPE_VOID } },
+	{ "smoothstep", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "edge0"), BuiltinParam(TYPE_FLOAT, "edge1"), BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Performs Hermite interpolation between two values.") },
+	{ "smoothstep", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "edge0"), BuiltinParam(TYPE_VEC2, "edge1"), BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "smoothstep", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "edge0"), BuiltinParam(TYPE_VEC3, "edge1"), BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "smoothstep", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "edge0"), BuiltinParam(TYPE_VEC4, "edge1"), BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "smoothstep", TYPE_VEC2, { BuiltinParam(TYPE_FLOAT, "edge0"), BuiltinParam(TYPE_FLOAT, "edge1"), BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "smoothstep", TYPE_VEC3, { BuiltinParam(TYPE_FLOAT, "edge0"), BuiltinParam(TYPE_FLOAT, "edge1"), BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "smoothstep", TYPE_VEC4, { BuiltinParam(TYPE_FLOAT, "edge0"), BuiltinParam(TYPE_FLOAT, "edge1"), BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "isnan", TYPE_BOOL, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Determines whether the parameter is a number.") },
+	{ "isnan", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "isnan", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "isnan", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "isinf", TYPE_BOOL, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Determine whether the parameter is positive or negative infinity.") },
+	{ "isinf", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "isinf", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "isinf", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "floatBitsToInt", TYPE_INT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Produces the encoding of a floating point value as an integer.") },
+	{ "floatBitsToInt", TYPE_IVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "floatBitsToInt", TYPE_IVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "floatBitsToInt", TYPE_IVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "floatBitsToUint", TYPE_UINT, { BuiltinParam(TYPE_FLOAT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Produces the encoding of a floating point value as an unsigned integer.") },
+	{ "floatBitsToUint", TYPE_UVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "floatBitsToUint", TYPE_UVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "floatBitsToUint", TYPE_UVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "intBitsToFloat", TYPE_FLOAT, { BuiltinParam(TYPE_INT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Produces a floating point using an encoding supplied as an integer.") },
+	{ "intBitsToFloat", TYPE_VEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "intBitsToFloat", TYPE_VEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "intBitsToFloat", TYPE_VEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "uintBitsToFloat", TYPE_FLOAT, { BuiltinParam(TYPE_UINT, "x"), BuiltinParam(TYPE_VOID) }, TTR("Produces a floating point using an encoding supplied as an unsigned integer.") },
+	{ "uintBitsToFloat", TYPE_VEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uintBitsToFloat", TYPE_VEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "uintBitsToFloat", TYPE_VEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
 	//builtins - geometric
-	{ "length", TYPE_FLOAT, { TYPE_VEC2, TYPE_VOID } },
-	{ "length", TYPE_FLOAT, { TYPE_VEC3, TYPE_VOID } },
-	{ "length", TYPE_FLOAT, { TYPE_VEC4, TYPE_VOID } },
-	{ "distance", TYPE_FLOAT, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "distance", TYPE_FLOAT, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "distance", TYPE_FLOAT, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "dot", TYPE_FLOAT, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "dot", TYPE_FLOAT, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "dot", TYPE_FLOAT, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
-	{ "cross", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "normalize", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "normalize", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "normalize", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-	{ "reflect", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "refract", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
+	{ "length", TYPE_FLOAT, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the length of a vector.") },
+	{ "length", TYPE_FLOAT, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "length", TYPE_FLOAT, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "faceforward", TYPE_VEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "faceforward", TYPE_VEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "faceforward", TYPE_VEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "distance", TYPE_FLOAT, { BuiltinParam(TYPE_VEC2, "p0"), BuiltinParam(TYPE_VEC2, "p1"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the distance between two points.") },
+	{ "distance", TYPE_FLOAT, { BuiltinParam(TYPE_VEC3, "p0"), BuiltinParam(TYPE_VEC3, "p1"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "distance", TYPE_FLOAT, { BuiltinParam(TYPE_VEC4, "p0"), BuiltinParam(TYPE_VEC4, "p1"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "matrixCompMult", TYPE_MAT2, { TYPE_MAT2, TYPE_MAT2, TYPE_VOID } },
-	{ "matrixCompMult", TYPE_MAT3, { TYPE_MAT3, TYPE_MAT3, TYPE_VOID } },
-	{ "matrixCompMult", TYPE_MAT4, { TYPE_MAT4, TYPE_MAT4, TYPE_VOID } },
+	{ "dot", TYPE_FLOAT, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the dot product of two vectors.") },
+	{ "dot", TYPE_FLOAT, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "dot", TYPE_FLOAT, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "outerProduct", TYPE_MAT2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "outerProduct", TYPE_MAT3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "outerProduct", TYPE_MAT4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "cross", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the cross product of two vectors.") },
 
-	{ "transpose", TYPE_MAT2, { TYPE_MAT2, TYPE_VOID } },
-	{ "transpose", TYPE_MAT3, { TYPE_MAT3, TYPE_VOID } },
-	{ "transpose", TYPE_MAT4, { TYPE_MAT4, TYPE_VOID } },
+	{ "normalize", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "v"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the unit vector in the same direction as the original vector.") },
+	{ "normalize", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "v"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "normalize", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "v"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "determinant", TYPE_FLOAT, { TYPE_MAT2, TYPE_VOID } },
-	{ "determinant", TYPE_FLOAT, { TYPE_MAT3, TYPE_VOID } },
-	{ "determinant", TYPE_FLOAT, { TYPE_MAT4, TYPE_VOID } },
+	{ "reflect", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "I"), BuiltinParam(TYPE_VEC3, "N"), BuiltinParam(TYPE_VOID) }, TTR("Calculate the reflection direction for an incident vector.") },
 
-	{ "inverse", TYPE_MAT2, { TYPE_MAT2, TYPE_VOID } },
-	{ "inverse", TYPE_MAT3, { TYPE_MAT3, TYPE_VOID } },
-	{ "inverse", TYPE_MAT4, { TYPE_MAT4, TYPE_VOID } },
+	{ "refract", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "I"), BuiltinParam(TYPE_VEC3, "N"), BuiltinParam(TYPE_FLOAT, "eta"), BuiltinParam(TYPE_VOID) }, TTR("Calculate the refraction direction for an incident vector.") },
 
-	{ "lessThan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "lessThan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "lessThan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "faceforward", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "N"), BuiltinParam(TYPE_VEC2, "I"), BuiltinParam(TYPE_VEC2, "nref"), BuiltinParam(TYPE_VOID) }, TTR("Returns a vector pointing in the same direction as another.") },
+	{ "faceforward", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "N"), BuiltinParam(TYPE_VEC3, "I"), BuiltinParam(TYPE_VEC3, "nref"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "faceforward", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "N"), BuiltinParam(TYPE_VEC4, "I"), BuiltinParam(TYPE_VEC4, "nref"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "lessThan", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "lessThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "lessThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
+	{ "matrixCompMult", TYPE_MAT2, { BuiltinParam(TYPE_MAT2, "x"), BuiltinParam(TYPE_MAT2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Performs a component-wise multiplication of two matrices.") },
+	{ "matrixCompMult", TYPE_MAT3, { BuiltinParam(TYPE_MAT3, "x"), BuiltinParam(TYPE_MAT3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "matrixCompMult", TYPE_MAT4, { BuiltinParam(TYPE_MAT4, "x"), BuiltinParam(TYPE_MAT4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "lessThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "lessThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "lessThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
+	{ "outerProduct", TYPE_MAT2, { BuiltinParam(TYPE_VEC2, "column"), BuiltinParam(TYPE_VEC2, "row"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the outer product of a pair of vectors.") },
+	{ "outerProduct", TYPE_MAT3, { BuiltinParam(TYPE_VEC3, "column"), BuiltinParam(TYPE_VEC3, "row"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "outerProduct", TYPE_MAT4, { BuiltinParam(TYPE_VEC4, "column"), BuiltinParam(TYPE_VEC4, "row"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "greaterThan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "greaterThan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "greaterThan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "transpose", TYPE_MAT2, { BuiltinParam(TYPE_MAT2, "matrix"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the transpose of a matrix.") },
+	{ "transpose", TYPE_MAT3, { BuiltinParam(TYPE_MAT3, "matrix"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "transpose", TYPE_MAT4, { BuiltinParam(TYPE_MAT4, "matrix"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "greaterThan", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "greaterThan", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "greaterThan", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
+	{ "determinant", TYPE_FLOAT, { BuiltinParam(TYPE_MAT2, "matrix"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the determinant of a matrix.") },
+	{ "determinant", TYPE_FLOAT, { BuiltinParam(TYPE_MAT3, "matrix"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "determinant", TYPE_FLOAT, { BuiltinParam(TYPE_MAT4, "matrix"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "greaterThan", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "greaterThan", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "greaterThan", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
+	{ "inverse", TYPE_MAT2, { BuiltinParam(TYPE_MAT2, "matrix"), BuiltinParam(TYPE_VOID) }, TTR("Calculates the inverse of a matrix.") },
+	{ "inverse", TYPE_MAT3, { BuiltinParam(TYPE_MAT3, "matrix"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "inverse", TYPE_MAT4, { BuiltinParam(TYPE_MAT4, "matrix"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "lessThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "lessThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "lessThanEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "lessThan", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Performs a component-wise less-than comparison of two vectors.") },
+	{ "lessThan", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThan", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "lessThanEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "lessThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "lessThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
+	{ "lessThan", TYPE_BVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_IVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThan", TYPE_BVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_IVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThan", TYPE_BVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_IVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "lessThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "lessThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "lessThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
+	{ "lessThan", TYPE_BVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThan", TYPE_BVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThan", TYPE_BVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "greaterThan", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Performs a component-wise greater-than comparison of two vectors.") },
+	{ "greaterThan", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThan", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
+	{ "greaterThan", TYPE_BVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_IVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThan", TYPE_BVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_IVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThan", TYPE_BVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_IVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "greaterThanEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "greaterThanEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "greaterThanEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
+	{ "greaterThan", TYPE_BVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThan", TYPE_BVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThan", TYPE_BVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "equal", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "equal", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "equal", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "lessThanEqual", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Performs a component-wise less-than-or-equal comparison of two vectors.") },
+	{ "lessThanEqual", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThanEqual", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "equal", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "equal", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "equal", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
+	{ "lessThanEqual", TYPE_BVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_IVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThanEqual", TYPE_BVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_IVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThanEqual", TYPE_BVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_IVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "equal", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "equal", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "equal", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
+	{ "lessThanEqual", TYPE_BVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThanEqual", TYPE_BVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "lessThanEqual", TYPE_BVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "equal", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID } },
-	{ "equal", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID } },
-	{ "equal", TYPE_BVEC4, { TYPE_BVEC4, TYPE_BVEC4, TYPE_VOID } },
+	{ "greaterThanEqual", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Performs a component-wise greater-than-or-equal comparison of two vectors.") },
+	{ "greaterThanEqual", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThanEqual", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "notEqual", TYPE_BVEC2, { TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC3, { TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC4, { TYPE_VEC4, TYPE_VEC4, TYPE_VOID } },
+	{ "greaterThanEqual", TYPE_BVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_IVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThanEqual", TYPE_BVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_IVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThanEqual", TYPE_BVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_IVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "notEqual", TYPE_BVEC2, { TYPE_IVEC2, TYPE_IVEC2, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC3, { TYPE_IVEC3, TYPE_IVEC3, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC4, { TYPE_IVEC4, TYPE_IVEC4, TYPE_VOID } },
+	{ "greaterThanEqual", TYPE_BVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThanEqual", TYPE_BVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "greaterThanEqual", TYPE_BVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "notEqual", TYPE_BVEC2, { TYPE_UVEC2, TYPE_UVEC2, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC3, { TYPE_UVEC3, TYPE_UVEC3, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC4, { TYPE_UVEC4, TYPE_UVEC4, TYPE_VOID } },
+	{ "equal", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Performs a component-wise equal-to comparison of two vectors.") },
+	{ "equal", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "equal", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "notEqual", TYPE_BVEC2, { TYPE_BVEC2, TYPE_BVEC2, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC3, { TYPE_BVEC3, TYPE_BVEC3, TYPE_VOID } },
-	{ "notEqual", TYPE_BVEC4, { TYPE_BVEC4, TYPE_BVEC4, TYPE_VOID } },
+	{ "equal", TYPE_BVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_IVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "equal", TYPE_BVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_IVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "equal", TYPE_BVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_IVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "any", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID } },
-	{ "any", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID } },
-	{ "any", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID } },
+	{ "equal", TYPE_BVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "equal", TYPE_BVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "equal", TYPE_BVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "all", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID } },
-	{ "all", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID } },
-	{ "all", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID } },
+	{ "equal", TYPE_BVEC2, { BuiltinParam(TYPE_BVEC2, "x"), BuiltinParam(TYPE_BVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "equal", TYPE_BVEC3, { BuiltinParam(TYPE_BVEC3, "x"), BuiltinParam(TYPE_BVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "equal", TYPE_BVEC4, { BuiltinParam(TYPE_BVEC4, "x"), BuiltinParam(TYPE_BVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "not", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID } },
-	{ "not", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID } },
-	{ "not", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID } },
+	{ "notEqual", TYPE_BVEC2, { BuiltinParam(TYPE_VEC2, "x"), BuiltinParam(TYPE_VEC2, "y"), BuiltinParam(TYPE_VOID) }, TTR("Performs a component-wise not-equal-to comparison of two vectors.") },
+	{ "notEqual", TYPE_BVEC3, { BuiltinParam(TYPE_VEC3, "x"), BuiltinParam(TYPE_VEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "notEqual", TYPE_BVEC4, { BuiltinParam(TYPE_VEC4, "x"), BuiltinParam(TYPE_VEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "notEqual", TYPE_BVEC2, { BuiltinParam(TYPE_IVEC2, "x"), BuiltinParam(TYPE_IVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "notEqual", TYPE_BVEC3, { BuiltinParam(TYPE_IVEC3, "x"), BuiltinParam(TYPE_IVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "notEqual", TYPE_BVEC4, { BuiltinParam(TYPE_IVEC4, "x"), BuiltinParam(TYPE_IVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "notEqual", TYPE_BVEC2, { BuiltinParam(TYPE_UVEC2, "x"), BuiltinParam(TYPE_UVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "notEqual", TYPE_BVEC3, { BuiltinParam(TYPE_UVEC3, "x"), BuiltinParam(TYPE_UVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "notEqual", TYPE_BVEC4, { BuiltinParam(TYPE_UVEC4, "x"), BuiltinParam(TYPE_UVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "notEqual", TYPE_BVEC2, { BuiltinParam(TYPE_BVEC2, "x"), BuiltinParam(TYPE_BVEC2, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "notEqual", TYPE_BVEC3, { BuiltinParam(TYPE_BVEC3, "x"), BuiltinParam(TYPE_BVEC3, "y"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "notEqual", TYPE_BVEC4, { BuiltinParam(TYPE_BVEC4, "x"), BuiltinParam(TYPE_BVEC4, "y"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "any", TYPE_BOOL, { BuiltinParam(TYPE_BVEC2, "x"), BuiltinParam(TYPE_VOID) }, TTR("Checks whether any element of a boolean vector is true.") },
+	{ "any", TYPE_BOOL, { BuiltinParam(TYPE_BVEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "any", TYPE_BOOL, { BuiltinParam(TYPE_BVEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "all", TYPE_BOOL, { BuiltinParam(TYPE_BVEC2, "x"), BuiltinParam(TYPE_VOID) }, TTR("Checks whether all elements of a boolean vector are true.") },
+	{ "all", TYPE_BOOL, { BuiltinParam(TYPE_BVEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "all", TYPE_BOOL, { BuiltinParam(TYPE_BVEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
+
+	{ "not", TYPE_BOOL, { BuiltinParam(TYPE_BVEC2, "x"), BuiltinParam(TYPE_VOID) }, TTR("Logically inverts a boolean vector.") },
+	{ "not", TYPE_BOOL, { BuiltinParam(TYPE_BVEC3, "x"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "not", TYPE_BOOL, { BuiltinParam(TYPE_BVEC4, "x"), BuiltinParam(TYPE_VOID) }, "" },
 
 	//builtins - texture
-	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLER2D, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC2, { TYPE_ISAMPLER2D, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC2, { TYPE_USAMPLER2D, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC3, { TYPE_SAMPLER2DARRAY, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER2DARRAY, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER2DARRAY, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC3, { TYPE_SAMPLER3D, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC3, { TYPE_ISAMPLER3D, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC3, { TYPE_USAMPLER3D, TYPE_INT, TYPE_VOID } },
-	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLERCUBE, TYPE_INT, TYPE_VOID } },
+	{ "textureSize", TYPE_IVEC2, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, TTR("Retrieve the dimensions of a level of a texture.") },
+	{ "textureSize", TYPE_IVEC2, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC2, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC3, { BuiltinParam(TYPE_SAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC3, { BuiltinParam(TYPE_ISAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC3, { BuiltinParam(TYPE_USAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC3, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC3, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC3, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureSize", TYPE_IVEC2, { BuiltinParam(TYPE_SAMPLERCUBE, "sampler"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VOID } },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_VOID) }, TTR("Retrieves texels from a texture.") },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLERCUBE, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texture", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLERCUBE, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VOID } },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
+	{ "textureProj", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, TTR("Performs a texture lookup with projection.") },
+	{ "textureProj", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProj", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "bias"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VOID } },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
+	{ "textureLod", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, TTR("Performs a texture lookup with explicit level-of-detail.") },
+	{ "textureLod", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureLod", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLERCUBE, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID } },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
+	{ "texelFetch", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_IVEC2, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, TTR("Performs a lookup of a single texel within a texture.") },
+	{ "texelFetch", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_IVEC2, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texelFetch", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_IVEC2, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texelFetch", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_IVEC3, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texelFetch", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_IVEC3, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texelFetch", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_IVEC3, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texelFetch", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_IVEC3, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texelFetch", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_IVEC3, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "texelFetch", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_IVEC3, "uv"), BuiltinParam(TYPE_INT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID } },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
+	{ "textureProjLod", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, TTR("Performs a texture lookup with projection and explicit level-of-detail.") },
+	{ "textureProjLod", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProjLod", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProjLod", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProjLod", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureProjLod", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC4, "uv"), BuiltinParam(TYPE_FLOAT, "lod"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VOID } },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
+	{ "textureGrad", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_VEC2, "dx"), BuiltinParam(TYPE_VEC2, "dy"), BuiltinParam(TYPE_VOID) }, TTR("Performs a texture lookup with explicit gradients.") },
+	{ "textureGrad", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_VEC2, "dx"), BuiltinParam(TYPE_VEC2, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2D, "sampler"), BuiltinParam(TYPE_VEC2, "uv"), BuiltinParam(TYPE_VEC2, "dx"), BuiltinParam(TYPE_VEC2, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VEC2, "dx"), BuiltinParam(TYPE_VEC2, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VEC2, "dx"), BuiltinParam(TYPE_VEC2, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER2DARRAY, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VEC2, "dx"), BuiltinParam(TYPE_VEC2, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VEC3, "dx"), BuiltinParam(TYPE_VEC3, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_IVEC4, { BuiltinParam(TYPE_ISAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VEC3, "dx"), BuiltinParam(TYPE_VEC3, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_UVEC4, { BuiltinParam(TYPE_USAMPLER3D, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VEC3, "dx"), BuiltinParam(TYPE_VEC3, "dy"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "textureGrad", TYPE_VEC4, { BuiltinParam(TYPE_SAMPLERCUBE, "sampler"), BuiltinParam(TYPE_VEC3, "uv"), BuiltinParam(TYPE_VEC3, "dx"), BuiltinParam(TYPE_VEC3, "dy"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_VOID } },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
+	{ "dFdx", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "p"), BuiltinParam(TYPE_VOID) }, TTR("Returns the partial derivative of an argument with respect to x.\nAvailable only in fragment and light functions.") },
+	{ "dFdx", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "p"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "dFdx", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "p"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "dFdx", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "p"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VOID } },
-	{ "texture", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
+	{ "dFdy", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "p"), BuiltinParam(TYPE_VOID) }, TTR("Returns the partial derivative of an argument with respect to y.\nAvailable only in fragment and light functions.") },
+	{ "dFdy", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "p"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "dFdy", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "p"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "dFdy", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "p"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VOID } },
-	{ "texture", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
+	{ "fwidth", TYPE_FLOAT, { BuiltinParam(TYPE_FLOAT, "p"), BuiltinParam(TYPE_VOID) }, TTR("Returns the sum of the absolute value of derivatives in x and y.\nAvailable only in fragment and light functions.") },
+	{ "fwidth", TYPE_VEC2, { BuiltinParam(TYPE_VEC2, "p"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "fwidth", TYPE_VEC3, { BuiltinParam(TYPE_VEC3, "p"), BuiltinParam(TYPE_VOID) }, "" },
+	{ "fwidth", TYPE_VEC4, { BuiltinParam(TYPE_VEC4, "p"), BuiltinParam(TYPE_VOID) }, "" },
 
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VOID } },
-	{ "texture", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_VOID } },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_VOID } },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_VOID } },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_VOID } },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_VOID } },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_VOID } },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_VOID } },
-	{ "textureProj", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_VOID } },
-	{ "textureProj", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_VOID } },
-	{ "textureProj", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureLod", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID } },
-	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID } },
-	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_IVEC2, TYPE_INT, TYPE_VOID } },
-
-	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-
-	{ "texelFetch", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-	{ "texelFetch", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-	{ "texelFetch", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_IVEC3, TYPE_INT, TYPE_VOID } },
-
-	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureProjLod", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureProjLod", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC3, TYPE_FLOAT, TYPE_VOID } },
-	{ "textureProjLod", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC4, TYPE_FLOAT, TYPE_VOID } },
-
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER2D, TYPE_VEC2, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER2DARRAY, TYPE_VEC3, TYPE_VEC2, TYPE_VEC2, TYPE_VOID } },
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "textureGrad", TYPE_IVEC4, { TYPE_ISAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "textureGrad", TYPE_UVEC4, { TYPE_USAMPLER3D, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-	{ "textureGrad", TYPE_VEC4, { TYPE_SAMPLERCUBE, TYPE_VEC3, TYPE_VEC3, TYPE_VEC3, TYPE_VOID } },
-
-	{ "dFdx", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "dFdx", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "dFdx", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "dFdx", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-
-	{ "dFdy", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "dFdy", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "dFdy", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "dFdy", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-
-	{ "fwidth", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
-	{ "fwidth", TYPE_VEC2, { TYPE_VEC2, TYPE_VOID } },
-	{ "fwidth", TYPE_VEC3, { TYPE_VEC3, TYPE_VOID } },
-	{ "fwidth", TYPE_VEC4, { TYPE_VEC4, TYPE_VOID } },
-
-	{ NULL, TYPE_VOID, { TYPE_VOID } }
-
+	{ NULL, TYPE_VOID, { BuiltinParam(TYPE_VOID) }, "" }
 };
 
 const ShaderLanguage::BuiltinFuncOutArgs ShaderLanguage::builtin_func_out_args[] = {
@@ -2086,15 +2086,15 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 				bool fail = false;
 				for (int i = 0; i < argcount; i++) {
 
-					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i])) {
+					if (get_scalar_type(args[i]) == args[i] && p_func->arguments[i + 1]->type == Node::TYPE_CONSTANT && convert_constant(static_cast<ConstantNode *>(p_func->arguments[i + 1]), builtin_func_defs[idx].args[i].type)) {
 						//all good, but needs implicit conversion later
-					} else if (args[i] != builtin_func_defs[idx].args[i]) {
+					} else if (args[i] != builtin_func_defs[idx].args[i].type) {
 						fail = true;
 						break;
 					}
 				}
 
-				if (!fail && argcount < 4 && builtin_func_defs[idx].args[argcount] != TYPE_VOID)
+				if (!fail && argcount < 4 && builtin_func_defs[idx].args[argcount].type != TYPE_VOID)
 					fail = true; //make sure the number of arguments matches
 
 				if (!fail) {
@@ -2136,7 +2136,7 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 					//implicitly convert values if possible
 					for (int i = 0; i < argcount; i++) {
 
-						if (get_scalar_type(args[i]) != args[i] || args[i] == builtin_func_defs[idx].args[i] || p_func->arguments[i + 1]->type != Node::TYPE_CONSTANT) {
+						if (get_scalar_type(args[i]) != args[i] || args[i] == builtin_func_defs[idx].args[i].type || p_func->arguments[i + 1]->type != Node::TYPE_CONSTANT) {
 							//can't do implicit conversion here
 							continue;
 						}
@@ -2145,10 +2145,10 @@ bool ShaderLanguage::_validate_function_call(BlockNode *p_block, OperatorNode *p
 						ConstantNode *constant = static_cast<ConstantNode *>(p_func->arguments[i + 1]);
 						ConstantNode *conversion = alloc_node<ConstantNode>();
 
-						conversion->datatype = builtin_func_defs[idx].args[i];
+						conversion->datatype = builtin_func_defs[idx].args[i].type;
 						conversion->values.resize(1);
 
-						convert_constant(constant, builtin_func_defs[idx].args[i], conversion->values.ptrw());
+						convert_constant(constant, builtin_func_defs[idx].args[i].type, conversion->values.ptrw());
 						p_func->arguments.write[i + 1] = conversion;
 					}
 
@@ -4684,7 +4684,7 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_name, String &r_call_desc, List<String> &r_call_overloads) {
 
 	clear();
 
@@ -4802,6 +4802,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					continue;
 				if (shader->functions[i].name == completion_function) {
 
+					r_call_name = shader->functions[i].name;
+
 					String calltip;
 
 					calltip += get_datatype_name(shader->functions[i].function->return_type);
@@ -4833,7 +4835,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 						calltip += " ";
 					calltip += ")";
 
-					r_call_hint = calltip;
+					r_call_overloads.push_back(calltip);
+
 					return OK;
 				}
 			}
@@ -4846,46 +4849,59 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 
 				if (completion_function == builtin_func_defs[idx].name) {
 
+					r_call_name = builtin_func_defs[idx].name;
+
+					bool first = builtin_func_defs[idx].description != "";
+
+					if (first) {
+						r_call_desc = builtin_func_defs[idx].description;
+					}
 					if (calltip.length())
 						calltip += "\n";
 
-					calltip += get_datatype_name(builtin_func_defs[idx].rettype);
-					calltip += " ";
-					calltip += builtin_func_defs[idx].name;
-					calltip += "(";
+					String overload;
+					overload += get_datatype_name(builtin_func_defs[idx].rettype);
+					overload += " ";
+					overload += builtin_func_defs[idx].name;
+					overload += "(";
 
 					bool found_arg = false;
 					for (int i = 0; i < 4; i++) {
 
-						if (builtin_func_defs[idx].args[i] == TYPE_VOID)
+						if (builtin_func_defs[idx].args[i].type == TYPE_VOID)
 							break;
 
 						if (i > 0)
-							calltip += ", ";
+							overload += String(", ");
 						else
-							calltip += " ";
+							overload += String(" ");
 
 						if (i == completion_argument) {
-							calltip += CharType(0xFFFF);
+							overload += CharType(0xFFFF);
 						}
 
-						calltip += get_datatype_name(builtin_func_defs[idx].args[i]);
+						overload += get_datatype_name(builtin_func_defs[idx].args[i].type);
+						if (String(builtin_func_defs[idx].args[i].name) != "") {
+							overload += " ";
+						}
+						overload += builtin_func_defs[idx].args[i].name;
 
 						if (i == completion_argument) {
-							calltip += CharType(0xFFFF);
+							overload += CharType(0xFFFF);
 						}
 
 						found_arg = true;
 					}
 
 					if (found_arg)
-						calltip += " ";
-					calltip += ")";
+						overload += " ";
+					overload += ")";
+
+					r_call_overloads.push_back(overload);
+					calltip += overload;
 				}
 				idx++;
 			}
-
-			r_call_hint = calltip;
 
 			return OK;
 

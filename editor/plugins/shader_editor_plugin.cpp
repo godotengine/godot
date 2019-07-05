@@ -195,14 +195,27 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 	_check_shader_mode();
 
 	ShaderLanguage sl;
-	String calltip;
+	String func_name;
+	String func_description;
+	List<String> func_overloads;
 
-	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
+	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, func_name, func_description, func_overloads);
 	if (err != OK)
 		ERR_PRINT("Shaderlang complete failed");
 
-	if (calltip != "") {
-		get_text_edit()->set_code_hint(calltip);
+	if (func_name != "") {
+
+		String help_link = "";
+		if (func_description != "") {
+			help_link = vformat("https://www.khronos.org/registry/OpenGL-Refpages/es3/html/%s.xhtml", func_name);
+		}
+		String overloads = "";
+		for (int i = 0; i < func_overloads.size(); i++) {
+			overloads += func_overloads[i];
+			if (i != func_overloads.size() - 1)
+				overloads += "\n";
+		}
+		get_text_edit()->set_code_hint(overloads);
 	}
 }
 
@@ -342,6 +355,16 @@ void ShaderEditor::_menu_option(int p_option) {
 
 			shader_editor->remove_all_bookmarks();
 		} break;
+		case HELP_ONLINE_DOCS:
+
+			OS::get_singleton()->shell_open("http://docs.godotengine.org/en/latest/tutorials/shading/shading_reference/index.html");
+			break;
+		case HELP_GLSL_DOCS:
+
+			OS::get_singleton()->shell_open("https://www.khronos.org/registry/OpenGL-Refpages/es3/html/index.php");
+			break;
+		default:
+			break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
 		shader_editor->get_text_edit()->call_deferred("grab_focus");
@@ -657,11 +680,20 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
 	bookmarks_menu->get_popup()->connect("index_pressed", this, "_bookmark_item_pressed");
 
+	help_menu = memnew(MenuButton);
+	help_menu->set_text(TTR("Help"));
+	help_menu->set_switch_on_hover(true);
+	help_menu->get_popup()->set_hide_on_window_lose_focus(true);
+	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_ONLINE_DOCS);
+	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("GLSL Docs"), HELP_GLSL_DOCS);
+	help_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
 	add_child(main_container);
 	main_container->add_child(hbc);
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
 	hbc->add_child(bookmarks_menu);
+	hbc->add_child(help_menu);
 	hbc->add_style_override("panel", p_node->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
 	main_container->add_child(shader_editor);
 

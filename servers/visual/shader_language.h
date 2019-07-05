@@ -650,11 +650,22 @@ private:
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
 
+	struct BuiltinParam {
+		DataType type;
+		const char *name;
+
+		BuiltinParam(DataType p_type = TYPE_VOID, const char *p_name = "") :
+				type(p_type),
+				name(p_name) {
+		}
+	};
+
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
 		const char *name;
 		DataType rettype;
-		const DataType args[MAX_ARGS];
+		const BuiltinParam args[MAX_ARGS];
+		String description;
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
@@ -690,7 +701,7 @@ public:
 
 	static String get_shader_type(const String &p_code);
 	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_name, String &r_call_desc, List<String> &r_call_overloads);
 
 	String get_error_text();
 	int get_error_line();

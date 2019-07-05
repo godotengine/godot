@@ -94,13 +94,14 @@ class ShaderEditor : public PanelContainer {
 		BOOKMARK_GOTO_NEXT,
 		BOOKMARK_GOTO_PREV,
 		BOOKMARK_REMOVE_ALL,
-
+		HELP_ONLINE_DOCS,
+		HELP_GLSL_DOCS,
 	};
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
 	MenuButton *bookmarks_menu;
-	MenuButton *settings_menu;
+	MenuButton *help_menu;
 	PopupMenu *context_menu;
 	uint64_t idle;
 
