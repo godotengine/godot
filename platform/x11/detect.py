@@ -324,6 +324,9 @@ def configure(env):
 
     if env["execinfo"]:
         env.Append(LIBS=['execinfo'])
+        
+    if not env['tools']:
+        env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
 
     ## Cross-compilation
 

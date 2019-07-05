@@ -34,6 +34,8 @@
 #include "editor/editor_settings.h"
 #include "platform/windows/logo.gen.h"
 
+static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
+
 class EditorExportPlatformWindows : public EditorExportPlatformPC {
 
 public:
@@ -172,6 +174,80 @@ void register_windows_exporter() {
 	platform->set_release_64("windows_64_release.exe");
 	platform->set_debug_64("windows_64_debug.exe");
 	platform->set_os_name("Windows");
+	platform->set_fixup_embedded_pck_func(&fixup_embedded_pck);
 
 	EditorExport::get_singleton()->add_export_platform(platform);
+}
+
+static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size) {
+
+	// Patch the header of the "pck" section in the PE file so that it corresponds to the embedded data
+
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+	if (!f) {
+		return ERR_CANT_OPEN;
+	}
+
+	// Jump to the PE header and check the magic number
+	{
+		f->seek(0x3c);
+		uint32_t pe_pos = f->get_32();
+
+		f->seek(pe_pos);
+		uint32_t magic = f->get_32();
+		if (magic != 0x00004550) {
+			f->close();
+			return ERR_FILE_CORRUPT;
+		}
+	}
+
+	// Process header
+
+	int num_sections;
+	{
+		int64_t header_pos = f->get_position();
+
+		f->seek(header_pos + 2);
+		num_sections = f->get_16();
+		f->seek(header_pos + 16);
+		uint16_t opt_header_size = f->get_16();
+
+		// Skip rest of header + optional header to go to the section headers
+		f->seek(f->get_position() + 2 + opt_header_size);
+	}
+
+	// Search for the "pck" section
+
+	int64_t section_table_pos = f->get_position();
+
+	bool found = false;
+	for (int i = 0; i < num_sections; ++i) {
+
+		int64_t section_header_pos = section_table_pos + i * 40;
+		f->seek(section_header_pos);
+
+		uint8_t section_name[9];
+		f->get_buffer(section_name, 8);
+		section_name[8] = '\0';
+
+		if (strcmp((char *)section_name, "pck") == 0) {
+			// "pck" section found, let's patch!
+
+			// Set virtual size to a little to avoid it taking memory (zero would give issues)
+			f->seek(section_header_pos + 8);
+			f->store_32(8);
+
+			f->seek(section_header_pos + 16);
+			f->store_32(p_embedded_size);
+			f->seek(section_header_pos + 20);
+			f->store_32(p_embedded_start);
+
+			found = true;
+			break;
+		}
+	}
+
+	f->close();
+
+	return found ? OK : ERR_FILE_CORRUPT;
 }

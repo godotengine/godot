@@ -899,7 +899,7 @@ Error EditorExportPlatform::_add_shared_object(void *p_userdata, const SharedObj
 	return OK;
 }
 
-Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files) {
+Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files, bool p_embed, int64_t *r_embedded_start, int64_t *r_embedded_size) {
 
 	EditorProgress ep("savepack", TTR("Packing"), 102, true);
 
@@ -921,9 +921,34 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	pd.file_ofs.sort(); //do sort, so we can do binary search later
 
-	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
-	f->store_32(0x43504447); //GDPK
+	FileAccess *f;
+	int64_t embed_pos = 0;
+	if (!p_embed) {
+		// Regular output to separate PCK file
+		f = FileAccess::open(p_path, FileAccess::WRITE);
+		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+	} else {
+		// Append to executable
+		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
+		ERR_FAIL_COND_V(!f, ERR_FILE_CANT_OPEN);
+
+		f->seek_end();
+		embed_pos = f->get_position();
+
+		if (r_embedded_start) {
+			*r_embedded_start = embed_pos;
+		}
+
+		// Ensure embedded PCK starts at a 64-bit multiple
+		int pad = f->get_position() % 8;
+		for (int i = 0; i < pad; i++) {
+			f->store_8(0);
+		}
+	}
+
+	int64_t pck_start_pos = f->get_position();
+
+	f->store_32(0x43504447); //GDPC
 	f->store_32(1); //pack version
 	f->store_32(VERSION_MAJOR);
 	f->store_32(VERSION_MINOR);
@@ -935,29 +960,29 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	f->store_32(pd.file_ofs.size()); //amount of files
 
-	size_t header_size = f->get_position();
+	int64_t header_size = f->get_position();
 
 	//precalculate header size
 
 	for (int i = 0; i < pd.file_ofs.size(); i++) {
 		header_size += 4; // size of path string (32 bits is enough)
-		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
+		int string_len = pd.file_ofs[i].path_utf8.length();
 		header_size += string_len + _get_pad(4, string_len); ///size of path string
 		header_size += 8; // offset to file _with_ header size included
 		header_size += 8; // size of file
 		header_size += 16; // md5
 	}
 
-	size_t header_padding = _get_pad(PCK_PADDING, header_size);
+	int header_padding = _get_pad(PCK_PADDING, header_size);
 
 	for (int i = 0; i < pd.file_ofs.size(); i++) {
 
-		uint32_t string_len = pd.file_ofs[i].path_utf8.length();
-		uint32_t pad = _get_pad(4, string_len);
-		;
+		int string_len = pd.file_ofs[i].path_utf8.length();
+		int pad = _get_pad(4, string_len);
+
 		f->store_32(string_len + pad);
 		f->store_buffer((const uint8_t *)pd.file_ofs[i].path_utf8.get_data(), string_len);
-		for (uint32_t j = 0; j < pad; j++) {
+		for (int j = 0; j < pad; j++) {
 			f->store_8(0);
 		}
 
@@ -966,7 +991,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 		f->store_buffer(pd.file_ofs[i].md5.ptr(), 16); //also save md5 for file
 	}
 
-	for (uint32_t j = 0; j < header_padding; j++) {
+	for (int i = 0; i < header_padding; i++) {
 		f->store_8(0);
 	}
 
@@ -992,7 +1017,23 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	memdelete(ftmp);
 
-	f->store_32(0x43504447); //GDPK
+	if (p_embed) {
+		// Ensure embedded data ends at a 64-bit multiple
+		int64_t embed_end = f->get_position() - embed_pos + 12;
+		int pad = embed_end % 8;
+		for (int i = 0; i < pad; i++) {
+			f->store_8(0);
+		}
+
+		int64_t pck_size = f->get_position() - pck_start_pos;
+		f->store_64(pck_size);
+		f->store_32(0x43504447); //GDPC
+
+		if (r_embedded_size) {
+			*r_embedded_size = f->get_position() - embed_pos;
+		}
+	}
+
 	memdelete(f);
 
 	return OK;
@@ -1399,6 +1440,7 @@ void EditorExportPlatformPC::get_export_options(List<ExportOption> *r_options) {
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/no_bptc_fallbacks"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/64_bits"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "binary_format/embed_pck"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/debug", PROPERTY_HINT_GLOBAL_FILE), ""));
 }
@@ -1516,12 +1558,33 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->copy(template_path, p_path, get_chmod_flags());
+	memdelete(da);
+
 	if (err == OK) {
-		String pck_path = p_path.get_basename() + ".pck";
+		String pck_path;
+		if (p_preset->get("binary_format/embed_pck")) {
+			pck_path = p_path;
+		} else {
+			pck_path = p_path.get_basename() + ".pck";
+		}
 
 		Vector<SharedObject> so_files;
 
-		err = save_pack(p_preset, pck_path, &so_files);
+		int64_t embedded_pos;
+		int64_t embedded_size;
+		err = save_pack(p_preset, pck_path, &so_files, p_preset->get("binary_format/embed_pck"), &embedded_pos, &embedded_size);
+		if (err == OK && p_preset->get("binary_format/embed_pck")) {
+
+			if (embedded_size >= 0x100000000 && !p_preset->get("binary_format/64_bits")) {
+				EditorNode::get_singleton()->show_warning(TTR("On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."));
+				return ERR_UNAVAILABLE;
+			}
+
+			FixUpEmbeddedPckFunc fixup_func = get_fixup_embedded_pck_func();
+			if (fixup_func) {
+				err = fixup_func(p_path, embedded_pos, embedded_size);
+			}
+		}
 
 		if (err == OK && !so_files.empty()) {
 			//if shared object files, copy them
@@ -1529,10 +1592,10 @@ Error EditorExportPlatformPC::export_project(const Ref<EditorExportPreset> &p_pr
 			for (int i = 0; i < so_files.size() && err == OK; i++) {
 				err = da->copy(so_files[i].path, p_path.get_base_dir().plus_file(so_files[i].path.get_file()));
 			}
+			memdelete(da);
 		}
 	}
 
-	memdelete(da);
 	return err;
 }
 
@@ -1603,9 +1666,20 @@ void EditorExportPlatformPC::set_chmod_flags(int p_flags) {
 	chmod_flags = p_flags;
 }
 
+EditorExportPlatformPC::FixUpEmbeddedPckFunc EditorExportPlatformPC::get_fixup_embedded_pck_func() const {
+
+	return fixup_embedded_pck_func;
+}
+
+void EditorExportPlatformPC::set_fixup_embedded_pck_func(FixUpEmbeddedPckFunc p_fixup_embedded_pck_func) {
+
+	fixup_embedded_pck_func = p_fixup_embedded_pck_func;
+}
+
 EditorExportPlatformPC::EditorExportPlatformPC() {
 
 	chmod_flags = -1;
+	fixup_embedded_pck_func = NULL;
 }
 
 ///////////////////////
