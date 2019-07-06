@@ -140,9 +140,6 @@ Transform2D Camera2D::get_camera_transform() {
 		Point2 screen_offset = (anchor_mode == ANCHOR_MODE_DRAG_CENTER ? (screen_size * 0.5 * zoom) : Point2());
 		Rect2 screen_rect(-screen_offset + camera_pos, screen_size * zoom);
 
-		if (offset != Vector2())
-			screen_rect.position += offset;
-
 		if (limit_smoothing_enabled) {
 			if (screen_rect.position.x < limit[MARGIN_LEFT])
 				camera_pos.x -= screen_rect.position.x - limit[MARGIN_LEFT];
@@ -193,21 +190,8 @@ Transform2D Camera2D::get_camera_transform() {
 	if (screen_rect.position.y < limit[MARGIN_TOP])
 		screen_rect.position.y = limit[MARGIN_TOP];
 
-	if (offset != Vector2()) {
-
+	if (offset != Vector2())
 		screen_rect.position += offset;
-		if (screen_rect.position.x + screen_rect.size.x > limit[MARGIN_RIGHT])
-			screen_rect.position.x = limit[MARGIN_RIGHT] - screen_rect.size.x;
-
-		if (screen_rect.position.y + screen_rect.size.y > limit[MARGIN_BOTTOM])
-			screen_rect.position.y = limit[MARGIN_BOTTOM] - screen_rect.size.y;
-
-		if (screen_rect.position.x < limit[MARGIN_LEFT])
-			screen_rect.position.x = limit[MARGIN_LEFT];
-
-		if (screen_rect.position.y < limit[MARGIN_TOP])
-			screen_rect.position.y = limit[MARGIN_TOP];
-	}
 
 	camera_screen_center = screen_rect.position + screen_rect.size * 0.5;
 
