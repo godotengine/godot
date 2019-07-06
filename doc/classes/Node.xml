@@ -553,7 +553,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Moves this node to the top of the array of nodes of the parent node. This is often useful in GUIs ([Control] nodes), because their order of drawing depends on their order in the tree.
+				Moves this node to the bottom of parent node's children hierarchy. This is often useful in GUIs ([Control] nodes), because their order of drawing depends on their order in the tree, i.e. the further they are on the node list, the higher they are drawn. After using [code]raise[/code], a Control will be drawn on top of their siblings.
 			</description>
 		</method>
 		<method name="remove_and_skip">
