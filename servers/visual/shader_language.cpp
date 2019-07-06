@@ -4684,7 +4684,7 @@ Error ShaderLanguage::compile(const String &p_code, const Map<StringName, Functi
 	return OK;
 }
 
-Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint) {
+Error ShaderLanguage::complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint) {
 
 	clear();
 
@@ -4705,8 +4705,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 		} break;
 		case COMPLETION_RENDER_MODE: {
 			for (int i = 0; i < p_render_modes.size(); i++) {
-
-				r_options->push_back(p_render_modes[i]);
+				ScriptCodeCompletionOption option(p_render_modes[i], ScriptCodeCompletionOption::KIND_ENUM);
+				r_options->push_back(option);
 			}
 
 			return OK;
@@ -4714,8 +4714,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 		case COMPLETION_MAIN_FUNCTION: {
 
 			for (const Map<StringName, FunctionInfo>::Element *E = p_functions.front(); E; E = E->next()) {
-
-				r_options->push_back(E->key());
+				ScriptCodeCompletionOption option(E->key(), ScriptCodeCompletionOption::KIND_FUNCTION);
+				r_options->push_back(option);
 			}
 
 			return OK;
@@ -4724,10 +4724,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 		case COMPLETION_FUNCTION_CALL: {
 
 			bool comp_ident = completion_type == COMPLETION_IDENTIFIER;
-			Set<String> matches;
-
+			Map<String, ScriptCodeCompletionOption::Kind> matches;
 			StringName skip_function;
-
 			BlockNode *block = completion_block;
 
 			while (block) {
@@ -4736,7 +4734,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					for (const Map<StringName, BlockNode::Variable>::Element *E = block->variables.front(); E; E = E->next()) {
 
 						if (E->get().line < completion_line) {
-							matches.insert(E->key());
+							matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
 						}
 					}
 				}
@@ -4744,7 +4742,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 				if (block->parent_function) {
 					if (comp_ident) {
 						for (int i = 0; i < block->parent_function->arguments.size(); i++) {
-							matches.insert(block->parent_function->arguments[i].name);
+							matches.insert(block->parent_function->arguments[i].name, ScriptCodeCompletionOption::KIND_FUNCTION);
 						}
 					}
 					skip_function = block->parent_function->name;
@@ -4755,35 +4753,43 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			if (comp_ident && skip_function != StringName() && p_functions.has(skip_function)) {
 
 				for (Map<StringName, BuiltInInfo>::Element *E = p_functions[skip_function].built_ins.front(); E; E = E->next()) {
-					matches.insert(E->key());
+					ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_MEMBER;
+					if (E->get().constant) {
+						kind = ScriptCodeCompletionOption::KIND_CONSTANT;
+					}
+					matches.insert(E->key(), kind);
 				}
 			}
 
 			if (comp_ident) {
 				for (const Map<StringName, ShaderNode::Varying>::Element *E = shader->varyings.front(); E; E = E->next()) {
-					matches.insert(E->key());
+					matches.insert(E->key(), ScriptCodeCompletionOption::KIND_VARIABLE);
 				}
 				for (const Map<StringName, ShaderNode::Uniform>::Element *E = shader->uniforms.front(); E; E = E->next()) {
-					matches.insert(E->key());
+					matches.insert(E->key(), ScriptCodeCompletionOption::KIND_MEMBER);
 				}
 			}
 
 			for (int i = 0; i < shader->functions.size(); i++) {
 				if (!shader->functions[i].callable || shader->functions[i].name == skip_function)
 					continue;
-				matches.insert(String(shader->functions[i].name) + "(");
+				matches.insert(String(shader->functions[i].name), ScriptCodeCompletionOption::KIND_FUNCTION);
 			}
 
 			int idx = 0;
 
 			while (builtin_func_defs[idx].name) {
 
-				matches.insert(String(builtin_func_defs[idx].name) + "(");
+				matches.insert(String(builtin_func_defs[idx].name), ScriptCodeCompletionOption::KIND_FUNCTION);
 				idx++;
 			}
 
-			for (Set<String>::Element *E = matches.front(); E; E = E->next()) {
-				r_options->push_back(E->get());
+			for (Map<String, ScriptCodeCompletionOption::Kind>::Element *E = matches.front(); E; E = E->next()) {
+				ScriptCodeCompletionOption option(E->key(), E->value());
+				if (E->value() == ScriptCodeCompletionOption::KIND_FUNCTION) {
+					option.insert_text += "(";
+				}
+				r_options->push_back(option);
 			}
 
 			return OK;
@@ -4923,8 +4929,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 			}
 
 			for (int i = 0; i < limit; i++) {
-				r_options->push_back(String::chr(colv[i]));
-				r_options->push_back(String::chr(coordv[i]));
+				r_options->push_back(ScriptCodeCompletionOption(String::chr(colv[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
+				r_options->push_back(ScriptCodeCompletionOption(String::chr(coordv[i]), ScriptCodeCompletionOption::KIND_PLAIN_TEXT));
 			}
 
 		} break;

@@ -53,7 +53,7 @@ protected:
 	static void _bind_methods();
 	virtual void _load_theme_settings();
 
-	virtual void _code_complete_script(const String &p_code, List<String> *r_options);
+	virtual void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options);
 
 public:
 	virtual void _validate_script();
