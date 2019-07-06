@@ -474,7 +474,7 @@ void DependencyRemoveDialog::show(const Vector<String> &p_folders, const Vector<
 	removed_deps.sort();
 	if (removed_deps.empty()) {
 		owners->hide();
-		text->set_text(TTR("Remove selected files from the project? (no undo)"));
+		text->set_text(TTR("Remove selected files from the project? (Can't be restored)"));
 		set_size(Size2());
 		popup_centered();
 	} else {
