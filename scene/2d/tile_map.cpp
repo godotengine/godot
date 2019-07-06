@@ -1275,7 +1275,7 @@ PoolVector<int> TileMap::_get_tile_data() const {
 		idx += 3;
 	}
 
-	w = PoolVector<int>::Write();
+	w.release();
 
 	return data;
 }

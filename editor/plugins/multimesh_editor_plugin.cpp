@@ -144,7 +144,7 @@ void MultiMeshEditor::_populate() {
 		}
 	}
 
-	w = PoolVector<Face3>::Write();
+	w.release();
 
 	PoolVector<Face3> faces = geometry;
 	ERR_EXPLAIN(TTR("Parent has no solid faces to populate."));

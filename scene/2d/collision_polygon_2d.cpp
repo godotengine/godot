@@ -70,7 +70,7 @@ void CollisionPolygon2D::_build_polygon() {
 			w[(i << 1) + 1] = polygon[(i + 1) % polygon.size()];
 		}
 
-		w = PoolVector<Vector2>::Write();
+		w.release();
 		concave->set_segments(segments);
 
 		parent->shape_owner_add_shape(owner_id, concave);

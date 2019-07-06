@@ -251,7 +251,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		src_data.resize(size);
 		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(), size);
-		wb = PoolVector<uint8_t>::Write();
 
 	} else if (info.palette) {
 
@@ -296,8 +295,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 			if (colsize == 4)
 				wb[dst_ofs + 3] = palette[src_ofs + 3];
 		}
-
-		wb = PoolVector<uint8_t>::Write();
 	} else {
 		//uncompressed generic...
 
@@ -444,8 +441,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 			default: {
 			}
 		}
-
-		wb = PoolVector<uint8_t>::Write();
 	}
 
 	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, info.format, src_data));

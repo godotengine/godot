@@ -289,7 +289,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		PoolVector<int>::Write w = sarr.write();
 		env->GetIntArrayRegion(arr, 0, fCount, w.ptr());
-		w = PoolVector<int>::Write();
+		w.release();
 		return sarr;
 	};
 
@@ -302,7 +302,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		PoolVector<uint8_t>::Write w = sarr.write();
 		env->GetByteArrayRegion(arr, 0, fCount, reinterpret_cast<signed char *>(w.ptr()));
-		w = PoolVector<uint8_t>::Write();
+		w.release();
 		return sarr;
 	};
 
@@ -514,7 +514,7 @@ public:
 
 				PoolVector<int>::Write w = sarr.write();
 				env->GetIntArrayRegion(arr, 0, fCount, w.ptr());
-				w = PoolVector<int>::Write();
+				w.release();
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
@@ -528,7 +528,7 @@ public:
 
 				PoolVector<float>::Write w = sarr.write();
 				env->GetFloatArrayRegion(arr, 0, fCount, w.ptr());
-				w = PoolVector<float>::Write();
+				w.release();
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;

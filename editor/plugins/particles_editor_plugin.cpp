@@ -197,7 +197,7 @@ void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 		}
 	}
 
-	w = PoolVector<Face3>::Write();
+	w.release();
 
 	emission_dialog->popup_centered(Size2(300, 130));
 }

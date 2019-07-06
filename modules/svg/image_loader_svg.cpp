@@ -123,7 +123,7 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 
 	rasterizer.rasterize(svg_image, 0, 0, p_scale * upscale, (unsigned char *)dw.ptr(), w, h, w * 4);
 
-	dw = PoolVector<uint8_t>::Write();
+	dw.release();
 	p_image->create(w, h, false, Image::FORMAT_RGBA8, dst_image);
 	if (upsample)
 		p_image->shrink_x2();

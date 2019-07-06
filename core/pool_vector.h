@@ -301,6 +301,10 @@ public:
 		virtual ~Access() {
 			_unref();
 		}
+
+		void release() {
+			_unref();
+		}
 	};
 
 	class Read : public Access {

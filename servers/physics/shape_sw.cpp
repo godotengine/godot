@@ -1524,8 +1524,8 @@ void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 			_aabb.merge_with(bvh_arrayw[i].aabb);
 	}
 
-	w = PoolVector<Face>::Write();
-	vw = PoolVector<Vector3>::Write();
+	w.release();
+	vw.release();
 
 	int count = 0;
 	_VolumeSW_BVH *bvh_tree = _volume_sw_build_bvh(bvh_arrayw, src_face_count, count);

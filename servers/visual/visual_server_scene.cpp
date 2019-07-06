@@ -2396,7 +2396,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		mipmap.resize(size);
 		PoolVector<uint8_t>::Write w = mipmap.write();
 		zeromem(w.ptr(), size);
-		w = PoolVector<uint8_t>::Write();
+		w.release();
 
 		probe->dynamic.mipmaps_3d.push_back(mipmap);
 

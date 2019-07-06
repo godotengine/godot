@@ -307,7 +307,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<Vector3>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -335,7 +335,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<Vector2>::Write();
+				w.release();
 				a[i] = array;
 			} break;
 			case Mesh::ARRAY_TANGENT: {
@@ -358,7 +358,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx + 3] = d < 0 ? -1 : 1;
 				}
 
-				w = PoolVector<float>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -375,7 +375,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx] = v.color;
 				}
 
-				w = PoolVector<Color>::Write();
+				w.release();
 				a[i] = array;
 			} break;
 			case Mesh::ARRAY_BONES: {
@@ -396,7 +396,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<int>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -418,7 +418,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<float>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -436,7 +436,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx] = E->get();
 				}
 
-				w = PoolVector<int>::Write();
+				w.release();
 
 				a[i] = array;
 			} break;

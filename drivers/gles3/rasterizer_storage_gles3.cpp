@@ -1173,7 +1173,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 			glDeleteFramebuffers(1, &tmp_fbo);
 		}
 
-		wb = PoolVector<uint8_t>::Write();
+		wb.release();
 
 		data.resize(data_size);
 
@@ -1248,7 +1248,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 		img_format = real_format;
 	}
 
-	wb = PoolVector<uint8_t>::Write();
+	wb.release();
 
 	data.resize(data_size);
 
@@ -1316,7 +1316,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &temp_framebuffer);
 
-	wb = PoolVector<uint8_t>::Write();
+	wb.release();
 
 	data.resize(data_size);
 
@@ -6337,7 +6337,7 @@ AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 	}
 
 #if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
-	r = PoolVector<uint8_t>::Read();
+	r.release();
 	vector = PoolVector<uint8_t>();
 #else
 	glUnmapBuffer(GL_ARRAY_BUFFER);
