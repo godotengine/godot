@@ -284,6 +284,9 @@
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
 			The width and height of viewport.
 		</member>
+		<member name="size_override_stretch" type="bool" setter="set_size_override_stretch" getter="is_size_override_stretch_enabled" default="false">
+			If [code]true[/code], the size override affects stretch as well.
+		</member>
 		<member name="transparent_bg" type="bool" setter="set_transparent_background" getter="has_transparent_background" default="false">
 			If [code]true[/code], the viewport should render its background as transparent.
 		</member>
