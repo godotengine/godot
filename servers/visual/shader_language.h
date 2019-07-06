@@ -33,6 +33,7 @@
 
 #include "core/list.h"
 #include "core/map.h"
+#include "core/script_language.h"
 #include "core/string_name.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
@@ -689,7 +690,7 @@ public:
 
 	static String get_shader_type(const String &p_code);
 	Error compile(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
-	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<String> *r_options, String &r_call_hint);
+	Error complete(const String &p_code, const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types, List<ScriptCodeCompletionOption> *r_options, String &r_call_hint);
 
 	String get_error_text();
 	int get_error_line();
