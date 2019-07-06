@@ -1164,6 +1164,8 @@ void SceneTreeDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			connect("confirmed", this, "_select");
+			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", this, "_select");
@@ -1187,20 +1189,37 @@ void SceneTreeDialog::_select() {
 	}
 }
 
+void SceneTreeDialog::_filter_changed(const String &p_filter) {
+
+	tree->set_filter(p_filter);
+}
+
 void SceneTreeDialog::_bind_methods() {
 
 	ClassDB::bind_method("_select", &SceneTreeDialog::_select);
 	ClassDB::bind_method("_cancel", &SceneTreeDialog::_cancel);
+	ClassDB::bind_method(D_METHOD("_filter_changed"), &SceneTreeDialog::_filter_changed);
+
 	ADD_SIGNAL(MethodInfo("selected", PropertyInfo(Variant::NODE_PATH, "path")));
 }
 
 SceneTreeDialog::SceneTreeDialog() {
 
 	set_title(TTR("Select a Node"));
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	add_child(vbc);
+
+	filter = memnew(LineEdit);
+	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->set_placeholder(TTR("Filter nodes"));
+	filter->add_constant_override("minimum_spaces", 0);
+	filter->connect("text_changed", this, "_filter_changed");
+	vbc->add_child(filter);
 
 	tree = memnew(SceneTreeEditor(false, false, true));
-	add_child(tree);
+	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 	tree->get_scene_tree()->connect("item_activated", this, "_select");
+	vbc->add_child(tree);
 }
 
 SceneTreeDialog::~SceneTreeDialog() {
