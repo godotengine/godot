@@ -48,6 +48,14 @@ void Popup::_notification(int p_what) {
 		update_configuration_warning();
 	}
 
+	if (p_what == NOTIFICATION_EXIT_TREE) {
+		if (popped_up) {
+			popped_up = false;
+			notification(NOTIFICATION_POPUP_HIDE);
+			emit_signal("popup_hide");
+		}
+	}
+
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 //small helper to make editing of these easier in editor
 #ifdef TOOLS_ENABLED
