@@ -332,7 +332,10 @@ void ParticlesMaterial::_update_shader() {
 			//do none
 		} break;
 		case EMISSION_SHAPE_SPHERE: {
-			code += "		TRANSFORM[3].xyz = normalize(vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0)) * emission_sphere_radius;\n";
+			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
+			code += "		float t = rand_from_seed(alt_seed) * 2.0 * pi;\n";
+			code += "		float radius = emission_sphere_radius * sqrt(1.0 - s * s);\n";
+			code += "		TRANSFORM[3].xyz = vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s);\n";
 		} break;
 		case EMISSION_SHAPE_BOX: {
 			code += "		TRANSFORM[3].xyz = vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0) * emission_box_extents;\n";
