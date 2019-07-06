@@ -754,7 +754,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 				for (int i = current + 1; i <= items.size(); i++) {
 					if (i == items.size()) {
-						if (current == 0)
+						if (current == 0 || current == -1)
 							break;
 						else
 							i = 0;
