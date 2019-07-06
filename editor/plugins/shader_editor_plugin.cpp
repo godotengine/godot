@@ -190,7 +190,7 @@ void ShaderTextEditor::_check_shader_mode() {
 	}
 }
 
-void ShaderTextEditor::_code_complete_script(const String &p_code, List<String> *r_options) {
+void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options) {
 
 	_check_shader_mode();
 
