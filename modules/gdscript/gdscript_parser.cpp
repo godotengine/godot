@@ -5077,6 +5077,9 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 
 						if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
 							tokenizer->advance();
+						} else if (tokenizer->is_token_literal(0, true)) {
+							_set_error("Unexpected identifier");
+							return;
 						}
 
 						if (enum_name != "") {
