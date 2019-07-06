@@ -569,7 +569,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			Node *dupsingle = NULL;
 			List<Node *> editable_children;
 
-			for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
+			selection.sort_custom<Node::Comparator>();
+
+			for (List<Node *>::Element *E = selection.back(); E; E = E->prev()) {
 
 				Node *node = E->get();
 				Node *parent = node->get_parent();
