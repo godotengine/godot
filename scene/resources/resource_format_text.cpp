@@ -1537,9 +1537,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		f->store_line("]\n"); //one empty line
 	}
 
-	{
-	}
-
 #ifdef TOOLS_ENABLED
 	//keep order from cached ids
 	Set<int> cached_ids_found;
