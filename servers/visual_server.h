@@ -953,11 +953,9 @@ public:
 
 	enum CanvasLightShadowFilter {
 		CANVAS_LIGHT_FILTER_NONE,
-		CANVAS_LIGHT_FILTER_PCF3,
 		CANVAS_LIGHT_FILTER_PCF5,
-		CANVAS_LIGHT_FILTER_PCF7,
-		CANVAS_LIGHT_FILTER_PCF9,
 		CANVAS_LIGHT_FILTER_PCF13,
+		CANVAS_LIGHT_FILTER_MAX
 	};
 
 	virtual void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled) = 0;
