@@ -92,7 +92,7 @@
 			Only intersecting geometry remains, the rest is removed.
 		</constant>
 		<constant name="OPERATION_SUBTRACTION" value="2" enum="Operation">
-			The second shape is susbtracted from the first, leaving a dent with it's shape.
+			The second shape is subtracted from the first, leaving a dent with its shape.
 		</constant>
 	</constants>
 </class>
