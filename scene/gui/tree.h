@@ -212,6 +212,7 @@ public:
 	bool is_button_disabled(int p_column, int p_idx) const;
 	void set_button(int p_column, int p_idx, const Ref<Texture> &p_button);
 	void set_button_color(int p_column, int p_idx, const Color &p_color);
+	void set_disable_button(int p_column, int p_idx, bool p_disabled);
 
 	/* range works for mode number or mode combo */
 
