@@ -257,7 +257,7 @@ String Particles::get_configuration_warning() const {
 				SpatialMaterial *spat = Object::cast_to<SpatialMaterial>(draw_passes[i]->surface_get_material(j).ptr());
 				anim_material_found = anim_material_found || (spat && spat->get_billboard_mode() == SpatialMaterial::BILLBOARD_PARTICLES);
 			}
-			if (meshes_found && anim_material_found) break;
+			if (anim_material_found) break;
 		}
 	}
 

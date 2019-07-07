@@ -103,7 +103,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_buffer, int p_frames) {
 
 		int todo = p_frames;
 
-		if (todo == 0 || todo < MIN_MIX) {
+		if (todo < MIN_MIX) {
 			break;
 		}
 

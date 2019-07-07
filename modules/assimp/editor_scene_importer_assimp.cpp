@@ -854,7 +854,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			if (found) {
 				Ref<Texture> texture = _load_texture(state, path);
 
-				if (texture != NULL) {
+				if (texture.is_valid()) {
 					_set_texture_mapping_mode(map_mode, texture);
 					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
 					mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);

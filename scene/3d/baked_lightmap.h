@@ -179,7 +179,7 @@ public:
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
 
-	void set_bake_default_texels_per_unit(const float &p_extents);
+	void set_bake_default_texels_per_unit(const float &p_bake_texels_per_unit);
 	float get_bake_default_texels_per_unit() const;
 
 	void set_propagation(float p_propagation);

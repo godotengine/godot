@@ -1487,7 +1487,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 	Variant **output_args = (Variant **)(input_args + max_input_args);
 	int flow_max = f->flow_stack_size;
 	int *flow_stack = flow_max ? (int *)(output_args + max_output_args) : (int *)NULL;
-	int *pass_stack = flow_stack + flow_max;
+	int *pass_stack = flow_stack ? (int *)(flow_stack + flow_max) : (int *)NULL;
 
 	String error_str;
 
@@ -1905,7 +1905,7 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 	Variant **output_args = (Variant **)(input_args + max_input_args);
 	int flow_max = f->flow_stack_size;
 	int *flow_stack = flow_max ? (int *)(output_args + max_output_args) : (int *)NULL;
-	int *pass_stack = flow_stack + flow_max;
+	int *pass_stack = flow_stack ? (int *)(flow_stack + flow_max) : (int *)NULL;
 
 	for (int i = 0; i < f->node_count; i++) {
 		sequence_bits[i] = false; //all starts as false
