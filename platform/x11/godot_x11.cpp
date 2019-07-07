@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
 	char *cwd = (char *)malloc(PATH_MAX);
+	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
 	char *ret = getcwd(cwd, PATH_MAX);
 
 	Error err = Main::setup(argv[0], argc - 1, &argv[1]);

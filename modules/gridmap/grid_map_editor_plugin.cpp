@@ -578,7 +578,7 @@ void GridMapEditor::_update_paste_indicator() {
 		return;
 	}
 
-	Vector3 center = 0.5 * Vector3(node->get_center_x(), node->get_center_y(), node->get_center_z());
+	Vector3 center = 0.5 * Vector3(float(node->get_center_x()), float(node->get_center_y()), float(node->get_center_z()));
 	Vector3 scale = (Vector3(1, 1, 1) + (paste_indicator.end - paste_indicator.begin)) * node->get_cell_size();
 	Transform xf;
 	xf.scale(scale);

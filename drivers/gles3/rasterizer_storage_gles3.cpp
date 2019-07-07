@@ -2526,19 +2526,19 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 
 			int v = value;
 			GLuint *gui = (GLuint *)data;
-			gui[0] = v & 1 ? GL_TRUE : GL_FALSE;
-			gui[1] = v & 2 ? GL_TRUE : GL_FALSE;
-			gui[2] = v & 4 ? GL_TRUE : GL_FALSE;
+			gui[0] = (v & 1) ? GL_TRUE : GL_FALSE;
+			gui[1] = (v & 2) ? GL_TRUE : GL_FALSE;
+			gui[2] = (v & 4) ? GL_TRUE : GL_FALSE;
 
 		} break;
 		case ShaderLanguage::TYPE_BVEC4: {
 
 			int v = value;
 			GLuint *gui = (GLuint *)data;
-			gui[0] = v & 1 ? GL_TRUE : GL_FALSE;
-			gui[1] = v & 2 ? GL_TRUE : GL_FALSE;
-			gui[2] = v & 4 ? GL_TRUE : GL_FALSE;
-			gui[3] = v & 8 ? GL_TRUE : GL_FALSE;
+			gui[0] = (v & 1) ? GL_TRUE : GL_FALSE;
+			gui[1] = (v & 2) ? GL_TRUE : GL_FALSE;
+			gui[2] = (v & 4) ? GL_TRUE : GL_FALSE;
+			gui[3] = (v & 8) ? GL_TRUE : GL_FALSE;
 
 		} break;
 		case ShaderLanguage::TYPE_INT: {
@@ -3441,7 +3441,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 		glGenBuffers(1, &surface->vertex_id);
 		glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
-		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), (p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 
 		if (p_format & VS::ARRAY_FORMAT_INDEX) {

@@ -6048,7 +6048,6 @@ void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const 
 void EditorSpatialGizmoPlugin::create_handle_material(const String &p_name, bool p_billboard) {
 	Ref<SpatialMaterial> handle_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 
-	handle_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	handle_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 	handle_material->set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE, true);
 	Ref<Texture> handle_t = SpatialEditor::get_singleton()->get_icon("Editor3DHandle", "EditorIcons");
