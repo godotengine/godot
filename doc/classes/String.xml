@@ -385,7 +385,10 @@
 			<return type="int">
 			</return>
 			<description>
-				Converts a string containing a hexadecimal number into an integer.
+				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings are expected to be prefixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
+				[codeblock]
+				print("0xff".hex_to_int()) # Print "255"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="insert">
