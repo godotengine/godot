@@ -3213,6 +3213,30 @@ void Tree::set_column_expand(int p_column, bool p_expand) {
 	columns.write[p_column].expand = p_expand;
 	update();
 }
+void Tree::set_column_stretch_ratio(int p_column, float p_stretch_ratio) {
+
+	ERR_FAIL_INDEX(p_column, columns.size());
+
+	if (p_stretch_ratio < 0)
+		return;
+	columns.write[p_column].stretch_ratio = p_stretch_ratio;
+	update();
+}
+float Tree::get_column_stretch_ratio(int p_column) {
+
+	ERR_FAIL_INDEX_V(p_column, columns.size(), -1);
+
+	return columns[p_column].stretch_ratio;
+}
+void Tree::set_column_stretch_ratios_enabled(bool p_enable_ratios) {
+
+	column_stretch_ratios_enabled = p_enable_ratios;
+	update();
+}
+bool Tree::are_column_stretch_ratios_enabled() {
+
+	return column_stretch_ratios_enabled;
+}
 
 TreeItem *Tree::get_selected() const {
 
@@ -3293,6 +3317,7 @@ int Tree::get_column_width(int p_column) const {
 
 	int expanding_columns = 0;
 	int expanding_total = 0;
+	float total_stretch_ratio = 0;
 
 	for (int i = 0; i < columns.size(); i++) {
 
@@ -3301,6 +3326,7 @@ int Tree::get_column_width(int p_column) const {
 		} else {
 			expanding_total += columns[i].min_width;
 			expanding_columns++;
+			total_stretch_ratio += columns[i].stretch_ratio;
 		}
 	}
 
@@ -3309,7 +3335,14 @@ int Tree::get_column_width(int p_column) const {
 
 	ERR_FAIL_COND_V(expanding_columns == 0, -1); // shouldn't happen
 
-	return expand_area * columns[p_column].min_width / expanding_total;
+	if (column_stretch_ratios_enabled) {
+		float unit_chunk_size = (expand_area - expanding_total) / total_stretch_ratio;
+		int weighted_chunk_size = unit_chunk_size * columns[p_column].stretch_ratio;
+		return columns[p_column].min_width + weighted_chunk_size;
+	} else {
+		// the min_widths serve as ratios for the available expand_area
+		return expand_area * columns[p_column].min_width / expanding_total;
+	}
 }
 
 void Tree::propagate_set_columns(TreeItem *p_item) {
@@ -3849,6 +3882,11 @@ void Tree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("ensure_cursor_is_visible"), &Tree::ensure_cursor_is_visible);
 
+	ClassDB::bind_method(D_METHOD("set_column_stretch_ratios_enabled", "enabled"), &Tree::set_column_stretch_ratios_enabled);
+	ClassDB::bind_method(D_METHOD("are_column_stretch_ratios_enabled"), &Tree::are_column_stretch_ratios_enabled);
+	ClassDB::bind_method(D_METHOD("set_column_stretch_ratio", "column", "ratio"), &Tree::set_column_stretch_ratio);
+	ClassDB::bind_method(D_METHOD("get_column_stretch_ratio", "column"), &Tree::get_column_stretch_ratio);
+
 	ClassDB::bind_method(D_METHOD("set_column_titles_visible", "visible"), &Tree::set_column_titles_visible);
 	ClassDB::bind_method(D_METHOD("are_column_titles_visible"), &Tree::are_column_titles_visible);
 
@@ -3957,6 +3995,7 @@ Tree::Tree() {
 	updating_value_editor = false;
 	pressed_button = -1;
 	show_column_titles = false;
+	column_stretch_ratios_enabled = false;
 
 	cache.click_type = Cache::CLICK_NONE;
 	cache.hover_type = Cache::CLICK_NONE;

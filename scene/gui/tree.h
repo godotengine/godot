@@ -349,13 +349,16 @@ private:
 
 		int min_width;
 		bool expand;
+		float stretch_ratio;
 		String title;
 		ColumnInfo() {
 			min_width = 1;
 			expand = true;
+			stretch_ratio = 1.0;
 		}
 	};
 
+	bool column_stretch_ratios_enabled;
 	bool show_column_titles;
 	LineEdit *text_editor;
 	HSlider *value_editor;
@@ -542,6 +545,10 @@ public:
 	TreeItem *get_root();
 	TreeItem *get_last_item();
 
+	void set_column_stretch_ratios_enabled(bool p_enable_ratios);
+	bool are_column_stretch_ratios_enabled();
+	void set_column_stretch_ratio(int p_column, float p_stretch_ratio);
+	float get_column_stretch_ratio(int p_column);
 	void set_column_min_width(int p_column, int p_min_width);
 	void set_column_expand(int p_column, bool p_expand);
 	int get_column_width(int p_column) const;
