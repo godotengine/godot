@@ -97,6 +97,7 @@ private:
 		Node *parent;
 		Node *owner;
 		Vector<Node *> children; // list of children
+		Vector<Node *> internal_children; // list of hidden children (not returned by get_children() etc.)
 		int pos;
 		int depth;
 		int blocked; // safeguard that throws an error when attempting to modify the tree in a harmful way while being traversed.
@@ -265,7 +266,7 @@ public:
 	StringName get_name() const;
 	void set_name(const String &p_name);
 
-	void add_child(Node *p_child, bool p_legible_unique_name = false);
+	void add_child(Node *p_child, bool p_legible_unique_name = false, bool p_internal = false);
 	void add_sibling(Node *p_sibling, bool p_legible_unique_name = false);
 	void remove_child(Node *p_child);
 
@@ -308,6 +309,7 @@ public:
 	int get_persistent_group_count() const;
 
 	void move_child(Node *p_child, int p_pos);
+	void _move_child(Node *p_child, int p_pos);
 	void raise();
 
 	void set_owner(Node *p_owner);

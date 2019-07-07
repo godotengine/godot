@@ -729,8 +729,22 @@ ColorPicker::ColorPicker() :
 	presets_visible = true;
 	screen = nullptr;
 
+	HBoxContainer *hb_smpl = memnew(HBoxContainer);
+	add_child(hb_smpl, false, true);
+
+	sample = memnew(TextureRect);
+	hb_smpl->add_child(sample);
+	sample->set_h_size_flags(SIZE_EXPAND_FILL);
+	sample->connect("draw", this, "_sample_draw");
+
+	btn_pick = memnew(ToolButton);
+	hb_smpl->add_child(btn_pick);
+	btn_pick->set_toggle_mode(true);
+	btn_pick->set_tooltip(TTR("Pick a color from the screen."));
+	btn_pick->connect("pressed", this, "_screen_pick_pressed");
+
 	HBoxContainer *hb_edit = memnew(HBoxContainer);
-	add_child(hb_edit);
+	add_child(hb_edit, false, true);
 	hb_edit->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	uv_edit = memnew(Control);
@@ -765,12 +779,12 @@ ColorPicker::ColorPicker() :
 	btn_pick->connect("pressed", callable_mp(this, &ColorPicker::_screen_pick_pressed));
 
 	VBoxContainer *vbl = memnew(VBoxContainer);
-	add_child(vbl);
+	add_child(vbl, false, true);
 
-	add_child(memnew(HSeparator));
+	add_child(memnew(HSeparator), false, true);
 
 	VBoxContainer *vbr = memnew(VBoxContainer);
-	add_child(vbr);
+	add_child(vbr, false, true);
 	vbr->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	for (int i = 0; i < 4; i++) {
@@ -842,11 +856,11 @@ ColorPicker::ColorPicker() :
 	set_pick_color(Color(1, 1, 1));
 
 	preset_separator = memnew(HSeparator);
-	add_child(preset_separator);
+	add_child(preset_separator, false, true);
 
 	preset_container = memnew(HBoxContainer);
 	preset_container->set_h_size_flags(SIZE_EXPAND_FILL);
-	add_child(preset_container);
+	add_child(preset_container, false, true);
 
 	preset = memnew(TextureRect);
 	preset_container->add_child(preset);

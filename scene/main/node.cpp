@@ -293,6 +293,10 @@ void Node::_propagate_exit_tree() {
 }
 
 void Node::move_child(Node *p_child, int p_pos) {
+	_move_child(p_child, p_pos + data.internal_children.size());
+}
+
+void Node::_move_child(Node *p_child, int p_pos) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1, "Invalid new child position: " + itos(p_pos) + ".");
 	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
@@ -342,7 +346,7 @@ void Node::raise() {
 		return;
 	}
 
-	data.parent->move_child(this, data.parent->data.children.size() - 1);
+	data.parent->move_child(this, data.parent->get_child_count() - 1);
 }
 
 void Node::add_child_notify(Node *p_child) {
@@ -1222,7 +1226,7 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 	add_child_notify(p_child);
 }
 
-void Node::add_child(Node *p_child, bool p_legible_unique_name) {
+void Node::add_child(Node *p_child, bool p_legible_unique_name, bool p_internal) {
 	ERR_FAIL_NULL(p_child);
 	ERR_FAIL_COND_MSG(p_child == this, "Can't add child '" + p_child->get_name() + "' to itself."); // adding to itself!
 	ERR_FAIL_COND_MSG(p_child->data.parent, "Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'."); //Fail if node has a parent
@@ -1232,6 +1236,10 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 	_validate_child_name(p_child, p_legible_unique_name);
 
 	_add_child_nocheck(p_child, p_child->data.name);
+	if (p_internal) {
+		_move_child(p_child, data.internal_children.size());
+		data.internal_children.push_back(p_child);
+	}
 }
 
 void Node::add_sibling(Node *p_sibling, bool p_legible_unique_name) {
@@ -1303,6 +1311,7 @@ void Node::remove_child(Node *p_child) {
 	p_child->notification(NOTIFICATION_UNPARENTED);
 
 	data.children.remove(idx);
+	data.internal_children.erase(p_child);
 
 	//update pointer and size
 	child_count = data.children.size();
@@ -1325,13 +1334,13 @@ void Node::remove_child(Node *p_child) {
 }
 
 int Node::get_child_count() const {
-	return data.children.size();
+	return data.children.size() - data.internal_children.size();
 }
 
 Node *Node::get_child(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, data.children.size(), nullptr);
+	ERR_FAIL_INDEX_V(p_index, data.children.size() - data.internal_children.size(), nullptr);
 
-	return data.children[p_index];
+	return data.children[p_index + data.internal_children.size()];
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
@@ -2384,7 +2393,7 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 	if (data.parent) {
 		parent->remove_child(this);
 		parent->add_child(p_node);
-		parent->move_child(p_node, pos_in_parent);
+		parent->_move_child(p_node, pos_in_parent);
 	}
 
 	while (get_child_count()) {
@@ -2710,7 +2719,7 @@ void Node::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_name", "name"), &Node::set_name);
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
-	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name"), &Node::add_child, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
 	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
 	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
@@ -2950,9 +2959,11 @@ Node::~Node() {
 	data.grouped.clear();
 	data.owned.clear();
 	data.children.clear();
+	data.internal_children.clear();
 
 	ERR_FAIL_COND(data.parent);
 	ERR_FAIL_COND(data.children.size());
+	ERR_FAIL_COND(data.internal_children.size());
 
 	orphan_node_count--;
 }
