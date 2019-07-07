@@ -182,7 +182,7 @@
 	</signals>
 	<constants>
 		<constant name="NOTIFICATION_EDITOR_SETTINGS_CHANGED" value="10000">
-				Emitted when editor settings change. It used by various editor plugins to update their visuals on theme changes or logic on configuration changes.
+			Emitted when editor settings change. It used by various editor plugins to update their visuals on theme changes or logic on configuration changes.
 		</constant>
 	</constants>
 </class>
