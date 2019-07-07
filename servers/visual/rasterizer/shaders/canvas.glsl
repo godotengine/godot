@@ -491,6 +491,71 @@ FRAGMENT_SHADER_CODE
 			light_color.a = 0.0;
 		}
 
+		if (bool(light_array.data[light_base].flags&LIGHT_FLAGS_HAS_SHADOW)) {
+
+			vec2 shadow_pos = (vec4(vertex,0.0,1.0) * mat4(light_array.data[light_base].shadow_matrix[0],light_array.data[light_base].shadow_matrix[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+
+			vec2 pos_norm = normalize(shadow_pos);
+			vec2 pos_abs = abs(pos_norm);
+			vec2 pos_box = pos_norm / max(pos_abs.x,pos_abs.y);
+			vec2 pos_rot = pos_norm * mat2(vec2(0.7071067811865476,-0.7071067811865476),vec2(0.7071067811865476,0.7071067811865476)); //is there a faster way to 45 degrees rot?
+			float tex_ofs;
+			float distance;
+			if (pos_rot.y>0) {
+				if (pos_rot.x>0) {
+					tex_ofs=pos_box.y*0.125+0.125;
+					distance=shadow_pos.x;
+				} else {
+					tex_ofs=pos_box.x*-0.125+(0.25+0.125);
+					distance=shadow_pos.y;
+				}
+			} else {
+				if (pos_rot.x<0) {
+					tex_ofs=pos_box.y*-0.125+(0.5+0.125);
+					distance=-shadow_pos.x;
+				} else {
+					tex_ofs=pos_box.x*0.125+(0.75+0.125);
+					distance=-shadow_pos.y;
+				}
+			}
+
+			//float distance = length(shadow_pos);
+			float shadow;
+			uint shadow_mode = light_array.data[light_base].flags&LIGHT_FLAGS_FILTER_MASK;
+			if (shadow_mode==LIGHT_FLAGS_SHADOW_NEAREST) {
+				shadow = step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs,0.0)).x,distance);
+			} else if (shadow_mode==LIGHT_FLAGS_SHADOW_PCF5) {
+				float shadow_pixel_size = light_array.data[light_base].shadow_pixel_size;
+				shadow = 0.0;
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size*2.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size*2.0,0.0)).x,distance);
+				shadow/=5.0;
+			} else if (shadow_mode==LIGHT_FLAGS_SHADOW_PCF13) {
+				float shadow_pixel_size = light_array.data[light_base].shadow_pixel_size;
+				shadow = 0.0;
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size*6.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size*5.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size*4.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size*3.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size*2.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs-shadow_pixel_size,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size*2.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size*3.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size*4.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size*5.0,0.0)).x,distance);
+				shadow += step(texture(sampler2D(shadow_textures[texture_idx],texture_sampler),vec2(tex_ofs+shadow_pixel_size*6.0,0.0)).x,distance);
+				shadow/=13.0;
+			}
+
+			light_color = mix(light_color,light_array.data[light_base].shadow_color,shadow);
+
+		}
+
 		uint blend_mode = light_array.data[light_base].flags&LIGHT_FLAGS_BLEND_MASK;
 
 		switch(blend_mode) {
