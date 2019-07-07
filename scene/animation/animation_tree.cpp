@@ -1279,6 +1279,18 @@ void AnimationTree::_process_graph(float p_delta) {
 	}
 }
 
+void AnimationTree::_animation_changed(String old_name, String new_name) {
+	emit_signal(SceneStringNames::get_singleton()->animation_changed, old_name, new_name);
+}
+
+void AnimationTree::_animation_finished(String anim_name) {
+	emit_signal(SceneStringNames::get_singleton()->animation_finished, anim_name);
+}
+
+void AnimationTree::_animation_started(String anim_name) {
+	emit_signal(SceneStringNames::get_singleton()->animation_started, anim_name);
+}
+
 void AnimationTree::advance(float p_time) {
 
 	_process_graph(p_time);
@@ -1301,6 +1313,9 @@ void AnimationTree::_notification(int p_what) {
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
 				player->disconnect("caches_cleared", this, "_clear_caches");
+				player->disconnect("animation_changed", this, "_animation_changed");
+				player->disconnect("animation_finished", this, "_animation_finished");
+				player->disconnect("animation_started", this, "_animation_started");
 			}
 		}
 	} else if (p_what == NOTIFICATION_ENTER_TREE) {
@@ -1309,6 +1324,9 @@ void AnimationTree::_notification(int p_what) {
 			Object *player = ObjectDB::get_instance(last_animation_player);
 			if (player) {
 				player->connect("caches_cleared", this, "_clear_caches");
+				player->connect("animation_changed", this, "_animation_changed");
+				player->connect("animation_finished", this, "_animation_finished");
+				player->connect("animation_started", this, "_animation_started");
 			}
 		}
 	}
@@ -1561,6 +1579,9 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
 	ClassDB::bind_method(D_METHOD("_clear_caches"), &AnimationTree::_clear_caches);
+	ClassDB::bind_method(D_METHOD("_animation_changed"), &AnimationTree::_animation_changed);
+	ClassDB::bind_method(D_METHOD("_animation_finished"), &AnimationTree::_animation_finished);
+	ClassDB::bind_method(D_METHOD("_animation_started"), &AnimationTree::_animation_started);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
@@ -1568,6 +1589,10 @@ void AnimationTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_mode", "get_process_mode");
 	ADD_GROUP("Root Motion", "root_motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
+
+	ADD_SIGNAL(MethodInfo("animation_finished", PropertyInfo(Variant::STRING, "anim_name")));
+	ADD_SIGNAL(MethodInfo("animation_changed", PropertyInfo(Variant::STRING, "old_name"), PropertyInfo(Variant::STRING, "new_name")));
+	ADD_SIGNAL(MethodInfo("animation_started", PropertyInfo(Variant::STRING, "anim_name")));
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);

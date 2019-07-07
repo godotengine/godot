@@ -273,6 +273,10 @@ private:
 	bool _update_caches(AnimationPlayer *player);
 	void _process_graph(float p_delta);
 
+	void _animation_changed(String old_name, String new_name);
+	void _animation_finished(String anim_name);
+	void _animation_started(String anim_name);
+
 	uint64_t setup_pass;
 	uint64_t process_pass;
 
