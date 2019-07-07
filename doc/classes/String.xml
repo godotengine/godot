@@ -385,7 +385,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings is expected to be pre-fixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
+				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings are expected to be pre-fixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
 				[codeblock]
 				print("0xff".hex_to_int()) # Print "255"
 				[/codeblock]
