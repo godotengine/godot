@@ -62,7 +62,10 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		LIGHT_FLAGS_BLEND_MODE_ADD = (0 << 16),
 		LIGHT_FLAGS_BLEND_MODE_SUB = (1 << 16),
 		LIGHT_FLAGS_BLEND_MODE_MIX = (2 << 16),
-		LIGHT_FLAGS_BLEND_MODE_MASK = (3 << 16)
+		LIGHT_FLAGS_BLEND_MODE_MASK = (3 << 16),
+		LIGHT_FLAGS_HAS_SHADOW = (1 << 20),
+		LIGHT_FLAGS_FILTER_SHIFT = 22
+
 	};
 
 	enum {
@@ -216,13 +219,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		struct {
 			int size;
 			RID texture;
-
-			RID render_depth;
-			RID render_fb[4];
-			RID render_textures[4];
-			RID fix_fb;
-			RID uniform_set;
-
+			RID depth;
+			RID fb;
 		} shadow;
 	};
 
@@ -230,7 +228,14 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	struct ShadowRenderPushConstant {
 		float projection[16];
-		float modelview[16];
+		float modelview[8];
+		float direction[2];
+		float pad[2];
+	};
+	struct ShadowFixPushConstant {
+		float projection[16];
+		float far;
+		float pad[3];
 	};
 
 	struct OccluderPolygon {
@@ -245,6 +250,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	struct LightUniform {
 		float matrix[8]; //light to texture coordinate matrix
+		float shadow_matrix[8]; //light to shadow coordinate matrix
 		float color[4];
 		float shadow_color[4];
 		float position[2];
@@ -263,11 +269,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		RID render_pipelines[3];
 		RD::VertexFormatID vertex_format;
 		RD::FramebufferFormatID framebuffer_format;
-
-		CanvasOcclusionFixShaderRD shader_fix;
-		RD::FramebufferFormatID framebuffer_fix_format;
-		RID shader_fix_version;
-		RID shader_fix_pipeline;
 	} shadow_render;
 
 	/***************/
