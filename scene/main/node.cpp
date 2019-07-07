@@ -292,7 +292,10 @@ void Node::_propagate_exit_tree() {
 	data.depth = -1;
 }
 
-void Node::move_child(Node *p_child, int p_pos) {
+void Node::move_child(Node *p_child, int p_pos, bool p_skip_internal) {
+	if (p_skip_internal) {
+		p_pos += data.internal_children.size();
+	}
 	_move_child(p_child, p_pos + data.internal_children.size());
 }
 
@@ -1237,7 +1240,7 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name, bool p_internal)
 
 	_add_child_nocheck(p_child, p_child->data.name);
 	if (p_internal) {
-		_move_child(p_child, data.internal_children.size());
+		move_child(p_child, data.internal_children.size());
 		data.internal_children.push_back(p_child);
 	}
 }
@@ -1333,14 +1336,22 @@ void Node::remove_child(Node *p_child) {
 	}
 }
 
-int Node::get_child_count() const {
-	return data.children.size() - data.internal_children.size();
+int Node::get_child_count(bool p_skip_internal) const {
+	if (p_skip_internal) {
+		return data.children.size() - data.internal_children.size();
+	} else {
+		return data.children.size();
+	}
 }
 
-Node *Node::get_child(int p_index) const {
-	ERR_FAIL_INDEX_V(p_index, data.children.size() - data.internal_children.size(), nullptr);
-
-	return data.children[p_index + data.internal_children.size()];
+Node *Node::get_child(int p_index, bool p_skip_internal) const {
+	if (p_skip_internal) {
+		ERR_FAIL_INDEX_V(p_index, data.children.size() - data.internal_children.size(), NULL);
+		return data.children[p_index + data.internal_children.size()];
+	} else {
+		ERR_FAIL_INDEX_V(p_index, data.children.size(), NULL);
+		return data.children[p_index];
+	}
 }
 
 Node *Node::_get_child_by_name(const StringName &p_name) const {
@@ -1864,8 +1875,12 @@ void Node::_propagate_replace_owner(Node *p_owner, Node *p_by_owner) {
 	data.blocked--;
 }
 
-int Node::get_index() const {
-	return data.pos;
+int Node::get_index(bool p_skip_internal) const {
+	if (p_skip_internal) {
+		return data.pos - data.parent->data.internal_children.size();
+	} else {
+		return data.pos;
+	}
 }
 
 void Node::remove_and_skip() {
@@ -2393,7 +2408,7 @@ void Node::replace_by(Node *p_node, bool p_keep_data) {
 	if (data.parent) {
 		parent->remove_child(this);
 		parent->add_child(p_node);
-		parent->_move_child(p_node, pos_in_parent);
+		parent->move_child(p_node, pos_in_parent);
 	}
 
 	while (get_child_count()) {
@@ -2617,12 +2632,12 @@ void Node::queue_delete() {
 	}
 }
 
-TypedArray<Node> Node::_get_children() const {
+Array Node::_get_children(bool p_skip_internal) const {
 	TypedArray<Node> arr;
-	int cc = get_child_count();
+	int cc = get_child_count(p_skip_internal);
 	arr.resize(cc);
 	for (int i = 0; i < cc; i++) {
-		arr[i] = get_child(i);
+		arr[i] = get_child(i, p_skip_internal);
 	}
 
 	return arr;
@@ -2721,9 +2736,9 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_name"), &Node::get_name);
 	ClassDB::bind_method(D_METHOD("add_child", "node", "legible_unique_name", "internal"), &Node::add_child, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_child", "node"), &Node::remove_child);
-	ClassDB::bind_method(D_METHOD("get_child_count"), &Node::get_child_count);
-	ClassDB::bind_method(D_METHOD("get_children"), &Node::_get_children);
-	ClassDB::bind_method(D_METHOD("get_child", "idx"), &Node::get_child);
+	ClassDB::bind_method(D_METHOD("get_child_count", "skip_internal"), &Node::get_child_count, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_children", "skip_internal"), &Node::_get_children, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("get_child", "idx", "skip_internal"), &Node::get_child, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("has_node", "path"), &Node::has_node);
 	ClassDB::bind_method(D_METHOD("get_node", "path"), &Node::get_node);
 	ClassDB::bind_method(D_METHOD("get_node_or_null", "path"), &Node::get_node_or_null);
@@ -2741,13 +2756,13 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_to_group", "group", "persistent"), &Node::add_to_group, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("remove_from_group", "group"), &Node::remove_from_group);
 	ClassDB::bind_method(D_METHOD("is_in_group", "group"), &Node::is_in_group);
-	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position"), &Node::move_child);
+	ClassDB::bind_method(D_METHOD("move_child", "child_node", "to_position", "skip_internal"), &Node::move_child, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_groups"), &Node::_get_groups);
 	ClassDB::bind_method(D_METHOD("raise"), &Node::raise);
 	ClassDB::bind_method(D_METHOD("set_owner", "owner"), &Node::set_owner);
 	ClassDB::bind_method(D_METHOD("get_owner"), &Node::get_owner);
 	ClassDB::bind_method(D_METHOD("remove_and_skip"), &Node::remove_and_skip);
-	ClassDB::bind_method(D_METHOD("get_index"), &Node::get_index);
+	ClassDB::bind_method(D_METHOD("get_index", "skip_internal"), &Node::get_index, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("print_tree"), &Node::print_tree);
 	ClassDB::bind_method(D_METHOD("print_tree_pretty"), &Node::print_tree_pretty);
 	ClassDB::bind_method(D_METHOD("set_filename", "filename"), &Node::set_filename);
