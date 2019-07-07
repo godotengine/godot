@@ -50,7 +50,7 @@ GradientEdit::GradientEdit() {
 	picker = memnew(ColorPicker);
 	popup->add_child(picker);
 
-	add_child(popup);
+	add_child(popup, false, true);
 
 	checker = Ref<ImageTexture>(memnew(ImageTexture));
 	Ref<Image> img = memnew(Image(checker_bg_png));

@@ -1266,14 +1266,14 @@ GraphEdit::GraphEdit() {
 	awaiting_scroll_offset_update = false;
 	top_layer = nullptr;
 	top_layer = memnew(GraphEditFilter(this));
-	add_child(top_layer);
+	add_child(top_layer, false, true);
 	top_layer->set_mouse_filter(MOUSE_FILTER_PASS);
 	top_layer->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	top_layer->connect("draw", callable_mp(this, &GraphEdit::_top_layer_draw));
 	top_layer->connect("gui_input", callable_mp(this, &GraphEdit::_top_layer_input));
 
 	connections_layer = memnew(Control);
-	add_child(connections_layer);
+	add_child(connections_layer, false, true);
 	connections_layer->connect("draw", callable_mp(this, &GraphEdit::_connections_layer_draw));
 	connections_layer->set_name("CLAYER");
 	connections_layer->set_disable_visibility_clip(true); // so it can draw freely and be offset

@@ -1869,14 +1869,14 @@ LineEdit::LineEdit() {
 	draw_caret = true;
 	caret_blink_enabled = false;
 	caret_blink_timer = memnew(Timer);
-	add_child(caret_blink_timer);
+	add_child(caret_blink_timer, false, true);
 	caret_blink_timer->set_wait_time(0.65);
 	caret_blink_timer->connect("timeout", callable_mp(this, &LineEdit::_toggle_draw_caret));
 	cursor_set_blink_enabled(false);
 
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
-	add_child(menu);
+	add_child(menu, false, true);
 	editable = false; // Initialise to opposite first, so we get past the early-out in set_editable.
 	set_editable(true);
 	menu->connect("id_pressed", callable_mp(this, &LineEdit::menu_option));

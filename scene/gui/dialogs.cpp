@@ -309,9 +309,9 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(MARGIN_BOTTOM, Control::ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
-	add_child(label);
+	add_child(label, false, true);
 
-	add_child(hbc);
+	add_child(hbc, false, true);
 
 	hbc->add_spacer();
 	ok = memnew(Button);

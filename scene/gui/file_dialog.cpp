@@ -846,7 +846,7 @@ FileDialog::FileDialog() {
 	mode_overrides_title = true;
 
 	vbox = memnew(VBoxContainer);
-	add_child(vbox);
+	add_child(vbc, false, true);
 	vbox->connect("theme_changed", callable_mp(this, &FileDialog::_theme_changed));
 
 	mode = FILE_MODE_SAVE_FILE;
@@ -925,7 +925,7 @@ FileDialog::FileDialog() {
 
 	confirm_save = memnew(ConfirmationDialog);
 	//	confirm_save->set_as_toplevel(true);
-	add_child(confirm_save);
+	add_child(confirm_save, false, true);
 
 	confirm_save->connect("confirmed", callable_mp(this, &FileDialog::_save_confirm_pressed));
 
@@ -936,16 +936,16 @@ FileDialog::FileDialog() {
 
 	makedirname = memnew(LineEdit);
 	makevb->add_margin_child(RTR("Name:"), makedirname);
-	add_child(makedialog);
+	add_child(makedialog, false, true);
 	makedialog->register_text_enter(makedirname);
 	makedialog->connect("confirmed", callable_mp(this, &FileDialog::_make_dir_confirm));
 	mkdirerr = memnew(AcceptDialog);
 	mkdirerr->set_text(RTR("Could not create folder."));
-	add_child(mkdirerr);
+	add_child(mkdirerr, false, true);
 
 	exterr = memnew(AcceptDialog);
 	exterr->set_text(RTR("Must use a valid extension."));
-	add_child(exterr);
+	add_child(exterr, false, true);
 
 	update_filters();
 	update_dir();

@@ -7188,8 +7188,8 @@ TextEdit::TextEdit() {
 	h_scroll = memnew(HScrollBar);
 	v_scroll = memnew(VScrollBar);
 
-	add_child(h_scroll);
-	add_child(v_scroll);
+	add_child(h_scroll, false, true);
+	add_child(v_scroll, false, true);
 
 	updating_scrolls = false;
 	selection.active = false;
@@ -7212,20 +7212,20 @@ TextEdit::TextEdit() {
 	block_caret = false;
 	caret_blink_enabled = false;
 	caret_blink_timer = memnew(Timer);
-	add_child(caret_blink_timer);
+	add_child(caret_blink_timer, false, true);
 	caret_blink_timer->set_wait_time(0.65);
 	caret_blink_timer->connect("timeout", callable_mp(this, &TextEdit::_toggle_draw_caret));
 	cursor_set_blink_enabled(false);
 	right_click_moves_caret = true;
 
 	idle_detect = memnew(Timer);
-	add_child(idle_detect);
+	add_child(idle_detect, false, true);
 	idle_detect->set_one_shot(true);
 	idle_detect->set_wait_time(GLOBAL_GET("gui/timers/text_edit_idle_detect_sec"));
 	idle_detect->connect("timeout", callable_mp(this, &TextEdit::_push_current_op));
 
 	click_select_held = memnew(Timer);
-	add_child(click_select_held);
+	add_child(click_select_held, false, true);
 	click_select_held->set_wait_time(0.05);
 	click_select_held->connect("timeout", callable_mp(this, &TextEdit::_click_selection_held));
 
@@ -7284,7 +7284,7 @@ TextEdit::TextEdit() {
 	context_menu_enabled = true;
 	shortcut_keys_enabled = true;
 	menu = memnew(PopupMenu);
-	add_child(menu);
+	add_child(menu, false, true);
 	readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
 	set_readonly(false);
 	menu->connect("id_pressed", callable_mp(this, &TextEdit::menu_option));
