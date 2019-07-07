@@ -392,6 +392,10 @@
 			<return type="String">
 			</return>
 			<description>
+				Escapes (encodes) a string to URL friendly format. Also referred to as 'URL encode'.
+				[codeblock]
+				print("https://example.org/?escaped=" + "Godot Engine:'docs'".http_escape())
+				[/codeblock]
 			</description>
 		</method>
 		<method name="http_unescape">
