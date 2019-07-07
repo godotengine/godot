@@ -1367,6 +1367,7 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 			state.light_uniforms[index].position[1] = canvas_light_pos.y;
 
 			_update_transform_2d_to_mat2x4(to_light_xform, state.light_uniforms[index].matrix);
+			_update_transform_2d_to_mat2x4(l->xform_cache.affine_inverse(), state.light_uniforms[index].shadow_matrix);
 
 			state.light_uniforms[index].height = l->height * (p_canvas_transform.elements[0].length() + p_canvas_transform.elements[1].length()) * 0.5; //approximate height conversion to the canvas size, since all calculations are done in canvas coords to avoid precision loss
 			for (int i = 0; i < 4; i++) {
@@ -1377,12 +1378,16 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 			state.light_uniforms[index].color[3] = l->energy; //use alpha for energy, so base color can go separate
 
 			if (clight->shadow.texture.is_valid()) {
-				state.light_uniforms[index].shadow_pixel_size = 1.0 / clight->shadow.size;
+				state.light_uniforms[index].shadow_pixel_size = (1.0 / clight->shadow.size) * (1.0 + l->shadow_smooth);
 			} else {
 				state.light_uniforms[index].shadow_pixel_size = 1.0;
 			}
 			state.light_uniforms[index].flags = clight->texture_index;
 			state.light_uniforms[index].flags |= l->mode << LIGHT_FLAGS_BLEND_SHIFT;
+			state.light_uniforms[index].flags |= l->shadow_filter << LIGHT_FLAGS_FILTER_SHIFT;
+			if (clight->shadow.texture.is_valid()) {
+				state.light_uniforms[index].flags |= LIGHT_FLAGS_HAS_SHADOW;
+			}
 
 			l->render_index_cache = index;
 
@@ -1454,23 +1459,17 @@ void RasterizerCanvasRD::light_set_use_shadow(RID p_rid, bool p_enable, int p_re
 
 	if (cl->shadow.texture.is_valid()) {
 
-		RD::get_singleton()->free(cl->shadow.uniform_set);
-		cl->shadow.uniform_set = RID();
-
-		for (int i = 0; i < 4; i++) {
-			RD::get_singleton()->free(cl->shadow.render_fb[i]);
-			RD::get_singleton()->free(cl->shadow.render_textures[i]);
-			cl->shadow.render_fb[i] = RID();
-			cl->shadow.render_textures[i] = RID();
-		}
-		RD::get_singleton()->free(cl->shadow.fix_fb);
+		RD::get_singleton()->free(cl->shadow.fb);
+		RD::get_singleton()->free(cl->shadow.depth);
 		RD::get_singleton()->free(cl->shadow.texture);
-
-		cl->shadow.fix_fb = RID();
+		cl->shadow.fb = RID();
 		cl->shadow.texture = RID();
+		cl->shadow.depth = RID();
 	}
 
 	if (p_enable) {
+
+		Vector<RID> fb_textures;
 
 		{ //texture
 			RD::TextureFormat tf;
@@ -1481,43 +1480,24 @@ void RasterizerCanvasRD::light_set_use_shadow(RID p_rid, bool p_enable, int p_re
 			tf.format = RD::DATA_FORMAT_R32_SFLOAT;
 
 			cl->shadow.texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-			Vector<RID> fb_textures;
 			fb_textures.push_back(cl->shadow.texture);
-			cl->shadow.fix_fb = RD::get_singleton()->framebuffer_create(fb_textures);
 		}
 		{
 			RD::TextureFormat tf;
 			tf.type = RD::TEXTURE_TYPE_2D;
-			tf.width = p_resolution / 2;
+			tf.width = p_resolution;
 			tf.height = 1;
 			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_X8_D24_UNORM_PACK32, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_X8_D24_UNORM_PACK32 : RD::DATA_FORMAT_D32_SFLOAT;
 			//chunks to write
-			cl->shadow.render_depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
-			RD::Uniform tex_uniforms;
-			tex_uniforms.type = RD::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-			tex_uniforms.binding = 0;
-
-			for (int i = 0; i < 4; i++) {
-				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-				tf.format = RD::DATA_FORMAT_R32_SFLOAT;
-				cl->shadow.render_textures[i] = RD::get_singleton()->texture_create(tf, RD::TextureView());
-				Vector<RID> textures;
-				textures.push_back(cl->shadow.render_textures[i]);
-				textures.push_back(cl->shadow.render_depth);
-				cl->shadow.render_fb[i] = RD::get_singleton()->framebuffer_create(textures);
-
-				tex_uniforms.ids.push_back(default_samplers.samplers[VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST][VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED]);
-				tex_uniforms.ids.push_back(cl->shadow.render_textures[i]);
-			}
-
-			Vector<RD::Uniform> tex_uniforms_set;
-			tex_uniforms_set.push_back(tex_uniforms);
-			cl->shadow.uniform_set = RD::get_singleton()->uniform_set_create(tex_uniforms_set, shadow_render.shader_fix.version_get_shader(shadow_render.shader_fix_version, 0), 0);
+			cl->shadow.depth = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			fb_textures.push_back(cl->shadow.depth);
 		}
+
+		cl->shadow.fb = RD::get_singleton()->framebuffer_create(fb_textures);
 	}
+
+	cl->shadow.size = p_resolution;
 
 	//canvas state uniform set needs updating
 	if (state.canvas_state_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(state.canvas_state_uniform_set)) {
@@ -1538,7 +1518,7 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, const Transform2D &p_lig
 
 		Vector<Color> cc;
 		cc.push_back(Color(p_far, p_far, p_far, 1.0));
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(cl->shadow.render_fb[i], RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, cc);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(cl->shadow.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, cc, Rect2i((cl->shadow.size / 4) * i, 0, (cl->shadow.size / 4), 1));
 
 		CameraMatrix projection;
 		{
@@ -1555,7 +1535,7 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, const Transform2D &p_lig
 			projection.set_frustum(xmin, xmax, ymin, ymax, nearp, farp);
 		}
 
-		Vector3 cam_target = Basis(Vector3(0, 0, Math_PI * 2 * (i / 4.0))).xform(Vector3(0, 1, 0));
+		Vector3 cam_target = Basis(Vector3(0, 0, Math_PI * 2 * ((i + 3) / 4.0))).xform(Vector3(0, 1, 0));
 		projection = projection * CameraMatrix(Transform().looking_at(cam_target, Vector3(0, 0, -1)).affine_inverse());
 
 		ShadowRenderPushConstant push_constant;
@@ -1564,6 +1544,11 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, const Transform2D &p_lig
 				push_constant.projection[y * 4 + x] = projection.matrix[y][x];
 			}
 		}
+		static const Vector2 directions[4] = { Vector2(1, 0), Vector2(0, 1), Vector2(-1, 0), Vector2(0, -1) };
+		push_constant.direction[0] = directions[i].x;
+		push_constant.direction[1] = directions[i].y;
+		push_constant.pad[0] = 0;
+		push_constant.pad[1] = 0;
 
 		/*if (i == 0)
 			*p_xform_cache = projection;*/
@@ -1572,7 +1557,7 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, const Transform2D &p_lig
 
 		while (instance) {
 
-			OccluderPolygon *co = occluder_polygon_owner.getornull(instance->polygon);
+			OccluderPolygon *co = occluder_polygon_owner.getornull(instance->occluder);
 
 			if (!co || co->index_array.is_null() || !(p_light_mask & instance->light_mask)) {
 
@@ -1580,7 +1565,7 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, const Transform2D &p_lig
 				continue;
 			}
 
-			_update_transform_2d_to_mat4(p_light_xform * instance->xform_cache, push_constant.modelview);
+			_update_transform_2d_to_mat2x4(p_light_xform * instance->xform_cache, push_constant.modelview);
 
 			RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.render_pipelines[co->cull_mode]);
 			RD::get_singleton()->draw_list_bind_vertex_array(draw_list, co->vertex_array);
@@ -1594,15 +1579,6 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, const Transform2D &p_lig
 
 		RD::get_singleton()->draw_list_end();
 	}
-
-	Vector<Color> cc;
-	cc.push_back(Color(p_far, p_far, p_far, 1.0));
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(cl->shadow.fix_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, cc);
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, shadow_render.shader_fix_pipeline);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, primitive_arrays.index_array[3]);
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, cl->shadow.uniform_set, 0);
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-	RD::get_singleton()->draw_list_end();
 }
 
 RID RasterizerCanvasRD::occluder_polygon_create() {
@@ -1920,8 +1896,6 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 
 			attachments.push_back(af_color);
 
-			shadow_render.framebuffer_fix_format = RD::get_singleton()->framebuffer_format_create(attachments);
-
 			RD::AttachmentFormat af_depth;
 			af_depth.format = RD::DATA_FORMAT_D24_UNORM_S8_UINT;
 			af_depth.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_X8_D24_UNORM_PACK32, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_X8_D24_UNORM_PACK32 : RD::DATA_FORMAT_D32_SFLOAT;
@@ -1953,10 +1927,6 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 			ds.depth_compare_operator = RD::COMPARE_OP_LESS;
 			shadow_render.render_pipelines[i] = RD::get_singleton()->render_pipeline_create(shadow_render.shader.version_get_shader(shadow_render.shader_version, 0), shadow_render.framebuffer_format, shadow_render.vertex_format, RD::RENDER_PRIMITIVE_TRIANGLES, rs, RD::PipelineMultisampleState(), ds, RD::PipelineColorBlendState::create_disabled(), 0);
 		}
-
-		shadow_render.shader_fix.initialize(versions);
-		shadow_render.shader_fix_version = shadow_render.shader_fix.version_create();
-		shadow_render.shader_fix_pipeline = RD::get_singleton()->render_pipeline_create(shadow_render.shader_fix.version_get_shader(shadow_render.shader_fix_version, 0), shadow_render.framebuffer_fix_format, RD::INVALID_ID, RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 	}
 
 	{ //bindings
