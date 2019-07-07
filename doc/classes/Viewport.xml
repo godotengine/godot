@@ -141,13 +141,6 @@
 				Returns [code]true[/code] if the size override is enabled. See [method set_size_override].
 			</description>
 		</method>
-		<method name="is_size_override_stretch_enabled" qualifiers="const">
-			<return type="bool">
-			</return>
-			<description>
-				Returns [code]true[/code] if the size stretch override is enabled. See [method set_size_override_stretch].
-			</description>
-		</method>
 		<method name="set_attach_to_screen_rect">
 			<return type="void">
 			</return>
@@ -173,15 +166,6 @@
 			</argument>
 			<description>
 				Sets the size override of the viewport. If the [code]enable[/code] parameter is [code]true[/code] the override is used, otherwise it uses the default size. If the size parameter is [code](-1, -1)[/code], it won't update the size.
-			</description>
-		</method>
-		<method name="set_size_override_stretch">
-			<return type="void">
-			</return>
-			<argument index="0" name="enabled" type="bool">
-			</argument>
-			<description>
-				If [code]true[/code], the size override affects stretch as well.
 			</description>
 		</method>
 		<method name="unhandled_input">
