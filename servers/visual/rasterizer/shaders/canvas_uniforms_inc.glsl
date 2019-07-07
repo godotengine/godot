@@ -93,10 +93,17 @@ layout(set = 3, binding = 0, std140) uniform CanvasData {
 #define LIGHT_FLAGS_BLEND_MODE_SUB (1<<16)
 #define LIGHT_FLAGS_BLEND_MODE_MIX (2<<16)
 #define LIGHT_FLAGS_BLEND_MODE_MASK (3<<16)
+#define LIGHT_FLAGS_HAS_SHADOW (1<<20)
+#define LIGHT_FLAGS_FILTER_SHIFT 22
+#define LIGHT_FLAGS_FILTER_MASK (3<<22)
+#define LIGHT_FLAGS_SHADOW_NEAREST (0<<22)
+#define LIGHT_FLAGS_SHADOW_PCF5 (1<<22)
+#define LIGHT_FLAGS_SHADOW_PCF13 (2<<22)
 
 
 struct Light {
-	mat2x4 matrix; //light to texture coordinate matrix
+	mat2x4 matrix; //light to texture coordinate matrix (transposed)
+	mat2x4 shadow_matrix; //light to shadow coordinate matrix (transposed)
 	vec4 color;
 	vec4 shadow_color;
 	vec2 position;
