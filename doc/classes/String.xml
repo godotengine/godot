@@ -398,6 +398,10 @@
 			<return type="String">
 			</return>
 			<description>
+				Unescapes (decodes) a string in URL encoded format. Also referred to as 'URL decode'.
+				[codeblock]
+				print( "https://example.org/?escaped="+"Godot%20Engine%3A%27docs%27".http_unescape() )
+				[/codeblock]
 			</description>
 		</method>
 		<method name="insert">
