@@ -241,9 +241,9 @@ void GDMono::initialize() {
 		locations.push_back("/usr/local/var/homebrew/linked/mono/");
 
 		for (int i = 0; i < locations.size(); i++) {
-			String hint_assembly_rootdir = path_join(locations[i], "lib");
-			String hint_mscorlib_path = path_join(hint_assembly_rootdir, "mono", "4.5", "mscorlib.dll");
-			String hint_config_dir = path_join(locations[i], "etc");
+			String hint_assembly_rootdir = path::join(locations[i], "lib");
+			String hint_mscorlib_path = path::join(hint_assembly_rootdir, "mono", "4.5", "mscorlib.dll");
+			String hint_config_dir = path::join(locations[i], "etc");
 
 			if (FileAccess::exists(hint_mscorlib_path) && DirAccess::exists(hint_config_dir)) {
 				assembly_rootdir = hint_assembly_rootdir;
