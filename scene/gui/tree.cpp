@@ -571,7 +571,14 @@ int TreeItem::get_button_by_id(int p_column, int p_id) const {
 
 	return -1;
 }
+void TreeItem::set_disable_button(int p_column, int p_idx, bool p_disabled) {
 
+	ERR_FAIL_INDEX(p_column, cells.size());
+	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
+
+	cells.write[p_column].buttons.write[p_idx].disabled = p_disabled;
+	_changed_notify(p_column);
+}
 bool TreeItem::is_button_disabled(int p_column, int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
@@ -786,6 +793,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
 	ClassDB::bind_method(D_METHOD("is_button_disabled", "column", "button_idx"), &TreeItem::is_button_disabled);
+	ClassDB::bind_method(D_METHOD("set_disable_button", "column", "button_idx", "disabled"), &TreeItem::set_disable_button);
 
 	ClassDB::bind_method(D_METHOD("set_expand_right", "column", "enable"), &TreeItem::set_expand_right);
 	ClassDB::bind_method(D_METHOD("get_expand_right", "column"), &TreeItem::get_expand_right);
