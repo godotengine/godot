@@ -293,6 +293,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 		RID lights_uniform_buffer;
 		RID canvas_state_buffer;
+		RID shadow_sampler;
 
 		//uniform set for all the above
 		RID canvas_state_uniform_set;
