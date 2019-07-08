@@ -1001,7 +1001,7 @@ void Polygon2DEditor::_uv_draw() {
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
-					uv_edit_draw->draw_line(Point2(i, 0), Point2(i, s.height), grid_color);
+					uv_edit_draw->draw_line(Point2(i, 0), Point2(i, s.height), grid_color, Math::round(EDSCALE));
 				last_cell = cell;
 			}
 		}
@@ -1012,7 +1012,7 @@ void Polygon2DEditor::_uv_draw() {
 				if (i == 0)
 					last_cell = cell;
 				if (last_cell != cell)
-					uv_edit_draw->draw_line(Point2(0, i), Point2(s.width, i), grid_color);
+					uv_edit_draw->draw_line(Point2(0, i), Point2(s.width, i), grid_color, Math::round(EDSCALE));
 				last_cell = cell;
 			}
 		}
@@ -1074,7 +1074,7 @@ void Polygon2DEditor::_uv_draw() {
 		int next = uv_draw_max > 0 ? (i + 1) % uv_draw_max : 0;
 
 		if (i < uv_draw_max && uv_drag && uv_move_current == UV_MODE_EDIT_POINT && EDITOR_DEF("editors/poly_editor/show_previous_outline", true)) {
-			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, 2 * EDSCALE);
+			uv_edit_draw->draw_line(mtx.xform(points_prev[i]), mtx.xform(points_prev[next]), prev_color, Math::round(EDSCALE), true);
 		}
 
 		Vector2 next_point = uvs[next];
@@ -1082,7 +1082,7 @@ void Polygon2DEditor::_uv_draw() {
 			next_point = uv_create_to;
 		}
 		if (i < uv_draw_max /*&& polygons.size() == 0 &&  polygon_create.size() == 0*/) { //if using or creating polygons, do not show outline (will show polygons instead)
-			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, 2 * EDSCALE);
+			uv_edit_draw->draw_line(mtx.xform(uvs[i]), mtx.xform(next_point), poly_line_color, Math::round(EDSCALE), true);
 		}
 
 		rect.expand_to(mtx.basis_xform(uvs[i]));
@@ -1103,7 +1103,7 @@ void Polygon2DEditor::_uv_draw() {
 
 			if (idx_next < 0 || idx_next >= uvs.size())
 				continue;
-			uv_edit_draw->draw_line(mtx.xform(uvs[idx]), mtx.xform(uvs[idx_next]), polygon_line_color, 2 * EDSCALE);
+			uv_edit_draw->draw_line(mtx.xform(uvs[idx]), mtx.xform(uvs[idx_next]), polygon_line_color, Math::round(EDSCALE), true);
 		}
 		if (points.size() >= 3) {
 			uv_edit_draw->draw_polygon(polypoints, polygon_fill_color);
@@ -1115,7 +1115,7 @@ void Polygon2DEditor::_uv_draw() {
 		if (weight_r.ptr()) {
 			Vector2 draw_pos = mtx.xform(uvs[i]);
 			float weight = weight_r[i];
-			uv_edit_draw->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0));
+			uv_edit_draw->draw_rect(Rect2(draw_pos - Vector2(2, 2) * EDSCALE, Vector2(5, 5) * EDSCALE), Color(weight, weight, weight, 1.0), Math::round(EDSCALE));
 		} else {
 			if (i < uv_draw_max) {
 				uv_edit_draw->draw_texture(handle, mtx.xform(uvs[i]) - handle->get_size() * 0.5);
@@ -1129,21 +1129,10 @@ void Polygon2DEditor::_uv_draw() {
 		for (int i = 0; i < polygon_create.size(); i++) {
 			Vector2 from = uvs[polygon_create[i]];
 			Vector2 to = (i + 1) < polygon_create.size() ? uvs[polygon_create[i + 1]] : uv_create_to;
-			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), polygon_line_color, 2);
+			uv_edit_draw->draw_line(mtx.xform(from), mtx.xform(to), polygon_line_color, Math::round(EDSCALE), true);
 		}
 	}
 
-#if 0
-	PoolVector<int> splits = node->get_splits();
-
-	for (int i = 0; i < splits.size(); i += 2) {
-		int idx_from = splits[i];
-		int idx_to = splits[i + 1];
-		if (idx_from < 0 || idx_to >= uvs.size())
-			continue;
-		uv_edit_draw->draw_line(mtx.xform(uvs[idx_from]), mtx.xform(uvs[idx_to]), poly_line_color, 2);
-	}
-#endif
 	if (uv_mode == UV_MODE_PAINT_WEIGHT || uv_mode == UV_MODE_CLEAR_WEIGHT) {
 
 		NodePath bone_path;
@@ -1182,8 +1171,8 @@ void Polygon2DEditor::_uv_draw() {
 						Transform2D endpoint_xform = bone_xform * n->get_transform();
 
 						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), current ? 5 : 4);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, current ? 3 : 2);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
 					}
 
 					if (!found_child) {
@@ -1192,8 +1181,8 @@ void Polygon2DEditor::_uv_draw() {
 						Transform2D endpoint_xform = bone_xform * Transform2D(0, Vector2(bone->get_default_length(), 0));
 
 						Color color = current ? Color(1, 1, 1) : Color(0.5, 0.5, 0.5);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), current ? 5 : 4);
-						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, current ? 3 : 2);
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), Color(0, 0, 0), Math::round((current ? 5 : 4) * EDSCALE));
+						uv_edit_draw->draw_line(mtx.xform(bone_xform.get_origin()), mtx.xform(endpoint_xform.get_origin()), color, Math::round((current ? 3 : 2) * EDSCALE));
 					}
 				}
 			}
