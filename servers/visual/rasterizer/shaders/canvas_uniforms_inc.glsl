@@ -121,3 +121,5 @@ layout(set = 3, binding = 1, std140) uniform LightData {
 
 layout(set = 3, binding = 2) uniform texture2D light_textures[MAX_LIGHT_TEXTURES];
 layout(set = 3, binding = 3) uniform texture2D shadow_textures[MAX_LIGHT_TEXTURES];
+
+layout(set = 3, binding = 4) uniform sampler shadow_sampler;

@@ -1302,6 +1302,14 @@ void RasterizerCanvasRD::_update_canvas_state_uniform_set() {
 		uniforms.push_back(u_shadows);
 	}
 
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_SAMPLER;
+		u.binding = 4;
+		u.ids.push_back(state.shadow_sampler);
+		uniforms.push_back(u);
+	}
+
 	state.canvas_state_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, 3); // uses index 3
 }
 
@@ -1937,6 +1945,13 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		{ //state allocate
 			state.canvas_state_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(State::Buffer));
 			state.lights_uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(LightUniform) * MAX_RENDER_LIGHTS);
+
+			RD::SamplerState shadow_sampler_state;
+			shadow_sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+			shadow_sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+			shadow_sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT; //shadow wrap around
+			shadow_sampler_state.compare_op = RD::COMPARE_OP_GREATER;
+			state.shadow_sampler = RD::get_singleton()->sampler_create(shadow_sampler_state);
 		}
 	}
 
