@@ -2192,7 +2192,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
 		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
-		itype.is_instantiable = ClassDB::can_instance(type_cname) && !itype.is_singleton;
+		itype.is_instantiable = class_info->creation_func && !itype.is_singleton;
 		itype.is_reference = ClassDB::is_parent_class(type_cname, name_cache.type_Reference);
 		itype.memory_own = itype.is_reference;
 
