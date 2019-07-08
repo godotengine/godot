@@ -49,7 +49,7 @@ private:
 	class PendingPeer : public Reference {
 
 	private:
-		bool _parse_request(String &r_key);
+		bool _parse_request(const PoolStringArray p_protocols);
 
 	public:
 		Ref<StreamPeer> connection;
@@ -58,13 +58,14 @@ private:
 		uint8_t req_buf[WSL_MAX_HEADER_SIZE];
 		int req_pos;
 		String key;
+		String protocol;
 		bool has_request;
 		CharString response;
 		int response_sent;
 
 		PendingPeer();
 
-		Error do_handshake();
+		Error do_handshake(const PoolStringArray p_protocols);
 	};
 
 	int _in_buf_size;
@@ -74,6 +75,7 @@ private:
 
 	List<Ref<PendingPeer> > _pending;
 	Ref<TCP_Server> _server;
+	PoolStringArray _protocols;
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
