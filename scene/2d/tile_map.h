@@ -94,6 +94,13 @@ private:
 
 		bool operator==(const PosKey &p_k) const { return (y == p_k.y && x == p_k.x); }
 
+		PosKey to_quadrant(const int &p_quadrant_size) const {
+			// rounding down, instead of simply rounding towards zero (truncating)
+			return PosKey(
+					x > 0 ? x / p_quadrant_size : (x - (p_quadrant_size - 1)) / p_quadrant_size,
+					y > 0 ? y / p_quadrant_size : (y - (p_quadrant_size - 1)) / p_quadrant_size);
+		}
+
 		PosKey(int16_t p_x, int16_t p_y) {
 			x = p_x;
 			y = p_y;
