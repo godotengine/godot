@@ -121,6 +121,7 @@ class CSharpScript : public Script {
 	bool placeholder_fallback_enabled;
 	bool exports_invalidated;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
+	void _update_member_info_no_exports();
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder);
 #endif
 
@@ -131,7 +132,6 @@ class CSharpScript : public Script {
 	void load_script_signals(GDMonoClass *p_class, GDMonoClass *p_native_class);
 	bool _get_signal(GDMonoClass *p_class, GDMonoClass *p_delegate, Vector<Argument> &params);
 
-	void _update_member_info_no_exports();
 	bool _update_exports();
 #ifdef TOOLS_ENABLED
 	bool _get_member_export(IMonoClassMember *p_member, bool p_inspect_export, PropertyInfo &r_prop_info, bool &r_exported);
@@ -355,7 +355,9 @@ public:
 
 	_FORCE_INLINE_ static CSharpLanguage *get_singleton() { return singleton; }
 
+#ifdef TOOLS_ENABLED
 	_FORCE_INLINE_ EditorPlugin *get_godotsharp_editor() const { return godotsharp_editor; }
+#endif
 
 	static void release_script_gchandle(Ref<MonoGCHandle> &p_gchandle);
 	static void release_script_gchandle(MonoObject *p_expected_obj, Ref<MonoGCHandle> &p_gchandle);

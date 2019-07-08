@@ -564,6 +564,7 @@ bool GDMono::_load_corlib_assembly() {
 	return success;
 }
 
+#ifdef TOOLS_ENABLED
 static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, const String &p_assembly_name, APIAssembly::Type p_api_type) {
 
 	// Create destination directory if needed
@@ -607,6 +608,7 @@ static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, 
 
 	return true;
 }
+#endif
 
 bool GDMono::_load_core_api_assembly() {
 
