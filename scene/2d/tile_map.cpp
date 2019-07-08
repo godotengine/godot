@@ -861,7 +861,7 @@ void TileMap::set_cell(int p_x, int p_y, int p_tile, bool p_flip_x, bool p_flip_
 	if (!E && p_tile == INVALID_CELL)
 		return; //nothing to do
 
-	PosKey qk(p_x / _get_quadrant_size(), p_y / _get_quadrant_size());
+	PosKey qk = pk.to_quadrant(_get_quadrant_size());
 	if (p_tile == INVALID_CELL) {
 		//erase existing
 		tile_map.erase(pk);
@@ -1020,7 +1020,7 @@ void TileMap::update_cell_bitmask(int p_x, int p_y) {
 			E->get().autotile_coord_x = (int)coord.x;
 			E->get().autotile_coord_y = (int)coord.y;
 
-			PosKey qk(p_x / _get_quadrant_size(), p_y / _get_quadrant_size());
+			PosKey qk = p.to_quadrant(_get_quadrant_size());
 			Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
 			_make_quadrant_dirty(Q);
 
@@ -1117,7 +1117,7 @@ void TileMap::set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord) 
 	c.autotile_coord_y = p_coord.y;
 	tile_map[pk] = c;
 
-	PosKey qk(p_x / _get_quadrant_size(), p_y / _get_quadrant_size());
+	PosKey qk = pk.to_quadrant(_get_quadrant_size());
 	Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
 
 	if (!Q)
@@ -1144,7 +1144,7 @@ void TileMap::_recreate_quadrants() {
 
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
 
-		PosKey qk(E->key().x / _get_quadrant_size(), E->key().y / _get_quadrant_size());
+		PosKey qk = PosKey(E->key().x, E->key().y).to_quadrant(_get_quadrant_size());
 
 		Map<PosKey, Quadrant>::Element *Q = quadrant_map.find(qk);
 		if (!Q) {
@@ -1281,7 +1281,11 @@ PoolVector<int> TileMap::_get_tile_data() const {
 }
 
 Rect2 TileMap::_edit_get_rect() const {
-	const_cast<TileMap *>(this)->update_dirty_quadrants();
+	if (pending_update) {
+		const_cast<TileMap *>(this)->update_dirty_quadrants();
+	} else {
+		const_cast<TileMap *>(this)->_recompute_rect_cache();
+	}
 	return rect_cache;
 }
 
