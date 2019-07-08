@@ -191,7 +191,7 @@ void WebSocketMultiplayerPeer::_send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_ty
 	p_peer->put_packet(&(message.read()[0]), message.size());
 }
 
-PoolVector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint32_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size) {
+PoolVector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size) {
 
 	PoolVector<uint8_t> out;
 	out.resize(PROTO_SIZE + p_data_size);

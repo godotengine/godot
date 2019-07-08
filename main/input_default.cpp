@@ -873,7 +873,7 @@ void InputDefault::joy_axis(int p_device, int p_axis, const JoyAxis &p_value) {
 			return;
 		}
 		float deadzone = p_value.min == 0 ? 0.5f : 0.0f;
-		bool pressed = p_value.value > deadzone ? true : false;
+		bool pressed = p_value.value > deadzone;
 		if (pressed == joy_buttons_pressed.has(_combine_device(map.index, p_device))) {
 			// button already pressed or released, this is an axis bounce value
 			return;

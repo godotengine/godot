@@ -570,7 +570,6 @@ void VisualScriptFunctionCall::_validate_property(PropertyInfo &property) const 
 			Node *bnode = _get_base_node();
 			if (bnode) {
 				property.hint_string = bnode->get_path(); //convert to loong string
-			} else {
 			}
 		}
 	}
@@ -1035,8 +1034,6 @@ PropertyInfo VisualScriptPropertySet::get_input_value_port_info(int p_idx) const
 			pi.name = (call_mode == CALL_MODE_INSTANCE ? String("instance") : Variant::get_type_name(basic_type).to_lower());
 			_adjust_input_index(pi);
 			return pi;
-		} else {
-			p_idx--;
 		}
 	}
 
@@ -1352,7 +1349,6 @@ void VisualScriptPropertySet::_validate_property(PropertyInfo &property) const {
 			Node *bnode = _get_base_node();
 			if (bnode) {
 				property.hint_string = bnode->get_path(); //convert to loong string
-			} else {
 			}
 		}
 	}
@@ -1794,8 +1790,6 @@ PropertyInfo VisualScriptPropertyGet::get_input_value_port_info(int p_idx) const
 			pi.type = (call_mode == CALL_MODE_INSTANCE ? Variant::OBJECT : basic_type);
 			pi.name = (call_mode == CALL_MODE_INSTANCE ? String("instance") : Variant::get_type_name(basic_type).to_lower());
 			return pi;
-		} else {
-			p_idx--;
 		}
 	}
 	return PropertyInfo();
@@ -2073,7 +2067,6 @@ void VisualScriptPropertyGet::_validate_property(PropertyInfo &property) const {
 			Node *bnode = _get_base_node();
 			if (bnode) {
 				property.hint_string = bnode->get_path(); //convert to loong string
-			} else {
 			}
 		}
 	}

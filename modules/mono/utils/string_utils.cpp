@@ -44,7 +44,7 @@ int sfind(const String &p_text, int p_from) {
 	int src_len = 2;
 	int len = p_text.length();
 
-	if (src_len == 0 || len == 0)
+	if (len == 0)
 		return -1;
 
 	const CharType *src = p_text.c_str();

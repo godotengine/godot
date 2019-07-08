@@ -1815,7 +1815,7 @@ T Animation::_interpolate(const Vector<TKey<T> > &p_keys, float p_time, Interpol
 				next = idx;
 			}
 
-		} else if (idx < 0) {
+		} else {
 
 			// only allow extending first key to anim start if looping
 			if (loop)
