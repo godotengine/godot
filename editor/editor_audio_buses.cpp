@@ -76,9 +76,9 @@ void EditorAudioBus::_notification(int p_what) {
 
 			disabled_vu = get_icon("BusVuFrozen", "EditorIcons");
 
-			Color solo_color = Color::html(EditorSettings::get_singleton()->is_dark_theme() ? "#ffe337" : "#ffeb70");
-			Color mute_color = Color::html(EditorSettings::get_singleton()->is_dark_theme() ? "#ff2929" : "#ff7070");
-			Color bypass_color = Color::html(EditorSettings::get_singleton()->is_dark_theme() ? "#22ccff" : "#70deff");
+			Color solo_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.89, 0.22) : Color(1.0, 0.92, 0.44);
+			Color mute_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(1.0, 0.16, 0.16) : Color(1.0, 0.44, 0.44);
+			Color bypass_color = EditorSettings::get_singleton()->is_dark_theme() ? Color(0.13, 0.8, 1.0) : Color(0.44, 0.87, 1.0);
 
 			solo->set_icon(get_icon("AudioBusSolo", "EditorIcons"));
 			solo->add_color_override("icon_color_pressed", solo_color);
