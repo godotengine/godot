@@ -488,9 +488,7 @@ T PoolVector<T>::get(int p_index) const {
 template <class T>
 void PoolVector<T>::set(int p_index, const T &p_val) {
 
-	if (p_index < 0 || p_index >= size()) {
-		ERR_FAIL_COND(p_index < 0 || p_index >= size());
-	}
+	ERR_FAIL_INDEX(p_index, size());
 
 	Write w = write();
 	w[p_index] = p_val;
