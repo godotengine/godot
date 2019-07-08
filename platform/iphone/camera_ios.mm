@@ -397,6 +397,22 @@ void CameraIOS::update_feeds() {
 };
 
 CameraIOS::CameraIOS() {
+	// check if we have our usage description
+	NSString *usage_desc = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"NSCameraUsageDescription"];
+	if (usage_desc == NULL) {
+		// don't initialise if we don't get anything
+		print_line("No NSCameraUsageDescription key in pList, no access to cameras.");
+		return;
+	} else if (usage_desc.length == 0) {
+		// don't initialise if we don't get anything
+		print_line("Empty NSCameraUsageDescription key in pList, no access to cameras.");
+		return;
+	}
+
+	// now we'll request access.
+	// If this is the first time the user will be prompted with the string (iOS will read it).
+	// Once a decision is made it is returned. If the user wants to change it later on they
+	// need to go into setting.
 	print_line("Requesting Camera permissions");
 
 	[AVCaptureDevice requestAccessForMediaType:AVMediaTypeVideo
