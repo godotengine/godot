@@ -110,7 +110,7 @@ Ref<Image> OpenSimplexNoise::get_image(int p_width, int p_height) const {
 
 	for (int i = 0; i < p_height; i++) {
 		for (int j = 0; j < p_width; j++) {
-			float v = get_noise_2d(i, j);
+			float v = get_noise_2d(j, i);
 			v = v * 0.5 + 0.5; // Normalize [0..1]
 			wd8[(i * p_width + j)] = uint8_t(CLAMP(v * 255.0, 0, 255));
 		}
