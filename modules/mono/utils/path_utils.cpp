@@ -36,16 +36,21 @@
 #include "core/project_settings.h"
 
 #ifdef WINDOWS_ENABLED
+#include <windows.h>
+
 #define ENV_PATH_SEP ";"
 #else
-#define ENV_PATH_SEP ":"
 #include <limits.h>
+#include <unistd.h>
+
+#define ENV_PATH_SEP ":"
 #endif
 
 #include <stdlib.h>
 
-String path_which(const String &p_name) {
+namespace path {
 
+String find_executable(const String &p_name) {
 #ifdef WINDOWS_ENABLED
 	Vector<String> exts = OS::get_singleton()->get_environment("PATHEXT").split(ENV_PATH_SEP, false);
 #endif
@@ -55,7 +60,7 @@ String path_which(const String &p_name) {
 		return String();
 
 	for (int i = 0; i < env_path.size(); i++) {
-		String p = path_join(env_path[i], p_name);
+		String p = path::join(env_path[i], p_name);
 
 #ifdef WINDOWS_ENABLED
 		for (int j = 0; j < exts.size(); j++) {
@@ -73,42 +78,96 @@ String path_which(const String &p_name) {
 	return String();
 }
 
-void fix_path(const String &p_path, String &r_out) {
-	r_out = p_path.replace("\\", "/");
-
-	while (true) { // in case of using 2 or more slash
-		String compare = r_out.replace("//", "/");
-		if (r_out == compare)
-			break;
-		else
-			r_out = compare;
-	}
-}
-
-bool rel_path_to_abs(const String &p_existing_path, String &r_abs_path) {
+String cwd() {
 #ifdef WINDOWS_ENABLED
-	CharType ret[_MAX_PATH];
-	if (::_wfullpath(ret, p_existing_path.c_str(), _MAX_PATH)) {
-		String abspath = String(ret).replace("\\", "/");
-		int pos = abspath.find(":/");
-		if (pos != -1) {
-			r_abs_path = abspath.substr(pos - 1, abspath.length());
-		} else {
-			r_abs_path = abspath;
-		}
-		return true;
-	}
+	const DWORD expected_size = ::GetCurrentDirectoryW(0, NULL);
+
+	String buffer;
+	buffer.resize((int)expected_size);
+	if (::GetCurrentDirectoryW(expected_size, buffer.ptrw()) == 0)
+		return ".";
+
+	return buffer.simplify_path();
 #else
-	char *resolved_path = ::realpath(p_existing_path.utf8().get_data(), NULL);
-	if (resolved_path) {
-		String retstr;
-		bool success = !retstr.parse_utf8(resolved_path);
-		::free(resolved_path);
-		if (success) {
-			r_abs_path = retstr;
-			return true;
-		}
-	}
+	char buffer[PATH_MAX];
+	if (::getcwd(buffer, sizeof(buffer)) == NULL)
+		return ".";
+
+	String result;
+	if (result.parse_utf8(buffer))
+		return ".";
+
+	return result.simplify_path();
 #endif
-	return false;
 }
+
+String abspath(const String &p_path) {
+	if (p_path.is_abs_path()) {
+		return p_path.simplify_path();
+	} else {
+		return path::join(path::cwd(), p_path).simplify_path();
+	}
+}
+
+String realpath(const String &p_path) {
+#ifdef WINDOWS_ENABLED
+	// Open file without read/write access
+	HANDLE hFile = ::CreateFileW(p_path.c_str(), 0,
+			FILE_SHARE_READ | FILE_SHARE_WRITE | FILE_SHARE_DELETE,
+			NULL, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, NULL);
+
+	if (hFile == INVALID_HANDLE_VALUE)
+		return p_path;
+
+	const DWORD expected_size = ::GetFinalPathNameByHandleW(hFile, NULL, 0, FILE_NAME_NORMALIZED);
+
+	if (expected_size == 0) {
+		::CloseHandle(hFile);
+		return p_path;
+	}
+
+	String buffer;
+	buffer.resize((int)expected_size);
+	::GetFinalPathNameByHandleW(hFile, buffer.ptrw(), expected_size, FILE_NAME_NORMALIZED);
+
+	::CloseHandle(hFile);
+	return buffer.simplify_path();
+#elif UNIX_ENABLED
+	char *resolved_path = ::realpath(p_path.utf8().get_data(), NULL);
+
+	if (!resolved_path)
+		return p_path;
+
+	String result;
+	bool parse_ok = result.parse_utf8(resolved_path);
+	::free(resolved_path);
+
+	if (parse_ok)
+		return p_path;
+
+	return result.simplify_path();
+#endif
+}
+
+String join(const String &p_a, const String &p_b) {
+	if (p_a.empty())
+		return p_b;
+
+	const CharType a_last = p_a[p_a.length() - 1];
+	if ((a_last == '/' || a_last == '\\') ||
+			(p_b.size() > 0 && (p_b[0] == '/' || p_b[0] == '\\'))) {
+		return p_a + p_b;
+	}
+
+	return p_a + "/" + p_b;
+}
+
+String join(const String &p_a, const String &p_b, const String &p_c) {
+	return path::join(path::join(p_a, p_b), p_c);
+}
+
+String join(const String &p_a, const String &p_b, const String &p_c, const String &p_d) {
+	return path::join(path::join(path::join(p_a, p_b), p_c), p_d);
+}
+
+} // namespace path
