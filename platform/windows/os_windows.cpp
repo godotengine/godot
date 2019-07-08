@@ -2367,7 +2367,20 @@ OS::CursorShape OS_Windows::get_cursor_shape() const {
 }
 
 void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+
 	if (p_cursor.is_valid()) {
+
+		Map<CursorShape, Vector<Variant> >::Element *cursor_c = cursors_cache.find(p_shape);
+
+		if (cursor_c) {
+			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+				set_cursor_shape(p_shape);
+				return;
+			}
+
+			cursors_cache.erase(p_shape);
+		}
+
 		Ref<Texture> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
@@ -2449,6 +2462,11 @@ void OS_Windows::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shap
 			DestroyIcon(cursors[p_shape]);
 
 		cursors[p_shape] = CreateIconIndirect(&iconinfo);
+
+		Vector<Variant> params;
+		params.push_back(p_cursor);
+		params.push_back(p_hotspot);
+		cursors_cache.insert(p_shape, params);
 
 		if (p_shape == cursor_shape) {
 			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {

@@ -119,6 +119,7 @@ public:
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 	MouseMode mouse_mode;
 
 	String title;
