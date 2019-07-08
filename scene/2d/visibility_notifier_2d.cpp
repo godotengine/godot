@@ -327,7 +327,7 @@ void VisibilityEnabler2D::_node_removed(Node *p_node) {
 String VisibilityEnabler2D::get_configuration_warning() const {
 #ifdef TOOLS_ENABLED
 	if (is_inside_tree() && get_parent() && (get_parent()->get_filename() == String() && get_parent() != get_tree()->get_edited_scene_root())) {
-		return TTR("VisibilityEnable2D works best when used with the edited scene root directly as parent.");
+		return TTR("VisibilityEnabler2D works best when used with the edited scene root directly as parent.");
 	}
 #endif
 	return String();

@@ -120,7 +120,7 @@ String CollisionShape::get_configuration_warning() const {
 	}
 
 	if (!shape.is_valid()) {
-		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it!");
+		return TTR("A shape must be provided for CollisionShape to function. Please create a shape resource for it.");
 	}
 
 	if (shape->is_class("PlaneShape")) {

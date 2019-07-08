@@ -268,7 +268,7 @@ String LightOccluder2D::get_configuration_warning() const {
 	}
 
 	if (occluder_polygon.is_valid() && occluder_polygon->get_polygon().size() == 0) {
-		return TTR("The occluder polygon for this occluder is empty. Please draw a polygon!");
+		return TTR("The occluder polygon for this occluder is empty. Please draw a polygon.");
 	}
 
 	return String();
