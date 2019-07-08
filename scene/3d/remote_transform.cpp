@@ -177,7 +177,7 @@ bool RemoteTransform::get_update_scale() const {
 String RemoteTransform::get_configuration_warning() const {
 
 	if (!has_node(remote_node) || !Object::cast_to<Spatial>(get_node(remote_node))) {
-		return TTR("Path property must point to a valid Spatial node to work.");
+		return TTR("The \"Remote Path\" property must point to a valid Spatial or Spatial-derived node to work.");
 	}
 
 	return String();

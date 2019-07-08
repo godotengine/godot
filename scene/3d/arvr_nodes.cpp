@@ -61,7 +61,7 @@ String ARVRCamera::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRCamera must have an ARVROrigin node as its parent");
+		return TTR("ARVRCamera must have an ARVROrigin node as its parent.");
 	};
 
 	return String();

@@ -80,7 +80,7 @@ Ref<Environment> WorldEnvironment::get_environment() const {
 String WorldEnvironment::get_configuration_warning() const {
 
 	if (!environment.is_valid()) {
-		return TTR("WorldEnvironment needs an Environment resource.");
+		return TTR("WorldEnvironment requires its \"Environment\" property to contain an Environment to have a visible effect.");
 	}
 
 	if (/*!is_visible_in_tree() ||*/ !is_inside_tree())
