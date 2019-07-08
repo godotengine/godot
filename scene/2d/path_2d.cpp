@@ -58,7 +58,7 @@ Rect2 Path2D::_edit_get_rect() const {
 }
 
 bool Path2D::_edit_use_rect() const {
-	return true;
+	return curve.is_valid() && curve->get_point_count() != 0;
 }
 
 bool Path2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {

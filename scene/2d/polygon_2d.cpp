@@ -76,7 +76,7 @@ Rect2 Polygon2D::_edit_get_rect() const {
 }
 
 bool Polygon2D::_edit_use_rect() const {
-	return true;
+	return polygon.size() > 0;
 }
 
 bool Polygon2D::_edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const {
