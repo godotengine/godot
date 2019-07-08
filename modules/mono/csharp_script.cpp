@@ -876,13 +876,17 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 			const StringName &class_namespace = script->tied_class_namespace_for_reload;
 			const StringName &class_name = script->tied_class_name_for_reload;
 			GDMonoAssembly *project_assembly = gdmono->get_project_assembly();
-			GDMonoAssembly *tools_assembly = gdmono->get_tools_assembly();
 
 			// Search in project and tools assemblies first as those are the most likely to have the class
 			GDMonoClass *script_class = (project_assembly ? project_assembly->get_class(class_namespace, class_name) : NULL);
+
+#ifdef TOOLS_ENABLED
 			if (!script_class) {
+				GDMonoAssembly *tools_assembly = gdmono->get_tools_assembly();
 				script_class = (tools_assembly ? tools_assembly->get_class(class_namespace, class_name) : NULL);
 			}
+#endif
+
 			if (!script_class) {
 				script_class = gdmono->get_class(class_namespace, class_name);
 			}
@@ -1202,7 +1206,9 @@ CSharpLanguage::CSharpLanguage() {
 
 	scripts_metadata_invalidated = true;
 
+#ifdef TOOLS_ENABLED
 	godotsharp_editor = NULL;
+#endif
 }
 
 CSharpLanguage::~CSharpLanguage() {
@@ -2143,7 +2149,6 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 		propnames.push_back(E->get());
 	}
 }
-#endif
 
 void CSharpScript::_update_member_info_no_exports() {
 
@@ -2190,6 +2195,7 @@ void CSharpScript::_update_member_info_no_exports() {
 		}
 	}
 }
+#endif
 
 bool CSharpScript::_update_exports() {
 
@@ -2743,7 +2749,9 @@ void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMon
 	}
 
 	p_script->load_script_signals(p_script->script_class, p_script->native);
+#ifdef TOOLS_ENABLED
 	p_script->_update_member_info_no_exports();
+#endif
 }
 
 bool CSharpScript::can_instance() const {
