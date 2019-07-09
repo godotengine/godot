@@ -46,20 +46,6 @@ bool GDMonoAssembly::in_preload = false;
 
 Vector<String> GDMonoAssembly::search_dirs;
 
-static String _get_expected_api_build_config() {
-#ifdef TOOLS_ENABLED
-	return "Debug";
-#else
-
-#ifdef DEBUG_ENABLED
-	return "Debug";
-#else
-	return "Release";
-#endif
-
-#endif
-}
-
 void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config, const String &p_custom_bcl_dir) {
 
 	String framework_dir;
@@ -81,11 +67,14 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
 	}
 
-	String api_config = p_custom_config.empty() ? _get_expected_api_build_config() :
-												  (p_custom_config == "Release" ? "Release" : "Debug");
-	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir().plus_file(api_config));
+	if (p_custom_config.empty()) {
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	} else {
+		String api_config = p_custom_config == "Release" ? "Release" : "Debug";
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir().plus_file(api_config));
+	}
 
-	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_resource_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
 

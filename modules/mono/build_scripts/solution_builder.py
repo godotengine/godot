@@ -112,6 +112,11 @@ def find_msbuild_windows(env):
     mono_bin_dir = os.path.join(mono_root, 'bin')
     msbuild_mono = os.path.join(mono_bin_dir, 'msbuild.bat')
 
+    msbuild_tools_path = find_msbuild_tools_path_reg()
+
+    if msbuild_tools_path:
+        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), framework_path, {})
+
     if os.path.isfile(msbuild_mono):
         # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
         # building with Mono's MSBuild. They must point to the batch files
@@ -122,11 +127,6 @@ def find_msbuild_windows(env):
             'FscToolExe': os.path.join(mono_bin_dir, 'fsharpc.bat')
         }
         return (msbuild_mono, framework_path, mono_msbuild_env)
-
-    msbuild_tools_path = find_msbuild_tools_path_reg()
-
-    if msbuild_tools_path:
-        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), framework_path, {})
 
     return None
 
