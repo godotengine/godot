@@ -58,7 +58,7 @@ namespace GodotTools
                 {
                     var oldFileDict = (Dictionary) oldFileVar;
 
-                    if (ulong.TryParse((string) oldFileDict["modified_time"], out ulong storedModifiedTime))
+                    if (ulong.TryParse(oldFileDict["modified_time"] as string, out ulong storedModifiedTime))
                     {
                         if (storedModifiedTime == modifiedTime)
                         {

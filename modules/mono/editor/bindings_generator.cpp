@@ -875,14 +875,14 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vect
 	da->make_dir("Core");
 	da->make_dir("ObjectType");
 
-	String core_dir = path_join(p_proj_dir, "Core");
-	String obj_type_dir = path_join(p_proj_dir, "ObjectType");
+	String core_dir = path::join(p_proj_dir, "Core");
+	String obj_type_dir = path::join(p_proj_dir, "ObjectType");
 
 	// Generate source file for global scope constants and enums
 	{
 		StringBuilder constants_source;
 		_generate_global_constants(constants_source);
-		String output_file = path_join(core_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
+		String output_file = path::join(core_dir, BINDINGS_GLOBAL_SCOPE_CLASS "_constants.cs");
 		Error save_err = _save_file(output_file, constants_source);
 		if (save_err != OK)
 			return save_err;
@@ -896,7 +896,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vect
 		if (itype.api_type == ClassDB::API_EDITOR)
 			continue;
 
-		String output_file = path_join(obj_type_dir, itype.proxy_name + ".cs");
+		String output_file = path::join(obj_type_dir, itype.proxy_name + ".cs");
 		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP)
@@ -917,7 +917,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vect
 		const String &file_name = E->key();
 		const GodotCsCompressedFile &file_data = E->value();
 
-		String output_file = path_join(core_dir, file_name);
+		String output_file = path::join(core_dir, file_name);
 
 		Vector<uint8_t> data;
 		data.resize(file_data.uncompressed_size);
@@ -971,7 +971,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vect
 
 	cs_icalls_content.append(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
 
-	String internal_methods_file = path_join(core_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
+	String internal_methods_file = path::join(core_dir, BINDINGS_CLASS_NATIVECALLS ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK)
@@ -996,8 +996,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir, Ve
 	da->make_dir("Core");
 	da->make_dir("ObjectType");
 
-	String core_dir = path_join(p_proj_dir, "Core");
-	String obj_type_dir = path_join(p_proj_dir, "ObjectType");
+	String core_dir = path::join(p_proj_dir, "Core");
+	String obj_type_dir = path::join(p_proj_dir, "ObjectType");
 
 	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next()) {
 		const TypeInterface &itype = E.get();
@@ -1005,7 +1005,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir, Ve
 		if (itype.api_type != ClassDB::API_EDITOR)
 			continue;
 
-		String output_file = path_join(obj_type_dir, itype.proxy_name + ".cs");
+		String output_file = path::join(obj_type_dir, itype.proxy_name + ".cs");
 		Error err = _generate_cs_type(itype, output_file);
 
 		if (err == ERR_SKIP)
@@ -1051,7 +1051,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir, Ve
 
 	cs_icalls_content.append(INDENT1 CLOSE_BLOCK CLOSE_BLOCK);
 
-	String internal_methods_file = path_join(core_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
+	String internal_methods_file = path::join(core_dir, BINDINGS_CLASS_NATIVECALLS_EDITOR ".cs");
 
 	Error err = _save_file(internal_methods_file, cs_icalls_content);
 	if (err != OK)
@@ -1064,7 +1064,7 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir, Ve
 
 Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
-	String output_dir = DirAccess::get_full_path(p_output_dir, DirAccess::ACCESS_FILESYSTEM);
+	String output_dir = path::abspath(path::realpath(p_output_dir));
 
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
@@ -1862,7 +1862,7 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	output.append("\n#endif // MONO_GLUE_ENABLED\n");
 
-	Error save_err = _save_file(path_join(p_output_dir, "mono_glue.gen.cpp"), output);
+	Error save_err = _save_file(path::join(p_output_dir, "mono_glue.gen.cpp"), output);
 	if (save_err != OK)
 		return save_err;
 
@@ -2192,7 +2192,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 		itype.base_name = ClassDB::get_parent_class(type_cname);
 		itype.is_singleton = Engine::get_singleton()->has_singleton(itype.proxy_name);
-		itype.is_instantiable = ClassDB::can_instance(type_cname) && !itype.is_singleton;
+		itype.is_instantiable = class_info->creation_func && !itype.is_singleton;
 		itype.is_reference = ClassDB::is_parent_class(type_cname, name_cache.type_Reference);
 		itype.memory_own = itype.is_reference;
 

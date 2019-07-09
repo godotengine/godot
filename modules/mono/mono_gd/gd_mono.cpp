@@ -241,9 +241,9 @@ void GDMono::initialize() {
 		locations.push_back("/usr/local/var/homebrew/linked/mono/");
 
 		for (int i = 0; i < locations.size(); i++) {
-			String hint_assembly_rootdir = path_join(locations[i], "lib");
-			String hint_mscorlib_path = path_join(hint_assembly_rootdir, "mono", "4.5", "mscorlib.dll");
-			String hint_config_dir = path_join(locations[i], "etc");
+			String hint_assembly_rootdir = path::join(locations[i], "lib");
+			String hint_mscorlib_path = path::join(hint_assembly_rootdir, "mono", "4.5", "mscorlib.dll");
+			String hint_config_dir = path::join(locations[i], "etc");
 
 			if (FileAccess::exists(hint_mscorlib_path) && DirAccess::exists(hint_config_dir)) {
 				assembly_rootdir = hint_assembly_rootdir;
@@ -564,6 +564,7 @@ bool GDMono::_load_corlib_assembly() {
 	return success;
 }
 
+#ifdef TOOLS_ENABLED
 static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, const String &p_assembly_name, APIAssembly::Type p_api_type) {
 
 	// Create destination directory if needed
@@ -607,6 +608,7 @@ static bool copy_api_assembly(const String &p_src_dir, const String &p_dst_dir, 
 
 	return true;
 }
+#endif
 
 bool GDMono::_load_core_api_assembly() {
 

@@ -867,17 +867,26 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			script->reload(p_soft_reload);
 			script->update_exports();
+
+			if (!script->valid) {
+				script->pending_reload_instances.clear();
+				continue;
+			}
 		} else {
 			const StringName &class_namespace = script->tied_class_namespace_for_reload;
 			const StringName &class_name = script->tied_class_name_for_reload;
 			GDMonoAssembly *project_assembly = gdmono->get_project_assembly();
-			GDMonoAssembly *tools_assembly = gdmono->get_tools_assembly();
 
 			// Search in project and tools assemblies first as those are the most likely to have the class
 			GDMonoClass *script_class = (project_assembly ? project_assembly->get_class(class_namespace, class_name) : NULL);
+
+#ifdef TOOLS_ENABLED
 			if (!script_class) {
+				GDMonoAssembly *tools_assembly = gdmono->get_tools_assembly();
 				script_class = (tools_assembly ? tools_assembly->get_class(class_namespace, class_name) : NULL);
 			}
+#endif
+
 			if (!script_class) {
 				script_class = gdmono->get_class(class_namespace, class_name);
 			}
@@ -897,12 +906,7 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 
 			GDMonoClass *native = GDMonoUtils::get_class_native_base(script_class);
 
-			Ref<CSharpScript> new_script = CSharpScript::create_for_managed_type(script_class, native);
-			CRASH_COND(new_script.is_null());
-
-			new_script->pending_reload_instances = script->pending_reload_instances;
-			new_script->pending_reload_state = script->pending_reload_state;
-			script = new_script;
+			CSharpScript::initialize_for_managed_type(script, script_class, native);
 		}
 
 		String native_name = NATIVE_GDMONOCLASS_NAME(script->native);
@@ -953,7 +957,6 @@ void CSharpLanguage::reload_assemblies(bool p_soft_reload) {
 				CRASH_COND(si != NULL);
 #endif
 				// Re-create script instance
-
 				obj->set_script(script.get_ref_ptr()); // will create the script instance as well
 			}
 		}
@@ -1203,7 +1206,9 @@ CSharpLanguage::CSharpLanguage() {
 
 	scripts_metadata_invalidated = true;
 
+#ifdef TOOLS_ENABLED
 	godotsharp_editor = NULL;
+#endif
 }
 
 CSharpLanguage::~CSharpLanguage() {
@@ -2144,7 +2149,6 @@ void CSharpScript::_update_exports_values(Map<StringName, Variant> &values, List
 		propnames.push_back(E->get());
 	}
 }
-#endif
 
 void CSharpScript::_update_member_info_no_exports() {
 
@@ -2191,6 +2195,7 @@ void CSharpScript::_update_member_info_no_exports() {
 		}
 	}
 }
+#endif
 
 bool CSharpScript::_update_exports() {
 
@@ -2673,35 +2678,46 @@ void CSharpScript::_bind_methods() {
 
 Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GDMonoClass *p_native) {
 
-	// This method should not fail
+	// This method should not fail, only assertions allowed
 
 	CRASH_COND(p_class == NULL);
 
 	// TODO OPTIMIZE: Cache the 'CSharpScript' associated with this 'p_class' instead of allocating a new one every time
 	Ref<CSharpScript> script = memnew(CSharpScript);
 
-	script->name = p_class->get_name();
-	script->script_class = p_class;
-	script->native = p_native;
+	initialize_for_managed_type(script, p_class, p_native);
 
-	CRASH_COND(script->native == NULL);
+	return script;
+}
 
-	GDMonoClass *base = script->script_class->get_parent_class();
+void CSharpScript::initialize_for_managed_type(Ref<CSharpScript> p_script, GDMonoClass *p_class, GDMonoClass *p_native) {
 
-	if (base != script->native)
-		script->base = base;
+	// This method should not fail, only assertions allowed
 
-	script->valid = true;
-	script->tool = script->script_class->has_attribute(CACHED_CLASS(ToolAttribute));
+	CRASH_COND(p_class == NULL);
 
-	if (!script->tool) {
-		GDMonoClass *nesting_class = script->script_class->get_nesting_class();
-		script->tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
+	p_script->name = p_class->get_name();
+	p_script->script_class = p_class;
+	p_script->native = p_native;
+
+	CRASH_COND(p_script->native == NULL);
+
+	GDMonoClass *base = p_script->script_class->get_parent_class();
+
+	if (base != p_script->native)
+		p_script->base = base;
+
+	p_script->valid = true;
+	p_script->tool = p_script->script_class->has_attribute(CACHED_CLASS(ToolAttribute));
+
+	if (!p_script->tool) {
+		GDMonoClass *nesting_class = p_script->script_class->get_nesting_class();
+		p_script->tool = nesting_class && nesting_class->has_attribute(CACHED_CLASS(ToolAttribute));
 	}
 
 #if TOOLS_ENABLED
-	if (!script->tool) {
-		script->tool = script->script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
+	if (!p_script->tool) {
+		p_script->tool = p_script->script_class->get_assembly() == GDMono::get_singleton()->get_tools_assembly();
 	}
 #endif
 
@@ -2710,10 +2726,10 @@ Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GD
 	// Native base methods must be fetched before the current class.
 	// Not needed if the script class itself is a native class.
 
-	if (script->script_class != script->native) {
-		GDMonoClass *native_top = script->native;
+	if (p_script->script_class != p_script->native) {
+		GDMonoClass *native_top = p_script->native;
 		while (native_top) {
-			native_top->fetch_methods_with_godot_api_checks(script->native);
+			native_top->fetch_methods_with_godot_api_checks(p_script->native);
 
 			if (native_top == CACHED_CLASS(GodotObject))
 				break;
@@ -2723,19 +2739,19 @@ Ref<CSharpScript> CSharpScript::create_for_managed_type(GDMonoClass *p_class, GD
 	}
 #endif
 
-	script->script_class->fetch_methods_with_godot_api_checks(script->native);
+	p_script->script_class->fetch_methods_with_godot_api_checks(p_script->native);
 
 	// Need to fetch method from base classes as well
-	GDMonoClass *top = script->script_class;
-	while (top && top != script->native) {
-		top->fetch_methods_with_godot_api_checks(script->native);
+	GDMonoClass *top = p_script->script_class;
+	while (top && top != p_script->native) {
+		top->fetch_methods_with_godot_api_checks(p_script->native);
 		top = top->get_parent_class();
 	}
 
-	script->load_script_signals(script->script_class, script->native);
-	script->_update_member_info_no_exports();
-
-	return script;
+	p_script->load_script_signals(p_script->script_class, p_script->native);
+#ifdef TOOLS_ENABLED
+	p_script->_update_member_info_no_exports();
+#endif
 }
 
 bool CSharpScript::can_instance() const {
