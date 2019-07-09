@@ -8735,7 +8735,7 @@ msgid ""
 "Failed to export the project for platform '%s'.\n"
 "Export templates seem to be missing or invalid."
 msgstr ""
-"Falha ao exportar o projeto para a plataforma '% s'.\n"
+"Falha ao exportar o projeto para a plataforma '%s'.\n"
 "Os modelos de exportação parecem estar ausentes ou inválidos."
 
 #: editor/project_export.cpp

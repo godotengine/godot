@@ -1265,7 +1265,7 @@ msgstr "Obre un Disseny de Bus d'Àudio"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr "No hi ha cap fitxer '% s'."
+msgstr "No hi ha cap fitxer '%s'."
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -1546,7 +1546,7 @@ msgstr "Sistema de Fitxers"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
-msgstr "Esborra el perfil '% s'? (no es pot desfer)"
+msgstr "Esborra el perfil '%s'? (no es pot desfer)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Profile must be a valid filename and must not contain '.'"
@@ -1590,14 +1590,14 @@ msgstr "Classes Habilitades:"
 
 #: editor/editor_feature_profile.cpp
 msgid "File '%s' format is invalid, import aborted."
-msgstr "El format del fitxer '% s' no és vàlid, s'ha anul·lat la importació."
+msgstr "El format del fitxer '%s' no és vàlid, s'ha anul·lat la importació."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
-"El perfil '% s' ja existeix. Elimineu-lo primer abans d'importar, importació "
+"El perfil '%s' ja existeix. Elimineu-lo primer abans d'importar, importació "
 "avortada."
 
 #: editor/editor_feature_profile.cpp
@@ -2082,7 +2082,7 @@ msgstr "Falta '%s' o les seves dependències."
 
 #: editor/editor_node.cpp
 msgid "Error while loading '%s'."
-msgstr "S'ha produït un error en carregar '% s'."
+msgstr "S'ha produït un error en carregar '%s'."
 
 #: editor/editor_node.cpp
 msgid "Saving Scene"
@@ -2353,7 +2353,7 @@ msgstr ""
 msgid "Unable to find script field for addon plugin at: 'res://addons/%s'."
 msgstr ""
 "No s'ha pogut trobar el camp d'Script per al complement a: 'res: // addons /"
-"% s'."
+"%s'."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s'."
@@ -2371,13 +2371,13 @@ msgstr ""
 msgid ""
 "Unable to load addon script from path: '%s' Base type is not EditorPlugin."
 msgstr ""
-"No es pot carregar l'Script complementari: El tipus base de '% s' no és pas "
+"No es pot carregar l'Script complementari: El tipus base de '%s' no és pas "
 "EditorPlugin."
 
 #: editor/editor_node.cpp
 msgid "Unable to load addon script from path: '%s' Script is not in tool mode."
 msgstr ""
-"No s'ha carregat l'Script d'addon des del camí: L'Script '% s' no és en el "
+"No s'ha carregat l'Script d'addon des del camí: L'Script '%s' no és en el "
 "mode d'Eina."
 
 #: editor/editor_node.cpp
@@ -9187,7 +9187,7 @@ msgstr ""
 
 #: editor/project_settings_editor.cpp
 msgid "An action with the name '%s' already exists."
-msgstr "Ja existeix una acció amb el nom '% s'."
+msgstr "Ja existeix una acció amb el nom '%s'."
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -10996,7 +10996,7 @@ msgstr "Un dígit no pot ser el primer caràcter d'un segment de paquets."
 #, fuzzy
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
-"El caràcter '% s' no pot ser el primer caràcter d'un segment de paquets."
+"El caràcter '%s' no pot ser el primer caràcter d'un segment de paquets."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
@@ -11074,7 +11074,7 @@ msgstr ""
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "No es permet el caràcter '% s' en l'Identificador."
+msgstr "No es permet el caràcter '%s' en l'Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
@@ -11084,7 +11084,7 @@ msgstr "Un dígit no pot ser el primer caràcter en un segment Identificador."
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
-"El caràcter '% s' no pot ser el primer caràcter en un segment Identificador."
+"El caràcter '%s' no pot ser el primer caràcter en un segment Identificador."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."

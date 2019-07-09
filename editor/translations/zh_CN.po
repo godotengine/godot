@@ -10936,7 +10936,7 @@ msgstr "标识符字段不能为空."
 
 #: platform/iphone/export/export.cpp
 msgid "The character '%s' is not allowed in Identifier."
-msgstr "标识符中不允许使用字符 '% s' 。"
+msgstr "标识符中不允许使用字符 '%s' 。"
 
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
