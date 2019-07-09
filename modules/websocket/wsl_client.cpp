@@ -92,6 +92,7 @@ void WSLClient::_do_handshake() {
 				data->id = 1;
 				_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
 				_on_connect(protocol);
+				break;
 			}
 			_resp_pos += 1;
 		}
