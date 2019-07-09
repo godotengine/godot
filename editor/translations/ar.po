@@ -2093,7 +2093,7 @@ msgstr "أخلاء الخرج"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
-msgstr "تصدير المشروع فشل, رمز الخطأ % d."
+msgstr "تصدير المشروع فشل, رمز الخطأ %d."
 
 #: editor/editor_node.cpp
 msgid "Imported resources can't be saved."

@@ -34,7 +34,7 @@ msgstr "डीकोडिंग बाइट्स, या अमान्य �
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "अभिव्यक्ति में अमान्य इनपुट % i (पारित नहीं)"
+msgstr "अभिव्यक्ति में अमान्य इनपुट %i (पारित नहीं)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
@@ -58,7 +58,7 @@ msgstr "'%s' बनाने के लिए अवैध तर्क"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr "'% s ' को कॉल करने पर:"
+msgstr "'%s ' को कॉल करने पर:"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp

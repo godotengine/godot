@@ -30,7 +30,7 @@ msgstr "డీకోడింగ్ బైట్లు కోసం తగిన
 #: core/math/expression.cpp
 #, fuzzy
 msgid "Invalid input %i (not passed) in expression"
-msgstr "వ్యక్తీకరణలో చెల్లని ఇన్పుట్% i (ఆమోదించబడలేదు)"
+msgstr "వ్యక్తీకరణలో చెల్లని ఇన్పుట్ %i (ఆమోదించబడలేదు)"
 
 #: core/math/expression.cpp
 #, fuzzy

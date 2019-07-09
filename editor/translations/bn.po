@@ -3634,7 +3634,7 @@ msgstr "ফেবরিট/প্রিয়-সমূহ:"
 
 #: editor/filesystem_dock.cpp
 msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr "'% s' তে নেভিগেট করা যাবে না কারণ এটি ফাইল সিস্টেমে পাওয়া যায়নি!"
+msgstr "'%s' তে নেভিগেট করা যাবে না কারণ এটি ফাইল সিস্টেমে পাওয়া যায়নি!"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -4024,11 +4024,11 @@ msgstr "সংরক্ষিত হচ্ছে..."
 
 #: editor/import_dock.cpp
 msgid "Set as Default for '%s'"
-msgstr "'% s' এর জন্য ডিফল্ট হিসাবে সেট করুন"
+msgstr "'%s' এর জন্য ডিফল্ট হিসাবে সেট করুন"
 
 #: editor/import_dock.cpp
 msgid "Clear Default for '%s'"
-msgstr "'% s' এর জন্য ডিফল্ট ক্লিয়ার  করুন"
+msgstr "'%s' এর জন্য ডিফল্ট ক্লিয়ার  করুন"
 
 #: editor/import_dock.cpp
 #, fuzzy
@@ -8471,7 +8471,7 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Set Input Default Port"
-msgstr "'% s' এর জন্য ডিফল্ট হিসাবে সেট করুন"
+msgstr "'%s' এর জন্য ডিফল্ট হিসাবে সেট করুন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -9821,7 +9821,7 @@ msgstr "প্রপার্টি:"
 
 #: editor/project_settings_editor.cpp
 msgid "Setting '%s' is internal, and it can't be deleted."
-msgstr "'% s' সেটিংটি অভ্যন্তরীণ, এবং এটি মোছা যাবে না।"
+msgstr "'%s' সেটিংটি অভ্যন্তরীণ, এবং এটি মোছা যাবে না।"
 
 #: editor/project_settings_editor.cpp
 #, fuzzy
