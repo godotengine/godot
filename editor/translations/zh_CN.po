@@ -47,12 +47,13 @@
 # liushuyu011 <liushuyu011@gmail.com>, 2019.
 # DS <dseqrasd@126.com>, 2019.
 # ZeroAurora <zeroaurora@qq.com>, 2019.
+# Gary Wang <wzc782970009@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-07-02 10:51+0000\n"
-"Last-Translator: ZeroAurora <zeroaurora@qq.com>\n"
+"PO-Revision-Date: 2019-07-09 10:47+0000\n"
+"Last-Translator: Gary Wang <wzc782970009@gmail.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -473,7 +474,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "警告: 正在编辑导入的动画"
 
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -728,24 +729,21 @@ msgid ""
 msgstr "找不到目标方法！ 请指定一个有效的方法或把脚本附加到目标节点。"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "连接到节点:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "无法连接到服务器:"
+msgstr "连接到脚本:"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "From Signal:"
-msgstr "信号:"
+msgstr "信号源:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Scene does not contain any script."
-msgstr "节点不包含几何。"
+msgstr "节点不包含脚本。"
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -784,7 +782,7 @@ msgstr "延时"
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
-msgstr ""
+msgstr "延迟信号触发，将其添加到信号队列，在引擎空闲时触发。"
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -792,12 +790,11 @@ msgstr "单次"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "信号触发后自动取消连接。"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Cannot connect signal"
-msgstr "连接信号： "
+msgstr "无法连接信号"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -839,14 +836,12 @@ msgid "Disconnect"
 msgstr "删除信号连接"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect a Signal to a Method"
-msgstr "连接信号： "
+msgstr "连接信号到方法"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Edit Connection:"
-msgstr "编辑广播订阅： "
+msgstr "编辑连接："
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -922,11 +917,10 @@ msgid "Dependencies For:"
 msgstr "依赖项:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
-msgstr "场景'%s'已被修改，重新加载后生效。"
+msgstr "场景 '%s' 已被修改，重新加载后生效。"
 
 #: editor/dependency_editor.cpp
 #, fuzzy
@@ -1023,9 +1017,8 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "永久删除选中的%d条项目吗？（此操作无法撤销！）"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Show Dependencies"
-msgstr "依赖"
+msgstr "显示依赖"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
@@ -1286,7 +1279,7 @@ msgstr "打开音频Bus布局"
 
 #: editor/editor_audio_buses.cpp
 msgid "There is no '%s' file."
-msgstr ""
+msgstr "文件 '%s' 不存在。"
 
 #: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Layout"
@@ -1343,23 +1336,20 @@ msgid "Valid characters:"
 msgstr "字符合法:"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing engine class name."
-msgstr "名称非法，与引擎内置类型名称冲突。"
+msgstr "与引擎内置类型名称冲突。"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr "名称非法，与引擎内置类型名称冲突。"
+msgstr "与引擎内置类型名称冲突。"
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing global constant name."
-msgstr "名称非法，与已存在的全局常量名称冲突。"
+msgstr "与已存在的全局常量名称冲突。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Keyword cannot be used as an autoload name."
-msgstr ""
+msgstr "该名称已被用作其他 autoload 占用。"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1445,9 +1435,8 @@ msgid "[unsaved]"
 msgstr "[未保存]"
 
 #: editor/editor_dir_dialog.cpp
-#, fuzzy
 msgid "Please select a base directory first."
-msgstr "请先选择一个目录"
+msgstr "请先选择一个目录。"
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
@@ -1526,14 +1515,12 @@ msgid "Template file not found:"
 msgstr "找不到模板文件:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "编辑器"
+msgstr "3D编辑器"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Script Editor"
-msgstr "打开脚本编辑器"
+msgstr "脚本编辑器"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
@@ -1552,9 +1539,8 @@ msgid "Node Dock"
 msgstr "节点面板"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "文件系统面板"
+msgstr "文件系统和导入面板"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1793,9 +1779,8 @@ msgid "(Un)favorite current folder."
 msgstr "（取消）收藏当前文件夹。"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle visibility of hidden files."
-msgstr "切换显示隐藏文件"
+msgstr "切换显示隐藏文件。"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1828,10 +1813,11 @@ msgid "ScanSources"
 msgstr "扫描源文件"
 
 #: editor/editor_file_system.cpp
+#, fuzzy
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
-msgstr ""
+msgstr "%s 文件存在多种导入方式、自动导入失败。"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
@@ -2226,9 +2212,8 @@ msgid "Open Base Scene"
 msgstr "打开父场景"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Quick Open..."
-msgstr "快速打开场景..."
+msgstr "快速打开..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
@@ -2453,7 +2438,7 @@ msgstr "关闭其他标签页"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
-msgstr ""
+msgstr "关闭右侧"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2592,7 +2577,7 @@ msgstr "打开项目数据文件夹"
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template"
-msgstr ""
+msgstr "安装 Android 构建模板"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2693,32 +2678,28 @@ msgid "Editor Layout"
 msgstr "编辑器布局"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Take Screenshot"
-msgstr "创建场景根节点"
+msgstr "截取屏幕"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "打开“编辑器设置/数据\"文件夹"
+msgstr "截图已保存到编辑器设置/数据目录。"
 
 #: editor/editor_node.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "自动打开截图"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open in an external image editor."
-msgstr "打开下一个编辑器"
+msgstr "使用外部图像编辑器打开。"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "全屏模式"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle System Console"
-msgstr "切换CanvasItem可见"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2733,9 +2714,8 @@ msgid "Open Editor Settings Folder"
 msgstr "打开“编辑器设置”文件夹"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Editor Features"
-msgstr "管理导出模板"
+msgstr "管理编辑器功能"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2868,7 +2848,7 @@ msgstr "不保存"
 
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
-msgstr ""
+msgstr "缺失 Android 构建模板，请安装相应的模板。"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -6428,7 +6408,7 @@ msgstr "语法高亮显示"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
-msgstr ""
+msgstr "书签"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7378,7 +7358,7 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Submenu"
-msgstr ""
+msgstr "子菜单(Submenu)"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
@@ -7502,9 +7482,8 @@ msgid "Mirror Y"
 msgstr "沿Y轴翻转"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Disable Autotile"
-msgstr "智能瓦片"
+msgstr "禁用智能磁贴(Autotile)"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
@@ -11555,6 +11534,8 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
+"由于该控件的 Mouse Filter 设置为  \"Ignore\" 因此它的 Hint Tooltip 将不会展"
+"示。将 Mouse Filter 设置为 \"Stop\" 或 \"Pass\" 可修正此问题。"
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -11645,7 +11626,7 @@ msgstr "变量只能在顶点函数中指定。"
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "不允许修改常量。"
 
 #~ msgid "Enabled Classes"
 #~ msgstr "启用的类"

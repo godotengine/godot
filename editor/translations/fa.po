@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-06-16 19:42+0000\n"
+"PO-Revision-Date: 2019-07-09 10:47+0000\n"
 "Last-Translator: hpn33 <hamed.hpn332@gmail.com>\n"
 "Language-Team: Persian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fa/>\n"
@@ -24,10 +24,11 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
+#, fuzzy
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
 "نوع آرگومان برای متد ()convert ‌ نامعتبر است ،‌ از ثابت های  *_TYPE‌ استفاده "
@@ -43,7 +44,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "ورودی نامعتبر i% (تایید نشده) در عبارت"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"

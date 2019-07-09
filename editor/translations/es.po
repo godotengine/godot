@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:50+0000\n"
+"PO-Revision-Date: 2019-07-09 10:47+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -256,7 +256,7 @@ msgstr "Tiempo (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr "Pista de Conmutación Activada"
+msgstr "Act./Desact. Pista"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -1360,9 +1360,8 @@ msgid "Must not collide with an existing engine class name."
 msgstr "No debe coincidir con el nombre de una clase ya existente del motor."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr "No debe coincidir con un nombre de tipo buit-in existente."
+msgstr "No debe coincidir con un nombre de tipo built-in existente."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing global constant name."
@@ -1566,9 +1565,8 @@ msgid "Node Dock"
 msgstr "Nodos"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "Sistema de Archivos"
+msgstr "Sistema de Archivo e Importación"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1621,7 +1619,6 @@ msgstr ""
 "El formato '%s' del archivo no es válido, la importación ha sido cancelada."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
@@ -1638,9 +1635,8 @@ msgid "Unset"
 msgstr "Desactivar"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "Perfil Actual"
+msgstr "Perfil Actual:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Make Current"
@@ -1662,9 +1658,8 @@ msgid "Export"
 msgstr "Exportar"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "Perfiles Disponibles"
+msgstr "Perfiles Disponibles:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -2755,32 +2750,30 @@ msgid "Editor Layout"
 msgstr "Layout del Editor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Take Screenshot"
-msgstr "Convertir en Raíz de Escena"
+msgstr "Realizar Captura de Pantalla"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Abrir Editor de Datos/Carpeta de Configuración"
+msgstr ""
+"Las capturas de pantalla se almacenan en la carpeta Editor de Datos / "
+"Configuración."
 
 #: editor/editor_node.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "Abrir Capturas de Pantalla Automáticamente"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open in an external image editor."
-msgstr "Abrir Editor siguiente"
+msgstr "Abrir en un editor de imágenes externo."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Cambiar a Pantalla Completa"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle System Console"
-msgstr "Act/desact. CanvasItem visible"
+msgstr "Act./Desact. Consola del Sistema"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2788,7 +2781,7 @@ msgstr "Abrir Editor de Datos/Carpeta de Configuración"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "Abrir Carpeta de Datos del Editor"
+msgstr "Abrir Carpeta de Editor de Datos"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
@@ -2889,19 +2882,16 @@ msgid "Spins when the editor window redraws."
 msgstr "Gira cuando la ventana del editor se redibuja."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "Continuo"
+msgstr "Actualizar Continuamente"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "Actualizar Cambios"
+msgstr "Actualizar Al Cambiar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Hide Update Spinner"
-msgstr "Desactivar Indicador de Actividad"
+msgstr "Ocultar Spinner de Actualización"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -4963,8 +4953,8 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
-"Cuando está activo, los nodos de Control en movimiento cambian sus anclajes "
-"en lugar de sus márgenes."
+"Cuando está activo, el movimiento de los nodos de Control cambian sus "
+"anclajes en lugar de sus márgenes."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -4991,12 +4981,12 @@ msgstr "Desbloquear Seleccionado"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Group Selected"
-msgstr "Grupo Seleccionado"
+msgstr "Agrupar Seleccionados"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Ungroup Selected"
-msgstr "Desagrupar Seleccionado"
+msgstr "Desagrupar Seleccionados"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
@@ -5353,9 +5343,8 @@ msgstr "Cargar Máscara de Emisión"
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Restart"
-msgstr "Reiniciar Ahora"
+msgstr "Reiniciar"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5759,7 +5748,7 @@ msgstr "¡Sin caras!"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry."
-msgstr "El nodo no posee geometría."
+msgstr "El nodo no tiene geometría."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Node does not contain geometry (faces)."
@@ -6268,18 +6257,16 @@ msgid "Find Next"
 msgstr "Buscar Siguiente"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter scripts"
-msgstr "Filtrar propiedades"
+msgstr "Filtrar scripts"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Alternar la ordenación alfabética de la lista de métodos."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter methods"
-msgstr "Modo de filtrado:"
+msgstr "Filtrar métodos"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6713,7 +6700,7 @@ msgstr "Escalado: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Translating: "
-msgstr "Trasladando: "
+msgstr "Trasladar: "
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotating %s degrees."
@@ -8069,43 +8056,36 @@ msgid "Boolean uniform."
 msgstr "Boolean uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for all shader modes."
-msgstr "Parámetro de entrada 'uv' para todos los modos de shader."
+msgstr "Parámetro de entrada %s' para todos los modos de shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Input parameter."
 msgstr "Parámetro de entrada."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for vertex and fragment shader modes."
-msgstr "Parámetro de entrada 'uv' para vértices y fragmentos en modo shader."
+msgstr "Parámetro de entrada '%s' para vértices y fragmentos en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for fragment and light shader modes."
-msgstr "Parámetro de entrada 'view' para fragmentos y luces en modo shader."
+msgstr "Parámetro de entrada '%s' para fragmentos y luces en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for fragment shader mode."
-msgstr "Parámetro de entrada 'side' para fragmentos en modo de shader."
+msgstr "Parámetro de entrada '%s' para fragmentos en modo de shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for light shader mode."
-msgstr "Parámetro de entrada 'diffuse' para luces en modo shader."
+msgstr "Parámetro de entrada '%s' para luces en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for vertex shader mode."
-msgstr "Parámetro de entrada 'custom' para vértices en modo shader."
+msgstr "Parámetro de entrada '%s' para vértices en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for vertex and fragment shader mode."
-msgstr "Parámetro de entrada 'uv' para vértices y fragmentos en modo shader."
+msgstr "Parámetro de entrada '%s' para vértices y fragmentos en modo shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -8664,7 +8644,7 @@ msgstr "Editar Propiedad Visual"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
-msgstr "Se ha cambiado el Modo de Visual Shader"
+msgstr "Cambiar Modo de Visual Shader"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -9868,9 +9848,8 @@ msgid "Add Child Node"
 msgstr "Añadir Nodo Hijo"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Expand/Collapse All"
-msgstr "Colapsar Todo"
+msgstr "Expandir/Colapsar Todo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Change Type"
@@ -9901,9 +9880,8 @@ msgid "Delete (No Confirm)"
 msgstr "Eliminar (Sin confirmar)"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Add/Create a New Node."
-msgstr "Añadir/Crear un Nuevo Nodo"
+msgstr "Añadir/Crear un Nuevo Nodo."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -11410,15 +11388,14 @@ msgstr ""
 "asígnale una."
 
 #: scene/2d/tile_map.cpp
-#, fuzzy
 msgid ""
 "TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D solo sirve para proveer de una forma de colisión a un nodo "
-"derivado de CollisionObject2D. Por favor, úsalo solo como hijo de Area2D, "
-"StaticBody2D, RigidBody2D, KinematicBody2D, etc. para dotarlos de forma."
+"TileMap con Use Parent activado necesita un CollisionObject2D padre para "
+"darle forma. Por favor, úsalo como hijo de Area2D, StaticBody2D, "
+"RigidBody2D, KinematicBody2D, etc. para que puedan tener forma."
 
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
@@ -11724,12 +11701,11 @@ msgstr "Selecciona un color de la pantalla."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
-msgstr ""
+msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
-#, fuzzy
 msgid "Raw"
-msgstr "Yaw"
+msgstr "Raw"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
@@ -11740,14 +11716,13 @@ msgid "Add current color as a preset."
 msgstr "Añadir el color actual como preset."
 
 #: scene/gui/container.cpp
-#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
 "If you don't intend to add a script, then please use a plain 'Control' node "
 "instead."
 msgstr ""
-"Container por sí mismo no sirve para nada a menos que un script configure el "
+"Container por sí mismo no sirve para nada a menos que un script defina el "
 "comportamiento de colocación de sus hijos.\n"
 "Si no tienes intención de añadir un script, utiliza un nodo 'Control' "
 "sencillo."
@@ -11757,6 +11732,9 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
+"Los Tooltip de Ayuda no se mostrarán cuando los controles del Filtro del "
+"Ratón estén configurados en \"Ignore\". Para solucionarlo, establece el "
+"Filtro del Ratón en \"Stop\" o \"Pass\"."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"

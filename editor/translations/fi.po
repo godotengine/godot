@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:51+0000\n"
+"PO-Revision-Date: 2019-07-09 10:47+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -8167,56 +8167,58 @@ msgstr "Palauttaa pienemmän kahdesta arvosta."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two scalars."
-msgstr ""
+msgstr "Lineaari-interpolaatio kahden skalaarin välillä."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin vasta-arvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - scalar"
-msgstr ""
+msgstr "1.0 - skalaari"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the value of the first parameter raised to the power of the second."
 msgstr ""
+"Palauttaa arvon, joka on ensimmäisen parametrin arvo potenssiin toisen "
+"parametrin arvo."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "Muuntaa suureen asteista radiaaneiksi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / scalar"
-msgstr ""
+msgstr "1.0 / skalaari"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "(Vain GLES3) Etsii parametria lähinnä olevan kokonaisluvun."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "(Vain GLES3) Etsii parametria lähinnä olevan parillisen kokonaisluvun."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
-msgstr ""
+msgstr "Rajaa arvon 0.0 ja 1.0 välille."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Extracts the sign of the parameter."
-msgstr ""
+msgstr "Poimii parametrin etumerkin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the sine of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin sinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "(Vain GLES3) Palauttaa parametrin hyperbolisen sinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the square root of the parameter."
-msgstr ""
+msgstr "Palauttaa parametrin neliöjuuren."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
