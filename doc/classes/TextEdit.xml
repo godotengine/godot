@@ -520,7 +520,7 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 1 )">
 			Sets the background [Color] of this [TextEdit]. [member syntax_highlighting] has to be enabled.
 		</theme_item>
 		<theme_item name="bookmark_color" type="Color" default="Color( 0.08, 0.49, 0.98, 1 )">
@@ -533,17 +533,17 @@
 		</theme_item>
 		<theme_item name="caret_background_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
-		<theme_item name="caret_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="caret_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
 		<theme_item name="code_folding_color" type="Color" default="Color( 0.8, 0.8, 0.8, 0.8 )">
 		</theme_item>
 		<theme_item name="completion" type="StyleBox">
 		</theme_item>
-		<theme_item name="completion_background_color" type="Color" default="Color( 0.172549, 0.164706, 0.196078, 1 )">
+		<theme_item name="completion_background_color" type="Color" default="Color( 0.17, 0.16, 0.2, 1 )">
 		</theme_item>
-		<theme_item name="completion_existing_color" type="Color" default="Color( 0.87451, 0.87451, 0.87451, 0.129412 )">
+		<theme_item name="completion_existing_color" type="Color" default="Color( 0.87, 0.87, 0.87, 0.13 )">
 		</theme_item>
-		<theme_item name="completion_font_color" type="Color" default="Color( 0.666667, 0.666667, 0.666667, 1 )">
+		<theme_item name="completion_font_color" type="Color" default="Color( 0.67, 0.67, 0.67, 1 )">
 		</theme_item>
 		<theme_item name="completion_lines" type="int" default="7">
 		</theme_item>
@@ -553,7 +553,7 @@
 		</theme_item>
 		<theme_item name="completion_scroll_width" type="int" default="3">
 		</theme_item>
-		<theme_item name="completion_selected_color" type="Color" default="Color( 0.262745, 0.258824, 0.266667, 1 )">
+		<theme_item name="completion_selected_color" type="Color" default="Color( 0.26, 0.26, 0.27, 1 )">
 		</theme_item>
 		<theme_item name="current_line_color" type="Color" default="Color( 0.25, 0.25, 0.26, 0.8 )">
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
@@ -569,16 +569,16 @@
 		<theme_item name="font" type="Font">
 			Sets the default [Font].
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Sets the font [Color].
 		</theme_item>
-		<theme_item name="font_color_readonly" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 0.5 )">
+		<theme_item name="font_color_readonly" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
-		<theme_item name="function_color" type="Color" default="Color( 0.4, 0.635294, 0.807843, 1 )">
+		<theme_item name="function_color" type="Color" default="Color( 0.4, 0.64, 0.81, 1 )">
 		</theme_item>
-		<theme_item name="line_number_color" type="Color" default="Color( 0.666667, 0.666667, 0.666667, 0.4 )">
+		<theme_item name="line_number_color" type="Color" default="Color( 0.67, 0.67, 0.67, 0.4 )">
 			Sets the [Color] of the line numbers. [member show_line_numbers] has to be enabled.
 		</theme_item>
 		<theme_item name="line_spacing" type="int" default="4">
@@ -587,24 +587,24 @@
 		<theme_item name="mark_color" type="Color" default="Color( 1, 0.4, 0.4, 0.4 )">
 			Sets the [Color] of marked text.
 		</theme_item>
-		<theme_item name="member_variable_color" type="Color" default="Color( 0.901961, 0.305882, 0.34902, 1 )">
+		<theme_item name="member_variable_color" type="Color" default="Color( 0.9, 0.31, 0.35, 1 )">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit].
 		</theme_item>
-		<theme_item name="number_color" type="Color" default="Color( 0.921569, 0.584314, 0.196078, 1 )">
+		<theme_item name="number_color" type="Color" default="Color( 0.92, 0.58, 0.2, 1 )">
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
 		</theme_item>
-		<theme_item name="safe_line_number_color" type="Color" default="Color( 0.666667, 0.784314, 0.666667, 0.6 )">
+		<theme_item name="safe_line_number_color" type="Color" default="Color( 0.67, 0.78, 0.67, 0.6 )">
 		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color( 0.490196, 0.490196, 0.490196, 1 )">
+		<theme_item name="selection_color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture">
 		</theme_item>
-		<theme_item name="symbol_color" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
+		<theme_item name="symbol_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="tab" type="Texture">
 			Sets a custom [Texture] for tab text characters.

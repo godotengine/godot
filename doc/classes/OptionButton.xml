@@ -229,11 +229,11 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
 		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
+		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>

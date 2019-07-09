@@ -164,7 +164,7 @@
 		<member name="android/modules" type="String" setter="" getter="" default="&quot;&quot;">
 			Comma-separated list of custom Android modules (which must have been built in the Android export templates) using their Java package path, e.g. [code]org/godotengine/org/GodotPaymentV3,org/godotengine/godot/MyCustomSingleton"[/code].
 		</member>
-		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.137255, 0.137255, 0.137255, 1 )">
+		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.14, 0.14, 0.14, 1 )">
 			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
@@ -719,6 +719,8 @@
 		</member>
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="" default="16">
 			Default size of packet peer stream for deserializing Godot data. Over this size, data is dropped.
+		</member>
+		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
 		</member>
 		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>

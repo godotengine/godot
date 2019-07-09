@@ -598,7 +598,7 @@
 		<theme_item name="font" type="Font">
 			Sets a custom [Font].
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Sets a custom [Color] for the [Font].
 		</theme_item>
 		<theme_item name="font_color_accel" type="Color" default="Color( 0.7, 0.7, 0.7, 0.8 )">
@@ -606,7 +606,7 @@
 		<theme_item name="font_color_disabled" type="Color" default="Color( 0.4, 0.4, 0.4, 0.8 )">
 			Sets a custom [Color] for disabled text.
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="font_color_hover" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 			Sets a custom [Color] for the hovered text.
 		</theme_item>
 		<theme_item name="hover" type="StyleBox">

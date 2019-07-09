@@ -187,21 +187,21 @@
 	<theme_items>
 		<theme_item name="clear" type="Texture">
 		</theme_item>
-		<theme_item name="clear_button_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="clear_button_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
 		<theme_item name="clear_button_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="cursor_color" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
+		<theme_item name="cursor_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
-		<theme_item name="font_color_uneditable" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 0.5 )">
+		<theme_item name="font_color_uneditable" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
 		</theme_item>
 		<theme_item name="minimum_spaces" type="int" default="12">
 		</theme_item>
@@ -209,7 +209,7 @@
 		</theme_item>
 		<theme_item name="read_only" type="StyleBox">
 		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color( 0.490196, 0.490196, 0.490196, 1 )">
+		<theme_item name="selection_color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
 		</theme_item>
 	</theme_items>
 </class>

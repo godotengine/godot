@@ -24,7 +24,7 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
+		<theme_item name="font_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
