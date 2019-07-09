@@ -396,8 +396,10 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 			}
 
 			if (write_gray) {
-				//TODO: not correct grayscale, should use fixed point version of actual weights
-				wofs[0] = uint8_t((uint16_t(rofs[0]) + uint16_t(rofs[1]) + uint16_t(rofs[2])) / 3);
+				wofs[0] = uint8_t((
+						uint16_t(rofs[0]) / 3 +
+						uint16_t(rofs[1]) / 2 +
+						uint16_t(rofs[2]) / 10));
 			} else {
 				for (uint32_t i = 0; i < write_bytes; i++) {
 
