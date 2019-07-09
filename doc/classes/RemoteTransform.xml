@@ -10,6 +10,13 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="force_update_cache">
+			<return type="void">
+			</return>
+			<description>
+				[RemoteTransform] caches the remote node. It may not notice if the remote node disappears; [method force_update_cache] forces it to update the cache again.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="remote_path" type="NodePath" setter="set_remote_node" getter="get_remote_node" default="NodePath(&quot;&quot;)">

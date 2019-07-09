@@ -68,6 +68,8 @@ public:
 	void set_update_scale(const bool p_update);
 	bool get_update_scale() const;
 
+	void force_update_cache();
+
 	virtual String get_configuration_warning() const;
 
 	RemoteTransform();
