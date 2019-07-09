@@ -142,7 +142,7 @@ env.Depends("#core/io/certs_compressed.gen.h", ["#thirdparty/certs/ca-certificat
 env.CommandNoCache("#core/io/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", run_in_subprocess(core_builders.make_certs_header))
 
 # Make binders
-env.CommandNoCache(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_binders.py', run_in_subprocess(make_binders.run))
+env.CommandNoCache(['method_bind.gen.inc', 'method_bind_ext.gen.inc', 'method_bind_free_func.gen.inc'], 'make_binders.py', run_in_subprocess(make_binders.run))
 
 # Authors
 env.Depends('#core/authors.gen.h', "../AUTHORS.md")
