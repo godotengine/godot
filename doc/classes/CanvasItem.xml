@@ -223,8 +223,13 @@
 			</argument>
 			<argument index="2" name="filled" type="bool" default="true">
 			</argument>
+			<argument index="3" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="4" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
-				Draws a colored rectangle.
+				Draws a rectangle. If [code]filled[/code] is [code]true[/code], the rectangle will be filled with the [code]color[/code] specified. If [code]filled[/code] is [code]false[/code], the rectangle will be drawn as a stroke with the [code]color[/code] and [code]width[/code] specified. If [code]antialiased[/code] is [code]true[/code], the lines will be antialiased.
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are only effective if [code]filled[/code] is [code]false[/code].
 			</description>
 		</method>
 		<method name="draw_set_transform">

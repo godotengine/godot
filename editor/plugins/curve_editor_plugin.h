@@ -97,8 +97,6 @@ private:
 
 	void _draw();
 
-	void stroke_rect(Rect2 rect, Color color);
-
 private:
 	Transform2D _world_to_view;
 
