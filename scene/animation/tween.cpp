@@ -66,26 +66,38 @@ void Tween::_add_pending_command(StringName p_key, const Variant &p_arg1, const 
 
 	// Add the specified arguments to the command
 	// TODO: Make this a switch statement?
-	if (count > 0)
-		cmd.arg[0] = p_arg1;
-	if (count > 1)
-		cmd.arg[1] = p_arg2;
-	if (count > 2)
-		cmd.arg[2] = p_arg3;
-	if (count > 3)
-		cmd.arg[3] = p_arg4;
-	if (count > 4)
-		cmd.arg[4] = p_arg5;
-	if (count > 5)
-		cmd.arg[5] = p_arg6;
-	if (count > 6)
-		cmd.arg[6] = p_arg7;
-	if (count > 7)
-		cmd.arg[7] = p_arg8;
-	if (count > 8)
-		cmd.arg[8] = p_arg9;
-	if (count > 9)
-		cmd.arg[9] = p_arg10;
+	switch (count) {
+		case 0: {
+			cmd.arg[0] = p_arg1;
+		} break;
+		case 1: {
+			cmd.arg[1] = p_arg2;
+		} break;
+		case 2: {
+			cmd.arg[2] = p_arg3;
+		} break;
+		case 3: {
+			cmd.arg[3] = p_arg4;
+		} break;
+		case 4: {
+			cmd.arg[4] = p_arg5;
+		} break;
+		case 5: {
+			cmd.arg[5] = p_arg6;
+		} break;
+		case 6: {
+			cmd.arg[6] = p_arg7;
+		} break;
+		case 7: {
+			cmd.arg[7] = p_arg8;
+		} break;
+		case 8: {
+			cmd.arg[8] = p_arg9;
+		} break;
+		default: {
+			cmd.arg[9] = p_arg10;
+		} break;
+	}
 }
 
 void Tween::_process_pending_commands() {
