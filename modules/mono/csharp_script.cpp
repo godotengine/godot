@@ -44,6 +44,10 @@
 #include "editor/editor_node.h"
 #endif
 
+#ifdef DEBUG_METHODS_ENABLED
+#include "class_db_api_json.h"
+#endif
+
 #include "editor/editor_internal_calls.h"
 #include "godotsharp_dirs.h"
 #include "mono_gd/gd_mono_class.h"
@@ -97,6 +101,15 @@ Error CSharpLanguage::execute_file(const String &p_path) {
 }
 
 void CSharpLanguage::init() {
+
+#ifdef DEBUG_METHODS_ENABLED
+	if (OS::get_singleton()->get_cmdline_args().find("--class_db_to_json")) {
+		class_db_api_to_json("user://class_db_api.json", ClassDB::API_CORE);
+#ifdef TOOLS_ENABLED
+		class_db_api_to_json("user://class_db_api_editor.json", ClassDB::API_EDITOR);
+#endif
+	}
+#endif
 
 	gdmono = memnew(GDMono);
 	gdmono->initialize();

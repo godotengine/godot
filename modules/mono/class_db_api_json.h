@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  class_db_api_json.h                                                  */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,34 +28,12 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef CLASS_DB_API_JSON_H
+#define CLASS_DB_API_JSON_H
 
-#include "navigation_mesh_editor_plugin.h"
+#include "core/class_db.h"
+#include "core/ustring.h"
 
-#ifdef TOOLS_ENABLED
-EditorNavigationMeshGenerator *_nav_mesh_generator = NULL;
-#endif
+void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api);
 
-void register_recast_types() {
-#ifdef TOOLS_ENABLED
-	EditorPlugins::add_by_type<NavigationMeshEditorPlugin>();
-	_nav_mesh_generator = memnew(EditorNavigationMeshGenerator);
-
-	ClassDB::APIType prev_api = ClassDB::get_current_api();
-	ClassDB::set_current_api(ClassDB::API_EDITOR);
-
-	ClassDB::register_class<EditorNavigationMeshGenerator>();
-
-	ClassDB::set_current_api(prev_api);
-
-	Engine::get_singleton()->add_singleton(Engine::Singleton("NavigationMeshGenerator", EditorNavigationMeshGenerator::get_singleton()));
-#endif
-}
-
-void unregister_recast_types() {
-#ifdef TOOLS_ENABLED
-	if (_nav_mesh_generator) {
-		memdelete(_nav_mesh_generator);
-	}
-#endif
-}
+#endif // CLASS_DB_API_JSON_H
