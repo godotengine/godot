@@ -3713,6 +3713,11 @@ void EditorNode::show_warning(const String &p_text, const String &p_title) {
 	warning->popup_centered_minsize();
 }
 
+void EditorNode::_copy_warning(const String &p_str) {
+
+	OS::get_singleton()->set_clipboard(warning->get_text());
+}
+
 void EditorNode::_dock_select_input(const Ref<InputEvent> &p_input) {
 
 	Ref<InputEventMouse> me = p_input;
@@ -5192,6 +5197,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_inherit_imported"), &EditorNode::_inherit_imported);
 	ClassDB::bind_method(D_METHOD("_dim_timeout"), &EditorNode::_dim_timeout);
 
+	ClassDB::bind_method("_copy_warning", &EditorNode::_copy_warning);
+
 	ClassDB::bind_method(D_METHOD("_resources_reimported"), &EditorNode::_resources_reimported);
 	ClassDB::bind_method(D_METHOD("_bottom_panel_raise_toggled"), &EditorNode::_bottom_panel_raise_toggled);
 
@@ -5793,7 +5800,9 @@ EditorNode::EditorNode() {
 	feature_profile_manager->connect("current_feature_profile_changed", this, "_feature_profile_changed");
 
 	warning = memnew(AcceptDialog);
+	warning->add_button(TTR("Copy Text"), true, "copy");
 	gui_base->add_child(warning);
+	warning->connect("custom_action", this, "_copy_warning");
 
 	ED_SHORTCUT("editor/next_tab", TTR("Next tab"), KEY_MASK_CMD + KEY_TAB);
 	ED_SHORTCUT("editor/prev_tab", TTR("Previous tab"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_TAB);
