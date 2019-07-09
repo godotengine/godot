@@ -395,7 +395,6 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
-	void _uncomment_line(int p_line);
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
 
