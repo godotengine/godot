@@ -234,7 +234,7 @@ Popup::Popup() {
 String Popup::get_configuration_warning() const {
 
 	if (is_visible_in_tree()) {
-		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine though, but they will hide upon running.");
+		return TTR("Popups will hide by default unless you call popup() or any of the popup*() functions. Making them visible for editing is fine, but they will hide upon running.");
 	}
 
 	return String();

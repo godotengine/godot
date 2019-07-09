@@ -270,7 +270,7 @@ String PathFollow::get_configuration_warning() const {
 	} else {
 		Path *path = Object::cast_to<Path>(get_parent());
 		if (path->get_curve().is_valid() && !path->get_curve()->is_up_vector_enabled() && rotation_mode == ROTATION_ORIENTED) {
-			return TTR("PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent Path's Curve resource.");
+			return TTR("PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its parent Path's Curve resource.");
 		}
 	}
 

@@ -347,7 +347,7 @@ void Light2D::_notification(int p_what) {
 String Light2D::get_configuration_warning() const {
 
 	if (!texture.is_valid()) {
-		return TTR("A texture with the shape of the light must be supplied to the 'texture' property.");
+		return TTR("A texture with the shape of the light must be supplied to the \"Texture\" property.");
 	}
 
 	return String();

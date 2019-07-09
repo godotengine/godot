@@ -137,7 +137,7 @@ String Bone2D::get_configuration_warning() const {
 	String warning = Node2D::get_configuration_warning();
 	if (!skeleton) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
 		if (parent_bone) {
 			warning += TTR("This Bone2D chain should end at a Skeleton2D node.");
@@ -148,7 +148,7 @@ String Bone2D::get_configuration_warning() const {
 
 	if (rest == Transform2D(0, 0, 0, 0, 0, 0)) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
 		warning += TTR("This bone lacks a proper REST pose. Go to the Skeleton2D node and set one.");
 	}
