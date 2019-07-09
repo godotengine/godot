@@ -652,6 +652,10 @@ msgstr "Satıra git"
 msgid "Line Number:"
 msgstr "Satır Numarası:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "Eşleşme Yok"
@@ -701,7 +705,7 @@ msgstr "Uzaklaştır"
 msgid "Reset Zoom"
 msgstr "Yaklaşmayı Sıfırla"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Uyarılar"
 
@@ -805,6 +809,11 @@ msgstr "Kapat"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "Bağla"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "Sinyaller:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -974,7 +983,8 @@ msgid "Owners Of:"
 msgstr "Şunların sahipleri:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "Seçili dosyaları projeden kaldır? (geri alınamaz)"
 
 #: editor/dependency_editor.cpp
@@ -1528,6 +1538,10 @@ msgstr "Özel yayınlama şablonu bulunamadı."
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "Şablon dosyası bulunamadı:"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -3095,7 +3109,7 @@ msgstr "Zaman"
 msgid "Calls"
 msgstr "Çağrılar"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "Açık"
 
@@ -3725,6 +3739,7 @@ msgid "Nodes not in Group"
 msgstr "Düğümler Grupta Değil"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "Düğümleri Süzgeçden Geçir"
 
@@ -6620,9 +6635,18 @@ msgid "Syntax Highlighter"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "Noktalar oluştur."
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10347,7 +10371,7 @@ msgstr "Çerçeveleri Yığ"
 msgid "Pick one or more items from the list to display the graph."
 msgstr "Grafiği görüntülemek için listeden bir veya daha fazla öğe seçin."
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "Hatalar"
 
@@ -10762,55 +10786,6 @@ msgstr "Uzaklık Seç:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Sınıf ismi ayrılmış anahtar kelime olamaz"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr "Çözüm oluşturuluyor..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "C# projesi üretiliyor..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create solution."
-msgstr "Çözüm oluşturma başarısız."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "Çözüm kaydetme başarısız."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "Oldu"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "C# projesi oluşturma başarısız."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "Tekli"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "C# desteği hakkında"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "C# Çözümü oluştur"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "İnşalar"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "Projeyi İnşa et"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
-msgid "View log"
-msgstr "Dosyaları Görüntüle"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11409,8 +11384,9 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Geçersiz açılış görüntülüğü bediz boyutları (620x300 olmalı)."
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Bir SpriteFrames kaynağı oluşturulmalı ya da 'Kareler' özelliğine atanmalı "
@@ -11477,8 +11453,9 @@ msgid ""
 msgstr ""
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "Işık yüzeyli bir doku, 'texture' özelliğine sağlanmalıdır."
 
@@ -11490,7 +11467,8 @@ msgstr ""
 "(ya da çizilmelidir)."
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "Bu engelleyici için engelleyici çokgeni boş. Lütfen bir çokgen çizin!"
 
 #: scene/2d/navigation_polygon.cpp
@@ -11584,15 +11562,17 @@ msgstr ""
 "vermek için kullanın."
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "VisibilityEnable2D düğümü düzenlenmiş sahne kökü doğrudan ebeveyn olarak "
 "kullanıldığında çalışır."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+#, fuzzy
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "ARVRCamera ebeveyni olarak ARVROrigin düğümüne sahip olmalı"
 
 #: scene/3d/arvr_nodes.cpp
@@ -11688,9 +11668,10 @@ msgstr ""
 "RigidBody, KinematicBody, v.b. onu sadece bunların çocuğu olarak kullanın."
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "CollisionShape'in çalışması için bir şekil verilmelidir. Lütfen bunun için "
 "bir şekil kaynağı oluşturun!"
@@ -11721,6 +11702,10 @@ msgstr "Örüntüler Haritalanıyor"
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
+msgstr ""
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -11764,8 +11749,8 @@ msgstr ""
 
 #: scene/3d/path.cpp
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -11779,7 +11764,10 @@ msgstr ""
 "Boyu değişikliğini bunun yerine çocuk çarpışma şekilleri içinden yapın."
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
+#, fuzzy
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr ""
 "Yol özelliği, çalışmak için geçerli bir Spatial düğümüne işaret etmelidir."
 
@@ -11799,8 +11787,9 @@ msgstr ""
 "Boyu değişikliğini bunun yerine çocuk çarpışma şekilleri içinden yapın."
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "AnimatedSprite3D 'nin çerçeveleri görüntülemek için bir SpriteFrames kaynağı "
@@ -11815,8 +11804,10 @@ msgstr ""
 "Lütfen bunu VehicleBody'nin çocuğu olarak kullanın."
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironment bir Environment kaynağı gerektirir."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11857,7 +11848,7 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Şunun: '%s' şununla: '%s' bağlantısını kes"
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+msgid "No root AnimationNode for the graph is set."
 msgstr ""
 
 #: scene/animation/animation_tree.cpp
@@ -11873,7 +11864,7 @@ msgstr ""
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
-msgid "AnimationPlayer root is not a valid node."
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Animasyon ağacı geçersizdir."
 
 #: scene/animation/animation_tree_player.cpp
@@ -11905,8 +11896,7 @@ msgstr "Şuanki rengi bir önayar olarak kaydet"
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 
 #: scene/gui/control.cpp
@@ -11924,23 +11914,25 @@ msgid "Please Confirm..."
 msgstr "Lütfen Doğrulayın..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "Açılır pencereler popup() veya popup*() işlevleri çağrılmadıkça varsayılan "
 "olarak gizlenecektir. Onları düzenleme için görünür kılmak da iyidir, ancak "
 "çalışırken gizlenecekler."
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "ScrollContainer tek bir çocuk denetimi ile çalışmak için tasarlanmıştır.\n"
@@ -11994,6 +11986,11 @@ msgstr "Giriş Ekle"
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
+msgid "Invalid source for preview."
+msgstr "Geçersiz kaynak!"
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
 msgid "Invalid source for shader."
 msgstr "Geçersiz kaynak!"
 
@@ -12012,6 +12009,46 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Generating solution..."
+#~ msgstr "Çözüm oluşturuluyor..."
+
+#~ msgid "Generating C# project..."
+#~ msgstr "C# projesi üretiliyor..."
+
+#~ msgid "Failed to create solution."
+#~ msgstr "Çözüm oluşturma başarısız."
+
+#~ msgid "Failed to save solution."
+#~ msgstr "Çözüm kaydetme başarısız."
+
+#~ msgid "Done"
+#~ msgstr "Oldu"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "C# projesi oluşturma başarısız."
+
+#~ msgid "Mono"
+#~ msgstr "Tekli"
+
+#~ msgid "About C# support"
+#~ msgstr "C# desteği hakkında"
+
+#~ msgid "Create C# solution"
+#~ msgstr "C# Çözümü oluştur"
+
+#~ msgid "Builds"
+#~ msgstr "İnşalar"
+
+#~ msgid "Build Project"
+#~ msgstr "Projeyi İnşa et"
+
+#, fuzzy
+#~ msgid "View log"
+#~ msgstr "Dosyaları Görüntüle"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "WorldEnvironment bir Environment kaynağı gerektirir."
 
 #, fuzzy
 #~ msgid "Enabled Classes"

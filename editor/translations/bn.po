@@ -665,6 +665,10 @@ msgstr "লাইন-এ যান"
 msgid "Line Number:"
 msgstr "লাইন নাম্বার:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "কোনো মিল নেই"
@@ -714,7 +718,7 @@ msgstr "সংকুচিত করুন (জুম্ আউট)"
 msgid "Reset Zoom"
 msgstr "সম্প্রসারন/সংকোচন অপসারণ করুন (রিসেট জুম্)"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 #, fuzzy
 msgid "Warnings"
 msgstr "সতর্কতা"
@@ -826,6 +830,11 @@ msgstr "বন্ধ করুন"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "সংযোগ"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "সিগন্যালস/সংকেতসমূহ:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -1002,7 +1011,8 @@ msgid "Owners Of:"
 msgstr "স্বত্বাধিকারীসমূহ:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "নির্বাচিত ফাইলসমূহ প্রকল্প হতে অপসারণ করবেন? (অফেরৎযোগ্য)"
 
 #: editor/dependency_editor.cpp
@@ -1568,6 +1578,10 @@ msgstr "স্বনির্মিত রিলিস (release) প্যাক
 #, fuzzy
 msgid "Template file not found:"
 msgstr "টেমপ্লেট ফাইল পাওয়া যায়নি:\n"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -3211,7 +3225,7 @@ msgstr "সময়:"
 msgid "Calls"
 msgstr "ডাকুন (Call)"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "চালু"
 
@@ -3903,6 +3917,7 @@ msgid "Nodes not in Group"
 msgstr "গ্রুপ/দলে যোগ করুন"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 #, fuzzy
 msgid "Filter nodes"
 msgstr "ফিল্টারসমূহ"
@@ -6878,9 +6893,18 @@ msgid "Syntax Highlighter"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "বিন্দু অপসারণ করুন"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10685,7 +10709,7 @@ msgstr "ফ্রেমসমূহ স্তূপ করুন"
 msgid "Pick one or more items from the list to display the graph."
 msgstr "গ্রাফ প্রদর্শন করতে তালিকা থেকে এক বা একাধিক আইটেম বাছাই করুন।"
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "সমস্যাসমূহ"
 
@@ -11120,62 +11144,6 @@ msgstr "ইন্সট্যান্স:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Generating solution..."
-msgstr "ওকট্রী (octree) গঠনবিন্যাস তৈরি করা হচ্ছে"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Failed to create solution."
-msgstr "প্রান্তরেখা তৈরি করা সম্ভব হয়নি!"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Failed to save solution."
-msgstr "রিসোর্স লোড ব্যর্থ হয়েছে।"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Done"
-msgstr "সম্পন্ন হয়েছে!"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Failed to create C# project."
-msgstr "রিসোর্স লোড ব্যর্থ হয়েছে।"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "মনো"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Create C# solution"
-msgstr "প্রান্তরেখা তৈরি করুন"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr ""
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
-msgid "Build Project"
-msgstr "নতুন প্রকল্প"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
-msgid "View log"
-msgstr "ফাইল"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11810,8 +11778,9 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "স্প্ল্যাশ পর্দার (splash screen) ছবির অগ্রহনযোগ্য মাত্রা (৬২০x৩০০ হতে হবে)।"
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "AnimatedSprite দ্বারা ফ্রেম দেখাতে SpriteFrames রিসোর্স অবশ্যই তৈরি করতে হবে "
@@ -11871,8 +11840,9 @@ msgid ""
 msgstr ""
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
 "অবশ্যই লাইটের আকৃতি সহ একটি গঠন 'texture' এর বৈশিষ্ট্যে হিসেবে প্রদান করতে হবে।"
@@ -11884,7 +11854,8 @@ msgstr ""
 "Occluder এর প্রভাব ফেলতে একটি occluder বহুভুজ নির্ধারণ করা (বা, আঁকা) আবশ্যক।"
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "এই occluder এর জন্য occluder পলিগনটি খালি। অনুগ্রহ করে একটি পলিগন আঁকুন!"
 
 #: scene/2d/navigation_polygon.cpp
@@ -11968,15 +11939,16 @@ msgstr ""
 "অনুগ্রহ করে তা শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "VisibilityEnable2D সর্বোত্তম কার্যকর হয় যখন সম্পাদিত দৃশ্য মূল দৃশ্য হিসেবে সরাসরি "
 "ব্যবহৃত হয়।"
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
@@ -12062,9 +12034,10 @@ msgstr ""
 "শুধুমাত্র তাদের অংশ হিসেবে ব্যবহার করুন।"
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "সফল্ভাবে কাজ করতে CollisionShape এর একটি আকৃতি প্রয়োজন। অনুগ্রহ করে তার জন্য একটি "
 "আকৃতি তৈরি করুন!"
@@ -12094,6 +12067,10 @@ msgstr "ছবিসমূহ ব্লিটিং (Blitting) করা হচ�
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
+msgstr ""
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -12135,8 +12112,8 @@ msgstr "PathFollow2D একমাত্র Path2D এর অংশ হিসে�
 
 #: scene/3d/path.cpp
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -12147,7 +12124,10 @@ msgid ""
 msgstr ""
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
+#, fuzzy
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr "Path এর দিক অবশ্যই একটি কার্যকর Spatial নোডের এর দিকে নির্দেশ করাতে হবে।"
 
 #: scene/3d/soft_body.cpp
@@ -12162,8 +12142,9 @@ msgid ""
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "AnimatedSprite3D দ্বারা ফ্রেম দেখাতে SpriteFrames রিসোর্স অবশ্যই তৈরি করতে হবে "
@@ -12176,7 +12157,9 @@ msgid ""
 msgstr ""
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
 msgstr ""
 
 #: scene/3d/world_environment.cpp
@@ -12216,7 +12199,7 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "'%s' এর সাথে '%s' সংযুক্ত করুন"
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+msgid "No root AnimationNode for the graph is set."
 msgstr ""
 
 #: scene/animation/animation_tree.cpp
@@ -12231,7 +12214,7 @@ msgstr ""
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
-msgid "AnimationPlayer root is not a valid node."
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "অ্যানিমেশনের তালিকাটি অকার্যকর।"
 
 #: scene/animation/animation_tree_player.cpp
@@ -12262,8 +12245,7 @@ msgstr ""
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 
 #: scene/gui/control.cpp
@@ -12281,23 +12263,24 @@ msgid "Please Confirm..."
 msgstr "অনুগ্রহ করে নিশ্চিত করুন..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "সাধারণত popups লুকিয়ে যাবে, যদি আপনি popup() বা popup*() এর যেকোনো ফাংশন "
 "ব্যবহার না করেন। যদিও সম্পাদনের কাজে তা গ্রহনযোগ্য, কিন্তু চালনার সময় তা লুকিয়ে "
 "যাবে।"
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
 
 #: scene/gui/scroll_container.cpp
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 
@@ -12346,6 +12329,11 @@ msgstr "ইনপুট যোগ করুন"
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
+msgid "Invalid source for preview."
+msgstr "অকার্যকর উৎস!"
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
 msgid "Invalid source for shader."
 msgstr "অকার্যকর উৎস!"
 
@@ -12364,6 +12352,41 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Generating solution..."
+#~ msgstr "ওকট্রী (octree) গঠনবিন্যাস তৈরি করা হচ্ছে"
+
+#, fuzzy
+#~ msgid "Failed to create solution."
+#~ msgstr "প্রান্তরেখা তৈরি করা সম্ভব হয়নি!"
+
+#, fuzzy
+#~ msgid "Failed to save solution."
+#~ msgstr "রিসোর্স লোড ব্যর্থ হয়েছে।"
+
+#, fuzzy
+#~ msgid "Done"
+#~ msgstr "সম্পন্ন হয়েছে!"
+
+#, fuzzy
+#~ msgid "Failed to create C# project."
+#~ msgstr "রিসোর্স লোড ব্যর্থ হয়েছে।"
+
+#~ msgid "Mono"
+#~ msgstr "মনো"
+
+#, fuzzy
+#~ msgid "Create C# solution"
+#~ msgstr "প্রান্তরেখা তৈরি করুন"
+
+#, fuzzy
+#~ msgid "Build Project"
+#~ msgstr "নতুন প্রকল্প"
+
+#, fuzzy
+#~ msgid "View log"
+#~ msgstr "ফাইল"
 
 #, fuzzy
 #~ msgid "Enabled Classes"

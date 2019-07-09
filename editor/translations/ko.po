@@ -634,6 +634,10 @@ msgstr "라인으로 이동"
 msgid "Line Number:"
 msgstr "라인 번호:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "일치 결과 없음"
@@ -683,7 +687,7 @@ msgstr "축소"
 msgid "Reset Zoom"
 msgstr "줌 리셋"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "경고"
 
@@ -786,6 +790,11 @@ msgstr "닫기"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "연결"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "시그널:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -950,7 +959,8 @@ msgid "Owners Of:"
 msgstr "소유자:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "프로젝트에서 선택된 파일들을 삭제하시겠습니까? (되돌리기 불가)"
 
 #: editor/dependency_editor.cpp
@@ -1497,6 +1507,10 @@ msgstr "커스텀 릴리즈 템플릿을 찾을 수 없습니다."
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "템플릿을 찾을 수 없습니다:"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3019,7 +3033,7 @@ msgstr "시간"
 msgid "Calls"
 msgstr "호출"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "사용"
 
@@ -3632,6 +3646,7 @@ msgid "Nodes not in Group"
 msgstr "그룹에 있지 않은 노드"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "노드 필터"
 
@@ -6396,9 +6411,18 @@ msgid "Syntax Highlighter"
 msgstr "구문 강조"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "북마크"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "포인트 만들기."
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -9998,7 +10022,7 @@ msgstr "스택 추적"
 msgid "Pick one or more items from the list to display the graph."
 msgstr "목록에서 한 개 혹은 여러 개의 항목을 집어 그래프로 보여줍니다."
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "오류"
 
@@ -10399,54 +10423,6 @@ msgstr "거리 선택:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "클래스 이름은 키워드가 될 수 없습니다"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr "솔루션 생성 중..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "C# 프로젝트 생성 중..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create solution."
-msgstr "솔루션 생성 실패."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "솔루션 저장 실패."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "완료"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "C# 프로젝트 생성 실패."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "모노"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "C# 지원에 대하여"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "C# 솔루션 만들기"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "빌드"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "프로젝트 빌드"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr "로그 보기"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11050,8 +11026,9 @@ msgstr ""
 "유효하지 않은 스플래쉬 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "AnimatedSprite이 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리소"
@@ -11117,8 +11094,9 @@ msgstr ""
 "CanvasItemMaterial이 필요합니다."
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "라이트의 모양을 나타내는 텍스쳐를 'texture' 속성에 지정해야합니다."
 
@@ -11129,7 +11107,8 @@ msgstr ""
 "Occluder가 동작하기 위해서는 Occluder 폴리곤을 지정하거나 그려야 합니다."
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그리세요!"
 
 #: scene/2d/navigation_polygon.cpp
@@ -11224,15 +11203,17 @@ msgstr ""
 "의 자식 노드로 추가하여 사용합니다."
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "VisibilityEnable2D는 편집 씬의 루트의 하위 노드로 추가할 때 가장 잘 동작합니"
 "다."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+#, fuzzy
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "ARVRCamera는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 함"
 
 #: scene/3d/arvr_nodes.cpp
@@ -11320,9 +11301,10 @@ msgstr ""
 "합니다."
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "CollisionShape가 기능을 하기 위해서는 Shape이 제공되어야 합니다. Shape 리소스"
 "를 만드세요!"
@@ -11358,6 +11340,10 @@ msgid ""
 msgstr ""
 "GIProbe는 GLES2 비디오 드라이버에서 지원하지 않습니다.\n"
 "BakedLightmap을 사용하세요."
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11401,9 +11387,10 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow는 Path 노드의 자식으로 있을 때만 동작합니다."
 
 #: scene/3d/path.cpp
+#, fuzzy
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 "PathFollow ROTATION_ORIENTED는 부모 Path의 Curve 리소스에서 \"Up Vector\"가 "
 "활성화되어 있어야 합니다."
@@ -11419,7 +11406,10 @@ msgstr ""
 "대신 자식 충돌 형태의 크기를 변경해보세요."
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
+#, fuzzy
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr "Path 속성은 유효한 Spatial 노드를 가리켜야 합니다."
 
 #: scene/3d/soft_body.cpp
@@ -11436,8 +11426,9 @@ msgstr ""
 "대신 자식의 충돌 크기를 변경하세요."
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "AnimatedSprite3D가 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리"
@@ -11452,8 +11443,10 @@ msgstr ""
 "의 자식으로 사용해주세요."
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironment는 Environment 리소스가 필요합니다."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11489,7 +11482,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "노드 '%s'의 '%s' 입력에 아무것도 연결되지 않음."
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+#, fuzzy
+msgid "No root AnimationNode for the graph is set."
 msgstr "그래프의 루트 AnimationNode가 설정되지 않았습니다."
 
 #: scene/animation/animation_tree.cpp
@@ -11504,7 +11498,8 @@ msgstr ""
 "다."
 
 #: scene/animation/animation_tree.cpp
-msgid "AnimationPlayer root is not a valid node."
+#, fuzzy
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "AnimationPlayer 루트가 유효한 노드가 아닙니다."
 
 #: scene/animation/animation_tree_player.cpp
@@ -11533,11 +11528,11 @@ msgid "Add current color as a preset."
 msgstr "현재 색상을 프리셋으로 추가합니다."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "Container 자체는 자식 배치 작업을 구성하는 스크립트 외에는 목적이 없습니다.\n"
 "스크립트를 추가하지 않는 경우, 순수한 'Control' 노드를 사용해주세요."
@@ -11560,22 +11555,25 @@ msgid "Please Confirm..."
 msgstr "확인해주세요..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "Popup은 popup() 또는 기타 popup*() 함수를 호출하기 전까지는 기본적으로 숨겨집"
 "니다. 편집하는 동안 보여지도록 할 수는 있으나, 실행 시에는 숨겨집니다."
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+#, fuzzy
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "exp_edit이 참이라면 min_value는 반드시 > 0 이어야 합니다."
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "ScrollContainer는 단일 자식 컨트롤을 작업하기 위한 것입니다.\n"
@@ -11627,6 +11625,11 @@ msgid "Input"
 msgstr "입력"
 
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid source for preview."
+msgstr "셰이더에 유효하지 않은 소스."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "셰이더에 유효하지 않은 소스."
 
@@ -11645,6 +11648,45 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Generating solution..."
+#~ msgstr "솔루션 생성 중..."
+
+#~ msgid "Generating C# project..."
+#~ msgstr "C# 프로젝트 생성 중..."
+
+#~ msgid "Failed to create solution."
+#~ msgstr "솔루션 생성 실패."
+
+#~ msgid "Failed to save solution."
+#~ msgstr "솔루션 저장 실패."
+
+#~ msgid "Done"
+#~ msgstr "완료"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "C# 프로젝트 생성 실패."
+
+#~ msgid "Mono"
+#~ msgstr "모노"
+
+#~ msgid "About C# support"
+#~ msgstr "C# 지원에 대하여"
+
+#~ msgid "Create C# solution"
+#~ msgstr "C# 솔루션 만들기"
+
+#~ msgid "Builds"
+#~ msgstr "빌드"
+
+#~ msgid "Build Project"
+#~ msgstr "프로젝트 빌드"
+
+#~ msgid "View log"
+#~ msgstr "로그 보기"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "WorldEnvironment는 Environment 리소스가 필요합니다."
 
 #~ msgid "Enabled Classes"
 #~ msgstr "활성화된 클래스"

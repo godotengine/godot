@@ -633,6 +633,10 @@ msgstr "Πήγαινε σε γραμμή"
 msgid "Line Number:"
 msgstr "Αρ. γραμμής:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "Δεν υπάρχουν αντιστοιχίες"
@@ -682,7 +686,7 @@ msgstr "Σμύκρινση"
 msgid "Reset Zoom"
 msgstr "Επαναφορά μεγέθυνσης"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Προειδοποιήσεις"
 
@@ -787,6 +791,11 @@ msgstr "Κλείσιμο"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "Σύνδεση"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "Σήματα:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -953,7 +962,8 @@ msgid "Owners Of:"
 msgstr "Ιδιοκτήτες του:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "Να αφαιρεθούν τα επιλεγμένα αρχεία από το έργο; (Αδύνατη η αναίρεση)"
 
 #: editor/dependency_editor.cpp
@@ -1504,6 +1514,10 @@ msgstr "Δεν βρέθηκε προσαρμοσμένο πακέτο παραγ
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "Δεν βρέθηκε αρχείο προτύπου:"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3061,7 +3075,7 @@ msgstr "Χρόνος"
 msgid "Calls"
 msgstr "Κλήσεις"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "Ναι"
 
@@ -3682,6 +3696,7 @@ msgid "Nodes not in Group"
 msgstr "Κόμβοι εκτός ομάδας"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "Φιλτράρισμα κόμβων"
 
@@ -6474,9 +6489,18 @@ msgid "Syntax Highlighter"
 msgstr "Επισημαντής Σύνταξης"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Αγαπημένα"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "Δημιουργία σημείων."
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10121,7 +10145,7 @@ msgstr ""
 "Επιλέξτε ένα ή περισσότερα αντικείμενα από την λίστα για να εμφανιστεί το "
 "γράφημα."
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "Σφάλματα"
 
@@ -10536,54 +10560,6 @@ msgstr "Επιλογή απόστασης:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Το όνομα της κλάσης δεν μπορεί να είναι λέξη-κλειδί"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr "Επίλυση..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "Δημιουργία έργου C#..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create solution."
-msgstr "Απέτυχε η δημιουργία λύσης."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "Απέτυχε η αποθήκευση της λύσης."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "Τέλος"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "Απέτυχε η δημιουργία έργου C#."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "Μονοφωνικό"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "Σχετικά με την υποστήριξη C#"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "Δημιουργία λύσης C#"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "Δόμηση"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "Δόμηση έργου"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr "Προβολή αρχείου καταγραφής"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11187,8 +11163,9 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Άκυρες διαστάσεις εικόνας οθόνης εκκίνησης (πρέπει να είναι 620x300)."
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Ένας πόρος SpriteFrames πρέπει να έχει δημιουργηθεί ή ορισθεί στην ιδιότητα "
@@ -11256,8 +11233,9 @@ msgid ""
 msgstr ""
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "Μία υφή με το σχήμα του φωτός πρέπει να δοθεί στην ιδιότητα 'texture'."
 
@@ -11269,7 +11247,8 @@ msgstr ""
 "αυτό το εμπόδιο."
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 "Το πολύγωνο εμποδίου για αυτό το εμπόδιο είναι άδειο. Ζωγραφίστε ένα "
 "πολύγονο!"
@@ -11364,15 +11343,17 @@ msgstr ""
 "να τους δώσετε ένα σχήμα."
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "Το VisibilityEnable2D δουλεύει καλύτερα όταν χρησιμοποιείται μα την ρίζα της "
 "επεξεργασμένης σκηνές κατευθείαν ως γονέας."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+#, fuzzy
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "Η ARVRCamera πρέπει να έχει έναν κόμβο ARVROrigin ως γονέα"
 
 #: scene/3d/arvr_nodes.cpp
@@ -11471,9 +11452,10 @@ msgstr ""
 "δώσετε ένα σχήμα."
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "Ένα σχήμα πρέπει να δοθεί στο CollisionShape για να λειτουργήσει. "
 "Δημιουργήστε ένα πόρο σχήματος για αυτό!"
@@ -11504,6 +11486,10 @@ msgstr "Τοποθέτηση πλεγμάτων"
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
+msgstr ""
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -11546,8 +11532,8 @@ msgstr "Το PathFollow2D δουλεύει μόνο όταν κληρονομε�
 
 #: scene/3d/path.cpp
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -11561,7 +11547,10 @@ msgstr ""
 "Αλλάξτε μέγεθος στα σχήματα σύγκρουσης των παιδιών."
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
+#, fuzzy
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr ""
 "Η ιδιότητα Path πρέπει να δείχνει σε έναν έγκυρο κόμβο Spatial για να "
 "δουλέψει αυτός ο κόμβος."
@@ -11582,8 +11571,9 @@ msgstr ""
 "Αλλάξτε μέγεθος στα σχήματα σύγκρουσης των παιδιών."
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "Ένας πόρος SpriteFrames πρέπει να δημιουργηθεί ή ορισθεί στην ιδιότητα "
@@ -11598,8 +11588,10 @@ msgstr ""
 "χρησιμοποιήστε το ως παιδί του VehicleBody."
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "Το WorldEnvironment χρειάζεται έναν πόρο Environment."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11640,7 +11632,7 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Αποσύνδεση του '%s' απο το '%s'"
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+msgid "No root AnimationNode for the graph is set."
 msgstr ""
 
 #: scene/animation/animation_tree.cpp
@@ -11656,7 +11648,7 @@ msgstr ""
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
-msgid "AnimationPlayer root is not a valid node."
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Το δέντρο κίνησης δεν είναι έγκυρο."
 
 #: scene/animation/animation_tree_player.cpp
@@ -11689,8 +11681,7 @@ msgstr "Προσθήκη τρέχοντος χρώματος στα προκαθ
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "Το Container από μόνο του δεν έχει κάποιο σκοπό αν κάποια δέσμη ενεργειών "
 "δεν ορίσει την τοποθέτηση των παιδιών του.\n"
@@ -11712,23 +11703,25 @@ msgid "Please Confirm..."
 msgstr "Παρακαλώ επιβεβαιώστε..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "Οι κόμβοι τύπου Popup θα είναι κρυμμένοι από προεπιλογή, εκτός κι αν "
 "καλέσετε την popup() ή καμία από τις συναρτήσεις popup*(). Το να τους κάνετε "
 "ορατούς κατά την επεξεργασία, όμως, δεν είναι πρόβλημα."
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr ""
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "Το ScrollContainer είναι φτιαγμένο για να δουλεύει με ένα μόνο υπο-στοιχείο "
@@ -11782,6 +11775,11 @@ msgstr "Είσοδος"
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
+msgid "Invalid source for preview."
+msgstr "Μη έγκυρη πηγή!"
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
 msgid "Invalid source for shader."
 msgstr "Μη έγκυρη πηγή!"
 
@@ -11800,6 +11798,45 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Generating solution..."
+#~ msgstr "Επίλυση..."
+
+#~ msgid "Generating C# project..."
+#~ msgstr "Δημιουργία έργου C#..."
+
+#~ msgid "Failed to create solution."
+#~ msgstr "Απέτυχε η δημιουργία λύσης."
+
+#~ msgid "Failed to save solution."
+#~ msgstr "Απέτυχε η αποθήκευση της λύσης."
+
+#~ msgid "Done"
+#~ msgstr "Τέλος"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "Απέτυχε η δημιουργία έργου C#."
+
+#~ msgid "Mono"
+#~ msgstr "Μονοφωνικό"
+
+#~ msgid "About C# support"
+#~ msgstr "Σχετικά με την υποστήριξη C#"
+
+#~ msgid "Create C# solution"
+#~ msgstr "Δημιουργία λύσης C#"
+
+#~ msgid "Builds"
+#~ msgstr "Δόμηση"
+
+#~ msgid "Build Project"
+#~ msgstr "Δόμηση έργου"
+
+#~ msgid "View log"
+#~ msgstr "Προβολή αρχείου καταγραφής"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "Το WorldEnvironment χρειάζεται έναν πόρο Environment."
 
 #~ msgid "Enabled Classes"
 #~ msgstr "Ενεργοποιημένες Κλάσεις"

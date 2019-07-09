@@ -640,6 +640,10 @@ msgstr "Перейти до рядка"
 msgid "Line Number:"
 msgstr "Номер рядка:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "Немає збігів"
@@ -689,7 +693,7 @@ msgstr "Зменшення"
 msgid "Reset Zoom"
 msgstr "Скинути масштаб"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Попередження"
 
@@ -794,6 +798,11 @@ msgstr "Закрити"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "З'єднати"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "Сигнали:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -958,7 +967,8 @@ msgid "Owners Of:"
 msgstr "Власники:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "Видалити вибрані файли з проєкту? (скасування неможливе)"
 
 #: editor/dependency_editor.cpp
@@ -1506,6 +1516,10 @@ msgstr "Нетипового шаблону випуску не знайдено
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "Файл шаблону не знайдено:"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3041,7 +3055,7 @@ msgstr "Час"
 msgid "Calls"
 msgstr "Виклики"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "Увімкнено"
 
@@ -3661,6 +3675,7 @@ msgid "Nodes not in Group"
 msgstr "Вузли поза групою"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "Фільтрувати вузли"
 
@@ -6448,9 +6463,18 @@ msgid "Syntax Highlighter"
 msgstr "Засіб підсвічування синтаксису"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "Закладки"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "Створити точки."
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10089,7 +10113,7 @@ msgstr "Трасування стека"
 msgid "Pick one or more items from the list to display the graph."
 msgstr "Виберіть один або декілька пунктів зі списку для перегляду графу."
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "Помилки"
 
@@ -10490,54 +10514,6 @@ msgstr "Відстань вибору:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Назвою класу не може бути зарезервоване ключове слово"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr "Створення розв'язку..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "Створюємо проєкт C#..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create solution."
-msgstr "Не вдалося створити розв'язок."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "Не вдалося зберегти розв'язок."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "Зроблено"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "Не вдалося створити проєкт C#."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "Моно"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "Про підтримку C#"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "Створити розв'язок C#"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "Збирання"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "Зібрати проєкт"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr "Переглянути журнал"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11162,8 +11138,9 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Некоректні розмірності зображення вікна вітання (мають бути 620x300)."
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Щоб AnimatedSprite могла показувати кадри, має бути створено або встановлено "
@@ -11229,8 +11206,9 @@ msgstr ""
 "увімкненим параметром «Анімація часток»."
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "Для властивості «texture» слід надати текстуру із формою освітлення."
 
@@ -11242,7 +11220,8 @@ msgstr ""
 "багатокутник затуляння."
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 "Для цього затуляння багатокутник є порожнім. Будь ласка, намалюйте "
 "багатокутник!"
@@ -11345,15 +11324,17 @@ msgstr ""
 "форми."
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "VisibilityEnable2D найкраще працюватиме, якщо його використано із "
 "безпосереднім батьківським елементом — редагованим коренем сцени."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+#, fuzzy
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "ARVRCamera повинен мати батьківським вузлом вузол ARVROrigin"
 
 #: scene/3d/arvr_nodes.cpp
@@ -11444,9 +11425,10 @@ msgstr ""
 "Area, StaticBody, RigidBody, KinematicBody тощо, щоб надати їм форми."
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "Для забезпечення працездатності CollisionShape слід надати форму. Будь "
 "ласка, створіть ресурс форми для цього елемента!"
@@ -11482,6 +11464,10 @@ msgid ""
 msgstr ""
 "У драйвері GLES2 не передбачено підтримки GIProbes.\n"
 "Скористайтеся замість них BakedLightmap."
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11527,9 +11513,10 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow працюватиме лише як дочірній елемент вузла Path."
 
 #: scene/3d/path.cpp
+#, fuzzy
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 "PathFollow ROTATION_ORIENTED потребує вмикання «Up Vector» у його "
 "батьківському ресурсі Curve у Path."
@@ -11545,7 +11532,10 @@ msgstr ""
 "Замість цієї зміни, вам варто змінити розміри дочірніх форм зіткнення."
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
+#, fuzzy
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr ""
 "Щоб усе працювало як слід, властивість шляху (path) має вказувати на "
 "коректний вузол Spatial."
@@ -11564,8 +11554,9 @@ msgstr ""
 "Замість цієї зміни, вам варто змінити розміри дочірніх форм зіткнення."
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "Щоб AnimatedSprite могла показувати кадри, має бути створено або встановлено "
@@ -11580,8 +11571,10 @@ msgstr ""
 "Будь ласка, використовуйте цей елемент як дочірній елемент вузла VehicleBody."
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironment потребує ресурсу Environment."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11620,7 +11613,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Нічого не з'єднано із входом «%s» вузла «%s»."
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+#, fuzzy
+msgid "No root AnimationNode for the graph is set."
 msgstr "Кореневий елемент AnimationNode для графу не встановлено."
 
 #: scene/animation/animation_tree.cpp
@@ -11633,7 +11627,8 @@ msgstr ""
 "Шлях, встановлений для AnimationPlayer, не веде до вузла AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
-msgid "AnimationPlayer root is not a valid node."
+#, fuzzy
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Кореневий елемент AnimationPlayer не є коректним вузлом."
 
 #: scene/animation/animation_tree_player.cpp
@@ -11662,11 +11657,11 @@ msgid "Add current color as a preset."
 msgstr "Додати поточний колір як шаблон."
 
 #: scene/gui/container.cpp
+#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "Сам контейнер не має призначення, якщо скрипт не налаштовує поведінку щодо "
 "розташування його дочірніх об'єктів.\n"
@@ -11691,23 +11686,26 @@ msgid "Please Confirm..."
 msgstr "Будь ласка, підтвердьте..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "Контекстні підказки типово буде приховано, якщо ви не викличете popup() або "
 "якусь із функцій popup*(). Втім, робити їх видимими для редагування — звична "
 "практика. Втім, слід пам'ятати, що під час запуску їх буде приховано."
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+#, fuzzy
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Якщо exp_edit має значення true, min_value має бути > 0."
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "ScrollContainer призначено для роботи із одинарним дочірнім засобом "
@@ -11760,6 +11758,11 @@ msgid "Input"
 msgstr "Вхідні дані"
 
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid source for preview."
+msgstr "Некоректне джерело програми побудови тіней."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "Некоректне джерело програми побудови тіней."
 
@@ -11778,6 +11781,45 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Generating solution..."
+#~ msgstr "Створення розв'язку..."
+
+#~ msgid "Generating C# project..."
+#~ msgstr "Створюємо проєкт C#..."
+
+#~ msgid "Failed to create solution."
+#~ msgstr "Не вдалося створити розв'язок."
+
+#~ msgid "Failed to save solution."
+#~ msgstr "Не вдалося зберегти розв'язок."
+
+#~ msgid "Done"
+#~ msgstr "Зроблено"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "Не вдалося створити проєкт C#."
+
+#~ msgid "Mono"
+#~ msgstr "Моно"
+
+#~ msgid "About C# support"
+#~ msgstr "Про підтримку C#"
+
+#~ msgid "Create C# solution"
+#~ msgstr "Створити розв'язок C#"
+
+#~ msgid "Builds"
+#~ msgstr "Збирання"
+
+#~ msgid "Build Project"
+#~ msgstr "Зібрати проєкт"
+
+#~ msgid "View log"
+#~ msgstr "Переглянути журнал"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "WorldEnvironment потребує ресурсу Environment."
 
 #~ msgid "Enabled Classes"
 #~ msgstr "Увімкнені класи"
