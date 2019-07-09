@@ -218,7 +218,11 @@ bool OS_Windows::can_draw() const {
 
 #define MI_WP_SIGNATURE 0xFF515700
 #define SIGNATURE_MASK 0xFFFFFF00
+// Keeping the name suggested by Microsoft, but this macro really answers:
+// Is this mouse event emulated from touch or pen input?
 #define IsPenEvent(dw) (((dw)&SIGNATURE_MASK) == MI_WP_SIGNATURE)
+// This one tells whether the event comes from touchscreen (and not from pen)
+#define IsTouchEvent(dw) (IsPenEvent(dw) && ((dw)&0x80))
 
 void OS_Windows::_touch_event(bool p_pressed, float p_x, float p_y, int idx) {
 
@@ -361,7 +365,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (input->is_emulating_mouse_from_touch()) {
 				// Universal translation enabled; ignore OS translation
 				LPARAM extra = GetMessageExtraInfo();
-				if (IsPenEvent(extra)) {
+				if (IsTouchEvent(extra)) {
 					break;
 				}
 			}
@@ -451,7 +455,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 			if (input->is_emulating_mouse_from_touch()) {
 				// Universal translation enabled; ignore OS translations for left button
 				LPARAM extra = GetMessageExtraInfo();
-				if (IsPenEvent(extra)) {
+				if (IsTouchEvent(extra)) {
 					break;
 				}
 			}
@@ -2063,6 +2067,8 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 		if (r_exitcode)
 			*r_exitcode = ret;
 
+		CloseHandle(pi.pi.hProcess);
+		CloseHandle(pi.pi.hThread);
 	} else {
 
 		ProcessID pid = pi.pi.dwProcessId;
@@ -2076,17 +2082,15 @@ Error OS_Windows::execute(const String &p_path, const List<String> &p_arguments,
 
 Error OS_Windows::kill(const ProcessID &p_pid) {
 
-	HANDLE h;
+	ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
 
-	if (process_map->has(p_pid)) {
-		h = (*process_map)[p_pid].pi.hProcess;
-		process_map->erase(p_pid);
-	} else {
+	const PROCESS_INFORMATION pi = (*process_map)[p_pid].pi;
+	process_map->erase(p_pid);
 
-		ERR_FAIL_COND_V(!process_map->has(p_pid), FAILED);
-	};
+	const int ret = TerminateProcess(pi.hProcess, 0);
 
-	int ret = TerminateProcess(h, 0);
+	CloseHandle(pi.hProcess);
+	CloseHandle(pi.hThread);
 
 	return ret != 0 ? OK : FAILED;
 };

@@ -174,15 +174,13 @@ private:
 public:
 	struct CallState {
 
-		ObjectID instance_id; //by debug only
-		ObjectID script_id;
-
+		ObjectID instance_id;
 		GDScriptInstance *instance;
 		Vector<uint8_t> stack;
 		int stack_size;
 		Variant self;
 		uint32_t alloca_size;
-		GDScript *_class;
+		Ref<GDScript> script;
 		int ip;
 		int line;
 		int defarg;
@@ -234,7 +232,7 @@ class GDScriptFunctionState : public Reference {
 	GDScriptFunction *function;
 	GDScriptFunction::CallState state;
 	Variant _signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
-	Ref<GDScriptFunctionState> previous_state;
+	Ref<GDScriptFunctionState> first_state;
 
 protected:
 	static void _bind_methods();

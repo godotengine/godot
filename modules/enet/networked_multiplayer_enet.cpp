@@ -59,6 +59,7 @@ Error NetworkedMultiplayerENet::create_server(int p_port, int p_max_clients, int
 	ERR_FAIL_COND_V(active, ERR_ALREADY_IN_USE);
 
 	ENetAddress address;
+	memset(&address, 0, sizeof(address));
 
 #ifdef GODOT_ENET
 	if (bind_ip.is_wildcard()) {

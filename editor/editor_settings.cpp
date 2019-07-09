@@ -511,6 +511,9 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("filesystem/import/pvrtc_fast_conversion", false);
 
 	_initial_set("run/auto_save/save_before_running", true);
+
+	// Output
+	hints["run/output/font_size"] = PropertyInfo(Variant::INT, "run/output/font_size", PROPERTY_HINT_RANGE, "8,96,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("run/output/always_clear_output_on_play", true);
 	_initial_set("run/output/always_open_output_on_play", true);
 	_initial_set("run/output/always_close_output_on_stop", false);
@@ -734,12 +737,6 @@ void EditorSettings::create() {
 		// Validate/create data dir and subdirectories
 
 		dir = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-		if (dir->change_dir(data_path) != OK) {
-			ERR_PRINT("Cannot find path for data directory!");
-			memdelete(dir);
-			goto fail;
-		}
-
 		if (dir->change_dir(data_dir) != OK) {
 			dir->make_dir_recursive(data_dir);
 			if (dir->change_dir(data_dir) != OK) {
@@ -1351,33 +1348,9 @@ struct ShortCutMapping {
 Ref<ShortCut> ED_SHORTCUT(const String &p_path, const String &p_name, uint32_t p_keycode) {
 
 #ifdef OSX_ENABLED
-	static const ShortCutMapping macos_mappings[] = {
-		{ "editor/play", KEY_MASK_CMD | KEY_B },
-		{ "editor/play_scene", KEY_MASK_CMD | KEY_R },
-		{ "editor/pause_scene", KEY_MASK_CMD | KEY_MASK_CTRL | KEY_Y },
-		{ "editor/stop", KEY_MASK_CMD | KEY_PERIOD },
-		{ "editor/play_custom_scene", KEY_MASK_SHIFT | KEY_MASK_CMD | KEY_R },
-		{ "editor/editor_2d", KEY_MASK_ALT | KEY_1 },
-		{ "editor/editor_3d", KEY_MASK_ALT | KEY_2 },
-		{ "editor/editor_script", KEY_MASK_ALT | KEY_3 },
-		{ "editor/editor_help", KEY_MASK_ALT | KEY_SPACE },
-		{ "editor/fullscreen_mode", KEY_MASK_CMD | KEY_MASK_CTRL | KEY_F },
-		{ "editor/distraction_free_mode", KEY_MASK_CMD | KEY_MASK_CTRL | KEY_D },
-		{ "script_text_editor/contextual_help", KEY_MASK_ALT | KEY_MASK_SHIFT | KEY_SPACE },
-		{ "script_text_editor/find_next", KEY_MASK_CMD | KEY_G },
-		{ "script_text_editor/find_previous", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_G },
-		{ "script_text_editor/toggle_breakpoint", KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_B }
-	};
-
+	// Use Cmd+Backspace as a general replacement for Delete shortcuts on macOS
 	if (p_keycode == KEY_DELETE) {
 		p_keycode = KEY_MASK_CMD | KEY_BACKSPACE;
-	} else {
-		for (int i = 0; i < sizeof(macos_mappings) / sizeof(ShortCutMapping); i++) {
-			if (p_path == macos_mappings[i].path) {
-				p_keycode = macos_mappings[i].keycode;
-				break;
-			}
-		}
 	}
 #endif
 

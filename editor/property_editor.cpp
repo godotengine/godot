@@ -2397,10 +2397,12 @@ void PropertyEditor::_check_reload_status(const String &p_name, TreeItem *item) 
 
 	if (!has_reload && !obj->get_script().is_null()) {
 		Ref<Script> scr = obj->get_script();
-		Variant orig_value;
-		if (scr->get_property_default_value(p_name, orig_value)) {
-			if (orig_value != obj->get(p_name)) {
-				has_reload = true;
+		if (scr.is_valid()) {
+			Variant orig_value;
+			if (scr->get_property_default_value(p_name, orig_value)) {
+				if (orig_value != obj->get(p_name)) {
+					has_reload = true;
+				}
 			}
 		}
 	}
@@ -3558,11 +3560,13 @@ void PropertyEditor::update_tree() {
 
 		if (!has_reload && !obj->get_script().is_null()) {
 			Ref<Script> scr = obj->get_script();
-			Variant orig_value;
-			if (scr->get_property_default_value(p.name, orig_value)) {
-				if (orig_value != obj->get(p.name)) {
-					item->add_button(1, get_icon("ReloadSmall", "EditorIcons"), 3);
-					has_reload = true;
+			if (scr.is_valid()) {
+				Variant orig_value;
+				if (scr->get_property_default_value(p.name, orig_value)) {
+					if (orig_value != obj->get(p.name)) {
+						item->add_button(1, get_icon("ReloadSmall", "EditorIcons"), 3);
+						has_reload = true;
+					}
 				}
 			}
 		}
@@ -3950,9 +3954,11 @@ void PropertyEditor::_edit_button(Object *p_item, int p_column, int p_button) {
 
 		if (!obj->get_script().is_null()) {
 			Ref<Script> scr = obj->get_script();
-			Variant orig_value;
-			if (scr->get_property_default_value(prop, orig_value)) {
-				_edit_set(prop, orig_value);
+			if (scr.is_valid()) {
+				Variant orig_value;
+				if (scr->get_property_default_value(prop, orig_value)) {
+					_edit_set(prop, orig_value);
+				}
 			}
 		}
 

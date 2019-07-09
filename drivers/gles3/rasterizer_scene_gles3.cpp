@@ -1384,7 +1384,16 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 			if (particles->draw_order == VS::PARTICLES_DRAW_ORDER_VIEW_DEPTH && particles->particle_valid_histories[1]) {
 
 				glBindBuffer(GL_ARRAY_BUFFER, particles->particle_buffer_histories[1]); //modify the buffer, this was used 2 frames ago so it should be good enough for flushing
-				RasterizerGLES3Particle *particle_array = (RasterizerGLES3Particle *)glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 24 * sizeof(float), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT);
+				RasterizerGLES3Particle *particle_array;
+#ifndef __EMSCRIPTEN__
+				particle_array = static_cast<RasterizerGLES3Particle *>(glMapBufferRange(GL_ARRAY_BUFFER, 0, particles->amount * 24 * sizeof(float), GL_MAP_READ_BIT | GL_MAP_WRITE_BIT));
+#else
+				PoolVector<RasterizerGLES3Particle> particle_vector;
+				particle_vector.resize(particles->amount);
+				PoolVector<RasterizerGLES3Particle>::Write w = particle_vector.write();
+				particle_array = w.ptr();
+				glGetBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(RasterizerGLES3Particle), particle_array);
+#endif
 
 				SortArray<RasterizerGLES3Particle, RasterizerGLES3ParticleSort> sorter;
 
@@ -1396,7 +1405,17 @@ void RasterizerSceneGLES3::_setup_geometry(RenderList::Element *e, const Transfo
 
 				sorter.sort(particle_array, particles->amount);
 
+#ifndef __EMSCRIPTEN__
 				glUnmapBuffer(GL_ARRAY_BUFFER);
+#else
+				w = PoolVector<RasterizerGLES3Particle>::Write();
+				particle_array = NULL;
+				{
+					PoolVector<RasterizerGLES3Particle>::Read r = particle_vector.read();
+					glBufferSubData(GL_ARRAY_BUFFER, 0, particles->amount * sizeof(RasterizerGLES3Particle), r.ptr());
+				}
+				particle_vector = PoolVector<RasterizerGLES3Particle>();
+#endif
 #ifdef DEBUG_ENABLED
 				if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME && s->instancing_array_wireframe_id) {
 					glBindVertexArray(s->instancing_array_wireframe_id); // use the wireframe instancing array ID
@@ -2674,7 +2693,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 
 			CameraMatrix shadow_mtx = rectm * bias * li->shadow_transform[j].camera * modelview;
 
-			store_camera(shadow_mtx, &ubo_data.shadow_matrix1[16 * j]);
+			store_camera(shadow_mtx, &ubo_data.shadow.matrix[16 * j]);
 
 			ubo_data.light_clamp[0] = atlas_rect.position.x;
 			ubo_data.light_clamp[1] = atlas_rect.position.y;
@@ -2785,7 +2804,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 
 					Transform proj = (p_camera_inverse_transform * li->transform).inverse();
 
-					store_transform(proj, ubo_data.shadow_matrix1);
+					store_transform(proj, ubo_data.shadow.matrix1);
 
 					ubo_data.light_params[3] = 1.0; //means it has shadow
 					ubo_data.light_clamp[0] = float(x) / atlas_size;
@@ -2874,7 +2893,7 @@ void RasterizerSceneGLES3::_setup_lights(RID *p_light_cull_result, int p_light_c
 
 					CameraMatrix shadow_mtx = rectm * bias * li->shadow_transform[0].camera * modelview;
 
-					store_camera(shadow_mtx, ubo_data.shadow_matrix1);
+					store_camera(shadow_mtx, ubo_data.shadow.matrix1);
 				}
 
 				li->light_index = state.spot_light_count;
@@ -3554,7 +3573,7 @@ void RasterizerSceneGLES3::_post_process(Environment *env, const CameraMatrix &p
 		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, 0);
 	}
 
-	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT]) {
+	if (!env || storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_TRANSPARENT] || storage->frame.current_rt->width < 4 || storage->frame.current_rt->height < 4) { //no post process on small render targets
 		//no environment or transparent render, simply return and convert to SRGB
 		glBindFramebuffer(GL_FRAMEBUFFER, storage->frame.current_rt->fbo);
 		glActiveTexture(GL_TEXTURE0);

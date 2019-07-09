@@ -104,13 +104,29 @@ static int prev_mouse_y = 0;
 static int button_mask = 0;
 static bool mouse_down_control = false;
 
-static Vector2 get_mouse_pos(NSEvent *event) {
+static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFactor) {
 
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
-	const NSPoint p = [event locationInWindow];
-	mouse_x = p.x * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	mouse_y = (contentRect.size.height - p.y) * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	const NSPoint p = locationInWindow;
+	const float s = OS_OSX::singleton->_mouse_scale(backingScaleFactor);
+	mouse_x = p.x * s;
+	mouse_y = (contentRect.size.height - p.y) * s;
 	return Vector2(mouse_x, mouse_y);
+}
+
+// DisplayLinkCallback is called from our DisplayLink OS thread informing us right before
+// a screen update is required. We can use it to work around the broken vsync.
+static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp *now, const CVTimeStamp *outputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext) {
+	OS_OSX *os = (OS_OSX *)displayLinkContext;
+
+	// Set flag so we know we can output our next frame and signal our conditional lock
+	// if we're not doing vsync this will be ignored
+	[os->vsync_condition lock];
+	os->waiting_for_vsync = false;
+	[os->vsync_condition signal];
+	[os->vsync_condition unlock];
+
+	return kCVReturnSuccess;
 }
 
 @interface GodotApplication : NSApplication
@@ -328,8 +344,15 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 - (void)windowDidBecomeKey:(NSNotification *)notification {
 	//_GodotInputWindowFocus(window, GL_TRUE);
 	//_GodotPlatformSetCursorMode(window, window->cursorMode);
-	if (OS_OSX::singleton->get_main_loop())
+
+	if (OS_OSX::singleton->get_main_loop()) {
+		get_mouse_pos(
+				[OS_OSX::singleton->window_object mouseLocationOutsideOfEventStream],
+				[OS_OSX::singleton->window_view backingScaleFactor]);
+		OS_OSX::singleton->input->set_mouse_position(Point2(mouse_x, mouse_y));
+
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_IN);
+	}
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
@@ -359,6 +382,8 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 	bool imeMode;
 }
 - (void)cancelComposition;
+- (BOOL)wantsUpdateLayer;
+- (void)updateLayer;
 @end
 
 @implementation GodotContentView
@@ -367,6 +392,14 @@ static Vector2 get_mouse_pos(NSEvent *event) {
 	if (self == [GodotContentView class]) {
 		// nothing left to do here at the moment..
 	}
+}
+
+- (BOOL)wantsUpdateLayer {
+	return YES;
+}
+
+- (void)updateLayer {
+	[OS_OSX::singleton->context update];
 }
 
 - (id)init {
@@ -596,12 +629,14 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	mm->set_button_mask(button_mask);
 	prev_mouse_x = mouse_x;
 	prev_mouse_y = mouse_y;
-	const Vector2 pos = get_mouse_pos(event);
+	const CGFloat backingScaleFactor = [[event window] backingScaleFactor];
+	const Vector2 pos = get_mouse_pos([event locationInWindow], backingScaleFactor);
 	mm->set_position(pos);
 	mm->set_global_position(pos);
+	mm->set_speed(OS_OSX::singleton->input->get_last_mouse_speed());
 	Vector2 relativeMotion = Vector2();
-	relativeMotion.x = [event deltaX] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
-	relativeMotion.y = [event deltaY] * OS_OSX::singleton->_mouse_scale([[event window] backingScaleFactor]);
+	relativeMotion.x = [event deltaX] * OS_OSX::singleton->_mouse_scale(backingScaleFactor);
+	relativeMotion.y = [event deltaY] * OS_OSX::singleton->_mouse_scale(backingScaleFactor);
 	mm->set_relative(relativeMotion);
 	get_key_modifier_state([event modifierFlags], mm);
 
@@ -668,7 +703,7 @@ static void _mouseDownEvent(NSEvent *event, int index, int mask, bool pressed) {
 	Ref<InputEventMagnifyGesture> ev;
 	ev.instance();
 	get_key_modifier_state([event modifierFlags], ev);
-	ev->set_position(get_mouse_pos(event));
+	ev->set_position(get_mouse_pos([event locationInWindow], [[event window] backingScaleFactor]));
 	ev->set_factor([event magnification] + 1.0);
 	OS_OSX::singleton->push_input(ev);
 }
@@ -958,6 +993,8 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 - (void)scrollWheel:(NSEvent *)event {
 	double deltaX, deltaY;
 
+	get_mouse_pos([event locationInWindow], [[event window] backingScaleFactor]);
+
 	deltaX = [event scrollingDeltaX];
 	deltaY = [event scrollingDeltaY];
 
@@ -1077,6 +1114,9 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	ERR_FAIL_COND_V(window_object == nil, ERR_UNAVAILABLE);
 
 	window_view = [[GodotContentView alloc] init];
+	if (@available(macOS 10.14, *)) {
+		[window_view setWantsLayer:TRUE];
+	}
 
 	float displayScale = 1.0;
 	if (is_hidpi_allowed()) {
@@ -1170,6 +1210,15 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	[context makeCurrentContext];
 
+	// setup our display link, this will inform us when a refresh is needed
+	CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
+	CVDisplayLinkSetOutputCallback(displayLink, &DisplayLinkCallback, this);
+	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, context.CGLContextObj, pixelFormat.CGLPixelFormatObj);
+	CVDisplayLinkStart(displayLink);
+
+	// initialise a conditional lock object
+	vsync_condition = [[NSCondition alloc] init];
+
 	set_use_vsync(p_desired.use_vsync);
 
 	[NSApp activateIgnoringOtherApps:YES];
@@ -1213,6 +1262,11 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 }
 
 void OS_OSX::finalize() {
+
+	if (displayLink) {
+		CVDisplayLinkRelease(displayLink);
+	}
+	[vsync_condition release];
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
 	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
@@ -1374,7 +1428,8 @@ void OS_OSX::set_cursor_shape(CursorShape p_shape) {
 			case CURSOR_VSPLIT: [[NSCursor resizeUpDownCursor] set]; break;
 			case CURSOR_HSPLIT: [[NSCursor resizeLeftRightCursor] set]; break;
 			case CURSOR_HELP: [[NSCursor arrowCursor] set]; break;
-			default: {};
+			default: {
+			};
 		}
 	}
 
@@ -1666,6 +1721,17 @@ String OS_OSX::get_locale() const {
 }
 
 void OS_OSX::swap_buffers() {
+	if (is_vsync_enabled()) {
+		// Wait until our DisplayLink callback unsets our flag...
+		[vsync_condition lock];
+		while (waiting_for_vsync)
+			[vsync_condition wait];
+
+		// Make sure we wait again next frame around
+		waiting_for_vsync = true;
+
+		[vsync_condition unlock];
+	}
 
 	[context flushBuffer];
 }
@@ -2219,12 +2285,21 @@ void OS_OSX::run() {
 	//int frames=0;
 	//uint64_t frame=0;
 
-	while (!force_quit) {
+	bool quit = false;
 
-		process_events(); // get rid of pending events
-		joypad_osx->process_joypads();
-		if (Main::iteration() == true)
-			break;
+	while (!force_quit && !quit) {
+
+		@try {
+
+			process_events(); // get rid of pending events
+			joypad_osx->process_joypads();
+
+			if (Main::iteration() == true) {
+				quit = true;
+			}
+		} @catch (NSException *exception) {
+			ERR_PRINTS("NSException: " + String([exception reason].UTF8String));
+		}
 	};
 
 	main_loop->finish();
@@ -2287,22 +2362,22 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 }
 
 void OS_OSX::_set_use_vsync(bool p_enable) {
-	CGLContextObj ctx = CGLGetCurrentContext();
+	// CGLCPSwapInterval broke in OSX 10.14 and it seems Apple is not interested in fixing
+	// it as OpenGL is now deprecated and Metal solves this differently.
+	// Following SDLs example we're working around this using DisplayLink
+	// When vsync is enabled we set a flag "waiting_for_vsync" to true.
+	// This flag is set to false when DisplayLink informs us our display is about to refresh.
+
+	/*	CGLContextObj ctx = CGLGetCurrentContext();
 	if (ctx) {
 		GLint swapInterval = p_enable ? 1 : 0;
 		CGLSetParameter(ctx, kCGLCPSwapInterval, &swapInterval);
-	}
+	}*/
+
+	///TODO Maybe pause/unpause display link?
+	waiting_for_vsync = p_enable;
 }
-/*
-bool OS_OSX::is_vsync_enabled() const {
-	GLint swapInterval = 0;
-	CGLContextObj ctx = CGLGetCurrentContext();
-	if (ctx) {
-		CGLGetParameter(ctx, kCGLCPSwapInterval, &swapInterval);
-	}
-	return swapInterval ? true : false;
-}
-*/
+
 OS_OSX *OS_OSX::singleton = NULL;
 
 OS_OSX::OS_OSX() {

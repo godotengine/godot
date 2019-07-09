@@ -885,8 +885,8 @@ String String::to_upper() const {
 
 	for (int i = 0; i < upper.size(); i++) {
 
-		const char s = upper[i];
-		const char t = _find_upper(s);
+		const CharType s = upper[i];
+		const CharType t = _find_upper(s);
 		if (s != t) // avoid copy on write
 			upper[i] = t;
 	}
@@ -900,8 +900,8 @@ String String::to_lower() const {
 
 	for (int i = 0; i < lower.size(); i++) {
 
-		const char s = lower[i];
-		const char t = _find_lower(s);
+		const CharType s = lower[i];
+		const CharType t = _find_lower(s);
 		if (s != t) // avoid copy on write
 			lower[i] = t;
 	}
@@ -3011,7 +3011,7 @@ String String::simplify_path() const {
 	} else if (s.begins_with("user://")) {
 
 		drive = "user://";
-		s = s.substr(6, s.length());
+		s = s.substr(7, s.length());
 	} else if (s.begins_with("/") || s.begins_with("\\")) {
 
 		drive = s.substr(0, 1);
@@ -3929,7 +3929,7 @@ String String::sprintf(const Array &values, bool *error) const {
 					str = str.pad_decimals(min_decimals);
 
 					// Show sign
-					if (show_sign && value >= 0) {
+					if (show_sign && str.left(1) != "-") {
 						str = str.insert(0, "+");
 					}
 

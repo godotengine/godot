@@ -1357,6 +1357,10 @@ void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 }
 
 void Node::add_child_below_node(Node *p_node, Node *p_child, bool p_legible_unique_name) {
+
+	ERR_FAIL_NULL(p_node);
+	ERR_FAIL_NULL(p_child);
+
 	add_child(p_child, p_legible_unique_name);
 
 	if (is_a_parent_of(p_node)) {
@@ -1431,6 +1435,7 @@ void Node::remove_child(Node *p_child) {
 	for (int i = idx; i < data.children.size(); i++) {
 
 		data.children[i]->data.pos = i;
+		data.children[i]->notification(NOTIFICATION_MOVED_IN_PARENT);
 	}
 
 	p_child->data.parent = NULL;
@@ -2403,7 +2408,7 @@ void Node::_duplicate_signals(const Node *p_original, Node *p_copy) const {
 			if (!copytarget)
 				copytarget = target;
 
-			if (copy && copytarget) {
+			if (copy && copytarget && !copy->is_connected(E->get().signal, copytarget, E->get().method)) {
 				copy->connect(E->get().signal, copytarget, E->get().method, E->get().binds, E->get().flags);
 			}
 		}
@@ -2555,7 +2560,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 
 		if (c.flags & CONNECT_PERSIST) {
 			c.source->disconnect(c.signal, this, c.method);
-			bool valid = p_new_target->has_method(c.method) || p_new_target->get_script().is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.method);
+			bool valid = p_new_target->has_method(c.method) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.method);
 			ERR_EXPLAIN("Attempt to connect signal \'" + c.source->get_class() + "." + c.signal + "\' to nonexistent method \'" + c.target->get_class() + "." + c.method + "\'");
 			ERR_CONTINUE(!valid);
 			c.source->connect(c.signal, p_new_target, c.method, c.binds, c.flags);

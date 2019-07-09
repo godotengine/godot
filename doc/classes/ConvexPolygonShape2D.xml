@@ -18,7 +18,7 @@
 			<argument index="0" name="point_cloud" type="PoolVector2Array">
 			</argument>
 			<description>
-				Currently, this method does nothing.
+				Based on the set of points provided, this creates and assigns the [member points] property using the convex hull algorithm. Removing all unneeded points. See [method Geometry.convex_hull_2d] for details.
 			</description>
 		</method>
 	</methods>

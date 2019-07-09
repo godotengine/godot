@@ -79,9 +79,9 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	if (arrays[Mesh::ARRAY_COLOR].get_type() != Variant::NIL)
 		col = arrays[Mesh::ARRAY_COLOR].operator PoolVector<Color>().read();
 
-	PoolVector<real_t>::Read bo;
+	PoolVector<int>::Read bo;
 	if (arrays[Mesh::ARRAY_BONES].get_type() != Variant::NIL)
-		bo = arrays[Mesh::ARRAY_BONES].operator PoolVector<real_t>().read();
+		bo = arrays[Mesh::ARRAY_BONES].operator PoolVector<int>().read();
 
 	PoolVector<real_t>::Read we;
 	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL)
@@ -194,7 +194,7 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	PoolVector<Vector2> u;
 	PoolVector<Vector2> u2;
 	PoolVector<Color> c;
-	PoolVector<real_t> b;
+	PoolVector<int> b;
 	PoolVector<real_t> w;
 	PoolVector<int> in;
 
@@ -233,7 +233,7 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 			col = c.write();
 		}
 
-		PoolVector<real_t>::Write bo;
+		PoolVector<int>::Write bo;
 		if (format & Mesh::ARRAY_FORMAT_BONES) {
 			b.resize(vcount * 4);
 			bo = b.write();

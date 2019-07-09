@@ -316,7 +316,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	}
 
 	// disable resizable window
-	if (!current_videomode.resizable) {
+	if (!current_videomode.resizable && !current_videomode.fullscreen) {
 		XSizeHints *xsh;
 		xsh = XAllocSizeHints();
 		xsh->flags = PMinSize | PMaxSize;
@@ -974,6 +974,16 @@ Size2 OS_X11::get_real_window_size() const {
 }
 
 void OS_X11::set_window_size(const Size2 p_size) {
+
+	if (current_videomode.width == p_size.width && current_videomode.height == p_size.height)
+		return;
+
+	XWindowAttributes xwa;
+	XSync(x11_display, False);
+	XGetWindowAttributes(x11_display, x11_window, &xwa);
+	int old_w = xwa.width;
+	int old_h = xwa.height;
+
 	// If window resizable is disabled we need to update the attributes first
 	if (is_window_resizable() == false) {
 		XSizeHints *xsh;
@@ -993,6 +1003,16 @@ void OS_X11::set_window_size(const Size2 p_size) {
 	// Update our videomode width and height
 	current_videomode.width = p_size.x;
 	current_videomode.height = p_size.y;
+
+	for (int timeout = 0; timeout < 50; ++timeout) {
+		XSync(x11_display, False);
+		XGetWindowAttributes(x11_display, x11_window, &xwa);
+
+		if (old_w != xwa.width || old_h != xwa.height)
+			break;
+
+		usleep(10000);
+	}
 }
 
 void OS_X11::set_window_fullscreen(bool p_enabled) {
@@ -1263,7 +1283,7 @@ void OS_X11::request_attention() {
 	//
 	// Sets the _NET_WM_STATE_DEMANDS_ATTENTION atom for WM_STATE
 	// Will be unset by the window manager after user react on the request for attention
-	//
+
 	XEvent xev;
 	Atom wm_state = XInternAtom(x11_display, "_NET_WM_STATE", False);
 	Atom wm_attention = XInternAtom(x11_display, "_NET_WM_STATE_DEMANDS_ATTENTION", False);
@@ -1277,6 +1297,7 @@ void OS_X11::request_attention() {
 	xev.xclient.data.l[1] = wm_attention;
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state) {
@@ -1891,6 +1912,7 @@ void OS_X11::process_xevents() {
 				// to be able to send relative motion events.
 				Point2i pos(event.xmotion.x, event.xmotion.y);
 
+#ifdef TOUCH_ENABLED
 				// Avoidance of spurious mouse motion (see handling of touch)
 				bool filter = false;
 				// Adding some tolerance to match better Point2i to Vector2
@@ -1902,6 +1924,7 @@ void OS_X11::process_xevents() {
 				if (filter) {
 					break;
 				}
+#endif
 
 				if (mouse_mode == MOUSE_MODE_CAPTURED) {
 
@@ -2358,7 +2381,19 @@ String OS_X11::get_system_dir(SystemDir p_dir) const {
 
 void OS_X11::move_window_to_foreground() {
 
-	XRaiseWindow(x11_display, x11_window);
+	XEvent xev;
+	Atom net_active_window = XInternAtom(x11_display, "_NET_ACTIVE_WINDOW", False);
+
+	memset(&xev, 0, sizeof(xev));
+	xev.type = ClientMessage;
+	xev.xclient.window = x11_window;
+	xev.xclient.message_type = net_active_window;
+	xev.xclient.format = 32;
+	xev.xclient.data.l[0] = 1;
+	xev.xclient.data.l[1] = CurrentTime;
+
+	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
+	XFlush(x11_display);
 }
 
 void OS_X11::set_cursor_shape(CursorShape p_shape) {
@@ -2421,17 +2456,23 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 void OS_X11::release_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->release_current();
+#endif
 }
 
 void OS_X11::make_rendering_thread() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->make_current();
+#endif
 }
 
 void OS_X11::swap_buffers() {
 
+#if defined(OPENGL_ENABLED)
 	context_gl->swap_buffers();
+#endif
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
@@ -2525,8 +2566,10 @@ String OS_X11::get_joy_guid(int p_device) const {
 }
 
 void OS_X11::_set_use_vsync(bool p_enable) {
+#if defined(OPENGL_ENABLED)
 	if (context_gl)
-		return context_gl->set_use_vsync(p_enable);
+		context_gl->set_use_vsync(p_enable);
+#endif
 }
 /*
 bool OS_X11::is_vsync_enabled() const {

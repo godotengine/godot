@@ -141,7 +141,7 @@ void FileAccessWindows::close() {
 			}
 			if (rename_error) {
 				attempts--;
-				OS::get_singleton()->delay_usec(1000000); //wait 100msec and try again
+				OS::get_singleton()->delay_usec(100000); // wait 100msec and try again
 			}
 		}
 

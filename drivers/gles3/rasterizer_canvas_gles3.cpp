@@ -191,11 +191,11 @@ void RasterizerCanvasGLES3::canvas_end() {
 	state.using_ninepatch = false;
 }
 
-RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map) {
+RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(const RID &p_texture, const RID &p_normal_map, bool p_force) {
 
 	RasterizerStorageGLES3::Texture *tex_return = NULL;
 
-	if (p_texture == state.current_tex) {
+	if (p_texture == state.current_tex && !p_force) {
 		tex_return = state.current_tex_ptr;
 	} else if (p_texture.is_valid()) {
 
@@ -230,7 +230,7 @@ RasterizerStorageGLES3::Texture *RasterizerCanvasGLES3::_bind_canvas_texture(con
 		state.current_tex_ptr = NULL;
 	}
 
-	if (p_normal_map == state.current_normal) {
+	if (p_normal_map == state.current_normal && !p_force) {
 		//do none
 		state.canvas_shader.set_uniform(CanvasShaderGLES3::USE_DEFAULT_NORMAL, state.current_normal.is_valid());
 
@@ -997,7 +997,7 @@ void RasterizerCanvasGLES3::_copy_texscreen(const Rect2 &p_rect) {
 	state.using_texture_rect = true;
 	_set_texture_rect_mode(false);
 
-	_bind_canvas_texture(state.current_tex, state.current_normal);
+	_bind_canvas_texture(state.current_tex, state.current_normal, true);
 
 	glEnable(GL_BLEND);
 }
@@ -1161,7 +1161,7 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 		}
 
 		int blend_mode = shader_cache ? shader_cache->canvas_item.blend_mode : RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX;
-		bool unshaded = shader_cache && (shader_cache->canvas_item.light_mode == RasterizerStorageGLES3::Shader::CanvasItem::LIGHT_MODE_UNSHADED || blend_mode != RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX);
+		bool unshaded = shader_cache && (shader_cache->canvas_item.light_mode == RasterizerStorageGLES3::Shader::CanvasItem::LIGHT_MODE_UNSHADED || (blend_mode != RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_MIX && blend_mode != RasterizerStorageGLES3::Shader::CanvasItem::BLEND_MODE_PMALPHA));
 		bool reclip = false;
 
 		if (last_blend_mode != blend_mode) {

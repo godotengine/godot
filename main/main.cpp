@@ -537,6 +537,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			auto_build_solutions = true;
 			editor = true;
+		} else if (I->get() == "--export" || I->get() == "--export-debug") { // Export project
+
+			editor = true;
+			main_args.push_back(I->get());
 #endif
 		} else if (I->get() == "--no-window") { // disable window creation, Windows only
 
@@ -1286,20 +1290,10 @@ bool Main::start() {
 					removal_docs.push_back(args[j]);
 			} else if (args[i] == "--export") {
 				editor = true; //needs editor
-				if (i + 1 < args.size()) {
-					_export_preset = args[i + 1];
-				} else {
-					ERR_PRINT("Export preset name not specified");
-					return false;
-				}
+				_export_preset = args[i + 1];
 			} else if (args[i] == "--export-debug") {
 				editor = true; //needs editor
-				if (i + 1 < args.size()) {
-					_export_preset = args[i + 1];
-				} else {
-					ERR_PRINT("Export preset name not specified");
-					return false;
-				}
+				_export_preset = args[i + 1];
 				export_debug = true;
 #endif
 			} else {
@@ -1703,6 +1697,7 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 		if (project_manager || (script == "" && test == "" && game_path == "" && !editor)) {
 
+			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);
 			ProgressDialog *progress_dialog = memnew(ProgressDialog);
 			pmanager->add_child(progress_dialog);

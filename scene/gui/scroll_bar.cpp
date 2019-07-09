@@ -271,9 +271,7 @@ void ScrollBar::_notification(int p_what) {
 
 		Point2 ofs;
 
-		VisualServer *vs = VisualServer::get_singleton();
-
-		vs->canvas_item_add_texture_rect(ci, Rect2(Point2(), decr->get_size()), decr->get_rid());
+		decr->draw(ci, Point2());
 
 		if (orientation == HORIZONTAL)
 			ofs.x += decr->get_width();
@@ -294,7 +292,7 @@ void ScrollBar::_notification(int p_what) {
 		else
 			ofs.height += area.height;
 
-		vs->canvas_item_add_texture_rect(ci, Rect2(ofs, decr->get_size()), incr->get_rid());
+		incr->draw(ci, ofs);
 		Rect2 grabber_rect;
 
 		if (orientation == HORIZONTAL) {

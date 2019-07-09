@@ -1376,6 +1376,15 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "bvec4", TYPE_BVEC4, { TYPE_UVEC4, TYPE_VOID } },
 	{ "bvec4", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
+	//conversion between matrixes
+
+	{ "mat2", TYPE_MAT2, { TYPE_MAT3, TYPE_VOID } },
+	{ "mat2", TYPE_MAT2, { TYPE_MAT4, TYPE_VOID } },
+	{ "mat3", TYPE_MAT3, { TYPE_MAT2, TYPE_VOID } },
+	{ "mat3", TYPE_MAT3, { TYPE_MAT4, TYPE_VOID } },
+	{ "mat4", TYPE_MAT4, { TYPE_MAT2, TYPE_VOID } },
+	{ "mat4", TYPE_MAT4, { TYPE_MAT3, TYPE_VOID } },
+
 	//builtins - trigonometry
 
 	{ "radians", TYPE_FLOAT, { TYPE_FLOAT, TYPE_VOID } },
@@ -1630,14 +1639,14 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "smoothstep", TYPE_VEC4, { TYPE_FLOAT, TYPE_FLOAT, TYPE_VEC4, TYPE_VOID } },
 
 	{ "isnan", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isnan", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isnan", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "isinf", TYPE_BOOL, { TYPE_FLOAT, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC2, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC3, TYPE_VOID } },
-	{ "isinf", TYPE_BOOL, { TYPE_VEC4, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC2, { TYPE_VEC2, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC3, { TYPE_VEC3, TYPE_VOID } },
+	{ "isinf", TYPE_BVEC4, { TYPE_VEC4, TYPE_VOID } },
 
 	{ "floatBitsToInt", TYPE_INT, { TYPE_FLOAT, TYPE_VOID } },
 	{ "floatBitsToInt", TYPE_IVEC2, { TYPE_VEC2, TYPE_VOID } },
@@ -2550,7 +2559,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 			TkPos pos = _get_tkpos();
 			tk = _get_token();
 
-			if (tk.type == TK_PERIOD) {
+			if (tk.type == TK_CURSOR) {
+				//do nothing
+			} else if (tk.type == TK_PERIOD) {
 
 				StringName identifier;
 				if (_get_completable_identifier(p_block, COMPLETION_INDEX, identifier)) {
@@ -4140,8 +4151,8 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 	switch (completion_type) {
 
 		case COMPLETION_NONE: {
-			//do none
-			return ERR_PARSE_ERROR;
+			//do nothing
+			return OK;
 		} break;
 		case COMPLETION_RENDER_MODE: {
 			for (const Set<String>::Element *E = p_render_modes.front(); E; E = E->next()) {

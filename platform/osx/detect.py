@@ -39,7 +39,7 @@ def configure(env):
 	## Build type
 
     if (env["target"] == "release"):
-        env.Prepend(CCFLAGS=['-O3', '-ffast-math', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
+        env.Prepend(CCFLAGS=['-O3', '-fomit-frame-pointer', '-ftree-vectorize', '-msse2'])
         if (env["debug_symbols"] == "yes"):
             env.Prepend(CCFLAGS=['-g1'])
         if (env["debug_symbols"] == "full"):
@@ -123,7 +123,7 @@ def configure(env):
 
     env.Append(CPPPATH=['#platform/osx'])
     env.Append(CPPFLAGS=['-DOSX_ENABLED', '-DUNIX_ENABLED', '-DGLES_ENABLED', '-DAPPLE_STYLE_KEYS', '-DCOREAUDIO_ENABLED'])
-    env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback'])
+    env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'CoreVideo'])
     env.Append(LIBS=['pthread'])
 
     env.Append(CPPFLAGS=['-mmacosx-version-min=10.9'])

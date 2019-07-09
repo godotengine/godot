@@ -51,8 +51,8 @@ bool GodotClosestRayResultCallback::needsCollision(btBroadphaseProxy *proxy0) co
 	if (needs) {
 		btCollisionObject *btObj = static_cast<btCollisionObject *>(proxy0->m_clientObject);
 		CollisionObjectBullet *gObj = static_cast<CollisionObjectBullet *>(btObj->getUserPointer());
-		if (m_pickRay && gObj->is_ray_pickable()) {
-			return true;
+		if (m_pickRay && !gObj->is_ray_pickable()) {
+			return false;
 		} else if (m_exclude->has(gObj->get_self())) {
 			return false;
 		}
@@ -235,6 +235,7 @@ btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp
 			colObj = static_cast<CollisionObjectBullet *>(colObj1Wrap->getCollisionObject()->getUserPointer());
 			m_result->shape = cp.m_index1;
 			B_TO_G(cp.getPositionWorldOnB(), m_result->point);
+			B_TO_G(cp.m_normalWorldOnB, m_result->normal);
 			m_rest_info_bt_point = cp.getPositionWorldOnB();
 			m_rest_info_collision_object = colObj1Wrap->getCollisionObject();
 		} else {

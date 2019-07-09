@@ -137,7 +137,7 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 	else {
 
 		if (p_name == CoreStringNames::get_singleton()->_custom_features) {
-			Vector<String> custom_feature_array = p_value;
+			Vector<String> custom_feature_array = String(p_value).split(",");
 			for (int i = 0; i < custom_feature_array.size(); i++) {
 
 				custom_features.insert(custom_feature_array[i]);
@@ -884,6 +884,10 @@ void ProjectSettings::set_setting(const String &p_setting, const Variant &p_valu
 
 Variant ProjectSettings::get_setting(const String &p_setting) const {
 	return get(p_setting);
+}
+
+bool ProjectSettings::has_custom_feature(const String &p_feature) const {
+	return custom_features.has(p_feature);
 }
 
 void ProjectSettings::_bind_methods() {

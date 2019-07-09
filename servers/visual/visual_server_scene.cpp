@@ -730,6 +730,11 @@ void VisualServerScene::instance_set_exterior(RID p_instance, bool p_enabled) {
 }
 
 void VisualServerScene::instance_set_extra_visibility_margin(RID p_instance, real_t p_margin) {
+	Instance *instance = instance_owner.get(p_instance);
+	ERR_FAIL_COND(!instance);
+
+	instance->extra_margin = p_margin;
+	_instance_queue_update(instance, true, false);
 }
 
 Vector<ObjectID> VisualServerScene::instances_cull_aabb(const AABB &p_aabb, RID p_scenario) const {

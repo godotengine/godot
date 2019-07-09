@@ -47,7 +47,7 @@ def configure(env):
 
     if (env["target"].startswith("release")):
         env.Append(CPPFLAGS=['-DNDEBUG', '-DNS_BLOCK_ASSERTIONS=1'])
-        env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer', '-ffast-math', '-funsafe-math-optimizations'])
+        env.Append(CPPFLAGS=['-O2', '-ftree-vectorize', '-fomit-frame-pointer'])
         env.Append(LINKFLAGS=['-O2'])
 
         if env["target"] == "release_debug":

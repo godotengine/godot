@@ -156,7 +156,7 @@
 			Perspective Projection (object's size on the screen becomes smaller when far away).
 		</constant>
 		<constant name="PROJECTION_ORTHOGONAL" value="1" enum="Projection">
-			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are).
+			Orthogonal Projection (objects remain the same size on the screen no matter how far away they are; also known as orthographic projection).
 		</constant>
 		<constant name="KEEP_WIDTH" value="0" enum="KeepAspect">
 			Preserves the horizontal aspect ratio.

@@ -170,13 +170,14 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				case ALIGN_LEFT: l.offset_caches.push_back(0); break;                                                                                           \
 				case ALIGN_CENTER: l.offset_caches.push_back(((p_width - margin) - used) / 2); break;                                                           \
 				case ALIGN_RIGHT: l.offset_caches.push_back(((p_width - margin) - used)); break;                                                                \
-				case ALIGN_FILL: l.offset_caches.push_back((p_width - margin) - used /*+spaces_size*/); break;                                                  \
+				case ALIGN_FILL: l.offset_caches.push_back(line_wrapped ? ((p_width - margin) - used) : 0); break;                                              \
 			}                                                                                                                                                   \
 			l.height_caches.push_back(line_height);                                                                                                             \
 			l.ascent_caches.push_back(line_ascent);                                                                                                             \
 			l.descent_caches.push_back(line_descent);                                                                                                           \
 			l.space_caches.push_back(spaces);                                                                                                                   \
 		}                                                                                                                                                       \
+		line_wrapped = false;                                                                                                                                   \
 		y += line_height + get_constant(SceneStringNames::get_singleton()->line_separation);                                                                    \
 		line_height = 0;                                                                                                                                        \
 		line_ascent = 0;                                                                                                                                        \
@@ -203,6 +204,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 		l.minimum_width = MAX(l.minimum_width, wofs + m_width);                                                                                                 \
 	}                                                                                                                                                           \
 	if (wofs + m_width > p_width) {                                                                                                                             \
+		line_wrapped = true;                                                                                                                                    \
 		if (p_mode == PROCESS_CACHE) {                                                                                                                          \
 			if (spaces > 0)                                                                                                                                     \
 				spaces -= 1;                                                                                                                                    \
@@ -247,6 +249,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 	int rchar = 0;
 	int lh = 0;
 	bool line_is_blank = true;
+	bool line_wrapped = false;
 	int fh = 0;
 
 	while (it) {
@@ -272,7 +275,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				if (p_mode == PROCESS_DRAW) {
 					color = _find_color(text, p_base_color);
 					underline = _find_underline(text);
-					if (_find_meta(text, &meta)) {
+					if (_find_meta(text, &meta) && underline_meta) {
 
 						underline = true;
 					}
@@ -1450,6 +1453,7 @@ void RichTextLabel::clear() {
 	main->lines.clear();
 	main->lines.resize(1);
 	main->first_invalid_line = 0;
+	scroll_w = 0;
 	update();
 	selection.click = NULL;
 	selection.active = false;

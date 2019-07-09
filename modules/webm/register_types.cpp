@@ -29,18 +29,22 @@
 /*************************************************************************/
 
 #include "register_types.h"
-#include "resource_importer_webm.h"
+
 #include "video_stream_webm.h"
+
+static ResourceFormatLoaderWebm *resource_loader_webm = NULL;
 
 void register_webm_types() {
 
-#ifdef TOOLS_ENABLED
-	Ref<ResourceImporterWebm> webm_import;
-	webm_import.instance();
-	ResourceFormatImporter::get_singleton()->add_importer(webm_import);
-#endif
+	resource_loader_webm = memnew(ResourceFormatLoaderWebm);
+	ResourceLoader::add_resource_format_loader(resource_loader_webm, true);
+
 	ClassDB::register_class<VideoStreamWebm>();
 }
 
 void unregister_webm_types() {
+
+	if (resource_loader_webm) {
+		memdelete(resource_loader_webm);
+	}
 }

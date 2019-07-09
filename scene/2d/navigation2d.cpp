@@ -671,7 +671,7 @@ Object *Navigation2D::get_closest_point_owner(const Vector2 &p_point) {
 
 				if (Geometry::is_point_in_triangle(p_point, _get_vertex(p.edges[0].point), _get_vertex(p.edges[i - 1].point), _get_vertex(p.edges[i].point))) {
 
-					E->get().owner;
+					return E->get().owner;
 				}
 			}
 		}

@@ -291,6 +291,9 @@ void ConvexPolygonShapeBullet::setup(const Vector<Vector3> &p_vertices) {
 }
 
 btCollisionShape *ConvexPolygonShapeBullet::create_bt_shape(const btVector3 &p_implicit_scale, real_t p_margin) {
+	if (!vertices.size())
+		// This is necessary since 0 vertices
+		return prepare(ShapeBullet::create_shape_empty());
 	btCollisionShape *cs(ShapeBullet::create_shape_convex(vertices));
 	cs->setLocalScaling(p_implicit_scale);
 	prepare(cs);

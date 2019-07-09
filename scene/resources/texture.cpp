@@ -230,6 +230,8 @@ void ImageTexture::load(const String &p_path) {
 
 void ImageTexture::set_data(const Ref<Image> &p_image) {
 
+	ERR_FAIL_COND(p_image.is_null());
+
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 
 	_change_notify();
@@ -378,6 +380,15 @@ ImageTexture::~ImageTexture() {
 }
 
 //////////////////////////////////////////
+
+void StreamTexture::set_path(const String &p_path, bool p_take_over) {
+
+	if (texture.is_valid()) {
+		VisualServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+	Resource::set_path(p_path, p_take_over);
+}
 
 void StreamTexture::_requested_3d(void *p_ud) {
 
@@ -825,6 +836,7 @@ uint32_t AtlasTexture::get_flags() const {
 
 void AtlasTexture::set_atlas(const Ref<Texture> &p_atlas) {
 
+	ERR_FAIL_COND(p_atlas == this);
 	if (atlas == p_atlas)
 		return;
 	atlas = p_atlas;
@@ -898,10 +910,10 @@ void AtlasTexture::_bind_methods() {
 
 void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -917,10 +929,10 @@ void AtlasTexture::draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_m
 
 void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	if (rc.size.width == 0) {
 		rc.size.width = atlas->get_width();
@@ -939,10 +951,10 @@ void AtlasTexture::draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile
 void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate, bool p_transpose, const Ref<Texture> &p_normal_map, bool p_clip_uv) const {
 
 	//this might not necessarily work well if using a rect, needs to be fixed properly
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return;
+
+	Rect2 rc = region;
 
 	Rect2 src = p_src_rect;
 	src.position += (rc.position - margin.position);
@@ -970,10 +982,10 @@ void AtlasTexture::draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, cons
 
 bool AtlasTexture::get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const {
 
-	Rect2 rc = region;
-
 	if (!atlas.is_valid())
 		return false;
+
+	Rect2 rc = region;
 
 	Rect2 src = p_src_rect;
 	src.position += (rc.position - margin.position);
@@ -1063,6 +1075,7 @@ void LargeTexture::set_piece_offset(int p_idx, const Point2 &p_offset) {
 
 void LargeTexture::set_piece_texture(int p_idx, const Ref<Texture> &p_texture) {
 
+	ERR_FAIL_COND(p_texture == this);
 	ERR_FAIL_INDEX(p_idx, pieces.size());
 	pieces[p_idx].texture = p_texture;
 };
@@ -1608,6 +1621,7 @@ void ProxyTexture::_bind_methods() {
 
 void ProxyTexture::set_base(const Ref<Texture> &p_texture) {
 
+	ERR_FAIL_COND(p_texture == this);
 	base = p_texture;
 	if (base.is_valid()) {
 		VS::get_singleton()->texture_set_proxy(proxy, base->get_rid());
