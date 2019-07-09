@@ -257,44 +257,44 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Please, use alphabet order if you've added new theme here(After "Default" and "Custom")
 
 	if (preset == "Default") {
-		preset_accent_color = Color::html("#699ce8");
-		preset_base_color = Color::html("#323b4f");
+		preset_accent_color = Color(0.41, 0.61, 0.91);
+		preset_base_color = Color(0.2, 0.23, 0.31);
 		preset_contrast = default_contrast;
 	} else if (preset == "Custom") {
 		accent_color = EDITOR_GET("interface/theme/accent_color");
 		base_color = EDITOR_GET("interface/theme/base_color");
 		contrast = EDITOR_GET("interface/theme/contrast");
 	} else if (preset == "Alien") {
-		preset_accent_color = Color::html("#1bfe99");
-		preset_base_color = Color::html("#2f373f");
+		preset_accent_color = Color(0.11, 1.0, 0.6);
+		preset_base_color = Color(0.18, 0.22, 0.25);
 		preset_contrast = 0.25;
 	} else if (preset == "Arc") {
-		preset_accent_color = Color::html("#5294e2");
-		preset_base_color = Color::html("#383c4a");
+		preset_accent_color = Color(0.32, 0.58, 0.89);
+		preset_base_color = Color(0.22, 0.24, 0.29);
 		preset_contrast = 0.25;
 	} else if (preset == "Godot 2") {
-		preset_accent_color = Color::html("#86ace2");
-		preset_base_color = Color::html("#3C3A44");
+		preset_accent_color = Color(0.53, 0.67, 0.89);
+		preset_base_color = Color(0.24, 0.23, 0.27);
 		preset_contrast = 0.25;
 	} else if (preset == "Grey") {
-		preset_accent_color = Color::html("#b8e4ff");
-		preset_base_color = Color::html("#3d3d3d");
+		preset_accent_color = Color(0.72, 0.89, 1.0);
+		preset_base_color = Color(0.24, 0.24, 0.24);
 		preset_contrast = 0.2;
 	} else if (preset == "Light") {
-		preset_accent_color = Color::html("#2070ff");
-		preset_base_color = Color::html("#ffffff");
+		preset_accent_color = Color(0.13, 0.44, 1.0);
+		preset_base_color = Color(1, 1, 1);
 		preset_contrast = 0.08;
 	} else if (preset == "Solarized (Dark)") {
-		preset_accent_color = Color::html("#268bd2");
-		preset_base_color = Color::html("#073642");
+		preset_accent_color = Color(0.15, 0.55, 0.82);
+		preset_base_color = Color(0.03, 0.21, 0.26);
 		preset_contrast = 0.23;
 	} else if (preset == "Solarized (Light)") {
-		preset_accent_color = Color::html("#268bd2");
-		preset_base_color = Color::html("#fdf6e3");
+		preset_accent_color = Color(0.15, 0.55, 0.82);
+		preset_base_color = Color(0.99, 0.96, 0.89);
 		preset_contrast = 0.06;
 	} else { // Default
-		preset_accent_color = Color::html("#699ce8");
-		preset_base_color = Color::html("#323b4f");
+		preset_accent_color = Color(0.41, 0.61, 0.91);
+		preset_base_color = Color(0.2, 0.23, 0.31);
 		preset_contrast = default_contrast;
 	}
 
@@ -1088,14 +1088,14 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color alpha3 = Color(mono_value, mono_value, mono_value, 0.7);
 
 	// editor main color
-	const Color main_color = Color::html(dark_theme ? "#57b3ff" : "#0480ff");
+	const Color main_color = dark_theme ? Color(0.34, 0.7, 1.0) : Color(0.02, 0.5, 1.0);
 
-	const Color symbol_color = Color::html("#5792ff").linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
-	const Color keyword_color = Color::html("#ff7185");
-	const Color basetype_color = Color::html(dark_theme ? "#42ffc2" : "#00c161");
+	const Color symbol_color = Color(0.34, 0.57, 1.0).linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
+	const Color keyword_color = Color(1.0, 0.44, 0.52);
+	const Color basetype_color = dark_theme ? Color(0.26, 1.0, 0.76) : Color(0.0, 0.76, 0.38);
 	const Color type_color = basetype_color.linear_interpolate(mono_color, dark_theme ? 0.7 : 0.5);
 	const Color comment_color = dim_color;
-	const Color string_color = Color::html(dark_theme ? "#ffd942" : "#ffd118").linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
+	const Color string_color = (dark_theme ? Color(1.0, 0.85, 0.26) : Color(1.0, 0.82, 0.09)).linear_interpolate(mono_color, dark_theme ? 0.5 : 0.3);
 
 	const Color te_background_color = dark_theme ? background_color : base_color;
 	const Color completion_background_color = dark_theme ? base_color : background_color;
