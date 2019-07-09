@@ -58,7 +58,7 @@ msgstr "無效的內存地址類型 %s，基礎型式 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "基本類型 %s 的命名索引 '% s' 無效"
+msgstr "基本類型 %s 的命名索引 '%s' 無效"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
@@ -3383,7 +3383,7 @@ msgstr "下載完成。"
 msgid ""
 "Templates installation failed. The problematic templates archives can be "
 "found at '%s'."
-msgstr "範本安裝失敗。有問題的範本存檔可以在 \"% s\" 中找到。"
+msgstr "範本安裝失敗。有問題的範本存檔可以在 \"%s\" 中找到。"
 
 #: editor/export_template_manager.cpp
 #, fuzzy

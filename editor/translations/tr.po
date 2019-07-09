@@ -2439,7 +2439,7 @@ msgid ""
 "Scene '%s' was automatically imported, so it can't be modified.\n"
 "To make changes to it, a new inherited scene can be created."
 msgstr ""
-"Sahne '% s' otomatik olarak içe aktarıldı, bu nedenle değiştirilemez.\n"
+"Sahne '%s' otomatik olarak içe aktarıldı, bu nedenle değiştirilemez.\n"
 "Değişiklik yapmak için miras alınmış yeni bir sahne oluşturulabilir."
 
 #: editor/editor_node.cpp

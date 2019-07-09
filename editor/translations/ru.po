@@ -949,7 +949,7 @@ msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
-"Ресурс '% s' используется.\n"
+"Ресурс '%s' используется.\n"
 "Изменения вступят в силу только после перезапуска."
 
 #: editor/dependency_editor.cpp
@@ -2419,7 +2419,7 @@ msgid ""
 "Unable to load addon script from path: '%s' There seems to be an error in "
 "the code, please check the syntax."
 msgstr ""
-"Невозможно загрузить скрипт аддона из источника: \"% s\". В коде есть "
+"Невозможно загрузить скрипт аддона из источника: '%s' В коде есть "
 "ошибка. Пожалуйста, проверьте синтаксис."
 
 #: editor/editor_node.cpp
