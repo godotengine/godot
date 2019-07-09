@@ -162,7 +162,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		result_col = col;
 
 		_update_results_count();
-		set_error(vformat(TTR("Found %d matches(s)."), results_count));
+		set_error(vformat(TTR("Found %d match(es)."), results_count));
 	} else {
 		result_line = -1;
 		result_col = -1;

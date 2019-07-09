@@ -646,6 +646,10 @@ msgstr "Pergi ke Baris"
 msgid "Line Number:"
 msgstr "Nomor Baris:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "Tidak ada yang cocok"
@@ -695,7 +699,7 @@ msgstr "Perkecil Pandangan"
 msgid "Reset Zoom"
 msgstr "Kebalikan Semula Pandangan"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Peringatan"
 
@@ -799,6 +803,11 @@ msgstr "Tutup"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "Menghubungkan"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "Sinyal-sinyal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -963,7 +972,8 @@ msgid "Owners Of:"
 msgstr "Pemilik Dari:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr ""
 "Hapus file-file yang dipilih dari proyek? (tidak bisa dibatalkan / undo)"
 
@@ -1514,6 +1524,10 @@ msgstr "Templat rilis kustom tidak ditemukan."
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "Templat berkas tidak ditemukan:"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3053,7 +3067,7 @@ msgstr "Waktu"
 msgid "Calls"
 msgstr "Panggil"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "Nyala"
 
@@ -3685,6 +3699,7 @@ msgid "Nodes not in Group"
 msgstr "Tambahkan ke Grup"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 #, fuzzy
 msgid "Filter nodes"
 msgstr "Filter:"
@@ -6636,9 +6651,18 @@ msgid "Syntax Highlighter"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "Hapus Titik"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10325,7 +10349,7 @@ msgstr ""
 msgid "Pick one or more items from the list to display the graph."
 msgstr ""
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr ""
 
@@ -10750,60 +10774,6 @@ msgstr ""
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Failed to create solution."
-msgstr "Gagal memuat resource."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Failed to save solution."
-msgstr "Gagal memuat resource."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Failed to create C# project."
-msgstr "Gagal memuat resource."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr ""
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Create C# solution"
-msgstr "Buat Subskribsi"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr ""
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
-msgid "Build Project"
-msgstr "Proyek"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-#, fuzzy
-msgid "View log"
-msgstr "File:"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11429,8 +11399,9 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Sebuah resource SpriteFrames seharusnya diciptakan atau diatur dalam "
@@ -11494,8 +11465,9 @@ msgid ""
 msgstr ""
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
 "Sebuah tekstur dengan bentuk cahaya harus disuplai ke properti 'texture'."
@@ -11508,7 +11480,8 @@ msgstr ""
 "berpengaruh."
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 "Polygon occluder untuk occluder ini kosong. Mohon gambar dulu sebuah polygon!"
 
@@ -11598,15 +11571,16 @@ msgstr ""
 "untuk memberikan mereka sebuah bentuk."
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "VisibilityEnable2D bekerja dengan sangat baik ketika digunakan dengan "
 "menyunting skena dasar secara langsung sebagai parent."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr ""
 
 #: scene/3d/arvr_nodes.cpp
@@ -11691,9 +11665,10 @@ msgstr ""
 "bentuk."
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "Sebuah bentuk harus disediakan untuk CollisionShape untuk fungsi. Mohon "
 "ciptakan sebuah resource bentuk untuk itu!"
@@ -11722,6 +11697,10 @@ msgstr ""
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
+msgstr ""
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
@@ -11765,8 +11744,8 @@ msgstr ""
 
 #: scene/3d/path.cpp
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 
 #: scene/3d/physics_body.cpp
@@ -11778,7 +11757,9 @@ msgstr ""
 
 #: scene/3d/remote_transform.cpp
 #, fuzzy
-msgid "Path property must point to a valid Spatial node to work."
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr ""
 "Properti path harus menunjuk ke sebuah node Particles2D yang sah agar "
 "bekerja."
@@ -11795,8 +11776,9 @@ msgid ""
 msgstr ""
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "Sebuah resource SpriteFrames harus diciptakan atau diatur didalam properti "
@@ -11809,7 +11791,9 @@ msgid ""
 msgstr ""
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
 msgstr ""
 
 #: scene/3d/world_environment.cpp
@@ -11849,7 +11833,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Memutuskan '%s' dari '%s'"
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+#, fuzzy
+msgid "No root AnimationNode for the graph is set."
 msgstr "Akar AnimationNode untuk grafik belum diatur."
 
 #: scene/animation/animation_tree.cpp
@@ -11865,7 +11850,8 @@ msgstr ""
 "AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
-msgid "AnimationPlayer root is not a valid node."
+#, fuzzy
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Akar AnimationPlayer bukanlah node yang valid."
 
 #: scene/animation/animation_tree_player.cpp
@@ -11898,8 +11884,7 @@ msgstr "Tambahkan warna yang sekarang sebagai preset"
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "Container dengan dirinya sendiri tidak berguna kecuali ada skrip yang "
 "mengkonfigurasi perilaku penempatan anak-anaknya.\n"
@@ -11921,10 +11906,11 @@ msgid "Please Confirm..."
 msgstr "Mohon konfirmasi..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "Popup-popup akan disembunyikan secara default kecuali anda memanggil fungsi "
 "popup() atau salah satu dari semua fungsi popup*() yang ada. Membuat mereka "
@@ -11932,13 +11918,15 @@ msgstr ""
 "game dijalankan."
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+#, fuzzy
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "jika exp_edit adalah true min_value seharusnya > 0."
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "ScrollContainer dimaksudkan untuk bekerja dengan kontrol anak tunggal.\n"
@@ -11993,6 +11981,11 @@ msgstr "Masukan"
 
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
+msgid "Invalid source for preview."
+msgstr "Ukuran font tidak sah."
+
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
 msgid "Invalid source for shader."
 msgstr "Ukuran font tidak sah."
 
@@ -12014,6 +12007,30 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#, fuzzy
+#~ msgid "Failed to create solution."
+#~ msgstr "Gagal memuat resource."
+
+#, fuzzy
+#~ msgid "Failed to save solution."
+#~ msgstr "Gagal memuat resource."
+
+#, fuzzy
+#~ msgid "Failed to create C# project."
+#~ msgstr "Gagal memuat resource."
+
+#, fuzzy
+#~ msgid "Create C# solution"
+#~ msgstr "Buat Subskribsi"
+
+#, fuzzy
+#~ msgid "Build Project"
+#~ msgstr "Proyek"
+
+#, fuzzy
+#~ msgid "View log"
+#~ msgstr "File:"
 
 #~ msgid "Enabled Classes"
 #~ msgstr "Kelas yang Diaktifkan"

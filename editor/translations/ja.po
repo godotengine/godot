@@ -658,6 +658,10 @@ msgstr "行に移動"
 msgid "Line Number:"
 msgstr "行番号:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "一致なし"
@@ -707,7 +711,7 @@ msgstr "ズームアウト"
 msgid "Reset Zoom"
 msgstr "ズームをリセット"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "警告"
 
@@ -816,6 +820,11 @@ msgstr "閉じる"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "接続"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "シグナル:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -984,7 +993,8 @@ msgid "Owners Of:"
 msgstr "次のオーナー:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "選択したファイルをプロジェクトから除去しますか？（「元に戻す」不可）"
 
 #: editor/dependency_editor.cpp
@@ -1536,6 +1546,10 @@ msgstr "カスタム リリーステンプレートが見つかりません。"
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "テンプレートファイルが見つかりません:"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -3114,7 +3128,7 @@ msgstr "時間"
 msgid "Calls"
 msgstr "呼出し"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "オン"
 
@@ -3743,6 +3757,7 @@ msgid "Nodes not in Group"
 msgstr "グループにないノード"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "フィルタノード"
 
@@ -6649,9 +6664,18 @@ msgid "Syntax Highlighter"
 msgstr "シンタックスハイライト"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "ブックマーク"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "点を作成する。"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10500,7 +10524,7 @@ msgstr "スタックトレース"
 msgid "Pick one or more items from the list to display the graph."
 msgstr "グラフを表示するには、リストからアイテムを1つ以上選んでください。"
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "エラー"
 
@@ -10936,56 +10960,6 @@ msgstr "インスタンス:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "クラス名を予約キーワードにすることはできません"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Generating solution..."
-msgstr "八分木テクスチャを生成"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "C#プロジェクトを生成しています…"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-#, fuzzy
-msgid "Failed to create solution."
-msgstr "アウトラインを生成できませんでした!"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "ソリューションの保存に失敗しました。"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "完了"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "C#プロジェクトの生成に失敗しました。"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "Mono"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "C#のサポートについて"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "C#ソリューションを生成"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "ビルド"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "プロジェクトをビルド"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr "ログを表示"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11639,8 +11613,9 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "不正なスプラッシュスクリーンイメージ（縦横620x300でないといけません）"
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "SpriteFrames リソースを作成または AnimatedSprite フレームを表示するためには "
@@ -11711,8 +11686,9 @@ msgstr ""
 "CanvasItemMaterialを使用する必要があります。"
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "光の形状とテクスチャは、'texture'プロパティに指定します。"
 
@@ -11724,7 +11700,8 @@ msgstr ""
 "す。"
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "この遮蔽のオクルーダ ポリゴンが空です。多角形を描画してください!"
 
 #: scene/2d/navigation_polygon.cpp
@@ -11827,15 +11804,17 @@ msgstr ""
 "ください."
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "VisibilityEnable2D は、親として直接編集されたシーンのルートを使用する場合に最"
 "適です。"
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+#, fuzzy
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "ARVRCameraはARVROriginノードを親に持つ必要があります"
 
 #: scene/3d/arvr_nodes.cpp
@@ -11934,9 +11913,10 @@ msgstr ""
 "子としてそれを使用してください。"
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "関数の CollisionShape の形状を指定する必要があります。それのためのシェイプリ"
 "ソースを作成してください!"
@@ -11974,6 +11954,10 @@ msgid ""
 msgstr ""
 "GIProbesはGLES2ビデオドライバではサポートされていません。\n"
 "代わりにBakedLightmapを使用してください。"
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -12018,9 +12002,10 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow は、Path ノードの子として設定されている場合のみ動作します。"
 
 #: scene/3d/path.cpp
+#, fuzzy
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 "PathFollow ROTATION_ORIENTEDでは、親パスのCurveリソースで \"Up Vector\"を有効"
 "にする必要があります。"
@@ -12037,7 +12022,9 @@ msgstr ""
 
 #: scene/3d/remote_transform.cpp
 #, fuzzy
-msgid "Path property must point to a valid Spatial node to work."
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr ""
 "Path プロパティは、動作するように有効な Particles2D ノードを示す必要がありま"
 "す。"
@@ -12057,8 +12044,9 @@ msgstr ""
 "代わりに、子の衝突シェイプのサイズを変更してください。"
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "SpriteFrames リソースを作成または AnimatedSprite3D フレームを表示するために"
@@ -12073,8 +12061,10 @@ msgstr ""
 "VehicleBodyの子として使用してください。"
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironmentにはEnvironmentリソースが必要です。"
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 #, fuzzy
@@ -12115,7 +12105,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "'%s' を '%s' に接続"
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+#, fuzzy
+msgid "No root AnimationNode for the graph is set."
 msgstr "グラフのルートAnimationNodeが設定されていません。"
 
 #: scene/animation/animation_tree.cpp
@@ -12129,7 +12120,7 @@ msgstr "AnimationPlayerに設定されたパスからAnimationPlayerノードが
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
-msgid "AnimationPlayer root is not a valid node."
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "アニメーションツリーに問題があります."
 
 #: scene/animation/animation_tree_player.cpp
@@ -12164,8 +12155,7 @@ msgstr "現在の色をプリセットとして追加"
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "コンテナ自体は、スクリプトで子の配置動作を設定しない限り、何の役割も果たしま"
 "せん。\n"
@@ -12187,23 +12177,26 @@ msgid "Please Confirm..."
 msgstr "確認..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "ポップアップは、popup() または popup*() 関数のいずれかを呼び出す場合を除き、"
 "既定では非表示になります。編集のためにそれらを可視化することは可能ですが、彼"
 "らは実行時に非表示になります。"
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+#, fuzzy
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "exp_edit がtrueの場合、min_value は0より大きい必要があります。"
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "ScrollContainerは単一の子コントロールで動作するように意図されています。コンテ"
@@ -12257,6 +12250,11 @@ msgid "Input"
 msgstr "入力"
 
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid source for preview."
+msgstr "無効なシェーダーのソースです。"
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "無効なシェーダーのソースです。"
 
@@ -12276,6 +12274,47 @@ msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#, fuzzy
+#~ msgid "Generating solution..."
+#~ msgstr "八分木テクスチャを生成"
+
+#~ msgid "Generating C# project..."
+#~ msgstr "C#プロジェクトを生成しています…"
+
+#, fuzzy
+#~ msgid "Failed to create solution."
+#~ msgstr "アウトラインを生成できませんでした!"
+
+#~ msgid "Failed to save solution."
+#~ msgstr "ソリューションの保存に失敗しました。"
+
+#~ msgid "Done"
+#~ msgstr "完了"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "C#プロジェクトの生成に失敗しました。"
+
+#~ msgid "Mono"
+#~ msgstr "Mono"
+
+#~ msgid "About C# support"
+#~ msgstr "C#のサポートについて"
+
+#~ msgid "Create C# solution"
+#~ msgstr "C#ソリューションを生成"
+
+#~ msgid "Builds"
+#~ msgstr "ビルド"
+
+#~ msgid "Build Project"
+#~ msgstr "プロジェクトをビルド"
+
+#~ msgid "View log"
+#~ msgstr "ログを表示"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "WorldEnvironmentにはEnvironmentリソースが必要です。"
 
 #, fuzzy
 #~ msgid "Enabled Classes"

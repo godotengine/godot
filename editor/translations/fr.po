@@ -689,6 +689,10 @@ msgstr "Aller à la ligne"
 msgid "Line Number:"
 msgstr "Numéro de ligne :"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "Pas de correspondances"
@@ -738,7 +742,7 @@ msgstr "Dézoomer"
 msgid "Reset Zoom"
 msgstr "Réinitialiser le zoom"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "Avertissements"
 
@@ -843,6 +847,11 @@ msgstr "Fermer"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "Connecter"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "Signaux :"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -1007,7 +1016,8 @@ msgid "Owners Of:"
 msgstr "Propriétaires de :"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr ""
 "Supprimer les fichiers sélectionnés de ce projet ? (annulation impossible)"
 
@@ -1561,6 +1571,10 @@ msgstr "Modèle de version personnalisée introuvable."
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "Fichier modèle introuvable :"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3113,7 +3127,7 @@ msgstr "Temps"
 msgid "Calls"
 msgstr "Appels"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "Activé"
 
@@ -3738,6 +3752,7 @@ msgid "Nodes not in Group"
 msgstr "Nœuds non groupés"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "Filtrer les nœuds"
 
@@ -6539,9 +6554,18 @@ msgid "Syntax Highlighter"
 msgstr "Coloration syntaxique"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "Créer des points."
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10190,7 +10214,7 @@ msgid "Pick one or more items from the list to display the graph."
 msgstr ""
 "Sélectionnez un ou plusieurs éléments de la liste pour afficher le graphique."
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "Erreurs"
 
@@ -10595,54 +10619,6 @@ msgstr "Choisissez distance :"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "Le nom de classe ne peut pas être un mot-clé réservé"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr "Génération de la solution en cours..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "Création du projet C#..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create solution."
-msgstr "Impossible de créer la solution."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "Impossible de sauvegarder la solution."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "Terminé"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "Impossible de créer le projet C#."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "Mono"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "À propos du support C#"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "Créer la solution C#"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "Constructions"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "Compiler le projet"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr "Voir les fichiers log"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11261,8 +11237,9 @@ msgstr ""
 "Les dimensions du splash screen sont invalides (doivent être de 620x300)."
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "Une ressource SpriteFrames doit être créée ou assignée à la propriété « "
@@ -11328,8 +11305,9 @@ msgstr ""
 "« Particles Animation » activé."
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
 "Une texture avec la forme de la lumière doit être fournie dans la propriété "
@@ -11343,7 +11321,8 @@ msgstr ""
 "occulteur ait un effet."
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr ""
 "Le polygone d'occultation pour cet occulteur est vide. Veuillez dessiner un "
 "polygone !"
@@ -11450,15 +11429,17 @@ msgstr ""
 "etc."
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
 "Un VisibilityEnable2D fonctionne mieux lorsqu'il est directement enfant du "
 "nœud racine de la scène."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+#, fuzzy
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "ARVRCamera doit avoir un nœud ARVROrigin comme parent"
 
 #: scene/3d/arvr_nodes.cpp
@@ -11552,9 +11533,10 @@ msgstr ""
 "CollisionObject, comme Area, StaticBody, RigidBody, KinematicBody, etc."
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "Une CollisionShape nécessite une forme pour fonctionner. Créez une ressource "
 "de forme pour cette CollisionShape !"
@@ -11591,6 +11573,10 @@ msgid ""
 msgstr ""
 "Les GIProps ne sont pas supporter par le pilote de vidéos GLES2.\n"
 "A la place utilisez une BakedLightMap."
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11640,9 +11626,10 @@ msgstr ""
 "nœud de type Path."
 
 #: scene/3d/path.cpp
+#, fuzzy
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 "L'option ROTATION_ORIENTED de PathFollow nécessite l'activation de « Up "
 "Vector » dans la ressource Curve de son parent Path."
@@ -11658,7 +11645,10 @@ msgstr ""
 "Modifiez la taille dans les formes de collision enfants à la place."
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
+#, fuzzy
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr ""
 "La propriété Path doit pointer vers un nœud Spatial valide pour fonctionner."
 
@@ -11678,8 +11668,9 @@ msgstr ""
 "Modifiez les tailles dans les formes de collision enfants à la place."
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "Une ressource de type SampleFrames doit être créée ou définie dans la "
@@ -11694,8 +11685,10 @@ msgstr ""
 "l'utiliser comme enfant d'un VehicleBody."
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironment requiert une ressource de type Environment."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11734,7 +11727,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Rien n'est connecté à l'entrée « %s » du nœud « %s »."
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+#, fuzzy
+msgid "No root AnimationNode for the graph is set."
 msgstr "Un AnimationNode racine pour le graphique n'est pas défini."
 
 #: scene/animation/animation_tree.cpp
@@ -11749,7 +11743,8 @@ msgstr ""
 "Le chemin défini pour AnimationPlayer ne mène pas à un nœud AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
-msgid "AnimationPlayer root is not a valid node."
+#, fuzzy
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "La racine AnimationPlayer n'est pas un nœud valide."
 
 #: scene/animation/animation_tree_player.cpp
@@ -11782,8 +11777,7 @@ msgstr "Ajouter la couleur courante comme pré-réglage."
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "Le conteneur en lui-même ne sert à rien à moins qu'un script ne configure "
 "son comportement de placement de ses enfants.\n"
@@ -11805,10 +11799,11 @@ msgid "Please Confirm..."
 msgstr "Veuillez confirmer…"
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "Les pop-ups seront cachés par défaut jusqu'à ce que vous appelez une "
 "fonction popup() ou une des fonctions popup*(). Les rendre visibles pour "
@@ -11816,13 +11811,15 @@ msgstr ""
 "l'exécution."
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+#, fuzzy
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "Si exp_edit est vrai min_value doit être > 0."
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "ScrollContainer est conçu pour fonctionner avec un unique nœud enfant de "
@@ -11875,6 +11872,11 @@ msgid "Input"
 msgstr "Entrée"
 
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid source for preview."
+msgstr "Source invalide pour la forme."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "Source invalide pour la forme."
 
@@ -11893,6 +11895,45 @@ msgstr "Les variations ne peuvent être affectées que dans la fonction vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Generating solution..."
+#~ msgstr "Génération de la solution en cours..."
+
+#~ msgid "Generating C# project..."
+#~ msgstr "Création du projet C#..."
+
+#~ msgid "Failed to create solution."
+#~ msgstr "Impossible de créer la solution."
+
+#~ msgid "Failed to save solution."
+#~ msgstr "Impossible de sauvegarder la solution."
+
+#~ msgid "Done"
+#~ msgstr "Terminé"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "Impossible de créer le projet C#."
+
+#~ msgid "Mono"
+#~ msgstr "Mono"
+
+#~ msgid "About C# support"
+#~ msgstr "À propos du support C#"
+
+#~ msgid "Create C# solution"
+#~ msgstr "Créer la solution C#"
+
+#~ msgid "Builds"
+#~ msgstr "Constructions"
+
+#~ msgid "Build Project"
+#~ msgstr "Compiler le projet"
+
+#~ msgid "View log"
+#~ msgstr "Voir les fichiers log"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "WorldEnvironment requiert une ressource de type Environment."
 
 #~ msgid "Enabled Classes"
 #~ msgstr "Classes activées"

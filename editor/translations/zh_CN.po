@@ -659,6 +659,10 @@ msgstr "转到行"
 msgid "Line Number:"
 msgstr "行号:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr ""
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "无匹配项"
@@ -708,7 +712,7 @@ msgstr "缩小"
 msgid "Reset Zoom"
 msgstr "重置缩放"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "警告"
 
@@ -813,6 +817,11 @@ msgstr "关闭"
 #: editor/connections_dialog.cpp
 msgid "Connect"
 msgstr "连接"
+
+#: editor/connections_dialog.cpp
+#, fuzzy
+msgid "Signal:"
+msgstr "信号:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -974,7 +983,8 @@ msgid "Owners Of:"
 msgstr "拥有者:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
+#, fuzzy
+msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "确定从项目中删除文件？（此操作无法撤销）"
 
 #: editor/dependency_editor.cpp
@@ -1513,6 +1523,10 @@ msgstr "找不到自定义发布包。"
 #: editor/editor_export.cpp platform/javascript/export/export.cpp
 msgid "Template file not found:"
 msgstr "找不到模板文件:"
+
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -3010,7 +3024,7 @@ msgstr "时间"
 msgid "Calls"
 msgstr "调用次数"
 
-#: editor/editor_properties.cpp
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "启用"
 
@@ -3624,6 +3638,7 @@ msgid "Nodes not in Group"
 msgstr "不在分组中的节点"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "筛选节点"
 
@@ -6406,9 +6421,18 @@ msgid "Syntax Highlighter"
 msgstr "语法高亮显示"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Bookmarks"
 msgstr "书签"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Breakpoints"
+msgstr "创建点。"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -10037,7 +10061,7 @@ msgstr "栈追踪"
 msgid "Pick one or more items from the list to display the graph."
 msgstr "从列表中选取一个或多个项目以显示图形。"
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "错误"
 
@@ -10438,54 +10462,6 @@ msgstr "拾取距离:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "类名不能是保留关键字"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr "正在创生成决方案..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "正在生成C#项目..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create solution."
-msgstr "创建解决方案失败。"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "保存解决方案失败。"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "完成"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "创建C#项目失败。"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "Mono"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "关于C#支持"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "创建C#解决方案"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "构建"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "构建项目"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr "查看日志"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -11064,8 +11040,9 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "启动画面图片尺寸无效（应为620x300）。"
 
 #: scene/2d/animated_sprite.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
 "SpriteFrames资源必须是通过AnimatedSprite节点的frames属性创建的，否则无法显示"
@@ -11124,8 +11101,9 @@ msgid ""
 msgstr "CPUParticles2D动画需要使用启用了“粒子动画”的CanvasItemMaterial。"
 
 #: scene/2d/light_2d.cpp
+#, fuzzy
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr "光照的形状与纹理必须提供给纹理属性。"
 
@@ -11135,7 +11113,8 @@ msgid ""
 msgstr "此遮光体必须设置遮光形状才能起到遮光作用。"
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
+#, fuzzy
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
 msgstr "此遮光体的遮光形状为空，请为其绘制一个遮光形状！"
 
 #: scene/2d/navigation_polygon.cpp
@@ -11223,13 +11202,15 @@ msgstr ""
 "其放在Area2D、StaticBody2D、RigidBody2D或者是KinematicBody2D节点下。"
 
 #: scene/2d/visibility_notifier_2d.cpp
+#, fuzzy
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr "VisibilityEnable2D类型的节点用于场景的根节点才能获得最好的效果。"
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
+#, fuzzy
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
 msgstr "ARVRCamera 必须处于 ARVROrigin 节点之下"
 
 #: scene/3d/arvr_nodes.cpp
@@ -11317,9 +11298,10 @@ msgstr ""
 "在Area、StaticBody、RigidBody或KinematicBody节点下。"
 
 #: scene/3d/collision_shape.cpp
+#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
 "CollisionShape节点必须拥有一个形状才能进行碰撞检测工作，请为它创建一个形状资"
 "源！"
@@ -11352,6 +11334,10 @@ msgid ""
 msgstr ""
 "GLES2视频驱动程序不支持全局光照探测器。\n"
 "请改用已烘焙灯光贴图。"
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
+msgstr ""
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11390,9 +11376,10 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow类型的节点只有作为Path类型节点的子节点才能正常工作。"
 
 #: scene/3d/path.cpp
+#, fuzzy
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
 "PathFollow ROTATION_ORIENTED需要在其父路径的曲线资源中启用“Up Vector”。"
 
@@ -11407,7 +11394,10 @@ msgstr ""
 "建议您修改子节点的碰撞形状。"
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
+#, fuzzy
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
 msgstr "path属性必须指向一个合法的Spatial节点才能正常工作。"
 
 #: scene/3d/soft_body.cpp
@@ -11425,8 +11415,9 @@ msgstr ""
 "建议修改子节点的碰撞体形状尺寸。"
 
 #: scene/3d/sprite_3d.cpp
+#, fuzzy
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
 "SpriteFrame资源必须是通过AnimatedSprite3D节点的Frames属性创建的，否则无法显示"
@@ -11441,8 +11432,10 @@ msgstr ""
 "VehicleBody的子节点。"
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironment需要一个环境资源。"
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11478,7 +11471,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "没有任何物体连接到节点 '%s' 的输入 '%s' 。"
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
+#, fuzzy
+msgid "No root AnimationNode for the graph is set."
 msgstr "图表没有设置动画节点作为根节点。"
 
 #: scene/animation/animation_tree.cpp
@@ -11490,7 +11484,8 @@ msgid "Path set for AnimationPlayer does not lead to an AnimationPlayer node."
 msgstr "动画播放器的路径没有加载一个 AnimationPlayer 节点。"
 
 #: scene/animation/animation_tree.cpp
-msgid "AnimationPlayer root is not a valid node."
+#, fuzzy
+msgid "The AnimationPlayer root node is not a valid node."
 msgstr "AnimationPlayer 的根节点不是一个有效的节点。"
 
 #: scene/animation/animation_tree_player.cpp
@@ -11523,8 +11518,7 @@ msgstr "将当前颜色添加为预设。"
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you don't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "除非在脚本内配置其子项的放置行为，否则容器本身没有用处。\n"
 "如果您不打算添加脚本，请使用简单的“控件”节点。"
@@ -11546,22 +11540,25 @@ msgid "Please Confirm..."
 msgstr "请确认..."
 
 #: scene/gui/popup.cpp
+#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
 "Popup对象默认保持隐藏，除非你调用popup()或其他popup相关方法。编辑时可以让它们"
 "保持可见，但它在运行时们会自动隐藏。"
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
+#, fuzzy
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
 msgstr "如果exp_edit为true, 则min_value必须为>0。"
 
 #: scene/gui/scroll_container.cpp
+#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
 "ScrollContainer旨在与单个子控件配合使用。\n"
@@ -11609,6 +11606,11 @@ msgid "Input"
 msgstr "输入"
 
 #: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid source for preview."
+msgstr "非法的着色器源。"
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "非法的着色器源。"
 
@@ -11627,6 +11629,45 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Generating solution..."
+#~ msgstr "正在创生成决方案..."
+
+#~ msgid "Generating C# project..."
+#~ msgstr "正在生成C#项目..."
+
+#~ msgid "Failed to create solution."
+#~ msgstr "创建解决方案失败。"
+
+#~ msgid "Failed to save solution."
+#~ msgstr "保存解决方案失败。"
+
+#~ msgid "Done"
+#~ msgstr "完成"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "创建C#项目失败。"
+
+#~ msgid "Mono"
+#~ msgstr "Mono"
+
+#~ msgid "About C# support"
+#~ msgstr "关于C#支持"
+
+#~ msgid "Create C# solution"
+#~ msgstr "创建C#解决方案"
+
+#~ msgid "Builds"
+#~ msgstr "构建"
+
+#~ msgid "Build Project"
+#~ msgstr "构建项目"
+
+#~ msgid "View log"
+#~ msgstr "查看日志"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "WorldEnvironment需要一个环境资源。"
 
 #~ msgid "Enabled Classes"
 #~ msgstr "启用的类"
