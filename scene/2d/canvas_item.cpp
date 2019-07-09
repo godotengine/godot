@@ -928,6 +928,9 @@ float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const 
 	ERR_FAIL_COND_V(p_char.length() != 1, 0);
 	ERR_FAIL_COND_V(p_font.is_null(), 0);
 
+	if (p_font->has_outline()) {
+		p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.c_str()[0], Color(1, 1, 1), true);
+	}
 	return p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.c_str()[0], p_modulate);
 }
 
