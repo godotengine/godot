@@ -123,7 +123,7 @@ class AudioStreamPlaybackMicrophone : public AudioStreamPlaybackResampled {
 	friend class AudioStreamMicrophone;
 
 	bool active;
-	unsigned int input_ofs;
+	unsigned int capture_ofs;
 
 	Ref<AudioStreamMicrophone> microphone;
 
