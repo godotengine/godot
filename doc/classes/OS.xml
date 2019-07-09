@@ -463,7 +463,7 @@
 				Returns the absolute directory path where user data is written ([code]user://[/code]).
 				On Linux, this is [code]~/.local/share/godot/app_userdata/[project_name][/code], or [code]~/.local/share/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
 				On macOS, this is [code]~/Library/Application Support/Godot/app_userdata/[project_name][/code], or [code]~/Library/Application Support/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
-				On Windows, this is [code]%APPDATA%/Godot/app_userdata/[project_name][/code], or [code]%APPDATA%/[custom_name][/code] if [code]use_custom_user_dir[/code] is set.
+				On Windows, this is [code]%APPDATA%\Godot\app_userdata\[project_name][/code], or [code]%APPDATA%\[custom_name][/code] if [code]use_custom_user_dir[/code] is set. [code]%APPDATA%[/code] expands to [code]%USERPROFILE%\AppData\Roaming[/code].
 				If the project name is empty, [code]user://[/code] falls back to [code]res://[/code].
 			</description>
 		</method>
