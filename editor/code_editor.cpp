@@ -161,7 +161,8 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		result_line = line;
 		result_col = col;
 
-		set_error("");
+		_update_results_count();
+		set_error(vformat(TTR("Found %d matches(s)."), results_count));
 	} else {
 		result_line = -1;
 		result_col = -1;
@@ -184,6 +185,8 @@ void FindReplaceBar::_replace() {
 		text_edit->insert_text_at_cursor(get_replace_text());
 
 		text_edit->end_complex_operation();
+
+		results_count = -1;
 	}
 
 	search_current();
@@ -271,6 +274,7 @@ void FindReplaceBar::_replace_all() {
 	set_error(vformat(TTR("Replaced %d occurrence(s)."), rc));
 
 	text_edit->call_deferred("connect", "text_changed", this, "_editor_text_changed");
+	results_count = -1;
 }
 
 void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
@@ -294,6 +298,36 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
 
 	if (r_line == result_line && r_col >= result_col && r_col <= result_col + get_search_text().length()) {
 		r_col = result_col;
+	}
+}
+
+void FindReplaceBar::_update_results_count() {
+	if (results_count != -1)
+		return;
+
+	results_count = 0;
+
+	String searched = get_search_text();
+	if (searched.empty()) return;
+
+	String full_text = text_edit->get_text();
+
+	int from_pos = 0;
+
+	while (true) {
+		int pos = is_case_sensitive() ? full_text.find(searched, from_pos) : full_text.findn(searched, from_pos);
+		if (pos == -1) break;
+
+		if (is_whole_words()) {
+			from_pos++; // Making sure we won't hit the same match next time, if we get out via a continue.
+			if (pos > 0 && !is_symbol(full_text[pos - 1]))
+				continue;
+			if (pos + searched.length() < full_text.length() && !is_symbol(full_text[pos + searched.length()]))
+				continue;
+		}
+
+		results_count++;
+		from_pos = pos + searched.length();
 	}
 }
 
@@ -420,11 +454,13 @@ void FindReplaceBar::popup_replace() {
 
 void FindReplaceBar::_search_options_changed(bool p_pressed) {
 
+	results_count = -1;
 	search_current();
 }
 
 void FindReplaceBar::_editor_text_changed() {
 
+	results_count = -1;
 	if (is_visible_in_tree()) {
 		preserve_cursor = true;
 		search_current();
@@ -434,6 +470,7 @@ void FindReplaceBar::_editor_text_changed() {
 
 void FindReplaceBar::_search_text_changed(const String &p_text) {
 
+	results_count = -1;
 	search_current();
 }
 
@@ -486,6 +523,7 @@ void FindReplaceBar::set_error(const String &p_label) {
 
 void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
+	results_count = -1;
 	text_edit = p_text_edit;
 	text_edit->connect("text_changed", this, "_editor_text_changed");
 }
@@ -512,6 +550,7 @@ void FindReplaceBar::_bind_methods() {
 
 FindReplaceBar::FindReplaceBar() {
 
+	results_count = -1;
 	replace_all_mode = false;
 	preserve_cursor = false;
 
