@@ -1918,9 +1918,9 @@ const ShaderLanguage::BuiltinFuncDef ShaderLanguage::builtin_func_defs[] = {
 	{ "all", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID } },
 	{ "all", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID } },
 
-	{ "not", TYPE_BOOL, { TYPE_BVEC2, TYPE_VOID } },
-	{ "not", TYPE_BOOL, { TYPE_BVEC3, TYPE_VOID } },
-	{ "not", TYPE_BOOL, { TYPE_BVEC4, TYPE_VOID } },
+	{ "not", TYPE_BVEC2, { TYPE_BVEC2, TYPE_VOID } },
+	{ "not", TYPE_BVEC3, { TYPE_BVEC3, TYPE_VOID } },
+	{ "not", TYPE_BVEC4, { TYPE_BVEC4, TYPE_VOID } },
 
 	//builtins - texture
 	{ "textureSize", TYPE_IVEC2, { TYPE_SAMPLER2D, TYPE_INT, TYPE_VOID } },
