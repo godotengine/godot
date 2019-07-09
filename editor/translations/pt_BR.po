@@ -63,12 +63,13 @@
 # Esdras Tarsis <esdrastarsis@gmail.com>, 2019.
 # Douglas Fiedler <dognew@gmail.com>, 2019.
 # Rarysson Guilherme <r_guilherme12@hotmail.com>, 2019.
+# Gustavo da Silva Santos <gustavo94.rb@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-07-02 10:47+0000\n"
-"Last-Translator: Rarysson Guilherme <r_guilherme12@hotmail.com>\n"
+"PO-Revision-Date: 2019-07-09 10:46+0000\n"
+"Last-Translator: Gustavo da Silva Santos <gustavo94.rb@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -798,13 +799,12 @@ msgid "Extra Call Arguments:"
 msgstr "Argumentos de Chamada Extras:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "Opções avançadas"
+msgstr "Avançado"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr "Postergado"
+msgstr "Diferido"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -1376,9 +1376,8 @@ msgid "Must not collide with an existing engine class name."
 msgstr "Não é permitido utilizar nomes de classes da engine."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
-msgstr "Não é permitido utilizar nomes de tipos internos da engine."
+msgstr "Não deve coincidir com um nome de tipo interno existente."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing global constant name."
@@ -1569,9 +1568,8 @@ msgid "Asset Library"
 msgstr "Biblioteca de Assets"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Scene Tree Editing"
-msgstr "Edição de Árvore de Cena"
+msgstr "Edição da Árvore de Cena"
 
 #: editor/editor_feature_profile.cpp
 msgid "Import Dock"
@@ -1592,12 +1590,10 @@ msgid "Erase profile '%s'? (no undo)"
 msgstr "Apagar perfil '%s'? (sem desfazer)"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile must be a valid filename and must not contain '.'"
 msgstr "O perfil precisa ser um nome de arquivo válido e não pode conter '.'"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Profile with this name already exists."
 msgstr "Um perfil com esse nome já existe."
 
@@ -1634,29 +1630,27 @@ msgid "Enabled Classes:"
 msgstr "Classes Ativadas:"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "File '%s' format is invalid, import aborted."
-msgstr "Arquivo com formato '%s' é inválido, importação abortada."
+msgstr "O formato do arquivo '%s' é inválido, importação abortada."
 
 #: editor/editor_feature_profile.cpp
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
+"Perfil '%s' já existe. Remova-o antes de importar, importação interrompida."
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
 msgstr "Erro ao salvar perfil no caminho: '%s'."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Unset"
-msgstr "Não definido"
+msgstr "Desmontardo"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "Perfil Atual"
+msgstr "Perfil Atual:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Make Current"
@@ -1678,9 +1672,8 @@ msgid "Export"
 msgstr "Exportar"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "Perfis Disponíveis"
+msgstr "Perfis Disponíveis:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -1703,9 +1696,8 @@ msgid "Export Profile"
 msgstr "Exportar Perfil"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Manage Editor Feature Profiles"
-msgstr "Gerenciar Modelos de Exportação"
+msgstr "Gerenciar perfis de recurso do editor"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -2829,7 +2821,7 @@ msgstr "Documentação Online"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "P&R"
+msgstr "Perguntas & Respostas"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -3664,12 +3656,11 @@ msgid "Filters:"
 msgstr "Filtros:"
 
 #: editor/find_in_files.cpp
-#, fuzzy
 msgid ""
 "Include the files with the following extensions. Add or remove them in "
 "ProjectSettings."
 msgstr ""
-"Inclua os arquivos com as seguintes extensões. Adicione ou remova os "
+"Inclui os arquivos com as seguintes extensões. Adicione ou remova os "
 "arquivos em ProjectSettings."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
@@ -4981,15 +4972,13 @@ msgstr "Alterar Âncoras"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Lock Selected"
-msgstr "Fixar Selecionado"
+msgstr "Fixar Seleção"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Unlock Selected"
-msgstr "Destravar Selecionados"
+msgstr "Destravar Selecionado"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6483,12 +6472,9 @@ msgid "Target"
 msgstr "Destino"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr ""
-"Está faltando o método conectado '%s' do sinal '%s' do nó '%s' para o nó "
-"'%s'."
+msgstr "Falta método conectado '%s' para sinal '%s' do nó '%s' para nó '%s'."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -6536,9 +6522,8 @@ msgstr "Realce de sintaxe"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#, fuzzy
 msgid "Bookmarks"
-msgstr "Favoritos"
+msgstr "Marcadores"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6562,9 +6547,8 @@ msgid "Toggle Comment"
 msgstr "Alternar Comentário"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Toggle Bookmark"
-msgstr "Alternar Favoritos"
+msgstr "Alternar Marcador"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
@@ -7947,9 +7931,8 @@ msgid "Scalar"
 msgstr "Escala:"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector"
-msgstr "Inspetor"
+msgstr "Vetor"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -8120,20 +8103,17 @@ msgid "Color uniform."
 msgstr "Limpar Transformação"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
 msgstr ""
-"Retorna um vetor associado se as escalares providas forem iguais, maiores ou "
-"menores."
+"Retorna um vetor associado se o escalar fornecido for igual, maior ou menor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
-"Retorna um vetor associado se o valor do boolean fornecido for verdadeiro ou "
+"Retorna um vetor associado se o valor lógico fornecido for verdadeiro ou "
 "falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8254,10 +8234,9 @@ msgstr ""
 "(Somente em GLES3) Retorna a tangente hiperbólica inversa do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
-msgstr "Localiza o inteiro mais próximo que é maior ou igual ao parâmetro."
+msgstr "Encontra o inteiro mais próximo que é maior ou igual ao parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
@@ -8277,9 +8256,8 @@ msgid "Converts a quantity in radians to degrees."
 msgstr "Converte uma quantidade em radianos para graus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Base-e Exponential."
-msgstr "Exponencial de Base-e."
+msgstr "Exponencial de Base e."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy

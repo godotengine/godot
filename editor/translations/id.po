@@ -19,12 +19,13 @@
 # Guntur Sarwohadi <gsarwohadi@gmail.com>, 2019.
 # Alphin Albukhari <alphinalbukhari5@gmail.com>, 2019.
 # I Dewa Agung Adhinata <agungnata2003@gmail.com>, 2019.
+# herri siagian <herry.it.2007@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:50+0000\n"
-"Last-Translator: Reza Hidayat Bayu Prabowo <rh.bayu.prabowo@gmail.com>\n"
+"PO-Revision-Date: 2019-07-09 10:47+0000\n"
+"Last-Translator: herri siagian <herry.it.2007@gmail.com>\n"
 "Language-Team: Indonesian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/id/>\n"
 "Language: id\n"
@@ -1592,12 +1593,11 @@ msgid "File '%s' format is invalid, import aborted."
 msgstr "Format Berkas '%s' tidak valid, impor dibatalkan."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
-"Sudah ada profil '%s'. Remote profil ini terlebih dahulu sebelum mengimpor, "
+"Sudah ada profil '%s'.  Hapus profil ini terlebih dahulu sebelum mengimpor, "
 "impor dibatalkan."
 
 #: editor/editor_feature_profile.cpp
@@ -2720,18 +2720,16 @@ msgid "Take Screenshot"
 msgstr "Jadikan Skena Dasar"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Buka Penyunting Direktori Data/Pengaturan"
+msgstr "Screenshot disimpan di folder Editor Data/Settings"
 
 #: editor/editor_node.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "Buka Screenshoots secara otomatis"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open in an external image editor."
-msgstr "Buka Penyunting Selanjutnya"
+msgstr "Buka di pengolah gambar lainnya"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
