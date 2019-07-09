@@ -24,9 +24,43 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_border_width" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_border_width_min" qualifiers="const">
 			<return type="int">
 			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_corner_radius" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="corner" type="int" enum="Corner">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_expand_margin" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_border_width">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="width" type="int">
+			</argument>
 			<description>
 			</description>
 		</method>
@@ -34,6 +68,16 @@
 			<return type="void">
 			</return>
 			<argument index="0" name="width" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_corner_radius">
+			<return type="void">
+			</return>
+			<argument index="0" name="corner" type="int" enum="Corner">
+			</argument>
+			<argument index="1" name="radius" type="int">
 			</argument>
 			<description>
 			</description>
@@ -56,6 +100,16 @@
 			<argument index="2" name="radius_bottom_right" type="int">
 			</argument>
 			<argument index="3" name="radius_bottom_left" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_expand_margin">
+			<return type="void">
+			</return>
+			<argument index="0" name="margin" type="int" enum="Margin">
+			</argument>
+			<argument index="1" name="size" type="float">
 			</argument>
 			<description>
 			</description>

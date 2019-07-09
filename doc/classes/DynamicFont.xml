@@ -40,6 +40,14 @@
 				Returns the number of fallback fonts.
 			</description>
 		</method>
+		<method name="get_spacing" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="remove_fallback">
 			<return type="void">
 			</return>
@@ -58,6 +66,16 @@
 			</argument>
 			<description>
 				Sets the fallback font at index [code]idx[/code].
+			</description>
+		</method>
+		<method name="set_spacing">
+			<return type="void">
+			</return>
+			<argument index="0" name="type" type="int">
+			</argument>
+			<argument index="1" name="value" type="int">
+			</argument>
+			<description>
 			</description>
 		</method>
 	</methods>

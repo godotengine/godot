@@ -12,6 +12,14 @@
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/kinematic_character_2d.html</link>
 	</tutorials>
 	<methods>
+		<method name="get_axis_lock" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="get_floor_velocity" qualifiers="const">
 			<return type="Vector3">
 			</return>
@@ -118,6 +126,16 @@
 			<description>
 				Moves the body while keeping it attached to slopes. Similar to [method move_and_slide].
 				As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting[code]snap[/code] to[code](0, 0, 0)[/code] or by using [method move_and_slide] instead.
+			</description>
+		</method>
+		<method name="set_axis_lock">
+			<return type="void">
+			</return>
+			<argument index="0" name="axis" type="int" enum="PhysicsServer.BodyAxis">
+			</argument>
+			<argument index="1" name="lock" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="test_move">
