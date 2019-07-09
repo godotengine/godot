@@ -382,7 +382,7 @@
 		</theme_item>
 		<theme_item name="custom_button" type="StyleBox">
 		</theme_item>
-		<theme_item name="custom_button_font_highlight" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
+		<theme_item name="custom_button_font_highlight" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="custom_button_hover" type="StyleBox">
 		</theme_item>
@@ -396,7 +396,7 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.690196, 0.690196, 0.690196, 1 )">
+		<theme_item name="font_color" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
@@ -408,7 +408,7 @@
 		</theme_item>
 		<theme_item name="item_margin" type="int" default="12">
 		</theme_item>
-		<theme_item name="relationship_line_color" type="Color" default="Color( 0.27451, 0.27451, 0.27451, 1 )">
+		<theme_item name="relationship_line_color" type="Color" default="Color( 0.27, 0.27, 0.27, 1 )">
 		</theme_item>
 		<theme_item name="scroll_border" type="int" default="4">
 		</theme_item>
@@ -422,7 +422,7 @@
 		</theme_item>
 		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
 		</theme_item>
-		<theme_item name="title_button_color" type="Color" default="Color( 0.878431, 0.878431, 0.878431, 1 )">
+		<theme_item name="title_button_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
 		<theme_item name="title_button_font" type="Font">
 		</theme_item>

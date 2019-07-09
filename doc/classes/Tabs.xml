@@ -260,11 +260,11 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color_bg" type="Color" default="Color( 0.690196, 0.690196, 0.690196, 1 )">
+		<theme_item name="font_color_bg" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
 		</theme_item>
 		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 		</theme_item>
-		<theme_item name="font_color_fg" type="Color" default="Color( 0.941176, 0.941176, 0.941176, 1 )">
+		<theme_item name="font_color_fg" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
 		</theme_item>

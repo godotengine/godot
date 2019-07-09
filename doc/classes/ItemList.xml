@@ -505,7 +505,7 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.627451, 0.627451, 0.627451, 1 )">
+		<theme_item name="font_color" type="Color" default="Color( 0.63, 0.63, 0.63, 1 )">
 		</theme_item>
 		<theme_item name="font_color_selected" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
