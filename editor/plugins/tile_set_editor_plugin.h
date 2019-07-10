@@ -201,7 +201,7 @@ private:
 	void _on_grid_snap_toggled(bool p_val);
 	Vector<Vector2> _get_collision_shape_points(const Ref<Shape2D> &p_shape);
 	Vector<Vector2> _get_edited_shape_points();
-	void _set_edited_shape_points(const Vector<Vector2> points);
+	void _set_edited_shape_points(const Vector<Vector2> &points);
 	void _update_tile_data();
 	void _update_toggle_shape_button();
 	void _select_next_tile();

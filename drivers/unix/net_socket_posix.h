@@ -65,7 +65,7 @@ private:
 protected:
 	static NetSocket *_create_func();
 
-	bool _can_use_ip(const IP_Address p_ip, const bool p_for_bind) const;
+	bool _can_use_ip(const IP_Address &p_ip, const bool p_for_bind) const;
 
 public:
 	static void make_default();

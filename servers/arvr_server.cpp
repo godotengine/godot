@@ -100,7 +100,7 @@ Transform ARVRServer::get_world_origin() const {
 	return world_origin;
 };
 
-void ARVRServer::set_world_origin(const Transform p_world_origin) {
+void ARVRServer::set_world_origin(const Transform &p_world_origin) {
 	world_origin = p_world_origin;
 };
 

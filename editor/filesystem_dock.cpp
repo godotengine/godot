@@ -163,7 +163,7 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 	return uncollapsed_paths;
 }
 
-void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool p_uncollapse_root, bool p_select_in_favorites) {
+void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, bool p_uncollapse_root, bool p_select_in_favorites) {
 
 	// Recreate the tree
 	tree->clear();
@@ -812,7 +812,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 }
 
-void FileSystemDock::_select_file(const String p_path, bool p_select_in_favorites) {
+void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
 		if (fpath != "res://") {
@@ -1502,7 +1502,7 @@ void FileSystemDock::_file_list_rmb_option(int p_option) {
 	_file_option(p_option, selected);
 }
 
-void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected) {
+void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected) {
 	// The first one should be the active item
 
 	switch (p_option) {

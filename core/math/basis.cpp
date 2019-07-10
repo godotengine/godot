@@ -852,7 +852,7 @@ void Basis::set_quat_scale(const Quat &p_quat, const Vector3 &p_scale) {
 	rotate(p_quat);
 }
 
-void Basis::set_diagonal(const Vector3 p_diag) {
+void Basis::set_diagonal(const Vector3 &p_diag) {
 	elements[0][0] = p_diag.x;
 	elements[0][1] = 0;
 	elements[0][2] = 0;

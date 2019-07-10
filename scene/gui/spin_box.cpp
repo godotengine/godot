@@ -173,7 +173,7 @@ void SpinBox::_line_edit_focus_exit() {
 	_text_entered(line_edit->get_text());
 }
 
-inline void SpinBox::_adjust_width_for_icon(const Ref<Texture> icon) {
+inline void SpinBox::_adjust_width_for_icon(const Ref<Texture> &icon) {
 
 	int w = icon->get_width();
 	if (w != last_w) {

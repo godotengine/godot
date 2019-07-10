@@ -222,7 +222,7 @@ class GridMapEditor : public VBoxContainer {
 	void _do_paste();
 	void _update_selection_transform();
 	void _validate_selection();
-	void _set_selection(bool p_active, const Vector3 p_begin = Vector3(), const Vector3 p_end = Vector3());
+	void _set_selection(bool p_active, const Vector3 &p_begin = Vector3(), const Vector3 &p_end = Vector3());
 
 	void _floor_changed(float p_value);
 	void _floor_mouse_exited();

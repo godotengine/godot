@@ -1249,7 +1249,7 @@ void SceneTree::_update_root_rect() {
 	}
 }
 
-void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 p_minsize, real_t p_shrink) {
+void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink) {
 
 	stretch_mode = p_mode;
 	stretch_aspect = p_aspect;

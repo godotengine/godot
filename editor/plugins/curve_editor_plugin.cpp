@@ -766,7 +766,7 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 	return p_type == "Curve";
 }
 
-Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 p_size) const {
+Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
 	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture>());

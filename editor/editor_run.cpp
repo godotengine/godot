@@ -37,7 +37,7 @@ EditorRun::Status EditorRun::get_status() const {
 
 	return status;
 }
-Error EditorRun::run(const String &p_scene, const String p_custom_args, const List<String> &p_breakpoints) {
+Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints) {
 
 	List<String> args;
 
