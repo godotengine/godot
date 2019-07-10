@@ -172,7 +172,7 @@ namespace GodotTools.Build
             if (outputArray.Count == 0)
                 return string.Empty;
 
-            var lines = outputArray[1].Split('\n');
+            var lines = outputArray[0].Split('\n');
 
             foreach (string line in lines)
             {
