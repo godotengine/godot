@@ -68,6 +68,8 @@
 		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
 		</member>
+		<member name="timeout" type="int" setter="set_timeout" getter="get_timeout" default="0">
+		</member>
 		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.
 		</member>
@@ -122,6 +124,8 @@
 		</constant>
 		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11" enum="Result">
 			Request reached its maximum redirect limit, see [member max_redirects].
+		</constant>
+		<constant name="RESULT_TIMEOUT" value="12" enum="Result">
 		</constant>
 	</constants>
 </class>
