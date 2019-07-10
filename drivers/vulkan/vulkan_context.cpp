@@ -86,6 +86,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 
 	free(message);
 
+	abort();
 	// Don't bail out, but keep going.
 	return false;
 }
