@@ -281,7 +281,7 @@ void TileMapEditor::_finish_undo() {
 	undo_redo->commit_action();
 }
 
-void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i p_autotile_coord) {
+void TileMapEditor::_set_cell(const Point2i &p_pos, Vector<int> p_values, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord) {
 
 	ERR_FAIL_COND(!node);
 
@@ -693,7 +693,7 @@ PoolVector<Vector2> TileMapEditor::_bucket_fill(const Point2i &p_start, bool era
 	return preview ? bucket_cache : points;
 }
 
-void TileMapEditor::_fill_points(const PoolVector<Vector2> p_points, const Dictionary &p_op) {
+void TileMapEditor::_fill_points(const PoolVector<Vector2> &p_points, const Dictionary &p_op) {
 
 	int len = p_points.size();
 	PoolVector<Vector2>::Read pr = p_points.read();
@@ -711,7 +711,7 @@ void TileMapEditor::_fill_points(const PoolVector<Vector2> p_points, const Dicti
 		node->update_dirty_bitmask();
 }
 
-void TileMapEditor::_erase_points(const PoolVector<Vector2> p_points) {
+void TileMapEditor::_erase_points(const PoolVector<Vector2> &p_points) {
 
 	int len = p_points.size();
 	PoolVector<Vector2>::Read pr = p_points.read();
@@ -754,7 +754,7 @@ void TileMapEditor::_erase_selection() {
 	}
 }
 
-void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i p_autotile_coord, const Transform2D &p_xform) {
+void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform) {
 
 	Ref<Texture> t = node->get_tileset()->tile_get_texture(p_cell);
 
@@ -875,7 +875,7 @@ void TileMapEditor::_draw_cell(Control *p_viewport, int p_cell, const Point2i &p
 	}
 }
 
-void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i p_autotile_coord, const Transform2D &p_xform) {
+void TileMapEditor::_draw_fill_preview(Control *p_viewport, int p_cell, const Point2i &p_point, bool p_flip_h, bool p_flip_v, bool p_transpose, const Point2i &p_autotile_coord, const Transform2D &p_xform) {
 
 	PoolVector<Vector2> points = _bucket_fill(p_point, false, true);
 	PoolVector<Vector2>::Read pr = points.read();

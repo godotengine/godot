@@ -1759,7 +1759,7 @@ bool Node::has_persistent_groups() const {
 
 	return false;
 }
-void Node::_print_tree_pretty(const String prefix, const bool last) {
+void Node::_print_tree_pretty(const String &prefix, const bool last) {
 
 	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	print_line(prefix + new_prefix + String(get_name()));

@@ -487,7 +487,7 @@ void ProjectSettings::set_registering_order(bool p_enable) {
 	registering_order = p_enable;
 }
 
-Error ProjectSettings::_load_settings_binary(const String p_path) {
+Error ProjectSettings::_load_settings_binary(const String &p_path) {
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -530,7 +530,7 @@ Error ProjectSettings::_load_settings_binary(const String p_path) {
 	return OK;
 }
 
-Error ProjectSettings::_load_settings_text(const String p_path) {
+Error ProjectSettings::_load_settings_text(const String &p_path) {
 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -593,7 +593,7 @@ Error ProjectSettings::_load_settings_text(const String p_path) {
 	}
 }
 
-Error ProjectSettings::_load_settings_text_or_binary(const String p_text_path, const String p_bin_path) {
+Error ProjectSettings::_load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path) {
 
 	// Attempt first to load the text-based project.godot file
 	Error err_text = _load_settings_text(p_text_path);

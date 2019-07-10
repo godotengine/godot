@@ -345,7 +345,7 @@ void GridMapEditor::_validate_selection() {
 	_update_selection_transform();
 }
 
-void GridMapEditor::_set_selection(bool p_active, const Vector3 p_begin, const Vector3 p_end) {
+void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const Vector3 &p_end) {
 
 	selection.active = p_active;
 	selection.begin = p_begin;

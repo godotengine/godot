@@ -73,7 +73,7 @@ protected:
 public:
 	void set_type(ARVRServer::TrackerType p_type);
 	ARVRServer::TrackerType get_type() const;
-	void set_name(const String p_name);
+	void set_name(const String &p_name);
 	StringName get_name() const;
 	int get_tracker_id() const;
 	void set_joy_id(int p_joy_id);

@@ -3190,7 +3190,7 @@ Vector3 SpatialEditorViewport::_get_instance_position(const Point2 &p_pos) const
 	return point + offset;
 }
 
-AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const AABB p_bounds) {
+AABB SpatialEditorViewport::_calculate_spatial_bounds(const Spatial *p_parent, const AABB &p_bounds) {
 	AABB bounds = p_bounds;
 	for (int i = 0; i < p_parent->get_child_count(); i++) {
 		Spatial *child = Object::cast_to<Spatial>(p_parent->get_child(i));
