@@ -288,7 +288,9 @@ public:
 			TYPE_CONSTANT,
 			TYPE_OPERATOR,
 			TYPE_CONTROL_FLOW,
-			TYPE_MEMBER
+			TYPE_MEMBER,
+			TYPE_ARRAY,
+			TYPE_ARRAY_DECLARATION,
 		};
 
 		Type type;
@@ -352,6 +354,39 @@ public:
 				datatype(TYPE_VOID) {}
 	};
 
+	struct ArrayNode : public Node {
+		DataType datatype_cache;
+		StringName name;
+		Node *index_expression;
+		Node *call_expression;
+
+		virtual DataType get_datatype() const { return datatype_cache; }
+
+		ArrayNode() :
+				Node(TYPE_ARRAY),
+				datatype_cache(TYPE_VOID),
+				index_expression(NULL),
+				call_expression(NULL) {}
+	};
+
+	struct ArrayDeclarationNode : public Node {
+		DataPrecision precision;
+		DataType datatype;
+
+		struct Declaration {
+			StringName name;
+			uint32_t size;
+		};
+
+		Vector<Declaration> declarations;
+		virtual DataType get_datatype() const { return datatype; }
+
+		ArrayDeclarationNode() :
+				Node(TYPE_ARRAY_DECLARATION),
+				precision(PRECISION_DEFAULT),
+				datatype(TYPE_VOID) {}
+	};
+
 	struct ConstantNode : public Node {
 		DataType datatype;
 
@@ -380,6 +415,7 @@ public:
 			DataType type;
 			DataPrecision precision;
 			int line; //for completion
+			int array_size;
 		};
 
 		Map<StringName, Variable> variables;
@@ -645,16 +681,22 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, int *r_array_size = NULL);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
+
+	enum SubClassTag {
+		TAG_GLOBAL,
+		TAG_ARRAY
+	};
 
 	struct BuiltinFuncDef {
 		enum { MAX_ARGS = 5 };
 		const char *name;
 		DataType rettype;
 		const DataType args[MAX_ARGS];
+		SubClassTag tag;
 	};
 
 	struct BuiltinFuncOutArgs { //arguments used as out in built in functions
@@ -666,6 +708,7 @@ private:
 	int completion_line;
 	BlockNode *completion_block;
 	DataType completion_base;
+	SubClassTag completion_class;
 	StringName completion_function;
 	int completion_argument;
 
