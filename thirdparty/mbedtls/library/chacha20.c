@@ -60,14 +60,14 @@
     MBEDTLS_INTERNAL_VALIDATE( cond )
 
 #define BYTES_TO_U32_LE( data, offset )                           \
-    ( (uint32_t) data[offset]                                     \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 1] << 8 )   \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 2] << 16 )  \
-          | (uint32_t) ( (uint32_t) data[( offset ) + 3] << 24 )  \
+    ( (uint32_t) (data)[offset]                                   \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 1] << 8 )     \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 2] << 16 )    \
+      | (uint32_t) ( (uint32_t) (data)[( offset ) + 3] << 24 )    \
     )
 
 #define ROTL32( value, amount ) \
-        ( (uint32_t) ( value << amount ) | ( value >> ( 32 - amount ) ) )
+    ( (uint32_t) ( (value) << (amount) ) | ( (value) >> ( 32 - (amount) ) ) )
 
 #define CHACHA20_CTR_INDEX ( 12U )
 

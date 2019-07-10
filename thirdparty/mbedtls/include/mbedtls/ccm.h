@@ -49,6 +49,12 @@
 #ifndef MBEDTLS_CCM_H
 #define MBEDTLS_CCM_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include "cipher.h"
 
 #define MBEDTLS_ERR_CCM_BAD_INPUT       -0x000D /**< Bad input parameters to the function. */

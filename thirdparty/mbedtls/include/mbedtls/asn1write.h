@@ -24,14 +24,21 @@
 #ifndef MBEDTLS_ASN1_WRITE_H
 #define MBEDTLS_ASN1_WRITE_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include "asn1.h"
 
 #define MBEDTLS_ASN1_CHK_ADD(g, f)                      \
-    do {                                                \
-        if( ( ret = f ) < 0 )                           \
+    do                                                  \
+    {                                                   \
+        if( ( ret = (f) ) < 0 )                         \
             return( ret );                              \
         else                                            \
-            g += ret;                                   \
+            (g) += ret;                                 \
     } while( 0 )
 
 #ifdef __cplusplus

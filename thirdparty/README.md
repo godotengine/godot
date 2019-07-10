@@ -268,7 +268,7 @@ changes are marked with `// -- GODOT --` comments.
 - Version: 1.1.0
 - License: MIT
 
-File extracted from upstream releaze tarball:
+File extracted from upstream release tarball:
 
 - All `*.c` and `*.h` in `lib/` and `lib/includes/`
 - `wslay.h` has a small Godot addition to fix MSVC build.
@@ -277,10 +277,10 @@ File extracted from upstream releaze tarball:
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.0
+- Version: 2.16.2
 - License: Apache 2.0
 
-File extracted from upstream release tarball `mbedtls-2.16.0-apache.tgz`:
+File extracted from upstream release tarball (`-apache.tgz` variant):
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
 - Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453).
