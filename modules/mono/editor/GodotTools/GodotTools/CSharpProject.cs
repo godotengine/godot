@@ -11,11 +11,11 @@ namespace GodotTools
 {
     public static class CSharpProject
     {
-        public static string GenerateGameProject(string dir, string name, IEnumerable<string> files = null)
+        public static string GenerateGameProject(string dir, string name)
         {
             try
             {
-                return ProjectGenerator.GenGameProject(dir, name, files);
+                return ProjectGenerator.GenGameProject(dir, name, compileItems: new string[] { });
             }
             catch (Exception e)
             {
