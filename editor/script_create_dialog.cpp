@@ -126,7 +126,7 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 				return false; // no start with number plz
 		}
 
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_';
+		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '.';
 
 		if (!valid_char)
 			return false;
@@ -528,7 +528,7 @@ void ScriptCreateDialog::_update_dialog() {
 	if (has_named_classes) {
 		if (is_new_script_created) {
 			class_name->set_editable(true);
-			class_name->set_placeholder(TTR("Allowed: a-z, A-Z, 0-9 and _"));
+			class_name->set_placeholder(TTR("Allowed: a-z, A-Z, 0-9, _ and ."));
 			class_name->set_placeholder_alpha(0.3);
 		} else {
 			class_name->set_editable(false);
