@@ -234,6 +234,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		const Map<FramebufferFormatKey, FramebufferFormatID>::Element *E;
 		VkRenderPass render_pass; //here for constructing shaders, never used, see section (7.2. Render Pass Compatibility from Vulkan spec)
 		int color_attachments; //used for pipeline validation
+		TextureSamples samples;
 	};
 
 	Map<FramebufferFormatID, FramebufferFormat> framebuffer_formats;
@@ -714,6 +715,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, int p_layer, int p_mipmap);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
 	virtual PoolVector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
@@ -725,7 +727,8 @@ public:
 	/**** FRAMEBUFFER ****/
 	/*********************/
 
-	FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format);
+	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format);
+	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format);
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID);
 
@@ -813,6 +816,8 @@ public:
 	/**************/
 
 	virtual void free(RID p_id);
+
+	virtual int limit_get(Limit p_limit);
 
 	virtual void prepare_screen_for_drawing();
 	void initialize(VulkanContext *p_context);

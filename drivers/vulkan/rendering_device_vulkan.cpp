@@ -1899,6 +1899,95 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, int p_layer, int p_mipmap) {
+
+	Texture *src_texture = texture_owner.getornull(p_with_texture);
+	ERR_FAIL_COND_V(!src_texture, RID());
+
+	if (src_texture->owner.is_valid()) { //ahh this is a share
+		p_with_texture = src_texture->owner;
+		src_texture = texture_owner.getornull(src_texture->owner);
+		ERR_FAIL_COND_V(!src_texture, RID()); //this is a bug
+	}
+
+	//create view
+
+	Texture texture = *src_texture;
+
+	uint32_t array_layer_multiplier = 1;
+	if (texture.type == TEXTURE_TYPE_CUBE_ARRAY || texture.type == TEXTURE_TYPE_CUBE) {
+		array_layer_multiplier = 6;
+	}
+
+	VkImageViewCreateInfo image_view_create_info;
+	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
+	image_view_create_info.pNext = NULL;
+	image_view_create_info.flags = 0;
+	image_view_create_info.image = texture.image;
+
+	static const VkImageViewType view_types[TEXTURE_TYPE_MAX] = {
+		VK_IMAGE_VIEW_TYPE_1D,
+		VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_VIEW_TYPE_1D,
+		VK_IMAGE_VIEW_TYPE_2D,
+		VK_IMAGE_VIEW_TYPE_2D,
+	};
+
+	image_view_create_info.viewType = view_types[texture.type];
+	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
+		image_view_create_info.format = vulkan_formats[texture.format];
+	} else {
+		ERR_FAIL_INDEX_V(p_view.format_override, DATA_FORMAT_MAX, RID());
+
+		if (texture.allowed_shared_formats.find(p_view.format_override) == -1) {
+			ERR_EXPLAIN("Format override is not in the list of allowed shareable formats for original texture.");
+			ERR_FAIL_V(RID());
+		}
+		image_view_create_info.format = vulkan_formats[p_view.format_override];
+	}
+
+	static const VkComponentSwizzle component_swizzles[TEXTURE_SWIZZLE_MAX] = {
+		VK_COMPONENT_SWIZZLE_IDENTITY,
+		VK_COMPONENT_SWIZZLE_ZERO,
+		VK_COMPONENT_SWIZZLE_ONE,
+		VK_COMPONENT_SWIZZLE_R,
+		VK_COMPONENT_SWIZZLE_G,
+		VK_COMPONENT_SWIZZLE_B,
+		VK_COMPONENT_SWIZZLE_A
+	};
+
+	image_view_create_info.components.r = component_swizzles[p_view.swizzle_r];
+	image_view_create_info.components.g = component_swizzles[p_view.swizzle_g];
+	image_view_create_info.components.b = component_swizzles[p_view.swizzle_b];
+	image_view_create_info.components.a = component_swizzles[p_view.swizzle_a];
+
+	ERR_FAIL_INDEX_V(p_mipmap, texture.mipmaps, RID());
+	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
+	image_view_create_info.subresourceRange.levelCount = 1;
+	image_view_create_info.subresourceRange.layerCount = 1;
+	image_view_create_info.subresourceRange.baseArrayLayer = p_layer;
+
+	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+	} else {
+		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+	}
+
+	VkResult err = vkCreateImageView(device, &image_view_create_info, NULL, &texture.view);
+
+	if (err) {
+		ERR_FAIL_V(RID());
+	}
+
+	texture.owner = p_with_texture;
+	RID id = texture_owner.make_rid(texture);
+	_add_dependency(id, p_with_texture);
+
+	return id;
+}
+
 Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw) {
 
 	_THREAD_SAFE_METHOD_
@@ -2670,8 +2759,16 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	fb_format.E = E;
 	fb_format.color_attachments = color_references;
 	fb_format.render_pass = render_pass;
+	fb_format.samples = p_format[0].samples;
 	framebuffer_formats[id] = fb_format;
 	return id;
+}
+
+RenderingDevice::TextureSamples RenderingDeviceVulkan::framebuffer_format_get_texture_samples(FramebufferFormatID p_format) {
+	Map<FramebufferFormatID, FramebufferFormat>::Element *E = framebuffer_formats.find(p_format);
+	ERR_FAIL_COND_V(!E, TEXTURE_SAMPLES_1);
+
+	return E->get().samples;
 }
 
 /***********************/
@@ -5910,6 +6007,41 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 			free(E->get());
 		}
 	}
+}
+
+int RenderingDeviceVulkan::limit_get(Limit p_limit) {
+	switch (p_limit) {
+		case LIMIT_MAX_BOUND_UNIFORM_SETS: return limits.maxBoundDescriptorSets;
+		case LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS: return limits.maxColorAttachments;
+		case LIMIT_MAX_TEXTURES_PER_UNIFORM_SET: return limits.maxDescriptorSetSampledImages;
+		case LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET: return limits.maxDescriptorSetSamplers;
+		case LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET: return limits.maxDescriptorSetStorageBuffers;
+		case LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET: return limits.maxDescriptorSetStorageImages;
+		case LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET: return limits.maxDescriptorSetUniformBuffers;
+		case LIMIT_MAX_DRAW_INDEXED_INDEX: return limits.maxDrawIndexedIndexValue;
+		case LIMIT_MAX_FRAMEBUFFER_HEIGHT: return limits.maxFramebufferHeight;
+		case LIMIT_MAX_FRAMEBUFFER_WIDTH: return limits.maxFramebufferWidth;
+		case LIMIT_MAX_TEXTURE_ARRAY_LAYERS: return limits.maxImageArrayLayers;
+		case LIMIT_MAX_TEXTURE_SIZE_1D: return limits.maxImageDimension1D;
+		case LIMIT_MAX_TEXTURE_SIZE_2D: return limits.maxImageDimension2D;
+		case LIMIT_MAX_TEXTURE_SIZE_3D: return limits.maxImageDimension3D;
+		case LIMIT_MAX_TEXTURE_SIZE_CUBE: return limits.maxImageDimensionCube;
+		case LIMIT_MAX_TEXTURES_PER_SHADER_STAGE: return limits.maxPerStageDescriptorSampledImages;
+		case LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE: return limits.maxPerStageDescriptorSamplers;
+		case LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE: return limits.maxPerStageDescriptorStorageBuffers;
+		case LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE: return limits.maxPerStageDescriptorStorageImages;
+		case LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE: return limits.maxPerStageDescriptorUniformBuffers;
+		case LIMIT_MAX_PUSH_CONSTANT_SIZE: return limits.maxPushConstantsSize;
+		case LIMIT_MAX_UNIFORM_BUFFER_SIZE: return limits.maxUniformBufferRange;
+		case LIMIT_MAX_VERTEX_INPUT_ATTRIBUTE_OFFSET: return limits.maxVertexInputAttributeOffset;
+		case LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES: return limits.maxVertexInputAttributes;
+		case LIMIT_MAX_VERTEX_INPUT_BINDINGS: return limits.maxVertexInputBindings;
+		case LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE: return limits.maxVertexInputBindingStride;
+		case LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT: return limits.minUniformBufferOffsetAlignment;
+		default: ERR_FAIL_V(0);
+	}
+
+	return 0;
 }
 
 void RenderingDeviceVulkan::finalize() {
