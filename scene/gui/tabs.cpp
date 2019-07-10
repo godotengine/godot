@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -222,6 +222,10 @@ void Tabs::_notification(int p_what) {
 
 	switch (p_what) {
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_MOUSE_EXIT: {
 			rb_hover = -1;
 			cb_hover = -1;
@@ -232,7 +236,6 @@ void Tabs::_notification(int p_what) {
 			_update_cache();
 			_ensure_no_over_offset();
 			ensure_tab_visible(current);
-
 		} break;
 		case NOTIFICATION_DRAW: {
 			_update_cache();
@@ -394,7 +397,6 @@ void Tabs::_notification(int p_what) {
 			} else {
 				buttons_visible = false;
 			}
-
 		} break;
 	}
 }
@@ -890,6 +892,8 @@ void Tabs::ensure_tab_visible(int p_idx) {
 }
 
 Rect2 Tabs::get_tab_rect(int p_tab) const {
+
+	ERR_FAIL_INDEX_V(p_tab, tabs.size(), Rect2());
 	return Rect2(tabs[p_tab].ofs_cache, 0, tabs[p_tab].size_cache, get_size().height);
 }
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -137,10 +137,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 	if (!tcp_client->is_connected_to_host()) {
 		ERR_EXPLAIN("Script Debugger failed to connect, but being used anyway.");
 		ERR_FAIL();
-	}
-
-	if (allow_focus_steal_pid) {
-		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
 	}
 
 	packet_peer_stream->put_var("debug_enter");
@@ -315,6 +311,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 		} else {
 			OS::get_singleton()->delay_usec(10000);
+			OS::get_singleton()->process_and_drop_events();
 		}
 	}
 
@@ -1058,10 +1055,6 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 	physics_frame_time = p_physics_frame_time;
 }
 
-void ScriptDebuggerRemote::set_allow_focus_steal_pid(OS::ProcessID p_pid) {
-	allow_focus_steal_pid = p_pid;
-}
-
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() :
@@ -1083,7 +1076,6 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		char_count(0),
 		last_msec(0),
 		msec_count(0),
-		allow_focus_steal_pid(0),
 		locking(false),
 		poll_every(0),
 		request_scene_tree(NULL),

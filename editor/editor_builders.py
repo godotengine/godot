@@ -6,7 +6,7 @@ All such functions are invoked in a subprocess on Windows to prevent build flaki
 import os
 import os.path
 from platform_methods import subprocess_main
-from compat import encode_utf8, byte_to_str, open_utf8, escape_string
+from compat import encode_utf8, byte_to_str, open_utf8
 
 
 def make_doc_header(target, source, env):

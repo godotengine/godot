@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -356,7 +356,9 @@ void Area::_area_inout(int p_status, const RID &p_area, int p_instance, int p_ar
 
 	Map<ObjectID, AreaState>::Element *E = area_map.find(objid);
 
-	ERR_FAIL_COND(!area_in && !E);
+	if (!area_in && !E) {
+		return; //likely removed from the tree
+	}
 
 	locked = true;
 
@@ -439,10 +441,10 @@ Array Area::get_overlapping_bodies() const {
 
 void Area::set_monitorable(bool p_enable) {
 
-	if (locked || PhysicsServer::get_singleton()->is_flushing_queries()) {
+	if (locked || (is_inside_tree() && PhysicsServer::get_singleton()->is_flushing_queries())) {
 		ERR_EXPLAIN("Function blocked during in/out signal. Use set_deferred(\"monitorable\",true/false)");
+		ERR_FAIL();
 	}
-	ERR_FAIL_COND(locked || PhysicsServer::get_singleton()->is_flushing_queries());
 
 	if (p_enable == monitorable)
 		return;
@@ -750,12 +752,12 @@ Area::Area() :
 	gravity_is_point = false;
 	gravity_distance_scale = 0;
 	linear_damp = 0.1;
-	angular_damp = 1;
+	angular_damp = 0.1;
 	priority = 0;
 	monitoring = false;
+	monitorable = false;
 	collision_mask = 1;
 	collision_layer = 1;
-	set_ray_pickable(false);
 	set_monitoring(true);
 	set_monitorable(true);
 

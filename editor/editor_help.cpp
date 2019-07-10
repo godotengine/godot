@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -48,11 +48,12 @@ void EditorHelp::_init_colors() {
 	text_color = get_color("default_color", "RichTextLabel");
 	headline_color = get_color("headline_color", "EditorHelp");
 	base_type_color = title_color.linear_interpolate(text_color, 0.5);
-	comment_color = Color(text_color.r, text_color.g, text_color.b, 0.6);
+	comment_color = text_color * Color(1, 1, 1, 0.4);
 	symbol_color = comment_color;
-	value_color = Color(text_color.r, text_color.g, text_color.b, 0.4);
-	qualifier_color = Color(text_color.r, text_color.g, text_color.b, 0.8);
+	value_color = text_color * Color(1, 1, 1, 0.6);
+	qualifier_color = text_color * Color(1, 1, 1, 0.8);
 	type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
+	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 }
 
 void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
@@ -96,8 +97,10 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		emit_signal("go_to_help", "class_name:" + p_select.substr(1, p_select.length()));
 		return;
 	} else if (p_select.begins_with("@")) {
-		String tag = p_select.substr(1, 6);
-		String link = p_select.substr(7, p_select.length());
+		int tag_end = p_select.find(" ");
+
+		String tag = p_select.substr(1, tag_end - 1);
+		String link = p_select.substr(tag_end + 1, p_select.length()).lstrip(" ");
 
 		String topic;
 		Map<String, int> *table = NULL;
@@ -108,24 +111,50 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 		} else if (tag == "member") {
 			topic = "class_property";
 			table = &this->property_line;
-		} else if (tag == "enum  ") {
+		} else if (tag == "enum") {
 			topic = "class_enum";
 			table = &this->enum_line;
 		} else if (tag == "signal") {
 			topic = "class_signal";
 			table = &this->signal_line;
+		} else if (tag == "constant") {
+			topic = "class_constant";
+			table = &this->constant_line;
 		} else {
 			return;
 		}
 
 		if (link.find(".") != -1) {
-
 			emit_signal("go_to_help", topic + ":" + link.get_slice(".", 0) + ":" + link.get_slice(".", 1));
 		} else {
+			if (table->has(link)) {
+				// Found in the current page
+				class_desc->scroll_to_line((*table)[link]);
+			} else {
+				if (topic == "class_enum") {
+					// Try to find the enum in @GlobalScope
+					const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
 
-			if (!table->has(link))
-				return;
-			class_desc->scroll_to_line((*table)[link]);
+					for (int i = 0; i < cd.constants.size(); i++) {
+						if (cd.constants[i].enumeration == link) {
+							// Found in @GlobalScope
+							emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
+							break;
+						}
+					}
+				} else if (topic == "class_constant") {
+					// Try to find the constant in @GlobalScope
+					const DocData::ClassDoc &cd = doc->class_list["@GlobalScope"];
+
+					for (int i = 0; i < cd.constants.size(); i++) {
+						if (cd.constants[i].name == link) {
+							// Found in @GlobalScope
+							emit_signal("go_to_help", topic + ":@GlobalScope:" + link);
+							break;
+						}
+					}
+				}
+			}
 		}
 	} else if (p_select.begins_with("http")) {
 		OS::get_singleton()->shell_open(p_select);
@@ -174,8 +203,9 @@ String EditorHelp::_fix_constant(const String &p_constant) const {
 	if (p_constant.strip_edges() == "2147483647") {
 		return "0x7FFFFFFF";
 	}
+
 	if (p_constant.strip_edges() == "1048575") {
-		return "0xfffff";
+		return "0xFFFFF";
 	}
 
 	return p_constant;
@@ -203,7 +233,7 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 	}
 
 	if (p_overview && p_method.description != "") {
-		class_desc->push_meta("@method" + p_method.name);
+		class_desc->push_meta("@method " + p_method.name);
 	}
 
 	class_desc->push_color(headline_color);
@@ -228,9 +258,11 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		if (p_method.arguments[j].default_value != "") {
 
 			class_desc->push_color(symbol_color);
-			class_desc->add_text("=");
+			class_desc->add_text(" = ");
 			class_desc->pop();
+			class_desc->push_color(value_color);
 			_add_text(_fix_constant(p_method.arguments[j].default_value));
+			class_desc->pop();
 		}
 
 		class_desc->pop();
@@ -295,6 +327,7 @@ void EditorHelp::_update_doc() {
 	DocData::ClassDoc cd = doc->class_list[edited_class]; //make a copy, so we can sort without worrying
 
 	Ref<Font> doc_font = get_font("doc", "EditorFonts");
+	Ref<Font> doc_bold_font = get_font("doc_bold", "EditorFonts");
 	Ref<Font> doc_title_font = get_font("doc_title", "EditorFonts");
 	Ref<Font> doc_code_font = get_font("doc_source", "EditorFonts");
 	String link_color_text = title_color.to_html(false);
@@ -358,7 +391,6 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 
 					class_desc->add_text(" , ");
-					prev = false;
 				}
 
 				_add_type(E->get().name);
@@ -385,6 +417,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 
 		class_desc->add_newline();
+		class_desc->add_newline();
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
 		class_desc->push_indent(1);
@@ -410,6 +443,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->add_newline();
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, 1);
@@ -439,13 +473,15 @@ void EditorHelp::_update_doc() {
 			if (cd.properties[i].description != "") {
 				describe = true;
 			}
-			class_desc->push_cell();
-			if (describe) {
-				class_desc->push_meta("@member" + cd.properties[i].name);
-			}
 
+			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(headline_color);
+
+			if (describe) {
+				class_desc->push_meta("@member " + cd.properties[i].name);
+			}
+
 			_add_text(cd.properties[i].name);
 
 			if (describe) {
@@ -453,8 +489,21 @@ void EditorHelp::_update_doc() {
 				property_descr = true;
 			}
 
+			if (cd.properties[i].default_value != "") {
+				class_desc->push_color(symbol_color);
+				class_desc->add_text(" [default: ");
+				class_desc->pop();
+				class_desc->push_color(value_color);
+				_add_text(_fix_constant(cd.properties[i].default_value));
+				class_desc->pop();
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("]");
+				class_desc->pop();
+			}
+
 			class_desc->pop();
 			class_desc->pop();
+
 			class_desc->pop();
 		}
 
@@ -488,6 +537,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->add_newline();
 		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
@@ -509,7 +559,6 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); //cell
 				class_desc->push_cell();
 				class_desc->pop(); //cell
-				any_previous = false;
 			}
 
 			String group_prefix;
@@ -580,6 +629,19 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(headline_color);
 			_add_text(cd.theme_properties[i].name);
 			class_desc->pop();
+
+			if (cd.theme_properties[i].default_value != "") {
+				class_desc->push_color(symbol_color);
+				class_desc->add_text(" [default: ");
+				class_desc->pop();
+				class_desc->push_color(value_color);
+				_add_text(_fix_constant(cd.theme_properties[i].default_value));
+				class_desc->pop();
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("]");
+				class_desc->pop();
+			}
+
 			class_desc->pop();
 
 			if (cd.theme_properties[i].description != "") {
@@ -638,7 +700,7 @@ void EditorHelp::_update_doc() {
 				if (cd.signals[i].arguments[j].default_value != "") {
 
 					class_desc->push_color(symbol_color);
-					class_desc->add_text("=");
+					class_desc->add_text(" = ");
 					class_desc->pop();
 					_add_text(cd.signals[i].arguments[j].default_value);
 				}
@@ -733,6 +795,9 @@ void EditorHelp::_update_doc() {
 					if (cd.name == "@GlobalScope")
 						enumValuesContainer[enum_list[i].name] = enumStartingLine;
 
+					// Add the enum constant line to the constant_line map so we can locate it as a constant
+					constant_line[enum_list[i].name] = class_desc->get_line_count() - 2;
+
 					class_desc->push_font(doc_code_font);
 					class_desc->push_color(headline_color);
 					_add_text(enum_list[i].name);
@@ -741,7 +806,7 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(" = ");
 					class_desc->pop();
 					class_desc->push_color(value_color);
-					_add_text(enum_list[i].value);
+					_add_text(_fix_constant(enum_list[i].value));
 					class_desc->pop();
 					class_desc->pop();
 					if (enum_list[i].description != "") {
@@ -807,7 +872,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text(" = ");
 				class_desc->pop();
 				class_desc->push_color(value_color);
-				_add_text(constants[i].value);
+				_add_text(_fix_constant(constants[i].value));
 				class_desc->pop();
 
 				class_desc->pop();
@@ -841,6 +906,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
@@ -926,6 +992,21 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(headline_color);
 			_add_text(cd.properties[i].name);
 			class_desc->pop(); // color
+
+			if (cd.properties[i].default_value != "") {
+				class_desc->push_color(symbol_color);
+				class_desc->add_text(" [default: ");
+				class_desc->pop(); // color
+
+				class_desc->push_color(value_color);
+				_add_text(_fix_constant(cd.properties[i].default_value));
+				class_desc->pop(); // color
+
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("]");
+				class_desc->pop(); // color
+			}
+
 			class_desc->pop(); // font
 			class_desc->pop(); // cell
 
@@ -965,6 +1046,7 @@ void EditorHelp::_update_doc() {
 
 			class_desc->pop(); // table
 
+			class_desc->add_newline();
 			class_desc->add_newline();
 
 			class_desc->push_color(text_color);
@@ -1008,6 +1090,8 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 
 			class_desc->add_newline();
+			class_desc->add_newline();
+
 			class_desc->push_color(text_color);
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
@@ -1099,6 +1183,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 	String base_path;
 
 	Ref<Font> doc_font = p_rt->get_font("doc", "EditorFonts");
+	Ref<Font> doc_bold_font = p_rt->get_font("doc_bold", "EditorFonts");
 	Ref<Font> doc_code_font = p_rt->get_font("doc_source", "EditorFonts");
 	Color font_color_hl = p_rt->get_color("headline_color", "EditorHelp");
 	Color link_color = p_rt->get_color("accent_color", "Editor").linear_interpolate(font_color_hl, 0.8);
@@ -1160,12 +1245,15 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			p_rt->add_text("[");
 			pos = brk_pos + 1;
 
-		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ")) {
+		} else if (tag.begins_with("method ") || tag.begins_with("member ") || tag.begins_with("signal ") || tag.begins_with("enum ") || tag.begins_with("constant ")) {
 
-			String link_target = tag.substr(tag.find(" ") + 1, tag.length());
-			String link_tag = tag.substr(0, tag.find(" ")).rpad(6);
+			int tag_end = tag.find(" ");
+
+			String link_tag = tag.substr(0, tag_end);
+			String link_target = tag.substr(tag_end + 1, tag.length()).lstrip(" ");
+
 			p_rt->push_color(link_color);
-			p_rt->push_meta("@" + link_tag + link_target);
+			p_rt->push_meta("@" + link_tag + " " + link_target);
 			p_rt->add_text(link_target + (tag.begins_with("method ") ? "()" : ""));
 			p_rt->pop();
 			p_rt->pop();
@@ -1183,7 +1271,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 		} else if (tag == "b") {
 
 			//use bold font
-			p_rt->push_font(doc_code_font);
+			p_rt->push_font(doc_bold_font);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "i") {
@@ -1201,13 +1289,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "center") {
 
-			//use monospace font
+			//align to center
 			p_rt->push_align(RichTextLabel::ALIGN_CENTER);
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 		} else if (tag == "br") {
 
-			//use monospace font
+			//force a line break
 			p_rt->add_newline();
 			pos = brk_end + 1;
 		} else if (tag == "u") {
@@ -1218,14 +1306,13 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front(tag);
 		} else if (tag == "s") {
 
-			//use strikethrough (not supported underline instead)
-			p_rt->push_underline();
+			//use strikethrough
+			p_rt->push_strikethrough();
 			pos = brk_end + 1;
 			tag_stack.push_front(tag);
 
 		} else if (tag == "url") {
 
-			//use strikethrough (not supported underline instead)
 			int end = bbcode.find("[", brk_end);
 			if (end == -1)
 				end = bbcode.length();
@@ -1242,13 +1329,12 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			tag_stack.push_front("url");
 		} else if (tag == "img") {
 
-			//use strikethrough (not supported underline instead)
 			int end = bbcode.find("[", brk_end);
 			if (end == -1)
 				end = bbcode.length();
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture> texture = ResourceLoader::load(base_path + "/" + image, "Texture");
+			Ref<Texture> texture = ResourceLoader::load(base_path.plus_file(image), "Texture");
 			if (texture.is_valid())
 				p_rt->add_image(texture);
 
@@ -1262,39 +1348,39 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			if (col.begins_with("#"))
 				color = Color::html(col);
 			else if (col == "aqua")
-				color = Color::html("#00FFFF");
+				color = Color(0, 1, 1);
 			else if (col == "black")
-				color = Color::html("#000000");
+				color = Color(0, 0, 0);
 			else if (col == "blue")
-				color = Color::html("#0000FF");
+				color = Color(0, 0, 1);
 			else if (col == "fuchsia")
-				color = Color::html("#FF00FF");
+				color = Color(1, 0, 1);
 			else if (col == "gray" || col == "grey")
-				color = Color::html("#808080");
+				color = Color(0.5, 0.5, 0.5);
 			else if (col == "green")
-				color = Color::html("#008000");
+				color = Color(0, 0.5, 0);
 			else if (col == "lime")
-				color = Color::html("#00FF00");
+				color = Color(0, 1, 0);
 			else if (col == "maroon")
-				color = Color::html("#800000");
+				color = Color(0.5, 0, 0);
 			else if (col == "navy")
-				color = Color::html("#000080");
+				color = Color(0, 0, 0.5);
 			else if (col == "olive")
-				color = Color::html("#808000");
+				color = Color(0.5, 0.5, 0);
 			else if (col == "purple")
-				color = Color::html("#800080");
+				color = Color(0.5, 0, 0.5);
 			else if (col == "red")
-				color = Color::html("#FF0000");
+				color = Color(1, 0, 0);
 			else if (col == "silver")
-				color = Color::html("#C0C0C0");
+				color = Color(0.75, 0.75, 0.75);
 			else if (col == "teal")
-				color = Color::html("#008008");
+				color = Color(0, 0.5, 0.5);
 			else if (col == "white")
-				color = Color::html("#FFFFFF");
+				color = Color(1, 1, 1);
 			else if (col == "yellow")
-				color = Color::html("#FFFF00");
+				color = Color(1, 1, 0);
 			else
-				color = Color(0, 0, 0, 1); //base_color;
+				color = Color(0, 0, 0); //base_color;
 
 			p_rt->push_color(color);
 			pos = brk_end + 1;
@@ -1304,7 +1390,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			String fnt = tag.substr(5, tag.length());
 
-			Ref<Font> font = ResourceLoader::load(base_path + "/" + fnt, "Font");
+			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
 			if (font.is_valid())
 				p_rt->push_font(font);
 			else {
@@ -1340,19 +1426,11 @@ void EditorHelp::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_READY: {
-
-			_update_doc();
-
-		} break;
-
+		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
-			class_desc->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
 			_update_doc();
 
 		} break;
-
 		default: break;
 	}
 }
@@ -1423,24 +1501,23 @@ EditorHelp::EditorHelp() {
 
 	EDITOR_DEF("text_editor/help/sort_functions_alphabetically", true);
 
-	find_bar = memnew(FindBar);
-	add_child(find_bar);
-	find_bar->hide();
-
 	class_desc = memnew(RichTextLabel);
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
-	class_desc->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
+	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	class_desc->connect("meta_clicked", this, "_class_desc_select");
 	class_desc->connect("gui_input", this, "_class_desc_input");
 
+	// Added second so it opens at the bottom so it won't offset the entire widget.
+	find_bar = memnew(FindBar);
+	add_child(find_bar);
+	find_bar->hide();
 	find_bar->set_rich_text_label(class_desc);
 
 	class_desc->set_selection_enabled(true);
 
 	scroll_locked = false;
 	select_locked = false;
-	//set_process_unhandled_key_input(true);
 	class_desc->hide();
 }
 
@@ -1492,7 +1569,7 @@ void EditorHelpBit::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			rich_text->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
+			rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 		} break;
 
 		default: break;
@@ -1509,47 +1586,33 @@ EditorHelpBit::EditorHelpBit() {
 
 	rich_text = memnew(RichTextLabel);
 	add_child(rich_text);
-	//rich_text->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 	rich_text->connect("meta_clicked", this, "_meta_clicked");
-	rich_text->add_color_override("selection_color", EditorSettings::get_singleton()->get("text_editor/theme/selection_color"));
+	rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 	rich_text->set_override_selected_font_color(false);
 	set_custom_minimum_size(Size2(0, 70 * EDSCALE));
 }
 
 FindBar::FindBar() {
 
-	container = memnew(Control);
-	add_child(container);
-
-	container->set_clip_contents(true);
-	container->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	hbc = memnew(HBoxContainer);
-	container->add_child(hbc);
-
-	vbc_search_text = memnew(VBoxContainer);
-	hbc->add_child(vbc_search_text);
-	vbc_search_text->set_h_size_flags(SIZE_EXPAND_FILL);
-	hbc->set_anchor_and_margin(MARGIN_RIGHT, 1, 0);
-
 	search_text = memnew(LineEdit);
-	vbc_search_text->add_child(search_text);
+	add_child(search_text);
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
+	search_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
 
 	find_prev = memnew(ToolButton);
-	hbc->add_child(find_prev);
+	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
 	find_prev->connect("pressed", this, "_search_prev");
 
 	find_next = memnew(ToolButton);
-	hbc->add_child(find_next);
+	add_child(find_next);
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", this, "_search_next");
 
 	error_label = memnew(Label);
-	hbc->add_child(error_label);
+	add_child(error_label);
 	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
 
 	hide_button = memnew(TextureButton);
@@ -1576,13 +1639,6 @@ void FindBar::popup_search() {
 			_search();
 		}
 	}
-
-	call_deferred("_update_size");
-}
-
-void FindBar::_update_size() {
-
-	container->set_custom_minimum_size(Size2(0, hbc->get_size().height));
 }
 
 void FindBar::_notification(int p_what) {
@@ -1618,7 +1674,6 @@ void FindBar::_bind_methods() {
 	ClassDB::bind_method("_search_next", &FindBar::search_next);
 	ClassDB::bind_method("_search_prev", &FindBar::search_prev);
 	ClassDB::bind_method("_hide_pressed", &FindBar::_hide_bar);
-	ClassDB::bind_method("_update_size", &FindBar::_update_size);
 
 	ADD_SIGNAL(MethodInfo("search"));
 }
@@ -1677,7 +1732,7 @@ void FindBar::_unhandled_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventKey> k = p_event;
 	if (k.is_valid()) {
 
-		if (k->is_pressed() && (rich_text_label->has_focus() || hbc->is_a_parent_of(get_focus_owner()))) {
+		if (k->is_pressed() && (rich_text_label->has_focus() || is_a_parent_of(get_focus_owner()))) {
 
 			bool accepted = true;
 

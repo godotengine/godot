@@ -1,28 +1,28 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afangles.c                                                             */
-/*                                                                         */
-/*    Routines used to compute vector angles with limited accuracy         */
-/*    and very high speed.  It also contains sorting routines (body).      */
-/*                                                                         */
-/*  Copyright 2003-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afangles.c
+ *
+ *   Routines used to compute vector angles with limited accuracy
+ *   and very high speed.  It also contains sorting routines (body).
+ *
+ * Copyright (C) 2003-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "aftypes.h"
 
 
   /*
-   *  We are not using `af_angle_atan' anymore, but we keep the source
-   *  code below just in case...
+   * We are not using `af_angle_atan' anymore, but we keep the source
+   * code below just in case...
    */
 
 
@@ -30,16 +30,16 @@
 
 
   /*
-   *  The trick here is to realize that we don't need a very accurate angle
-   *  approximation.  We are going to use the result of `af_angle_atan' to
-   *  only compare the sign of angle differences, or check whether its
-   *  magnitude is very small.
+   * The trick here is to realize that we don't need a very accurate angle
+   * approximation.  We are going to use the result of `af_angle_atan' to
+   * only compare the sign of angle differences, or check whether its
+   * magnitude is very small.
    *
-   *  The approximation
+   * The approximation
    *
-   *    dy * PI / (|dx|+|dy|)
+   *   dy * PI / (|dx|+|dy|)
    *
-   *  should be enough, and much faster to compute.
+   * should be enough, and much faster to compute.
    */
   FT_LOCAL_DEF( AF_Angle )
   af_angle_atan( FT_Fixed  dx,

@@ -1,10 +1,10 @@
 
 /* pngerror.c - stub functions for i/o and memory allocation
  *
- * Last changed in libpng 1.6.31 [July 27, 2017]
+ * Copyright (c) 2018 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2017 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -425,7 +425,7 @@ png_app_error(png_const_structrp png_ptr, png_const_charp error_message)
  * if the character is invalid.
  */
 #define isnonalpha(c) ((c) < 65 || (c) > 122 || ((c) > 90 && (c) < 97))
-static PNG_CONST char png_digit[16] = {
+static const char png_digit[16] = {
    '0', '1', '2', '3', '4', '5', '6', '7', '8', '9',
    'A', 'B', 'C', 'D', 'E', 'F'
 };
@@ -885,7 +885,7 @@ PNG_FUNCTION(void /* PRIVATE */, (PNGCBAPI
 png_safe_error),(png_structp png_nonconst_ptr, png_const_charp error_message),
     PNG_NORETURN)
 {
-   const png_const_structrp png_ptr = png_nonconst_ptr;
+   png_const_structrp png_ptr = png_nonconst_ptr;
    png_imagep image = png_voidcast(png_imagep, png_ptr->error_ptr);
 
    /* An error is always logged here, overwriting anything (typically a warning)
@@ -920,7 +920,7 @@ png_safe_error),(png_structp png_nonconst_ptr, png_const_charp error_message),
 void /* PRIVATE */ PNGCBAPI
 png_safe_warning(png_structp png_nonconst_ptr, png_const_charp warning_message)
 {
-   const png_const_structrp png_ptr = png_nonconst_ptr;
+   png_const_structrp png_ptr = png_nonconst_ptr;
    png_imagep image = png_voidcast(png_imagep, png_ptr->error_ptr);
 
    /* A warning is only logged if there is no prior warning or error. */

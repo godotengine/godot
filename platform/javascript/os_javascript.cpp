@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,6 +68,20 @@ static bool is_canvas_focused() {
 		return document.activeElement == Module.canvas;
 	);
 	/* clang-format on */
+}
+
+static Point2 correct_canvas_position(int x, int y) {
+	int canvas_width;
+	int canvas_height;
+	emscripten_get_canvas_element_size(NULL, &canvas_width, &canvas_height);
+
+	double element_width;
+	double element_height;
+	emscripten_get_element_css_size(NULL, &element_width, &element_height);
+
+	x = (int)(canvas_width / element_width * x);
+	y = (int)(canvas_height / element_height * y);
+	return Point2(x, y);
 }
 
 static bool cursor_inside_canvas = true;
@@ -245,6 +259,8 @@ EM_BOOL OS_JavaScript::keydown_callback(int p_event_type, const EmscriptenKeyboa
 		return false;
 	}
 	os->input->parse_input_event(ev);
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	return true;
 }
 
@@ -283,7 +299,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(Point2(p_event->canvasX, p_event->canvasY));
+	ev->set_position(correct_canvas_position(p_event->canvasX, p_event->canvasY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(p_event, ev);
 	switch (p_event->button) {
@@ -335,6 +351,8 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	ev->set_button_mask(mask);
 
 	os->input->parse_input_event(ev);
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	// Prevent multi-click text selection and wheel-click scrolling anchor.
 	// Context menu is prevented through contextmenu event.
 	return true;
@@ -345,7 +363,7 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 	OS_JavaScript *os = get_singleton();
 
 	int input_mask = os->input->get_mouse_button_mask();
-	Point2 pos = Point2(p_event->canvasX, p_event->canvasY);
+	Point2 pos = correct_canvas_position(p_event->canvasX, p_event->canvasY);
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
 	if (!cursor_inside_canvas && !input_mask)
@@ -415,12 +433,151 @@ void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
+	if (get_mouse_mode() == MOUSE_MODE_VISIBLE) {
+		if (cursors[p_shape] != "") {
+			Vector<String> url = cursors[p_shape].split("?");
+			set_css_cursor(("url(\"" + url[0] + "\") " + url[1] + ", auto").utf8());
+		} else {
+			set_css_cursor(godot2dom_cursor(p_shape));
+		}
+	}
+
 	cursor_shape = p_shape;
-	if (get_mouse_mode() != MOUSE_MODE_HIDDEN)
-		set_css_cursor(godot2dom_cursor(cursor_shape));
 }
 
 void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+
+	if (p_cursor.is_valid()) {
+
+		Map<CursorShape, Vector<Variant> >::Element *cursor_c = cursors_cache.find(p_shape);
+
+		if (cursor_c) {
+			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+				set_cursor_shape(p_shape);
+				return;
+			}
+
+			cursors_cache.erase(p_shape);
+		}
+
+		Ref<Texture> texture = p_cursor;
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Ref<Image> image;
+		Size2 texture_size;
+		Rect2 atlas_rect;
+
+		if (texture.is_valid()) {
+			image = texture->get_data();
+			if (image.is_valid()) {
+				image->duplicate();
+			}
+		}
+
+		if (!image.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.position.x = atlas_texture->get_region().position.x;
+			atlas_rect.position.y = atlas_texture->get_region().position.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else if (image.is_valid()) {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
+
+		image = texture->get_data();
+
+		ERR_FAIL_COND(!image.is_valid());
+
+		image = image->duplicate();
+
+		if (atlas_texture.is_valid())
+			image->crop_from_point(
+					atlas_rect.position.x,
+					atlas_rect.position.y,
+					texture_size.width,
+					texture_size.height);
+
+		if (image->get_format() != Image::FORMAT_RGBA8) {
+			image->convert(Image::FORMAT_RGBA8);
+		}
+
+		png_image png_meta;
+		memset(&png_meta, 0, sizeof png_meta);
+		png_meta.version = PNG_IMAGE_VERSION;
+		png_meta.width = texture_size.width;
+		png_meta.height = texture_size.height;
+		png_meta.format = PNG_FORMAT_RGBA;
+
+		PoolByteArray png;
+		size_t len;
+		PoolByteArray::Read r = image->get_data().read();
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+
+		png.resize(len);
+		PoolByteArray::Write w = png.write();
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
+		w = PoolByteArray::Write();
+
+		r = png.read();
+
+		char *object_url;
+		/* clang-format off */
+		EM_ASM({
+			var PNG_PTR = $0;
+			var PNG_LEN = $1;
+			var PTR = $2;
+
+			var png = new Blob([HEAPU8.slice(PNG_PTR, PNG_PTR + PNG_LEN)], { type: 'image/png' });
+			var url = URL.createObjectURL(png);
+			var length_bytes = lengthBytesUTF8(url) + 1;
+			var string_on_wasm_heap = _malloc(length_bytes);
+			setValue(PTR, string_on_wasm_heap, '*');
+			stringToUTF8(url, string_on_wasm_heap, length_bytes);
+		}, r.ptr(), len, &object_url);
+		/* clang-format on */
+		r = PoolByteArray::Read();
+
+		String url = String::utf8(object_url) + "?" + itos(p_hotspot.x) + " " + itos(p_hotspot.y);
+
+		/* clang-format off */
+		EM_ASM({ _free($0); }, object_url);
+		/* clang-format on */
+
+		if (cursors[p_shape] != "") {
+			/* clang-format off */
+			EM_ASM({
+				URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
+			}, cursors[p_shape].utf8().get_data());
+			/* clang-format on */
+			cursors[p_shape] = "";
+		}
+
+		cursors[p_shape] = url;
+
+		Vector<Variant> params;
+		params.push_back(p_cursor);
+		params.push_back(p_hotspot);
+		cursors_cache.insert(p_shape, params);
+
+	} else if (cursors[p_shape] != "") {
+		/* clang-format off */
+		EM_ASM({
+			URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
+		}, cursors[p_shape].utf8().get_data());
+		/* clang-format on */
+		cursors[p_shape] = "";
+	}
+
+	set_cursor_shape(cursor_shape);
 }
 
 void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
@@ -432,7 +589,9 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
 
+		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
 		set_css_cursor(godot2dom_cursor(cursor_shape));
+		set_cursor_shape(cursor_shape);
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
@@ -446,7 +605,9 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 		ERR_EXPLAIN("MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback");
 		ERR_FAIL_COND(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED);
 		ERR_FAIL_COND(result != EMSCRIPTEN_RESULT_SUCCESS);
+		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
 		set_css_cursor(godot2dom_cursor(cursor_shape));
+		set_cursor_shape(cursor_shape);
 	}
 }
 
@@ -536,12 +697,14 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		os->touches[i] = ev->get_position();
 		ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
 
 		os->input->parse_input_event(ev);
 	}
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	return true;
 }
 
@@ -559,7 +722,7 @@ EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouc
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		Point2 &prev = os->touches[i];
 		ev->set_relative(ev->get_position() - prev);
 		prev = ev->get_position();
@@ -663,6 +826,47 @@ const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 	return "JavaScript";
 }
 
+// Clipboard
+extern "C" EMSCRIPTEN_KEEPALIVE void update_clipboard(const char *p_text) {
+	// Only call set_clipboard from OS (sets local clipboard)
+	OS::get_singleton()->OS::set_clipboard(p_text);
+}
+
+void OS_JavaScript::set_clipboard(const String &p_text) {
+	OS::set_clipboard(p_text);
+	/* clang-format off */
+	int err = EM_ASM_INT({
+		var text = UTF8ToString($0);
+		if (!navigator.clipboard || !navigator.clipboard.writeText)
+			return 1;
+		navigator.clipboard.writeText(text).catch(e => {
+			// Setting OS clipboard is only possible from an input callback.
+			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
+		});
+		return 0;
+	}, p_text.utf8().get_data());
+	/* clang-format on */
+	ERR_EXPLAIN("Clipboard API is not supported.");
+	ERR_FAIL_COND(err);
+}
+
+String OS_JavaScript::get_clipboard() const {
+	/* clang-format off */
+	EM_ASM({
+		try {
+			navigator.clipboard.readText().then(function (result) {
+				ccall('update_clipboard', 'void', ['string'], [result]);
+			}).catch(function (e) {
+				// Fail graciously.
+			});
+		} catch (e) {
+			// Fail graciously.
+		}
+	});
+	/* clang-format on */
+	return this->OS::get_clipboard();
+}
+
 // Lifecycle
 int OS_JavaScript::get_current_video_driver() const {
 	return video_driver_index;
@@ -697,7 +901,7 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 				RasterizerGLES3::make_current();
 				break;
 			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					gles3 = false;
 					continue;
@@ -734,8 +938,21 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	video_driver_index = p_video_driver;
 
 	video_mode = p_desired;
-	// Can't fulfill fullscreen request during start-up due to browser security.
+	// fullscreen_change_callback will correct this if the request is successful.
 	video_mode.fullscreen = false;
+	// Emscripten only attempts fullscreen requests if the user input callback
+	// was registered through one its own functions, so request manually for
+	// start-up fullscreen.
+	if (p_desired.fullscreen) {
+		/* clang-format off */
+		EM_ASM({
+			(canvas.requestFullscreen || canvas.msRequestFullscreen ||
+				canvas.mozRequestFullScreen || canvas.mozRequestFullscreen ||
+				canvas.webkitRequestFullscreen
+			).call(canvas);
+		});
+		/* clang-format on */
+	}
 	/* clang-format off */
 	if (EM_ASM_INT_V({ return Module.resizeCanvasOnStart })) {
 		/* clang-format on */
@@ -755,6 +972,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	AudioDriverManager::initialize(p_audio_driver);
 	VisualServer *visual_server = memnew(VisualServerRaster());
 	input = memnew(InputDefault);
+
+	camera_server = memnew(CameraServer);
 
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
@@ -794,6 +1013,11 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
 			Module.canvas.addEventListener(event, send_notification.bind(null, notifications[index]));
 		});
+		// Clipboard
+		const update_clipboard = cwrap('update_clipboard', null, ['string']);
+		window.addEventListener('paste', function(evt) {
+			update_clipboard(evt.clipboardData.getData('text'));
+		}, true);
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
@@ -841,15 +1065,16 @@ bool OS_JavaScript::main_loop_iterate() {
 		if (sync_wait_time < 0) {
 			/* clang-format off */
 			EM_ASM(
-				FS.syncfs(function(err) {
-					if (err) { console.warn('Failed to save IDB file system: ' + err.message); }
+				FS.syncfs(function(error) {
+					if (error) { err('Failed to save IDB file system: ' + error.message); }
 				});
 			);
 			/* clang-format on */
 		}
 	}
 
-	process_joypads();
+	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
+		process_joypads();
 
 	if (just_exited_fullscreen) {
 		if (window_maximized) {
@@ -884,12 +1109,13 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize() {
 
+	memdelete(camera_server);
 	memdelete(input);
 }
 
 // Miscellaneous
 
-Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
 	ERR_EXPLAIN("OS::execute() is not available on the HTML5 platform");
 	ERR_FAIL_V(ERR_UNAVAILABLE);
@@ -925,16 +1151,6 @@ bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 		return true;
 #endif
 
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_get_current_context();
-	// All extensions are already automatically enabled, this function allows
-	// checking WebGL extension support without inline JavaScript
-	if (p_feature == "s3tc")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_s3tc_srgb");
-	if (p_feature == "etc")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc1");
-	if (p_feature == "etc2")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc");
-
 	return false;
 }
 
@@ -962,7 +1178,7 @@ void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 	Ref<Image> icon = p_icon;
 	if (icon->is_compressed()) {
 		icon = icon->duplicate();
-		ERR_FAIL_COND(icon->decompress() != OK)
+		ERR_FAIL_COND(icon->decompress() != OK);
 	}
 	if (icon->get_format() != Image::FORMAT_RGBA8) {
 		if (icon == p_icon)
@@ -1023,7 +1239,7 @@ Error OS_JavaScript::shell_open(String p_uri) {
 	return OK;
 }
 
-String OS_JavaScript::get_name() {
+String OS_JavaScript::get_name() const {
 
 	return "HTML5";
 }

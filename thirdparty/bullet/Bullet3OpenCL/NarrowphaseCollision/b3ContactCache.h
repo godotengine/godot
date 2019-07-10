@@ -17,16 +17,12 @@ subject to the following restrictions:
 #ifndef B3_CONTACT_CACHE_H
 #define B3_CONTACT_CACHE_H
 
-
 #include "Bullet3Common/b3Vector3.h"
 #include "Bullet3Common/b3Transform.h"
 #include "Bullet3Common/b3AlignedAllocator.h"
 
-
 ///maximum contact breaking and merging threshold
 extern b3Scalar gContactBreakingThreshold;
-
-
 
 #define MANIFOLD_CACHE_SIZE 4
 
@@ -37,24 +33,16 @@ extern b3Scalar gContactBreakingThreshold;
 ///reduces the cache to 4 points, when more then 4 points are added, using following rules:
 ///the contact point with deepest penetration is always kept, and it tries to maximuze the area covered by the points
 ///note that some pairs of objects might have more then one contact manifold.
-B3_ATTRIBUTE_ALIGNED16( class) b3ContactCache
+B3_ATTRIBUTE_ALIGNED16(class)
+b3ContactCache
 {
-
-	
-
-	
 	/// sort cached points so most isolated points come first
-	int	sortCachedPoints(const b3Vector3& pt);
-
-	
+	int sortCachedPoints(const b3Vector3& pt);
 
 public:
-
 	B3_DECLARE_ALIGNED_ALLOCATOR();
 
-	
-	
-	int addManifoldPoint( const b3Vector3& newPoint);
+	int addManifoldPoint(const b3Vector3& newPoint);
 
 	/*void replaceContactPoint(const b3Vector3& newPoint,int insertIndex)
 	{
@@ -63,18 +51,12 @@ public:
 	}
 	*/
 
-
-	
 	static bool validContactDistance(const b3Vector3& pt);
-	
+
 	/// calculated new worldspace coordinates and depth, and reject points that exceed the collision margin
-	static void	refreshContactPoints(  const b3Transform& trA,const b3Transform& trB, struct b3Contact4Data& newContactCache);
+	static void refreshContactPoints(const b3Transform& trA, const b3Transform& trB, struct b3Contact4Data& newContactCache);
 
-	static void removeContactPoint(struct b3Contact4Data& newContactCache,int i);
-	
-
+	static void removeContactPoint(struct b3Contact4Data & newContactCache, int i);
 };
 
-
-
-#endif //B3_CONTACT_CACHE_H
+#endif  //B3_CONTACT_CACHE_H

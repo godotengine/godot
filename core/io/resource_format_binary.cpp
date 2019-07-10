@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -106,7 +106,7 @@ StringName ResourceInteractiveLoaderBinary::_get_string() {
 	uint32_t id = f->get_32();
 	if (id & 0x80000000) {
 		uint32_t len = id & 0x7FFFFFFF;
-		if (len > str_buf.size()) {
+		if ((int)len > str_buf.size()) {
 			str_buf.resize(len);
 		}
 		if (len == 0)
@@ -296,9 +296,9 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 		} break;
 		case VARIANT_OBJECT: {
 
-			uint32_t type = f->get_32();
+			uint32_t objtype = f->get_32();
 
-			switch (type) {
+			switch (objtype) {
 
 				case OBJECT_EMPTY: {
 					//do none
@@ -317,7 +317,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				case OBJECT_EXTERNAL_RESOURCE: {
 					//old file format, still around for compatibility
 
-					String type = get_unicode_string();
+					String exttype = get_unicode_string();
 					String path = get_unicode_string();
 
 					if (path.find("://") == -1 && path.is_rel_path()) {
@@ -329,7 +329,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 						path = remaps[path];
 					}
 
-					RES res = ResourceLoader::load(path, type);
+					RES res = ResourceLoader::load(path, exttype);
 
 					if (res.is_null()) {
 						WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -342,11 +342,11 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 					int erindex = f->get_32();
 
 					if (erindex < 0 || erindex >= external_resources.size()) {
-						WARN_PRINT("Broken external resource! (index out of size");
+						WARN_PRINT("Broken external resource! (index out of size)");
 						r_v = Variant();
 					} else {
 
-						String type = external_resources[erindex].type;
+						String exttype = external_resources[erindex].type;
 						String path = external_resources[erindex].path;
 
 						if (path.find("://") == -1 && path.is_rel_path()) {
@@ -354,7 +354,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 							path = ProjectSettings::get_singleton()->localize_path(res_path.get_base_dir().plus_file(path));
 						}
 
-						RES res = ResourceLoader::load(path, type);
+						RES res = ResourceLoader::load(path, exttype);
 
 						if (res.is_null()) {
 							WARN_PRINT(String("Couldn't load resource: " + path).utf8().get_data());
@@ -410,7 +410,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			PoolVector<uint8_t>::Write w = array.write();
 			f->get_buffer(w.ptr(), len);
 			_advance_padding(len);
-			w = PoolVector<uint8_t>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -432,7 +432,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			}
 
 #endif
-			w = PoolVector<int>::Write();
+			w.release();
 			r_v = array;
 		} break;
 		case VARIANT_REAL_ARRAY: {
@@ -454,7 +454,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 #endif
 
-			w = PoolVector<real_t>::Write();
+			w.release();
 			r_v = array;
 		} break;
 		case VARIANT_STRING_ARRAY: {
@@ -465,7 +465,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			PoolVector<String>::Write w = array.write();
 			for (uint32_t i = 0; i < len; i++)
 				w[i] = get_unicode_string();
-			w = PoolVector<String>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -493,7 +493,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Vector2 size is NOT 8!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Vector2>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -521,7 +521,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Vector3 size is NOT 12!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Vector3>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -549,7 +549,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Color size is NOT 16!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Color>::Write();
+			w.release();
 			r_v = array;
 		} break;
 #ifndef DISABLE_DEPRECATED
@@ -584,7 +584,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				PoolVector<uint8_t>::Write w = imgdata.write();
 				f->get_buffer(w.ptr(), datalen);
 				_advance_padding(datalen);
-				w = PoolVector<uint8_t>::Write();
+				w.release();
 
 				Ref<Image> image;
 				image.instance();
@@ -597,7 +597,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				data.resize(f->get_32());
 				PoolVector<uint8_t>::Write w = data.write();
 				f->get_buffer(w.ptr(), data.size());
-				w = PoolVector<uint8_t>::Write();
+				w.release();
 
 				Ref<Image> image;
 
@@ -720,7 +720,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 		error = ERR_FILE_CORRUPT;
 		memdelete(obj); //bye
 		ERR_EXPLAIN(local_path + ":Resource type in resource field not a resource, type is: " + obj->get_class());
-		ERR_FAIL_COND_V(!r, ERR_FILE_CORRUPT);
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
 	RES res = RES(r);
@@ -991,10 +991,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
-	}
+	ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1129,9 +1126,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
-		if (err != OK) {
-			ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
-		}
+
+		ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 
 		Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 		ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1314,8 +1310,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 			} else {
 				f->store_32(VARIANT_INT);
-				int val = p_property;
-				f->store_32(int32_t(val));
+				f->store_32(int32_t(p_property));
 			}
 
 		} break;
@@ -1502,7 +1497,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 				if (!resource_set.has(res)) {
 					f->store_32(OBJECT_EMPTY);
-					ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
+					ERR_EXPLAIN("Resource was not pre cached for the resource section, most likely due to circular refedence.");
 					ERR_FAIL();
 				}
 
@@ -1651,6 +1646,10 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				return;
 
 			if (!p_main && (!bundle_resources) && res->get_path().length() && res->get_path().find("::") == -1) {
+				if (res->get_path() == path) {
+					ERR_PRINTS("Circular reference to resource being saved found: '" + local_path + "' will be null next time it's loaded.");
+					return;
+				}
 				int idx = external_resources.size();
 				external_resources[res] = idx;
 				return;
@@ -1667,7 +1666,20 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 
 				if (E->get().usage & PROPERTY_USAGE_STORAGE) {
 
-					_find_resources(res->get(E->get().name));
+					Variant value = res->get(E->get().name);
+					if (E->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						RES sres = value;
+						if (sres.is_valid()) {
+							NonPersistentKey npk;
+							npk.base = res;
+							npk.property = E->get().name;
+							non_persistent_map[npk] = sres;
+							resource_set.insert(sres);
+							saved_resources.push_back(sres);
+						}
+					} else {
+						_find_resources(value);
+					}
 				}
 			}
 
@@ -1682,7 +1694,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 
-				Variant v = varray.get(i);
+				const Variant &v = varray.get(i);
 				_find_resources(v);
 			}
 
@@ -1709,7 +1721,8 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 				get_string_index(np.get_subname(i));
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1762,6 +1775,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 		takeover_paths = false;
 
 	local_path = p_path.get_base_dir();
+	path = ProjectSettings::get_singleton()->localize_path(p_path);
 
 	_find_resources(p_resource, true);
 
@@ -1811,7 +1825,17 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 				if ((F->get().usage & PROPERTY_USAGE_STORAGE)) {
 					Property p;
 					p.name_idx = get_string_index(F->get().name);
-					p.value = E->get()->get(F->get().name);
+
+					if (F->get().usage & PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT) {
+						NonPersistentKey npk;
+						npk.base = E->get();
+						npk.property = F->get().name;
+						if (non_persistent_map.has(npk)) {
+							p.value = non_persistent_map[npk];
+						}
+					} else {
+						p.value = E->get()->get(F->get().name);
+					}
 
 					Variant default_value = ClassDB::class_get_default_property_value(E->get()->get_class(), F->get().name);
 

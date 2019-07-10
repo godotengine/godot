@@ -14,7 +14,7 @@ if env['builtin_squish']:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_cvtt.Append(CPPPATH=[thirdparty_dir])
+    env_cvtt.Prepend(CPPPATH=[thirdparty_dir])
 
     env_thirdparty = env_cvtt.Clone()
     env_thirdparty.disable_warnings()

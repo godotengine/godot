@@ -1,0 +1,183 @@
+===============================================================
+Open Asset Import Library (Assimp)
+Developers and Contributors
+===============================================================
+
+The following is a non-exhaustive list of all constributors over the years.
+If you think your name should be listed here, drop us a line and we'll add you.
+
+- Alexander Gessler,
+3DS-, BLEND-, ASE-, DXF-, HMP-, MDL-, MD2-, MD3-, MD5-, MDC-, NFF-, PLY-, STL-, RAW-, OFF-, MS3D-, Q3D- and LWO-Loader, Assimp-Viewer, assimp-cmd, -noboost, Website (Design).
+
+- Thomas Schulze,
+X-, Collada-, BVH-Loader, Postprocessing framework. Data structure & Interface design, documentation.
+
+- Kim Kulling,
+Obj-, Q3BSD-, OpenGEX-Loader, Logging system, CMake-build-environment, Linux-build, Website ( Admin ), Coverity ( Admin ), Glitter ( Admin ).
+
+- R.Schmidt,
+Linux build, eclipse support.
+
+- Matthias Gubisch,
+Assimp.net
+Visual Studio 9 support, bugfixes.
+
+- Mark Sibly
+B3D-Loader, Assimp testing
+
+- Jonathan Klein
+Ogre Loader, VC2010 fixes and CMake fixes.
+
+- Sebastian Hempel,
+PyAssimp (first version)
+Compile-Bugfixes for mingw, add environment for static library support in make.
+
+- Jonathan Pokrass
+Supplied a bugfix concerning the scaling in the md3 loader.
+
+- Andrew Galante,
+Submitted patches to make Assimp compile with GCC-4, a makefile and the xcode3 workspace.
+
+- Andreas Nagel
+First Assimp testing & verification under Windows Vista 64 Bit.
+
+- Marius Schr�der
+Allowed us to use many of his models for screenshots and testing.
+
+- Christian Schubert
+Supplied various XFiles for testing purposes.
+
+- Tizian Wieland
+Searched the web for hundreds of test models for internal use
+
+- John Connors
+Supplied patches for linux and SCons.
+
+- T. R.
+The GUY who performed some of the CSM mocaps.
+
+- Andy Maloney
+Contributed fixes for the documentation and the doxygen markup
+
+- Zhao Lei
+Contributed several bugfixes fixing memory leaks and improving float parsing 
+
+- sueastside
+Updated PyAssimp to the latest Assimp data structures and provided a script to keep the Python binding up-to-date.
+
+- Tobias Rittig
+Collada testing with Cinema 4D
+
+- Brad Grantham
+Improvements in OpenGL-Sample.
+
+- Robert Ramirez
+Add group loading feature to Obj-Loader.
+
+- Chris Maiwald
+Many bugreports, improving Assimp's portability, regular testing & feedback.
+
+- Stepan Hrbek
+Bugreport and fix for a obj-materialloader crash.
+
+- David Nadlinger
+D bindings, CMake install support.
+
+- Dario Accornero
+Contributed several patches regarding Mac OS/XCode targets, bug reports.
+
+- Martin Walser (Samhayne)
+Contributed the 'SimpleTexturedOpenGl' sample.
+
+- Matthias Fauconneau
+Contributed a fix for the Q3-BSP loader.
+
+- Jørgen P. Tjernø
+Contributed updated and improved xcode workspaces
+
+- drparallax
+Contributed the /samples/SimpleAssimpViewX sample
+
+- Carsten Fuchs
+Contributed a fix for the Normalize method in aiQuaternion.
+
+- dbburgess
+Contributes a Android-specific build issue: log the hardware architecture for ARM.
+
+- alfiereinre7
+Contributes a obj-fileparser fix: missing tokens in the obj-token list.
+
+- Roman Kharitonov
+Contributes a fix for the configure script environment.
+
+- Ed Diana
+Contributed AssimpDelphi (/port/AssimpDelphi).
+
+- rdb
+Contributes a bundle of fixes and improvements for the bsp-importer.
+
+- Mick P
+For contributing the De-bone postprocessing step and filing various bug reports.
+
+- Rosen Diankov
+Contributed patches to build assimp debian packages using cmake.
+
+- Mark Page
+Contributed a patch to fix the VertexTriangleAdjacency postprocessing step.
+
+- IOhannes
+Contributed the Debian build fixes ( architecture macro ).
+
+- gellule
+Several LWO and LWS fixes (pivoting). 
+
+- Marcel Metz
+GCC/Linux fixes for the SimpleOpenGL sample.
+
+- Brian Miller
+Bugfix for a compiler fix for iOS on arm.
+
+- Séverin Lemaignan
+Rewrite of PyAssimp, distutils and Python3 support
+
+- albert-wang
+Bugfixes for the collada parser
+
+- Ya ping Jin
+Bugfixes for uv-tanget calculation.
+
+- Jonne Nauha
+Ogre Binary format support
+
+- Filip Wasil, Tieto Poland Sp. z o.o.
+Android JNI asset extraction support
+
+- Richard Steffen
+Contributed ExportProperties interface
+Contributed X File exporter
+Contributed Step (stp) exporter
+
+- Thomas Iorns (mesilliac)
+Initial FBX Export support
+
+For a more detailed list just check: https://github.com/assimp/assimp/network/members
+
+
+========
+Patreons
+========
+
+Huge thanks to our Patreons!
+
+- migenius
+- Marcus
+- Cort
+- elect
+- Steffen
+
+
+===================
+Commercial Sponsors
+===================
+
+- MyDidimo (mydidimo.com): Sponsored development of FBX Export support

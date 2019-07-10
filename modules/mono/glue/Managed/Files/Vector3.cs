@@ -65,14 +65,15 @@ namespace Godot
 
         internal void Normalize()
         {
-            real_t length = Length();
+            real_t lengthsq = LengthSquared();
 
-            if (length == 0f)
+            if (lengthsq == 0)
             {
                 x = y = z = 0f;
             }
             else
             {
+                real_t length = Mathf.Sqrt(lengthsq);
                 x /= length;
                 y /= length;
                 z /= length;
@@ -124,6 +125,11 @@ namespace Godot
                         (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
                         (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
                     );
+        }
+
+        public Vector3 DirectionTo(Vector3 b)
+        {
+            return new Vector3(b.x - x, b.y - y, b.z - z).Normalized();
         }
 
         public real_t DistanceSquaredTo(Vector3 b)
@@ -182,6 +188,14 @@ namespace Godot
                 y + t * (b.y - y),
                 z + t * (b.z - z)
             );
+        }
+
+        public Vector3 MoveToward(Vector3 to, real_t delta)
+        {
+            var v = this;
+            var vd = to - v;
+            var len = vd.Length();
+            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
         }
 
         public Axis MaxAxis()
@@ -392,9 +406,9 @@ namespace Godot
 
         public static bool operator <(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z < right.z;
                 return left.y < right.y;
             }
@@ -404,9 +418,9 @@ namespace Godot
 
         public static bool operator >(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z > right.z;
                 return left.y > right.y;
             }
@@ -416,9 +430,9 @@ namespace Godot
 
         public static bool operator <=(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z <= right.z;
                 return left.y < right.y;
             }
@@ -428,9 +442,9 @@ namespace Godot
 
         public static bool operator >=(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z >= right.z;
                 return left.y > right.y;
             }
@@ -450,7 +464,7 @@ namespace Godot
 
         public bool Equals(Vector3 other)
         {
-            return x == other.x && y == other.y && z == other.z;
+            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
         }
 
         public override int GetHashCode()

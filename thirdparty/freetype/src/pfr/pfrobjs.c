@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  pfrobjs.c                                                              */
-/*                                                                         */
-/*    FreeType PFR object methods (body).                                  */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * pfrobjs.c
+ *
+ *   FreeType PFR object methods (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "pfrobjs.h"
@@ -29,7 +29,7 @@
 #include "pfrerror.h"
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_pfr
+#define FT_COMPONENT  pfr
 
 
   /*************************************************************************/
@@ -122,7 +122,7 @@
               stream,
               (FT_UInt)( face_index & 0xFFFF ),
               face->header.log_dir_offset,
-              FT_BOOL( face->header.phy_font_max_size_high != 0 ) );
+              FT_BOOL( face->header.phy_font_max_size_high ) );
     if ( error )
       goto Exit;
 
@@ -370,7 +370,7 @@
       FT_Bool            scaling;
 
 
-      scaling = FT_BOOL( ( load_flags & FT_LOAD_NO_SCALE ) == 0 );
+      scaling = FT_BOOL( !( load_flags & FT_LOAD_NO_SCALE ) );
 
       /* copy outline data */
       *outline = slot->glyph.loader->base.outline;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -621,44 +621,48 @@ void Theme::clear() {
 
 void Theme::copy_default_theme() {
 
-	Ref<Theme> default_theme = get_default();
+	Ref<Theme> default_theme2 = get_default();
+	copy_theme(default_theme2);
+}
+
+void Theme::copy_theme(const Ref<Theme> &p_other) {
 
 	//these need reconnecting, so add normally
 	{
 		const StringName *K = NULL;
-		while ((K = default_theme->icon_map.next(K))) {
+		while ((K = p_other->icon_map.next(K))) {
 			const StringName *L = NULL;
-			while ((L = default_theme->icon_map[*K].next(L))) {
-				set_icon(*K, *L, default_theme->icon_map[*K][*L]);
+			while ((L = p_other->icon_map[*K].next(L))) {
+				set_icon(*L, *K, p_other->icon_map[*K][*L]);
 			}
 		}
 	}
 
 	{
 		const StringName *K = NULL;
-		while ((K = default_theme->style_map.next(K))) {
+		while ((K = p_other->style_map.next(K))) {
 			const StringName *L = NULL;
-			while ((L = default_theme->style_map[*K].next(L))) {
-				set_stylebox(*K, *L, default_theme->style_map[*K][*L]);
+			while ((L = p_other->style_map[*K].next(L))) {
+				set_stylebox(*L, *K, p_other->style_map[*K][*L]);
 			}
 		}
 	}
 
 	{
 		const StringName *K = NULL;
-		while ((K = default_theme->font_map.next(K))) {
+		while ((K = p_other->font_map.next(K))) {
 			const StringName *L = NULL;
-			while ((L = default_theme->font_map[*K].next(L))) {
-				set_font(*K, *L, default_theme->font_map[*K][*L]);
+			while ((L = p_other->font_map[*K].next(L))) {
+				set_font(*L, *K, p_other->font_map[*K][*L]);
 			}
 		}
 	}
 
 	//these are ok to just copy
 
-	color_map = default_theme->color_map;
-	constant_map = default_theme->constant_map;
-	shader_map = default_theme->shader_map;
+	color_map = p_other->color_map;
+	constant_map = p_other->constant_map;
+	shader_map = p_other->shader_map;
 
 	_change_notify();
 	emit_changed();
@@ -752,6 +756,7 @@ void Theme::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_emit_theme_changed"), &Theme::_emit_theme_changed);
 
 	ClassDB::bind_method("copy_default_theme", &Theme::copy_default_theme);
+	ClassDB::bind_method(D_METHOD("copy_theme", "other"), &Theme::copy_theme);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "default_font", PROPERTY_HINT_RESOURCE_TYPE, "Font"), "set_default_font", "get_default_font");
 }

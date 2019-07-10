@@ -44,6 +44,8 @@
 extern "C" {
 #endif
 
+#if defined(MBEDTLS_ASN1_PARSE_C)
+
 /**
  * \brief          PKCS#5 PBES2 function
  *
@@ -61,6 +63,8 @@ int mbedtls_pkcs5_pbes2( const mbedtls_asn1_buf *pbe_params, int mode,
                  const unsigned char *pwd,  size_t pwdlen,
                  const unsigned char *data, size_t datalen,
                  unsigned char *output );
+
+#endif /* MBEDTLS_ASN1_PARSE_C */
 
 /**
  * \brief          PKCS#5 PBKDF2 using HMAC

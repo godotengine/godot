@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,9 +41,14 @@
 #ifdef VERSION_PATCH
 // Example: "3.1.4"
 #define VERSION_NUMBER "" VERSION_BRANCH "." _MKSTR(VERSION_PATCH)
+// Version number encoded as hexadecimal int with one byte for each number,
+// for easy comparison from code.
+// Example: 3.1.4 will be 0x030104, making comparison easy from script.
+#define VERSION_HEX 0x10000 * VERSION_MAJOR + 0x100 * VERSION_MINOR + VERSION_PATCH
 #else
 // Example: "3.1"
 #define VERSION_NUMBER "" VERSION_BRANCH
+#define VERSION_HEX 0x10000 * VERSION_MAJOR + 0x100 * VERSION_MINOR
 #endif // VERSION_PATCH
 
 // Describes the full configuration of that Godot version, including the version number,

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,6 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class SceneTree;
 class PackedScene;
 class Node;
 class Viewport;
@@ -127,6 +126,7 @@ private:
 	StringName tree_changed_name;
 	StringName node_added_name;
 	StringName node_removed_name;
+	StringName node_renamed_name;
 
 	bool use_font_oversampling;
 	int64_t current_frame;
@@ -153,6 +153,7 @@ private:
 	Size2i stretch_min;
 	real_t stretch_shrink;
 
+	void _update_font_oversampling(float p_ratio);
 	void _update_root_rect();
 
 	List<ObjectID> delete_queue;
@@ -201,6 +202,7 @@ private:
 	void tree_changed();
 	void node_added(Node *p_node);
 	void node_removed(Node *p_node);
+	void node_renamed(Node *p_node);
 
 	Group *add_to_group(const StringName &p_group, Node *p_node);
 	void remove_from_group(const StringName &p_group, Node *p_node);
@@ -287,7 +289,7 @@ protected:
 
 public:
 	enum {
-		NOTIFICATION_TRANSFORM_CHANGED = 29
+		NOTIFICATION_TRANSFORM_CHANGED = 2000
 	};
 
 	enum GroupCallFlags {
@@ -384,7 +386,7 @@ public:
 	void get_nodes_in_group(const StringName &p_group, List<Node *> *p_list);
 	bool has_group(const StringName &p_identifier) const;
 
-	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 p_minsize, real_t p_shrink = 1);
+	void set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink = 1);
 
 	void set_use_font_oversampling(bool p_oversampling);
 	bool is_using_font_oversampling() const;

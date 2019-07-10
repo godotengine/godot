@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -177,13 +177,13 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// Font Colors
 
-	Color control_font_color = Color::html("e0e0e0");
-	Color control_font_color_lower = Color::html("a0a0a0");
-	Color control_font_color_low = Color::html("b0b0b0");
-	Color control_font_color_hover = Color::html("f0f0f0");
+	Color control_font_color = Color(0.88, 0.88, 0.88);
+	Color control_font_color_lower = Color(0.63, 0.63, 0.63);
+	Color control_font_color_low = Color(0.69, 0.69, 0.69);
+	Color control_font_color_hover = Color(0.94, 0.94, 0.94);
 	Color control_font_color_disabled = Color(0.9, 0.9, 0.9, 0.2);
-	Color control_font_color_pressed = Color::html("ffffff");
-	Color font_color_selection = Color::html("7d7d7d");
+	Color control_font_color_pressed = Color(1, 1, 1);
+	Color font_color_selection = Color(0.49, 0.49, 0.49);
 
 	// Panel
 
@@ -359,7 +359,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("focus", "CheckButton", focus);
 
 	theme->set_icon("on", "CheckButton", make_icon(toggle_on_png));
+	theme->set_icon("on_disabled", "CheckButton", make_icon(toggle_on_disabled_png));
 	theme->set_icon("off", "CheckButton", make_icon(toggle_off_png));
+	theme->set_icon("off_disabled", "CheckButton", make_icon(toggle_off_disabled_png));
 
 	theme->set_font("font", "CheckButton", default_font);
 
@@ -396,6 +398,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_color("font_color", "LineEdit", control_font_color);
 	theme->set_color("font_color_selected", "LineEdit", Color(0, 0, 0));
+	theme->set_color("font_color_uneditable", "LineEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("cursor_color", "LineEdit", control_font_color_hover);
 	theme->set_color("selection_color", "LineEdit", font_color_selection);
 	theme->set_color("clear_button_color", "LineEdit", control_font_color);
@@ -423,31 +426,37 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_stylebox("completion", "TextEdit", make_stylebox(tree_bg_png, 3, 3, 3, 3, 0, 0, 0, 0));
 
 	theme->set_icon("tab", "TextEdit", make_icon(tab_png));
+	theme->set_icon("space", "TextEdit", make_icon(space_png));
+	theme->set_icon("folded", "TextEdit", make_icon(arrow_right_png));
+	theme->set_icon("fold", "TextEdit", make_icon(arrow_down_png));
 
 	theme->set_font("font", "TextEdit", default_font);
 
-	theme->set_color("background_color", "TextEdit", Color(0, 0, 0, 0));
-	theme->set_color("completion_background_color", "TextEdit", Color::html("2C2A32"));
-	theme->set_color("completion_selected_color", "TextEdit", Color::html("434244"));
-	theme->set_color("completion_existing_color", "TextEdit", Color::html("21dfdfdf"));
+	theme->set_color("background_color", "TextEdit", Color(0, 0, 0));
+	theme->set_color("completion_background_color", "TextEdit", Color(0.17, 0.16, 0.2));
+	theme->set_color("completion_selected_color", "TextEdit", Color(0.26, 0.26, 0.27));
+	theme->set_color("completion_existing_color", "TextEdit", Color(0.87, 0.87, 0.87, 0.13));
 	theme->set_color("completion_scroll_color", "TextEdit", control_font_color_pressed);
-	theme->set_color("completion_font_color", "TextEdit", Color::html("aaaaaa"));
+	theme->set_color("completion_font_color", "TextEdit", Color(0.67, 0.67, 0.67));
 	theme->set_color("font_color", "TextEdit", control_font_color);
 	theme->set_color("font_color_selected", "TextEdit", Color(0, 0, 0));
+	theme->set_color("font_color_readonly", "TextEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));
 	theme->set_color("selection_color", "TextEdit", font_color_selection);
 	theme->set_color("mark_color", "TextEdit", Color(1.0, 0.4, 0.4, 0.4));
+	theme->set_color("bookmark_color", "TextEdit", Color(0.08, 0.49, 0.98));
 	theme->set_color("breakpoint_color", "TextEdit", Color(0.8, 0.8, 0.4, 0.2));
+	theme->set_color("executing_line_color", "TextEdit", Color(0.2, 0.8, 0.2, 0.4));
 	theme->set_color("code_folding_color", "TextEdit", Color(0.8, 0.8, 0.8, 0.8));
 	theme->set_color("current_line_color", "TextEdit", Color(0.25, 0.25, 0.26, 0.8));
 	theme->set_color("caret_color", "TextEdit", control_font_color);
-	theme->set_color("caret_background_color", "TextEdit", Color::html("000000"));
+	theme->set_color("caret_background_color", "TextEdit", Color(0, 0, 0));
 	theme->set_color("symbol_color", "TextEdit", control_font_color_hover);
 	theme->set_color("brace_mismatch_color", "TextEdit", Color(1, 0.2, 0.2));
-	theme->set_color("line_number_color", "TextEdit", Color::html("66aaaaaa"));
-	theme->set_color("safe_line_number_color", "TextEdit", Color::html("99aac8aa"));
-	theme->set_color("function_color", "TextEdit", Color::html("66a2ce"));
-	theme->set_color("member_variable_color", "TextEdit", Color::html("e64e59"));
-	theme->set_color("number_color", "TextEdit", Color::html("EB9532"));
+	theme->set_color("line_number_color", "TextEdit", Color(0.67, 0.67, 0.67, 0.4));
+	theme->set_color("safe_line_number_color", "TextEdit", Color(0.67, 0.78, 0.67, 0.6));
+	theme->set_color("function_color", "TextEdit", Color(0.4, 0.64, 0.81));
+	theme->set_color("member_variable_color", "TextEdit", Color(0.9, 0.31, 0.35));
+	theme->set_color("number_color", "TextEdit", Color(0.92, 0.58, 0.2));
 	theme->set_color("word_highlighted_color", "TextEdit", Color(0.8, 0.9, 0.9, 0.15));
 
 	theme->set_constant("completion_lines", "TextEdit", 7);
@@ -534,8 +543,9 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// File Dialog
 
-	theme->set_icon("reload", "FileDialog", make_icon(icon_reload_png));
 	theme->set_icon("parent_folder", "FileDialog", make_icon(icon_parent_folder_png));
+	theme->set_icon("reload", "FileDialog", make_icon(icon_reload_png));
+	theme->set_icon("toggle_hidden", "FileDialog", make_icon(icon_visibility_png));
 
 	// Popup
 
@@ -575,14 +585,14 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	// GraphNode
 
-	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png, 6, 24, 6, 5, 16, 24, 16, 5);
-	Ref<StyleBoxTexture> graphsbcomment = make_stylebox(graph_node_comment_png, 6, 24, 6, 5, 16, 24, 16, 5);
-	Ref<StyleBoxTexture> graphsbcommentselected = make_stylebox(graph_node_comment_focus_png, 6, 24, 6, 5, 16, 24, 16, 5);
-	Ref<StyleBoxTexture> graphsbselected = make_stylebox(graph_node_selected_png, 6, 24, 6, 5, 16, 24, 16, 5);
+	Ref<StyleBoxTexture> graphsb = make_stylebox(graph_node_png, 6, 24, 6, 5, 16, 24, 16, 6);
+	Ref<StyleBoxTexture> graphsbcomment = make_stylebox(graph_node_comment_png, 6, 24, 6, 5, 16, 24, 16, 6);
+	Ref<StyleBoxTexture> graphsbcommentselected = make_stylebox(graph_node_comment_focus_png, 6, 24, 6, 5, 16, 24, 16, 6);
+	Ref<StyleBoxTexture> graphsbselected = make_stylebox(graph_node_selected_png, 6, 24, 6, 5, 16, 24, 16, 6);
 	Ref<StyleBoxTexture> graphsbdefault = make_stylebox(graph_node_default_png, 4, 4, 4, 4, 6, 4, 4, 4);
 	Ref<StyleBoxTexture> graphsbdeffocus = make_stylebox(graph_node_default_focus_png, 4, 4, 4, 4, 6, 4, 4, 4);
-	Ref<StyleBoxTexture> graph_bpoint = make_stylebox(graph_node_breakpoint_png, 6, 24, 6, 5, 16, 24, 16, 5);
-	Ref<StyleBoxTexture> graph_position = make_stylebox(graph_node_position_png, 6, 24, 6, 5, 16, 24, 16, 5);
+	Ref<StyleBoxTexture> graph_bpoint = make_stylebox(graph_node_breakpoint_png, 6, 24, 6, 5, 16, 24, 16, 6);
+	Ref<StyleBoxTexture> graph_position = make_stylebox(graph_node_position_png, 6, 24, 6, 5, 16, 24, 16, 6);
 
 	//graphsb->set_expand_margin_size(MARGIN_LEFT,10);
 	//graphsb->set_expand_margin_size(MARGIN_RIGHT,10);
@@ -641,7 +651,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("cursor_color", "Tree", Color(0, 0, 0));
 	theme->set_color("guide_color", "Tree", Color(0, 0, 0, 0.1));
 	theme->set_color("drop_position_color", "Tree", Color(1, 0.3, 0.2));
-	theme->set_color("relationship_line_color", "Tree", Color::html("464646"));
+	theme->set_color("relationship_line_color", "Tree", Color(0.27, 0.27, 0.27));
 	theme->set_color("custom_button_font_highlight", "Tree", control_font_color_hover);
 
 	theme->set_constant("hseparation", "Tree", 4 * scale);
@@ -682,6 +692,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("tab_fg", "TabContainer", sb_expand(make_stylebox(tab_current_png, 4, 4, 4, 1, 16, 4, 16, 4), 2, 2, 2, 2));
 	theme->set_stylebox("tab_bg", "TabContainer", sb_expand(make_stylebox(tab_behind_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
+	theme->set_stylebox("tab_disabled", "TabContainer", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("panel", "TabContainer", tc_sb);
 
 	theme->set_icon("increment", "TabContainer", make_icon(scroll_button_right_png));
@@ -707,6 +718,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_stylebox("tab_fg", "Tabs", sb_expand(make_stylebox(tab_current_png, 4, 3, 4, 1, 16, 3, 16, 2), 2, 2, 2, 2));
 	theme->set_stylebox("tab_bg", "Tabs", sb_expand(make_stylebox(tab_behind_png, 5, 4, 5, 1, 16, 5, 16, 2), 3, 3, 3, 3));
+	theme->set_stylebox("tab_disabled", "Tabs", sb_expand(make_stylebox(tab_disabled_png, 5, 5, 5, 1, 16, 6, 16, 4), 3, 0, 3, 3));
 	theme->set_stylebox("panel", "Tabs", tc_sb);
 	theme->set_stylebox("button_pressed", "Tabs", make_stylebox(button_pressed_png, 4, 4, 4, 4));
 	theme->set_stylebox("button", "Tabs", make_stylebox(button_normal_png, 4, 4, 4, 4));
@@ -793,7 +805,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_font("bold_italics_font", "RichTextLabel", default_font);
 	theme->set_font("mono_font", "RichTextLabel", default_font);
 
-	theme->set_color("default_color", "RichTextLabel", control_font_color);
+	theme->set_color("default_color", "RichTextLabel", Color(1, 1, 1));
 	theme->set_color("font_color_selected", "RichTextLabel", font_color_selection);
 	theme->set_color("selection_color", "RichTextLabel", Color(0.1, 0.1, 1, 0.8));
 
@@ -828,14 +840,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_constant("autohide", "HSplitContainer", 1 * scale);
 	theme->set_constant("autohide", "VSplitContainer", 1 * scale);
 
-	// ReferenceRect
-
-	Ref<StyleBoxTexture> ttnc = make_stylebox(full_panel_bg_png, 8, 8, 8, 8);
-	ttnc->set_draw_center(false);
-
-	theme->set_stylebox("panelnc", "Panel", ttnc);
-	theme->set_stylebox("panelf", "Panel", tc_sb);
-
 	Ref<StyleBoxTexture> sb_pc = make_stylebox(tab_container_bg_png, 4, 4, 4, 4, 7, 7, 7, 7);
 	theme->set_stylebox("panel", "PanelContainer", sb_pc);
 
@@ -849,8 +853,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("activity", "GraphEdit", Color(1, 1, 1));
 	theme->set_constant("bezier_len_pos", "GraphEdit", 80 * scale);
 	theme->set_constant("bezier_len_neg", "GraphEdit", 160 * scale);
-
-	theme->set_icon("logo", "Icons", make_icon(logo_png));
 
 	// Visual Node Ports
 	theme->set_constant("port_grab_distance_horizontal", "GraphEdit", 48 * scale);

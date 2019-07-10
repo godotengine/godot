@@ -9,6 +9,12 @@ public:
 	$ifret R$ $ifnoret void$ (T::*method)($arg, P@$) $ifconst const$;
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
 	Variant::Type _get_argument_type(int p_argument) const {
 		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
 		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
@@ -94,6 +100,12 @@ public:
 
 #ifdef DEBUG_METHODS_ENABLED
 	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
 
 	Variant::Type _get_argument_type(int p_argument) const {
 		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
@@ -179,6 +191,96 @@ MethodBind* create_method_bind($ifret R$ $ifnoret void$ (T::*p_method)($arg, P@$
 """
 
 
+template_typed_free_func = """
+#ifdef TYPED_METHOD_BIND
+template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
+class FunctionBind$argc$$ifret R$$ifconst C$ : public MethodBind {
+public:
+
+	$ifret R$ $ifnoret void$ (*method) ($ifconst const$ T *$ifargs , $$arg, P@$);
+#ifdef DEBUG_METHODS_ENABLED
+	virtual Variant::Type _gen_argument_type(int p_arg) const { return _get_argument_type(p_arg); }
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const {
+		$ifret if (p_arg==-1) return GetTypeInfo<R>::METADATA;$
+		$arg if (p_arg==(@-1)) return GetTypeInfo<P@>::METADATA;
+		$
+		return GodotTypeInfo::METADATA_NONE;
+	}
+	Variant::Type _get_argument_type(int p_argument) const {
+		$ifret if (p_argument==-1) return (Variant::Type)GetTypeInfo<R>::VARIANT_TYPE;$
+		$arg if (p_argument==(@-1)) return (Variant::Type)GetTypeInfo<P@>::VARIANT_TYPE;
+		$
+		return Variant::NIL;
+	}
+	virtual PropertyInfo _gen_argument_type_info(int p_argument) const {
+		$ifret if (p_argument==-1) return GetTypeInfo<R>::get_class_info();$
+		$arg if (p_argument==(@-1)) return GetTypeInfo<P@>::get_class_info();
+		$
+		return PropertyInfo();
+	}
+#endif
+	virtual String get_instance_class() const {
+		return T::get_class_static();
+	}
+
+	virtual Variant call(Object* p_object,const Variant** p_args,int p_arg_count, Variant::CallError& r_error) {
+
+		T *instance=Object::cast_to<T>(p_object);
+		r_error.error=Variant::CallError::CALL_OK;
+#ifdef DEBUG_METHODS_ENABLED
+
+		ERR_FAIL_COND_V(!instance,Variant());
+		if (p_arg_count>get_argument_count()) {
+			r_error.error=Variant::CallError::CALL_ERROR_TOO_MANY_ARGUMENTS;
+			r_error.argument=get_argument_count();
+			return Variant();
+
+		}
+		if (p_arg_count<(get_argument_count()-get_default_argument_count())) {
+
+			r_error.error=Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
+			r_error.argument=get_argument_count()-get_default_argument_count();
+			return Variant();
+		}
+		$arg CHECK_ARG(@);
+		$
+#endif
+		$ifret Variant ret = $(method)(instance$ifargs , $$arg, _VC(@)$);
+		$ifret return Variant(ret);$
+		$ifnoret return Variant();$
+	}
+
+#ifdef PTRCALL_ENABLED
+	virtual void ptrcall(Object*p_object,const void** p_args,void *r_ret) {
+
+		T *instance=Object::cast_to<T>(p_object);
+		$ifret PtrToArg<R>::encode( $ (method)(instance$ifargs , $$arg, PtrToArg<P@>::convert(p_args[@-1])$) $ifret ,r_ret)$ ;
+	}
+#endif
+	FunctionBind$argc$$ifret R$$ifconst C$ () {
+#ifdef DEBUG_METHODS_ENABLED
+		_set_const($ifconst true$$ifnoconst false$);
+		_generate_argument_types($argc$);
+#else
+		set_argument_count($argc$);
+#endif
+
+		$ifret _set_returns(true); $
+	};
+};
+
+template<class T $ifret ,class R$ $ifargs ,$ $arg, class P@$>
+MethodBind* create_method_bind($ifret R$ $ifnoret void$ (*p_method)($ifconst const$ T *$ifargs , $$arg, P@$) ) {
+
+	FunctionBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$> * a = memnew( (FunctionBind$argc$$ifret R$$ifconst C$<T $ifret ,R$ $ifargs ,$ $arg, P@$>) );
+	a->method=p_method;
+	return a;
+}
+#endif
+"""
+
+
+
 def make_version(template, nargs, argmax, const, ret):
 
     intext = template
@@ -247,6 +349,9 @@ def run(target, source, env):
     versions_ext = 6
     text = ""
     text_ext = ""
+    text_free_func = "#ifndef METHOD_BIND_FREE_FUNC_H\n#define METHOD_BIND_FREE_FUNC_H\n"
+    text_free_func += "\n//including this header file allows method binding to use free functions\n"
+    text_free_func += "//note that the free function must have a pointer to an instance of the class as its first parameter\n"
 
     for i in range(0, versions + 1):
 
@@ -264,11 +369,21 @@ def run(target, source, env):
         else:
             text += t
 
+        text_free_func += make_version(template_typed_free_func, i, versions, False, False)
+        text_free_func += make_version(template_typed_free_func, i, versions, False, True)
+        text_free_func += make_version(template_typed_free_func, i, versions, True, False)
+        text_free_func += make_version(template_typed_free_func, i, versions, True, True)
+
+    text_free_func += "#endif"
+
     with open(target[0], "w") as f:
         f.write(text)
 
     with open(target[1], "w") as f:
         f.write(text_ext)
+
+    with open(target[2], "w") as f:
+        f.write(text_free_func)
 
 
 if __name__ == '__main__':

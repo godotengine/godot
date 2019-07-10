@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cffgload.c                                                             */
-/*                                                                         */
-/*    OpenType Glyph Loader (body).                                        */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cffgload.c
+ *
+ *   OpenType Glyph Loader (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -31,14 +31,14 @@
 #include "cfferrs.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cffgload
+#define FT_COMPONENT  cffgload
 
 
   FT_LOCAL_DEF( FT_Error )
@@ -280,16 +280,16 @@
           glyph->root.outline.n_points   = 0;
           glyph->root.outline.n_contours = 0;
 
-          glyph->root.metrics.width  = (FT_Pos)metrics.width  << 6;
-          glyph->root.metrics.height = (FT_Pos)metrics.height << 6;
+          glyph->root.metrics.width  = (FT_Pos)metrics.width  * 64;
+          glyph->root.metrics.height = (FT_Pos)metrics.height * 64;
 
-          glyph->root.metrics.horiBearingX = (FT_Pos)metrics.horiBearingX << 6;
-          glyph->root.metrics.horiBearingY = (FT_Pos)metrics.horiBearingY << 6;
-          glyph->root.metrics.horiAdvance  = (FT_Pos)metrics.horiAdvance  << 6;
+          glyph->root.metrics.horiBearingX = (FT_Pos)metrics.horiBearingX * 64;
+          glyph->root.metrics.horiBearingY = (FT_Pos)metrics.horiBearingY * 64;
+          glyph->root.metrics.horiAdvance  = (FT_Pos)metrics.horiAdvance  * 64;
 
-          glyph->root.metrics.vertBearingX = (FT_Pos)metrics.vertBearingX << 6;
-          glyph->root.metrics.vertBearingY = (FT_Pos)metrics.vertBearingY << 6;
-          glyph->root.metrics.vertAdvance  = (FT_Pos)metrics.vertAdvance  << 6;
+          glyph->root.metrics.vertBearingX = (FT_Pos)metrics.vertBearingX * 64;
+          glyph->root.metrics.vertBearingY = (FT_Pos)metrics.vertBearingY * 64;
+          glyph->root.metrics.vertAdvance  = (FT_Pos)metrics.vertAdvance  * 64;
 
           glyph->root.format = FT_GLYPH_FORMAT_BITMAP;
 
@@ -414,7 +414,7 @@
         decoder.width_only = TRUE;
 
       decoder.builder.no_recurse =
-        (FT_Bool)( load_flags & FT_LOAD_NO_RECURSE );
+        FT_BOOL( load_flags & FT_LOAD_NO_RECURSE );
 
       /* now load the unscaled outline */
       error = cff_get_glyph_data( face, glyph_index,

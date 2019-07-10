@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttsubpix.h                                                             */
-/*                                                                         */
-/*    TrueType Subpixel Hinting.                                           */
-/*                                                                         */
-/*  Copyright 2010-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttsubpix.h
+ *
+ *   TrueType Subpixel Hinting.
+ *
+ * Copyright (C) 2010-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef TTSUBPIX_H_
@@ -29,11 +29,11 @@ FT_BEGIN_HEADER
 
 #ifdef TT_SUPPORT_SUBPIXEL_HINTING_INFINALITY
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* ID flags to identify special functions at FDEF and runtime.           */
-  /*                                                                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * ID flags to identify special functions at FDEF and runtime.
+   *
+   */
 #define SPH_FDEF_INLINE_DELTA_1       0x0000001
 #define SPH_FDEF_INLINE_DELTA_2       0x0000002
 #define SPH_FDEF_DIAGONAL_STROKE      0x0000004
@@ -45,11 +45,11 @@ FT_BEGIN_HEADER
 #define SPH_FDEF_TYPEMAN_DIAGENDCTRL  0x0000100
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Tweak flags that are set for each glyph by the below rules.           */
-  /*                                                                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Tweak flags that are set for each glyph by the below rules.
+   *
+   */
 #define SPH_TWEAK_ALLOW_X_DMOVE                   0x0000001UL
 #define SPH_TWEAK_ALWAYS_DO_DELTAP                0x0000002UL
 #define SPH_TWEAK_ALWAYS_SKIP_DELTAP              0x0000004UL

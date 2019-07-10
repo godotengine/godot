@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,7 +42,7 @@
 
 class ParticlesEditorBase : public Control {
 
-	GDCLASS(ParticlesEditorBase, Control)
+	GDCLASS(ParticlesEditorBase, Control);
 
 protected:
 	Spatial *base_node;
@@ -86,6 +86,7 @@ class ParticlesEditor : public ParticlesEditorBase {
 		MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH,
 		MENU_OPTION_CLEAR_EMISSION_VOLUME,
 		MENU_OPTION_CONVERT_TO_CPU_PARTICLES,
+		MENU_OPTION_RESTART,
 
 	};
 

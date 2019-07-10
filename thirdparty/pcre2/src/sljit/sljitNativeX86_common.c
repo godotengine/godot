@@ -669,23 +669,6 @@ static SLJIT_INLINE sljit_s32 emit_sse2_store(struct sljit_compiler *compiler,
 static SLJIT_INLINE sljit_s32 emit_sse2_load(struct sljit_compiler *compiler,
 	sljit_s32 single, sljit_s32 dst, sljit_s32 src, sljit_sw srcw);
 
-#ifdef _WIN32
-#include <malloc.h>
-
-static void SLJIT_FUNC sljit_grow_stack(sljit_sw local_size)
-{
-	/* Workaround for calling the internal _chkstk() function on Windows.
-	This function touches all 4k pages belongs to the requested stack space,
-	which size is passed in local_size. This is necessary on Windows where
-	the stack can only grow in 4k steps. However, this function just burn
-	CPU cycles if the stack is large enough. However, you don't know it in
-	advance, so it must always be called. I think this is a bad design in
-	general even if it has some reasons. */
-	*(volatile sljit_s32*)alloca(local_size) = 0;
-}
-
-#endif
-
 #if (defined SLJIT_CONFIG_X86_32 && SLJIT_CONFIG_X86_32)
 #include "sljitNativeX86_32.c"
 #else

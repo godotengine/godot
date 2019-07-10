@@ -104,17 +104,26 @@ namespace Godot
             }
         }
 
-        private static readonly Color black = new Color(0f, 0f, 0f);
-
-        public Color Black
+        public static Color ColorN(string name, float alpha = 1f)
         {
-            get
+            name = name.Replace(" ", String.Empty);
+            name = name.Replace("-", String.Empty);
+            name = name.Replace("_", String.Empty);
+            name = name.Replace("'", String.Empty);
+            name = name.Replace(".", String.Empty);
+            name = name.ToLower();
+
+            if (!Colors.namedColors.ContainsKey(name))
             {
-                return black;
+                throw new ArgumentOutOfRangeException($"Invalid Color Name: {name}");
             }
+
+            Color color = Colors.namedColors[name];
+            color.a = alpha;
+            return color;
         }
 
-        public float this [int index]
+        public float this[int index]
         {
             get
             {
@@ -159,7 +168,7 @@ namespace Godot
             int max = Mathf.Max(color.r8, Mathf.Max(color.g8, color.b8));
             int min = Mathf.Min(color.r8, Mathf.Min(color.g8, color.b8));
 
-            float delta = max - min;
+            int delta = max - min;
 
             if (delta == 0)
             {
@@ -380,7 +389,7 @@ namespace Godot
             return txt;
         }
 
-        // Constructors
+        // Constructors 
         public Color(float r, float g, float b, float a = 1.0f)
         {
             this.r = r;
@@ -582,11 +591,11 @@ namespace Godot
 
         public static bool operator <(Color left, Color right)
         {
-            if (left.r == right.r)
+            if (Mathf.IsEqualApprox(left.r, right.r))
             {
-                if (left.g == right.g)
+                if (Mathf.IsEqualApprox(left.g, right.g))
                 {
-                    if (left.b == right.b)
+                    if (Mathf.IsEqualApprox(left.b, right.b))
                         return left.a < right.a;
                     return left.b < right.b;
                 }
@@ -599,11 +608,11 @@ namespace Godot
 
         public static bool operator >(Color left, Color right)
         {
-            if (left.r == right.r)
+            if (Mathf.IsEqualApprox(left.r, right.r))
             {
-                if (left.g == right.g)
+                if (Mathf.IsEqualApprox(left.g, right.g))
                 {
-                    if (left.b == right.b)
+                    if (Mathf.IsEqualApprox(left.b, right.b))
                         return left.a > right.a;
                     return left.b > right.b;
                 }
@@ -626,7 +635,7 @@ namespace Godot
 
         public bool Equals(Color other)
         {
-            return r == other.r && g == other.g && b == other.b && a == other.a;
+            return Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) && Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
         }
 
         public override int GetHashCode()

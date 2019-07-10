@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -70,9 +70,9 @@ bool Skeleton::_set(const StringName &p_path, const Variant &p_value) {
 
 			for (int i = 0; i < children.size(); i++) {
 
-				NodePath path = children[i];
-				ERR_CONTINUE(path.operator String() == "");
-				Node *node = get_node(path);
+				NodePath npath = children[i];
+				ERR_CONTINUE(npath.operator String() == "");
+				Node *node = get_node(npath);
 				ERR_CONTINUE(!node);
 				bind_child_node_to_bone(which, node);
 			}
@@ -115,8 +115,8 @@ bool Skeleton::_get(const StringName &p_path, Variant &r_ret) const {
 			ERR_CONTINUE(!obj);
 			Node *node = Object::cast_to<Node>(obj);
 			ERR_CONTINUE(!node);
-			NodePath path = get_path_to(node);
-			children.push_back(path);
+			NodePath npath = get_path_to(node);
+			children.push_back(npath);
 		}
 
 		r_ret = children;
@@ -162,7 +162,7 @@ void Skeleton::_update_process_order() {
 	//now check process order
 	int pass_count = 0;
 	while (pass_count < len * len) {
-		//using bubblesort because of simplicity, it wont run every frame though.
+		//using bubblesort because of simplicity, it won't run every frame though.
 		//bublesort worst case is O(n^2), and this may be an infinite loop if cyclic
 		bool swapped = false;
 		for (int i = 0; i < len; i++) {
@@ -198,11 +198,7 @@ void Skeleton::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			if (dirty) {
-
-				dirty = false;
-				_make_dirty(); // property make it dirty
-			}
+			VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
 
 		} break;
 		case NOTIFICATION_EXIT_WORLD: {
@@ -210,21 +206,7 @@ void Skeleton::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
-			if (dirty)
-				break; //will be eventually updated
-
-			//if moved, just update transforms
-			VisualServer *vs = VisualServer::get_singleton();
-			const Bone *bonesptr = bones.ptr();
-			int len = bones.size();
-			Transform global_transform = get_global_transform();
-			Transform global_transform_inverse = global_transform.affine_inverse();
-
-			for (int i = 0; i < len; i++) {
-
-				const Bone &b = bonesptr[i];
-				vs->skeleton_bone_set_transform(skeleton, i, global_transform * (b.transform_final * global_transform_inverse));
-			}
+			VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
 		} break;
 		case NOTIFICATION_UPDATE_SKELETON: {
 
@@ -232,7 +214,7 @@ void Skeleton::_notification(int p_what) {
 			Bone *bonesptr = bones.ptrw();
 			int len = bones.size();
 
-			vs->skeleton_allocate(skeleton, len); // if same size, nothin really happens
+			vs->skeleton_allocate(skeleton, len); // if same size, nothing really happens
 
 			_update_process_order();
 
@@ -256,9 +238,6 @@ void Skeleton::_notification(int p_what) {
 
 				rest_global_inverse_dirty = false;
 			}
-
-			Transform global_transform = get_global_transform();
-			Transform global_transform_inverse = global_transform.affine_inverse();
 
 			for (int i = 0; i < len; i++) {
 
@@ -320,7 +299,7 @@ void Skeleton::_notification(int p_what) {
 				}
 
 				b.transform_final = b.pose_global * b.rest_global_inverse;
-				vs->skeleton_bone_set_transform(skeleton, i, global_transform * (b.transform_final * global_transform_inverse));
+				vs->skeleton_bone_set_transform(skeleton, order[i], b.transform_final);
 
 				for (List<uint32_t>::Element *E = b.nodes_bound.front(); E; E = E->next()) {
 
@@ -561,10 +540,11 @@ void Skeleton::clear_bones() {
 void Skeleton::set_bone_pose(int p_bone, const Transform &p_pose) {
 
 	ERR_FAIL_INDEX(p_bone, bones.size());
-	ERR_FAIL_COND(!is_inside_tree());
 
 	bones.write[p_bone].pose = p_pose;
-	_make_dirty();
+	if (is_inside_tree()) {
+		_make_dirty();
+	}
 }
 Transform Skeleton::get_bone_pose(int p_bone) const {
 
@@ -594,10 +574,6 @@ void Skeleton::_make_dirty() {
 	if (dirty)
 		return;
 
-	if (!is_inside_tree()) {
-		dirty = true;
-		return;
-	}
 	MessageQueue::get_singleton()->push_notification(this, NOTIFICATION_UPDATE_SKELETON);
 	dirty = true;
 }
@@ -771,6 +747,16 @@ void Skeleton::physical_bones_remove_collision_exception(RID p_exception) {
 
 #endif // _3D_DISABLED
 
+void Skeleton::set_use_bones_in_world_transform(bool p_enable) {
+	use_bones_in_world_transform = p_enable;
+	if (is_inside_tree()) {
+		VS::get_singleton()->skeleton_set_world_transform(skeleton, use_bones_in_world_transform, get_global_transform());
+	}
+}
+bool Skeleton::is_using_bones_in_world_transform() const {
+	return use_bones_in_world_transform;
+}
+
 void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_bone", "name"), &Skeleton::add_bone);
@@ -786,6 +772,8 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_rest", "bone_idx"), &Skeleton::get_bone_rest);
 	ClassDB::bind_method(D_METHOD("set_bone_rest", "bone_idx", "rest"), &Skeleton::set_bone_rest);
+
+	ClassDB::bind_method(D_METHOD("localize_rests"), &Skeleton::localize_rests);
 
 	ClassDB::bind_method(D_METHOD("set_bone_disable_rest", "bone_idx", "disable"), &Skeleton::set_bone_disable_rest);
 	ClassDB::bind_method(D_METHOD("is_bone_rest_disabled", "bone_idx"), &Skeleton::is_bone_rest_disabled);
@@ -807,6 +795,9 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_bone_transform", "bone_idx"), &Skeleton::get_bone_transform);
 
+	ClassDB::bind_method(D_METHOD("set_use_bones_in_world_transform", "enable"), &Skeleton::set_use_bones_in_world_transform);
+	ClassDB::bind_method(D_METHOD("is_using_bones_in_world_transform"), &Skeleton::is_using_bones_in_world_transform);
+
 #ifndef _3D_DISABLED
 
 	ClassDB::bind_method(D_METHOD("physical_bones_stop_simulation"), &Skeleton::physical_bones_stop_simulation);
@@ -818,6 +809,7 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bone_ignore_animation", "bone", "ignore"), &Skeleton::set_bone_ignore_animation);
 
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bones_in_world_transform"), "set_use_bones_in_world_transform", "is_using_bones_in_world_transform");
 	BIND_CONSTANT(NOTIFICATION_UPDATE_SKELETON);
 }
 
@@ -828,6 +820,7 @@ Skeleton::Skeleton() {
 	process_order_dirty = true;
 	skeleton = VisualServer::get_singleton()->skeleton_create();
 	set_notify_transform(true);
+	use_bones_in_world_transform = false;
 }
 
 Skeleton::~Skeleton() {

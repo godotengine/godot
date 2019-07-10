@@ -1,12 +1,12 @@
 /*************************************************************************/
-/* text_editor.cpp                                                       */
+/*  text_editor.cpp                                                      */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,7 +66,6 @@ void TextEditor::_change_syntax_highlighter(int p_idx) {
 		el = el->next();
 	}
 	set_syntax_highlighter(highlighters[highlighter_menu->get_item_text(p_idx)]);
-	EditorSettings::get_singleton()->set_project_metadata("text_editor", "syntax_highlighter", p_idx);
 }
 
 void TextEditor::_load_theme_settings() {
@@ -94,7 +93,9 @@ void TextEditor::_load_theme_settings() {
 	Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
 	Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
 	Color mark_color = EDITOR_GET("text_editor/highlighting/mark_color");
+	Color bookmark_color = EDITOR_GET("text_editor/highlighting/bookmark_color");
 	Color breakpoint_color = EDITOR_GET("text_editor/highlighting/breakpoint_color");
+	Color executing_line_color = EDITOR_GET("text_editor/highlighting/executing_line_color");
 	Color code_folding_color = EDITOR_GET("text_editor/highlighting/code_folding_color");
 	Color search_result_color = EDITOR_GET("text_editor/highlighting/search_result_color");
 	Color search_result_border_color = EDITOR_GET("text_editor/highlighting/search_result_border_color");
@@ -115,7 +116,7 @@ void TextEditor::_load_theme_settings() {
 	text_edit->add_color_override("line_number_color", line_number_color);
 	text_edit->add_color_override("caret_color", caret_color);
 	text_edit->add_color_override("caret_background_color", caret_background_color);
-	text_edit->add_color_override("font_selected_color", text_selected_color);
+	text_edit->add_color_override("font_color_selected", text_selected_color);
 	text_edit->add_color_override("selection_color", selection_color);
 	text_edit->add_color_override("brace_mismatch_color", brace_mismatch_color);
 	text_edit->add_color_override("current_line_color", current_line_color);
@@ -125,7 +126,9 @@ void TextEditor::_load_theme_settings() {
 	text_edit->add_color_override("function_color", function_color);
 	text_edit->add_color_override("member_variable_color", member_variable_color);
 	text_edit->add_color_override("breakpoint_color", breakpoint_color);
+	text_edit->add_color_override("executing_line_color", executing_line_color);
 	text_edit->add_color_override("mark_color", mark_color);
+	text_edit->add_color_override("bookmark_color", bookmark_color);
 	text_edit->add_color_override("code_folding_color", code_folding_color);
 	text_edit->add_color_override("search_result_color", search_result_color);
 	text_edit->add_color_override("search_result_border_color", search_result_border_color);
@@ -201,7 +204,6 @@ void TextEditor::reload_text() {
 	int v = te->get_v_scroll();
 
 	te->set_text(text_file->get_text());
-	te->clear_undo_history();
 	te->cursor_set_line(row);
 	te->cursor_set_column(column);
 	te->set_h_scroll(h);
@@ -215,6 +217,43 @@ void TextEditor::reload_text() {
 void TextEditor::_validate_script() {
 	emit_signal("name_changed");
 	emit_signal("edited_script_changed");
+}
+
+void TextEditor::_update_bookmark_list() {
+
+	bookmarks_menu->get_popup()->clear();
+
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
+	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+
+	Array bookmark_list = code_editor->get_text_edit()->get_bookmarks_array();
+	if (bookmark_list.size() == 0) {
+		return;
+	}
+
+	bookmarks_menu->get_popup()->add_separator();
+
+	for (int i = 0; i < bookmark_list.size(); i++) {
+		String line = code_editor->get_text_edit()->get_line(bookmark_list[i]).strip_edges();
+		// Limit the size of the line if too big.
+		if (line.length() > 50) {
+			line = line.substr(0, 50);
+		}
+
+		bookmarks_menu->get_popup()->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->get_popup()->set_item_metadata(bookmarks_menu->get_popup()->get_item_count() - 1, bookmark_list[i]);
+	}
+}
+
+void TextEditor::_bookmark_item_pressed(int p_idx) {
+
+	if (p_idx < 4) { // Any item before the separator.
+		_edit_option(bookmarks_menu->get_popup()->get_item_id(p_idx));
+	} else {
+		code_editor->goto_line(bookmarks_menu->get_popup()->get_item_metadata(p_idx));
+	}
 }
 
 void TextEditor::apply_code() {
@@ -234,11 +273,24 @@ Variant TextEditor::get_edit_state() {
 void TextEditor::set_edit_state(const Variant &p_state) {
 
 	code_editor->set_edit_state(p_state);
+
+	Dictionary state = p_state;
+	if (state.has("syntax_highlighter")) {
+		int idx = highlighter_menu->get_item_idx_from_text(state["syntax_highlighter"]);
+		if (idx >= 0) {
+			_change_syntax_highlighter(idx);
+		}
+	}
 }
 
 void TextEditor::trim_trailing_whitespace() {
 
 	code_editor->trim_trailing_whitespace();
+}
+
+void TextEditor::insert_final_newline() {
+
+	code_editor->insert_final_newline();
 }
 
 void TextEditor::convert_indent_to_spaces() {
@@ -259,6 +311,15 @@ void TextEditor::tag_saved_version() {
 void TextEditor::goto_line(int p_line, bool p_with_error) {
 
 	code_editor->goto_line(p_line);
+}
+
+void TextEditor::set_executing_line(int p_line) {
+
+	code_editor->set_executing_line(p_line);
+}
+
+void TextEditor::clear_executing_line() {
+	code_editor->clear_executing_line();
 }
 
 void TextEditor::ensure_focus() {
@@ -299,7 +360,6 @@ void TextEditor::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_READY:
 			_load_theme_settings();
-			_change_syntax_highlighter(EditorSettings::get_singleton()->get_project_metadata("text_editor", "syntax_highlighter", 0));
 			break;
 	}
 }
@@ -421,6 +481,22 @@ void TextEditor::_edit_option(int p_op) {
 
 			goto_line_dialog->popup_find_line(tx);
 		} break;
+		case BOOKMARK_TOGGLE: {
+
+			code_editor->toggle_bookmark();
+		} break;
+		case BOOKMARK_GOTO_NEXT: {
+
+			code_editor->goto_next_bookmark();
+		} break;
+		case BOOKMARK_GOTO_PREV: {
+
+			code_editor->goto_prev_bookmark();
+		} break;
+		case BOOKMARK_REMOVE_ALL: {
+
+			code_editor->remove_all_bookmarks();
+		} break;
 	}
 }
 
@@ -432,6 +508,8 @@ void TextEditor::_convert_case(CodeTextEditor::CaseStyle p_case) {
 void TextEditor::_bind_methods() {
 
 	ClassDB::bind_method("_validate_script", &TextEditor::_validate_script);
+	ClassDB::bind_method("_update_bookmark_list", &TextEditor::_update_bookmark_list);
+	ClassDB::bind_method("_bookmark_item_pressed", &TextEditor::_bookmark_item_pressed);
 	ClassDB::bind_method("_load_theme_settings", &TextEditor::_load_theme_settings);
 	ClassDB::bind_method("_edit_option", &TextEditor::_edit_option);
 	ClassDB::bind_method("_change_syntax_highlighter", &TextEditor::_change_syntax_highlighter);
@@ -508,6 +586,7 @@ void TextEditor::_make_context_menu(bool p_selection, bool p_can_fold, bool p_is
 	context_menu->add_separator();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_left"), EDIT_INDENT_LEFT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/indent_right"), EDIT_INDENT_RIGHT);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
 	if (p_selection) {
 		context_menu->add_separator();
@@ -545,6 +624,7 @@ TextEditor::TextEditor() {
 	search_menu = memnew(MenuButton);
 	edit_hb->add_child(search_menu);
 	search_menu->set_text(TTR("Search"));
+	search_menu->set_switch_on_hover(true);
 	search_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find"), SEARCH_FIND);
@@ -559,6 +639,7 @@ TextEditor::TextEditor() {
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));
+	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
 	edit_hb->add_child(edit_menu);
@@ -603,5 +684,16 @@ TextEditor::TextEditor() {
 	highlighter_menu->add_radio_check_item(TTR("Standard"));
 	highlighter_menu->connect("id_pressed", this, "_change_syntax_highlighter");
 
+	bookmarks_menu = memnew(MenuButton);
+	edit_hb->add_child(bookmarks_menu);
+	bookmarks_menu->set_text(TTR("Bookmarks"));
+	bookmarks_menu->set_switch_on_hover(true);
+	_update_bookmark_list();
+	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
+	bookmarks_menu->get_popup()->connect("index_pressed", this, "_bookmark_item_pressed");
+
 	code_editor->get_text_edit()->set_drag_forwarding(this);
+}
+
+void TextEditor::validate() {
 }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,14 +41,14 @@ class StreamPeerGDNative : public StreamPeer {
 
 protected:
 	static void _bind_methods();
-	godot_net_stream_peer *interface;
+	const godot_net_stream_peer *interface;
 
 public:
 	StreamPeerGDNative();
 	~StreamPeerGDNative();
 
 	/* Sets the interface implementation from GDNative */
-	void set_native_stream_peer(godot_net_stream_peer *p_interface);
+	void set_native_stream_peer(const godot_net_stream_peer *p_interface);
 
 	/* Specific to StreamPeer */
 	Error put_data(const uint8_t *p_data, int p_bytes);

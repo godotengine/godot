@@ -21,28 +21,23 @@ subject to the following restrictions:
 class btVoronoiSimplexSolver;
 class btGjkEpaPenetrationDepthSolver;
 
-
 ///btSoftBodyRigidBodyCollisionConfiguration add softbody interaction on top of btDefaultCollisionConfiguration
-class	btSoftBodyRigidBodyCollisionConfiguration : public btDefaultCollisionConfiguration
+class btSoftBodyRigidBodyCollisionConfiguration : public btDefaultCollisionConfiguration
 {
-
 	//default CreationFunctions, filling the m_doubleDispatch table
-	btCollisionAlgorithmCreateFunc*	m_softSoftCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_softRigidConvexCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_swappedSoftRigidConvexCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_softRigidConcaveCreateFunc;
-	btCollisionAlgorithmCreateFunc*	m_swappedSoftRigidConcaveCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_softSoftCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_softRigidConvexCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_swappedSoftRigidConvexCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_softRigidConcaveCreateFunc;
+	btCollisionAlgorithmCreateFunc* m_swappedSoftRigidConcaveCreateFunc;
 
 public:
-
 	btSoftBodyRigidBodyCollisionConfiguration(const btDefaultCollisionConstructionInfo& constructionInfo = btDefaultCollisionConstructionInfo());
 
 	virtual ~btSoftBodyRigidBodyCollisionConfiguration();
 
 	///creation of soft-soft and soft-rigid, and otherwise fallback to base class implementation
-	virtual btCollisionAlgorithmCreateFunc* getCollisionAlgorithmCreateFunc(int proxyType0,int proxyType1);
-
+	virtual btCollisionAlgorithmCreateFunc* getCollisionAlgorithmCreateFunc(int proxyType0, int proxyType1);
 };
 
-#endif //BT_SOFTBODY_RIGIDBODY_COLLISION_CONFIGURATION
-
+#endif  //BT_SOFTBODY_RIGIDBODY_COLLISION_CONFIGURATION

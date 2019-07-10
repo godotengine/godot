@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Script" inherits="Resource" category="Core" version="3.1">
+<class name="Script" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		A class stored as a resource.
 	</brief_description>
@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/scripting.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="can_instance" qualifiers="const">
 			<return type="bool">

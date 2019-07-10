@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 
 class ParticlesMaterial : public Material {
 
-	GDCLASS(ParticlesMaterial, Material)
+	GDCLASS(ParticlesMaterial, Material);
 
 public:
 	enum Parameter {
@@ -129,6 +129,7 @@ private:
 	static SelfList<ParticlesMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
+		StringName direction;
 		StringName spread;
 		StringName flatness;
 		StringName initial_linear_velocity;
@@ -194,6 +195,7 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	Vector3 direction;
 	float spread;
 	float flatness;
 
@@ -230,6 +232,9 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
+	void set_direction(Vector3 p_direction);
+	Vector3 get_direction() const;
+
 	void set_spread(float p_spread);
 	float get_spread() const;
 

@@ -1,40 +1,40 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afwarp.c                                                               */
-/*                                                                         */
-/*    Auto-fitter warping algorithm (body).                                */
-/*                                                                         */
-/*  Copyright 2006-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afwarp.c
+ *
+ *   Auto-fitter warping algorithm (body).
+ *
+ * Copyright (C) 2006-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
   /*
-   *  The idea of the warping code is to slightly scale and shift a glyph
-   *  within a single dimension so that as much of its segments are aligned
-   *  (more or less) on the grid.  To find out the optimal scaling and
-   *  shifting value, various parameter combinations are tried and scored.
+   * The idea of the warping code is to slightly scale and shift a glyph
+   * within a single dimension so that as much of its segments are aligned
+   * (more or less) on the grid.  To find out the optimal scaling and
+   * shifting value, various parameter combinations are tried and scored.
    */
 
 #include "afwarp.h"
 
 #ifdef AF_CONFIG_OPTION_USE_WARPER
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_afwarp
+#define FT_COMPONENT  afwarp
 
 
   /* The weights cover the range 0/64 - 63/64 of a pixel.  Obviously, */

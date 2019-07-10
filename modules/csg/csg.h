@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #ifndef CSG_H
 #define CSG_H
 
-#include "core/dvector.h"
 #include "core/map.h"
 #include "core/math/aabb.h"
 #include "core/math/plane.h"
@@ -39,6 +38,7 @@
 #include "core/math/transform.h"
 #include "core/math/vector3.h"
 #include "core/oa_hash_map.h"
+#include "core/pool_vector.h"
 #include "scene/resources/material.h"
 
 struct CSGBrush {

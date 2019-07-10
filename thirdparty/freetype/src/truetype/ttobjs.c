@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttobjs.c                                                               */
-/*                                                                         */
-/*    Objects manager (body).                                              */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttobjs.c
+ *
+ *   Objects manager (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -36,36 +36,37 @@
 #include "ttgxvar.h"
 #endif
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttobjs
+#define FT_COMPONENT  ttobjs
 
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                       GLYPH ZONE FUNCTIONS                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                      GLYPH ZONE FUNCTIONS
+   *
+   */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_glyphzone_done                                                  */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Deallocate a glyph zone.                                           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    zone :: A pointer to the target glyph zone.                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_glyphzone_done
+   *
+   * @Description:
+   *   Deallocate a glyph zone.
+   *
+   * @Input:
+   *   zone ::
+   *     A pointer to the target glyph zone.
+   */
   FT_LOCAL_DEF( void )
   tt_glyphzone_done( TT_GlyphZone  zone )
   {
@@ -87,27 +88,31 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_glyphzone_new                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Allocate a new glyph zone.                                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    memory      :: A handle to the current memory object.              */
-  /*                                                                       */
-  /*    maxPoints   :: The capacity of glyph zone in points.               */
-  /*                                                                       */
-  /*    maxContours :: The capacity of glyph zone in contours.             */
-  /*                                                                       */
-  /* <Output>                                                              */
-  /*    zone        :: A pointer to the target glyph zone record.          */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_glyphzone_new
+   *
+   * @Description:
+   *   Allocate a new glyph zone.
+   *
+   * @Input:
+   *   memory ::
+   *     A handle to the current memory object.
+   *
+   *   maxPoints ::
+   *     The capacity of glyph zone in points.
+   *
+   *   maxContours ::
+   *     The capacity of glyph zone in contours.
+   *
+   * @Output:
+   *   zone ::
+   *     A pointer to the target glyph zone record.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_glyphzone_new( FT_Memory     memory,
                     FT_UShort     maxPoints,
@@ -566,32 +571,37 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_init                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initialize a given TrueType face object.                           */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    stream     :: The source font stream.                              */
-  /*                                                                       */
-  /*    face_index :: The index of the TrueType font, if we are opening a  */
-  /*                  collection, in bits 0-15.  The numbered instance     */
-  /*                  index~+~1 of a GX (sub)font, if applicable, in bits  */
-  /*                  16-30.                                               */
-  /*                                                                       */
-  /*    num_params :: Number of additional generic parameters.  Ignored.   */
-  /*                                                                       */
-  /*    params     :: Additional generic parameters.  Ignored.             */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    face       :: The newly built face object.                         */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_init
+   *
+   * @Description:
+   *   Initialize a given TrueType face object.
+   *
+   * @Input:
+   *   stream ::
+   *     The source font stream.
+   *
+   *   face_index ::
+   *     The index of the TrueType font, if we are opening a
+   *     collection, in bits 0-15.  The numbered instance
+   *     index~+~1 of a GX (sub)font, if applicable, in bits
+   *     16-30.
+   *
+   *   num_params ::
+   *     Number of additional generic parameters.  Ignored.
+   *
+   *   params ::
+   *     Additional generic parameters.  Ignored.
+   *
+   * @InOut:
+   *   face ::
+   *     The newly built face object.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_face_init( FT_Stream      stream,
                 FT_Face        ttface,      /* TT_Face */
@@ -743,17 +753,18 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_face_done                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finalize a given face object.                                      */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    face :: A pointer to the face object to destroy.                   */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_face_done
+   *
+   * @Description:
+   *   Finalize a given face object.
+   *
+   * @Input:
+   *   face ::
+   *     A pointer to the face object to destroy.
+   */
   FT_LOCAL_DEF( void )
   tt_face_done( FT_Face  ttface )           /* TT_Face */
   {
@@ -799,30 +810,32 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                           SIZE  FUNCTIONS                             */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                          SIZE  FUNCTIONS
+   *
+   */
 
 #ifdef TT_USE_BYTECODE_INTERPRETER
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_size_run_fpgm                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Run the font program.                                              */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    size     :: A handle to the size object.                           */
-  /*                                                                       */
-  /*    pedantic :: Set if bytecode execution should be pedantic.          */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_size_run_fpgm
+   *
+   * @Description:
+   *   Run the font program.
+   *
+   * @Input:
+   *   size ::
+   *     A handle to the size object.
+   *
+   *   pedantic ::
+   *     Set if bytecode execution should be pedantic.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_size_run_fpgm( TT_Size  size,
                     FT_Bool  pedantic )
@@ -899,22 +912,24 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_size_run_prep                                                   */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Run the control value program.                                     */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    size     :: A handle to the size object.                           */
-  /*                                                                       */
-  /*    pedantic :: Set if bytecode execution should be pedantic.          */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_size_run_prep
+   *
+   * @Description:
+   *   Run the control value program.
+   *
+   * @Input:
+   *   size ::
+   *     A handle to the size object.
+   *
+   *   pedantic ::
+   *     Set if bytecode execution should be pedantic.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_size_run_prep( TT_Size  size,
                     FT_Bool  pedantic )
@@ -1159,10 +1174,16 @@
       TT_Face  face = (TT_Face)size->root.face;
 
 
-      /* Scale the cvt values to the new ppem.          */
-      /* We use by default the y ppem to scale the CVT. */
+      /* Scale the cvt values to the new ppem.            */
+      /* By default, we use the y ppem value for scaling. */
+      FT_TRACE6(( "CVT values:\n" ));
       for ( i = 0; i < size->cvt_size; i++ )
+      {
         size->cvt[i] = FT_MulFix( face->cvt[i], size->ttmetrics.scale );
+        FT_TRACE6(( "  %3d: %d (%f)\n",
+                    i, face->cvt[i], size->cvt[i] / 64.0 ));
+      }
+      FT_TRACE6(( "\n" ));
 
       /* all twilight points are originally zero */
       for ( i = 0; i < (FT_UInt)size->twilight.n_points; i++ )
@@ -1191,20 +1212,21 @@
 #endif /* TT_USE_BYTECODE_INTERPRETER */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_size_init                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initialize a new TrueType size object.                             */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    size :: A handle to the size object.                               */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_size_init
+   *
+   * @Description:
+   *   Initialize a new TrueType size object.
+   *
+   * @InOut:
+   *   size ::
+   *     A handle to the size object.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_size_init( FT_Size  ttsize )           /* TT_Size */
   {
@@ -1224,17 +1246,18 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_size_done                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    The TrueType size object finalizer.                                */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    size :: A handle to the target size object.                        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_size_done
+   *
+   * @Description:
+   *   The TrueType size object finalizer.
+   *
+   * @Input:
+   *   size ::
+   *     A handle to the target size object.
+   */
   FT_LOCAL_DEF( void )
   tt_size_done( FT_Size  ttsize )           /* TT_Size */
   {
@@ -1249,22 +1272,24 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_size_reset                                                      */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Reset a TrueType size when resolutions and character dimensions    */
-  /*    have been changed.                                                 */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    size        :: A handle to the target size object.                 */
-  /*                                                                       */
-  /*    only_height :: Only recompute ascender, descender, and height;     */
-  /*                   this flag is used for variation fonts where         */
-  /*                   `tt_size_reset' is used as an iterator function.    */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_size_reset
+   *
+   * @Description:
+   *   Reset a TrueType size when resolutions and character dimensions
+   *   have been changed.
+   *
+   * @Input:
+   *   size ::
+   *     A handle to the target size object.
+   *
+   *   only_height ::
+   *     Only recompute ascender, descender, and height;
+   *     this flag is used for variation fonts where
+   *     `tt_size_reset' is used as an iterator function.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_size_reset( TT_Size  size,
                  FT_Bool  only_height )
@@ -1358,20 +1383,21 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_driver_init                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initialize a given TrueType driver object.                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    driver :: A handle to the target driver object.                    */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_driver_init
+   *
+   * @Description:
+   *   Initialize a given TrueType driver object.
+   *
+   * @Input:
+   *   driver ::
+   *     A handle to the target driver object.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_driver_init( FT_Module  ttdriver )     /* TT_Driver */
   {
@@ -1398,17 +1424,18 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_driver_done                                                     */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Finalize a given TrueType driver.                                  */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    driver :: A handle to the target TrueType driver.                  */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_driver_done
+   *
+   * @Description:
+   *   Finalize a given TrueType driver.
+   *
+   * @Input:
+   *   driver ::
+   *     A handle to the target TrueType driver.
+   */
   FT_LOCAL_DEF( void )
   tt_driver_done( FT_Module  ttdriver )     /* TT_Driver */
   {
@@ -1416,20 +1443,21 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    tt_slot_init                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initialize a new slot object.                                      */
-  /*                                                                       */
-  /* <InOut>                                                               */
-  /*    slot :: A handle to the slot object.                               */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   tt_slot_init
+   *
+   * @Description:
+   *   Initialize a new slot object.
+   *
+   * @InOut:
+   *   slot ::
+   *     A handle to the slot object.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   tt_slot_init( FT_GlyphSlot  slot )
   {

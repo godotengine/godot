@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -270,6 +270,8 @@ void VehicleWheel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_skidinfo"), &VehicleWheel::get_skidinfo);
 
+	ClassDB::bind_method(D_METHOD("get_rpm"), &VehicleWheel::get_rpm);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
 	ADD_GROUP("Wheel", "wheel_");
@@ -309,6 +311,11 @@ bool VehicleWheel::is_used_as_steering() const {
 float VehicleWheel::get_skidinfo() const {
 
 	return m_skidInfo;
+}
+
+float VehicleWheel::get_rpm() const {
+
+	return m_rpm;
 }
 
 VehicleWheel::VehicleWheel() {
@@ -578,7 +585,7 @@ void VehicleBody::_resolve_single_bilateral(PhysicsDirectBodyState *s, const Vec
 	if (p_rollInfluence > 0.0) {
 		// !BAS! But seeing we apply this frame by frame, makes more sense to me to make this time based
 		// keeping in mind our anti roll factor if it is set
-		contactDamping = s->get_step() / p_rollInfluence;
+		contactDamping = MIN(contactDamping, s->get_step() / p_rollInfluence);
 	}
 
 #define ONLY_USE_LINEAR_MASS
@@ -716,7 +723,7 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 			real_t rollingFriction = 0.f;
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
-				if (engine_force != 0.f) {
+				if (engine_force != 0.f && wheelInfo.engine_traction) {
 					rollingFriction = -engine_force * s->get_step();
 				} else {
 					real_t defaultRollingFrictionImpulse = 0.f;
@@ -865,11 +872,10 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 			real_t proj2 = fwd.dot(vel);
 
 			wheel.m_deltaRotation = (proj2 * step) / (wheel.m_wheelRadius);
-			wheel.m_rotation += wheel.m_deltaRotation;
-
-		} else {
-			wheel.m_rotation += wheel.m_deltaRotation;
 		}
+
+		wheel.m_rotation += wheel.m_deltaRotation;
+		wheel.m_rpm = ((wheel.m_deltaRotation / step) * 60) / Math_TAU;
 
 		wheel.m_deltaRotation *= real_t(0.99); //damping of rotation when not in contact
 	}
@@ -922,8 +928,7 @@ void VehicleBody::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
 }
 
-VehicleBody::VehicleBody() :
-		RigidBody() {
+VehicleBody::VehicleBody() {
 
 	m_pitchControl = 0;
 	m_currentVehicleSpeedKmHour = real_t(0.);

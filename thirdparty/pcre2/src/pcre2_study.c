@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -707,6 +707,7 @@ for (;;)
     /* Skip these, but we need to add in the name length. */
 
     case OP_MARK:
+    case OP_COMMIT_ARG:
     case OP_PRUNE_ARG:
     case OP_SKIP_ARG:
     case OP_THEN_ARG:
@@ -956,6 +957,7 @@ do
       case OP_CIRCM:
       case OP_CLOSE:
       case OP_COMMIT:
+      case OP_COMMIT_ARG:
       case OP_COND:
       case OP_CREF:
       case OP_FALSE:
@@ -1274,7 +1276,7 @@ do
       break;
 
       /* Single character types set the bits and stop. Note that if PCRE2_UCP
-      is set, we do not see these op codes because \d etc are converted to
+      is set, we do not see these opcodes because \d etc are converted to
       properties. Therefore, these apply in the case when only characters less
       than 256 are recognized to match the types. */
 

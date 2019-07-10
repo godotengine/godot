@@ -1,0 +1,108 @@
+buildscript {
+    repositories {
+        google()
+        jcenter()
+    }
+    dependencies {
+        classpath 'com.android.tools.build:gradle:3.3.2'
+    }
+}
+
+allprojects {
+    repositories {
+        google()
+        jcenter()
+    }
+}
+
+apply plugin: 'com.android.library'
+
+dependencies {
+    implementation "com.android.support:support-core-utils:28.0.0"
+}
+
+def pathToRootDir = "../../../"
+// Note: Only keep the abis you support to speed up the gradle 'assemble' task.
+def supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
+
+android {
+
+    lintOptions {
+        abortOnError false
+        disable "MissingTranslation", 'UnusedResources'
+    }
+
+    compileSdkVersion 28
+    buildToolsVersion "28.0.3"
+    useLibrary 'org.apache.http.legacy'
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
+    defaultConfig {
+        minSdkVersion 18
+        targetSdkVersion 28
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile "AndroidManifest.xml"
+            java.srcDirs = ["${pathToRootDir}platform/android/java/src"]
+            res.srcDirs = ["${pathToRootDir}platform/android/java/res"]
+            aidl.srcDirs = ["${pathToRootDir}platform/android/java/aidl"]
+            assets.srcDirs = ["${pathToRootDir}platform/android/java/assets"]
+        }
+        debug.jniLibs.srcDirs = ["${pathToRootDir}platform/android/java/libs/debug"]
+        release.jniLibs.srcDirs = ["${pathToRootDir}platform/android/java/libs/release"]
+    }
+
+    libraryVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "godot-lib.${variant.name}.aar"
+        }
+
+        def buildType = variant.buildType.name.capitalize()
+
+        def taskPrefix = ""
+        if (project.path != ":") {
+            taskPrefix = project.path + ":"
+        }
+
+        // Disable the externalNativeBuild* task as it would cause build failures since the cmake build
+        // files is only setup for editing support.
+        gradle.startParameter.excludedTaskNames += taskPrefix + "externalNativeBuild" + buildType
+
+        // Create tasks to generate the Godot native libraries.
+        def taskName = "compileGodotNativeLibs" + buildType
+        def releaseTarget = "release"
+        if (buildType == "Debug") {
+            releaseTarget += "_debug"
+        }
+
+        def abiTaskNames = []
+        // Creating gradle tasks to generate the native libraries for the supported abis.
+        supportedAbis.each { abi ->
+            def abiTaskName = taskName + abi.capitalize()
+            abiTaskNames += abiTaskName
+            tasks.create(name: abiTaskName, type: Exec) {
+                executable "scons"
+                args "--directory=${pathToRootDir}", "platform=android", "target=${releaseTarget}", "android_arch=${abi}"
+            }
+        }
+
+        // Creating gradle task to run all of the previously generated tasks.
+        tasks.create(name: taskName, type: GradleBuild) {
+            tasks = abiTaskNames
+        }
+
+        // Schedule the tasks so the generated libs are present before the aar file is packaged.
+        tasks["merge${buildType}JniLibFolders"].dependsOn taskName
+    }
+
+    externalNativeBuild {
+        cmake {
+            path "CMakeLists.txt"
+        }
+    }
+}

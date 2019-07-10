@@ -1,44 +1,44 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftdebug.c                                                              */
-/*                                                                         */
-/*    Debugging and logging component (body).                              */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftdebug.c
+ *
+ *   Debugging and logging component (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This component contains various macros and functions used to ease the */
-  /* debugging of the FreeType engine.  Its main purpose is in assertion   */
-  /* checking, tracing, and error detection.                               */
-  /*                                                                       */
-  /* There are now three debugging modes:                                  */
-  /*                                                                       */
-  /* - trace mode                                                          */
-  /*                                                                       */
-  /*   Error and trace messages are sent to the log file (which can be the */
-  /*   standard error output).                                             */
-  /*                                                                       */
-  /* - error mode                                                          */
-  /*                                                                       */
-  /*   Only error messages are generated.                                  */
-  /*                                                                       */
-  /* - release mode:                                                       */
-  /*                                                                       */
-  /*   No error message is sent or generated.  The code is free from any   */
-  /*   debugging parts.                                                    */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This component contains various macros and functions used to ease the
+   * debugging of the FreeType engine.  Its main purpose is in assertion
+   * checking, tracing, and error detection.
+   *
+   * There are now three debugging modes:
+   *
+   * - trace mode
+   *
+   *   Error and trace messages are sent to the log file (which can be the
+   *   standard error output).
+   *
+   * - error mode
+   *
+   *   Only error messages are generated.
+   *
+   * - release mode:
+   *
+   *   No error message is sent or generated.  The code is free from any
+   *   debugging parts.
+   *
+   */
 
 
 #include <ft2build.h>
@@ -87,9 +87,19 @@
             int          line,
             const char*  file )
   {
+#if 0
+    /* activating the code in this block makes FreeType very chatty */
+    fprintf( stderr,
+             "%s:%d: error 0x%02x: %s\n",
+             file,
+             line,
+             error,
+             FT_Error_String( error ) );
+#else
     FT_UNUSED( error );
     FT_UNUSED( line );
     FT_UNUSED( file );
+#endif
 
     return 0;
   }
@@ -100,9 +110,16 @@
 
 #ifdef FT_DEBUG_LEVEL_TRACE
 
-  /* array of trace levels, initialized to 0 */
-  int  ft_trace_levels[trace_count];
+  /* array of trace levels, initialized to 0; */
+  /* this gets adjusted at run-time           */
+  static int  ft_trace_levels_enabled[trace_count];
 
+  /* array of trace levels, always initialized to 0 */
+  static int  ft_trace_levels_disabled[trace_count];
+
+  /* a pointer to either `ft_trace_levels_enabled' */
+  /* or `ft_trace_levels_disabled'                 */
+  int*  ft_trace_levels;
 
   /* define array of trace toggle names */
 #define FT_TRACE_DEF( x )  #x ,
@@ -140,24 +157,42 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Initialize the tracing sub-system.  This is done by retrieving the    */
-  /* value of the `FT2_DEBUG' environment variable.  It must be a list of  */
-  /* toggles, separated by spaces, `;', or `,'.  Example:                  */
-  /*                                                                       */
-  /*    export FT2_DEBUG="any:3 memory:7 stream:5"                         */
-  /*                                                                       */
-  /* This requests that all levels be set to 3, except the trace level for */
-  /* the memory and stream components which are set to 7 and 5,            */
-  /* respectively.                                                         */
-  /*                                                                       */
-  /* See the file `include/freetype/internal/fttrace.h' for details of     */
-  /* the available toggle names.                                           */
-  /*                                                                       */
-  /* The level must be between 0 and 7; 0 means quiet (except for serious  */
-  /* runtime errors), and 7 means _very_ verbose.                          */
-  /*                                                                       */
+  /* documentation is in ftdebug.h */
+
+  FT_BASE_DEF( void )
+  FT_Trace_Disable( void )
+  {
+    ft_trace_levels = ft_trace_levels_disabled;
+  }
+
+
+  /* documentation is in ftdebug.h */
+
+  FT_BASE_DEF( void )
+  FT_Trace_Enable( void )
+  {
+    ft_trace_levels = ft_trace_levels_enabled;
+  }
+
+
+  /**************************************************************************
+   *
+   * Initialize the tracing sub-system.  This is done by retrieving the
+   * value of the `FT2_DEBUG' environment variable.  It must be a list of
+   * toggles, separated by spaces, `;', or `,'.  Example:
+   *
+   *   export FT2_DEBUG="any:3 memory:7 stream:5"
+   *
+   * This requests that all levels be set to 3, except the trace level for
+   * the memory and stream components which are set to 7 and 5,
+   * respectively.
+   *
+   * See the file `include/freetype/internal/fttrace.h' for details of
+   * the available toggle names.
+   *
+   * The level must be between 0 and 7; 0 means quiet (except for serious
+   * runtime errors), and 7 means _very_ verbose.
+   */
   FT_BASE_DEF( void )
   ft_debug_init( void )
   {
@@ -223,14 +258,16 @@
             {
               /* special case for `any' */
               for ( n = 0; n < trace_count; n++ )
-                ft_trace_levels[n] = level;
+                ft_trace_levels_enabled[n] = level;
             }
             else
-              ft_trace_levels[found] = level;
+              ft_trace_levels_enabled[found] = level;
           }
         }
       }
     }
+
+    ft_trace_levels = ft_trace_levels_enabled;
   }
 
 
@@ -257,6 +294,22 @@
     FT_UNUSED( idx );
 
     return NULL;
+  }
+
+
+  FT_BASE_DEF( void )
+  FT_Trace_Disable( void )
+  {
+    /* nothing */
+  }
+
+
+  /* documentation is in ftdebug.h */
+
+  FT_BASE_DEF( void )
+  FT_Trace_Enable( void )
+  {
+    /* nothing */
   }
 
 

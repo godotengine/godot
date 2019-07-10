@@ -1,39 +1,39 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t42drivr.c                                                             */
-/*                                                                         */
-/*    High-level Type 42 driver interface (body).                          */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  Roberto Alameda.                                                       */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t42drivr.c
+ *
+ *   High-level Type 42 driver interface (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * Roberto Alameda.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This driver implements Type42 fonts as described in the               */
-  /* Technical Note #5012 from Adobe, with these limitations:              */
-  /*                                                                       */
-  /* 1) CID Fonts are not currently supported.                             */
-  /* 2) Incremental fonts making use of the GlyphDirectory keyword         */
-  /*    will be loaded, but the rendering will be using the TrueType       */
-  /*    tables.                                                            */
-  /* 3) As for Type1 fonts, CDevProc is not supported.                     */
-  /* 4) The Metrics dictionary is not supported.                           */
-  /* 5) AFM metrics are not supported.                                     */
-  /*                                                                       */
-  /* In other words, this driver supports Type42 fonts derived from        */
-  /* TrueType fonts in a non-CID manner, as done by usual conversion       */
-  /* programs.                                                             */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This driver implements Type42 fonts as described in the
+   * Technical Note #5012 from Adobe, with these limitations:
+   *
+   * 1) CID Fonts are not currently supported.
+   * 2) Incremental fonts making use of the GlyphDirectory keyword
+   *    will be loaded, but the rendering will be using the TrueType
+   *    tables.
+   * 3) As for Type1 fonts, CDevProc is not supported.
+   * 4) The Metrics dictionary is not supported.
+   * 5) AFM metrics are not supported.
+   *
+   * In other words, this driver supports Type42 fonts derived from
+   * TrueType fonts in a non-CID manner, as done by usual conversion
+   * programs.
+   *
+   */
 
 
 #include "t42drivr.h"
@@ -47,12 +47,12 @@
 #include FT_SERVICE_POSTSCRIPT_INFO_H
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t42
+#define FT_COMPONENT  t42
 
 
   /*
    *
-   *  GLYPH DICT SERVICE
+   * GLYPH DICT SERVICE
    *
    */
 
@@ -98,7 +98,7 @@
 
   /*
    *
-   *  POSTSCRIPT NAME SERVICE
+   * POSTSCRIPT NAME SERVICE
    *
    */
 
@@ -117,7 +117,7 @@
 
   /*
    *
-   *  POSTSCRIPT INFO SERVICE
+   * POSTSCRIPT INFO SERVICE
    *
    */
 
@@ -173,7 +173,7 @@
 
   /*
    *
-   *  SERVICE LIST
+   * SERVICE LIST
    *
    */
 

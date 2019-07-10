@@ -26,21 +26,16 @@ class btCollisionWorld;
 class btActionInterface
 {
 protected:
-
 	static btRigidBody& getFixedBody();
-	
-	
-public:
 
+public:
 	virtual ~btActionInterface()
 	{
 	}
 
-	virtual void updateAction( btCollisionWorld* collisionWorld, btScalar deltaTimeStep)=0;
+	virtual void updateAction(btCollisionWorld* collisionWorld, btScalar deltaTimeStep) = 0;
 
 	virtual void debugDraw(btIDebugDraw* debugDrawer) = 0;
-
 };
 
-#endif //_BT_ACTION_INTERFACE_H
-
+#endif  //_BT_ACTION_INTERFACE_H

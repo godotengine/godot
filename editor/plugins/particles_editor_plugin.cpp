@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,7 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 			float areapos = Math::random(0.0f, area_accum);
 
 			Map<float, int>::Element *E = triangle_area_map.find_closest(areapos);
-			ERR_FAIL_COND_V(!E, false)
+			ERR_FAIL_COND_V(!E, false);
 			int index = E->get();
 			ERR_FAIL_INDEX_V(index, geometry.size(), false);
 
@@ -197,7 +197,7 @@ void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 		}
 	}
 
-	w = PoolVector<Face3>::Write();
+	w.release();
 
 	emission_dialog->popup_centered(Size2(300, 130));
 }
@@ -305,8 +305,6 @@ void ParticlesEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CONVERT_TO_CPU_PARTICLES: {
 
-			UndoRedo *undo_redo = EditorNode::get_singleton()->get_undo_redo();
-
 			CPUParticles *cpu_particles = memnew(CPUParticles);
 			cpu_particles->convert_from_particles(node);
 			cpu_particles->set_name(node->get_name());
@@ -314,12 +312,18 @@ void ParticlesEditor::_menu_option(int p_option) {
 			cpu_particles->set_visible(node->is_visible());
 			cpu_particles->set_pause_mode(node->get_pause_mode());
 
-			undo_redo->create_action("Replace Particles by CPUParticles");
-			undo_redo->add_do_method(node, "replace_by", cpu_particles);
-			undo_redo->add_undo_method(cpu_particles, "replace_by", node);
-			undo_redo->add_do_reference(cpu_particles);
-			undo_redo->add_undo_reference(node);
-			undo_redo->commit_action();
+			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			ur->create_action(TTR("Convert to CPUParticles"));
+			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, cpu_particles, true, false);
+			ur->add_do_reference(cpu_particles);
+			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, node, false, false);
+			ur->add_undo_reference(node);
+			ur->commit_action();
+
+		} break;
+		case MENU_OPTION_RESTART: {
+
+			node->restart();
 
 		} break;
 	}
@@ -360,7 +364,11 @@ void ParticlesEditor::_generate_aabb() {
 		node->set_emitting(false);
 	}
 
-	node->set_visibility_aabb(rect);
+	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	ur->create_action(TTR("Generate Visibility AABB"));
+	ur->add_do_method(node, "set_visibility_aabb", rect);
+	ur->add_undo_method(node, "set_visibility_aabb", node->get_visibility_aabb());
+	ur->commit_action();
 }
 
 void ParticlesEditor::edit(Particles *p_particles) {
@@ -457,6 +465,7 @@ ParticlesEditor::ParticlesEditor() {
 	particles_editor_hb = memnew(HBoxContainer);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
+	options->set_switch_on_hover(true);
 	particles_editor_hb->add_child(options);
 	particles_editor_hb->hide();
 
@@ -467,6 +476,8 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
 
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 

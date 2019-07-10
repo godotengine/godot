@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -304,6 +304,7 @@ btScalar GodotRestInfoContactResultCallback::addSingleResult(btManifoldPoint &cp
 			colObj = static_cast<CollisionObjectBullet *>(colObj1Wrap->getCollisionObject()->getUserPointer());
 			m_result->shape = cp.m_index1;
 			B_TO_G(cp.getPositionWorldOnB(), m_result->point);
+			B_TO_G(cp.m_normalWorldOnB, m_result->normal);
 			m_rest_info_bt_point = cp.getPositionWorldOnB();
 			m_rest_info_collision_object = colObj1Wrap->getCollisionObject();
 		} else {
@@ -332,14 +333,6 @@ void GodotDeepPenetrationContactResultCallback::addContactPoint(const btVector3 
 		m_other_compound_shape_index = isSwapped ? m_index0 : m_index1;
 		m_pointWorld = isSwapped ? (pointInWorldOnB + (normalOnBInWorld * depth)) : pointInWorldOnB;
 
-		const btCollisionObjectWrapper *bw0 = m_body0Wrap;
-		if (isSwapped)
-			bw0 = m_body1Wrap;
-
-		if (bw0->getCollisionShape()->getShapeType() == CUSTOM_CONVEX_SHAPE_TYPE) {
-			m_pointNormalWorld = bw0->m_worldTransform.getBasis().transpose() * btVector3(0, 0, 1);
-		} else {
-			m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
-		}
+		m_pointNormalWorld = isSwapped ? normalOnBInWorld * -1 : normalOnBInWorld;
 	}
 }

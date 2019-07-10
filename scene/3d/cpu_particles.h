@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -53,7 +53,7 @@ public:
 
 		PARAM_INITIAL_LINEAR_VELOCITY,
 		PARAM_ANGULAR_VELOCITY,
-		//PARAM_ORBIT_VELOCITY,
+		PARAM_ORBIT_VELOCITY,
 		PARAM_LINEAR_ACCEL,
 		PARAM_RADIAL_ACCEL,
 		PARAM_TANGENTIAL_ACCEL,
@@ -104,6 +104,7 @@ private:
 	float inactive_time;
 	float frame_remainder;
 	int cycle;
+	bool redraw;
 
 	RID multimesh;
 
@@ -115,7 +116,7 @@ private:
 		const Particle *particles;
 
 		bool operator()(int p_a, int p_b) const {
-			return particles[p_a].time < particles[p_b].time;
+			return particles[p_a].time > particles[p_b].time;
 		}
 	};
 
@@ -141,6 +142,8 @@ private:
 	int fixed_fps;
 	bool fractional_delta;
 
+	Transform inv_emission_transform;
+
 	volatile bool can_update;
 
 	DrawOrder draw_order;
@@ -149,6 +152,7 @@ private:
 
 	////////
 
+	Vector3 direction;
 	float spread;
 	float flatness;
 
@@ -177,6 +181,8 @@ private:
 	Mutex *update_mutex;
 
 	void _update_render_thread();
+
+	void _set_redraw(bool p_redraw);
 
 protected:
 	static void _bind_methods();
@@ -226,6 +232,9 @@ public:
 
 	///////////////////
 
+	void set_direction(Vector3 p_direction);
+	Vector3 get_direction() const;
+
 	void set_spread(float p_spread);
 	float get_spread() const;
 
@@ -244,7 +253,7 @@ public:
 	void set_color(const Color &p_color);
 	Color get_color() const;
 
-	void set_color_ramp(const Ref<Gradient> &p_texture);
+	void set_color_ramp(const Ref<Gradient> &p_ramp);
 	Ref<Gradient> get_color_ramp() const;
 
 	void set_particle_flag(Flags p_flag, bool p_enable);

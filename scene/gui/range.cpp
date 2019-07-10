@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,9 +35,9 @@ String Range::get_configuration_warning() const {
 
 	if (shared->exp_ratio && shared->min <= 0) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
-		warning += TTR("If exp_edit is true min_value must be > 0.");
+		warning += TTR("If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0.");
 	}
 
 	return warning;
@@ -63,7 +63,7 @@ void Range::Shared::emit_value_changed() {
 
 void Range::_changed_notify(const char *p_what) {
 
-	emit_signal("changed", shared->val);
+	emit_signal("changed");
 	update();
 	_change_notify(p_what);
 }
@@ -79,6 +79,7 @@ void Range::Shared::emit_changed(const char *p_what) {
 }
 
 void Range::set_value(double p_val) {
+
 	if (shared->step > 0)
 		p_val = Math::round(p_val / shared->step) * shared->step;
 
@@ -303,22 +304,27 @@ bool Range::is_ratio_exp() const {
 }
 
 void Range::set_allow_greater(bool p_allow) {
+
 	shared->allow_greater = p_allow;
 }
 
 bool Range::is_greater_allowed() const {
+
 	return shared->allow_greater;
 }
 
 void Range::set_allow_lesser(bool p_allow) {
+
 	shared->allow_lesser = p_allow;
 }
 
 bool Range::is_lesser_allowed() const {
+
 	return shared->allow_lesser;
 }
 
 Range::Range() {
+
 	shared = memnew(Shared);
 	shared->min = 0;
 	shared->max = 100;

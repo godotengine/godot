@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,11 +65,16 @@ void PluginConfigDialog::_on_confirmed() {
 	cf->save(path.plus_file("plugin.cfg"));
 
 	if (!_edit_mode) {
-		String type = script_option_edit->get_item_text(script_option_edit->get_selected());
+		int lang_idx = script_option_edit->get_selected();
+		String lang_name = ScriptServer::get_language(lang_idx)->get_name();
 
 		Ref<Script> script;
 
-		if (type == GDScriptLanguage::get_singleton()->get_name()) {
+		// TODO Use script templates. Right now, this code won't add the 'tool' annotation to other languages.
+		// TODO Better support script languages with named classes (has_named_classes).
+
+		if (lang_name == GDScriptLanguage::get_singleton()->get_name()) {
+			// Hard-coded GDScript template to keep usability until we use script templates.
 			Ref<GDScript> gdscript = memnew(GDScript);
 			gdscript->set_source_code(
 					"tool\n"
@@ -84,8 +89,13 @@ void PluginConfigDialog::_on_confirmed() {
 			gdscript->set_path(script_path);
 			ResourceSaver::save(script_path, gdscript);
 			script = gdscript;
+		} else {
+			String script_path = path.plus_file(script_edit->get_text());
+			String class_name = script_path.get_file().get_basename();
+			script = ScriptServer::get_language(lang_idx)->get_template(class_name, "EditorPlugin");
+			script->set_path(script_path);
+			ResourceSaver::save(script_path, script);
 		}
-		//TODO: other languages
 
 		emit_signal("plugin_ready", script.operator->(), active_edit->is_pressed() ? subfolder_edit->get_text() : "");
 	} else {
@@ -98,8 +108,9 @@ void PluginConfigDialog::_on_cancelled() {
 	_clear_fields();
 }
 
-void PluginConfigDialog::_on_required_text_changed(const String &p_text) {
-	String ext = script_option_edit->get_item_metadata(script_option_edit->get_selected());
+void PluginConfigDialog::_on_required_text_changed(const String &) {
+	int lang_idx = script_option_edit->get_selected();
+	String ext = ScriptServer::get_language(lang_idx)->get_extension();
 	get_ok()->set_disabled(script_edit->get_text().get_basename().empty() || script_edit->get_text().get_extension() != ext || name_edit->get_text().empty());
 }
 
@@ -108,6 +119,10 @@ void PluginConfigDialog::_notification(int p_what) {
 		case NOTIFICATION_READY: {
 			connect("confirmed", this, "_on_confirmed");
 			get_cancel()->connect("pressed", this, "_on_cancelled");
+		} break;
+
+		case NOTIFICATION_POST_POPUP: {
+			name_edit->grab_focus();
 		} break;
 	}
 }
@@ -204,10 +219,15 @@ PluginConfigDialog::PluginConfigDialog() {
 	grid->add_child(script_option_lb);
 
 	script_option_edit = memnew(OptionButton);
-	script_option_edit->add_item(GDScriptLanguage::get_singleton()->get_name());
-	script_option_edit->set_item_metadata(0, GDScriptLanguage::get_singleton()->get_extension());
-	script_option_edit->select(0);
-	//TODO: add other languages
+	int default_lang = 0;
+	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+		ScriptLanguage *lang = ScriptServer::get_language(i);
+		script_option_edit->add_item(lang->get_name());
+		if (lang == GDScriptLanguage::get_singleton()) {
+			default_lang = i;
+		}
+	}
+	script_option_edit->select(default_lang);
 	grid->add_child(script_option_edit);
 
 	Label *script_lb = memnew(Label);
@@ -219,6 +239,7 @@ PluginConfigDialog::PluginConfigDialog() {
 	script_edit->set_placeholder("\"plugin.gd\" -> res://addons/my_plugin/plugin.gd");
 	grid->add_child(script_edit);
 
+	// TODO Make this option work better with languages like C#. Right now, it does not work because the C# project must be compiled first.
 	Label *active_lb = memnew(Label);
 	active_lb->set_text(TTR("Activate now?"));
 	grid->add_child(active_lb);

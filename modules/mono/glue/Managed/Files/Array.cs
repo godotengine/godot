@@ -28,7 +28,7 @@ namespace Godot.Collections
         }
     }
 
-    public class Array : IList<object>, ICollection<object>, IEnumerable<object>, IDisposable
+    public class Array : IList, IDisposable
     {
         ArraySafeHandle safeHandle;
         bool disposed = false;
@@ -36,6 +36,14 @@ namespace Godot.Collections
         public Array()
         {
             safeHandle = new ArraySafeHandle(godot_icall_Array_Ctor());
+        }
+
+        public Array(IEnumerable collection) : this()
+        {
+            if (collection == null)
+                throw new NullReferenceException($"Parameter '{nameof(collection)} cannot be null.'");
+
+            MarshalUtils.EnumerableToArray(collection, GetPtr());
         }
 
         internal Array(ArraySafeHandle handle)
@@ -50,8 +58,18 @@ namespace Godot.Collections
 
         internal IntPtr GetPtr()
         {
+            if (disposed)
+                throw new ObjectDisposedException(GetType().FullName);
+
             return safeHandle.DangerousGetHandle();
         }
+
+        public Error Resize(int newSize)
+        {
+            return godot_icall_Array_Resize(GetPtr(), newSize);
+        }
+
+        // IDisposable
 
         public void Dispose()
         {
@@ -67,62 +85,55 @@ namespace Godot.Collections
             disposed = true;
         }
 
+        // IList
+
+        public bool IsReadOnly => false;
+
+        public bool IsFixedSize => false;
+
         public object this[int index]
         {
-            get
-            {
-                return godot_icall_Array_At(GetPtr(), index);
-            }
-            set
-            {
-                godot_icall_Array_SetAt(GetPtr(), index, value);
-            }
+            get => godot_icall_Array_At(GetPtr(), index);
+            set => godot_icall_Array_SetAt(GetPtr(), index, value);
         }
 
-        public int Count
-        {
-            get
-            {
-                return godot_icall_Array_Count(GetPtr());
-            }
-        }
+        public int Add(object value) => godot_icall_Array_Add(GetPtr(), value);
 
-        public bool IsReadOnly
-        {
-            get
-            {
-                return false;
-            }
-        }
+        public bool Contains(object value) => godot_icall_Array_Contains(GetPtr(), value);
 
-        public void Add(object item)
-        {
-            godot_icall_Array_Add(GetPtr(), item);
-        }
+        public void Clear() => godot_icall_Array_Clear(GetPtr());
 
-        public void Clear()
-        {
-            godot_icall_Array_Clear(GetPtr());
-        }
+        public int IndexOf(object value) => godot_icall_Array_IndexOf(GetPtr(), value);
 
-        public bool Contains(object item)
-        {
-            return godot_icall_Array_Contains(GetPtr(), item);
-        }
+        public void Insert(int index, object value) => godot_icall_Array_Insert(GetPtr(), index, value);
 
-        public void CopyTo(object[] array, int arrayIndex)
+        public void Remove(object value) => godot_icall_Array_Remove(GetPtr(), value);
+
+        public void RemoveAt(int index) => godot_icall_Array_RemoveAt(GetPtr(), index);
+
+        // ICollection
+
+        public int Count => godot_icall_Array_Count(GetPtr());
+
+        public object SyncRoot => this;
+
+        public bool IsSynchronized => false;
+
+        public void CopyTo(System.Array array, int index)
         {
             if (array == null)
                 throw new ArgumentNullException(nameof(array), "Value cannot be null.");
 
-            if (arrayIndex < 0)
-                throw new ArgumentOutOfRangeException(nameof(arrayIndex), "Number was less than the array's lower bound in the first dimension.");
+            if (index < 0)
+                throw new ArgumentOutOfRangeException(nameof(index), "Number was less than the array's lower bound in the first dimension.");
 
             // Internal call may throw ArgumentException
-            godot_icall_Array_CopyTo(GetPtr(), array, arrayIndex);
+            godot_icall_Array_CopyTo(GetPtr(), array, index);
         }
 
-        public IEnumerator<object> GetEnumerator()
+        // IEnumerable
+
+        public IEnumerator GetEnumerator()
         {
             int count = Count;
 
@@ -132,29 +143,9 @@ namespace Godot.Collections
             }
         }
 
-        public int IndexOf(object item)
+        public override string ToString()
         {
-            return godot_icall_Array_IndexOf(GetPtr(), item);
-        }
-
-        public void Insert(int index, object item)
-        {
-            godot_icall_Array_Insert(GetPtr(), index, item);
-        }
-
-        public bool Remove(object item)
-        {
-            return godot_icall_Array_Remove(GetPtr(), item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            godot_icall_Array_RemoveAt(GetPtr(), index);
-        }
-
-        IEnumerator IEnumerable.GetEnumerator()
-        {
-            return GetEnumerator();
+            return godot_icall_Array_ToString(GetPtr());
         }
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -176,7 +167,7 @@ namespace Godot.Collections
         internal extern static int godot_icall_Array_Count(IntPtr ptr);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_Add(IntPtr ptr, object item);
+        internal extern static int godot_icall_Array_Add(IntPtr ptr, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_Clear(IntPtr ptr);
@@ -185,7 +176,7 @@ namespace Godot.Collections
         internal extern static bool godot_icall_Array_Contains(IntPtr ptr, object item);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        internal extern static void godot_icall_Array_CopyTo(IntPtr ptr, object[] array, int arrayIndex);
+        internal extern static void godot_icall_Array_CopyTo(IntPtr ptr, System.Array array, int arrayIndex);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static int godot_icall_Array_IndexOf(IntPtr ptr, object item);
@@ -200,7 +191,13 @@ namespace Godot.Collections
         internal extern static void godot_icall_Array_RemoveAt(IntPtr ptr, int index);
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static Error godot_icall_Array_Resize(IntPtr ptr, int newSize);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         internal extern static void godot_icall_Array_Generic_GetElementTypeInfo(Type elemType, out int elemTypeEncoding, out IntPtr elemTypeClass);
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        internal extern static string godot_icall_Array_ToString(IntPtr ptr);
     }
 
     public class Array<T> : IList<T>, ICollection<T>, IEnumerable<T>
@@ -220,6 +217,14 @@ namespace Godot.Collections
             objectArray = new Array();
         }
 
+        public Array(IEnumerable<T> collection)
+        {
+            if (collection == null)
+                throw new NullReferenceException($"Parameter '{nameof(collection)} cannot be null.'");
+
+            objectArray = new Array(collection);
+        }
+
         public Array(Array array)
         {
             objectArray = array;
@@ -235,10 +240,22 @@ namespace Godot.Collections
             objectArray = new Array(handle);
         }
 
+        internal IntPtr GetPtr()
+        {
+            return objectArray.GetPtr();
+        }
+
         public static explicit operator Array(Array<T> from)
         {
             return from.objectArray;
         }
+
+        public Error Resize(int newSize)
+        {
+            return objectArray.Resize(newSize);
+        }
+
+        // IList<T>
 
         public T this[int index]
         {
@@ -251,6 +268,23 @@ namespace Godot.Collections
                 objectArray[index] = value;
             }
         }
+
+        public int IndexOf(T item)
+        {
+            return objectArray.IndexOf(item);
+        }
+
+        public void Insert(int index, T item)
+        {
+            objectArray.Insert(index, item);
+        }
+
+        public void RemoveAt(int index)
+        {
+            objectArray.RemoveAt(index);
+        }
+
+        // ICollection<T>
 
         public int Count
         {
@@ -306,6 +340,13 @@ namespace Godot.Collections
             }
         }
 
+        public bool Remove(T item)
+        {
+            return Array.godot_icall_Array_Remove(GetPtr(), item);
+        }
+
+        // IEnumerable<T>
+
         public IEnumerator<T> GetEnumerator()
         {
             int count = objectArray.Count;
@@ -316,34 +357,11 @@ namespace Godot.Collections
             }
         }
 
-        public int IndexOf(T item)
-        {
-            return objectArray.IndexOf(item);
-        }
-
-        public void Insert(int index, T item)
-        {
-            objectArray.Insert(index, item);
-        }
-
-        public bool Remove(T item)
-        {
-            return objectArray.Remove(item);
-        }
-
-        public void RemoveAt(int index)
-        {
-            objectArray.RemoveAt(index);
-        }
-
         IEnumerator IEnumerable.GetEnumerator()
         {
             return GetEnumerator();
         }
 
-        internal IntPtr GetPtr()
-        {
-            return objectArray.GetPtr();
-        }
+        public override string ToString() => objectArray.ToString();
     }
 }

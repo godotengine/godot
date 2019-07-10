@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MultiMeshInstance2D" inherits="Node2D" category="Core" version="3.2">
+	<brief_description>
+		Node that instances a [MultiMesh] in 2D.
+	</brief_description>
+	<description>
+		[MultiMeshInstance2D] is a specialized node to instance a [MultiMesh] resource in 2D.
+		Usage is the same as [MultiMeshInstance].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh" default="null">
+			The [MultiMesh] that will be drawn by the [MultiMeshInstance2D].
+		</member>
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" default="null">
+			The normal map that will be used if using the default [CanvasItemMaterial].
+		</member>
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+			The [Texture] that will be used if using the default [CanvasItemMaterial]. Can be accessed as [code]TEXTURE[/code] in CanvasItem shader.
+		</member>
+	</members>
+	<signals>
+		<signal name="texture_changed">
+			<description>
+			</description>
+		</signal>
+	</signals>
+	<constants>
+	</constants>
+</class>

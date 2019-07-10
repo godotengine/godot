@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -159,22 +159,22 @@ String PluginScriptLanguage::make_function(const String &p_class, const String &
 	return String();
 }
 
-Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_force, String &r_call_hint) {
+Error PluginScriptLanguage::complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_force, String &r_call_hint) {
 	if (_desc.complete_code) {
 		Array options;
 		godot_error tmp = _desc.complete_code(
 				_data,
 				(godot_string *)&p_code,
-				(godot_string *)&p_base_path,
+				(godot_string *)&p_path,
 				(godot_object *)p_owner,
 				(godot_array *)&options,
 				&r_force,
 				(godot_string *)&r_call_hint);
 		for (int i = 0; i < options.size(); i++) {
-			r_options->push_back(String(options[i]));
+			ScriptCodeCompletionOption option(options[i], ScriptCodeCompletionOption::KIND_PLAIN_TEXT);
+			r_options->push_back(option);
 		}
-		Error err = *(Error *)&tmp;
-		return err;
+		return (Error)tmp;
 	}
 	return ERR_UNAVAILABLE;
 }
@@ -217,7 +217,7 @@ void PluginScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_
 		Dictionary constants;
 		_desc.get_public_constants(_data, (godot_dictionary *)&constants);
 		for (const Variant *key = constants.next(); key; key = constants.next(key)) {
-			Variant value = constants[key];
+			Variant value = constants[*key];
 			p_constants->push_back(Pair<String, Variant>(*key, value));
 		}
 	}

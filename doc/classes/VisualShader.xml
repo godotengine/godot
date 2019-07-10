@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShader" inherits="Shader" category="Core" version="3.1">
+<class name="VisualShader" inherits="Shader" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_node">
 			<return type="void">
@@ -41,6 +39,22 @@
 		</method>
 		<method name="connect_nodes">
 			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="type" type="int" enum="VisualShader.Type">
+			</argument>
+			<argument index="1" name="from_node" type="int">
+			</argument>
+			<argument index="2" name="from_port" type="int">
+			</argument>
+			<argument index="3" name="to_node" type="int">
+			</argument>
+			<argument index="4" name="to_port" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="connect_nodes_forced">
+			<return type="void">
 			</return>
 			<argument index="0" name="type" type="int" enum="VisualShader.Type">
 			</argument>
@@ -131,6 +145,12 @@
 			<description>
 			</description>
 		</method>
+		<method name="rebuild">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="remove_node">
 			<return type="void">
 			</return>
@@ -163,7 +183,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset">
+		<member name="graph_offset" type="Vector2" setter="set_graph_offset" getter="get_graph_offset" default="Vector2( 0, 0 )">
 		</member>
 	</members>
 	<constants>
@@ -174,6 +194,7 @@
 		<constant name="TYPE_LIGHT" value="2" enum="Type">
 		</constant>
 		<constant name="TYPE_MAX" value="3" enum="Type">
+			Represents the size of the [enum Type] enum.
 		</constant>
 		<constant name="NODE_ID_INVALID" value="-1">
 		</constant>

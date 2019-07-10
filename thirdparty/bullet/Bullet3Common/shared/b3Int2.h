@@ -20,11 +20,10 @@ subject to the following restrictions:
 
 struct b3UnsignedInt2
 {
-	union
-	{
+	union {
 		struct
 		{
-			unsigned int x,y;
+			unsigned int x, y;
 		};
 		struct
 		{
@@ -35,11 +34,10 @@ struct b3UnsignedInt2
 
 struct b3Int2
 {
-	union
-	{
+	union {
 		struct
 		{
-			int x,y;
+			int x, y;
 		};
 		struct
 		{
@@ -51,7 +49,8 @@ struct b3Int2
 inline b3Int2 b3MakeInt2(int x, int y)
 {
 	b3Int2 v;
-	v.s[0] = x; v.s[1] = y;
+	v.s[0] = x;
+	v.s[1] = y;
 	return v;
 }
 #else
@@ -60,5 +59,5 @@ inline b3Int2 b3MakeInt2(int x, int y)
 #define b3Int2 int2
 #define b3MakeInt2 (int2)
 
-#endif //__cplusplus
+#endif  //__cplusplus
 #endif

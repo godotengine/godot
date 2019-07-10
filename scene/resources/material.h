@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,7 +43,7 @@
 
 class Material : public Resource {
 
-	GDCLASS(Material, Resource)
+	GDCLASS(Material, Resource);
 	RES_BASE_EXTENSION("material")
 	OBJ_SAVE_TYPE(Material)
 
@@ -111,7 +111,7 @@ public:
 
 class SpatialMaterial : public Material {
 
-	GDCLASS(SpatialMaterial, Material)
+	GDCLASS(SpatialMaterial, Material);
 
 public:
 	enum TextureParam {
@@ -196,6 +196,7 @@ public:
 		FLAG_DONT_RECEIVE_SHADOWS,
 		FLAG_ENSURE_CORRECT_NORMALS,
 		FLAG_DISABLE_AMBIENT_LIGHT,
+		FLAG_USE_SHADOW_TO_OPACITY,
 		FLAG_MAX
 	};
 

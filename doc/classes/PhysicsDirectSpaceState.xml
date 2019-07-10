@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsDirectSpaceState" inherits="Object" category="Core" version="3.1">
+<class name="PhysicsDirectSpaceState" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Direct access object to a space in the [PhysicsServer].
 	</brief_description>
@@ -9,8 +9,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/ray-casting.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="cast_motion">
 			<return type="Array">
@@ -20,8 +18,8 @@
 			<argument index="1" name="motion" type="Vector3">
 			</argument>
 			<description>
-				Checks whether the shape can travel to a point. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [1, 1].
-				If the shape can not move, the returned array will be [0, 0].
+				Checks whether the shape can travel to a point. The method will return an array with two floats between 0 and 1, both representing a fraction of [code]motion[/code]. The first is how far the shape can move without triggering a collision, and the second is the point at which a collision will occur. If no collision is detected, the returned array will be [code][1, 1][/code].
+				If the shape can not move, the returned array will be [code][0, 0][/code] under Bullet, and empty under GodotPhysics.
 			</description>
 		</method>
 		<method name="collide_shape">

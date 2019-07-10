@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  tttags.h                                                               */
-/*                                                                         */
-/*    Tags for TrueType and OpenType tables (specification only).          */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * tttags.h
+ *
+ *   Tags for TrueType and OpenType tables (specification only).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef TTAGS_H_
@@ -46,6 +46,8 @@ FT_BEGIN_HEADER
 #define TTAG_CFF2  FT_MAKE_TAG( 'C', 'F', 'F', '2' )
 #define TTAG_CID   FT_MAKE_TAG( 'C', 'I', 'D', ' ' )
 #define TTAG_cmap  FT_MAKE_TAG( 'c', 'm', 'a', 'p' )
+#define TTAG_COLR  FT_MAKE_TAG( 'C', 'O', 'L', 'R' )
+#define TTAG_CPAL  FT_MAKE_TAG( 'C', 'P', 'A', 'L' )
 #define TTAG_cvar  FT_MAKE_TAG( 'c', 'v', 'a', 'r' )
 #define TTAG_cvt   FT_MAKE_TAG( 'c', 'v', 't', ' ' )
 #define TTAG_DSIG  FT_MAKE_TAG( 'D', 'S', 'I', 'G' )

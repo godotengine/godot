@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -108,7 +108,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	float max_x = 0;
 	float max_y = 0;
-	for (int i = 0; i < output->vertexCount; i++) {
+	for (uint32_t i = 0; i < output->vertexCount; i++) {
 		(*r_vertex)[i] = output->vertexArray[i].xref;
 		(*r_uv)[i * 2 + 0] = output->vertexArray[i].uv[0] / w;
 		(*r_uv)[i * 2 + 1] = output->vertexArray[i].uv[1] / h;
@@ -119,7 +119,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	printf("final texsize: %f,%f - max %f,%f\n", w, h, max_x, max_y);
 	*r_vertex_count = output->vertexCount;
 
-	for (int i = 0; i < output->indexCount; i++) {
+	for (uint32_t i = 0; i < output->indexCount; i++) {
 		(*r_index)[i] = output->indexArray[i];
 	}
 

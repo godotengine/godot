@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -45,9 +45,10 @@
 #include "core/project_settings.h"
 #include "drivers/unix/syslog_logger.h"
 
-#include "sem_iphone.h"
+#include "semaphore_iphone.h"
 
 #include "ios.h"
+
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
@@ -83,14 +84,14 @@ void OSIPhone::set_data_dir(String p_dir) {
 	memdelete(da);
 };
 
-void OSIPhone::set_unique_id(String p_ID) {
+void OSIPhone::set_unique_id(String p_id) {
 
-	unique_ID = p_ID;
+	unique_id = p_id;
 };
 
 String OSIPhone::get_unique_id() const {
 
-	return unique_ID;
+	return unique_id;
 };
 
 void OSIPhone::initialize_core() {
@@ -119,7 +120,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 				RasterizerGLES3::make_current();
 				break;
 			} else {
-				if (GLOBAL_GET("rendering/quality/driver/driver_fallback") == "Best") {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
 					p_video_driver = VIDEO_DRIVER_GLES2;
 					use_gl3 = false;
 					continue;
@@ -165,6 +166,8 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
+
+	camera_server = memnew(CameraIOS);
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -360,6 +363,11 @@ void OSIPhone::finalize() {
 	if (main_loop) // should not happen?
 		memdelete(main_loop);
 
+	if (camera_server) {
+		memdelete(camera_server);
+		camera_server = NULL;
+	}
+
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
@@ -489,18 +497,12 @@ void OSIPhone::set_keep_screen_on(bool p_enabled) {
 	_set_keep_screen_on(p_enabled);
 };
 
-void OSIPhone::set_cursor_shape(CursorShape p_shape){
-
-};
-
 String OSIPhone::get_user_data_dir() const {
 
 	return data_dir;
 };
 
-void OSIPhone::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){};
-
-String OSIPhone::get_name() {
+String OSIPhone::get_name() const {
 
 	return "iOS";
 };
@@ -586,7 +588,7 @@ void OSIPhone::native_video_stop() {
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "mobile" || p_feature == "etc" || p_feature == "pvrtc" || p_feature == "etc2";
+	return p_feature == "mobile";
 }
 
 // Initialization order between compilation units is not guaranteed,

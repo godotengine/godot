@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNode" inherits="Resource" category="Core" version="3.1">
+<class name="VisualShaderNode" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_input_port_default_value" qualifiers="const">
 			<return type="Variant">
@@ -29,9 +27,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values">
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" default="[ 0, Vector3( 0, 0, 0 ) ]">
 		</member>
-		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview">
+		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview" default="-1">
 		</member>
 	</members>
 	<signals>

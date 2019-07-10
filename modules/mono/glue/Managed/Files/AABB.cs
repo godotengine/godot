@@ -414,6 +414,21 @@ namespace Godot
             _position = position;
             _size = size;
         }
+        public AABB(Vector3 position, real_t width, real_t height, real_t depth)
+        {
+            _position = position;
+            _size = new Vector3(width, height, depth);
+        }
+        public AABB(real_t x, real_t y, real_t z, Vector3 size)
+        {
+            _position = new Vector3(x, y, z);
+            _size = size;
+        }
+        public AABB(real_t x, real_t y, real_t z, real_t width, real_t height, real_t depth)
+        {
+            _position = new Vector3(x, y, z);
+            _size = new Vector3(width, height, depth);
+        }
 
         public static bool operator ==(AABB left, AABB right)
         {

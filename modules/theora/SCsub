@@ -66,17 +66,17 @@ if env['builtin_libtheora']:
         thirdparty_sources += thirdparty_sources_x86_vc
 
     if (env["x86_libtheora_opt_gcc"] or env["x86_libtheora_opt_vc"]):
-        env_theora.Append(CCFLAGS=["-DOC_X86_ASM"])
+        env_theora.Append(CPPDEFINES=["OC_X86_ASM"])
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_theora.Append(CPPPATH=[thirdparty_dir])
+    env_theora.Prepend(CPPPATH=[thirdparty_dir])
 
     # also requires libogg and libvorbis
     if env['builtin_libogg']:
-        env_theora.Append(CPPPATH=["#thirdparty/libogg"])
+        env_theora.Prepend(CPPPATH=["#thirdparty/libogg"])
     if env['builtin_libvorbis']:
-        env_theora.Append(CPPPATH=["#thirdparty/libvorbis"])
+        env_theora.Prepend(CPPPATH=["#thirdparty/libvorbis"])
 
     env_thirdparty = env_theora.Clone()
     env_thirdparty.disable_warnings()

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -79,7 +79,7 @@ Error PacketPeer::put_packet_buffer(const PoolVector<uint8_t> &p_buffer) {
 	return put_packet(&r[0], len);
 }
 
-Error PacketPeer::get_var(Variant &r_variant) {
+Error PacketPeer::get_var(Variant &r_variant, bool p_allow_objects) {
 
 	const uint8_t *buffer;
 	int buffer_size;
@@ -87,13 +87,13 @@ Error PacketPeer::get_var(Variant &r_variant) {
 	if (err)
 		return err;
 
-	return decode_variant(r_variant, buffer, buffer_size, NULL, allow_object_decoding);
+	return decode_variant(r_variant, buffer, buffer_size, NULL, p_allow_objects || allow_object_decoding);
 }
 
-Error PacketPeer::put_var(const Variant &p_packet) {
+Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 	int len;
-	Error err = encode_variant(p_packet, NULL, len, !allow_object_decoding); // compute len first
+	Error err = encode_variant(p_packet, NULL, len, p_full_objects || allow_object_decoding); // compute len first
 	if (err)
 		return err;
 
@@ -102,15 +102,15 @@ Error PacketPeer::put_var(const Variant &p_packet) {
 
 	uint8_t *buf = (uint8_t *)alloca(len);
 	ERR_FAIL_COND_V(!buf, ERR_OUT_OF_MEMORY);
-	err = encode_variant(p_packet, buf, len, !allow_object_decoding);
+	err = encode_variant(p_packet, buf, len, p_full_objects || allow_object_decoding);
 	ERR_FAIL_COND_V(err, err);
 
 	return put_packet(buf, len);
 }
 
-Variant PacketPeer::_bnd_get_var() {
+Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
 	Variant var;
-	get_var(var);
+	get_var(var, p_allow_objects);
 
 	return var;
 };
@@ -132,8 +132,8 @@ Error PacketPeer::_get_packet_error() const {
 
 void PacketPeer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("get_var"), &PacketPeer::_bnd_get_var);
-	ClassDB::bind_method(D_METHOD("put_var", "var"), &PacketPeer::put_var);
+	ClassDB::bind_method(D_METHOD("get_var", "allow_objects"), &PacketPeer::_bnd_get_var, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("put_var", "var", "full_objects"), &PacketPeer::put_var, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_packet"), &PacketPeer::_get_packet);
 	ClassDB::bind_method(D_METHOD("put_packet", "buffer"), &PacketPeer::_put_packet);
 	ClassDB::bind_method(D_METHOD("get_packet_error"), &PacketPeer::_get_packet_error);
@@ -224,7 +224,7 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 	uint32_t len = decode_uint32(lbuf);
 	ERR_FAIL_COND_V(remaining < (int)len, ERR_UNAVAILABLE);
 
-	ERR_FAIL_COND_V(input_buffer.size() < len, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(input_buffer.size() < (int)len, ERR_UNAVAILABLE);
 	ring_buffer.read(lbuf, 4); //get rid of first 4 bytes
 	ring_buffer.read(input_buffer.ptrw(), len); // read packet
 

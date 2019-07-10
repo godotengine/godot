@@ -1,17 +1,18 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="AnimationNodeAdd2" inherits="AnimationNode" category="Core" version="3.1">
+<class name="AnimationNodeAdd2" inherits="AnimationNode" category="Core" version="3.2">
 	<brief_description>
+		Blends two animations additively inside of an [AnimationNodeBlendTree].
 	</brief_description>
 	<description>
+		A resource to add to an [AnimationNodeBlendTree]. Blends two animations additively based on an amount value in the [code][0.0, 1.0][/code] range.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync">
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
+			If [code]true[/code], sets the [code]optimization[/code] to [code]false[/code] when calling [method AnimationNode.blend_input], forcing the blended animations to update every frame.
 		</member>
 	</members>
 	<constants>

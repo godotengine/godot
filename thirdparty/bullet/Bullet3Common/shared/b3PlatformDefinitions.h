@@ -8,18 +8,18 @@ struct MyTest
 
 #ifdef __cplusplus
 //#define b3ConstArray(a) const b3AlignedObjectArray<a>&
-#define b3ConstArray(a) const a*
+#define b3ConstArray(a) const a *
 #define b3AtomicInc(a) ((*a)++)
 
-inline int b3AtomicAdd (volatile int *p, int val)
+inline int b3AtomicAdd(volatile int *p, int val)
 {
 	int oldValue = *p;
-	int newValue = oldValue+val;
+	int newValue = oldValue + val;
 	*p = newValue;
 	return oldValue;
 }
 
-#define __global 
+#define __global
 
 #define B3_STATIC static
 #else
@@ -27,7 +27,7 @@ inline int b3AtomicAdd (volatile int *p, int val)
 #define B3_LARGE_FLOAT 1e18f
 #define B3_INFINITY 1e18f
 #define b3Assert(a)
-#define b3ConstArray(a) __global const a*
+#define b3ConstArray(a) __global const a *
 #define b3AtomicInc atomic_inc
 #define b3AtomicAdd atomic_add
 #define b3Fabs fabs

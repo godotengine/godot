@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,6 +63,7 @@ private:
 	int last_send_cache_id;
 	Vector<uint8_t> packet_cache;
 	Node *root_node;
+	bool allow_object_decoding;
 
 protected:
 	static void _bind_methods();
@@ -76,7 +77,7 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	void _send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount);
-	bool _send_confirm_path(NodePath p_path, PathSentCache *psc, int p_from);
+	bool _send_confirm_path(NodePath p_path, PathSentCache *psc, int p_target);
 
 public:
 	enum NetworkCommands {
@@ -125,6 +126,9 @@ public:
 	bool is_network_server() const;
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;
+
+	void set_allow_object_decoding(bool p_enable);
+	bool is_object_decoding_allowed() const;
 
 	MultiplayerAPI();
 	~MultiplayerAPI();

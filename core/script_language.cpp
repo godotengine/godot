@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "script_language.h"
 
+#include "core/core_string_names.h"
 #include "core/project_settings.h"
 
 ScriptLanguage *ScriptServer::_languages[MAX_LANGUAGES];
@@ -37,6 +38,7 @@ int ScriptServer::_language_count = 0;
 
 bool ScriptServer::scripting_enabled = true;
 bool ScriptServer::reload_scripts_on_save = false;
+bool ScriptServer::languages_finished = false;
 ScriptEditRequestFunction ScriptServer::edit_request_func = NULL;
 
 void Script::_notification(int p_what) {
@@ -130,6 +132,7 @@ void ScriptServer::finish_languages() {
 		_languages[i]->finish();
 	}
 	global_classes_clear();
+	languages_finished = true;
 }
 
 void ScriptServer::set_reload_scripts_on_save(bool p_enable) {
@@ -187,6 +190,14 @@ String ScriptServer::get_global_class_path(const String &p_class) {
 StringName ScriptServer::get_global_class_base(const String &p_class) {
 	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
 	return global_classes[p_class].base;
+}
+StringName ScriptServer::get_global_class_native_base(const String &p_class) {
+	ERR_FAIL_COND_V(!global_classes.has(p_class), String());
+	String base = global_classes[p_class].base;
+	while (global_classes.has(base)) {
+		base = global_classes[base].base;
+	}
+	return base;
 }
 void ScriptServer::get_global_class_list(List<StringName> *r_global_classes) {
 	const StringName *K = NULL;
@@ -376,7 +387,7 @@ ScriptDebugger::ScriptDebugger() {
 
 bool PlaceHolderScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
-	if (build_failed)
+	if (script->is_placeholder_fallback_enabled())
 		return false;
 
 	if (values.has(p_name)) {
@@ -407,7 +418,12 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 		return true;
 	}
 
-	if (!build_failed) {
+	if (constants.has(p_name)) {
+		r_ret = constants[p_name];
+		return true;
+	}
+
+	if (!script->is_placeholder_fallback_enabled()) {
 		Variant defval;
 		if (script->get_property_default_value(p_name, defval)) {
 			r_ret = defval;
@@ -420,7 +436,7 @@ bool PlaceHolderScriptInstance::get(const StringName &p_name, Variant &r_ret) co
 
 void PlaceHolderScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
 
-	if (build_failed) {
+	if (script->is_placeholder_fallback_enabled()) {
 		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
 			p_properties->push_back(E->get());
 		}
@@ -442,6 +458,13 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 			*r_is_valid = true;
 		return values[p_name].get_type();
 	}
+
+	if (constants.has(p_name)) {
+		if (r_is_valid)
+			*r_is_valid = true;
+		return constants[p_name].get_type();
+	}
+
 	if (r_is_valid)
 		*r_is_valid = false;
 
@@ -450,7 +473,7 @@ Variant::Type PlaceHolderScriptInstance::get_property_type(const StringName &p_n
 
 void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const {
 
-	if (build_failed)
+	if (script->is_placeholder_fallback_enabled())
 		return;
 
 	if (script.is_valid()) {
@@ -459,7 +482,7 @@ void PlaceHolderScriptInstance::get_method_list(List<MethodInfo> *p_list) const 
 }
 bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 
-	if (build_failed)
+	if (script->is_placeholder_fallback_enabled())
 		return false;
 
 	if (script.is_valid()) {
@@ -469,8 +492,6 @@ bool PlaceHolderScriptInstance::has_method(const StringName &p_method) const {
 }
 
 void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values) {
-
-	build_failed = false;
 
 	Set<StringName> new_values;
 	for (const List<PropertyInfo>::Element *E = p_properties.front(); E; E = E->next()) {
@@ -513,11 +534,14 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 		owner->_change_notify();
 	}
 	//change notify
+
+	constants.clear();
+	script->get_constants(&constants);
 }
 
 void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, const Variant &p_value, bool *r_valid) {
 
-	if (build_failed) {
+	if (script->is_placeholder_fallback_enabled()) {
 		Map<StringName, Variant>::Element *E = values.find(p_name);
 
 		if (E) {
@@ -527,8 +551,8 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 		}
 
 		bool found = false;
-		for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
-			if (E->get().name == p_name) {
+		for (const List<PropertyInfo>::Element *F = properties.front(); F; F = F->next()) {
+			if (F->get().name == p_name) {
 				found = true;
 				break;
 			}
@@ -544,9 +568,16 @@ void PlaceHolderScriptInstance::property_set_fallback(const StringName &p_name, 
 
 Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_name, bool *r_valid) {
 
-	if (build_failed) {
+	if (script->is_placeholder_fallback_enabled()) {
 		const Map<StringName, Variant>::Element *E = values.find(p_name);
 
+		if (E) {
+			if (r_valid)
+				*r_valid = true;
+			return E->value();
+		}
+
+		E = constants.find(p_name);
 		if (E) {
 			if (r_valid)
 				*r_valid = true;
@@ -563,8 +594,7 @@ Variant PlaceHolderScriptInstance::property_get_fallback(const StringName &p_nam
 PlaceHolderScriptInstance::PlaceHolderScriptInstance(ScriptLanguage *p_language, Ref<Script> p_script, Object *p_owner) :
 		owner(p_owner),
 		language(p_language),
-		script(p_script),
-		build_failed(false) {
+		script(p_script) {
 }
 
 PlaceHolderScriptInstance::~PlaceHolderScriptInstance() {

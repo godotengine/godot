@@ -13,25 +13,20 @@ subject to the following restrictions:
 3. This notice may not be removed or altered from any source distribution.
 */
 
-
 #include "btFixedConstraint.h"
 #include "BulletDynamics/Dynamics/btRigidBody.h"
 #include "LinearMath/btTransformUtil.h"
 #include <new>
 
-
-btFixedConstraint::btFixedConstraint(btRigidBody& rbA,btRigidBody& rbB, const btTransform& frameInA,const btTransform& frameInB)
-:btGeneric6DofSpring2Constraint(rbA,rbB,frameInA,frameInB)
+btFixedConstraint::btFixedConstraint(btRigidBody& rbA, btRigidBody& rbB, const btTransform& frameInA, const btTransform& frameInB)
+	: btGeneric6DofSpring2Constraint(rbA, rbB, frameInA, frameInB)
 {
-	setAngularLowerLimit(btVector3(0,0,0));
-	setAngularUpperLimit(btVector3(0,0,0));
-	setLinearLowerLimit(btVector3(0,0,0));
-	setLinearUpperLimit(btVector3(0,0,0));
+	setAngularLowerLimit(btVector3(0, 0, 0));
+	setAngularUpperLimit(btVector3(0, 0, 0));
+	setLinearLowerLimit(btVector3(0, 0, 0));
+	setLinearUpperLimit(btVector3(0, 0, 0));
 }
 
-
-
-
-btFixedConstraint::~btFixedConstraint ()
+btFixedConstraint::~btFixedConstraint()
 {
 }

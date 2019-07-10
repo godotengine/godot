@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,6 +66,7 @@ class ScriptEditorDebugger : public Control {
 	enum ItemMenu {
 		ITEM_MENU_COPY_ERROR,
 		ITEM_MENU_SAVE_REMOTE_NODE,
+		ITEM_MENU_COPY_NODE_PATH,
 	};
 
 	AcceptDialog *msgdialog;
@@ -77,6 +78,7 @@ class ScriptEditorDebugger : public Control {
 	LineEdit *live_edit_root;
 	Button *le_set;
 	Button *le_clear;
+	Button *export_csv;
 
 	bool updating_scene_tree;
 	float inspect_scene_tree_timeout;
@@ -87,12 +89,18 @@ class ScriptEditorDebugger : public Control {
 	Map<ObjectID, ScriptEditorDebuggerInspectedObject *> remote_objects;
 	Set<ObjectID> unfold_cache;
 
-	HSplitContainer *error_split;
+	VBoxContainer *errors_tab;
 	Tree *error_tree;
 	Tree *inspect_scene_tree;
 	Button *clearbutton;
 	PopupMenu *item_menu;
+
 	EditorFileDialog *file_dialog;
+	enum FileDialogMode {
+		SAVE_CSV,
+		SAVE_NODE,
+	};
+	FileDialogMode file_dialog_mode;
 
 	int error_count;
 	int warning_count;
@@ -195,6 +203,10 @@ class ScriptEditorDebugger : public Control {
 
 	void _error_tree_item_rmb_selected(const Vector2 &p_pos);
 	void _item_menu_id_pressed(int p_option);
+
+	void _export_csv();
+
+	void _clear_execution();
 
 protected:
 	void _notification(int p_what);

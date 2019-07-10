@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,7 +113,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	collapse_theme->set_icon("unchecked", "CheckBox", collapse_theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 
 	CheckBox *chk_collapse_features = memnew(CheckBox);
-	chk_collapse_features->set_text(TTR("Advanced options"));
+	chk_collapse_features->set_text(TTR("Advanced Options"));
 	chk_collapse_features->set_theme(collapse_theme);
 	chk_collapse_features->set_focus_mode(FOCUS_NONE);
 	vbc->add_child(chk_collapse_features);
@@ -131,7 +131,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc_substitute->set_name(TTR("Substitute"));
 	tabc_features->add_child(vbc_substitute);
 
-	cbut_substitute = memnew(CheckButton);
+	cbut_substitute = memnew(CheckBox);
 	cbut_substitute->set_text(TTR("Substitute"));
 	vbc_substitute->add_child(cbut_substitute);
 
@@ -246,7 +246,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc_regex->set_custom_minimum_size(Size2(0, feature_min_height));
 	tabc_features->add_child(vbc_regex);
 
-	cbut_regex = memnew(CheckButton);
+	cbut_regex = memnew(CheckBox);
 	cbut_regex->set_text(TTR("Regular Expressions"));
 	vbc_regex->add_child(cbut_regex);
 
@@ -258,7 +258,7 @@ RenameDialog::RenameDialog(SceneTreeEditor *p_scene_tree_editor, UndoRedo *p_und
 	vbc_process->set_custom_minimum_size(Size2(0, feature_min_height));
 	tabc_features->add_child(vbc_process);
 
-	cbut_process = memnew(CheckButton);
+	cbut_process = memnew(CheckBox);
 	cbut_process->set_text(TTR("Post-Process"));
 	vbc_process->add_child(cbut_process);
 
@@ -475,17 +475,17 @@ String RenameDialog::_substitute(const String &subject, const Node *node, int co
 	if (root_node) {
 		result = result.replace("${ROOT}", root_node->get_name());
 	}
-
-	Node *parent_node = node->get_parent();
-	if (parent_node) {
-		if (node == root_node) {
-			// Can not substitute parent of root.
-			result = result.replace("${PARENT}", "");
-		} else {
-			result = result.replace("${PARENT}", parent_node->get_name());
+	if (node) {
+		Node *parent_node = node->get_parent();
+		if (parent_node) {
+			if (node == root_node) {
+				// Can not substitute parent of root.
+				result = result.replace("${PARENT}", "");
+			} else {
+				result = result.replace("${PARENT}", parent_node->get_name());
+			}
 		}
 	}
-
 	return result;
 }
 

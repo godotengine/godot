@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,30 +42,40 @@
 
 class AStar : public Reference {
 
-	GDCLASS(AStar, Reference)
+	GDCLASS(AStar, Reference);
 
 	uint64_t pass;
 
 	struct Point {
 
-		SelfList<Point> list;
-
 		int id;
 		Vector3 pos;
 		real_t weight_scale;
-		uint64_t last_pass;
+		bool enabled;
 
 		Set<Point *> neighbours;
+		Set<Point *> unlinked_neighbours;
 
 		// Used for pathfinding
 		Point *prev_point;
-		real_t distance;
-
-		Point() :
-				list(this) {}
+		real_t g_score;
+		real_t f_score;
+		uint64_t open_pass;
+		uint64_t closed_pass;
 	};
 
 	Map<int, Point *> points;
+
+	struct SortPoints {
+		_FORCE_INLINE_ bool operator()(const Point *A, const Point *B) const { // Returns true when the Point A is worse than Point B
+			if (A->f_score > B->f_score)
+				return true;
+			else if (A->f_score < B->f_score)
+				return false;
+			else
+				return A->g_score < B->g_score; // If the f_costs are the same then prioritize the points that are further away from the start
+		}
+	};
 
 	struct Segment {
 		union {
@@ -114,6 +124,9 @@ public:
 	PoolVector<int> get_point_connections(int p_id);
 	Array get_points();
 
+	void set_point_disabled(int p_id, bool p_disabled = true);
+	bool is_point_disabled(int p_id) const;
+
 	void connect_points(int p_id, int p_with_id, bool bidirectional = true);
 	void disconnect_points(int p_id, int p_with_id);
 	bool are_points_connected(int p_id, int p_with_id) const;
@@ -128,6 +141,45 @@ public:
 
 	AStar();
 	~AStar();
+};
+
+class AStar2D : public Reference {
+	GDCLASS(AStar2D, Reference);
+	AStar astar;
+
+protected:
+	static void _bind_methods();
+
+public:
+	int get_available_point_id() const;
+
+	void add_point(int p_id, const Vector2 &p_pos, real_t p_weight_scale = 1);
+	Vector2 get_point_position(int p_id) const;
+	void set_point_position(int p_id, const Vector2 &p_pos);
+	real_t get_point_weight_scale(int p_id) const;
+	void set_point_weight_scale(int p_id, real_t p_weight_scale);
+	void remove_point(int p_id);
+	bool has_point(int p_id) const;
+	PoolVector<int> get_point_connections(int p_id);
+	Array get_points();
+
+	void set_point_disabled(int p_id, bool p_disabled = true);
+	bool is_point_disabled(int p_id) const;
+
+	void connect_points(int p_id, int p_with_id, bool p_bidirectional = true);
+	void disconnect_points(int p_id, int p_with_id);
+	bool are_points_connected(int p_id, int p_with_id) const;
+
+	void clear();
+
+	int get_closest_point(const Vector2 &p_point) const;
+	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
+
+	PoolVector<Vector2> get_point_path(int p_from_id, int p_to_id);
+	PoolVector<int> get_id_path(int p_from_id, int p_to_id);
+
+	AStar2D();
+	~AStar2D();
 };
 
 #endif // ASTAR_H
