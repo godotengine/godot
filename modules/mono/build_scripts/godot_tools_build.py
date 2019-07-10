@@ -87,7 +87,7 @@ def build(env_mono):
     target_filenames = ['GodotTools.dll', 'GodotTools.BuildLogger.dll', 'GodotTools.ProjectEditor.dll', 'DotNet.Glob.dll', 'GodotTools.Core.dll']
 
     if env_mono['target'] == 'debug':
-        target_filenames += ['GodotTools.pdb', 'GodotTools.BuildLogger.dll', 'GodotTools.ProjectEditor.dll', 'GodotTools.Core.dll']
+        target_filenames += ['GodotTools.pdb', 'GodotTools.BuildLogger.pdb', 'GodotTools.ProjectEditor.pdb', 'GodotTools.Core.pdb']
 
     targets = [os.path.join(editor_tools_dir, filename) for filename in target_filenames]
 
@@ -102,6 +102,10 @@ def build_project_editor_only(env_mono):
     editor_tools_dir = os.path.join(output_dir, 'GodotSharp', 'Tools')
 
     target_filenames = ['GodotTools.ProjectEditor.dll', 'DotNet.Glob.dll', 'GodotTools.Core.dll']
+
+    if env_mono['target'] == 'debug':
+        target_filenames += ['GodotTools.ProjectEditor.pdb', 'GodotTools.Core.pdb']
+
     targets = [os.path.join(editor_tools_dir, filename) for filename in target_filenames]
 
     cmd = env_mono.CommandNoCache(targets, [], build_godot_tools_project_editor, module_dir=os.getcwd())
