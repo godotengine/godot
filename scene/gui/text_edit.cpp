@@ -683,7 +683,7 @@ void TextEdit::_notification(int p_what) {
 			}
 
 			if (line_length_guideline) {
-				int x = xmargin_beg + cache.font->get_char_size('0').width * line_length_guideline_col - cursor.x_ofs;
+				int x = xmargin_beg + (int)cache.font->get_char_size('0').width * line_length_guideline_col - cursor.x_ofs;
 				if (x > xmargin_beg && x < xmargin_end) {
 					VisualServer::get_singleton()->canvas_item_add_line(ci, Point2(x, 0), Point2(x, size.height), cache.line_length_guideline_color);
 				}
