@@ -464,6 +464,9 @@ namespace GodotTools
             {
                 // Defer this task because EditorProgress calls Main::iterarion() and the main loop is not yet initialized.
                 CallDeferred(nameof(_MakeApiSolutionsIfNeeded));
+
+                // Make sure the existing project has Api assembly references configured correctly
+                CSharpProject.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
             }
             else
             {
