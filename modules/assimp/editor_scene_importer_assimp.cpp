@@ -446,21 +446,65 @@ Spatial *EditorSceneImporterAssimp::_generate_scene(const String &p_path, const 
 	state.animation_player = NULL;
 
 	real_t scale_factor = 1.0f;
+	Quat rotation_quat;
 	{
 		//handle scale
 		String ext = p_path.get_file().get_extension().to_lower();
 		if (ext == "fbx") {
 			if (scene->mMetaData != NULL) {
-				float factor = 1.0;
+				double factor = 1.0;
 				scene->mMetaData->Get("UnitScaleFactor", factor);
 				scale_factor = factor * 0.01f;
+				int32_t up_axis = 0;
+				int32_t up_axis_sign = 0;
+				int32_t front_axis = 0;
+				int32_t front_axis_sign = 0;
+				int32_t coord_axis = 0;
+				int32_t coord_axis_sign = 0;
+				scene->mMetaData->Get("UpAxis", up_axis);
+				scene->mMetaData->Get("UpAxisSign", up_axis_sign);
+				scene->mMetaData->Get("FrontAxis", front_axis);
+				scene->mMetaData->Get("FrontAxisSign", front_axis_sign);
+				scene->mMetaData->Get("CoordAxis", coord_axis);
+				scene->mMetaData->Get("CoordAxisSign", coord_axis_sign);
+				Vector3 rotation = Vector3(Math::deg2rad(-90.0f), Math::deg2rad(0.0f), Math::deg2rad(0.0f));
+				if (up_axis == 1 && up_axis_sign == 1 &&
+						front_axis == 2 && front_axis_sign == 1 &&
+						coord_axis == 0 && coord_axis_sign == 1) {
+				} else if (up_axis == 2 && up_axis_sign == 1 &&
+						   front_axis == 2 && front_axis_sign == 1 &&
+						   coord_axis == 0 && coord_axis_sign == 1) {
+					rotation_quat.set_euler(rotation);
+				} else if (up_axis == -1 && up_axis_sign == 1 &&
+						   front_axis == 1 && front_axis_sign == -1 &&
+						   coord_axis == 0 && coord_axis_sign == 1) {
+					rotation_quat.set_euler(rotation);
+				} else if (up_axis == -1 && up_axis_sign == 1 &&
+						   front_axis == 2 && front_axis_sign == 1 &&
+						   coord_axis == 0 && coord_axis_sign == 1) {
+					rotation_quat.set_euler(rotation);
+				} else if (up_axis == 1 && up_axis_sign == 1 &&
+						   front_axis == 1 && front_axis_sign == -1 &&
+						   coord_axis == 0 && coord_axis_sign == 1) {
+					rotation_quat.set_euler(rotation);
+				} else if (up_axis == -1 && up_axis_sign == 1 &&
+						   front_axis == 2 && front_axis_sign == 1 &&
+						   coord_axis == 0 && coord_axis_sign == 1) {
+					rotation_quat.set_euler(rotation);
+				} else if (up_axis == 1 && up_axis_sign == 1 &&
+						   front_axis == 1 && front_axis_sign == -1 &&
+						   coord_axis == 0 && coord_axis_sign == 1) {
+					rotation_quat.set_euler(rotation);
+				}
 			}
 			state.fbx = true;
 		}
 	}
 
-	state.root->set_scale(Vector3(scale_factor, scale_factor, scale_factor));
-
+	Transform xform;
+	xform.basis.set_quat_scale(rotation_quat, Vector3(scale_factor, scale_factor, scale_factor));
+	xform = xform * state.root->get_transform();
+	state.root->set_transform(xform);
 	//fill light map cache
 	for (size_t l = 0; l < scene->mNumLights; l++) {
 
