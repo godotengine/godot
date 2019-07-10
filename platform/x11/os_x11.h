@@ -170,6 +170,7 @@ class OS_X11 : public OS_Unix {
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
 
