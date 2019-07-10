@@ -1148,7 +1148,7 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 	return Variant::NIL;
 }
 
-StringName ClassDB::get_property_setter(StringName p_class, const StringName p_property) {
+StringName ClassDB::get_property_setter(StringName p_class, const StringName &p_property) {
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -1165,7 +1165,7 @@ StringName ClassDB::get_property_setter(StringName p_class, const StringName p_p
 	return StringName();
 }
 
-StringName ClassDB::get_property_getter(StringName p_class, const StringName p_property) {
+StringName ClassDB::get_property_getter(StringName p_class, const StringName &p_property) {
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;

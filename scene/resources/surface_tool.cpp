@@ -769,7 +769,7 @@ void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
 	material = p_existing->surface_get_material(p_surface);
 }
 
-void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String p_blend_shape_name) {
+void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name) {
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);

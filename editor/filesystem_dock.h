@@ -175,7 +175,7 @@ private:
 	Ref<Texture> _get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx);
 	bool _create_tree(TreeItem *p_parent, EditorFileSystemDirectory *p_dir, Vector<String> &uncollapsed_paths, bool p_select_in_favorites);
 	Vector<String> _compute_uncollapsed_paths();
-	void _update_tree(const Vector<String> p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false);
+	void _update_tree(const Vector<String> &p_uncollapsed_paths = Vector<String>(), bool p_uncollapse_root = false, bool p_select_in_favorites = false);
 	void _navigate_to_path(const String &p_path, bool p_select_in_favorites = false);
 
 	void _file_list_gui_input(Ref<InputEvent> p_event);
@@ -188,7 +188,7 @@ private:
 
 	void _tree_toggle_collapsed();
 
-	void _select_file(const String p_path, bool p_select_in_favorites = false);
+	void _select_file(const String &p_path, bool p_select_in_favorites = false);
 	void _tree_activate_file();
 	void _file_list_activate_file(int p_idx);
 	void _file_multi_selected(int p_index, bool p_selected);
@@ -221,7 +221,7 @@ private:
 
 	void _tree_rmb_option(int p_option);
 	void _file_list_rmb_option(int p_option);
-	void _file_option(int p_option, const Vector<String> p_selected);
+	void _file_option(int p_option, const Vector<String> &p_selected);
 
 	void _fw_history();
 	void _bw_history();

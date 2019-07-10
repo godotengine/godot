@@ -212,7 +212,7 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() {
 #pragma GCC diagnostic pop
 #endif
 
-bool NetSocketPosix::_can_use_ip(const IP_Address p_ip, const bool p_for_bind) const {
+bool NetSocketPosix::_can_use_ip(const IP_Address &p_ip, const bool p_for_bind) const {
 
 	if (p_for_bind && !(p_ip.is_valid() || p_ip.is_wildcard())) {
 		return false;
