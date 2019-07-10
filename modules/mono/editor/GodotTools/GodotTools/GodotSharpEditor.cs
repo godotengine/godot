@@ -26,6 +26,8 @@ namespace GodotTools
         private MonoDevelopInstance monoDevelopInstance;
         private MonoDevelopInstance visualStudioForMacInstance;
 
+        private WeakReference<GodotSharpExport> exportPluginWeak;
+
         public MonoBottomPanel MonoBottomPanel { get; private set; }
 
         private bool CreateProjectSolution()
@@ -513,9 +515,25 @@ namespace GodotTools
             });
 
             // Export plugin
-            AddExportPlugin(new GodotSharpExport());
+            var exportPlugin = new GodotSharpExport();
+            AddExportPlugin(exportPlugin);
+            exportPluginWeak = new WeakReference<GodotSharpExport>(exportPlugin);
 
             GodotSharpBuilds.Initialize();
+        }
+
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+
+            if (exportPluginWeak.TryGetTarget(out var exportPlugin))
+            {
+                // We need to dispose our export plugin before the editor destroys EditorSettings.
+                // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
+                // will be freed after EditorSettings already was, and its device polling thread
+                // will try to access the EditorSettings singleton, resulting in null dereferencing.
+                exportPlugin.Dispose();
+            }
         }
 
         public void OnBeforeSerialize()
