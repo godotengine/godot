@@ -180,7 +180,9 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 			builder.append(vertex_codev.get_data()); // version info (if exists)
 			builder.append("\n"); //make sure defines begin at newline
+			builder.append(general_defines.get_data());
 			builder.append(variant_defines[i].get_data());
+
 			for (int j = 0; j < p_version->custom_defines.size(); j++) {
 				builder.append(p_version->custom_defines[j].get_data());
 			}
@@ -214,6 +216,7 @@ void ShaderRD::_compile_version(Version *p_version) {
 			builder.append(fragment_codev.get_data()); // version info (if exists)
 			builder.append("\n"); //make sure defines begin at newline
 
+			builder.append(general_defines.get_data());
 			builder.append(variant_defines[i].get_data());
 			for (int j = 0; j < p_version->custom_defines.size(); j++) {
 				builder.append(p_version->custom_defines[j].get_data());
@@ -307,9 +310,10 @@ bool ShaderRD::version_free(RID p_version) {
 	return true;
 }
 
-void ShaderRD::initialize(const Vector<String> &p_variant_defines) {
+void ShaderRD::initialize(const Vector<String> &p_variant_defines, const String &p_general_defines) {
 	ERR_FAIL_COND(variant_defines.size());
 	ERR_FAIL_COND(p_variant_defines.size() == 0);
+	general_defines = p_general_defines.utf8();
 	for (int i = 0; i < p_variant_defines.size(); i++) {
 
 		variant_defines.push_back(p_variant_defines[i].utf8());

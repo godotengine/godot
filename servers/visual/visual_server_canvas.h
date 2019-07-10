@@ -245,7 +245,6 @@ public:
 
 	void canvas_light_set_shadow_enabled(RID p_light, bool p_enabled);
 	void canvas_light_set_shadow_buffer_size(RID p_light, int p_size);
-	void canvas_light_set_shadow_gradient_length(RID p_light, float p_length);
 	void canvas_light_set_shadow_filter(RID p_light, VS::CanvasLightShadowFilter p_filter);
 	void canvas_light_set_shadow_color(RID p_light, const Color &p_color);
 	void canvas_light_set_shadow_smooth(RID p_light, float p_smooth);

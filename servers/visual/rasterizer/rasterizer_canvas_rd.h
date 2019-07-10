@@ -6,7 +6,6 @@
 #include "servers/visual/rasterizer/render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rasterizer/shaders/canvas.glsl.gen.h"
 #include "servers/visual/rasterizer/shaders/canvas_occlusion.glsl.gen.h"
-#include "servers/visual/rasterizer/shaders/canvas_occlusion_fix.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
 
 class RasterizerCanvasRD : public RasterizerCanvas {
@@ -20,13 +19,13 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		SHADER_VARIANT_PRIMITIVE_POINTS,
 		SHADER_VARIANT_ATTRIBUTES,
 		SHADER_VARIANT_ATTRIBUTES_POINTS,
+		SHADER_VARIANT_QUAD_LIGHT,
+		SHADER_VARIANT_NINEPATCH_LIGHT,
+		SHADER_VARIANT_PRIMITIVE_LIGHT,
+		SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT,
+		SHADER_VARIANT_ATTRIBUTES_LIGHT,
+		SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT,
 		SHADER_VARIANT_MAX
-	};
-
-	enum RenderTargetFormat {
-		RENDER_TARGET_FORMAT_8_BIT_INT,
-		RENDER_TARGET_FORMAT_16_BIT_FLOAT,
-		RENDER_TARGET_FORMAT_MAX
 	};
 
 	enum {
@@ -71,8 +70,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	enum {
 		MAX_RENDER_ITEMS = 256 * 1024,
 		MAX_LIGHT_TEXTURES = 1024,
-		MAX_LIGHTS_PER_ITEM = 16,
-		MAX_RENDER_LIGHTS = 256
+		DEFAULT_MAX_LIGHTS_PER_ITEM = 16,
+		DEFAULT_MAX_LIGHTS_PER_RENDER = 256
 	};
 
 	/****************/
@@ -90,22 +89,28 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		PIPELINE_VARIANT_ATTRIBUTE_POINTS,
 		PIPELINE_VARIANT_MAX
 	};
+	enum PipelineLightMode {
+		PIPELINE_LIGHT_MODE_DISABLED,
+		PIPELINE_LIGHT_MODE_ENABLED,
+		PIPELINE_LIGHT_MODE_MAX
+	};
+
 	struct PipelineVariants {
-		RenderPipelineVertexFormatCacheRD variants[RENDER_TARGET_FORMAT_MAX][PIPELINE_VARIANT_MAX];
+		RenderPipelineVertexFormatCacheRD variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX];
 	};
 
 	struct {
 		CanvasShaderRD canvas_shader;
-		RD::FramebufferFormatID framebuffer_formats[RENDER_TARGET_FORMAT_MAX];
 		RID default_version;
 		RID default_version_rd_shader;
+		RID default_version_rd_shader_light;
 		RID quad_index_buffer;
 		RID quad_index_array;
 		PipelineVariants pipeline_variants;
 
 		// default_skeleton uniform set
-		RID default_skeleton_uniform;
-		RID default_skeleton_uniform_set;
+		RID default_skeleton_uniform_buffer;
+		RID default_skeleton_texture_buffer;
 
 	} shader;
 
@@ -194,6 +199,10 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	struct {
 		HashMap<PolygonID, PolygonBuffers> polygons;
 		PolygonID last_id;
+		RID default_color_buffer;
+		RID default_uv_buffer;
+		RID default_bone_buffer;
+		RID default_weight_buffer;
 	} polygon_buffers;
 
 	/********************/
@@ -214,7 +223,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	struct CanvasLight {
 
-		int32_t texture_index;
 		RID texture;
 		struct {
 			int size;
@@ -256,9 +264,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		float position[2];
 		uint32_t flags; //index to light texture
 		float height;
-		float shadow_softness;
 		float shadow_pixel_size;
-		float pad[2];
+		float pad[3];
 	};
 
 	RID_Owner<OccluderPolygon> occluder_polygon_owner;
@@ -277,6 +284,36 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	//state that does not vary across rendering all items
 
+	struct ItemStateData : public Item::CustomData {
+
+		struct LightCache {
+			uint64_t light_version;
+			Light *light;
+		};
+
+		LightCache light_cache[DEFAULT_MAX_LIGHTS_PER_ITEM];
+		uint32_t light_cache_count;
+		RID light_uniform_set;
+		RID state_uniform_set;
+		ItemStateData() {
+
+			for (int i = 0; i < DEFAULT_MAX_LIGHTS_PER_ITEM; i++) {
+				light_cache[i].light_version = 0;
+				light_cache[i].light = NULL;
+			}
+			light_cache_count = 0xFFFFFFFF;
+		}
+
+		~ItemStateData() {
+			if (light_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(light_uniform_set)) {
+				RD::get_singleton()->free(light_uniform_set);
+			}
+			if (state_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(state_uniform_set)) {
+				RD::get_singleton()->free(state_uniform_set);
+			}
+		}
+	};
+
 	struct State {
 
 		//state buffer
@@ -289,14 +326,14 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			//uint32_t pad[3];
 		};
 
-		LightUniform light_uniforms[MAX_RENDER_LIGHTS];
+		LightUniform *light_uniforms;
 
 		RID lights_uniform_buffer;
 		RID canvas_state_buffer;
 		RID shadow_sampler;
 
-		//uniform set for all the above
-		RID canvas_state_uniform_set;
+		uint32_t max_lights_per_render;
+		uint32_t max_lights_per_item;
 	} state;
 
 	struct PushConstant {
@@ -331,7 +368,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	Item *items[MAX_RENDER_ITEMS];
 
 	Size2i _bind_texture_binding(TextureBindingID p_binding, RenderingDevice::DrawListID p_draw_list, uint32_t &flags);
-	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderTargetFormat p_render_target_format, RenderingDevice::TextureSamples p_samples, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights);
+	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights);
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
@@ -341,8 +378,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	_FORCE_INLINE_ void _update_transform_to_mat4(const Transform &p_transform, float *p_mat4);
 
 	_FORCE_INLINE_ void _update_specular_shininess(const Color &p_transform, uint32_t *r_ss);
-
-	void _update_canvas_state_uniform_set();
 
 public:
 	TextureBindingID request_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, VS::CanvasItemTextureFilter p_filter, VS::CanvasItemTextureRepeat p_repeat, RID p_multimesh);

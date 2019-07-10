@@ -426,8 +426,11 @@ FRAGMENT_SHADER_CODE
 	}
 
 	color*=canvas_data.canvas_modulation;
-
-	for(uint i=0;i<light_count;i++) {
+#ifdef USE_LIGHTING
+	for(uint i=0;i<MAX_LIGHT_TEXTURES;i++) {
+		if (i>=light_count) {
+			break;
+		}
 		uint light_base;
 		if (i<8) {
 			if (i<4) {
@@ -445,16 +448,8 @@ FRAGMENT_SHADER_CODE
 		light_base>>=(i&3)*8;
 		light_base&=0xFF;
 
-#define LIGHT_FLAGS_BLEND_MASK (3<<16)
-#define LIGHT_FLAGS_BLEND_MODE_ADD (0<<16)
-#define LIGHT_FLAGS_BLEND_MODE_SUB (1<<16)
-#define LIGHT_FLAGS_BLEND_MODE_MIX (2<<16)
-#define LIGHT_FLAGS_BLEND_MODE_MASK (3<<16)
-
-
 		vec2 tex_uv = (vec4(vertex,0.0,1.0) * mat4(light_array.data[light_base].matrix[0],light_array.data[light_base].matrix[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
-		uint texture_idx = light_array.data[light_base].flags&LIGHT_FLAGS_TEXTURE_MASK;
-		vec4 light_color = texture(sampler2D(light_textures[texture_idx],texture_sampler),tex_uv);
+		vec4 light_color = texture(sampler2D(light_textures[i],texture_sampler),tex_uv);
 		vec4 light_base_color = light_array.data[light_base].color;
 		light_color.rgb*=light_base_color.rgb*light_base_color.a;
 
@@ -526,32 +521,32 @@ FRAGMENT_SHADER_CODE
 			vec4 shadow_uv = vec4(tex_ofs,0.0,distance,1.0);
 
 			if (shadow_mode==LIGHT_FLAGS_SHADOW_NEAREST) {
-				shadow = textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv).x;
+				shadow = textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv).x;
 			} else if (shadow_mode==LIGHT_FLAGS_SHADOW_PCF5) {
 				vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size,0.0,0.0,0.0);
 				shadow = 0.0;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size*2.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size*2.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size*2.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size*2.0).x;
 				shadow/=5.0;
-			} else if (shadow_mode==LIGHT_FLAGS_SHADOW_PCF13) {
+			} else { //PCF13
 				vec4 shadow_pixel_size = vec4(light_array.data[light_base].shadow_pixel_size,0.0,0.0,0.0);
 				shadow = 0.0;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size*6.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size*5.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size*4.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size*3.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size*2.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv-shadow_pixel_size).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size*2.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size*3.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size*4.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size*5.0).x;
-				shadow += textureProj(sampler2DShadow(shadow_textures[texture_idx],shadow_sampler),shadow_uv+shadow_pixel_size*6.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size*6.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size*5.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size*4.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size*3.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size*2.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv-shadow_pixel_size).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size*2.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size*3.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size*4.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size*5.0).x;
+				shadow += textureProj(sampler2DShadow(shadow_textures[i],shadow_sampler),shadow_uv+shadow_pixel_size*6.0).x;
 				shadow/=13.0;
 			}
 
@@ -577,6 +572,7 @@ FRAGMENT_SHADER_CODE
 			} break;
 		}
 	}
+#endif
 
 	frag_color = color;
 
