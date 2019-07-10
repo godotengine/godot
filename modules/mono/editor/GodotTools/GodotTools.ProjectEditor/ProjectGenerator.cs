@@ -91,13 +91,11 @@ namespace GodotTools.ProjectEditor
 
             var coreApiRef = root.AddItem("Reference", CoreApiProjectName);
             coreApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", "$(ApiConfiguration)", CoreApiProjectName + ".dll"));
-            coreApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", CoreApiProjectName + ".dll"));
             coreApiRef.AddMetadata("Private", "False");
 
             var editorApiRef = root.AddItem("Reference", EditorApiProjectName);
             editorApiRef.Condition = " '$(Configuration)' == 'Tools' ";
             editorApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", "$(ApiConfiguration)", EditorApiProjectName + ".dll"));
-            editorApiRef.AddMetadata("HintPath", Path.Combine("$(ProjectDir)", ".mono", "assemblies", EditorApiProjectName + ".dll"));
             editorApiRef.AddMetadata("Private", "False");
 
             GenAssemblyInfoFile(root, dir, name);
