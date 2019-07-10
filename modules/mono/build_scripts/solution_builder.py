@@ -108,14 +108,13 @@ def find_msbuild_windows(env):
     if not mono_root:
         raise RuntimeError('Cannot find mono root directory')
 
-    framework_path = os.path.join(mono_root, 'lib', 'mono', '4.5')
     mono_bin_dir = os.path.join(mono_root, 'bin')
     msbuild_mono = os.path.join(mono_bin_dir, 'msbuild.bat')
 
     msbuild_tools_path = find_msbuild_tools_path_reg()
 
     if msbuild_tools_path:
-        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), framework_path, {})
+        return (os.path.join(msbuild_tools_path, 'MSBuild.exe'), {})
 
     if os.path.isfile(msbuild_mono):
         # The (Csc/Vbc/Fsc)ToolExe environment variables are required when
@@ -126,7 +125,7 @@ def find_msbuild_windows(env):
             'VbcToolExe': os.path.join(mono_bin_dir, 'vbc.bat'),
             'FscToolExe': os.path.join(mono_bin_dir, 'fsharpc.bat')
         }
-        return (msbuild_mono, framework_path, mono_msbuild_env)
+        return (msbuild_mono, mono_msbuild_env)
 
     return None
 
@@ -172,7 +171,6 @@ def build_solution(env, solution_path, build_config, extra_msbuild_args=[]):
     global verbose
     verbose = env['verbose']
 
-    framework_path = ''
     msbuild_env = os.environ.copy()
 
     # Needed when running from Developer Command Prompt for VS
@@ -185,8 +183,7 @@ def build_solution(env, solution_path, build_config, extra_msbuild_args=[]):
         if msbuild_info is None:
             raise RuntimeError('Cannot find MSBuild executable')
         msbuild_path = msbuild_info[0]
-        framework_path = msbuild_info[1]
-        msbuild_env.update(msbuild_info[2])
+        msbuild_env.update(msbuild_info[1])
     else:
         msbuild_path = find_msbuild_unix('msbuild')
         if msbuild_path is None:
@@ -212,7 +209,6 @@ def build_solution(env, solution_path, build_config, extra_msbuild_args=[]):
     # Build solution
 
     msbuild_args = [solution_path, '/p:Configuration=' + build_config]
-    msbuild_args += ['/p:FrameworkPathOverride=' + framework_path] if framework_path else []
     msbuild_args += extra_msbuild_args
 
     run_command(msbuild_path, msbuild_args, env_override=msbuild_env, name='msbuild')
