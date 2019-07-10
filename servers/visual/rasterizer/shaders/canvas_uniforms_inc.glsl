@@ -1,10 +1,7 @@
 
-/* SET0: Per draw primitive settings */
+/* SET0: Draw Primitive */
 
 #define M_PI 3.14159265359
-
-#define MAX_LIGHT_TEXTURES 1024
-#define MAX_RENDER_LIGHTS 256
 
 #define FLAGS_INSTANCING_STRIDE_MASK 0xF
 #define FLAGS_INSTANCING_ENABLED (1<<4)
@@ -64,22 +61,10 @@ layout(set = 0, binding = 5) uniform textureBuffer instancing_buffer;
 
 //
 
-/* SET2: Is the skeleton */
+/* SET2: Canvas Item State */
 
-#ifdef USE_ATTRIBUTES
 
-layout(set = 2, binding = 0) uniform textureBuffer skeleton_buffer;
-
-layout(set = 2, binding = 1, std140) uniform SkeletonData {
-	mat4 skeleton_transform; //in world coordinates
-	mat4 skeleton_transform_inverse;
-} skeleton_data;
-
-#endif
-
-/* SET3: Per Scene settings */
-
-layout(set = 3, binding = 0, std140) uniform CanvasData {
+layout(set = 2, binding = 0, std140) uniform CanvasData {
 	mat4 canvas_transform;
 	mat4 screen_transform;
 	mat4 canvas_normal_transform;
@@ -87,7 +72,19 @@ layout(set = 3, binding = 0, std140) uniform CanvasData {
 	//uint light_count;
 } canvas_data;
 
-#define LIGHT_FLAGS_TEXTURE_MASK 0xFFFF
+layout(set = 2, binding = 1) uniform textureBuffer skeleton_buffer;
+
+layout(set = 2, binding = 2, std140) uniform SkeletonData {
+	mat4 skeleton_transform; //in world coordinates
+	mat4 skeleton_transform_inverse;
+} skeleton_data;
+
+
+
+/* SET3: Lighting */
+
+#ifdef USE_LIGHTING
+
 #define LIGHT_FLAGS_BLEND_MASK (3<<16)
 #define LIGHT_FLAGS_BLEND_MODE_ADD (0<<16)
 #define LIGHT_FLAGS_BLEND_MODE_SUB (1<<16)
@@ -109,17 +106,19 @@ struct Light {
 	vec2 position;
 	uint flags; //index to light texture
 	float height;
-	float shadow_softness;
 	float shadow_pixel_size;
 	float pad0;
 	float pad1;
+	float pad2;
 };
 
-layout(set = 3, binding = 1, std140) uniform LightData {
-	Light data[MAX_RENDER_LIGHTS];
+layout(set = 3, binding = 0, std140) uniform LightData {
+	Light data[MAX_LIGHTS];
 } light_array;
 
-layout(set = 3, binding = 2) uniform texture2D light_textures[MAX_LIGHT_TEXTURES];
-layout(set = 3, binding = 3) uniform texture2D shadow_textures[MAX_LIGHT_TEXTURES];
+layout(set = 3, binding = 1) uniform texture2D light_textures[MAX_LIGHT_TEXTURES];
+layout(set = 3, binding = 2) uniform texture2D shadow_textures[MAX_LIGHT_TEXTURES];
 
-layout(set = 3, binding = 4) uniform sampler shadow_sampler;
+layout(set = 3, binding = 3) uniform sampler shadow_sampler;
+
+#endif

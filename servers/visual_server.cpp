@@ -1975,7 +1975,6 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_light_set_mode", "light", "mode"), &VisualServer::canvas_light_set_mode);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_enabled", "light", "enabled"), &VisualServer::canvas_light_set_shadow_enabled);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_buffer_size", "light", "size"), &VisualServer::canvas_light_set_shadow_buffer_size);
-	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_gradient_length", "light", "length"), &VisualServer::canvas_light_set_shadow_gradient_length);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_filter", "light", "filter"), &VisualServer::canvas_light_set_shadow_filter);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_color", "light", "color"), &VisualServer::canvas_light_set_shadow_color);
 	ClassDB::bind_method(D_METHOD("canvas_light_set_shadow_smooth", "light", "smooth"), &VisualServer::canvas_light_set_shadow_smooth);
