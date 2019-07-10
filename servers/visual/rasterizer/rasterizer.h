@@ -618,7 +618,6 @@ public:
 		RID canvas;
 		bool use_shadow;
 		int shadow_buffer_size;
-		float shadow_gradient_length;
 		VS::CanvasLightShadowFilter shadow_filter;
 		Color shadow_color;
 		float shadow_smooth;
@@ -638,10 +637,12 @@ public:
 		Light *mask_next_ptr;
 
 		RID light_internal;
+		uint64_t version;
 
 		int32_t render_index_cache;
 
 		Light() {
+			version = 0;
 			enabled = true;
 			color = Color(1, 1, 1);
 			shadow_color = Color(0, 0, 0, 0);
@@ -661,7 +662,6 @@ public:
 			filter_next_ptr = NULL;
 			use_shadow = false;
 			shadow_buffer_size = 2048;
-			shadow_gradient_length = 0;
 			shadow_filter = VS::CANVAS_LIGHT_FILTER_NONE;
 			shadow_smooth = 0.0;
 			render_index_cache = -1;
@@ -1064,6 +1064,13 @@ public:
 			return command;
 		}
 
+		struct CustomData {
+
+			virtual ~CustomData() {}
+		};
+
+		mutable CustomData *custom_data; //implementation dependent
+
 		void clear() {
 			Command *c = commands;
 			while (c) {
@@ -1112,6 +1119,7 @@ public:
 			light_masked = false;
 			update_when_visible = false;
 			z_final = 0;
+			custom_data = NULL;
 		}
 		virtual ~Item() {
 			clear();
@@ -1119,6 +1127,9 @@ public:
 				memfree(blocks[i].memory);
 			}
 			if (copy_back_buffer) memdelete(copy_back_buffer);
+			if (custom_data) {
+				memdelete(custom_data);
+			}
 		}
 	};
 

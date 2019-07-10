@@ -70,7 +70,6 @@ private:
 	int item_shadow_mask;
 	int shadow_buffer_size;
 	float shadow_smooth;
-	float shadow_gradient_length;
 	Mode mode;
 	Ref<Texture2D> texture;
 	Vector2 texture_offset;
@@ -146,9 +145,6 @@ public:
 
 	void set_shadow_buffer_size(int p_size);
 	int get_shadow_buffer_size() const;
-
-	void set_shadow_gradient_length(float p_multiplier);
-	float get_shadow_gradient_length() const;
 
 	void set_shadow_filter(ShadowFilter p_filter);
 	ShadowFilter get_shadow_filter() const;
