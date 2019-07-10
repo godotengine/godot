@@ -1144,8 +1144,12 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 			shaders.copy.set_conditional(CopyShaderGLES3::USE_TEXTURE2DARRAY, texture->type == VS::TEXTURE_TYPE_2D_ARRAY);
 			shaders.copy.bind();
 
-			// calculate the normalized z coordinate for the layer
-			float layer = (float)p_layer / (float)texture->alloc_depth;
+			float layer;
+			if (texture->type == VS::TEXTURE_TYPE_2D_ARRAY)
+				layer = (float)p_layer;
+			else
+				// calculate the normalized z coordinate for the layer
+				layer = (float)p_layer / (float)texture->alloc_depth;
 
 			shaders.copy.set_uniform(CopyShaderGLES3::LAYER, layer);
 
