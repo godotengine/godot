@@ -215,6 +215,7 @@ float BakedLightmap::get_capture_cell_size() const {
 void BakedLightmap::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	update_gizmo();
+	_change_notify("bake_extents");
 }
 
 Vector3 BakedLightmap::get_extents() const {
