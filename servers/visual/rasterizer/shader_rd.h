@@ -44,6 +44,7 @@
 class ShaderRD {
 
 	//versions
+	CharString general_defines;
 	Vector<CharString> variant_defines;
 
 	int vertex_code_start;
@@ -114,7 +115,7 @@ public:
 
 	bool version_free(RID p_version);
 
-	void initialize(const Vector<String> &p_variant_defines);
+	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");
 	virtual ~ShaderRD();
 };
 

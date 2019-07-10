@@ -334,6 +334,7 @@ public:
 		}
 	};
 
+
 	struct TextureView {
 		DataFormat format_override;
 		TextureSwizzle swizzle_r;
@@ -352,6 +353,8 @@ public:
 
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >()) = 0;
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) = 0;
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture,int p_layer,int p_mipmap) = 0;
+
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 	virtual PoolVector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
 
@@ -373,6 +376,7 @@ public:
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format) = 0;
+	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format) =0;
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID) = 0;
 
@@ -865,11 +869,48 @@ public:
 
 	virtual void draw_list_end() = 0;
 
+
 	/***************/
 	/**** FREE! ****/
 	/***************/
 
 	virtual void free(RID p_id) = 0;
+
+	/****************/
+	/**** LIMITS ****/
+	/****************/
+
+	enum Limit {
+		LIMIT_MAX_BOUND_UNIFORM_SETS,
+		LIMIT_MAX_FRAMEBUFFER_COLOR_ATTACHMENTS,
+		LIMIT_MAX_TEXTURES_PER_UNIFORM_SET,
+		LIMIT_MAX_SAMPLERS_PER_UNIFORM_SET,
+		LIMIT_MAX_STORAGE_BUFFERS_PER_UNIFORM_SET,
+		LIMIT_MAX_STORAGE_IMAGES_PER_UNIFORM_SET,
+		LIMIT_MAX_UNIFORM_BUFFERS_PER_UNIFORM_SET,
+		LIMIT_MAX_DRAW_INDEXED_INDEX,
+		LIMIT_MAX_FRAMEBUFFER_HEIGHT,
+		LIMIT_MAX_FRAMEBUFFER_WIDTH,
+		LIMIT_MAX_TEXTURE_ARRAY_LAYERS,
+		LIMIT_MAX_TEXTURE_SIZE_1D,
+		LIMIT_MAX_TEXTURE_SIZE_2D,
+		LIMIT_MAX_TEXTURE_SIZE_3D,
+		LIMIT_MAX_TEXTURE_SIZE_CUBE,
+		LIMIT_MAX_TEXTURES_PER_SHADER_STAGE,
+		LIMIT_MAX_SAMPLERS_PER_SHADER_STAGE,
+		LIMIT_MAX_STORAGE_BUFFERS_PER_SHADER_STAGE,
+		LIMIT_MAX_STORAGE_IMAGES_PER_SHADER_STAGE,
+		LIMIT_MAX_UNIFORM_BUFFERS_PER_SHADER_STAGE,
+		LIMIT_MAX_PUSH_CONSTANT_SIZE,
+		LIMIT_MAX_UNIFORM_BUFFER_SIZE,
+		LIMIT_MAX_VERTEX_INPUT_ATTRIBUTE_OFFSET,
+		LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES,
+		LIMIT_MAX_VERTEX_INPUT_BINDINGS,
+		LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE,
+		LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT	,
+	};
+
+	virtual int limit_get(Limit p_limit) =0;
 
 	//methods below not exposed, used by RenderingDeviceRD
 	virtual void prepare_screen_for_drawing() =0;
