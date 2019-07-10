@@ -285,10 +285,10 @@ Godot build configurations, check them out when updating.
 ## mbedtls
 
 - Upstream: https://tls.mbed.org/
-- Version: 2.16.0
+- Version: 2.16.2
 - License: Apache 2.0
 
-File extracted from upstream release tarball `mbedtls-2.16.0-apache.tgz`:
+File extracted from upstream release tarball (`-apache.tgz` variant):
 - All `*.h` from `include/mbedtls/` to `thirdparty/mbedtls/include/mbedtls/`
 - All `*.c` from `library/` to `thirdparty/mbedtls/library/`
 - Applied the patch in `thirdparty/mbedtls/1453.diff` (PR 1453). Soon to be merged upstream. Check it out at next update.

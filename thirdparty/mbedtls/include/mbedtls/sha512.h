@@ -253,6 +253,7 @@ int mbedtls_sha512_ret( const unsigned char *input,
 #else
 #define MBEDTLS_DEPRECATED
 #endif
+
 /**
  * \brief          This function calculates the SHA-512 or SHA-384
  *                 checksum of a buffer.
@@ -280,6 +281,9 @@ MBEDTLS_DEPRECATED void mbedtls_sha512( const unsigned char *input,
 
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
+
+#if defined(MBEDTLS_SELF_TEST)
+
  /**
  * \brief          The SHA-384 or SHA-512 checkup routine.
  *
@@ -287,6 +291,7 @@ MBEDTLS_DEPRECATED void mbedtls_sha512( const unsigned char *input,
  * \return         \c 1 on failure.
  */
 int mbedtls_sha512_self_test( int verbose );
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }

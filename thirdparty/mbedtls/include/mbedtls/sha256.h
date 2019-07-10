@@ -278,6 +278,8 @@ MBEDTLS_DEPRECATED void mbedtls_sha256( const unsigned char *input,
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
+#if defined(MBEDTLS_SELF_TEST)
+
 /**
  * \brief          The SHA-224 and SHA-256 checkup routine.
  *
@@ -285,6 +287,8 @@ MBEDTLS_DEPRECATED void mbedtls_sha256( const unsigned char *input,
  * \return         \c 1 on failure.
  */
 int mbedtls_sha256_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }

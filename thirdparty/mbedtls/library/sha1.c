@@ -152,19 +152,21 @@ int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
     GET_UINT32_BE( W[14], data, 56 );
     GET_UINT32_BE( W[15], data, 60 );
 
-#define S(x,n) ((x << n) | ((x & 0xFFFFFFFF) >> (32 - n)))
+#define S(x,n) (((x) << (n)) | (((x) & 0xFFFFFFFF) >> (32 - (n))))
 
-#define R(t)                                            \
-(                                                       \
-    temp = W[( t -  3 ) & 0x0F] ^ W[( t - 8 ) & 0x0F] ^ \
-           W[( t - 14 ) & 0x0F] ^ W[  t       & 0x0F],  \
-    ( W[t & 0x0F] = S(temp,1) )                         \
-)
+#define R(t)                                                    \
+    (                                                           \
+        temp = W[( (t) -  3 ) & 0x0F] ^ W[( (t) - 8 ) & 0x0F] ^ \
+               W[( (t) - 14 ) & 0x0F] ^ W[  (t)       & 0x0F],  \
+        ( W[(t) & 0x0F] = S(temp,1) )                           \
+    )
 
-#define P(a,b,c,d,e,x)                                  \
-{                                                       \
-    e += S(a,5) + F(b,c,d) + K + x; b = S(b,30);        \
-}
+#define P(a,b,c,d,e,x)                                          \
+    do                                                          \
+    {                                                           \
+        (e) += S((a),5) + F((b),(c),(d)) + K + (x);             \
+        (b) = S((b),30);                                        \
+    } while( 0 )
 
     A = ctx->state[0];
     B = ctx->state[1];
@@ -172,7 +174,7 @@ int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
     D = ctx->state[3];
     E = ctx->state[4];
 
-#define F(x,y,z) (z ^ (x & (y ^ z)))
+#define F(x,y,z) ((z) ^ ((x) & ((y) ^ (z))))
 #define K 0x5A827999
 
     P( A, B, C, D, E, W[0]  );
@@ -199,7 +201,7 @@ int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
 #undef K
 #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
+#define F(x,y,z) ((x) ^ (y) ^ (z))
 #define K 0x6ED9EBA1
 
     P( A, B, C, D, E, R(20) );
@@ -226,7 +228,7 @@ int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
 #undef K
 #undef F
 
-#define F(x,y,z) ((x & y) | (z & (x | y)))
+#define F(x,y,z) (((x) & (y)) | ((z) & ((x) | (y))))
 #define K 0x8F1BBCDC
 
     P( A, B, C, D, E, R(40) );
@@ -253,7 +255,7 @@ int mbedtls_internal_sha1_process( mbedtls_sha1_context *ctx,
 #undef K
 #undef F
 
-#define F(x,y,z) (x ^ y ^ z)
+#define F(x,y,z) ((x) ^ (y) ^ (z))
 #define K 0xCA62C1D6
 
     P( A, B, C, D, E, R(60) );

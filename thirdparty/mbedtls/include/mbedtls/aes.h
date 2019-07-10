@@ -655,6 +655,8 @@ MBEDTLS_DEPRECATED void mbedtls_aes_decrypt( mbedtls_aes_context *ctx,
 #undef MBEDTLS_DEPRECATED
 #endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
+
+#if defined(MBEDTLS_SELF_TEST)
 /**
  * \brief          Checkup routine.
  *
@@ -662,6 +664,8 @@ MBEDTLS_DEPRECATED void mbedtls_aes_decrypt( mbedtls_aes_context *ctx,
  * \return         \c 1 on failure.
  */
 int mbedtls_aes_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }
