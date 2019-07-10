@@ -341,7 +341,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 
 	if (do_start) {
 
-		if (sm->start_node != StringName() && p_seek && p_time == 0) {
+		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0) {
 			current = p_state_machine->start_node;
 			emit_signal("state_changed");
 		}
