@@ -570,7 +570,6 @@ public:
 
 	FUNC2(canvas_light_set_shadow_enabled, RID, bool)
 	FUNC2(canvas_light_set_shadow_buffer_size, RID, int)
-	FUNC2(canvas_light_set_shadow_gradient_length, RID, float)
 	FUNC2(canvas_light_set_shadow_filter, RID, CanvasLightShadowFilter)
 	FUNC2(canvas_light_set_shadow_color, RID, const Color &)
 	FUNC2(canvas_light_set_shadow_smooth, RID, float)
