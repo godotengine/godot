@@ -165,7 +165,7 @@ License: FTL
 
 Files: ./thirdparty/glad/
 Comment: glad
-Copyright: 2013-2018, David Herberth
+Copyright: 2013-2019, David Herberth
 License: Expat
 
 Files: ./thirdparty/jpeg_compressor/
