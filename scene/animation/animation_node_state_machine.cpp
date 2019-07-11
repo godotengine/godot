@@ -323,13 +323,13 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 			if (!_travel(p_state_machine, start_request)) {
 				//can't travel, then teleport
 				path.clear();
+				emit_signal("state_changed", current, start_request);
 				current = start_request;
-				emit_signal("state_changed");
 			}
 		} else {
 			path.clear();
+			emit_signal("state_changed", current, start_request);
 			current = start_request;
-			emit_signal("state_changed");
 			playing = true;
 			play_start = true;
 		}
@@ -342,8 +342,8 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 	if (do_start) {
 
 		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0) {
+			emit_signal("state_changed", current, p_state_machine->start_node);
 			current = p_state_machine->start_node;
-			emit_signal("state_changed");
 		}
 
 		len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 1.0, AnimationNode::FILTER_IGNORE, false);
@@ -353,8 +353,8 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 
 	if (!p_state_machine->states.has(current)) {
 		playing = false; //current does not exist
+		emit_signal("state_changed", current, StringName());
 		current = StringName();
-		emit_signal("state_changed");
 		return 0;
 	}
 	float fade_blend = 1.0;
@@ -469,8 +469,8 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 			if (path.size()) { //if it came from path, remove path
 				path.remove(0);
 			}
+			emit_signal("state_changed", current, next);
 			current = next;
-			emit_signal("state_changed");
 			if (switch_mode == AnimationNodeStateMachineTransition::SWITCH_MODE_SYNC) {
 				len_current = p_state_machine->blend_node(current, p_state_machine->states[current].node, 0, true, 0, AnimationNode::FILTER_IGNORE, false);
 				pos_current = MIN(pos_current, len_current);
@@ -504,7 +504,7 @@ void AnimationNodeStateMachinePlayback::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_current_node"), &AnimationNodeStateMachinePlayback::get_current_node);
 	ClassDB::bind_method(D_METHOD("get_travel_path"), &AnimationNodeStateMachinePlayback::get_travel_path);
 
-	ADD_SIGNAL(MethodInfo("state_changed"));
+	ADD_SIGNAL(MethodInfo("state_changed", PropertyInfo(Variant::STRING, "from_state"), PropertyInfo(Variant::STRING, "to_state")));
 }
 
 AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
@@ -799,12 +799,12 @@ Vector2 AnimationNodeStateMachine::get_graph_offset() const {
 	return graph_offset;
 }
 
-void AnimationNodeStateMachine::on_playback_state_changed() {
+void AnimationNodeStateMachine::_on_playback_state_changed(const StringName &p_from_state, const StringName &p_to_state) {
 
 	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
 	ERR_FAIL_COND(playback.is_null());
 
-	emit_signal("state_changed", playback->current);
+	emit_signal("state_changed", p_from_state, p_to_state);
 }
 
 float AnimationNodeStateMachine::process(float p_time, bool p_seek) {
@@ -812,8 +812,8 @@ float AnimationNodeStateMachine::process(float p_time, bool p_seek) {
 	Ref<AnimationNodeStateMachinePlayback> playback = get_parameter(this->playback);
 	ERR_FAIL_COND_V(playback.is_null(), 0.0);
 
-	if (!playback->is_connected("state_changed", this, "on_playback_state_changed")) {
-		playback->connect("state_changed", this, "on_playback_state_changed");
+	if (!playback->is_connected("state_changed", this, "_on_playback_state_changed")) {
+		playback->connect("state_changed", this, "_on_playback_state_changed");
 	}
 
 	return playback->process(this, p_time, p_seek);
@@ -988,9 +988,9 @@ void AnimationNodeStateMachine::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationNodeStateMachine::_tree_changed);
 
-	ClassDB::bind_method(D_METHOD("on_playback_state_changed"), &AnimationNodeStateMachine::on_playback_state_changed);
+	ClassDB::bind_method(D_METHOD("_on_playback_state_changed"), &AnimationNodeStateMachine::_on_playback_state_changed);
 
-	ADD_SIGNAL(MethodInfo("state_changed", PropertyInfo(Variant::STRING, "new_state")));
+	ADD_SIGNAL(MethodInfo("state_changed", PropertyInfo(Variant::STRING, "from_state"), PropertyInfo(Variant::STRING, "to_state")));
 }
 
 AnimationNodeStateMachine::AnimationNodeStateMachine() {
