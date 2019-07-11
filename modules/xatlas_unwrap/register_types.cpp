@@ -39,57 +39,37 @@ extern bool (*array_mesh_lightmap_unwrap_callback)(float p_texel_size, const flo
 bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_vertices, const float *p_normals, int p_vertex_count, const int *p_indices, const int *p_face_materials, int p_index_count, float **r_uv, int **r_vertex, int *r_vertex_count, int **r_index, int *r_index_count, int *r_size_hint_x, int *r_size_hint_y) {
 
 	//set up input mesh
-	xatlas::InputMesh input_mesh;
-	input_mesh.indexData = malloc(sizeof(int) * p_index_count);
+	xatlas::MeshDecl input_mesh;
+	input_mesh.indexData = p_indices;
 	input_mesh.indexCount = p_index_count;
-	input_mesh.indexFormat = xatlas::IndexFormat::Float; //really xatlas?
-	input_mesh.faceMaterialData = (uint16_t *)malloc(sizeof(uint16_t) * p_index_count);
-
-	for (int i = 0; i < p_index_count; i++) {
-		int *index = (int *)input_mesh.indexData;
-		index[i] = p_indices[i];
-	}
-	for (int i = 0; i < p_index_count / 3; i++) {
-		uint16_t *mat_index = (uint16_t *)input_mesh.faceMaterialData;
-		mat_index[i] = p_face_materials[i];
-	}
+	input_mesh.indexFormat = xatlas::IndexFormat::UInt32;
 
 	input_mesh.vertexCount = p_vertex_count;
-	input_mesh.vertexPositionData = malloc(sizeof(float) * p_vertex_count * 3);
+	input_mesh.vertexPositionData = p_vertices;
 	input_mesh.vertexPositionStride = sizeof(float) * 3;
-	input_mesh.vertexNormalData = malloc(sizeof(float) * p_vertex_count * 3);
-	input_mesh.vertexNormalStride = sizeof(float) * 3;
-
-	//material is a better hint than this i guess?
+	input_mesh.vertexNormalData = p_normals;
+	input_mesh.vertexNormalStride = sizeof(uint32_t) * 3;
 	input_mesh.vertexUvData = NULL;
 	input_mesh.vertexUvStride = 0;
 
-	for (int i = 0; i < p_vertex_count * 3; i++) {
-		float *vertex_ptr = (float *)input_mesh.vertexPositionData;
-		float *normal_ptr = (float *)input_mesh.vertexNormalData;
+	xatlas::ChartOptions chart_options;
+	xatlas::PackOptions pack_options;
 
-		vertex_ptr[i] = p_vertices[i];
-		normal_ptr[i] = p_normals[i];
-	}
-
-	xatlas::CharterOptions chart_options;
-	xatlas::PackerOptions pack_options;
-
-	pack_options.method = xatlas::PackMethod::TexelArea;
-	pack_options.texelArea = 1.0 / p_texel_size;
-	pack_options.quality = 3;
+	pack_options.maxChartSize = 4096;
+	pack_options.bruteForce = true;
+	pack_options.texelsPerUnit = 1.0 / p_texel_size;
 
 	xatlas::Atlas *atlas = xatlas::Create();
-	printf("adding mesh..\n");
-	xatlas::AddMeshError err = xatlas::AddMesh(atlas, input_mesh);
-	ERR_EXPLAINC(xatlas::StringForEnum(err.code));
-	ERR_FAIL_COND_V(err.code != xatlas::AddMeshErrorCode::Success, false);
+	printf("Adding mesh..\n");
+	xatlas::AddMeshError::Enum err = xatlas::AddMesh(atlas, input_mesh, 1);
+	ERR_EXPLAINC(xatlas::StringForEnum(err));
+	ERR_FAIL_COND_V(err != xatlas::AddMeshError::Enum::Success, false);
 
-	printf("generate..\n");
-	xatlas::Generate(atlas, chart_options, pack_options);
+	printf("Generate..\n");
+	xatlas::Generate(atlas, chart_options, NULL, pack_options);
 
-	*r_size_hint_x = xatlas::GetWidth(atlas);
-	*r_size_hint_y = xatlas::GetHeight(atlas);
+	*r_size_hint_x = atlas->width;
+	*r_size_hint_y = atlas->height;
 
 	float w = *r_size_hint_x;
 	float h = *r_size_hint_y;
@@ -98,39 +78,33 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 		return false; //could not bake
 	}
 
-	const xatlas::OutputMesh *const *output_meshes = xatlas::GetOutputMeshes(atlas);
+	const xatlas::Mesh &output = atlas->meshes[0];
 
-	const xatlas::OutputMesh *output = output_meshes[0];
-
-	*r_vertex = (int *)malloc(sizeof(int) * output->vertexCount);
-	*r_uv = (float *)malloc(sizeof(float) * output->vertexCount * 2);
-	*r_index = (int *)malloc(sizeof(int) * output->indexCount);
+	*r_vertex = (int *)malloc(sizeof(int) * output.vertexCount);
+	*r_uv = (float *)malloc(sizeof(float) * output.vertexCount * 2);
+	*r_index = (int *)malloc(sizeof(int) * output.indexCount);
 
 	float max_x = 0;
 	float max_y = 0;
-	for (uint32_t i = 0; i < output->vertexCount; i++) {
-		(*r_vertex)[i] = output->vertexArray[i].xref;
-		(*r_uv)[i * 2 + 0] = output->vertexArray[i].uv[0] / w;
-		(*r_uv)[i * 2 + 1] = output->vertexArray[i].uv[1] / h;
-		max_x = MAX(max_x, output->vertexArray[i].uv[0]);
-		max_y = MAX(max_y, output->vertexArray[i].uv[1]);
+	for (uint32_t i = 0; i < output.vertexCount; i++) {
+		(*r_vertex)[i] = output.vertexArray[i].xref;
+		(*r_uv)[i * 2 + 0] = output.vertexArray[i].uv[0] / w;
+		(*r_uv)[i * 2 + 1] = output.vertexArray[i].uv[1] / h;
+		max_x = MAX(max_x, output.vertexArray[i].uv[0]);
+		max_y = MAX(max_y, output.vertexArray[i].uv[1]);
 	}
 
-	printf("final texsize: %f,%f - max %f,%f\n", w, h, max_x, max_y);
-	*r_vertex_count = output->vertexCount;
+	printf("Final texture size: %f,%f - max %f,%f\n", w, h, max_x, max_y);
+	*r_vertex_count = output.vertexCount;
 
-	for (uint32_t i = 0; i < output->indexCount; i++) {
-		(*r_index)[i] = output->indexArray[i];
+	for (uint32_t i = 0; i < output.indexCount; i++) {
+		(*r_index)[i] = output.indexArray[i];
 	}
 
-	*r_index_count = output->indexCount;
+	*r_index_count = output.indexCount;
 
 	//xatlas::Destroy(atlas);
-	free((void *)input_mesh.indexData);
-	free((void *)input_mesh.vertexPositionData);
-	free((void *)input_mesh.vertexNormalData);
-	free((void *)input_mesh.faceMaterialData);
-	printf("done");
+	printf("Done\n");
 	return true;
 }
 
