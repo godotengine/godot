@@ -98,8 +98,7 @@
     /* we must now build type1.encoding when we have a custom array */
     if ( type1->encoding_type == T1_ENCODING_TYPE_ARRAY )
     {
-      FT_Int    charcode, idx, min_char, max_char;
-      FT_Byte*  glyph_name;
+      FT_Int  charcode, idx, min_char, max_char;
 
 
       /* OK, we do the following: for each element in the encoding   */
@@ -114,27 +113,27 @@
       charcode = 0;
       for ( ; charcode < loader.encoding_table.max_elems; charcode++ )
       {
-        FT_Byte*  char_name;
+        const FT_String*  char_name =
+              (const FT_String*)loader.encoding_table.elements[charcode];
 
 
         type1->encoding.char_index[charcode] = 0;
-        type1->encoding.char_name [charcode] = (char *)".notdef";
+        type1->encoding.char_name [charcode] = ".notdef";
 
-        char_name = loader.encoding_table.elements[charcode];
         if ( char_name )
           for ( idx = 0; idx < type1->num_glyphs; idx++ )
           {
-            glyph_name = (FT_Byte*)type1->glyph_names[idx];
-            if ( ft_strcmp( (const char*)char_name,
-                            (const char*)glyph_name ) == 0 )
+            const FT_String*  glyph_name = type1->glyph_names[idx];
+
+
+            if ( ft_strcmp( char_name, glyph_name ) == 0 )
             {
               type1->encoding.char_index[charcode] = (FT_UShort)idx;
-              type1->encoding.char_name [charcode] = (char*)glyph_name;
+              type1->encoding.char_name [charcode] = glyph_name;
 
               /* Change min/max encoded char only if glyph name is */
               /* not /.notdef                                      */
-              if ( ft_strcmp( (const char*)".notdef",
-                              (const char*)glyph_name ) != 0 )
+              if ( ft_strcmp( ".notdef", glyph_name ) != 0 )
               {
                 if ( charcode < min_char )
                   min_char = charcode;

@@ -166,6 +166,17 @@ FT_BEGIN_HEADER
 
 
   /*
+   *    function      acts on      increases  does range   for    emits
+   *                                pointer    checking   frames  error
+   *  -------------------------------------------------------------------
+   *   FT_PEEK_XXX  buffer pointer      no         no        no     no
+   *   FT_NEXT_XXX  buffer pointer     yes         no        no     no
+   *   FT_GET_XXX   stream->cursor     yes        yes       yes     no
+   *   FT_READ_XXX  stream->pos        yes        yes        no    yes
+   */
+
+
+  /*
    * `FT_PEEK_XXX' are generic macros to get data from a buffer position.  No
    * safety checks are performed.
    */

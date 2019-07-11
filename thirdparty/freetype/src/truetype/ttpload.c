@@ -352,12 +352,12 @@
       goto Exit;
 
     {
-      FT_Short*  cur   = face->cvt;
-      FT_Short*  limit = cur + face->cvt_size;
+      FT_Int32*  cur   = face->cvt;
+      FT_Int32*  limit = cur + face->cvt_size;
 
 
       for ( ; cur < limit; cur++ )
-        *cur = FT_GET_SHORT();
+        *cur = FT_GET_SHORT() * 64;
     }
 
     FT_FRAME_EXIT();

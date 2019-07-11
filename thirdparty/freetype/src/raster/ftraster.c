@@ -399,7 +399,7 @@
 
 
 #define RAS_ARGS       /* void */
-#define RAS_ARG        /* void */
+#define RAS_ARG        void
 
 #define RAS_VARS       /* void */
 #define RAS_VAR        /* void */
@@ -546,8 +546,7 @@
 
 #ifdef FT_STATIC_RASTER
 
-  static black_TWorker  cur_ras;
-#define ras  cur_ras
+  static black_TWorker  ras;
 
 #else /* !FT_STATIC_RASTER */
 
@@ -661,7 +660,6 @@
       return FAILURE;
     }
 
-    ras.cProfile->flags  = 0;
     ras.cProfile->start  = 0;
     ras.cProfile->height = 0;
     ras.cProfile->offset = ras.top;
@@ -914,16 +912,18 @@
 
 
     base[4].x = base[2].x;
-    b = base[1].x;
-    a = base[3].x = ( base[2].x + b ) / 2;
-    b = base[1].x = ( base[0].x + b ) / 2;
-    base[2].x = ( a + b ) / 2;
+    a = base[0].x + base[1].x;
+    b = base[1].x + base[2].x;
+    base[3].x = b >> 1;
+    base[2].x = ( a + b ) >> 2;
+    base[1].x = a >> 1;
 
     base[4].y = base[2].y;
-    b = base[1].y;
-    a = base[3].y = ( base[2].y + b ) / 2;
-    b = base[1].y = ( base[0].y + b ) / 2;
-    base[2].y = ( a + b ) / 2;
+    a = base[0].y + base[1].y;
+    b = base[1].y + base[2].y;
+    base[3].y = b >> 1;
+    base[2].y = ( a + b ) >> 2;
+    base[1].y = a >> 1;
 
     /* hand optimized.  gcc doesn't seem to be too good at common      */
     /* expression substitution and instruction scheduling ;-)          */
@@ -947,28 +947,32 @@
   static void
   Split_Cubic( TPoint*  base )
   {
-    Long  a, b, c, d;
+    Long  a, b, c;
 
 
     base[6].x = base[3].x;
-    c = base[1].x;
-    d = base[2].x;
-    base[1].x = a = ( base[0].x + c + 1 ) >> 1;
-    base[5].x = b = ( base[3].x + d + 1 ) >> 1;
-    c = ( c + d + 1 ) >> 1;
-    base[2].x = a = ( a + c + 1 ) >> 1;
-    base[4].x = b = ( b + c + 1 ) >> 1;
-    base[3].x = ( a + b + 1 ) >> 1;
+    a = base[0].x + base[1].x;
+    b = base[1].x + base[2].x;
+    c = base[2].x + base[3].x;
+    base[5].x = c >> 1;
+    c += b;
+    base[4].x = c >> 2;
+    base[1].x = a >> 1;
+    a += b;
+    base[2].x = a >> 2;
+    base[3].x = ( a + c ) >> 3;
 
     base[6].y = base[3].y;
-    c = base[1].y;
-    d = base[2].y;
-    base[1].y = a = ( base[0].y + c + 1 ) >> 1;
-    base[5].y = b = ( base[3].y + d + 1 ) >> 1;
-    c = ( c + d + 1 ) >> 1;
-    base[2].y = a = ( a + c + 1 ) >> 1;
-    base[4].y = b = ( b + c + 1 ) >> 1;
-    base[3].y = ( a + b + 1 ) >> 1;
+    a = base[0].y + base[1].y;
+    b = base[1].y + base[2].y;
+    c = base[2].y + base[3].y;
+    base[5].y = c >> 1;
+    c += b;
+    base[4].y = c >> 2;
+    base[1].y = a >> 1;
+    a += b;
+    base[2].y = a >> 2;
+    base[3].y = ( a + c ) >> 3;
   }
 
 
@@ -2784,7 +2788,7 @@
         P_Left  = draw_left;
         P_Right = draw_right;
 
-        while ( P_Left )
+        while ( P_Left && P_Right )
         {
           x1 = P_Left ->X;
           x2 = P_Right->X;
@@ -2885,7 +2889,7 @@
     P_Left  = draw_left;
     P_Right = draw_right;
 
-    while ( P_Left )
+    while ( P_Left && P_Right )
     {
       if ( P_Left->countL )
       {
@@ -3257,7 +3261,9 @@
     const FT_Outline*  outline    = (const FT_Outline*)params->source;
     const FT_Bitmap*   target_map = params->target;
 
+#ifndef FT_STATIC_RASTER
     black_TWorker  worker[1];
+#endif
 
     Long  buffer[FT_MAX_BLACK_POOL];
 
@@ -3299,8 +3305,8 @@
     ras.outline = *outline;
     ras.target  = *target_map;
 
-    worker->buff     = buffer;
-    worker->sizeBuff = (&buffer)[1]; /* Points to right after buffer. */
+    ras.buff     = buffer;
+    ras.sizeBuff = (&buffer)[1]; /* Points to right after buffer. */
 
     return Render_Glyph( RAS_VAR );
   }

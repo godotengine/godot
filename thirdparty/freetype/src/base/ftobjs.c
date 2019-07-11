@@ -4059,8 +4059,8 @@
   /* documentation is in freetype.h */
 
   FT_EXPORT_DEF( FT_UInt )
-  FT_Get_Name_Index( FT_Face     face,
-                     FT_String*  glyph_name )
+  FT_Get_Name_Index( FT_Face           face,
+                     const FT_String*  glyph_name )
   {
     FT_UInt  result = 0;
 

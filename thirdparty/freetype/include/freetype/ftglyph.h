@@ -210,7 +210,7 @@ FT_BEGIN_HEADER
    *
    *   As the outline is extracted from a glyph slot, its coordinates are
    *   expressed normally in 26.6 pixels, unless the flag @FT_LOAD_NO_SCALE
-   *   was used in @FT_Load_Glyph() or @FT_Load_Char().
+   *   was used in @FT_Load_Glyph or @FT_Load_Char.
    *
    *   The outline's tables are always owned by the object and are destroyed
    *   with it.

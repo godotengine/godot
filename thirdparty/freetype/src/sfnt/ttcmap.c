@@ -2368,10 +2368,7 @@
         /* if `gindex' is invalid, the remaining values */
         /* in this group are invalid, too               */
         if ( gindex >= (FT_UInt)face->num_glyphs )
-        {
-          gindex = 0;
           continue;
-        }
 
         cmap->cur_charcode = char_code;
         cmap->cur_gindex   = gindex;
@@ -3661,7 +3658,7 @@
   tt_get_glyph_name( TT_Face  face,
                      FT_UInt  idx )
   {
-    FT_String*  PSname;
+    FT_String*  PSname = NULL;
 
 
     tt_face_get_ps_name( face, idx, &PSname );

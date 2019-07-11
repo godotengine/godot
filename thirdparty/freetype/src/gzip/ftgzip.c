@@ -746,7 +746,7 @@
     stream.zfree  = (free_func) ft_gzip_free;
     stream.opaque = memory;
 
-    err = inflateInit2( &stream, MAX_WBITS );
+    err = inflateInit2( &stream, MAX_WBITS|32 );
     if ( err != Z_OK )
       return FT_THROW( Invalid_Argument );
 

@@ -381,8 +381,8 @@
 
 
   static FT_UInt
-  cff_get_name_index( CFF_Face    face,
-                      FT_String*  glyph_name )
+  cff_get_name_index( CFF_Face          face,
+                      const FT_String*  glyph_name )
   {
     CFF_Font            cff;
     CFF_Charset         charset;

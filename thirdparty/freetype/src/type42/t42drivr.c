@@ -69,8 +69,8 @@
 
 
   static FT_UInt
-  t42_get_name_index( T42_Face    face,
-                      FT_String*  glyph_name )
+  t42_get_name_index( T42_Face          face,
+                      const FT_String*  glyph_name )
   {
     FT_Int  i;
 

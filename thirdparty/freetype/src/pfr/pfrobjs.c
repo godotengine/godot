@@ -378,7 +378,7 @@
       outline->flags &= ~FT_OUTLINE_OWNER;
       outline->flags |= FT_OUTLINE_REVERSE_FILL;
 
-      if ( size && pfrsize->metrics.y_ppem < 24 )
+      if ( pfrsize->metrics.y_ppem < 24 )
         outline->flags |= FT_OUTLINE_HIGH_PRECISION;
 
       /* compute the advance vector */

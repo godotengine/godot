@@ -243,7 +243,7 @@
       }
 
       if ( lcd_filter_func )
-        lcd_filter_func( bitmap, mode, lcd_weights );
+        lcd_filter_func( bitmap, lcd_weights );
     }
 
 #else /* !FT_CONFIG_OPTION_SUBPIXEL_RENDERING */

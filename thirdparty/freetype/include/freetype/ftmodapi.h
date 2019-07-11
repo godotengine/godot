@@ -623,7 +623,7 @@ FT_BEGIN_HEADER
    *     it is bytecode interpreter's execution context, `TT_ExecContext`,
    *     which is declared in FreeType's internal header file `tttypes.h`.
    */
-  typedef void
+  typedef FT_Error
   (*FT_DebugHook_Func)( void*  arg );
 
 
