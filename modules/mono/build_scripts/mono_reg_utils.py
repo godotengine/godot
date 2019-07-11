@@ -116,5 +116,3 @@ def find_msbuild_tools_path_reg():
             return value
     except (WindowsError, OSError):
         return ''
-
-    return ''
