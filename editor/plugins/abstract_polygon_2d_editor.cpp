@@ -349,7 +349,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 							Vector<Vector2> vertices2 = _get_polygon(insert.polygon);
 							pre_move_edit = vertices2;
-							printf("setting pre_move_edit\n");
 							edited_point = PosVertex(insert.polygon, insert.vertex + 1, xform.affine_inverse().xform(insert.pos));
 							vertices2.insert(edited_point.vertex, edited_point.pos);
 							selected_point = edited_point;
@@ -367,7 +366,6 @@ bool AbstractPolygon2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) 
 
 						if (closest.valid()) {
 
-							printf("setting pre_move_edit\n");
 							pre_move_edit = _get_polygon(closest.polygon);
 							edited_point = PosVertex(closest, xform.affine_inverse().xform(closest.pos));
 							selected_point = closest;
@@ -612,7 +610,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 				Vector2 point = xform.xform(p);
 				Vector2 next_point = xform.xform(p2);
 
-				p_overlay->draw_line(point, next_point, col, 2 * EDSCALE);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
 			}
 		}
 
@@ -636,7 +634,7 @@ void AbstractPolygon2DEditor::forward_canvas_draw_over_viewport(Control *p_overl
 					p2 = points[(i + 1) % n_points] + offset;
 
 				const Vector2 next_point = xform.xform(p2);
-				p_overlay->draw_line(point, next_point, col, 2 * EDSCALE);
+				p_overlay->draw_line(point, next_point, col, Math::round(2 * EDSCALE), true);
 			}
 		}
 
