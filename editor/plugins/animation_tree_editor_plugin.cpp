@@ -115,6 +115,8 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 			button_path.push_back(p_path[i]);
 		}
 
+		edited_path = button_path;
+
 		for (int i = 0; i < editors.size(); i++) {
 			if (editors[i]->can_edit(node)) {
 				editors[i]->edit(node);
@@ -126,9 +128,8 @@ void AnimationTreeEditor::edit_path(const Vector<String> &p_path) {
 		}
 	} else {
 		current_root = 0;
+		edited_path = button_path;
 	}
-
-	edited_path = button_path;
 
 	_update_path();
 }
