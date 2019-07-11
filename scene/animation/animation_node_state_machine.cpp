@@ -342,14 +342,7 @@ float AnimationNodeStateMachinePlayback::process(AnimationNodeStateMachine *p_st
 	if (do_start) {
 
 		if (p_state_machine->start_node != StringName() && p_seek && p_time == 0) {
-<<<<<<< HEAD
-<<<<<<< HEAD
-			emit_signal("state_changed")
-=======
->>>>>>> 08558909e... clang formatting and pointer fixes
-=======
 			emit_signal("state_changed", current, p_state_machine->start_node);
->>>>>>> 18872a879... exposed to and from states in signal
 			current = p_state_machine->start_node;
 		}
 
