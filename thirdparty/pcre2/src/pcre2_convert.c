@@ -276,7 +276,7 @@ while (plength > 0)
     break;
 
     case CHAR_BACKSLASH:
-    if (plength <= 0) return PCRE2_ERROR_END_BACKSLASH;
+    if (plength == 0) return PCRE2_ERROR_END_BACKSLASH;
     if (extended) nextisliteral = TRUE; else
       {
       if (*posix < 127 && strchr(posix_meta_escapes, *posix) != NULL)

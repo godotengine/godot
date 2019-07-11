@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -129,7 +129,7 @@ for (; ptr < ptrend; ptr++)
 
     ptr += 1;  /* Must point after \ */
     erc = PRIV(check_escape)(&ptr, ptrend, &ch, &errorcode,
-      code->overall_options, FALSE, NULL);
+      code->overall_options, code->extra_options, FALSE, NULL);
     ptr -= 1;  /* Back to last code unit of escape */
     if (errorcode != 0)
       {
@@ -239,13 +239,17 @@ PCRE2_SIZE extra_needed = 0;
 PCRE2_SIZE buff_offset, buff_length, lengthleft, fraglength;
 PCRE2_SIZE *ovector;
 PCRE2_SIZE ovecsave[3];
+pcre2_substitute_callout_block scb;
+
+/* General initialization */
 
 buff_offset = 0;
 lengthleft = buff_length = *blength;
 *blength = PCRE2_UNSET;
 ovecsave[0] = ovecsave[1] = ovecsave[2] = PCRE2_UNSET;
 
-/* Partial matching is not valid. */
+/* Partial matching is not valid. This must come after setting *blength to 
+PCRE2_UNSET, so as not to imply an offset in the replacement. */
 
 if ((options & (PCRE2_PARTIAL_HARD|PCRE2_PARTIAL_SOFT)) != 0)
   return PCRE2_ERROR_BADOPTION;
@@ -263,6 +267,13 @@ if (match_data == NULL)
   }
 ovector = pcre2_get_ovector_pointer(match_data);
 ovector_count = pcre2_get_ovector_count(match_data);
+
+/* Fixed things in the callout block */
+
+scb.version = 0;
+scb.input = subject;
+scb.output = (PCRE2_SPTR)buffer;
+scb.ovector = ovector;
 
 /* Find lengths of zero-terminated strings and the end of the replacement. */
 
@@ -390,7 +401,7 @@ do
     rc = PCRE2_ERROR_INTERNAL_DUPMATCH;
     goto EXIT;   
     }   
-
+    
   /* Count substitutions with a paranoid check for integer overflow; surely no
   real call to this function would ever hit this! */
 
@@ -401,11 +412,14 @@ do
     }
   subs++;
 
-  /* Copy the text leading up to the match. */
+  /* Copy the text leading up to the match, and remember where the insert
+  begins and how many ovector pairs are set. */
 
   if (rc == 0) rc = ovector_count;
   fraglength = ovector[0] - start_offset;
   CHECKMEMCPY(subject + start_offset, fraglength);
+  scb.output_offsets[0] = buff_offset;
+  scb.oveccount = rc;
 
   /* Process the replacement string. Literal mode is set by \Q, but only in
   extended mode when backslashes are being interpreted. In extended mode we
@@ -421,7 +435,7 @@ do
 
     if (ptr >= repend)
       {
-      if (ptrstackptr <= 0) break;       /* End of replacement string */
+      if (ptrstackptr == 0) break;       /* End of replacement string */
       repend = ptrstack[--ptrstackptr];
       ptr = ptrstack[--ptrstackptr];
       continue;
@@ -702,7 +716,7 @@ do
               {
               if (((code->tables + cbits_offset +
                   ((forcecase > 0)? cbit_upper:cbit_lower)
-                  )[ch/8] & (1 << (ch%8))) == 0)
+                  )[ch/8] & (1u << (ch%8))) == 0)
                 ch = (code->tables + fcc_offset)[ch];
               }
             forcecase = forcecasereset;
@@ -760,7 +774,7 @@ do
 
       ptr++;  /* Point after \ */
       rc = PRIV(check_escape)(&ptr, repend, &ch, &errorcode,
-        code->overall_options, FALSE, NULL);
+        code->overall_options, code->extra_options, FALSE, NULL);
       if (errorcode != 0) goto BADESCAPE;
 
       switch(rc)
@@ -804,7 +818,7 @@ do
           {
           if (((code->tables + cbits_offset +
               ((forcecase > 0)? cbit_upper:cbit_lower)
-              )[ch/8] & (1 << (ch%8))) == 0)
+              )[ch/8] & (1u << (ch%8))) == 0)
             ch = (code->tables + fcc_offset)[ch];
           }
         forcecase = forcecasereset;
@@ -821,10 +835,37 @@ do
       } /* End handling a literal code unit */
     }   /* End of loop for scanning the replacement. */
 
-  /* The replacement has been copied to the output. Save the details of this
-  match. See above for how this data is used. If we matched an empty string, do
-  the magic for global matches. Finally, update the start offset to point to
-  the rest of the subject string. */
+  /* The replacement has been copied to the output, or its size has been 
+  remembered. Do the callout if there is one and we have done an actual 
+  replacement. */
+  
+  if (!overflowed && mcontext != NULL && mcontext->substitute_callout != NULL)
+    {
+    scb.subscount = subs;  
+    scb.output_offsets[1] = buff_offset;
+    rc = mcontext->substitute_callout(&scb, mcontext->substitute_callout_data); 
+
+    /* A non-zero return means cancel this substitution. Instead, copy the 
+    matched string fragment. */
+
+    if (rc != 0)
+      {
+      PCRE2_SIZE newlength = scb.output_offsets[1] - scb.output_offsets[0];
+      PCRE2_SIZE oldlength = ovector[1] - ovector[0];
+      
+      buff_offset -= newlength;
+      lengthleft += newlength;
+      CHECKMEMCPY(subject + ovector[0], oldlength);    
+      
+      /* A negative return means do not do any more. */
+      
+      if (rc < 0) suboptions &= (~PCRE2_SUBSTITUTE_GLOBAL);
+      }
+    }   
+ 
+  /* Save the details of this match. See above for how this data is used. If we
+  matched an empty string, do the magic for global matches. Finally, update the
+  start offset to point to the rest of the subject string. */
   
   ovecsave[0] = ovector[0];                                
   ovecsave[1] = ovector[1];                                        
