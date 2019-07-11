@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifdef JAVASCRIPT_ENABLED
 
 #include "emws_client.h"
@@ -204,9 +205,15 @@ int EMWSClient::get_max_packet_size() const {
 	return (1 << _in_buf_size) - PROTO_SIZE;
 }
 
+Error EMWSClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
+	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
+	_in_pkt_size = nearest_shift(p_in_packets - 1);
+	return OK;
+}
+
 EMWSClient::EMWSClient() {
-	_in_buf_size = GLOBAL_GET(WSC_IN_BUF);
-	_in_pkt_size = GLOBAL_GET(WSC_IN_PKT);
+	_in_buf_size = nearest_shift((int)GLOBAL_GET(WSC_IN_BUF) - 1) + 10;
+	_in_pkt_size = nearest_shift((int)GLOBAL_GET(WSC_IN_PKT) - 1);
 	_is_connecting = false;
 	_peer = Ref<EMWSPeer>(memnew(EMWSPeer));
 	/* clang-format off */

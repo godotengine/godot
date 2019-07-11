@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -133,19 +133,19 @@ void AnimationCache::_update_cache() {
 		} else {
 			if (np.get_subname_count() > 0) {
 
-				RES res;
+				RES res2;
 				Vector<StringName> leftover_subpath;
 
 				// We don't want to cache the last resource unless it is a method call
 				bool is_method = animation->track_get_type(i) == Animation::TYPE_METHOD;
-				root->get_node_and_resource(np, res, leftover_subpath, is_method);
+				root->get_node_and_resource(np, res2, leftover_subpath, is_method);
 
-				if (res.is_valid()) {
-					path.resource = res;
+				if (res2.is_valid()) {
+					path.resource = res2;
 				} else {
 					path.node = node;
 				}
-				path.object = res.is_valid() ? res.ptr() : (Object *)node;
+				path.object = res2.is_valid() ? res2.ptr() : (Object *)node;
 				path.subpath = leftover_subpath;
 
 			} else {
@@ -309,7 +309,8 @@ void AnimationCache::set_all(float p_time, float p_delta) {
 				}
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 }

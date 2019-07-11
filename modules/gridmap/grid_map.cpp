@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -197,7 +197,7 @@ bool GridMap::get_collision_layer_bit(int p_bit) const {
 void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
 
 	ERR_EXPLAIN("GridMap.theme/set_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/set_mesh_library() instead.");
-	WARN_DEPRECATED
+	WARN_DEPRECATED;
 
 	set_mesh_library(p_theme);
 }
@@ -205,7 +205,7 @@ void GridMap::set_theme(const Ref<MeshLibrary> &p_theme) {
 Ref<MeshLibrary> GridMap::get_theme() const {
 
 	ERR_EXPLAIN("GridMap.theme/get_theme() is deprecated and will be removed in a future version. Use GridMap.mesh_library/get_mesh_library() instead.");
-	WARN_DEPRECATED
+	WARN_DEPRECATED;
 
 	return get_mesh_library();
 }
@@ -241,6 +241,7 @@ Vector3 GridMap::get_cell_size() const {
 
 void GridMap::set_octant_size(int p_size) {
 
+	ERR_FAIL_COND(p_size == 0);
 	octant_size = p_size;
 	_recreate_octant_data();
 }
@@ -517,7 +518,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 		Ref<NavigationMesh> navmesh = mesh_library->get_item_navmesh(c.item);
 		if (navmesh.is_valid()) {
 			Octant::NavMesh nm;
-			nm.xform = xform;
+			nm.xform = xform * mesh_library->get_item_navmesh_transform(c.item);
 
 			if (navigation) {
 				nm.id = navigation->navmesh_add(navmesh, xform, this);

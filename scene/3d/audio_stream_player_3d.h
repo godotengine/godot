@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,12 +40,14 @@
 class Camera;
 class AudioStreamPlayer3D : public Spatial {
 
-	GDCLASS(AudioStreamPlayer3D, Spatial)
+	GDCLASS(AudioStreamPlayer3D, Spatial);
+
 public:
 	enum AttenuationModel {
 		ATTENUATION_INVERSE_DISTANCE,
 		ATTENUATION_INVERSE_SQUARE_DISTANCE,
 		ATTENUATION_LOGARITHMIC,
+		ATTENUATION_DISABLED,
 	};
 
 	enum OutOfRangeMode {
@@ -69,7 +71,7 @@ private:
 	struct Output {
 
 		AudioFilterSW filter;
-		AudioFilterSW::Processor filter_process[6];
+		AudioFilterSW::Processor filter_process[8];
 		AudioFrame vol[4];
 		float filter_gain;
 		float pitch_scale;
@@ -204,6 +206,8 @@ public:
 
 	void set_stream_paused(bool p_pause);
 	bool get_stream_paused() const;
+
+	Ref<AudioStreamPlayback> get_stream_playback();
 
 	AudioStreamPlayer3D();
 	~AudioStreamPlayer3D();

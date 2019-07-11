@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +109,12 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 	float upscale = upsample ? 2.0 : 1.0;
 
 	int w = (int)(svg_image->width * p_scale * upscale);
+	ERR_EXPLAIN(vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max width.", rtos(p_scale)));
+	ERR_FAIL_COND_V(w > Image::MAX_WIDTH, ERR_PARAMETER_RANGE_ERROR);
+
 	int h = (int)(svg_image->height * p_scale * upscale);
+	ERR_EXPLAIN(vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max height.", rtos(p_scale)));
+	ERR_FAIL_COND_V(h > Image::MAX_HEIGHT, ERR_PARAMETER_RANGE_ERROR);
 
 	PoolVector<uint8_t> dst_image;
 	dst_image.resize(w * h * 4);
@@ -118,7 +123,7 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 
 	rasterizer.rasterize(svg_image, 0, 0, p_scale * upscale, (unsigned char *)dw.ptr(), w, h, w * 4);
 
-	dw = PoolVector<uint8_t>::Write();
+	dw.release();
 	p_image->create(w, h, false, Image::FORMAT_RGBA8, dst_image);
 	if (upsample)
 		p_image->shrink_x2();

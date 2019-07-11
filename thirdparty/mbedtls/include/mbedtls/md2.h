@@ -37,6 +37,7 @@
 
 #include <stddef.h>
 
+/* MBEDTLS_ERR_MD2_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_MD2_HW_ACCEL_FAILED                   -0x002B  /**< MD2 hardware accelerator failed */
 
 #ifdef __cplusplus
@@ -55,7 +56,7 @@ extern "C" {
  *                 stronger message digests instead.
  *
  */
-typedef struct
+typedef struct mbedtls_md2_context
 {
     unsigned char cksum[16];    /*!< checksum of the data block */
     unsigned char state[48];    /*!< intermediate digest state  */

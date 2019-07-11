@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Translation" inherits="Resource" category="Core" version="3.1">
+<class name="Translation" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Language Translation.
 	</brief_description>
 	<description>
-		Translations are resources that can be loaded/unloaded on demand. They map a string to another string.
+		Translations are resources that can be loaded and unloaded on demand. They map a string to another string.
 	</description>
 	<tutorials>
-		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/internationalizing_games.html</link>
-		<link>https://docs.godotengine.org/en/stable/tutorials/i18n/locales.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/internationalizing_games.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/i18n/locales.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="add_message">
 			<return type="void">
@@ -58,7 +56,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="locale" type="String" setter="set_locale" getter="get_locale">
+		<member name="locale" type="String" setter="set_locale" getter="get_locale" default="&quot;en&quot;">
 			The locale of the translation.
 		</member>
 	</members>

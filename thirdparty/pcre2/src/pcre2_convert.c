@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -1066,11 +1066,12 @@ BOOL utf = (options & PCRE2_CONVERT_UTF) != 0;
 uint32_t pattype = options & TYPE_OPTIONS;
 
 if (pattern == NULL || bufflenptr == NULL) return PCRE2_ERROR_NULL;
+
 if ((options & ~ALL_OPTIONS) != 0 ||        /* Undefined bit set */
     (pattype & (~pattype+1)) != pattype ||  /* More than one type set */
     pattype == 0)                           /* No type set */
   {
-  *bufflenptr = 0;  /* Error offset */
+  *bufflenptr = 0;                          /* Error offset */
   return PCRE2_ERROR_BADOPTION;
   }
 
@@ -1081,7 +1082,11 @@ if (ccontext == NULL) ccontext =
 /* Check UTF if required. */
 
 #ifndef SUPPORT_UNICODE
-if (utf) return PCRE2_ERROR_UNICODE_NOT_SUPPORTED;
+if (utf)
+  {
+  *bufflenptr = 0;  /* Error offset */
+  return PCRE2_ERROR_UNICODE_NOT_SUPPORTED;
+  }
 #else
 if (utf && (options & PCRE2_CONVERT_NO_UTF_CHECK) == 0)
   {
@@ -1126,6 +1131,7 @@ for (i = 0; i < 2; i++)
     break;
 
     default:
+    *bufflenptr = 0;  /* Error offset */
     return PCRE2_ERROR_INTERNAL;
     }
 

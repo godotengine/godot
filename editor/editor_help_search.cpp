@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,21 +43,6 @@ void EditorHelpSearch::_update_icons() {
 
 	if (is_visible_in_tree())
 		_update_results();
-}
-
-void EditorHelpSearch::_load_settings() {
-
-	bool enable_rl = EditorSettings::get_singleton()->get("docks/scene_tree/draw_relationship_lines");
-	Color rl_color = EditorSettings::get_singleton()->get("docks/scene_tree/relationship_line_color");
-
-	if (enable_rl) {
-		results_tree->add_constant_override("draw_relationship_lines", 1);
-		results_tree->add_color_override("relationship_line_color", rl_color);
-		results_tree->add_constant_override("draw_guides", 0);
-	} else {
-		results_tree->add_constant_override("draw_relationship_lines", 0);
-		results_tree->add_constant_override("draw_guides", 1);
-	}
 }
 
 void EditorHelpSearch::_update_results() {
@@ -120,7 +105,6 @@ void EditorHelpSearch::_notification(int p_what) {
 	switch (p_what) {
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 
-			_load_settings();
 			_update_icons();
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
@@ -264,8 +248,29 @@ EditorHelpSearch::EditorHelpSearch() {
 	results_tree->connect("item_activated", this, "_confirmed");
 	results_tree->connect("item_selected", get_ok(), "set_disabled", varray(false));
 	vbox->add_child(results_tree, true);
+}
 
-	_load_settings();
+bool EditorHelpSearch::Runner::_is_class_disabled_by_feature_profile(const StringName &p_class) {
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_null()) {
+		return false;
+	}
+
+	StringName class_name = p_class;
+	while (class_name != StringName()) {
+
+		if (!ClassDB::class_exists(class_name)) {
+			return false;
+		}
+
+		if (profile->is_class_disabled(class_name)) {
+			return true;
+		}
+		class_name = ClassDB::get_parent_class(class_name);
+	}
+
+	return false;
 }
 
 bool EditorHelpSearch::Runner::_slice() {
@@ -317,43 +322,45 @@ bool EditorHelpSearch::Runner::_phase_match_classes_init() {
 bool EditorHelpSearch::Runner::_phase_match_classes() {
 
 	DocData::ClassDoc &class_doc = iterator_doc->value();
+	if (!_is_class_disabled_by_feature_profile(class_doc.name)) {
 
-	matches[class_doc.name] = ClassMatch();
-	ClassMatch &match = matches[class_doc.name];
+		matches[class_doc.name] = ClassMatch();
+		ClassMatch &match = matches[class_doc.name];
 
-	match.doc = &class_doc;
+		match.doc = &class_doc;
 
-	// Match class name.
-	if (search_flags & SEARCH_CLASSES)
-		match.name = term == "" || _match_string(term, class_doc.name);
+		// Match class name.
+		if (search_flags & SEARCH_CLASSES)
+			match.name = term == "" || _match_string(term, class_doc.name);
 
-	// Match members if the term is long enough.
-	if (term.length() > 1) {
-		if (search_flags & SEARCH_METHODS)
-			for (int i = 0; i < class_doc.methods.size(); i++) {
-				String method_name = search_flags & SEARCH_CASE_SENSITIVE ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
-				if (method_name.find(term) > -1 ||
-						(term.begins_with(".") && method_name.begins_with(term.right(1))) ||
-						(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
-						(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges()))
-					match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
-			}
-		if (search_flags & SEARCH_SIGNALS)
-			for (int i = 0; i < class_doc.signals.size(); i++)
-				if (_match_string(term, class_doc.signals[i].name))
-					match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
-		if (search_flags & SEARCH_CONSTANTS)
-			for (int i = 0; i < class_doc.constants.size(); i++)
-				if (_match_string(term, class_doc.constants[i].name))
-					match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
-		if (search_flags & SEARCH_PROPERTIES)
-			for (int i = 0; i < class_doc.properties.size(); i++)
-				if (_match_string(term, class_doc.properties[i].name))
-					match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
-		if (search_flags & SEARCH_THEME_ITEMS)
-			for (int i = 0; i < class_doc.theme_properties.size(); i++)
-				if (_match_string(term, class_doc.theme_properties[i].name))
-					match.theme_properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.theme_properties[i]));
+		// Match members if the term is long enough.
+		if (term.length() > 1) {
+			if (search_flags & SEARCH_METHODS)
+				for (int i = 0; i < class_doc.methods.size(); i++) {
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
+					if (method_name.find(term) > -1 ||
+							(term.begins_with(".") && method_name.begins_with(term.right(1))) ||
+							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
+							(term.begins_with(".") && term.ends_with("(") && method_name == term.substr(1, term.length() - 2).strip_edges()))
+						match.methods.push_back(const_cast<DocData::MethodDoc *>(&class_doc.methods[i]));
+				}
+			if (search_flags & SEARCH_SIGNALS)
+				for (int i = 0; i < class_doc.signals.size(); i++)
+					if (_match_string(term, class_doc.signals[i].name))
+						match.signals.push_back(const_cast<DocData::MethodDoc *>(&class_doc.signals[i]));
+			if (search_flags & SEARCH_CONSTANTS)
+				for (int i = 0; i < class_doc.constants.size(); i++)
+					if (_match_string(term, class_doc.constants[i].name))
+						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
+			if (search_flags & SEARCH_PROPERTIES)
+				for (int i = 0; i < class_doc.properties.size(); i++)
+					if (_match_string(term, class_doc.properties[i].name))
+						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
+			if (search_flags & SEARCH_THEME_ITEMS)
+				for (int i = 0; i < class_doc.theme_properties.size(); i++)
+					if (_match_string(term, class_doc.theme_properties[i].name))
+						match.theme_properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.theme_properties[i]));
+		}
 	}
 
 	iterator_doc = iterator_doc->next();
@@ -398,7 +405,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 
 	ClassMatch &match = iterator_match->value();
 
-	TreeItem *parent = search_flags & SEARCH_SHOW_HIERARCHY ? class_items[match.doc->name] : root_item;
+	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	for (int i = 0; i < match.methods.size(); i++)
 		_create_method_item(parent, match.doc, match.methods[i]);
 	for (int i = 0; i < match.signals.size(); i++)

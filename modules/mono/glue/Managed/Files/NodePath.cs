@@ -3,7 +3,7 @@ using System.Runtime.CompilerServices;
 
 namespace Godot
 {
-    public partial class NodePath : IDisposable
+    public sealed partial class NodePath : IDisposable
     {
         private bool disposed = false;
 
@@ -11,7 +11,13 @@ namespace Godot
 
         internal static IntPtr GetPtr(NodePath instance)
         {
-            return instance == null ? IntPtr.Zero : instance.ptr;
+            if (instance == null)
+                return IntPtr.Zero;
+
+            if (instance.disposed)
+                throw new ObjectDisposedException(instance.GetType().FullName);
+
+            return instance.ptr;
         }
 
         ~NodePath()
@@ -25,7 +31,7 @@ namespace Godot
             GC.SuppressFinalize(this);
         }
 
-        protected virtual void Dispose(bool disposing)
+        private void Dispose(bool disposing)
         {
             if (disposed)
                 return;
@@ -49,7 +55,7 @@ namespace Godot
             get { return ptr; }
         }
 
-        public NodePath() : this(string.Empty) {}
+        public NodePath() : this(string.Empty) { }
 
         public NodePath(string path)
         {

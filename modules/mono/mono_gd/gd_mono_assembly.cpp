@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -46,11 +46,17 @@ bool GDMonoAssembly::in_preload = false;
 
 Vector<String> GDMonoAssembly::search_dirs;
 
-void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config) {
+void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const String &p_custom_config, const String &p_custom_bcl_dir) {
 
-	const char *rootdir = mono_assembly_getrootdir();
-	if (rootdir) {
-		String framework_dir = String(rootdir).plus_file("mono").plus_file("4.5");
+	String framework_dir;
+
+	if (!p_custom_bcl_dir.empty()) {
+		framework_dir = p_custom_bcl_dir;
+	} else if (mono_assembly_getrootdir()) {
+		framework_dir = String::utf8(mono_assembly_getrootdir()).plus_file("mono").plus_file("4.5");
+	}
+
+	if (!framework_dir.empty()) {
 		r_search_dirs.push_back(framework_dir);
 		r_search_dirs.push_back(framework_dir.plus_file("Facades"));
 	}
@@ -61,11 +67,22 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
 	}
 
-	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	if (p_custom_config.empty()) {
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	} else {
+		String api_config = p_custom_config == "Release" ? "Release" : "Debug";
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir().plus_file(api_config));
+	}
+
+	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_resource_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
+
 #ifdef TOOLS_ENABLED
 	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_tools_dir());
+
+	// For GodotTools to find the api assemblies
+	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug"));
 #endif
 }
 
@@ -264,7 +281,18 @@ Error GDMonoAssembly::load(bool p_refonly) {
 	Vector<uint8_t> data = FileAccess::get_file_as_array(path);
 	ERR_FAIL_COND_V(data.empty(), ERR_FILE_CANT_READ);
 
-	String image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	String image_filename;
+
+#ifdef ANDROID_ENABLED
+	if (path.begins_with("res://")) {
+		image_filename = path.substr(6, path.length());
+	} else {
+		image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	}
+#else
+	// FIXME: globalize_path does not work on exported games
+	image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+#endif
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
 
@@ -277,6 +305,7 @@ Error GDMonoAssembly::load(bool p_refonly) {
 	ERR_FAIL_NULL_V(image, ERR_FILE_CANT_OPEN);
 
 #ifdef DEBUG_ENABLED
+	Vector<uint8_t> pdb_data;
 	String pdb_path(path + ".pdb");
 
 	if (!FileAccess::exists(pdb_path)) {
@@ -286,8 +315,9 @@ Error GDMonoAssembly::load(bool p_refonly) {
 			goto no_pdb;
 	}
 
-	pdb_data.clear();
 	pdb_data = FileAccess::get_file_as_array(pdb_path);
+
+	// mono_debug_close_image doesn't seem to be needed
 	mono_debug_open_image_from_memory(image, &pdb_data[0], pdb_data.size());
 
 no_pdb:
@@ -306,6 +336,9 @@ no_pdb:
 
 	ERR_FAIL_COND_V(status != MONO_IMAGE_OK || assembly == NULL, ERR_FILE_CANT_OPEN);
 
+	// Decrement refcount which was previously incremented by mono_image_open_from_data_with_name
+	mono_image_close(image);
+
 	loaded = true;
 	modified_time = last_modified_time;
 
@@ -321,8 +354,6 @@ Error GDMonoAssembly::wrapper_for_image(MonoImage *p_image) {
 
 	image = p_image;
 
-	mono_image_addref(image);
-
 	loaded = true;
 
 	return OK;
@@ -332,21 +363,12 @@ void GDMonoAssembly::unload() {
 
 	ERR_FAIL_COND(!loaded);
 
-#ifdef DEBUG_ENABLED
-	if (pdb_data.size()) {
-		mono_debug_close_image(image);
-		pdb_data.clear();
-	}
-#endif
-
 	for (Map<MonoClass *, GDMonoClass *>::Element *E = cached_raw.front(); E; E = E->next()) {
 		memdelete(E->value());
 	}
 
 	cached_classes.clear();
 	cached_raw.clear();
-
-	mono_image_close(image);
 
 	assembly = NULL;
 	image = NULL;

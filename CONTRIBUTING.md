@@ -18,7 +18,7 @@ each of them.
 Everything referred to hereafter as "bug" also applies for feature requests.
 
 If you are reporting a new issue, you will make our life much simpler (and the
-fix come much sooner) by following those guidelines:
+fix come much sooner) by following these guidelines:
 
 #### Search first in the existing database
 
@@ -51,7 +51,7 @@ understand that:
   and then figure out why it's failing.
 
 To speed up our work, please prepare for us **a simple project** that isolates
-and reproduces the issue. This is always the **the best way for us to fix it**.
+and reproduces the issue. This is always the **best way for us to fix it**.
 You can attach a zip file with the minimal project directly to the bug report,
 by drag and dropping the file in the GitHub edition field.
 

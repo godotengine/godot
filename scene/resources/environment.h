@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 #define ENVIRONMENT_H
 
 #include "core/resource.h"
-#include "scene/resources/sky_box.h"
+#include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
 #include "servers/visual_server.h"
 
@@ -49,6 +49,7 @@ public:
 		BG_COLOR_SKY,
 		BG_CANVAS,
 		BG_KEEP,
+		BG_CAMERA_FEED,
 		BG_MAX
 	};
 
@@ -98,6 +99,7 @@ private:
 	Color ambient_color;
 	float ambient_energy;
 	float ambient_sky_contribution;
+	int camera_feed_id;
 
 	ToneMapper tone_mapper;
 	float tonemap_exposure;
@@ -192,6 +194,7 @@ public:
 	void set_ambient_light_color(const Color &p_color);
 	void set_ambient_light_energy(float p_energy);
 	void set_ambient_light_sky_contribution(float p_energy);
+	void set_camera_feed_id(int p_camera_feed_id);
 
 	BGMode get_background() const;
 	Ref<Sky> get_sky() const;
@@ -205,6 +208,7 @@ public:
 	Color get_ambient_light_color() const;
 	float get_ambient_light_energy() const;
 	float get_ambient_light_sky_contribution() const;
+	int get_camera_feed_id(void) const;
 
 	void set_tonemapper(ToneMapper p_tone_mapper);
 	ToneMapper get_tonemapper() const;

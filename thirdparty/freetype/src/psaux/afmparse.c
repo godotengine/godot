@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afmparse.c                                                             */
-/*                                                                         */
-/*    AFM parser (body).                                                   */
-/*                                                                         */
-/*  Copyright 2006-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afmparse.c
+ *
+ *   AFM parser (body).
+ *
+ * Copyright (C) 2006-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
@@ -28,13 +28,13 @@
 #include "psauxerr.h"
 
 
-/***************************************************************************/
-/*                                                                         */
-/*    AFM_Stream                                                           */
-/*                                                                         */
-/* The use of AFM_Stream is largely inspired by parseAFM.[ch] from t1lib.  */
-/*                                                                         */
-/*                                                                         */
+  /**************************************************************************
+   *
+   * AFM_Stream
+   *
+   * The use of AFM_Stream is largely inspired by parseAFM.[ch] from t1lib.
+   *
+   */
 
   enum
   {
@@ -193,11 +193,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*    AFM_Parser                                                         */
-  /*                                                                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * AFM_Parser
+   *
+   */
 
   /* all keys defined in Ch. 7-10 of 5004.AFM_Spec.pdf */
   typedef enum  AFM_Token_

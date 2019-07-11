@@ -36,6 +36,7 @@
 
 #include <stddef.h>
 
+/* MBEDTLS_ERR_ARC4_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_ARC4_HW_ACCEL_FAILED                  -0x0019  /**< ARC4 hardware accelerator failed. */
 
 #ifdef __cplusplus
@@ -53,7 +54,7 @@ extern "C" {
  *            security risk. We recommend considering stronger ciphers instead.
  *
  */
-typedef struct
+typedef struct mbedtls_arc4_context
 {
     int x;                      /*!< permutation index */
     int y;                      /*!< permutation index */

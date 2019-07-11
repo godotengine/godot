@@ -26,42 +26,39 @@ subject to the following restrictions:
 
 #include "b3OpenCLArray.h"
 #include "b3FillCL.h"
-#include "b3RadixSort32CL.h" //for b3SortData (perhaps move it?)
+#include "b3RadixSort32CL.h"  //for b3SortData (perhaps move it?)
 class b3BoundSearchCL
 {
-	public:
+public:
+	enum Option
+	{
+		BOUND_LOWER,
+		BOUND_UPPER,
+		COUNT,
+	};
 
-		enum Option
-		{
-			BOUND_LOWER,
-			BOUND_UPPER,
-			COUNT,
-		};
+	cl_context m_context;
+	cl_device_id m_device;
+	cl_command_queue m_queue;
 
-		cl_context m_context;
-		cl_device_id m_device;
-		cl_command_queue m_queue;
+	cl_kernel m_lowerSortDataKernel;
+	cl_kernel m_upperSortDataKernel;
+	cl_kernel m_subtractKernel;
 
-		
-		cl_kernel m_lowerSortDataKernel;
-		cl_kernel m_upperSortDataKernel;
-		cl_kernel m_subtractKernel;
-		
-		b3OpenCLArray<b3Int4>* m_constbtOpenCLArray;
-		b3OpenCLArray<unsigned int>* m_lower;
-		b3OpenCLArray<unsigned int>* m_upper;
-		
-		b3FillCL* m_filler;
-		
-		b3BoundSearchCL(cl_context context, cl_device_id device, cl_command_queue queue, int size);
+	b3OpenCLArray<b3Int4>* m_constbtOpenCLArray;
+	b3OpenCLArray<unsigned int>* m_lower;
+	b3OpenCLArray<unsigned int>* m_upper;
 
-		virtual ~b3BoundSearchCL();
+	b3FillCL* m_filler;
 
-		//	src has to be src[i].m_key <= src[i+1].m_key
-		void execute( b3OpenCLArray<b3SortData>& src, int nSrc, b3OpenCLArray<unsigned int>& dst, int nDst, Option option = BOUND_LOWER );
+	b3BoundSearchCL(cl_context context, cl_device_id device, cl_command_queue queue, int size);
 
-		void executeHost( b3AlignedObjectArray<b3SortData>& src, int nSrc, b3AlignedObjectArray<unsigned int>& dst, int nDst, Option option = BOUND_LOWER);
+	virtual ~b3BoundSearchCL();
+
+	//	src has to be src[i].m_key <= src[i+1].m_key
+	void execute(b3OpenCLArray<b3SortData>& src, int nSrc, b3OpenCLArray<unsigned int>& dst, int nDst, Option option = BOUND_LOWER);
+
+	void executeHost(b3AlignedObjectArray<b3SortData>& src, int nSrc, b3AlignedObjectArray<unsigned int>& dst, int nDst, Option option = BOUND_LOWER);
 };
 
-
-#endif //B3_BOUNDSEARCH_H
+#endif  //B3_BOUNDSEARCH_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,13 +80,14 @@ real_t Transform2D::get_rotation() const {
 }
 
 void Transform2D::set_rotation(real_t p_rot) {
-
+	Size2 scale = get_scale();
 	real_t cr = Math::cos(p_rot);
 	real_t sr = Math::sin(p_rot);
 	elements[0][0] = cr;
 	elements[0][1] = sr;
 	elements[1][0] = -sr;
 	elements[1][1] = cr;
+	set_scale(scale);
 }
 
 Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
@@ -101,8 +102,15 @@ Transform2D::Transform2D(real_t p_rot, const Vector2 &p_pos) {
 }
 
 Size2 Transform2D::get_scale() const {
-	real_t det_sign = basis_determinant() > 0 ? 1 : -1;
+	real_t det_sign = SGN(basis_determinant());
 	return Size2(elements[0].length(), det_sign * elements[1].length());
+}
+
+void Transform2D::set_scale(const Size2 &p_scale) {
+	elements[0].normalize();
+	elements[1].normalize();
+	elements[0] *= p_scale.x;
+	elements[1] *= p_scale.y;
 }
 
 void Transform2D::scale(const Size2 &p_scale) {

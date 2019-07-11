@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afhints.c                                                              */
-/*                                                                         */
-/*    Auto-fitter hinting routines (body).                                 */
-/*                                                                         */
-/*  Copyright 2003-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afhints.c
+ *
+ *   Auto-fitter hinting routines (body).
+ *
+ * Copyright (C) 2003-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "afhints.h"
@@ -22,14 +22,14 @@
 #include FT_INTERNAL_DEBUG_H
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_afhints
+#define FT_COMPONENT  afhints
 
 
   /* Get new segment for given axis. */
@@ -297,6 +297,19 @@
   }
 
 
+  static int
+  af_get_strong_edge_index( AF_GlyphHints  hints,
+                            AF_Edge*       strong_edges,
+                            int            dimension )
+  {
+    AF_AxisHints  axis  = &hints->axis[dimension];
+    AF_Edge       edges = axis->edges;
+
+
+    return AF_INDEX_NUM( strong_edges[dimension], edges );
+  }
+
+
 #ifdef __cplusplus
   extern "C" {
 #endif
@@ -317,8 +330,10 @@
     {
       AF_DUMP(( "  index  hedge  hseg  vedge  vseg  flags "
              /* "  XXXXX  XXXXX XXXXX  XXXXX XXXXX  XXXXXX" */
-                "  xorg  yorg  xscale  yscale   xfit    yfit" ));
+                "  xorg  yorg  xscale  yscale   xfit    yfit "
              /* " XXXXX XXXXX XXXX.XX XXXX.XX XXXX.XX XXXX.XX" */
+                "  hbef  haft  vbef  vaft" ));
+             /* " XXXXX XXXXX XXXXX XXXXX" */
     }
     else
       AF_DUMP(( "  (none)\n" ));
@@ -330,6 +345,7 @@
       int  segment_idx_1 = af_get_segment_index( hints, point_idx, 1 );
 
       char  buf1[16], buf2[16], buf3[16], buf4[16];
+      char  buf5[16], buf6[16], buf7[16], buf8[16];
 
 
       /* insert extra newline at the beginning of a contour */
@@ -340,7 +356,8 @@
       }
 
       AF_DUMP(( "  %5d  %5s %5s  %5s %5s  %s"
-                " %5d %5d %7.2f %7.2f %7.2f %7.2f\n",
+                " %5d %5d %7.2f %7.2f %7.2f %7.2f"
+                " %5s %5s %5s %5s\n",
                 point_idx,
                 af_print_idx( buf1,
                               af_get_edge_index( hints, segment_idx_1, 1 ) ),
@@ -359,7 +376,20 @@
                 point->ox / 64.0,
                 point->oy / 64.0,
                 point->x / 64.0,
-                point->y / 64.0 ));
+                point->y / 64.0,
+
+                af_print_idx( buf5, af_get_strong_edge_index( hints,
+                                                              point->before,
+                                                              1 ) ),
+                af_print_idx( buf6, af_get_strong_edge_index( hints,
+                                                              point->after,
+                                                              1 ) ),
+                af_print_idx( buf7, af_get_strong_edge_index( hints,
+                                                              point->before,
+                                                              0 ) ),
+                af_print_idx( buf8, af_get_strong_edge_index( hints,
+                                                              point->after,
+                                                              0 ) ) ));
     }
     AF_DUMP(( "\n" ));
   }
@@ -519,7 +549,7 @@
     *offset  = ( dim == AF_DIMENSION_HORZ ) ? seg->first->fx
                                             : seg->first->fy;
     if ( seg->edge )
-      *is_blue = (FT_Bool)( seg->edge->blue_edge != 0 );
+      *is_blue = FT_BOOL( seg->edge->blue_edge );
     else
       *is_blue = FALSE;
 
@@ -558,8 +588,8 @@
 
 
       /*
-       *  note: AF_DIMENSION_HORZ corresponds to _vertical_ edges
-       *        since they have a constant X coordinate.
+       * note: AF_DIMENSION_HORZ corresponds to _vertical_ edges
+       *       since they have a constant X coordinate.
        */
       if ( dimension == AF_DIMENSION_HORZ )
         AF_DUMP(( "Table of %s edges (1px=%.2fu, 10u=%.2fpx):\n",
@@ -681,8 +711,8 @@
     memory = hints->memory;
 
     /*
-     *  note that we don't need to free the segment and edge
-     *  buffers since they are really within the hints->points array
+     * note that we don't need to free the segment and edge
+     * buffers since they are really within the hints->points array
      */
     for ( dim = 0; dim < AF_DIMENSION_MAX; dim++ )
     {
@@ -776,9 +806,9 @@
     }
 
     /*
-     *  then reallocate the points arrays if necessary --
-     *  note that we reserve two additional point positions, used to
-     *  hint metrics appropriately
+     * then reallocate the points arrays if necessary --
+     * note that we reserve two additional point positions, used to
+     * hint metrics appropriately
      */
     new_max = (FT_UInt)( outline->n_points + 2 );
     old_max = (FT_UInt)hints->max_points;
@@ -898,6 +928,14 @@
               prev     = end;
             }
           }
+
+#ifdef FT_DEBUG_AUTOFIT
+          point->before[0] = NULL;
+          point->before[1] = NULL;
+          point->after[0]  = NULL;
+          point->after[1]  = NULL;
+#endif
+
         }
       }
 
@@ -918,15 +956,15 @@
 
       {
         /*
-         *  Compute directions of `in' and `out' vectors.
+         * Compute directions of `in' and `out' vectors.
          *
-         *  Note that distances between points that are very near to each
-         *  other are accumulated.  In other words, the auto-hinter either
-         *  prepends the small vectors between near points to the first
-         *  non-near vector, or the sum of small vector lengths exceeds a
-         *  threshold, thus `grouping' the small vectors.  All intermediate
-         *  points are tagged as weak; the directions are adjusted also to
-         *  be equal to the accumulated one.
+         * Note that distances between points that are very near to each
+         * other are accumulated.  In other words, the auto-hinter either
+         * prepends the small vectors between near points to the first
+         * non-near vector, or the sum of small vector lengths exceeds a
+         * threshold, thus `grouping' the small vectors.  All intermediate
+         * points are tagged as weak; the directions are adjusted also to
+         * be equal to the accumulated one.
          */
 
         FT_Int  near_limit2 = 2 * near_limit - 1;
@@ -956,12 +994,12 @@
             out_y = point->fy - prev->fy;
 
             /*
-             *  We use Taxicab metrics to measure the vector length.
+             * We use Taxicab metrics to measure the vector length.
              *
-             *  Note that the accumulated distances so far could have the
-             *  opposite direction of the distance measured here.  For this
-             *  reason we use `near_limit2' for the comparison to get a
-             *  non-near point even in the worst case.
+             * Note that the accumulated distances so far could have the
+             * opposite direction of the distance measured here.  For this
+             * reason we use `near_limit2' for the comparison to get a
+             * non-near point even in the worst case.
              */
             if ( FT_ABS( out_x ) + FT_ABS( out_y ) >= near_limit2 )
               break;
@@ -979,11 +1017,11 @@
           curr = first;
 
           /*
-           *  We abuse the `u' and `v' fields to store index deltas to the
-           *  next and previous non-near point, respectively.
+           * We abuse the `u' and `v' fields to store index deltas to the
+           * next and previous non-near point, respectively.
            *
-           *  To avoid problems with not having non-near points, we point to
-           *  `first' by default as the next non-near point.
+           * To avoid problems with not having non-near points, we point to
+           * `first' by default as the next non-near point.
            *
            */
           curr->u  = (FT_Pos)( first - curr );
@@ -1035,12 +1073,12 @@
         }
 
         /*
-         *  The next step is to `simplify' an outline's topology so that we
-         *  can identify local extrema more reliably: A series of
-         *  non-horizontal or non-vertical vectors pointing into the same
-         *  quadrant are handled as a single, long vector.  From a
-         *  topological point of the view, the intermediate points are of no
-         *  interest and thus tagged as weak.
+         * The next step is to `simplify' an outline's topology so that we
+         * can identify local extrema more reliably: A series of
+         * non-horizontal or non-vertical vectors pointing into the same
+         * quadrant are handled as a single, long vector.  From a
+         * topological point of the view, the intermediate points are of no
+         * interest and thus tagged as weak.
          */
 
         for ( point = points; point < point_limit; point++ )
@@ -1080,9 +1118,9 @@
         }
 
         /*
-         *  Finally, check for remaining weak points.  Everything else not
-         *  collected in edges so far is then implicitly classified as strong
-         *  points.
+         * Finally, check for remaining weak points.  Everything else not
+         * collected in edges so far is then implicitly classified as strong
+         * points.
          */
 
         for ( point = points; point < point_limit; point++ )
@@ -1309,6 +1347,12 @@
         if ( delta >= 0 )
         {
           u = edge->pos - ( edge->opos - ou );
+
+#ifdef FT_DEBUG_AUTOFIT
+          point->before[dim] = edge;
+          point->after[dim]  = NULL;
+#endif
+
           goto Store_Point;
         }
 
@@ -1318,6 +1362,12 @@
         if ( delta >= 0 )
         {
           u = edge->pos + ( ou - edge->opos );
+
+#ifdef FT_DEBUG_AUTOFIT
+          point->before[dim] = NULL;
+          point->after[dim]  = edge;
+#endif
+
           goto Store_Point;
         }
 
@@ -1364,6 +1414,12 @@
             {
               /* we are on the edge */
               u = edge->pos;
+
+#ifdef FT_DEBUG_AUTOFIT
+              point->before[dim] = NULL;
+              point->after[dim]  = NULL;
+#endif
+
               goto Store_Point;
             }
           }
@@ -1373,6 +1429,11 @@
             AF_Edge  before = edges + min - 1;
             AF_Edge  after  = edges + min + 0;
 
+
+#ifdef FT_DEBUG_AUTOFIT
+            point->before[dim] = before;
+            point->after[dim]  = after;
+#endif
 
             /* assert( before && after && before != after ) */
             if ( before->scale == 0 )

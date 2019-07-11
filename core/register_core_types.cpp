@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,7 +47,7 @@
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
-#include "core/io/resource_import.h"
+#include "core/io/resource_importer.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
@@ -68,8 +68,8 @@
 static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
 static Ref<ResourceFormatImporter> resource_format_importer;
-
 static Ref<ResourceFormatLoaderImage> resource_format_image;
+static Ref<TranslationLoaderPO> resource_format_po;
 
 static _ResourceLoader *_resource_loader = NULL;
 static _ResourceSaver *_resource_saver = NULL;
@@ -77,7 +77,6 @@ static _OS *_os = NULL;
 static _Engine *_engine = NULL;
 static _ClassDB *_classdb = NULL;
 static _Marshalls *_marshalls = NULL;
-static Ref<TranslationLoaderPO> resource_format_po;
 static _JSON *_json = NULL;
 
 static IP *ip = NULL;
@@ -100,6 +99,7 @@ void register_core_types() {
 	_global_mutex = Mutex::create();
 
 	StringName::setup();
+	ResourceLoader::initialize();
 
 	register_global_constants();
 	register_variant_methods();
@@ -143,6 +143,7 @@ void register_core_types() {
 	ClassDB::register_virtual_class<InputEventGesture>();
 	ClassDB::register_class<InputEventMagnifyGesture>();
 	ClassDB::register_class<InputEventPanGesture>();
+	ClassDB::register_class<InputEventMIDI>();
 
 	ClassDB::register_class<FuncRef>();
 	ClassDB::register_virtual_class<StreamPeer>();
@@ -183,10 +184,13 @@ void register_core_types() {
 	ClassDB::register_class<PackedDataContainer>();
 	ClassDB::register_virtual_class<PackedDataContainerRef>();
 	ClassDB::register_class<AStar>();
+	ClassDB::register_class<AStar2D>();
 	ClassDB::register_class<EncodedObjectAsID>();
 	ClassDB::register_class<RandomNumberGenerator>();
 
 	ClassDB::register_class<JSONParseResult>();
+
+	ClassDB::register_virtual_class<ResourceImporter>();
 
 	ip = IP::create();
 
@@ -203,6 +207,8 @@ void register_core_types() {
 
 void register_core_settings() {
 	//since in register core types, globals may not e present
+	GLOBAL_DEF("network/limits/tcp/connect_timeout_seconds", (30));
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
 	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
 }
@@ -251,25 +257,17 @@ void unregister_core_types() {
 
 	memdelete(_geometry);
 
-	if (resource_format_image.is_valid()) {
-		ResourceLoader::remove_resource_format_loader(resource_format_image);
-		resource_format_image.unref();
-	}
+	ResourceLoader::remove_resource_format_loader(resource_format_image);
+	resource_format_image.unref();
 
-	if (resource_saver_binary.is_valid()) {
-		ResourceSaver::remove_resource_format_saver(resource_saver_binary);
-		resource_saver_binary.unref();
-	}
+	ResourceSaver::remove_resource_format_saver(resource_saver_binary);
+	resource_saver_binary.unref();
 
-	if (resource_loader_binary.is_valid()) {
-		ResourceLoader::remove_resource_format_loader(resource_loader_binary);
-		resource_loader_binary.unref();
-	}
+	ResourceLoader::remove_resource_format_loader(resource_loader_binary);
+	resource_loader_binary.unref();
 
-	if (resource_format_importer.is_valid()) {
-		ResourceLoader::remove_resource_format_loader(resource_format_importer);
-		resource_format_importer.unref();
-	}
+	ResourceLoader::remove_resource_format_loader(resource_format_importer);
+	resource_format_importer.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_format_po);
 	resource_format_po.unref();
@@ -277,6 +275,9 @@ void unregister_core_types() {
 	if (ip)
 		memdelete(ip);
 
+	ResourceLoader::finalize();
+
+	ClassDB::cleanup_defaults();
 	ObjectDB::cleanup();
 
 	unregister_variant_methods();

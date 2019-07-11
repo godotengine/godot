@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cidgload.c                                                             */
-/*                                                                         */
-/*    CID-keyed Type1 Glyph Loader (body).                                 */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cidgload.c
+ *
+ *   CID-keyed Type1 Glyph Loader (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -31,14 +31,14 @@
 #include "ciderrs.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cidgload
+#define FT_COMPONENT  cidgload
 
 
   FT_CALLBACK_DEF( FT_Error )
@@ -393,8 +393,7 @@
     must_finish_decoder = TRUE;
 
     /* set up the decoder */
-    decoder.builder.no_recurse = FT_BOOL(
-      ( ( load_flags & FT_LOAD_NO_RECURSE ) != 0 ) );
+    decoder.builder.no_recurse = FT_BOOL( load_flags & FT_LOAD_NO_RECURSE );
 
     error = cid_load_glyph( &decoder, glyph_index );
     if ( error )

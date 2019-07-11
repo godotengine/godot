@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,10 +63,7 @@ Rect2 Sprite::_edit_get_rect() const {
 }
 
 bool Sprite::_edit_use_rect() const {
-	if (texture.is_null())
-		return false;
-
-	return true;
+	return texture.is_valid();
 }
 
 Rect2 Sprite::get_anchorable_rect() const {
@@ -363,7 +360,7 @@ Rect2 Sprite::get_rect() const {
 
 	Point2 ofs = offset;
 	if (centered)
-		ofs -= s / 2;
+		ofs -= Size2(s) / 2;
 
 	if (s == Size2(0, 0))
 		s = Size2(1, 1);

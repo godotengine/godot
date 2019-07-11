@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -165,6 +165,16 @@ by "configure". */
 #define INT64_OR_DOUBLE double
 #endif
 
+/* External (in the C sense) functions and tables that are private to the
+libraries are always referenced using the PRIV macro. This makes it possible
+for pcre2test.c to include some of the source files from the libraries using a
+different PRIV definition to avoid name clashes. It also makes it clear in the
+code that a non-static object is being referenced. */
+
+#ifndef PRIV
+#define PRIV(name) _pcre2_##name
+#endif
+
 /* When compiling for use with the Virtual Pascal compiler, these functions
 need to have their names changed. PCRE2 must be compiled with the -DVPCOMPAT
 option on the command line. */
@@ -178,49 +188,14 @@ option on the command line. */
 #define memset(s,c,n)    _memset(s,c,n)
 #else  /* VPCOMPAT */
 
-/* To cope with SunOS4 and other systems that lack memmove() but have bcopy(),
-define a macro for memmove() if HAVE_MEMMOVE is false, provided that HAVE_BCOPY
-is set. Otherwise, include an emulating function for those systems that have
-neither (there some non-Unix environments where this is the case). */
+/* Otherwise, to cope with SunOS4 and other systems that lack memmove(), define
+a macro that calls an emulating function. */
 
 #ifndef HAVE_MEMMOVE
-#undef  memmove        /* some systems may have a macro */
-#ifdef HAVE_BCOPY
-#define memmove(a, b, c) bcopy(b, a, c)
-#else  /* HAVE_BCOPY */
-static void *
-pcre2_memmove(void *d, const void *s, size_t n)
-{
-size_t i;
-unsigned char *dest = (unsigned char *)d;
-const unsigned char *src = (const unsigned char *)s;
-if (dest > src)
-  {
-  dest += n;
-  src += n;
-  for (i = 0; i < n; ++i) *(--dest) = *(--src);
-  return (void *)dest;
-  }
-else
-  {
-  for (i = 0; i < n; ++i) *dest++ = *src++;
-  return (void *)(dest - n);
-  }
-}
-#define memmove(a, b, c) pcre2_memmove(a, b, c)
-#endif   /* not HAVE_BCOPY */
+#undef  memmove          /* Some systems may have a macro */
+#define memmove(a, b, c) PRIV(memmove)(a, b, c)
 #endif   /* not HAVE_MEMMOVE */
 #endif   /* not VPCOMPAT */
-
-/* External (in the C sense) functions and tables that are private to the
-libraries are always referenced using the PRIV macro. This makes it possible
-for pcre2test.c to include some of the source files from the libraries using a
-different PRIV definition to avoid name clashes. It also makes it clear in the
-code that a non-static object is being referenced. */
-
-#ifndef PRIV
-#define PRIV(name) _pcre2_##name
-#endif
 
 /* This is an unsigned int value that no UTF character can ever have, as
 Unicode doesn't go beyond 0x0010ffff. */
@@ -247,11 +222,16 @@ not rely on this. */
 pcre2_match() is allocated on the system stack, of this size (bytes). The size
 must be a multiple of sizeof(PCRE2_SPTR) in all environments, so making it a
 multiple of 8 is best. Typical frame sizes are a few hundred bytes (it depends
-on the number of capturing parentheses) so 20K handles quite a few frames. A
+on the number of capturing parentheses) so 20KiB handles quite a few frames. A
 larger vector on the heap is obtained for patterns that need more frames. The
 maximum size of this can be limited. */
 
 #define START_FRAMES_SIZE 20480
+
+/* Similarly, for DFA matching, an initial internal workspace vector is
+allocated on the stack. */
+
+#define DFA_START_RWS_SIZE 30720
 
 /* Define the default BSR convention. */
 
@@ -585,14 +565,15 @@ these tables. */
 #define cbit_cntrl   288      /* [:cntrl:] */
 #define cbit_length  320      /* Length of the cbits table */
 
-/* Bit definitions for entries in the ctypes table. */
+/* Bit definitions for entries in the ctypes table. Do not change these values
+without checking pcre2_jit_compile.c, which has an assertion to ensure that
+ctype_word has the value 16. */
 
 #define ctype_space   0x01
 #define ctype_letter  0x02
 #define ctype_digit   0x04
-#define ctype_xdigit  0x08
+#define ctype_xdigit  0x08    /* not actually used any more */
 #define ctype_word    0x10    /* alphanumeric or '_' */
-#define ctype_meta    0x80    /* regexp meta char or zero (end pattern) */
 
 /* Offsets of the various tables from the base tables pointer, and
 total length of the tables. */
@@ -1267,36 +1248,6 @@ contain characters with values greater than 255. */
 #define XCL_PROP      3    /* Unicode property (2-byte property code follows) */
 #define XCL_NOTPROP   4    /* Unicode inverted property (ditto) */
 
-/* Escape items that are just an encoding of a particular data value. These
-appear in the escapes[] table in pcre2_compile.c as positive numbers. */
-
-#ifndef ESC_a
-#define ESC_a CHAR_BEL
-#endif
-
-#ifndef ESC_e
-#define ESC_e CHAR_ESC
-#endif
-
-#ifndef ESC_f
-#define ESC_f CHAR_FF
-#endif
-
-#ifndef ESC_n
-#define ESC_n CHAR_LF
-#endif
-
-#ifndef ESC_r
-#define ESC_r CHAR_CR
-#endif
-
-/* We can't officially use ESC_t because it is a POSIX reserved identifier
-(presumably because of all the others like size_t). */
-
-#ifndef ESC_tee
-#define ESC_tee CHAR_HT
-#endif
-
 /* These are escaped items that aren't just an encoding of a particular data
 value such as \n. They must have non-zero values, as check_escape() returns 0
 for a data character. In the escapes[] table in pcre2_compile.c their values
@@ -1578,23 +1529,26 @@ enum {
   OP_THEN,           /* 155 */
   OP_THEN_ARG,       /* 156 same, but with argument */
   OP_COMMIT,         /* 157 */
+  OP_COMMIT_ARG,     /* 158 same, but with argument */
 
-  /* These are forced failure and success verbs */
+  /* These are forced failure and success verbs. FAIL and ACCEPT do accept an
+  argument, but these cases can be compiled as, for example, (*MARK:X)(*FAIL)
+  without the need for a special opcode. */
 
-  OP_FAIL,           /* 158 */
-  OP_ACCEPT,         /* 159 */
-  OP_ASSERT_ACCEPT,  /* 160 Used inside assertions */
-  OP_CLOSE,          /* 161 Used before OP_ACCEPT to close open captures */
+  OP_FAIL,           /* 159 */
+  OP_ACCEPT,         /* 160 */
+  OP_ASSERT_ACCEPT,  /* 161 Used inside assertions */
+  OP_CLOSE,          /* 162 Used before OP_ACCEPT to close open captures */
 
   /* This is used to skip a subpattern with a {0} quantifier */
 
-  OP_SKIPZERO,       /* 162 */
+  OP_SKIPZERO,       /* 163 */
 
   /* This is used to identify a DEFINE group during compilation so that it can
   be checked for having only one branch. It is changed to OP_FALSE before
   compilation finishes. */
 
-  OP_DEFINE,         /* 163 */
+  OP_DEFINE,         /* 164 */
 
   /* This is not an opcode, but is used to check that tables indexed by opcode
   are the correct length, in order to catch updating errors - there have been
@@ -1650,7 +1604,7 @@ some cases doesn't actually use these names at all). */
   "Cond false", "Cond true",                                      \
   "Brazero", "Braminzero", "Braposzero",                          \
   "*MARK", "*PRUNE", "*PRUNE", "*SKIP", "*SKIP",                  \
-  "*THEN", "*THEN", "*COMMIT", "*FAIL",                           \
+  "*THEN", "*THEN", "*COMMIT", "*COMMIT", "*FAIL",                \
   "*ACCEPT", "*ASSERT_ACCEPT",                                    \
   "Close", "Skip zero", "Define"
 
@@ -1742,7 +1696,8 @@ in UTF-8 mode. The code that uses this table must know about such things. */
   3, 1, 3,                       /* MARK, PRUNE, PRUNE_ARG                 */ \
   1, 3,                          /* SKIP, SKIP_ARG                         */ \
   1, 3,                          /* THEN, THEN_ARG                         */ \
-  1, 1, 1, 1,                    /* COMMIT, FAIL, ACCEPT, ASSERT_ACCEPT    */ \
+  1, 3,                          /* COMMIT, COMMIT_ARG                     */ \
+  1, 1, 1,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */ \
   1+IMM2_SIZE, 1,                /* CLOSE, SKIPZERO                        */ \
   1                              /* DEFINE                                 */
 
@@ -1896,7 +1851,7 @@ extern const ucd_record                PRIV(ucd_records)[];
 #if PCRE2_CODE_UNIT_WIDTH == 32
 extern const ucd_record                PRIV(dummy_ucd_record)[];
 #endif
-extern const uint8_t                   PRIV(ucd_stage1)[];
+extern const uint16_t                  PRIV(ucd_stage1)[];
 extern const uint16_t                  PRIV(ucd_stage2)[];
 extern const uint32_t                  PRIV(ucp_gbtable)[];
 extern const uint32_t                  PRIV(ucp_gentype)[];
@@ -1976,6 +1931,14 @@ extern int          _pcre2_valid_utf(PCRE2_SPTR, PCRE2_SIZE, PCRE2_SIZE *);
 extern BOOL         _pcre2_was_newline(PCRE2_SPTR, uint32_t, PCRE2_SPTR,
                       uint32_t *, BOOL);
 extern BOOL         _pcre2_xclass(uint32_t, PCRE2_SPTR, BOOL);
+
+/* This function is needed only when memmove() is not available. */
+
+#if !defined(VPCOMPAT) && !defined(HAVE_MEMMOVE)
+#define _pcre2_memmove               PCRE2_SUFFIX(_pcre2_memmove)
+extern void *       _pcre2_memmove(void *, const void *, size_t);
+#endif
+
 #endif  /* PCRE2_CODE_UNIT_WIDTH */
 #endif  /* PCRE2_INTERNAL_H_IDEMPOTENT_GUARD */
 

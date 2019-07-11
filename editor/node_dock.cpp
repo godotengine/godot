@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -119,13 +119,13 @@ NodeDock::NodeDock() {
 	groups_button->connect("pressed", this, "show_groups");
 
 	connections = memnew(ConnectionsDock(EditorNode::get_singleton()));
-	connections->set_undoredo(EditorNode::get_singleton()->get_undo_redo());
+	connections->set_undoredo(EditorNode::get_undo_redo());
 	add_child(connections);
 	connections->set_v_size_flags(SIZE_EXPAND_FILL);
 	connections->hide();
 
 	groups = memnew(GroupsEditor);
-	groups->set_undo_redo(EditorNode::get_singleton()->get_undo_redo());
+	groups->set_undo_redo(EditorNode::get_undo_redo());
 	add_child(groups);
 	groups->set_v_size_flags(SIZE_EXPAND_FILL);
 	groups->hide();

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Expression" inherits="Reference" category="Core" version="3.1">
+<class name="Expression" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
 		A class that stores an expression you can execute.
 	</brief_description>
@@ -16,7 +16,7 @@
 		func _on_text_entered(command):
 		    var error = expression.parse(command, [])
 		    if error != OK:
-		        print(get_error_text())
+		        print(expression.get_error_text())
 		        return
 		    var result = expression.execute([], null, true)
 		    if not expression.has_execute_failed():
@@ -25,8 +25,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="execute">
 			<return type="Variant">
@@ -39,6 +37,7 @@
 			</argument>
 			<description>
 				Executes the expression that was previously parsed by [method parse] and returns the result. Before you use the returned object, you should check if the method failed by calling [method has_execute_failed].
+				If you defined input variables in [method parse], you can specify their values in the inputs array, in the same order.
 			</description>
 		</method>
 		<method name="get_error_text" qualifiers="const">
@@ -63,7 +62,8 @@
 			<argument index="1" name="input_names" type="PoolStringArray" default="PoolStringArray(  )">
 			</argument>
 			<description>
-				Parses the expression and returns a [enum @GlobalScope.Error].
+				Parses the expression and returns an [enum Error] code.
+				You can optionally specify names of variables that may appear in the expression with [code]input_names[/code], so that you can bind them when it gets executed.
 			</description>
 		</method>
 	</methods>

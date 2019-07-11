@@ -38,6 +38,7 @@
 #include <stddef.h>
 #include <stdint.h>
 
+/* MBEDTLS_ERR_MD4_HW_ACCEL_FAILED is deprecated and should not be used. */
 #define MBEDTLS_ERR_MD4_HW_ACCEL_FAILED                   -0x002D  /**< MD4 hardware accelerator failed */
 
 #ifdef __cplusplus
@@ -56,7 +57,7 @@ extern "C" {
  *                 stronger message digests instead.
  *
  */
-typedef struct
+typedef struct mbedtls_md4_context
 {
     uint32_t total[2];          /*!< number of bytes processed  */
     uint32_t state[4];          /*!< intermediate digest state  */

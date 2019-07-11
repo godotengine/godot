@@ -1,23 +1,23 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftzopen.c                                                              */
-/*                                                                         */
-/*    FreeType support for .Z compressed files.                            */
-/*                                                                         */
-/*  This optional component relies on NetBSD's zopen().  It should mainly  */
-/*  be used to parse compressed PCF fonts, as found with many X11 server   */
-/*  distributions.                                                         */
-/*                                                                         */
-/*  Copyright 2005-2018 by                                                 */
-/*  David Turner.                                                          */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftzopen.c
+ *
+ *   FreeType support for .Z compressed files.
+ *
+ * This optional component relies on NetBSD's zopen().  It should mainly
+ * be used to parse compressed PCF fonts, as found with many X11 server
+ * distributions.
+ *
+ * Copyright (C) 2005-2019 by
+ * David Turner.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 #include "ftzopen.h"
 #include FT_INTERNAL_MEMORY_H
@@ -167,11 +167,11 @@
       new_size += new_size >> 2;  /* don't grow too fast */
 
     /*
-     *  Note that the `suffix' array is located in the same memory block
-     *  pointed to by `prefix'.
+     * Note that the `suffix' array is located in the same memory block
+     * pointed to by `prefix'.
      *
-     *  I know that sizeof(FT_Byte) == 1 by definition, but it is clearer
-     *  to write it literally.
+     * I know that sizeof(FT_Byte) == 1 by definition, but it is clearer
+     * to write it literally.
      *
      */
     if ( FT_REALLOC_MULT( state->prefix, old_size, new_size,

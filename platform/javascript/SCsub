@@ -20,6 +20,13 @@ for lib in js_libraries:
     env.Append(LINKFLAGS=['--js-library', env.File(lib).path])
 env.Depends(build, js_libraries)
 
+js_modules = [
+    'id_handler.js',
+]
+for module in js_modules:
+    env.Append(LINKFLAGS=['--pre-js', env.File(module).path])
+env.Depends(build, js_modules)
+
 wrapper_start = env.File('pre.js')
 wrapper_end = env.File('engine.js')
 js_wrapped = env.Textfile('#bin/godot', [wrapper_start, js, wrapper_end], TEXTFILESUFFIX='${PROGSUFFIX}.wrapped.js')

@@ -19,6 +19,12 @@ namespace Godot
             sb.Append(" ");
         }
 
+        public static void InstallTraceListener()
+        {
+            Trace.Listeners.Clear();
+            Trace.Listeners.Add(new GodotTraceListener());
+        }
+
         public static void GetStackFrameInfo(StackFrame frame, out string fileName, out int fileLineNumber, out string methodDecl)
         {
             fileName = frame.GetFileName();

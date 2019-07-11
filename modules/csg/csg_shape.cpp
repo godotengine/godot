@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -436,10 +436,10 @@ void CSGShape::_update_shape() {
 		}
 
 		// unset write access
-		surfaces.write[i].verticesw = PoolVector<Vector3>::Write();
-		surfaces.write[i].normalsw = PoolVector<Vector3>::Write();
-		surfaces.write[i].uvsw = PoolVector<Vector2>::Write();
-		surfaces.write[i].tansw = PoolVector<float>::Write();
+		surfaces.write[i].verticesw.release();
+		surfaces.write[i].normalsw.release();
+		surfaces.write[i].uvsw.release();
+		surfaces.write[i].tansw.release();
 
 		if (surfaces[i].last_added == 0)
 			continue;
@@ -531,6 +531,13 @@ void CSGShape::_notification(int p_what) {
 		}
 	}
 
+	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+
+		if (parent) {
+			parent->_make_dirty();
+		}
+	}
+
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
 		if (parent)
@@ -550,6 +557,7 @@ void CSGShape::set_operation(Operation p_operation) {
 
 	operation = p_operation;
 	_make_dirty();
+	update_gizmo();
 }
 
 CSGShape::Operation CSGShape::get_operation() const {
@@ -575,6 +583,18 @@ void CSGShape::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+Array CSGShape::get_meshes() const {
+
+	if (root_mesh.is_valid()) {
+		Array arr;
+		arr.resize(2);
+		arr[0] = Transform();
+		arr[1] = root_mesh;
+		return arr;
+	}
+
+	return Array();
+}
 void CSGShape::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_update_shape"), &CSGShape::_update_shape);
@@ -603,6 +623,8 @@ void CSGShape::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_calculate_tangents", "enabled"), &CSGShape::set_calculate_tangents);
 	ClassDB::bind_method(D_METHOD("is_calculating_tangents"), &CSGShape::is_calculating_tangents);
+
+	ClassDB::bind_method(D_METHOD("get_meshes"), &CSGShape::get_meshes);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "operation", PROPERTY_HINT_ENUM, "Union,Intersection,Subtraction"), "set_operation", "get_operation");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "snap", PROPERTY_HINT_RANGE, "0.0001,1,0.001"), "set_snap", "get_snap");
@@ -703,6 +725,7 @@ CSGBrush *CSGMesh::_build_brush() {
 	PoolVector<bool> smooth;
 	PoolVector<Ref<Material> > materials;
 	PoolVector<Vector2> uvs;
+	Ref<Material> material = get_material();
 
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
 
@@ -739,7 +762,12 @@ CSGBrush *CSGMesh::_build_brush() {
 			uvr_used = true;
 		}
 
-		Ref<Material> mat = mesh->surface_get_material(i);
+		Ref<Material> mat;
+		if (material.is_valid()) {
+			mat = material;
+		} else {
+			mat = mesh->surface_get_material(i);
+		}
 
 		PoolVector<int> aindices = arrays[Mesh::ARRAY_INDEX];
 		if (aindices.size()) {
@@ -785,8 +813,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				uvw[as + j + 1] = uv[1];
 				uvw[as + j + 2] = uv[2];
 
-				sw[j / 3] = !flat;
-				mw[j / 3] = mat;
+				sw[(as + j) / 3] = !flat;
+				mw[(as + j) / 3] = mat;
 			}
 		} else {
 			int as = vertices.size();
@@ -828,8 +856,8 @@ CSGBrush *CSGMesh::_build_brush() {
 				uvw[as + j + 1] = uv[1];
 				uvw[as + j + 2] = uv[2];
 
-				sw[j / 3] = !flat;
-				mw[j / 3] = mat;
+				sw[(as + j) / 3] = !flat;
+				mw[(as + j) / 3] = mat;
 			}
 		}
 	}
@@ -845,6 +873,18 @@ void CSGMesh::_mesh_changed() {
 	update_gizmo();
 }
 
+void CSGMesh::set_material(const Ref<Material> &p_material) {
+	if (material == p_material)
+		return;
+	material = p_material;
+	_make_dirty();
+}
+
+Ref<Material> CSGMesh::get_material() const {
+
+	return material;
+}
+
 void CSGMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_mesh", "mesh"), &CSGMesh::set_mesh);
@@ -852,7 +892,11 @@ void CSGMesh::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_mesh_changed"), &CSGMesh::_mesh_changed);
 
+	ClassDB::bind_method(D_METHOD("set_material", "material"), &CSGMesh::set_material);
+	ClassDB::bind_method(D_METHOD("get_material"), &CSGMesh::get_material);
+
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "material", PROPERTY_HINT_RESOURCE_TYPE, "SpatialMaterial,ShaderMaterial"), "set_material", "get_material");
 }
 
 void CSGMesh::set_mesh(const Ref<Mesh> &p_mesh) {
@@ -1132,9 +1176,9 @@ CSGBrush *CSGBox::_build_brush() {
 					for (int k = 0; k < 3; k++) {
 
 						if (i < 3)
-							face_points[j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+							face_points[j][(i + k) % 3] = v[k];
 						else
-							face_points[3 - j][(i + k) % 3] = v[k] * (i >= 3 ? -1 : 1);
+							face_points[3 - j][(i + k) % 3] = -v[k];
 					}
 				}
 
@@ -1773,11 +1817,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 			path_cache = path;
 
-			if (path_cache) {
-				path_cache->connect("tree_exited", this, "_path_exited");
-				path_cache->connect("curve_changed", this, "_path_changed");
-				path_cache = NULL;
-			}
+			path_cache->connect("tree_exited", this, "_path_exited");
+			path_cache->connect("curve_changed", this, "_path_changed");
+			path_cache = NULL;
 		}
 		curve = path->get_curve();
 		if (curve.is_null())
@@ -2039,6 +2081,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 				for (int i = 0; i <= splits; i++) {
 
 					float ofs = i * path_interval;
+					if (ofs > bl) {
+						ofs = bl;
+					}
 					if (i == splits && path_joined) {
 						ofs = 0.0;
 					}

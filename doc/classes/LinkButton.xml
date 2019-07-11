@@ -1,26 +1,24 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="LinkButton" inherits="BaseButton" category="Core" version="3.1">
+<class name="LinkButton" inherits="BaseButton" category="Core" version="3.2">
 	<brief_description>
 		Simple button used to represent a link to some resource.
 	</brief_description>
 	<description>
-		This kind of buttons are primarily used when the interaction with the button causes a context change (like linking to a web page).
+		This kind of button is primarily used when the interaction with the button causes a context change (like linking to a web page).
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 		</member>
-		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode">
+		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode" default="0">
 		</member>
 	</members>
 	<constants>
 		<constant name="UNDERLINE_MODE_ALWAYS" value="0" enum="UnderlineMode">
-			The LinkButton will always show an underline at the bottom of its text
+			The LinkButton will always show an underline at the bottom of its text.
 		</constant>
 		<constant name="UNDERLINE_MODE_ON_HOVER" value="1" enum="UnderlineMode">
 			The LinkButton will show an underline at the bottom of its text when the mouse cursor is over it.
@@ -34,13 +32,13 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
 		</theme_item>
-		<theme_item name="font_color_hover" type="Color">
+		<theme_item name="font_color_hover" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
-		<theme_item name="font_color_pressed" type="Color">
+		<theme_item name="font_color_pressed" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="underline_spacing" type="int">
+		<theme_item name="underline_spacing" type="int" default="2">
 		</theme_item>
 	</theme_items>
 </class>

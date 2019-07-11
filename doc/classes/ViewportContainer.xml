@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ViewportContainer" inherits="Container" category="Core" version="3.1">
+<class name="ViewportContainer" inherits="Container" category="Core" version="3.2">
 	<brief_description>
 		Control for holding [Viewport]s.
 	</brief_description>
@@ -8,15 +8,13 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled">
-			If [code]true[/code] the viewport will be scaled to the control's size. Default value:[code]false[/code].
+		<member name="stretch" type="bool" setter="set_stretch" getter="is_stretch_enabled" default="false">
+			If [code]true[/code], the viewport will be scaled to the control's size.
 		</member>
-		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink">
+		<member name="stretch_shrink" type="int" setter="set_stretch_shrink" getter="get_stretch_shrink" default="1">
 		</member>
 	</members>
 	<constants>

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,6 +33,7 @@
 
 #define CMP_EPSILON 0.00001
 #define CMP_EPSILON2 (CMP_EPSILON * CMP_EPSILON)
+
 #define CMP_NORMALIZE_TOLERANCE 0.000001
 #define CMP_POINT_IN_PLANE_EPSILON 0.00001
 
@@ -47,6 +48,14 @@
 
 #ifdef DEBUG_ENABLED
 #define MATH_CHECKS
+#endif
+
+//this epsilon is for values related to a unit size (scalar or vector len)
+#ifdef PRECISE_MATH_CHECKS
+#define UNIT_EPSILON 0.00001
+#else
+//tolerate some more floating point error normally
+#define UNIT_EPSILON 0.001
 #endif
 
 #define USEC_TO_SEC(m_usec) ((m_usec) / 1000000.0)

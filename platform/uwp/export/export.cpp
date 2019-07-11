@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #include "core/bind/core_bind.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
+#include "core/math/crypto_core.h"
 #include "core/object.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
@@ -42,8 +43,6 @@
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
-#include "thirdparty/misc/base64.h"
-#include "thirdparty/misc/sha256.h"
 
 #include <zlib.h>
 
@@ -73,7 +72,7 @@ static const char *uwp_uap_capabilities[] = {
 	"voipCall",
 	NULL
 };
-static const char *uwp_device_capabilites[] = {
+static const char *uwp_device_capabilities[] = {
 	"bluetooth",
 	"location",
 	"microphone",
@@ -187,7 +186,7 @@ class AppxPackager {
 public:
 	void set_progress_task(String p_task) { progress_task = p_task; }
 	void init(FileAccess *p_fa);
-	void add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress = false);
+	Error add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress = false);
 	void finish();
 
 	AppxPackager();
@@ -198,15 +197,12 @@ public:
 
 String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
 
-	char hash[32];
+	unsigned char hash[32];
 	char base64[45];
 
-	sha256_context ctx;
-	sha256_init(&ctx);
-	sha256_hash(&ctx, (uint8_t *)p_block_data, p_block_len);
-	sha256_done(&ctx, (uint8_t *)hash);
-
-	base64_encode(base64, hash, 32);
+	CryptoCore::sha256(p_block_data, p_block_len, hash);
+	size_t len = 0;
+	CryptoCore::b64_encode((unsigned char *)base64, 45, &len, (unsigned char *)hash, 32);
 	base64[44] = '\0';
 
 	return String(base64);
@@ -241,7 +237,6 @@ void AppxPackager::make_block_map() {
 
 	tmp_file->close();
 	memdelete(tmp_file);
-	tmp_file = NULL;
 }
 
 String AppxPackager::content_type(String p_extension) {
@@ -291,7 +286,6 @@ void AppxPackager::make_content_types() {
 
 	tmp_file->close();
 	memdelete(tmp_file);
-	tmp_file = NULL;
 }
 
 Vector<uint8_t> AppxPackager::make_file_header(FileMeta p_file_meta) {
@@ -468,10 +462,12 @@ void AppxPackager::init(FileAccess *p_fa) {
 	tmp_content_types_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
 }
 
-void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress) {
+Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress) {
 
 	if (p_file_no >= 1 && p_total_files >= 1) {
-		EditorNode::progress_task_step(progress_task, "File: " + p_file_name, (p_file_no * 100) / p_total_files);
+		if (EditorNode::progress_task_step(progress_task, "File: " + p_file_name, (p_file_no * 100) / p_total_files)) {
+			return ERR_SKIP;
+		}
 	}
 
 	FileMeta meta;
@@ -505,7 +501,7 @@ void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t 
 
 	while (p_len - step > 0) {
 
-		size_t block_size = (p_len - step) > BLOCK_SIZE ? BLOCK_SIZE : (p_len - step);
+		size_t block_size = (p_len - step) > BLOCK_SIZE ? (size_t)BLOCK_SIZE : (p_len - step);
 
 		for (uint32_t i = 0; i < block_size; i++) {
 			strm_in.write[i] = p_buffer[step + i];
@@ -584,6 +580,8 @@ void AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t 
 	package->store_buffer(file_buffer.ptr(), file_buffer.size());
 
 	file_metadata.push_back(meta);
+
+	return OK;
 }
 
 void AppxPackager::finish() {
@@ -602,7 +600,6 @@ void AppxPackager::finish() {
 
 	blockmap_file->close();
 	memdelete(blockmap_file);
-	blockmap_file = NULL;
 
 	// Add content types
 	EditorNode::progress_task_step("export", "Setting content types...", 5);
@@ -618,7 +615,6 @@ void AppxPackager::finish() {
 
 	types_file->close();
 	memdelete(types_file);
-	types_file = NULL;
 
 	// Pre-process central directory before signing
 	for (int i = 0; i < file_metadata.size(); i++) {
@@ -646,9 +642,9 @@ AppxPackager::~AppxPackager() {}
 
 ////////////////////////////////////////////////////////////////////
 
-class EditorExportUWP : public EditorExportPlatform {
+class EditorExportPlatformUWP : public EditorExportPlatform {
 
-	GDCLASS(EditorExportUWP, EditorExportPlatform);
+	GDCLASS(EditorExportPlatformUWP, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 
@@ -841,7 +837,7 @@ class EditorExportUWP : public EditorExportPlatform {
 			}
 			uap++;
 		}
-		const char **device = uwp_device_capabilites;
+		const char **device = uwp_device_capabilities;
 		while (*device) {
 			if ((bool)p_preset->get("capabilities/" + String(*device))) {
 				capabilities_elements += "    <DeviceCapability Name=\"" + String(*device) + "\" />\n";
@@ -1008,9 +1004,7 @@ class EditorExportUWP : public EditorExportPlatform {
 		AppxPackager *packager = (AppxPackager *)p_userdata;
 		String dst_path = p_path.replace_first("res://", "game/");
 
-		packager->add_file(dst_path, p_data.ptr(), p_data.size(), p_file, p_total, _should_compress_asset(p_path, p_data));
-
-		return OK;
+		return packager->add_file(dst_path, p_data.ptr(), p_data.size(), p_file, p_total, _should_compress_asset(p_path, p_data));
 	}
 
 public:
@@ -1035,13 +1029,13 @@ public:
 		r_features->push_back("s3tc");
 		r_features->push_back("etc");
 		switch ((int)p_preset->get("architecture/target")) {
-			case EditorExportUWP::ARM: {
+			case EditorExportPlatformUWP::ARM: {
 				r_features->push_back("arm");
 			} break;
-			case EditorExportUWP::X86: {
+			case EditorExportPlatformUWP::X86: {
 				r_features->push_back("32");
 			} break;
-			case EditorExportUWP::X64: {
+			case EditorExportPlatformUWP::X64: {
 				r_features->push_back("64");
 			} break;
 		}
@@ -1105,7 +1099,7 @@ public:
 			uap++;
 		}
 
-		const char **device = uwp_device_capabilites;
+		const char **device = uwp_device_capabilities;
 		while (*device) {
 			r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/" + String(*device).camelcase_to_underscore(false)), false));
 			device++;
@@ -1123,13 +1117,13 @@ public:
 		String platform_infix;
 
 		switch (arch) {
-			case EditorExportUWP::ARM: {
+			case EditorExportPlatformUWP::ARM: {
 				platform_infix = "arm";
 			} break;
-			case EditorExportUWP::X86: {
+			case EditorExportPlatformUWP::X86: {
 				platform_infix = "x86";
 			} break;
-			case EditorExportUWP::X64: {
+			case EditorExportPlatformUWP::X64: {
 				platform_infix = "x64";
 			} break;
 		}
@@ -1151,12 +1145,12 @@ public:
 
 		if (!FileAccess::exists(custom_debug_binary)) {
 			dvalid = false;
-			err = "\nCustom debug binary not found.";
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 
 		if (!FileAccess::exists(custom_release_binary)) {
 			rvalid = false;
-			err += "\nCustom release binary not found.";
+			err += TTR("Custom release template not found.") + "\n";
 		}
 
 		if (dvalid || rvalid)
@@ -1169,57 +1163,57 @@ public:
 
 		if (!_valid_resource_name(p_preset->get("package/unique_name"))) {
 			valid = false;
-			err += "\nInvalid unique name.";
+			err += TTR("Invalid package unique name.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/product_guid"))) {
 			valid = false;
-			err += "\nInvalid product GUID.";
+			err += TTR("Invalid product GUID.") + "\n";
 		}
 
 		if (!_valid_guid(p_preset->get("identity/publisher_guid"))) {
 			valid = false;
-			err += "\nInvalid publisher GUID.";
+			err += TTR("Invalid publisher GUID.") + "\n";
 		}
 
 		if (!_valid_bgcolor(p_preset->get("images/background_color"))) {
 			valid = false;
-			err += "\nInvalid background color.";
+			err += TTR("Invalid background color.") + "\n";
 		}
 
 		if (!p_preset->get("images/store_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/store_logo"))), 50, 50)) {
 			valid = false;
-			err += "\nInvalid Store Logo image dimensions (should be 50x50).";
+			err += TTR("Invalid Store Logo image dimensions (should be 50x50).") + "\n";
 		}
 
 		if (!p_preset->get("images/square44x44_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square44x44_logo"))), 44, 44)) {
 			valid = false;
-			err += "\nInvalid square 44x44 logo image dimensions (should be 44x44).";
+			err += TTR("Invalid square 44x44 logo image dimensions (should be 44x44).") + "\n";
 		}
 
 		if (!p_preset->get("images/square71x71_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square71x71_logo"))), 71, 71)) {
 			valid = false;
-			err += "\nInvalid square 71x71 logo image dimensions (should be 71x71).";
+			err += TTR("Invalid square 71x71 logo image dimensions (should be 71x71).") + "\n";
 		}
 
 		if (!p_preset->get("images/square150x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square150x150_logo"))), 150, 0)) {
 			valid = false;
-			err += "\nInvalid square 150x150 logo image dimensions (should be 150x150).";
+			err += TTR("Invalid square 150x150 logo image dimensions (should be 150x150).") + "\n";
 		}
 
 		if (!p_preset->get("images/square310x310_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/square310x310_logo"))), 310, 310)) {
 			valid = false;
-			err += "\nInvalid square 310x310 logo image dimensions (should be 310x310).";
+			err += TTR("Invalid square 310x310 logo image dimensions (should be 310x310).") + "\n";
 		}
 
 		if (!p_preset->get("images/wide310x150_logo").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/wide310x150_logo"))), 310, 150)) {
 			valid = false;
-			err += "\nInvalid wide 310x150 logo image dimensions (should be 310x150).";
+			err += TTR("Invalid wide 310x150 logo image dimensions (should be 310x150).") + "\n";
 		}
 
 		if (!p_preset->get("images/splash_screen").is_zero() && !_valid_image((Object::cast_to<StreamTexture>((Object *)p_preset->get("images/splash_screen"))), 620, 300)) {
 			valid = false;
-			err += "\nInvalid splash screen image dimensions (should be 620x300).";
+			err += TTR("Invalid splash screen image dimensions (should be 620x300).") + "\n";
 		}
 
 		r_error = err;
@@ -1230,7 +1224,7 @@ public:
 
 		String src_appx;
 
-		EditorProgress ep("export", "Exporting for Windows Universal", 7);
+		EditorProgress ep("export", "Exporting for Windows Universal", 7, true);
 
 		if (p_debug)
 			src_appx = p_preset->get("custom_template/debug");
@@ -1265,6 +1259,10 @@ public:
 			}
 		}
 
+		if (!DirAccess::exists(p_path.get_base_dir())) {
+			return ERR_FILE_BAD_PATH;
+		}
+
 		Error err = OK;
 
 		FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
@@ -1276,7 +1274,9 @@ public:
 		FileAccess *src_f = NULL;
 		zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-		ep.step("Creating package...", 0);
+		if (ep.step("Creating package...", 0)) {
+			return ERR_SKIP;
+		}
 
 		unzFile pkg = unzOpen2(src_appx.utf8().get_data(), &io);
 
@@ -1288,7 +1288,9 @@ public:
 
 		int ret = unzGoToFirstFile(pkg);
 
-		ep.step("Copying template files...", 1);
+		if (ep.step("Copying template files...", 1)) {
+			return ERR_SKIP;
+		}
 
 		EditorNode::progress_add_task("template_files", "Template files", 100);
 		packager.set_progress_task("template_files");
@@ -1337,14 +1339,19 @@ public:
 
 			print_line("ADDING: " + path);
 
-			packager.add_file(path, data.ptr(), data.size(), template_file_no++, template_files_amount, _should_compress_asset(path, data));
+			err = packager.add_file(path, data.ptr(), data.size(), template_file_no++, template_files_amount, _should_compress_asset(path, data));
+			if (err != OK) {
+				return err;
+			}
 
 			ret = unzGoToNextFile(pkg);
 		}
 
 		EditorNode::progress_end_task("template_files");
 
-		ep.step("Creating command line...", 2);
+		if (ep.step("Creating command line...", 2)) {
+			return ERR_SKIP;
+		}
 
 		Vector<String> cl = ((String)p_preset->get("command_line/extra_args")).strip_edges().split(" ");
 		for (int i = 0; i < cl.size(); i++) {
@@ -1378,9 +1385,14 @@ public:
 			print_line(itos(i) + " param: " + cl[i]);
 		}
 
-		packager.add_file("__cl__.cl", clf.ptr(), clf.size(), -1, -1, false);
+		err = packager.add_file("__cl__.cl", clf.ptr(), clf.size(), -1, -1, false);
+		if (err != OK) {
+			return err;
+		}
 
-		ep.step("Adding project files...", 3);
+		if (ep.step("Adding project files...", 3)) {
+			return ERR_SKIP;
+		}
 
 		EditorNode::progress_add_task("project_files", "Project Files", 100);
 		packager.set_progress_task("project_files");
@@ -1389,7 +1401,9 @@ public:
 
 		EditorNode::progress_end_task("project_files");
 
-		ep.step("Closing package...", 7);
+		if (ep.step("Closing package...", 7)) {
+			return ERR_SKIP;
+		}
 
 		unzClose(pkg);
 
@@ -1459,7 +1473,7 @@ public:
 	virtual void resolve_platform_feature_priorities(const Ref<EditorExportPreset> &p_preset, Set<String> &p_features) {
 	}
 
-	EditorExportUWP() {
+	EditorExportPlatformUWP() {
 		Ref<Image> img = memnew(Image(_uwp_logo));
 		logo.instance();
 		logo->create_from_image(img);
@@ -1478,7 +1492,7 @@ void register_uwp_exporter() {
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "export/uwp/debug_algorithm", PROPERTY_HINT_ENUM, "MD5,SHA1,SHA256"));
 #endif // WINDOWS_ENABLED
 
-	Ref<EditorExportUWP> exporter;
+	Ref<EditorExportPlatformUWP> exporter;
 	exporter.instance();
 	EditorExport::get_singleton()->add_export_platform(exporter);
 }

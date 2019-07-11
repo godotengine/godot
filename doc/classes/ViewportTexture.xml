@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ViewportTexture" inherits="Texture" category="Core" version="3.1">
+<class name="ViewportTexture" inherits="Texture" category="Core" version="3.2">
 	<brief_description>
 		Texture which displays the content of a [Viewport].
 	</brief_description>
@@ -9,12 +9,10 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>
-		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene">
+		<member name="viewport_path" type="NodePath" setter="set_viewport_path_in_scene" getter="get_viewport_path_in_scene" default="NodePath(&quot;&quot;)">
 			The path to the [Viewport] node to display. This is relative to the scene root, not to the node which uses the texture.
 		</member>
 	</members>

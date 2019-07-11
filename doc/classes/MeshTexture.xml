@@ -1,0 +1,26 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="MeshTexture" inherits="Texture" category="Core" version="3.2">
+	<brief_description>
+		Simple texture that uses a mesh to draw itself.
+	</brief_description>
+	<description>
+		Simple texture that uses a mesh to draw itself. It's limited because flags can't be changed and region drawing is not supported.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="base_texture" type="Texture" setter="set_base_texture" getter="get_base_texture" default="null">
+			Sets the base texture that the Mesh will use to draw.
+		</member>
+		<member name="image_size" type="Vector2" setter="set_image_size" getter="get_image_size" default="Vector2( 0, 0 )">
+			Sets the size of the image, needed for reference.
+		</member>
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh" default="null">
+			Sets the mesh used to draw. It must be a mesh using 2D vertices.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

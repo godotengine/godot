@@ -24,6 +24,14 @@ does not infringe any patents that apply in your area before you
 ship it.
 */
 
+/*
+ * Please note that this version has been modified for various reasons:
+ * 1. Using the Godot core typedefs
+ * 2. At some point or another the code relied on the byte order of a uint32_t, this has been fixed
+ * 3. Output has been reordered to struct { uint8_t r, g, b, a; } precisely in accordance with the function names
+ * 4. Removing unused 'dither' parameter
+ */
+
 #ifndef YUV2RGB_H
 #define YUV2RGB_H
 
@@ -803,6 +811,8 @@ static const uint32_t tables[256*3] = {
 	0xE6365800U
 };
 
+/* -- Common -- */
+
 #define FLAGS 0x40080100
 #define READUV(U,V) (tables[256 + (U)] + tables[512 + (V)])
 #define READY(Y)    tables[Y]
@@ -820,11 +830,13 @@ do {                             \
 
 #define STORE(Y,DSTPTR)         \
 do {                            \
-    *(DSTPTR)++ = (Y);          \
-    *(DSTPTR)++ = (Y)>>22;      \
     *(DSTPTR)++ = (Y)>>11;      \
-    *(DSTPTR)++ = 255;            \
+    *(DSTPTR)++ = (Y)>>22;       \
+    *(DSTPTR)++ = (Y);          \
+	*(DSTPTR)++ = 255;           \
 } while (0 == 1)
+
+/* -- End Common -- */
 
 static void yuv422_2_rgb8888(uint8_t  *dst_ptr,
 		const uint8_t  *y_ptr,
@@ -834,8 +846,7 @@ static void yuv422_2_rgb8888(uint8_t  *dst_ptr,
 		      int32_t   height,
 		      int32_t   y_span,
 		      int32_t   uv_span,
-		      int32_t   dst_span,
-		      int32_t   dither)
+		      int32_t   dst_span)
 {
     height -= 1;
     while (height > 0)
@@ -909,35 +920,7 @@ static void yuv422_2_rgb8888(uint8_t  *dst_ptr,
     }
 }
 
-
-#undef FLAGS
-#undef READUV
-#undef READY
-#undef FIXUP
-#undef STORE
-
-
-#define FLAGS 0x40080100
-#define READUV(U,V) (tables[256 + (U)] + tables[512 + (V)])
-#define READY(Y)    tables[Y]
-#define FIXUP(Y)                 \
-do {                             \
-    int tmp = (Y) & FLAGS;       \
-    if (tmp != 0)                \
-    {                            \
-	tmp  -= tmp>>8;          \
-	(Y)  |= tmp;             \
-	tmp   = FLAGS & ~(Y>>1); \
-	(Y)  += tmp>>8;          \
-    }                            \
-} while (0 == 1)
-
-#define STORE(Y,DSTPTR)     \
-do {                        \
-    (DSTPTR) = 0xFF000000 | (Y & 0xFF) | (0xFF00 & (Y>>14)) | (0xFF0000 & (Y<<5));\
-} while (0 == 1)
-
-static void yuv420_2_rgb8888(uint8_t  *dst_ptr_,
+static void yuv420_2_rgb8888(uint8_t  *dst_ptr,
 		const uint8_t  *y_ptr,
 		const uint8_t  *u_ptr,
 		const uint8_t  *v_ptr,
@@ -945,12 +928,9 @@ static void yuv420_2_rgb8888(uint8_t  *dst_ptr_,
 		      int32_t   height,
 		      int32_t   y_span,
 		      int32_t   uv_span,
-		      int32_t   dst_span,
-		      int32_t   dither)
+		      int32_t   dst_span)
 {
-    uint32_t *dst_ptr = (uint32_t *)(void *)dst_ptr_;
-    dst_span >>= 2;
-
+    /* The 'dst_ptr as uint32_t' thing is not endianness-aware, so that's been removed. */
     height -= 1;
     while (height > 0)
     {
@@ -960,36 +940,38 @@ static void yuv420_2_rgb8888(uint8_t  *dst_ptr_,
 	{
 	    /* Do 2 column pairs */
 	    uint32_t uv, y0, y1;
+        uint8_t * dst_ptr_1span = dst_ptr + dst_span;
 
 	    uv  = READUV(*u_ptr++,*v_ptr++);
 	    y1  = uv + READY(y_ptr[y_span]);
 	    y0  = uv + READY(*y_ptr++);
 	    FIXUP(y1);
 	    FIXUP(y0);
-	    STORE(y1, dst_ptr[dst_span]);
-	    STORE(y0, *dst_ptr++);
+	    STORE(y1, dst_ptr_1span);
+	    STORE(y0, dst_ptr);
 	    y1  = uv + READY(y_ptr[y_span]);
 	    y0  = uv + READY(*y_ptr++);
 	    FIXUP(y1);
 	    FIXUP(y0);
-	    STORE(y1, dst_ptr[dst_span]);
-	    STORE(y0, *dst_ptr++);
+	    STORE(y1, dst_ptr_1span);
+	    STORE(y0, dst_ptr);
 	    height += (2<<16);
 	}
 	if ((height>>16) == 0)
 	{
 	    /* Trailing column pair */
 	    uint32_t uv, y0, y1;
+        uint8_t * dst_ptr_1span = dst_ptr + dst_span;
 
 	    uv = READUV(*u_ptr,*v_ptr);
 	    y1 = uv + READY(y_ptr[y_span]);
 	    y0 = uv + READY(*y_ptr++);
 	    FIXUP(y1);
 	    FIXUP(y0);
-	    STORE(y0, dst_ptr[dst_span]);
-	    STORE(y1, *dst_ptr++);
+	    STORE(y0, dst_ptr_1span);
+	    STORE(y1, dst_ptr);
 	}
-	dst_ptr += dst_span*2-width;
+	dst_ptr += (dst_span * 2) - (width * 4);
 	y_ptr   += y_span*2-width;
 	u_ptr   += uv_span-(width>>1);
 	v_ptr   += uv_span-(width>>1);
@@ -1011,8 +993,8 @@ static void yuv420_2_rgb8888(uint8_t  *dst_ptr_,
 	    y0  = uv + READY(*y_ptr++);
 	    FIXUP(y1);
 	    FIXUP(y0);
-	    STORE(y1, *dst_ptr++);
-	    STORE(y0, *dst_ptr++);
+	    STORE(y1, dst_ptr);
+	    STORE(y0, dst_ptr);
 	    height += (2<<16);
 	}
 	if ((height>>16) == 0)
@@ -1023,41 +1005,10 @@ static void yuv420_2_rgb8888(uint8_t  *dst_ptr_,
 	    uv = READUV(*u_ptr++,*v_ptr++);
 	    y0 = uv + READY(*y_ptr++);
 	    FIXUP(y0);
-	    STORE(y0, *dst_ptr++);
+	    STORE(y0, dst_ptr);
 	}
     }
 }
-
-
-
-#undef FLAGS
-#undef READUV
-#undef READY
-#undef FIXUP
-#undef STORE
-
-#define FLAGS 0x40080100
-#define READUV(U,V) (tables[256 + (U)] + tables[512 + (V)])
-#define READY(Y)    tables[Y]
-#define FIXUP(Y)                 \
-do {                             \
-    int tmp = (Y) & FLAGS;       \
-    if (tmp != 0)                \
-    {                            \
-	tmp  -= tmp>>8;          \
-	(Y)  |= tmp;             \
-	tmp   = FLAGS & ~(Y>>1); \
-	(Y)  += tmp>>8;          \
-    }                            \
-} while (0 == 1)
-
-#define STORE(Y,DSTPTR)         \
-do {                            \
-    *(DSTPTR)++ = (Y);          \
-    *(DSTPTR)++ = (Y)>>22;      \
-    *(DSTPTR)++ = (Y)>>11;      \
-	*(DSTPTR)++ = 255;           \
-} while (0 == 1)
 
 static void yuv444_2_rgb8888(uint8_t  *dst_ptr,
 		const uint8_t  *y_ptr,
@@ -1067,8 +1018,7 @@ static void yuv444_2_rgb8888(uint8_t  *dst_ptr,
 		      int32_t   height,
 		      int32_t   y_span,
 		      int32_t   uv_span,
-		      int32_t   dst_span,
-		      int32_t   dither)
+		      int32_t   dst_span)
 {
     height -= 1;
     while (height > 0)
@@ -1143,4 +1093,11 @@ static void yuv444_2_rgb8888(uint8_t  *dst_ptr,
 	height -= 1;
     }
 }
+
+#undef FLAGS
+#undef READUV
+#undef READY
+#undef FIXUP
+#undef STORE
+
 #endif // YUV2RGB_H

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -66,7 +66,7 @@ Size2 EditorProperty::get_minimum_size() const {
 
 	if (checkable) {
 		Ref<Texture> check = get_icon("checked", "CheckBox");
-		ms.width += check->get_width() + get_constant("hseparator", "Tree");
+		ms.width += check->get_width() + get_constant("hseparation", "CheckBox") + get_constant("hseparator", "Tree");
 	}
 
 	if (bottom_editor != NULL && bottom_editor->is_visible()) {
@@ -78,6 +78,14 @@ Size2 EditorProperty::get_minimum_size() const {
 	}
 
 	return ms;
+}
+
+void EditorProperty::emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field, bool p_changing) {
+
+	Variant args[4] = { p_property, p_value, p_field, p_changing };
+	const Variant *argptrs[4] = { &args[0], &args[1], &args[2], &args[3] };
+
+	emit_signal("property_changed", (const Variant **)argptrs, 4);
 }
 
 void EditorProperty::_notification(int p_what) {
@@ -203,42 +211,42 @@ void EditorProperty::_notification(int p_what) {
 		}
 
 		int ofs = 0;
+		int text_limit = text_size;
+
 		if (checkable) {
 			Ref<Texture> checkbox;
 			if (checked)
-				checkbox = get_icon("checked", "CheckBox");
+				checkbox = get_icon("GuiChecked", "EditorIcons");
 			else
-				checkbox = get_icon("unchecked", "CheckBox");
+				checkbox = get_icon("GuiUnchecked", "EditorIcons");
 
-			Color color(1, 1, 1);
+			Color color2(1, 1, 1);
 			if (check_hover) {
-				color.r *= 1.2;
-				color.g *= 1.2;
-				color.b *= 1.2;
+				color2.r *= 1.2;
+				color2.g *= 1.2;
+				color2.b *= 1.2;
 			}
 			check_rect = Rect2(ofs, ((size.height - checkbox->get_height()) / 2), checkbox->get_width(), checkbox->get_height());
-			draw_texture(checkbox, check_rect.position, color);
-			ofs += get_constant("hseparator", "Tree");
-			ofs += checkbox->get_width();
+			draw_texture(checkbox, check_rect.position, color2);
+			ofs += get_constant("hseparator", "Tree") + checkbox->get_width() + get_constant("hseparation", "CheckBox");
+			text_limit -= ofs;
 		} else {
 			check_rect = Rect2();
 		}
-
-		int text_limit = text_size;
 
 		if (can_revert) {
 			Ref<Texture> reload_icon = get_icon("ReloadSmall", "EditorIcons");
 			text_limit -= reload_icon->get_width() + get_constant("hseparator", "Tree") * 2;
 			revert_rect = Rect2(text_limit + get_constant("hseparator", "Tree"), (size.height - reload_icon->get_height()) / 2, reload_icon->get_width(), reload_icon->get_height());
 
-			Color color(1, 1, 1);
+			Color color2(1, 1, 1);
 			if (revert_hover) {
-				color.r *= 1.2;
-				color.g *= 1.2;
-				color.b *= 1.2;
+				color2.r *= 1.2;
+				color2.g *= 1.2;
+				color2.b *= 1.2;
 			}
 
-			draw_texture(reload_icon, revert_rect.position, color);
+			draw_texture(reload_icon, revert_rect.position, color2);
 		} else {
 			revert_rect = Rect2();
 		}
@@ -257,14 +265,14 @@ void EditorProperty::_notification(int p_what) {
 
 			ofs = size.width - key->get_width() - get_constant("hseparator", "Tree");
 
-			Color color(1, 1, 1);
+			Color color2(1, 1, 1);
 			if (keying_hover) {
-				color.r *= 1.2;
-				color.g *= 1.2;
-				color.b *= 1.2;
+				color2.r *= 1.2;
+				color2.g *= 1.2;
+				color2.b *= 1.2;
 			}
 			keying_rect = Rect2(ofs, ((size.height - key->get_height()) / 2), key->get_width(), key->get_height());
-			draw_texture(key, keying_rect.position, color);
+			draw_texture(key, keying_rect.position, color2);
 		} else {
 			keying_rect = Rect2();
 		}
@@ -425,7 +433,7 @@ bool EditorPropertyRevert::is_node_property_different(Node *p_node, const Varian
 		float a = p_current;
 		float b = p_orig;
 
-		return Math::abs(a - b) > CMP_EPSILON; //this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
+		return !Math::is_equal_approx(a, b); //this must be done because, as some scenes save as text, there might be a tiny difference in floats due to numerical error
 	}
 
 	return bool(Variant::evaluate(Variant::OP_NOT_EQUAL, p_current, p_orig));
@@ -462,10 +470,12 @@ bool EditorPropertyRevert::can_property_revert(Object *p_object, const StringNam
 
 	if (!has_revert && !p_object->get_script().is_null()) {
 		Ref<Script> scr = p_object->get_script();
-		Variant orig_value;
-		if (scr->get_property_default_value(p_property, orig_value)) {
-			if (orig_value != p_object->get(p_property)) {
-				has_revert = true;
+		if (scr.is_valid()) {
+			Variant orig_value;
+			if (scr->get_property_default_value(p_property, orig_value)) {
+				if (orig_value != p_object->get(p_property)) {
+					has_revert = true;
+				}
 			}
 		}
 	}
@@ -634,7 +644,7 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 			emit_signal("property_keyed", property, use_keying_next());
 
 			if (use_keying_next()) {
-				call_deferred("emit_signal", "property_changed", property, object->get(property).operator int64_t() + 1);
+				call_deferred("emit_changed", property, object->get(property).operator int64_t() + 1, "", false);
 				call_deferred("update_property");
 			}
 		}
@@ -646,31 +656,33 @@ void EditorProperty::_gui_input(const Ref<InputEvent> &p_event) {
 			Node *node = Object::cast_to<Node>(object);
 			if (node && EditorPropertyRevert::may_node_be_in_instance(node) && EditorPropertyRevert::get_instanced_node_original_property(node, property, vorig)) {
 
-				emit_signal("property_changed", property, vorig.duplicate(true));
+				emit_changed(property, vorig.duplicate(true));
 				update_property();
 				return;
 			}
 
 			if (object->call("property_can_revert", property).operator bool()) {
 				Variant rev = object->call("property_get_revert", property);
-				emit_signal("property_changed", property, rev);
+				emit_changed(property, rev);
 				update_property();
 				return;
 			}
 
 			if (!object->get_script().is_null()) {
 				Ref<Script> scr = object->get_script();
-				Variant orig_value;
-				if (scr->get_property_default_value(property, orig_value)) {
-					emit_signal("property_changed", property, orig_value);
-					update_property();
-					return;
+				if (scr.is_valid()) {
+					Variant orig_value;
+					if (scr->get_property_default_value(property, orig_value)) {
+						emit_changed(property, orig_value);
+						update_property();
+						return;
+					}
 				}
 			}
 
 			Variant default_value = ClassDB::class_get_default_property_value(object->get_class_name(), property);
 			if (default_value != Variant()) {
-				emit_signal("property_changed", property, default_value);
+				emit_changed(property, default_value);
 				update_property();
 				return;
 			}
@@ -791,6 +803,11 @@ void EditorProperty::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_focusable_focused"), &EditorProperty::_focusable_focused);
 
 	ClassDB::bind_method(D_METHOD("get_tooltip_text"), &EditorProperty::get_tooltip_text);
+
+	ClassDB::bind_method(D_METHOD("add_focusable", "control"), &EditorProperty::add_focusable);
+	ClassDB::bind_method(D_METHOD("set_bottom_editor", "editor"), &EditorProperty::set_bottom_editor);
+
+	ClassDB::bind_method(D_METHOD("emit_changed", "property", "value", "field", "changing"), &EditorProperty::emit_changed, DEFVAL(StringName()), DEFVAL(false));
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "label"), "set_label", "get_label");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "read_only"), "set_read_only", "is_read_only");
@@ -1226,6 +1243,7 @@ EditorInspectorSection::EditorInspectorSection() {
 }
 
 EditorInspectorSection::~EditorInspectorSection() {
+
 	if (!vbox_added) {
 		memdelete(vbox);
 	}
@@ -1287,6 +1305,10 @@ void EditorInspector::remove_inspector_plugin(const Ref<EditorInspectorPlugin> &
 	for (int i = idx; i < inspector_plugin_count - 1; i++) {
 		inspector_plugins[i] = inspector_plugins[i + 1];
 	}
+
+	if (idx == inspector_plugin_count - 1)
+		inspector_plugins[idx] = Ref<EditorInspectorPlugin>();
+
 	inspector_plugin_count--;
 }
 
@@ -1355,11 +1377,56 @@ void EditorInspector::_parse_added_editors(VBoxContainer *current_vbox, Ref<Edit
 	ped->added_editors.clear();
 }
 
+bool EditorInspector::_is_property_disabled_by_feature_profile(const StringName &p_property) {
+
+	Ref<EditorFeatureProfile> profile = EditorFeatureProfileManager::get_singleton()->get_current_profile();
+	if (profile.is_null()) {
+		return false;
+	}
+
+	StringName class_name = object->get_class();
+
+	while (class_name != StringName()) {
+
+		if (profile->is_class_property_disabled(class_name, p_property)) {
+			return true;
+		}
+		if (profile->is_class_disabled(class_name)) {
+			//won't see properties of a disabled class
+			return true;
+		}
+		class_name = ClassDB::get_parent_class(class_name);
+	}
+
+	return false;
+}
+
 void EditorInspector::update_tree() {
 
 	//to update properly if all is refreshed
 	StringName current_selected = property_selected;
-	int current_focusable = property_focusable;
+	int current_focusable = -1;
+
+	if (property_focusable != -1) {
+		//check focusable is really focusable
+		bool restore_focus = false;
+		Control *focused = get_focus_owner();
+		if (focused) {
+			Node *parent = focused->get_parent();
+			while (parent) {
+				EditorInspector *inspector = Object::cast_to<EditorInspector>(parent);
+				if (inspector) {
+					restore_focus = inspector == this; //may be owned by another inspector
+					break; //exit after the first inspector is found, since there may be nested ones
+				}
+				parent = parent->get_parent();
+			}
+		}
+
+		if (restore_focus) {
+			current_focusable = property_focusable;
+		}
+	}
 
 	_clear();
 
@@ -1454,19 +1521,19 @@ void EditorInspector::update_tree() {
 
 			category->bg_color = get_color("prop_category", "Editor");
 			if (use_doc_hints) {
-				StringName type = p.name;
-				if (!class_descr_cache.has(type)) {
+				StringName type2 = p.name;
+				if (!class_descr_cache.has(type2)) {
 
 					String descr;
 					DocData *dd = EditorHelp::get_doc_data();
-					Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(type);
+					Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(type2);
 					if (E) {
 						descr = E->get().brief_description;
 					}
-					class_descr_cache[type] = descr.word_wrap(80);
+					class_descr_cache[type2] = descr;
 				}
 
-				category->set_tooltip(p.name + "::" + (class_descr_cache[type] == "" ? "" : class_descr_cache[type]));
+				category->set_tooltip(p.name + "::" + (class_descr_cache[type2] == "" ? "" : class_descr_cache[type2]));
 			}
 
 			for (List<Ref<EditorInspectorPlugin> >::Element *E = valid_plugins.front(); E; E = E->next()) {
@@ -1477,7 +1544,7 @@ void EditorInspector::update_tree() {
 
 			continue;
 
-		} else if (!(p.usage & PROPERTY_USAGE_EDITOR))
+		} else if (!(p.usage & PROPERTY_USAGE_EDITOR) || _is_property_disabled_by_feature_profile(p.name))
 			continue;
 
 		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && VS::get_singleton()->is_low_end())
@@ -1611,16 +1678,16 @@ void EditorInspector::update_tree() {
 
 			if (!found) {
 				DocData *dd = EditorHelp::get_doc_data();
-				Map<String, DocData::ClassDoc>::Element *E = dd->class_list.find(classname);
-				while (E && descr == String()) {
-					for (int i = 0; i < E->get().properties.size(); i++) {
-						if (E->get().properties[i].name == propname.operator String()) {
-							descr = E->get().properties[i].description.strip_edges().word_wrap(80);
+				Map<String, DocData::ClassDoc>::Element *F = dd->class_list.find(classname);
+				while (F && descr == String()) {
+					for (int i = 0; i < F->get().properties.size(); i++) {
+						if (F->get().properties[i].name == propname.operator String()) {
+							descr = F->get().properties[i].description.strip_edges();
 							break;
 						}
 					}
-					if (!E->get().inherits.empty()) {
-						E = dd->class_list.find(E->get().inherits);
+					if (!F->get().inherits.empty()) {
+						F = dd->class_list.find(F->get().inherits);
 					} else {
 						break;
 					}
@@ -1871,13 +1938,13 @@ int EditorInspector::get_scroll_offset() const {
 	return get_v_scroll();
 }
 
-void EditorInspector::set_use_sub_inspector_bg(bool p_enable) {
+void EditorInspector::set_sub_inspector(bool p_enable) {
 
-	use_sub_inspector_bg = p_enable;
+	sub_inspector = p_enable;
 	if (!is_inside_tree())
 		return;
 
-	if (use_sub_inspector_bg) {
+	if (sub_inspector) {
 		add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
 	} else {
 		add_style_override("bg", get_stylebox("bg", "Tree"));
@@ -1909,7 +1976,7 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 		}
 	}
 
-	if (!undo_redo || Object::cast_to<ArrayPropertyEdit>(object) || Object::cast_to<DictionaryPropertyEdit>(object)) { //kind of hacky
+	if (!undo_redo || bool(object->call("_dont_undo_redo"))) {
 
 		object->set(p_name, p_value);
 		if (p_refresh_all)
@@ -1941,10 +2008,6 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 
 		Resource *r = Object::cast_to<Resource>(object);
 		if (r) {
-			if (!r->is_edited() && String(p_name) != "resource/edited") {
-				undo_redo->add_do_method(r, "set_edited", true);
-				undo_redo->add_undo_method(r, "set_edited", false);
-			}
 
 			if (String(p_name) == "resource_local_to_scene") {
 				bool prev = object->get(p_name);
@@ -1969,14 +2032,14 @@ void EditorInspector::_edit_set(const String &p_name, const Variant &p_value, bo
 	}
 }
 
-void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, bool changing) {
+void EditorInspector::_property_changed(const String &p_path, const Variant &p_value, const String &p_name, bool changing) {
 
 	// The "changing" variable must be true for properties that trigger events as typing occurs,
 	// like "text_changed" signal. eg: Text property of Label, Button, RichTextLabel, etc.
 	if (changing)
 		this->changing++;
 
-	_edit_set(p_path, p_value, false, "");
+	_edit_set(p_path, p_value, false, p_name);
 
 	if (changing)
 		this->changing--;
@@ -1986,7 +2049,7 @@ void EditorInspector::_property_changed(const String &p_path, const Variant &p_v
 	}
 }
 
-void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value) {
+void EditorInspector::_property_changed_update_all(const String &p_path, const Variant &p_value, const String &p_name, bool p_changing) {
 	update_tree();
 }
 
@@ -2100,18 +2163,27 @@ void EditorInspector::_node_removed(Node *p_node) {
 
 void EditorInspector::_notification(int p_what) {
 
+	if (p_what == NOTIFICATION_READY) {
+		EditorFeatureProfileManager::get_singleton()->connect("current_feature_profile_changed", this, "_feature_profile_changed");
+	}
+
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		get_tree()->connect("node_removed", this, "_node_removed");
-		if (use_sub_inspector_bg) {
+		if (sub_inspector) {
 			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
-		} else if (is_inside_tree()) {
+		} else {
 			add_style_override("bg", get_stylebox("bg", "Tree"));
+			get_tree()->connect("node_removed", this, "_node_removed");
 		}
+	}
+	if (p_what == NOTIFICATION_PREDELETE) {
+		edit(NULL); //just in case
 	}
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 
-		get_tree()->disconnect("node_removed", this, "_node_removed");
+		if (!sub_inspector) {
+			get_tree()->disconnect("node_removed", this, "_node_removed");
+		}
 		edit(NULL);
 	}
 
@@ -2160,7 +2232,7 @@ void EditorInspector::_notification(int p_what) {
 
 	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		if (use_sub_inspector_bg) {
+		if (sub_inspector) {
 			add_style_override("bg", get_stylebox("sub_inspector_bg", "Editor"));
 		} else if (is_inside_tree()) {
 			add_style_override("bg", get_stylebox("bg", "Tree"));
@@ -2201,9 +2273,14 @@ String EditorInspector::get_object_class() const {
 	return object_class;
 }
 
+void EditorInspector::_feature_profile_changed() {
+
+	update_tree();
+}
+
 void EditorInspector::_bind_methods() {
 
-	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed, DEFVAL(false));
+	ClassDB::bind_method("_property_changed", &EditorInspector::_property_changed, DEFVAL(""), DEFVAL(false));
 	ClassDB::bind_method("_multiple_properties_changed", &EditorInspector::_multiple_properties_changed);
 	ClassDB::bind_method("_property_changed_update_all", &EditorInspector::_property_changed_update_all);
 
@@ -2217,6 +2294,7 @@ void EditorInspector::_bind_methods() {
 	ClassDB::bind_method("_resource_selected", &EditorInspector::_resource_selected);
 	ClassDB::bind_method("_object_id_selected", &EditorInspector::_object_id_selected);
 	ClassDB::bind_method("_vscroll_changed", &EditorInspector::_vscroll_changed);
+	ClassDB::bind_method("_feature_profile_changed", &EditorInspector::_feature_profile_changed);
 
 	ClassDB::bind_method("refresh", &EditorInspector::refresh);
 
@@ -2256,7 +2334,7 @@ EditorInspector::EditorInspector() {
 	_prop_edited = "property_edited";
 	set_process(true);
 	property_focusable = -1;
-	use_sub_inspector_bg = false;
+	sub_inspector = false;
 
 	get_v_scrollbar()->connect("value_changed", this, "_vscroll_changed");
 	update_scroll_request = -1;

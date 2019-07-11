@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -227,8 +227,6 @@ void EditorProfiler::_update_plot() {
 		Map<StringName, int> plot_prev;
 		//Map<StringName,int> plot_max;
 
-		uint64_t time = OS::get_singleton()->get_ticks_usec();
-
 		for (int i = 0; i < w; i++) {
 
 			for (int j = 0; j < h * 4; j++) {
@@ -340,11 +338,9 @@ void EditorProfiler::_update_plot() {
 				wr[widx + 3] = 255;
 			}
 		}
-
-		time = OS::get_singleton()->get_ticks_usec() - time;
 	}
 
-	wr = PoolVector<uint8_t>::Write();
+	wr.release();
 
 	Ref<Image> img;
 	img.instance();
@@ -392,7 +388,7 @@ void EditorProfiler::_update_frame() {
 			category->set_custom_color(0, _get_color_from_signature(m.categories[i].signature));
 		}
 
-		for (int j = 0; j < m.categories[i].items.size(); j++) {
+		for (int j = m.categories[i].items.size() - 1; j >= 0; j--) {
 			const Metric::Category::Item &it = m.categories[i].items[j];
 
 			TreeItem *item = variables->create_item(category);
@@ -623,6 +619,63 @@ void EditorProfiler::set_enabled(bool p_enable) {
 
 bool EditorProfiler::is_profiling() {
 	return activate->is_pressed();
+}
+
+Vector<Vector<String> > EditorProfiler::get_data_as_csv() const {
+	Vector<Vector<String> > res;
+
+	if (frame_metrics.empty()) {
+		return res;
+	}
+
+	// signatures
+	Vector<String> signatures;
+	const Vector<EditorProfiler::Metric::Category> &categories = frame_metrics[0].categories;
+
+	for (int j = 0; j < categories.size(); j++) {
+
+		const EditorProfiler::Metric::Category &c = categories[j];
+		signatures.push_back(c.signature);
+
+		for (int k = 0; k < c.items.size(); k++) {
+			signatures.push_back(c.items[k].signature);
+		}
+	}
+	res.push_back(signatures);
+
+	// values
+	Vector<String> values;
+	values.resize(signatures.size());
+
+	int index = last_metric;
+
+	for (int i = 0; i < frame_metrics.size(); i++) {
+
+		++index;
+
+		if (index >= frame_metrics.size()) {
+			index = 0;
+		}
+
+		if (!frame_metrics[index].valid) {
+			continue;
+		}
+		int it = 0;
+		const Vector<EditorProfiler::Metric::Category> &frame_cat = frame_metrics[index].categories;
+
+		for (int j = 0; j < frame_cat.size(); j++) {
+
+			const EditorProfiler::Metric::Category &c = frame_cat[j];
+			values.write[it++] = String::num_real(c.total_time);
+
+			for (int k = 0; k < c.items.size(); k++) {
+				values.write[it++] = String::num_real(c.items[k].total);
+			}
+		}
+		res.push_back(values);
+	}
+
+	return res;
 }
 
 EditorProfiler::EditorProfiler() {

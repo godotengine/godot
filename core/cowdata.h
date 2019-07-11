@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,8 @@
 
 #ifndef COWDATA_H_
 #define COWDATA_H_
+
+#include <string.h>
 
 #include "core/os/memory.h"
 #include "core/safe_refcount.h"
@@ -177,6 +179,8 @@ public:
 		return OK;
 	};
 
+	int find(const T &p_val, int p_from = 0) const;
+
 	_FORCE_INLINE_ CowData();
 	_FORCE_INLINE_ ~CowData();
 	_FORCE_INLINE_ CowData(CowData<T> &p_from) { _ref(p_from); };
@@ -194,12 +198,14 @@ void CowData<T>::_unref(void *p_data) {
 		return; // still in use
 	// clean up
 
-	uint32_t *count = _get_size();
-	T *data = (T *)(count + 1);
+	if (!__has_trivial_destructor(T)) {
+		uint32_t *count = _get_size();
+		T *data = (T *)(count + 1);
 
-	for (uint32_t i = 0; i < *count; ++i) {
-		// call destructors
-		data[i].~T();
+		for (uint32_t i = 0; i < *count; ++i) {
+			// call destructors
+			data[i].~T();
+		}
 	}
 
 	// free mem
@@ -226,9 +232,13 @@ void CowData<T>::_copy_on_write() {
 		T *_data = (T *)(mem_new);
 
 		// initialize new elements
-		for (uint32_t i = 0; i < current_size; i++) {
+		if (__has_trivial_copy(T)) {
+			memcpy(mem_new, _ptr, current_size * sizeof(T));
 
-			memnew_placement(&_data[i], T(_get_data()[i]));
+		} else {
+			for (uint32_t i = 0; i < current_size; i++) {
+				memnew_placement(&_data[i], T(_get_data()[i]));
+			}
 		}
 
 		_unref(_ptr);
@@ -275,22 +285,25 @@ Error CowData<T>::resize(int p_size) {
 		}
 
 		// construct the newly created elements
-		T *elems = _get_data();
 
-		for (int i = *_get_size(); i < p_size; i++) {
+		if (!__has_trivial_constructor(T)) {
+			T *elems = _get_data();
 
-			memnew_placement(&elems[i], T);
+			for (int i = *_get_size(); i < p_size; i++) {
+				memnew_placement(&elems[i], T);
+			}
 		}
 
 		*_get_size() = p_size;
 
 	} else if (p_size < size()) {
 
-		// deinitialize no longer needed elements
-		for (uint32_t i = p_size; i < *_get_size(); i++) {
-
-			T *t = &_get_data()[i];
-			t->~T();
+		if (!__has_trivial_destructor(T)) {
+			// deinitialize no longer needed elements
+			for (uint32_t i = p_size; i < *_get_size(); i++) {
+				T *t = &_get_data()[i];
+				t->~T();
+			}
 		}
 
 		void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
@@ -302,6 +315,24 @@ Error CowData<T>::resize(int p_size) {
 	}
 
 	return OK;
+}
+
+template <class T>
+int CowData<T>::find(const T &p_val, int p_from) const {
+	int ret = -1;
+
+	if (p_from < 0 || size() == 0) {
+		return ret;
+	}
+
+	for (int i = p_from; i < size(); i++) {
+		if (get(i) == p_val) {
+			ret = i;
+			break;
+		}
+	}
+
+	return ret;
 }
 
 template <class T>

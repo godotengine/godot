@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -197,6 +197,19 @@ public:
 		r.reference = NULL;
 	}
 
+	template <class T_Other>
+	void reference_ptr(T_Other *p_ptr) {
+		if (reference == p_ptr) {
+			return;
+		}
+		unref();
+
+		T *r = Object::cast_to<T>(p_ptr);
+		if (r) {
+			ref_pointer(r);
+		}
+	}
+
 	Ref(const Ref &p_from) {
 
 		reference = NULL;
@@ -362,7 +375,8 @@ struct PtrToArg<const RefPtr &> {
 
 template <class T>
 struct GetTypeInfo<Ref<T> > {
-	enum { VARIANT_TYPE = Variant::OBJECT };
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());
@@ -371,7 +385,8 @@ struct GetTypeInfo<Ref<T> > {
 
 template <class T>
 struct GetTypeInfo<const Ref<T> &> {
-	enum { VARIANT_TYPE = Variant::OBJECT };
+	static const Variant::Type VARIANT_TYPE = Variant::OBJECT;
+	static const GodotTypeInfo::Metadata METADATA = GodotTypeInfo::METADATA_NONE;
 
 	static inline PropertyInfo get_class_info() {
 		return PropertyInfo(Variant::OBJECT, String(), PROPERTY_HINT_RESOURCE_TYPE, T::get_class_static());

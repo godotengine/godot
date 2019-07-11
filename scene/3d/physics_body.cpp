@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -188,12 +188,12 @@ PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 #ifndef DISABLE_DEPRECATED
 void StaticBody::set_friction(real_t p_friction) {
 
-	if (p_friction == 1.0) { // default value, don't create an override for that
+	if (p_friction == 1.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -206,8 +206,8 @@ void StaticBody::set_friction(real_t p_friction) {
 
 real_t StaticBody::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -218,12 +218,12 @@ real_t StaticBody::get_friction() const {
 
 void StaticBody::set_bounce(real_t p_bounce) {
 
-	if (p_bounce == 0.0) { // default value, don't create an override for that
+	if (p_bounce == 0.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -236,8 +236,8 @@ void StaticBody::set_bounce(real_t p_bounce) {
 
 real_t StaticBody::get_bounce() const {
 
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	if (physics_material_override.is_null()) {
 		return 0;
@@ -632,12 +632,12 @@ real_t RigidBody::get_weight() const {
 #ifndef DISABLE_DEPRECATED
 void RigidBody::set_friction(real_t p_friction) {
 
-	if (p_friction == 1.0) { // default value, don't create an override for that
+	if (p_friction == 1.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -649,8 +649,8 @@ void RigidBody::set_friction(real_t p_friction) {
 }
 real_t RigidBody::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -661,12 +661,12 @@ real_t RigidBody::get_friction() const {
 
 void RigidBody::set_bounce(real_t p_bounce) {
 
-	if (p_bounce == 0.0) { // default value, don't create an override for that
+	if (p_bounce == 0.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -677,8 +677,8 @@ void RigidBody::set_bounce(real_t p_bounce) {
 	physics_material_override->set_bounce(p_bounce);
 }
 real_t RigidBody::get_bounce() const {
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
+	WARN_DEPRECATED;
 	if (physics_material_override.is_null()) {
 		return 0;
 	}
@@ -934,7 +934,7 @@ String RigidBody::get_configuration_warning() const {
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
 		warning += TTR("Size changes to RigidBody (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
@@ -1104,10 +1104,10 @@ void RigidBody::_reload_physics_characteristics() {
 //////////////////////////////////////////////////////
 //////////////////////////
 
-Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_test_only) {
+Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
 
 	Collision col;
-	if (move_and_collide(p_motion, p_infinite_inertia, col, p_test_only)) {
+	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only)) {
 		if (motion_cache.is_null()) {
 			motion_cache.instance();
 			motion_cache->owner = this;
@@ -1121,11 +1121,11 @@ Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_inf
 	return Ref<KinematicCollision>();
 }
 
-bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_test_only) {
+bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
 
 	Transform gt = get_global_transform();
 	PhysicsServer::MotionResult result;
-	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result);
+	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes);
 
 	if (colliding) {
 		r_collision.collider_metadata = result.collider_metadata;
@@ -1181,19 +1181,16 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	while (p_max_slides) {
 
 		Collision collision;
-
 		bool found_collision = false;
 
-		int test_type = 0;
-
-		do {
+		for (int i = 0; i < 2; ++i) {
 			bool collided;
-			if (test_type == 0) { //collide
+			if (i == 0) { //collide
 				collided = move_and_collide(motion, p_infinite_inertia, collision);
 				if (!collided) {
 					motion = Vector3(); //clear because no collision happened and motion completed
 				}
-			} else {
+			} else { //separate raycasts (if any)
 				collided = separate_raycast_shapes(p_infinite_inertia, collision);
 				if (collided) {
 					collision.remainder = motion; //keep
@@ -1203,9 +1200,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 
 			if (collided) {
 				found_collision = true;
-			}
-
-			if (collided) {
 
 				colliders.push_back(collision);
 				motion = collision.remainder;
@@ -1222,7 +1216,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if (Vector3() == lv_n + p_floor_direction) {
+							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform gt = get_global_transform();
 								gt.origin -= collision.travel;
 								set_global_transform(gt);
@@ -1248,15 +1242,13 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					lv = lv.slide(n);
 				}
 
-				for (int i = 0; i < 3; i++) {
-					if (locked_axis & (1 << i)) {
-						lv[i] = 0;
+				for (int j = 0; j < 3; j++) {
+					if (locked_axis & (1 << j)) {
+						lv[j] = 0;
 					}
 				}
 			}
-
-			++test_type;
-		} while (!p_stop_on_slope && test_type < 2);
+		}
 
 		if (!found_collision || motion == Vector3())
 			break;
@@ -1279,14 +1271,27 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 	Collision col;
 	Transform gt = get_global_transform();
 
-	if (move_and_collide(p_snap, p_infinite_inertia, col, true)) {
-		gt.origin += col.travel;
-		if (p_floor_direction != Vector3() && Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
-			on_floor = true;
-			on_floor_body = col.collider_rid;
-			floor_velocity = col.collider_vel;
+	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
+
+		bool apply = true;
+		if (p_floor_direction != Vector3()) {
+			if (Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
+				on_floor = true;
+				on_floor_body = col.collider_rid;
+				floor_velocity = col.collider_vel;
+				if (p_stop_on_slope) {
+					// move and collide may stray the object a bit because of pre un-stucking,
+					// so only ensure that motion happens on floor direction in this case.
+					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+				}
+			} else {
+				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
+			}
 		}
-		set_global_transform(gt);
+		if (apply) {
+			gt.origin += col.travel;
+			set_global_transform(gt);
+		}
 	}
 
 	return ret;
@@ -1401,7 +1406,7 @@ Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 
 void KinematicBody::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "test_only"), &KinematicBody::_move, DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
@@ -1465,7 +1470,7 @@ Vector3 KinematicCollision::get_remainder() const {
 	return collision.remainder;
 }
 Object *KinematicCollision::get_local_shape() const {
-	ERR_FAIL_COND_V(!owner, NULL);
+	if (!owner) return NULL;
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }

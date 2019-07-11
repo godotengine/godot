@@ -403,7 +403,8 @@ extern "C" {
 /**
  * \brief Base OID descriptor structure
  */
-typedef struct {
+typedef struct mbedtls_oid_descriptor_t
+{
     const char *asn1;               /*!< OID ASN.1 representation       */
     size_t asn1_len;                /*!< length of asn1                 */
     const char *name;               /*!< official name (e.g. from RFC)  */

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,9 +54,9 @@ class GridMapEditor : public VBoxContainer {
 		INPUT_NONE,
 		INPUT_PAINT,
 		INPUT_ERASE,
-		INPUT_COPY,
+		INPUT_PICK,
 		INPUT_SELECT,
-		INPUT_DUPLICATE,
+		INPUT_PASTE,
 	};
 
 	enum ClipMode {
@@ -79,6 +79,8 @@ class GridMapEditor : public VBoxContainer {
 	double accumulated_floor_delta;
 	ToolButton *mode_thumbnail;
 	ToolButton *mode_list;
+	LineEdit *search_box;
+	HSlider *size_slider;
 	HBoxContainer *spatial_editor_hb;
 	ConfirmationDialog *settings_dialog;
 	VBoxContainer *settings_vbc;
@@ -114,8 +116,17 @@ class GridMapEditor : public VBoxContainer {
 	RID selection_instance;
 	RID selection_level_mesh[3];
 	RID selection_level_instance[3];
-	RID duplicate_mesh;
-	RID duplicate_instance;
+	RID paste_mesh;
+	RID paste_instance;
+
+	struct ClipboardItem {
+		int cell_item;
+		Vector3 grid_offset;
+		int orientation;
+		RID instance;
+	};
+
+	List<ClipboardItem> clipboard_items;
 
 	Ref<SpatialMaterial> indicator_mat;
 	Ref<SpatialMaterial> inner_mat;
@@ -130,9 +141,19 @@ class GridMapEditor : public VBoxContainer {
 		Vector3 current;
 		Vector3 begin;
 		Vector3 end;
-		int duplicate_rot;
 		bool active;
 	} selection;
+	Selection last_selection;
+
+	struct PasteIndicator {
+
+		Vector3 click;
+		Vector3 current;
+		Vector3 begin;
+		Vector3 end;
+		int orientation;
+	};
+	PasteIndicator paste_indicator;
 
 	bool cursor_visible;
 	Transform cursor_transform;
@@ -146,7 +167,6 @@ class GridMapEditor : public VBoxContainer {
 
 	enum Menu {
 
-		MENU_OPTION_CONFIGURE,
 		MENU_OPTION_NEXT_LEVEL,
 		MENU_OPTION_PREV_LEVEL,
 		MENU_OPTION_LOCK_VIEW,
@@ -163,13 +183,11 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_CURSOR_BACK_ROTATE_X,
 		MENU_OPTION_CURSOR_BACK_ROTATE_Z,
 		MENU_OPTION_CURSOR_CLEAR_ROTATION,
-		MENU_OPTION_DUPLICATE_SELECTS,
-		MENU_OPTION_SELECTION_MAKE_AREA,
-		MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR,
+		MENU_OPTION_PASTE_SELECTS,
 		MENU_OPTION_SELECTION_DUPLICATE,
+		MENU_OPTION_SELECTION_CUT,
 		MENU_OPTION_SELECTION_CLEAR,
 		MENU_OPTION_SELECTION_FILL,
-		MENU_OPTION_REMOVE_AREA,
 		MENU_OPTION_GRIDMAP_SETTINGS
 
 	};
@@ -193,12 +211,21 @@ class GridMapEditor : public VBoxContainer {
 	void _update_cursor_instance();
 	void _update_clip();
 
-	void _update_duplicate_indicator();
-	void _duplicate_paste();
+	void _text_changed(const String &p_text);
+	void _sbox_input(const Ref<InputEvent> &p_ie);
+
+	void _icon_size_changed(float p_value);
+
+	void _clear_clipboard_data();
+	void _set_clipboard_data();
+	void _update_paste_indicator();
+	void _do_paste();
 	void _update_selection_transform();
 	void _validate_selection();
+	void _set_selection(bool p_active, const Vector3 &p_begin = Vector3(), const Vector3 &p_end = Vector3());
 
 	void _floor_changed(float p_value);
+	void _floor_mouse_exited();
 
 	void _delete_selection();
 	void _fill_selection();

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,7 +121,7 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/name", PROPERTY_HINT_PLACEHOLDER_TEXT, "Game Name"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/info"), "Made with Godot Engine"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/icon", PROPERTY_HINT_FILE, "*.png,*.icns"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/identifier", PROPERTY_HINT_PLACEHOLDER_TEXT, "com.example.game"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/signature"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "application/short_version"), "1.0"));
@@ -409,7 +409,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 	String src_pkg_name;
 
-	EditorProgress ep("export", "Exporting for OSX", 3);
+	EditorProgress ep("export", "Exporting for OSX", 3, true);
 
 	if (p_debug)
 		src_pkg_name = p_preset->get("custom_package/debug");
@@ -425,10 +425,16 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		}
 	}
 
+	if (!DirAccess::exists(p_path.get_base_dir())) {
+		return ERR_FILE_BAD_PATH;
+	}
+
 	FileAccess *src_f = NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
-	ep.step("Creating app", 0);
+	if (ep.step("Creating app", 0)) {
+		return ERR_SKIP;
+	}
 
 	unzFile src_pkg_zip = unzOpen2(src_pkg_name.utf8().get_data(), &io);
 	if (!src_pkg_zip) {
@@ -437,7 +443,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 		return ERR_FILE_NOT_FOUND;
 	}
 
-	ERR_FAIL_COND_V(!src_pkg_zip, ERR_CANT_OPEN);
 	int ret = unzGoToFirstFile(src_pkg_zip);
 
 	String binary_to_use = "godot_osx_" + String(p_debug ? "debug" : "release") + ".64";
@@ -539,11 +544,21 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 				iconpath = ProjectSettings::get_singleton()->get("application/config/icon");
 
 			if (iconpath != "") {
-				Ref<Image> icon;
-				icon.instance();
-				icon->load(iconpath);
-				if (!icon->empty()) {
-					_make_icon(icon, data);
+				if (iconpath.get_extension() == "icns") {
+					FileAccess *icon = FileAccess::open(iconpath, FileAccess::READ);
+					if (icon) {
+						data.resize(icon->get_len());
+						icon->get_buffer(&data.write[0], icon->get_len());
+						icon->close();
+						memdelete(icon);
+					}
+				} else {
+					Ref<Image> icon;
+					icon.instance();
+					icon->load(iconpath);
+					if (!icon->empty()) {
+						_make_icon(icon, data);
+					}
 				}
 			}
 			//bleh?
@@ -555,7 +570,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 			if (export_format == "dmg") {
 				// write it into our application bundle
-				file = tmp_app_path_name + "/" + file;
+				file = tmp_app_path_name.plus_file(file);
 
 				// write the file, need to add chmod
 				FileAccess *f = FileAccess::open(file, FileAccess::WRITE);
@@ -564,7 +579,7 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					f->close();
 					if (is_execute) {
 						// Chmod with 0755 if the file is executable
-						f->_chmod(file, 0755);
+						FileAccess::set_unix_permissions(file, 0755);
 					}
 					memdelete(f);
 				} else {
@@ -613,7 +628,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 	}
 
 	if (err == OK) {
-		ep.step("Making PKG", 1);
+		if (ep.step("Making PKG", 1)) {
+			return ERR_SKIP;
+		}
 
 		if (export_format == "dmg") {
 			String pack_path = tmp_app_path_name + "/Contents/Resources/" + pkg_name + ".pck";
@@ -635,7 +652,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			}
 
 			if (err == OK && identity != "") {
-				ep.step("Code signing bundle", 2);
+				if (ep.step("Code signing bundle", 2)) {
+					return ERR_SKIP;
+				}
 
 				// the order in which we code sign is important, this is a bit of a shame or we could do this in our loop that extracts the files from our ZIP
 
@@ -660,7 +679,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 			// and finally create a DMG
 			if (err == OK) {
-				ep.step("Making DMG", 3);
+				if (ep.step("Making DMG", 3)) {
+					return ERR_SKIP;
+				}
 				err = _create_dmg(p_path, pkg_name, tmp_app_path_name);
 			}
 
@@ -749,7 +770,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		if (FileAccess::exists(p_preset->get("custom_package/debug"))) {
 			valid = true;
 		} else {
-			err += "Custom debug package not found.\n";
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
 
@@ -757,7 +778,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 		if (FileAccess::exists(p_preset->get("custom_package/release"))) {
 			valid = true;
 		} else {
-			err += "Custom release package not found.\n";
+			err += TTR("Custom release template not found.") + "\n";
 		}
 	}
 

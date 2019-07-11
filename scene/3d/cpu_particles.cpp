@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,20 +47,8 @@ PoolVector<Face3> CPUParticles::get_faces(uint32_t p_usage_flags) const {
 void CPUParticles::set_emitting(bool p_emitting) {
 
 	emitting = p_emitting;
-	if (!is_processing_internal()) {
+	if (emitting)
 		set_process_internal(true);
-		if (is_inside_tree()) {
-#ifndef NO_THREADS
-			update_mutex->lock();
-#endif
-			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
-
-#ifndef NO_THREADS
-			update_mutex->unlock();
-#endif
-		}
-	}
 }
 
 void CPUParticles::set_amount(int p_amount) {
@@ -224,7 +212,7 @@ String CPUParticles::get_configuration_warning() const {
 										get_param_curve(PARAM_ANIM_SPEED).is_valid() || get_param_curve(PARAM_ANIM_OFFSET).is_valid())) {
 		if (warnings != String())
 			warnings += "\n";
-		warnings += "- " + TTR("CPUParticles animation requires the usage of a SpatialMaterial with \"Billboard Particles\" enabled.");
+		warnings += "- " + TTR("CPUParticles animation requires the usage of a SpatialMaterial whose Billboard Mode is set to \"Particle Billboard\".");
 	}
 
 	return warnings;
@@ -237,6 +225,8 @@ void CPUParticles::restart() {
 	frame_remainder = 0;
 	cycle = 0;
 
+	set_emitting(true);
+
 	{
 		int pc = particles.size();
 		PoolVector<Particle>::Write w = particles.write();
@@ -245,6 +235,16 @@ void CPUParticles::restart() {
 			w[i].active = false;
 		}
 	}
+}
+
+void CPUParticles::set_direction(Vector3 p_direction) {
+
+	direction = p_direction;
+}
+
+Vector3 CPUParticles::get_direction() const {
+
+	return direction;
 }
 
 void CPUParticles::set_spread(float p_spread) {
@@ -314,9 +314,9 @@ void CPUParticles::set_param_curve(Parameter p_param, const Ref<Curve> &p_curve)
 		case PARAM_ANGULAR_VELOCITY: {
 			_adjust_curve_range(p_curve, -360, 360);
 		} break;
-		/*case PARAM_ORBIT_VELOCITY: {
+		case PARAM_ORBIT_VELOCITY: {
 			_adjust_curve_range(p_curve, -500, 500);
-		} break;*/
+		} break;
 		case PARAM_LINEAR_ACCEL: {
 			_adjust_curve_range(p_curve, -200, 200);
 		} break;
@@ -343,7 +343,8 @@ void CPUParticles::set_param_curve(Parameter p_param, const Ref<Curve> &p_curve)
 		} break;
 		case PARAM_ANIM_OFFSET: {
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 Ref<Curve> CPUParticles::get_param_curve(Parameter p_param) const {
@@ -472,11 +473,10 @@ void CPUParticles::_validate_property(PropertyInfo &property) const {
 	if (property.name == "emission_normals" && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
 		property.usage = 0;
 	}
-	/*
+
 	if (property.name.begins_with("orbit_") && !flags[FLAG_DISABLE_Z]) {
 		property.usage = 0;
 	}
-	*/
 }
 
 static uint32_t idhash(uint32_t x) {
@@ -515,7 +515,8 @@ void CPUParticles::_particles_process(float p_delta) {
 		time = Math::fmod(time, lifetime);
 		cycle++;
 		if (one_shot && cycle > 0) {
-			emitting = false;
+			set_emitting(false);
+			_change_notify();
 		}
 	}
 
@@ -526,6 +527,8 @@ void CPUParticles::_particles_process(float p_delta) {
 		velocity_xform = emission_xform.basis;
 	}
 
+	float system_phase = time / lifetime;
+
 	for (int i = 0; i < pcount; i++) {
 
 		Particle &p = parray[i];
@@ -533,21 +536,26 @@ void CPUParticles::_particles_process(float p_delta) {
 		if (!emitting && !p.active)
 			continue;
 
-		float restart_time = (float(i) / float(pcount)) * lifetime;
 		float local_delta = p_delta;
+
+		// The phase is a ratio between 0 (birth) and 1 (end of life) for each particle.
+		// While we use time in tests later on, for randomness we use the phase as done in the
+		// original shader code, and we later multiply by lifetime to get the time.
+		float restart_phase = float(i) / float(pcount);
 
 		if (randomness_ratio > 0.0) {
 			uint32_t seed = cycle;
-			if (restart_time >= time) {
+			if (restart_phase >= system_phase) {
 				seed -= uint32_t(1);
 			}
 			seed *= uint32_t(pcount);
 			seed += uint32_t(i);
 			float random = float(idhash(seed) % uint32_t(65536)) / 65536.0;
-			restart_time += randomness_ratio * random * 1.0 / float(pcount);
+			restart_phase += randomness_ratio * random * 1.0 / float(pcount);
 		}
 
-		restart_time *= (1.0 - explosiveness_ratio);
+		restart_phase *= (1.0 - explosiveness_ratio);
+		float restart_time = restart_phase * lifetime;
 		bool restart = false;
 
 		if (time > prev_time) {
@@ -556,7 +564,7 @@ void CPUParticles::_particles_process(float p_delta) {
 			if (restart_time >= prev_time && restart_time < time) {
 				restart = true;
 				if (fractional_delta) {
-					local_delta = (time - restart_time) * lifetime;
+					local_delta = time - restart_time;
 				}
 			}
 
@@ -564,13 +572,13 @@ void CPUParticles::_particles_process(float p_delta) {
 			if (restart_time >= prev_time) {
 				restart = true;
 				if (fractional_delta) {
-					local_delta = (1.0 - restart_time + time) * lifetime;
+					local_delta = lifetime - restart_time + time;
 				}
 
 			} else if (restart_time < time) {
 				restart = true;
 				if (fractional_delta) {
-					local_delta = (time - restart_time) * lifetime;
+					local_delta = time - restart_time;
 				}
 			}
 		}
@@ -605,19 +613,14 @@ void CPUParticles::_particles_process(float p_delta) {
 			p.hue_rot_rand = Math::randf();
 			p.anim_offset_rand = Math::randf();
 
-			float angle1_rad;
-			float angle2_rad;
-
 			if (flags[FLAG_DISABLE_Z]) {
-
-				angle1_rad = (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
+				float angle1_rad = Math::atan2(direction.y, direction.x) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
 				Vector3 rot = Vector3(Math::cos(angle1_rad), Math::sin(angle1_rad), 0.0);
 				p.velocity = rot * parameters[PARAM_INITIAL_LINEAR_VELOCITY] * Math::lerp(1.0f, float(Math::randf()), randomness[PARAM_INITIAL_LINEAR_VELOCITY]);
-
 			} else {
 				//initiate velocity spread in 3D
-				angle1_rad = (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
-				angle2_rad = (Math::randf() * 2.0 - 1.0) * (1.0 - flatness) * Math_PI * spread / 180.0;
+				float angle1_rad = Math::atan2(direction.x, direction.z) + (Math::randf() * 2.0 - 1.0) * Math_PI * spread / 180.0;
+				float angle2_rad = Math::atan2(direction.y, Math::abs(direction.z)) + (Math::randf() * 2.0 - 1.0) * (1.0 - flatness) * Math_PI * spread / 180.0;
 
 				Vector3 direction_xz = Vector3(Math::sin(angle1_rad), 0, Math::cos(angle1_rad));
 				Vector3 direction_yz = Vector3(0, Math::sin(angle2_rad), Math::cos(angle2_rad));
@@ -640,7 +643,9 @@ void CPUParticles::_particles_process(float p_delta) {
 					//do none
 				} break;
 				case EMISSION_SHAPE_SPHERE: {
-					p.transform.origin = Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0).normalized() * emission_sphere_radius;
+					float s = 2.0 * Math::randf() - 1.0, t = 2.0 * Math_PI * Math::randf();
+					float radius = emission_sphere_radius * Math::sqrt(1.0 - s * s);
+					p.transform.origin = Vector3(radius * Math::cos(t), radius * Math::sin(t), emission_sphere_radius * s);
 				} break;
 				case EMISSION_SHAPE_BOX: {
 					p.transform.origin = Vector3(Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0, Math::randf() * 2.0 - 1.0) * emission_box_extents;
@@ -707,16 +712,14 @@ void CPUParticles::_particles_process(float p_delta) {
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 				tex_linear_velocity = curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY]->interpolate(p.custom[1]);
 			}
-			/*
+
 			float tex_orbit_velocity = 0.0;
-
 			if (flags[FLAG_DISABLE_Z]) {
-
-				if (curve_parameters[PARAM_INITIAL_ORBIT_VELOCITY].is_valid()) {
-					tex_orbit_velocity = curve_parameters[PARAM_INITIAL_ORBIT_VELOCITY]->interpolate(p.custom[1]);
+				if (curve_parameters[PARAM_ORBIT_VELOCITY].is_valid()) {
+					tex_orbit_velocity = curve_parameters[PARAM_ORBIT_VELOCITY]->interpolate(p.custom[1]);
 				}
 			}
-*/
+
 			float tex_angular_velocity = 0.0;
 			if (curve_parameters[PARAM_ANGULAR_VELOCITY].is_valid()) {
 				tex_angular_velocity = curve_parameters[PARAM_ANGULAR_VELOCITY]->interpolate(p.custom[1]);
@@ -770,8 +773,9 @@ void CPUParticles::_particles_process(float p_delta) {
 			//apply tangential acceleration;
 			if (flags[FLAG_DISABLE_Z]) {
 
-				Vector3 yx = Vector3(diff.y, 0, diff.x);
-				force += yx.length() > 0.0 ? (yx * Vector3(-1.0, 0, 1.0)) * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector3();
+				Vector2 yx = Vector2(diff.y, diff.x);
+				Vector2 yx2 = (yx * Vector2(-1.0, 1.0)).normalized();
+				force += yx.length() > 0.0 ? Vector3(yx2.x, yx2.y, 0.0) * ((parameters[PARAM_TANGENTIAL_ACCEL] + tex_tangential_accel) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_TANGENTIAL_ACCEL])) : Vector3();
 
 			} else {
 				Vector3 crossDiff = diff.normalized().cross(gravity.normalized());
@@ -780,18 +784,18 @@ void CPUParticles::_particles_process(float p_delta) {
 			//apply attractor forces
 			p.velocity += force * local_delta;
 			//orbit velocity
-#if 0
 			if (flags[FLAG_DISABLE_Z]) {
-
-				float orbit_amount = (orbit_velocity + tex_orbit_velocity) * mix(1.0, rand_from_seed(alt_seed), orbit_velocity_random);
+				float orbit_amount = (parameters[PARAM_ORBIT_VELOCITY] + tex_orbit_velocity) * Math::lerp(1.0f, rand_from_seed(alt_seed), randomness[PARAM_ORBIT_VELOCITY]);
 				if (orbit_amount != 0.0) {
-					float ang = orbit_amount * DELTA * pi * 2.0;
-					mat2 rot = mat2(vec2(cos(ang), -sin(ang)), vec2(sin(ang), cos(ang)));
-					TRANSFORM[3].xy -= diff.xy;
-					TRANSFORM[3].xy += rot * diff.xy;
+					float ang = orbit_amount * local_delta * Math_PI * 2.0;
+					// Not sure why the ParticlesMaterial code uses a clockwise rotation matrix,
+					// but we use -ang here to reproduce its behavior.
+					Transform2D rot = Transform2D(-ang, Vector2());
+					Vector2 rotv = rot.basis_xform(Vector2(diff.x, diff.y));
+					p.transform.origin -= Vector3(diff.x, diff.y, 0);
+					p.transform.origin += Vector3(rotv.x, rotv.y, 0);
 				}
 			}
-#endif
 			if (curve_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid()) {
 				p.velocity = p.velocity.normalized() * tex_linear_velocity;
 			}
@@ -926,11 +930,6 @@ void CPUParticles::_update_particle_data_buffer() {
 		PoolVector<Particle>::Read r = particles.read();
 		float *ptr = w.ptr();
 
-		Transform un_transform;
-		if (!local_coords) {
-			un_transform = get_global_transform().affine_inverse();
-		}
-
 		if (draw_order != DRAW_ORDER_INDEX) {
 			ow = particle_order.write();
 			order = ow.ptr();
@@ -948,7 +947,12 @@ void CPUParticles::_update_particle_data_buffer() {
 					Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
 
 					if (local_coords) {
-						dir = un_transform.basis.xform(dir).normalized();
+
+						// will look different from Particles in editor as this is based on the camera in the scenetree
+						// and not the editor camera
+						dir = inv_emission_transform.xform(dir).normalized();
+					} else {
+						dir = dir.normalized();
 					}
 
 					SortArray<int, SortAxis> sorter;
@@ -966,7 +970,7 @@ void CPUParticles::_update_particle_data_buffer() {
 			Transform t = r[idx].transform;
 
 			if (!local_coords) {
-				t = un_transform * t;
+				t = inv_emission_transform * t;
 			}
 
 			if (r[idx].active) {
@@ -1009,6 +1013,27 @@ void CPUParticles::_update_particle_data_buffer() {
 #endif
 }
 
+void CPUParticles::_set_redraw(bool p_redraw) {
+	if (redraw == p_redraw)
+		return;
+	redraw = p_redraw;
+#ifndef NO_THREADS
+	update_mutex->lock();
+#endif
+	if (redraw) {
+		VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
+		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
+		VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
+	} else {
+		VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
+		VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
+	}
+#ifndef NO_THREADS
+	update_mutex->unlock();
+#endif
+}
+
 void CPUParticles::_update_render_thread() {
 
 #ifndef NO_THREADS
@@ -1027,31 +1052,11 @@ void CPUParticles::_update_render_thread() {
 void CPUParticles::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
-		if (is_processing_internal()) {
-
-#ifndef NO_THREADS
-			update_mutex->lock();
-#endif
-			VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, true);
-#ifndef NO_THREADS
-			update_mutex->unlock();
-#endif
-		}
+		set_process_internal(emitting);
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
-		if (is_processing_internal()) {
-
-#ifndef NO_THREADS
-			update_mutex->lock();
-#endif
-			VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
-			VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
-#ifndef NO_THREADS
-			update_mutex->unlock();
-#endif
-		}
+		_set_redraw(false);
 	}
 
 	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
@@ -1059,26 +1064,20 @@ void CPUParticles::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 
-		if (particles.size() == 0 || !is_visible_in_tree())
+		if (particles.size() == 0 || !is_visible_in_tree()) {
+			_set_redraw(false);
 			return;
+		}
 
 		float delta = get_process_delta_time();
 		if (emitting) {
-
 			inactive_time = 0;
 		} else {
 			inactive_time += delta;
 			if (inactive_time > lifetime * 1.2) {
 				set_process_internal(false);
-#ifndef NO_THREADS
-				update_mutex->lock();
-#endif
-				VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
-				VS::get_singleton()->instance_geometry_set_flag(get_instance(), VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE, false);
+				_set_redraw(false);
 
-#ifndef NO_THREADS
-				update_mutex->unlock();
-#endif
 				//reset variables
 				time = 0;
 				inactive_time = 0;
@@ -1087,6 +1086,7 @@ void CPUParticles::_notification(int p_what) {
 				return;
 			}
 		}
+		_set_redraw(true);
 
 		bool processed = false;
 
@@ -1136,6 +1136,46 @@ void CPUParticles::_notification(int p_what) {
 			_update_particle_data_buffer();
 		}
 	}
+
+	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
+
+		inv_emission_transform = get_global_transform().affine_inverse();
+
+		if (!local_coords) {
+
+			int pc = particles.size();
+
+			PoolVector<float>::Write w = particle_data.write();
+			PoolVector<Particle>::Read r = particles.read();
+			float *ptr = w.ptr();
+
+			for (int i = 0; i < pc; i++) {
+
+				Transform t = inv_emission_transform * r[i].transform;
+
+				if (r[i].active) {
+					ptr[0] = t.basis.elements[0][0];
+					ptr[1] = t.basis.elements[0][1];
+					ptr[2] = t.basis.elements[0][2];
+					ptr[3] = t.origin.x;
+					ptr[4] = t.basis.elements[1][0];
+					ptr[5] = t.basis.elements[1][1];
+					ptr[6] = t.basis.elements[1][2];
+					ptr[7] = t.origin.y;
+					ptr[8] = t.basis.elements[2][0];
+					ptr[9] = t.basis.elements[2][1];
+					ptr[10] = t.basis.elements[2][2];
+					ptr[11] = t.origin.z;
+				} else {
+					zeromem(ptr, sizeof(float) * 12);
+				}
+
+				ptr += 17;
+			}
+
+			can_update = true;
+		}
+	}
 }
 
 void CPUParticles::convert_from_particles(Node *p_particles) {
@@ -1161,6 +1201,7 @@ void CPUParticles::convert_from_particles(Node *p_particles) {
 	if (material.is_null())
 		return;
 
+	set_direction(material->get_direction());
 	set_spread(material->get_spread());
 	set_flatness(material->get_flatness());
 
@@ -1191,7 +1232,7 @@ void CPUParticles::convert_from_particles(Node *p_particles) {
 
 	CONVERT_PARAM(PARAM_INITIAL_LINEAR_VELOCITY);
 	CONVERT_PARAM(PARAM_ANGULAR_VELOCITY);
-	//	CONVERT_PARAM(PARAM_ORBIT_VELOCITY);
+	CONVERT_PARAM(PARAM_ORBIT_VELOCITY);
 	CONVERT_PARAM(PARAM_LINEAR_ACCEL);
 	CONVERT_PARAM(PARAM_RADIAL_ACCEL);
 	CONVERT_PARAM(PARAM_TANGENTIAL_ACCEL);
@@ -1243,7 +1284,7 @@ void CPUParticles::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "emitting"), "set_emitting", "is_emitting");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "amount", PROPERTY_HINT_EXP_RANGE, "1,1000000,1"), "set_amount", "get_amount");
 	ADD_GROUP("Time", "");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_EXP_RANGE, "0.01,600.0,0.01"), "set_lifetime", "get_lifetime");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime", PROPERTY_HINT_EXP_RANGE, "0.01,600.0,0.01,or_greater"), "set_lifetime", "get_lifetime");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "one_shot"), "set_one_shot", "get_one_shot");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "preprocess", PROPERTY_HINT_EXP_RANGE, "0.00,600.0,0.01"), "set_pre_process_time", "get_pre_process_time");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale", PROPERTY_HINT_RANGE, "0,64,0.01"), "set_speed_scale", "get_speed_scale");
@@ -1261,6 +1302,9 @@ void CPUParticles::_bind_methods() {
 	BIND_ENUM_CONSTANT(DRAW_ORDER_VIEW_DEPTH);
 
 	////////////////////////////////
+
+	ClassDB::bind_method(D_METHOD("set_direction", "direction"), &CPUParticles::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &CPUParticles::get_direction);
 
 	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &CPUParticles::set_spread);
 	ClassDB::bind_method(D_METHOD("get_spread"), &CPUParticles::get_spread);
@@ -1322,7 +1366,8 @@ void CPUParticles::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_particle_flag", "get_particle_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_particle_flag", "get_particle_flag", FLAG_ROTATE_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_disable_z"), "set_particle_flag", "get_particle_flag", FLAG_DISABLE_Z);
-	ADD_GROUP("Spread", "");
+	ADD_GROUP("Direction", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
 	ADD_GROUP("Gravity", "");
@@ -1334,12 +1379,10 @@ void CPUParticles::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_velocity", PROPERTY_HINT_RANGE, "-720,720,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "angular_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ANGULAR_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "angular_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ANGULAR_VELOCITY);
-	/*
 	ADD_GROUP("Orbit Velocity", "orbit_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "orbit_velocity", PROPERTY_HINT_RANGE, "-1000,1000,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_ORBIT_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "orbit_velocity_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_ORBIT_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "orbit_velocity_curve", PROPERTY_HINT_RESOURCE_TYPE, "Curve"), "set_param_curve", "get_param_curve", PARAM_ORBIT_VELOCITY);
-*/
 	ADD_GROUP("Linear Accel", "linear_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_accel", PROPERTY_HINT_RANGE, "-100,100,0.01,or_lesser,or_greater"), "set_param", "get_param", PARAM_LINEAR_ACCEL);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "linear_accel_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_LINEAR_ACCEL);
@@ -1382,7 +1425,7 @@ void CPUParticles::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(PARAM_INITIAL_LINEAR_VELOCITY);
 	BIND_ENUM_CONSTANT(PARAM_ANGULAR_VELOCITY);
-	//BIND_ENUM_CONSTANT(PARAM_ORBIT_VELOCITY);
+	BIND_ENUM_CONSTANT(PARAM_ORBIT_VELOCITY);
 	BIND_ENUM_CONSTANT(PARAM_LINEAR_ACCEL);
 	BIND_ENUM_CONSTANT(PARAM_RADIAL_ACCEL);
 	BIND_ENUM_CONSTANT(PARAM_TANGENTIAL_ACCEL);
@@ -1396,6 +1439,7 @@ void CPUParticles::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FLAG_ALIGN_Y_TO_VELOCITY);
 	BIND_ENUM_CONSTANT(FLAG_ROTATE_Y);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_Z);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
@@ -1411,8 +1455,12 @@ CPUParticles::CPUParticles() {
 	inactive_time = 0;
 	frame_remainder = 0;
 	cycle = 0;
+	redraw = false;
+
+	set_notify_transform(true);
 
 	multimesh = VisualServer::get_singleton()->multimesh_create();
+	VisualServer::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	set_base(multimesh);
 
 	set_emitting(true);
@@ -1429,10 +1477,12 @@ CPUParticles::CPUParticles() {
 	set_draw_order(DRAW_ORDER_INDEX);
 	set_speed_scale(1);
 
+	set_direction(Vector3(1, 0, 0));
 	set_spread(45);
 	set_flatness(0);
-	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 1);
-	//set_param(PARAM_ORBIT_VELOCITY, 0);
+	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);
+	set_param(PARAM_ANGULAR_VELOCITY, 0);
+	set_param(PARAM_ORBIT_VELOCITY, 0);
 	set_param(PARAM_LINEAR_ACCEL, 0);
 	set_param(PARAM_RADIAL_ACCEL, 0);
 	set_param(PARAM_TANGENTIAL_ACCEL, 0);

@@ -547,7 +547,7 @@ static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_t
 	sljit_ins prev_ins = NOP;
 	sljit_ins ins = NOP;
 
-	SLJIT_ASSERT(reg_map[TMP_REG3] == 4 && freg_map[TMP_FREG1] == 12);
+	SLJIT_ASSERT(reg_map[TMP_REG1] == 4 && freg_map[TMP_FREG1] == 12);
 
 	arg_types >>= SLJIT_DEF_SHIFT;
 
@@ -591,7 +591,7 @@ static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_t
 			if (arg_count != word_arg_count)
 				ins = DADDU | S(word_arg_count) | TA(0) | D(arg_count);
 			else if (arg_count == 1)
-				ins = DADDU | S(SLJIT_R0) | TA(0) | D(TMP_REG3);
+				ins = DADDU | S(SLJIT_R0) | TA(0) | DA(4);
 			arg_count--;
 			word_arg_count--;
 			break;

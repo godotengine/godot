@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 #include "core/cowdata.h"
 #include "core/error_macros.h"
 #include "core/os/memory.h"
-#include "core/sort.h"
+#include "core/sort_array.h"
 
 template <class T>
 class VectorWriteProxy {
@@ -84,6 +84,7 @@ public:
 	Error resize(int p_size) { return _cowdata.resize(p_size); }
 	_FORCE_INLINE_ const T &operator[](int p_index) const { return _cowdata.get(p_index); }
 	Error insert(int p_pos, const T &p_val) { return _cowdata.insert(p_pos, p_val); }
+	int find(const T &p_val, int p_from = 0) const { return _cowdata.find(p_val, p_from); }
 
 	void append_array(const Vector<T> &p_other);
 
@@ -113,22 +114,6 @@ public:
 			};
 		};
 		insert(i, p_val);
-	}
-
-	int find(const T &p_val, int p_from = 0) const {
-		int ret = -1;
-		if (p_from < 0 || size() == 0)
-			return ret;
-
-		for (int i = p_from; i < size(); i++) {
-
-			if (ptr()[i] == p_val) {
-				ret = i;
-				break;
-			};
-		};
-
-		return ret;
 	}
 
 	_FORCE_INLINE_ Vector() {}
@@ -165,7 +150,7 @@ template <class T>
 bool Vector<T>::push_back(const T &p_elem) {
 
 	Error err = resize(size() + 1);
-	ERR_FAIL_COND_V(err, true)
+	ERR_FAIL_COND_V(err, true);
 	set(size() - 1, p_elem);
 
 	return false;

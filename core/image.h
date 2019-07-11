@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #define IMAGE_H
 
 #include "core/color.h"
-#include "core/dvector.h"
 #include "core/math/rect2.h"
+#include "core/pool_vector.h"
 #include "core/resource.h"
 
 /**
@@ -52,13 +52,13 @@ typedef Ref<Image> (*ImageMemLoadFunc)(const uint8_t *p_png, int p_size);
 class Image : public Resource {
 	GDCLASS(Image, Resource);
 
+public:
+	static SavePNGFunc save_png_func;
+
 	enum {
 		MAX_WIDTH = 16384, // force a limit somehow
 		MAX_HEIGHT = 16384 // force a limit somehow
 	};
-
-public:
-	static SavePNGFunc save_png_func;
 
 	enum Format {
 
@@ -109,6 +109,7 @@ public:
 		INTERPOLATE_BILINEAR,
 		INTERPOLATE_CUBIC,
 		INTERPOLATE_TRILINEAR,
+		INTERPOLATE_LANCZOS,
 		/* INTERPOLATE_TRICUBIC, */
 		/* INTERPOLATE GAUSS */
 	};
@@ -223,6 +224,7 @@ public:
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
 	void expand_x2_hq2x();
+	bool is_size_po2() const;
 	/**
 	 * Crop the image to a specific size, if larger, then the image is filled by black
 	 */
@@ -348,7 +350,7 @@ public:
 
 	Color get_pixelv(const Point2 &p_src) const;
 	Color get_pixel(int p_x, int p_y) const;
-	void set_pixelv(const Point2 &p_dest, const Color &p_color);
+	void set_pixelv(const Point2 &p_dst, const Color &p_color);
 	void set_pixel(int p_x, int p_y, const Color &p_color);
 
 	void copy_internals_from(const Ref<Image> &p_image) {

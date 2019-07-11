@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -65,7 +65,7 @@ Vector2 Vector2::normalized() const {
 
 bool Vector2::is_normalized() const {
 	// use length_squared() instead of length() to avoid sqrt(), makes it more stringent.
-	return Math::is_equal_approx(length_squared(), 1.0);
+	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON);
 }
 
 real_t Vector2::distance_to(const Vector2 &p_vector2) const {
@@ -162,6 +162,13 @@ Vector2 Vector2::cubic_interpolate(const Vector2 &p_b, const Vector2 &p_pre_a, c
 						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
 						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
+}
+
+Vector2 Vector2::move_toward(const Vector2 &p_to, const real_t p_delta) const {
+	Vector2 v = *this;
+	Vector2 vd = p_to - v;
+	real_t len = vd.length();
+	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
 }
 
 // slide returns the component of the vector along the given plane, specified by its normal vector.

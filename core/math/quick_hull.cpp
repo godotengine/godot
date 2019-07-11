@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,8 +35,6 @@
 uint32_t QuickHull::debug_stop_after = 0xFFFFFFFF;
 
 Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_mesh) {
-
-	static const real_t over_tolerance = 0.0001;
 
 	/* CREATE AABB VOLUME */
 
@@ -179,6 +177,8 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 		faces.push_back(f);
 	}
+
+	real_t over_tolerance = 3 * UNIT_EPSILON * (aabb.size.x + aabb.size.y + aabb.size.z);
 
 	/* COMPUTE AVAILABLE VERTICES */
 
@@ -438,12 +438,12 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 				}
 
 				// remove all edge connections to this face
-				for (Map<Edge, RetFaceConnect>::Element *E = ret_edges.front(); E; E = E->next()) {
-					if (E->get().left == O)
-						E->get().left = NULL;
+				for (Map<Edge, RetFaceConnect>::Element *G = ret_edges.front(); G; G = G->next()) {
+					if (G->get().left == O)
+						G->get().left = NULL;
 
-					if (E->get().right == O)
-						E->get().right = NULL;
+					if (G->get().right == O)
+						G->get().right = NULL;
 				}
 
 				ret_edges.erase(F); //remove the edge

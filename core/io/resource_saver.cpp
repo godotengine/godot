@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -233,9 +233,9 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 
 void ResourceSaver::remove_custom_resource_format_saver(String script_path) {
 
-	Ref<ResourceFormatSaver> saver = _find_custom_resource_format_saver(script_path);
-	if (saver.is_valid())
-		remove_resource_format_saver(saver);
+	Ref<ResourceFormatSaver> custom_saver = _find_custom_resource_format_saver(script_path);
+	if (custom_saver.is_valid())
+		remove_resource_format_saver(custom_saver);
 }
 
 void ResourceSaver::add_custom_savers() {
@@ -249,7 +249,7 @@ void ResourceSaver::add_custom_savers() {
 	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
 
 		StringName class_name = E->get();
-		StringName base_class = ScriptServer::get_global_class_base(class_name);
+		StringName base_class = ScriptServer::get_global_class_native_base(class_name);
 
 		if (base_class == custom_saver_base_class) {
 			String path = ScriptServer::get_global_class_path(class_name);

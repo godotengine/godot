@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,6 +72,7 @@ private:
 	String undo_text;
 	String text;
 	String placeholder;
+	String placeholder_translated;
 	String secret_character;
 	float placeholder_alpha;
 	String ime_text;
@@ -125,6 +126,8 @@ private:
 	void _text_changed();
 	void _emit_text_change();
 	bool expand_to_text_length;
+
+	void update_placeholder_width();
 
 	bool caret_blink_enabled;
 	bool draw_caret;

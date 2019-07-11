@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,7 +54,7 @@ class BulletPhysicsDirectBodyState;
 /// created by BulletPhysicsServer and is held by the "singleton" variable of this class
 /// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
-	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState)
+	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
 
 	static BulletPhysicsDirectBodyState *singleton;
 
@@ -167,7 +167,7 @@ public:
 
 		KinematicShape() :
 				shape(NULL) {}
-		const bool is_active() const { return shape; }
+		bool is_active() const { return shape; }
 	};
 
 	struct KinematicUtilities {

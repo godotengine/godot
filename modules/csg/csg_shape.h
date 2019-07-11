@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,8 +38,8 @@
 #include "scene/resources/concave_polygon_shape.h"
 #include "thirdparty/misc/mikktspace.h"
 
-class CSGShape : public VisualInstance {
-	GDCLASS(CSGShape, VisualInstance);
+class CSGShape : public GeometryInstance {
+	GDCLASS(CSGShape, GeometryInstance);
 
 public:
 	enum Operation {
@@ -117,6 +117,8 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
+	Array get_meshes() const;
+
 	void set_operation(Operation p_operation);
 	Operation get_operation() const;
 
@@ -154,7 +156,8 @@ public:
 VARIANT_ENUM_CAST(CSGShape::Operation)
 
 class CSGCombiner : public CSGShape {
-	GDCLASS(CSGCombiner, CSGShape)
+	GDCLASS(CSGCombiner, CSGShape);
+
 private:
 	virtual CSGBrush *_build_brush();
 
@@ -163,7 +166,7 @@ public:
 };
 
 class CSGPrimitive : public CSGShape {
-	GDCLASS(CSGPrimitive, CSGShape)
+	GDCLASS(CSGPrimitive, CSGShape);
 
 private:
 	bool invert_faces;
@@ -180,11 +183,12 @@ public:
 };
 
 class CSGMesh : public CSGPrimitive {
-	GDCLASS(CSGMesh, CSGPrimitive)
+	GDCLASS(CSGMesh, CSGPrimitive);
 
 	virtual CSGBrush *_build_brush();
 
 	Ref<Mesh> mesh;
+	Ref<Material> material;
 
 	void _mesh_changed();
 
@@ -194,11 +198,14 @@ protected:
 public:
 	void set_mesh(const Ref<Mesh> &p_mesh);
 	Ref<Mesh> get_mesh();
+
+	void set_material(const Ref<Material> &p_material);
+	Ref<Material> get_material() const;
 };
 
 class CSGSphere : public CSGPrimitive {
 
-	GDCLASS(CSGSphere, CSGPrimitive)
+	GDCLASS(CSGSphere, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -231,7 +238,7 @@ public:
 
 class CSGBox : public CSGPrimitive {
 
-	GDCLASS(CSGBox, CSGPrimitive)
+	GDCLASS(CSGBox, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -260,7 +267,7 @@ public:
 
 class CSGCylinder : public CSGPrimitive {
 
-	GDCLASS(CSGCylinder, CSGPrimitive)
+	GDCLASS(CSGCylinder, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -297,7 +304,7 @@ public:
 
 class CSGTorus : public CSGPrimitive {
 
-	GDCLASS(CSGTorus, CSGPrimitive)
+	GDCLASS(CSGTorus, CSGPrimitive);
 	virtual CSGBrush *_build_brush();
 
 	Ref<Material> material;
@@ -334,7 +341,7 @@ public:
 
 class CSGPolygon : public CSGPrimitive {
 
-	GDCLASS(CSGPolygon, CSGPrimitive)
+	GDCLASS(CSGPolygon, CSGPrimitive);
 
 public:
 	enum Mode {
@@ -397,7 +404,7 @@ public:
 	void set_spin_degrees(float p_spin_degrees);
 	float get_spin_degrees() const;
 
-	void set_spin_sides(int p_sides);
+	void set_spin_sides(int p_spin_sides);
 	int get_spin_sides() const;
 
 	void set_path_node(const NodePath &p_path);

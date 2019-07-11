@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,8 +43,6 @@ String DirAccess::_get_root_path() const {
 		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
 		default: return "";
 	}
-
-	return "";
 }
 String DirAccess::_get_root_string() const {
 
@@ -54,8 +52,6 @@ String DirAccess::_get_root_string() const {
 		case ACCESS_USERDATA: return "user://";
 		default: return "";
 	}
-
-	return "";
 }
 
 int DirAccess::get_current_drive() {
@@ -330,7 +326,7 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 
 	if (err == OK && p_chmod_flags != -1) {
 		fdst->close();
-		err = fdst->_chmod(p_to, p_chmod_flags);
+		err = FileAccess::set_unix_permissions(p_to, p_chmod_flags);
 		// If running on a platform with no chmod support (i.e., Windows), don't fail
 		if (err == ERR_UNAVAILABLE)
 			err = OK;
@@ -373,12 +369,12 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 			if (current_is_dir())
 				dirs.push_back(n);
 			else {
-				String rel_path = n;
+				const String &rel_path = n;
 				if (!n.is_rel_path()) {
 					list_dir_end();
 					return ERR_BUG;
 				}
-				Error err = copy(get_current_dir() + "/" + n, p_to + rel_path, p_chmod_flags);
+				Error err = copy(get_current_dir().plus_file(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
 					return err;

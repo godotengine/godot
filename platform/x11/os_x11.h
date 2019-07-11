@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,13 +35,14 @@
 #include "core/os/input.h"
 #include "crash_handler_x11.h"
 #include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/alsa_midi.h"
+#include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
 #include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
@@ -119,6 +120,9 @@ class OS_X11 : public OS_Unix {
 	bool im_active;
 	Vector2 im_position;
 
+	Size2 min_size;
+	Size2 max_size;
+
 	Point2 last_mouse_pos;
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
@@ -146,6 +150,8 @@ class OS_X11 : public OS_Unix {
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
 	void flush_mouse_motion();
 
+	CameraServer *camera_server;
+
 	MouseMode mouse_mode;
 	Point2i center;
 
@@ -164,6 +170,7 @@ class OS_X11 : public OS_Unix {
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
 
@@ -216,9 +223,10 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	void set_mouse_mode(MouseMode p_mode);
@@ -264,6 +272,10 @@ public:
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
+	virtual Size2 get_max_window_size() const;
+	virtual Size2 get_min_window_size() const;
+	virtual void set_min_window_size(const Size2 p_size);
+	virtual void set_max_window_size(const Size2 p_size);
 	virtual void set_window_size(const Size2 p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;

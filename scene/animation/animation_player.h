@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,6 +68,11 @@ public:
 		ANIMATION_PROCESS_MANUAL,
 	};
 
+	enum AnimationMethodCallMode {
+		ANIMATION_METHOD_CALL_DEFERRED,
+		ANIMATION_METHOD_CALL_IMMEDIATE,
+	};
+
 private:
 	enum {
 
@@ -114,10 +119,12 @@ private:
 			Variant value_accum;
 			uint64_t accum_pass;
 			Variant capture;
-			PropertyAnim() {
-				accum_pass = 0;
-				object = NULL;
-			}
+
+			PropertyAnim() :
+					owner(NULL),
+					special(SP_NONE),
+					object(NULL),
+					accum_pass(0) {}
 		};
 
 		Map<StringName, PropertyAnim> property_anim;
@@ -129,25 +136,28 @@ private:
 			float bezier_accum;
 			Object *object;
 			uint64_t accum_pass;
-			BezierAnim() {
-				accum_pass = 0;
-				bezier_accum = 0;
-				object = NULL;
-			}
+
+			BezierAnim() :
+					owner(NULL),
+					bezier_accum(0.0),
+					object(NULL),
+					accum_pass(0) {}
 		};
 
 		Map<StringName, BezierAnim> bezier_anim;
 
-		TrackNodeCache() {
-			skeleton = NULL;
-			spatial = NULL;
-			node = NULL;
-			accum_pass = 0;
-			bone_idx = -1;
-			node_2d = NULL;
-			audio_playing = false;
-			animation_playing = false;
-		}
+		TrackNodeCache() :
+				id(0),
+				node(NULL),
+				spatial(NULL),
+				node_2d(NULL),
+				skeleton(NULL),
+				bone_idx(-1),
+				accum_pass(0),
+				audio_playing(false),
+				audio_start(0.0),
+				audio_len(0.0),
+				animation_playing(false) {}
 	};
 
 	struct TrackNodeCacheKey {
@@ -175,8 +185,6 @@ private:
 	TrackNodeCache::BezierAnim *cache_update_bezier[NODE_CACHE_UPDATE_MAX];
 	int cache_update_bezier_size;
 	Set<TrackNodeCache *> playing_caches;
-
-	Map<Ref<Animation>, int> used_anims;
 
 	uint64_t accum_pass;
 	float speed_scale;
@@ -243,6 +251,7 @@ private:
 
 	String autoplay;
 	AnimationProcessMode animation_process_mode;
+	AnimationMethodCallMode method_call_mode;
 	bool processing;
 	bool active;
 
@@ -335,6 +344,9 @@ public:
 	void set_animation_process_mode(AnimationProcessMode p_mode);
 	AnimationProcessMode get_animation_process_mode() const;
 
+	void set_method_call_mode(AnimationMethodCallMode p_mode);
+	AnimationMethodCallMode get_method_call_mode() const;
+
 	void seek(float p_time, bool p_update = false);
 	void seek_delta(float p_time, float p_delta);
 	float get_current_animation_position() const;
@@ -360,5 +372,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
+VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
 #endif

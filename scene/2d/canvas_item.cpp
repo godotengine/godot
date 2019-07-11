@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,6 +64,7 @@ void CanvasItemMaterial::init_shaders() {
 void CanvasItemMaterial::finish_shaders() {
 
 	memdelete(dirty_materials);
+	memdelete(shader_names);
 	dirty_materials = NULL;
 
 #ifndef NO_THREADS
@@ -130,19 +131,15 @@ void CanvasItemMaterial::_update_shader() {
 
 		code += "\tVERTEX.xy /= vec2(h_frames, v_frames);\n";
 
-		code += "\tint total_frames = particles_anim_h_frames * particles_anim_v_frames;\n";
-		code += "\tint frame = int(float(total_frames) * INSTANCE_CUSTOM.z);\n";
-		code += "\tif (particles_anim_loop) {\n";
-		code += "\t\tframe = abs(frame) % total_frames;\n";
+		code += "\tfloat particle_total_frames = float(particles_anim_h_frames * particles_anim_v_frames);\n";
+		code += "\tfloat particle_frame = floor(INSTANCE_CUSTOM.z * float(particle_total_frames));\n";
+		code += "\tif (!particles_anim_loop) {\n";
+		code += "\t\tparticle_frame = clamp(particle_frame, 0.0, particle_total_frames - 1.0);\n";
 		code += "\t} else {\n";
-		code += "\t\tframe = clamp(frame, 0, total_frames - 1);\n";
-		code += "\t}\n";
-
-		code += "\tfloat frame_w = 1.0 / h_frames;\n";
-		code += "\tfloat frame_h = 1.0 / v_frames;\n";
-		code += "\tUV.x = UV.x * frame_w + frame_w * float(frame % particles_anim_h_frames);\n";
-		code += "\tUV.y = UV.y * frame_h + frame_h * float(frame / particles_anim_h_frames);\n";
-
+		code += "\t\tparticle_frame = mod(particle_frame, particle_total_frames);\n";
+		code += "\t}";
+		code += "\tUV /= vec2(h_frames, v_frames);\n";
+		code += "\tUV += vec2(mod(particle_frame, h_frames) / h_frames, floor(particle_frame / h_frames) / v_frames);\n";
 		code += "}\n";
 	}
 
@@ -433,6 +430,11 @@ void CanvasItem::hide() {
 	_change_notify("visible");
 }
 
+CanvasItem *CanvasItem::current_item_drawn = NULL;
+CanvasItem *CanvasItem::get_current_item_drawn() {
+	return current_item_drawn;
+}
+
 void CanvasItem::_update_callback() {
 
 	if (!is_inside_tree()) {
@@ -448,11 +450,13 @@ void CanvasItem::_update_callback() {
 			first_draw = false;
 		}
 		drawing = true;
+		current_item_drawn = this;
 		notification(NOTIFICATION_DRAW);
 		emit_signal(SceneStringNames::get_singleton()->draw);
 		if (get_script_instance()) {
 			get_script_instance()->call_multilevel_reversed(SceneStringNames::get_singleton()->_draw, NULL, 0);
 		}
+		current_item_drawn = NULL;
 		drawing = false;
 	}
 	//todo updating = false
@@ -755,7 +759,7 @@ void CanvasItem::draw_multiline_colors(const Vector<Point2> &p_points, const Vec
 	VisualServer::get_singleton()->canvas_item_add_multiline(canvas_item, p_points, p_colors, p_width, p_antialiased);
 }
 
-void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled) {
+void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled, float p_width, bool p_antialiased) {
 
 	if (!drawing) {
 		ERR_EXPLAIN("Drawing is only allowed inside NOTIFICATION_DRAW, _draw() function or 'draw' signal.");
@@ -763,13 +767,53 @@ void CanvasItem::draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_fil
 	}
 
 	if (p_filled) {
+		if (p_width != 1.0) {
+			WARN_PRINT("The draw_rect() \"width\" argument has no effect when \"filled\" is \"true\".");
+		}
+
+		if (p_antialiased) {
+			WARN_PRINT("The draw_rect() \"antialiased\" argument has no effect when \"filled\" is \"true\".");
+		}
 
 		VisualServer::get_singleton()->canvas_item_add_rect(canvas_item, p_rect, p_color);
 	} else {
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position, p_rect.position + Size2(p_rect.size.width, 0), p_color);
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position, p_rect.position + Size2(0, p_rect.size.height), p_color);
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + Point2(0, p_rect.size.height), p_rect.position + p_rect.size, p_color);
-		VisualServer::get_singleton()->canvas_item_add_line(canvas_item, p_rect.position + Point2(p_rect.size.width, 0), p_rect.position + p_rect.size, p_color);
+		// Thick lines are offset depending on their width to avoid partial overlapping.
+		// Thin lines don't require an offset, so don't apply one in this case
+		float offset;
+		if (p_width >= 2) {
+			offset = p_width / 2.0;
+		} else {
+			offset = 0.0;
+		}
+
+		VisualServer::get_singleton()->canvas_item_add_line(
+				canvas_item,
+				p_rect.position + Point2(-offset, 0),
+				p_rect.position + Size2(p_rect.size.width + offset, 0),
+				p_color,
+				p_width,
+				p_antialiased);
+		VisualServer::get_singleton()->canvas_item_add_line(
+				canvas_item,
+				p_rect.position + Point2(0, offset),
+				p_rect.position + Size2(0, p_rect.size.height - offset),
+				p_color,
+				p_width,
+				p_antialiased);
+		VisualServer::get_singleton()->canvas_item_add_line(
+				canvas_item,
+				p_rect.position + Point2(-offset, p_rect.size.height),
+				p_rect.position + Size2(p_rect.size.width + offset, p_rect.size.height),
+				p_color,
+				p_width,
+				p_antialiased);
+		VisualServer::get_singleton()->canvas_item_add_line(
+				canvas_item,
+				p_rect.position + Point2(p_rect.size.width, offset),
+				p_rect.position + Size2(p_rect.size.width, p_rect.size.height - offset),
+				p_color,
+				p_width,
+				p_antialiased);
 	}
 }
 
@@ -887,13 +931,13 @@ void CanvasItem::draw_colored_polygon(const Vector<Point2> &p_points, const Colo
 	VisualServer::get_singleton()->canvas_item_add_polygon(canvas_item, p_points, colors, p_uvs, rid, rid_normal, p_antialiased);
 }
 
-void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map) {
+void CanvasItem::draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map, const Transform2D &p_transform, const Color &p_modulate) {
 
 	ERR_FAIL_COND(p_mesh.is_null());
 	RID texture_rid = p_texture.is_valid() ? p_texture->get_rid() : RID();
 	RID normal_map_rid = p_normal_map.is_valid() ? p_normal_map->get_rid() : RID();
 
-	VisualServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), texture_rid, normal_map_rid);
+	VisualServer::get_singleton()->canvas_item_add_mesh(canvas_item, p_mesh->get_rid(), p_transform, p_modulate, texture_rid, normal_map_rid);
 }
 void CanvasItem::draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture> &p_texture, const Ref<Texture> &p_normal_map) {
 
@@ -924,6 +968,9 @@ float CanvasItem::draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const 
 	ERR_FAIL_COND_V(p_char.length() != 1, 0);
 	ERR_FAIL_COND_V(p_font.is_null(), 0);
 
+	if (p_font->has_outline()) {
+		p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.c_str()[0], Color(1, 1, 1), true);
+	}
 	return p_font->draw_char(canvas_item, p_pos, p_char[0], p_next.c_str()[0], p_modulate);
 }
 
@@ -1070,6 +1117,7 @@ Vector2 CanvasItem::make_canvas_position_local(const Vector2 &screen_point) cons
 
 Ref<InputEvent> CanvasItem::make_input_local(const Ref<InputEvent> &p_event) const {
 
+	ERR_FAIL_COND_V(p_event.is_null(), p_event);
 	ERR_FAIL_COND_V(!is_inside_tree(), p_event);
 
 	return p_event->xformed_by((get_canvas_transform() * get_global_transform()).affine_inverse());
@@ -1153,7 +1201,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_polyline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_polyline_colors, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline", "points", "color", "width", "antialiased"), &CanvasItem::draw_multiline, DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_multiline_colors", "points", "colors", "width", "antialiased"), &CanvasItem::draw_multiline_colors, DEFVAL(1.0), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled"), &CanvasItem::draw_rect, DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("draw_rect", "rect", "color", "filled", "width", "antialiased"), &CanvasItem::draw_rect, DEFVAL(true), DEFVAL(1.0), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_circle", "position", "radius", "color"), &CanvasItem::draw_circle);
 	ClassDB::bind_method(D_METHOD("draw_texture", "texture", "position", "modulate", "normal_map"), &CanvasItem::draw_texture, DEFVAL(Color(1, 1, 1, 1)), DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("draw_texture_rect", "texture", "rect", "tile", "modulate", "transpose", "normal_map"), &CanvasItem::draw_texture_rect, DEFVAL(Color(1, 1, 1)), DEFVAL(false), DEFVAL(Variant()));
@@ -1164,7 +1212,7 @@ void CanvasItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("draw_colored_polygon", "points", "color", "uvs", "texture", "normal_map", "antialiased"), &CanvasItem::draw_colored_polygon, DEFVAL(PoolVector2Array()), DEFVAL(Variant()), DEFVAL(Variant()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("draw_string", "font", "position", "text", "modulate", "clip_w"), &CanvasItem::draw_string, DEFVAL(Color(1, 1, 1)), DEFVAL(-1));
 	ClassDB::bind_method(D_METHOD("draw_char", "font", "position", "char", "next", "modulate"), &CanvasItem::draw_char, DEFVAL(Color(1, 1, 1)));
-	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture>()));
+	ClassDB::bind_method(D_METHOD("draw_mesh", "mesh", "texture", "normal_map", "transform", "modulate"), &CanvasItem::draw_mesh, DEFVAL(Ref<Texture>()), DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1)));
 	ClassDB::bind_method(D_METHOD("draw_multimesh", "multimesh", "texture", "normal_map"), &CanvasItem::draw_multimesh, DEFVAL(Ref<Texture>()));
 
 	ClassDB::bind_method(D_METHOD("draw_set_transform", "position", "rotation", "scale"), &CanvasItem::draw_set_transform);

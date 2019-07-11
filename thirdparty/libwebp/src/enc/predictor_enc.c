@@ -177,12 +177,15 @@ static uint8_t NearLosslessComponent(uint8_t value, uint8_t predict,
   }
 }
 
+static WEBP_INLINE uint8_t NearLosslessDiff(uint8_t a, uint8_t b) {
+  return (uint8_t)((((int)(a) - (int)(b))) & 0xff);
+}
+
 // Quantize every component of the difference between the actual pixel value and
 // its prediction to a multiple of a quantization (a power of 2, not larger than
 // max_quantization which is a power of 2, smaller than max_diff). Take care if
 // value and predict have undergone subtract green, which means that red and
 // blue are represented as offsets from green.
-#define NEAR_LOSSLESS_DIFF(a, b) (uint8_t)((((int)(a) - (int)(b))) & 0xff)
 static uint32_t NearLossless(uint32_t value, uint32_t predict,
                              int max_quantization, int max_diff,
                              int used_subtract_green) {
@@ -199,7 +202,7 @@ static uint32_t NearLossless(uint32_t value, uint32_t predict,
   }
   if ((value >> 24) == 0 || (value >> 24) == 0xff) {
     // Preserve transparency of fully transparent or fully opaque pixels.
-    a = NEAR_LOSSLESS_DIFF(value >> 24, predict >> 24);
+    a = NearLosslessDiff(value >> 24, predict >> 24);
   } else {
     a = NearLosslessComponent(value >> 24, predict >> 24, 0xff, quantization);
   }
@@ -212,16 +215,15 @@ static uint32_t NearLossless(uint32_t value, uint32_t predict,
     // The amount by which green has been adjusted during quantization. It is
     // subtracted from red and blue for compensation, to avoid accumulating two
     // quantization errors in them.
-    green_diff = NEAR_LOSSLESS_DIFF(new_green, value >> 8);
+    green_diff = NearLosslessDiff(new_green, value >> 8);
   }
-  r = NearLosslessComponent(NEAR_LOSSLESS_DIFF(value >> 16, green_diff),
+  r = NearLosslessComponent(NearLosslessDiff(value >> 16, green_diff),
                             (predict >> 16) & 0xff, 0xff - new_green,
                             quantization);
-  b = NearLosslessComponent(NEAR_LOSSLESS_DIFF(value, green_diff),
+  b = NearLosslessComponent(NearLosslessDiff(value, green_diff),
                             predict & 0xff, 0xff - new_green, quantization);
   return ((uint32_t)a << 24) | ((uint32_t)r << 16) | ((uint32_t)g << 8) | b;
 }
-#undef NEAR_LOSSLESS_DIFF
 #endif  // (WEBP_NEAR_LOSSLESS == 1)
 
 // Stores the difference between the pixel and its prediction in "out".

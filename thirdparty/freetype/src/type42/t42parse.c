@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t42parse.c                                                             */
-/*                                                                         */
-/*    Type 42 font parser (body).                                          */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  Roberto Alameda.                                                       */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t42parse.c
+ *
+ *   Type 42 font parser (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * Roberto Alameda.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "t42parse.h"
@@ -23,14 +23,14 @@
 #include FT_INTERNAL_POSTSCRIPT_AUX_H
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t42
+#define FT_COMPONENT  t42
 
 
   static void
@@ -149,19 +149,19 @@
     parser->base_dict = NULL;
     parser->in_memory = 0;
 
-    /*******************************************************************/
-    /*                                                                 */
-    /* Here a short summary of what is going on:                       */
-    /*                                                                 */
-    /*   When creating a new Type 42 parser, we try to locate and load */
-    /*   the base dictionary, loading the whole font into memory.      */
-    /*                                                                 */
-    /*   When `loading' the base dictionary, we only set up pointers   */
-    /*   in the case of a memory-based stream.  Otherwise, we allocate */
-    /*   and load the base dictionary in it.                           */
-    /*                                                                 */
-    /*   parser->in_memory is set if we have a memory stream.          */
-    /*                                                                 */
+    /********************************************************************
+     *
+     * Here a short summary of what is going on:
+     *
+     *   When creating a new Type 42 parser, we try to locate and load
+     *   the base dictionary, loading the whole font into memory.
+     *
+     *   When `loading' the base dictionary, we only set up pointers
+     *   in the case of a memory-based stream.  Otherwise, we allocate
+     *   and load the base dictionary in it.
+     *
+     *   parser->in_memory is set if we have a memory stream.
+     */
 
     if ( FT_STREAM_SEEK( 0L ) ||
          FT_FRAME_ENTER( 17 ) )
@@ -283,6 +283,13 @@
     matrix->yx = temp[1];
     matrix->xy = temp[2];
     matrix->yy = temp[3];
+
+    if ( !FT_Matrix_Check( matrix ) )
+    {
+      FT_ERROR(( "t42_parse_font_matrix: invalid font matrix\n" ));
+      parser->root.error = FT_THROW( Invalid_File_Format );
+      return;
+    }
 
     /* note that the offsets must be expressed in integer font units */
     offset->x = temp[4] >> 16;
@@ -588,6 +595,14 @@
 
       else if ( *cur == '<' )
       {
+        if ( string_buf && !allocated )
+        {
+          FT_ERROR(( "t42_parse_sfnts: "
+                     "can't handle mixed binary and hex strings\n" ));
+          error = FT_THROW( Invalid_File_Format );
+          goto Fail;
+        }
+
         T1_Skip_PS_Token( parser );
         if ( parser->root.error )
           goto Exit;

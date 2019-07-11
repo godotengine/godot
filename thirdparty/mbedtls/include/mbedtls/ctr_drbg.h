@@ -8,8 +8,11 @@
  * Recommendation for Random Number Generation Using Deterministic Random
  * Bit Generators</em>.
  *
- * The Mbed TLS implementation of CTR_DRBG uses AES-256 as the underlying
- * block cipher.
+ * The Mbed TLS implementation of CTR_DRBG uses AES-256 (default) or AES-128
+ * as the underlying block cipher.
+ *
+ *  \warning Using 128-bit keys for CTR_DRBG limits the security of generated
+ *  keys and operations that use random values generated to 128-bit security.
  */
 /*
  *  Copyright (C) 2006-2018, Arm Limited (or its affiliates), All Rights Reserved
@@ -45,7 +48,13 @@
 #define MBEDTLS_ERR_CTR_DRBG_FILE_IO_ERROR                -0x003A  /**< Read or write error in file. */
 
 #define MBEDTLS_CTR_DRBG_BLOCKSIZE          16 /**< The block size used by the cipher. */
-#define MBEDTLS_CTR_DRBG_KEYSIZE            32 /**< The key size used by the cipher. */
+
+#if defined(MBEDTLS_CTR_DRBG_USE_128_BIT_KEY)
+#define MBEDTLS_CTR_DRBG_KEYSIZE            16 /**< The key size used by the cipher (compile-time choice: 128 bits). */
+#else
+#define MBEDTLS_CTR_DRBG_KEYSIZE            32 /**< The key size used by the cipher (compile-time choice: 256 bits). */
+#endif
+
 #define MBEDTLS_CTR_DRBG_KEYBITS            ( MBEDTLS_CTR_DRBG_KEYSIZE * 8 ) /**< The key size for the DRBG operation, in bits. */
 #define MBEDTLS_CTR_DRBG_SEEDLEN            ( MBEDTLS_CTR_DRBG_KEYSIZE + MBEDTLS_CTR_DRBG_BLOCKSIZE ) /**< The seed length, calculated as (counter + AES key). */
 
@@ -108,7 +117,7 @@ extern "C" {
 /**
  * \brief          The CTR_DRBG context structure.
  */
-typedef struct
+typedef struct mbedtls_ctr_drbg_context
 {
     unsigned char counter[16];  /*!< The counter (V). */
     int reseed_counter;         /*!< The reseed counter. */
@@ -230,18 +239,20 @@ int mbedtls_ctr_drbg_reseed( mbedtls_ctr_drbg_context *ctx,
 /**
  * \brief              This function updates the state of the CTR_DRBG context.
  *
- * \note               If \p add_len is greater than
- *                     #MBEDTLS_CTR_DRBG_MAX_SEED_INPUT, only the first
- *                     #MBEDTLS_CTR_DRBG_MAX_SEED_INPUT Bytes are used.
- *                     The remaining Bytes are silently discarded.
- *
  * \param ctx          The CTR_DRBG context.
  * \param additional   The data to update the state with.
- * \param add_len      Length of \p additional data.
+ * \param add_len      Length of \p additional in bytes. This must be at
+ *                     most #MBEDTLS_CTR_DRBG_MAX_SEED_INPUT.
  *
+ * \return             \c 0 on success.
+ * \return             #MBEDTLS_ERR_CTR_DRBG_INPUT_TOO_BIG if
+ *                     \p add_len is more than
+ *                     #MBEDTLS_CTR_DRBG_MAX_SEED_INPUT.
+ * \return             An error from the underlying AES cipher on failure.
  */
-void mbedtls_ctr_drbg_update( mbedtls_ctr_drbg_context *ctx,
-                      const unsigned char *additional, size_t add_len );
+int mbedtls_ctr_drbg_update_ret( mbedtls_ctr_drbg_context *ctx,
+                                 const unsigned char *additional,
+                                 size_t add_len );
 
 /**
  * \brief   This function updates a CTR_DRBG instance with additional
@@ -280,6 +291,35 @@ int mbedtls_ctr_drbg_random_with_add( void *p_rng,
  */
 int mbedtls_ctr_drbg_random( void *p_rng,
                      unsigned char *output, size_t output_len );
+
+
+#if ! defined(MBEDTLS_DEPRECATED_REMOVED)
+#if defined(MBEDTLS_DEPRECATED_WARNING)
+#define MBEDTLS_DEPRECATED    __attribute__((deprecated))
+#else
+#define MBEDTLS_DEPRECATED
+#endif
+/**
+ * \brief              This function updates the state of the CTR_DRBG context.
+ *
+ * \deprecated         Superseded by mbedtls_ctr_drbg_update_ret()
+ *                     in 2.16.0.
+ *
+ * \note               If \p add_len is greater than
+ *                     #MBEDTLS_CTR_DRBG_MAX_SEED_INPUT, only the first
+ *                     #MBEDTLS_CTR_DRBG_MAX_SEED_INPUT Bytes are used.
+ *                     The remaining Bytes are silently discarded.
+ *
+ * \param ctx          The CTR_DRBG context.
+ * \param additional   The data to update the state with.
+ * \param add_len      Length of \p additional data.
+ */
+MBEDTLS_DEPRECATED void mbedtls_ctr_drbg_update(
+    mbedtls_ctr_drbg_context *ctx,
+    const unsigned char *additional,
+    size_t add_len );
+#undef MBEDTLS_DEPRECATED
+#endif /* !MBEDTLS_DEPRECATED_REMOVED */
 
 #if defined(MBEDTLS_FS_IO)
 /**

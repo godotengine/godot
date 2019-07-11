@@ -299,14 +299,14 @@ namespace Godot
             if (basepos != -1)
             {
                 var end = basepos + 3;
-                rs = instance.Substring(end, instance.Length);
+                rs = instance.Substring(end);
                 @base = instance.Substring(0, end);
             }
             else
             {
                 if (instance.BeginsWith("/"))
                 {
-                    rs = instance.Substring(1, instance.Length);
+                    rs = instance.Substring(1);
                     @base = "/";
                 }
                 else
@@ -333,7 +333,7 @@ namespace Godot
             if (sep == -1)
                 return instance;
 
-            return instance.Substring(sep + 1, instance.Length);
+            return instance.Substring(sep + 1);
         }
 
         // <summary>
@@ -911,7 +911,8 @@ namespace Godot
         // </summary>
         public static string Substr(this string instance, int from, int len)
         {
-            return instance.Substring(from, len);
+            int max = instance.Length - from;
+            return instance.Substring(from, len > max ? max : len);
         }
 
         // <summary>

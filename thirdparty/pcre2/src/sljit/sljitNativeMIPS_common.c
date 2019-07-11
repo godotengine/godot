@@ -57,14 +57,14 @@ typedef sljit_u32 sljit_ins;
 #define RETURN_ADDR_REG	31
 
 /* Flags are kept in volatile registers. */
-#define EQUAL_FLAG	31
+#define EQUAL_FLAG	3
 #define OTHER_FLAG	1
 
 #define TMP_FREG1	(SLJIT_NUMBER_OF_FLOAT_REGISTERS + 1)
 #define TMP_FREG2	(SLJIT_NUMBER_OF_FLOAT_REGISTERS + 2)
 
 static const sljit_u8 reg_map[SLJIT_NUMBER_OF_REGISTERS + 5] = {
-	0, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 24, 23, 22, 21, 20, 19, 18, 17, 16, 29, 3, 25, 4
+	0, 2, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 24, 23, 22, 21, 20, 19, 18, 17, 16, 29, 4, 25, 31
 };
 
 #if (defined SLJIT_CONFIG_MIPS_32 && SLJIT_CONFIG_MIPS_32)
@@ -612,16 +612,17 @@ SLJIT_API_FUNC_ATTRIBUTE sljit_s32 sljit_emit_enter(struct sljit_compiler *compi
 		/* Frequent case. */
 		FAIL_IF(push_inst(compiler, ADDIU_W | S(SLJIT_SP) | T(SLJIT_SP) | IMM(-local_size), DR(SLJIT_SP)));
 		base = S(SLJIT_SP);
+		offs = local_size - (sljit_sw)sizeof(sljit_sw);
 	}
 	else {
-		FAIL_IF(load_immediate(compiler, DR(TMP_REG1), local_size));
+		FAIL_IF(load_immediate(compiler, DR(OTHER_FLAG), local_size));
 		FAIL_IF(push_inst(compiler, ADDU_W | S(SLJIT_SP) | TA(0) | D(TMP_REG2), DR(TMP_REG2)));
-		FAIL_IF(push_inst(compiler, SUBU_W | S(SLJIT_SP) | T(TMP_REG1) | D(SLJIT_SP), DR(SLJIT_SP)));
+		FAIL_IF(push_inst(compiler, SUBU_W | S(SLJIT_SP) | T(OTHER_FLAG) | D(SLJIT_SP), DR(SLJIT_SP)));
 		base = S(TMP_REG2);
 		local_size = 0;
+		offs = -(sljit_sw)sizeof(sljit_sw);
 	}
 
-	offs = local_size - (sljit_sw)(sizeof(sljit_sw));
 	FAIL_IF(push_inst(compiler, STACK_STORE | base | TA(RETURN_ADDR_REG) | IMM(offs), MOVABLE_INS));
 
 	tmp = saveds < SLJIT_NUMBER_OF_SAVED_REGISTERS ? (SLJIT_S0 + 1 - saveds) : SLJIT_FIRST_SAVED_REG;
@@ -805,7 +806,8 @@ static sljit_s32 getput_arg(struct sljit_compiler *compiler, sljit_s32 flags, sl
 	if ((flags & MEM_MASK) <= GPR_REG && (flags & LOAD_DATA)) {
 		tmp_ar = reg_ar;
 		delay_slot = reg_ar;
-	} else {
+	}
+	else {
 		tmp_ar = DR(TMP_REG1);
 		delay_slot = MOVABLE_INS;
 	}
@@ -881,11 +883,39 @@ static sljit_s32 getput_arg(struct sljit_compiler *compiler, sljit_s32 flags, sl
 
 static SLJIT_INLINE sljit_s32 emit_op_mem(struct sljit_compiler *compiler, sljit_s32 flags, sljit_s32 reg_ar, sljit_s32 arg, sljit_sw argw)
 {
+	sljit_s32 tmp_ar, base, delay_slot;
+
 	if (getput_arg_fast(compiler, flags, reg_ar, arg, argw))
 		return compiler->error;
-	compiler->cache_arg = 0;
-	compiler->cache_argw = 0;
-	return getput_arg(compiler, flags, reg_ar, arg, argw, 0, 0);
+
+	if ((flags & MEM_MASK) <= GPR_REG && (flags & LOAD_DATA)) {
+		tmp_ar = reg_ar;
+		delay_slot = reg_ar;
+	}
+	else {
+		tmp_ar = DR(TMP_REG1);
+		delay_slot = MOVABLE_INS;
+	}
+	base = arg & REG_MASK;
+
+	if (SLJIT_UNLIKELY(arg & OFFS_REG_MASK)) {
+		argw &= 0x3;
+
+		if (SLJIT_UNLIKELY(argw)) {
+			FAIL_IF(push_inst(compiler, SLL_W | T(OFFS_REG(arg)) | DA(tmp_ar) | SH_IMM(argw), tmp_ar));
+			FAIL_IF(push_inst(compiler, ADDU_W | S(base) | TA(tmp_ar) | DA(tmp_ar), tmp_ar));
+		}
+		else
+			FAIL_IF(push_inst(compiler, ADDU_W | S(base) | T(OFFS_REG(arg)) | DA(tmp_ar), tmp_ar));
+		return push_inst(compiler, data_transfer_insts[flags & MEM_MASK] | SA(tmp_ar) | TA(reg_ar), delay_slot);
+	}
+
+	FAIL_IF(load_immediate(compiler, tmp_ar, argw));
+
+	if (base != 0)
+		FAIL_IF(push_inst(compiler, ADDU_W | S(base) | TA(tmp_ar) | DA(tmp_ar), tmp_ar));
+
+	return push_inst(compiler, data_transfer_insts[flags & MEM_MASK] | SA(tmp_ar) | TA(reg_ar), delay_slot);
 }
 
 static SLJIT_INLINE sljit_s32 emit_op_mem2(struct sljit_compiler *compiler, sljit_s32 flags, sljit_s32 reg, sljit_s32 arg1, sljit_sw arg1w, sljit_s32 arg2, sljit_sw arg2w)

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include "core/reference.h"
 #include "core/script_language.h"
 #include "core/self_list.h"
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/variant.h"
 
 class GDScriptInstance;
@@ -45,10 +45,11 @@ class GDScript;
 struct GDScriptDataType {
 	bool has_type;
 	enum {
+		UNINITIALIZED,
 		BUILTIN,
 		NATIVE,
 		SCRIPT,
-		GDSCRIPT
+		GDSCRIPT,
 	} kind;
 	Variant::Type builtin_type;
 	StringName native_type;
@@ -58,6 +59,8 @@ struct GDScriptDataType {
 		if (!has_type) return true; // Can't type check
 
 		switch (kind) {
+			case UNINITIALIZED:
+				break;
 			case BUILTIN: {
 				Variant::Type var_type = p_variant.get_type();
 				bool valid = builtin_type == var_type;
@@ -74,8 +77,14 @@ struct GDScriptDataType {
 					return false;
 				}
 				Object *obj = p_variant.operator Object *();
-				if (obj && !ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
-					return false;
+				if (obj) {
+					if (!ClassDB::is_parent_class(obj->get_class_name(), native_type)) {
+						// Try with underscore prefix
+						StringName underscore_native_type = "_" + native_type;
+						if (!ClassDB::is_parent_class(obj->get_class_name(), underscore_native_type)) {
+							return false;
+						}
+					}
 				}
 				return true;
 			} break;
@@ -107,6 +116,8 @@ struct GDScriptDataType {
 		PropertyInfo info;
 		if (has_type) {
 			switch (kind) {
+				case UNINITIALIZED:
+					break;
 				case BUILTIN: {
 					info.type = builtin_type;
 				} break;
@@ -128,7 +139,9 @@ struct GDScriptDataType {
 	}
 
 	GDScriptDataType() :
-			has_type(false) {}
+			has_type(false),
+			kind(UNINITIALIZED),
+			builtin_type(Variant::NIL) {}
 };
 
 class GDScriptFunction {

@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Shape2D" inherits="Resource" category="Core" version="3.1">
+<class name="Shape2D" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		Base class for all 2D Shapes.
+		Base class for all 2D shapes.
 	</brief_description>
 	<description>
-		Base class for all 2D Shapes. All 2D shape types inherit from this.
+		Base class for all 2D shapes. All 2D shape types inherit from this.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/physics/physics_introduction.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="collide">
 			<return type="bool">
@@ -27,7 +25,7 @@
 			</description>
 		</method>
 		<method name="collide_and_get_contacts">
-			<return type="Variant">
+			<return type="Array">
 			</return>
 			<argument index="0" name="local_xform" type="Transform2D">
 			</argument>
@@ -54,12 +52,12 @@
 			<argument index="4" name="shape_motion" type="Vector2">
 			</argument>
 			<description>
-				Return whether this shape would collide with another, if a given movement was applied.
+				Returns whether this shape would collide with another, if a given movement was applied.
 				This method needs the transformation matrix for this shape ([code]local_xform[/code]), the movement to test on this shape ([code]local_motion[/code]), the shape to check collisions with ([code]with_shape[/code]), the transformation matrix of that shape ([code]shape_xform[/code]), and the movement to test onto the other object ([code]shape_motion[/code]).
 			</description>
 		</method>
 		<method name="collide_with_motion_and_get_contacts">
-			<return type="Variant">
+			<return type="Array">
 			</return>
 			<argument index="0" name="local_xform" type="Transform2D">
 			</argument>
@@ -78,7 +76,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias">
+		<member name="custom_solver_bias" type="float" setter="set_custom_solver_bias" getter="get_custom_solver_bias" default="0.0">
 		</member>
 	</members>
 	<constants>

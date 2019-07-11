@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,9 +67,6 @@ void GridMapEditor::_menu_option(int p_option) {
 			floor->set_value(floor->get_value() + 1);
 		} break;
 
-		case MENU_OPTION_CONFIGURE: {
-
-		} break;
 		case MENU_OPTION_LOCK_VIEW: {
 
 			int index = options->get_popup()->get_item_index(MENU_OPTION_LOCK_VIEW);
@@ -121,14 +118,15 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CURSOR_ROTATE_Y: {
 
 			Basis r;
-			if (input_action == INPUT_DUPLICATE) {
+			if (input_action == INPUT_PASTE) {
 
-				r.set_orthogonal_index(selection.duplicate_rot);
+				r.set_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(0, 1, 0), -Math_PI / 2.0);
-				selection.duplicate_rot = r.get_orthogonal_index();
-				_update_duplicate_indicator();
+				paste_indicator.orientation = r.get_orthogonal_index();
+				_update_paste_indicator();
 				break;
 			}
+
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 1, 0), -Math_PI / 2.0);
 			cursor_rot = r.get_orthogonal_index();
@@ -137,12 +135,12 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CURSOR_ROTATE_X: {
 
 			Basis r;
-			if (input_action == INPUT_DUPLICATE) {
+			if (input_action == INPUT_PASTE) {
 
-				r.set_orthogonal_index(selection.duplicate_rot);
+				r.set_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(1, 0, 0), -Math_PI / 2.0);
-				selection.duplicate_rot = r.get_orthogonal_index();
-				_update_duplicate_indicator();
+				paste_indicator.orientation = r.get_orthogonal_index();
+				_update_paste_indicator();
 				break;
 			}
 
@@ -154,12 +152,12 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CURSOR_ROTATE_Z: {
 
 			Basis r;
-			if (input_action == INPUT_DUPLICATE) {
+			if (input_action == INPUT_PASTE) {
 
-				r.set_orthogonal_index(selection.duplicate_rot);
+				r.set_orthogonal_index(paste_indicator.orientation);
 				r.rotate(Vector3(0, 0, 1), -Math_PI / 2.0);
-				selection.duplicate_rot = r.get_orthogonal_index();
-				_update_duplicate_indicator();
+				paste_indicator.orientation = r.get_orthogonal_index();
+				_update_paste_indicator();
 				break;
 			}
 
@@ -171,6 +169,15 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Y: {
 
 			Basis r;
+			if (input_action == INPUT_PASTE) {
+
+				r.set_orthogonal_index(paste_indicator.orientation);
+				r.rotate(Vector3(0, 1, 0), Math_PI / 2.0);
+				paste_indicator.orientation = r.get_orthogonal_index();
+				_update_paste_indicator();
+				break;
+			}
+
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 1, 0), Math_PI / 2.0);
 			cursor_rot = r.get_orthogonal_index();
@@ -179,6 +186,15 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CURSOR_BACK_ROTATE_X: {
 
 			Basis r;
+			if (input_action == INPUT_PASTE) {
+
+				r.set_orthogonal_index(paste_indicator.orientation);
+				r.rotate(Vector3(1, 0, 0), Math_PI / 2.0);
+				paste_indicator.orientation = r.get_orthogonal_index();
+				_update_paste_indicator();
+				break;
+			}
+
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(1, 0, 0), Math_PI / 2.0);
 			cursor_rot = r.get_orthogonal_index();
@@ -187,6 +203,15 @@ void GridMapEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CURSOR_BACK_ROTATE_Z: {
 
 			Basis r;
+			if (input_action == INPUT_PASTE) {
+
+				r.set_orthogonal_index(paste_indicator.orientation);
+				r.rotate(Vector3(0, 0, 1), Math_PI / 2.0);
+				paste_indicator.orientation = r.get_orthogonal_index();
+				_update_paste_indicator();
+				break;
+			}
+
 			r.set_orthogonal_index(cursor_rot);
 			r.rotate(Vector3(0, 0, 1), Math_PI / 2.0);
 			cursor_rot = r.get_orthogonal_index();
@@ -194,10 +219,10 @@ void GridMapEditor::_menu_option(int p_option) {
 		} break;
 		case MENU_OPTION_CURSOR_CLEAR_ROTATION: {
 
-			if (input_action == INPUT_DUPLICATE) {
+			if (input_action == INPUT_PASTE) {
 
-				selection.duplicate_rot = 0;
-				_update_duplicate_indicator();
+				paste_indicator.orientation = 0;
+				_update_paste_indicator();
 				break;
 			}
 
@@ -205,28 +230,33 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 
-		case MENU_OPTION_DUPLICATE_SELECTS: {
-			int idx = options->get_popup()->get_item_index(MENU_OPTION_DUPLICATE_SELECTS);
+		case MENU_OPTION_PASTE_SELECTS: {
+			int idx = options->get_popup()->get_item_index(MENU_OPTION_PASTE_SELECTS);
 			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
 		} break;
+
 		case MENU_OPTION_SELECTION_DUPLICATE:
+		case MENU_OPTION_SELECTION_CUT: {
 			if (!(selection.active && input_action == INPUT_NONE))
-				return;
-			if (last_mouseover == Vector3(-1, -1, -1)) //nono mouseovering anythin
 				break;
 
-			last_mouseover = selection.begin;
-			VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], Transform(Basis(), grid_ofs));
+			_set_clipboard_data();
 
-			input_action = INPUT_DUPLICATE;
-			selection.click = last_mouseover;
-			selection.current = last_mouseover;
-			selection.duplicate_rot = 0;
-			_update_duplicate_indicator();
-			break;
+			if (p_option == MENU_OPTION_SELECTION_CUT) {
+				_delete_selection();
+			}
+
+			input_action = INPUT_PASTE;
+			paste_indicator.click = selection.begin;
+			paste_indicator.current = selection.begin;
+			paste_indicator.begin = selection.begin;
+			paste_indicator.end = selection.end;
+			paste_indicator.orientation = 0;
+			_update_paste_indicator();
+		} break;
 		case MENU_OPTION_SELECTION_CLEAR: {
 			if (!selection.active)
-				return;
+				break;
 
 			_delete_selection();
 
@@ -249,7 +279,7 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = Transform();
 	cursor_transform.origin = cursor_origin;
 	cursor_transform.basis.set_orthogonal_index(cursor_rot);
-	cursor_transform = node->get_transform() * cursor_transform;
+	cursor_transform = node->get_global_transform() * cursor_transform;
 
 	if (cursor_instance.is_valid()) {
 		VisualServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
@@ -289,11 +319,11 @@ void GridMapEditor::_update_selection_transform() {
 			scale *= node->get_cell_size();
 			pos *= node->get_cell_size();
 
-			Transform xf;
-			xf.basis.scale(scale);
-			xf.origin = pos;
+			Transform xf2;
+			xf2.basis.scale(scale);
+			xf2.origin = pos;
 
-			VisualServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf);
+			VisualServer::get_singleton()->instance_set_transform(selection_level_instance[i], xf2);
 		}
 	}
 }
@@ -315,17 +345,28 @@ void GridMapEditor::_validate_selection() {
 	_update_selection_transform();
 }
 
+void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const Vector3 &p_end) {
+
+	selection.active = p_active;
+	selection.begin = p_begin;
+	selection.end = p_end;
+	selection.click = p_begin;
+	selection.current = p_end;
+
+	_update_selection_transform();
+}
+
 bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, bool p_click) {
 
 	if (!spatial_editor)
 		return false;
 
-	if (selected_palette < 0 && input_action != INPUT_COPY && input_action != INPUT_SELECT && input_action != INPUT_DUPLICATE)
+	if (selected_palette < 0 && input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE)
 		return false;
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
 	if (mesh_library.is_null())
 		return false;
-	if (input_action != INPUT_COPY && input_action != INPUT_SELECT && input_action != INPUT_DUPLICATE && !mesh_library->has_item(selected_palette))
+	if (input_action != INPUT_PICK && input_action != INPUT_SELECT && input_action != INPUT_PASTE && !mesh_library->has_item(selected_palette))
 		return false;
 
 	Camera *camera = p_camera;
@@ -379,20 +420,24 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	}
 
 	last_mouseover = Vector3(cell[0], cell[1], cell[2]);
-	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], Transform(Basis(), grid_ofs));
+	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
 
 	if (cursor_instance.is_valid()) {
 
 		cursor_origin = (Vector3(cell[0], cell[1], cell[2]) + Vector3(0.5 * node->get_center_x(), 0.5 * node->get_center_y(), 0.5 * node->get_center_z())) * node->get_cell_size();
 		cursor_visible = true;
 
+		if (input_action == INPUT_SELECT || input_action == INPUT_PASTE) {
+			cursor_visible = false;
+		}
+
 		_update_cursor_transform();
 	}
 
-	if (input_action == INPUT_DUPLICATE) {
+	if (input_action == INPUT_PASTE) {
 
-		selection.current = Vector3(cell[0], cell[1], cell[2]);
-		_update_duplicate_indicator();
+		paste_indicator.current = Vector3(cell[0], cell[1], cell[2]);
+		_update_paste_indicator();
 
 	} else if (input_action == INPUT_SELECT) {
 
@@ -403,7 +448,7 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 		_validate_selection();
 
 		return true;
-	} else if (input_action == INPUT_COPY) {
+	} else if (input_action == INPUT_PICK) {
 
 		int item = node->get_cell_item(cell[0], cell[1], cell[2]);
 		if (item >= 0) {
@@ -456,10 +501,9 @@ void GridMapEditor::_delete_selection() {
 			}
 		}
 	}
+	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
+	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
-
-	selection.active = false;
-	_validate_selection();
 }
 
 void GridMapEditor::_fill_selection() {
@@ -479,49 +523,26 @@ void GridMapEditor::_fill_selection() {
 			}
 		}
 	}
+	undo_redo->add_do_method(this, "_set_selection", !selection.active, selection.begin, selection.end);
+	undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	undo_redo->commit_action();
-
-	selection.active = false;
-	_validate_selection();
 }
 
-void GridMapEditor::_update_duplicate_indicator() {
+void GridMapEditor::_clear_clipboard_data() {
 
-	if (!selection.active || input_action != INPUT_DUPLICATE) {
+	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
 
-		Transform xf;
-		xf.basis.set_zero();
-		VisualServer::get_singleton()->instance_set_transform(duplicate_instance, xf);
-		return;
+		VisualServer::get_singleton()->free(E->get().instance);
 	}
 
-	Transform xf;
-	xf.scale(Vector3(1, 1, 1) * (Vector3(1, 1, 1) + (selection.end - selection.begin)) * node->get_cell_size());
-	xf.origin = (selection.begin + (selection.current - selection.click)) * node->get_cell_size();
-	Basis rot;
-	rot.set_orthogonal_index(selection.duplicate_rot);
-	xf.basis = rot * xf.basis;
-
-	VisualServer::get_singleton()->instance_set_transform(duplicate_instance, node->get_global_transform() * xf);
+	clipboard_items.clear();
 }
 
-struct __Item {
-	Vector3 pos;
-	int rot;
-	int item;
-};
-void GridMapEditor::_duplicate_paste() {
+void GridMapEditor::_set_clipboard_data() {
 
-	if (!selection.active)
-		return;
+	_clear_clipboard_data();
 
-	int idx = options->get_popup()->get_item_index(MENU_OPTION_DUPLICATE_SELECTS);
-	bool reselect = options->get_popup()->is_item_checked(idx);
-
-	List<__Item> items;
-
-	Basis rot;
-	rot.set_orthogonal_index(selection.duplicate_rot);
+	Ref<MeshLibrary> meshLibrary = node->get_mesh_library();
 
 	for (int i = selection.begin.x; i <= selection.end.x; i++) {
 
@@ -532,44 +553,94 @@ void GridMapEditor::_duplicate_paste() {
 				int itm = node->get_cell_item(i, j, k);
 				if (itm == GridMap::INVALID_CELL_ITEM)
 					continue;
-				int orientation = node->get_cell_item_orientation(i, j, k);
-				__Item item;
-				Vector3 rel = Vector3(i, j, k) - selection.begin;
-				rel = rot.xform(rel);
 
-				Basis orm;
-				orm.set_orthogonal_index(orientation);
-				orm = rot * orm;
+				Ref<Mesh> mesh = meshLibrary->get_item_mesh(itm);
 
-				item.pos = selection.begin + rel;
-				item.item = itm;
-				item.rot = orm.get_orthogonal_index();
-				items.push_back(item);
+				ClipboardItem item;
+				item.cell_item = itm;
+				item.grid_offset = Vector3(i, j, k) - selection.begin;
+				item.orientation = node->get_cell_item_orientation(i, j, k);
+				item.instance = VisualServer::get_singleton()->instance_create2(mesh->get_rid(), get_tree()->get_root()->get_world()->get_scenario());
+
+				clipboard_items.push_back(item);
 			}
 		}
 	}
+}
 
-	Vector3 ofs = selection.current - selection.click;
-	if (items.size()) {
-		undo_redo->create_action(TTR("GridMap Duplicate Selection"));
-		for (List<__Item>::Element *E = items.front(); E; E = E->next()) {
-			__Item &it = E->get();
-			Vector3 pos = it.pos + ofs;
+void GridMapEditor::_update_paste_indicator() {
 
-			undo_redo->add_do_method(node, "set_cell_item", pos.x, pos.y, pos.z, it.item, it.rot);
-			undo_redo->add_undo_method(node, "set_cell_item", pos.x, pos.y, pos.z, node->get_cell_item(pos.x, pos.y, pos.z), node->get_cell_item_orientation(pos.x, pos.y, pos.z));
-		}
-		undo_redo->commit_action();
+	if (input_action != INPUT_PASTE) {
+
+		Transform xf;
+		xf.basis.set_zero();
+		VisualServer::get_singleton()->instance_set_transform(paste_instance, xf);
+		return;
+	}
+
+	Vector3 center = 0.5 * Vector3(float(node->get_center_x()), float(node->get_center_y()), float(node->get_center_z()));
+	Vector3 scale = (Vector3(1, 1, 1) + (paste_indicator.end - paste_indicator.begin)) * node->get_cell_size();
+	Transform xf;
+	xf.scale(scale);
+	xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
+	Basis rot;
+	rot.set_orthogonal_index(paste_indicator.orientation);
+	xf.basis = rot * xf.basis;
+	xf.translate((-center * node->get_cell_size()) / scale);
+
+	VisualServer::get_singleton()->instance_set_transform(paste_instance, node->get_global_transform() * xf);
+
+	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
+
+		ClipboardItem &item = E->get();
+
+		xf = Transform();
+		xf.origin = (paste_indicator.begin + (paste_indicator.current - paste_indicator.click) + center) * node->get_cell_size();
+		xf.basis = rot * xf.basis;
+		xf.translate(item.grid_offset * node->get_cell_size());
+
+		Basis item_rot;
+		item_rot.set_orthogonal_index(item.orientation);
+		xf.basis = item_rot * xf.basis;
+
+		VisualServer::get_singleton()->instance_set_transform(item.instance, node->get_global_transform() * xf);
+	}
+}
+
+void GridMapEditor::_do_paste() {
+
+	int idx = options->get_popup()->get_item_index(MENU_OPTION_PASTE_SELECTS);
+	bool reselect = options->get_popup()->is_item_checked(idx);
+
+	Basis rot;
+	rot.set_orthogonal_index(paste_indicator.orientation);
+
+	Vector3 ofs = paste_indicator.current - paste_indicator.click;
+	undo_redo->create_action(TTR("GridMap Paste Selection"));
+
+	for (List<ClipboardItem>::Element *E = clipboard_items.front(); E; E = E->next()) {
+
+		ClipboardItem &item = E->get();
+
+		Vector3 pos = rot.xform(item.grid_offset) + paste_indicator.begin + ofs;
+
+		Basis orm;
+		orm.set_orthogonal_index(item.orientation);
+		orm = rot * orm;
+
+		undo_redo->add_do_method(node, "set_cell_item", pos.x, pos.y, pos.z, item.cell_item, orm.get_orthogonal_index());
+		undo_redo->add_undo_method(node, "set_cell_item", pos.x, pos.y, pos.z, node->get_cell_item(pos.x, pos.y, pos.z), node->get_cell_item_orientation(pos.x, pos.y, pos.z));
 	}
 
 	if (reselect) {
 
-		selection.begin += ofs;
-		selection.end += ofs;
-		selection.click = selection.begin;
-		selection.current = selection.end;
-		_validate_selection();
+		undo_redo->add_do_method(this, "_set_selection", true, paste_indicator.begin + ofs, paste_indicator.end + ofs);
+		undo_redo->add_undo_method(this, "_set_selection", selection.active, selection.begin, selection.end);
 	}
+
+	undo_redo->commit_action();
+
+	_clear_clipboard_data();
 }
 
 bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<InputEvent> &p_event) {
@@ -593,31 +664,36 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 		}
 
 		if (mb->is_pressed()) {
+			SpatialEditorViewport::NavigationScheme nav_scheme = (SpatialEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+			if ((nav_scheme == SpatialEditorViewport::NAVIGATION_MAYA || nav_scheme == SpatialEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
+				input_action = INPUT_NONE;
+			} else if (mb->get_button_index() == BUTTON_LEFT) {
 
-			if (mb->get_button_index() == BUTTON_LEFT) {
-
-				if (input_action == INPUT_DUPLICATE) {
-					//paste
-					_duplicate_paste();
+				if (input_action == INPUT_PASTE) {
+					_do_paste();
 					input_action = INPUT_NONE;
-					_update_duplicate_indicator();
+					_update_paste_indicator();
 				} else if (mb->get_shift()) {
 					input_action = INPUT_SELECT;
+					last_selection = selection;
 				} else if (mb->get_command()) {
-					input_action = INPUT_COPY;
+					input_action = INPUT_PICK;
 				} else {
 					input_action = INPUT_PAINT;
 					set_items.clear();
 				}
 			} else if (mb->get_button_index() == BUTTON_RIGHT) {
-				if (input_action == INPUT_DUPLICATE) {
+				if (input_action == INPUT_PASTE) {
+					_clear_clipboard_data();
 					input_action = INPUT_NONE;
-					_update_duplicate_indicator();
-				} else if (mb->get_shift()) {
+					_update_paste_indicator();
+					return true;
+				} else if (selection.active) {
+					_set_selection(false);
+					return true;
+				} else {
 					input_action = INPUT_ERASE;
 					set_items.clear();
-				} else {
-					return false;
 				}
 			} else {
 				return false;
@@ -631,7 +707,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 					(mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
 
 				if (set_items.size()) {
-					undo_redo->create_action("GridMap Paint");
+					undo_redo->create_action(TTR("GridMap Paint"));
 					for (List<SetItem>::Element *E = set_items.front(); E; E = E->next()) {
 
 						const SetItem &si = E->get();
@@ -650,13 +726,21 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 				return set_items.size() > 0;
 			}
 
+			if (mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_SELECT) {
+
+				undo_redo->create_action("GridMap Selection");
+				undo_redo->add_do_method(this, "_set_selection", selection.active, selection.begin, selection.end);
+				undo_redo->add_undo_method(this, "_set_selection", last_selection.active, last_selection.begin, last_selection.end);
+				undo_redo->commit_action();
+			}
+
 			if (mb->get_button_index() == BUTTON_LEFT && input_action != INPUT_NONE) {
 
 				set_items.clear();
 				input_action = INPUT_NONE;
 				return true;
 			}
-			if (mb->get_button_index() == BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_DUPLICATE)) {
+			if (mb->get_button_index() == BUTTON_RIGHT && (input_action == INPUT_ERASE || input_action == INPUT_PASTE)) {
 				input_action = INPUT_NONE;
 				return true;
 			}
@@ -668,6 +752,45 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 	if (mm.is_valid()) {
 
 		return do_input_action(p_camera, mm->get_position(), false);
+	}
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid()) {
+		if (k->is_pressed()) {
+			if (k->get_scancode() == KEY_ESCAPE) {
+
+				if (input_action == INPUT_PASTE) {
+					_clear_clipboard_data();
+					input_action = INPUT_NONE;
+					_update_paste_indicator();
+					return true;
+				} else if (selection.active) {
+					_set_selection(false);
+					return true;
+				} else {
+					selected_palette = -1;
+					mesh_library_palette->unselect_all();
+					update_palette();
+					_update_cursor_instance();
+					return true;
+				}
+			}
+
+			if (k->get_shift() && selection.active && input_action != INPUT_PASTE) {
+
+				if (k->get_scancode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_PREV_LEVEL))) {
+					selection.click[edit_axis]--;
+					_validate_selection();
+					return true;
+				}
+				if (k->get_scancode() == options->get_popup()->get_item_accelerator(options->get_popup()->get_item_index(MENU_OPTION_NEXT_LEVEL))) {
+					selection.click[edit_axis]++;
+					_validate_selection();
+					return true;
+				}
+			}
+		}
 	}
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
@@ -717,6 +840,26 @@ void GridMapEditor::_set_display_mode(int p_mode) {
 	update_palette();
 }
 
+void GridMapEditor::_text_changed(const String &p_text) {
+	update_palette();
+}
+
+void GridMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
+
+	Ref<InputEventKey> k = p_ie;
+
+	if (k.is_valid() && (k->get_scancode() == KEY_UP || k->get_scancode() == KEY_DOWN || k->get_scancode() == KEY_PAGEUP || k->get_scancode() == KEY_PAGEDOWN)) {
+
+		mesh_library_palette->call("_gui_input", k);
+		search_box->accept_event();
+	}
+}
+
+void GridMapEditor::_icon_size_changed(float p_value) {
+	mesh_library_palette->set_icon_scale(p_value);
+	update_palette();
+}
+
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
@@ -730,8 +873,9 @@ void GridMapEditor::update_palette() {
 	}
 
 	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	min_size *= EDSCALE;
 	mesh_library_palette->set_fixed_icon_size(Size2(min_size, min_size));
-	mesh_library_palette->set_fixed_column_width(min_size * 3 / 2);
+	mesh_library_palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1.5));
 	mesh_library_palette->set_max_text_lines(2);
 
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
@@ -754,23 +898,28 @@ void GridMapEditor::update_palette() {
 	}
 	il.sort();
 
+	String filter = search_box->get_text().strip_edges();
+
 	int item = 0;
 
 	for (List<_CGMEItemSort>::Element *E = il.front(); E; E = E->next()) {
 		int id = E->get().id;
-
-		mesh_library_palette->add_item("");
-
 		String name = mesh_library->get_item_name(id);
 		Ref<Texture> preview = mesh_library->get_item_preview(id);
 
+		if (name == "") {
+			name = "#" + itos(id);
+		}
+
+		if (filter != "" && !filter.is_subsequence_ofi(name))
+			continue;
+
+		mesh_library_palette->add_item("");
 		if (!preview.is_null()) {
 			mesh_library_palette->set_item_icon(item, preview);
 			mesh_library_palette->set_item_tooltip(item, name);
 		}
-		if (name != "") {
-			mesh_library_palette->set_item_text(item, name);
-		}
+		mesh_library_palette->set_item_text(item, name);
 		mesh_library_palette->set_item_metadata(item, id);
 
 		item++;
@@ -792,7 +941,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	input_action = INPUT_NONE;
 	selection.active = false;
 	_update_selection_transform();
-	_update_duplicate_indicator();
+	_update_paste_indicator();
 
 	spatial_editor = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
 
@@ -927,13 +1076,15 @@ void GridMapEditor::_notification(int p_what) {
 			}
 
 			selection_instance = VisualServer::get_singleton()->instance_create2(selection_mesh, get_tree()->get_root()->get_world()->get_scenario());
-			duplicate_instance = VisualServer::get_singleton()->instance_create2(duplicate_mesh, get_tree()->get_root()->get_world()->get_scenario());
+			paste_instance = VisualServer::get_singleton()->instance_create2(paste_mesh, get_tree()->get_root()->get_world()->get_scenario());
 
 			_update_selection_transform();
-			_update_duplicate_indicator();
+			_update_paste_indicator();
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			_clear_clipboard_data();
+
 			for (int i = 0; i < 3; i++) {
 
 				VS::get_singleton()->free(grid_instance[i]);
@@ -944,9 +1095,9 @@ void GridMapEditor::_notification(int p_what) {
 			}
 
 			VisualServer::get_singleton()->free(selection_instance);
-			VisualServer::get_singleton()->free(duplicate_instance);
+			VisualServer::get_singleton()->free(paste_instance);
 			selection_instance = RID();
-			duplicate_instance = RID();
+			paste_instance = RID();
 		} break;
 
 		case NOTIFICATION_PROCESS: {
@@ -985,6 +1136,7 @@ void GridMapEditor::_notification(int p_what) {
 
 		case NOTIFICATION_THEME_CHANGED: {
 			options->set_icon(get_icon("GridMap", "EditorIcons"));
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 	}
 }
@@ -1029,12 +1181,21 @@ void GridMapEditor::_floor_changed(float p_value) {
 	_update_selection_transform();
 }
 
+void GridMapEditor::_floor_mouse_exited() {
+	floor->get_line_edit()->release_focus();
+}
+
 void GridMapEditor::_bind_methods() {
 
+	ClassDB::bind_method("_text_changed", &GridMapEditor::_text_changed);
+	ClassDB::bind_method("_sbox_input", &GridMapEditor::_sbox_input);
+	ClassDB::bind_method("_icon_size_changed", &GridMapEditor::_icon_size_changed);
 	ClassDB::bind_method("_menu_option", &GridMapEditor::_menu_option);
 	ClassDB::bind_method("_configure", &GridMapEditor::_configure);
 	ClassDB::bind_method("_item_selected_cbk", &GridMapEditor::_item_selected_cbk);
 	ClassDB::bind_method("_floor_changed", &GridMapEditor::_floor_changed);
+	ClassDB::bind_method("_floor_mouse_exited", &GridMapEditor::_floor_mouse_exited);
+	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
 
 	ClassDB::bind_method(D_METHOD("_set_display_mode", "mode"), &GridMapEditor::_set_display_mode);
 }
@@ -1067,6 +1228,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	spatial_editor_hb->add_child(floor);
 	floor->connect("value_changed", this, "_floor_changed");
+	floor->connect("mouse_exited", this, "_floor_mouse_exited");
+	floor->get_line_edit()->connect("mouse_exited", this, "_floor_mouse_exited");
 
 	spatial_editor_hb->add_child(memnew(VSeparator));
 
@@ -1098,15 +1261,12 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KEY_MASK_SHIFT + KEY_D);
 	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, KEY_W);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_check_item("Duplicate Selects", MENU_OPTION_DUPLICATE_SELECTS);
+	options->get_popup()->add_check_item("Paste Selects", MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Create Area"), MENU_OPTION_SELECTION_MAKE_AREA, KEY_CONTROL + KEY_C);
-	options->get_popup()->add_item(TTR("Create Exterior Connector"), MENU_OPTION_SELECTION_MAKE_EXTERIOR_CONNECTOR);
-	options->get_popup()->add_item(TTR("Erase Area"), MENU_OPTION_REMOVE_AREA);
-	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_SHIFT + KEY_C);
-	options->get_popup()->add_item(TTR("Clear Selection"), MENU_OPTION_SELECTION_CLEAR, KEY_MASK_SHIFT + KEY_X);
-	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KEY_MASK_SHIFT + KEY_F);
+	options->get_popup()->add_item(TTR("Duplicate Selection"), MENU_OPTION_SELECTION_DUPLICATE, KEY_MASK_CTRL + KEY_C);
+	options->get_popup()->add_item(TTR("Cut Selection"), MENU_OPTION_SELECTION_CUT, KEY_MASK_CTRL + KEY_X);
+	options->get_popup()->add_item(TTR("Clear Selection"), MENU_OPTION_SELECTION_CLEAR, KEY_DELETE);
+	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KEY_MASK_CTRL + KEY_F);
 
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);
@@ -1132,6 +1292,12 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	add_child(hb);
 	hb->set_h_size_flags(SIZE_EXPAND_FILL);
 
+	search_box = memnew(LineEdit);
+	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	hb->add_child(search_box);
+	search_box->connect("text_changed", this, "_text_changed");
+	search_box->connect("gui_input", this, "_sbox_input");
+
 	mode_thumbnail = memnew(ToolButton);
 	mode_thumbnail->set_toggle_mode(true);
 	mode_thumbnail->set_pressed(true);
@@ -1145,6 +1311,15 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	mode_list->set_icon(p_editor->get_gui_base()->get_icon("FileList", "EditorIcons"));
 	hb->add_child(mode_list);
 	mode_list->connect("pressed", this, "_set_display_mode", varray(DISPLAY_LIST));
+
+	size_slider = memnew(HSlider);
+	size_slider->set_h_size_flags(SIZE_EXPAND_FILL);
+	size_slider->set_min(0.1f);
+	size_slider->set_max(4.0f);
+	size_slider->set_step(0.1f);
+	size_slider->set_value(1.0f);
+	size_slider->connect("value_changed", this, "_icon_size_changed");
+	add_child(size_slider);
 
 	EDITOR_DEF("editors/grid_map/preview_size", 64);
 
@@ -1166,7 +1341,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	last_mouseover = Vector3(-1, -1, -1);
 
 	selection_mesh = VisualServer::get_singleton()->mesh_create();
-	duplicate_mesh = VisualServer::get_singleton()->mesh_create();
+	paste_mesh = VisualServer::get_singleton()->mesh_create();
 
 	{
 		//selection mesh create
@@ -1274,12 +1449,12 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		VisualServer::get_singleton()->mesh_surface_set_material(selection_mesh, 1, outer_mat->get_rid());
 
 		d[VS::ARRAY_VERTEX] = triangles;
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(duplicate_mesh, VS::PRIMITIVE_TRIANGLES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh, 0, inner_mat->get_rid());
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(paste_mesh, VS::PRIMITIVE_TRIANGLES, d);
+		VisualServer::get_singleton()->mesh_surface_set_material(paste_mesh, 0, inner_mat->get_rid());
 
 		d[VS::ARRAY_VERTEX] = lines;
-		VisualServer::get_singleton()->mesh_add_surface_from_arrays(duplicate_mesh, VS::PRIMITIVE_LINES, d);
-		VisualServer::get_singleton()->mesh_surface_set_material(duplicate_mesh, 1, outer_mat->get_rid());
+		VisualServer::get_singleton()->mesh_add_surface_from_arrays(paste_mesh, VS::PRIMITIVE_LINES, d);
+		VisualServer::get_singleton()->mesh_surface_set_material(paste_mesh, 1, outer_mat->get_rid());
 
 		for (int i = 0; i < 3; i++) {
 			d[VS::ARRAY_VERTEX] = square[i];
@@ -1295,6 +1470,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 }
 
 GridMapEditor::~GridMapEditor() {
+
+	_clear_clipboard_data();
 
 	for (int i = 0; i < 3; i++) {
 
@@ -1314,9 +1491,9 @@ GridMapEditor::~GridMapEditor() {
 	if (selection_instance.is_valid())
 		VisualServer::get_singleton()->free(selection_instance);
 
-	VisualServer::get_singleton()->free(duplicate_mesh);
-	if (duplicate_instance.is_valid())
-		VisualServer::get_singleton()->free(duplicate_instance);
+	VisualServer::get_singleton()->free(paste_mesh);
+	if (paste_instance.is_valid())
+		VisualServer::get_singleton()->free(paste_instance);
 }
 
 void GridMapEditorPlugin::_notification(int p_what) {

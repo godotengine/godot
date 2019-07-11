@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,18 +80,15 @@ void AnimationNodeBlendSpace2D::add_blend_point(const Ref<AnimationRootNode> &p_
 	blend_points[p_at_index].node->connect("tree_changed", this, "_tree_changed", varray(), CONNECT_REFERENCE_COUNTED);
 	blend_points_used++;
 
-	if (auto_triangles) {
-		trianges_dirty = true;
-	}
+	_queue_auto_triangles();
+
 	emit_signal("tree_changed");
 }
 
 void AnimationNodeBlendSpace2D::set_blend_point_position(int p_point, const Vector2 &p_position) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
 	blend_points[p_point].position = p_position;
-	if (auto_triangles) {
-		trianges_dirty = true;
-	}
+	_queue_auto_triangles();
 }
 void AnimationNodeBlendSpace2D::set_blend_point_node(int p_point, const Ref<AnimationRootNode> &p_node) {
 	ERR_FAIL_INDEX(p_point, blend_points_used);
@@ -309,6 +306,15 @@ Vector<int> AnimationNodeBlendSpace2D::_get_triangles() const {
 	return t;
 }
 
+void AnimationNodeBlendSpace2D::_queue_auto_triangles() {
+	if (!auto_triangles || trianges_dirty) {
+		return;
+	}
+
+	trianges_dirty = true;
+	call_deferred("_update_triangles");
+}
+
 void AnimationNodeBlendSpace2D::_update_triangles() {
 
 	if (!auto_triangles || !trianges_dirty)
@@ -316,8 +322,10 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 
 	trianges_dirty = false;
 	triangles.clear();
-	if (blend_points_used < 3)
+	if (blend_points_used < 3) {
+		emit_signal("triangles_updated");
 		return;
+	}
 
 	Vector<Vector2> points;
 	points.resize(blend_points_used);
@@ -330,6 +338,7 @@ void AnimationNodeBlendSpace2D::_update_triangles() {
 	for (int i = 0; i < triangles.size(); i++) {
 		add_triangle(triangles[i].points[0], triangles[i].points[1], triangles[i].points[2]);
 	}
+	emit_signal("triangles_updated");
 }
 
 Vector2 AnimationNodeBlendSpace2D::get_closest_point(const Vector2 &p_point) {
@@ -452,9 +461,9 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 					points[j],
 					points[(j + 1) % 3]
 				};
-				Vector2 closest = Geometry::get_closest_point_to_segment_2d(blend_pos, s);
-				if (first || closest.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
-					best_point = closest;
+				Vector2 closest2 = Geometry::get_closest_point_to_segment_2d(blend_pos, s);
+				if (first || closest2.distance_to(blend_pos) < best_point.distance_to(blend_pos)) {
+					best_point = closest2;
 					blend_triangle = i;
 					first = false;
 					float d = s[0].distance_to(s[1]);
@@ -463,7 +472,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 						blend_weights[(j + 1) % 3] = 0.0;
 						blend_weights[(j + 2) % 3] = 0.0;
 					} else {
-						float c = s[0].distance_to(closest) / d;
+						float c = s[0].distance_to(closest2) / d;
 
 						blend_weights[j] = 1.0 - c;
 						blend_weights[(j + 1) % 3] = c;
@@ -546,6 +555,10 @@ String AnimationNodeBlendSpace2D::get_caption() const {
 }
 
 void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &property) const {
+
+	if (auto_triangles && property.name == "triangles") {
+		property.usage = 0;
+	}
 	if (property.name.begins_with("blend_point_")) {
 		String left = property.name.get_slicec('/', 0);
 		int idx = left.get_slicec('_', 2).to_int();
@@ -557,10 +570,12 @@ void AnimationNodeBlendSpace2D::_validate_property(PropertyInfo &property) const
 }
 
 void AnimationNodeBlendSpace2D::set_auto_triangles(bool p_enable) {
-	auto_triangles = p_enable;
-	if (auto_triangles) {
-		trianges_dirty = true;
+	if (auto_triangles == p_enable) {
+		return;
 	}
+
+	auto_triangles = p_enable;
+	_queue_auto_triangles();
 }
 
 bool AnimationNodeBlendSpace2D::get_auto_triangles() const {
@@ -625,6 +640,7 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_blend_mode"), &AnimationNodeBlendSpace2D::get_blend_mode);
 
 	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationNodeBlendSpace2D::_tree_changed);
+	ClassDB::bind_method(D_METHOD("_update_triangles"), &AnimationNodeBlendSpace2D::_update_triangles);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_triangles", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_auto_triangles", "get_auto_triangles");
 
@@ -642,6 +658,7 @@ void AnimationNodeBlendSpace2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "y_label", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_y_label", "get_y_label");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_mode", PROPERTY_HINT_ENUM, "Interpolated,Discrete,Carry", PROPERTY_USAGE_NOEDITOR), "set_blend_mode", "get_blend_mode");
 
+	ADD_SIGNAL(MethodInfo("triangles_updated"));
 	BIND_ENUM_CONSTANT(BLEND_MODE_INTERPOLATED);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE);
 	BIND_ENUM_CONSTANT(BLEND_MODE_DISCRETE_CARRY);

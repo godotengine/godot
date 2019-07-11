@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@ String GDMonoClass::get_full_name(MonoClass *p_mono_class) {
 
 	MonoException *exc = NULL;
 	MonoString *str = GDMonoUtils::object_to_string((MonoObject *)type_obj, &exc);
-	UNLIKELY_UNHANDLED_EXCEPTION(exc);
+	UNHANDLED_EXCEPTION(exc);
 
 	return GDMonoMarshal::mono_string_to_godot(str);
 }
@@ -55,26 +55,32 @@ String GDMonoClass::get_full_name() const {
 }
 
 MonoType *GDMonoClass::get_mono_type() {
-	// Care, you cannot compare MonoType pointers
+	// Careful, you cannot compare two MonoType*.
+	// There is mono_metadata_type_equal, how is this different from comparing two MonoClass*?
 	return get_mono_type(mono_class);
 }
 
-bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
+uint32_t GDMonoClass::get_flags() const {
+	return mono_class_get_flags(mono_class);
+}
 
+bool GDMonoClass::is_static() const {
+	uint32_t static_class_flags = MONO_TYPE_ATTR_ABSTRACT | MONO_TYPE_ATTR_SEALED;
+	return (get_flags() & static_class_flags) == static_class_flags;
+}
+
+bool GDMonoClass::is_assignable_from(GDMonoClass *p_from) const {
 	return mono_class_is_assignable_from(mono_class, p_from->mono_class);
 }
 
 GDMonoClass *GDMonoClass::get_parent_class() {
+	MonoClass *parent_mono_class = mono_class_get_parent(mono_class);
+	return parent_mono_class ? GDMono::get_singleton()->get_class(parent_mono_class) : NULL;
+}
 
-	if (assembly) {
-		MonoClass *parent_mono_class = mono_class_get_parent(mono_class);
-
-		if (parent_mono_class) {
-			return GDMono::get_singleton()->get_class(parent_mono_class);
-		}
-	}
-
-	return NULL;
+GDMonoClass *GDMonoClass::get_nesting_class() {
+	MonoClass *nesting_type = mono_class_get_nesting_type(mono_class);
+	return nesting_type ? GDMono::get_singleton()->get_class(nesting_type) : NULL;
 }
 
 #ifdef TOOLS_ENABLED
@@ -250,6 +256,11 @@ GDMonoMethod *GDMonoClass::get_fetched_method_unknown_params(const StringName &p
 bool GDMonoClass::has_fetched_method_unknown_params(const StringName &p_name) {
 
 	return get_fetched_method_unknown_params(p_name) != NULL;
+}
+
+bool GDMonoClass::implements_interface(GDMonoClass *p_interface) {
+
+	return mono_class_implements_interface(mono_class, p_interface->get_mono_ptr());
 }
 
 GDMonoMethod *GDMonoClass::get_method(const StringName &p_name, int p_params_count) {

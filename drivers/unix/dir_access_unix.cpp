@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,10 +100,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 	struct stat flags;
 	bool success = (stat(p_dir.utf8().get_data(), &flags) == 0);
 
-	if (success && S_ISDIR(flags.st_mode))
-		return true;
-
-	return false;
+	return (success && S_ISDIR(flags.st_mode));
 }
 
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
@@ -316,7 +313,7 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
 	if (p_dir.is_rel_path()) {
-		String next_dir = current_dir + "/" + p_dir;
+		String next_dir = current_dir.plus_file(p_dir);
 		next_dir = next_dir.simplify_path();
 		try_dir = next_dir;
 	} else {
@@ -406,6 +403,10 @@ size_t DirAccessUnix::get_space_left() {
 	return 0;
 #endif
 };
+
+String DirAccessUnix::get_filesystem_type() const {
+	return ""; //TODO this should be implemented
+}
 
 DirAccessUnix::DirAccessUnix() {
 

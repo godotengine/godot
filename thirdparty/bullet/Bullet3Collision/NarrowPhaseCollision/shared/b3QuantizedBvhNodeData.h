@@ -14,57 +14,56 @@ typedef struct b3QuantizedBvhNodeData b3QuantizedBvhNodeData_t;
 struct b3QuantizedBvhNodeData
 {
 	//12 bytes
-	unsigned short int	m_quantizedAabbMin[3];
-	unsigned short int	m_quantizedAabbMax[3];
+	unsigned short int m_quantizedAabbMin[3];
+	unsigned short int m_quantizedAabbMax[3];
 	//4 bytes
-	int	m_escapeIndexOrTriangleIndex;
+	int m_escapeIndexOrTriangleIndex;
 };
 
-inline int	b3GetTriangleIndex(const b3QuantizedBvhNodeData* rootNode)
+inline int b3GetTriangleIndex(const b3QuantizedBvhNodeData* rootNode)
 {
-	unsigned int x=0;
-	unsigned int y = (~(x&0))<<(31-B3_MAX_NUM_PARTS_IN_BITS);
+	unsigned int x = 0;
+	unsigned int y = (~(x & 0)) << (31 - B3_MAX_NUM_PARTS_IN_BITS);
 	// Get only the lower bits where the triangle index is stored
-	return (rootNode->m_escapeIndexOrTriangleIndex&~(y));
+	return (rootNode->m_escapeIndexOrTriangleIndex & ~(y));
 }
 
 inline int b3IsLeaf(const b3QuantizedBvhNodeData* rootNode)
 {
 	//skipindex is negative (internal node), triangleindex >=0 (leafnode)
-	return (rootNode->m_escapeIndexOrTriangleIndex >= 0)? 1 : 0;
+	return (rootNode->m_escapeIndexOrTriangleIndex >= 0) ? 1 : 0;
 }
-	
+
 inline int b3GetEscapeIndex(const b3QuantizedBvhNodeData* rootNode)
 {
 	return -rootNode->m_escapeIndexOrTriangleIndex;
 }
 
-inline void b3QuantizeWithClamp(unsigned short* out, b3Float4ConstArg point2,int isMax, b3Float4ConstArg bvhAabbMin, b3Float4ConstArg bvhAabbMax, b3Float4ConstArg bvhQuantization)
+inline void b3QuantizeWithClamp(unsigned short* out, b3Float4ConstArg point2, int isMax, b3Float4ConstArg bvhAabbMin, b3Float4ConstArg bvhAabbMax, b3Float4ConstArg bvhQuantization)
 {
-	b3Float4 clampedPoint = b3MaxFloat4(point2,bvhAabbMin);
-	clampedPoint = b3MinFloat4 (clampedPoint, bvhAabbMax);
+	b3Float4 clampedPoint = b3MaxFloat4(point2, bvhAabbMin);
+	clampedPoint = b3MinFloat4(clampedPoint, bvhAabbMax);
 
 	b3Float4 v = (clampedPoint - bvhAabbMin) * bvhQuantization;
 	if (isMax)
 	{
-		out[0] = (unsigned short) (((unsigned short)(v.x+1.f) | 1));
-		out[1] = (unsigned short) (((unsigned short)(v.y+1.f) | 1));
-		out[2] = (unsigned short) (((unsigned short)(v.z+1.f) | 1));
-	} else
-	{
-		out[0] = (unsigned short) (((unsigned short)(v.x) & 0xfffe));
-		out[1] = (unsigned short) (((unsigned short)(v.y) & 0xfffe));
-		out[2] = (unsigned short) (((unsigned short)(v.z) & 0xfffe));
+		out[0] = (unsigned short)(((unsigned short)(v.x + 1.f) | 1));
+		out[1] = (unsigned short)(((unsigned short)(v.y + 1.f) | 1));
+		out[2] = (unsigned short)(((unsigned short)(v.z + 1.f) | 1));
 	}
-
+	else
+	{
+		out[0] = (unsigned short)(((unsigned short)(v.x) & 0xfffe));
+		out[1] = (unsigned short)(((unsigned short)(v.y) & 0xfffe));
+		out[2] = (unsigned short)(((unsigned short)(v.z) & 0xfffe));
+	}
 }
 
-
 inline int b3TestQuantizedAabbAgainstQuantizedAabbSlow(
-								const unsigned short int* aabbMin1,
-								const unsigned short int* aabbMax1,
-								const unsigned short int* aabbMin2,
-								const unsigned short int* aabbMax2)
+	const unsigned short int* aabbMin1,
+	const unsigned short int* aabbMax1,
+	const unsigned short int* aabbMin2,
+	const unsigned short int* aabbMax2)
 {
 	//int overlap = 1;
 	if (aabbMin1[0] > aabbMax2[0])
@@ -86,5 +85,4 @@ inline int b3TestQuantizedAabbAgainstQuantizedAabbSlow(
 	//return overlap;
 }
 
-
-#endif //B3_QUANTIZED_BVH_NODE_H
+#endif  //B3_QUANTIZED_BVH_NODE_H

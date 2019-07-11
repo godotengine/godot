@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,9 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "crash_handler_osx.h"
+
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "main/main.h"
-#include "os_osx.h"
 
 #include <string.h>
 #include <unistd.h>
@@ -75,7 +77,12 @@ static void handle_crash(int sig) {
 	void *bt_buffer[256];
 	size_t size = backtrace(bt_buffer, 256);
 	String _execpath = OS::get_singleton()->get_executable_path();
-	String msg = GLOBAL_GET("debug/settings/crash_handler/message");
+
+	String msg;
+	const ProjectSettings *proj_settings = ProjectSettings::get_singleton();
+	if (proj_settings) {
+		msg = proj_settings->get("debug/settings/crash_handler/message");
+	}
 
 	// Dump the backtrace to stderr with a message to the user
 	fprintf(stderr, "%s: Program crashed with signal %d\n", __FUNCTION__, sig);

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorFileSystem" inherits="Node" category="Core" version="3.1">
+<class name="EditorFileSystem" inherits="Node" category="Core" version="3.2">
 	<brief_description>
 		Resource filesystem, as the editor sees it.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_file_type" qualifiers="const">
 			<return type="String">
@@ -17,14 +15,14 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Get the type of the file, given the full path.
+				Gets the type of the file, given the full path.
 			</description>
 		</method>
 		<method name="get_filesystem">
 			<return type="EditorFileSystemDirectory">
 			</return>
 			<description>
-				Get the root directory object.
+				Gets the root directory object.
 			</description>
 		</method>
 		<method name="get_filesystem_path">
@@ -40,14 +38,14 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the scan progress for 0 to 1 if the FS is being scanned.
+				Returns the scan progress for 0 to 1 if the FS is being scanned.
 			</description>
 		</method>
 		<method name="is_scanning" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Return true of the filesystem is being scanned.
+				Returns [code]true[/code] of the filesystem is being scanned.
 			</description>
 		</method>
 		<method name="scan">

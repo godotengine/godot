@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,17 +30,6 @@
 
 package org.godotengine.godot.payments;
 
-import org.json.JSONException;
-import org.json.JSONObject;
-
-import org.godotengine.godot.Godot;
-import org.godotengine.godot.GodotLib;
-import org.godotengine.godot.GodotPaymentV3;
-import org.godotengine.godot.utils.Crypt;
-import org.godotengine.godot.utils.HttpRequester;
-import org.godotengine.godot.utils.RequestParams;
-import com.android.vending.billing.IInAppBillingService;
-
 import android.app.Activity;
 import android.app.PendingIntent;
 import android.app.ProgressDialog;
@@ -51,8 +40,16 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.RemoteException;
 import android.util.Log;
-
+import com.android.vending.billing.IInAppBillingService;
 import java.lang.ref.WeakReference;
+import org.godotengine.godot.Godot;
+import org.godotengine.godot.GodotLib;
+import org.godotengine.godot.GodotPaymentV3;
+import org.godotengine.godot.utils.Crypt;
+import org.godotengine.godot.utils.HttpRequester;
+import org.godotengine.godot.utils.RequestParams;
+import org.json.JSONException;
+import org.json.JSONObject;
 
 abstract public class ValidateTask {
 

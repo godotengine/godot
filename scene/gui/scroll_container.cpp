@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -88,13 +88,16 @@ void ScrollContainer::_cancel_drag() {
 
 void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
+	double prev_v_scroll = v_scroll->get_value();
+	double prev_h_scroll = h_scroll->get_value();
+
 	Ref<InputEventMouseButton> mb = p_gui_input;
 
 	if (mb.is_valid()) {
 
 		if (mb->get_button_index() == BUTTON_WHEEL_UP && mb->is_pressed()) {
 			// only horizontal is enabled, scroll horizontally
-			if (h_scroll->is_visible() && !v_scroll->is_visible()) {
+			if (h_scroll->is_visible() && (!v_scroll->is_visible() || mb->get_shift())) {
 				h_scroll->set_value(h_scroll->get_value() - h_scroll->get_page() / 8 * mb->get_factor());
 			} else if (v_scroll->is_visible_in_tree()) {
 				v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() / 8 * mb->get_factor());
@@ -103,7 +106,7 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 		if (mb->get_button_index() == BUTTON_WHEEL_DOWN && mb->is_pressed()) {
 			// only horizontal is enabled, scroll horizontally
-			if (h_scroll->is_visible() && !v_scroll->is_visible()) {
+			if (h_scroll->is_visible() && (!v_scroll->is_visible() || mb->get_shift())) {
 				h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() / 8 * mb->get_factor());
 			} else if (v_scroll->is_visible()) {
 				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() / 8 * mb->get_factor());
@@ -122,6 +125,9 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		}
 
+		if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
+			accept_event(); //accept event if scroll changed
+
 		if (!OS::get_singleton()->has_touchscreen_ui_hint())
 			return;
 
@@ -134,19 +140,17 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				_cancel_drag();
 			}
 
-			if (true) {
-				drag_speed = Vector2();
-				drag_accum = Vector2();
-				last_drag_accum = Vector2();
-				drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
-				drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
-				drag_touching_deaccel = false;
-				beyond_deadzone = false;
+			drag_speed = Vector2();
+			drag_accum = Vector2();
+			last_drag_accum = Vector2();
+			drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
+			drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+			drag_touching_deaccel = false;
+			beyond_deadzone = false;
+			time_since_motion = 0;
+			if (drag_touching) {
+				set_physics_process_internal(true);
 				time_since_motion = 0;
-				if (drag_touching) {
-					set_physics_process_internal(true);
-					time_since_motion = 0;
-				}
 			}
 
 		} else {
@@ -204,6 +208,9 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
 		}
 	}
+
+	if (v_scroll->get_value() != prev_v_scroll || h_scroll->get_value() != prev_h_scroll)
+		accept_event(); //accept event if scroll changed
 }
 
 void ScrollContainer::_update_scrollbar_position() {
@@ -271,7 +278,6 @@ void ScrollContainer::_notification(int p_what) {
 			}
 			if (!scroll_v || (!v_scroll->is_visible_in_tree() && c->get_v_size_flags() & SIZE_EXPAND)) {
 				r.position.y = 0;
-				r.size.height = size.height;
 				if (c->get_v_size_flags() & SIZE_EXPAND)
 					r.size.height = MAX(size.height, minsize.height);
 				else
@@ -369,8 +375,10 @@ void ScrollContainer::update_scrollbars() {
 	Ref<StyleBox> sb = get_stylebox("bg");
 	size -= sb->get_minimum_size();
 
-	Size2 hmin = h_scroll->get_combined_minimum_size();
-	Size2 vmin = v_scroll->get_combined_minimum_size();
+	Size2 hmin;
+	Size2 vmin;
+	if (scroll_h) hmin = h_scroll->get_combined_minimum_size();
+	if (scroll_v) vmin = v_scroll->get_combined_minimum_size();
 
 	Size2 min = child_max_size;
 
@@ -478,7 +486,7 @@ String ScrollContainer::get_configuration_warning() const {
 	}
 
 	if (found != 1)
-		return TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox,HBox,etc), or a Control and set the custom minimum size manually.");
+		return TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");
 	else
 		return "";
 }

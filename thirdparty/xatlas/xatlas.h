@@ -3,15 +3,18 @@
 #ifndef XATLAS_H
 #define XATLAS_H
 #include <float.h> // FLT_MAX
-#include <limits.h>
-#include <stdint.h>
+// -- GODOT start --
+#include <limits.h> // INT_MAX, UINT_MAX
+// -- GODOT end --
+
 namespace xatlas {
 
 typedef void (*PrintFunc)(const char *, ...);
 
 struct Atlas;
 
-struct CharterOptions {
+struct CharterOptions
+{
 	float proxyFitMetricWeight;
 	float roundnessMetricWeight;
 	float straightnessMetricWeight;
@@ -20,7 +23,8 @@ struct CharterOptions {
 	float maxChartArea;
 	float maxBoundaryLength;
 
-	CharterOptions() {
+	CharterOptions()
+	{
 		// These are the default values we use on The Witness.
 		proxyFitMetricWeight = 2.0f;
 		roundnessMetricWeight = 0.01f;
@@ -39,15 +43,18 @@ struct CharterOptions {
 	}
 };
 
-struct PackMethod {
-	enum Enum {
+struct PackMethod
+{
+	enum Enum
+	{
 		TexelArea, // texel_area determines resolution
 		ApproximateResolution, // guess texel_area to approximately match desired resolution
 		ExactResolution // run the packer multiple times to exactly match the desired resolution (slow)
 	};
 };
 
-struct PackerOptions {
+struct PackerOptions
+{
 	PackMethod::Enum method;
 
 	// 0 - brute force
@@ -59,13 +66,14 @@ struct PackerOptions {
 	// Avoid brute force packing, since it can be unusably slow in some situations.
 	int quality;
 
-	float texelArea; // This is not really texel area, but 1 / texel width?
+	float texelArea;       // This is not really texel area, but 1 / texel width?
 	uint32_t resolution;
-	bool blockAlign; // Align charts to 4x4 blocks.
-	bool conservative; // Pack charts with extra padding.
+	bool blockAlign;       // Align charts to 4x4 blocks. 
+	bool conservative;      // Pack charts with extra padding.
 	int padding;
 
-	PackerOptions() {
+	PackerOptions()
+	{
 		method = PackMethod::ApproximateResolution;
 		quality = 1;
 		texelArea = 8;
@@ -76,8 +84,10 @@ struct PackerOptions {
 	}
 };
 
-struct AddMeshErrorCode {
-	enum Enum {
+struct AddMeshErrorCode
+{
+	enum Enum
+	{
 		Success,
 		AlreadyAddedEdge, // index0 and index1 are the edge indices
 		DegenerateColocalEdge, // index0 and index1 are the edge indices
@@ -90,20 +100,24 @@ struct AddMeshErrorCode {
 	};
 };
 
-struct AddMeshError {
+struct AddMeshError
+{
 	AddMeshErrorCode::Enum code;
 	uint32_t face;
 	uint32_t index0, index1;
 };
 
-struct IndexFormat {
-	enum Enum {
+struct IndexFormat
+{
+	enum Enum
+	{
 		HalfFloat,
 		Float
 	};
 };
 
-struct InputMesh {
+struct InputMesh
+{
 	uint32_t vertexCount;
 	const void *vertexPositionData;
 	uint32_t vertexPositionStride;
@@ -124,17 +138,20 @@ struct InputMesh {
 	const uint16_t *faceMaterialData;
 };
 
-struct OutputChart {
+struct OutputChart
+{
 	uint32_t *indexArray;
 	uint32_t indexCount;
 };
 
-struct OutputVertex {
+struct OutputVertex
+{
 	float uv[2];
-	uint32_t xref; // Index of input vertex from which this output vertex originated.
+	uint32_t xref;   // Index of input vertex from which this output vertex originated.
 };
 
-struct OutputMesh {
+struct OutputMesh
+{
 	OutputChart *chartArray;
 	uint32_t chartCount;
 	uint32_t *indexArray;
@@ -152,7 +169,7 @@ void Generate(Atlas *atlas, CharterOptions charterOptions = CharterOptions(), Pa
 uint32_t GetWidth(const Atlas *atlas);
 uint32_t GetHeight(const Atlas *atlas);
 uint32_t GetNumCharts(const Atlas *atlas);
-const OutputMesh *const *GetOutputMeshes(const Atlas *atlas);
+const OutputMesh * const *GetOutputMeshes(const Atlas *atlas);
 const char *StringForEnum(AddMeshErrorCode::Enum error);
 
 } // namespace xatlas

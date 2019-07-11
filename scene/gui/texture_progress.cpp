@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -160,23 +160,27 @@ Point2 TextureProgress::unit_val_to_uv(float val) {
 		if (edge == 0) {
 			if (dir.x > 0)
 				continue;
-			cp = -dir.x;
 			cq = -(edgeLeft - p.x);
+			dir.x *= 2.0 * cq;
+			cp = -dir.x;
 		} else if (edge == 1) {
 			if (dir.x < 0)
 				continue;
-			cp = dir.x;
 			cq = (edgeRight - p.x);
+			dir.x *= 2.0 * cq;
+			cp = dir.x;
 		} else if (edge == 2) {
 			if (dir.y > 0)
 				continue;
-			cp = -dir.y;
 			cq = -(edgeBottom - p.y);
+			dir.y *= 2.0 * cq;
+			cp = -dir.y;
 		} else if (edge == 3) {
 			if (dir.y < 0)
 				continue;
-			cp = dir.y;
 			cq = (edgeTop - p.y);
+			dir.y *= 2.0 * cq;
+			cp = dir.y;
 		}
 		cr = cq / cp;
 		if (cr >= 0 && cr < t1)
@@ -247,12 +251,14 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 
 		middle_section_size *= MIN(1.0, (MAX(0.0, width_filled - first_section_size) / MAX(1.0, width_total - first_section_size - last_section_size)));
 		last_section_size = MAX(0.0, last_section_size - (width_total - width_filled));
+		first_section_size = MIN(first_section_size, width_filled);
 		width_texture = MIN(width_texture, first_section_size + middle_section_size + last_section_size);
 
 		switch (mode) {
 			case FILL_LEFT_TO_RIGHT: {
 				src_rect.size.x = width_texture;
 				dst_rect.size.x = width_filled;
+				topleft.x = first_section_size;
 				bottomright.x = last_section_size;
 			} break;
 			case FILL_RIGHT_TO_LEFT: {
@@ -261,11 +267,13 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				dst_rect.position.x += width_total - width_filled;
 				dst_rect.size.x = width_filled;
 				topleft.x = last_section_size;
+				bottomright.x = first_section_size;
 			} break;
 			case FILL_TOP_TO_BOTTOM: {
 				src_rect.size.y = width_texture;
 				dst_rect.size.y = width_filled;
 				bottomright.y = last_section_size;
+				topleft.y = first_section_size;
 			} break;
 			case FILL_BOTTOM_TO_TOP: {
 				src_rect.position.y += src_rect.size.y - width_texture;
@@ -273,6 +281,7 @@ void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, F
 				dst_rect.position.y += width_total - width_filled;
 				dst_rect.size.y = width_filled;
 				topleft.y = last_section_size;
+				bottomright.y = first_section_size;
 			} break;
 			case FILL_BILINEAR_LEFT_AND_RIGHT: {
 				// TODO: Implement

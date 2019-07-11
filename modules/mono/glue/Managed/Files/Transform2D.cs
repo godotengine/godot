@@ -13,42 +13,65 @@ namespace Godot
     {
         public Vector2 x;
         public Vector2 y;
-        public Vector2 o;
-
-        public Vector2 Origin
-        {
-            get { return o; }
-        }
+        public Vector2 origin;
 
         public real_t Rotation
         {
-            get { return Mathf.Atan2(y.x, o.y); }
+            get
+            {
+                real_t det = BasisDeterminant();
+                Transform2D t = Orthonormalized();
+                if (det < 0)
+                {
+                    t.ScaleBasis(new Vector2(1, -1));
+                }
+                return Mathf.Atan2(t.x.y, t.x.x);
+            }
+            set
+            {
+                Vector2 scale = Scale;
+                x.x = y.y = Mathf.Cos(value);
+                x.y = y.x = Mathf.Sin(value);
+                y.x *= -1;
+                Scale = scale;
+            }
         }
 
         public Vector2 Scale
         {
-            get { return new Vector2(x.Length(), y.Length()); }
+            get
+            {
+                real_t detSign = Mathf.Sign(BasisDeterminant());
+                return new Vector2(x.Length(), detSign * y.Length());
+            }
+            set
+            {
+                x = x.Normalized();
+                y = y.Normalized();
+                x *= value.x;
+                y *= value.y;
+            }
         }
 
-        public Vector2 this[int index]
+        public Vector2 this[int rowIndex]
         {
             get
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
                         return x;
                     case 1:
                         return y;
                     case 2:
-                        return o;
+                        return origin;
                     default:
                         throw new IndexOutOfRangeException();
                 }
             }
             set
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
                         x = value;
@@ -57,7 +80,7 @@ namespace Godot
                         y = value;
                         return;
                     case 2:
-                        o = value;
+                        origin = value;
                         return;
                     default:
                         throw new IndexOutOfRangeException();
@@ -65,30 +88,29 @@ namespace Godot
             }
         }
 
-
-        public real_t this[int index, int axis]
+        public real_t this[int rowIndex, int columnIndex]
         {
             get
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
-                        return x[axis];
+                        return x[columnIndex];
                     case 1:
-                        return y[axis];
+                        return y[columnIndex];
                     default:
                         throw new IndexOutOfRangeException();
                 }
             }
             set
             {
-                switch (index)
+                switch (rowIndex)
                 {
                     case 0:
-                        x[axis] = value;
+                        x[columnIndex] = value;
                         return;
                     case 1:
-                        y[axis] = value;
+                        y[columnIndex] = value;
                         return;
                     default:
                         throw new IndexOutOfRangeException();
@@ -98,32 +120,30 @@ namespace Godot
 
         public Transform2D AffineInverse()
         {
-            var inv = this;
-
-            real_t det = this[0, 0] * this[1, 1] - this[1, 0] * this[0, 1];
+            real_t det = BasisDeterminant();
 
             if (det == 0)
-            {
-                return new Transform2D
-                (
-                    float.NaN, float.NaN,
-                    float.NaN, float.NaN,
-                    float.NaN, float.NaN
-                );
-            }
+                throw new InvalidOperationException("Matrix determinant is zero and cannot be inverted.");
 
-            real_t idet = 1.0f / det;
+            var inv = this;
 
-            real_t temp = this[0, 0];
-            this[0, 0] = this[1, 1];
-            this[1, 1] = temp;
+            real_t temp = inv[0, 0];
+            inv[0, 0] = inv[1, 1];
+            inv[1, 1] = temp;
 
-            this[0] *= new Vector2(idet, -idet);
-            this[1] *= new Vector2(-idet, idet);
+            real_t detInv = 1.0f / det;
 
-            this[2] = BasisXform(-this[2]);
+            inv[0] *= new Vector2(detInv, -detInv);
+            inv[1] *= new Vector2(-detInv, detInv);
+
+            inv[2] = BasisXform(-inv[2]);
 
             return inv;
+        }
+
+        private real_t BasisDeterminant()
+        {
+            return x.x * y.y - x.y * y.x;
         }
 
         public Vector2 BasisXform(Vector2 v)
@@ -168,8 +188,8 @@ namespace Godot
             }
 
             // Extract parameters
-            Vector2 p1 = Origin;
-            Vector2 p2 = m.Origin;
+            Vector2 p1 = origin;
+            Vector2 p2 = m.origin;
 
             // Construct matrix
             var res = new Transform2D(Mathf.Atan2(v.y, v.x), p1.LinearInterpolate(p2, c));
@@ -189,7 +209,7 @@ namespace Godot
             inv.x.y = inv.y.x;
             inv.y.x = temp;
 
-            inv.o = inv.BasisXform(-inv.o);
+            inv.origin = inv.BasisXform(-inv.origin);
 
             return inv;
         }
@@ -221,8 +241,16 @@ namespace Godot
             var copy = this;
             copy.x *= scale;
             copy.y *= scale;
-            copy.o *= scale;
+            copy.origin *= scale;
             return copy;
+        }
+
+        private void ScaleBasis(Vector2 scale)
+        {
+            x.x *= scale.x;
+            x.y *= scale.y;
+            y.x *= scale.x;
+            y.y *= scale.y;
         }
 
         private real_t Tdotx(Vector2 with)
@@ -238,66 +266,62 @@ namespace Godot
         public Transform2D Translated(Vector2 offset)
         {
             var copy = this;
-            copy.o += copy.BasisXform(offset);
+            copy.origin += copy.BasisXform(offset);
             return copy;
         }
 
         public Vector2 Xform(Vector2 v)
         {
-            return new Vector2(Tdotx(v), Tdoty(v)) + o;
+            return new Vector2(Tdotx(v), Tdoty(v)) + origin;
         }
 
         public Vector2 XformInv(Vector2 v)
         {
-            Vector2 vInv = v - o;
+            Vector2 vInv = v - origin;
             return new Vector2(x.Dot(vInv), y.Dot(vInv));
         }
 
         // Constants
-        private static readonly Transform2D _identity = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
-        private static readonly Transform2D _flipX = new Transform2D(new Vector2(-1f, 0f), new Vector2(0f, 1f), Vector2.Zero);
-        private static readonly Transform2D _flipY = new Transform2D(new Vector2(1f, 0f), new Vector2(0f, -1f), Vector2.Zero);
+        private static readonly Transform2D _identity = new Transform2D(1, 0, 0, 1, 0, 0);
+        private static readonly Transform2D _flipX = new Transform2D(-1, 0, 0, 1, 0, 0);
+        private static readonly Transform2D _flipY = new Transform2D(1, 0, 0, -1, 0, 0);
 
-        public static Transform2D Identity { get { return _identity; } }
-        public static Transform2D FlipX { get { return _flipX; } }
-        public static Transform2D FlipY { get { return _flipY; } }
+        public static Transform2D Identity => _identity;
+        public static Transform2D FlipX => _flipX;
+        public static Transform2D FlipY => _flipY;
 
         // Constructors
-        public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 origin)
+        public Transform2D(Vector2 xAxis, Vector2 yAxis, Vector2 originPos)
         {
             x = xAxis;
             y = yAxis;
-            o = origin;
+            origin = originPos;
         }
 
+        // Arguments are named such that xy is equal to calling x.y
         public Transform2D(real_t xx, real_t xy, real_t yx, real_t yy, real_t ox, real_t oy)
         {
             x = new Vector2(xx, xy);
             y = new Vector2(yx, yy);
-            o = new Vector2(ox, oy);
+            origin = new Vector2(ox, oy);
         }
 
         public Transform2D(real_t rot, Vector2 pos)
         {
-            real_t cr = Mathf.Cos(rot);
-            real_t sr = Mathf.Sin(rot);
-            x.x = cr;
-            y.y = cr;
-            x.y = -sr;
-            y.x = sr;
-            o = pos;
+            x.x = y.y = Mathf.Cos(rot);
+            x.y = y.x = Mathf.Sin(rot);
+            y.x *= -1;
+            origin = pos;
         }
 
         public static Transform2D operator *(Transform2D left, Transform2D right)
         {
-            left.o = left.Xform(right.o);
+            left.origin = left.Xform(right.origin);
 
-            real_t x0, x1, y0, y1;
-
-            x0 = left.Tdotx(right.x);
-            x1 = left.Tdoty(right.x);
-            y0 = left.Tdotx(right.y);
-            y1 = left.Tdoty(right.y);
+            real_t x0 = left.Tdotx(right.x);
+            real_t x1 = left.Tdoty(right.x);
+            real_t y0 = left.Tdotx(right.y);
+            real_t y1 = left.Tdoty(right.y);
 
             left.x.x = x0;
             left.x.y = x1;
@@ -319,22 +343,17 @@ namespace Godot
 
         public override bool Equals(object obj)
         {
-            if (obj is Transform2D)
-            {
-                return Equals((Transform2D)obj);
-            }
-
-            return false;
+            return obj is Transform2D transform2D && Equals(transform2D);
         }
 
         public bool Equals(Transform2D other)
         {
-            return x.Equals(other.x) && y.Equals(other.y) && o.Equals(other.o);
+            return x.Equals(other.x) && y.Equals(other.y) && origin.Equals(other.origin);
         }
 
         public override int GetHashCode()
         {
-            return x.GetHashCode() ^ y.GetHashCode() ^ o.GetHashCode();
+            return x.GetHashCode() ^ y.GetHashCode() ^ origin.GetHashCode();
         }
 
         public override string ToString()
@@ -343,7 +362,7 @@ namespace Godot
             {
                 x.ToString(),
                 y.ToString(),
-                o.ToString()
+                origin.ToString()
             });
         }
 
@@ -353,7 +372,7 @@ namespace Godot
             {
                 x.ToString(format),
                 y.ToString(format),
-                o.ToString(format)
+                origin.ToString(format)
             });
         }
     }

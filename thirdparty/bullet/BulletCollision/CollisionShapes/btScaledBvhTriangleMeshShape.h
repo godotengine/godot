@@ -18,78 +18,69 @@ subject to the following restrictions:
 
 #include "BulletCollision/CollisionShapes/btBvhTriangleMeshShape.h"
 
-
 ///The btScaledBvhTriangleMeshShape allows to instance a scaled version of an existing btBvhTriangleMeshShape.
 ///Note that each btBvhTriangleMeshShape still can have its own local scaling, independent from this btScaledBvhTriangleMeshShape 'localScaling'
-ATTRIBUTE_ALIGNED16(class) btScaledBvhTriangleMeshShape : public btConcaveShape
+ATTRIBUTE_ALIGNED16(class)
+btScaledBvhTriangleMeshShape : public btConcaveShape
 {
-	
-	
-	btVector3	m_localScaling;
+	btVector3 m_localScaling;
 
-	btBvhTriangleMeshShape*	m_bvhTriMeshShape;
+	btBvhTriangleMeshShape* m_bvhTriMeshShape;
 
 public:
-
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-
-	btScaledBvhTriangleMeshShape(btBvhTriangleMeshShape* childShape,const btVector3& localScaling);
+	btScaledBvhTriangleMeshShape(btBvhTriangleMeshShape * childShape, const btVector3& localScaling);
 
 	virtual ~btScaledBvhTriangleMeshShape();
 
-
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
-	virtual void	setLocalScaling(const btVector3& scaling);
+	virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
+	virtual void setLocalScaling(const btVector3& scaling);
 	virtual const btVector3& getLocalScaling() const;
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
+	virtual void calculateLocalInertia(btScalar mass, btVector3 & inertia) const;
 
-	virtual void	processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const;
+	virtual void processAllTriangles(btTriangleCallback * callback, const btVector3& aabbMin, const btVector3& aabbMax) const;
 
-	btBvhTriangleMeshShape*	getChildShape()
+	btBvhTriangleMeshShape* getChildShape()
 	{
 		return m_bvhTriMeshShape;
 	}
 
-	const btBvhTriangleMeshShape*	getChildShape() const
+	const btBvhTriangleMeshShape* getChildShape() const
 	{
 		return m_bvhTriMeshShape;
 	}
 
 	//debugging
-	virtual const char*	getName()const {return "SCALEDBVHTRIANGLEMESH";}
+	virtual const char* getName() const { return "SCALEDBVHTRIANGLEMESH"; }
 
-	virtual	int	calculateSerializeBufferSize() const;
+	virtual int calculateSerializeBufferSize() const;
 
 	///fills the dataBuffer and returns the struct name (and 0 on failure)
-	virtual	const char*	serialize(void* dataBuffer, btSerializer* serializer) const;
-
+	virtual const char* serialize(void* dataBuffer, btSerializer* serializer) const;
 };
 
 ///do not change those serialization structures, it requires an updated sBulletDNAstr/sBulletDNAstr64
-struct	btScaledTriangleMeshShapeData
+struct btScaledTriangleMeshShapeData
 {
-	btTriangleMeshShapeData	m_trimeshShapeData;
+	btTriangleMeshShapeData m_trimeshShapeData;
 
-	btVector3FloatData	m_localScaling;
+	btVector3FloatData m_localScaling;
 };
 
-
-SIMD_FORCE_INLINE	int	btScaledBvhTriangleMeshShape::calculateSerializeBufferSize() const
+SIMD_FORCE_INLINE int btScaledBvhTriangleMeshShape::calculateSerializeBufferSize() const
 {
 	return sizeof(btScaledTriangleMeshShapeData);
 }
 
-
 ///fills the dataBuffer and returns the struct name (and 0 on failure)
-SIMD_FORCE_INLINE	const char*	btScaledBvhTriangleMeshShape::serialize(void* dataBuffer, btSerializer* serializer) const
+SIMD_FORCE_INLINE const char* btScaledBvhTriangleMeshShape::serialize(void* dataBuffer, btSerializer* serializer) const
 {
-	btScaledTriangleMeshShapeData* scaledMeshData = (btScaledTriangleMeshShapeData*) dataBuffer;
-	m_bvhTriMeshShape->serialize(&scaledMeshData->m_trimeshShapeData,serializer);
+	btScaledTriangleMeshShapeData* scaledMeshData = (btScaledTriangleMeshShapeData*)dataBuffer;
+	m_bvhTriMeshShape->serialize(&scaledMeshData->m_trimeshShapeData, serializer);
 	scaledMeshData->m_trimeshShapeData.m_collisionShapeData.m_shapeType = SCALED_TRIANGLE_MESH_SHAPE_PROXYTYPE;
 	m_localScaling.serializeFloat(scaledMeshData->m_localScaling);
 	return "btScaledTriangleMeshShapeData";
 }
 
-
-#endif //BT_SCALED_BVH_TRIANGLE_MESH_SHAPE_H
+#endif  //BT_SCALED_BVH_TRIANGLE_MESH_SHAPE_H

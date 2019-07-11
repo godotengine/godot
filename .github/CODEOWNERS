@@ -1,0 +1,50 @@
+# Lines starting with '#' are comments.
+# Each line is a file pattern followed by one or more owners.
+# Owners can be @users, @org/teams or emails
+
+/doc/                @godotengine/documentation
+doc_classes/*        @godotengine/documentation
+
+# Rendering
+/drivers/gl_context/ @reduz
+/drivers/gles2/      @reduz
+/drivers/gles3/      @reduz
+
+# Audio
+/drivers/alsa/       @marcelofg55
+/drivers/alsamidi/   @marcelofg55
+/drivers/coreaudio/  @marcelofg55
+/drivers/coremidi/   @marcelofg55
+/drivers/pulseaudio/ @marcelofg55
+/drivers/wasapi/     @marcelofg55
+/drivers/winmidi/    @marcelofg55
+/drivers/xaudio2/    @marcelofg55
+
+/drivers/unix/       @hpvb
+/drivers/windows/    @hpvb
+
+/editor/icons/       @djrm
+
+/misc/               @akien-mga
+
+/modules/bullet/     @AndreaCatania
+/modules/csg/        @BastiaanOlij
+/modules/enet/       @godotengine/network
+/modules/gdnative/   @karroffel
+/modules/gdnative/*arvr/ @BastiaanOlij
+/modules/gdscript/   @vnen @bojidar-bg
+/modules/mbedtls/    @godotengine/network
+/modules/mobile_vr/  @BastiaanOlij
+/modules/mono/       @neikeq
+/modules/opensimplex/ @JFonS
+/modules/regex/      @LeeZH
+/modules/upnp/       @godotengine/network
+/modules/websocket/  @godotengine/network
+
+/platform/javascript/ @eska014
+/platform/uwp/       @vnen
+
+/server/physics*/    @reduz @AndreaCatania
+/server/visual*/     @reduz @karroffel
+
+/thirdparty/         @akien-mga

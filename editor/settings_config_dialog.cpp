@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,14 +98,7 @@ void EditorSettingsDialog::popup_edit_settings() {
 	if (saved_size != Rect2()) {
 		popup(saved_size);
 	} else {
-
-		Size2 popup_size = Size2(900, 700) * editor_get_scale();
-		Size2 window_size = get_viewport_rect().size;
-
-		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
-		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
-
-		popup_centered(popup_size);
+		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
 
 	_focus_current_search_box();
@@ -187,7 +180,7 @@ void EditorSettingsDialog::_update_icons() {
 	restart_close_button->set_icon(get_icon("Close", "EditorIcons"));
 	restart_container->add_style_override("panel", get_stylebox("bg", "Tree"));
 	restart_icon->set_texture(get_icon("StatusWarning", "EditorIcons"));
-	restart_label->add_color_override("font_color", get_color("error_color", "Editor"));
+	restart_label->add_color_override("font_color", get_color("warning_color", "Editor"));
 }
 
 void EditorSettingsDialog::_update_shortcuts() {
@@ -282,7 +275,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 		if (!sc.is_valid())
 			return; //pointless, there is nothing
 
-		undo_redo->create_action("Erase Shortcut");
+		undo_redo->create_action(TTR("Erase Shortcut"));
 		undo_redo->add_do_method(sc.ptr(), "set_shortcut", Ref<InputEvent>());
 		undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
 		undo_redo->add_do_method(this, "_update_shortcuts");
@@ -296,7 +289,7 @@ void EditorSettingsDialog::_shortcut_button_pressed(Object *p_item, int p_column
 
 		Ref<InputEvent> original = sc->get_meta("original");
 
-		undo_redo->create_action("Restore Shortcut");
+		undo_redo->create_action(TTR("Restore Shortcut"));
 		undo_redo->add_do_method(sc.ptr(), "set_shortcut", original);
 		undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
 		undo_redo->add_do_method(this, "_update_shortcuts");
@@ -344,7 +337,7 @@ void EditorSettingsDialog::_press_a_key_confirm() {
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(shortcut_configured);
 
-	undo_redo->create_action("Change Shortcut '" + shortcut_configured + "'");
+	undo_redo->create_action(TTR("Change Shortcut") + " '" + shortcut_configured + "'");
 	undo_redo->add_do_method(sc.ptr(), "set_shortcut", ie);
 	undo_redo->add_undo_method(sc.ptr(), "set_shortcut", sc->get_shortcut());
 	undo_redo->add_do_method(this, "_update_shortcuts");
@@ -375,7 +368,8 @@ void EditorSettingsDialog::_focus_current_search_box() {
 }
 
 void EditorSettingsDialog::_editor_restart() {
-	EditorNode::get_singleton()->save_all_scenes_and_restart();
+	EditorNode::get_singleton()->save_all_scenes();
+	EditorNode::get_singleton()->restart_editor();
 }
 
 void EditorSettingsDialog::_editor_restart_request() {
@@ -448,7 +442,7 @@ EditorSettingsDialog::EditorSettingsDialog() {
 	restart_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
-	restart_label->set_text(TTR("Editor must be restarted for changes to take effect"));
+	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);

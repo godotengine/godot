@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@
 #include "editor/code_editor.h"
 #include "editor/doc/doc_data.h"
 #include "editor/editor_plugin.h"
+#include "scene/gui/margin_container.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/rich_text_label.h"
@@ -51,10 +52,6 @@ class FindBar : public HBoxContainer {
 	Label *error_label;
 	TextureButton *hide_button;
 	String prev_search;
-
-	Control *container;
-	HBoxContainer *hbc;
-	VBoxContainer *vbc_search_text;
 
 	RichTextLabel *rich_text_label;
 

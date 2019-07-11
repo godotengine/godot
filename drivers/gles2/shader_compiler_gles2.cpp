@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  shader_compiler_gles3.cpp                                            */
+/*  shader_compiler_gles2.cpp                                            */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -81,7 +81,7 @@ static String _opstr(SL::Operator p_op) {
 static String _mkid(const String &p_id) {
 
 	String id = "m_" + p_id;
-	return id.replace("__", "_dus_"); //doubleunderscore is reserverd in glsl
+	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
 static String f2sp0(float p_float) {
@@ -316,9 +316,14 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			for (Map<StringName, SL::ShaderNode::Uniform>::Element *E = snode->uniforms.front(); E; E = E->next()) {
 				StringBuffer<> uniform_code;
 
-				uniform_code += "uniform ";
+				// use highp if no precision is specified to prevent different default values in fragment and vertex shader
+				SL::DataPrecision precision = E->get().precision;
+				if (precision == SL::PRECISION_DEFAULT && E->get().type != SL::TYPE_BOOL) {
+					precision = SL::PRECISION_HIGHP;
+				}
 
-				uniform_code += _prestr(E->get().precission);
+				uniform_code += "uniform ";
+				uniform_code += _prestr(precision);
 				uniform_code += _typestr(E->get().type);
 				uniform_code += " ";
 				uniform_code += _mkid(E->key());
@@ -344,7 +349,7 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				StringBuffer<> varying_code;
 
 				varying_code += "varying ";
-				varying_code += _prestr(E->get().precission);
+				varying_code += _prestr(E->get().precision);
 				varying_code += _typestr(E->get().type);
 				varying_code += " ";
 				varying_code += _mkid(E->key());
@@ -354,6 +359,21 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				vertex_global += final_code;
 				fragment_global += final_code;
+			}
+
+			// constants
+
+			for (Map<StringName, SL::ShaderNode::Constant>::Element *E = snode->constants.front(); E; E = E->next()) {
+				String gcode;
+				gcode += "const ";
+				gcode += _prestr(E->get().precision);
+				gcode += _typestr(E->get().type);
+				gcode += " " + _mkid(E->key());
+				gcode += "=";
+				gcode += _dump_node_code(E->get().initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				gcode += ";\n";
+				vertex_global += gcode;
+				fragment_global += gcode;
 			}
 
 			// functions
@@ -737,7 +757,7 @@ Error ShaderCompilerGLES2::compile(VS::ShaderMode p_mode, const String &p_code, 
 
 		Vector<String> shader = p_code.split("\n");
 		for (int i = 0; i < shader.size(); i++) {
-			print_line(itos(i) + " " + shader[i]);
+			print_line(itos(i + 1) + " " + shader[i]);
 		}
 
 		_err_print_error(NULL, p_path.utf8().get_data(), parser.get_error_line(), parser.get_error_text().utf8().get_data(), ERR_HANDLER_SHADER);
@@ -770,7 +790,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	/** CANVAS ITEM SHADER **/
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
-	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv_interp";
+	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv";
 	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "gl_PointSize";
 
 	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
@@ -806,9 +826,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SHADOW_COLOR"] = "#define SHADOW_COLOR_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
 	/** SPATIAL SHADER **/
@@ -824,13 +842,13 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["NORMAL"] = "normal";
 	actions[VS::SHADER_SPATIAL].renames["TANGENT"] = "tangent";
 	actions[VS::SHADER_SPATIAL].renames["BINORMAL"] = "binormal";
+	actions[VS::SHADER_SPATIAL].renames["POSITION"] = "position";
 	actions[VS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
 	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
 	// gl_InstanceID is not available in OpenGL ES 2.0
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "0";
-	actions[VS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
 	//builtins
 
@@ -861,13 +879,16 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_CUSTOM"] = "instance_custom";
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_UV"] = "screen_uv";
 	actions[VS::SHADER_SPATIAL].renames["SCREEN_TEXTURE"] = "screen_texture";
-	actions[VS::SHADER_SPATIAL].renames["DEPTH_TEXTURE"] = "depth_buffer";
-	actions[VS::SHADER_SPATIAL].renames["SIDE"] = "side";
+	actions[VS::SHADER_SPATIAL].renames["DEPTH_TEXTURE"] = "depth_texture";
+	// Defined in GLES3, but not available in GLES2
+	//actions[VS::SHADER_SPATIAL].renames["DEPTH"] = "gl_FragDepth";
 	actions[VS::SHADER_SPATIAL].renames["ALPHA_SCISSOR"] = "alpha_scissor";
+	actions[VS::SHADER_SPATIAL].renames["OUTPUT_IS_SRGB"] = "SHADER_IS_SRGB";
 
 	//for light
 	actions[VS::SHADER_SPATIAL].renames["VIEW"] = "view";
 	actions[VS::SHADER_SPATIAL].renames["LIGHT_COLOR"] = "light_color";
+	actions[VS::SHADER_SPATIAL].renames["LIGHT"] = "light";
 	actions[VS::SHADER_SPATIAL].renames["ATTENUATION"] = "attenuation";
 	actions[VS::SHADER_SPATIAL].renames["DIFFUSE_LIGHT"] = "diffuse_light";
 	actions[VS::SHADER_SPATIAL].renames["SPECULAR_LIGHT"] = "specular_light";
@@ -889,10 +910,12 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["ALPHA_SCISSOR"] = "#define ALPHA_SCISSOR_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["SSS_STRENGTH"] = "#define ENABLE_SSS\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["TRANSMISSION"] = "#define TRANSMISSION_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["DEPTH_TEXTURE"] = "#define DEPTH_TEXTURE_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
 
 	actions[VS::SHADER_SPATIAL].usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
@@ -900,6 +923,12 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
+
+	// Defined in GLES3, could be implemented in GLES2 too if there's a need for it
+	//actions[VS::SHADER_SPATIAL].render_mode_defines["ensure_correct_normals"] = "#define ENSURE_CORRECT_NORMALS\n";
+	// Defined in GLES3, might not be possible in GLES2 as gl_FrontFacing is not available
+	//actions[VS::SHADER_SPATIAL].render_mode_defines["cull_front"] = "#define DO_SIDE_CHECK\n";
+	//actions[VS::SHADER_SPATIAL].render_mode_defines["cull_disabled"] = "#define DO_SIDE_CHECK\n";
 
 	bool force_lambert = GLOBAL_GET("rendering/quality/shading/force_lambert_over_burley");
 
@@ -925,28 +954,9 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].render_mode_defines["specular_disabled"] = "#define SPECULAR_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
+	actions[VS::SHADER_SPATIAL].render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
 
-	/* PARTICLES SHADER */
-
-	actions[VS::SHADER_PARTICLES].renames["COLOR"] = "out_color";
-	actions[VS::SHADER_PARTICLES].renames["VELOCITY"] = "out_velocity_active.xyz";
-	actions[VS::SHADER_PARTICLES].renames["MASS"] = "mass";
-	actions[VS::SHADER_PARTICLES].renames["ACTIVE"] = "shader_active";
-	actions[VS::SHADER_PARTICLES].renames["RESTART"] = "restart";
-	actions[VS::SHADER_PARTICLES].renames["CUSTOM"] = "out_custom";
-	actions[VS::SHADER_PARTICLES].renames["TRANSFORM"] = "xform";
-	actions[VS::SHADER_PARTICLES].renames["TIME"] = "time";
-	actions[VS::SHADER_PARTICLES].renames["LIFETIME"] = "lifetime";
-	actions[VS::SHADER_PARTICLES].renames["DELTA"] = "local_delta";
-	actions[VS::SHADER_PARTICLES].renames["NUMBER"] = "particle_number";
-	actions[VS::SHADER_PARTICLES].renames["INDEX"] = "index";
-	actions[VS::SHADER_PARTICLES].renames["GRAVITY"] = "current_gravity";
-	actions[VS::SHADER_PARTICLES].renames["EMISSION_TRANSFORM"] = "emission_transform";
-	actions[VS::SHADER_PARTICLES].renames["RANDOM_SEED"] = "random_seed";
-
-	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
-	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
-	actions[VS::SHADER_PARTICLES].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
+	// No defines for particle shaders in GLES2, there are no GPU particles
 
 	vertex_name = "vertex";
 	fragment_name = "fragment";

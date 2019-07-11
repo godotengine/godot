@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeGroupBase" inherits="VisualShaderNode" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_input_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="type" type="int">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="add_output_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<argument index="1" name="type" type="int">
+			</argument>
+			<argument index="2" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_input_ports">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="clear_output_ports">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_control">
+			<return type="Control">
+			</return>
+			<argument index="0" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_free_input_port_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_free_output_port_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_input_port_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_inputs" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_output_port_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_outputs" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_size" qualifiers="const">
+			<return type="Vector2">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="has_input_port" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="has_output_port" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="is_valid_port_name" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_input_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="remove_output_port">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_control">
+			<return type="void">
+			</return>
+			<argument index="0" name="control" type="Control">
+			</argument>
+			<argument index="1" name="index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_port_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<argument index="1" name="arg1" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_input_port_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_inputs">
+			<return type="void">
+			</return>
+			<argument index="0" name="inputs" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_output_port_name">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<argument index="1" name="arg1" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_output_port_type">
+			<return type="void">
+			</return>
+			<argument index="0" name="arg0" type="int">
+			</argument>
+			<argument index="1" name="arg1" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_outputs">
+			<return type="void">
+			</return>
+			<argument index="0" name="outputs" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_size">
+			<return type="void">
+			</return>
+			<argument index="0" name="size" type="Vector2">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>
