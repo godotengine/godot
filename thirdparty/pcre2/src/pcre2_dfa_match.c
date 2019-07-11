@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,8 @@ in others, so I abandoned this code. */
 #define PUBLIC_DFA_MATCH_OPTIONS \
   (PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_NOTBOL|PCRE2_NOTEOL|PCRE2_NOTEMPTY| \
    PCRE2_NOTEMPTY_ATSTART|PCRE2_NO_UTF_CHECK|PCRE2_PARTIAL_HARD| \
-   PCRE2_PARTIAL_SOFT|PCRE2_DFA_SHORTEST|PCRE2_DFA_RESTART)
+   PCRE2_PARTIAL_SOFT|PCRE2_DFA_SHORTEST|PCRE2_DFA_RESTART| \
+   PCRE2_COPY_MATCHED_SUBJECT)
 
 
 /*************************************************
@@ -173,6 +174,7 @@ static const uint8_t coptable[] = {
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
   0,                             /* ONCE                                   */
+  0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
   0, 0, 0, 0, 0,                 /* SBRA, SBRAPOS, SCBRA, SCBRAPOS, SCOND  */
   0, 0,                          /* CREF, DNCREF                           */
@@ -247,6 +249,7 @@ static const uint8_t poptable[] = {
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
   0,                             /* ONCE                                   */
+  0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
   0, 0, 0, 0, 0,                 /* SBRA, SBRAPOS, SCBRA, SCBRAPOS, SCOND  */
   0, 0,                          /* CREF, DNCREF                           */
@@ -316,8 +319,8 @@ finding the minimum heap requirement for a match. */
 
 typedef struct RWS_anchor {
   struct RWS_anchor *next;
-  unsigned int size;  /* Number of ints */
-  unsigned int free;  /* Number of ints */
+  uint32_t size;  /* Number of ints */
+  uint32_t free;  /* Number of ints */
 } RWS_anchor;
 
 #define RWS_ANCHOR_SIZE (sizeof(RWS_anchor)/sizeof(int))
@@ -413,20 +416,24 @@ if (rws->next != NULL)
   new = rws->next;
   }
 
-/* All sizes are in units of sizeof(int), except for mb->heaplimit, which is in
-kibibytes. */
+/* Sizes in the RWS_anchor blocks are in units of sizeof(int), but
+mb->heap_limit and mb->heap_used are in kibibytes. Play carefully, to avoid
+overflow. */
 
 else
   {
-  unsigned int newsize = rws->size * 2;
-  unsigned int heapleft = (unsigned int)
-    (((1024/sizeof(int))*mb->heap_limit - mb->heap_used));
-  if (newsize > heapleft) newsize = heapleft;
+  uint32_t newsize = (rws->size >= UINT32_MAX/2)? UINT32_MAX/2 : rws->size * 2;
+  uint32_t newsizeK = newsize/(1024/sizeof(int));
+
+  if (newsizeK + mb->heap_used > mb->heap_limit)
+    newsizeK = (uint32_t)(mb->heap_limit - mb->heap_used);
+  newsize = newsizeK*(1024/sizeof(int));
+
   if (newsize < RWS_RSIZE + ovecsize + RWS_ANCHOR_SIZE)
     return PCRE2_ERROR_HEAPLIMIT;
   new = mb->memctl.malloc(newsize*sizeof(int), mb->memctl.memory_data);
   if (new == NULL) return PCRE2_ERROR_NOMEMORY;
-  mb->heap_used += newsize;
+  mb->heap_used += newsizeK;
   new->next = NULL;
   new->size = newsize;
   rws->next = new;
@@ -2560,7 +2567,7 @@ for (;;)
           if (clen > 0)
             {
             isinclass = (c > 255)? (codevalue == OP_NCLASS) :
-              ((((uint8_t *)(code + 1))[c/8] & (1 << (c&7))) != 0);
+              ((((uint8_t *)(code + 1))[c/8] & (1u << (c&7))) != 0);
             }
           }
 
@@ -2753,7 +2760,7 @@ for (;;)
         /* There is also an always-true condition */
 
         else if (condcode == OP_TRUE)
-          { ADD_ACTIVE(state_offset + LINK_SIZE + 2 + IMM2_SIZE, 0); }
+          { ADD_ACTIVE(state_offset + LINK_SIZE + 2, 0); }
 
         /* The only supported version of OP_RREF is for the value RREF_ANY,
         which means "test if in any recursion". We can't test for specifically
@@ -3226,6 +3233,8 @@ pcre2_dfa_match(const pcre2_code *code, PCRE2_SPTR subject, PCRE2_SIZE length,
   pcre2_match_context *mcontext, int *workspace, PCRE2_SIZE wscount)
 {
 int rc;
+int was_zero_terminated = 0;
+
 const pcre2_real_code *re = (const pcre2_real_code *)code;
 
 PCRE2_SPTR start_match;
@@ -3265,7 +3274,11 @@ rws->free = RWS_BASE_SIZE - RWS_ANCHOR_SIZE;
 /* A length equal to PCRE2_ZERO_TERMINATED implies a zero-terminated
 subject string. */
 
-if (length == PCRE2_ZERO_TERMINATED) length = PRIV(strlen)(subject);
+if (length == PCRE2_ZERO_TERMINATED)
+  {
+  length = PRIV(strlen)(subject);
+  was_zero_terminated = 1;
+  }
 
 /* Plausibility checks */
 
@@ -3518,10 +3531,20 @@ if ((re->flags & PCRE2_LASTSET) != 0)
     }
   }
 
+/* If the match data block was previously used with PCRE2_COPY_MATCHED_SUBJECT,
+free the memory that was obtained. */
+
+if ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0)
+  {
+  match_data->memctl.free((void *)match_data->subject,
+    match_data->memctl.memory_data);
+  match_data->flags &= ~PCRE2_MD_COPIED_SUBJECT;
+  }
+
 /* Fill in fields that are always returned in the match data. */
 
 match_data->code = re;
-match_data->subject = subject;
+match_data->subject = NULL;  /* Default for no match */
 match_data->mark = NULL;
 match_data->matchedby = PCRE2_MATCHEDBY_DFA_INTERPRETER;
 
@@ -3586,7 +3609,7 @@ for (;;)
 #if PCRE2_CODE_UNIT_WIDTH != 8
             if (c > 255) c = 255;
 #endif
-            ok = (start_bits[c/8] & (1 << (c&7))) != 0;
+            ok = (start_bits[c/8] & (1u << (c&7))) != 0;
             }
           }
         if (!ok) break;
@@ -3697,7 +3720,7 @@ for (;;)
 #if PCRE2_CODE_UNIT_WIDTH != 8
           if (c > 255) c = 255;
 #endif
-          if ((start_bits[c/8] & (1 << (c&7))) != 0) break;
+          if ((start_bits[c/8] & (1u << (c&7))) != 0) break;
           start_match++;
           }
 
@@ -3816,6 +3839,20 @@ for (;;)
     match_data->rightchar = (PCRE2_SIZE)( mb->last_used_ptr - subject);
     match_data->startchar = (PCRE2_SIZE)(start_match - subject);
     match_data->rc = rc;
+
+    if (rc >= 0 &&(options & PCRE2_COPY_MATCHED_SUBJECT) != 0)
+      {
+      length = CU2BYTES(length + was_zero_terminated);
+      match_data->subject = match_data->memctl.malloc(length,
+        match_data->memctl.memory_data);
+      if (match_data->subject == NULL) return PCRE2_ERROR_NOMEMORY;
+      memcpy((void *)match_data->subject, subject, length);
+      match_data->flags |= PCRE2_MD_COPIED_SUBJECT;
+      }
+    else
+      {
+      if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL) match_data->subject = subject;
+      }
     goto EXIT;
     }
 

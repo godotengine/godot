@@ -477,12 +477,22 @@ typedef struct compiler_common {
   BOOL alt_circumflex;
 #ifdef SUPPORT_UNICODE
   BOOL utf;
+  BOOL invalid_utf;
   BOOL use_ucp;
+  /* Points to saving area for iref. */
+  sljit_s32 iref_ptr;
   jump_list *getucd;
+  jump_list *getucdtype;
 #if PCRE2_CODE_UNIT_WIDTH == 8
   jump_list *utfreadchar;
-  jump_list *utfreadchar16;
   jump_list *utfreadtype8;
+  jump_list *utfpeakcharback;
+#endif
+#if PCRE2_CODE_UNIT_WIDTH == 8 || PCRE2_CODE_UNIT_WIDTH == 16
+  jump_list *utfreadchar_invalid;
+  jump_list *utfreadnewline_invalid;
+  jump_list *utfmoveback_invalid;
+  jump_list *utfpeakcharback_invalid;
 #endif
 #endif /* SUPPORT_UNICODE */
 } compiler_common;
@@ -616,7 +626,183 @@ the start pointers when the end of the capturing group has not yet reached. */
 
 #define READ_CHAR_MAX 0x7fffffff
 
-#define INVALID_UTF_CHAR 888
+#define INVALID_UTF_CHAR -1
+#define UNASSIGNED_UTF_CHAR 888
+
+#if defined SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+
+#define GETCHARINC_INVALID(c, ptr, end, invalid_action) \
+  { \
+  if (ptr[0] <= 0x7f) \
+    c = *ptr++; \
+  else if (ptr + 1 < end && ptr[1] >= 0x80 && ptr[1] < 0xc0) \
+    { \
+    c = ptr[1] - 0x80; \
+    \
+    if (ptr[0] >= 0xc2 && ptr[0] <= 0xdf) \
+      { \
+      c |= (ptr[0] - 0xc0) << 6; \
+      ptr += 2; \
+      } \
+    else if (ptr + 2 < end && ptr[2] >= 0x80 && ptr[2] < 0xc0) \
+      { \
+      c = c << 6 | (ptr[2] - 0x80); \
+      \
+      if (ptr[0] >= 0xe0 && ptr[0] <= 0xef) \
+        { \
+        c |= (ptr[0] - 0xe0) << 12; \
+        ptr += 3; \
+        \
+        if (c < 0x800 || (c >= 0xd800 && c < 0xe000)) \
+          { \
+          invalid_action; \
+          } \
+        } \
+      else if (ptr + 3 < end && ptr[3] >= 0x80 && ptr[3] < 0xc0) \
+        { \
+        c = c << 6 | (ptr[3] - 0x80); \
+        \
+        if (ptr[0] >= 0xf0 && ptr[0] <= 0xf4) \
+          { \
+          c |= (ptr[0] - 0xf0) << 18; \
+          ptr += 4; \
+          \
+          if (c >= 0x110000 || c < 0x10000) \
+            { \
+            invalid_action; \
+            } \
+          } \
+        else \
+          { \
+          invalid_action; \
+          } \
+        } \
+      else \
+        { \
+        invalid_action; \
+        } \
+      } \
+    else \
+      { \
+      invalid_action; \
+      } \
+    } \
+  else \
+    { \
+    invalid_action; \
+    } \
+  }
+
+#define GETCHARBACK_INVALID(c, ptr, start, invalid_action) \
+  { \
+  if (ptr[-1] <= 0x7f) \
+    c = *ptr--; \
+  else if (ptr - 1 > start && ptr[-1] >= 0x80 && ptr[-1] < 0xc0) \
+    { \
+    c = ptr[-1] - 0x80; \
+    \
+    if (ptr[-2] >= 0xc2 && ptr[-2] <= 0xdf) \
+      { \
+      c |= (ptr[-2] - 0xc0) << 6; \
+      ptr -= 2; \
+      } \
+    else if (ptr - 2 > start && ptr[-2] >= 0x80 && ptr[-2] < 0xc0) \
+      { \
+      c = c << 6 | (ptr[-2] - 0x80); \
+      \
+      if (ptr[-3] >= 0xe0 && ptr[-3] <= 0xef) \
+        { \
+        c |= (ptr[-3] - 0xe0) << 12; \
+        ptr -= 3; \
+        \
+        if (c < 0x800 || (c >= 0xd800 && c < 0xe000)) \
+          { \
+          invalid_action; \
+          } \
+        } \
+      else if (ptr - 3 > start && ptr[-3] >= 0x80 && ptr[-3] < 0xc0) \
+        { \
+        c = c << 6 | (ptr[-3] - 0x80); \
+        \
+        if (ptr[-4] >= 0xf0 && ptr[-4] <= 0xf4) \
+          { \
+          c |= (ptr[-4] - 0xf0) << 18; \
+          ptr -= 4; \
+          \
+          if (c >= 0x110000 || c < 0x10000) \
+            { \
+            invalid_action; \
+            } \
+          } \
+        else \
+          { \
+          invalid_action; \
+          } \
+        } \
+      else \
+        { \
+        invalid_action; \
+        } \
+      } \
+    else \
+      { \
+      invalid_action; \
+      } \
+    } \
+  else \
+    { \
+    invalid_action; \
+    } \
+  }
+
+#elif PCRE2_CODE_UNIT_WIDTH == 16
+
+#define GETCHARINC_INVALID(c, ptr, end, invalid_action) \
+  { \
+  if (ptr[0] < 0xd800 || ptr[0] >= 0xe000) \
+    c = *ptr++; \
+  else if (ptr[0] < 0xdc00 && ptr + 1 < end && ptr[1] >= 0xdc00 && ptr[1] < 0xe000) \
+    { \
+    c = (((ptr[0] - 0xd800) << 10) | (ptr[1] - 0xdc00)) + 0x10000; \
+    ptr += 2; \
+    } \
+  else \
+    { \
+    invalid_action; \
+    } \
+  }
+
+#define GETCHARBACK_INVALID(c, ptr, start, invalid_action) \
+  { \
+  if (ptr[-1] < 0xd800 || ptr[-1] >= 0xe000) \
+    c = *ptr--; \
+  else if (ptr[-1] >= 0xdc00 && ptr - 1 > start && ptr[-2] >= 0xd800 && ptr[-2] < 0xdc00) \
+    { \
+    c = (((ptr[-2] - 0xd800) << 10) | (ptr[-1] - 0xdc00)) + 0x10000; \
+    ptr -= 2; \
+    } \
+  else \
+    { \
+    invalid_action; \
+    } \
+  }
+
+
+#elif PCRE2_CODE_UNIT_WIDTH == 32
+
+#define GETCHARINC_INVALID(c, ptr, end, invalid_action) \
+  { \
+  if (ptr[0] < 0x110000) \
+    c = *ptr++; \
+  else \
+    { \
+    invalid_action; \
+    } \
+  }
+
+#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16|32] */
+#endif /* SUPPORT_UNICODE */
 
 static PCRE2_SPTR bracketend(PCRE2_SPTR cc)
 {
@@ -716,6 +902,7 @@ switch(*cc)
   case OP_ASSERTBACK:
   case OP_ASSERTBACK_NOT:
   case OP_ONCE:
+  case OP_SCRIPT_RUN:
   case OP_BRA:
   case OP_BRAPOS:
   case OP_CBRA:
@@ -869,8 +1056,16 @@ while (cc < ccend)
     cc += 1;
     break;
 
-    case OP_REF:
     case OP_REFI:
+#ifdef SUPPORT_UNICODE
+    if (common->iref_ptr == 0)
+      {
+      common->iref_ptr = common->ovector_start;
+      common->ovector_start += 3 * sizeof(sljit_sw);
+      }
+#endif /* SUPPORT_UNICODE */
+    /* Fall through. */
+    case OP_REF:
     common->optimized_cbracket[GET2(cc, 1)] = 0;
     cc += 1 + IMM2_SIZE;
     break;
@@ -1375,6 +1570,7 @@ while (cc < ccend)
     case OP_ASSERTBACK:
     case OP_ASSERTBACK_NOT:
     case OP_ONCE:
+    case OP_SCRIPT_RUN:
     case OP_BRAPOS:
     case OP_SBRA:
     case OP_SBRAPOS:
@@ -1951,6 +2147,7 @@ while (cc < ccend)
     case OP_ASSERTBACK:
     case OP_ASSERTBACK_NOT:
     case OP_ONCE:
+    case OP_SCRIPT_RUN:
     case OP_BRAPOS:
     case OP_SBRA:
     case OP_SBRAPOS:
@@ -2174,14 +2371,14 @@ if (base_reg != TMP2)
 else
   {
   status.saved_tmp_regs[1] = RETURN_ADDR;
-  if (sljit_get_register_index (RETURN_ADDR) == -1)
+  if (sljit_get_register_index(RETURN_ADDR) == -1)
     status.tmp_regs[1] = STR_PTR;
   else
     status.tmp_regs[1] = RETURN_ADDR;
   }
 
 status.saved_tmp_regs[2] = TMP3;
-if (sljit_get_register_index (TMP3) == -1)
+if (sljit_get_register_index(TMP3) == -1)
   status.tmp_regs[2] = STR_END;
 else
   status.tmp_regs[2] = TMP3;
@@ -2274,6 +2471,7 @@ while (cc < ccend)
     case OP_ASSERTBACK:
     case OP_ASSERTBACK_NOT:
     case OP_ONCE:
+    case OP_SCRIPT_RUN:
     case OP_BRAPOS:
     case OP_SBRA:
     case OP_SBRAPOS:
@@ -3059,13 +3257,13 @@ return (0 << 8) | bit;
 #ifdef SUPPORT_UNICODE
 if (common->utf && c > 65535)
   {
-  if (bit >= (1 << 10))
+  if (bit >= (1u << 10))
     bit >>= 10;
   else
     return (bit < 256) ? ((2 << 8) | bit) : ((3 << 8) | (bit >> 8));
   }
 #endif /* SUPPORT_UNICODE */
-return (bit < 256) ? ((0 << 8) | bit) : ((1 << 8) | (bit >> 8));
+return (bit < 256) ? ((0u << 8) | bit) : ((1u << 8) | (bit >> 8));
 
 #endif /* PCRE2_CODE_UNIT_WIDTH == [8|16|32] */
 }
@@ -3159,47 +3357,335 @@ else
 JUMPHERE(jump);
 }
 
-static void peek_char(compiler_common *common, sljit_u32 max)
+static void peek_char(compiler_common *common, sljit_u32 max, sljit_s32 dst, sljit_sw dstw, jump_list **backtracks)
 {
 /* Reads the character into TMP1, keeps STR_PTR.
-Does not check STR_END. TMP2 Destroyed. */
+Does not check STR_END. TMP2, dst, RETURN_ADDR Destroyed. */
 DEFINE_COMPILER;
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
 struct sljit_jump *jump;
-#endif
+#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
 
 SLJIT_UNUSED_ARG(max);
+SLJIT_UNUSED_ARG(dst);
+SLJIT_UNUSED_ARG(dstw);
+SLJIT_UNUSED_ARG(backtracks);
 
-OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), 0);
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
 if (common->utf)
   {
   if (max < 128) return;
 
-  jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xc0);
+  jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x80);
+  OP1(SLJIT_MOV, dst, dstw, STR_PTR, 0);
   OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-  add_jump(compiler, &common->utfreadchar, JUMP(SLJIT_FAST_CALL));
-  OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
+  add_jump(compiler, common->invalid_utf ? &common->utfreadchar_invalid : &common->utfreadchar, JUMP(SLJIT_FAST_CALL));
+  OP1(SLJIT_MOV, STR_PTR, 0, dst, dstw);
+  if (backtracks && common->invalid_utf)
+    add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
   JUMPHERE(jump);
   }
-#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
-
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 16
+#elif PCRE2_CODE_UNIT_WIDTH == 16
 if (common->utf)
   {
   if (max < 0xd800) return;
 
   OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xd800);
-  jump = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0xdc00 - 0xd800 - 1);
-  /* TMP2 contains the high surrogate. */
-  OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x40);
-  OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 10);
-  OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3ff);
-  OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+  if (common->invalid_utf)
+    {
+    jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0xe000 - 0xd800);
+    OP1(SLJIT_MOV, dst, dstw, STR_PTR, 0);
+    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    add_jump(compiler, &common->utfreadchar_invalid, JUMP(SLJIT_FAST_CALL));
+    OP1(SLJIT_MOV, STR_PTR, 0, dst, dstw);
+    if (backtracks && common->invalid_utf)
+      add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
+    }
+  else
+    {
+    /* TMP2 contains the high surrogate. */
+    jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0xdc00 - 0xd800);
+    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
+    OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 10);
+    OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x10000 - 0xdc00);
+    OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+    }
+
   JUMPHERE(jump);
   }
+#elif PCRE2_CODE_UNIT_WIDTH == 32
+if (common->invalid_utf)
+  {
+  if (backtracks != NULL)
+    add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x110000));
+  else
+    {
+    OP2(SLJIT_SUB | SLJIT_SET_GREATER_EQUAL, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x110000);
+    CMOV(SLJIT_GREATER_EQUAL, TMP1, SLJIT_IMM, INVALID_UTF_CHAR);
+    }
+  }
+#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16|32] */
+#endif /* SUPPORT_UNICODE */
+}
+
+static void peek_char_back(compiler_common *common, sljit_u32 max, jump_list **backtracks)
+{
+/* Reads one character back without moving STR_PTR. TMP2 must
+contain the start of the subject buffer. Affects TMP1, TMP2, and RETURN_ADDR. */
+DEFINE_COMPILER;
+
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+struct sljit_jump *jump;
+#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
+
+SLJIT_UNUSED_ARG(max);
+SLJIT_UNUSED_ARG(backtracks);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-1));
+
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+if (common->utf)
+  {
+  if (max < 128) return;
+
+  jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x80);
+  if (common->invalid_utf)
+    {
+    add_jump(compiler, &common->utfpeakcharback_invalid, JUMP(SLJIT_FAST_CALL));
+    if (backtracks != NULL)
+      add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
+    }
+  else
+    add_jump(compiler, &common->utfpeakcharback, JUMP(SLJIT_FAST_CALL));
+  JUMPHERE(jump);
+  }
+#elif PCRE2_CODE_UNIT_WIDTH == 16
+if (common->utf)
+  {
+  if (max < 0xd800) return;
+
+  if (common->invalid_utf)
+    {
+    jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xd800);
+    add_jump(compiler, &common->utfpeakcharback_invalid, JUMP(SLJIT_FAST_CALL));
+    if (backtracks != NULL)
+      add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
+    }
+  else
+    {
+    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xdc00);
+    jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0xe000 - 0xdc00);
+    /* TMP2 contains the low surrogate. */
+    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+    OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x10000);
+    OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 10);
+    OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+    }
+    JUMPHERE(jump);
+  }
+#elif PCRE2_CODE_UNIT_WIDTH == 32
+  if (common->invalid_utf)
+    add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x110000));
+#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16|32] */
+#endif /* SUPPORT_UNICODE */
+}
+
+#define READ_CHAR_UPDATE_STR_PTR 0x1
+#define READ_CHAR_UTF8_NEWLINE 0x2
+#define READ_CHAR_NEWLINE (READ_CHAR_UPDATE_STR_PTR | READ_CHAR_UTF8_NEWLINE)
+#define READ_CHAR_VALID_UTF 0x4
+
+static void read_char(compiler_common *common, sljit_u32 min, sljit_u32 max,
+  jump_list **backtracks, sljit_u32 options)
+{
+/* Reads the precise value of a character into TMP1, if the character is
+between min and max (c >= min && c <= max). Otherwise it returns with a value
+outside the range. Does not check STR_END. */
+DEFINE_COMPILER;
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+struct sljit_jump *jump;
 #endif
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
+struct sljit_jump *jump2;
+#endif
+
+SLJIT_UNUSED_ARG(min);
+SLJIT_UNUSED_ARG(max);
+SLJIT_UNUSED_ARG(backtracks);
+SLJIT_UNUSED_ARG(options);
+SLJIT_ASSERT(min <= max);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+#ifdef SUPPORT_UNICODE
+#if PCRE2_CODE_UNIT_WIDTH == 8
+if (common->utf)
+  {
+  if (max < 128 && !(options & READ_CHAR_UPDATE_STR_PTR)) return;
+
+  if (common->invalid_utf && !(options & READ_CHAR_VALID_UTF))
+    {
+    jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x80);
+
+    if (options & READ_CHAR_UTF8_NEWLINE)
+      add_jump(compiler, &common->utfreadnewline_invalid, JUMP(SLJIT_FAST_CALL));
+    else
+      add_jump(compiler, &common->utfreadchar_invalid, JUMP(SLJIT_FAST_CALL));
+
+    if (backtracks != NULL)
+      add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
+    JUMPHERE(jump);
+    return;
+    }
+
+  jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xc0);
+  if (min >= 0x10000)
+    {
+    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xf0);
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      OP1(SLJIT_MOV_U8, RETURN_ADDR, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
+    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+    jump2 = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0x7);
+    OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
+    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
+    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(2));
+    if (!(options & READ_CHAR_UPDATE_STR_PTR))
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(3));
+    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+    JUMPHERE(jump2);
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, RETURN_ADDR, 0);
+    }
+  else if (min >= 0x800 && max <= 0xffff)
+    {
+    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xe0);
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      OP1(SLJIT_MOV_U8, RETURN_ADDR, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
+    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+    jump2 = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0xf);
+    OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
+    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
+    if (!(options & READ_CHAR_UPDATE_STR_PTR))
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+    JUMPHERE(jump2);
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, RETURN_ADDR, 0);
+    }
+  else if (max >= 0x800)
+    {
+    add_jump(compiler, &common->utfreadchar, JUMP(SLJIT_FAST_CALL));
+    }
+  else if (max < 128)
+    {
+    OP1(SLJIT_MOV_U8, TMP2, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
+    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
+    }
+  else
+    {
+    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+    if (!(options & READ_CHAR_UPDATE_STR_PTR))
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    else
+      OP1(SLJIT_MOV_U8, RETURN_ADDR, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
+    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, RETURN_ADDR, 0);
+    }
+  JUMPHERE(jump);
+  }
+#elif PCRE2_CODE_UNIT_WIDTH == 16
+if (common->utf)
+  {
+  if (max < 0xd800 && !(options & READ_CHAR_UPDATE_STR_PTR)) return;
+
+  if (common->invalid_utf && !(options & READ_CHAR_VALID_UTF))
+    {
+    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+    jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0xe000 - 0xd800);
+
+    if (options & READ_CHAR_UTF8_NEWLINE)
+      add_jump(compiler, &common->utfreadnewline_invalid, JUMP(SLJIT_FAST_CALL));
+    else
+      add_jump(compiler, &common->utfreadchar_invalid, JUMP(SLJIT_FAST_CALL));
+
+    if (backtracks != NULL)
+      add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
+    JUMPHERE(jump);
+    return;
+    }
+
+  if (max >= 0x10000)
+    {
+    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+    jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0xdc00 - 0xd800);
+    /* TMP2 contains the high surrogate. */
+    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+    OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 10);
+    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x10000 - 0xdc00);
+    OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+    JUMPHERE(jump);
+    return;
+    }
+
+  /* Skip low surrogate if necessary. */
+  OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+
+  if (sljit_has_cpu_feature(SLJIT_HAS_CMOV) && sljit_get_register_index(RETURN_ADDR) >= 0)
+    {
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      OP2(SLJIT_ADD, RETURN_ADDR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_IMM, 0x400);
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      CMOV(SLJIT_LESS, STR_PTR, RETURN_ADDR, 0);
+    if (max >= 0xd800)
+      CMOV(SLJIT_LESS, TMP1, SLJIT_IMM, 0x10000);
+    }
+  else
+    {
+    jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x400);
+    if (options & READ_CHAR_UPDATE_STR_PTR)
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    if (max >= 0xd800)
+      OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0x10000);
+    JUMPHERE(jump);
+    }
+  }
+#elif PCRE2_CODE_UNIT_WIDTH == 32
+if (common->invalid_utf)
+  {
+  if (backtracks != NULL)
+    add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x110000));
+  else
+    {
+    OP2(SLJIT_SUB | SLJIT_SET_GREATER_EQUAL, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x110000);
+    CMOV(SLJIT_GREATER_EQUAL, TMP1, SLJIT_IMM, INVALID_UTF_CHAR);
+    }
+  }
+#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16|32] */
+#endif /* SUPPORT_UNICODE */
 }
 
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
@@ -3221,7 +3707,7 @@ while (bitset < end);
 return TRUE;
 }
 
-static void read_char7_type(compiler_common *common, BOOL full_read)
+static void read_char7_type(compiler_common *common, jump_list **backtracks, BOOL negated)
 {
 /* Reads the precise character type of a character into TMP1, if the character
 is less than 128. Otherwise it returns with zero. Does not check STR_END. The
@@ -3234,153 +3720,31 @@ SLJIT_ASSERT(common->utf);
 OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), 0);
 OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
 
+/* All values > 127 are zero in ctypes. */
 OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP2), common->ctypes);
 
-if (full_read)
+if (negated)
   {
-  jump = CMP(SLJIT_LESS, TMP2, 0, SLJIT_IMM, 0xc0);
-  OP1(SLJIT_MOV_U8, TMP2, 0, SLJIT_MEM1(TMP2), (sljit_sw)PRIV(utf8_table4) - 0xc0);
-  OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
+  jump = CMP(SLJIT_LESS, TMP2, 0, SLJIT_IMM, 0x80);
+
+  if (common->invalid_utf)
+    {
+    add_jump(compiler, &common->utfreadchar_invalid, JUMP(SLJIT_FAST_CALL));
+    add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
+    OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0);
+    }
+  else
+    {
+    OP1(SLJIT_MOV_U8, TMP2, 0, SLJIT_MEM1(TMP2), (sljit_sw)PRIV(utf8_table4) - 0xc0);
+    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
+    }
   JUMPHERE(jump);
   }
 }
 
 #endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8 */
 
-static void read_char_range(compiler_common *common, sljit_u32 min, sljit_u32 max, BOOL update_str_ptr)
-{
-/* Reads the precise value of a character into TMP1, if the character is
-between min and max (c >= min && c <= max). Otherwise it returns with a value
-outside the range. Does not check STR_END. */
-DEFINE_COMPILER;
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-struct sljit_jump *jump;
-#endif
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
-struct sljit_jump *jump2;
-#endif
-
-SLJIT_UNUSED_ARG(update_str_ptr);
-SLJIT_UNUSED_ARG(min);
-SLJIT_UNUSED_ARG(max);
-SLJIT_ASSERT(min <= max);
-
-OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
-if (common->utf)
-  {
-  if (max < 128 && !update_str_ptr) return;
-
-  jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xc0);
-  if (min >= 0x10000)
-    {
-    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xf0);
-    if (update_str_ptr)
-      OP1(SLJIT_MOV_U8, RETURN_ADDR, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
-    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-    jump2 = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0x7);
-    OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
-    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
-    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
-    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(2));
-    if (!update_str_ptr)
-      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(3));
-    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
-    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-    JUMPHERE(jump2);
-    if (update_str_ptr)
-      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, RETURN_ADDR, 0);
-    }
-  else if (min >= 0x800 && max <= 0xffff)
-    {
-    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xe0);
-    if (update_str_ptr)
-      OP1(SLJIT_MOV_U8, RETURN_ADDR, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
-    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-    jump2 = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0xf);
-    OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
-    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
-    if (!update_str_ptr)
-      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
-    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
-    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-    JUMPHERE(jump2);
-    if (update_str_ptr)
-      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, RETURN_ADDR, 0);
-    }
-  else if (max >= 0x800)
-    add_jump(compiler, (max < 0x10000) ? &common->utfreadchar16 : &common->utfreadchar, JUMP(SLJIT_FAST_CALL));
-  else if (max < 128)
-    {
-    OP1(SLJIT_MOV_U8, TMP2, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
-    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
-    }
-  else
-    {
-    OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-    if (!update_str_ptr)
-      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-    else
-      OP1(SLJIT_MOV_U8, RETURN_ADDR, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
-    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
-    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-    if (update_str_ptr)
-      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, RETURN_ADDR, 0);
-    }
-  JUMPHERE(jump);
-  }
-#endif
-
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 16
-if (common->utf)
-  {
-  if (max >= 0x10000)
-    {
-    OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xd800);
-    jump = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0xdc00 - 0xd800 - 1);
-    /* TMP2 contains the high surrogate. */
-    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-    OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x40);
-    OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 10);
-    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3ff);
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-    JUMPHERE(jump);
-    return;
-    }
-
-  if (max < 0xd800 && !update_str_ptr) return;
-
-  /* Skip low surrogate if necessary. */
-  OP2(SLJIT_SUB, TMP2, 0, TMP1, 0, SLJIT_IMM, 0xd800);
-  jump = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0xdc00 - 0xd800 - 1);
-  if (update_str_ptr)
-    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-  if (max >= 0xd800)
-    OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0x10000);
-  JUMPHERE(jump);
-  }
-#endif
-}
-
-static SLJIT_INLINE void read_char(compiler_common *common)
-{
-read_char_range(common, 0, READ_CHAR_MAX, TRUE);
-}
-
-static void read_char8_type(compiler_common *common, BOOL update_str_ptr)
+static void read_char8_type(compiler_common *common, jump_list **backtracks, BOOL negated)
 {
 /* Reads the character type into TMP1, updates STR_PTR. Does not check STR_END. */
 DEFINE_COMPILER;
@@ -3391,7 +3755,8 @@ struct sljit_jump *jump;
 struct sljit_jump *jump2;
 #endif
 
-SLJIT_UNUSED_ARG(update_str_ptr);
+SLJIT_UNUSED_ARG(backtracks);
+SLJIT_UNUSED_ARG(negated);
 
 OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), 0);
 OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
@@ -3399,18 +3764,38 @@ OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
 if (common->utf)
   {
-  /* This can be an extra read in some situations, but hopefully
-  it is needed in most cases. */
+  /* The result of this read may be unused, but saves an "else" part. */
   OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP2), common->ctypes);
-  jump = CMP(SLJIT_LESS, TMP2, 0, SLJIT_IMM, 0xc0);
-  if (!update_str_ptr)
+  jump = CMP(SLJIT_LESS, TMP2, 0, SLJIT_IMM, 0x80);
+
+  if (!negated)
     {
+    if (common->invalid_utf)
+      add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
     OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
     OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-    OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
+    OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc2);
+    if (common->invalid_utf)
+      add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0xe0 - 0xc2));
+
     OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
-    OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
-    OP2(SLJIT_OR, TMP2, 0, TMP2, 0, TMP1, 0);
+    OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
+    OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x80);
+    if (common->invalid_utf)
+      add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40));
+
+    OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0);
+    jump2 = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 255);
+    OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP2), common->ctypes);
+    JUMPHERE(jump2);
+    }
+  else if (common->invalid_utf)
+    {
+    add_jump(compiler, &common->utfreadchar_invalid, JUMP(SLJIT_FAST_CALL));
+    OP1(SLJIT_MOV, TMP2, 0, TMP1, 0);
+    add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR));
+
     OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0);
     jump2 = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 255);
     OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP2), common->ctypes);
@@ -3418,43 +3803,98 @@ if (common->utf)
     }
   else
     add_jump(compiler, &common->utfreadtype8, JUMP(SLJIT_FAST_CALL));
+
   JUMPHERE(jump);
   return;
   }
 #endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8 */
 
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 32
+if (common->invalid_utf && negated)
+  add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x110000));
+#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 32 */
+
 #if PCRE2_CODE_UNIT_WIDTH != 8
 /* The ctypes array contains only 256 values. */
 OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0);
 jump = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 255);
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH != 8 */
 OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP2), common->ctypes);
 #if PCRE2_CODE_UNIT_WIDTH != 8
 JUMPHERE(jump);
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH != 8 */
 
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 16
-if (common->utf && update_str_ptr)
+if (common->utf && negated)
   {
   /* Skip low surrogate if necessary. */
+  if (!common->invalid_utf)
+    {
+    OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xd800);
+
+    if (sljit_has_cpu_feature(SLJIT_HAS_CMOV) && sljit_get_register_index(RETURN_ADDR) >= 0)
+      {
+      OP2(SLJIT_ADD, RETURN_ADDR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+      OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_IMM, 0x400);
+      CMOV(SLJIT_LESS, STR_PTR, RETURN_ADDR, 0);
+      }
+    else
+      {
+      jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x400);
+      OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+      JUMPHERE(jump);
+      }
+    return;
+    }
+
   OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xd800);
-  jump = CMP(SLJIT_GREATER, TMP2, 0, SLJIT_IMM, 0xdc00 - 0xd800 - 1);
+  jump = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0xe000 - 0xd800);
+  add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x400));
+  add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
+  OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
   OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+  OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xdc00);
+  add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x400));
+
   JUMPHERE(jump);
+  return;
   }
 #endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 16 */
 }
 
-static void skip_char_back(compiler_common *common)
+static void move_back(compiler_common *common, jump_list **backtracks, BOOL must_be_valid)
 {
-/* Goes one character back. Affects STR_PTR and TMP1. Does not check begin. */
+/* Goes one character back. TMP2 must contain the start of
+the subject buffer. Affects STR_PTR and TMP1. Does not modify
+STR_PTR for invalid character sequences. */
 DEFINE_COMPILER;
+
+SLJIT_UNUSED_ARG(backtracks);
+SLJIT_UNUSED_ARG(must_be_valid);
+
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+struct sljit_jump *jump;
+#endif
+
+#ifdef SUPPORT_UNICODE
 #if PCRE2_CODE_UNIT_WIDTH == 8
 struct sljit_label *label;
 
 if (common->utf)
   {
+  if (!must_be_valid && common->invalid_utf)
+    {
+    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), -IN_UCHARS(1));
+    OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x80);
+    add_jump(compiler, &common->utfmoveback_invalid, JUMP(SLJIT_FAST_CALL));
+    if (backtracks != NULL)
+      add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, 0));
+    JUMPHERE(jump);
+    return;
+    }
+
   label = LABEL();
   OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), -IN_UCHARS(1));
   OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
@@ -3467,16 +3907,45 @@ if (common->utf)
   {
   OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), -IN_UCHARS(1));
   OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+  if (!must_be_valid && common->invalid_utf)
+    {
+    OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+    jump = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0xe000 - 0xd800);
+    add_jump(compiler, &common->utfmoveback_invalid, JUMP(SLJIT_FAST_CALL));
+    if (backtracks != NULL)
+      add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, 0));
+    JUMPHERE(jump);
+    return;
+    }
+
   /* Skip low surrogate if necessary. */
   OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xfc00);
   OP2(SLJIT_SUB | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0xdc00);
   OP_FLAGS(SLJIT_MOV, TMP1, 0, SLJIT_EQUAL);
-  OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 1);
+  OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, UCHAR_SHIFT);
   OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
   return;
   }
-#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16] */
-#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
+#elif PCRE2_CODE_UNIT_WIDTH == 32
+if (common->invalid_utf && !must_be_valid)
+  {
+  OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), -IN_UCHARS(1));
+  if (backtracks != NULL)
+    {
+    add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x110000));
+    OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    return;
+    }
+
+  OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x110000);
+  OP_FLAGS(SLJIT_MOV, TMP1, 0, SLJIT_LESS);
+  OP2(SLJIT_SHL,  TMP1, 0, TMP1, 0, SLJIT_IMM, UCHAR_SHIFT);
+  OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
+  return;
+  }
+#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16|32] */
+#endif /* SUPPORT_UNICODE */
 OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
 }
 
@@ -3519,13 +3988,12 @@ else
 static void do_utfreadchar(compiler_common *common)
 {
 /* Fast decoding a UTF-8 character. TMP1 contains the first byte
-of the character (>= 0xc0). Return char value in TMP1, length in TMP2. */
+of the character (>= 0xc0). Return char value in TMP1. */
 DEFINE_COMPILER;
 struct sljit_jump *jump;
 
 sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
 OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
 OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
 OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
 OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
@@ -3534,13 +4002,12 @@ OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
 OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
 jump = JUMP(SLJIT_NOT_ZERO);
 /* Two byte sequence. */
+OP2(SLJIT_XOR, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3000);
 OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, IN_UCHARS(2));
 sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
 
 JUMPHERE(jump);
 OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
-OP2(SLJIT_XOR, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x800);
 OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
 OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
 OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
@@ -3548,55 +4015,18 @@ OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
 OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x10000);
 jump = JUMP(SLJIT_NOT_ZERO);
 /* Three byte sequence. */
+OP2(SLJIT_XOR, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xe0000);
 OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
-OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, IN_UCHARS(3));
 sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
 
 /* Four byte sequence. */
 JUMPHERE(jump);
 OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(2));
-OP2(SLJIT_XOR, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x10000);
-OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+OP2(SLJIT_XOR, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xf0000);
 OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(3));
-OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
-OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, IN_UCHARS(4));
-sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
-}
-
-static void do_utfreadchar16(compiler_common *common)
-{
-/* Fast decoding a UTF-8 character. TMP1 contains the first byte
-of the character (>= 0xc0). Return value in TMP1. */
-DEFINE_COMPILER;
-struct sljit_jump *jump;
-
-sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
-OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
-OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x3f);
 OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
 OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
 OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-
-/* Searching for the first zero. */
-OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
-jump = JUMP(SLJIT_NOT_ZERO);
-/* Two byte sequence. */
-OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
-
-JUMPHERE(jump);
-OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x400);
-OP_FLAGS(SLJIT_MOV, TMP2, 0, SLJIT_NOT_ZERO);
-/* This code runs only in 8 bit mode. No need to shift the value. */
-OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
-OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
-OP2(SLJIT_XOR, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x800);
-OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
-OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x3f);
-OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
-/* Three byte sequence. */
-OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
 sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
 }
 
@@ -3636,7 +4066,643 @@ OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
 sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
 }
 
+static void do_utfreadchar_invalid(compiler_common *common)
+{
+/* Slow decoding a UTF-8 character. TMP1 contains the first byte
+of the character (>= 0xc0). Return char value in TMP1. STR_PTR is
+undefined for invalid characters. */
+DEFINE_COMPILER;
+sljit_s32 i;
+sljit_s32 has_cmov = sljit_has_cpu_feature(SLJIT_HAS_CMOV);
+struct sljit_jump *jump;
+struct sljit_jump *buffer_end_close;
+struct sljit_label *three_byte_entry;
+struct sljit_label *exit_invalid_label;
+struct sljit_jump *exit_invalid[11];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xc2);
+
+/* Usually more than 3 characters remained in the subject buffer. */
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(3));
+
+/* Not a valid start of a multi-byte sequence, no more bytes read. */
+exit_invalid[0] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0xf5 - 0xc2);
+
+buffer_end_close = CMP(SLJIT_GREATER, STR_PTR, 0, STR_END, 0);
+
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-3));
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+/* If TMP2 is in 0x80-0xbf range, TMP1 is also increased by (0x2 << 6). */
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x80);
+exit_invalid[1] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+
+OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
+jump = JUMP(SLJIT_NOT_ZERO);
+
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(jump);
+
+/* Three-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x80);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_GREATER_EQUAL, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_IMM, 0x40);
+  CMOV(SLJIT_GREATER_EQUAL, TMP1, SLJIT_IMM, 0x20000);
+  exit_invalid[2] = NULL;
+  }
+else
+  exit_invalid[2] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+
+OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x10000);
+jump = JUMP(SLJIT_NOT_ZERO);
+
+three_byte_entry = LABEL();
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x2d800);
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
+  CMOV(SLJIT_LESS, TMP1, SLJIT_IMM, INVALID_UTF_CHAR - 0xd800);
+  exit_invalid[3] = NULL;
+  }
+else
+  exit_invalid[3] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x800);
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
+  CMOV(SLJIT_LESS, TMP1, SLJIT_IMM, INVALID_UTF_CHAR);
+  exit_invalid[4] = NULL;
+  }
+else
+  exit_invalid[4] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x800);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(jump);
+
+/* Four-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-1));
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x80);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_GREATER_EQUAL, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_IMM, 0x40);
+  CMOV(SLJIT_GREATER_EQUAL, TMP1, SLJIT_IMM, 0);
+  exit_invalid[5] = NULL;
+  }
+else
+  exit_invalid[5] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xc10000);
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_GREATER_EQUAL, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x100000);
+  CMOV(SLJIT_GREATER_EQUAL, TMP1, SLJIT_IMM, INVALID_UTF_CHAR - 0x10000);
+  exit_invalid[6] = NULL;
+  }
+else
+  exit_invalid[6] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x100000);
+
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x10000);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(buffer_end_close);
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+exit_invalid[7] = CMP(SLJIT_GREATER, STR_PTR, 0, STR_END, 0);
+
+/* Two-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-1));
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+/* If TMP2 is in 0x80-0xbf range, TMP1 is also increased by (0x2 << 6). */
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x80);
+exit_invalid[8] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+
+OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
+jump = JUMP(SLJIT_NOT_ZERO);
+
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+/* Three-byte sequence. */
+JUMPHERE(jump);
+exit_invalid[9] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x80);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_GREATER_EQUAL, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_IMM, 0x40);
+  CMOV(SLJIT_GREATER_EQUAL, TMP1, SLJIT_IMM, INVALID_UTF_CHAR);
+  exit_invalid[10] = NULL;
+  }
+else
+  exit_invalid[10] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+
+/* One will be substracted from STR_PTR later. */
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+
+/* Four byte sequences are not possible. */
+CMPTO(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x30000, three_byte_entry);
+
+exit_invalid_label = LABEL();
+for (i = 0; i < 11; i++)
+  sljit_set_label(exit_invalid[i], exit_invalid_label);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_utfreadnewline_invalid(compiler_common *common)
+{
+/* Slow decoding a UTF-8 character, specialized for newlines.
+TMP1 contains the first byte of the character (>= 0xc0). Return
+char value in TMP1. */
+DEFINE_COMPILER;
+struct sljit_label *loop;
+struct sljit_label *skip_start;
+struct sljit_label *three_byte_exit;
+struct sljit_jump *jump[5];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+if (common->nltype != NLTYPE_ANY)
+  {
+  SLJIT_ASSERT(common->nltype != NLTYPE_FIXED || common->newline < 128);
+
+  /* All newlines are ascii, just skip intermediate octets. */
+  jump[0] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+  loop = LABEL();
+  OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+  OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc0);
+  CMPTO(SLJIT_EQUAL, TMP2, 0, SLJIT_IMM, 0x80, loop);
+  OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+  JUMPHERE(jump[0]);
+
+  OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+  sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+  return;
+  }
+
+jump[0] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+jump[1] = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, 0xc2);
+jump[2] = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, 0xe2);
+
+skip_start = LABEL();
+OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc0);
+jump[3] = CMP(SLJIT_NOT_EQUAL, TMP2, 0, SLJIT_IMM, 0x80);
+
+/* Skip intermediate octets. */
+loop = LABEL();
+jump[4] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+OP2(SLJIT_AND, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc0);
+CMPTO(SLJIT_EQUAL, TMP2, 0, SLJIT_IMM, 0x80, loop);
+
+JUMPHERE(jump[3]);
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+three_byte_exit = LABEL();
+JUMPHERE(jump[0]);
+JUMPHERE(jump[4]);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+/* Two byte long newline: 0x85. */
+JUMPHERE(jump[1]);
+CMPTO(SLJIT_NOT_EQUAL, TMP2, 0, SLJIT_IMM, 0x85, skip_start);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0x85);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+/* Three byte long newlines: 0x2028 and 0x2029. */
+JUMPHERE(jump[2]);
+CMPTO(SLJIT_NOT_EQUAL, TMP2, 0, SLJIT_IMM, 0x80, skip_start);
+CMPTO(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0, three_byte_exit);
+
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+OP2(SLJIT_SUB, TMP1, 0, TMP2, 0, SLJIT_IMM, 0x80);
+CMPTO(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x40, skip_start);
+
+OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, 0x2000);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_utfmoveback_invalid(compiler_common *common)
+{
+/* Goes one character back. */
+DEFINE_COMPILER;
+sljit_s32 i;
+struct sljit_jump *jump;
+struct sljit_jump *buffer_start_close;
+struct sljit_label *exit_ok_label;
+struct sljit_label *exit_invalid_label;
+struct sljit_jump *exit_invalid[7];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(3));
+exit_invalid[0] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0xc0);
+
+/* Two-byte sequence. */
+buffer_start_close = CMP(SLJIT_LESS, STR_PTR, 0, TMP2, 0);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(2));
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xc0);
+jump = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x20);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 1);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+/* Three-byte sequence. */
+JUMPHERE(jump);
+exit_invalid[1] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, -0x40);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(1));
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xe0);
+jump = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x10);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 1);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+/* Four-byte sequence. */
+JUMPHERE(jump);
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xe0 - 0x80);
+exit_invalid[2] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x40);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xf0);
+exit_invalid[3] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x05);
+
+exit_ok_label = LABEL();
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 1);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+/* Two-byte sequence. */
+JUMPHERE(buffer_start_close);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+
+exit_invalid[4] = CMP(SLJIT_LESS, STR_PTR, 0, TMP2, 0);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xc0);
+CMPTO(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x20, exit_ok_label);
+
+/* Three-byte sequence. */
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+exit_invalid[5] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, -0x40);
+exit_invalid[6] = CMP(SLJIT_LESS, STR_PTR, 0, TMP2, 0);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xe0);
+CMPTO(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x10, exit_ok_label);
+
+/* Four-byte sequences are not possible. */
+
+exit_invalid_label = LABEL();
+sljit_set_label(exit_invalid[5], exit_invalid_label);
+sljit_set_label(exit_invalid[6], exit_invalid_label);
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(3));
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(exit_invalid[4]);
+/* -2 + 4 = 2 */
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+
+exit_invalid_label = LABEL();
+for (i = 0; i < 4; i++)
+  sljit_set_label(exit_invalid[i], exit_invalid_label);
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(4));
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_utfpeakcharback(compiler_common *common)
+{
+/* Peak a character back. */
+DEFINE_COMPILER;
+struct sljit_jump *jump[2];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xc0);
+jump[0] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x20);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-3));
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xe0);
+jump[1] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x10);
+
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-4));
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xe0 - 0x80);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xf0);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+JUMPHERE(jump[1]);
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x80);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+JUMPHERE(jump[0]);
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-1));
+OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 6);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x80);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_utfpeakcharback_invalid(compiler_common *common)
+{
+/* Peak a character back. */
+DEFINE_COMPILER;
+sljit_s32 i;
+sljit_s32 has_cmov = sljit_has_cpu_feature(SLJIT_HAS_CMOV);
+struct sljit_jump *jump[2];
+struct sljit_label *two_byte_entry;
+struct sljit_label *three_byte_entry;
+struct sljit_label *exit_invalid_label;
+struct sljit_jump *exit_invalid[8];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, IN_UCHARS(3));
+exit_invalid[0] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0xc0);
+jump[0] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, STR_PTR, 0);
+
+/* Two-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc2);
+jump[1] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x1e);
+
+two_byte_entry = LABEL();
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
+/* If TMP1 is in 0x80-0xbf range, TMP1 is also increased by (0x2 << 6). */
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(jump[1]);
+OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc2 - 0x80);
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x80);
+exit_invalid[1] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+/* Three-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-3));
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xe0);
+jump[1] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x10);
+
+three_byte_entry = LABEL();
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 12);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
+  CMOV(SLJIT_LESS, TMP1, SLJIT_IMM, -0xd800);
+  exit_invalid[2] = NULL;
+  }
+else
+  exit_invalid[2] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x800);
+
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x800);
+  CMOV(SLJIT_LESS, TMP1, SLJIT_IMM, INVALID_UTF_CHAR);
+  exit_invalid[3] = NULL;
+  }
+else
+  exit_invalid[3] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x800);
+
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(jump[1]);
+OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xe0 - 0x80);
+exit_invalid[4] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 12);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+/* Four-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-4));
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x10000);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xf0);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 18);
+/* ADD is used instead of OR because of the SUB 0x10000 above. */
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+
+if (has_cmov)
+  {
+  OP2(SLJIT_SUB | SLJIT_SET_GREATER_EQUAL, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x100000);
+  CMOV(SLJIT_GREATER_EQUAL, TMP1, SLJIT_IMM, INVALID_UTF_CHAR - 0x10000);
+  exit_invalid[5] = NULL;
+  }
+else
+  exit_invalid[5] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x100000);
+
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x10000);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(jump[0]);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, IN_UCHARS(1));
+jump[0] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, STR_PTR, 0);
+
+/* Two-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc2);
+CMPTO(SLJIT_LESS, TMP2, 0, SLJIT_IMM, 0x1e, two_byte_entry);
+
+OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc2 - 0x80);
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x80);
+exit_invalid[6] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x40);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 6);
+OP2(SLJIT_OR, TMP1, 0, TMP1, 0, TMP2, 0);
+
+/* Three-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-3));
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xe0);
+CMPTO(SLJIT_LESS, TMP2, 0, SLJIT_IMM, 0x10, three_byte_entry);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(jump[0]);
+exit_invalid[7] = CMP(SLJIT_GREATER, TMP2, 0, STR_PTR, 0);
+
+/* Two-byte sequence. */
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xc2);
+CMPTO(SLJIT_LESS, TMP2, 0, SLJIT_IMM, 0x1e, two_byte_entry);
+
+exit_invalid_label = LABEL();
+for (i = 0; i < 8; i++)
+  sljit_set_label(exit_invalid[i], exit_invalid_label);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
 #endif /* PCRE2_CODE_UNIT_WIDTH == 8 */
+
+#if PCRE2_CODE_UNIT_WIDTH == 16
+
+static void do_utfreadchar_invalid(compiler_common *common)
+{
+/* Slow decoding a UTF-16 character. TMP1 contains the first half
+of the character (>= 0xd800). Return char value in TMP1. STR_PTR is
+undefined for invalid characters. */
+DEFINE_COMPILER;
+struct sljit_jump *exit_invalid[3];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+/* TMP2 contains the high surrogate. */
+exit_invalid[0] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0xdc00);
+exit_invalid[1] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 10);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xdc00);
+OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, 0x10000);
+exit_invalid[2] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x400);
+
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(exit_invalid[0]);
+JUMPHERE(exit_invalid[1]);
+JUMPHERE(exit_invalid[2]);
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_utfreadnewline_invalid(compiler_common *common)
+{
+/* Slow decoding a UTF-16 character, specialized for newlines.
+TMP1 contains the first half of the character (>= 0xd800). Return
+char value in TMP1. */
+
+DEFINE_COMPILER;
+struct sljit_jump *exit_invalid[2];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+/* TMP2 contains the high surrogate. */
+exit_invalid[0] = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(0));
+exit_invalid[1] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0xdc00);
+
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xdc00);
+OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_IMM, 0x400);
+OP_FLAGS(SLJIT_MOV, TMP2, 0, SLJIT_LESS);
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0x10000);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, UCHAR_SHIFT);
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP2, 0);
+
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(exit_invalid[0]);
+JUMPHERE(exit_invalid[1]);
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_utfmoveback_invalid(compiler_common *common)
+{
+/* Goes one character back. */
+DEFINE_COMPILER;
+struct sljit_jump *exit_invalid[3];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+exit_invalid[0] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x400);
+exit_invalid[1] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, STR_PTR, 0);
+
+OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-1));
+OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+exit_invalid[2] = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0x400);
+
+OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 1);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(exit_invalid[0]);
+JUMPHERE(exit_invalid[1]);
+JUMPHERE(exit_invalid[2]);
+
+OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, 0);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_utfpeakcharback_invalid(compiler_common *common)
+{
+/* Peak a character back. */
+DEFINE_COMPILER;
+struct sljit_jump *jump;
+struct sljit_jump *exit_invalid[3];
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+jump = CMP(SLJIT_GREATER_EQUAL, TMP1, 0, SLJIT_IMM, 0xe000);
+OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, IN_UCHARS(1));
+exit_invalid[0] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xdc00);
+exit_invalid[1] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, STR_PTR, 0);
+
+OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x10000 - 0xdc00);
+OP2(SLJIT_SUB, TMP2, 0, TMP2, 0, SLJIT_IMM, 0xd800);
+exit_invalid[2] = CMP(SLJIT_GREATER_EQUAL, TMP2, 0, SLJIT_IMM, 0x400);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 10);
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+
+JUMPHERE(jump);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+
+JUMPHERE(exit_invalid[0]);
+JUMPHERE(exit_invalid[1]);
+JUMPHERE(exit_invalid[2]);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+#endif /* PCRE2_CODE_UNIT_WIDTH == 16 */
 
 /* UCD_BLOCK_SIZE must be 128 (see the assert below). */
 #define UCD_BLOCK_MASK 127
@@ -3653,12 +4719,12 @@ struct sljit_jump *jump;
 
 #if defined SLJIT_DEBUG && SLJIT_DEBUG
 /* dummy_ucd_record */
-const ucd_record *record = GET_UCD(INVALID_UTF_CHAR);
-SLJIT_ASSERT(record->script == ucp_Common && record->chartype == ucp_Cn && record->gbprop == ucp_gbOther);
+const ucd_record *record = GET_UCD(UNASSIGNED_UTF_CHAR);
+SLJIT_ASSERT(record->script == ucp_Unknown && record->chartype == ucp_Cn && record->gbprop == ucp_gbOther);
 SLJIT_ASSERT(record->caseset == 0 && record->other_case == 0);
 #endif
 
-SLJIT_ASSERT(UCD_BLOCK_SIZE == 128 && sizeof(ucd_record) == 8);
+SLJIT_ASSERT(UCD_BLOCK_SIZE == 128 && sizeof(ucd_record) == 12);
 
 sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
 
@@ -3666,7 +4732,7 @@ sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
 if (!common->utf)
   {
   jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, MAX_UTF_CODE_POINT + 1);
-  OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+  OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, UNASSIGNED_UTF_CHAR);
   JUMPHERE(jump);
   }
 #endif
@@ -3679,8 +4745,59 @@ OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, UCD_BLOCK_SHIFT);
 OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
 OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_stage2));
 OP1(SLJIT_MOV_U16, TMP2, 0, SLJIT_MEM2(TMP2, TMP1), 1);
+sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
+}
+
+static void do_getucdtype(compiler_common *common)
+{
+/* Search the UCD record for the character comes in TMP1.
+Returns chartype in TMP1 and UCD offset in TMP2. */
+DEFINE_COMPILER;
+#if PCRE2_CODE_UNIT_WIDTH == 32
+struct sljit_jump *jump;
+#endif
+
+#if defined SLJIT_DEBUG && SLJIT_DEBUG
+/* dummy_ucd_record */
+const ucd_record *record = GET_UCD(UNASSIGNED_UTF_CHAR);
+SLJIT_ASSERT(record->script == ucp_Unknown && record->chartype == ucp_Cn && record->gbprop == ucp_gbOther);
+SLJIT_ASSERT(record->caseset == 0 && record->other_case == 0);
+#endif
+
+SLJIT_ASSERT(UCD_BLOCK_SIZE == 128 && sizeof(ucd_record) == 12);
+
+sljit_emit_fast_enter(compiler, RETURN_ADDR, 0);
+
+#if PCRE2_CODE_UNIT_WIDTH == 32
+if (!common->utf)
+  {
+  jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, MAX_UTF_CODE_POINT + 1);
+  OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, UNASSIGNED_UTF_CHAR);
+  JUMPHERE(jump);
+  }
+#endif
+
+OP2(SLJIT_LSHR, TMP2, 0, TMP1, 0, SLJIT_IMM, UCD_BLOCK_SHIFT);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 1);
+OP1(SLJIT_MOV_U16, TMP2, 0, SLJIT_MEM1(TMP2), (sljit_sw)PRIV(ucd_stage1));
+OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, UCD_BLOCK_MASK);
+OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, UCD_BLOCK_SHIFT);
+OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP2, 0);
+OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_stage2));
+OP1(SLJIT_MOV_U16, TMP2, 0, SLJIT_MEM2(TMP2, TMP1), 1);
+
+// PH hacking
+//fprintf(stderr, "~~A\n");
+  OP2(SLJIT_SHL, TMP1, 0, TMP2, 0, SLJIT_IMM, 2);
+  OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 3);
+  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
+  OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_records) + SLJIT_OFFSETOF(ucd_record, chartype));
+
 OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_records) + SLJIT_OFFSETOF(ucd_record, chartype));
-OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 3);
+
+  OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 0);
+
+// OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 3);
 sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
 }
 
@@ -3695,8 +4812,9 @@ struct sljit_jump *start;
 struct sljit_jump *end = NULL;
 struct sljit_jump *end2 = NULL;
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
-struct sljit_jump *singlechar;
-#endif
+struct sljit_label *loop;
+struct sljit_jump *jump;
+#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
 jump_list *newline = NULL;
 sljit_u32 overall_options = common->re->overall_options;
 BOOL hascrorlf = (common->re->flags & PCRE2_HASCRORLF) != 0;
@@ -3733,7 +4851,7 @@ if ((overall_options & PCRE2_FIRSTLINE) != 0)
     mainloop = LABEL();
     /* Continual stores does not cause data dependency. */
     OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), common->match_end_ptr, STR_PTR, 0);
-    read_char_range(common, common->nlmin, common->nlmax, TRUE);
+    read_char(common, common->nlmin, common->nlmax, NULL, READ_CHAR_NEWLINE);
     check_newlinechar(common, common->nltype, &newline, TRUE);
     CMPTO(SLJIT_LESS, STR_PTR, 0, STR_END, 0, mainloop);
     JUMPHERE(end);
@@ -3753,11 +4871,9 @@ else if ((overall_options & PCRE2_USE_OFFSET_LIMIT) != 0)
   OP1(SLJIT_MOV, TMP2, 0, STR_END, 0);
   end = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, (sljit_sw) PCRE2_UNSET);
   OP1(SLJIT_MOV, TMP2, 0, ARGUMENTS, 0);
-#if PCRE2_CODE_UNIT_WIDTH == 16
-  OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 1);
-#elif PCRE2_CODE_UNIT_WIDTH == 32
-  OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 2);
-#endif
+#if PCRE2_CODE_UNIT_WIDTH == 16 || PCRE2_CODE_UNIT_WIDTH == 32
+  OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, UCHAR_SHIFT);
+#endif /* PCRE2_CODE_UNIT_WIDTH == [16|32] */
   OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(TMP2), SLJIT_OFFSETOF(jit_arguments, begin));
   OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
   end2 = CMP(SLJIT_LESS_EQUAL, TMP2, 0, STR_END, 0);
@@ -3781,7 +4897,7 @@ if (newlinecheck)
   OP_FLAGS(SLJIT_MOV, TMP1, 0, SLJIT_EQUAL);
 #if PCRE2_CODE_UNIT_WIDTH == 16 || PCRE2_CODE_UNIT_WIDTH == 32
   OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, UCHAR_SHIFT);
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH == [16|32] */
   OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
   end2 = JUMP(SLJIT_JUMP);
   }
@@ -3789,9 +4905,9 @@ if (newlinecheck)
 mainloop = LABEL();
 
 /* Increasing the STR_PTR here requires one less jump in the most common case. */
-#ifdef SUPPORT_UNICODE
-if (common->utf) readuchar = TRUE;
-#endif
+#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+if (common->utf && !common->invalid_utf) readuchar = TRUE;
+#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
 if (newlinecheck) readuchar = TRUE;
 
 if (readuchar)
@@ -3803,23 +4919,55 @@ if (newlinecheck)
 OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
 #if PCRE2_CODE_UNIT_WIDTH == 8
-if (common->utf)
+if (common->invalid_utf)
   {
-  singlechar = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xc0);
+  /* Skip continuation code units. */
+  loop = LABEL();
+  jump = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+  OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), 0);
+  OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+  OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0x80);
+  CMPTO(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x40, loop);
+  OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+  JUMPHERE(jump);
+  }
+else if (common->utf)
+  {
+  jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xc0);
   OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
   OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
-  JUMPHERE(singlechar);
+  JUMPHERE(jump);
   }
 #elif PCRE2_CODE_UNIT_WIDTH == 16
-if (common->utf)
+if (common->invalid_utf)
   {
-  singlechar = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xd800);
-  OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xfc00);
-  OP2(SLJIT_SUB | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0xd800);
-  OP_FLAGS(SLJIT_MOV, TMP1, 0, SLJIT_EQUAL);
-  OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 1);
-  OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
-  JUMPHERE(singlechar);
+  /* Skip continuation code units. */
+  loop = LABEL();
+  jump = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+  OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), 0);
+  OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+  OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xdc00);
+  CMPTO(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0x400, loop);
+  OP2(SLJIT_SUB, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+  JUMPHERE(jump);
+  }
+else if (common->utf)
+  {
+  OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, 0xd800);
+
+  if (sljit_has_cpu_feature(SLJIT_HAS_CMOV))
+    {
+    OP2(SLJIT_ADD, TMP2, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
+    OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x400);
+    CMOV(SLJIT_LESS, STR_PTR, TMP2, 0);
+    }
+  else
+    {
+    OP2(SLJIT_SUB | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, 0x400);
+    OP_FLAGS(SLJIT_MOV, TMP1, 0, SLJIT_LESS);
+    OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, UCHAR_SHIFT);
+    OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
+    }
   }
 #endif /* PCRE2_CODE_UNIT_WIDTH == [8|16] */
 #endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32 */
@@ -4305,16 +5453,16 @@ return CMP(SLJIT_NOT_EQUAL, reg, 0, SLJIT_IMM, 0xdc00);
 
 static sljit_s32 character_to_int32(PCRE2_UCHAR chr)
 {
-sljit_s32 value = (sljit_s32)chr;
+sljit_u32 value = chr;
 #if PCRE2_CODE_UNIT_WIDTH == 8
 #define SSE2_COMPARE_TYPE_INDEX 0
-return (value << 24) | (value << 16) | (value << 8) | value;
+return (sljit_s32)((value << 24) | (value << 16) | (value << 8) | value);
 #elif PCRE2_CODE_UNIT_WIDTH == 16
 #define SSE2_COMPARE_TYPE_INDEX 1
-return (value << 16) | value;
+return (sljit_s32)((value << 16) | value);
 #elif PCRE2_CODE_UNIT_WIDTH == 32
 #define SSE2_COMPARE_TYPE_INDEX 2
-return value;
+return (sljit_s32)(value);
 #else
 #error "Unsupported unit width"
 #endif
@@ -5120,7 +6268,7 @@ for (i = 0; i < max; i++)
   }
 
 #if (defined SLJIT_CONFIG_X86 && SLJIT_CONFIG_X86) && !(defined SUPPORT_VALGRIND) && !(defined _WIN64)
-if (check_fast_forward_char_pair_sse2(common, chars, max))
+if (sljit_has_cpu_feature(SLJIT_HAS_SSE2) && check_fast_forward_char_pair_sse2(common, chars, max))
   return TRUE;
 #endif
 
@@ -5356,14 +6504,15 @@ if (common->nltype == NLTYPE_FIXED && common->newline > 255)
   }
 
 OP1(SLJIT_MOV, TMP1, 0, ARGUMENTS, 0);
+/* Example: match /^/ to \r\n from offset 1. */
 OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(TMP1), SLJIT_OFFSETOF(jit_arguments, str));
 firstchar = CMP(SLJIT_LESS_EQUAL, STR_PTR, 0, TMP2, 0);
-skip_char_back(common);
+move_back(common, NULL, FALSE);
 
 loop = LABEL();
 common->ff_newline_shortcut = loop;
 
-read_char_range(common, common->nlmin, common->nlmax, TRUE);
+read_char(common, common->nlmin, common->nlmax, NULL, READ_CHAR_NEWLINE);
 lastchar = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
 if (common->nltype == NLTYPE_ANY || common->nltype == NLTYPE_ANYCRLF)
   foundcr = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, CHAR_CR);
@@ -5544,7 +6693,7 @@ OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(STACK_TOP), -sizeof(sljit_sw));
 jump = CMP(SLJIT_SIG_LESS_EQUAL, TMP2, 0, SLJIT_IMM, 0);
 
 OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
-if (sljit_get_register_index (TMP3) < 0)
+if (sljit_get_register_index(TMP3) < 0)
   {
   OP1(SLJIT_MOV, SLJIT_MEM1(TMP2), 0, SLJIT_MEM1(STACK_TOP), -(2 * sizeof(sljit_sw)));
   OP1(SLJIT_MOV, SLJIT_MEM1(TMP2), sizeof(sljit_sw), SLJIT_MEM1(STACK_TOP), -(3 * sizeof(sljit_sw)));
@@ -5569,7 +6718,7 @@ sljit_emit_fast_return(compiler, RETURN_ADDR, 0);
 JUMPHERE(jump);
 OP1(SLJIT_NEG, TMP2, 0, TMP2, 0);
 OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
-if (sljit_get_register_index (TMP3) < 0)
+if (sljit_get_register_index(TMP3) < 0)
   {
   OP1(SLJIT_MOV, SLJIT_MEM1(TMP2), 0, SLJIT_MEM1(STACK_TOP), -(2 * sizeof(sljit_sw)));
   OP2(SLJIT_SUB, STACK_TOP, 0, STACK_TOP, 0, SLJIT_IMM, 2 * sizeof(sljit_sw));
@@ -5588,21 +6737,29 @@ static void check_wordboundary(compiler_common *common)
 DEFINE_COMPILER;
 struct sljit_jump *skipread;
 jump_list *skipread_list = NULL;
+jump_list *invalid_utf = NULL;
 #if PCRE2_CODE_UNIT_WIDTH != 8 || defined SUPPORT_UNICODE
 struct sljit_jump *jump;
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH != 8 || SUPPORT_UNICODE */
 
 SLJIT_COMPILE_ASSERT(ctype_word == 0x10, ctype_word_must_be_16);
 
 sljit_emit_fast_enter(compiler, SLJIT_MEM1(SLJIT_SP), LOCALS0);
-/* Get type of the previous char, and put it to LOCALS1. */
+/* Get type of the previous char, and put it to TMP3. */
 OP1(SLJIT_MOV, TMP1, 0, ARGUMENTS, 0);
-OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(TMP1), SLJIT_OFFSETOF(jit_arguments, begin));
-OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), LOCALS1, SLJIT_IMM, 0);
-skipread = CMP(SLJIT_LESS_EQUAL, STR_PTR, 0, TMP1, 0);
-skip_char_back(common);
-check_start_used_ptr(common);
-read_char(common);
+OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(TMP1), SLJIT_OFFSETOF(jit_arguments, begin));
+OP1(SLJIT_MOV, TMP3, 0, SLJIT_IMM, 0);
+skipread = CMP(SLJIT_LESS_EQUAL, STR_PTR, 0, TMP2, 0);
+
+if (common->mode == PCRE2_JIT_COMPLETE)
+  peek_char_back(common, READ_CHAR_MAX, &invalid_utf);
+else
+  {
+  move_back(common, &invalid_utf, FALSE);
+  check_start_used_ptr(common);
+  /* No need precise read since match fails anyway. */
+  read_char(common, 0, READ_CHAR_MAX, &invalid_utf, READ_CHAR_UPDATE_STR_PTR);
+  }
 
 /* Testing char type. */
 #ifdef SUPPORT_UNICODE
@@ -5610,7 +6767,7 @@ if (common->use_ucp)
   {
   OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, 1);
   jump = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, CHAR_UNDERSCORE);
-  add_jump(compiler, &common->getucd, JUMP(SLJIT_FAST_CALL));
+  add_jump(compiler, &common->getucdtype, JUMP(SLJIT_FAST_CALL));
   OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, ucp_Ll);
   OP2(SLJIT_SUB | SLJIT_SET_LESS_EQUAL, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, ucp_Lu - ucp_Ll);
   OP_FLAGS(SLJIT_MOV, TMP2, 0, SLJIT_LESS_EQUAL);
@@ -5618,23 +6775,22 @@ if (common->use_ucp)
   OP2(SLJIT_SUB | SLJIT_SET_LESS_EQUAL, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, ucp_No - ucp_Nd);
   OP_FLAGS(SLJIT_OR, TMP2, 0, SLJIT_LESS_EQUAL);
   JUMPHERE(jump);
-  OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), LOCALS1, TMP2, 0);
+  OP1(SLJIT_MOV, TMP3, 0, TMP2, 0);
   }
 else
-#endif
+#endif /* SUPPORT_UNICODE */
   {
 #if PCRE2_CODE_UNIT_WIDTH != 8
   jump = CMP(SLJIT_GREATER, TMP1, 0, SLJIT_IMM, 255);
 #elif defined SUPPORT_UNICODE
-  /* Here LOCALS1 has already been zeroed. */
+  /* Here TMP3 has already been zeroed. */
   jump = NULL;
   if (common->utf)
     jump = CMP(SLJIT_GREATER, TMP1, 0, SLJIT_IMM, 255);
 #endif /* PCRE2_CODE_UNIT_WIDTH == 8 */
   OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP1), common->ctypes);
   OP2(SLJIT_LSHR, TMP1, 0, TMP1, 0, SLJIT_IMM, 4 /* ctype_word */);
-  OP2(SLJIT_AND, TMP1, 0, TMP1, 0, SLJIT_IMM, 1);
-  OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), LOCALS1, TMP1, 0);
+  OP2(SLJIT_AND, TMP3, 0, TMP1, 0, SLJIT_IMM, 1);
 #if PCRE2_CODE_UNIT_WIDTH != 8
   JUMPHERE(jump);
 #elif defined SUPPORT_UNICODE
@@ -5646,7 +6802,7 @@ JUMPHERE(skipread);
 
 OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, 0);
 check_str_end(common, &skipread_list);
-peek_char(common, READ_CHAR_MAX);
+peek_char(common, READ_CHAR_MAX, SLJIT_MEM1(SLJIT_SP), LOCALS1, &invalid_utf);
 
 /* Testing char type. This is a code duplication. */
 #ifdef SUPPORT_UNICODE
@@ -5654,7 +6810,7 @@ if (common->use_ucp)
   {
   OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, 1);
   jump = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, CHAR_UNDERSCORE);
-  add_jump(compiler, &common->getucd, JUMP(SLJIT_FAST_CALL));
+  add_jump(compiler, &common->getucdtype, JUMP(SLJIT_FAST_CALL));
   OP2(SLJIT_SUB, TMP1, 0, TMP1, 0, SLJIT_IMM, ucp_Ll);
   OP2(SLJIT_SUB | SLJIT_SET_LESS_EQUAL, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, ucp_Lu - ucp_Ll);
   OP_FLAGS(SLJIT_MOV, TMP2, 0, SLJIT_LESS_EQUAL);
@@ -5664,7 +6820,7 @@ if (common->use_ucp)
   JUMPHERE(jump);
   }
 else
-#endif
+#endif /* SUPPORT_UNICODE */
   {
 #if PCRE2_CODE_UNIT_WIDTH != 8
   /* TMP2 may be destroyed by peek_char. */
@@ -5688,8 +6844,22 @@ else
   }
 set_jumps(skipread_list, LABEL());
 
-OP2(SLJIT_XOR | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_MEM1(SLJIT_SP), LOCALS1);
-sljit_emit_fast_return(compiler, SLJIT_MEM1(SLJIT_SP), LOCALS0);
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(SLJIT_SP), LOCALS0);
+OP2(SLJIT_XOR | SLJIT_SET_Z, TMP2, 0, TMP2, 0, TMP3, 0);
+sljit_emit_fast_return(compiler, TMP1, 0);
+
+#ifdef SUPPORT_UNICODE
+if (common->invalid_utf)
+  {
+  SLJIT_ASSERT(invalid_utf != NULL);
+
+  set_jumps(invalid_utf, LABEL());
+  OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(SLJIT_SP), LOCALS0);
+  OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, -1);
+  sljit_emit_fast_return(compiler, TMP1, 0);
+  return;
+  }
+#endif /* SUPPORT_UNICODE */
 }
 
 static BOOL optimize_class_ranges(compiler_common *common, const sljit_u8 *bits, BOOL nclass, BOOL invert, jump_list **backtracks)
@@ -5856,9 +7026,6 @@ int i, j, k, len, c;
 if (!sljit_has_cpu_feature(SLJIT_HAS_CMOV))
   return FALSE;
 
-if (invert)
-  nclass = !nclass;
-
 len = 0;
 
 for (i = 0; i < 32; i++)
@@ -5939,6 +7106,9 @@ if (j != 0)
       CMOV(SLJIT_ZERO, TMP2, TMP1, 0);
       }
   }
+
+if (invert)
+  nclass = !nclass;
 
 type = nclass ? SLJIT_NOT_EQUAL : SLJIT_EQUAL;
 add_jump(compiler, backtracks, CMP(type, TMP2, 0, SLJIT_IMM, 0));
@@ -6225,37 +7395,6 @@ OP1(SLJIT_MOV, char1_reg, 0, SLJIT_MEM1(SLJIT_SP), LOCALS1);
 sljit_emit_fast_return(compiler, TMP1, 0);
 }
 
-#if defined SUPPORT_UNICODE
-
-static PCRE2_SPTR SLJIT_FUNC do_utf_caselesscmp(PCRE2_SPTR src1, PCRE2_SPTR src2, PCRE2_SPTR end1, PCRE2_SPTR end2)
-{
-/* This function would be ineffective to do in JIT level. */
-sljit_u32 c1, c2;
-const ucd_record *ur;
-const sljit_u32 *pp;
-
-while (src1 < end1)
-  {
-  if (src2 >= end2)
-    return (PCRE2_SPTR)1;
-  GETCHARINC(c1, src1);
-  GETCHARINC(c2, src2);
-  ur = GET_UCD(c2);
-  if (c1 != c2 && c1 != c2 + ur->other_case)
-    {
-    pp = PRIV(ucd_caseless_sets) + ur->caseset;
-    for (;;)
-      {
-      if (c1 < *pp) return NULL;
-      if (c1 == *pp++) break;
-      }
-    }
-  }
-return src2;
-}
-
-#endif /* SUPPORT_UNICODE */
-
 static PCRE2_SPTR byte_sequence_compare(compiler_common *common, BOOL caseless, PCRE2_SPTR cc,
     compare_context *context, jump_list **backtracks)
 {
@@ -6297,7 +7436,7 @@ if (context->sourcereg == -1)
     OP1(SLJIT_MOV_U16, TMP1, 0, SLJIT_MEM1(STR_PTR), -context->length);
   else
 #endif
-    OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(STR_PTR), -context->length);
+    OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), -context->length);
 #elif PCRE2_CODE_UNIT_WIDTH == 16
 #if defined SLJIT_UNALIGNED && SLJIT_UNALIGNED
   if (context->length >= 4)
@@ -6444,7 +7583,7 @@ PCRE2_SPTR ccbegin;
 int compares, invertcmp, numberofcmps;
 #if defined SUPPORT_UNICODE && (PCRE2_CODE_UNIT_WIDTH == 8 || PCRE2_CODE_UNIT_WIDTH == 16)
 BOOL utf = common->utf;
-#endif
+#endif /* SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == [8|16] */
 
 #ifdef SUPPORT_UNICODE
 BOOL needstype = FALSE, needsscript = FALSE, needschar = FALSE;
@@ -6452,7 +7591,7 @@ BOOL charsaved = FALSE;
 int typereg = TMP1;
 const sljit_u32 *other_cases;
 sljit_uw typeoffset;
-#endif
+#endif /* SUPPORT_UNICODE */
 
 /* Scanning the necessary info. */
 cc++;
@@ -6476,7 +7615,7 @@ while (*cc != XCL_END)
     if (c < min) min = c;
 #ifdef SUPPORT_UNICODE
     needschar = TRUE;
-#endif
+#endif /* SUPPORT_UNICODE */
     }
   else if (*cc == XCL_RANGE)
     {
@@ -6487,7 +7626,7 @@ while (*cc != XCL_END)
     if (c > max) max = c;
 #ifdef SUPPORT_UNICODE
     needschar = TRUE;
-#endif
+#endif /* SUPPORT_UNICODE */
     }
 #ifdef SUPPORT_UNICODE
   else
@@ -6555,13 +7694,16 @@ while (*cc != XCL_END)
       }
     cc += 2;
     }
-#endif
+#endif /* SUPPORT_UNICODE */
   }
 SLJIT_ASSERT(compares > 0);
 
 /* We are not necessary in utf mode even in 8 bit mode. */
 cc = ccbegin;
-read_char_range(common, min, max, (cc[-1] & XCL_NOT) != 0);
+if ((cc[-1] & XCL_NOT) != 0)
+  read_char(common, min, max, backtracks, READ_CHAR_UPDATE_STR_PTR);
+else
+  read_char(common, min, max, NULL, 0);
 
 if ((cc[-1] & XCL_HASPROP) == 0)
   {
@@ -6594,13 +7736,13 @@ else if ((cc[-1] & XCL_MAP) != 0)
   OP1(SLJIT_MOV, RETURN_ADDR, 0, TMP1, 0);
 #ifdef SUPPORT_UNICODE
   charsaved = TRUE;
-#endif
+#endif /* SUPPORT_UNICODE */
   if (!optimize_class(common, (const sljit_u8 *)cc, FALSE, TRUE, list))
     {
 #if PCRE2_CODE_UNIT_WIDTH == 8
     jump = NULL;
     if (common->utf)
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH == 8 */
       jump = CMP(SLJIT_GREATER, TMP1, 0, SLJIT_IMM, 255);
 
     OP2(SLJIT_AND, TMP2, 0, TMP1, 0, SLJIT_IMM, 0x7);
@@ -6612,7 +7754,7 @@ else if ((cc[-1] & XCL_MAP) != 0)
 
 #if PCRE2_CODE_UNIT_WIDTH == 8
     if (common->utf)
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH == 8 */
       JUMPHERE(jump);
     }
 
@@ -6630,10 +7772,10 @@ if (needstype || needsscript)
   if (!common->utf)
     {
     jump = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, MAX_UTF_CODE_POINT + 1);
-    OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, INVALID_UTF_CHAR);
+    OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, UNASSIGNED_UTF_CHAR);
     JUMPHERE(jump);
     }
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH == 32 */
 
   OP2(SLJIT_LSHR, TMP2, 0, TMP1, 0, SLJIT_IMM, UCD_BLOCK_SHIFT);
   OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 1);
@@ -6647,8 +7789,18 @@ if (needstype || needsscript)
   /* Before anything else, we deal with scripts. */
   if (needsscript)
     {
+// PH hacking
+//fprintf(stderr, "~~B\n");
+
+      OP2(SLJIT_SHL, TMP1, 0, TMP2, 0, SLJIT_IMM, 2);
+      OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 3);
+      OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
+
     OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_records) + SLJIT_OFFSETOF(ucd_record, script));
-    OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 3);
+
+      OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 0);
+
+    // OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 3);
 
     ccbegin = cc;
 
@@ -6686,33 +7838,49 @@ if (needstype || needsscript)
     }
 
   if (needschar)
-    {
     OP1(SLJIT_MOV, TMP1, 0, RETURN_ADDR, 0);
-    }
 
   if (needstype)
     {
     if (!needschar)
       {
+// PH hacking
+//fprintf(stderr, "~~C\n");
+  OP2(SLJIT_SHL, TMP1, 0, TMP2, 0, SLJIT_IMM, 2);
+  OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 3);
+  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
+  OP2(SLJIT_ADD, TMP1, 0, TMP2, 0, TMP1, 0);
+
       OP1(SLJIT_MOV, TMP1, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_records) + SLJIT_OFFSETOF(ucd_record, chartype));
-      OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 3);
+
+  OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 0);
+
+//      OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM2(TMP1, TMP2), 3);
       }
     else
       {
+// PH hacking
+//fprintf(stderr, "~~D\n");
+  OP2(SLJIT_SHL, TMP1, 0, TMP2, 0, SLJIT_IMM, 2);
+
       OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 3);
+
+  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
+  OP1(SLJIT_MOV, TMP1, 0, RETURN_ADDR, 0);
+
       OP1(SLJIT_MOV_U8, RETURN_ADDR, 0, SLJIT_MEM1(TMP2), (sljit_sw)PRIV(ucd_records) + SLJIT_OFFSETOF(ucd_record, chartype));
       typereg = RETURN_ADDR;
       }
     }
   }
-#endif
+#endif /* SUPPORT_UNICODE */
 
 /* Generating code. */
 charoffset = 0;
 numberofcmps = 0;
 #ifdef SUPPORT_UNICODE
 typeoffset = 0;
-#endif
+#endif /* SUPPORT_UNICODE */
 
 while (*cc != XCL_END)
   {
@@ -6979,7 +8147,7 @@ while (*cc != XCL_END)
       }
     cc += 2;
     }
-#endif
+#endif /* SUPPORT_UNICODE */
 
   if (jump != NULL)
     add_jump(compiler, compares > 0 ? list : backtracks, jump);
@@ -7020,6 +8188,15 @@ switch(type)
   case OP_NOT_WORD_BOUNDARY:
   case OP_WORD_BOUNDARY:
   add_jump(compiler, &common->wordboundary, JUMP(SLJIT_FAST_CALL));
+#ifdef SUPPORT_UNICODE
+  if (common->invalid_utf)
+    {
+    OP2(SLJIT_SUB | SLJIT_SET_Z | SLJIT_SET_SIG_LESS, SLJIT_UNUSED, 0, TMP2, 0, SLJIT_IMM, 0);
+    add_jump(compiler, backtracks, JUMP(SLJIT_SIG_LESS));
+    add_jump(compiler, backtracks, JUMP(type == OP_NOT_WORD_BOUNDARY ? SLJIT_NOT_ZERO : SLJIT_ZERO));
+    return cc;
+    }
+#endif /* SUPPORT_UNICODE */
   sljit_set_current_flags(compiler, SLJIT_SET_Z);
   add_jump(compiler, backtracks, JUMP(type == OP_NOT_WORD_BOUNDARY ? SLJIT_NOT_ZERO : SLJIT_ZERO));
   return cc;
@@ -7078,13 +8255,13 @@ switch(type)
       }
     else
       {
-      OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), LOCALS1, STR_PTR, 0);
-      read_char_range(common, common->nlmin, common->nlmax, TRUE);
+      OP1(SLJIT_MOV, TMP3, 0, STR_PTR, 0);
+      read_char(common, common->nlmin, common->nlmax, backtracks, READ_CHAR_UPDATE_STR_PTR);
       add_jump(compiler, backtracks, CMP(SLJIT_NOT_EQUAL, STR_PTR, 0, STR_END, 0));
       add_jump(compiler, &common->anynewline, JUMP(SLJIT_FAST_CALL));
       sljit_set_current_flags(compiler, SLJIT_SET_Z);
       add_jump(compiler, backtracks, JUMP(SLJIT_ZERO));
-      OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_MEM1(SLJIT_SP), LOCALS1);
+      OP1(SLJIT_MOV, STR_PTR, 0, TMP3, 0);
       }
     JUMPHERE(jump[2]);
     JUMPHERE(jump[3]);
@@ -7143,7 +8320,7 @@ switch(type)
     }
   else
     {
-    peek_char(common, common->nlmax);
+    peek_char(common, common->nlmax, TMP3, 0, NULL);
     check_newlinechar(common, common->nltype, backtracks, FALSE);
     }
   JUMPHERE(jump[0]);
@@ -7158,10 +8335,10 @@ switch(type)
   return cc;
 
   case OP_CIRCM:
-  OP1(SLJIT_MOV, TMP2, 0, ARGUMENTS, 0);
-  OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(TMP2), SLJIT_OFFSETOF(jit_arguments, begin));
-  jump[1] = CMP(SLJIT_GREATER, STR_PTR, 0, TMP1, 0);
-  OP2(SLJIT_AND32 | SLJIT_SET_Z, SLJIT_UNUSED, 0, SLJIT_MEM1(TMP2), SLJIT_OFFSETOF(jit_arguments, options), SLJIT_IMM, PCRE2_NOTBOL);
+  OP1(SLJIT_MOV, TMP1, 0, ARGUMENTS, 0);
+  OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(TMP1), SLJIT_OFFSETOF(jit_arguments, begin));
+  jump[1] = CMP(SLJIT_GREATER, STR_PTR, 0, TMP2, 0);
+  OP2(SLJIT_AND32 | SLJIT_SET_Z, SLJIT_UNUSED, 0, SLJIT_MEM1(TMP1), SLJIT_OFFSETOF(jit_arguments, options), SLJIT_IMM, PCRE2_NOTBOL);
   add_jump(compiler, backtracks, JUMP(SLJIT_NOT_ZERO32));
   jump[0] = JUMP(SLJIT_JUMP);
   JUMPHERE(jump[1]);
@@ -7171,8 +8348,8 @@ switch(type)
 
   if (common->nltype == NLTYPE_FIXED && common->newline > 255)
     {
-    OP2(SLJIT_SUB, TMP2, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
-    add_jump(compiler, backtracks, CMP(SLJIT_LESS, TMP2, 0, TMP1, 0));
+    OP2(SLJIT_SUB, TMP1, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(2));
+    add_jump(compiler, backtracks, CMP(SLJIT_LESS, TMP1, 0, TMP2, 0));
     OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-2));
     OP1(MOV_UCHAR, TMP2, 0, SLJIT_MEM1(STR_PTR), IN_UCHARS(-1));
     add_jump(compiler, backtracks, CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, (common->newline >> 8) & 0xff));
@@ -7180,8 +8357,7 @@ switch(type)
     }
   else
     {
-    skip_char_back(common);
-    read_char_range(common, common->nlmin, common->nlmax, TRUE);
+    peek_char_back(common, common->nlmax, backtracks);
     check_newlinechar(common, common->nltype, backtracks, FALSE);
     }
   JUMPHERE(jump[0]);
@@ -7195,12 +8371,12 @@ switch(type)
 #ifdef SUPPORT_UNICODE
   if (common->utf)
     {
-    OP1(SLJIT_MOV, TMP3, 0, SLJIT_MEM1(TMP1), SLJIT_OFFSETOF(jit_arguments, begin));
-    OP1(SLJIT_MOV, TMP2, 0, SLJIT_IMM, length);
+    OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(TMP1), SLJIT_OFFSETOF(jit_arguments, begin));
+    OP1(SLJIT_MOV, TMP3, 0, SLJIT_IMM, length);
     label = LABEL();
-    add_jump(compiler, backtracks, CMP(SLJIT_LESS_EQUAL, STR_PTR, 0, TMP3, 0));
-    skip_char_back(common);
-    OP2(SLJIT_SUB | SLJIT_SET_Z, TMP2, 0, TMP2, 0, SLJIT_IMM, 1);
+    add_jump(compiler, backtracks, CMP(SLJIT_LESS_EQUAL, STR_PTR, 0, TMP2, 0));
+    move_back(common, backtracks, FALSE);
+    OP2(SLJIT_SUB | SLJIT_SET_Z, TMP3, 0, TMP3, 0, SLJIT_IMM, 1);
     JUMPTO(SLJIT_NOT_ZERO, label);
     }
   else
@@ -7225,21 +8401,28 @@ static PCRE2_SPTR SLJIT_FUNC do_extuni_utf(jit_arguments *args, PCRE2_SPTR cc)
 {
 PCRE2_SPTR start_subject = args->begin;
 PCRE2_SPTR end_subject = args->end;
-int lgb, rgb, len, ricount;
-PCRE2_SPTR prevcc, bptr;
+int lgb, rgb, ricount;
+PCRE2_SPTR prevcc, startcc, bptr;
+BOOL first = TRUE;
 uint32_t c;
 
 prevcc = cc;
-GETCHARINC(c, cc);
-lgb = UCD_GRAPHBREAK(c);
-
-while (cc < end_subject)
+startcc = NULL;
+do
   {
-  len = 1;
-  GETCHARLEN(c, cc, len);
+  GETCHARINC(c, cc);
   rgb = UCD_GRAPHBREAK(c);
 
-  if ((PRIV(ucp_gbtable)[lgb] & (1 << rgb)) == 0) break;
+  if (first)
+    {
+    lgb = rgb;
+    startcc = cc;
+    first = FALSE;
+    continue;
+    }
+
+  if ((PRIV(ucp_gbtable)[lgb] & (1 << rgb)) == 0)
+    break;
 
   /* Not breaking between Regional Indicators is allowed only if there
   are an even number of preceding RIs. */
@@ -7256,7 +8439,8 @@ while (cc < end_subject)
       BACKCHAR(bptr);
       GETCHAR(c, bptr);
 
-      if (UCD_GRAPHBREAK(c) != ucp_gbRegionalIndicator) break;
+      if (UCD_GRAPHBREAK(c) != ucp_gbRegionalIndicator)
+        break;
 
       ricount++;
       }
@@ -7271,14 +8455,80 @@ while (cc < end_subject)
        lgb != ucp_gbExtended_Pictographic)
     lgb = rgb;
 
-  prevcc = cc;
-  cc += len;
+  prevcc = startcc;
+  startcc = cc;
   }
+while (cc < end_subject);
 
-return cc;
+return startcc;
 }
 
-#endif
+static PCRE2_SPTR SLJIT_FUNC do_extuni_utf_invalid(jit_arguments *args, PCRE2_SPTR cc)
+{
+PCRE2_SPTR start_subject = args->begin;
+PCRE2_SPTR end_subject = args->end;
+int lgb, rgb, ricount;
+PCRE2_SPTR prevcc, startcc, bptr;
+BOOL first = TRUE;
+uint32_t c;
+
+prevcc = cc;
+startcc = NULL;
+do
+  {
+  GETCHARINC_INVALID(c, cc, end_subject, break);
+  rgb = UCD_GRAPHBREAK(c);
+
+  if (first)
+    {
+    lgb = rgb;
+    startcc = cc;
+    first = FALSE;
+    continue;
+    }
+
+  if ((PRIV(ucp_gbtable)[lgb] & (1 << rgb)) == 0)
+    break;
+
+  /* Not breaking between Regional Indicators is allowed only if there
+  are an even number of preceding RIs. */
+
+  if (lgb == ucp_gbRegionalIndicator && rgb == ucp_gbRegionalIndicator)
+    {
+    ricount = 0;
+    bptr = prevcc;
+
+    /* bptr is pointing to the left-hand character */
+    while (bptr > start_subject)
+      {
+      GETCHARBACK_INVALID(c, bptr, start_subject, break);
+
+      if (UCD_GRAPHBREAK(c) != ucp_gbRegionalIndicator)
+        break;
+
+      ricount++;
+      }
+
+    if ((ricount & 1) != 0)
+      break;  /* Grapheme break required */
+    }
+
+  /* If Extend or ZWJ follows Extended_Pictographic, do not update lgb; this
+  allows any number of them before a following Extended_Pictographic. */
+
+  if ((rgb != ucp_gbExtend && rgb != ucp_gbZWJ) ||
+       lgb != ucp_gbExtended_Pictographic)
+    lgb = rgb;
+
+  prevcc = startcc;
+  startcc = cc;
+  }
+while (cc < end_subject);
+
+return startcc;
+}
+
+#endif /* PCRE2_CODE_UNIT_WIDTH != 32 */
 
 static PCRE2_SPTR SLJIT_FUNC do_extuni_no_utf(jit_arguments *args, PCRE2_SPTR cc)
 {
@@ -7289,14 +8539,23 @@ PCRE2_SPTR bptr;
 uint32_t c;
 
 GETCHARINC(c, cc);
+#if PCRE2_CODE_UNIT_WIDTH == 32
+if (c >= 0x110000)
+  return NULL;
+#endif /* PCRE2_CODE_UNIT_WIDTH == 32 */
 lgb = UCD_GRAPHBREAK(c);
 
 while (cc < end_subject)
   {
   c = *cc;
+#if PCRE2_CODE_UNIT_WIDTH == 32
+  if (c >= 0x110000)
+    break;
+#endif /* PCRE2_CODE_UNIT_WIDTH == 32 */
   rgb = UCD_GRAPHBREAK(c);
 
-  if ((PRIV(ucp_gbtable)[lgb] & (1 << rgb)) == 0) break;
+  if ((PRIV(ucp_gbtable)[lgb] & (1 << rgb)) == 0)
+    break;
 
   /* Not breaking between Regional Indicators is allowed only if there
   are an even number of preceding RIs. */
@@ -7311,13 +8570,18 @@ while (cc < end_subject)
       {
       bptr--;
       c = *bptr;
+#if PCRE2_CODE_UNIT_WIDTH == 32
+      if (c >= 0x110000)
+        break;
+#endif /* PCRE2_CODE_UNIT_WIDTH == 32 */
 
       if (UCD_GRAPHBREAK(c) != ucp_gbRegionalIndicator) break;
 
       ricount++;
       }
 
-    if ((ricount & 1) != 0) break;  /* Grapheme break required */
+    if ((ricount & 1) != 0)
+      break;  /* Grapheme break required */
     }
 
   /* If Extend or ZWJ follows Extended_Pictographic, do not update lgb; this
@@ -7333,7 +8597,7 @@ while (cc < end_subject)
 return cc;
 }
 
-#endif
+#endif /* SUPPORT_UNICODE */
 
 static PCRE2_SPTR compile_char1_matchingpath(compiler_common *common, PCRE2_UCHAR type, PCRE2_SPTR cc, jump_list **backtracks, BOOL check_str_ptr)
 {
@@ -7356,10 +8620,10 @@ switch(type)
     detect_partial_match(common, backtracks);
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
   if (common->utf && is_char7_bitset((const sljit_u8*)common->ctypes - cbit_length + cbit_digit, FALSE))
-    read_char7_type(common, type == OP_NOT_DIGIT);
+    read_char7_type(common, backtracks, type == OP_NOT_DIGIT);
   else
 #endif
-    read_char8_type(common, type == OP_NOT_DIGIT);
+    read_char8_type(common, backtracks, type == OP_NOT_DIGIT);
     /* Flip the starting bit in the negative case. */
   OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, ctype_digit);
   add_jump(compiler, backtracks, JUMP(type == OP_DIGIT ? SLJIT_ZERO : SLJIT_NOT_ZERO));
@@ -7371,10 +8635,10 @@ switch(type)
     detect_partial_match(common, backtracks);
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
   if (common->utf && is_char7_bitset((const sljit_u8*)common->ctypes - cbit_length + cbit_space, FALSE))
-    read_char7_type(common, type == OP_NOT_WHITESPACE);
+    read_char7_type(common, backtracks, type == OP_NOT_WHITESPACE);
   else
 #endif
-    read_char8_type(common, type == OP_NOT_WHITESPACE);
+    read_char8_type(common, backtracks, type == OP_NOT_WHITESPACE);
   OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, ctype_space);
   add_jump(compiler, backtracks, JUMP(type == OP_WHITESPACE ? SLJIT_ZERO : SLJIT_NOT_ZERO));
   return cc;
@@ -7385,10 +8649,10 @@ switch(type)
     detect_partial_match(common, backtracks);
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
   if (common->utf && is_char7_bitset((const sljit_u8*)common->ctypes - cbit_length + cbit_word, FALSE))
-    read_char7_type(common, type == OP_NOT_WORDCHAR);
+    read_char7_type(common, backtracks, type == OP_NOT_WORDCHAR);
   else
 #endif
-    read_char8_type(common, type == OP_NOT_WORDCHAR);
+    read_char8_type(common, backtracks, type == OP_NOT_WORDCHAR);
   OP2(SLJIT_AND | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, ctype_word);
   add_jump(compiler, backtracks, JUMP(type == OP_WORDCHAR ? SLJIT_ZERO : SLJIT_NOT_ZERO));
   return cc;
@@ -7396,7 +8660,7 @@ switch(type)
   case OP_ANY:
   if (check_str_ptr)
     detect_partial_match(common, backtracks);
-  read_char_range(common, common->nlmin, common->nlmax, TRUE);
+  read_char(common, common->nlmin, common->nlmax, backtracks, READ_CHAR_UPDATE_STR_PTR);
   if (common->nltype == NLTYPE_FIXED && common->newline > 255)
     {
     jump[0] = CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, (common->newline >> 8) & 0xff);
@@ -7418,12 +8682,18 @@ switch(type)
   case OP_ALLANY:
   if (check_str_ptr)
     detect_partial_match(common, backtracks);
-#if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH != 32
+#ifdef SUPPORT_UNICODE
   if (common->utf)
     {
+    if (common->invalid_utf)
+      {
+      read_char(common, 0, READ_CHAR_MAX, backtracks, READ_CHAR_UPDATE_STR_PTR);
+      return cc;
+      }
+
+#if PCRE2_CODE_UNIT_WIDTH == 8 || PCRE2_CODE_UNIT_WIDTH == 16
     OP1(MOV_UCHAR, TMP1, 0, SLJIT_MEM1(STR_PTR), 0);
     OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
-#if PCRE2_CODE_UNIT_WIDTH == 8 || PCRE2_CODE_UNIT_WIDTH == 16
 #if PCRE2_CODE_UNIT_WIDTH == 8
     jump[0] = CMP(SLJIT_LESS, TMP1, 0, SLJIT_IMM, 0xc0);
     OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(TMP1), (sljit_sw)PRIV(utf8_table4) - 0xc0);
@@ -7435,12 +8705,12 @@ switch(type)
     OP_FLAGS(SLJIT_MOV, TMP1, 0, SLJIT_EQUAL);
     OP2(SLJIT_SHL, TMP1, 0, TMP1, 0, SLJIT_IMM, 1);
     OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, TMP1, 0);
-#endif
+#endif /* PCRE2_CODE_UNIT_WIDTH == 8 */
     JUMPHERE(jump[0]);
-#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16] */
     return cc;
+#endif /* PCRE2_CODE_UNIT_WIDTH == [8|16] */
     }
-#endif
+#endif /* SUPPORT_UNICODE */
   OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(1));
   return cc;
 
@@ -7467,7 +8737,7 @@ switch(type)
   case OP_ANYNL:
   if (check_str_ptr)
     detect_partial_match(common, backtracks);
-  read_char_range(common, common->bsr_nlmin, common->bsr_nlmax, FALSE);
+  read_char(common, common->bsr_nlmin, common->bsr_nlmax, NULL, 0);
   jump[0] = CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, CHAR_CR);
   /* We don't need to handle soft partial matching case. */
   end_list = NULL;
@@ -7490,7 +8760,12 @@ switch(type)
   case OP_HSPACE:
   if (check_str_ptr)
     detect_partial_match(common, backtracks);
-  read_char_range(common, 0x9, 0x3000, type == OP_NOT_HSPACE);
+
+  if (type == OP_NOT_HSPACE)
+    read_char(common, 0x9, 0x3000, backtracks, READ_CHAR_UPDATE_STR_PTR);
+  else
+    read_char(common, 0x9, 0x3000, NULL, 0);
+
   add_jump(compiler, &common->hspace, JUMP(SLJIT_FAST_CALL));
   sljit_set_current_flags(compiler, SLJIT_SET_Z);
   add_jump(compiler, backtracks, JUMP(type == OP_NOT_HSPACE ? SLJIT_NOT_ZERO : SLJIT_ZERO));
@@ -7500,7 +8775,12 @@ switch(type)
   case OP_VSPACE:
   if (check_str_ptr)
     detect_partial_match(common, backtracks);
-  read_char_range(common, 0xa, 0x2029, type == OP_NOT_VSPACE);
+
+  if (type == OP_NOT_VSPACE)
+    read_char(common, 0xa, 0x2029, backtracks, READ_CHAR_UPDATE_STR_PTR);
+  else
+    read_char(common, 0xa, 0x2029, NULL, 0);
+
   add_jump(compiler, &common->vspace, JUMP(SLJIT_FAST_CALL));
   sljit_set_current_flags(compiler, SLJIT_SET_Z);
   add_jump(compiler, backtracks, JUMP(type == OP_NOT_VSPACE ? SLJIT_NOT_ZERO : SLJIT_ZERO));
@@ -7516,9 +8796,12 @@ switch(type)
 
 #if PCRE2_CODE_UNIT_WIDTH != 32
   sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_RET(SW) | SLJIT_ARG1(SW) | SLJIT_ARG2(SW), SLJIT_IMM,
-      common->utf ? SLJIT_FUNC_OFFSET(do_extuni_utf) : SLJIT_FUNC_OFFSET(do_extuni_no_utf));
+    common->utf ? (common->invalid_utf ? SLJIT_FUNC_OFFSET(do_extuni_utf_invalid) : SLJIT_FUNC_OFFSET(do_extuni_utf)) : SLJIT_FUNC_OFFSET(do_extuni_no_utf));
+  if (common->invalid_utf)
+    add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, SLJIT_RETURN_REG, 0, SLJIT_IMM, 0));
 #else
   sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_RET(SW) | SLJIT_ARG1(SW) | SLJIT_ARG2(SW), SLJIT_IMM, SLJIT_FUNC_OFFSET(do_extuni_no_utf));
+  add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, SLJIT_RETURN_REG, 0, SLJIT_IMM, 0));
 #endif
 
   OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_RETURN_REG, 0);
@@ -7539,11 +8822,15 @@ switch(type)
 #ifdef SUPPORT_UNICODE
   if (common->utf && HAS_EXTRALEN(*cc)) length += GET_EXTRALEN(*cc);
 #endif
-  if (common->mode == PCRE2_JIT_COMPLETE && check_str_ptr
-      && (type == OP_CHAR || !char_has_othercase(common, cc) || char_get_othercase_bit(common, cc) != 0))
+
+  if (check_str_ptr && common->mode != PCRE2_JIT_COMPLETE)
+    detect_partial_match(common, backtracks);
+
+  if (type == OP_CHAR || !char_has_othercase(common, cc) || char_get_othercase_bit(common, cc) != 0)
     {
     OP2(SLJIT_ADD, STR_PTR, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(length));
-    add_jump(compiler, backtracks, CMP(SLJIT_GREATER, STR_PTR, 0, STR_END, 0));
+    if (length > 1 || (check_str_ptr && common->mode == PCRE2_JIT_COMPLETE))
+      add_jump(compiler, backtracks, CMP(SLJIT_GREATER, STR_PTR, 0, STR_END, 0));
 
     context.length = IN_UCHARS(length);
     context.sourcereg = -1;
@@ -7553,8 +8840,6 @@ switch(type)
     return byte_sequence_compare(common, type == OP_CHARI, cc, &context, backtracks);
     }
 
-  if (check_str_ptr)
-    detect_partial_match(common, backtracks);
 #ifdef SUPPORT_UNICODE
   if (common->utf)
     {
@@ -7564,24 +8849,28 @@ switch(type)
 #endif
     c = *cc;
 
-  if (type == OP_CHAR || !char_has_othercase(common, cc))
-    {
-    read_char_range(common, c, c, FALSE);
-    add_jump(compiler, backtracks, CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, c));
-    return cc + length;
-    }
+  SLJIT_ASSERT(type == OP_CHARI && char_has_othercase(common, cc));
+
+  if (check_str_ptr && common->mode == PCRE2_JIT_COMPLETE)
+    add_jump(compiler, backtracks, CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0));
+
   oc = char_othercase(common, c);
-  read_char_range(common, c < oc ? c : oc, c > oc ? c : oc, FALSE);
-  bit = c ^ oc;
-  if (is_powerof2(bit))
+  read_char(common, c < oc ? c : oc, c > oc ? c : oc, NULL, 0);
+
+  SLJIT_ASSERT(!is_powerof2(c ^ oc));
+
+  if (sljit_has_cpu_feature(SLJIT_HAS_CMOV))
     {
-    OP2(SLJIT_OR, TMP1, 0, TMP1, 0, SLJIT_IMM, bit);
-    add_jump(compiler, backtracks, CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, c | bit));
-    return cc + length;
+    OP2(SLJIT_SUB | SLJIT_SET_Z, SLJIT_UNUSED, 0, TMP1, 0, SLJIT_IMM, oc);
+    CMOV(SLJIT_EQUAL, TMP1, SLJIT_IMM, c);
+    add_jump(compiler, backtracks, CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, c));
     }
-  jump[0] = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, c);
-  add_jump(compiler, backtracks, CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, oc));
-  JUMPHERE(jump[0]);
+  else
+    {
+    jump[0] = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, c);
+    add_jump(compiler, backtracks, CMP(SLJIT_NOT_EQUAL, TMP1, 0, SLJIT_IMM, oc));
+    JUMPHERE(jump[0]);
+    }
   return cc + length;
 
   case OP_NOT:
@@ -7595,7 +8884,7 @@ switch(type)
     {
 #if PCRE2_CODE_UNIT_WIDTH == 8
     c = *cc;
-    if (c < 128)
+    if (c < 128 && !common->invalid_utf)
       {
       OP1(SLJIT_MOV_U8, TMP1, 0, SLJIT_MEM1(STR_PTR), 0);
       if (type == OP_NOT || !char_has_othercase(common, cc))
@@ -7626,13 +8915,13 @@ switch(type)
 
   if (type == OP_NOT || !char_has_othercase(common, cc))
     {
-    read_char_range(common, c, c, TRUE);
+    read_char(common, c, c, backtracks, READ_CHAR_UPDATE_STR_PTR);
     add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, c));
     }
   else
     {
     oc = char_othercase(common, c);
-    read_char_range(common, c < oc ? c : oc, c > oc ? c : oc, TRUE);
+    read_char(common, c < oc ? c : oc, c > oc ? c : oc, backtracks, READ_CHAR_UPDATE_STR_PTR);
     bit = c ^ oc;
     if (is_powerof2(bit))
       {
@@ -7654,9 +8943,15 @@ switch(type)
 
 #if defined SUPPORT_UNICODE && PCRE2_CODE_UNIT_WIDTH == 8
   bit = (common->utf && is_char7_bitset((const sljit_u8 *)cc, type == OP_NCLASS)) ? 127 : 255;
-  read_char_range(common, 0, bit, type == OP_NCLASS);
+  if (type == OP_NCLASS)
+    read_char(common, 0, bit, backtracks, READ_CHAR_UPDATE_STR_PTR);
+  else
+    read_char(common, 0, bit, NULL, 0);
 #else
-  read_char_range(common, 0, 255, type == OP_NCLASS);
+  if (type == OP_NCLASS)
+    read_char(common, 0, 255, backtracks, READ_CHAR_UPDATE_STR_PTR);
+  else
+    read_char(common, 0, 255, NULL, 0);
 #endif
 
   if (optimize_class(common, (const sljit_u8 *)cc, type == OP_NCLASS, FALSE, backtracks))
@@ -7843,6 +9138,14 @@ int offset = 0;
 struct sljit_jump *jump = NULL;
 struct sljit_jump *partial;
 struct sljit_jump *nopartial;
+#if defined SUPPORT_UNICODE
+struct sljit_label *loop;
+struct sljit_label *caseless_loop;
+jump_list *no_match = NULL;
+int source_reg = COUNT_MATCH;
+int source_end_reg = ARGUMENTS;
+int char1_reg = STACK_LIMIT;
+#endif /* SUPPORT_UNICODE */
 
 if (ref)
   {
@@ -7858,34 +9161,98 @@ else
 #if defined SUPPORT_UNICODE
 if (common->utf && *cc == OP_REFI)
   {
-  SLJIT_ASSERT(TMP1 == SLJIT_R0 && STR_PTR == SLJIT_R1);
+  SLJIT_ASSERT(common->iref_ptr != 0);
+
   if (ref)
-    OP1(SLJIT_MOV, SLJIT_R2, 0, SLJIT_MEM1(SLJIT_SP), OVECTOR(offset + 1));
+    OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(SLJIT_SP), OVECTOR(offset + 1));
   else
-    OP1(SLJIT_MOV, SLJIT_R2, 0, SLJIT_MEM1(TMP2), sizeof(sljit_sw));
+    OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(TMP2), sizeof(sljit_sw));
 
-  if (withchecks)
-    jump = CMP(SLJIT_EQUAL, TMP1, 0, SLJIT_R2, 0);
-  /* No free saved registers so save data on stack. */
+  if (withchecks && emptyfail)
+    add_jump(compiler, backtracks, CMP(SLJIT_EQUAL, TMP1, 0, TMP2, 0));
 
-  OP1(SLJIT_MOV, SLJIT_R3, 0, STR_END, 0);
-  sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_RET(SW) | SLJIT_ARG1(SW) | SLJIT_ARG2(SW) | SLJIT_ARG3(SW) | SLJIT_ARG4(SW), SLJIT_IMM, SLJIT_FUNC_OFFSET(do_utf_caselesscmp));
-  OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_RETURN_REG, 0);
+  OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), common->iref_ptr, source_reg, 0);
+  OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw), source_end_reg, 0);
+  OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw) * 2, char1_reg, 0);
 
+  OP1(SLJIT_MOV, source_reg, 0, TMP1, 0);
+  OP1(SLJIT_MOV, source_end_reg, 0, TMP2, 0);
+
+  loop = LABEL();
+  jump = CMP(SLJIT_GREATER_EQUAL, source_reg, 0, source_end_reg, 0);
+  partial = CMP(SLJIT_GREATER_EQUAL, STR_PTR, 0, STR_END, 0);
+
+  /* Read original character. It must be a valid UTF character. */
+  OP1(SLJIT_MOV, TMP3, 0, STR_PTR, 0);
+  OP1(SLJIT_MOV, STR_PTR, 0, source_reg, 0);
+
+  read_char(common, 0, READ_CHAR_MAX, NULL, READ_CHAR_UPDATE_STR_PTR | READ_CHAR_VALID_UTF);
+
+  OP1(SLJIT_MOV, source_reg, 0, STR_PTR, 0);
+  OP1(SLJIT_MOV, STR_PTR, 0, TMP3, 0);
+  OP1(SLJIT_MOV, char1_reg, 0, TMP1, 0);
+
+  /* Read second character. */
+  read_char(common, 0, READ_CHAR_MAX, &no_match, READ_CHAR_UPDATE_STR_PTR);
+
+  CMPTO(SLJIT_EQUAL, TMP1, 0, char1_reg, 0, loop);
+
+// PH hacking
+//fprintf(stderr, "~~E\n");
+
+  OP1(SLJIT_MOV, TMP3, 0, TMP1, 0);
+
+  add_jump(compiler, &common->getucd, JUMP(SLJIT_FAST_CALL));
+
+    OP2(SLJIT_SHL, TMP1, 0, TMP2, 0, SLJIT_IMM, 2);
+
+  OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 3);
+
+    OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, TMP1, 0);
+
+  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_records));
+
+  OP1(SLJIT_MOV_S32, TMP1, 0, SLJIT_MEM1(TMP2), SLJIT_OFFSETOF(ucd_record, other_case));
+  OP1(SLJIT_MOV_U8, TMP2, 0, SLJIT_MEM1(TMP2), SLJIT_OFFSETOF(ucd_record, caseset));
+  OP2(SLJIT_ADD, TMP1, 0, TMP1, 0, TMP3, 0);
+  CMPTO(SLJIT_EQUAL, TMP1, 0, char1_reg, 0, loop);
+
+  add_jump(compiler, &no_match, CMP(SLJIT_EQUAL, TMP2, 0, SLJIT_IMM, 0));
+  OP2(SLJIT_SHL, TMP2, 0, TMP2, 0, SLJIT_IMM, 2);
+  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, (sljit_sw)PRIV(ucd_caseless_sets));
+
+  caseless_loop = LABEL();
+  OP1(SLJIT_MOV_U32, TMP1, 0, SLJIT_MEM1(TMP2), 0);
+  OP2(SLJIT_ADD, TMP2, 0, TMP2, 0, SLJIT_IMM, sizeof(uint32_t));
+  OP2(SLJIT_SUB | SLJIT_SET_Z | SLJIT_SET_LESS, SLJIT_UNUSED, 0, TMP1, 0, char1_reg, 0);
+  JUMPTO(SLJIT_EQUAL, loop);
+  JUMPTO(SLJIT_LESS, caseless_loop);
+
+  set_jumps(no_match, LABEL());
   if (common->mode == PCRE2_JIT_COMPLETE)
-    add_jump(compiler, backtracks, CMP(SLJIT_LESS_EQUAL, SLJIT_RETURN_REG, 0, SLJIT_IMM, 1));
-  else
+    JUMPHERE(partial);
+
+  OP1(SLJIT_MOV, source_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr);
+  OP1(SLJIT_MOV, source_end_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw));
+  OP1(SLJIT_MOV, char1_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw) * 2);
+  add_jump(compiler, backtracks, JUMP(SLJIT_JUMP));
+
+  if (common->mode != PCRE2_JIT_COMPLETE)
     {
-    OP2(SLJIT_SUB | SLJIT_SET_Z | SLJIT_SET_LESS, SLJIT_UNUSED, 0, SLJIT_RETURN_REG, 0, SLJIT_IMM, 1);
+    JUMPHERE(partial);
+    OP1(SLJIT_MOV, source_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr);
+    OP1(SLJIT_MOV, source_end_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw));
+    OP1(SLJIT_MOV, char1_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw) * 2);
 
-    add_jump(compiler, backtracks, JUMP(SLJIT_LESS));
-
-    nopartial = JUMP(SLJIT_NOT_EQUAL);
-    OP1(SLJIT_MOV, STR_PTR, 0, STR_END, 0);
     check_partial(common, FALSE);
     add_jump(compiler, backtracks, JUMP(SLJIT_JUMP));
-    JUMPHERE(nopartial);
     }
+
+  JUMPHERE(jump);
+  OP1(SLJIT_MOV, source_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr);
+  OP1(SLJIT_MOV, source_end_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw));
+  OP1(SLJIT_MOV, char1_reg, 0, SLJIT_MEM1(SLJIT_SP), common->iref_ptr + sizeof(sljit_sw) * 2);
+  return;
   }
 else
 #endif /* SUPPORT_UNICODE */
@@ -8862,6 +10229,42 @@ if (common->optimized_cbracket[offset >> 1] == 0)
 return stacksize;
 }
 
+static PCRE2_SPTR SLJIT_FUNC do_script_run(PCRE2_SPTR ptr, PCRE2_SPTR endptr)
+{
+  if (PRIV(script_run)(ptr, endptr, FALSE))
+    return endptr;
+  return NULL;
+}
+
+#ifdef SUPPORT_UNICODE
+
+static PCRE2_SPTR SLJIT_FUNC do_script_run_utf(PCRE2_SPTR ptr, PCRE2_SPTR endptr)
+{
+  if (PRIV(script_run)(ptr, endptr, TRUE))
+    return endptr;
+  return NULL;
+}
+
+#endif /* SUPPORT_UNICODE */
+
+static SLJIT_INLINE void match_script_run_common(compiler_common *common, int private_data_ptr, backtrack_common *parent)
+{
+DEFINE_COMPILER;
+
+SLJIT_ASSERT(TMP1 == SLJIT_R0 && STR_PTR == SLJIT_R1);
+
+OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(SLJIT_SP), private_data_ptr);
+#ifdef SUPPORT_UNICODE
+sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_RET(SW) | SLJIT_ARG1(SW) | SLJIT_ARG2(SW), SLJIT_IMM,
+  common->utf ? SLJIT_FUNC_OFFSET(do_script_run_utf) : SLJIT_FUNC_OFFSET(do_script_run));
+#else
+sljit_emit_icall(compiler, SLJIT_CALL, SLJIT_RET(SW) | SLJIT_ARG1(SW) | SLJIT_ARG2(SW), SLJIT_IMM, SLJIT_FUNC_OFFSET(do_script_run));
+#endif
+
+OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_RETURN_REG, 0);
+add_jump(compiler, parent->top != NULL ? &parent->top->nextbacktracks : &parent->topbacktracks, CMP(SLJIT_EQUAL, SLJIT_RETURN_REG, 0, SLJIT_IMM, 0));
+}
+
 /*
   Handling bracketed expressions is probably the most complex part.
 
@@ -8997,7 +10400,7 @@ if (opcode == OP_CBRA || opcode == OP_SCBRA)
   BACKTRACK_AS(bracket_backtrack)->private_data_ptr = private_data_ptr;
   matchingpath += IMM2_SIZE;
   }
-else if (opcode == OP_ONCE || opcode == OP_SBRA || opcode == OP_SCOND)
+else if (opcode == OP_ONCE || opcode == OP_SCRIPT_RUN || opcode == OP_SBRA || opcode == OP_SCOND)
   {
   /* Other brackets simply allocate the next entry. */
   private_data_ptr = PRIVATE_DATA(ccbegin);
@@ -9036,35 +10439,32 @@ if (bra == OP_BRAMINZERO)
     free_stack(common, 1);
     braminzero = CMP(SLJIT_EQUAL, STR_PTR, 0, SLJIT_IMM, 0);
     }
-  else
+  else if (opcode == OP_ONCE || opcode >= OP_SBRA)
     {
-    if (opcode == OP_ONCE || opcode >= OP_SBRA)
+    jump = CMP(SLJIT_NOT_EQUAL, STR_PTR, 0, SLJIT_IMM, 0);
+    OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_MEM1(STACK_TOP), STACK(1));
+    /* Nothing stored during the first run. */
+    skip = JUMP(SLJIT_JUMP);
+    JUMPHERE(jump);
+    /* Checking zero-length iteration. */
+    if (opcode != OP_ONCE || BACKTRACK_AS(bracket_backtrack)->u.framesize < 0)
       {
-      jump = CMP(SLJIT_NOT_EQUAL, STR_PTR, 0, SLJIT_IMM, 0);
-      OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_MEM1(STACK_TOP), STACK(1));
-      /* Nothing stored during the first run. */
-      skip = JUMP(SLJIT_JUMP);
-      JUMPHERE(jump);
-      /* Checking zero-length iteration. */
-      if (opcode != OP_ONCE || BACKTRACK_AS(bracket_backtrack)->u.framesize < 0)
-        {
-        /* When we come from outside, private_data_ptr contains the previous STR_PTR. */
-        braminzero = CMP(SLJIT_EQUAL, STR_PTR, 0, SLJIT_MEM1(SLJIT_SP), private_data_ptr);
-        }
-      else
-        {
-        /* Except when the whole stack frame must be saved. */
-        OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(SLJIT_SP), private_data_ptr);
-        braminzero = CMP(SLJIT_EQUAL, STR_PTR, 0, SLJIT_MEM1(TMP1), STACK(-BACKTRACK_AS(bracket_backtrack)->u.framesize - 2));
-        }
-      JUMPHERE(skip);
+      /* When we come from outside, private_data_ptr contains the previous STR_PTR. */
+      braminzero = CMP(SLJIT_EQUAL, STR_PTR, 0, SLJIT_MEM1(SLJIT_SP), private_data_ptr);
       }
     else
       {
-      jump = CMP(SLJIT_NOT_EQUAL, STR_PTR, 0, SLJIT_IMM, 0);
-      OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_MEM1(STACK_TOP), STACK(1));
-      JUMPHERE(jump);
+      /* Except when the whole stack frame must be saved. */
+      OP1(SLJIT_MOV, TMP1, 0, SLJIT_MEM1(SLJIT_SP), private_data_ptr);
+      braminzero = CMP(SLJIT_EQUAL, STR_PTR, 0, SLJIT_MEM1(TMP1), STACK(-BACKTRACK_AS(bracket_backtrack)->u.framesize - 2));
       }
+    JUMPHERE(skip);
+    }
+  else
+    {
+    jump = CMP(SLJIT_NOT_EQUAL, STR_PTR, 0, SLJIT_IMM, 0);
+    OP1(SLJIT_MOV, STR_PTR, 0, SLJIT_MEM1(STACK_TOP), STACK(1));
+    JUMPHERE(jump);
     }
   }
 
@@ -9081,7 +10481,7 @@ if (ket == OP_KETRMIN)
 if (ket == OP_KETRMAX)
   {
   rmax_label = LABEL();
-  if (has_alternatives && opcode != OP_ONCE && opcode < OP_SBRA && repeat_type == 0)
+  if (has_alternatives && opcode >= OP_BRA && opcode < OP_SBRA && repeat_type == 0)
     BACKTRACK_AS(bracket_backtrack)->alternative_matchingpath = rmax_label;
   }
 
@@ -9185,7 +10585,7 @@ else if (opcode == OP_CBRA || opcode == OP_SCBRA)
     OP1(SLJIT_MOV, SLJIT_MEM1(STACK_TOP), STACK(0), TMP2, 0);
     }
   }
-else if (opcode == OP_SBRA || opcode == OP_SCOND)
+else if (opcode == OP_SCRIPT_RUN || opcode == OP_SBRA || opcode == OP_SCOND)
   {
   /* Saving the previous value. */
   OP1(SLJIT_MOV, TMP2, 0, SLJIT_MEM1(SLJIT_SP), private_data_ptr);
@@ -9314,6 +10714,9 @@ if (SLJIT_UNLIKELY(sljit_get_compiler_error(compiler)))
 if (opcode == OP_ONCE)
   match_once_common(common, ket, BACKTRACK_AS(bracket_backtrack)->u.framesize, private_data_ptr, has_alternatives, needs_control_head);
 
+if (opcode == OP_SCRIPT_RUN)
+  match_script_run_common(common, private_data_ptr, backtrack);
+
 stacksize = 0;
 if (repeat_type == OP_MINUPTO)
   {
@@ -9383,13 +10786,15 @@ if (ket == OP_KETRMAX)
     if (opcode != OP_ONCE)
       free_stack(common, 1);
     }
-  else if (opcode == OP_ONCE || opcode >= OP_SBRA)
+  else if (opcode < OP_BRA || opcode >= OP_SBRA)
     {
     if (has_alternatives)
       BACKTRACK_AS(bracket_backtrack)->alternative_matchingpath = LABEL();
+
     /* Checking zero-length iteration. */
     if (opcode != OP_ONCE)
       {
+      /* This case includes opcodes such as OP_SCRIPT_RUN. */
       CMPTO(SLJIT_NOT_EQUAL, SLJIT_MEM1(SLJIT_SP), private_data_ptr, STR_PTR, 0, rmax_label);
       /* Drop STR_PTR for greedy plus quantifier. */
       if (bra != OP_BRAZERO)
@@ -9456,7 +10861,7 @@ if (opcode == OP_ONCE)
   /* We temporarily encode the needs_control_head in the lowest bit.
      Note: on the target architectures of SLJIT the ((x << 1) >> 1) returns
      the same value for small signed numbers (including negative numbers). */
-  BACKTRACK_AS(bracket_backtrack)->u.framesize = (BACKTRACK_AS(bracket_backtrack)->u.framesize << 1) | (needs_control_head ? 1 : 0);
+  BACKTRACK_AS(bracket_backtrack)->u.framesize = (int)((unsigned)BACKTRACK_AS(bracket_backtrack)->u.framesize << 1) | (needs_control_head ? 1 : 0);
   }
 return cc + repeat_length;
 }
@@ -9951,7 +11356,7 @@ if (exact > 1)
 #ifdef SUPPORT_UNICODE
       && !common->utf
 #endif
-      )
+      && type != OP_ANYNL && type != OP_EXTUNI)
     {
     OP2(SLJIT_ADD, TMP1, 0, STR_PTR, 0, SLJIT_IMM, IN_UCHARS(exact));
     add_jump(compiler, &backtrack->topbacktracks, CMP(SLJIT_GREATER, TMP1, 0, STR_END, 0));
@@ -10634,6 +12039,7 @@ while (cc < ccend)
     break;
 
     case OP_ONCE:
+    case OP_SCRIPT_RUN:
     case OP_BRA:
     case OP_CBRA:
     case OP_COND:
@@ -10787,14 +12193,14 @@ switch(opcode)
       if (CURRENT_AS(char_iterator_backtrack)->u.charpos.othercasebit != 0)
         OP2(SLJIT_OR, TMP1, 0, TMP1, 0, SLJIT_IMM, CURRENT_AS(char_iterator_backtrack)->u.charpos.othercasebit);
       CMPTO(SLJIT_EQUAL, TMP1, 0, SLJIT_IMM, CURRENT_AS(char_iterator_backtrack)->u.charpos.chr, CURRENT_AS(char_iterator_backtrack)->matchingpath);
-      skip_char_back(common);
+      move_back(common, NULL, TRUE);
       CMPTO(SLJIT_GREATER, STR_PTR, 0, TMP2, 0, label);
       }
     else
       {
       OP1(SLJIT_MOV, STR_PTR, 0, base, offset0);
       jump = CMP(SLJIT_LESS_EQUAL, STR_PTR, 0, base, offset1);
-      skip_char_back(common);
+      move_back(common, NULL, TRUE);
       OP1(SLJIT_MOV, base, offset0, STR_PTR, 0);
       JUMPTO(SLJIT_JUMP, CURRENT_AS(char_iterator_backtrack)->matchingpath);
       }
@@ -11240,6 +12646,9 @@ if (has_alternatives)
       compile_matchingpath(common, ccprev, cc, current);
       if (SLJIT_UNLIKELY(sljit_get_compiler_error(compiler)))
         return;
+
+      if (opcode == OP_SCRIPT_RUN)
+        match_script_run_common(common, private_data_ptr, current);
       }
 
     /* Instructions after the current alternative is successfully matched. */
@@ -11368,7 +12777,7 @@ if (offset != 0)
     OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), private_data_ptr, TMP1, 0);
     }
   }
-else if (opcode == OP_SBRA || opcode == OP_SCOND)
+else if (opcode == OP_SCRIPT_RUN || opcode == OP_SBRA || opcode == OP_SCOND)
   {
   OP1(SLJIT_MOV, SLJIT_MEM1(SLJIT_SP), private_data_ptr, SLJIT_MEM1(STACK_TOP), STACK(0));
   free_stack(common, 1);
@@ -11717,6 +13126,7 @@ while (current)
     break;
 
     case OP_ONCE:
+    case OP_SCRIPT_RUN:
     case OP_BRA:
     case OP_CBRA:
     case OP_COND:
@@ -12016,6 +13426,9 @@ sljit_emit_fast_return(compiler, TMP2, 0);
 #undef COMPILE_BACKTRACKINGPATH
 #undef CURRENT_AS
 
+#define PUBLIC_JIT_COMPILE_CONFIGURATION_OPTIONS \
+  (PCRE2_JIT_INVALID_UTF)
+
 static int jit_compile(pcre2_code *code, sljit_u32 mode)
 {
 pcre2_real_code *re = (pcre2_real_code *)code;
@@ -12052,6 +13465,11 @@ common->re = re;
 common->name_table = (PCRE2_SPTR)((uint8_t *)re + sizeof(pcre2_real_code));
 rootbacktrack.cc = common->name_table + re->name_count * re->name_entry_size;
 
+#ifdef SUPPORT_UNICODE
+common->invalid_utf = (mode & PCRE2_JIT_INVALID_UTF) != 0;
+#endif /* SUPPORT_UNICODE */
+mode &= ~PUBLIC_JIT_COMPILE_CONFIGURATION_OPTIONS;
+
 common->start = rootbacktrack.cc;
 common->read_only_data_head = NULL;
 common->fcc = tables + fcc_offset;
@@ -12066,6 +13484,7 @@ switch(re->newline_convention)
   case PCRE2_NEWLINE_CRLF: common->newline = (CHAR_CR << 8) | CHAR_NL; break;
   case PCRE2_NEWLINE_ANY: common->newline = (CHAR_CR << 8) | CHAR_NL; common->nltype = NLTYPE_ANY; break;
   case PCRE2_NEWLINE_ANYCRLF: common->newline = (CHAR_CR << 8) | CHAR_NL; common->nltype = NLTYPE_ANYCRLF; break;
+  case PCRE2_NEWLINE_NUL: common->newline = CHAR_NUL; break;
   default: return PCRE2_ERROR_INTERNAL;
   }
 common->nlmax = READ_CHAR_MAX;
@@ -12117,6 +13536,8 @@ if (common->utf)
     common->bsr_nlmax = (CHAR_CR > CHAR_NL) ? CHAR_CR : CHAR_NL;
   common->bsr_nlmin = (CHAR_CR < CHAR_NL) ? CHAR_CR : CHAR_NL;
   }
+else
+  common->invalid_utf = FALSE;
 #endif /* SUPPORT_UNICODE */
 ccend = bracketend(common->start);
 
@@ -12557,21 +13978,48 @@ if (common->utfreadchar != NULL)
   set_jumps(common->utfreadchar, LABEL());
   do_utfreadchar(common);
   }
-if (common->utfreadchar16 != NULL)
-  {
-  set_jumps(common->utfreadchar16, LABEL());
-  do_utfreadchar16(common);
-  }
 if (common->utfreadtype8 != NULL)
   {
   set_jumps(common->utfreadtype8, LABEL());
   do_utfreadtype8(common);
   }
+if (common->utfpeakcharback != NULL)
+  {
+  set_jumps(common->utfpeakcharback, LABEL());
+  do_utfpeakcharback(common);
+  }
 #endif /* PCRE2_CODE_UNIT_WIDTH == 8 */
+#if PCRE2_CODE_UNIT_WIDTH == 8 || PCRE2_CODE_UNIT_WIDTH == 16
+if (common->utfreadchar_invalid != NULL)
+  {
+  set_jumps(common->utfreadchar_invalid, LABEL());
+  do_utfreadchar_invalid(common);
+  }
+if (common->utfreadnewline_invalid != NULL)
+  {
+  set_jumps(common->utfreadnewline_invalid, LABEL());
+  do_utfreadnewline_invalid(common);
+  }
+if (common->utfmoveback_invalid)
+  {
+  set_jumps(common->utfmoveback_invalid, LABEL());
+  do_utfmoveback_invalid(common);
+  }
+if (common->utfpeakcharback_invalid)
+  {
+  set_jumps(common->utfpeakcharback_invalid, LABEL());
+  do_utfpeakcharback_invalid(common);
+  }
+#endif /* PCRE2_CODE_UNIT_WIDTH == 8 || PCRE2_CODE_UNIT_WIDTH == 16 */
 if (common->getucd != NULL)
   {
   set_jumps(common->getucd, LABEL());
   do_getucd(common);
+  }
+if (common->getucdtype != NULL)
+  {
+  set_jumps(common->getucdtype, LABEL());
+  do_getucdtype(common);
   }
 #endif /* SUPPORT_UNICODE */
 
@@ -12644,7 +14092,7 @@ Returns:        0: success or (*NOJIT) was used
 */
 
 #define PUBLIC_JIT_COMPILE_OPTIONS \
-  (PCRE2_JIT_COMPLETE|PCRE2_JIT_PARTIAL_SOFT|PCRE2_JIT_PARTIAL_HARD)
+  (PCRE2_JIT_COMPLETE|PCRE2_JIT_PARTIAL_SOFT|PCRE2_JIT_PARTIAL_HARD|PCRE2_JIT_INVALID_UTF)
 
 PCRE2_EXP_DEFN int PCRE2_CALL_CONVENTION
 pcre2_jit_compile(pcre2_code *code, uint32_t options)
@@ -12659,6 +14107,7 @@ return PCRE2_ERROR_JIT_BADOPTION;
 
 pcre2_real_code *re = (pcre2_real_code *)code;
 executable_functions *functions;
+uint32_t excluded_options;
 int result;
 
 if (code == NULL)
@@ -12673,21 +14122,24 @@ functions = (executable_functions *)re->executable_jit;
 
 if ((options & PCRE2_JIT_COMPLETE) != 0 && (functions == NULL
     || functions->executable_funcs[0] == NULL)) {
-  result = jit_compile(code, PCRE2_JIT_COMPLETE);
+  excluded_options = (PCRE2_JIT_PARTIAL_SOFT | PCRE2_JIT_PARTIAL_HARD);
+  result = jit_compile(code, options & ~excluded_options);
   if (result != 0)
     return result;
   }
 
 if ((options & PCRE2_JIT_PARTIAL_SOFT) != 0 && (functions == NULL
     || functions->executable_funcs[1] == NULL)) {
-  result = jit_compile(code, PCRE2_JIT_PARTIAL_SOFT);
+  excluded_options = (PCRE2_JIT_COMPLETE | PCRE2_JIT_PARTIAL_HARD);
+  result = jit_compile(code, options & ~excluded_options);
   if (result != 0)
     return result;
   }
 
 if ((options & PCRE2_JIT_PARTIAL_HARD) != 0 && (functions == NULL
     || functions->executable_funcs[2] == NULL)) {
-  result = jit_compile(code, PCRE2_JIT_PARTIAL_HARD);
+  excluded_options = (PCRE2_JIT_COMPLETE | PCRE2_JIT_PARTIAL_SOFT);
+  result = jit_compile(code, options & ~excluded_options);
   if (result != 0)
     return result;
   }

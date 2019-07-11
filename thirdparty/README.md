@@ -444,8 +444,8 @@ Files extracted from upstream source:
 
 ## pcre2
 
-- Upstream: http://www.pcre.org/
-- Version: 10.32
+- Upstream: http://www.pcre.org
+- Version: 10.33
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
