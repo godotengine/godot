@@ -443,6 +443,7 @@
       style = (AF_Style)( globals->glyph_styles[gindex] &
                           AF_STYLE_UNASSIGNED           );
 
+  Again:
     style_class          = af_style_classes[style];
     writing_system_class = af_writing_system_classes
                              [style_class->writing_system];
@@ -470,6 +471,16 @@
             writing_system_class->style_metrics_done( metrics );
 
           FT_FREE( metrics );
+
+          /* internal error code -1 indicates   */
+          /* that no blue zones have been found */
+          if ( error == -1 )
+          {
+            style = (AF_Style)( globals->glyph_styles[gindex] &
+                                AF_STYLE_UNASSIGNED           );
+            goto Again;
+          }
+
           goto Exit;
         }
       }

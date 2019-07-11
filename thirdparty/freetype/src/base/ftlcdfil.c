@@ -77,13 +77,13 @@
   /* FIR filter used by the default and light filters */
   FT_BASE_DEF( void )
   ft_lcd_filter_fir( FT_Bitmap*           bitmap,
-                     FT_Render_Mode       mode,
                      FT_LcdFiveTapFilter  weights )
   {
     FT_UInt   width  = (FT_UInt)bitmap->width;
     FT_UInt   height = (FT_UInt)bitmap->rows;
     FT_Int    pitch  = bitmap->pitch;
     FT_Byte*  origin = bitmap->buffer;
+    FT_Byte   mode   = bitmap->pixel_mode;
 
 
     /* take care of bitmap flow */
@@ -91,7 +91,7 @@
       origin += pitch * (FT_Int)( height - 1 );
 
     /* horizontal in-place FIR filter */
-    if ( mode == FT_RENDER_MODE_LCD && width >= 2 )
+    if ( mode == FT_PIXEL_MODE_LCD && width >= 2 )
     {
       FT_Byte*  line = origin;
 
@@ -134,7 +134,7 @@
     }
 
     /* vertical in-place FIR filter */
-    else if ( mode == FT_RENDER_MODE_LCD_V && height >= 2 )
+    else if ( mode == FT_PIXEL_MODE_LCD_V && height >= 2 )
     {
       FT_Byte*  column = origin;
 
@@ -183,13 +183,13 @@
   /* intra-pixel filter used by the legacy filter */
   static void
   _ft_lcd_filter_legacy( FT_Bitmap*      bitmap,
-                         FT_Render_Mode  mode,
                          FT_Byte*        weights )
   {
     FT_UInt   width  = (FT_UInt)bitmap->width;
     FT_UInt   height = (FT_UInt)bitmap->rows;
     FT_Int    pitch  = bitmap->pitch;
     FT_Byte*  origin = bitmap->buffer;
+    FT_Byte   mode   = bitmap->pixel_mode;
 
     static const unsigned int  filters[3][3] =
     {
@@ -206,7 +206,7 @@
       origin += pitch * (FT_Int)( height - 1 );
 
     /* horizontal in-place intra-pixel filter */
-    if ( mode == FT_RENDER_MODE_LCD && width >= 3 )
+    if ( mode == FT_PIXEL_MODE_LCD && width >= 3 )
     {
       FT_Byte*  line = origin;
 
@@ -243,7 +243,7 @@
         }
       }
     }
-    else if ( mode == FT_RENDER_MODE_LCD_V && height >= 3 )
+    else if ( mode == FT_PIXEL_MODE_LCD_V && height >= 3 )
     {
       FT_Byte*  column = origin;
 

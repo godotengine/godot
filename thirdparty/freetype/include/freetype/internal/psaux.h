@@ -96,10 +96,10 @@ FT_BEGIN_HEADER
     (*done)( PS_Table  table );
 
     FT_Error
-    (*add)( PS_Table  table,
-            FT_Int    idx,
-            void*     object,
-            FT_UInt   length );
+    (*add)( PS_Table     table,
+            FT_Int       idx,
+            const void*  object,
+            FT_UInt      length );
 
     void
     (*release)( PS_Table  table );

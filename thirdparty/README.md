@@ -122,13 +122,13 @@ Use UI font variant if available, because it has tight vertical metrics and good
 ## freetype
 
 - Upstream: https://www.freetype.org
-- Version: 2.10.0
+- Version: 2.10.1
 - License: FreeType License (BSD-like)
 
 Files extracted from upstream source:
 
-- the src/ folder, stripped of the `Jamfile` files
-- the include/ folder
+- the `src/` folder, stripped of the `Jamfile` files and the `tools` subfolder
+- the `include/` folder
 - `docs/{FTL.TXT,LICENSE.TXT}`
 
 

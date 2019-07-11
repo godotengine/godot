@@ -869,7 +869,7 @@ FT_BEGIN_HEADER
    *
    * @input:
    *   y ::
-   *     The scanline's y~coordinate.
+   *     The scanline's upward y~coordinate.
    *
    *   count ::
    *     The number of spans to draw on this scanline.
@@ -945,19 +945,16 @@ FT_BEGIN_HEADER
    *     This flag is set to indicate direct rendering.  In this mode, client
    *     applications must provide their own span callback.  This lets them
    *     directly draw or compose over an existing bitmap.  If this bit is
-   *     not set, the target pixmap's buffer _must_ be zeroed before
-   *     rendering.
+   *     _not_ set, the target pixmap's buffer _must_ be zeroed before
+   *     rendering and the output will be clipped to its size.
    *
    *     Direct rendering is only possible with anti-aliased glyphs.
    *
    *   FT_RASTER_FLAG_CLIP ::
    *     This flag is only used in direct rendering mode.  If set, the output
    *     will be clipped to a box specified in the `clip_box` field of the
-   *     @FT_Raster_Params structure.
-   *
-   *     Note that by default, the glyph bitmap is clipped to the target
-   *     pixmap, except in direct rendering mode where all spans are
-   *     generated if no clipping box is set.
+   *     @FT_Raster_Params structure.  Otherwise, the `clip_box` is
+   *     effectively set to the bounding box and all spans are generated.
    */
 #define FT_RASTER_FLAG_DEFAULT  0x0
 #define FT_RASTER_FLAG_AA       0x1
@@ -978,7 +975,8 @@ FT_BEGIN_HEADER
    *   FT_Raster_Params
    *
    * @description:
-   *   A structure to hold the arguments used by a raster's render function.
+   *   A structure to hold the parameters used by a raster's render function,
+   *   passed as an argument to @FT_Outline_Render.
    *
    * @fields:
    *   target ::

@@ -953,7 +953,8 @@
         error = afm_parse_kern_data( parser );
         if ( error )
           goto Fail;
-        /* fall through since we only support kern data */
+        /* we only support kern data, so ... */
+        /* fall through                      */
 
       case AFM_TOKEN_ENDFONTMETRICS:
         return FT_Err_Ok;

@@ -1184,6 +1184,8 @@
 
 
         seg = edge->first;
+        if ( !seg )
+          goto Skip_Loop;
 
         do
         {
@@ -1239,13 +1241,14 @@
               edge2->flags |= AF_EDGE_SERIF;
             }
             else
-              edge->link  = edge2;
+              edge->link = edge2;
           }
 
           seg = seg->edge_next;
 
         } while ( seg != edge->first );
 
+      Skip_Loop:
         /* set the round/straight flags */
         edge->flags = AF_EDGE_NORMAL;
 

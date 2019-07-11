@@ -378,6 +378,7 @@ FT_BEGIN_HEADER
 #if FT_SIZEOF_INT == 4
 
 #include <intrin.h>
+#pragma intrinsic( _BitScanReverse )
 
   static __inline FT_Int32
   FT_MSB_i386( FT_UInt32  x )
@@ -385,7 +386,6 @@ FT_BEGIN_HEADER
     unsigned long  where;
 
 
-    /* not available in older VC versions */
     _BitScanReverse( &where, x );
 
     return (FT_Int32)where;

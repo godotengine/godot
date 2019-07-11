@@ -1,8 +1,8 @@
 /****************************************************************************
  *
- * sfnt.c
+ * sfwoff.h
  *
- *   Single object library component.
+ *   WOFFF format management (specification).
  *
  * Copyright (C) 1996-2019 by
  * David Turner, Robert Wilhelm, and Werner Lemberg.
@@ -16,23 +16,26 @@
  */
 
 
-#define FT_MAKE_OPTION_SINGLE_OBJECT
+#ifndef SFWOFF_H_
+#define SFWOFF_H_
+
+
 #include <ft2build.h>
+#include FT_INTERNAL_SFNT_H
+#include FT_INTERNAL_OBJECTS_H
 
-#include "pngshim.c"
-#include "sfdriver.c"
-#include "sfobjs.c"
-#include "sfwoff.c"
-#include "ttbdf.c"
-#include "ttcmap.c"
-#include "ttcolr.c"
-#include "ttcpal.c"
 
-#include "ttkern.c"
-#include "ttload.c"
-#include "ttmtx.c"
-#include "ttpost.c"
-#include "ttsbit.c"
+FT_BEGIN_HEADER
+
+
+  FT_LOCAL( FT_Error )
+  woff_open_font( FT_Stream  stream,
+                  TT_Face    face );
+
+
+FT_END_HEADER
+
+#endif /* SFWOFF_H_ */
 
 
 /* END */

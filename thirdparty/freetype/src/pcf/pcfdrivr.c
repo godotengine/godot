@@ -122,9 +122,9 @@ THE SOFTWARE.
          charcodeCol > enc->lastCol  )
       return 0;
 
-    return (FT_UInt)enc->offset[ ( charcodeRow - enc->firstRow ) *
-                                 ( enc->lastCol - enc->firstCol + 1 ) +
-                                   charcodeCol - enc->firstCol          ];
+    return (FT_UInt)enc->offset[( charcodeRow - enc->firstRow ) *
+                                  ( enc->lastCol - enc->firstCol + 1 ) +
+                                charcodeCol - enc->firstCol];
   }
 
 
@@ -160,9 +160,9 @@ THE SOFTWARE.
 
       charcode = (FT_UInt32)( charcodeRow * 256 + charcodeCol );
 
-      result = (FT_UInt)enc->offset[ ( charcodeRow - enc->firstRow ) *
-                                     ( enc->lastCol - enc->firstCol + 1 ) +
-                                       charcodeCol - enc->firstCol          ];
+      result = (FT_UInt)enc->offset[( charcodeRow - enc->firstRow ) *
+                                      ( enc->lastCol - enc->firstCol + 1 ) +
+                                    charcodeCol - enc->firstCol];
       if ( result != 0xFFFFU )
         break;
     }

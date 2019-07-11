@@ -962,7 +962,7 @@
           cffface->style_name = style_name;
         else
           /* assume "Regular" style if we don't know better */
-          cffface->style_name = cff_strcpy( memory, (char *)"Regular" );
+          cffface->style_name = cff_strcpy( memory, "Regular" );
 
         /********************************************************************
          *

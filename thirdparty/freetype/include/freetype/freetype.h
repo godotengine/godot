@@ -645,7 +645,7 @@ FT_BEGIN_HEADER
    *   FT_ENCODING_MS_SYMBOL ::
    *     Microsoft Symbol encoding, used to encode mathematical symbols and
    *     wingdings.  For more information, see
-   *     'https://www.microsoft.com/typography/otspec/recom.htm',
+   *     'https://www.microsoft.com/typography/otspec/recom.htm#non-standard-symbol-fonts',
    *     'http://www.kostis.net/charsets/symbol.htm', and
    *     'http://www.kostis.net/charsets/wingding.htm'.
    *
@@ -1765,6 +1765,13 @@ FT_BEGIN_HEADER
    *     @FT_GLYPH_FORMAT_OUTLINE.  Once a glyph is loaded, `outline` can be
    *     transformed, distorted, emboldened, etc.  However, it must not be
    *     freed.
+   *
+   *     [Since 2.10.1] If @FT_LOAD_NO_SCALE is set, outline coordinates of
+   *     OpenType variation fonts for a selected instance are internally
+   *     handled as 26.6 fractional font units but returned as (rounded)
+   *     integers, as expected.  To get unrounded font units, don't use
+   *     @FT_LOAD_NO_SCALE but load the glyph with @FT_LOAD_NO_HINTING and
+   *     scale it, using the font's `units_per_EM` value as the ppem.
    *
    *   num_subglyphs ::
    *     The number of subglyphs in a composite glyph.  This field is only
@@ -3932,8 +3939,8 @@ FT_BEGIN_HEADER
    *   The glyph index.  0~means 'undefined character code'.
    */
   FT_EXPORT( FT_UInt )
-  FT_Get_Name_Index( FT_Face     face,
-                     FT_String*  glyph_name );
+  FT_Get_Name_Index( FT_Face           face,
+                     const FT_String*  glyph_name );
 
 
   /**************************************************************************
@@ -4774,7 +4781,7 @@ FT_BEGIN_HEADER
    */
 #define FREETYPE_MAJOR  2
 #define FREETYPE_MINOR  10
-#define FREETYPE_PATCH  0
+#define FREETYPE_PATCH  1
 
 
   /**************************************************************************

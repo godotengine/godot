@@ -278,14 +278,12 @@ FT_BEGIN_HEADER
 #ifdef FT_CONFIG_OPTION_SUBPIXEL_RENDERING
 
   typedef void  (*FT_Bitmap_LcdFilterFunc)( FT_Bitmap*      bitmap,
-                                            FT_Render_Mode  render_mode,
                                             FT_Byte*        weights );
 
 
   /* This is the default LCD filter, an in-place, 5-tap FIR filter. */
   FT_BASE( void )
   ft_lcd_filter_fir( FT_Bitmap*           bitmap,
-                     FT_Render_Mode       mode,
                      FT_LcdFiveTapFilter  weights );
 
 #endif /* FT_CONFIG_OPTION_SUBPIXEL_RENDERING */
@@ -941,8 +939,8 @@ FT_BEGIN_HEADER
                                FT_UInt     buffer_max );
 
   typedef FT_UInt
-  (*FT_Face_GetGlyphNameIndexFunc)( FT_Face     face,
-                                    FT_String*  glyph_name );
+  (*FT_Face_GetGlyphNameIndexFunc)( FT_Face           face,
+                                    const FT_String*  glyph_name );
 
 
 #ifndef FT_CONFIG_OPTION_NO_DEFAULT_SYSTEM

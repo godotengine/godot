@@ -41,8 +41,8 @@ FT_BEGIN_HEADER
                                FT_UInt     buffer_max );
 
   typedef FT_UInt
-  (*FT_GlyphDict_NameIndexFunc)( FT_Face     face,
-                                 FT_String*  glyph_name );
+  (*FT_GlyphDict_NameIndexFunc)( FT_Face           face,
+                                 const FT_String*  glyph_name );
 
 
   FT_DEFINE_SERVICE( GlyphDict )
