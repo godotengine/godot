@@ -409,7 +409,7 @@ Collection of single-file libraries used in Godot components.
   * License: Public Domain (Unlicense) or MIT
 - `stb_vorbis.c`
   * Upstream: https://github.com/nothings/stb
-  * Version: 1.15
+  * Version: 1.16
   * License: Public Domain (Unlicense) or MIT
 
 

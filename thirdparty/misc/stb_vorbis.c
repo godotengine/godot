@@ -1,4 +1,4 @@
-// Ogg Vorbis audio decoder - v1.15 - public domain
+// Ogg Vorbis audio decoder - v1.16 - public domain
 // http://nothings.org/stb_vorbis/
 //
 // Original version written by Sean Barrett in 2007.
@@ -33,6 +33,7 @@
 //    Timur Gagiev
 //
 // Partial history:
+//    1.16    - 2019-03-04 - fix warnings
 //    1.15    - 2019-02-07 - explicit failure if Ogg Skeleton data is found
 //    1.14    - 2018-02-11 - delete bogus dealloca usage
 //    1.13    - 2018-01-29 - fix truncation of last frame (hopefully)
@@ -4990,7 +4991,13 @@ stb_vorbis * stb_vorbis_open_file(FILE *file, int close_on_free, int *error, con
 
 stb_vorbis * stb_vorbis_open_filename(const char *filename, int *error, const stb_vorbis_alloc *alloc)
 {
-   FILE *f = fopen(filename, "rb");
+   FILE *f;
+#if defined(_WIN32) && defined(__STDC_WANT_SECURE_LIB__)
+   if (0 != fopen_s(&f, filename, "rb"))
+      f = NULL;
+#else
+   f = fopen(filename, "rb");
+#endif
    if (f)
       return stb_vorbis_open_file(f, TRUE, error, alloc);
    if (error) *error = VORBIS_file_open_failure;

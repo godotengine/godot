@@ -321,7 +321,7 @@ License: BSD-3-clause
 Files: ./thirdparty/misc/stb_truetype.h
  ./thirdparty/misc/stb_vorbis.c
 Comment: stb libraries
-Copyright: 2007-2017, Sean Barrett
+Copyright: 2007-2019, Sean Barrett
 License: public-domain
 
 Files: ./thirdparty/misc/triangulator.cpp
