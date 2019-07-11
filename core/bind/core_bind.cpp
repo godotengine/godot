@@ -30,11 +30,11 @@
 
 #include "core_bind.h"
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
-#include "core/math/crypto_core.h"
 #include "core/math/geometry.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

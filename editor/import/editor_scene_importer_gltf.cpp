@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_gltf.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/json.h"
-#include "core/math/crypto_core.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
