@@ -5,6 +5,7 @@ using System.Threading.Tasks;
 using GodotTools.Build;
 using GodotTools.Internals;
 using GodotTools.Utils;
+using static GodotTools.Internals.Globals;
 using Error = Godot.Error;
 using File = GodotTools.Utils.File;
 using Directory = GodotTools.Utils.Directory;
@@ -376,7 +377,7 @@ namespace GodotTools
         {
             // Build tool settings
 
-            Internal.EditorDef("mono/builds/build_tool", OS.IsWindows() ? BuildTool.MsBuildVs : BuildTool.MsBuildMono);
+            EditorDef("mono/builds/build_tool", OS.IsWindows() ? BuildTool.MsBuildVs : BuildTool.MsBuildMono);
 
             var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
 
@@ -390,7 +391,7 @@ namespace GodotTools
                     $"{PropNameMsbuildMono},{PropNameXbuild}"
             });
 
-            Internal.EditorDef("mono/builds/print_build_output", false);
+            EditorDef("mono/builds/print_build_output", false);
         }
     }
 }

@@ -44,6 +44,7 @@
     <Compile Include="Internals\GodotSharpDirs.cs" />
     <Compile Include="Internals\Internal.cs" />
     <Compile Include="Internals\ScriptClassParser.cs" />
+    <Compile Include="Internals\Globals.cs" />
     <Compile Include="MonoDevelopInstance.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Build\BuildSystem.cs" />

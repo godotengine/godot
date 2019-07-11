@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.IO;
 using GodotTools.Internals;
 using GodotTools.ProjectEditor;
+using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using Path = System.IO.Path;
 using OS = GodotTools.Utils.OS;
@@ -32,9 +33,9 @@ namespace GodotTools
 
         private bool CreateProjectSolution()
         {
-            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...", 2)) // TTR("Generating solution...")
+            using (var pr = new EditorProgress("create_csharp_solution", "Generating solution...".TTR(), 2))
             {
-                pr.Step("Generating C# project..."); // TTR("Generating C# project...")
+                pr.Step("Generating C# project...".TTR());
 
                 string resourceDir = ProjectSettings.GlobalizePath("res://");
 
@@ -67,7 +68,7 @@ namespace GodotTools
                     }
                     catch (IOException e)
                     {
-                        ShowErrorDialog($"Failed to save solution. Exception message: {e.Message}"); // TTR
+                        ShowErrorDialog("Failed to save solution. Exception message: ".TTR() + e.Message);
                         return false;
                     }
 
@@ -79,14 +80,14 @@ namespace GodotTools
                     if (!GodotSharpBuilds.MakeApiAssembly(ApiAssemblyType.Editor, apiConfig))
                         return false;
 
-                    pr.Step("Done"); // TTR("Done")
+                    pr.Step("Done".TTR());
 
                     // Here, after all calls to progress_task_step
                     CallDeferred(nameof(_RemoveCreateSlnMenuOption));
                 }
                 else
                 {
-                    ShowErrorDialog("Failed to create C# project."); // TTR
+                    ShowErrorDialog("Failed to create C# project.".TTR());
                 }
 
                 return true;
@@ -407,7 +408,7 @@ namespace GodotTools
 
             MonoBottomPanel = new MonoBottomPanel();
 
-            bottomPanelBtn = AddControlToBottomPanel(MonoBottomPanel, "Mono"); // TTR("Mono")
+            bottomPanelBtn = AddControlToBottomPanel(MonoBottomPanel, "Mono".TTR());
 
             AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
 
@@ -419,7 +420,7 @@ namespace GodotTools
 
             // TODO: Remove or edit this info dialog once Mono support is no longer in alpha
             {
-                menuPopup.AddItem("About C# support", (int) MenuOptions.AboutCSharp); // TTR("About C# support")
+                menuPopup.AddItem("About C# support".TTR(), (int) MenuOptions.AboutCSharp);
                 aboutDialog = new AcceptDialog();
                 editorBaseControl.AddChild(aboutDialog);
                 aboutDialog.WindowTitle = "Important: C# support is not feature-complete";
@@ -441,7 +442,7 @@ namespace GodotTools
 
                 var aboutLabel = new Label();
                 aboutHBox.AddChild(aboutLabel);
-                aboutLabel.RectMinSize = new Vector2(600, 150) * Internal.EditorScale;
+                aboutLabel.RectMinSize = new Vector2(600, 150) * EditorScale;
                 aboutLabel.SizeFlagsVertical = (int) Control.SizeFlags.ExpandFill;
                 aboutLabel.Autowrap = true;
                 aboutLabel.Text =
@@ -454,7 +455,7 @@ namespace GodotTools
                     "        https://github.com/godotengine/godot/issues\n\n" +
                     "Your critical feedback at this stage will play a great role in shaping the C# support in future releases, so thank you!";
 
-                Internal.EditorDef("mono/editor/show_info_on_start", true);
+                EditorDef("mono/editor/show_info_on_start", true);
 
                 // CheckBox in main container
                 aboutDialogCheckBox = new CheckBox {Text = "Show this warning when starting the editor"};
@@ -473,7 +474,7 @@ namespace GodotTools
             else
             {
                 bottomPanelBtn.Hide();
-                menuPopup.AddItem("Create C# solution", (int) MenuOptions.CreateSln); // TTR("Create C# solution")
+                menuPopup.AddItem("Create C# solution".TTR(), (int) MenuOptions.CreateSln);
             }
 
             menuPopup.Connect("id_pressed", this, nameof(_MenuOptionPressed));
@@ -488,7 +489,7 @@ namespace GodotTools
             AddControlToContainer(CustomControlContainer.Toolbar, buildButton);
 
             // External editor settings
-            Internal.EditorDef("mono/editor/external_editor", ExternalEditor.None);
+            EditorDef("mono/editor/external_editor", ExternalEditor.None);
 
             string settingsHintStr = "Disabled";
 

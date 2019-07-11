@@ -1,5 +1,6 @@
 using Godot;
 using GodotTools.Internals;
+using static GodotTools.Internals.Globals;
 
 namespace GodotTools
 {
@@ -37,7 +38,7 @@ namespace GodotTools
             watchTimer = new Timer
             {
                 OneShot = false,
-                WaitTime = (float) Internal.EditorDef("mono/assembly_watch_interval_sec", 0.5)
+                WaitTime = (float) EditorDef("mono/assembly_watch_interval_sec", 0.5)
             };
             watchTimer.Connect("timeout", this, nameof(TimerTimeout));
             AddChild(watchTimer);
