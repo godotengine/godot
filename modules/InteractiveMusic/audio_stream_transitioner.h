@@ -25,17 +25,17 @@ private:
 
 
 	struct Transition {
-		int next_clip_number;
+		bool transition_active;
 
 		int fade_in_beats;
 		int fade_out_beats;
 
-		char next_clip_name;
+		Ref<AudioStream> to_stream;
 	};
 
 	Transition transitions[MAX_TRANSITIONS];
 
-	Ref<AudioStream> audio_streams[MAX_STREAMS];
+	Ref<AudioStream> starting_stream;
 	Set<AudioStreamPlaybackTransitioner *> playbacks;
 
 public:
@@ -45,10 +45,8 @@ public:
 	void set_bpm(int p_bpm);
 	int get_bpm();
 
-	void set_clip_count(int p_clip_count);
-	int get_clip_count();
-	void set_list_clip(int stream_number, Ref<AudioStream> p_stream);
-	Ref<AudioStream> get_list_clip(int stream_number);
+	void set_start_clip(Ref<AudioStream> start_stream);
+	Ref<AudioStream> get_start_clip();
 
 	void set_transition_count(int p_transition_count);
 	int get_transition_count();
@@ -62,7 +60,7 @@ public:
 	void set_next_clip(int transition_number, Ref<AudioStream> next_clip);
 	Ref<AudioStream> get_next_clip(int transition_number);
 
-	void set_active_transition(Transition t_transition);
+	void set_active_transition(int t_number);
 
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
@@ -95,7 +93,7 @@ private:
 	AudioFrame aux_buffer[MIX_BUFFER_SIZE];
 
 	Ref<AudioStreamTransitioner> transitioner;
-	Ref<AudioStreamPlayback> playbacks[AudioStreamTransitioner::MAX_STREAMS];
+	Ref<AudioStreamPlayback> playbacks[AudioStreamTransitioner::MAX_TRANSITIONS+1];
 
 	int current;
 	int next;
@@ -120,4 +118,6 @@ public:
 	virtual float get_length() const;
 	AudioStreamPlaybackTransitioner();
 	~AudioStreamPlaybackTransitioner();
+
+
 };
