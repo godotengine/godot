@@ -10,20 +10,15 @@ namespace GodotTools.Internals
         public const string CSharpLanguageType = "CSharpScript";
         public const string CSharpLanguageExtension = "cs";
 
+        public static string UpdateApiAssembliesFromPrebuilt() =>
+            internal_UpdateApiAssembliesFromPrebuilt();
+
         public static string FullTemplatesDir =>
             internal_FullTemplatesDir();
 
         public static string SimplifyGodotPath(this string path) => internal_SimplifyGodotPath(path);
 
         public static bool IsOsxAppBundleInstalled(string bundleId) => internal_IsOsxAppBundleInstalled(bundleId);
-
-        public static bool MetadataIsApiAssemblyInvalidated(ApiAssemblyType apiType) =>
-            internal_MetadataIsApiAssemblyInvalidated(apiType);
-
-        public static void MetadataSetApiAssemblyInvalidated(ApiAssemblyType apiType, bool invalidated) =>
-            internal_MetadataSetApiAssemblyInvalidated(apiType, invalidated);
-
-        public static bool IsMessageQueueFlushing() => internal_IsMessageQueueFlushing();
 
         public static bool GodotIs32Bits() => internal_GodotIs32Bits();
 
@@ -54,6 +49,9 @@ namespace GodotTools.Internals
         // Internal Calls
 
         [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern string internal_UpdateApiAssembliesFromPrebuilt();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_FullTemplatesDir();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -61,15 +59,6 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_IsOsxAppBundleInstalled(string bundleId);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_MetadataIsApiAssemblyInvalidated(ApiAssemblyType apiType);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_MetadataSetApiAssemblyInvalidated(ApiAssemblyType apiType, bool invalidated);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_IsMessageQueueFlushing();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_GodotIs32Bits();

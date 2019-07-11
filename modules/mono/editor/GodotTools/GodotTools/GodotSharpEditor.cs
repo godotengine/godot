@@ -27,7 +27,7 @@ namespace GodotTools
         private MonoDevelopInstance monoDevelopInstance;
         private MonoDevelopInstance visualStudioForMacInstance;
 
-        private WeakReference<GodotSharpExport> exportPluginWeak;
+        private WeakRef exportPluginWeak; // TODO Use WeakReference once we have proper serialization
 
         public MonoBottomPanel MonoBottomPanel { get; private set; }
 
@@ -72,13 +72,9 @@ namespace GodotTools
                         return false;
                     }
 
-                    string apiConfig = "Debug";
-
-                    if (!GodotSharpBuilds.MakeApiAssembly(ApiAssemblyType.Core, apiConfig))
-                        return false;
-
-                    if (!GodotSharpBuilds.MakeApiAssembly(ApiAssemblyType.Editor, apiConfig))
-                        return false;
+                    // Make sure to update the API assemblies if they happen to be missing. Just in
+                    // case the user decided to delete them at some point after they were loaded.
+                    Internal.UpdateApiAssembliesFromPrebuilt();
 
                     pr.Step("Done".TTR());
 
@@ -91,70 +87,6 @@ namespace GodotTools
                 }
 
                 return true;
-            }
-        }
-
-        private static int _makeApiSolutionsAttempts = 100;
-        private static bool _makeApiSolutionsRecursionGuard = false;
-
-        private void _MakeApiSolutionsIfNeeded()
-        {
-            // I'm sick entirely of ProgressDialog
-
-            if (Internal.IsMessageQueueFlushing() || Engine.GetMainLoop() == null)
-            {
-                if (_makeApiSolutionsAttempts == 0) // This better never happen or I swear...
-                    throw new TimeoutException();
-
-                if (Engine.GetMainLoop() != null)
-                {
-                    if (!Engine.GetMainLoop().IsConnected("idle_frame", this, nameof(_MakeApiSolutionsIfNeeded)))
-                        Engine.GetMainLoop().Connect("idle_frame", this, nameof(_MakeApiSolutionsIfNeeded));
-                }
-                else
-                {
-                    CallDeferred(nameof(_MakeApiSolutionsIfNeededImpl));
-                }
-
-                _makeApiSolutionsAttempts--;
-                return;
-            }
-
-            // Recursion guard needed because signals don't play well with ProgressDialog either, but unlike
-            // the message queue, with signals the collateral damage should be minimal in the worst case.
-            if (!_makeApiSolutionsRecursionGuard)
-            {
-                _makeApiSolutionsRecursionGuard = true;
-
-                // Oneshot signals don't play well with ProgressDialog either, so we do it this way instead
-                if (Engine.GetMainLoop().IsConnected("idle_frame", this, nameof(_MakeApiSolutionsIfNeeded)))
-                    Engine.GetMainLoop().Disconnect("idle_frame", this, nameof(_MakeApiSolutionsIfNeeded));
-
-                _MakeApiSolutionsIfNeededImpl();
-
-                _makeApiSolutionsRecursionGuard = false;
-            }
-        }
-
-        private void _MakeApiSolutionsIfNeededImpl()
-        {
-            // If the project has a solution and C# project make sure the API assemblies are present and up to date
-
-            string api_config = "Debug";
-            string resAssembliesDir = Path.Combine(GodotSharpDirs.ResAssembliesBaseDir, api_config);
-
-            if (!File.Exists(Path.Combine(resAssembliesDir, $"{ApiAssemblyNames.Core}.dll")) ||
-                Internal.MetadataIsApiAssemblyInvalidated(ApiAssemblyType.Core))
-            {
-                if (!GodotSharpBuilds.MakeApiAssembly(ApiAssemblyType.Core, api_config))
-                    return;
-            }
-
-            if (!File.Exists(Path.Combine(resAssembliesDir, $"{ApiAssemblyNames.Editor}.dll")) ||
-                Internal.MetadataIsApiAssemblyInvalidated(ApiAssemblyType.Editor))
-            {
-                if (!GodotSharpBuilds.MakeApiAssembly(ApiAssemblyType.Editor, api_config))
-                    return; // Redundant? I don't think so!
             }
         }
 
@@ -465,9 +397,6 @@ namespace GodotTools
 
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
-                // Defer this task because EditorProgress calls Main::iterarion() and the main loop is not yet initialized.
-                CallDeferred(nameof(_MakeApiSolutionsIfNeeded));
-
                 // Make sure the existing project has Api assembly references configured correctly
                 CSharpProject.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
             }
@@ -521,7 +450,7 @@ namespace GodotTools
             // Export plugin
             var exportPlugin = new GodotSharpExport();
             AddExportPlugin(exportPlugin);
-            exportPluginWeak = new WeakReference<GodotSharpExport>(exportPlugin);
+            exportPluginWeak = WeakRef(exportPlugin);
 
             GodotSharpBuilds.Initialize();
         }
@@ -530,13 +459,15 @@ namespace GodotTools
         {
             base.Dispose(disposing);
 
-            if (exportPluginWeak.TryGetTarget(out var exportPlugin))
+            if (exportPluginWeak != null)
             {
                 // We need to dispose our export plugin before the editor destroys EditorSettings.
                 // Otherwise, if the GC disposes it at a later time, EditorExportPlatformAndroid
                 // will be freed after EditorSettings already was, and its device polling thread
                 // will try to access the EditorSettings singleton, resulting in null dereferencing.
-                exportPlugin.Dispose();
+                (exportPluginWeak.GetRef() as GodotSharpExport)?.Dispose();
+
+                exportPluginWeak.Dispose();
             }
         }
 
