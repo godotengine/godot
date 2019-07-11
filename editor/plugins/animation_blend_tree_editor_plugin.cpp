@@ -878,9 +878,7 @@ void AnimationNodeBlendTreeEditor::edit(const Ref<AnimationNode> &p_node) {
 		blend_tree->disconnect("removed_from_graph", this, "_removed_from_graph");
 	}
 
-	if (p_node.is_valid()) {
-		blend_tree = p_node;
-	}
+	blend_tree = p_node;
 
 	if (blend_tree.is_null()) {
 		hide();
