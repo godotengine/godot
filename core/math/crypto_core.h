@@ -46,8 +46,22 @@ public:
 		~MD5Context();
 
 		Error start();
-		Error update(uint8_t *p_src, size_t p_len);
+		Error update(const uint8_t *p_src, size_t p_len);
 		Error finish(unsigned char r_hash[16]);
+	};
+
+	class SHA1Context {
+
+	private:
+		void *ctx; // To include, or not to include...
+
+	public:
+		SHA1Context();
+		~SHA1Context();
+
+		Error start();
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[20]);
 	};
 
 	class SHA256Context {
@@ -60,8 +74,8 @@ public:
 		~SHA256Context();
 
 		Error start();
-		Error update(uint8_t *p_src, size_t p_len);
-		Error finish(unsigned char r_hash[16]);
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[32]);
 	};
 
 	class AESContext {
