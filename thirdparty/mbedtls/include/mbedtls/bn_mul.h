@@ -38,6 +38,12 @@
 #ifndef MBEDTLS_BN_MUL_H
 #define MBEDTLS_BN_MUL_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include "bignum.h"
 
 #if defined(MBEDTLS_HAVE_ASM)
@@ -750,7 +756,7 @@
         "sw     $10, %2         \n\t"   \
         : "=m" (c), "=m" (d), "=m" (s)                      \
         : "m" (s), "m" (d), "m" (c), "m" (b)                \
-        : "$9", "$10", "$11", "$12", "$13", "$14", "$15"    \
+        : "$9", "$10", "$11", "$12", "$13", "$14", "$15", "lo", "hi" \
     );
 
 #endif /* MIPS */

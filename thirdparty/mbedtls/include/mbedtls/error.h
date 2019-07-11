@@ -24,6 +24,12 @@
 #ifndef MBEDTLS_ERROR_H
 #define MBEDTLS_ERROR_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include <stddef.h>
 
 /**

@@ -36,6 +36,12 @@
 #ifndef MBEDTLS_CTR_DRBG_H
 #define MBEDTLS_CTR_DRBG_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include "aes.h"
 
 #if defined(MBEDTLS_THREADING_C)
@@ -350,6 +356,8 @@ int mbedtls_ctr_drbg_write_seed_file( mbedtls_ctr_drbg_context *ctx, const char 
 int mbedtls_ctr_drbg_update_seed_file( mbedtls_ctr_drbg_context *ctx, const char *path );
 #endif /* MBEDTLS_FS_IO */
 
+#if defined(MBEDTLS_SELF_TEST)
+
 /**
  * \brief               The CTR_DRBG checkup routine.
  *
@@ -357,6 +365,8 @@ int mbedtls_ctr_drbg_update_seed_file( mbedtls_ctr_drbg_context *ctx, const char
  * \return              \c 1 on failure.
  */
 int mbedtls_ctr_drbg_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 /* Internal functions (do not call directly) */
 int mbedtls_ctr_drbg_seed_entropy_len( mbedtls_ctr_drbg_context *,
