@@ -498,7 +498,16 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 						Vector2(line->to.x, line->to.y)
 					};
 
+#ifdef GLES_OVER_GL
+					if (line->antialiased)
+						glEnable(GL_LINE_SMOOTH);
+#endif
 					_draw_gui_primitive(2, verts, NULL, NULL);
+
+#ifdef GLES_OVER_GL
+					if (line->antialiased)
+						glDisable(GL_LINE_SMOOTH);
+#endif
 				} else {
 					Vector2 t = (line->from - line->to).normalized().tangent() * line->width * 0.5;
 
@@ -510,6 +519,19 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					};
 
 					_draw_gui_primitive(4, verts, NULL, NULL);
+#ifdef GLES_OVER_GL
+					if (line->antialiased) {
+						glEnable(GL_LINE_SMOOTH);
+						for (int j = 0; j < 4; j++) {
+							Vector2 vertsl[2] = {
+								verts[j],
+								verts[(j + 1) % 4],
+							};
+							_draw_gui_primitive(2, vertsl, NULL, NULL);
+						}
+						glDisable(GL_LINE_SMOOTH);
+					}
+#endif
 				}
 			} break;
 
@@ -919,6 +941,13 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 				}
 
 				_draw_polygon(polygon->indices.ptr(), polygon->count, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1, polygon->weights.ptr(), polygon->bones.ptr());
+#ifdef GLES_OVER_GL
+				if (polygon->antialiased) {
+					glEnable(GL_LINE_SMOOTH);
+					_draw_generic(GL_LINE_LOOP, polygon->points.size(), polygon->points.ptr(), polygon->uvs.ptr(), polygon->colors.ptr(), polygon->colors.size() == 1);
+					glDisable(GL_LINE_SMOOTH);
+				}
+#endif
 			} break;
 			case Item::Command::TYPE_MESH: {
 
@@ -1120,7 +1149,22 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 
 				if (pline->triangles.size()) {
 					_draw_generic(GL_TRIANGLE_STRIP, pline->triangles.size(), pline->triangles.ptr(), NULL, pline->triangle_colors.ptr(), pline->triangle_colors.size() == 1);
+#ifdef GLES_OVER_GL
+					glEnable(GL_LINE_SMOOTH);
+					if (pline->multiline) {
+						//needs to be different
+					} else {
+						_draw_generic(GL_LINE_LOOP, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
+					}
+					glDisable(GL_LINE_SMOOTH);
+#endif
 				} else {
+
+#ifdef GLES_OVER_GL
+					if (pline->antialiased)
+						glEnable(GL_LINE_SMOOTH);
+#endif
+
 					if (pline->multiline) {
 						int todo = pline->lines.size() / 2;
 						int max_per_call = data.polygon_buffer_size / (sizeof(real_t) * 4);
@@ -1135,6 +1179,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 					} else {
 						_draw_generic(GL_LINES, pline->lines.size(), pline->lines.ptr(), NULL, pline->line_colors.ptr(), pline->line_colors.size() == 1);
 					}
+
+#ifdef GLES_OVER_GL
+					if (pline->antialiased)
+						glDisable(GL_LINE_SMOOTH);
+#endif
 				}
 			} break;
 
