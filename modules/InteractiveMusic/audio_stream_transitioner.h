@@ -25,17 +25,17 @@ private:
 
 
 	struct Transition {
-		bool transition_active;
-
+		bool t_active;
 		int fade_in_beats;
 		int fade_out_beats;
-
-		Ref<AudioStream> to_stream;
 	};
 
 	Transition transitions[MAX_TRANSITIONS];
+	Transition active_transition;
 
-	Ref<AudioStream> starting_stream;
+	Ref<AudioStream> clips[MAX_STREAMS];
+	int active_clip_number;
+	int fading_clip_number;
 	Set<AudioStreamPlaybackTransitioner *> playbacks;
 
 public:
@@ -45,11 +45,14 @@ public:
 	void set_bpm(int p_bpm);
 	int get_bpm();
 
-	void set_start_clip(Ref<AudioStream> start_stream);
-	Ref<AudioStream> get_start_clip();
+	void set_list_clip(int clip_number, Ref<AudioStream> p_clip);
+	Ref<AudioStream> get_list_clip(int clip_number);
 
 	void set_transition_count(int p_transition_count);
 	int get_transition_count();
+
+	void set_clip_count(int p_clip_count);
+	int get_clip_count();
 
 	void set_transition_fade_in(int transition_number, int fade_in);
 	int get_transition_fade_in(int transition_number);
@@ -57,10 +60,7 @@ public:
 	void set_transition_fade_out(int transition_number, int fade_out);
 	int get_transition_fade_out(int transition_number);
 
-	void set_next_clip(int transition_number, Ref<AudioStream> next_clip);
-	Ref<AudioStream> get_next_clip(int transition_number);
-
-	void set_active_transition(int t_number);
+	void go_to_clip(int clip_number, int transition_number);
 
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
@@ -72,9 +72,6 @@ protected:
 	void _validate_property(PropertyInfo &property) const;
 };
 
-//consider whether or not it's worth only using transitions and importing the streams into them
-//find out how to be able to click on the part where next stream is set on transition and it shows you a drop list of all the streams already in transitioner
-//
 
 class AudioStreamPlaybackTransitioner : AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackTransitioner, AudioStreamPlayback)
@@ -93,13 +90,18 @@ private:
 	AudioFrame aux_buffer[MIX_BUFFER_SIZE];
 
 	Ref<AudioStreamTransitioner> transitioner;
-	Ref<AudioStreamPlayback> playbacks[AudioStreamTransitioner::MAX_TRANSITIONS+1];
+	Ref<AudioStreamPlayback> playbacks[AudioStreamTransitioner::MAX_STREAMS];
+	
 
 	int current;
-	int next;
+	int previous;
 	int fade_in_samples_total;
 	int fade_out_samples_total;
 	int transition_samples_total;
+
+	int beat_size;
+
+	bool fading;
 
 	bool active;
 
@@ -113,7 +115,7 @@ public:
 	virtual int get_loop_count() const; // times it looped
 	virtual float get_playback_position() const;
 	virtual void seek(float p_time);
-	void add_stream_to_buffer(Ref<AudioStreamTransitioner> playback, int samples, float p_rate_scale, float initial_volume, float final_volume);
+	void add_stream_to_buffer(Ref<AudioStreamPlayback> playback, int samples, float p_rate_scale, float initial_volume, float final_volume);
 	virtual void mix(AudioFrame *p_buffer, float p_rate_scale, int p_frames);
 	virtual float get_length() const;
 	AudioStreamPlaybackTransitioner();
