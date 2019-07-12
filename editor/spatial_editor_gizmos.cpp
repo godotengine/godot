@@ -1580,7 +1580,7 @@ Position3DSpatialGizmoPlugin::Position3DSpatialGizmoPlugin() {
 	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
 	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	mat->set_line_width(3);
+
 	Array d;
 	d.resize(VS::ARRAY_MAX);
 	d[Mesh::ARRAY_VERTEX] = cursor_points;
