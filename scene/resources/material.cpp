@@ -169,7 +169,7 @@ bool ShaderMaterial::property_can_revert(const String &p_name) {
 
 		StringName pr = shader->remap_param(p_name);
 		if (pr) {
-			Variant default_value = VisualServer::get_singleton()->material_get_param_default(_get_material(), pr);
+			Variant default_value = VisualServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
 			Variant current_value;
 			_get(p_name, current_value);
 			return default_value.get_type() != Variant::NIL && default_value != current_value;
@@ -183,7 +183,7 @@ Variant ShaderMaterial::property_get_revert(const String &p_name) {
 	if (shader.is_valid()) {
 		StringName pr = shader->remap_param(p_name);
 		if (pr) {
-			r_ret = VisualServer::get_singleton()->material_get_param_default(_get_material(), pr);
+			r_ret = VisualServer::get_singleton()->shader_get_param_default(shader->get_rid(), pr);
 		}
 	}
 	return r_ret;
@@ -1504,17 +1504,6 @@ void SpatialMaterial::_validate_property(PropertyInfo &property) const {
 	}
 }
 
-void SpatialMaterial::set_line_width(float p_line_width) {
-
-	line_width = p_line_width;
-	VS::get_singleton()->material_set_line_width(_get_material(), line_width);
-}
-
-float SpatialMaterial::get_line_width() const {
-
-	return line_width;
-}
-
 void SpatialMaterial::set_point_size(float p_point_size) {
 
 	point_size = p_point_size;
@@ -1949,9 +1938,6 @@ void SpatialMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_refraction", "refraction"), &SpatialMaterial::set_refraction);
 	ClassDB::bind_method(D_METHOD("get_refraction"), &SpatialMaterial::get_refraction);
 
-	ClassDB::bind_method(D_METHOD("set_line_width", "line_width"), &SpatialMaterial::set_line_width);
-	ClassDB::bind_method(D_METHOD("get_line_width"), &SpatialMaterial::get_line_width);
-
 	ClassDB::bind_method(D_METHOD("set_point_size", "point_size"), &SpatialMaterial::set_point_size);
 	ClassDB::bind_method(D_METHOD("get_point_size"), &SpatialMaterial::get_point_size);
 
@@ -2095,7 +2081,6 @@ void SpatialMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_blend_mode", PROPERTY_HINT_ENUM, "Mix,Add,Sub,Mul"), "set_blend_mode", "get_blend_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_cull_mode", PROPERTY_HINT_ENUM, "Back,Front,Disabled"), "set_cull_mode", "get_cull_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_depth_draw_mode", PROPERTY_HINT_ENUM, "Opaque Only,Always,Never,Opaque Pre-Pass"), "set_depth_draw_mode", "get_depth_draw_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_line_width", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_line_width", "get_line_width");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "params_point_size", PROPERTY_HINT_RANGE, "0.1,128,0.1"), "set_point_size", "get_point_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "params_billboard_mode", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard,Particle Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "params_billboard_keep_scale"), "set_flag", "get_flag", FLAG_BILLBOARD_KEEP_SCALE);
@@ -2336,7 +2321,6 @@ SpatialMaterial::SpatialMaterial() :
 	set_subsurface_scattering_strength(0);
 	set_transmission(Color(0, 0, 0));
 	set_refraction(0.05);
-	set_line_width(1);
 	set_point_size(1);
 	set_uv1_offset(Vector3(0, 0, 0));
 	set_uv1_scale(Vector3(1, 1, 1));
