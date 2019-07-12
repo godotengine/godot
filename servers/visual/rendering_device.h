@@ -370,6 +370,11 @@ public:
 		DataFormat format;
 		TextureSamples samples;
 		uint32_t usage_flags;
+		AttachmentFormat() {
+			format=DATA_FORMAT_R8G8B8A8_UNORM;
+			samples=TEXTURE_SAMPLES_1;
+			usage_flags=0;
+		}
 	};
 
 	typedef int64_t FramebufferFormatID;
