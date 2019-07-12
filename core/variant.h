@@ -200,7 +200,7 @@ private:
 	_ALWAYS_INLINE_ ObjData &_get_obj();
 	_ALWAYS_INLINE_ const ObjData &_get_obj() const;
 
-	union {
+	union Variations {
 		bool _bool;
 		int64_t _int;
 		double _float;
@@ -211,6 +211,7 @@ private:
 		PackedArrayRefBase *packed_array;
 		void *_ptr; //generic pointer
 		uint8_t _mem[sizeof(ObjData) > (sizeof(real_t) * 4) ? sizeof(ObjData) : (sizeof(real_t) * 4)];
+		Variations() { memset(this, 0, sizeof(Variations)); }
 	} _data GCC_ALIGNED_8;
 
 	void reference(const Variant &p_variant);
