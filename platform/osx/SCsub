@@ -13,10 +13,9 @@ files = [
     'dir_access_osx.mm',
     'joypad_osx.cpp',
     'power_osx.cpp',
+    'vulkan_context_osx.mm',
+    'context_gl_osx.mm'
 ]
-
-if (env["renderer"] == "vulkan"):
-    files += ['vulkan_context_osx.mm']
 
 prog = env.add_program('#bin/godot', files)
 
