@@ -767,6 +767,17 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				pipeline_push_constant_suppplied = false;
 			}
 		} validation;
+#else
+		struct Validation {
+			uint32_t vertex_array_size; //0 if not set
+			uint32_t index_array_size; //0 if index buffer not set
+			uint32_t index_array_offset;
+
+			Validation() {
+				vertex_array_size = 0;
+				index_array_size = 0; //not sent
+			}
+		} validation;
 
 #endif
 	};
