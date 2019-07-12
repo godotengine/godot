@@ -2094,6 +2094,10 @@ EffectsRD *RasterizerStorageRD::get_effects() {
 
 RasterizerStorageRD::RasterizerStorageRD() {
 
+	for (int i = 0; i < SHADER_TYPE_MAX; i++) {
+		shader_data_request_func[i] = NULL;
+	}
+
 	material_update_list = NULL;
 	{ //create default textures
 
