@@ -387,7 +387,6 @@ private:
 	float subsurface_scattering_strength;
 	Color transmission;
 	float refraction;
-	float line_width;
 	float point_size;
 	float alpha_scissor_threshold;
 	bool grow_enabled;
@@ -518,9 +517,6 @@ public:
 
 	void set_refraction(float p_refraction);
 	float get_refraction() const;
-
-	void set_line_width(float p_line_width);
-	float get_line_width() const;
 
 	void set_point_size(float p_point_size);
 	float get_point_size() const;

@@ -337,7 +337,6 @@ void RayCast::_create_debug_shape() {
 
 		Ref<SpatialMaterial> line_material = static_cast<Ref<SpatialMaterial> >(debug_material);
 		line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		line_material->set_line_width(3.0);
 		line_material->set_albedo(Color(1.0, 0.8, 0.6));
 	}
 

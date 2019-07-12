@@ -189,6 +189,26 @@ public:
 
 	/* SHADER API */
 
+	enum ShaderType {
+		SHADER_TYPE_2D,
+		SHADER_TYPE_3D,
+		SHADER_TYPE_3D_POST_PROCESS,
+		SHADER_TYPE_PARTICLES
+	};
+
+	class ShaderData {
+	public:
+		virtual void set_code(const String &p_Code) = 0;
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
+		virtual bool is_animated() const = 0;
+		virtual bool casts_shadows() const = 0;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
+		virtual ~ShaderData() {}
+	};
+
+	typedef ShaderData *(ShaderDataRequestFunction)();
+
 	RID shader_create() { return RID(); }
 
 	void shader_set_code(RID p_shader, const String &p_code) {}
@@ -197,22 +217,29 @@ public:
 
 	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {}
 	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const { return RID(); }
+	Variant shader_get_param_default(RID p_material, const StringName &p_param) const { return Variant(); }
 
 	/* COMMON MATERIAL API */
 
+	struct MaterialData {
+
+		virtual void set_render_priority(int p_priority) = 0;
+		virtual void set_next_pass(RID p_pass) = 0;
+		virtual void update_parameters(const Map<StringName, Variant> &p_parameters) = 0;
+		virtual ~MaterialData() {}
+	};
+	typedef MaterialData *(MaterialDataRequestFunction)(ShaderData *);
+
 	RID material_create() { return RID(); }
 
-	void material_set_render_priority(RID p_material, int priority) {}
 	void material_set_shader(RID p_shader_material, RID p_shader) {}
 	RID material_get_shader(RID p_shader_material) const { return RID(); }
 
 	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {}
 	Variant material_get_param(RID p_material, const StringName &p_param) const { return Variant(); }
-	Variant material_get_param_default(RID p_material, const StringName &p_param) const { return Variant(); }
-
-	void material_set_line_width(RID p_material, float p_width) {}
 
 	void material_set_next_pass(RID p_material, RID p_next_material) {}
+	void material_set_render_priority(RID p_material, int priority) {}
 
 	bool material_is_animated(RID p_material) { return false; }
 	bool material_casts_shadows(RID p_material) { return false; }
