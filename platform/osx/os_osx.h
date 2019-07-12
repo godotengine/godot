@@ -45,6 +45,10 @@
 #include "servers/visual/visual_server_wrap_mt.h"
 #include "servers/visual_server.h"
 
+#if defined(OPENGL_ENABLED)
+#include "context_gl_osx.h"
+#endif
+
 #if defined(VULKAN_ENABLED)
 #include "drivers/vulkan/rendering_device_vulkan.h"
 #include "platform/osx/vulkan_context_osx.h"
@@ -112,20 +116,15 @@ public:
 	id cursor;
 
 #if defined(OPENGL_ENABLED)
-	void *framework;
-	NSOpenGLPixelFormat *pixelFormat;
-	NSOpenGLContext *context;
+	ContextGL_OSX *context_gles2;
 #endif
 
 #if defined(VULKAN_ENABLED)
 	VulkanContextOSX *context_vulkan;
-	RenderingDeviceVulkan *rendering_device;
+	RenderingDeviceVulkan *rendering_device_vulkan;
 #endif
 
 	bool layered_window;
-	bool waiting_for_vsync;
-	NSCondition *vsync_condition;
-	CVDisplayLinkRef displayLink;
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
