@@ -109,8 +109,6 @@ opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
 opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
 
-opts.Add(EnumVariable('renderer', "Renderer type", 'vulkan', ('vulkan', 'opengl')))
-
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
 opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise epsilon (useful to debug the engine)', False))

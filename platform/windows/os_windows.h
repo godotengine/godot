@@ -178,13 +178,14 @@ class OS_Windows : public OS {
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
+
 #if defined(OPENGL_ENABLED)
-	ContextGL_Windows *gl_context;
+	ContextGL_Windows *context_gles2;
 #endif
 
 #if defined(VULKAN_ENABLED)
 	VulkanContextWindows *context_vulkan;
-	RenderingDeviceVulkan *rendering_device;
+	RenderingDeviceVulkan *rendering_device_vulkan;
 #endif
 
 	VisualServer *visual_server;

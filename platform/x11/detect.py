@@ -320,14 +320,13 @@ def configure(env):
     env.Prepend(CPPPATH=['#platform/x11'])
     env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED'])
 
-    if (env["renderer"] == "vulkan"):
-        env.Prepend(CPPPATH=['#thirdparty/vulkan/include/', "#thirdparty/vulkan/registry/"])
-        env.Append(CPPDEFINES=['VULKAN_ENABLED'])
-        if not env["builtin_vulkan_loader"]:
-            env.Append(LIBS=['vulkan'])
-    else:
-        env.Append(CPPDEFINES=['OPENGL_ENABLED'])
-        env.Append(LIBS=['GL'])
+    env.Prepend(CPPPATH=['#thirdparty/vulkan/include/', "#thirdparty/vulkan/registry/"])
+    env.Append(CPPDEFINES=['VULKAN_ENABLED'])
+    if not env["builtin_vulkan_loader"]:
+        env.Append(LIBS=['vulkan'])
+
+    #env.Append(CPPDEFINES=['OPENGL_ENABLED'])
+    env.Append(LIBS=['GL'])
 
     env.Append(LIBS=['pthread'])
 

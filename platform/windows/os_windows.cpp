@@ -38,10 +38,10 @@
 
 #if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
 #endif
+
 #if defined(VULKAN_ENABLED)
-#include "servers/visual/rasterizer/rasterizer_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
 #endif
 
 #include "drivers/windows/dir_access_windows.h"
@@ -894,7 +894,9 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 					set_window_size(Size2(video_mode.width, video_mode.height));
 				}
 #if defined(VULKAN_ENABLED)
-				context_vulkan->window_resize(0, video_mode.width, video_mode.height);
+				if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+					context_vulkan->window_resize(0, video_mode.width, video_mode.height);
+				}
 #endif
 			}
 
@@ -1419,91 +1421,61 @@ Error OS_Windows::initialize(const VideoMode &p_desired, int p_video_driver, int
 		SetWindowPos(hWnd, video_mode.always_on_top ? HWND_TOPMOST : HWND_NOTOPMOST, 0, 0, 0, 0, SWP_NOMOVE | SWP_NOSIZE);
 	}
 
-#if defined(OPENGL_ENABLED)
-
-	bool gles3_context = true;
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		gles3_context = false;
-	}
-
-	bool editor = Engine::get_singleton()->is_editor_hint();
-	bool gl_initialization_error = false;
-
-	gl_context = NULL;
-	while (!gl_context) {
-		gl_context = memnew(ContextGL_Windows(hWnd, gles3_context));
-
-		if (gl_context->initialize() != OK) {
-			memdelete(gl_context);
-			gl_context = NULL;
-
-			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-				if (p_video_driver == VIDEO_DRIVER_GLES2) {
-					gl_initialization_error = true;
-					break;
-				}
-
-				p_video_driver = VIDEO_DRIVER_GLES2;
-				gles3_context = false;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
-	while (true) {
-		if (gles3_context) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					gles3_context = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
-				"Unable to initialize Video driver");
-		return ERR_UNAVAILABLE;
-	}
-
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
 	video_driver_index = p_video_driver;
+	print_verbose("Driver: " + String(get_video_driver_name(video_driver_index)) + " [" + itos(video_driver_index) + "]");
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	gl_context->set_use_vsync(video_mode.use_vsync);
-	set_vsync_via_compositor(video_mode.vsync_via_compositor);
+	// Init context and rendering device
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+
+		context_gles2 = memnew(ContextGL_Windows(hWnd, false));
+
+		if (context_gles2->initialize() != OK) {
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		context_gles2->set_use_vsync(video_mode.use_vsync);
+		set_vsync_via_compositor(video_mode.vsync_via_compositor);
+
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+		} else {
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+	}
 #endif
 #if defined(VULKAN_ENABLED)
-	video_driver_index = VIDEO_DRIVER_VULKAN;
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
 
-	context_vulkan = memnew(VulkanContextWindows);
-	context_vulkan->initialize();
-	context_vulkan->window_create(hWnd, hInstance, get_video_mode().width, get_video_mode().height);
+		context_vulkan = memnew(VulkanContextWindows);
+		if (context_vulkan->initialize() != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+		if (context_vulkan->window_create(hWnd, hInstance, get_video_mode().width, get_video_mode().height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
 
-	//temporary
-	rendering_device = memnew(RenderingDeviceVulkan);
-	rendering_device->initialize(context_vulkan);
-	RasterizerRD::make_current();
+		//temporary
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
+
+		RasterizerRD::make_current();
+	}
 #endif
+
 	visual_server = memnew(VisualServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, get_render_thread_mode() == RENDER_SEPARATE_THREAD));
@@ -1674,16 +1646,26 @@ void OS_Windows::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
-#ifdef OPENGL_ENABLED
-	if (gl_context)
-		memdelete(gl_context);
+
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+
+		if (context_gles2)
+			memdelete(context_gles2);
+
+	}
 #endif
-
 #if defined(VULKAN_ENABLED)
-	rendering_device->finalize();
-	memdelete(rendering_device);
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
 
-	memdelete(context_vulkan);
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+		}
+
+		if (context_vulkan)
+			memdelete(context_vulkan);
+	}
 #endif
 
 	if (user_proc) {
@@ -1985,9 +1967,10 @@ void OS_Windows::set_window_size(const Size2 p_size) {
 
 	video_mode.width = w;
 	video_mode.height = h;
-
 #if defined(VULKAN_ENABLED)
-	context_vulkan->window_resize(0, video_mode.width, video_mode.height);
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		context_vulkan->window_resize(0, video_mode.width, video_mode.height);
+	}
 #endif
 
 	if (video_mode.fullscreen) {
@@ -3142,22 +3125,30 @@ OS::LatinKeyboardVariant OS_Windows::get_latin_keyboard_variant() const {
 
 void OS_Windows::release_rendering_thread() {
 #if defined(OPENGL_ENABLED)
-	gl_context->release_current();
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->release_current();
+	}
 #endif
 }
 
 void OS_Windows::make_rendering_thread() {
 #if defined(OPENGL_ENABLED)
-	gl_context->make_current();
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->make_current();
+	}
 #endif
 }
 
 void OS_Windows::swap_buffers() {
 #if defined(OPENGL_ENABLED)
-	gl_context->swap_buffers();
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->swap_buffers();
+	}
 #endif
 #if defined(VULKAN_ENABLED)
-	context_vulkan->swap_buffers();
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		context_vulkan->swap_buffers();
+	}
 #endif
 }
 
@@ -3326,18 +3317,12 @@ String OS_Windows::get_joy_guid(int p_device) const {
 
 void OS_Windows::_set_use_vsync(bool p_enable) {
 #if defined(OPENGL_ENABLED)
-	if (gl_context)
-		gl_context->set_use_vsync(p_enable);
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		if (context_gles2)
+			context_gles2->set_use_vsync(p_enable);
+	}
 #endif
 }
-/*
-bool OS_Windows::is_vsync_enabled() const {
-
-	if (gl_context)
-		return gl_context->is_using_vsync();
-
-	return true;
-}*/
 
 OS::PowerState OS_Windows::get_power_state() {
 	return power_manager->get_power_state();
