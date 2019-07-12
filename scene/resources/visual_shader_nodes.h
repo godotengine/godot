@@ -1513,4 +1513,115 @@ public:
 	VisualShaderNodeFresnel();
 };
 
+///////////////////////////////////////
+/// Is
+///////////////////////////////////////
+
+class VisualShaderNodeIs : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeIs, VisualShaderNode);
+
+public:
+	enum Function {
+		FUNC_IS_INF,
+		FUNC_IS_NAN,
+	};
+
+protected:
+	Function func;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_function(Function p_func);
+	Function get_function() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+
+	VisualShaderNodeIs();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeIs::Function)
+
+///////////////////////////////////////
+/// Compare
+///////////////////////////////////////
+
+class VisualShaderNodeCompare : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeCompare, VisualShaderNode);
+
+public:
+	enum ComparsionType {
+		CTYPE_SCALAR,
+		CTYPE_VECTOR,
+		CTYPE_BOOLEAN,
+		CTYPE_TRANSFORM
+	};
+
+	enum Function {
+		FUNC_EQUAL,
+		FUNC_NOT_EQUAL,
+		FUNC_GREATER_THAN,
+		FUNC_GREATER_THAN_EQUAL,
+		FUNC_LESS_THAN,
+		FUNC_LESS_THAN_EQUAL,
+	};
+
+	enum Condition {
+		COND_ALL,
+		COND_ANY,
+	};
+
+protected:
+	ComparsionType ctype;
+	Function func;
+	Condition condition;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	void set_comparsion_type(ComparsionType p_func);
+	ComparsionType get_comparsion_type() const;
+
+	void set_function(Function p_func);
+	Function get_function() const;
+
+	void set_condition(Condition p_mode);
+	Condition get_condition() const;
+
+	virtual Vector<StringName> get_editable_properties() const;
+	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
+
+	VisualShaderNodeCompare();
+};
+
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::ComparsionType)
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::Function)
+VARIANT_ENUM_CAST(VisualShaderNodeCompare::Condition)
+
 #endif // VISUAL_SHADER_NODES_H
