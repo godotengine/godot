@@ -1974,15 +1974,12 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 			RD::AttachmentFormat af_color;
 			af_color.format = RD::DATA_FORMAT_R32_SFLOAT;
 			af_color.usage_flags = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-			af_color.samples = RenderingDevice::TEXTURE_SAMPLES_64;
 
 			attachments.push_back(af_color);
 
 			RD::AttachmentFormat af_depth;
-			af_depth.format = RD::DATA_FORMAT_D24_UNORM_S8_UINT;
 			af_depth.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_X8_D24_UNORM_PACK32, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_X8_D24_UNORM_PACK32 : RD::DATA_FORMAT_D32_SFLOAT;
 			af_depth.usage_flags = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-			af_depth.samples = RenderingDevice::TEXTURE_SAMPLES_64;
 
 			attachments.push_back(af_depth);
 

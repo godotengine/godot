@@ -549,7 +549,6 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 
 	line_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
 	line_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	line_material->set_line_width(3.0);
 	line_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 	line_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	line_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
