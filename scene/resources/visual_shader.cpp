@@ -67,6 +67,14 @@ String VisualShaderNode::generate_global(Shader::Mode p_mode, VisualShader::Type
 	return String();
 }
 
+String VisualShaderNode::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	return String();
+}
+
+String VisualShaderNode::generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	return String();
+}
+
 Vector<StringName> VisualShaderNode::get_editable_properties() const {
 	return Vector<StringName>();
 }
@@ -449,7 +457,10 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	ERR_FAIL_COND_V(node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_TRANSFORM, String());
 
 	StringBuilder global_code;
+	StringBuilder global_code_per_node;
+	Map<Type, StringBuilder> global_code_per_func;
 	StringBuilder code;
+	Set<StringName> classes;
 
 	global_code += String() + "shader_type canvas_item;\n";
 
@@ -474,7 +485,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	code += "\nvoid fragment() {\n";
 
 	Set<int> processed;
-	Error err = _write_node(p_type, global_code, code, default_tex_params, input_connections, output_connections, p_node, processed, true);
+	Error err = _write_node(p_type, global_code, global_code_per_node, global_code_per_func, code, default_tex_params, input_connections, output_connections, p_node, processed, true, classes);
 	ERR_FAIL_COND_V(err != OK, String());
 
 	if (node->get_output_port_type(p_port) == VisualShaderNode::PORT_TYPE_SCALAR) {
@@ -489,6 +500,7 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 	//set code secretly
 	global_code += "\n\n";
 	String final_code = global_code;
+	final_code += global_code_per_node;
 	final_code += code;
 	return final_code;
 }
@@ -833,7 +845,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview) const {
+Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBuilder &global_code_per_node, Map<Type, StringBuilder> &global_code_per_func, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview, Set<StringName> &r_classes) const {
 
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[node].node;
 
@@ -850,7 +862,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 				continue;
 			}
 
-			Error err = _write_node(type, global_code, code, def_tex_params, input_connections, output_connections, from_node, processed, for_preview);
+			Error err = _write_node(type, global_code, global_code_per_node, global_code_per_func, code, def_tex_params, input_connections, output_connections, from_node, processed, for_preview, r_classes);
 			if (err)
 				return err;
 		}
@@ -958,6 +970,14 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 	if (!skip_global) {
 		global_code += vsnode->generate_global(get_mode(), type, node);
+
+		if (!r_classes.has(vsnode->get_class_name())) {
+			global_code_per_node += vsnode->generate_global_per_node(get_mode(), type, node);
+			for (int i = 0; i < TYPE_MAX; i++) {
+				global_code_per_func[Type(i)] += vsnode->generate_global_per_func(get_mode(), Type(i), node);
+			}
+			r_classes.insert(vsnode->get_class_name());
+		}
 	}
 
 	//handle normally
@@ -976,8 +996,12 @@ void VisualShader::_update_shader() const {
 	dirty = false;
 
 	StringBuilder global_code;
+	StringBuilder global_code_per_node;
+	Map<Type, StringBuilder> global_code_per_func;
 	StringBuilder code;
 	Vector<VisualShader::DefaultTextureParam> default_tex_params;
+	Set<StringName> classes;
+	List<int> insertion_pos;
 	static const char *shader_mode_str[Shader::MODE_MAX] = { "spatial", "canvas_item", "particles" };
 
 	global_code += String() + "shader_type " + shader_mode_str[shader_mode] + ";\n";
@@ -1056,8 +1080,9 @@ void VisualShader::_update_shader() const {
 		code += "\nvoid " + String(func_name[i]) + "() {\n";
 
 		Set<int> processed;
-		Error err = _write_node(Type(i), global_code, code, default_tex_params, input_connections, output_connections, NODE_ID_OUTPUT, processed, false);
+		Error err = _write_node(Type(i), global_code, global_code_per_node, global_code_per_func, code, default_tex_params, input_connections, output_connections, NODE_ID_OUTPUT, processed, false, classes);
 		ERR_FAIL_COND(err != OK);
+		insertion_pos.push_back(code.get_string_length());
 
 		code += "}\n";
 	}
@@ -1065,7 +1090,13 @@ void VisualShader::_update_shader() const {
 	//set code secretly
 	global_code += "\n\n";
 	String final_code = global_code;
-	final_code += code;
+	final_code += global_code_per_node;
+	String tcode = code;
+	for (int i = 0; i < TYPE_MAX; i++) {
+		tcode = tcode.insert(insertion_pos[i], global_code_per_func[Type(i)]);
+	}
+	final_code += tcode;
+
 	const_cast<VisualShader *>(this)->set_code(final_code);
 	for (int i = 0; i < default_tex_params.size(); i++) {
 		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);

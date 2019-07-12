@@ -2229,8 +2229,9 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
 	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
 
-	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform."), -1, VisualShaderNode::PORT_TYPE_COLOR));
-	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform."), -1, VisualShaderNode::PORT_TYPE_COLOR));
+	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
+	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
+	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, VisualShaderNode::PORT_TYPE_COLOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
 
 	// TRANSFORM
 
