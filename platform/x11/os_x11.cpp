@@ -33,11 +33,17 @@
 
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
-//#include "drivers/gles2/rasterizer_gles2.h"
-//#include "drivers/gles3/rasterizer_gles3.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
+
+#if defined(OPENGL_ENABLED)
+#include "drivers/gles2/rasterizer_gles2.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
 #include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+#endif
+
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
@@ -97,15 +103,7 @@ void OS_X11::initialize_core() {
 int OS_X11::get_current_video_driver() const {
 	return video_driver_index;
 }
-#if 0
-static RID test_index_array;
-static RID test_vertex_array;
-static RID test_uniform_set;
-static RID test_pipeline;
-static RID test_framebuffer_pipeline;
-static RID test_framebuffer_uniform_set;
-static RID test_framebuffer;
-#endif
+
 Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
 	long im_event_mask = 0;
@@ -233,138 +231,14 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		XFree(imvalret);
 	}
 
-/*
-	char* windowid = getenv("GODOT_WINDOWID");
-	if (windowid) {
-
-		//freopen("/home/punto/stdout", "w", stdout);
-		//reopen("/home/punto/stderr", "w", stderr);
-		x11_window = atol(windowid);
-
-		XWindowAttributes xwa;
-		XGetWindowAttributes(x11_display,x11_window,&xwa);
-
-		current_videomode.width = xwa.width;
-		current_videomode.height = xwa.height;
-	};
-	*/
-
-// maybe contextgl wants to be in charge of creating the window
-#if defined(OPENGL_ENABLED)
-	if (getenv("DRI_PRIME") == NULL) {
-		int use_prime = -1;
-
-		if (getenv("PRIMUS_DISPLAY") ||
-				getenv("PRIMUS_libGLd") ||
-				getenv("PRIMUS_libGLa") ||
-				getenv("PRIMUS_libGL") ||
-				getenv("PRIMUS_LOAD_GLOBAL") ||
-				getenv("BUMBLEBEE_SOCKET")) {
-
-			print_verbose("Optirun/primusrun detected. Skipping GPU detection");
-			use_prime = 0;
-		}
-
-		if (getenv("LD_LIBRARY_PATH")) {
-			String ld_library_path(getenv("LD_LIBRARY_PATH"));
-			Vector<String> libraries = ld_library_path.split(":");
-
-			for (int i = 0; i < libraries.size(); ++i) {
-				if (FileAccess::exists(libraries[i] + "/libGL.so.1") ||
-						FileAccess::exists(libraries[i] + "/libGL.so")) {
-
-					print_verbose("Custom libGL override detected. Skipping GPU detection");
-					use_prime = 0;
-				}
-			}
-		}
-
-		if (use_prime == -1) {
-			print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
-			use_prime = detect_prime();
-		}
-
-		if (use_prime) {
-			print_line("Found discrete GPU, setting DRI_PRIME=1 to use it.");
-			print_line("Note: Set DRI_PRIME=0 in the environment to disable Godot from using the discrete GPU.");
-			setenv("DRI_PRIME", "1", 1);
-		}
-	}
-
-	ContextGL_X11::ContextType opengl_api_type = ContextGL_X11::GLES_3_0_COMPATIBLE;
-
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
-	}
-
-	bool editor = Engine::get_singleton()->is_editor_hint();
-	bool gl_initialization_error = false;
-
-	context_gl = NULL;
-	while (!context_gl) {
-		context_gl = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type));
-
-		if (context_gl->initialize() != OK) {
-			memdelete(context_gl);
-			context_gl = NULL;
-
-			if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-				if (p_video_driver == VIDEO_DRIVER_GLES2) {
-					gl_initialization_error = true;
-					break;
-				}
-
-				p_video_driver = VIDEO_DRIVER_GLES2;
-				opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
-	while (true) {
-		if (opengl_api_type == ContextGL_X11::GLES_3_0_COMPATIBLE) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		}
-
-		if (opengl_api_type == ContextGL_X11::GLES_2_0_COMPATIBLE) {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
-				"Unable to initialize Video driver");
-		return ERR_UNAVAILABLE;
-	}
-
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
 	video_driver_index = p_video_driver;
+	print_verbose("Driver: " + String(get_video_driver_name(video_driver_index)) + " [" + itos(video_driver_index) + "]");
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
 
-	context_gl->set_use_vsync(current_videomode.use_vsync);
+	//Create window
 
-#else
 	long visualMask = VisualScreenMask;
 	int numberOfVisuals;
 	XVisualInfo vInfoTemplate = {};
@@ -378,11 +252,7 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	windowAttributes.background_pixel = 0xFFFFFFFF;
 	windowAttributes.border_pixel = 0;
 	windowAttributes.event_mask = KeyPressMask | KeyReleaseMask | StructureNotifyMask | ExposureMask;
-	/*
-	   window = XCreateWindow(demo->display, RootWindow(display, vInfoTemplate.screen), 0, 0, demo->width,
-					     demo->height, 0, visualInfo->depth, InputOutput, visualInfo->visual,
-					     CWBackPixel | CWBorderPixel | CWEventMask | CWColormap, &windowAttributes);
-  */
+
 	unsigned long valuemask = CWBorderPixel | CWColormap | CWEventMask;
 	x11_window = XCreateWindow(x11_display, RootWindow(x11_display, visualInfo->screen), 0, 0, OS::get_singleton()->get_video_mode().width, OS::get_singleton()->get_video_mode().height, 0, visualInfo->depth, InputOutput, visualInfo->visual, valuemask, &windowAttributes);
 
@@ -395,261 +265,92 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	XFree(visualInfo);
 
-	context_vulkan = memnew(VulkanContextX11);
-	context_vulkan->initialize();
-	context_vulkan->window_create(x11_window, x11_display, get_video_mode().width, get_video_mode().height);
+	// Init context and rendering device
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		if (getenv("DRI_PRIME") == NULL) {
+			int use_prime = -1;
 
-	//temporary
-	rendering_device = memnew(RenderingDeviceVulkan);
-	rendering_device->initialize(context_vulkan);
-	RasterizerRD::make_current();
+			if (getenv("PRIMUS_DISPLAY") ||
+					getenv("PRIMUS_libGLd") ||
+					getenv("PRIMUS_libGLa") ||
+					getenv("PRIMUS_libGL") ||
+					getenv("PRIMUS_LOAD_GLOBAL") ||
+					getenv("BUMBLEBEE_SOCKET")) {
 
-	// test shader
-#if 0
-	//test code, remains for reference, ask before removing
-	RID shader;
-	{
-		RenderingDevice::ShaderStageSource vert;
-		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
-		vert.shader_source = "#version 450\n"
-							 "layout(location = 0) in vec4 vertex_pos;\n"
-							 "layout(location = 1) in vec2 uv_pos;\n"
-							 "layout(location = 0) out vec2 uv_interp;\n"
-							 "void main() { gl_Position = vertex_pos; uv_interp=uv_pos;\n }";
-		//"void main() { if (gl_VertexIndex==0) gl_Position=vec4(-0.8,-0.8,0.0,1.0); if (gl_VertexIndex==1) gl_Position=vec4(-0.8,-0.2,0.0,1.0); if (gl_VertexIndex==2) gl_Position=vec4(-0.2,-0.2,0.0,1.0); if (gl_VertexIndex==3) gl_Position=vec4(-0.2,-0.8,0.0,1.0);\n }";
+				print_verbose("Optirun/primusrun detected. Skipping GPU detection");
+				use_prime = 0;
+			}
 
-		RenderingDevice::ShaderStageSource frag;
-		frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
-		frag.shader_source = "#version 450\n"
-							 "layout (location = 0) in vec2 uv_interp;\n"
-							 "layout (location = 0) out vec4 uFragColor;\n"
-							 "layout (binding = 0) uniform sampler2D t;\n"
-							 "layout (push_constant, binding=1) uniform ColorMultiplier { vec4 color_mult; } color_multiplier;\n"
-							 "void main() { uFragColor=texture(t,uv_interp) * color_multiplier.color_mult; }\n";
+			if (getenv("LD_LIBRARY_PATH")) {
+				String ld_library_path(getenv("LD_LIBRARY_PATH"));
+				Vector<String> libraries = ld_library_path.split(":");
 
-		Vector<RenderingDevice::ShaderStageSource> source;
-		source.push_back(vert);
-		source.push_back(frag);
-		String error;
-		shader = rendering_device->shader_create_from_source(source, &error);
-		if (!shader.is_valid()) {
-			print_line("failed compilation: " + error);
+				for (int i = 0; i < libraries.size(); ++i) {
+					if (FileAccess::exists(libraries[i] + "/libGL.so.1") ||
+							FileAccess::exists(libraries[i] + "/libGL.so")) {
+
+						print_verbose("Custom libGL override detected. Skipping GPU detection");
+						use_prime = 0;
+					}
+				}
+			}
+
+			if (use_prime == -1) {
+				print_verbose("Detecting GPUs, set DRI_PRIME in the environment to override GPU detection logic.");
+				use_prime = detect_prime();
+			}
+
+			if (use_prime) {
+				print_line("Found discrete GPU, setting DRI_PRIME=1 to use it.");
+				print_line("Note: Set DRI_PRIME=0 in the environment to disable Godot from using the discrete GPU.");
+				setenv("DRI_PRIME", "1", 1);
+			}
+		}
+
+		ContextGL_X11::ContextType opengl_api_type = ContextGL_X11::GLES_2_0_COMPATIBLE;
+
+		context_gles2 = memnew(ContextGL_X11(x11_display, x11_window, current_videomode, opengl_api_type));
+
+		if (context_gles2->initialize() != OK) {
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		context_gles2->set_use_vsync(current_videomode.use_vsync);
+
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
 		} else {
-			print_line("compilation success");
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
-	}
-
-	RenderingDevice::VertexFormatID vertex_desc;
-	{
-
-		PoolVector<uint8_t> pv;
-		pv.resize(24 * 4);
-		{
-			PoolVector<uint8_t>::Write w = pv.write();
-			float *p32 = (float *)w.ptr();
-			p32[0] = -0.8;
-			p32[1] = -0.8;
-			p32[2] = 0.0;
-			p32[3] = 1.0;
-
-			p32[4] = 0.0;
-			p32[5] = 0.0;
-
-			p32[6] = -0.8;
-			p32[7] = -0.2;
-			p32[8] = 0.0;
-			p32[9] = 1.0;
-
-			p32[10] = 0.0;
-			p32[11] = 1.0;
-
-			p32[12] = -0.2;
-			p32[13] = -0.2;
-			p32[14] = 0.0;
-			p32[15] = 1.0;
-
-			p32[16] = 1.0;
-			p32[17] = 1.0;
-
-			p32[18] = -0.2;
-			p32[19] = -0.8;
-			p32[20] = 0.0;
-			p32[21] = 1.0;
-
-			p32[22] = 1.0;
-			p32[23] = 0.0;
-		}
-
-		RID vertex_buffer = rendering_device->vertex_buffer_create(pv.size(), pv);
-		Vector<RenderingDevice::VertexDescription> vdarr;
-		RenderingDevice::VertexDescription vd;
-		vd.format = RenderingDevice::DATA_FORMAT_R32G32B32A32_SFLOAT;
-		vd.stride = 4 * 6; //vertex/uv
-		vd.offset = 0;
-		vd.location = 0;
-		vdarr.push_back(vd);
-		vd.format = RenderingDevice::DATA_FORMAT_R32G32_SFLOAT;
-		vd.stride = 4 * 6; //vertex/uv
-		vd.offset = 4 * 4; //offset to UV
-		vd.location = 1;
-		vdarr.push_back(vd);
-
-		vertex_desc = rendering_device->vertex_format_create(vdarr);
-
-		Vector<RID> buffers;
-		buffers.push_back(vertex_buffer);
-		buffers.push_back(vertex_buffer);
-
-		test_vertex_array = rendering_device->vertex_array_create(4, vertex_desc, buffers);
-	}
-
-	RID test_framebuffer_tex_id;
-
-	{
-		RenderingDevice::TextureFormat tex_format;
-		tex_format.format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UNORM; //RenderingDevice::DATA_FORMAT_A8B8G8R8_UNORM_PACK32;
-		tex_format.width = 256;
-		tex_format.height = 256;
-		tex_format.mipmaps = 1;
-		tex_format.type = RenderingDevice::TEXTURE_TYPE_2D;
-		tex_format.usage_bits = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
-
-		test_framebuffer_tex_id = rendering_device->texture_create(tex_format, RenderingDevice::TextureView());
-
-		Vector<RID> ids;
-		ids.push_back(test_framebuffer_tex_id);
-
-		test_framebuffer = rendering_device->framebuffer_create(ids);
-	}
-
-	test_pipeline = rendering_device->render_pipeline_create(shader, rendering_device->framebuffer_get_format(test_framebuffer), vertex_desc, RenderingDevice::RENDER_PRIMITIVE_TRIANGLES, RenderingDevice::PipelineRasterizationState(), RenderingDevice::PipelineMultisampleState(), RenderingDevice::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled());
-
-	{
-
-		Ref<Image> img;
-		img.instance();
-		Error terr = img->load("../logo.png");
-		if (terr != OK) {
-			print_line("Cant load logo?");
-		}
-
-		img->convert(Image::FORMAT_RGBA8);
-
-		RenderingDevice::TextureFormat tex_format;
-		tex_format.format = RenderingDevice::DATA_FORMAT_R8G8B8A8_UNORM; //RenderingDevice::DATA_FORMAT_A8B8G8R8_UNORM_PACK32;
-		tex_format.width = img->get_width();
-		tex_format.height = img->get_height();
-		print_line("imgsize: " + Vector2(img->get_width(), img->get_height()));
-		tex_format.mipmaps = 1;
-		tex_format.type = RenderingDevice::TEXTURE_TYPE_2D;
-		tex_format.usage_bits = RenderingDevice::TEXTURE_USAGE_SAMPLING_BIT | RenderingDevice::TEXTURE_USAGE_CAN_UPDATE_BIT;
-
-		Vector<PoolVector<uint8_t> > initial_data;
-		initial_data.push_back(img->get_data());
-
-		RID tex_id = rendering_device->texture_create(tex_format, RenderingDevice::TextureView(), initial_data);
-		RID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
-
-		Vector<RenderingDevice::Uniform> uniform_description;
-
-		RenderingDevice::Uniform u;
-		u.type = RenderingDevice::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-		u.binding = 0;
-		u.ids.push_back(sampler);
-		u.ids.push_back(tex_id);
-
-		uniform_description.push_back(u);
-
-		test_uniform_set = rendering_device->uniform_set_create(uniform_description, shader, 0);
-	}
-
-	{
-		PoolVector<uint8_t> pv;
-		pv.resize(6 * 4);
-		{
-			PoolVector<uint8_t>::Write w = pv.write();
-			int *p32 = (int *)w.ptr();
-			p32[0] = 0;
-			p32[1] = 1;
-			p32[2] = 2;
-			p32[3] = 0;
-			p32[4] = 2;
-			p32[5] = 3;
-		}
-		RID index_buffer = rendering_device->index_buffer_create(6, RenderingDevice::INDEX_BUFFER_FORMAT_UINT32, pv);
-		test_index_array = rendering_device->index_array_create(index_buffer, 0, 6);
-	}
-
-	{
-
-		RID sampler = rendering_device->sampler_create(RenderingDevice::SamplerState());
-
-		Vector<RenderingDevice::Uniform> uniform_description;
-
-		RenderingDevice::Uniform u;
-		u.type = RenderingDevice::UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
-		u.binding = 0;
-		u.ids.push_back(sampler);
-		u.ids.push_back(test_framebuffer_tex_id);
-
-		uniform_description.push_back(u);
-
-		test_framebuffer_uniform_set = rendering_device->uniform_set_create(uniform_description, shader, 0);
-		test_framebuffer_pipeline = rendering_device->render_pipeline_create(shader, rendering_device->screen_get_framebuffer_format(), vertex_desc, RenderingDevice::RENDER_PRIMITIVE_TRIANGLES, RenderingDevice::PipelineRasterizationState(), RenderingDevice::PipelineMultisampleState(), RenderingDevice::PipelineDepthStencilState(), RenderingDevice::PipelineColorBlendState::create_disabled());
-	}
-
-#endif
-#if 0
-	//test code, remains for reference, ask before removing
-	Vector<RenderingDevice::ShaderStageSource> source;
-	RenderingDevice::ShaderStageSource frag;
-	frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
-	frag.shader_source = ""
-						 "#version 450\n"
-						 "#extension GL_ARB_separate_shader_objects : enable\n"
-						 "#extension GL_ARB_shading_language_420pack : enable\n"
-						 "layout (set =2, binding = 3) uniform sampler2D sampie;\n"
-						 "layout (set =2, binding = 4) uniform texture2D texie;\n"
-						 "layout (set =2, binding = 5) uniform sampler sampieonly;\n"
-						 "layout (set =2, binding = 6) uniform sampler2D sampiearr[2];\n"
-						 "layout (set =2, binding = 7) uniform texture2D texiearr[2];\n"
-						 "layout (set =2, binding = 8) uniform sampler sampieonlyarr[2];\n"
-						 "layout (set =2, binding = 9) uniform samplerBuffer sabufsa;\n"
-						 "layout (set =2, binding = 9) uniform textureBuffer texbufsa;\n"
-						 "layout (set=3,binding=1,rgba32f) uniform image2D img1;\n"
-						 "layout(std140, set=1,binding = 0) uniform buf {\n"
-						 "	mat4 MVP;\n"
-						 "	vec4 position[12*3];\n"
-						 "	vec4 attr[12*3];\n"
-						 "} ubuf;\n"
-						 "layout(std140, set=1,binding = 1) buffer popis {\n"
-						 "	int popitos;\n"
-						 "} popibuf;\n"
-						 "layout (location = 0) out vec4 uFragColor;\n"
-						 "		\n"
-						 "const vec3 lightDir= vec3(0.424, 0.566, 0.707);\n"
-						 "\n"
-						 "void main() {\n"
-						 "	uFragColor = texture(sampie, vec2(ubuf.attr[0].x));\n"
-						 "	uFragColor+= texture(sampler2D(texie,sampieonly), vec2(ubuf.attr[0].x));\n"
-						 "	uFragColor+= texture(sampiearr[1], vec2(ubuf.attr[0].x));\n"
-						 "	uFragColor+= texture(sampler2D(texiearr[1],sampieonlyarr[1]), vec2(ubuf.attr[0].x));\n"
-						 "	uFragColor+= texelFetch(sabufsa,0);\n"
-						 "	uFragColor+= texelFetch(samplerBuffer(texbufsa,sampieonly),0);\n"
-						 "	uFragColor+= texelFetch(texbufsa,0);\n"
-						 "	uFragColor.xy+= imageSize(img1);\n"
-						 "	uFragColor.x+= float(popibuf.popitos);\n"
-						 "}\n";
-	source.push_back(frag);
-	String error;
-	RID shader = rendering_device->shader_create_from_source(source, &error);
-	if (shader == RenderingDevice::INVALID_ID) {
-		print_line("failed compilation: " + error);
-	} else {
-		print_line("compilation success");
 	}
 #endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
 
+		context_vulkan = memnew(VulkanContextX11);
+		if (context_vulkan->initialize() != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+		if (context_vulkan->window_create(x11_window, x11_display, get_video_mode().width, get_video_mode().height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+
+		//temporary
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
+
+		RasterizerRD::make_current();
+	}
 #endif
 
 	visual_server = memnew(VisualServerRaster);
@@ -1094,14 +795,28 @@ void OS_X11::finalize() {
 	visual_server->finish();
 	memdelete(visual_server);
 
-	rendering_device->finalize();
-	memdelete(rendering_device);
-
-	memdelete(context_vulkan);
-
-	//memdelete(rasterizer);
-
 	memdelete(power_manager);
+
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+
+		if (context_gles2)
+			memdelete(context_gles2);
+
+	}
+#endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+		}
+
+		if (context_vulkan)
+			memdelete(context_vulkan);
+	}
+#endif
 
 	if (xrandr_handle)
 		dlclose(xrandr_handle);
@@ -1109,9 +824,6 @@ void OS_X11::finalize() {
 	XUnmapWindow(x11_display, x11_window);
 	XDestroyWindow(x11_display, x11_window);
 
-#if defined(OPENGL_ENABLED)
-	memdelete(context_gl);
-#endif
 	for (int i = 0; i < CURSOR_MAX; i++) {
 		if (cursors[i] != None)
 			XFreeCursor(x11_display, cursors[i]);
@@ -2350,7 +2062,12 @@ void OS_X11::_window_changed(XEvent *event) {
 
 	current_videomode.width = event->xconfigure.width;
 	current_videomode.height = event->xconfigure.height;
-	context_vulkan->window_resize(0, current_videomode.width, current_videomode.height);
+
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		context_vulkan->window_resize(0, current_videomode.width, current_videomode.height);
+	}
+#endif
 }
 
 void OS_X11::process_xevents() {
@@ -3302,48 +3019,32 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 }
 
 void OS_X11::release_rendering_thread() {
-
 #if defined(OPENGL_ENABLED)
-	context_gl->release_current();
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->release_current();
+	}
 #endif
 }
 
 void OS_X11::make_rendering_thread() {
-
 #if defined(OPENGL_ENABLED)
-	context_gl->make_current();
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->make_current();
+	}
 #endif
 }
 
 void OS_X11::swap_buffers() {
-
 #if defined(OPENGL_ENABLED)
-	context_gl->swap_buffers();
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->swap_buffers();
+	}
 #endif
-#if 0
-	Vector <Color> clear;
-	float color[4] = { 1, 0, 1, 1 };
-	clear.push_back(Color(0.5, 0.8, 0.2));
-	RenderingDevice::DrawListID cmd_list = rendering_device->draw_list_begin(test_framebuffer, RenderingDevice::INITIAL_ACTION_CLEAR, RenderingDevice::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear);
-	rendering_device->draw_list_bind_render_pipeline(cmd_list, test_pipeline);
-	rendering_device->draw_list_bind_index_array(cmd_list, test_index_array);
-	rendering_device->draw_list_bind_vertex_array(cmd_list, test_vertex_array);
-	rendering_device->draw_list_bind_uniform_set(cmd_list, test_uniform_set, 0);
-	rendering_device->draw_list_set_push_constant(cmd_list, color, 4 * 4);
-	rendering_device->draw_list_draw(cmd_list, true);
-	rendering_device->draw_list_end();
-
-	cmd_list = rendering_device->draw_list_begin_for_screen();
-	rendering_device->draw_list_bind_render_pipeline(cmd_list, test_framebuffer_pipeline);
-	rendering_device->draw_list_bind_index_array(cmd_list, test_index_array);
-	rendering_device->draw_list_bind_vertex_array(cmd_list, test_vertex_array);
-	rendering_device->draw_list_bind_uniform_set(cmd_list, test_framebuffer_uniform_set, 0);
-	rendering_device->draw_list_set_push_constant(cmd_list, color, 4 * 4);
-	rendering_device->draw_list_draw(cmd_list, true);
-	rendering_device->draw_list_end();
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		context_vulkan->swap_buffers();
+	}
 #endif
-
-	context_vulkan->swap_buffers();
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
@@ -3531,19 +3232,13 @@ String OS_X11::get_joy_guid(int p_device) const {
 
 void OS_X11::_set_use_vsync(bool p_enable) {
 #if defined(OPENGL_ENABLED)
-	if (context_gl)
-		context_gl->set_use_vsync(p_enable);
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		if (context_gles2)
+			context_gles2->set_use_vsync(p_enable);
+	}
 #endif
 }
-/*
-bool OS_X11::is_vsync_enabled() const {
 
-	if (context_gl)
-		return context_gl->is_using_vsync();
-
-	return true;
-}
-*/
 void OS_X11::set_context(int p_context) {
 
 	XClassHint *classHint = XAllocClassHint();
