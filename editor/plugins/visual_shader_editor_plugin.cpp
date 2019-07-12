@@ -1379,6 +1379,9 @@ void VisualShaderEditor::_delete_request(int which) {
 	undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, which);
 	undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, which), which);
 
+	undo_redo->add_do_method(this, "_clear_buffer");
+	undo_redo->add_undo_method(this, "_clear_buffer");
+
 	// restore size, inputs and outputs if node is group
 	VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
 	if (group) {
@@ -1533,12 +1536,32 @@ void VisualShaderEditor::_node_changed(int p_id) {
 	}
 }
 
-void VisualShaderEditor::_duplicate_nodes() {
+void VisualShaderEditor::_dup_update_excluded(int p_type, Set<int> &r_excluded) {
+	r_excluded.clear();
+	VisualShader::Type type = (VisualShader::Type)p_type;
 
-	VisualShader::Type type = VisualShader::Type(edit_type->get_selected());
+	for (int i = 0; i < graph->get_child_count(); i++) {
 
-	List<int> nodes;
-	Set<int> excluded;
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+		if (gn) {
+			int id = String(gn->get_name()).to_int();
+			Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
+			Ref<VisualShaderNodeOutput> output = node;
+			if (output.is_valid()) {
+				r_excluded.insert(id);
+				continue;
+			}
+			r_excluded.insert(id);
+		}
+	}
+}
+
+void VisualShaderEditor::_dup_copy_nodes(int p_type, List<int> &r_nodes, Set<int> &r_excluded) {
+
+	VisualShader::Type type = (VisualShader::Type)p_type;
+
+	selection_center.x = 0.0f;
+	selection_center.y = 0.0f;
 
 	for (int i = 0; i < graph->get_child_count(); i++) {
 
@@ -1548,33 +1571,37 @@ void VisualShaderEditor::_duplicate_nodes() {
 			Ref<VisualShaderNode> node = visual_shader->get_node(type, id);
 			Ref<VisualShaderNodeOutput> output = node;
 			if (output.is_valid()) { // can't duplicate output
-				excluded.insert(id);
+				r_excluded.insert(id);
 				continue;
 			}
 			if (node.is_valid() && gn->is_selected()) {
-				nodes.push_back(id);
+				Vector2 pos = visual_shader->get_node_position(type, id);
+				selection_center += pos;
+				r_nodes.push_back(id);
 			}
-			excluded.insert(id);
+			r_excluded.insert(id);
 		}
 	}
 
-	if (nodes.empty())
-		return;
+	selection_center /= (float)r_nodes.size();
+}
 
-	undo_redo->create_action(TTR("Duplicate Nodes"));
+void VisualShaderEditor::_dup_paste_nodes(int p_type, List<int> &r_nodes, Set<int> &r_excluded, const Vector2 &p_offset, bool p_select) {
+
+	VisualShader::Type type = (VisualShader::Type)p_type;
 
 	int base_id = visual_shader->get_valid_node_id(type);
 	int id_from = base_id;
 	Map<int, int> connection_remap;
 
-	for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+	for (List<int>::Element *E = r_nodes.front(); E; E = E->next()) {
 
 		connection_remap[E->get()] = id_from;
 		Ref<VisualShaderNode> node = visual_shader->get_node(type, E->get());
 
 		Ref<VisualShaderNode> dupli = node->duplicate();
 
-		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, dupli, visual_shader->get_node_position(type, E->get()) + Vector2(10, 10) * EDSCALE, id_from);
+		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, dupli, visual_shader->get_node_position(type, E->get()) + p_offset, id_from);
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
 
 		// duplicate size, inputs and outputs if node is group
@@ -1606,19 +1633,69 @@ void VisualShaderEditor::_duplicate_nodes() {
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
 
-	// reselect duplicated nodes by excluding the other ones
-	for (int i = 0; i < graph->get_child_count(); i++) {
+	if (p_select) {
+		// reselect duplicated nodes by excluding the other ones
+		for (int i = 0; i < graph->get_child_count(); i++) {
 
-		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
-		if (gn) {
-			int id = String(gn->get_name()).to_int();
-			if (!excluded.has(id)) {
-				gn->set_selected(true);
-			} else {
-				gn->set_selected(false);
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_child(i));
+			if (gn) {
+				int id = String(gn->get_name()).to_int();
+				if (!r_excluded.has(id)) {
+					gn->set_selected(true);
+				} else {
+					gn->set_selected(false);
+				}
 			}
 		}
 	}
+}
+
+void VisualShaderEditor::_clear_buffer() {
+
+	copy_nodes_buffer.clear();
+	copy_nodes_excluded_buffer.clear();
+}
+
+void VisualShaderEditor::_duplicate_nodes() {
+
+	int type = edit_type->get_selected();
+
+	List<int> nodes;
+	Set<int> excluded;
+
+	_dup_copy_nodes(type, nodes, excluded);
+
+	if (nodes.empty())
+		return;
+
+	undo_redo->create_action(TTR("Duplicate Nodes"));
+
+	_dup_paste_nodes(type, nodes, excluded, Vector2(10, 10) * EDSCALE, true);
+}
+
+void VisualShaderEditor::_copy_nodes() {
+
+	copy_type = edit_type->get_selected();
+
+	_clear_buffer();
+
+	_dup_copy_nodes(copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer);
+}
+
+void VisualShaderEditor::_paste_nodes() {
+
+	if (copy_nodes_buffer.empty())
+		return;
+
+	int type = edit_type->get_selected();
+
+	undo_redo->create_action(TTR("Paste Nodes"));
+
+	float scale = graph->get_zoom();
+
+	_dup_paste_nodes(type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + graph->get_local_mouse_position() / scale - selection_center), false);
+
+	_dup_update_excluded(type, copy_nodes_excluded_buffer); // to prevent selection of previous copies at new paste
 }
 
 void VisualShaderEditor::_on_nodes_delete() {
@@ -1646,6 +1723,9 @@ void VisualShaderEditor::_on_nodes_delete() {
 
 		undo_redo->add_do_method(visual_shader.ptr(), "remove_node", type, F->get());
 		undo_redo->add_undo_method(visual_shader.ptr(), "add_node", type, node, visual_shader->get_node_position(type, F->get()), F->get());
+
+		undo_redo->add_do_method(this, "_clear_buffer");
+		undo_redo->add_undo_method(this, "_clear_buffer");
 
 		// restore size, inputs and outputs if node is group
 		VisualShaderNodeGroupBase *group = Object::cast_to<VisualShaderNodeGroupBase>(node.ptr());
@@ -1691,6 +1771,10 @@ void VisualShaderEditor::_on_nodes_delete() {
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
+
+	copy_nodes_buffer.clear();
+	copy_nodes_excluded_buffer.clear();
+
 	_update_options_menu();
 	_update_graph();
 }
@@ -1884,6 +1968,8 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_line_edit_changed", &VisualShaderEditor::_line_edit_changed);
 	ClassDB::bind_method("_port_name_focus_out", &VisualShaderEditor::_port_name_focus_out);
 	ClassDB::bind_method("_duplicate_nodes", &VisualShaderEditor::_duplicate_nodes);
+	ClassDB::bind_method("_copy_nodes", &VisualShaderEditor::_copy_nodes);
+	ClassDB::bind_method("_paste_nodes", &VisualShaderEditor::_paste_nodes);
 	ClassDB::bind_method("_mode_selected", &VisualShaderEditor::_mode_selected);
 	ClassDB::bind_method("_input_select_item", &VisualShaderEditor::_input_select_item);
 	ClassDB::bind_method("_preview_select_port", &VisualShaderEditor::_preview_select_port);
@@ -1898,6 +1984,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_remove_output_port", &VisualShaderEditor::_remove_output_port);
 	ClassDB::bind_method("_node_resized", &VisualShaderEditor::_node_resized);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
+	ClassDB::bind_method("_clear_buffer", &VisualShaderEditor::_clear_buffer);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -1943,6 +2030,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->connect("node_selected", this, "_node_selected");
 	graph->connect("scroll_offset_changed", this, "_scroll_changed");
 	graph->connect("duplicate_nodes_request", this, "_duplicate_nodes");
+	graph->connect("copy_nodes_request", this, "_copy_nodes");
+	graph->connect("paste_nodes_request", this, "_paste_nodes");
 	graph->connect("delete_nodes_request", this, "_on_nodes_delete");
 	graph->connect("gui_input", this, "_graph_gui_input");
 	graph->connect("connection_to_empty", this, "_connection_to_empty");
