@@ -688,8 +688,6 @@ void SceneTreeEditor::set_selected(Node *p_node, bool p_emit_selected) {
 		tree->ensure_cursor_is_visible();
 
 	} else {
-		if (!p_node)
-			selected = NULL;
 		_update_tree();
 		selected = p_node;
 	}
