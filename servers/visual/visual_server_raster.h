@@ -202,6 +202,7 @@ public:
 
 	BIND3(shader_set_default_texture_param, RID, const StringName &, RID)
 	BIND2RC(RID, shader_get_default_texture_param, RID, const StringName &)
+	BIND2RC(Variant, shader_get_param_default, RID, const StringName &)
 
 	/* COMMON MATERIAL API */
 
@@ -212,10 +213,8 @@ public:
 
 	BIND3(material_set_param, RID, const StringName &, const Variant &)
 	BIND2RC(Variant, material_get_param, RID, const StringName &)
-	BIND2RC(Variant, material_get_param_default, RID, const StringName &)
 
 	BIND2(material_set_render_priority, RID, int)
-	BIND2(material_set_line_width, RID, float)
 	BIND2(material_set_next_pass, RID, RID)
 
 	/* MESH API */
