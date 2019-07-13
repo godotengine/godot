@@ -18,12 +18,14 @@
 			<argument index="1" name="create_visual_debug" type="bool" default="false">
 			</argument>
 			<description>
+				Bakes the lightmaps within the currently edited scene.
 			</description>
 		</method>
 		<method name="debug_bake">
 			<return type="void">
 			</return>
 			<description>
+				Executes a dry run bake of lightmaps within the currently edited scene.
 			</description>
 		</method>
 	</methods>
@@ -32,9 +34,7 @@
 			Grid subdivision size for lightmapper calculation. Default value of [code]0.25[/code] will work for most cases. Increase for better lighting on small details or if your scene is very large.
 		</member>
 		<member name="bake_energy" type="float" setter="set_energy" getter="get_energy">
-		</member>
-		<member name="bake_extents" type="Vector3" setter="set_extents" getter="get_extents">
-			Size of affected area.
+			Multiplies the light sources' intensity by this value. For instance, if the value is set to 2, lights will be twice as bright. If the value is set to 0.5, lights will be half as bright.
 		</member>
 		<member name="bake_hdr" type="bool" setter="set_hdr" getter="is_hdr">
 			If [code]true[/code], lightmap can capture light values greater than [code]1.0[/code]. Turning this off will result in a smaller lightmap. Default value:[code]false[/code].
@@ -43,6 +43,7 @@
 			Lightmapping mode. See [enum BakeMode].
 		</member>
 		<member name="bake_propagation" type="float" setter="set_propagation" getter="get_propagation">
+			Defines how far the light will travel before it is no longer effective. The higher the number, the farther the light will travel. For instance, if the value is set to 2, the light will go twice as far. If the value is set to 0.5, the light will only go half as far.
 		</member>
 		<member name="bake_quality" type="int" setter="set_bake_quality" getter="get_bake_quality" enum="BakedLightmap.BakeQuality">
 			Three quality modes are available. Higher quality requires more rendering time. See [enum BakeQuality].
