@@ -2607,7 +2607,7 @@ int EditorNode::_next_unsaved_scene(bool p_valid_filename, int p_start) {
 		if (!editor_data.get_edited_scene_root(i))
 			continue;
 		int current = editor_data.get_edited_scene();
-		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
+		bool unsaved = i == current ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
 		if (unsaved) {
 			String scene_filename = editor_data.get_edited_scene_root(i)->get_filename();
 			if (p_valid_filename && scene_filename.length() == 0)
