@@ -371,6 +371,8 @@ private:
 	List<CanvasItem *> drag_selection;
 	int dragged_guide_index;
 	Point2 dragged_guide_pos;
+	bool is_hovering_h_guide;
+	bool is_hovering_v_guide;
 
 	bool updating_value_dialog;
 
