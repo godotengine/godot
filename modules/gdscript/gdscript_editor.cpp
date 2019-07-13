@@ -161,6 +161,10 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 
 				funcs[cl->subclasses[i]->functions[j]->line] = String(cl->subclasses[i]->name) + "." + String(cl->subclasses[i]->functions[j]->name);
 			}
+			for (int j = 0; j < cl->subclasses[i]->static_functions.size(); j++) {
+
+				funcs[cl->subclasses[i]->static_functions[j]->line] = String(cl->subclasses[i]->name) + "." + String(cl->subclasses[i]->static_functions[j]->name);
+			}
 		}
 
 		for (Map<int, String>::Element *E = funcs.front(); E; E = E->next()) {
