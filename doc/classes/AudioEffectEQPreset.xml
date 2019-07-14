@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioEffectEQPreset" inherits="AudioEffectEQ" category="Core" version="3.2">
+	<brief_description>
+		Base class for audio equalizers with a preset of bands.
+		It is unlikely that this base class will be directly used; instead, see [AudioEffectEQ6], [AudioEffectEQ10] or [AudioEffectEQ21].
+		In case a greater level of customization is needed, see [AudioEffectEQCustom].
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

@@ -255,7 +255,7 @@ void AudioEffectEQCustom::_get_property_list(List<PropertyInfo> *p_list) const {
 void AudioEffectEQCustom::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_band_count", "count"), &AudioEffectEQCustom::set_band_count);
-	ClassDB::bind_method(D_METHOD("set_band_frequency", "frequency"), &AudioEffectEQCustom::set_band_frequency);
+	ClassDB::bind_method(D_METHOD("set_band_frequency", "band_idx", "frequency"), &AudioEffectEQCustom::set_band_frequency);
 }
 
 AudioEffectEQCustom::AudioEffectEQCustom() {
