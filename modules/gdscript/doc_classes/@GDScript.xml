@@ -604,6 +604,29 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="lerp_angle">
+			<return type="float">
+			</return>
+			<argument index="0" name="from" type="float">
+			</argument>
+			<argument index="1" name="to" type="float">
+			</argument>
+			<argument index="2" name="weight" type="float">
+			</argument>
+			<description>
+				Linearly interpolates between two angles (in radians) by a normalized value.
+				Similar to [method lerp] but interpolate correctly when the angles wrap around [constant @GDScript.TAU].
+				[codeblock]
+				extends Sprite
+				var elapsed = 0.0
+				func _process(delta):
+					var min_angle = deg2rad(0.0)
+					var max_angle = deg2rad(90.0)
+					rotation = lerp_angle(min_angle, max_angle, elapsed)
+					elapsed += delta
+				[/codeblock]
+			</description>
+		</method>
 		<method name="linear2db">
 			<return type="float">
 			</return>

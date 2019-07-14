@@ -185,6 +185,12 @@ namespace Godot
             return from + (to - from) * weight;
         }
 
+        public static real_t LerpAngle(real_t from, real_t to, real_t weight) {
+            real_t difference = (to - from) % Mathf.Tau;
+            real_t distance = ((2 * difference) % Mathf.Tau) - difference;
+            return from + distance * weight;
+        }
+
         public static real_t Log(real_t s)
         {
             return (real_t)Math.Log(s);

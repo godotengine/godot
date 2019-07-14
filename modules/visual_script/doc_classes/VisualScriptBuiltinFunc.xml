@@ -212,8 +212,11 @@
 			var t = clamp((weight - from) / (to - from), 0.0, 1.0)
 			return t * t * (3.0 - 2.0 * t)
 			[/codeblock]
+		<constant name="MATH_POSMOD" value="65" enum="BuiltinFunc">
 		</constant>
-		<constant name="FUNC_MAX" value="65" enum="BuiltinFunc">
+		<constant name="MATH_LERP_ANGLE" value="66" enum="BuiltinFunc">
+		</constant>
+		<constant name="FUNC_MAX" value="67" enum="BuiltinFunc">
 			Represents the size of the [enum BuiltinFunc] enum.
 		</constant>
 	</constants>

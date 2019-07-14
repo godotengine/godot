@@ -215,6 +215,17 @@ public:
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
 
+	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
+		double difference = fmod(p_to - p_from, Math_TAU);
+		double distance = fmod(2.0 * difference, Math_TAU) - difference;
+		return p_from + distance * p_weight;
+	}
+	static _ALWAYS_INLINE_ float lerp_angle(float p_from, float p_to, float p_weight) {
+		float difference = fmod(p_to - p_from, (float)Math_TAU);
+		float distance = fmod(2.0f * difference, (float)Math_TAU) - difference;
+		return p_from + distance * p_weight;
+	}
+
 	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
 	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
 
