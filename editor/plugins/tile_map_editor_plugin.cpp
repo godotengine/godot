@@ -1467,15 +1467,28 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			return true;
 		}
-		if (ED_IS_SHORTCUT("tile_map_editor/mirror_x", p_event)) {
-			flip_h = !flip_h;
-			_update_palette();
+		if (ED_IS_SHORTCUT("tile_map_editor/rotate_left", p_event)) {
+			_rotate(-1);
 			CanvasItemEditor::get_singleton()->update_viewport();
 			return true;
 		}
-		if (ED_IS_SHORTCUT("tile_map_editor/mirror_y", p_event)) {
-			flip_v = !flip_v;
-			_update_palette();
+		if (ED_IS_SHORTCUT("tile_map_editor/rotate_right", p_event)) {
+			_rotate(1);
+			CanvasItemEditor::get_singleton()->update_viewport();
+			return true;
+		}
+		if (ED_IS_SHORTCUT("tile_map_editor/flip_horizontal", p_event)) {
+			_flip_horizontal();
+			CanvasItemEditor::get_singleton()->update_viewport();
+			return true;
+		}
+		if (ED_IS_SHORTCUT("tile_map_editor/flip_vertical", p_event)) {
+			_flip_vertical();
+			CanvasItemEditor::get_singleton()->update_viewport();
+			return true;
+		}
+		if (ED_IS_SHORTCUT("tile_map_editor/clear_transform", p_event)) {
+			_clear_transform();
 			CanvasItemEditor::get_singleton()->update_viewport();
 			return true;
 		}
@@ -1917,8 +1930,6 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("tile_map_editor/erase_selection", TTR("Erase Selection"), KEY_DELETE);
 	ED_SHORTCUT("tile_map_editor/find_tile", TTR("Find Tile"), KEY_MASK_CMD + KEY_F);
 	ED_SHORTCUT("tile_map_editor/transpose", TTR("Transpose"), KEY_T);
-	ED_SHORTCUT("tile_map_editor/mirror_x", TTR("Mirror X"), KEY_A);
-	ED_SHORTCUT("tile_map_editor/mirror_y", TTR("Mirror Y"), KEY_S);
 
 	HBoxContainer *tool_hb = memnew(HBoxContainer);
 	add_child(tool_hb);
@@ -2044,30 +2055,35 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	rotate_left_button->set_tooltip(TTR("Rotate Left"));
 	rotate_left_button->set_focus_mode(FOCUS_NONE);
 	rotate_left_button->connect("pressed", this, "_rotate", varray(-1));
+	rotate_left_button->set_shortcut(ED_SHORTCUT("tile_map_editor/rotate_left", TTR("Rotate Left"), KEY_A));
 	tool_hb->add_child(rotate_left_button);
 
 	rotate_right_button = memnew(ToolButton);
 	rotate_right_button->set_tooltip(TTR("Rotate Right"));
 	rotate_right_button->set_focus_mode(FOCUS_NONE);
 	rotate_right_button->connect("pressed", this, "_rotate", varray(1));
+	rotate_right_button->set_shortcut(ED_SHORTCUT("tile_map_editor/rotate_right", TTR("Rotate Right"), KEY_S));
 	tool_hb->add_child(rotate_right_button);
 
 	flip_horizontal_button = memnew(ToolButton);
 	flip_horizontal_button->set_tooltip(TTR("Flip Horizontally"));
 	flip_horizontal_button->set_focus_mode(FOCUS_NONE);
 	flip_horizontal_button->connect("pressed", this, "_flip_horizontal");
+	flip_horizontal_button->set_shortcut(ED_SHORTCUT("tile_map_editor/flip_horizontal", TTR("Flip Horizontally"), KEY_X));
 	tool_hb->add_child(flip_horizontal_button);
 
 	flip_vertical_button = memnew(ToolButton);
 	flip_vertical_button->set_tooltip(TTR("Flip Vertically"));
 	flip_vertical_button->set_focus_mode(FOCUS_NONE);
 	flip_vertical_button->connect("pressed", this, "_flip_vertical");
+	flip_vertical_button->set_shortcut(ED_SHORTCUT("tile_map_editor/flip_vertical", TTR("Flip Vertically"), KEY_Z));
 	tool_hb->add_child(flip_vertical_button);
 
 	clear_transform_button = memnew(ToolButton);
 	clear_transform_button->set_tooltip(TTR("Clear Transform"));
 	clear_transform_button->set_focus_mode(FOCUS_NONE);
 	clear_transform_button->connect("pressed", this, "_clear_transform");
+	clear_transform_button->set_shortcut(ED_SHORTCUT("tile_map_editor/clear_transform", TTR("Clear Transform"), KEY_W));
 	tool_hb->add_child(clear_transform_button);
 
 	clear_transform_button->set_disabled(true);
