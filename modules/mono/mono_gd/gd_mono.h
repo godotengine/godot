@@ -104,6 +104,8 @@ class GDMono {
 
 	void _domain_assemblies_cleanup(uint32_t p_domain_id);
 
+	bool _are_api_assemblies_out_of_sync();
+
 	bool _load_corlib_assembly();
 	bool _load_core_api_assembly();
 #ifdef TOOLS_ENABLED
@@ -112,11 +114,8 @@ class GDMono {
 #endif
 	bool _load_project_assembly();
 
-	bool _load_api_assemblies();
-
-#ifdef TOOLS_ENABLED
-	String _get_api_assembly_metadata_path();
-#endif
+	bool _try_load_api_assemblies();
+	void _load_api_assemblies();
 
 	void _install_trace_listener();
 
@@ -157,9 +156,8 @@ public:
 #endif
 
 #ifdef TOOLS_ENABLED
-	void metadata_set_api_assembly_invalidated(APIAssembly::Type p_api_type, bool p_invalidated);
-	bool metadata_is_api_assembly_invalidated(APIAssembly::Type p_api_type);
-	String get_invalidated_api_assembly_path(APIAssembly::Type p_api_type);
+	bool copy_prebuilt_api_assembly(APIAssembly::Type p_api_type);
+	String update_api_assemblies_from_prebuilt();
 #endif
 
 	static GDMono *get_singleton() { return singleton; }
@@ -203,6 +201,7 @@ public:
 	Error finalize_and_unload_domain(MonoDomain *p_domain);
 
 	void initialize();
+	void initialize_load_assemblies();
 
 	GDMono();
 	~GDMono();

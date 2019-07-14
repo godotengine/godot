@@ -30,7 +30,6 @@
 
 #include "editor_internal_calls.h"
 
-#include "core/message_queue.h"
 #include "core/os/os.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
@@ -231,22 +230,32 @@ uint32_t godot_icall_GodotSharpExport_GetExportedAssemblyDependencies(MonoString
 	return GodotSharpExport::get_exported_assembly_dependencies(project_dll_name, project_dll_src_path, build_config, custom_lib_dir, dependencies);
 }
 
-float godot_icall_Internal_EditorScale() {
+float godot_icall_Globals_EditorScale() {
 	return EDSCALE;
 }
 
-MonoObject *godot_icall_Internal_GlobalDef(MonoString *p_setting, MonoObject *p_default_value, MonoBoolean p_restart_if_changed) {
+MonoObject *godot_icall_Globals_GlobalDef(MonoString *p_setting, MonoObject *p_default_value, MonoBoolean p_restart_if_changed) {
 	String setting = GDMonoMarshal::mono_string_to_godot(p_setting);
 	Variant default_value = GDMonoMarshal::mono_object_to_variant(p_default_value);
 	Variant result = _GLOBAL_DEF(setting, default_value, (bool)p_restart_if_changed);
 	return GDMonoMarshal::variant_to_mono_object(result);
 }
 
-MonoObject *godot_icall_Internal_EditorDef(MonoString *p_setting, MonoObject *p_default_value, MonoBoolean p_restart_if_changed) {
+MonoObject *godot_icall_Globals_EditorDef(MonoString *p_setting, MonoObject *p_default_value, MonoBoolean p_restart_if_changed) {
 	String setting = GDMonoMarshal::mono_string_to_godot(p_setting);
 	Variant default_value = GDMonoMarshal::mono_object_to_variant(p_default_value);
-	Variant result = _GLOBAL_DEF(setting, default_value, (bool)p_restart_if_changed);
+	Variant result = _EDITOR_DEF(setting, default_value, (bool)p_restart_if_changed);
 	return GDMonoMarshal::variant_to_mono_object(result);
+}
+
+MonoString *godot_icall_Globals_TTR(MonoString *p_text) {
+	String text = GDMonoMarshal::mono_string_to_godot(p_text);
+	return GDMonoMarshal::mono_string_from_godot(TTR(text));
+}
+
+MonoString *godot_icall_Internal_UpdateApiAssembliesFromPrebuilt() {
+	String error_str = GDMono::get_singleton()->update_api_assemblies_from_prebuilt();
+	return GDMonoMarshal::mono_string_from_godot(error_str);
 }
 
 MonoString *godot_icall_Internal_FullTemplatesDir() {
@@ -267,18 +276,6 @@ MonoBoolean godot_icall_Internal_IsOsxAppBundleInstalled(MonoString *p_bundle_id
 	(void)p_bundle_id; // UNUSED
 	return (MonoBoolean) false;
 #endif
-}
-
-MonoBoolean godot_icall_Internal_MetadataIsApiAssemblyInvalidated(int32_t p_api_type) {
-	return GDMono::get_singleton()->metadata_is_api_assembly_invalidated((APIAssembly::Type)p_api_type);
-}
-
-void godot_icall_Internal_MetadataSetApiAssemblyInvalidated(int32_t p_api_type, MonoBoolean p_invalidated) {
-	GDMono::get_singleton()->metadata_set_api_assembly_invalidated((APIAssembly::Type)p_api_type, (bool)p_invalidated);
-}
-
-MonoBoolean godot_icall_Internal_IsMessageQueueFlushing() {
-	return (MonoBoolean)MessageQueue::get_singleton()->is_flushing();
 }
 
 MonoBoolean godot_icall_Internal_GodotIs32Bits() {
@@ -402,15 +399,10 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.GodotSharpExport::internal_GetExportedAssemblyDependencies", (void *)godot_icall_GodotSharpExport_GetExportedAssemblyDependencies);
 
 	// Internals
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorScale", (void *)godot_icall_Internal_EditorScale);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_GlobalDef", (void *)godot_icall_Internal_GlobalDef);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorDef", (void *)godot_icall_Internal_EditorDef);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_UpdateApiAssembliesFromPrebuilt", (void *)godot_icall_Internal_UpdateApiAssembliesFromPrebuilt);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_FullTemplatesDir", (void *)godot_icall_Internal_FullTemplatesDir);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_SimplifyGodotPath", (void *)godot_icall_Internal_SimplifyGodotPath);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_IsOsxAppBundleInstalled", (void *)godot_icall_Internal_IsOsxAppBundleInstalled);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_MetadataIsApiAssemblyInvalidated", (void *)godot_icall_Internal_MetadataIsApiAssemblyInvalidated);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_MetadataSetApiAssemblyInvalidated", (void *)godot_icall_Internal_MetadataSetApiAssemblyInvalidated);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_IsMessageQueueFlushing", (void *)godot_icall_Internal_IsMessageQueueFlushing);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GodotIs32Bits", (void *)godot_icall_Internal_GodotIs32Bits);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GodotIsRealTDouble", (void *)godot_icall_Internal_GodotIsRealTDouble);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GodotMainIteration", (void *)godot_icall_Internal_GodotMainIteration);
@@ -423,6 +415,12 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorNodeShowScriptScreen", (void *)godot_icall_Internal_EditorNodeShowScriptScreen);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GetScriptsMetadataOrNothing", (void *)godot_icall_Internal_GetScriptsMetadataOrNothing);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_MonoWindowsInstallRoot", (void *)godot_icall_Internal_MonoWindowsInstallRoot);
+
+	// Globals
+	mono_add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", (void *)godot_icall_Globals_EditorScale);
+	mono_add_internal_call("GodotTools.Internals.Globals::internal_GlobalDef", (void *)godot_icall_Globals_GlobalDef);
+	mono_add_internal_call("GodotTools.Internals.Globals::internal_EditorDef", (void *)godot_icall_Globals_EditorDef);
+	mono_add_internal_call("GodotTools.Internals.Globals::internal_TTR", (void *)godot_icall_Globals_TTR);
 
 	// Utils.OS
 	mono_add_internal_call("GodotTools.Utils.OS::GetPlatformName", (void *)godot_icall_Utils_OS_GetPlatformName);

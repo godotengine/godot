@@ -1,9 +1,9 @@
 using Godot;
 using System;
-using System.Collections.Generic;
 using Godot.Collections;
 using GodotTools.Internals;
 using GodotTools.ProjectEditor;
+using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using Directory = GodotTools.Utils.Directory;
 
@@ -26,7 +26,7 @@ namespace GodotTools
 
         public static void AddItem(string projectPath, string itemType, string include)
         {
-            if (!(bool) Internal.GlobalDef("mono/project/auto_update_project", true))
+            if (!(bool) GlobalDef("mono/project/auto_update_project", true))
                 return;
 
             ProjectUtils.AddItemToProjectChecked(projectPath, itemType, include);

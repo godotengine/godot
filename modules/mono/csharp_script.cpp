@@ -114,14 +114,19 @@ void CSharpLanguage::init() {
 	gdmono = memnew(GDMono);
 	gdmono->initialize();
 
-#ifndef MONO_GLUE_ENABLED
-	WARN_PRINT("This binary is built with `mono_glue=no` and cannot be used for scripting");
-#endif
-
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
+	// Generate bindings here, before loading assemblies. `initialize_load_assemblies` aborts
+	// the applications if the api assemblies or the main tools assembly is missing, but this
+	// is not a problem for BindingsGenerator as it only needs the tools project editor assembly.
 	List<String> cmdline_args = OS::get_singleton()->get_cmdline_args();
 	BindingsGenerator::handle_cmdline_args(cmdline_args);
 #endif
+
+#ifndef MONO_GLUE_ENABLED
+	print_line("Run this binary with `--generate-mono-glue path/to/modules/mono/glue`");
+#endif
+
+	gdmono->initialize_load_assemblies();
 
 #ifdef TOOLS_ENABLED
 	EditorNode::add_init_callback(&_editor_init_callback);
@@ -709,14 +714,6 @@ bool CSharpLanguage::is_assembly_reloading_needed() {
 		if (!FileAccess::exists(GodotSharpDirs::get_res_temp_assemblies_dir().plus_file(appname_safe)))
 			return false; // No assembly to load
 	}
-
-#ifdef TOOLS_ENABLED
-	if (!gdmono->get_core_api_assembly() && gdmono->metadata_is_api_assembly_invalidated(APIAssembly::API_CORE))
-		return false; // The core API assembly to load is invalidated
-
-	if (!gdmono->get_editor_api_assembly() && gdmono->metadata_is_api_assembly_invalidated(APIAssembly::API_EDITOR))
-		return false; // The editor API assembly to load is invalidated
-#endif
 
 	return true;
 }

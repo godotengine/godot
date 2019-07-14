@@ -3,6 +3,7 @@ using System;
 using System.IO;
 using Godot.Collections;
 using GodotTools.Internals;
+using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
 using Path = System.IO.Path;
 
@@ -254,7 +255,7 @@ namespace GodotTools
             panelTabs = new TabContainer
             {
                 TabAlign = TabContainer.TabAlignEnum.Left,
-                RectMinSize = new Vector2(0, 228) * Internal.EditorScale,
+                RectMinSize = new Vector2(0, 228) * EditorScale,
                 SizeFlagsVertical = (int) SizeFlags.ExpandFill
             };
             panelTabs.AddStyleboxOverride("panel", editorBaseControl.GetStylebox("DebuggerPanel", "EditorStyles"));
@@ -266,7 +267,7 @@ namespace GodotTools
                 // Builds tab
                 panelBuildsTab = new VBoxContainer
                 {
-                    Name = "Builds", // TTR
+                    Name = "Builds".TTR(),
                     SizeFlagsHorizontal = (int) SizeFlags.ExpandFill
                 };
                 panelTabs.AddChild(panelBuildsTab);
@@ -276,7 +277,7 @@ namespace GodotTools
 
                 var buildProjectBtn = new Button
                 {
-                    Text = "Build Project", // TTR
+                    Text = "Build Project".TTR(),
                     FocusMode = FocusModeEnum.None
                 };
                 buildProjectBtn.Connect("pressed", this, nameof(BuildProjectPressed));
@@ -286,7 +287,7 @@ namespace GodotTools
 
                 warningsBtn = new ToolButton
                 {
-                    Text = "Warnings", // TTR
+                    Text = "Warnings".TTR(),
                     ToggleMode = true,
                     Pressed = true,
                     Visible = false,
@@ -297,7 +298,7 @@ namespace GodotTools
 
                 errorsBtn = new ToolButton
                 {
-                    Text = "Errors", // TTR
+                    Text = "Errors".TTR(),
                     ToggleMode = true,
                     Pressed = true,
                     Visible = false,
@@ -310,7 +311,7 @@ namespace GodotTools
 
                 viewLogBtn = new Button
                 {
-                    Text = "View log", // TTR
+                    Text = "View log".TTR(),
                     FocusMode = FocusModeEnum.None,
                     Visible = false
                 };

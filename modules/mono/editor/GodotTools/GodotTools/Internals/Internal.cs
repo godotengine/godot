@@ -10,13 +10,8 @@ namespace GodotTools.Internals
         public const string CSharpLanguageType = "CSharpScript";
         public const string CSharpLanguageExtension = "cs";
 
-        public static float EditorScale => internal_EditorScale();
-
-        public static object GlobalDef(string setting, object defaultValue, bool restartIfChanged = false) =>
-            internal_GlobalDef(setting, defaultValue, restartIfChanged);
-
-        public static object EditorDef(string setting, object defaultValue, bool restartIfChanged = false) =>
-            internal_EditorDef(setting, defaultValue, restartIfChanged);
+        public static string UpdateApiAssembliesFromPrebuilt() =>
+            internal_UpdateApiAssembliesFromPrebuilt();
 
         public static string FullTemplatesDir =>
             internal_FullTemplatesDir();
@@ -24,14 +19,6 @@ namespace GodotTools.Internals
         public static string SimplifyGodotPath(this string path) => internal_SimplifyGodotPath(path);
 
         public static bool IsOsxAppBundleInstalled(string bundleId) => internal_IsOsxAppBundleInstalled(bundleId);
-
-        public static bool MetadataIsApiAssemblyInvalidated(ApiAssemblyType apiType) =>
-            internal_MetadataIsApiAssemblyInvalidated(apiType);
-
-        public static void MetadataSetApiAssemblyInvalidated(ApiAssemblyType apiType, bool invalidated) =>
-            internal_MetadataSetApiAssemblyInvalidated(apiType, invalidated);
-
-        public static bool IsMessageQueueFlushing() => internal_IsMessageQueueFlushing();
 
         public static bool GodotIs32Bits() => internal_GodotIs32Bits();
 
@@ -62,13 +49,7 @@ namespace GodotTools.Internals
         // Internal Calls
 
         [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern float internal_EditorScale();
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern object internal_GlobalDef(string setting, object defaultValue, bool restartIfChanged);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern object internal_EditorDef(string setting, object defaultValue, bool restartIfChanged);
+        private static extern string internal_UpdateApiAssembliesFromPrebuilt();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_FullTemplatesDir();
@@ -78,15 +59,6 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_IsOsxAppBundleInstalled(string bundleId);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_MetadataIsApiAssemblyInvalidated(ApiAssemblyType apiType);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern void internal_MetadataSetApiAssemblyInvalidated(ApiAssemblyType apiType, bool invalidated);
-
-        [MethodImpl(MethodImplOptions.InternalCall)]
-        private static extern bool internal_IsMessageQueueFlushing();
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern bool internal_GodotIs32Bits();
