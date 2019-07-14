@@ -267,11 +267,10 @@ void main() {
 
 	// Early Tonemap & SRGB Conversion
 
-	color = apply_tonemapping(color, white);
-
 #ifdef KEEP_3D_LINEAR
 	// leave color as is (-> don't convert to SRGB)
 #else
+	color = apply_tonemapping(color, white);
 	color = linear_to_srgb(color); // regular linear -> SRGB conversion
 #endif
 
