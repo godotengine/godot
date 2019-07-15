@@ -27,7 +27,7 @@
 			The body's friction, from 0 (frictionless) to 1 (full friction).
 			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
-		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override" default="null">
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 	</members>
 	<constants>

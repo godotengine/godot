@@ -12,13 +12,13 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh" default="null">
+		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
 			The [MultiMesh] that will be drawn by the [MultiMeshInstance2D].
 		</member>
-		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" default="null">
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 			The normal map that will be used if using the default [CanvasItemMaterial].
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The [Texture] that will be used if using the default [CanvasItemMaterial]. Can be accessed as [code]TEXTURE[/code] in CanvasItem shader.
 		</member>
 	</members>

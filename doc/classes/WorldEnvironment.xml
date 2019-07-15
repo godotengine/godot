@@ -14,7 +14,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="environment" type="Environment" setter="set_environment" getter="get_environment" default="null">
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] resource used by this [WorldEnvironment], defining the default properties.
 		</member>
 	</members>

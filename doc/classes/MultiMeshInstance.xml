@@ -14,7 +14,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh" default="null">
+		<member name="multimesh" type="MultiMesh" setter="set_multimesh" getter="get_multimesh">
 			The [MultiMesh] resource that will be used and shared among all instances of the [MultiMeshInstance].
 		</member>
 	</members>

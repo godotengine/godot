@@ -335,7 +335,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font" default="null">
+		<member name="default_font" type="Font" setter="set_default_font" getter="get_default_font">
 			The theme's default font.
 		</member>
 	</members>

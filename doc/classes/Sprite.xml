@@ -49,7 +49,7 @@
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">
 			The number of columns in the sprite sheet.
 		</member>
-		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" default="null">
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 			The normal map gives depth to the Sprite.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
@@ -64,7 +64,7 @@
 		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
 			The region of the atlas texture to display. [member region_enabled] must be [code]true[/code].
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			[Texture] object to draw.
 		</member>
 		<member name="vframes" type="int" setter="set_vframes" getter="get_vframes" default="1">

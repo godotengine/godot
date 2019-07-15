@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="collider" type="Object" setter="" getter="get_collider" default="null">
+		<member name="collider" type="Object" setter="" getter="get_collider">
 			The colliding body.
 		</member>
 		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
@@ -21,7 +21,7 @@
 		<member name="collider_metadata" type="Variant" setter="" getter="get_collider_metadata">
 			The colliding body's metadata. See [Object].
 		</member>
-		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape" default="null">
+		<member name="collider_shape" type="Object" setter="" getter="get_collider_shape">
 			The colliding body's shape.
 		</member>
 		<member name="collider_shape_index" type="int" setter="" getter="get_collider_shape_index" default="0">
@@ -30,7 +30,7 @@
 		<member name="collider_velocity" type="Vector2" setter="" getter="get_collider_velocity" default="Vector2( 0, 0 )">
 			The colliding object's velocity.
 		</member>
-		<member name="local_shape" type="Object" setter="" getter="get_local_shape" default="null">
+		<member name="local_shape" type="Object" setter="" getter="get_local_shape">
 			The moving object's colliding shape.
 		</member>
 		<member name="normal" type="Vector2" setter="" getter="get_normal" default="Vector2( 0, 0 )">

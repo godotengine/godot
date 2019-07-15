@@ -788,7 +788,7 @@
 		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" default="1">
 			Tells the parent [Container] nodes how they should resize and place the node on the Y axis. Use one of the [code]SIZE_*[/code] constants to change the flags. See the constants to learn what each does.
 		</member>
-		<member name="theme" type="Theme" setter="set_theme" getter="get_theme" default="null">
+		<member name="theme" type="Theme" setter="set_theme" getter="get_theme">
 			Changing this property replaces the current [Theme] resource this node and all its [Control] children use.
 		</member>
 	</members>

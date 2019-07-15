@@ -48,7 +48,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="shader" type="Shader" setter="set_shader" getter="get_shader" default="null">
+		<member name="shader" type="Shader" setter="set_shader" getter="get_shader">
 			The [Shader] program used to render this material.
 		</member>
 	</members>

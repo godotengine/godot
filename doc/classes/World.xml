@@ -15,10 +15,10 @@
 		<member name="direct_space_state" type="PhysicsDirectSpaceState" setter="" getter="get_direct_space_state">
 			The World's physics direct space state, used for making various queries. Might be used only during [code]_physics_process[/code].
 		</member>
-		<member name="environment" type="Environment" setter="set_environment" getter="get_environment" default="null">
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The World's [Environment].
 		</member>
-		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment" default="null">
+		<member name="fallback_environment" type="Environment" setter="set_fallback_environment" getter="get_fallback_environment">
 			The World's fallback_environment will be used if the World's [Environment] fails or is missing.
 		</member>
 		<member name="scenario" type="RID" setter="" getter="get_scenario">

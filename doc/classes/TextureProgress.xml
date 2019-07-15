@@ -57,14 +57,14 @@
 		<member name="stretch_margin_top" type="int" setter="set_stretch_margin" getter="get_stretch_margin" default="0">
 			The height of the 9-patch's top row.
 		</member>
-		<member name="texture_over" type="Texture" setter="set_over_texture" getter="get_over_texture" default="null">
+		<member name="texture_over" type="Texture" setter="set_over_texture" getter="get_over_texture">
 			[Texture] that draws over the progress bar. Use it to add highlights or an upper-frame that hides part of [member texture_progress].
 		</member>
-		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture" default="null">
+		<member name="texture_progress" type="Texture" setter="set_progress_texture" getter="get_progress_texture">
 			[Texture] that clips based on the node's [code]value[/code] and [member fill_mode]. As [code]value[/code] increased, the texture fills up. It shows entirely when [code]value[/code] reaches [code]max_value[/code]. It doesn't show at all if [code]value[/code] is equal to [code]min_value[/code].
 			The [code]value[/code] property comes from [Range]. See [member Range.value], [member Range.min_value], [member Range.max_value].
 		</member>
-		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture" default="null">
+		<member name="texture_under" type="Texture" setter="set_under_texture" getter="get_under_texture">
 			[Texture] that draws under the progress bar. The bar's background.
 		</member>
 		<member name="tint_over" type="Color" setter="set_tint_over" getter="get_tint_over" default="Color( 1, 1, 1, 1 )">

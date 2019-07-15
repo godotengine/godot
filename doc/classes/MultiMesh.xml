@@ -123,7 +123,7 @@
 		<member name="instance_count" type="int" setter="set_instance_count" getter="get_instance_count" default="0">
 			Number of instances that will get drawn. This clears and (re)sizes the buffers. By default, all instances are drawn but you can limit this with [member visible_instance_count].
 		</member>
-		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh" default="null">
+		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			Mesh to be drawn.
 		</member>
 		<member name="transform_format" type="int" setter="set_transform_format" getter="get_transform_format" enum="MultiMesh.TransformFormat" default="0">

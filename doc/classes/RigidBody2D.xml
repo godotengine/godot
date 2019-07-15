@@ -168,7 +168,7 @@
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="RigidBody2D.Mode" default="0">
 			The body's mode. See [enum Mode] for possible values.
 		</member>
-		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override" default="null">
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 		<member name="sleeping" type="bool" setter="set_sleeping" getter="is_sleeping" default="false">
 			If [code]true[/code], the body is sleeping and will not calculate forces until woken up by a collision or by using [method apply_impulse] or [method add_force].

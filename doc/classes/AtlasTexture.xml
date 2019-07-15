@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="atlas" type="Texture" setter="set_atlas" getter="get_atlas" default="null">
+		<member name="atlas" type="Texture" setter="set_atlas" getter="get_atlas">
 			The texture that contains the atlas. Can be any [Texture] subtype.
 		</member>
 		<member name="filter_clip" type="bool" setter="set_filter_clip" getter="has_filter_clip" default="false">

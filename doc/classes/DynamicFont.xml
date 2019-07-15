@@ -92,7 +92,7 @@
 		<member name="extra_spacing_top" type="int" setter="set_spacing" getter="get_spacing" default="0">
 			Extra spacing at the top in pixels.
 		</member>
-		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data" default="null">
+		<member name="font_data" type="DynamicFontData" setter="set_font_data" getter="get_font_data">
 			The font data.
 		</member>
 		<member name="outline_color" type="Color" setter="set_outline_color" getter="get_outline_color" default="Color( 1, 1, 1, 1 )">

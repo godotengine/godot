@@ -210,7 +210,7 @@
 		</member>
 		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 		</member>
-		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library" default="null">
+		<member name="mesh_library" type="MeshLibrary" setter="set_mesh_library" getter="get_mesh_library">
 			The assigned [MeshLibrary].
 		</member>
 		<member name="theme" type="MeshLibrary" setter="set_theme" getter="get_theme">

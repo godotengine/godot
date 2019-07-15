@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="collider" type="Object" setter="" getter="get_collider" default="null">
+		<member name="collider" type="Object" setter="" getter="get_collider">
 		</member>
 		<member name="collider_id" type="int" setter="" getter="get_collider_id" default="0">
 		</member>

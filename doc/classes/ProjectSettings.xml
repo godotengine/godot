@@ -434,92 +434,31 @@
 		<member name="gui/timers/text_edit_idle_detect_sec" type="float" setter="" getter="" default="3">
 			Timer for detecting idle in the editor (in seconds).
 		</member>
-		<member name="input/ui_accept" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777221,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777222,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:32,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:0,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_accept" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777221,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777222,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:32,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:0,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_cancel" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777217,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:1,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_cancel" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777217,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:1,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_down" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777234,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:13,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_down" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777234,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:13,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_end" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777230,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_end" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777230,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777218,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_focus_next" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777218,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_focus_prev" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:true,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777218,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_focus_prev" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:true,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777218,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_home" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777229,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_home" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777229,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_left" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777231,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:14,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_left" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777231,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:14,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_page_down" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777236,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_page_down" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777236,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_page_up" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777235,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_page_up" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777235,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_right" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777233,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:15,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_right" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777233,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:15,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_select" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:32,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:3,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_select" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:32,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:3,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
-		<member name="input/ui_up" type="Dictionary" setter="" getter="" default="{
-&quot;deadzone&quot;: 0.5,
-&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777232,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null)
-, Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:12,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null)
- ]
-}">
+		<member name="input/ui_up" type="Dictionary" setter="" getter="" default="{&quot;deadzone&quot;: 0.5,&quot;events&quot;: [ Object(InputEventKey,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;alt&quot;:false,&quot;shift&quot;:false,&quot;control&quot;:false,&quot;meta&quot;:false,&quot;command&quot;:false,&quot;pressed&quot;:false,&quot;scancode&quot;:16777232,&quot;unicode&quot;:0,&quot;echo&quot;:false,&quot;script&quot;:null), Object(InputEventJoypadButton,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;device&quot;:0,&quot;button_index&quot;:12,&quot;pressure&quot;:0.0,&quot;pressed&quot;:false,&quot;script&quot;:null) ]}">
 		</member>
 		<member name="input_devices/pointing/emulate_mouse_from_touch" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], sends mouse input events when tapping or swiping on the touchscreen.
@@ -907,7 +846,7 @@
 		<member name="rendering/vram_compression/import_s3tc" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], the texture importer will import VRAM-compressed textures using the S3 Texture Compression algorithm. This algorithm is only supported on desktop platforms and consoles.
 		</member>
-		<member name="script" type="Script" setter="" getter="" default="null">
+		<member name="script" type="Script" setter="" getter="">
 		</member>
 	</members>
 	<constants>

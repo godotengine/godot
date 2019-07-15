@@ -51,7 +51,7 @@
 		<member name="local_coords" type="bool" setter="set_use_local_coordinates" getter="get_use_local_coordinates" default="true">
 			If [code]true[/code], particles use the parent node's coordinate space. If [code]false[/code], they use global coordinates.
 		</member>
-		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map" default="null">
+		<member name="normal_map" type="Texture" setter="set_normal_map" getter="get_normal_map">
 			Normal map to be used for the [member texture] property.
 		</member>
 		<member name="one_shot" type="bool" setter="set_one_shot" getter="get_one_shot" default="false">
@@ -60,7 +60,7 @@
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
 			Particle system starts as if it had already run for this many seconds.
 		</member>
-		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material" default="null">
+		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
 			[Material] for processing particles. Can be a [ParticlesMaterial] or a [ShaderMaterial].
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" default="0.0">
@@ -69,7 +69,7 @@
 		<member name="speed_scale" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			Particle system's running speed scaling ratio. A value of [code]0[/code] can be used to pause the particles.
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			Particle texture. If [code]null[/code], particles will be squares.
 		</member>
 		<member name="visibility_rect" type="Rect2" setter="set_visibility_rect" getter="get_visibility_rect" default="Rect2( -100, -100, 200, 200 )">

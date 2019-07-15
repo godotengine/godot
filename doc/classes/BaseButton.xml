@@ -54,7 +54,7 @@
 		<member name="enabled_focus_mode" type="int" setter="set_enabled_focus_mode" getter="get_enabled_focus_mode" enum="Control.FocusMode" default="2">
 			Focus access mode to use when switching between enabled/disabled (see [member Control.focus_mode] and [member disabled]).
 		</member>
-		<member name="group" type="ButtonGroup" setter="set_button_group" getter="get_button_group" default="null">
+		<member name="group" type="ButtonGroup" setter="set_button_group" getter="get_button_group">
 			[ButtonGroup] associated to the button.
 		</member>
 		<member name="keep_pressed_outside" type="bool" setter="set_keep_pressed_outside" getter="is_keep_pressed_outside" default="false">
@@ -63,7 +63,7 @@
 		<member name="pressed" type="bool" setter="set_pressed" getter="is_pressed" default="false">
 			If [code]true[/code], the button's state is pressed. Means the button is pressed down or toggled (if toggle_mode is active).
 		</member>
-		<member name="shortcut" type="ShortCut" setter="set_shortcut" getter="get_shortcut" default="null">
+		<member name="shortcut" type="ShortCut" setter="set_shortcut" getter="get_shortcut">
 			[ShortCut] associated to the button.
 		</member>
 		<member name="shortcut_in_tooltip" type="bool" setter="set_shortcut_in_tooltip" getter="is_shortcut_in_tooltip_enabled" default="true">

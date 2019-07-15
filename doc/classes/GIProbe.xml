@@ -30,7 +30,7 @@
 		</member>
 		<member name="compress" type="bool" setter="set_compress" getter="is_compressed" default="false">
 		</member>
-		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data" default="null">
+		<member name="data" type="GIProbeData" setter="set_probe_data" getter="get_probe_data">
 		</member>
 		<member name="dynamic_range" type="int" setter="set_dynamic_range" getter="get_dynamic_range" default="4">
 		</member>

@@ -14,7 +14,7 @@
 		<member name="inner_radius" type="float" setter="set_inner_radius" getter="get_inner_radius" default="2.0">
 			The inner radius of the torus.
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material" default="null">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the torus.
 		</member>
 		<member name="outer_radius" type="float" setter="set_outer_radius" getter="get_outer_radius" default="3.0">

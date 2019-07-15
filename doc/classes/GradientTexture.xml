@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient" default="null">
+		<member name="gradient" type="Gradient" setter="set_gradient" getter="get_gradient">
 			The [Gradient] that will be used to fill the texture.
 		</member>
 		<member name="width" type="int" setter="set_width" getter="get_width" default="2048">

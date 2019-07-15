@@ -11,7 +11,7 @@
 	<members>
 		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="true">
 		</member>
-		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh" default="null">
+		<member name="navmesh" type="NavigationMesh" setter="set_navigation_mesh" getter="get_navigation_mesh">
 		</member>
 	</members>
 	<constants>

@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream" default="null">
+		<member name="audio_stream" type="AudioStream" setter="set_audio_stream" getter="get_audio_stream">
 			The current [AudioStream].
 		</member>
 		<member name="random_pitch" type="float" setter="set_random_pitch" getter="get_random_pitch" default="1.1">

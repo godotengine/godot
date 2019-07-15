@@ -51,7 +51,7 @@
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="Particles.DrawOrder" default="0">
 			Particle draw order. Uses [code]DRAW_ORDER_*[/code] values.
 		</member>
-		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh" default="null">
+		<member name="draw_pass_1" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
 			[Mesh] that is drawn for the first draw pass.
 		</member>
 		<member name="draw_pass_2" type="Mesh" setter="set_draw_pass_mesh" getter="get_draw_pass_mesh">
@@ -90,7 +90,7 @@
 		<member name="preprocess" type="float" setter="set_pre_process_time" getter="get_pre_process_time" default="0.0">
 			Amount of time to preprocess the particles before animation starts. Lets you start the animation some time after particles have started emitting.
 		</member>
-		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material" default="null">
+		<member name="process_material" type="Material" setter="set_process_material" getter="get_process_material">
 			[Material] for processing particles. Can be a [ParticlesMaterial] or a [ShaderMaterial].
 		</member>
 		<member name="randomness" type="float" setter="set_randomness_ratio" getter="get_randomness_ratio" default="0.0">

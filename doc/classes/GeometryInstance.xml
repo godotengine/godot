@@ -56,7 +56,7 @@
 		<member name="lod_min_hysteresis" type="float" setter="set_lod_min_hysteresis" getter="get_lod_min_hysteresis" default="0.0">
 			The GeometryInstance's min LOD margin.
 		</member>
-		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override" default="null">
+		<member name="material_override" type="Material" setter="set_material_override" getter="get_material_override">
 			The material override for the whole geometry.
 			If there is a material in [code]material_override[/code], it will be used instead of any material set in any material slot of the mesh.
 		</member>

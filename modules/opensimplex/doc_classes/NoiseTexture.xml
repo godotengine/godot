@@ -20,7 +20,7 @@
 		<member name="height" type="int" setter="set_height" getter="get_height" default="512">
 			Height of the generated texture.
 		</member>
-		<member name="noise" type="OpenSimplexNoise" setter="set_noise" getter="get_noise" default="null">
+		<member name="noise" type="OpenSimplexNoise" setter="set_noise" getter="get_noise">
 			The [OpenSimplexNoise] instance used to generate the noise.
 		</member>
 		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless" default="false">

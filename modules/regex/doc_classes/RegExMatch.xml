@@ -48,9 +48,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="names" type="Dictionary" setter="" getter="get_names" default="{
-
-}">
+		<member name="names" type="Dictionary" setter="" getter="get_names" default="{}">
 			A dictionary of named groups and its corresponding group number. Only groups with that were matched are included. If multiple groups have the same name, that name would refer to the first matching one.
 		</member>
 		<member name="strings" type="Array" setter="" getter="get_strings" default="[  ]">

@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="panorama" type="Texture" setter="set_panorama" getter="get_panorama" default="null">
+		<member name="panorama" type="Texture" setter="set_panorama" getter="get_panorama">
 			[Texture] to be applied to the PanoramaSky.
 		</member>
 	</members>

@@ -60,7 +60,7 @@
 		<member name="image_path" type="String" setter="set_image_path" getter="get_image_path" default="&quot;.&quot;">
 			The location where lightmaps will be saved.
 		</member>
-		<member name="light_data" type="BakedLightmapData" setter="set_light_data" getter="get_light_data" default="null">
+		<member name="light_data" type="BakedLightmapData" setter="set_light_data" getter="get_light_data">
 			The calculated light data.
 		</member>
 	</members>

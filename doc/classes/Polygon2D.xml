@@ -104,7 +104,7 @@
 		</member>
 		<member name="skeleton" type="NodePath" setter="set_skeleton" getter="get_skeleton" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			The polygon's fill texture. Use [code]uv[/code] to set texture coordinates.
 		</member>
 		<member name="texture_offset" type="Vector2" setter="set_texture_offset" getter="get_texture_offset" default="Vector2( 0, 0 )">

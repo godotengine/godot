@@ -107,7 +107,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="primary_interface" type="ARVRInterface" setter="set_primary_interface" getter="get_primary_interface" default="null">
+		<member name="primary_interface" type="ARVRInterface" setter="set_primary_interface" getter="get_primary_interface">
 		</member>
 		<member name="world_scale" type="float" setter="set_world_scale" getter="get_world_scale" default="1.0">
 			Allows you to adjust the scale to your game's units. Most AR/VR platforms assume a scale of 1 game world unit = 1 real world meter.

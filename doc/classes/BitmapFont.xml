@@ -110,7 +110,7 @@
 		<member name="distance_field" type="bool" setter="set_distance_field_hint" getter="is_distance_field_hint" default="false">
 			If [code]true[/code], distance field hint is enabled.
 		</member>
-		<member name="fallback" type="BitmapFont" setter="set_fallback" getter="get_fallback" default="null">
+		<member name="fallback" type="BitmapFont" setter="set_fallback" getter="get_fallback">
 			The fallback font.
 		</member>
 		<member name="height" type="float" setter="set_height" getter="get_height" default="1.0">

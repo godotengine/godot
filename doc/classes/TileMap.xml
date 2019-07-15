@@ -306,7 +306,7 @@
 		<member name="occluder_light_mask" type="int" setter="set_occluder_light_mask" getter="get_occluder_light_mask" default="1">
 			The light mask assigned to all light occluders in the TileMap. The TileSet's light occluders will cast shadows only from Light2D(s) that have the same light mask(s).
 		</member>
-		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset" default="null">
+		<member name="tile_set" type="TileSet" setter="set_tileset" getter="get_tileset">
 			The assigned [TileSet].
 		</member>
 	</members>

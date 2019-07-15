@@ -43,7 +43,7 @@
 		</member>
 		<member name="root_motion_track" type="NodePath" setter="set_root_motion_track" getter="get_root_motion_track" default="NodePath(&quot;&quot;)">
 		</member>
-		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root" default="null">
+		<member name="tree_root" type="AnimationNode" setter="set_tree_root" getter="get_tree_root">
 		</member>
 	</members>
 	<constants>

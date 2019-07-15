@@ -40,7 +40,7 @@
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			The displayed animation frame's index.
 		</member>
-		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames" default="null">
+		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
 		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">

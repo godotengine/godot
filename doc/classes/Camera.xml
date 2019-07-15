@@ -171,7 +171,7 @@
 		<member name="doppler_tracking" type="int" setter="set_doppler_tracking" getter="get_doppler_tracking" enum="Camera.DopplerTracking" default="0">
 			If not [constant DOPPLER_TRACKING_DISABLED], this camera will simulate the Doppler effect for objects changed in particular [code]_process[/code] methods. See [enum DopplerTracking] for possible values.
 		</member>
-		<member name="environment" type="Environment" setter="set_environment" getter="get_environment" default="null">
+		<member name="environment" type="Environment" setter="set_environment" getter="get_environment">
 			The [Environment] to use for this camera.
 		</member>
 		<member name="far" type="float" setter="set_zfar" getter="get_zfar" default="100.0">

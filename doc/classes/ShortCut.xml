@@ -35,7 +35,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut" default="null">
+		<member name="shortcut" type="InputEvent" setter="set_shortcut" getter="get_shortcut">
 			The shortcut's [InputEvent].
 			Generally the [InputEvent] is a keyboard key, though it can be any [InputEvent].
 		</member>

@@ -295,7 +295,7 @@
 		<member name="usage" type="int" setter="set_usage" getter="get_usage" enum="Viewport.Usage" default="2">
 			The rendering mode of viewport.
 		</member>
-		<member name="world" type="World" setter="set_world" getter="get_world" default="null">
+		<member name="world" type="World" setter="set_world" getter="get_world">
 			The custom [World] which can be used as 3D environment source.
 		</member>
 		<member name="world_2d" type="World2D" setter="set_world_2d" getter="get_world_2d">

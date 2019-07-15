@@ -70,7 +70,7 @@
 		<member name="shadow_item_cull_mask" type="int" setter="set_item_shadow_cull_mask" getter="get_item_shadow_cull_mask" default="1">
 			The shadow mask. Used with [LightOccluder2D] to cast shadows. Only occluders with a matching shadow mask will cast shadows.
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 			[Texture] used for the Light2D's appearance.
 		</member>
 		<member name="texture_scale" type="float" setter="set_texture_scale" getter="get_texture_scale" default="1.0">

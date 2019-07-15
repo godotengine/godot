@@ -26,7 +26,7 @@
 			The body's friction. Values range from [code]0[/code] (no friction) to [code]1[/code] (full friction).
 			Deprecated, use [member PhysicsMaterial.friction] instead via [member physics_material_override].
 		</member>
-		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override" default="null">
+		<member name="physics_material_override" type="PhysicsMaterial" setter="set_physics_material_override" getter="get_physics_material_override">
 		</member>
 	</members>
 	<constants>

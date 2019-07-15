@@ -69,7 +69,7 @@
 		<member name="albedo_color" type="Color" setter="set_albedo" getter="get_albedo" default="Color( 1, 1, 1, 1 )">
 			The material's base color.
 		</member>
-		<member name="albedo_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="albedo_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="anisotropy" type="float" setter="set_anisotropy" getter="get_anisotropy">
 			The strength of the anisotropy effect.
@@ -190,7 +190,7 @@
 			General reflectivity amount.
 			[b]Note:[/b] unlike [member metallic], this is not energy-conserving, so it should be left at [code]0.5[/code] in most cases. See also [member roughness].
 		</member>
-		<member name="metallic_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="metallic_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="SpatialMaterial.TextureChannel" default="2">
 		</member>
@@ -275,7 +275,7 @@
 		<member name="roughness" type="float" setter="set_roughness" getter="get_roughness" default="1.0">
 			Surface reflection. A value of [code]0[/code] represents a perfect mirror while a value of [code]1[/code] completely blurs the reflection. See also [member metallic].
 		</member>
-		<member name="roughness_texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="roughness_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="SpatialMaterial.TextureChannel" default="1">
 		</member>

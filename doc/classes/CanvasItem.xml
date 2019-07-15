@@ -519,7 +519,7 @@
 		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
 			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material" default="null">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material applied to textures on this [CanvasItem].
 		</member>
 		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">

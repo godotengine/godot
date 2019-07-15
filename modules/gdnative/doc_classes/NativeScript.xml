@@ -53,7 +53,7 @@
 	<members>
 		<member name="class_name" type="String" setter="set_class_name" getter="get_class_name" default="&quot;&quot;">
 		</member>
-		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library" default="null">
+		<member name="library" type="GDNativeLibrary" setter="set_library" getter="get_library">
 		</member>
 		<member name="script_class_icon_path" type="String" setter="set_script_class_icon_path" getter="get_script_class_icon_path" default="&quot;&quot;">
 		</member>

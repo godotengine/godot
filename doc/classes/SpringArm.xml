@@ -41,7 +41,7 @@
 		</member>
 		<member name="margin" type="float" setter="set_margin" getter="get_margin" default="0.01">
 		</member>
-		<member name="shape" type="Shape" setter="set_shape" getter="get_shape" default="null">
+		<member name="shape" type="Shape" setter="set_shape" getter="get_shape">
 		</member>
 		<member name="spring_length" type="float" setter="set_length" getter="get_length" default="1.0">
 		</member>

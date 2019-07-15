@@ -11,7 +11,7 @@
 	<members>
 		<member name="source" type="int" setter="set_source" getter="get_source" enum="VisualShaderNodeTexture.Source" default="0">
 		</member>
-		<member name="texture" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
 		<member name="texture_type" type="int" setter="set_texture_type" getter="get_texture_type" enum="VisualShaderNodeTexture.TextureType" default="0">
 		</member>

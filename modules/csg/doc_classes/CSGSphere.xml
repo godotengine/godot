@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="material" type="Material" setter="set_material" getter="get_material" default="null">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the sphere.
 		</member>
 		<member name="radial_segments" type="int" setter="set_radial_segments" getter="get_radial_segments" default="12">

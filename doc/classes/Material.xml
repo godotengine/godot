@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass" default="null">
+		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
 		</member>
 		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
 		</member>

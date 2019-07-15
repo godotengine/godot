@@ -95,7 +95,7 @@
 		<member name="playing" type="bool" setter="_set_playing" getter="is_playing" default="false">
 			If [code]true[/code], audio is playing.
 		</member>
-		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream" default="null">
+		<member name="stream" type="AudioStream" setter="set_stream" getter="get_stream">
 			The [AudioStream] object to be played.
 		</member>
 		<member name="stream_paused" type="bool" setter="set_stream_paused" getter="get_stream_paused" default="false">

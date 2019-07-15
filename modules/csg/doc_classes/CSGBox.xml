@@ -17,7 +17,7 @@
 		<member name="height" type="float" setter="set_height" getter="get_height" default="2.0">
 			Height of the box measured from the center of the box.
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material" default="null">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
 			The material used to render the box.
 		</member>
 		<member name="width" type="float" setter="set_width" getter="get_width" default="2.0">

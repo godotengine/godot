@@ -21,19 +21,19 @@
 		<member name="action" type="String" setter="set_action" getter="get_action" default="&quot;&quot;">
 			The button's action. Actions can be handled with [InputEventAction].
 		</member>
-		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask" default="null">
+		<member name="bitmask" type="BitMap" setter="set_bitmask" getter="get_bitmask">
 			The button's bitmask.
 		</member>
-		<member name="normal" type="Texture" setter="set_texture" getter="get_texture" default="null">
+		<member name="normal" type="Texture" setter="set_texture" getter="get_texture">
 			The button's texture for the normal state.
 		</member>
 		<member name="passby_press" type="bool" setter="set_passby_press" getter="is_passby_press_enabled" default="false">
 			If [code]true[/code], pass-by presses are enabled.
 		</member>
-		<member name="pressed" type="Texture" setter="set_texture_pressed" getter="get_texture_pressed" default="null">
+		<member name="pressed" type="Texture" setter="set_texture_pressed" getter="get_texture_pressed">
 			The button's texture for the pressed state.
 		</member>
-		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" default="null">
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
 			The button's shape.
 		</member>
 		<member name="shape_centered" type="bool" setter="set_shape_centered" getter="is_shape_centered" default="true">

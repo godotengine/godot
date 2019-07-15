@@ -12,11 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve" default="Object(Curve3D,&quot;resource_local_to_scene&quot;:false,&quot;resource_name&quot;:&quot;&quot;,&quot;bake_interval&quot;:0.2,&quot;_data&quot;:{
-&quot;points&quot;: PoolVector3Array(  ),
-&quot;tilts&quot;: PoolRealArray(  )
-},&quot;up_vector_enabled&quot;:true,&quot;script&quot;:null)
-">
+		<member name="curve" type="Curve3D" setter="set_curve" getter="get_curve">
 			A [Curve3D] describing the path.
 		</member>
 	</members>

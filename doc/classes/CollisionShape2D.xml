@@ -20,7 +20,7 @@
 		</member>
 		<member name="one_way_collision_margin" type="float" setter="set_one_way_collision_margin" getter="get_one_way_collision_margin" default="1.0">
 		</member>
-		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape" default="null">
+		<member name="shape" type="Shape2D" setter="set_shape" getter="get_shape">
 			The actual shape owned by this collision shape.
 		</member>
 	</members>

@@ -14,7 +14,7 @@
 		<member name="depth" type="float" setter="set_depth" getter="get_depth" default="1.0">
 			Extrusion depth when [member mode] is [constant MODE_DEPTH].
 		</member>
-		<member name="material" type="Material" setter="set_material" getter="get_material" default="null">
+		<member name="material" type="Material" setter="set_material" getter="get_material">
 			Material to use for the resulting mesh.
 		</member>
 		<member name="mode" type="int" setter="set_mode" getter="get_mode" enum="CSGPolygon.Mode" default="0">

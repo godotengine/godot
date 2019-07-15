@@ -38,7 +38,7 @@
 		<member name="adjustment_brightness" type="float" setter="set_adjustment_brightness" getter="get_adjustment_brightness" default="1.0">
 			Global brightness value of the rendered scene (default value is 1).
 		</member>
-		<member name="adjustment_color_correction" type="Texture" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction" default="null">
+		<member name="adjustment_color_correction" type="Texture" setter="set_adjustment_color_correction" getter="get_adjustment_color_correction">
 			Applies the provided [Texture] resource to affect the global color aspect of the rendered scene.
 		</member>
 		<member name="adjustment_contrast" type="float" setter="set_adjustment_contrast" getter="get_adjustment_contrast" default="1.0">
@@ -89,7 +89,7 @@
 		<member name="background_mode" type="int" setter="set_background" getter="get_background" enum="Environment.BGMode" default="0">
 			Defines the mode of background.
 		</member>
-		<member name="background_sky" type="Sky" setter="set_sky" getter="get_sky" default="null">
+		<member name="background_sky" type="Sky" setter="set_sky" getter="get_sky">
 			[Sky] resource defined as background.
 		</member>
 		<member name="background_sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov" default="0.0">
