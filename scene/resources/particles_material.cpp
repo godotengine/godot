@@ -101,6 +101,8 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->trail_color_modifier = "trail_color_modifier";
 
 	shader_names->gravity = "gravity";
+
+	shader_names->lifetime_randomness = "lifetime_randomness";
 }
 
 void ParticlesMaterial::finish_shaders() {
@@ -173,6 +175,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "uniform float hue_variation_random;\n";
 	code += "uniform float anim_speed_random;\n";
 	code += "uniform float anim_offset_random;\n";
+	code += "uniform float lifetime_randomness;\n";
 
 	switch (emission_shape) {
 		case EMISSION_SHAPE_POINT: {
@@ -285,7 +288,11 @@ void ParticlesMaterial::_update_shader() {
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 	}
-	code += "	if (RESTART) {\n";
+	code += "	bool restart = false;\n";
+	code += "	if (CUSTOM.y > CUSTOM.w) {\n";
+	code += "		restart = true;\n";
+	code += "	}\n\n";
+	code += "	if (RESTART || restart) {\n";
 
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
 		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(0.0, 0.0), 0.0).r;\n";
@@ -325,6 +332,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "		float base_angle = (initial_angle + tex_angle) * mix(1.0, angle_rand, initial_angle_random);\n";
 	code += "		CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
 	code += "		CUSTOM.y = 0.0;\n"; // phase
+	code += "		CUSTOM.w = LIFETIME * (1.0 - lifetime_randomness * rand_from_seed(alt_seed));\n";
 	code += "		CUSTOM.z = (anim_offset + tex_anim_offset) * mix(1.0, anim_offset_rand, anim_offset_random);\n"; // animation offset (0-1)
 
 	switch (emission_shape) {
@@ -576,6 +584,9 @@ void ParticlesMaterial::_update_shader() {
 		code += "	VELOCITY.z = 0.0;\n";
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
+	code += "	if (CUSTOM.y > CUSTOM.w) {";
+	code += "		ACTIVE = false;\n";
+	code += "	}\n";
 	code += "}\n";
 	code += "\n";
 
@@ -1014,6 +1025,17 @@ Vector3 ParticlesMaterial::get_gravity() const {
 	return gravity;
 }
 
+void ParticlesMaterial::set_lifetime_randomness(float p_lifetime) {
+
+	lifetime_randomness = p_lifetime;
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->lifetime_randomness, lifetime_randomness);
+}
+
+float ParticlesMaterial::get_lifetime_randomness() const {
+
+	return lifetime_randomness;
+}
+
 RID ParticlesMaterial::get_shader_rid() const {
 
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
@@ -1118,6 +1140,11 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);
 
+	ClassDB::bind_method(D_METHOD("set_lifetime_randomness", "randomness"), &ParticlesMaterial::set_lifetime_randomness);
+	ClassDB::bind_method(D_METHOD("get_lifetime_randomness"), &ParticlesMaterial::get_lifetime_randomness);
+
+	ADD_GROUP("Time", "");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
 	ADD_GROUP("Trail", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_divisor", PROPERTY_HINT_RANGE, "1,1000000,1"), "set_trail_divisor", "get_trail_divisor");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trail_size_modifier", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_trail_size_modifier", "get_trail_size_modifier");
@@ -1240,6 +1267,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_emission_box_extents(Vector3(1, 1, 1));
 	set_trail_divisor(1);
 	set_gravity(Vector3(0, -9.8, 0));
+	set_lifetime_randomness(0);
 	emission_point_count = 1;
 
 	for (int i = 0; i < PARAM_MAX; i++) {
