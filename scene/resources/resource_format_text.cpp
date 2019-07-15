@@ -445,10 +445,6 @@ Error ResourceInteractiveLoaderText::poll() {
 		} else {
 
 			resource_cache.push_back(res);
-#ifdef TOOLS_ENABLED
-			//remember ID for saving
-			res->set_id_for_path(local_path, index);
-#endif
 		}
 
 		ExtResource er;
@@ -1537,41 +1533,23 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		f->store_line("]\n"); //one empty line
 	}
 
-#ifdef TOOLS_ENABLED
-	//keep order from cached ids
-	Set<int> cached_ids_found;
-	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		int cached_id = E->key()->get_id_for_path(local_path);
-		if (cached_id < 0 || cached_ids_found.has(cached_id)) {
-			E->get() = -1; //reset
-		} else {
-			E->get() = cached_id;
-			cached_ids_found.insert(cached_id);
-		}
-	}
-	//create IDs for non cached resources
-	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		if (cached_ids_found.has(E->get())) { //already cached, go on
-			continue;
-		}
+	List<RES> sorted_resources;
 
-		int attempt = 1; //start from one, more readable format
-		while (cached_ids_found.has(attempt)) {
-			attempt++;
-		}
-
-		cached_ids_found.insert(attempt);
-		E->get() = attempt;
-		//update also in resource
-		Ref<Resource> res = E->key();
-		res->set_id_for_path(local_path, attempt);
+	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+		sorted_resources.push_back(E->key());
 	}
-#else
+
+	sorted_resources.sort_custom<Resource::PathCompare>();
+
+	int resources_i = 1;
+	for (List<RES>::Element *E = sorted_resources.front(); E; E = E->next()) {
+		external_resources.find(E->get())->get() = resources_i++;
+	}
+
 	//make sure to start from one, as it makes format more readable
-	for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
-		E->get() = E->get() + 1;
-	}
-#endif
+	// for (Map<RES, int>::Element *E = external_resources.front(); E; E = E->next()) {
+	// 	E->get() = E->get() + 1;
+	// }
 
 	Vector<ResourceSort> sorted_er;
 
