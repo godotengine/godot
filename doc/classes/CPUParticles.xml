@@ -220,6 +220,9 @@
 		<member name="lifetime" type="float" setter="set_lifetime" getter="get_lifetime" default="1.0">
 			Amount of time each particle will exist.
 		</member>
+		<member name="lifetime_randomness" type="float" setter="set_lifetime_randomness" getter="get_lifetime_randomness" default="0.0">
+			Particle lifetime randomness ratio.
+		</member>
 		<member name="linear_accel" type="float" setter="set_param" getter="get_param" default="0.0">
 			Linear acceleration applied to each particle in the direction of motion.
 		</member>

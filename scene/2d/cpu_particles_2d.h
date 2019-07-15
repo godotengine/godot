@@ -96,6 +96,7 @@ private:
 		float hue_rot_rand;
 		float anim_offset_rand;
 		float time;
+		float lifetime;
 		Color base_color;
 
 		uint32_t seed;
@@ -139,6 +140,7 @@ private:
 	float pre_process_time;
 	float explosiveness_ratio;
 	float randomness_ratio;
+	float lifetime_randomness;
 	float speed_scale;
 	bool local_coords;
 	int fixed_fps;
@@ -200,6 +202,7 @@ public:
 	void set_pre_process_time(float p_time);
 	void set_explosiveness_ratio(float p_ratio);
 	void set_randomness_ratio(float p_ratio);
+	void set_lifetime_randomness(float p_random);
 	void set_visibility_aabb(const Rect2 &p_aabb);
 	void set_use_local_coordinates(bool p_enable);
 	void set_speed_scale(float p_scale);
@@ -211,6 +214,7 @@ public:
 	float get_pre_process_time() const;
 	float get_explosiveness_ratio() const;
 	float get_randomness_ratio() const;
+	float get_lifetime_randomness() const;
 	Rect2 get_visibility_aabb() const;
 	bool get_use_local_coordinates() const;
 	float get_speed_scale() const;
