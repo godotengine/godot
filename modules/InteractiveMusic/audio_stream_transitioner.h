@@ -4,7 +4,7 @@
 
 class AudioStreamPlaybackTransitioner;
 
-class AudioStreamTransitioner : AudioStream {
+class AudioStreamTransitioner : public AudioStream {
 	GDCLASS(AudioStreamTransitioner, AudioStream)
 	OBJ_SAVE_TYPE(AudioStream)
 
@@ -25,11 +25,11 @@ private:
 
 
 	struct Transition {
-		bool t_active;
+		
 		int fade_in_beats;
 		int fade_out_beats;
 	};
-
+	bool t_active;
 	Transition transitions[MAX_TRANSITIONS];
 	Transition active_transition;
 
@@ -60,6 +60,9 @@ public:
 	void set_transition_fade_out(int transition_number, int fade_out);
 	int get_transition_fade_out(int transition_number);
 
+	void set_active_transition(int transition_number);
+	Transition get_active_transition();
+
 	void go_to_clip(int clip_number, int transition_number);
 
 	virtual Ref<AudioStreamPlayback> instance_playback();
@@ -73,7 +76,7 @@ protected:
 };
 
 
-class AudioStreamPlaybackTransitioner : AudioStreamPlayback {
+class AudioStreamPlaybackTransitioner : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackTransitioner, AudioStreamPlayback)
 	friend class AudioStreamTransitioner;
 
