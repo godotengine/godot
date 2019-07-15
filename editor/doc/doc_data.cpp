@@ -266,8 +266,8 @@ void DocData::generate(bool p_basic_types) {
 				}
 			}
 
-			if (default_value_valid) {
-				prop.default_value = default_value.get_construct_string();
+			if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
+				prop.default_value = default_value.get_construct_string().replace("\n", "");
 			}
 
 			bool found_type = false;
