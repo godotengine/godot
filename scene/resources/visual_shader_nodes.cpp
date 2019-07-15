@@ -2968,6 +2968,98 @@ VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
 	color_default = COLOR_DEFAULT_WHITE;
 }
 
+////////////// Texture Uniform (Triplanar)
+
+String VisualShaderNodeTextureUniformTriplanar::get_caption() const {
+	return "TextureUniformTriplanar";
+}
+
+int VisualShaderNodeTextureUniformTriplanar::get_input_port_count() const {
+	return 2;
+}
+
+VisualShaderNodeTextureUniform::PortType VisualShaderNodeTextureUniformTriplanar::get_input_port_type(int p_port) const {
+	if (p_port == 0) {
+		return PORT_TYPE_VECTOR;
+	} else if (p_port == 1) {
+		return PORT_TYPE_VECTOR;
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+String VisualShaderNodeTextureUniformTriplanar::get_input_port_name(int p_port) const {
+	if (p_port == 0) {
+		return "weights";
+	} else if (p_port == 1) {
+		return "pos";
+	}
+	return "";
+}
+
+String VisualShaderNodeTextureUniformTriplanar::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+
+	String code;
+
+	code += "// TRIPLANAR FUNCTION GLOBAL CODE\n";
+	code += "\tvec4 triplanar_texture(sampler2D p_sampler, vec3 p_weights, vec3 p_triplanar_pos) {\n";
+	code += "\t\tvec4 samp = vec4(0.0);\n";
+	code += "\t\tsamp += texture(p_sampler, p_triplanar_pos.xy) * p_weights.z;\n";
+	code += "\t\tsamp += texture(p_sampler, p_triplanar_pos.xz) * p_weights.y;\n";
+	code += "\t\tsamp += texture(p_sampler, p_triplanar_pos.zy * vec2(-1.0, 1.0)) * p_weights.x;\n";
+	code += "\t\treturn samp;\n";
+	code += "\t}\n";
+	code += "\n";
+	code += "\tuniform vec3 triplanar_scale = vec3(1.0, 1.0, 1.0);\n";
+	code += "\tuniform vec3 triplanar_offset;\n";
+	code += "\tuniform float triplanar_sharpness = 0.5;\n";
+	code += "\n";
+	code += "\tvarying vec3 triplanar_power_normal;\n";
+	code += "\tvarying vec3 triplanar_pos;\n";
+
+	return code;
+}
+
+String VisualShaderNodeTextureUniformTriplanar::generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+
+	String code;
+
+	if (p_type == VisualShader::TYPE_VERTEX) {
+
+		code += "\t// TRIPLANAR FUNCTION VERTEX CODE\n";
+		code += "\t\ttriplanar_power_normal = pow(abs(NORMAL), vec3(triplanar_sharpness));\n";
+		code += "\t\ttriplanar_power_normal /= dot(triplanar_power_normal, vec3(1.0));\n";
+		code += "\t\ttriplanar_pos = VERTEX * triplanar_scale + triplanar_offset;\n";
+		code += "\t\ttriplanar_pos *= vec3(1.0, -1.0, 1.0);\n";
+	}
+
+	return code;
+}
+
+String VisualShaderNodeTextureUniformTriplanar::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+
+	String id = get_uniform_name();
+	String code = "\t{\n";
+
+	if (p_input_vars[0] == String() && p_input_vars[1] == String()) {
+		code += "\t\tvec4 n_tex_read = triplanar_texture( " + id + ", triplanar_power_normal, triplanar_pos );\n";
+	} else if (p_input_vars[0] != String() && p_input_vars[1] == String()) {
+		code += "\t\tvec4 n_tex_read = triplanar_texture( " + id + ", " + p_input_vars[0] + ", triplanar_pos );\n";
+	} else if (p_input_vars[0] == String() && p_input_vars[1] != String()) {
+		code += "\t\tvec4 n_tex_read = triplanar_texture( " + id + ", triplanar_power_normal," + p_input_vars[1] + " );\n";
+	} else {
+		code += "\t\tvec4 n_tex_read = triplanar_texture( " + id + ", " + p_input_vars[0] + ", " + p_input_vars[1] + " );\n";
+	}
+
+	code += "\t\t" + p_output_vars[0] + " = n_tex_read.rgb;\n";
+	code += "\t\t" + p_output_vars[1] + " = n_tex_read.a;\n";
+	code += "\t}\n";
+
+	return code;
+}
+
+VisualShaderNodeTextureUniformTriplanar::VisualShaderNodeTextureUniformTriplanar() {
+}
+
 ////////////// CubeMap Uniform
 
 String VisualShaderNodeCubeMapUniform::get_caption() const {
