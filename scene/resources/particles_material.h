@@ -185,6 +185,8 @@ private:
 		StringName trail_color_modifier;
 
 		StringName gravity;
+
+		StringName lifetime_randomness;
 	};
 
 	static ShaderNames *shader_names;
@@ -224,6 +226,8 @@ private:
 	Ref<GradientTexture> trail_color_modifier;
 
 	Vector3 gravity;
+
+	float lifetime_randomness;
 
 	//do not save emission points here
 
@@ -286,6 +290,9 @@ public:
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
+
+	void set_lifetime_randomness(float p_lifetime);
+	float get_lifetime_randomness() const;
 
 	static void init_shaders();
 	static void finish_shaders();
