@@ -50,8 +50,6 @@ class SectionedInspector : public HSplitContainer {
 	EditorInspector *inspector;
 	LineEdit *search_box;
 
-	String selected_category;
-
 	static void _bind_methods();
 	void _section_selected();
 

@@ -1021,21 +1021,15 @@ bool TextureRegionEditorPlugin::handles(Object *p_object) const {
 	return p_object->is_class("Sprite") || p_object->is_class("Sprite3D") || p_object->is_class("NinePatchRect") || p_object->is_class("StyleBoxTexture") || p_object->is_class("AtlasTexture");
 }
 
-void TextureRegionEditorPlugin::_editor_visiblity_changed() {
-	manually_hidden = !region_editor->is_visible_in_tree();
-}
-
 void TextureRegionEditorPlugin::make_visible(bool p_visible) {
 	if (p_visible) {
 		texture_region_button->show();
-		bool is_node_configured = region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region()) || (region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region());
-		if ((is_node_configured && !manually_hidden) || texture_region_button->is_pressed()) {
+		if (region_editor->is_stylebox() || region_editor->is_atlas_texture() || region_editor->is_ninepatch() || (region_editor->get_sprite() && region_editor->get_sprite()->is_region()) || (region_editor->get_sprite_3d() && region_editor->get_sprite_3d()->is_region()) || texture_region_button->is_pressed()) {
 			editor->make_bottom_panel_item_visible(region_editor);
 		}
 	} else {
 		if (region_editor->is_visible_in_tree()) {
 			editor->hide_bottom_panel();
-			manually_hidden = false;
 		}
 		texture_region_button->hide();
 		region_editor->edit(NULL);
@@ -1082,18 +1076,12 @@ void TextureRegionEditorPlugin::set_state(const Dictionary &p_state) {
 	}
 }
 
-void TextureRegionEditorPlugin::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("_editor_visiblity_changed"), &TextureRegionEditorPlugin::_editor_visiblity_changed);
-}
-
 TextureRegionEditorPlugin::TextureRegionEditorPlugin(EditorNode *p_node) {
-	manually_hidden = false;
 	editor = p_node;
-
 	region_editor = memnew(TextureRegionEditor(p_node));
+
 	region_editor->set_custom_minimum_size(Size2(0, 200) * EDSCALE);
 	region_editor->hide();
-	region_editor->connect("visibility_changed", this, "_editor_visiblity_changed");
 
 	texture_region_button = p_node->add_bottom_panel_item(TTR("TextureRegion"), region_editor);
 	texture_region_button->hide();

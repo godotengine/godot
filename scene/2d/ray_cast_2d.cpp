@@ -100,7 +100,6 @@ Vector2 RayCast2D::get_collision_normal() const {
 void RayCast2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
-	update();
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
 		set_physics_process_internal(p_enabled);
 	if (!p_enabled)
@@ -168,25 +167,19 @@ void RayCast2D::_notification(int p_what) {
 			xf.rotate(cast_to.angle());
 			xf.translate(Vector2(cast_to.length(), 0));
 
-			// Draw an arrow indicating where the RayCast is pointing to
-			Color draw_col = get_tree()->get_debug_collisions_color();
-			if (!enabled) {
-				float g = draw_col.get_v();
-				draw_col.r = g;
-				draw_col.g = g;
-				draw_col.b = g;
-			}
-			draw_line(Vector2(), cast_to, draw_col, 2, true);
+			//Vector2 tip = Vector2(0,s->get_length());
+			Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
+			draw_line(Vector2(), cast_to, dcol, 3);
 			Vector<Vector2> pts;
-			float tsize = 8;
+			float tsize = 4;
 			pts.push_back(xf.xform(Vector2(tsize, 0)));
 			pts.push_back(xf.xform(Vector2(0, 0.707 * tsize)));
 			pts.push_back(xf.xform(Vector2(0, -0.707 * tsize)));
 			Vector<Color> cols;
 			for (int i = 0; i < 3; i++)
-				cols.push_back(draw_col);
+				cols.push_back(dcol);
 
-			draw_primitive(pts, cols, Vector<Vector2>());
+			draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
 
 		} break;
 

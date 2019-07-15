@@ -70,8 +70,7 @@ void SceneTreeEditor::_cell_button_pressed(Object *p_item, int p_column, int p_i
 		}
 	} else if (p_id == BUTTON_SCRIPT) {
 		RefPtr script = n->get_script();
-		Ref<Script> script_typed = script;
-		if (!script_typed.is_null())
+		if (!script.is_null())
 			emit_signal("open_script", script);
 
 	} else if (p_id == BUTTON_VISIBILITY) {
@@ -211,8 +210,7 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 	if (connect_to_script_mode) {
 		Color accent = get_color("accent_color", "Editor");
 
-		Ref<Script> script = p_node->get_script();
-		if (!script.is_null()) {
+		if (!p_node->get_script().is_null()) {
 			//has script
 			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT);
 		} else {
@@ -292,8 +290,8 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		if (!p_node->is_connected("script_changed", this, "_node_script_changed"))
 			p_node->connect("script_changed", this, "_node_script_changed", varray(p_node));
 
-		Ref<Script> script = p_node->get_script();
-		if (!script.is_null()) {
+		if (!p_node->get_script().is_null()) {
+			Ref<Script> script = p_node->get_script();
 			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + script->get_path());
 		}
 

@@ -97,8 +97,15 @@ void CollisionShape2D::_notification(int p_what) {
 			}
 			owner_id = 0;
 			parent = NULL;
-
 		} break;
+		/*
+		case NOTIFICATION_TRANSFORM_CHANGED: {
+
+			if (!is_inside_scene())
+				break;
+			_update_parent();
+
+		} break;*/
 		case NOTIFICATION_DRAW: {
 
 			if (!Engine::get_singleton()->is_editor_hint() && !get_tree()->is_debugging_collisions_hint()) {
@@ -124,13 +131,10 @@ void CollisionShape2D::_notification(int p_what) {
 			rect = rect.grow(3);
 
 			if (one_way_collision) {
-				// Draw an arrow indicating the one-way collision direction
-				draw_col = get_tree()->get_debug_collisions_color().inverted();
-				if (disabled) {
-					draw_col = draw_col.darkened(0.25);
-				}
+				Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
+				dcol.a = 1.0;
 				Vector2 line_to(0, 20);
-				draw_line(Vector2(), line_to, draw_col, 2, true);
+				draw_line(Vector2(), line_to, dcol, 3);
 				Vector<Vector2> pts;
 				float tsize = 8;
 				pts.push_back(line_to + (Vector2(0, tsize)));
@@ -138,9 +142,9 @@ void CollisionShape2D::_notification(int p_what) {
 				pts.push_back(line_to + (Vector2(-0.707 * tsize, 0)));
 				Vector<Color> cols;
 				for (int i = 0; i < 3; i++)
-					cols.push_back(draw_col);
+					cols.push_back(dcol);
 
-				draw_primitive(pts, cols, Vector<Vector2>());
+				draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
 			}
 		} break;
 	}
