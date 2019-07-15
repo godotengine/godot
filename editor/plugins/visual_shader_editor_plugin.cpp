@@ -542,6 +542,9 @@ void VisualShaderEditor::_update_graph() {
 						button->set_custom_minimum_size(Size2(30, 0) * EDSCALE);
 						button->connect("draw", this, "_draw_color_over_button", varray(button, default_value));
 					} break;
+					case Variant::BOOL: {
+						button->set_text(((bool)default_value) ? "true" : "false");
+					} break;
 					case Variant::INT:
 					case Variant::REAL: {
 						button->set_text(String::num(default_value, 4));
