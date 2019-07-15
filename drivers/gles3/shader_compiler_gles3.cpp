@@ -607,6 +607,72 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			}
 
 		} break;
+		case SL::Node::TYPE_ARRAY_DECLARATION: {
+
+			SL::ArrayDeclarationNode *vdnode = (SL::ArrayDeclarationNode *)p_node;
+
+			String declaration = _prestr(vdnode->precision) + _typestr(vdnode->datatype);
+			for (int i = 0; i < vdnode->declarations.size(); i++) {
+				if (i > 0) {
+					declaration += ",";
+				} else {
+					declaration += " ";
+				}
+				declaration += _mkid(vdnode->declarations[i].name);
+				declaration += "[";
+				declaration += itos(vdnode->declarations[i].size);
+				declaration += "]";
+			}
+
+			code += declaration;
+		} break;
+		case SL::Node::TYPE_ARRAY: {
+			SL::ArrayNode *vnode = (SL::ArrayNode *)p_node;
+
+			if (p_assigning && p_actions.write_flag_pointers.has(vnode->name)) {
+				*p_actions.write_flag_pointers[vnode->name] = true;
+			}
+
+			if (p_default_actions.usage_defines.has(vnode->name) && !used_name_defines.has(vnode->name)) {
+				String define = p_default_actions.usage_defines[vnode->name];
+				if (define.begins_with("@")) {
+					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+				}
+				r_gen_code.defines.push_back(define.utf8());
+				used_name_defines.insert(vnode->name);
+			}
+
+			if (p_actions.usage_flag_pointers.has(vnode->name) && !used_flag_pointers.has(vnode->name)) {
+				*p_actions.usage_flag_pointers[vnode->name] = true;
+				used_flag_pointers.insert(vnode->name);
+			}
+
+			if (p_default_actions.renames.has(vnode->name))
+				code = p_default_actions.renames[vnode->name];
+			else
+				code = _mkid(vnode->name);
+
+			if (vnode->call_expression != NULL) {
+				code += ".";
+				code += _dump_node_code(vnode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+			}
+
+			if (vnode->index_expression != NULL) {
+				code += "[";
+				code += _dump_node_code(vnode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				code += "]";
+			}
+
+			if (vnode->name == time_name) {
+				if (current_func_name == vertex_name) {
+					r_gen_code.uses_vertex_time = true;
+				}
+				if (current_func_name == fragment_name || current_func_name == light_name) {
+					r_gen_code.uses_fragment_time = true;
+				}
+			}
+
+		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
 			return get_constant_text(cnode->datatype, cnode->values);

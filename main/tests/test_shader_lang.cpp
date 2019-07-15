@@ -197,6 +197,13 @@ static String dump_node_code(SL::Node *p_node, int p_level) {
 		case SL::Node::TYPE_VARIABLE_DECLARATION: {
 			// FIXME: Implement
 		} break;
+		case SL::Node::TYPE_ARRAY: {
+			SL::ArrayNode *vnode = (SL::ArrayNode *)p_node;
+			code = vnode->name;
+		} break;
+		case SL::Node::TYPE_ARRAY_DECLARATION: {
+			// FIXME: Implement
+		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
 			return get_constant_text(cnode->datatype, cnode->values);
