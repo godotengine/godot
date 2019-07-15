@@ -531,6 +531,22 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				declaration += "[";
 				declaration += itos(var_dec_node->declarations[i].size);
 				declaration += "]";
+				int sz = var_dec_node->declarations[i].initializer.size();
+				if (sz > 0) {
+					declaration += "=";
+					declaration += _typestr(var_dec_node->datatype);
+					declaration += "[";
+					declaration += itos(sz);
+					declaration += "]";
+					declaration += "(";
+					for (int j = 0; j < sz; j++) {
+						declaration += _dump_node_code(var_dec_node->declarations[i].initializer[j], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+						if (j != sz - 1) {
+							declaration += ", ";
+						}
+					}
+					declaration += ")";
+				}
 			}
 
 			code += declaration.as_string();
