@@ -444,6 +444,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 
 		class_desc->add_newline();
+		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, 1);
@@ -509,6 +510,7 @@ void EditorHelp::_update_doc() {
 
 		class_desc->pop(); //table
 		class_desc->pop();
+		class_desc->pop(); // font
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
