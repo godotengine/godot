@@ -364,7 +364,7 @@ private:
 	Camera *preview;
 
 	bool previewing_cinema;
-
+	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
