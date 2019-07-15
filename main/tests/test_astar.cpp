@@ -87,11 +87,145 @@ bool test_abcx() {
 	return ok;
 }
 
+bool test_add_remove() {
+	AStar a;
+	bool ok = true;
+
+	// Manual tests
+	a.add_point(1, Vector3(0, 0, 0));
+	a.add_point(2, Vector3(0, 1, 0));
+	a.add_point(3, Vector3(1, 1, 0));
+	a.add_point(4, Vector3(2, 0, 0));
+	a.connect_points(1, 2, true);
+	a.connect_points(1, 3, true);
+	a.connect_points(1, 4, false);
+
+	ok = ok && (a.are_points_connected(2, 1) == true);
+	ok = ok && (a.are_points_connected(4, 1) == true);
+	ok = ok && (a.are_points_connected(2, 1, false) == true);
+	ok = ok && (a.are_points_connected(4, 1, false) == false);
+
+	a.disconnect_points(1, 2, true);
+	ok = ok && (a.get_point_connections(1).size() == 2); // 3, 4
+	ok = ok && (a.get_point_connections(2).size() == 0);
+
+	a.disconnect_points(4, 1, false);
+	ok = ok && (a.get_point_connections(1).size() == 2); // 3, 4
+	ok = ok && (a.get_point_connections(4).size() == 0);
+
+	a.disconnect_points(4, 1, true);
+	ok = ok && (a.get_point_connections(1).size() == 1); // 3
+	ok = ok && (a.get_point_connections(4).size() == 0);
+
+	a.connect_points(2, 3, false);
+	ok = ok && (a.get_point_connections(2).size() == 1); // 3
+	ok = ok && (a.get_point_connections(3).size() == 1); // 1
+
+	a.connect_points(2, 3, true);
+	ok = ok && (a.get_point_connections(2).size() == 1); // 3
+	ok = ok && (a.get_point_connections(3).size() == 2); // 1, 2
+
+	a.disconnect_points(2, 3, false);
+	ok = ok && (a.get_point_connections(2).size() == 0);
+	ok = ok && (a.get_point_connections(3).size() == 2); // 1, 2
+
+	a.connect_points(4, 3, true);
+	ok = ok && (a.get_point_connections(3).size() == 3); // 1, 2, 4
+	ok = ok && (a.get_point_connections(4).size() == 1); // 3
+
+	a.disconnect_points(3, 4, false);
+	ok = ok && (a.get_point_connections(3).size() == 2); // 1, 2
+	ok = ok && (a.get_point_connections(4).size() == 1); // 3
+
+	a.remove_point(3);
+	ok = ok && (a.get_point_connections(1).size() == 0);
+	ok = ok && (a.get_point_connections(2).size() == 0);
+	ok = ok && (a.get_point_connections(4).size() == 0);
+
+	a.add_point(0, Vector3(0, -1, 0));
+	a.add_point(3, Vector3(2, 1, 0));
+	// 0: (0, -1)
+	// 1: (0, 0)
+	// 2: (0, 1)
+	// 3: (2, 1)
+	// 4: (2, 0)
+
+	// Tests for get_closest_position_in_segment
+	a.connect_points(2, 3);
+	ok = ok && (a.get_closest_position_in_segment(Vector3(0.5, 0.5, 0)) == Vector3(0.5, 1, 0));
+
+	a.connect_points(3, 4);
+	a.connect_points(0, 3);
+	a.connect_points(1, 4);
+	a.disconnect_points(1, 4, false);
+	a.disconnect_points(4, 3, false);
+	a.disconnect_points(3, 4, false);
+	// Remaining edges: <2, 3>, <0, 3>, <1, 4> (directed)
+	ok = ok && (a.get_closest_position_in_segment(Vector3(2, 0.5, 0)) == Vector3(1.75, 0.75, 0));
+	ok = ok && (a.get_closest_position_in_segment(Vector3(-1, 0.2, 0)) == Vector3(0, 0, 0));
+	ok = ok && (a.get_closest_position_in_segment(Vector3(3, 2, 0)) == Vector3(2, 1, 0));
+
+	int seed = 0;
+
+	// Random tests for connectivity checks
+	for (int i = 0; i < 20000; i++) {
+		seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+		int u = (seed / 5) % 5;
+		int v = seed % 5;
+		if (u == v) {
+			i--;
+			continue;
+		}
+		if (seed % 2 == 1) {
+			// Add a (possibly existing) directed edge and confirm connectivity
+			a.connect_points(u, v, false);
+			ok = ok && (a.are_points_connected(u, v, false) == true);
+		} else {
+			// Remove a (possibly nonexistent) directed edge and confirm disconnectivity
+			a.disconnect_points(u, v, false);
+			ok = ok && (a.are_points_connected(u, v, false) == false);
+		}
+	}
+
+	// Random tests for point removal
+	for (int i = 0; i < 20000; i++) {
+		a.clear();
+		for (int j = 0; j < 5; j++)
+			a.add_point(j, Vector3(0, 0, 0));
+
+		// Add or remove random edges
+		for (int j = 0; j < 10; j++) {
+			seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+			int u = (seed / 5) % 5;
+			int v = seed % 5;
+			if (u == v) {
+				j--;
+				continue;
+			}
+			if (seed % 2 == 1)
+				a.connect_points(u, v, false);
+			else
+				a.disconnect_points(u, v, false);
+		}
+
+		// Remove point 0
+		a.remove_point(0);
+		// White box: this will check all edges remaining in the segments set
+		for (int j = 1; j < 5; j++) {
+			ok = ok && (a.are_points_connected(0, j, true) == false);
+		}
+	}
+
+	// It's been great work, cheers \(^ ^)/
+	return ok;
+}
+
 typedef bool (*TestFunc)(void);
 
 TestFunc test_funcs[] = {
 	test_abc,
 	test_abcx,
+	test_add_remove,
 	NULL
 };
 

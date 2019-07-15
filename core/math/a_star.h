@@ -81,20 +81,35 @@ class AStar : public Reference {
 	struct Segment {
 		union {
 			struct {
-				int32_t from;
-				int32_t to;
+				int32_t u;
+				int32_t v;
 			};
 			uint64_t key;
 		};
 
-		Point *from_point;
-		Point *to_point;
+		enum {
+			NONE = 0,
+			FORWARD = 1,
+			BACKWARD = 2,
+			BIDIRECTIONAL = FORWARD | BACKWARD
+		};
+		unsigned char direction;
 
 		bool operator<(const Segment &p_s) const { return key < p_s.key; }
-		Segment() { key = 0; }
+		Segment() {
+			key = 0;
+			direction = NONE;
+		}
 		Segment(int p_from, int p_to) {
-			from = p_from;
-			to = p_to;
+			if (p_from < p_to) {
+				u = p_from;
+				v = p_to;
+				direction = FORWARD;
+			} else {
+				u = p_to;
+				v = p_from;
+				direction = BACKWARD;
+			}
 		}
 	};
 
