@@ -917,6 +917,13 @@
 				2
 				4
 				[/codeblock]
+				[b]Note:[/b] It bears repetition that, unlike its Python cousin, [code]range[/code] produces an actual allocated and filled array. As such, using [code]range[/code] with a for-loop can introduce a significant overhead in both memory and time when the iteration count is high. This is especially important to consider when trying to benchmark code. Instead, consider using a manually counted [code]while[/code] loop:
+				[codeblock]
+				var i = 0
+				while i &lt; 1000000:
+					print(i)
+					i += 1
+				[/codeblock]
 			</description>
 		</method>
 		<method name="range_lerp">
