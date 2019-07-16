@@ -376,6 +376,7 @@ public:
 		struct Declaration {
 			StringName name;
 			uint32_t size;
+			Vector<Node *> initializer;
 		};
 
 		Vector<Declaration> declarations;
@@ -588,6 +589,7 @@ public:
 	static DataInterpolation get_token_interpolation(TokenType p_type);
 	static bool is_token_precision(TokenType p_type);
 	static DataPrecision get_token_precision(TokenType p_type);
+	static String get_precision_name(DataPrecision p_type);
 	static String get_datatype_name(DataType p_type);
 	static bool is_token_nonvoid_datatype(TokenType p_type);
 	static bool is_token_operator(TokenType p_type);

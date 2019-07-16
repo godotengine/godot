@@ -785,6 +785,17 @@ ShaderLanguage::DataPrecision ShaderLanguage::get_token_precision(TokenType p_ty
 		return PRECISION_MEDIUMP;
 }
 
+String ShaderLanguage::get_precision_name(DataPrecision p_type) {
+	switch (p_type) {
+		case PRECISION_LOWP: return "lowp";
+		case PRECISION_MEDIUMP: return "mediump";
+		case PRECISION_HIGHP: return "highp";
+		default:
+			break;
+	}
+	return "";
+}
+
 String ShaderLanguage::get_datatype_name(DataType p_type) {
 
 	switch (p_type) {
@@ -3803,6 +3814,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				tk = _get_token();
 
 				if (tk.type == TK_BRACKET_OPEN) {
+					bool unknown_size = false;
 
 					ArrayDeclarationNode *node = alloc_node<ArrayDeclarationNode>();
 					node->datatype = type;
@@ -3815,22 +3827,181 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 					tk = _get_token();
 
-					if (tk.type != TK_INT_CONSTANT || ((int)tk.constant) <= 0) {
-						_set_error("Expected integer constant > 0");
-						return ERR_PARSE_ERROR;
+					if (tk.type == TK_BRACKET_CLOSE) {
+						unknown_size = true;
+					} else {
+
+						if (tk.type != TK_INT_CONSTANT || ((int)tk.constant) <= 0) {
+							_set_error("Expected integer constant > 0 or ']'");
+							return ERR_PARSE_ERROR;
+						}
+
+						tk = _get_token();
+
+						if (tk.type != TK_BRACKET_CLOSE) {
+							_set_error("Expected ']'");
+							return ERR_PARSE_ERROR;
+						}
+
+						decl.size = ((uint32_t)tk.constant);
+						var.array_size = decl.size;
 					}
 
-					tk = _get_token();
+					bool full_def = false;
 
-					if (tk.type != TK_BRACKET_CLOSE) {
-						_set_error("Expected ']'");
-						return ERR_PARSE_ERROR;
+					tk = _get_token();
+					if (tk.type == TK_OP_ASSIGN) {
+						tk = _get_token();
+
+						if (tk.type != TK_CURLY_BRACKET_OPEN) {
+
+							if (unknown_size) {
+								_set_error("Expected '{'");
+								return ERR_PARSE_ERROR;
+							}
+
+							full_def = true;
+
+							DataPrecision precision2 = PRECISION_DEFAULT;
+							if (is_token_precision(tk.type)) {
+								precision2 = get_token_precision(tk.type);
+								tk = _get_token();
+								if (!is_token_nonvoid_datatype(tk.type)) {
+									_set_error("Expected datatype after precision");
+									return ERR_PARSE_ERROR;
+								}
+							}
+							if (!is_token_variable_datatype(tk.type)) {
+								_set_error("Invalid data type for array");
+								return ERR_PARSE_ERROR;
+							}
+							DataType type2 = get_token_datatype(tk.type);
+
+							int array_size2 = 0;
+
+							tk = _get_token();
+							if (tk.type == TK_BRACKET_OPEN) {
+								Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+								if (!n || n->type != Node::TYPE_CONSTANT || n->get_datatype() != TYPE_INT) {
+									_set_error("Expected single integer constant > 0");
+									return ERR_PARSE_ERROR;
+								}
+
+								ConstantNode *cnode = (ConstantNode *)n;
+								if (cnode->values.size() == 1) {
+									array_size2 = cnode->values[0].sint;
+									if (array_size2 <= 0) {
+										_set_error("Expected single integer constant > 0");
+										return ERR_PARSE_ERROR;
+									}
+								} else {
+									_set_error("Expected single integer constant > 0");
+									return ERR_PARSE_ERROR;
+								}
+
+								tk = _get_token();
+								if (tk.type != TK_BRACKET_CLOSE) {
+									_set_error("Expected ']");
+									return ERR_PARSE_ERROR;
+								} else {
+									tk = _get_token();
+								}
+							} else {
+								_set_error("Expected '[");
+								return ERR_PARSE_ERROR;
+							}
+
+							if (precision != precision2 || type != type2 || var.array_size != array_size2) {
+								String error_str = "Cannot convert from '";
+								if (precision2 != PRECISION_DEFAULT) {
+									error_str += get_precision_name(precision2);
+									error_str += " ";
+								}
+								error_str += get_datatype_name(type2);
+								error_str += "[";
+								error_str += itos(array_size2);
+								error_str += "]'";
+								error_str += " to '";
+								if (precision != PRECISION_DEFAULT) {
+									error_str += get_precision_name(precision);
+									error_str += " ";
+								}
+								error_str += get_datatype_name(type);
+								error_str += "[";
+								error_str += itos(var.array_size);
+								error_str += "]'";
+								_set_error(error_str);
+								return ERR_PARSE_ERROR;
+							}
+						}
+
+						bool curly = tk.type == TK_CURLY_BRACKET_OPEN;
+
+						if (unknown_size) {
+							if (!curly) {
+								_set_error("Expected '{'");
+								return ERR_PARSE_ERROR;
+							}
+						} else {
+							if (full_def) {
+								if (curly) {
+									_set_error("Expected '('");
+									return ERR_PARSE_ERROR;
+								}
+							}
+						}
+
+						if (tk.type == TK_PARENTHESIS_OPEN || curly) { // initialization
+							while (true) {
+
+								Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+								if (!n) {
+									return ERR_PARSE_ERROR;
+								}
+								if (n->type != Node::TYPE_CONSTANT) {
+									_set_error("Expected constant expression in the array declaration");
+									return ERR_PARSE_ERROR;
+								}
+
+								if (var.type != n->get_datatype()) {
+									_set_error("Invalid assignment of '" + get_datatype_name(n->get_datatype()) + "' to '" + get_datatype_name(var.type) + "'");
+									return ERR_PARSE_ERROR;
+								}
+
+								tk = _get_token();
+								if (tk.type == TK_COMMA) {
+									decl.initializer.push_back(n);
+									continue;
+								} else if (!curly && tk.type == TK_PARENTHESIS_CLOSE) {
+									decl.initializer.push_back(n);
+									break;
+								} else if (curly && tk.type == TK_CURLY_BRACKET_CLOSE) {
+									decl.initializer.push_back(n);
+									break;
+								} else {
+									if (curly)
+										_set_error("Expected '}' or ','");
+									else
+										_set_error("Expected ')' or ','");
+									return ERR_PARSE_ERROR;
+								}
+							}
+							if (unknown_size) {
+								decl.size = decl.initializer.size();
+								var.array_size = decl.initializer.size();
+							} else if (decl.initializer.size() != var.array_size) {
+								_set_error("Array size mismatch");
+								return ERR_PARSE_ERROR;
+							}
+							tk = _get_token();
+						}
+					} else {
+						if (unknown_size) {
+							_set_error("Expected array initialization");
+							return ERR_PARSE_ERROR;
+						}
 					}
 
-					decl.size = ((uint32_t)tk.constant);
-					var.array_size = decl.size;
-
-					tk = _get_token();
 					node->declarations.push_back(decl);
 				} else if (tk.type == TK_OP_ASSIGN) {
 
@@ -3878,11 +4049,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				} else if (tk.type == TK_SEMICOLON) {
 					break;
 				} else {
-					if (var.array_size != 0U) {
-						_set_error("Expected ',' or ';' or '[' after variable");
-					} else {
-						_set_error("Expected ',' or ';' after variable");
-					}
+					_set_error("Expected ',' or ';' after variable");
 					return ERR_PARSE_ERROR;
 				}
 			}
