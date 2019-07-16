@@ -102,7 +102,7 @@ public:
 	void set_z_index(int p_z);
 	int get_z_index() const;
 
-	void look_at(const Vector2 &p_pos);
+	float look_at(const Vector2 &p_pos);
 	float get_angle_to(const Vector2 &p_pos) const;
 
 	Point2 to_local(Point2 p_global) const;
