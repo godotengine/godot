@@ -257,8 +257,8 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			if (bmp_header.bmp_info_header.bmp_bit_count <= 8) {
 				// Support 256 colors max
 				color_table_size = 1 << bmp_header.bmp_info_header.bmp_bit_count;
+				ERR_FAIL_COND_V(color_table_size == 0, ERR_BUG);
 			}
-			ERR_FAIL_COND_V(color_table_size == 0, ERR_BUG);
 
 			PoolVector<uint8_t> bmp_color_table;
 			if (color_table_size > 0) {
