@@ -238,185 +238,183 @@ void EditorNode::_unhandled_input(const Ref<InputEvent> &p_event) {
 
 void EditorNode::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			if (opening_prev && !confirmation->is_visible())
+				opening_prev = false;
 
-		editor_data.save_editor_external_data();
-		FileAccess::set_file_close_fail_notify_callback(NULL);
-		log->deinit(); // do not get messages anymore
-	}
-	if (p_what == NOTIFICATION_PROCESS) {
+			if (unsaved_cache != (saved_version != editor_data.get_undo_redo().get_version())) {
 
-		if (opening_prev && !confirmation->is_visible())
-			opening_prev = false;
+				unsaved_cache = (saved_version != editor_data.get_undo_redo().get_version());
+				_update_title();
+			}
 
-		if (unsaved_cache != (saved_version != editor_data.get_undo_redo().get_version())) {
+			if (last_checked_version != editor_data.get_undo_redo().get_version()) {
+				_update_scene_tabs();
+				last_checked_version = editor_data.get_undo_redo().get_version();
+			}
 
-			unsaved_cache = (saved_version != editor_data.get_undo_redo().get_version());
-			_update_title();
-		}
+			// update the animation frame of the update spinner
+			uint64_t frame = Engine::get_singleton()->get_frames_drawn();
+			uint32_t tick = OS::get_singleton()->get_ticks_msec();
 
-		if (last_checked_version != editor_data.get_undo_redo().get_version()) {
+			if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
+
+				update_spinner_step++;
+				if (update_spinner_step >= 8)
+					update_spinner_step = 0;
+
+				update_spinner_step_msec = tick;
+				update_spinner_step_frame = frame + 1;
+
+				// update the icon itself only when the spinner is visible
+				if (EditorSettings::get_singleton()->get("interface/editor/show_update_spinner")) {
+					update_spinner->set_icon(gui_base->get_icon("Progress" + itos(update_spinner_step + 1), "EditorIcons"));
+				}
+			}
+
+			editor_selection->update();
+
+			scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
+
+			ResourceImporterTexture::get_singleton()->update_imports();
+		} break;
+
+		case NOTIFICATION_ENTER_TREE: {
+			Engine::get_singleton()->set_editor_hint(true);
+
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
+			get_tree()->get_root()->set_usage(Viewport::USAGE_2D_NO_SAMPLING); //reduce memory usage
+			get_tree()->get_root()->set_disable_3d(true);
+			get_tree()->get_root()->set_as_audio_listener(false);
+			get_tree()->get_root()->set_as_audio_listener_2d(false);
+			get_tree()->set_auto_accept_quit(false);
+			get_tree()->connect("files_dropped", this, "_dropped_files");
+
+			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
+		} break;
+
+		case NOTIFICATION_EXIT_TREE: {
+			editor_data.save_editor_external_data();
+			FileAccess::set_file_close_fail_notify_callback(NULL);
+			log->deinit(); // do not get messages anymore
+			editor_data.clear_edited_scenes();
+		} break;
+
+		case NOTIFICATION_READY: {
+
+			VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(), true);
+			VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
+			VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
+
+			feature_profile_manager->notify_changed();
+
+			if (!main_editor_buttons[EDITOR_3D]->is_visible()) { //may be hidden due to feature profile
+				_editor_select(EDITOR_2D);
+			} else {
+				_editor_select(EDITOR_3D);
+			}
+
+			_update_debug_options();
+
+			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
+		} break;
+
+		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
+
+			// Restore the original FPS cap after focusing back on the editor
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
+
+			EditorFileSystem::get_singleton()->scan_changes();
+		} break;
+
+		case MainLoop::NOTIFICATION_WM_FOCUS_OUT: {
+
+			// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused
+			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
+		} break;
+
+		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
+
+			_menu_option_confirm(FILE_QUIT, false);
+		} break;
+
+		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
+			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
+			Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+
+			theme_base->set_theme(theme);
+			gui_base->set_theme(theme);
+
+			gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
+			scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
+			bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
+			scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
+			scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
+
+			file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+			project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+			debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+			settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+			help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
+
+			if (EDITOR_GET("interface/scene_tabs/resize_if_many_tabs")) {
+				scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
+			} else {
+				scene_tabs->set_min_width(0);
+			}
 			_update_scene_tabs();
-			last_checked_version = editor_data.get_undo_redo().get_version();
-		}
 
-		// update the animation frame of the update spinner
-		uint64_t frame = Engine::get_singleton()->get_frames_drawn();
-		uint32_t tick = OS::get_singleton()->get_ticks_msec();
+			recent_scenes->set_as_minsize();
 
-		if (frame != update_spinner_step_frame && (tick - update_spinner_step_msec) > (1000 / 8)) {
+			// debugger area
+			if (ScriptEditor::get_singleton()->get_debugger()->is_visible())
+				bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
 
-			update_spinner_step++;
-			if (update_spinner_step >= 8)
-				update_spinner_step = 0;
+			// update_icons
+			for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
 
-			update_spinner_step_msec = tick;
-			update_spinner_step_frame = frame + 1;
+				ToolButton *tb = singleton->main_editor_buttons[i];
+				EditorPlugin *p_editor = singleton->editor_table[i];
+				Ref<Texture> icon = p_editor->get_icon();
 
-			// update the icon itself only when the spinner is visible
-			if (EditorSettings::get_singleton()->get("interface/editor/show_update_spinner")) {
-				update_spinner->set_icon(gui_base->get_icon("Progress" + itos(update_spinner_step + 1), "EditorIcons"));
+				if (icon.is_valid()) {
+					tb->set_icon(icon);
+				} else if (singleton->gui_base->has_icon(p_editor->get_name(), "EditorIcons")) {
+					tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
+				}
 			}
-		}
 
-		editor_selection->update();
+			_build_icon_type_cache();
 
-		scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
+			play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
+			play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
+			play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
+			pause_button->set_icon(gui_base->get_icon("Pause", "EditorIcons"));
+			stop_button->set_icon(gui_base->get_icon("Stop", "EditorIcons"));
 
-		ResourceImporterTexture::get_singleton()->update_imports();
-	}
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+			prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
+			distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
+			scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
 
-		Engine::get_singleton()->set_editor_hint(true);
+			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
+			dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
+			dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
 
-		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
-		get_tree()->get_root()->set_usage(Viewport::USAGE_2D_NO_SAMPLING); //reduce memory usage
-		get_tree()->get_root()->set_disable_3d(true);
-		get_tree()->get_root()->set_as_audio_listener(false);
-		get_tree()->get_root()->set_as_audio_listener_2d(false);
-		get_tree()->set_auto_accept_quit(false);
-		get_tree()->connect("files_dropped", this, "_dropped_files");
+			PopupMenu *p = help_menu->get_popup();
+			p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_ISSUES), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_icon("Instance", "EditorIcons"));
+			p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
 
-		/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
-	}
+			_update_update_spinner();
+		} break;
 
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-
-		editor_data.clear_edited_scenes();
-	}
-	if (p_what == NOTIFICATION_READY) {
-
-		VisualServer::get_singleton()->viewport_set_hide_scenario(get_scene_root()->get_viewport_rid(), true);
-		VisualServer::get_singleton()->viewport_set_hide_canvas(get_scene_root()->get_viewport_rid(), true);
-		VisualServer::get_singleton()->viewport_set_disable_environment(get_viewport()->get_viewport_rid(), true);
-
-		feature_profile_manager->notify_changed();
-
-		if (!main_editor_buttons[EDITOR_3D]->is_visible()) { //may be hidden due to feature profile
-			_editor_select(EDITOR_2D);
-		} else {
-			_editor_select(EDITOR_3D);
-		}
-
-		_update_debug_options();
-
-		/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
-	}
-
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN) {
-
-		// Restore the original FPS cap after focusing back on the editor
-		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
-
-		EditorFileSystem::get_singleton()->scan_changes();
-	}
-
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
-
-		// Set a low FPS cap to decrease CPU/GPU usage while the editor is unfocused
-		OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
-	}
-
-	if (p_what == MainLoop::NOTIFICATION_WM_QUIT_REQUEST) {
-
-		_menu_option_confirm(FILE_QUIT, false);
-	}
-
-	if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-		scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-		Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
-
-		theme_base->set_theme(theme);
-		gui_base->set_theme(theme);
-
-		gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
-		scene_root_parent->add_style_override("panel", gui_base->get_stylebox("Content", "EditorStyles"));
-		bottom_panel->add_style_override("panel", gui_base->get_stylebox("panel", "TabContainer"));
-		scene_tabs->add_style_override("tab_fg", gui_base->get_stylebox("SceneTabFG", "EditorStyles"));
-		scene_tabs->add_style_override("tab_bg", gui_base->get_stylebox("SceneTabBG", "EditorStyles"));
-
-		file_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-		project_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-		debug_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-		settings_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-		help_menu->add_style_override("hover", gui_base->get_stylebox("MenuHover", "EditorStyles"));
-
-		if (EDITOR_GET("interface/scene_tabs/resize_if_many_tabs")) {
-			scene_tabs->set_min_width(int(EDITOR_GET("interface/scene_tabs/minimum_width")) * EDSCALE);
-		} else {
-			scene_tabs->set_min_width(0);
-		}
-		_update_scene_tabs();
-
-		recent_scenes->set_as_minsize();
-
-		// debugger area
-		if (ScriptEditor::get_singleton()->get_debugger()->is_visible())
-			bottom_panel->add_style_override("panel", gui_base->get_stylebox("BottomPanelDebuggerOverride", "EditorStyles"));
-
-		// update_icons
-		for (int i = 0; i < singleton->main_editor_buttons.size(); i++) {
-
-			ToolButton *tb = singleton->main_editor_buttons[i];
-			EditorPlugin *p_editor = singleton->editor_table[i];
-			Ref<Texture> icon = p_editor->get_icon();
-
-			if (icon.is_valid()) {
-				tb->set_icon(icon);
-			} else if (singleton->gui_base->has_icon(p_editor->get_name(), "EditorIcons")) {
-				tb->set_icon(singleton->gui_base->get_icon(p_editor->get_name(), "EditorIcons"));
-			}
-		}
-
-		_build_icon_type_cache();
-
-		play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
-		play_scene_button->set_icon(gui_base->get_icon("PlayScene", "EditorIcons"));
-		play_custom_scene_button->set_icon(gui_base->get_icon("PlayCustom", "EditorIcons"));
-		pause_button->set_icon(gui_base->get_icon("Pause", "EditorIcons"));
-		stop_button->set_icon(gui_base->get_icon("Stop", "EditorIcons"));
-
-		prev_scene->set_icon(gui_base->get_icon("PrevScene", "EditorIcons"));
-		distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
-		scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
-
-		// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
-		dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
-		dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
-
-		PopupMenu *p = help_menu->get_popup();
-		p->set_item_icon(p->get_item_index(HELP_SEARCH), gui_base->get_icon("HelpSearch", "EditorIcons"));
-		p->set_item_icon(p->get_item_index(HELP_DOCS), gui_base->get_icon("Instance", "EditorIcons"));
-		p->set_item_icon(p->get_item_index(HELP_QA), gui_base->get_icon("Instance", "EditorIcons"));
-		p->set_item_icon(p->get_item_index(HELP_ISSUES), gui_base->get_icon("Instance", "EditorIcons"));
-		p->set_item_icon(p->get_item_index(HELP_COMMUNITY), gui_base->get_icon("Instance", "EditorIcons"));
-		p->set_item_icon(p->get_item_index(HELP_ABOUT), gui_base->get_icon("Godot", "EditorIcons"));
-
-		_update_update_spinner();
-	}
-
-	if (p_what == Control::NOTIFICATION_RESIZED) {
-		_update_scene_tabs();
+		case Control::NOTIFICATION_RESIZED: {
+			_update_scene_tabs();
+		} break;
 	}
 }
 
