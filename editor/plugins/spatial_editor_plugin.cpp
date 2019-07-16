@@ -283,7 +283,8 @@ void SpatialEditorViewport::_select_clicked(bool p_append, bool p_single) {
 		node = node->get_parent();
 	}
 
-	_select(selected, clicked_wants_append, true);
+	if (!_is_node_locked(selected))
+		_select(selected, clicked_wants_append, true);
 }
 
 void SpatialEditorViewport::_select(Node *p_node, bool p_append, bool p_single) {
@@ -513,7 +514,7 @@ void SpatialEditorViewport::_select_region() {
 	for (int i = 0; i < instances.size(); i++) {
 
 		Spatial *sp = Object::cast_to<Spatial>(ObjectDB::get_instance(instances[i]));
-		if (!sp)
+		if (!sp && _is_node_locked(sp))
 			continue;
 
 		Node *item = Object::cast_to<Node>(sp);
@@ -535,6 +536,8 @@ void SpatialEditorViewport::_select_region() {
 		}
 
 		if (selected.find(item) != -1) continue;
+
+		if (_is_node_locked(Object::cast_to<Spatial>(item))) continue;
 
 		Ref<EditorSpatialGizmo> seg = sp->get_gizmo();
 
@@ -833,7 +836,9 @@ void SpatialEditorViewport::_surface_focus_exit() {
 
 	view_menu->set_disable_shortcuts(true);
 }
-
+bool SpatialEditorViewport ::_is_node_locked(const Node *p_node) {
+	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
+}
 void SpatialEditorViewport::_list_select(Ref<InputEventMouseButton> b) {
 
 	_find_items_at_pos(b->get_position(), clicked_includes_current, selection_results, b->get_shift());
