@@ -1298,7 +1298,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
 	int current_tab = editor->get_current_tab();
-
+	_save_scenes_after_move(file_renames); // save scenes before updating
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
 	_update_project_settings_after_move(file_renames);
@@ -1407,7 +1407,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 
 	if (is_moved) {
 		int current_tab = editor->get_current_tab();
-
+		_save_scenes_after_move(file_renames); //save scenes before updating
 		_update_dependencies_after_move(file_renames);
 		_update_resource_paths_after_move(file_renames);
 		_update_project_settings_after_move(file_renames);
