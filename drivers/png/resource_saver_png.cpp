@@ -79,7 +79,7 @@ bool ResourceSaverPNG::recognize(const RES &p_resource) const {
 
 void ResourceSaverPNG::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 
-	if (Object::cast_to<Texture>(*p_resource)) {
+	if (Object::cast_to<ImageTexture>(*p_resource)) {
 		p_extensions->push_back("png");
 	}
 }
