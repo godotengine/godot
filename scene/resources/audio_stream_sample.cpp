@@ -564,7 +564,8 @@ Error AudioStreamSample::save_to_wav(const String &p_path) {
 	file->store_32(sub_chunk_2_size); //Subchunk2Size
 
 	// Add data
-	PoolVector<uint8_t>::Read read_data = get_data().read();
+	PoolVector<uint8_t> data = get_data();
+	PoolVector<uint8_t>::Read read_data = data.read();
 	switch (format) {
 		case AudioStreamSample::FORMAT_8_BITS:
 			for (unsigned int i = 0; i < data_bytes; i++) {
