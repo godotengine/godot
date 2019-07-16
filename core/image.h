@@ -36,6 +36,10 @@
 #include "core/pool_vector.h"
 #include "core/resource.h"
 
+#ifdef EXTENDED_LIMITS
+#include <limits>
+#endif
+
 /**
  *	@author Juan Linietsky <reduzio@gmail.com>
  *
@@ -55,10 +59,17 @@ class Image : public Resource {
 public:
 	static SavePNGFunc save_png_func;
 
+#ifdef EXTENDED_LIMITS
+	enum {
+		MAX_WIDTH = std::numeric_limits<int>::max(),
+		MAX_HEIGHT = std::numeric_limits<int>::max()
+	};
+#else
 	enum {
 		MAX_WIDTH = 16384, // force a limit somehow
 		MAX_HEIGHT = 16384 // force a limit somehow
 	};
+#endif
 
 	enum Format {
 
