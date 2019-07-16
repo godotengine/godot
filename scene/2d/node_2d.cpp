@@ -369,9 +369,11 @@ Transform2D Node2D::get_relative_transform_to_parent(const Node *p_parent) const
 		return parent_2d->get_relative_transform_to_parent(p_parent) * get_transform();
 }
 
-void Node2D::look_at(const Vector2 &p_pos) {
+float Node2D::look_at(const Vector2 &p_pos) {
 
-	rotate(get_angle_to(p_pos));
+	float rot_angle = get_angle_to(p_pos);
+	rotate(rot_angle);
+	return rot_angle;
 }
 
 float Node2D::get_angle_to(const Vector2 &p_pos) const {
