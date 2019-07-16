@@ -338,6 +338,8 @@ void AudioServer::_mix_step() {
 		E->get().callback(E->get().userdata);
 	}
 
+	emit_signal("audio_mix_callback");
+
 	for (int i = buses.size() - 1; i >= 0; i--) {
 		//go bus by bus
 		Bus *bus = buses[i];
@@ -1057,6 +1059,8 @@ void AudioServer::update() {
 
 		E->get().callback(E->get().userdata);
 	}
+
+	emit_signal("audio_update_callback");
 }
 
 void AudioServer::load_default_bus_layout() {
@@ -1417,6 +1421,8 @@ void AudioServer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
+	ADD_SIGNAL(MethodInfo("audio_mix_callback"));
+	ADD_SIGNAL(MethodInfo("audio_update_callback"));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);
