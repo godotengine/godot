@@ -3958,10 +3958,6 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 								if (!n) {
 									return ERR_PARSE_ERROR;
 								}
-								if (n->type != Node::TYPE_CONSTANT) {
-									_set_error("Expected constant expression in the array declaration");
-									return ERR_PARSE_ERROR;
-								}
 
 								if (var.type != n->get_datatype()) {
 									_set_error("Invalid assignment of '" + get_datatype_name(n->get_datatype()) + "' to '" + get_datatype_name(var.type) + "'");
