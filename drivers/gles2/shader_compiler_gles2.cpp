@@ -587,7 +587,15 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (var_node->index_expression != NULL) {
 				code += "[";
-				code += _dump_node_code(var_node->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				if (Engine::get_singleton()->is_editor_hint() && var_node->index_expression->type != ShaderLanguage::Node::TYPE_CONSTANT) { // to prevent shader crash in editor mode, when the given expression return incorrect index
+					code += "int(clamp(";
+					code += _dump_node_code(var_node->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+					code += ",0,";
+					code += _mkid(var_node->name);
+					code += ".length()-1))";
+				} else {
+					code += _dump_node_code(var_node->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				}
 				code += "]";
 			}
 
