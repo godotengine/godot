@@ -2246,8 +2246,6 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			//printf("Plugin\n");
 		} else if ((accepted = _gui_input_open_scene_on_double_click(p_event))) {
 			//printf("Open scene on double click\n");
-		} else if ((accepted = _gui_input_anchors(p_event))) {
-			//printf("Anchors\n");
 		} else if ((accepted = _gui_input_scale(p_event))) {
 			//printf("Set scale\n");
 		} else if ((accepted = _gui_input_pivot(p_event))) {
@@ -2258,6 +2256,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			//printf("Rotate\n");
 		} else if ((accepted = _gui_input_move(p_event))) {
 			//printf("Move\n");
+		} else if ((accepted = _gui_input_anchors(p_event))) {
+			//printf("Anchors\n");
 		} else if ((accepted = _gui_input_select(p_event))) {
 			//printf("Selection\n");
 		} else {
