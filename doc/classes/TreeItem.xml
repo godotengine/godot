@@ -347,6 +347,7 @@
 			<argument index="2" name="disabled" type="bool">
 			</argument>
 			<description>
+				If [code]true[/code], disables the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="set_cell_mode">
