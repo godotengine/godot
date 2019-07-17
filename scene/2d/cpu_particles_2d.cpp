@@ -493,7 +493,7 @@ void CPUParticles2D::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name == "emission_rect_extents" && emission_shape != EMISSION_SHAPE_RECTANGLE) {
+	if (property.name == "emission_rect_extents" && emission_shape != EMISSION_SHAPE_RECTANGLE && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS) {
 		property.usage = 0;
 	}
 
@@ -690,7 +690,7 @@ void CPUParticles2D::_particles_process(float p_delta) {
 
 					int random_idx = Math::rand() % pc;
 
-					p.transform[2] = emission_points.get(random_idx);
+					p.transform[2] = emission_points.get(random_idx) * emission_rect_extents - (emission_rect_extents * 0.5);
 
 					if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS && emission_normals.size() == pc) {
 						p.velocity = emission_normals.get(random_idx);

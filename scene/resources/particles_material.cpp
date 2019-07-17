@@ -192,6 +192,7 @@ void ParticlesMaterial::_update_shader() {
 			FALLTHROUGH;
 		}
 		case EMISSION_SHAPE_POINTS: {
+			code += "uniform vec3 emission_box_extents;\n";
 			code += "uniform sampler2D emission_texture_points : hint_black;\n";
 			code += "uniform int emission_texture_point_count;\n";
 			if (emission_color_texture.is_valid()) {
@@ -350,7 +351,7 @@ void ParticlesMaterial::_update_shader() {
 		} break;
 		case EMISSION_SHAPE_POINTS:
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
-			code += "		TRANSFORM[3].xyz = texelFetch(emission_texture_points, emission_tex_ofs, 0).xyz;\n";
+			code += "		TRANSFORM[3].xyz = texelFetch(emission_texture_points, emission_tex_ofs, 0).xyz * emission_box_extents - (emission_box_extents * 0.5);\n";
 
 			if (emission_shape == EMISSION_SHAPE_DIRECTED_POINTS) {
 				if (flags[FLAG_DISABLE_Z]) {
@@ -1052,7 +1053,7 @@ void ParticlesMaterial::_validate_property(PropertyInfo &property) const {
 		property.usage = 0;
 	}
 
-	if (property.name == "emission_box_extents" && emission_shape != EMISSION_SHAPE_BOX) {
+	if (property.name == "emission_box_extents" && (emission_shape != EMISSION_SHAPE_BOX && emission_shape != EMISSION_SHAPE_POINTS && emission_shape != EMISSION_SHAPE_DIRECTED_POINTS)) {
 		property.usage = 0;
 	}
 
