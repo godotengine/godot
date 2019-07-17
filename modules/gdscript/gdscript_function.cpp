@@ -1784,19 +1784,8 @@ GDScriptFunction::~GDScriptFunction() {
 
 Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
-	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
-#ifdef DEBUG_ENABLED
-		ERR_EXPLAIN("Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
-		ERR_FAIL_V(Variant());
-#else
-		return Variant();
-#endif
-	}
-
 	Variant arg;
 	r_error.error = Variant::CallError::CALL_OK;
-
-	ERR_FAIL_COND_V(!function, Variant());
 
 	if (p_argcount == 0) {
 		r_error.error = Variant::CallError::CALL_ERROR_TOO_FEW_ARGUMENTS;
@@ -1823,44 +1812,7 @@ Variant GDScriptFunctionState::_signal_callback(const Variant **p_args, int p_ar
 		return Variant();
 	}
 
-	state.result = arg;
-	Variant ret = function->call(NULL, NULL, 0, r_error, &state);
-
-	bool completed = true;
-
-	// If the return value is a GDScriptFunctionState reference,
-	// then the function did yield again after resuming.
-	if (ret.is_ref()) {
-		GDScriptFunctionState *gdfs = Object::cast_to<GDScriptFunctionState>(ret);
-		if (gdfs && gdfs->function == function) {
-			completed = false;
-			gdfs->first_state = first_state.is_valid() ? first_state : Ref<GDScriptFunctionState>(this);
-		}
-	}
-
-	function = NULL; //cleaned up;
-	state.result = Variant();
-
-	if (completed) {
-		if (first_state.is_valid()) {
-			first_state->emit_signal("completed", ret);
-		} else {
-			emit_signal("completed", ret);
-		}
-	}
-
-#ifdef DEBUG_ENABLED
-	if (ScriptDebugger::get_singleton())
-		GDScriptLanguage::get_singleton()->exit_function();
-	if (state.stack_size) {
-		//free stack
-		Variant *stack = (Variant *)state.stack.ptr();
-		for (int i = 0; i < state.stack_size; i++)
-			stack[i].~Variant();
-	}
-#endif
-
-	return ret;
+	return resume(arg);
 }
 
 bool GDScriptFunctionState::is_valid(bool p_extended_check) const {
