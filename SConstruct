@@ -422,7 +422,7 @@ if selected_platform in platform_list:
         if (can_build):
             config.configure(env)
             env.module_list.append(x)
-            
+
             # Get doc classes paths (if present)
             try:
                 doc_classes = config.get_doc_classes()
@@ -522,12 +522,22 @@ if selected_platform in platform_list:
                 env.AppendUnique(CPPDEFINES=[header[1]])
 
 elif selected_platform != "":
+    if selected_platform == "list":
+        print("The following platforms are available:\n")
+    else:
+        print('Invalid target platform "' + selected_platform + '".')
+        print("The following platforms were detected:\n")
 
-    print("Invalid target platform: " + selected_platform)
-    print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
+
     print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform == "list":
+        # Exit early to suppress the rest of the built-in SCons messages
+        sys.exit(0)
+    else:
+        sys.exit(255)
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():
