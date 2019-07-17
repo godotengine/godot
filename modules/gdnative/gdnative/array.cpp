@@ -327,6 +327,15 @@ godot_array GDAPI godot_array_duplicate(const godot_array *p_self, const godot_b
 	return res;
 }
 
+godot_array GDAPI godot_array_slice(const godot_array *p_self, const godot_int p_begin, const godot_int p_end, const godot_int p_step, const godot_bool p_deep) {
+	const Array *self = (const Array *)p_self;
+	godot_array res;
+	Array *val = (Array *)&res;
+	memnew_placement(val, Array);
+	*val = self->slice(p_begin, p_end, p_step, p_deep);
+	return res;
+}
+
 godot_variant GDAPI godot_array_max(const godot_array *p_self) {
 	const Array *self = (const Array *)p_self;
 	godot_variant v;

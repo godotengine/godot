@@ -80,6 +80,17 @@
               ["const godot_vector2 *", "p_self"],
               ["const godot_vector2 *", "p_to"]
             ]
+          },
+          {
+            "name": "godot_array_slice",
+            "return_type": "godot_array",
+            "arguments": [
+              ["const godot_array *", "p_self"],
+              ["const godot_int", "p_begin"],
+              ["const godot_int", "p_end"],
+              ["const godot_int", "p_step"],
+              ["const godot_bool", "p_deep"]
+            ]
           }
         ]
       },
