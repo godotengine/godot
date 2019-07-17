@@ -159,11 +159,11 @@ bool GDScriptLanguage::validate(const String &p_script, int &r_line_error, int &
 		for (int i = 0; i < cl->subclasses.size(); i++) {
 			for (int j = 0; j < cl->subclasses[i]->functions.size(); j++) {
 
-				funcs[cl->subclasses[i]->functions[j]->line] = String(cl->subclasses[i]->name) + "." + String(cl->subclasses[i]->functions[j]->name);
+				funcs[cl->subclasses[i]->functions[j]->line] = String(cl->subclasses[i]->name) + "." + cl->subclasses[i]->functions[j]->name;
 			}
 			for (int j = 0; j < cl->subclasses[i]->static_functions.size(); j++) {
 
-				funcs[cl->subclasses[i]->static_functions[j]->line] = String(cl->subclasses[i]->name) + "." + String(cl->subclasses[i]->static_functions[j]->name);
+				funcs[cl->subclasses[i]->static_functions[j]->line] = String(cl->subclasses[i]->name) + "." + cl->subclasses[i]->static_functions[j]->name;
 			}
 		}
 
