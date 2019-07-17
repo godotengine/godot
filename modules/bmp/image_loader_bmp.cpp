@@ -47,9 +47,6 @@ Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		size_t height = (size_t)p_header.bmp_info_header.bmp_height;
 		size_t bits_per_pixel = (size_t)p_header.bmp_info_header.bmp_bit_count;
 
-		if (p_header.bmp_info_header.bmp_compression != BI_RGB) {
-			err = FAILED;
-		}
 		// Check whether we can load it
 
 		if (bits_per_pixel == 1) {
@@ -238,11 +235,16 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 			bmp_header.bmp_info_header.bmp_colors_used = f->get_32();
 			bmp_header.bmp_info_header.bmp_important_colors = f->get_32();
 
-			// Compressed bitmaps not supported, stop parsing
-			if (bmp_header.bmp_info_header.bmp_compression != BI_RGB) {
-				ERR_EXPLAIN("Unsupported bmp file: " + f->get_path());
-				f->close();
-				ERR_FAIL_V(ERR_UNAVAILABLE);
+			switch (bmp_header.bmp_info_header.bmp_compression) {
+				case BI_RLE8:
+				case BI_RLE4:
+				case BI_CMYKRLE8:
+				case BI_CMYKRLE4: {
+					// Stop parsing
+					ERR_EXPLAIN("Compressed BMP files are not supported: " + f->get_path());
+					f->close();
+					ERR_FAIL_V(ERR_UNAVAILABLE);
+				} break;
 			}
 			// Don't rely on sizeof(bmp_file_header) as structure padding
 			// adds 2 bytes offset leading to misaligned color table reading
