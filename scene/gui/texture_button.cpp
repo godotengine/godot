@@ -161,6 +161,13 @@ void TextureButton::_notification(int p_what) {
 					} else
 						texdraw = disabled;
 				} break;
+				case DRAW_FOCUSED: {
+					if (disabled.is_null()) {
+						if (normal.is_valid())
+							texdraw = normal;
+					} else
+						texdraw = disabled;
+				} break;
 			}
 
 			if (texdraw.is_valid()) {

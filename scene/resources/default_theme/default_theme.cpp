@@ -182,6 +182,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	Color control_font_color_low = Color(0.69, 0.69, 0.69);
 	Color control_font_color_hover = Color(0.94, 0.94, 0.94);
 	Color control_font_color_disabled = Color(0.9, 0.9, 0.9, 0.2);
+	Color control_font_color_focused = Color(0.88, 0.88, 0.88);
 	Color control_font_color_pressed = Color(1, 1, 1);
 	Color font_color_selection = Color(0.49, 0.49, 0.49);
 
@@ -216,6 +217,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("font_color_pressed", "Button", control_font_color_pressed);
 	theme->set_color("font_color_hover", "Button", control_font_color_hover);
 	theme->set_color("font_color_disabled", "Button", control_font_color_disabled);
+	theme->set_color("font_color_focused", "Button", control_font_color_focused);
 
 	theme->set_constant("hseparation", "Button", 2 * scale);
 

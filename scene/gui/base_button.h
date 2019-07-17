@@ -63,6 +63,7 @@ private:
 		bool hovering;
 		bool press_attempt;
 		bool pressing_inside;
+		bool focused;
 
 		bool disabled;
 
@@ -91,6 +92,7 @@ public:
 		DRAW_HOVER,
 		DRAW_DISABLED,
 		DRAW_HOVER_PRESSED,
+		DRAW_FOCUSED,
 	};
 
 	DrawMode get_draw_mode() const;

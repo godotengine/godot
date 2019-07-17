@@ -99,12 +99,14 @@ void BaseButton::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
 
-		status.hovering = true;
+		//status.hovering = true;
+		status.focused = true;
 		update();
 	}
 
 	if (p_what == NOTIFICATION_FOCUS_EXIT) {
 
+		status.focused = false;
 		if (status.press_attempt) {
 			status.press_attempt = false;
 			status.hovering = false;
@@ -253,6 +255,10 @@ BaseButton::DrawMode BaseButton::get_draw_mode() const {
 
 		return DRAW_HOVER;
 	} else {
+
+		if (!status.press_attempt && !status.pressed && status.focused) {
+			return DRAW_FOCUSED;
+		}
 		/* determine if pressed or not */
 
 		bool pressing;
@@ -459,6 +465,7 @@ BaseButton::BaseButton() {
 	status.hovering = false;
 	status.pressing_inside = false;
 	status.disabled = false;
+	status.focused = false;
 	set_focus_mode(FOCUS_ALL);
 	enabled_focus_mode = FOCUS_ALL;
 	action_mode = ACTION_MODE_BUTTON_RELEASE;

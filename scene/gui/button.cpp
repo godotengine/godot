@@ -138,6 +138,11 @@ void Button::_notification(int p_what) {
 					color_icon = get_color("icon_color_disabled");
 
 			} break;
+			case DRAW_FOCUSED: {
+
+				color = get_color("font_color_focused");
+
+			} break;
 		}
 
 		if (has_focus()) {

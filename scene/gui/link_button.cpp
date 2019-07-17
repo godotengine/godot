@@ -98,6 +98,10 @@ void LinkButton::_notification(int p_what) {
 					do_underline = underline_mode == UNDERLINE_MODE_ALWAYS;
 
 				} break;
+				case DRAW_FOCUSED: {
+
+					color = get_color("font_color_focused");
+				}
 			}
 
 			if (has_focus()) {
