@@ -74,6 +74,7 @@ class OS_Server : public OS_Unix {
 #endif
 
 	CrashHandler crash_handler;
+	CameraServer *camera_server;
 
 	int video_driver_index;
 
