@@ -403,54 +403,60 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_PROCESS) {
+	switch (p_what) {
 
-		// Make the progress bar visible again when retrying the download
-		progress->set_modulate(Color(1, 1, 1, 1));
+		case NOTIFICATION_READY: {
 
-		if (download->get_downloaded_bytes() > 0) {
-			progress->set_max(download->get_body_size());
-			progress->set_value(download->get_downloaded_bytes());
-		}
+			add_style_override("panel", get_stylebox("panel", "TabContainer"));
+		} break;
+		case NOTIFICATION_PROCESS: {
 
-		int cstatus = download->get_http_client_status();
+			// Make the progress bar visible again when retrying the download.
+			progress->set_modulate(Color(1, 1, 1, 1));
 
-		if (cstatus == HTTPClient::STATUS_BODY) {
-			if (download->get_body_size() > 0) {
-				status->set_text(
-						vformat(
-								TTR("Downloading (%s / %s)..."),
-								String::humanize_size(download->get_downloaded_bytes()),
-								String::humanize_size(download->get_body_size())));
-			} else {
-				// Total file size is unknown, so it cannot be displayed
-				status->set_text(TTR("Downloading..."));
+			if (download->get_downloaded_bytes() > 0) {
+				progress->set_max(download->get_body_size());
+				progress->set_value(download->get_downloaded_bytes());
 			}
-		}
 
-		if (cstatus != prev_status) {
-			switch (cstatus) {
+			int cstatus = download->get_http_client_status();
 
-				case HTTPClient::STATUS_RESOLVING: {
-					status->set_text(TTR("Resolving..."));
-					progress->set_max(1);
-					progress->set_value(0);
-				} break;
-				case HTTPClient::STATUS_CONNECTING: {
-					status->set_text(TTR("Connecting..."));
-					progress->set_max(1);
-					progress->set_value(0);
-				} break;
-				case HTTPClient::STATUS_REQUESTING: {
-					status->set_text(TTR("Requesting..."));
-					progress->set_max(1);
-					progress->set_value(0);
-				} break;
-				default: {
+			if (cstatus == HTTPClient::STATUS_BODY) {
+				if (download->get_body_size() > 0) {
+					status->set_text(vformat(
+							TTR("Downloading (%s / %s)..."),
+							String::humanize_size(download->get_downloaded_bytes()),
+							String::humanize_size(download->get_body_size())));
+				} else {
+					// Total file size is unknown, so it cannot be displayed.
+					status->set_text(TTR("Downloading..."));
 				}
 			}
-			prev_status = cstatus;
-		}
+
+			if (cstatus != prev_status) {
+				switch (cstatus) {
+
+					case HTTPClient::STATUS_RESOLVING: {
+						status->set_text(TTR("Resolving..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					case HTTPClient::STATUS_CONNECTING: {
+						status->set_text(TTR("Connecting..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					case HTTPClient::STATUS_REQUESTING: {
+						status->set_text(TTR("Requesting..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					default: {
+					}
+				}
+				prev_status = cstatus;
+			}
+		} break;
 	}
 }
 void EditorAssetLibraryItemDownload::_close() {
@@ -531,7 +537,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	hb2->add_spacer();
 
 	install = memnew(Button);
-	install->set_text(TTR("Install"));
+	install->set_text(TTR("Install..."));
 	install->set_disabled(true);
 	install->connect("pressed", this, "_install");
 
@@ -564,6 +570,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 
 	switch (p_what) {
+
 		case NOTIFICATION_READY: {
 
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
@@ -573,14 +580,12 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 			error_label->raise();
 		} break;
-
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (is_visible()) {
-				_repository_changed(0); // Update when shown for the first time
+				_repository_changed(0); // Update when shown for the first time.
 			}
 		} break;
-
 		case NOTIFICATION_PROCESS: {
 
 			HTTPClient::Status s = request->get_http_client_status();
@@ -619,6 +624,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
+			downloads_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
 			filter->set_right_icon(get_icon("Search", "EditorIcons"));
@@ -1238,9 +1244,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->connect("confirmed", this, "_install_asset");
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
-			/*item->connect("asset_selected",this,"_select_asset");
-			item->connect("author_selected",this,"_select_author");
-			item->connect("category_selected",this,"_category_selected");*/
 
 			if (r.has("icon_url") && r["icon_url"] != "") {
 				_request_image(description->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
@@ -1390,19 +1393,16 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	reverse = memnew(ToolButton);
 	reverse->set_toggle_mode(true);
 	reverse->connect("toggled", this, "_rerun_search");
-	//reverse->set_text(TTR("Reverse"));
+	reverse->set_tooltip(TTR("Reverse sorting."));
 	search_hb2->add_child(reverse);
 
 	search_hb2->add_child(memnew(VSeparator));
-
-	//search_hb2->add_spacer();
 
 	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
 	categories = memnew(OptionButton);
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
-	//search_hb2->add_spacer();
 	categories->connect("item_selected", this, "_rerun_search");
 
 	search_hb2->add_child(memnew(VSeparator));
