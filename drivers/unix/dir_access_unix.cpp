@@ -136,27 +136,31 @@ String DirAccessUnix::get_next() {
 		return "";
 	}
 
-	//typedef struct stat Stat;
-	struct stat flags;
-
 	String fname = fix_unicode_name(entry->d_name);
 
-	String f = current_dir.plus_file(fname);
+	if (entry->d_type == DT_UNKNOWN) {
+		//typedef struct stat Stat;
+		struct stat flags;
 
-	if (stat(f.utf8().get_data(), &flags) == 0) {
+		String f = current_dir.plus_file(fname);
 
-		if (S_ISDIR(flags.st_mode)) {
+		if (stat(f.utf8().get_data(), &flags) == 0) {
 
-			_cisdir = true;
+			if (S_ISDIR(flags.st_mode)) {
+
+				_cisdir = true;
+
+			} else {
+
+				_cisdir = false;
+			}
 
 		} else {
 
 			_cisdir = false;
 		}
-
 	} else {
-
-		_cisdir = false;
+		_cisdir = (entry->d_type == DT_DIR);
 	}
 
 	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
