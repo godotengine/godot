@@ -30,6 +30,7 @@
 
 #include "link_button.h"
 
+#include "core/os/os.h"
 #include "core/translation.h"
 
 void LinkButton::set_text(const String &p_text) {
@@ -47,6 +48,14 @@ String LinkButton::get_text() const {
 	return text;
 }
 
+void LinkButton::set_uri(const String &p_uri) {
+	uri = p_uri;
+}
+
+String LinkButton::get_uri() const {
+	return uri;
+}
+
 void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 	underline_mode = p_underline_mode;
 	update();
@@ -54,6 +63,14 @@ void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 
 LinkButton::UnderlineMode LinkButton::get_underline_mode() const {
 	return underline_mode;
+}
+
+void LinkButton::pressed() {
+	if (uri.empty()) {
+		return;
+	}
+
+	OS::get_singleton()->shell_open(uri);
 }
 
 Size2 LinkButton::get_minimum_size() const {
@@ -129,7 +146,8 @@ void LinkButton::_notification(int p_what) {
 void LinkButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &LinkButton::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &LinkButton::get_text);
-
+	ClassDB::bind_method(D_METHOD("set_uri", "uri"), &LinkButton::set_uri);
+	ClassDB::bind_method(D_METHOD("get_uri"), &LinkButton::get_uri);
 	ClassDB::bind_method(D_METHOD("set_underline_mode", "underline_mode"), &LinkButton::set_underline_mode);
 	ClassDB::bind_method(D_METHOD("get_underline_mode"), &LinkButton::get_underline_mode);
 
@@ -139,6 +157,7 @@ void LinkButton::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text"), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "underline", PROPERTY_HINT_ENUM, "Always,On Hover,Never"), "set_underline_mode", "get_underline_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uri"), "set_uri", "get_uri");
 }
 
 LinkButton::LinkButton() {
