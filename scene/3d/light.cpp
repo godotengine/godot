@@ -413,7 +413,7 @@ DirectionalLight::DirectionalLight() :
 
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
 	set_param(PARAM_SHADOW_BIAS, 0.1);
-	set_param(PARAM_SHADOW_MAX_DISTANCE, 200);
+	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
