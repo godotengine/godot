@@ -104,7 +104,7 @@ SoftBody::PinnedPoint::PinnedPoint(const PinnedPoint &obj_tocopy) {
 	offset = obj_tocopy.offset;
 }
 
-SoftBody::PinnedPoint SoftBody::PinnedPoint::operator=(const PinnedPoint &obj) {
+SoftBody::PinnedPoint &SoftBody::PinnedPoint::operator=(const PinnedPoint &obj) {
 	point_index = obj.point_index;
 	spatial_attachment_path = obj.spatial_attachment_path;
 	spatial_attachment = obj.spatial_attachment;
