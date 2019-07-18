@@ -9,7 +9,7 @@ using Path = System.IO.Path;
 
 namespace GodotTools
 {
-    public class MonoBottomPanel : VBoxContainer
+    public class BottomPanel : VBoxContainer
     {
         private EditorInterface editorInterface;
 
@@ -34,7 +34,7 @@ namespace GodotTools
 
             for (int i = 0; i < buildTabs.GetChildCount(); i++)
             {
-                var tab = (MonoBuildTab) buildTabs.GetChild(i);
+                var tab = (BuildTab) buildTabs.GetChild(i);
 
                 if (tab == null)
                     continue;
@@ -49,11 +49,11 @@ namespace GodotTools
                 itemTooltip += "\nStatus: ";
 
                 if (tab.BuildExited)
-                    itemTooltip += tab.BuildResult == MonoBuildTab.BuildResults.Success ? "Succeeded" : "Errored";
+                    itemTooltip += tab.BuildResult == BuildTab.BuildResults.Success ? "Succeeded" : "Errored";
                 else
                     itemTooltip += "Running";
 
-                if (!tab.BuildExited || tab.BuildResult == MonoBuildTab.BuildResults.Error)
+                if (!tab.BuildExited || tab.BuildResult == BuildTab.BuildResults.Error)
                     itemTooltip += $"\nErrors: {tab.ErrorCount}";
 
                 itemTooltip += $"\nWarnings: {tab.WarningCount}";
@@ -68,15 +68,15 @@ namespace GodotTools
             }
         }
 
-        public MonoBuildTab GetBuildTabFor(MonoBuildInfo buildInfo)
+        public BuildTab GetBuildTabFor(BuildInfo buildInfo)
         {
-            foreach (var buildTab in new Array<MonoBuildTab>(buildTabs.GetChildren()))
+            foreach (var buildTab in new Array<BuildTab>(buildTabs.GetChildren()))
             {
                 if (buildTab.BuildInfo.Equals(buildInfo))
                     return buildTab;
             }
 
-            var newBuildTab = new MonoBuildTab(buildInfo);
+            var newBuildTab = new BuildTab(buildInfo);
             AddBuildTab(newBuildTab);
 
             return newBuildTab;
@@ -120,7 +120,7 @@ namespace GodotTools
             if (currentTab < 0 || currentTab >= buildTabs.GetTabCount())
                 throw new InvalidOperationException("No tab selected");
 
-            var buildTab = (MonoBuildTab) buildTabs.GetChild(currentTab);
+            var buildTab = (BuildTab) buildTabs.GetChild(currentTab);
             buildTab.WarningsVisible = pressed;
             buildTab.UpdateIssuesList();
         }
@@ -132,7 +132,7 @@ namespace GodotTools
             if (currentTab < 0 || currentTab >= buildTabs.GetTabCount())
                 throw new InvalidOperationException("No tab selected");
 
-            var buildTab = (MonoBuildTab) buildTabs.GetChild(currentTab);
+            var buildTab = (BuildTab) buildTabs.GetChild(currentTab);
             buildTab.ErrorsVisible = pressed;
             buildTab.UpdateIssuesList();
         }
@@ -145,7 +145,7 @@ namespace GodotTools
             string editorScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor");
             string playerScriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, "scripts_metadata.editor_player");
 
-            CSharpProject.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, editorScriptsMetadataPath);
+            CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, editorScriptsMetadataPath);
 
             if (File.Exists(editorScriptsMetadataPath))
             {
@@ -166,7 +166,7 @@ namespace GodotTools
                 Internal.GodotIs32Bits() ? "32" : "64"
             };
 
-            bool buildSuccess = GodotSharpBuilds.BuildProjectBlocking("Tools", godotDefines);
+            bool buildSuccess = BuildManager.BuildProjectBlocking("Tools", godotDefines);
 
             if (!buildSuccess)
                 return;
@@ -193,9 +193,9 @@ namespace GodotTools
 
             int selectedItem = selectedItems[0];
 
-            var buildTab = (MonoBuildTab) buildTabs.GetTabControl(selectedItem);
+            var buildTab = (BuildTab) buildTabs.GetTabControl(selectedItem);
 
-            OS.ShellOpen(Path.Combine(buildTab.BuildInfo.LogsDirPath, GodotSharpBuilds.MsBuildLogFileName));
+            OS.ShellOpen(Path.Combine(buildTab.BuildInfo.LogsDirPath, BuildManager.MsBuildLogFileName));
         }
 
         public override void _Notification(int what)
@@ -211,13 +211,13 @@ namespace GodotTools
             }
         }
 
-        public void AddBuildTab(MonoBuildTab buildTab)
+        public void AddBuildTab(BuildTab buildTab)
         {
             buildTabs.AddChild(buildTab);
             RaiseBuildTab(buildTab);
         }
 
-        public void RaiseBuildTab(MonoBuildTab buildTab)
+        public void RaiseBuildTab(BuildTab buildTab)
         {
             if (buildTab.GetParent() != buildTabs)
                 throw new InvalidOperationException("Build tab is not in the tabs list");

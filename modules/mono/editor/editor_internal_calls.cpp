@@ -350,6 +350,21 @@ MonoString *godot_icall_Internal_MonoWindowsInstallRoot() {
 #endif
 }
 
+void godot_icall_Internal_EditorRunPlay() {
+	EditorNode::get_singleton()->run_play();
+}
+
+void godot_icall_Internal_EditorRunStop() {
+	EditorNode::get_singleton()->run_stop();
+}
+
+void godot_icall_Internal_ScriptEditorDebugger_ReloadScripts() {
+	ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+	if (sed) {
+		sed->reload_scripts();
+	}
+}
+
 MonoString *godot_icall_Utils_OS_GetPlatformName() {
 	String os_name = OS::get_singleton()->get_name();
 	return GDMonoMarshal::mono_string_from_godot(os_name);
@@ -414,7 +429,9 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorEdit", (void *)godot_icall_Internal_ScriptEditorEdit);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorNodeShowScriptScreen", (void *)godot_icall_Internal_EditorNodeShowScriptScreen);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GetScriptsMetadataOrNothing", (void *)godot_icall_Internal_GetScriptsMetadataOrNothing);
-	mono_add_internal_call("GodotTools.Internals.Internal::internal_MonoWindowsInstallRoot", (void *)godot_icall_Internal_MonoWindowsInstallRoot);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunPlay", (void *)godot_icall_Internal_EditorRunPlay);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunStop", (void *)godot_icall_Internal_EditorRunStop);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebugger_ReloadScripts", (void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts);
 
 	// Globals
 	mono_add_internal_call("GodotTools.Internals.Globals::internal_EditorScale", (void *)godot_icall_Globals_EditorScale);

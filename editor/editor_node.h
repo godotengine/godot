@@ -867,6 +867,9 @@ public:
 	static void add_build_callback(EditorBuildCallback p_callback);
 
 	bool ensure_main_scene(bool p_from_native);
+
+	void run_play();
+	void run_stop();
 };
 
 struct EditorProgress {

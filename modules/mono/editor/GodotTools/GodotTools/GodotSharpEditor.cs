@@ -2,16 +2,18 @@ using Godot;
 using GodotTools.Utils;
 using System;
 using System.Collections.Generic;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
+using GodotTools.Ides;
 using GodotTools.Internals;
 using GodotTools.ProjectEditor;
 using static GodotTools.Internals.Globals;
 using File = GodotTools.Utils.File;
-using Path = System.IO.Path;
 using OS = GodotTools.Utils.OS;
 
 namespace GodotTools
 {
+    [SuppressMessage("ReSharper", "ClassNeverInstantiated.Global")]
     public class GodotSharpEditor : EditorPlugin, ISerializationListener
     {
         private EditorSettings editorSettings;
@@ -24,12 +26,11 @@ namespace GodotTools
 
         private ToolButton bottomPanelBtn;
 
-        private MonoDevelopInstance monoDevelopInstance;
-        private MonoDevelopInstance visualStudioForMacInstance;
+        public GodotIdeManager GodotIdeManager { get; private set; }
 
         private WeakRef exportPluginWeak; // TODO Use WeakReference once we have proper serialization
 
-        public MonoBottomPanel MonoBottomPanel { get; private set; }
+        public BottomPanel BottomPanel { get; private set; }
 
         private bool CreateProjectSolution()
         {
@@ -44,7 +45,7 @@ namespace GodotTools
                 if (name.Empty())
                     name = "UnnamedProject";
 
-                string guid = CSharpProject.GenerateGameProject(path, name);
+                string guid = CsProjOperations.GenerateGameProject(path, name);
 
                 if (guid.Length > 0)
                 {
@@ -133,7 +134,7 @@ namespace GodotTools
                     return; // Failed to create solution
             }
 
-            Instance.MonoBottomPanel.BuildProjectPressed();
+            Instance.BottomPanel.BuildProjectPressed();
         }
 
         public override void _Notification(int what)
@@ -153,19 +154,10 @@ namespace GodotTools
             }
         }
 
-        public enum MenuOptions
+        private enum MenuOptions
         {
             CreateSln,
             AboutCSharp,
-        }
-
-        public enum ExternalEditor
-        {
-            None,
-            VisualStudio, // TODO (Windows-only)
-            VisualStudioForMac, // Mac-only
-            MonoDevelop,
-            VsCode
         }
 
         public void ShowErrorDialog(string message, string title = "Error")
@@ -184,11 +176,30 @@ namespace GodotTools
 
         public Error OpenInExternalEditor(Script script, int line, int col)
         {
-            var editor = (ExternalEditor) editorSettings.GetSetting("mono/editor/external_editor");
+            var editor = (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor");
 
             switch (editor)
             {
-                case ExternalEditor.VsCode:
+                case ExternalEditorId.None:
+                    // Tells the caller to fallback to the global external editor settings or the built-in editor
+                    return Error.Unavailable;
+                case ExternalEditorId.VisualStudio:
+                    throw new NotSupportedException();
+                case ExternalEditorId.VisualStudioForMac:
+                    goto case ExternalEditorId.MonoDevelop;
+                case ExternalEditorId.MonoDevelop:
+                {
+                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
+
+                    if (line >= 0)
+                        GodotIdeManager.SendOpenFile(scriptPath, line + 1, col);
+                    else
+                        GodotIdeManager.SendOpenFile(scriptPath);
+
+                    break;
+                }
+
+                case ExternalEditorId.VsCode:
                 {
                     if (_vsCodePath.Empty() || !File.Exists(_vsCodePath))
                     {
@@ -273,47 +284,6 @@ namespace GodotTools
                     break;
                 }
 
-                case ExternalEditor.VisualStudioForMac:
-                    goto case ExternalEditor.MonoDevelop;
-                case ExternalEditor.MonoDevelop:
-                {
-                    MonoDevelopInstance GetMonoDevelopInstance(string solutionPath)
-                    {
-                        if (OS.IsOSX() && editor == ExternalEditor.VisualStudioForMac)
-                        {
-                            if (visualStudioForMacInstance == null)
-                                visualStudioForMacInstance = new MonoDevelopInstance(solutionPath, MonoDevelopInstance.EditorId.VisualStudioForMac);
-
-                            return visualStudioForMacInstance;
-                        }
-
-                        if (monoDevelopInstance == null)
-                            monoDevelopInstance = new MonoDevelopInstance(solutionPath, MonoDevelopInstance.EditorId.MonoDevelop);
-
-                        return monoDevelopInstance;
-                    }
-
-                    string scriptPath = ProjectSettings.GlobalizePath(script.ResourcePath);
-
-                    if (line >= 0)
-                        scriptPath += $";{line + 1};{col}";
-
-                    try
-                    {
-                        GetMonoDevelopInstance(GodotSharpDirs.ProjectSlnPath).Execute(scriptPath);
-                    }
-                    catch (FileNotFoundException)
-                    {
-                        string editorName = editor == ExternalEditor.VisualStudioForMac ? "Visual Studio" : "MonoDevelop";
-                        GD.PushError($"Cannot find code editor: {editorName}");
-                        return Error.FileNotFound;
-                    }
-
-                    break;
-                }
-
-                case ExternalEditor.None:
-                    return Error.Unavailable;
                 default:
                     throw new ArgumentOutOfRangeException();
             }
@@ -323,12 +293,12 @@ namespace GodotTools
 
         public bool OverridesExternalEditor()
         {
-            return (ExternalEditor) editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditor.None;
+            return (ExternalEditorId) editorSettings.GetSetting("mono/editor/external_editor") != ExternalEditorId.None;
         }
 
         public override bool Build()
         {
-            return GodotSharpBuilds.EditorBuildCallback();
+            return BuildManager.EditorBuildCallback();
         }
 
         public override void EnablePlugin()
@@ -347,9 +317,9 @@ namespace GodotTools
             errorDialog = new AcceptDialog();
             editorBaseControl.AddChild(errorDialog);
 
-            MonoBottomPanel = new MonoBottomPanel();
+            BottomPanel = new BottomPanel();
 
-            bottomPanelBtn = AddControlToBottomPanel(MonoBottomPanel, "Mono".TTR());
+            bottomPanelBtn = AddControlToBottomPanel(BottomPanel, "Mono".TTR());
 
             AddChild(new HotReloadAssemblyWatcher {Name = "HotReloadAssemblyWatcher"});
 
@@ -407,7 +377,7 @@ namespace GodotTools
             if (File.Exists(GodotSharpDirs.ProjectSlnPath) && File.Exists(GodotSharpDirs.ProjectCsProjPath))
             {
                 // Make sure the existing project has Api assembly references configured correctly
-                CSharpProject.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
+                CsProjOperations.FixApiHintPath(GodotSharpDirs.ProjectCsProjPath);
             }
             else
             {
@@ -427,25 +397,25 @@ namespace GodotTools
             AddControlToContainer(CustomControlContainer.Toolbar, buildButton);
 
             // External editor settings
-            EditorDef("mono/editor/external_editor", ExternalEditor.None);
+            EditorDef("mono/editor/external_editor", ExternalEditorId.None);
 
             string settingsHintStr = "Disabled";
 
             if (OS.IsWindows())
             {
-                settingsHintStr += $",MonoDevelop:{(int) ExternalEditor.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditor.VsCode}";
+                settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
             }
             else if (OS.IsOSX())
             {
-                settingsHintStr += $",Visual Studio:{(int) ExternalEditor.VisualStudioForMac}" +
-                                   $",MonoDevelop:{(int) ExternalEditor.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditor.VsCode}";
+                settingsHintStr += $",Visual Studio:{(int) ExternalEditorId.VisualStudioForMac}" +
+                                   $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
             }
             else if (OS.IsUnix())
             {
-                settingsHintStr += $",MonoDevelop:{(int) ExternalEditor.MonoDevelop}" +
-                                   $",Visual Studio Code:{(int) ExternalEditor.VsCode}";
+                settingsHintStr += $",MonoDevelop:{(int) ExternalEditorId.MonoDevelop}" +
+                                   $",Visual Studio Code:{(int) ExternalEditorId.VsCode}";
             }
 
             editorSettings.AddPropertyInfo(new Godot.Collections.Dictionary
@@ -461,7 +431,10 @@ namespace GodotTools
             AddExportPlugin(exportPlugin);
             exportPluginWeak = WeakRef(exportPlugin);
 
-            GodotSharpBuilds.Initialize();
+            BuildManager.Initialize();
+
+            GodotIdeManager = new GodotIdeManager();
+            AddChild(GodotIdeManager);
         }
 
         protected override void Dispose(bool disposing)
@@ -478,6 +451,8 @@ namespace GodotTools
 
                 exportPluginWeak.Dispose();
             }
+
+            GodotIdeManager?.Dispose();
         }
 
         public void OnBeforeSerialize()

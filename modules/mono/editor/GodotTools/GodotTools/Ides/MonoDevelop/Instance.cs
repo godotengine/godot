@@ -1,4 +1,3 @@
-using GodotTools.Core;
 using System;
 using System.IO;
 using System.Collections.Generic;
@@ -6,22 +5,18 @@ using System.Diagnostics;
 using GodotTools.Internals;
 using GodotTools.Utils;
 
-namespace GodotTools
+namespace GodotTools.Ides.MonoDevelop
 {
-    public class MonoDevelopInstance
+    public class Instance
     {
-        public enum EditorId
-        {
-            MonoDevelop = 0,
-            VisualStudioForMac = 1
-        }
-
         private readonly string solutionFile;
         private readonly EditorId editorId;
 
         private Process process;
 
-        public void Execute(params string[] files)
+        public bool IsRunning => process != null && !process.HasExited;
+
+        public void Execute()
         {
             bool newWindow = process == null || process.HasExited;
 
@@ -29,7 +24,7 @@ namespace GodotTools
 
             string command;
 
-            if (Utils.OS.IsOSX())
+            if (OS.IsOSX())
             {
                 string bundleId = BundleIds[editorId];
 
@@ -61,16 +56,6 @@ namespace GodotTools
             if (newWindow)
                 args.Add("\"" + Path.GetFullPath(solutionFile) + "\"");
 
-            foreach (var file in files)
-            {
-                int semicolonIndex = file.IndexOf(';');
-
-                string filePath = semicolonIndex < 0 ? file : file.Substring(0, semicolonIndex);
-                string cursor = semicolonIndex < 0 ? string.Empty : file.Substring(semicolonIndex);
-
-                args.Add("\"" + Path.GetFullPath(filePath.NormalizePath()) + cursor + "\"");
-            }
-
             if (command == null)
                 throw new FileNotFoundException();
 
@@ -80,7 +65,7 @@ namespace GodotTools
                 {
                     FileName = command,
                     Arguments = string.Join(" ", args),
-                    UseShellExecute = false
+                    UseShellExecute = true
                 });
             }
             else
@@ -89,14 +74,14 @@ namespace GodotTools
                 {
                     FileName = command,
                     Arguments = string.Join(" ", args),
-                    UseShellExecute = false
+                    UseShellExecute = true
                 })?.Dispose();
             }
         }
 
-        public MonoDevelopInstance(string solutionFile, EditorId editorId)
+        public Instance(string solutionFile, EditorId editorId)
         {
-            if (editorId == EditorId.VisualStudioForMac && !Utils.OS.IsOSX())
+            if (editorId == EditorId.VisualStudioForMac && !OS.IsOSX())
                 throw new InvalidOperationException($"{nameof(EditorId.VisualStudioForMac)} not supported on this platform");
 
             this.solutionFile = solutionFile;
@@ -106,9 +91,9 @@ namespace GodotTools
         private static readonly IReadOnlyDictionary<EditorId, string> ExecutableNames;
         private static readonly IReadOnlyDictionary<EditorId, string> BundleIds;
 
-        static MonoDevelopInstance()
+        static Instance()
         {
-            if (Utils.OS.IsOSX())
+            if (OS.IsOSX())
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
@@ -122,7 +107,7 @@ namespace GodotTools
                     {EditorId.VisualStudioForMac, "com.microsoft.visual-studio"}
                 };
             }
-            else if (Utils.OS.IsWindows())
+            else if (OS.IsWindows())
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {
@@ -133,7 +118,7 @@ namespace GodotTools
                     {EditorId.MonoDevelop, "MonoDevelop.exe"}
                 };
             }
-            else if (Utils.OS.IsUnix())
+            else if (OS.IsUnix())
             {
                 ExecutableNames = new Dictionary<EditorId, string>
                 {

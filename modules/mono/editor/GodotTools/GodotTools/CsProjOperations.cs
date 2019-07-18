@@ -9,7 +9,7 @@ using Directory = GodotTools.Utils.Directory;
 
 namespace GodotTools
 {
-    public static class CSharpProject
+    public static class CsProjOperations
     {
         public static string GenerateGameProject(string dir, string name)
         {

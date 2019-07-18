@@ -165,7 +165,7 @@ public:
 #endif
 
 #ifdef TOOLS_ENABLED
-	bool copy_prebuilt_api_assembly(APIAssembly::Type p_api_type);
+	bool copy_prebuilt_api_assembly(APIAssembly::Type p_api_type, const String &p_config);
 	String update_api_assemblies_from_prebuilt();
 #endif
 

@@ -65,14 +65,14 @@ namespace GodotTools
                 string buildConfig = isDebug ? "Debug" : "Release";
 
                 string scriptsMetadataPath = Path.Combine(GodotSharpDirs.ResMetadataDir, $"scripts_metadata.{(isDebug ? "debug" : "release")}");
-                CSharpProject.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
+                CsProjOperations.GenerateScriptsMetadata(GodotSharpDirs.ProjectCsProjPath, scriptsMetadataPath);
 
                 AddFile(scriptsMetadataPath, scriptsMetadataPath);
 
                 // Turn export features into defines
                 var godotDefines = features;
 
-                if (!GodotSharpBuilds.BuildProjectBlocking(buildConfig, godotDefines))
+                if (!BuildManager.BuildProjectBlocking(buildConfig, godotDefines))
                 {
                     GD.PushError("Failed to build project");
                     return;
