@@ -230,6 +230,7 @@ EditorPropertyNameProcessor::EditorPropertyNameProcessor() {
 	capitalize_string_remaps["tcp"] = "TCP";
 	capitalize_string_remaps["tls"] = "TLS";
 	capitalize_string_remaps["ui"] = "UI";
+	capitalize_string_remaps["uri"] = "URI";
 	capitalize_string_remaps["url"] = "URL";
 	capitalize_string_remaps["urls"] = "URLs";
 	capitalize_string_remaps["us"] = String::utf8("(µs)"); // Unit.

@@ -18,7 +18,16 @@
 			The button's text that will be displayed inside the button's area.
 		</member>
 		<member name="underline" type="int" setter="set_underline_mode" getter="get_underline_mode" enum="LinkButton.UnderlineMode" default="0">
-			Determines when to show the underline. See [enum UnderlineMode] for options.
+			The underline mode to use for the text. See [enum LinkButton.UnderlineMode] for the available modes.
+		</member>
+		<member name="uri" type="String" setter="set_uri" getter="get_uri" default="&quot;&quot;">
+			The [url=https://en.wikipedia.org/wiki/Uniform_Resource_Identifier]URI[/url] for this [LinkButton]. If set to a valid URI, pressing the button opens the URI using the operating system's default program for the protocol (via [method OS.shell_open]). HTTP and HTTPS URLs open the default web browser.
+			[b]Examples:[/b]
+			[codeblock]
+			uri = "https://godotengine.org"  # Opens the URL in the default web browser.
+			uri = "C:\SomeFolder"  # Opens the file explorer at the given path.
+			uri = "C:\SomeImage.png"  # Opens the given image in the default viewing app.
+			[/codeblock]
 		</member>
 	</members>
 	<constants>
