@@ -264,7 +264,7 @@ def configure(env):
     env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
 
     if env["android_arch"] == "armv7":
-        env.Append(LINKFLAGS=string.split('-Wl,--fix-cortex-a8'))
+        env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
     env.Append(LINKFLAGS='-Wl,--no-undefined -Wl,-z,noexecstack -Wl,-z,relro -Wl,-z,now'.split())
     env.Append(LINKFLAGS='-Wl,-soname,libgodot_android.so -Wl,--gc-sections'.split())
 
