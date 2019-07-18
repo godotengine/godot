@@ -746,6 +746,7 @@ public:
 
 	void set_physics_jitter_fix(float p_threshold);
 	float get_physics_jitter_fix() const;
+	float get_physics_interpolation_fraction() const;
 
 	void set_target_fps(int p_fps);
 	int get_target_fps() const;

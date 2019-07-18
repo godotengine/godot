@@ -72,6 +72,13 @@
 				Returns the main loop object (see [MainLoop] and [SceneTree]).
 			</description>
 		</method>
+		<method name="get_physics_interpolation_fraction" qualifiers="const">
+			<return type="float">
+			</return>
+			<description>
+				Returns the fraction through the current physics tick we are at the time of rendering the frame. This can be used to implement fixed timestep interpolation.
+			</description>
+		</method>
 		<method name="get_singleton" qualifiers="const">
 			<return type="Object">
 			</return>

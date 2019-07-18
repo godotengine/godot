@@ -36,6 +36,7 @@
 struct MainFrameTime {
 	float idle_step; // time to advance idles for (argument to process())
 	int physics_steps; // number of times to iterate the physics engine
+	float interpolation_fraction; // fraction through the current physics tick
 
 	void clamp_idle(float min_idle_step, float max_idle_step);
 };
