@@ -17,6 +17,8 @@
 			<argument index="0" name="with_event" type="InputEvent">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the given input event and this input event can be added together (only for events of type [InputEventMouseMotion]).
+				The given input event's position, global position and speed will be copied. The resulting [code]relative[/code] is a sum of both events. Both events' modifiers have to be identical.
 			</description>
 		</method>
 		<method name="as_text" qualifiers="const">
@@ -32,6 +34,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
+				Returns a value between 0.0 and 1.0 depending on the given actions' state. Useful for getting the value of events of type [InputEventJoypadMotion].
 			</description>
 		</method>
 		<method name="is_action" qualifiers="const">
@@ -88,6 +91,7 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Returns [code]true[/code] if the given input event is checking for the same key ([InputEventKey]), button ([InputEventJoypadButton]) or action ([InputEventAction]).
 			</description>
 		</method>
 		<method name="xformed_by" qualifiers="const">
@@ -98,6 +102,7 @@
 			<argument index="1" name="local_ofs" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
+				Returns a copy of the given input event which has been offset by [code]local_ofs[/code] and transformed by [code]xform[/code]. Relevant for events of type [InputEventMouseButton], [InputEventMouseMotion], [InputEventScreenTouch], [InputEventScreenDrag], [InputEventMagnifyGesture] and [InputEventPanGesture].
 			</description>
 		</method>
 	</methods>
