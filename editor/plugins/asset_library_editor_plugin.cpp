@@ -177,6 +177,8 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						tex->create_from_image(thumbnail);
 
 						preview_images[i].button->set_icon(tex);
+						// Make it clearer that clicking it will open an external link
+						preview_images[i].button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 					} else {
 						preview_images[i].button->set_icon(p_image);
 					}
@@ -755,7 +757,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
 					}
 				} break;
 				case IMAGE_QUEUE_SCREENSHOT: {
@@ -763,7 +765,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
 					}
 				} break;
 			}
@@ -1270,9 +1272,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					if (p.has("thumbnail")) {
 						_request_image(description->get_instance_id(), p["thumbnail"], IMAGE_QUEUE_THUMBNAIL, i);
 					}
-					if (is_video) {
-						//_request_image(description->get_instance_id(),p["link"],IMAGE_QUEUE_SCREENSHOT,i);
-					} else {
+
+					if (!is_video) {
 						_request_image(description->get_instance_id(), p["link"], IMAGE_QUEUE_SCREENSHOT, i);
 					}
 				}
