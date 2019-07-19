@@ -383,6 +383,67 @@ void ScriptEditorDebugger::_scene_tree_request() {
 	ppeer->put_var(msg);
 }
 
+/// Populates inspect_scene_tree recursively given data in nodes.
+/// Nodes is an array containing 4 elements for each node, it follows this pattern:
+/// nodes[i] == number of direct children of this node
+/// nodes[i + 1] == node name
+/// nodes[i + 2] == node class
+/// nodes[i + 3] == node instance id
+///
+/// Returns the number of items parsed in nodes from current_index.
+///
+/// Given a nodes array like [R,A,B,C,D,E] the following Tree will be generated, assuming
+/// filter is an empty String, R and A child count are 2, B is 1 and C, D and E are 0.
+///
+/// R
+/// |-A
+/// | |-B
+/// | | |-C
+/// | |
+/// | |-D
+/// |
+/// |-E
+///
+int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &nodes, int current_index) {
+	String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
+	String item_text = nodes[current_index + 1];
+	bool keep = filter.is_subsequence_ofi(item_text);
+
+	TreeItem *item = inspect_scene_tree->create_item(parent);
+	item->set_text(0, item_text);
+	ObjectID id = ObjectID(nodes[current_index + 3]);
+	Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(nodes[current_index + 2], "");
+	if (icon.is_valid()) {
+		item->set_icon(0, icon);
+	}
+	item->set_metadata(0, id);
+
+	int children_count = nodes[current_index];
+	// Tracks the total number of items parsed in nodes, this is used to skips nodes that
+	// are not direct children of the current node since we can't know in advance the total
+	// number of children, direct and not, of a node without traversing the nodes array previously.
+	// Keeping track of this allows us to build our remote scene tree by traversing the node
+	// array just once.
+	int items_count = 1;
+	for (int i = 0; i < children_count; i++) {
+		// Called for each direct child of item.
+		// Direct children of current item might not be adjacent so items_count must
+		// be incremented by the number of items parsed until now, otherwise we would not
+		// be able to access the next child of the current item.
+		// items_count is multiplied by 4 since that's the number of elements in the nodes
+		// array needed to represent a single node.
+		items_count += _update_scene_tree(item, nodes, current_index + items_count * 4);
+	}
+
+	// If item has not children and should not be kept delete it
+	if (!keep && !item->get_children() && parent) {
+		parent->remove_child(item);
+		memdelete(item);
+	}
+
+	return items_count;
+}
+
 void ScriptEditorDebugger::_video_mem_request() {
 
 	ERR_FAIL_COND(connection.is_null());
@@ -455,48 +516,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		updating_scene_tree = true;
 
-		for (int i = 0; i < p_data.size(); i += 4) {
+		_update_scene_tree(NULL, p_data, 0);
 
-			TreeItem *p;
-			int level = p_data[i];
-			if (level == 0) {
-				p = NULL;
-			} else {
-				ERR_CONTINUE(!lv.has(level - 1));
-				p = lv[level - 1];
-			}
-
-			TreeItem *it = inspect_scene_tree->create_item(p);
-
-			ObjectID id = ObjectID(p_data[i + 3]);
-
-			it->set_text(0, p_data[i + 1]);
-			Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(p_data[i + 2], "");
-			if (icon.is_valid())
-				it->set_icon(0, icon);
-			it->set_metadata(0, id);
-
-			if (id == inspected_object_id) {
-				TreeItem *cti = it->get_parent(); //ensure selected is always uncollapsed
-				while (cti) {
-					cti->set_collapsed(false);
-					cti = cti->get_parent();
-				}
-				it->select(0);
-			}
-
-			if (p) {
-				if (!unfold_cache.has(id)) {
-					it->set_collapsed(true);
-				}
-			} else {
-				if (unfold_cache.has(id)) { //reverse for root
-					it->set_collapsed(true);
-				}
-			}
-
-			lv[level] = it;
-		}
 		updating_scene_tree = false;
 
 		le_clear->set_disabled(false);

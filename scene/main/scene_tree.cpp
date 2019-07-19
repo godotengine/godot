@@ -1089,7 +1089,7 @@ void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_li
 
 static void _fill_array(Node *p_node, Array &array, int p_level) {
 
-	array.push_back(p_level);
+	array.push_back(p_node->get_child_count());
 	array.push_back(p_node->get_name());
 	array.push_back(p_node->get_class());
 	array.push_back(p_node->get_instance_id());
