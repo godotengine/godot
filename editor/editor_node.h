@@ -776,6 +776,8 @@ public:
 	void stop_child_process();
 
 	Ref<Theme> get_editor_theme() const { return theme; }
+	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
+	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
 	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
