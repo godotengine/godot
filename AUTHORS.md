@@ -83,6 +83,7 @@ name is available.
     Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
+	Josias Aurel
     Juan Linietsky (reduz)
     Julian Murgia (StraToN)
     Justo Delgado (mrcdk)
