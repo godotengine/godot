@@ -182,7 +182,7 @@
 			<argument index="1" name="expand" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], the column will have the "Expand" flag of [Control].
+				If [code]true[/code], the column will have the "Expand" flag of [Control]. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
 			</description>
 		</method>
 		<method name="set_column_min_width">
@@ -193,7 +193,7 @@
 			<argument index="1" name="min_width" type="int">
 			</argument>
 			<description>
-				Sets the minimum width of a column.
+				Sets the minimum width of a column. Columns that have the "Expand" flag will use their "min_width" in a similar fashion to [member Control.size_flags_stretch_ratio].
 			</description>
 		</method>
 		<method name="set_column_title">
