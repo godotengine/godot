@@ -1176,7 +1176,6 @@ msgid "Success!"
 msgstr "成功！"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install"
 msgstr "インストール"
 
@@ -2582,6 +2581,11 @@ msgstr "シーン"
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "以前に開いたシーンに移動する。"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Copy Text"
+msgstr "パスをコピー"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -4831,6 +4835,11 @@ msgid "Idle"
 msgstr "待機"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Install..."
+msgstr "インストール"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
 msgstr "再試行"
 
@@ -4873,8 +4882,9 @@ msgid "Sort:"
 msgstr "ソート:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "逆"
+#, fuzzy
+msgid "Reverse sorting."
+msgstr "リクエスト中..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4955,31 +4965,38 @@ msgid "Rotation Step:"
 msgstr "回転のステップ:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move vertical guide"
+#, fuzzy
+msgid "Move Vertical Guide"
 msgstr "垂直ガイドを移動"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new vertical guide"
+#, fuzzy
+msgid "Create Vertical Guide"
 msgstr "垂直ガイドを作成"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove vertical guide"
+#, fuzzy
+msgid "Remove Vertical Guide"
 msgstr "垂直ガイドを削除"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move horizontal guide"
+#, fuzzy
+msgid "Move Horizontal Guide"
 msgstr "水平ガイドを移動"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal guide"
+#, fuzzy
+msgid "Create Horizontal Guide"
 msgstr "水平ガイドを作成"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove horizontal guide"
+#, fuzzy
+msgid "Remove Horizontal Guide"
 msgstr "水平ガイドを削除"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal and vertical guides"
+#, fuzzy
+msgid "Create Horizontal and Vertical Guides"
 msgstr "水平垂直ガイドを作成"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7792,14 +7809,6 @@ msgid "Transpose"
 msgstr "転置"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X"
-msgstr "ミラーX"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y"
-msgstr "ミラーY"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
 msgid "Disable Autotile"
 msgstr "自動スライス"
@@ -8235,6 +8244,10 @@ msgid "Visual Shader Input Type Changed"
 msgstr "ビジュアルシェーダの入力タイプが変更されました"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "頂点"
 
@@ -8328,6 +8341,23 @@ msgid "Color uniform."
 msgstr "トランスフォーム"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the %s comparison between two parameters."
+msgstr "パラメータの平方根の逆数を返します。"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Equal (==)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than (>)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than or Equal (>=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
@@ -8337,9 +8367,44 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
+"Returns the boolean result of the comparison between INF and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between NaN and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than (<)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than or Equal (<=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Not Equal (!=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
 "指定されたブール値がtrueまたはfalseの場合、関連付けられたベクトルを返します。"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the comparison between two parameters."
+msgstr "パラメータのタンジェントを返します。"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between INF (or NaN) and a "
+"scalar parameter."
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8434,7 +8499,8 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "パラメータの逆コサインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic cosine of the parameter."
 msgstr "(GLES3のみ)パラメータの双曲線逆コサインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8442,7 +8508,8 @@ msgid "Returns the arc-sine of the parameter."
 msgstr "パラメータの逆サインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic sine of the parameter."
 msgstr "(GLES3のみ)パラメータの双曲線逆サインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8454,7 +8521,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "複数パラメータの逆タンジェントを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr "(GLES3のみ)パラメータの双曲線逆タンジェントを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8471,7 +8539,8 @@ msgid "Returns the cosine of the parameter."
 msgstr "パラメータのコサインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic cosine of the parameter."
 msgstr "(GLES3のみ)パラメータの双曲線コサインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8540,11 +8609,13 @@ msgid "1.0 / scalar"
 msgstr "1.0 / スカラー"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest integer to the parameter."
 msgstr "(GLES3のみ)パラメータに最も近い整数を検索します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest even integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest even integer to the parameter."
 msgstr "(GLES3のみ)パラメータに最も近い偶数の整数を検索します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8560,7 +8631,8 @@ msgid "Returns the sine of the parameter."
 msgstr "パラメータの符号を返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic sine of the parameter."
 msgstr "(GLES3のみ)パラメータの双曲サインを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8596,11 +8668,13 @@ msgid "Returns the tangent of the parameter."
 msgstr "パラメータのタンジェントを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic tangent of the parameter."
 msgstr "(GLES3のみ)パラメータの双曲タンジェントを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the truncated value of the parameter."
+#, fuzzy
+msgid "Finds the truncated value of the parameter."
 msgstr "(GLES3のみ)パラメータのトランケートされた値を検索します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8643,12 +8717,17 @@ msgstr "テクスチャ・ルックアップを実行します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Cubic texture uniform."
+msgid "Cubic texture uniform lookup."
 msgstr "テクスチャUniformを変更"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "2D texture uniform."
+msgid "2D texture uniform lookup."
+msgstr "テクスチャUniformを変更"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "2D texture uniform lookup with triplanar."
 msgstr "テクスチャUniformを変更"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8657,8 +8736,9 @@ msgid "Transform function."
 msgstr "トランスフォームのダイアログ..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) Calculate the outer product of a pair of vectors.\n"
+"Calculate the outer product of a pair of vectors.\n"
 "\n"
 "OuterProduct treats the first parameter 'c' as a column vector (matrix with "
 "one column) and the second parameter 'r' as a row vector (matrix with one "
@@ -8682,15 +8762,18 @@ msgid "Decomposes transform to four vectors."
 msgstr "変換を4つのベクトルに分解します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the determinant of a transform."
+#, fuzzy
+msgid "Calculates the determinant of a transform."
 msgstr "(GLES3のみ)変換の行列式を計算します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the inverse of a transform."
+#, fuzzy
+msgid "Calculates the inverse of a transform."
 msgstr "(GLES3のみ)変換の逆関数を計算します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the transpose of a transform."
+#, fuzzy
+msgid "Calculates the transpose of a transform."
 msgstr "(GLES3のみ)変換の転置を計算します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8742,8 +8825,9 @@ msgid "Calculates the dot product of two vectors."
 msgstr "2つのベクトルの内積を計算します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the same direction as a reference vector. "
+"Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
@@ -8774,13 +8858,15 @@ msgid "1.0 / vector"
 msgstr "1.0 / ベクトル"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the direction of reflection ( a : incident "
+"Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr "反射の方向(a:入射ベクトル、b:法線ベクトル)を指すベクトルを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Returns a vector that points in the direction of refraction."
+#, fuzzy
+msgid "Returns the vector that points in the direction of refraction."
 msgstr "屈折の方向を指すベクトルを返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8880,57 +8966,65 @@ msgstr ""
 "返します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Scalar derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(GLES3のみ)(フラグメント/ライトモードのみ)スカラー導関数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Vector derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Vector derivative function."
 msgstr "(GLES3のみ)(フラグメント/ライトモードのみ)ベクトル導関数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(GLES3のみ)(フラグメント/ライトモードのみ)(ベクトル)ローカル差分を使用して "
 "'x' で微分します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(GLES3のみ)(フラグメント/ライトモードのみ)(スカラー)ローカル差分を使用して "
 "'x' で微分します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(GLES3のみ)(フラグメント/ライトモードのみ)(ベクトル)ローカル差分を使用して "
 "'y' で微分します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(GLES3のみ)(フラグメント/ライトモードのみ)(スカラー)ローカル差分を使用して "
 "'y' で微分します。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(GLES3のみ)(フラグメント/ライトモードのみ)(ベクトル) 'x' と 'y' の絶対導関数"
 "の合計。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(GLES3のみ)(フラグメント/ライトモードのみ)(スカラー) 'x' と 'y' の絶対導関数"
 "の合計。"
@@ -10465,7 +10559,8 @@ msgid "Script is valid."
 msgstr "正当なスクリプト"
 
 #: editor/script_create_dialog.cpp
-msgid "Allowed: a-z, A-Z, 0-9 and _"
+#, fuzzy
+msgid "Allowed: a-z, A-Z, 0-9, _ and ."
 msgstr "使用可能: a-z, A-Z, 0-9 と _"
 
 #: editor/script_create_dialog.cpp
@@ -12258,6 +12353,11 @@ msgstr "無効なシェーダーのソースです。"
 msgid "Invalid source for shader."
 msgstr "無効なシェーダーのソースです。"
 
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid comparison function for that type."
+msgstr "無効なシェーダーのソースです。"
+
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
 msgstr "関数への割り当て。"
@@ -12274,6 +12374,15 @@ msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Reverse"
+#~ msgstr "逆"
+
+#~ msgid "Mirror X"
+#~ msgstr "ミラーX"
+
+#~ msgid "Mirror Y"
+#~ msgstr "ミラーY"
 
 #, fuzzy
 #~ msgid "Generating solution..."

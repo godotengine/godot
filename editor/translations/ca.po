@@ -1135,7 +1135,6 @@ msgid "Success!"
 msgstr "Èxit!"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install"
 msgstr "Instal·la"
 
@@ -2509,6 +2508,11 @@ msgstr "Escena"
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "Vés a l'escena oberta anteriorment."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Copy Text"
+msgstr "Copia Camí"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -4712,6 +4716,11 @@ msgid "Idle"
 msgstr "Inactiu"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Install..."
+msgstr "Instal·la"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
 msgstr "Torneu a provar"
 
@@ -4754,8 +4763,9 @@ msgid "Sort:"
 msgstr "Ordena:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "Inverteix"
+#, fuzzy
+msgid "Reverse sorting."
+msgstr "Sol·licitud en marxa..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4837,31 +4847,38 @@ msgid "Rotation Step:"
 msgstr "Pas de la Rotació:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move vertical guide"
+#, fuzzy
+msgid "Move Vertical Guide"
 msgstr "Mou la guia vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new vertical guide"
+#, fuzzy
+msgid "Create Vertical Guide"
 msgstr "Crea una nova guia vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove vertical guide"
+#, fuzzy
+msgid "Remove Vertical Guide"
 msgstr "Elimina la guia vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move horizontal guide"
+#, fuzzy
+msgid "Move Horizontal Guide"
 msgstr "Mou la guia horitzontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal guide"
+#, fuzzy
+msgid "Create Horizontal Guide"
 msgstr "Crea una nova guia horitzontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove horizontal guide"
+#, fuzzy
+msgid "Remove Horizontal Guide"
 msgstr "Elimina la guia horitzontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal and vertical guides"
+#, fuzzy
+msgid "Create Horizontal and Vertical Guides"
 msgstr "Crea una guia horitzontal i vertical noves"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7573,14 +7590,6 @@ msgid "Transpose"
 msgstr "Transposa"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X"
-msgstr "Replica en l'eix X"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y"
-msgstr "Replica en l'Eix Y"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
 #, fuzzy
 msgid "Disable Autotile"
 msgstr "AutoTiles"
@@ -8015,6 +8024,10 @@ msgid "Visual Shader Input Type Changed"
 msgstr "El tipus d'entrada VisualShader ha canviat"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "Vèrtex"
 
@@ -8104,6 +8117,23 @@ msgid "Color uniform."
 msgstr "Transforma"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the %s comparison between two parameters."
+msgstr "Retorna l'invers de l'arrel quadrada del paràmetre."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Equal (==)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than (>)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than or Equal (>=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
@@ -8113,9 +8143,44 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
+"Returns the boolean result of the comparison between INF and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between NaN and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than (<)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than or Equal (<=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Not Equal (!=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
 "Retorna un vector associat si el valor booleà proporcionat és cert o fals."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the comparison between two parameters."
+msgstr "Retorna la tangent del paràmetre."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between INF (or NaN) and a "
+"scalar parameter."
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8217,7 +8282,8 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "Retorna el l'arc cosinus  del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic cosine of the parameter."
 msgstr "(Només GLES3) Retorna el cosinus hiperbòlic invers del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8225,7 +8291,8 @@ msgid "Returns the arc-sine of the parameter."
 msgstr "Retorna l'arc sinus del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic sine of the parameter."
 msgstr "(Només GLES3) Retorna el sinus hiperbòlic invers del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8237,7 +8304,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "Retorna l'arc tangent dels paràmetres."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr "(Només GLES3) Retorna la tangent hiperbòlica inversa del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8254,7 +8322,8 @@ msgid "Returns the cosine of the parameter."
 msgstr "Retorna el cosinus del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic cosine of the parameter."
 msgstr "(Només GLES3) Retorna el cosinus hiperbòlic del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8323,11 +8392,13 @@ msgid "1.0 / scalar"
 msgstr "1.0 / escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest integer to the parameter."
 msgstr "(Només GLES3) Troba l'enter més proper al paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest even integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest even integer to the parameter."
 msgstr "(Només GLES3) Troba l'enter parell més proper al paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8343,7 +8414,8 @@ msgid "Returns the sine of the parameter."
 msgstr "Retorna el sinus del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic sine of the parameter."
 msgstr "(Només GLES3) Retorna el sinus hiperbòlic del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8371,11 +8443,13 @@ msgid "Returns the tangent of the parameter."
 msgstr "Retorna la tangent del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic tangent of the parameter."
 msgstr "(Només GLES3) Retorna la tangent hiperbòlica del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the truncated value of the parameter."
+#, fuzzy
+msgid "Finds the truncated value of the parameter."
 msgstr "(Només GLES3) Troba el valor truncat del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8420,12 +8494,17 @@ msgstr "Realitza la cerca de textures."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Cubic texture uniform."
+msgid "Cubic texture uniform lookup."
 msgstr "Modifica un Uniforme Textura"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "2D texture uniform."
+msgid "2D texture uniform lookup."
+msgstr "Modifica un Uniforme Textura"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "2D texture uniform lookup with triplanar."
 msgstr "Modifica un Uniforme Textura"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8435,7 +8514,7 @@ msgstr "Funció de transformació."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"(GLES3 only) Calculate the outer product of a pair of vectors.\n"
+"Calculate the outer product of a pair of vectors.\n"
 "\n"
 "OuterProduct treats the first parameter 'c' as a column vector (matrix with "
 "one column) and the second parameter 'r' as a row vector (matrix with one "
@@ -8453,15 +8532,18 @@ msgid "Decomposes transform to four vectors."
 msgstr "Descompon una transformació en quatre vectors."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the determinant of a transform."
+#, fuzzy
+msgid "Calculates the determinant of a transform."
 msgstr "(Només GLES3) Calcula el determinant d'una transformació."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the inverse of a transform."
+#, fuzzy
+msgid "Calculates the inverse of a transform."
 msgstr "(Només GLES3) Calcula l'invers d'una transformació."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the transpose of a transform."
+#, fuzzy
+msgid "Calculates the transpose of a transform."
 msgstr "(Només GLES3) Calcula la transposició d'una transformació."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8514,7 +8596,7 @@ msgstr "Calcula el producte escalar de dos vectors."
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Returns a vector that points in the same direction as a reference vector. "
+"Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
@@ -8548,14 +8630,15 @@ msgstr "1.0 / vector"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid ""
-"Returns a vector that points in the direction of reflection ( a : incident "
+"Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr ""
 "Retorna un vector que apunta en la direcció de la reflexió (a: vector "
 "d'incident, b: vector normal)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Returns a vector that points in the direction of refraction."
+#, fuzzy
+msgid "Returns the vector that points in the direction of refraction."
 msgstr "Retorna un vector que apunta en la direcció de la refracció."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8639,47 +8722,47 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Scalar derivative function."
+msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Vector derivative function."
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'x' using "
-"local differencing."
+msgid "(Fragment/Light mode only) Vector derivative function."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
+"'y'."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -10134,7 +10217,8 @@ msgid "Script is valid."
 msgstr "El script és vàlid."
 
 #: editor/script_create_dialog.cpp
-msgid "Allowed: a-z, A-Z, 0-9 and _"
+#, fuzzy
+msgid "Allowed: a-z, A-Z, 0-9, _ and ."
 msgstr "Permesos: a-z, a-Z, 0-9 i _"
 
 #: editor/script_create_dialog.cpp
@@ -11848,6 +11932,11 @@ msgstr "Font no vàlida pel Shader."
 msgid "Invalid source for shader."
 msgstr "Font no vàlida pel Shader."
 
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid comparison function for that type."
+msgstr "Font no vàlida pel Shader."
+
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
 msgstr "Assignació a funció."
@@ -11863,6 +11952,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Les constants no es poden modificar."
+
+#~ msgid "Reverse"
+#~ msgstr "Inverteix"
+
+#~ msgid "Mirror X"
+#~ msgstr "Replica en l'eix X"
+
+#~ msgid "Mirror Y"
+#~ msgstr "Replica en l'Eix Y"
 
 #~ msgid "Generating solution..."
 #~ msgstr "S'està generant la solució..."

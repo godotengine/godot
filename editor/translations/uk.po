@@ -1150,7 +1150,6 @@ msgid "Success!"
 msgstr "Успіх!"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install"
 msgstr "Встановити"
 
@@ -2516,6 +2515,11 @@ msgstr "Сцена"
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "Перейти до раніше відкритої сцени."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Copy Text"
+msgstr "Копіювати шлях"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -4727,6 +4731,11 @@ msgid "Idle"
 msgstr "Простій"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Install..."
+msgstr "Встановити"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
 msgstr "Повторити спробу"
 
@@ -4769,8 +4778,9 @@ msgid "Sort:"
 msgstr "Сортувати:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "Зворотний"
+#, fuzzy
+msgid "Reverse sorting."
+msgstr "Запит..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4851,31 +4861,38 @@ msgid "Rotation Step:"
 msgstr "Крок повороту:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move vertical guide"
+#, fuzzy
+msgid "Move Vertical Guide"
 msgstr "Перемістити вертикальну напрямну"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new vertical guide"
+#, fuzzy
+msgid "Create Vertical Guide"
 msgstr "Створити нову вертикальну напрямну"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove vertical guide"
+#, fuzzy
+msgid "Remove Vertical Guide"
 msgstr "Вилучити вертикальну напрямну"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move horizontal guide"
+#, fuzzy
+msgid "Move Horizontal Guide"
 msgstr "Перемістити горизонтальну напрямну"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal guide"
+#, fuzzy
+msgid "Create Horizontal Guide"
 msgstr "Створити нову горизонтальну напрямну"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove horizontal guide"
+#, fuzzy
+msgid "Remove Horizontal Guide"
 msgstr "Вилучити горизонтальну напрямну"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal and vertical guides"
+#, fuzzy
+msgid "Create Horizontal and Vertical Guides"
 msgstr "Створити нові горизонтальні та вертикальні напрямні"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7520,14 +7537,6 @@ msgid "Transpose"
 msgstr "Транспонувати"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X"
-msgstr "Віддзеркалити за X"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y"
-msgstr "Віддзеркалити за Y"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Disable Autotile"
 msgstr "Вимкнути автоплитки"
 
@@ -7927,6 +7936,10 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Змінено тип введення для візуального шейдера"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "Вершина"
 
@@ -8011,6 +8024,23 @@ msgid "Color uniform."
 msgstr "Однорідний колір."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the %s comparison between two parameters."
+msgstr "Повертає одиницю поділену на квадратний корінь з параметра."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Equal (==)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than (>)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than or Equal (>=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
@@ -8020,9 +8050,44 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
+"Returns the boolean result of the comparison between INF and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between NaN and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than (<)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than or Equal (<=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Not Equal (!=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
 "Повертає пов'язаний вектор за заданим булевим значенням «true» або «false»."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the comparison between two parameters."
+msgstr "Повертає тангенс параметра."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between INF (or NaN) and a "
+"scalar parameter."
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean constant."
@@ -8113,7 +8178,8 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "Повертає арккосинус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic cosine of the parameter."
 msgstr "(Лише GLES3) Повертає обернений гіперболічний косинус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8121,7 +8187,8 @@ msgid "Returns the arc-sine of the parameter."
 msgstr "Повертає арксинус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic sine of the parameter."
 msgstr "(Лише GLES3) Повертає обернений гіперболічний синус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8133,7 +8200,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "Повертає арктангенс параметрів."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr "(Лише GLES3) Повертає обернений гіперболічний тангенс параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8152,7 +8220,8 @@ msgid "Returns the cosine of the parameter."
 msgstr "Повертає косинус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic cosine of the parameter."
 msgstr "(Лише GLES3) Повертає гіперболічний косинус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8225,11 +8294,13 @@ msgid "1.0 / scalar"
 msgstr "1.0 / скаляр"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest integer to the parameter."
 msgstr "(Лише GLES3) Знаходить найближче ціле значення до параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest even integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest even integer to the parameter."
 msgstr "(Лише GLES3) Знаходить найближче парне ціле значення до параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8245,7 +8316,8 @@ msgid "Returns the sine of the parameter."
 msgstr "Повертає синус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic sine of the parameter."
 msgstr "(Лише GLES3) Повертає гіперболічний синус параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8281,11 +8353,13 @@ msgid "Returns the tangent of the parameter."
 msgstr "Повертає тангенс параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic tangent of the parameter."
 msgstr "(Лише GLES3) Повертає гіперболічний тангенс параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the truncated value of the parameter."
+#, fuzzy
+msgid "Finds the truncated value of the parameter."
 msgstr "(Лише GLES3) Визначає обрізане до цілого значення параметра."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8325,11 +8399,18 @@ msgid "Perform the texture lookup."
 msgstr "Виконує пошук текстури."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Cubic texture uniform."
+#, fuzzy
+msgid "Cubic texture uniform lookup."
 msgstr "Однорідна кубічна текстура."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "2D texture uniform."
+#, fuzzy
+msgid "2D texture uniform lookup."
+msgstr "Однорідна пласка текстура."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "2D texture uniform lookup with triplanar."
 msgstr "Однорідна пласка текстура."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8337,8 +8418,9 @@ msgid "Transform function."
 msgstr "Функція перетворення."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) Calculate the outer product of a pair of vectors.\n"
+"Calculate the outer product of a pair of vectors.\n"
 "\n"
 "OuterProduct treats the first parameter 'c' as a column vector (matrix with "
 "one column) and the second parameter 'r' as a row vector (matrix with one "
@@ -8363,15 +8445,18 @@ msgid "Decomposes transform to four vectors."
 msgstr "Розкладає перетворення на чотири вектори."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the determinant of a transform."
+#, fuzzy
+msgid "Calculates the determinant of a transform."
 msgstr "(Лише GLES3) Обчислює визначник перетворення."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the inverse of a transform."
+#, fuzzy
+msgid "Calculates the inverse of a transform."
 msgstr "(Лише GLES3) Обчислює обернену матрицю перетворення."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the transpose of a transform."
+#, fuzzy
+msgid "Calculates the transpose of a transform."
 msgstr "(Лише GLES3) Обчислює транспозицію перетворення."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8419,8 +8504,9 @@ msgid "Calculates the dot product of two vectors."
 msgstr "Обчислює скалярний добуток двох векторів."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the same direction as a reference vector. "
+"Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
@@ -8451,15 +8537,17 @@ msgid "1.0 / vector"
 msgstr "1.0 / вектор"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the direction of reflection ( a : incident "
+"Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr ""
 "Повертає вектор, який вказує напрямок відбиття ( a — вектор падіння, b — "
 "вектор нормалі )."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Returns a vector that points in the direction of refraction."
+#, fuzzy
+msgid "Returns the vector that points in the direction of refraction."
 msgstr "Повертає вектор, який вказує напрямок рефракції."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8558,61 +8646,69 @@ msgstr ""
 "напрямку погляду камери (функції слід передати відповіді вхідні дані)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Scalar derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) Функція скалярної "
 "похідної."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Vector derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Vector derivative function."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) Функція векторної "
 "похідної."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) (вектор) Похідна у «x» на "
 "основі локального диференціювання."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) (скаляр) Похідна у «x» на "
 "основі локального диференціювання."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) (вектор) Похідна у «y» на "
 "основі локального диференціювання."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) (скаляр) Похідна у «y» на "
 "основі локального диференціювання."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) (вектор) Сума похідних за "
 "модулем у «x» та «y»."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(Лише GLES3) (лише у режимі фрагментів або світла) Сума похідних за модулем "
 "у «x» та «y»."
@@ -10058,7 +10154,8 @@ msgid "Script is valid."
 msgstr "Скрипт є коректним."
 
 #: editor/script_create_dialog.cpp
-msgid "Allowed: a-z, A-Z, 0-9 and _"
+#, fuzzy
+msgid "Allowed: a-z, A-Z, 0-9, _ and ."
 msgstr "Можна використовувати: a-z, A-Z, 0-9 і _"
 
 #: editor/script_create_dialog.cpp
@@ -11752,6 +11849,11 @@ msgstr "Некоректне джерело для попереднього пе
 msgid "Invalid source for shader."
 msgstr "Некоректне джерело програми побудови тіней."
 
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid comparison function for that type."
+msgstr "Некоректне джерело програми побудови тіней."
+
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
 msgstr "Призначення функційного."
@@ -11767,6 +11869,15 @@ msgstr "Змінні величини можна пов'язувати лише 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Сталі не можна змінювати."
+
+#~ msgid "Reverse"
+#~ msgstr "Зворотний"
+
+#~ msgid "Mirror X"
+#~ msgstr "Віддзеркалити за X"
+
+#~ msgid "Mirror Y"
+#~ msgstr "Віддзеркалити за Y"
 
 #~ msgid "Generating solution..."
 #~ msgstr "Створення розв'язку..."

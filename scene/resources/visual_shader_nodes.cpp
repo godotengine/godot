@@ -3437,7 +3437,7 @@ String VisualShaderNodeCompare::get_warning(Shader::Mode p_mode, VisualShader::T
 
 	if (ctype == CTYPE_BOOLEAN || ctype == CTYPE_TRANSFORM) {
 		if (func > FUNC_NOT_EQUAL) {
-			return TTR("Invalid comparsion function for that type.");
+			return TTR("Invalid comparison function for that type.");
 		}
 	}
 

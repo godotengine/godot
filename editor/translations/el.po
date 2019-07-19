@@ -1143,7 +1143,6 @@ msgid "Success!"
 msgstr "Επιτυχία!"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install"
 msgstr "Εγκατάσταση"
 
@@ -2520,6 +2519,11 @@ msgstr "Σκηνή"
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "Επιστροφή στην προηγουμένως ανοιγμένη σκηνή."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Copy Text"
+msgstr "Αντιγραφή διαδρομής"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -4733,6 +4737,11 @@ msgid "Idle"
 msgstr "Ανενεργό"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Install..."
+msgstr "Εγκατάσταση"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
 msgstr "Ξαναδοκίμασε"
 
@@ -4775,8 +4784,9 @@ msgid "Sort:"
 msgstr "Ταξινόμηση:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "Αντιστροφή"
+#, fuzzy
+msgid "Reverse sorting."
+msgstr "Γίνεται αίτημα..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4858,31 +4868,38 @@ msgid "Rotation Step:"
 msgstr "Βήμα περιστροφής:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move vertical guide"
+#, fuzzy
+msgid "Move Vertical Guide"
 msgstr "Μετακίνηση κάθετου οδηγού"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new vertical guide"
+#, fuzzy
+msgid "Create Vertical Guide"
 msgstr "Δημιουργία νέου κάθετου οδηγού"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove vertical guide"
+#, fuzzy
+msgid "Remove Vertical Guide"
 msgstr "Αφαίρεση κάθετου οδηγού"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move horizontal guide"
+#, fuzzy
+msgid "Move Horizontal Guide"
 msgstr "Μετακίνηση οριζόντιου οδηγού"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal guide"
+#, fuzzy
+msgid "Create Horizontal Guide"
 msgstr "Δημιουργία νέου οριζόντιου οδηγού"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove horizontal guide"
+#, fuzzy
+msgid "Remove Horizontal Guide"
 msgstr "Αφαίρεση οριζόντιου οδηγού"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal and vertical guides"
+#, fuzzy
+msgid "Create Horizontal and Vertical Guides"
 msgstr "Δημιουργία νέων οριζοντίων και κάθετων οδηγών"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7531,14 +7548,6 @@ msgid "Transpose"
 msgstr "Μετατόπιση"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X"
-msgstr "Συμμετρία στον άξονα Χ"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y"
-msgstr "Συμμετρία στον άξονα Υ"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Disable Autotile"
 msgstr "Απενεργοποίηση Αυτόματων Πλακιδίων"
 
@@ -7935,6 +7944,10 @@ msgid "Visual Shader Input Type Changed"
 msgstr "Αλλαγή Τύπου Εισόδου Οπτικού Προγράμματος Σκίασης"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "Κορυφή"
 
@@ -8019,6 +8032,23 @@ msgid "Color uniform."
 msgstr "Ενιαία μεταβλητή χρώματος."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the %s comparison between two parameters."
+msgstr "Επιστρέφει το αντίστροφο της τετραγωνικής ρίζας της παραμέτρου."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Equal (==)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than (>)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than or Equal (>=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
@@ -8028,9 +8058,44 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
+"Returns the boolean result of the comparison between INF and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between NaN and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than (<)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than or Equal (<=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Not Equal (!=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
 "Επιστρέφει ένα συσχετισμένο διάνυσμα εάν η λογική τιμή είναι αληθής ή ψευδής."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the comparison between two parameters."
+msgstr "Επιστρέφει την εφαπτομένη της παραμέτρου."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between INF (or NaN) and a "
+"scalar parameter."
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean constant."
@@ -8121,7 +8186,8 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "Επιστρέφει το τόξο συνημιτόνου της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic cosine of the parameter."
 msgstr ""
 "(Μόνο GLES3) Επιστρέφει το αντίστροφο υπερβολικό συνημίτονο της παραμέτρου."
 
@@ -8130,7 +8196,8 @@ msgid "Returns the arc-sine of the parameter."
 msgstr "Επιστρέφει το τόξο ημιτόνου της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic sine of the parameter."
 msgstr ""
 "(Μόνο GLES3) Επιστρέφει το αντίστροφο υπερβολικό ημίτονο της παραμέτρου."
 
@@ -8143,7 +8210,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "Επιστρέφει το τόξο εφαπτομένης των παραμέτρων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr ""
 "(Μόνο GLES3) Επιστρέφει την αντίστροφη υπερβολική εφαπτομένη της παραμέτρου."
 
@@ -8161,7 +8229,8 @@ msgid "Returns the cosine of the parameter."
 msgstr "Επιστρέφει το συνημίτονο της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic cosine of the parameter."
 msgstr "(Μόνο GLES3) Επιστρέφει το υπερβολικό συνημίτονο της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8231,11 +8300,13 @@ msgid "1.0 / scalar"
 msgstr "1.0 / βαθμωτό μέγεθος"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest integer to the parameter."
 msgstr "(Μόνο GLES3) Βρίσκει τον κοντινότερο ακέραιο στην παράμετρο."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest even integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest even integer to the parameter."
 msgstr "(Μόνο GLES3) Βρίσκει τον κοντινότερο άρτιο ακέραιο στην παράμετρο."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8251,7 +8322,8 @@ msgid "Returns the sine of the parameter."
 msgstr "Επιστρέφει το ημίτονο της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic sine of the parameter."
 msgstr "(Μόνο GLES3) Επιστρέφει το υπερβολικό ημίτονο της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8287,11 +8359,13 @@ msgid "Returns the tangent of the parameter."
 msgstr "Επιστρέφει την εφαπτομένη της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic tangent of the parameter."
 msgstr "(Μόνο GLES3) Επιστρέφει την υπερβολική εφαπτομένη της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the truncated value of the parameter."
+#, fuzzy
+msgid "Finds the truncated value of the parameter."
 msgstr "(Μόνο GLES3) Βρίσκει την περικομμένη  τιμή της παραμέτρου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8331,11 +8405,18 @@ msgid "Perform the texture lookup."
 msgstr "Εκτέλεση αντιστοιχίας υφής."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Cubic texture uniform."
+#, fuzzy
+msgid "Cubic texture uniform lookup."
 msgstr "Ενιαία μεταβλητή κυβικής υφής."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "2D texture uniform."
+#, fuzzy
+msgid "2D texture uniform lookup."
+msgstr "Ενιαία μεταβλητή 2D υφής."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "2D texture uniform lookup with triplanar."
 msgstr "Ενιαία μεταβλητή 2D υφής."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8343,8 +8424,9 @@ msgid "Transform function."
 msgstr "Συνάρτηση μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) Calculate the outer product of a pair of vectors.\n"
+"Calculate the outer product of a pair of vectors.\n"
 "\n"
 "OuterProduct treats the first parameter 'c' as a column vector (matrix with "
 "one column) and the second parameter 'r' as a row vector (matrix with one "
@@ -8368,15 +8450,18 @@ msgid "Decomposes transform to four vectors."
 msgstr "Αποσυνθέτει μετασχηματισμό σε τέσσερα διανύσματα."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the determinant of a transform."
+#, fuzzy
+msgid "Calculates the determinant of a transform."
 msgstr "(Μόνο GLES3) Υπολογίζει την ορίζουσα ενός μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the inverse of a transform."
+#, fuzzy
+msgid "Calculates the inverse of a transform."
 msgstr "(Μόνο GLES3) Υπολογίζει το αντίστροφο ενός μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the transpose of a transform."
+#, fuzzy
+msgid "Calculates the transpose of a transform."
 msgstr "(Μόνο GLES3) Υπολογίζει το ανάστροφο ενός μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8424,8 +8509,9 @@ msgid "Calculates the dot product of two vectors."
 msgstr "Υπολογίζει το εσωτερικό γινόμενο 2 διανυσμάτων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the same direction as a reference vector. "
+"Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
@@ -8457,15 +8543,17 @@ msgid "1.0 / vector"
 msgstr "1.0 / διάνυσμα"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the direction of reflection ( a : incident "
+"Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr ""
 "Επιστρέφει ένα διάνυσμα που δείχνει προς την κατεύθυνση αντανάκλασης ( a : "
 "διάνυσμα συμβάντος, b : κανονικό διάνυσμα )."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Returns a vector that points in the direction of refraction."
+#, fuzzy
+msgid "Returns the vector that points in the direction of refraction."
 msgstr "Επιστρέφει ένα διάνυσμα που δείχνει προς την κατεύθυνση διάθλασης."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8563,57 +8651,65 @@ msgstr ""
 "και της κατεύθυνσης της κάμερας (δώστε τις σχετικές εισόδους)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Scalar derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) Βαθμωτή παράγωγη συνάρτηση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Vector derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Vector derivative function."
 msgstr "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) Διανυσματική παράγωγη συνάρτηση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Διανυσματικά) Παράγωγος στο «x» με "
 "τοπική διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Βαθμωτά) Παράγωγος στο «x» με τοπική "
 "διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Διανυσματικά) Παράγωγος στο «y» με "
 "τοπική διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Βαθμωτά) Παράγωγος στο «y» με τοπική "
 "διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Διανυσματικά) Άθροισμα απόλυτης "
 "παραγώγου σε «x» και «y»."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Βαθμωτά) Άθροισμα απόλυτης παραγώγου "
 "σε «x» και «y»."
@@ -10114,7 +10210,8 @@ msgid "Script is valid."
 msgstr "Έγκυρη δεσμή ενεργειών"
 
 #: editor/script_create_dialog.cpp
-msgid "Allowed: a-z, A-Z, 0-9 and _"
+#, fuzzy
+msgid "Allowed: a-z, A-Z, 0-9, _ and ."
 msgstr "Επιτρεπόμενα: a-z, A-Z, 0-9 και _"
 
 #: editor/script_create_dialog.cpp
@@ -11813,6 +11910,11 @@ msgstr "Μη έγκυρη πηγή!"
 msgid "Invalid source for shader."
 msgstr "Μη έγκυρη πηγή!"
 
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid comparison function for that type."
+msgstr "Μη έγκυρη πηγή!"
+
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
 msgstr ""
@@ -11828,6 +11930,15 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Reverse"
+#~ msgstr "Αντιστροφή"
+
+#~ msgid "Mirror X"
+#~ msgstr "Συμμετρία στον άξονα Χ"
+
+#~ msgid "Mirror Y"
+#~ msgstr "Συμμετρία στον άξονα Υ"
 
 #~ msgid "Generating solution..."
 #~ msgstr "Επίλυση..."

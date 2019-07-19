@@ -1139,7 +1139,6 @@ msgid "Success!"
 msgstr "성공!"
 
 #: editor/editor_asset_installer.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Install"
 msgstr "설치"
 
@@ -2495,6 +2494,11 @@ msgstr "씬"
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "이전에 열었던 씬으로 가기."
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Copy Text"
+msgstr "경로 복사"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -4689,6 +4693,11 @@ msgid "Idle"
 msgstr "대기"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Install..."
+msgstr "설치"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
 msgstr "다시 시도"
 
@@ -4731,8 +4740,9 @@ msgid "Sort:"
 msgstr "정렬:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "뒤집기"
+#, fuzzy
+msgid "Reverse sorting."
+msgstr "요청중..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4811,31 +4821,38 @@ msgid "Rotation Step:"
 msgstr "회전 스텝:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move vertical guide"
+#, fuzzy
+msgid "Move Vertical Guide"
 msgstr "세로 가이드 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new vertical guide"
+#, fuzzy
+msgid "Create Vertical Guide"
 msgstr "새로운 세로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove vertical guide"
+#, fuzzy
+msgid "Remove Vertical Guide"
 msgstr "세로 가이드 삭제"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move horizontal guide"
+#, fuzzy
+msgid "Move Horizontal Guide"
 msgstr "가로 가이드 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal guide"
+#, fuzzy
+msgid "Create Horizontal Guide"
 msgstr "새로운 가로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove horizontal guide"
+#, fuzzy
+msgid "Remove Horizontal Guide"
 msgstr "가로 가이드 삭제"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal and vertical guides"
+#, fuzzy
+msgid "Create Horizontal and Vertical Guides"
 msgstr "새 가로 세로 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -7465,14 +7482,6 @@ msgid "Transpose"
 msgstr "바꾸기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X"
-msgstr "X축 뒤집기"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y"
-msgstr "Y축 뒤집기"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Disable Autotile"
 msgstr "오토타일 비활성화"
 
@@ -7869,6 +7878,10 @@ msgid "Visual Shader Input Type Changed"
 msgstr "비주얼 셰이더 입력 타입 변경됨"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "버텍스"
 
@@ -7953,6 +7966,23 @@ msgid "Color uniform."
 msgstr "색상 유니폼."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the %s comparison between two parameters."
+msgstr "매개변수의 제곱근 역함수 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Equal (==)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than (>)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than or Equal (>=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
@@ -7960,8 +7990,43 @@ msgstr "제공된 스칼라가 같거나, 더 크거나, 더 작으면 관련 �
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
+"Returns the boolean result of the comparison between INF and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between NaN and a scalar "
+"parameter."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than (<)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than or Equal (<=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Not Equal (!=)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr "불리언 값이 참이거나 거짓이면 관련 벡터를 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Returns the boolean result of the comparison between two parameters."
+msgstr "매개변수의 탄젠트 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between INF (or NaN) and a "
+"scalar parameter."
+msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean constant."
@@ -8052,7 +8117,8 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "매개변수의 아크코사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic cosine of the parameter."
 msgstr "(GLES3만 가능) 매개변수의 역쌍곡코사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8060,7 +8126,8 @@ msgid "Returns the arc-sine of the parameter."
 msgstr "매개변수의 아크사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic sine of the parameter."
 msgstr "(GLES3만 가능) 매개변수의 역쌍곡사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8072,7 +8139,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "매개변수들의 아크탄젠트 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the inverse hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the inverse hyperbolic tangent of the parameter."
 msgstr "(GLES3만 가능) 매개변수의 역쌍곡탄젠트 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8089,7 +8157,8 @@ msgid "Returns the cosine of the parameter."
 msgstr "매개변수의 코사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic cosine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic cosine of the parameter."
 msgstr "(GLES3만 가능) 매개변수의 쌍곡코사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8158,11 +8227,13 @@ msgid "1.0 / scalar"
 msgstr "1.0 / 스칼라"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest integer to the parameter."
 msgstr "(GLES3만 가능) 매개변수에서 가장 가까운 정수를 찾습니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the nearest even integer to the parameter."
+#, fuzzy
+msgid "Finds the nearest even integer to the parameter."
 msgstr "(GLES3만 가능) 매개변수에서 가장 가까운 짝수 정수를 찾습니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8178,7 +8249,8 @@ msgid "Returns the sine of the parameter."
 msgstr "매개변수의 사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic sine of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic sine of the parameter."
 msgstr "(GLES3만 가능) 매개변수의 쌍곡사인 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8213,11 +8285,13 @@ msgid "Returns the tangent of the parameter."
 msgstr "매개변수의 탄젠트 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Returns the hyperbolic tangent of the parameter."
+#, fuzzy
+msgid "Returns the hyperbolic tangent of the parameter."
 msgstr "(GLES3만 가능) 매개변수의 쌍곡탄젠트 값을 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Finds the truncated value of the parameter."
+#, fuzzy
+msgid "Finds the truncated value of the parameter."
 msgstr "(GLES3만 가능) 매개변수의 절사 값을 찾습니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8257,11 +8331,18 @@ msgid "Perform the texture lookup."
 msgstr "텍스쳐 룩업을 수행합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Cubic texture uniform."
+#, fuzzy
+msgid "Cubic texture uniform lookup."
 msgstr "세제곱 텍스쳐 유니폼."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "2D texture uniform."
+#, fuzzy
+msgid "2D texture uniform lookup."
+msgstr "2D 텍스쳐 유니폼."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "2D texture uniform lookup with triplanar."
 msgstr "2D 텍스쳐 유니폼."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8269,8 +8350,9 @@ msgid "Transform function."
 msgstr "변형 함수."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) Calculate the outer product of a pair of vectors.\n"
+"Calculate the outer product of a pair of vectors.\n"
 "\n"
 "OuterProduct treats the first parameter 'c' as a column vector (matrix with "
 "one column) and the second parameter 'r' as a row vector (matrix with one "
@@ -8294,15 +8376,18 @@ msgid "Decomposes transform to four vectors."
 msgstr "변형을 4개의 벡터로 분해합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the determinant of a transform."
+#, fuzzy
+msgid "Calculates the determinant of a transform."
 msgstr "(GLES3만 가능) 변형의 행렬식을 계산합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the inverse of a transform."
+#, fuzzy
+msgid "Calculates the inverse of a transform."
 msgstr "(GLES3만 가능) 변형의 역함수를 계산합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) Calculates the transpose of a transform."
+#, fuzzy
+msgid "Calculates the transpose of a transform."
 msgstr "(GLES3만 가능) 변형의 전치를 계산합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8350,8 +8435,9 @@ msgid "Calculates the dot product of two vectors."
 msgstr "두 벡터의 스칼라곱 값을 계산합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the same direction as a reference vector. "
+"Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
@@ -8382,14 +8468,16 @@ msgid "1.0 / vector"
 msgstr "1.0 / 벡터"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"Returns a vector that points in the direction of reflection ( a : incident "
+"Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr ""
 "반사 방향을 가리키는 벡터를 반환합니다 (a : 인시던트 벡터, b : 노멀 벡터)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "Returns a vector that points in the direction of refraction."
+#, fuzzy
+msgid "Returns the vector that points in the direction of refraction."
 msgstr "반사 방향을 가리키는 벡터를 반환합니다."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8487,57 +8575,65 @@ msgstr ""
 "다 (폴오프와 관련된 입력을 전달함)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Scalar derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Scalar derivative function."
 msgstr "(GLES3만 가능) (프래그먼트/조명 모드만 가능) 스칼라 미분 함수."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only) (Fragment/Light mode only) Vector derivative function."
+#, fuzzy
+msgid "(Fragment/Light mode only) Vector derivative function."
 msgstr "(GLES3만 가능) (프래그먼트/조명 모드만 가능) 벡터 미분 함수."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(GLES3만 가능) (프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'x'의 (벡터) "
 "도함수."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'x' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
+"differencing."
 msgstr ""
 "(GLES3만 가능) (프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'x'의 (스칼"
 "라) 도함수."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(GLES3만 가능) (프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'y'의 (벡터) "
 "도함수."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'y' using "
-"local differencing."
+"(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
+"differencing."
 msgstr ""
 "(GLES3만 가능) (프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'y'의 (스칼"
 "라) 도함수."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Vector) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(GLES3만 가능) (프래그먼트/조명 모드만 가능) (벡터) 'x'와 'y'의 절대 미분 값"
 "의 합."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
-"(GLES3 only) (Fragment/Light mode only) (Scalar) Sum of absolute derivative "
-"in 'x' and 'y'."
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
+"'y'."
 msgstr ""
 "(GLES3만 가능) (프래그먼트/조명 모드만 가능) (스칼라) 'x'와 'y'의 절대 미분 "
 "값의 합."
@@ -9967,7 +10063,8 @@ msgid "Script is valid."
 msgstr "스크립트가 올바릅니다."
 
 #: editor/script_create_dialog.cpp
-msgid "Allowed: a-z, A-Z, 0-9 and _"
+#, fuzzy
+msgid "Allowed: a-z, A-Z, 0-9, _ and ."
 msgstr "허용됨: a-z, A-z, 0-9 그리고 _"
 
 #: editor/script_create_dialog.cpp
@@ -11621,6 +11718,11 @@ msgstr "미리보기에 올바르지 않은 소스."
 msgid "Invalid source for shader."
 msgstr "셰이더에 올바르지 않은 소스."
 
+#: scene/resources/visual_shader_nodes.cpp
+#, fuzzy
+msgid "Invalid comparison function for that type."
+msgstr "셰이더에 올바르지 않은 소스."
+
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
 msgstr "함수에 배치함."
@@ -11636,6 +11738,15 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Reverse"
+#~ msgstr "뒤집기"
+
+#~ msgid "Mirror X"
+#~ msgstr "X축 뒤집기"
+
+#~ msgid "Mirror Y"
+#~ msgstr "Y축 뒤집기"
 
 #~ msgid "Generating solution..."
 #~ msgstr "솔루션 생성 중..."
