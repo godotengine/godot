@@ -35,6 +35,7 @@
 #include "core/compressed_translation.h"
 #include "core/core_string_names.h"
 #include "core/crypto/crypto.h"
+#include "core/crypto/hashing_context.h"
 #include "core/engine.h"
 #include "core/func_ref.h"
 #include "core/input_map.h"
@@ -156,6 +157,7 @@ void register_core_types() {
 	ClassDB::register_class<PacketPeerUDP>();
 
 	// Crypto
+	ClassDB::register_class<HashingContext>();
 	ClassDB::register_custom_instance_class<X509Certificate>();
 	ClassDB::register_custom_instance_class<CryptoKey>();
 	ClassDB::register_custom_instance_class<Crypto>();
