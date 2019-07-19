@@ -606,6 +606,13 @@ struct _VariantCall {
 		r_ret = s;
 	}
 
+	static void _call_PoolByteArray_hex_encode(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
+		PoolByteArray::Read r = ba->read();
+		String s = String::hex_encode_buffer(&r[0], ba->size());
+		r_ret = s;
+	}
+
 	VCALL_LOCALMEM0R(PoolByteArray, size);
 	VCALL_LOCALMEM2(PoolByteArray, set);
 	VCALL_LOCALMEM1R(PoolByteArray, get);
@@ -1763,6 +1770,7 @@ void register_variant_methods() {
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_ascii, varray());
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_utf8, varray());
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, sha256_string, varray());
+	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, hex_encode, varray());
 	ADDFUNC1R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, compress, INT, "compression_mode", varray(0));
 	ADDFUNC2R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
 
