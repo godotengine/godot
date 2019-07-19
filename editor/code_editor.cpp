@@ -1426,17 +1426,17 @@ void CodeTextEditor::_on_settings_change() {
 
 	// AUTO BRACE COMPLETION
 	text_editor->set_auto_brace_completion(
-			EDITOR_DEF("text_editor/completion/auto_brace_complete", true));
+			EDITOR_GET("text_editor/completion/auto_brace_complete"));
 
 	code_complete_timer->set_wait_time(
-			EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
+			EDITOR_GET("text_editor/completion/code_complete_delay"));
 
 	// call hint settings
 	text_editor->set_callhint_settings(
-			EDITOR_DEF("text_editor/completion/put_callhint_tooltip_below_current_line", true),
-			EDITOR_DEF("text_editor/completion/callhint_tooltip_offset", Vector2()));
+			EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"),
+			EDITOR_GET("text_editor/completion/callhint_tooltip_offset"));
 
-	idle->set_wait_time(EDITOR_DEF("text_editor/completion/idle_parse_delay", 2.0));
+	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
@@ -1622,12 +1622,12 @@ CodeTextEditor::CodeTextEditor() {
 	idle = memnew(Timer);
 	add_child(idle);
 	idle->set_one_shot(true);
-	idle->set_wait_time(EDITOR_DEF("text_editor/completion/idle_parse_delay", 2.0));
+	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
-	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
+	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 
 	error_line = 0;
 	error_column = 0;
