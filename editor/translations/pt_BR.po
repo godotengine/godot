@@ -68,8 +68,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-07-09 10:46+0000\n"
-"Last-Translator: Gustavo da Silva Santos <gustavo94.rb@gmail.com>\n"
+"PO-Revision-Date: 2019-07-15 13:10+0000\n"
+"Last-Translator: Esdras Tarsis <esdrastarsis@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -690,7 +690,7 @@ msgstr "Número da Linha:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "%d correspondência(s) encontrada(s)."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -847,9 +847,8 @@ msgid "Connect"
 msgstr "Conectar"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Sinais:"
+msgstr "Sinal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -1014,7 +1013,6 @@ msgid "Owners Of:"
 msgstr "Donos De:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
 msgstr "Remover arquivos selecionados do projeto? (irreversível)"
 
@@ -1567,7 +1565,7 @@ msgstr "Arquivo de modelo não encontrado:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "Em exportações de 32 bits, o PCK embutido não pode ser maior que 4GB."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -1590,14 +1588,12 @@ msgid "Import Dock"
 msgstr "Importar Dock"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Node Dock"
-msgstr "Nó Movido"
+msgstr "Dock de Nós"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "Arquivos"
+msgstr "Sistema de Arquivos e Importar Docks"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1834,9 +1830,8 @@ msgid "(Un)favorite current folder."
 msgstr "(Des)favoritar pasta atual."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Toggle visibility of hidden files."
-msgstr "Alternar Arquivos Ocultos"
+msgstr "Alternar visibilidade de arquivos ocultos."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1873,6 +1868,8 @@ msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
 msgstr ""
+"Existem múltiplos importadores para diferentes tipos que apontam para o "
+"arquivo %s, importação abortada"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
@@ -2657,7 +2654,7 @@ msgstr "Abrir Pasta do Projeto"
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template"
-msgstr ""
+msgstr "Instalar o Modelo de Compilação do Android"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2768,32 +2765,28 @@ msgid "Editor Layout"
 msgstr "Layout do Editor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Take Screenshot"
-msgstr "Fazer Raiz de Cena"
+msgstr "Tirar Captura de Tela"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Abrir Editor/Configurações de Pasta"
+msgstr "Capturas de Telas ficam salvas na Pasta Editor Data/Settings."
 
 #: editor/editor_node.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "Abrir Capturas de Tela Automaticamente"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open in an external image editor."
-msgstr "Abrir o próximo Editor"
+msgstr "Abrir em um editor de imagens externo."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Alternar Tela-Cheia"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle System Console"
-msgstr "Alternar CanvasItem Visível"
+msgstr "Alternar Console do Sistema"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2808,9 +2801,8 @@ msgid "Open Editor Settings Folder"
 msgstr "Abrir Configurações do Editor"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Editor Features"
-msgstr "Gerenciar Modelos de Exportação"
+msgstr "Gerenciar Recursos do Editor"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2903,19 +2895,16 @@ msgid "Spins when the editor window redraws."
 msgstr "Gira quando a janela do editor atualiza."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "Contínuo"
+msgstr "Atualizar Continuamente"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "Atualizar Alterações"
+msgstr "Atualizar quando Alterado"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Hide Update Spinner"
-msgstr "Desabilitar Spinner de Atualização"
+msgstr "Ocultar Spinner de Atualização"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -2944,16 +2933,22 @@ msgstr "Não Salvar"
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
 msgstr ""
+"O modelo de compilação do Android não foi encontrado, por favor instale "
+"modelos relevantes."
 
 #: editor/editor_node.cpp
 msgid "Manage Templates"
 msgstr "Gerenciar Templates"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "This will install the Android project for custom builds.\n"
 "Note that, in order to use it, it needs to be enabled per export preset."
 msgstr ""
+"Isso instalará o projeto Android para compilações personalizadas.\n"
+"Observe que, para usá-lo, ele precisa ser ativado por predefinição de "
+"exportação."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2961,6 +2956,8 @@ msgid ""
 "Remove the \"build\" directory manually before attempting this operation "
 "again."
 msgstr ""
+"O modelo de compilação do Android já está instalado e não será substituído.\n"
+"Remova a pasta \"build\" manualmente antes de tentar esta operação novamente."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -3434,9 +3431,8 @@ msgid "SSL Handshake Error"
 msgstr "Erro SSL Handshake"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uncompressing Android Build Sources"
-msgstr "Descompactando Assets"
+msgstr "Descompactando Fontes de Compilação do Android"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -3455,9 +3451,8 @@ msgid "Remove Template"
 msgstr "Remover Modelo"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select Template File"
-msgstr "Selecione o arquivo de modelo"
+msgstr "Selecionar o Arquivo de Modelo"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3621,9 +3616,8 @@ msgid "Re-Scan Filesystem"
 msgstr "Re-escanear Sistema de Arquivos"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "Toggle Split Mode"
-msgstr "Alternar modo"
+msgstr "Alternar Modo Split"
 
 #: editor/filesystem_dock.cpp
 msgid "Search files"
@@ -4402,9 +4396,8 @@ msgid "Enable Onion Skinning"
 msgstr "Ativar Papel Vegetal"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-#, fuzzy
 msgid "Onion Skinning Options"
-msgstr "Papel Vegetal"
+msgstr "Opções do Onion Skinning"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
@@ -4972,6 +4965,8 @@ msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
 msgstr ""
+"Quando ativo, os nós de Controle móveis mudam suas âncoras em vez de suas "
+"margens."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5010,14 +5005,12 @@ msgid "Paste Pose"
 msgstr "Colar Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Custom Bone(s) from Node(s)"
-msgstr "Criar esqueleto(s) customizado do(s) nó(s)"
+msgstr "Criar esqueleto(s) customizado(s) do(s) nó(s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Bones"
-msgstr "Limpar Pose"
+msgstr "Limpar Esqueletos"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make IK Chain"
@@ -5105,7 +5098,6 @@ msgid "Snapping Options"
 msgstr "Opções de agarramento"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Grid"
 msgstr "Encaixar na grade"
 
@@ -5127,39 +5119,32 @@ msgid "Use Pixel Snap"
 msgstr "Usar Snap de Pixel"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Smart Snapping"
 msgstr "Encaixe inteligente"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Parent"
-msgstr "Encaixar no pai"
+msgstr "Encaixar no Pai"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Anchor"
-msgstr "Encaixar na âncora do nó"
+msgstr "Encaixar na Âncora do Nó"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Sides"
-msgstr "Encaixar nos lados do nó"
+msgstr "Encaixar nos Lados do Nó"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Node Center"
-msgstr "Encaixar no centro do nó"
+msgstr "Encaixar no Centro do Nó"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Other Nodes"
-msgstr "Encaixar em outros nós"
+msgstr "Encaixar em Outros Nós"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Snap to Guides"
-msgstr "Encaixar nas guias"
+msgstr "Encaixar nas Guias"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -5240,9 +5225,8 @@ msgid "Frame Selection"
 msgstr "Seleção de Quadros"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Preview Canvas Scale"
-msgstr "Prever Atlas"
+msgstr "Visualizar Canvas Scale"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -5371,9 +5355,8 @@ msgstr "Carregar Máscara de Emissão"
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Restart"
-msgstr "Reiniciar Agora"
+msgstr "Reiniciar"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5461,19 +5444,16 @@ msgid "Remove Point"
 msgstr "Remover Ponto"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Left Linear"
-msgstr "Linear esquerda"
+msgstr "Linear Esquerda"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Right Linear"
-msgstr "Linear direita"
+msgstr "Linear Direita"
 
 #: editor/plugins/curve_editor_plugin.cpp
-#, fuzzy
 msgid "Load Preset"
-msgstr "Carregar definição"
+msgstr "Carregar Predefinição"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Remove Curve Point"
@@ -6537,7 +6517,7 @@ msgstr "Realce de sintaxe"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Ir Para"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -7311,7 +7291,7 @@ msgstr "Adicionar Textura de um Arquivo"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr ""
+msgstr "Adicionar Quadros de uma Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7486,8 +7466,9 @@ msgid "Checked Radio Item"
 msgstr "Item Rádio Marcado"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Named Sep."
-msgstr ""
+msgstr "Sep. Nomeado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Submenu"
@@ -8059,7 +8040,7 @@ msgstr "Ir para Função"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color operator."
-msgstr ""
+msgstr "Operador de cor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8081,11 +8062,11 @@ msgstr "Renomear Função"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Burn operator."
-msgstr ""
+msgstr "Operador de gravação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Darken operator."
-msgstr ""
+msgstr "Operador de escurecimento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8098,19 +8079,19 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "HardLight operator"
-msgstr ""
+msgstr "Operador HardLight"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
-msgstr ""
+msgstr "Operador de iluminação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Overlay operator."
-msgstr ""
+msgstr "Operador de sobreposição."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Screen operator."
-msgstr ""
+msgstr "Operador de tela."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
@@ -8147,7 +8128,7 @@ msgstr "Alterar Constante Vet"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean uniform."
-msgstr ""
+msgstr "Booleano uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for all shader modes."

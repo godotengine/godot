@@ -16,8 +16,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-09 10:47+0000\n"
-"Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
+"PO-Revision-Date: 2019-07-19 13:42+0000\n"
+"Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
 "Language: es_AR\n"
@@ -641,7 +641,7 @@ msgstr "Numero de Línea:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "Se encontraron %d coincidencias."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -799,9 +799,8 @@ msgid "Connect"
 msgstr "Conectar"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Señales:"
+msgstr "Señal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -967,9 +966,9 @@ msgid "Owners Of:"
 msgstr "Dueños De:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Quitar los archivos seleccionados del proyecto? (imposible deshacer)"
+msgstr ""
+"¿Eliminar los archivos seleccionados del proyecto? (No puede ser restaurado)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1521,6 +1520,7 @@ msgstr "Plantilla no encontrada:"
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
+"En la exportación de 32 bits el PCK embebido no puede ser mayor de 4 GiB."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -4972,9 +4972,8 @@ msgid "Paste Pose"
 msgstr "Pegar Pose"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Custom Bone(s) from Node(s)"
-msgstr "Crear Hueso(s) Personalizados a partir de Nodo(s)"
+msgstr "Crear Hueso(s) Personalizado(s) a partir de Nodo(s)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Clear Bones"
@@ -6428,10 +6427,11 @@ msgid "Target"
 msgstr "Objetivo"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid ""
 "Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
-msgstr "Nada conectado a la entrada '%s' del nodo '%s'."
+msgstr ""
+"No se encuentra el método conectado '%s' para la señal '%s' del nodo '%s' al "
+"nodo '%s'."
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Line"
@@ -6479,7 +6479,7 @@ msgstr "Resaltador de Sintaxis"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Ir A"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -6487,9 +6487,8 @@ msgid "Bookmarks"
 msgstr "Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Breakpoints"
-msgstr "Crear puntos."
+msgstr "Puntos de interrupción"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -7951,315 +7950,310 @@ msgid "Create Shader Node"
 msgstr "Crear Nodo Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color function."
-msgstr "Ir a Función"
+msgstr "Función Color."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color operator."
-msgstr ""
+msgstr "Operador Color."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Grayscale function."
-msgstr "Crear Función"
+msgstr "Función Escala de Grises."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "Convertir vector HSV a equivalente RGB."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "Convertir vector RGB a equivalente HSV."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Sepia function."
-msgstr "Renombrar Función"
+msgstr "Función Sepia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Burn operator."
-msgstr ""
+msgstr "Operador Burn(subexponer)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Darken operator."
-msgstr ""
+msgstr "Operador Darken(oscurecer)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Difference operator."
-msgstr "Solo Diferencias"
+msgstr "Operador Difference(diferencia)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Dodge operator."
-msgstr ""
+msgstr "Operador Dodge(sobreexponer)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "HardLight operator"
-msgstr ""
+msgstr "Operador HardLight(luz fuerte)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
-msgstr ""
+msgstr "Operador Lighten(aclarar)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Overlay operator."
-msgstr ""
+msgstr "Operador Overlay(superponer)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Screen operator."
-msgstr ""
+msgstr "Operador Screen(trama)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
-msgstr ""
+msgstr "Operador SoftLight(luz suave)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color constant."
-msgstr "Constante"
+msgstr "Constante de color."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color uniform."
-msgstr "Reestablecer transform"
+msgstr "Color uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
 msgstr ""
+"Devuelve un vector asociado si los escalares proporcionados son iguales, "
+"mayores o menores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
 msgstr ""
+"Devuelve un vector asociado si el valor booleano proporcionado es verdadero "
+"o falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Boolean constant."
-msgstr "Cambiar Constante Vec."
+msgstr "Constante booleana."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean uniform."
-msgstr ""
+msgstr "Uniform booleano."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for all shader modes."
-msgstr ""
+msgstr "Parámetro de entrada %s' para todos los modos de shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Input parameter."
-msgstr "Alinear al Padre"
+msgstr "Parámetro de entrada."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader modes."
-msgstr ""
+msgstr "Parámetro de entrada '%s' para modos vertex y fragment shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment and light shader modes."
-msgstr ""
+msgstr "Parámetro de entrada '%s' para modos fragment y light shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment shader mode."
-msgstr ""
+msgstr "Parámetro de entrada '%s' para modo fragment shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for light shader mode."
-msgstr ""
+msgstr "Parámetro de entrada '%s' para modo light shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex shader mode."
-msgstr ""
+msgstr "Parámetro de entrada '%s' para modo vertex shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader mode."
-msgstr ""
+msgstr "Parámetro de entrada '%s' para modos vertex y fragment shader."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar function."
-msgstr "Cambiar Función Escalar"
+msgstr "Función Escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar operator."
-msgstr "Cambiar Operador Escalar"
+msgstr "Operador Escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
-msgstr ""
+msgstr "Constante E (2.718282). Representa la base del logaritmo natural."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
-msgstr ""
+msgstr "Constante de Épsilon (0.00001). El número escalar más pequeño posible."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Phi constant (1.618034). Golden ratio."
-msgstr ""
+msgstr "Constante Phi (1.618034). Proporcion áurea."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/4 constant (0.785398) or 45 degrees."
-msgstr ""
+msgstr "Constante Pi/4 (0.785398) o 45 grados."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/2 constant (1.570796) or 90 degrees."
-msgstr ""
+msgstr "Constante Pi/2 (1.570796) o 90 grados."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi constant (3.141593) or 180 degrees."
-msgstr ""
+msgstr "Constante Pi (3.141593) o 180 grados."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Tau constant (6.283185) or 360 degrees."
-msgstr ""
+msgstr "Constante Tau (6.283185) o 360 grados."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sqrt2 constant (1.414214). Square root of 2."
-msgstr ""
+msgstr "Constante Sqrt2 (1.414214). Raíz cuadrada de 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "Devuelve el valor absoluto del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
-msgstr ""
+msgstr "Devuelve el arcocoseno del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Devuelve el coseno hiperbólico inverso del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
-msgstr ""
+msgstr "Devuelve el arcoseno del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Devuelve el seno hiperbólico inverso del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
-msgstr ""
+msgstr "Devuelve el arcotangente del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "Devuelve el arcotangente de los parámetros."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Devuelve la tangente hiperbólica inversa del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
-msgstr ""
+msgstr "Encuentra el entero más cercano mayor o igual que el parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
-msgstr ""
+msgstr "Limita un valor a estar entre dos valores más."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
-msgstr ""
+msgstr "Devuelve el coseno del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Devuelve el coseno hiperbólico del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "Convierte una cantidad en radianes a grados."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "Exponencial en base e."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "Exponencial en base 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr ""
+msgstr "Encuentra el número entero más cercano menor o igual que el parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Calcula la parte fraccional del argumento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "Devuelve el inverso de la raíz cuadrada del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Natural logarithm."
-msgstr ""
+msgstr "Logaritmo natural."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "Logaritmo de la base 2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
-msgstr ""
+msgstr "Devuelve el mayor de dos valores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the lesser of two values."
-msgstr ""
+msgstr "Devuelve el menor de dos valores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two scalars."
-msgstr ""
+msgstr "Interpolación lineal entre dos escalares."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "Devuelve el valor opuesto del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - scalar"
-msgstr ""
+msgstr "1.0 - escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the value of the first parameter raised to the power of the second."
 msgstr ""
+"Devuelve el valor del primer parámetro elevado a la potencia del segundo."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "Convierte una cantidad de grados a radianes."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / scalar"
-msgstr ""
+msgstr "1.0 / escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Encuentra el entero más cercano al parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Encuentra el entero más cercano al parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
-msgstr ""
+msgstr "Ajusta el valor entre 0.0 y 1.0."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Extracts the sign of the parameter."
-msgstr ""
+msgstr "Extrae el signo del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the sine of the parameter."
-msgstr ""
+msgstr "Devuelve el seno del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Devuelve el seno hiperbólico del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the square root of the parameter."
-msgstr ""
+msgstr "Devuelve la raíz cuadrada del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8269,6 +8263,11 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
+"SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"\n"
+"Devuelve 0.0 si 'x' es menor que 'edge0' y 1.0 si x es mayor que 'edge1'. De "
+"lo contrario, el valor de retorno se interpola entre 0.0 y 1.0 utilizando "
+"polinomios de Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8276,71 +8275,69 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
+"Step function( scalar(edge), scalar(x) ).\n"
+"\n"
+"Devuelve 0.0 si 'x' es menor que 'edge' y en caso contrario devuelve 1.0."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the tangent of the parameter."
-msgstr ""
+msgstr "Devuelve la tangente del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Returns the hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Devuelve la tangente hiperbólica del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Finds the truncated value of the parameter."
-msgstr ""
+msgstr "(Sólo GLES3) Encuentra el valor truncado del parámetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds scalar to scalar."
-msgstr ""
+msgstr "Añade escalar a escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Divides scalar by scalar."
-msgstr ""
+msgstr "Divide escalar por escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies scalar by scalar."
-msgstr ""
+msgstr "Multiplica escalar por escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two scalars."
-msgstr ""
+msgstr "Devuelve el resto de dos escalares."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts scalar from scalar."
-msgstr ""
+msgstr "Resta escalar de escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar constant."
-msgstr "Cambiar Constante Escalar"
+msgstr "Constante escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar uniform."
-msgstr "Cambiar Uniforme Escalar"
+msgstr "Uniform escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Perform the cubic texture lookup."
-msgstr ""
+msgstr "Realiza una búsqueda de texturas cúbicas."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Perform the texture lookup."
-msgstr ""
+msgstr "Realiza una búsqueda de texturas."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Cubic texture uniform."
-msgstr "Cambiar Uniforme Textura"
+msgstr "Uniform de textura cúbica."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform."
-msgstr "Cambiar Uniforme Textura"
+msgstr "Uniform de Textura 2D."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform function."
-msgstr "Cuadro de diálogo de Transform..."
+msgstr "Función Transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8352,74 +8349,77 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
+"(GLES3 solamente) Calcula el producto exterior de un par de vectores.\n"
+"\n"
+"OuterProduct trata el primer parámetro 'c' como un vector de columna (matriz "
+"con una columna) y el segundo parámetro 'r' como un vector de fila (matriz "
+"con una fila) y multiplica una matriz algebraica lineal 'c * r', dando como "
+"resultado una matriz cuyo número de filas es el número de componentes en 'c' "
+"y cuyo número de columnas es el número de componentes en 'r'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
-msgstr ""
+msgstr "Compone un transform a partir de cuatro vectores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes transform to four vectors."
-msgstr ""
+msgstr "Descompone un transform en cuatro vectores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Calculates the determinant of a transform."
-msgstr ""
+msgstr "(Sólo GLES3) Calcula el determinante de un transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Calculates the inverse of a transform."
-msgstr ""
+msgstr "(Sólo GLES3) Calcula el inverso de un transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Calculates the transpose of a transform."
-msgstr ""
+msgstr "(Sólo GLES3) Calcula la transposición de un transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies transform by transform."
-msgstr ""
+msgstr "Multiplica transform por transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by transform."
-msgstr ""
+msgstr "Multiplica vector por transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform constant."
-msgstr "Transformación Abortada."
+msgstr "Constante transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform uniform."
-msgstr "Transformación Abortada."
+msgstr "Uniform de transform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector function."
-msgstr "Asignación a función."
+msgstr "Función Vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector operator."
-msgstr "Cambiar Operador Vec."
+msgstr "Operador vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes vector from three scalars."
-msgstr ""
+msgstr "Compone vector a partir de tres escalares."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes vector to three scalars."
-msgstr ""
+msgstr "Descompone vector a tres escalares."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "Calcula el producto cruzado de dos vectores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the distance between two points."
-msgstr ""
+msgstr "Devuelve la distancia entre dos puntos."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
-msgstr ""
+msgstr "Calcula el producto punto de dos vectores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8428,36 +8428,43 @@ msgid ""
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
+"Devuelve un vector que apunta en la misma dirección que un vector de "
+"referencia. La función tiene tres parámetros vectoriales: N, el vector a "
+"orientar, I, el vector incidente, y Nref, el vector de referencia. Si el "
+"producto punto de I y Nref es menor que cero, el valor de retorno es N. De "
+"lo contrario, se devuelve -N."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
-msgstr ""
+msgstr "Calcula la longitud de un vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two vectors."
-msgstr ""
+msgstr "Interpolación lineal entre dos vectores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
-msgstr ""
+msgstr "Calcula el producto normalizado del vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - vector"
-msgstr ""
+msgstr "1.0 - vector"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / vector"
-msgstr ""
+msgstr "1.0 / vector"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns a vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr ""
+"Devuelve un vector que apunta en dirección a su reflexión ( a : vector "
+"incidente, b : vector normal)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns a vector that points in the direction of refraction."
-msgstr ""
+msgstr "Devuelve un vector que apunta en dirección a su refracción."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8467,6 +8474,11 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
+"SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
+"\n"
+"Devuelve 0.0 si 'x' es menor que 'edge0' y 1.0 si 'x' es mayor que 'edge1'. "
+"De lo contrario, el valor de retorno se interpola entre 0.0 y 1.0 utilizando "
+"polinomios de Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8476,6 +8488,11 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
+"SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n"
+"\n"
+"Devuelve 0.0 si 'x' es menor que 'edge0' y 1.0 si 'x' es mayor que 'edge1'. "
+"De lo contrario, el valor de retorno se interpola entre 0.0 y 1.0 utilizando "
+"polinomios de Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8483,6 +8500,9 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
+"Step function( vector(edge), vector(x) ).\n"
+"\n"
+"Devuelve 0.0 si 'x' es menor que 'edge' y 1.0 en caso contrario."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8490,36 +8510,37 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
+"Step function( scalar(edge), vector(x) ).\n"
+"\n"
+"Devuelve 0.0 si 'x' es menor que 'edge' y 1.0 en caso contrario."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds vector to vector."
-msgstr ""
+msgstr "Suma vector a vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Divides vector by vector."
-msgstr ""
+msgstr "Divide vector por vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by vector."
-msgstr ""
+msgstr "Multiplica vector por vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two vectors."
-msgstr ""
+msgstr "Devuelve el resto de los dos vectores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts vector from vector."
-msgstr ""
+msgstr "Sustrae vector de vector."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector constant."
-msgstr "Cambiar Constante Vec."
+msgstr "Constante vectorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector uniform."
-msgstr "Asignación a uniform."
+msgstr "Uniform vectorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8527,56 +8548,74 @@ msgid ""
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
 msgstr ""
+"Expresión personalizada del lenguaje de shaders de Godot, con una cantidad "
+"determinada de puertos de entrada y salida. Esta es una inyección directa de "
+"código en la función vertex/fragment/light, no la uses para escribir "
+"declaraciones de funciones en su interior."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
+"Devuelve el falloff en base al producto punto de la superficie normal y la "
+"dirección de vista de la camara ( pasale los puntos asociados)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) (Fragment/Light mode only) Scalar derivative function."
-msgstr ""
+msgstr "(Sólo GLES3) (Sólo modo Fragmento/Luz) Función derivada escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) (Fragment/Light mode only) Vector derivative function."
-msgstr ""
+msgstr "(Sólo GLES3) (Sólo modo Fragmento/Luz) Función derivada vectorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'x' using "
 "local differencing."
 msgstr ""
+"(Sólo GLES3) (Sólo modo Fragmento/Luz) (Vector) Derivada en 'x' utilizando "
+"diferenciación local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'x' using "
 "local differencing."
 msgstr ""
+"(Sólo GLES3) (Sólo modo Fragmento/Luz) (Escalar) Derivada en 'x' utilizando "
+"diferenciación local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'y' using "
 "local differencing."
 msgstr ""
+"(Sólo GLES3) (Sólo modo Fragmento/Luz) (Vector) Derivada en 'y' utilizando "
+"diferenciación local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'y' using "
 "local differencing."
 msgstr ""
+"(Sólo GLES3) (Sólo modo Fragmento/Luz) (Escalar) Derivada en 'y' utilizando "
+"diferenciación local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Vector) Sum of absolute derivative "
 "in 'x' and 'y'."
 msgstr ""
+"(Sólo GLES3) (Sólo modo Fragmento/Luz) (Vector) Suma de la derivada absoluta "
+"en 'x' e 'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Scalar) Sum of absolute derivative "
 "in 'x' and 'y'."
 msgstr ""
+"(Sólo GLES3) (Sólo modo Fragmento/Luz) (Escalar) Suma de la derivada "
+"absoluta en 'x' e 'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -8920,7 +8959,6 @@ msgid "Are you sure to open more than one project?"
 msgstr "¿Estás seguro/a que quieres abrir más de un proyecto?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file does not specify the version of Godot "
 "through which it was created.\n"
@@ -8943,7 +8981,6 @@ msgstr ""
 "anteriores del motor."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "The following project settings file was generated by an older engine "
 "version, and needs to be converted for this version:\n"
@@ -8954,12 +8991,12 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
-"Las siguientes configuraciones de proyecto fueron generadas para una versión "
-"anterior del motor, y deben ser convertidas para esta versión:\n"
+"El siguiente archivo de configuración de proyecto fue generado por una "
+"versión anterior del motor, y debe se convertido para esta versión:\n"
 "\n"
 "%s\n"
 "\n"
-"¿Querés convertirlas?\n"
+"¿Querés convertirlo?\n"
 "Advertencia: No vas a poder volver a abrir el proyecto con versiones "
 "anteriores del motor."
 
@@ -8972,15 +9009,14 @@ msgstr ""
 "del motor y no son compatibles con esta versión."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
 msgstr ""
-"No sé puede ejecutar el proyecto: No se ha definido ninguna escena "
+"No se puede ejecutar el proyecto: No se ha definido ninguna escena "
 "principal.\n"
-"Por favor editá el proyecto y seteá la escena principal en \"Ajustes de "
+"Por favor editá el proyecto y asigná la escena principal en \"Ajustes de "
 "Proyecto\" bajo la categoría 'Aplicación'."
 
 #: editor/project_manager.cpp
@@ -8992,46 +9028,41 @@ msgstr ""
 "Por favor editá el proyecto para provocar la importación inicial."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to run %d projects at once?"
-msgstr "¿Estás seguro/a que quieres ejecutar más de un proyecto?"
+msgstr "¿Estás seguro/a que querés ejecutar %d proyectos a la vez?"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Remove %d projects from the list?\n"
 "The project folders' contents won't be modified."
 msgstr ""
-"¿Quitar proyecto de la lista? (Los contenidos de la carpeta no serán "
-"modificados)"
+"¿Quitar %d proyectos de la lista?\n"
+"El contenido de las carpetas de proyecto no será modificado."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Remove this project from the list?\n"
 "The project folder's contents won't be modified."
 msgstr ""
-"¿Quitar proyecto de la lista? (Los contenidos de la carpeta no serán "
-"modificados)"
+"¿Quitar este proyecto de la lista?\n"
+"El contenido de la carpeta de proyecto no será modificado."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Remove all missing projects from the list? (Folders contents will not be "
 "modified)"
 msgstr ""
-"¿Quitar proyecto de la lista? (Los contenidos de la carpeta no serán "
-"modificados)"
+"¿Eliminar todos los proyectos faltantes de la lista? (El contenido de las "
+"carpetas no se modificará)"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Language changed.\n"
 "The interface will update after restarting the editor or project manager."
 msgstr ""
 "Lenguaje cambiado.\n"
-"La interfaz de usuario se actualizara la próxima vez que el editor o gestor "
-"de proyectos inicie."
+"La interfaz de usuario se actualizara luego de reiniciar el editor o gestor "
+"de proyectos."
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -10207,7 +10238,7 @@ msgstr "Setear Desde Arbol"
 
 #: editor/script_editor_debugger.cpp
 msgid "Export measures as CSV"
-msgstr ""
+msgstr "Exportar medidas como CSV"
 
 #: editor/settings_config_dialog.cpp
 msgid "Erase Shortcut"
@@ -10339,7 +10370,7 @@ msgstr "GDNativeLibrary"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Enabled GDNative Singleton"
-msgstr ""
+msgstr "Activar Singleton GDNative"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
 #, fuzzy
@@ -10957,15 +10988,21 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
+"La compilación personalizada requiere una ruta de Android SDK válida en "
+"Configuración del Editor."
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
+"Ruta del SDK de Android inválida para la compilación personalizada en "
+"Configuración del Editor."
 
 #: platform/android/export/export.cpp
 msgid ""
 "Android project is not installed for compiling. Install from Editor menu."
 msgstr ""
+"El proyecto Android no está instalado para la compilación. Instálalo desde "
+"el menú Editor."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -10980,6 +11017,9 @@ msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
+"Intentando construir a partir de una plantilla personalizada, pero no existe "
+"información de la versión para ello. Por favor, reinstalá desde el menú "
+"'Proyecto'."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -10988,20 +11028,28 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
+"La versión de compilación de Android no coincide:\n"
+"   Plantilla instalada: %s\n"
+"   Versión de Godot: %s\n"
+"Por favor, reinstalá la plantilla de compilación de Android desde el menú "
+"'Proyecto'."
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
-msgstr ""
+msgstr "Construir Proyecto Android (gradle)"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
+"La construcción del proyecto Android falló, comprueba la salida del error.\n"
+"También podés visitar docs.godotengine.org para consultar la documentación "
+"de compilación de Android."
 
 #: platform/android/export/export.cpp
 msgid "No build apk generated at: "
-msgstr ""
+msgstr "No se ha generado ninguna compilación apk en: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -11466,6 +11514,8 @@ msgstr ""
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
+"Un SpotLight con un ángulo mas ancho que 90 grados no puede proyectar "
+"sombras."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11574,6 +11624,8 @@ msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"WorldEnvironment requiere que su propiedad \"Environment\" contenga un "
+"Environment para que tenga un efecto visible."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11641,7 +11693,7 @@ msgstr "Elegir un color de la pantalla."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
-msgstr ""
+msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
 #, fuzzy
@@ -11673,6 +11725,9 @@ msgid ""
 "The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
 "\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
 msgstr ""
+"Los Tooltip de Ayuda no se mostrarán cuando los controles del Filtro del "
+"Mouse estén configurados en \"Ignore\". Para solucionarlo, establece el "
+"Filtro del Mouse en \"Stop\" o \"Pass\"."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -11776,7 +11831,7 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Las constantes no pueden modificarse."
 
 #~ msgid "Generating solution..."
 #~ msgstr "Generando solución..."

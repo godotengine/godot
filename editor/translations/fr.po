@@ -56,12 +56,14 @@
 # Peter Kent <0.peter.kent@gmail.com>, 2019.
 # jef dered <themen098s@vivaldi.net>, 2019.
 # Patrick Zoch Alves <patrickzochalves@gmail.com>, 2019.
+# Alexis Comte <comtealexis@gmail.com>, 2019.
+# Julian Murgia <the.straton@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:50+0000\n"
-"Last-Translator: Chenebel Dorian <LoubiTek54@gmail.com>\n"
+"PO-Revision-Date: 2019-07-17 09:20+0000\n"
+"Last-Translator: Julian Murgia <the.straton@gmail.com>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -509,9 +511,8 @@ msgid "Select All"
 msgstr "Tout sélectionner"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select None"
-msgstr "Sélectionner un nœud"
+msgstr "Tout désélectionner"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -691,7 +692,7 @@ msgstr "Numéro de ligne :"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "%d correspondance(s) trouvée(s)"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -1574,7 +1575,7 @@ msgstr "Fichier modèle introuvable :"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "Le PCK inclus dans un export 32-bits ne peut dépasser 4 Go."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -1659,6 +1660,8 @@ msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
+"Le profil '%s' existe déjà. Veuillez le supprimer avant d'importer. Import "
+"interrompu."
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."

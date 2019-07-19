@@ -48,12 +48,16 @@
 # DS <dseqrasd@126.com>, 2019.
 # ZeroAurora <zeroaurora@qq.com>, 2019.
 # Gary Wang <wzc782970009@gmail.com>, 2019.
+# ASC_8384 <ASC8384ST@gmail.com>, 2019.
+# Lyu Shiqing <shiqing-thu18@yandex.com>, 2019.
+# ColdThunder11 <lslyj27761@gmail.com>, 2019.
+# liu lizhi <kz-xy@163.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-07-09 10:47+0000\n"
-"Last-Translator: Gary Wang <wzc782970009@gmail.com>\n"
+"PO-Revision-Date: 2019-07-19 13:42+0000\n"
+"Last-Translator: liu lizhi <kz-xy@163.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -471,6 +475,11 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"此动画属于导入的场景，因此不会保存对导入轨道的更改。\n"
+"\n"
+"要启用添加自定义轨道的功能，可以导航到场景的导入设置，将\n"
+"“动画 > 存储”设为“文件”，启用“动画 > 保留自定义轨道”并重新导入。\n"
+"或者也可以选择一个导入动画的导入预设以分隔文件。"
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -661,7 +670,7 @@ msgstr "行号:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "找到%d个匹配项。"
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -721,16 +730,14 @@ msgid "Line and column numbers."
 msgstr "行号和列号。"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "必须指定目标节点的方法！"
+msgstr "必须指定目标节点的方法。"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
-msgstr "找不到目标方法！ 请指定一个有效的方法或把脚本附加到目标节点。"
+msgstr "找不到目标方法！ 请指定一个有效的方法或者把脚本附加到目标节点。"
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
@@ -741,7 +748,6 @@ msgid "Connect to Script:"
 msgstr "连接到脚本:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
 msgstr "信号源:"
 
@@ -775,7 +781,6 @@ msgid "Extra Call Arguments:"
 msgstr "额外调用参数:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
 msgstr "高级选项"
 
@@ -819,7 +824,6 @@ msgid "Connect"
 msgstr "连接"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
 msgstr "信号:"
 
@@ -932,11 +936,12 @@ msgid ""
 msgstr "场景 '%s' 已被修改，重新加载后生效。"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
-msgstr "资源'%s'正在使用中，修改将在重新加载后生效。"
+msgstr ""
+"资源'%s'正在使用中。\n"
+"修改将只在重新加载后生效。"
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -983,9 +988,8 @@ msgid "Owners Of:"
 msgstr "拥有者:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "确定从项目中删除文件？（此操作无法撤销）"
+msgstr "确定从项目中删除选定文件？（此操作无法撤销）"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1390,7 +1394,6 @@ msgid "Rearrange Autoloads"
 msgstr "重排序Autoload"
 
 #: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Invalid path."
 msgstr "路径非法。"
 
@@ -1526,7 +1529,7 @@ msgstr "找不到模板文件:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "以32位平台导出时，内嵌的PCK不能大于4GB。"
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -1605,11 +1608,10 @@ msgid "File '%s' format is invalid, import aborted."
 msgstr "文件 '%s' 格式无效，导入中止。"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
-msgstr "配置文件 '%s' 已存在。在导入之前首先远程处理，导入已中止。"
+msgstr "配置文件 '%s' 已存在。在导入之前先删除它，导入已中止。"
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
@@ -1620,7 +1622,6 @@ msgid "Unset"
 msgstr "未设置"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
 msgstr "当前配置文件"
 
@@ -1644,9 +1645,8 @@ msgid "Export"
 msgstr "导出"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "可用配置文件"
+msgstr "可用配置文件："
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -2713,7 +2713,7 @@ msgstr "全屏模式"
 
 #: editor/editor_node.cpp
 msgid "Toggle System Console"
-msgstr ""
+msgstr "系统命令行模式"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2874,6 +2874,8 @@ msgid ""
 "This will install the Android project for custom builds.\n"
 "Note that, in order to use it, it needs to be enabled per export preset."
 msgstr ""
+"将安装Android项目以进行自定义构建。\n"
+"注意，为了可用，需要为每个导出预设启用。"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -2881,6 +2883,8 @@ msgid ""
 "Remove the \"build\" directory manually before attempting this operation "
 "again."
 msgstr ""
+"Android 构建模板已经安装且不会被覆盖。\n"
+"请先移除“build”目录再重新尝试此操作。"
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -3586,7 +3590,7 @@ msgstr "筛选："
 msgid ""
 "Include the files with the following extensions. Add or remove them in "
 "ProjectSettings."
-msgstr ""
+msgstr "包含下列扩展名的文件。可在项目设置中增加或移除。"
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -4860,7 +4864,7 @@ msgstr "控件节点的定位点和边距值的预设。"
 msgid ""
 "When active, moving Control nodes changes their anchors instead of their "
 "margins."
-msgstr ""
+msgstr "激活后，移动控制节点会更改变锚点，而非边距。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -5143,7 +5147,7 @@ msgstr "用于插入键的旋转掩码。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Scale mask for inserting keys."
-msgstr ""
+msgstr "插入键的缩放遮罩。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert keys (based on mask)."
@@ -5423,7 +5427,7 @@ msgstr "创建Trimesh(三维网格)形状"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Failed creating shapes!"
-msgstr ""
+msgstr "创建形状失败！"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 #, fuzzy
@@ -6422,7 +6426,7 @@ msgstr "语法高亮显示"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "跳转到"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -7194,13 +7198,12 @@ msgid "Animation Frames:"
 msgstr "动画帧："
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Add a Texture from File"
-msgstr "添加纹理到磁贴集。"
+msgstr "从文件添加纹理"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr ""
+msgstr "从精灵表格中添加帧"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7219,9 +7222,8 @@ msgid "Move (After)"
 msgstr "往后移动"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select Frames"
-msgstr "堆栈帧（Stack Frames）"
+msgstr "选择帧"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
@@ -7523,6 +7525,8 @@ msgid ""
 "Shift+RMB: Line Draw\n"
 "Shift+Ctrl+RMB: Rectangle Paint"
 msgstr ""
+"Shift+鼠标右键：绘制直线\n"
+"Shift+Ctrl+鼠标右键：绘制矩形"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
@@ -7849,7 +7853,7 @@ msgstr "向量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
-msgstr ""
+msgstr "布尔值"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7858,7 +7862,7 @@ msgstr "添加输入事件"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
-msgstr ""
+msgstr "增加输出端口"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7948,7 +7952,7 @@ msgstr "转到函数"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color operator."
-msgstr ""
+msgstr "颜色运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7957,11 +7961,11 @@ msgstr "创建方法"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
-msgstr ""
+msgstr "将HSV向量转换为等效的RGB向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts RGB vector to HSV equivalent."
-msgstr ""
+msgstr "将RGB向量转换为等效的HSV向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -9004,7 +9008,7 @@ msgstr "您确认要扫描%s目录下现有的Godot项目吗？"
 
 #: editor/project_manager.cpp
 msgid "Project Manager"
-msgstr "项目管理员"
+msgstr "项目管理器"
 
 #: editor/project_manager.cpp
 msgid "Project List"
@@ -11337,7 +11341,7 @@ msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
-msgstr ""
+msgstr "角度宽于 90 度的 SpotLight 无法投射出阴影。"
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11436,6 +11440,7 @@ msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"WorldEnvironment 要求其“Environment”属性是一个 Environment，以产生可见效果。"
 
 #: scene/3d/world_environment.cpp
 msgid ""

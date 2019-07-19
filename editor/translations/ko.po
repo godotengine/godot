@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-09 10:47+0000\n"
+"PO-Revision-Date: 2019-07-15 13:10+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -32,13 +32,13 @@ msgstr ""
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"convert()하기 위한 인수 타입이 유효하지 않습니다, TYPE_* 상수를 사용하세요."
+"convert()하기 위한 인수 타입이 올바르지 않습니다, TYPE_* 상수를 사용하세요."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "디코딩할 바이트가 모자라거나, 유효하지 않은 형식입니다."
+msgstr "디코딩할 바이트가 모자라거나, 올바르지 않은 형식입니다."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -50,19 +50,19 @@ msgstr "인스턴스가 비어있기 때문에 Self를 사용할 수 없습니�
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "연산자 %s, %s 그리고 %s의 연산 대상이 유효하지 않습니다."
+msgstr "연산자 %s, %s 그리고 %s의 연산 대상이 올바르지 않습니다."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "베이스 타입 %s에 유효하지 않은 인덱스 타입 %s"
+msgstr "베이스 타입 %s에 올바르지 않은 인덱스 타입 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "베이스 타입 %s에 유효하지 않은 인덱스 이름 %s"
+msgstr "베이스 타입 %s에 올바르지 않은 인덱스 이름 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "'%s'을(를) 구성하기에 유효하지 않은 인수"
+msgstr "'%s'을(를) 구성하기에 올바르지 않은 인수"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -380,7 +380,7 @@ msgstr "베지어 트랙 추가"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr "트랙 경로가 유효하지 않습니다, 키를 추가하실 수 없습니다."
+msgstr "트랙 경로가 올바르지 않습니다, 키를 추가할 수 없습니다."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
@@ -396,7 +396,7 @@ msgstr "트랙 키 추가"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "트랙 경로가 유효하지 않습니다, 메서드 키를 추가하실 수 없습니다."
+msgstr "트랙 경로가 올바르지 않습니다, 메서드 키를 추가할 수 없습니다."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -567,7 +567,7 @@ msgstr "최적화"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "유효하지 않은 키 삭제"
+msgstr "올바르지 않은 키 삭제"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -636,7 +636,7 @@ msgstr "라인 번호:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "%d 개가 일치합니다."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -644,7 +644,7 @@ msgstr "일치 결과 없음"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr "%d 회 교체됨."
+msgstr "%d 개의 발생을 교체했습니다."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -704,7 +704,7 @@ msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"대상 메서드를 찾을 수 없습니다! 유효한 메서드를 지정하거나, 대상 노드에 스크"
+"대상 메서드를 찾을 수 없습니다! 올바른 메서드를 지정하거나, 대상 노드에 스크"
 "립트를 붙이세요."
 
 #: editor/connections_dialog.cpp
@@ -792,7 +792,6 @@ msgid "Connect"
 msgstr "연결"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
 msgstr "시그널:"
 
@@ -938,7 +937,7 @@ msgstr "깨진 종속성 수정"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr "종속 관계 에디터"
+msgstr "종속 관계 편집기"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
@@ -959,9 +958,8 @@ msgid "Owners Of:"
 msgstr "소유자:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "프로젝트에서 선택된 파일들을 삭제하시겠습니까? (되돌리기 불가)"
+msgstr "프로젝트에서 선택한 파일을 삭제하시겠습니까? (되돌리기 불가)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1129,7 +1127,7 @@ msgstr "패키지 파일을 여는 데 오류가 발생했습니다. zip 형식�
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "에셋 압축해제"
+msgstr "애셋 압축해제"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1318,11 +1316,11 @@ msgstr "새로운 버스 레이아웃을 만듭니다."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
-msgstr "유효하지 않은 이름."
+msgstr "올바르지 않은 이름."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
-msgstr "유효한 문자:"
+msgstr "올바른 문자:"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Must not collide with an existing engine class name."
@@ -1511,18 +1509,20 @@ msgstr "템플릿을 찾을 수 없습니다:"
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
+"32 비트 환경에서 내장된 PCK를 내보내려면 4 GiB(기가 이진 바이트)보다 작아야 "
+"합니다."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
-msgstr "3D 에디터"
+msgstr "3D 편집기"
 
 #: editor/editor_feature_profile.cpp
 msgid "Script Editor"
-msgstr "스크립트 에디터"
+msgstr "스크립트 편집기"
 
 #: editor/editor_feature_profile.cpp
 msgid "Asset Library"
-msgstr "에셋 라이브러리"
+msgstr "애셋 라이브러리"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
@@ -1554,7 +1554,7 @@ msgstr "이 이름을 가진 프로필이 이미 존재합니다."
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled, Properties Disabled)"
-msgstr "(에디터 비활성화됨, 속성 비활성화됨)"
+msgstr "(편집기 비활성화됨, 속성 비활성화됨)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(Properties Disabled)"
@@ -1562,7 +1562,7 @@ msgstr "(속성 비활성화됨)"
 
 #: editor/editor_feature_profile.cpp
 msgid "(Editor Disabled)"
-msgstr "(에디터 비활성화됨)"
+msgstr "(편집기 비활성화됨)"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options:"
@@ -1570,7 +1570,7 @@ msgstr "클래스 옵션:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enable Contextual Editor"
-msgstr "컨텍스트 에디터 활성화"
+msgstr "컨텍스트 편집기 활성화"
 
 #: editor/editor_feature_profile.cpp
 msgid "Enabled Properties:"
@@ -1653,7 +1653,7 @@ msgstr "프로필 내보내기"
 
 #: editor/editor_feature_profile.cpp
 msgid "Manage Editor Feature Profiles"
-msgstr "에디터 기능 프로필 관리"
+msgstr "편집기 기능 프로필 관리"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
@@ -1803,7 +1803,7 @@ msgstr "파일:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr "유효한 확장자를 사용해야 합니다."
+msgstr "올바른 확장자를 사용해야 합니다."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
@@ -1819,7 +1819,7 @@ msgstr ""
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "에셋 (다시) 가져오기"
+msgstr "애셋 (다시) 가져오기"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
@@ -1883,7 +1883,7 @@ msgstr "이넘  "
 
 #: editor/editor_help.cpp
 msgid "Constants"
-msgstr "상수"
+msgstr "상수(Constant)"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
@@ -2137,7 +2137,7 @@ msgstr "레이아웃 저장 시도 중 오류!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "에디터 기본 레이아웃이 변경되었습니다."
+msgstr "편집기 기본 레이아웃이 변경되었습니다."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -2304,7 +2304,7 @@ msgstr "종료"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr "에디터를 종료하시겠습니까?"
+msgstr "편집기를 종료하시겠습니까?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
@@ -2626,7 +2626,7 @@ msgid ""
 msgstr ""
 "이 옵션이 활성화 되어 있을 경우, 내보내기나 배포는 최소한의 실행 파일을 생성"
 "합니다.\n"
-"파일 시스템은 네트워크를 통해서 에디터 상의 프로젝트가 제공합니다.\n"
+"파일 시스템은 네트워크를 통해서 편집기 상의 프로젝트가 제공합니다.\n"
 "안드로이드의 경우, USB 케이블을 사용하여 배포할 경우 더 빠른 퍼포먼스를 제공"
 "합니다. 이 옵션은 큰 설치 용량을 요구하는 게임의 테스트를 빠르게 할 수 있습니"
 "다."
@@ -2666,7 +2666,7 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"이 옵션이 활성화 되어 있을 경우, 에디터 상의 씬의 변경사항이 실행 중인 게임"
+"이 옵션이 활성화 되어 있을 경우, 편집기 상의 씬의 변경사항이 실행 중인 게임"
 "에 반영됩니다.\n"
 "기기에 원격으로 사용되는 경우, 네트워크 파일 시스템과 함께하면 더욱 효과적입"
 "니다."
@@ -2689,15 +2689,15 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Editor"
-msgstr "에디터"
+msgstr "편집기"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr "에디터 설정"
+msgstr "편집기 설정"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "에디터 레이아웃"
+msgstr "편집기 레이아웃"
 
 #: editor/editor_node.cpp
 msgid "Take Screenshot"
@@ -2725,19 +2725,19 @@ msgstr "시스템 콘솔 토글"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "에디터 데이터/설정 폴더 열기"
+msgstr "편집기 데이터/설정 폴더 열기"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "에디터 데이터 폴더 열기"
+msgstr "편집기 데이터 폴더 열기"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr "에디터 설정 폴더 열기"
+msgstr "편집기 설정 폴더 열기"
 
 #: editor/editor_node.cpp
 msgid "Manage Editor Features"
-msgstr "에디터 기능 관리"
+msgstr "편집기 기능 관리"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2818,7 +2818,7 @@ msgstr "커스텀 씬 실행"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr "비디오 드라이버를 변경하려면 에디터를 다시 시작해야 합니다."
+msgstr "비디오 드라이버를 변경하려면 편집기를 다시 시작해야 합니다."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -2827,7 +2827,7 @@ msgstr "저장 & 다시 시작"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
-msgstr "에디터 윈도우가 다시 그려질 때 회전합니다."
+msgstr "편집기 창이 다시 그려질 때 회전합니다."
 
 #: editor/editor_node.cpp
 msgid "Update Continuously"
@@ -2929,27 +2929,27 @@ msgstr "선택"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr "2D 에디터 열기"
+msgstr "2D 편집기 열기"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr "3D 에디터 열기"
+msgstr "3D 편집기 열기"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr "스크립트 에디터 열기"
+msgstr "스크립트 편집기 열기"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr "에셋 라이브러리 열기"
+msgstr "애셋 라이브러리 열기"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
-msgstr "다음 에디터 열기"
+msgstr "다음 편집기 열기"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr "이전 에디터 열기"
+msgstr "이전 편집기 열기"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -3055,7 +3055,7 @@ msgstr "지정하기..."
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
-msgstr "유효하지 않은 RID"
+msgstr "올바르지 않은 RID"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -3122,7 +3122,7 @@ msgstr "%s로 변환"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Open Editor"
-msgstr "에디터 열기"
+msgstr "편집기 열기"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -3240,7 +3240,7 @@ msgstr "내보내기 템플릿 zip 파일을 열 수 없습니다."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "템플릿 안에 version.txt가 유효하지 않은 형식입니다: %s."
+msgstr "템플릿 안 version.txt가 올바르지 않은 형식입니다: %s."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -3437,11 +3437,11 @@ msgstr "이름이 제공되지 않았습니다."
 
 #: editor/filesystem_dock.cpp
 msgid "Provided name contains invalid characters."
-msgstr "제공된 이름에 유효하지 않은 문자가 있습니다."
+msgstr "제공된 이름에 올바르지 않은 문자가 있습니다."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr "이름에 유효하지 않은 문자가 있습니다."
+msgstr "이름에 올바르지 않은 문자가 있습니다."
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
@@ -3734,7 +3734,7 @@ msgstr "가져오기 후 실행할 스크립트를 불러올 수 없습니다:"
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
 msgstr ""
-"가져오기 후 실행할 스크립트가 유효하지 않거나 깨져 있습니다 (콘솔 확인):"
+"가져오기 후 실행할 스크립트가 올바르지 않거나 깨져 있습니다 (콘솔 확인):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
@@ -3774,13 +3774,13 @@ msgstr "씬 저장, 다시 가져오기 및 다시 시작"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "가져온 파일의 타입을 변경하려면 에디터를 다시 시작해야 합니다."
+msgstr "가져온 파일의 타입을 변경하려면 편집기를 다시 시작해야 합니다."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
-"경고: 이 리소스를 사용하는 에셋이 존재합니다, 에셋을 불러오지 못할 수 있습니"
+"경고: 이 리소스를 사용하는 애셋이 존재합니다, 애셋을 불러오지 못할 수 있습니"
 "다."
 
 #: editor/inspector_dock.cpp
@@ -4110,7 +4110,7 @@ msgstr "노드 이동됨"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
-msgstr "연결할 수 없습니다, 포트가 사용 중이거나 유효하지 않는 연결입니다."
+msgstr "연결할 수 없습니다, 포트가 사용 중이거나 올바르지 않는 연결입니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -4151,7 +4151,7 @@ msgstr "설정한 애니메이션 플레이어가 없습니다, 트랙 이름을
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
 msgstr ""
-"유효하지 않는 플레이어 경로 설정입니다, 트랙 이름을 검색할 수 없습니다."
+"올바르지 않는 플레이어 경로 설정입니다, 트랙 이름을 검색할 수 없습니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -4159,7 +4159,7 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
-"애니메이션 플레이어가 유효한 루트 노드 경로를 가지고 있지 않습니다, 트랙 이름"
+"애니메이션 플레이어가 올바른 루트 노드 경로를 가지고 있지 않습니다, 트랙 이름"
 "을 검색할 수 없습니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -4208,7 +4208,7 @@ msgstr "애니메이션 삭제"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr "유효하지 않은 애니메이션 이름!"
+msgstr "올바르지 않은 애니메이션 이름!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
@@ -4562,11 +4562,11 @@ msgstr "입력 삭제"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr "애니메이션 트리가 유효합니다."
+msgstr "애니메이션 트리가 올바릅니다."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr "애니메이션 트리가 유효하지 않습니다."
+msgstr "애니메이션 트리가 올바르지 않습니다."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
@@ -4666,7 +4666,7 @@ msgstr "sha256 해시 확인 실패"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr "에셋 다운로드 오류:"
+msgstr "애셋 다운로드 오류:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
@@ -4698,7 +4698,7 @@ msgstr "다운로드 오류"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr "이 에셋의 다운로드가 이미 진행중입니다!"
+msgstr "이 애셋의 다운로드가 이미 진행중입니다!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -4757,7 +4757,7 @@ msgstr "테스팅"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr "에셋 ZIP 파일"
+msgstr "애셋 ZIP 파일"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -5388,7 +5388,7 @@ msgstr "항목"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item List Editor"
-msgstr "항목 목록 에디터"
+msgstr "항목 목록 편집기"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -5534,15 +5534,15 @@ msgstr "소스 메시가 지정되지 않았습니다 (그리고 MultiMesh에 �
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
-msgstr "소스 메시가 유효하지 않습니다 (유효하지 않은 경로)."
+msgstr "소스 메시가 올바르지 않습니다 (올바르지 않은 경로)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr "소스 메시가 유효하지 않습니다 (MeshInstance가 아닙니다)."
+msgstr "소스 메시가 올바르지 않습니다 (MeshInstance가 아닙니다)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "소스 메시가 유효하지 않습니다 (메시 리소스가 없습니다)."
+msgstr "소스 메시가 올바르지 않습니다 (Mesh 리소스가 없습니다)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -5550,15 +5550,15 @@ msgstr "서피스 소스가 지정되지 않았습니다."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (invalid path)."
-msgstr "서피스 소스가 유효하지 않습니다 (유효하지 않은 경로)."
+msgstr "서피스 소스가 올바르지 않습니다 (올바르지 않은 경로)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no geometry)."
-msgstr "서피스 소스가 유효하지 않습니다 (지오메트리 없음)."
+msgstr "서피스 소스가 올바르지 않습니다 (지오메트리 없음)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no faces)."
-msgstr "서피스 소스가 유효하지 않습니다 (페이스 없음)."
+msgstr "서피스 소스가 올바르지 않습니다 (페이스 없음)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Parent has no solid faces to populate."
@@ -5882,7 +5882,7 @@ msgstr "내부 꼭짓점 삭제"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr "유효하지 않은 폴리곤 (3개의 다른 꼭짓점이 필요함)"
+msgstr "올바르지 않은 폴리곤 (3개의 다른 꼭짓점이 필요함)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Add Custom Polygon"
@@ -5906,11 +5906,11 @@ msgstr "본 무게 페인트"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
-msgstr "폴리곤 2D UV 에디터 열기."
+msgstr "폴리곤 2D UV 편집기 열기."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
-msgstr "폴리곤 2D UV 에디터"
+msgstr "폴리곤 2D UV 편집기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV"
@@ -6072,7 +6072,7 @@ msgstr "타입:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr "에디터에서 열기"
+msgstr "편집기에서 열기"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 msgid "Load Resource"
@@ -6088,7 +6088,7 @@ msgstr "AnimationTree가 AnimationPlayer로 향하는 경로를 가지고 있지
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "Path to AnimationPlayer is invalid"
-msgstr "AnimationPlayer로 향하는 경로가 유효하지 않습니다"
+msgstr "AnimationPlayer로 향하는 경로가 올바르지 않습니다"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -6287,7 +6287,7 @@ msgstr "디버거 항상 열어놓기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Debug with External Editor"
-msgstr "외부 에디터로 디버깅"
+msgstr "외부 편집기로 디버깅"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Open Godot online documentation."
@@ -6412,7 +6412,7 @@ msgstr "구문 강조"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "이동"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -6420,9 +6420,8 @@ msgid "Bookmarks"
 msgstr "북마크"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Breakpoints"
-msgstr "포인트 만들기."
+msgstr "중단점"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6808,7 +6807,7 @@ msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-"참고: FPS 값은 에디터의 프레임 속도입니다.\n"
+"참고: FPS 값은 편집기의 프레임 속도입니다.\n"
 "게임 내 성능을 보증하는 표시로 볼 수 없습니다."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7310,11 +7309,11 @@ msgstr "빈 템플릿 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Editor Template"
-msgstr "빈 에디터 템플릿 만들기"
+msgstr "빈 편집기 템플릿 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create From Current Editor Theme"
-msgstr "현재 에디터 테마로부터 만들기"
+msgstr "현재 편집기 테마로부터 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Toggle Button"
@@ -7681,9 +7680,9 @@ msgid ""
 "bindings.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"사용할 서브 타일을 아이콘으로 설정하세요, 유효하지 않은 자동 타일 바인딩에도 "
+"아이콘으로 사용할 서브 타일을 설정하세요, 올바르지 않은 자동 타일 바인딩에도 "
 "사용됩니다.\n"
-"다른 타일을 편집하려면 클릭."
+"다른 타일을 편집하려면 클릭하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -8721,7 +8720,8 @@ msgstr "경로가 존재하지 않습니다."
 #: editor/project_manager.cpp
 msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
 msgstr ""
-"유효하지 않은 '.zip' 프로젝트 파일, 'project.godot' 파일을 포함하지 않음."
+"올바르지 않은 '.zip' 프로젝트 파일, 'project.godot' 파일을 포함하지 않고 있습"
+"니다."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
@@ -8761,7 +8761,7 @@ msgstr "프로젝트 이름을 정하는 것을 권합니다."
 
 #: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr "유효하지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
+msgstr "올바르지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8936,7 +8936,7 @@ msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
-"프로젝트 실행 불가: 에셋들을 가져와야 합니다.\n"
+"프로젝트 실행 불가: 애셋들을 가져와야 합니다.\n"
 "프로젝트를 편집하여 최초 가져오기가 실행되도록 하세요."
 
 #: editor/project_manager.cpp
@@ -8973,7 +8973,7 @@ msgid ""
 "The interface will update after restarting the editor or project manager."
 msgstr ""
 "언어가 변경되었습니다.\n"
-"인터페이스는 에디터나 프로젝트 매니저를 재시작할 때 업데이트됩니다."
+"인터페이스는 편집기나 프로젝트 매니저를 재시작할 때 업데이트됩니다."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -9029,7 +9029,7 @@ msgid ""
 "Would you like to explore official example projects in the Asset Library?"
 msgstr ""
 "현재 프로젝트가 하나도 없습니다.\n"
-"에셋 라이브러리에서 공식 예제 프로젝트를 찾아보시겠습니까?"
+"애셋 라이브러리에서 공식 예제 프로젝트를 찾아보시겠습니까?"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -9052,7 +9052,7 @@ msgid ""
 "Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
-"유효하지 않은 액션 이름. 공백이거나, '/' , ':', '=', '\\', '\"' 를 포함하면 "
+"올바르지 않은 액션 이름. 공백이거나, '/' , ':', '=', '\\', '\"' 를 포함하면 "
 "안 됩니다"
 
 #: editor/project_settings_editor.cpp
@@ -9277,7 +9277,7 @@ msgstr "재정의..."
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
 msgid "The editor must be restarted for changes to take effect."
-msgstr "변경 사항을 적용하려면 에디터를 다시 실행해야 합니다."
+msgstr "변경 사항을 적용하려면 편집기를 다시 실행해야 합니다."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -9880,7 +9880,7 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
-msgstr "유효하지 않은 노드 이름입니다. 다음의 문자는 허용되지 않습니다:"
+msgstr "올바르지 않은 노드 이름입니다. 다음의 문자는 허용되지 않습니다:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -9964,7 +9964,7 @@ msgstr "올바르지 않은 상속된 부모 이름 또는 경로."
 
 #: editor/script_create_dialog.cpp
 msgid "Script is valid."
-msgstr "스크립트가 유효합니다."
+msgstr "스크립트가 올바릅니다."
 
 #: editor/script_create_dialog.cpp
 msgid "Allowed: a-z, A-Z, 0-9 and _"
@@ -10284,21 +10284,21 @@ msgstr "리소스 파일에 기반하지 않음"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr "유효하지 않은 인스턴스 Dictionary 형식 (@path 없음)"
+msgstr "올바르지 않은 인스턴스 Dictionary 형식 (@path 없음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"유효하지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 불러올 수 없음)"
+"올바르지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 불러올 수 없음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
 msgstr ""
-"유효하지 않은 인스턴스 Dictionary 형식 (@path의 스크립트가 유효하지 않음)"
+"올바르지 않은 인스턴스 Dictionary 형식 (@path의 스크립트가 올바르지 않음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "유효하지 않은 인스턴스 Dictionary (서브클래스가 유효하지 않음)"
+msgstr "올바르지 않은 인스턴스 Dictionary (하위 클래스가 올바르지 않음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Object can't provide a length."
@@ -10514,7 +10514,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr "유효하지 않은 시퀀스 출력을 반환한 노드: "
+msgstr "올바르지 않은 시퀀스 출력을 반환한 노드: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
@@ -10551,7 +10551,7 @@ msgstr "변수:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr "유효한 식별자가 아닌 이름:"
+msgstr "이름이 올바른 식별자가 아닙니다:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
@@ -10759,7 +10759,7 @@ msgstr "반복자가 유효하지 않게 됨: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
-msgstr "유효하지 않은 인덱스 속성명."
+msgstr "올바르지 않은 인덱스 속성명."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
@@ -10771,15 +10771,15 @@ msgstr "노드를 지칭하는 경로가 아닙니다!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "노드 %s 안에 인덱스 속성 이름 '%s'은(는) 유효하지 않습니다."
+msgstr "노드 %s 안에 인덱스 속성 이름 '%s'은(는) 올바르지 않습니다."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
-msgstr ": 유효하지 않은 인수 타입: "
+msgstr ": 올바르지 않은 인수 타입: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ": 유효하지 않은 인수: "
+msgstr ": 올바르지 않은 인수: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -10799,7 +10799,7 @@ msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
-"_step()으로부터의 유효하지 않은 반환 값으로, integer (seq out), 혹은 string "
+"_step()으로부터의 올바르지 않은 반환 값으로, integer (seq out), 혹은 string "
 "(error)가 아니면 안됩니다."
 
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -10841,39 +10841,39 @@ msgstr "패키지는 적어도 하나의 '.' 분리 기호를 갖고 있어야 �
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB 실행 파일이 에디터 설정에서 구성되지 않았습니다."
+msgstr "ADB 실행 파일이 편집기 설정에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner가 에디터 설정에서 구성되지 않았습니다."
+msgstr "OpenJDK jarsigner가 편집기 설정에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
-msgstr "Debug keystore이 에디터 설정 또는 프리셋에서 구성되지 않았습니다."
+msgstr "Debug keystore이 편집기 설정 또는 프리셋에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
-"커스텀 빌드에는 에디터 설정에서 유효한 안드로이드 SDK 경로가 필요합니다."
+"커스텀 빌드에는 편집기 설정에서 올바른 안드로이드 SDK 경로가 필요합니다."
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
-msgstr "에디터 설정에서 커스텀 빌드에 올바르지 않은 안드로이드 SDK 경로입니다."
+msgstr "편집기 설정에서 커스텀 빌드에 올바르지 않은 안드로이드 SDK 경로입니다."
 
 #: platform/android/export/export.cpp
 msgid ""
 "Android project is not installed for compiling. Install from Editor menu."
 msgstr ""
-"컴파일을 하기 위한 안드로이드 프로젝트가 설치되지 않았습니다. 에디터 메뉴에"
+"컴파일을 하기 위한 안드로이드 프로젝트가 설치되지 않았습니다. 편집기 메뉴에"
 "서 설치하세요."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr "APK 확장에 유효하지 않은 공용 키입니다."
+msgstr "APK 확장에 올바르지 않은 공용 키입니다."
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
-msgstr "유효하지 않은 패키지 이름:"
+msgstr "올바르지 않은 패키지 이름:"
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -10942,7 +10942,7 @@ msgstr "앱스토어 팀 ID가 지정되지 않았습니다 - 프로젝트를 �
 
 #: platform/iphone/export/export.cpp
 msgid "Invalid Identifier:"
-msgstr "유효하지 않은 식별자:"
+msgstr "올바르지 않은 식별자:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
@@ -10966,7 +10966,7 @@ msgstr "내보내기 템플릿을 열 수 없습니다:"
 
 #: platform/javascript/export/export.cpp
 msgid "Invalid export template:"
-msgstr "유효하지 않은 내보내기 템플릿:"
+msgstr "올바르지 않은 내보내기 템플릿:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read custom HTML shell:"
@@ -10982,7 +10982,7 @@ msgstr "기본 부트 스플래시 이미지 사용."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
-msgstr "유효하지 않은 패키지 고유 이름."
+msgstr "올바르지 않은 패키지 고유 이름."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -10998,41 +10998,40 @@ msgstr "유요하지 않은 배경 색상."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (44x44 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (44x44 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (71x71 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (71x71 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (150x150 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (150x150 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (310x310 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (310x310 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (310x150 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (310x150 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
-"유효하지 않은 스플래쉬 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
+"올바르지 않은 스플래시 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
 
 #: scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"AnimatedSprite이 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리소"
-"스 만들거나 지정해야 합니다."
+"AnimatedSprite이 프레임을 보여주기 위해서는 \"Frames\" 속성에 SpriteFrames 리"
+"소스를 만들거나 지정해야 합니다."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -11094,11 +11093,10 @@ msgstr ""
 "CanvasItemMaterial이 필요합니다."
 
 #: scene/2d/light_2d.cpp
-#, fuzzy
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
-msgstr "라이트의 모양을 나타내는 텍스쳐를 'texture' 속성에 지정해야합니다."
+msgstr "조명의 모양을 나타낼 텍스쳐를 \"Texture\" 속성에 지정해야 합니다."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -11107,9 +11105,8 @@ msgstr ""
 "Occluder가 동작하기 위해서는 Occluder 폴리곤을 지정하거나 그려야 합니다."
 
 #: scene/2d/light_occluder_2d.cpp
-#, fuzzy
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그리세요!"
+msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그리세요."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -11175,7 +11172,7 @@ msgstr ""
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr "Path 속성은 유효한 Node2D 노드를 가리켜야 합니다."
+msgstr "Path 속성은 올바른 Node2D 노드를 가리켜야 합니다."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
@@ -11203,18 +11200,16 @@ msgstr ""
 "의 자식 노드로 추가하여 사용합니다."
 
 #: scene/2d/visibility_notifier_2d.cpp
-#, fuzzy
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D는 편집 씬의 루트의 하위 노드로 추가할 때 가장 잘 동작합니"
+"VisibilityEnabler2D는 편집 씬의 루트의 하위 노드로 추가할 때 가장 잘 동작합니"
 "다."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "ARVRCamera는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 함"
+msgstr "ARVRCamera는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 합니다."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
@@ -11301,13 +11296,12 @@ msgstr ""
 "합니다."
 
 #: scene/3d/collision_shape.cpp
-#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
 msgstr ""
-"CollisionShape가 기능을 하기 위해서는 Shape이 제공되어야 합니다. Shape 리소스"
-"를 만드세요!"
+"CollisionShape가 제 기능을 하려면 Shape가 제공되어야 합니다. Shape 리소스를 "
+"만드세요."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -11343,7 +11337,7 @@ msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
-msgstr ""
+msgstr "SpotLight의 각도를 90도 이상으로 잡게되면 그림자를 투영할 수 없습니다."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11387,13 +11381,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow는 Path 노드의 자식으로 있을 때만 동작합니다."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
 "parent Path's Curve resource."
 msgstr ""
-"PathFollow ROTATION_ORIENTED는 부모 Path의 Curve 리소스에서 \"Up Vector\"가 "
-"활성화되어 있어야 합니다."
+"PathFollow의 ROTATION_ORIENTED는 부모 Path의 Curve 리소스에서 \"Up Vector"
+"\"가 활성화되어 있어야 합니다."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -11406,11 +11399,12 @@ msgstr ""
 "대신 자식 충돌 형태의 크기를 변경해보세요."
 
 #: scene/3d/remote_transform.cpp
-#, fuzzy
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
-msgstr "Path 속성은 유효한 Spatial 노드를 가리켜야 합니다."
+msgstr ""
+"\"Remote Path\" 속성은 올바른 Spatial  노드, 또는 Spatial 파생 노드를 가리켜"
+"야 합니다."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -11426,13 +11420,12 @@ msgstr ""
 "대신 자식의 충돌 크기를 변경하세요."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"AnimatedSprite3D가 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리"
-"소스 만들거나 지정해야 합니다."
+"AnimatedSprite3D가 프레임을 보여주기 위해서는 \"Frames\" 속성에 SpriteFrames "
+"리소스 만들거나 지정해야 합니다."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
@@ -11447,6 +11440,8 @@ msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"WorldEnvironment는 시각 효과를 위해 Environment를 갖는 \"Environment\" 속성"
+"이 필요합니다."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11471,20 +11466,19 @@ msgstr "애니메이션을 찾을 수 없음: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
-msgstr "노드 '%s'에서, 유효하지 않은 애니메이션: '%s'."
+msgstr "노드 '%s'에서, 올바르지 않은 애니메이션: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Invalid animation: '%s'."
-msgstr "유효하지 않은 애니메이션: '%s'."
+msgstr "올바르지 않은 애니메이션: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "노드 '%s'의 '%s' 입력에 아무것도 연결되지 않음."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "No root AnimationNode for the graph is set."
-msgstr "그래프의 루트 AnimationNode가 설정되지 않았습니다."
+msgstr "그래프를 위한 루트 AnimationNode가 설정되지 않았습니다."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
@@ -11498,9 +11492,8 @@ msgstr ""
 "다."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr "AnimationPlayer 루트가 유효한 노드가 아닙니다."
+msgstr "AnimationPlayer 루트 노드가 올바른 노드가 아닙니다."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
@@ -11528,14 +11521,13 @@ msgid "Add current color as a preset."
 msgstr "현재 색상을 프리셋으로 추가합니다."
 
 #: scene/gui/container.cpp
-#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
 "If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
 "Container 자체는 자식 배치 작업을 구성하는 스크립트 외에는 목적이 없습니다.\n"
-"스크립트를 추가하지 않는 경우, 순수한 'Control' 노드를 사용해주세요."
+"스크립트를 추가하지 않는 경우, 순수한 Control 노드를 사용해주세요."
 
 #: scene/gui/control.cpp
 msgid ""
@@ -11555,30 +11547,27 @@ msgid "Please Confirm..."
 msgstr "확인해주세요..."
 
 #: scene/gui/popup.cpp
-#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
-"Popup은 popup() 또는 기타 popup*() 함수를 호출하기 전까지는 기본적으로 숨겨집"
-"니다. 편집하는 동안 보여지도록 할 수는 있으나, 실행 시에는 숨겨집니다."
+"Popup은 popup() 또는 기타 popup*() 함수로 호출되기 전까지 기본적으로 숨어있습"
+"니다. 편집하는 동안 보이도록 할 수는 있으나, 실행 시에는 보이지 않습니다."
 
 #: scene/gui/range.cpp
-#, fuzzy
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr "exp_edit이 참이라면 min_value는 반드시 > 0 이어야 합니다."
+msgstr "\"Exp Edit\"이 활성화되면, \"Min Value\"는 반드시 0보다 커야 합니다."
 
 #: scene/gui/scroll_container.cpp
-#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer는 단일 자식 컨트롤을 작업하기 위한 것입니다.\n"
-"컨테이너를 자식 (VBox,HBox,등)으로 사용하거나, Control을 수동으로 지정한 최"
-"소 수치로 설정해서 사용하세요."
+"ScrollContainer는 단일 자식 Control을 작업하기 위한 것입니다.\n"
+"컨테이너를 자식으로 사용하거나 (VBox, HBox 등), Control을 사용해 손수 최소 수"
+"치를 설정하세요."
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
@@ -11618,20 +11607,19 @@ msgstr "폰트 로딩 오류."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr "유효하지 않은 폰트 크기."
+msgstr "올바르지 않은 폰트 크기."
 
 #: scene/resources/visual_shader.cpp
 msgid "Input"
 msgstr "입력"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "셰이더에 유효하지 않은 소스."
+msgstr "미리보기에 올바르지 않은 소스."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
-msgstr "셰이더에 유효하지 않은 소스."
+msgstr "셰이더에 올바르지 않은 소스."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

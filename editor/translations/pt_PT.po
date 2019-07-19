@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-09 10:47+0000\n"
+"PO-Revision-Date: 2019-07-15 13:10+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -642,7 +642,7 @@ msgstr "Numero da linha:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "Encontrada(s) %d correspondência(s)."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -800,9 +800,8 @@ msgid "Connect"
 msgstr "Ligar"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Sinais:"
+msgstr "Sinal:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -967,9 +966,8 @@ msgid "Owners Of:"
 msgstr "Proprietários de:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Remover arquivos selecionados do Projeto? (sem desfazer)"
+msgstr "Remover arquivos selecionados do Projeto? (Sem desfazer)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1522,6 +1520,7 @@ msgstr "Ficheiro Modelo não encontrado:"
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
+"Em exportações de 32 bits o PCK incorporado não pode ser maior do que 4 GiB."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -6445,7 +6444,7 @@ msgstr "Destaque de Sintaxe"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Ir Para"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -6453,9 +6452,8 @@ msgid "Bookmarks"
 msgstr "Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Breakpoints"
-msgstr "Criar pontos."
+msgstr "Pontos de paragem"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -11090,13 +11088,12 @@ msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr "Dimensões inválidas da imagem do ecrã inicial (deve ser 620x300)."
 
 #: scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Um recurso SpriteFrames tem de ser criado ou definido na Propriedade "
-"'Frames' para que AnimatedSprite mostre Frames."
+"Um recurso SpriteFrames tem de ser criado ou definido na Propriedade \"Frames"
+"\" para que AnimatedSprite mostre frames."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -11159,13 +11156,12 @@ msgstr ""
 "\"Particles Animation\" ativada."
 
 #: scene/2d/light_2d.cpp
-#, fuzzy
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
 "Uma textura com a forma da luz tem de ser disponibilizada na Propriedade "
-"'textura'."
+"\"Textura\"."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -11175,9 +11171,8 @@ msgstr ""
 "efeito."
 
 #: scene/2d/light_occluder_2d.cpp
-#, fuzzy
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "O Polígono oclusor deste Oclusor está vazio. Desenhe um Polígono!"
+msgstr "O polígono oclusor deste oclusor está vazio. Desenhe um polígono."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -11273,18 +11268,16 @@ msgstr ""
 "KinematicBody2D, etc. para lhes dar uma forma."
 
 #: scene/2d/visibility_notifier_2d.cpp
-#, fuzzy
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D funciona melhor quando usado diretamente como parente na "
+"VisibilityEnabler2D funciona melhor quando usado diretamente como parente na "
 "Cena raiz editada."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "ARVRCamera precisa de um Nó ARVROrigin como parente"
+msgstr "ARVRCamera precisa de um Nó ARVROrigin como parente."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
@@ -11374,13 +11367,12 @@ msgstr ""
 "RigidBody, KinematicBody, etc. para lhes dar uma forma."
 
 #: scene/3d/collision_shape.cpp
-#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
 msgstr ""
 "Uma forma tem de ser fornecida para CollisionShape funcionar. Crie um "
-"recurso forma!"
+"recurso forma."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -11416,7 +11408,7 @@ msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
-msgstr ""
+msgstr "Uma SpotLight com ângulo superior a 90 graus não cria sombras."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11461,13 +11453,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow apenas funciona quando definido como filho de um Nó Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
 "parent Path's Curve resource."
 msgstr ""
-"PathFollow ROTATION_ORIENTED requer \"Up Vector\" habilitado no recurso de "
-"Curva do Caminho do seu pai."
+"ROTATION_ORIENTED de PathFollow requer \"Up Vector\" habilitado no recurso "
+"de Curva do Caminho do seu pai."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -11480,13 +11471,12 @@ msgstr ""
 "Mude antes o tamanho das formas de colisão filhas."
 
 #: scene/3d/remote_transform.cpp
-#, fuzzy
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
 msgstr ""
-"Para funcionar, a Propriedade Caminho tem de apontar para um Nó Spatial "
-"válido."
+"Para funcionar, a Propriedade \"Caminho Remoto\" tem de apontar para um Nó "
+"Spatial válido ou seu derivado."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -11503,13 +11493,12 @@ msgstr ""
 "Em vez disso, mude o tamanho das formas de colisão filhas."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"Um recurso SpriteFrames tem de ser criado ou definido na Propriedade "
-"'Frames' de forma a que  AnimatedSprite3D mostre frames."
+"Um recurso SpriteFrames tem de ser criado ou definido na Propriedade \"Frames"
+"\" de forma a que  AnimatedSprite3D mostre frames."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
@@ -11524,6 +11513,8 @@ msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"WorldEnvironment exige que a sua propriedade \"Ambiente\" contenha um "
+"Ambiente para obter efeitos visíveis."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11561,9 +11552,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nada conectado à entrada '%s' do nó '%s'."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "No root AnimationNode for the graph is set."
-msgstr "Não foi definida um AnimationNode raiz para o gráfico."
+msgstr "Não foi definida uma raíz AnimationNode para o gráfico."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
@@ -11576,9 +11566,8 @@ msgstr ""
 "O caminho definido para AnimationPlayer não conduz a um nó AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "The AnimationPlayer root node is not a valid node."
-msgstr "A raiz de AnimationPlayer não é um nó válido."
+msgstr "O Nó raiz de AnimationPlayer não é um Nó válido."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
@@ -11605,7 +11594,6 @@ msgid "Add current color as a preset."
 msgstr "Adicionar cor atual como predefinição."
 
 #: scene/gui/container.cpp
-#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
@@ -11613,7 +11601,7 @@ msgid ""
 msgstr ""
 "Por si só um Contentor não tem utilidade, a não ser que um script configure "
 "a disposição dos seu filhos.\n"
-"Se não pretende adicionar um script, use antes um simples Nó 'Control'."
+"Se não pretende adicionar um script, use antes um simples Nó Control."
 
 #: scene/gui/control.cpp
 msgid ""
@@ -11633,30 +11621,27 @@ msgid "Please Confirm..."
 msgstr "Confirme por favor..."
 
 #: scene/gui/popup.cpp
-#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
 "Popups estão escondidas por defeito a não ser que chame popup() ou qualquer "
-"das funções popup*(). Torná-las visíveis para edição é aceitável, mas serão "
-"escondidas na execução."
+"das funções popup*(). Torná-las visíveis para edição é aceitável, mas "
+"estarão escondidas na execução."
 
 #: scene/gui/range.cpp
-#, fuzzy
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr "Se exp_edit é verdadeiro min_value tem de ser > 0."
+msgstr "Se \"Exp Edit\" está ativado, \"Min Value\" tem de ser maior que 0."
 
 #: scene/gui/scroll_container.cpp
-#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer está destinado a funcionar com um único controlo filho.\n"
-"Use um contentor como filho (VBox,HBox,etc), um um Control e defina o "
+"ScrollContainer deve ser usado com um único controlo filho.\n"
+"Use um contentor como filho (VBox, HBox, etc.), ou um Control e defina o "
 "tamanho mínimo manualmente."
 
 #: scene/gui/tree.cpp
@@ -11704,9 +11689,8 @@ msgid "Input"
 msgstr "Entrada"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "Fonte inválida para Shader."
+msgstr "Fonte inválida para previsualização."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."

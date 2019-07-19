@@ -39,8 +39,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-09 10:47+0000\n"
-"Last-Translator: Rafał Wyszomirski <rawyszo@gmail.com>\n"
+"PO-Revision-Date: 2019-07-15 13:10+0000\n"
+"Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
 "Language: pl\n"
@@ -663,7 +663,7 @@ msgstr "Numer linii:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "Znaleziono %d dopasowań."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -820,9 +820,8 @@ msgid "Connect"
 msgstr "Połącz"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Sygnały:"
+msgstr "Sygnał:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -987,9 +986,8 @@ msgid "Owners Of:"
 msgstr "Właściciele:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Usunąć wybrane pliki z projektu? (Nie można tego cofnąć)"
+msgstr "Usunąć wybrane pliki z projektu? (Nie można ich przywrócić)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1539,7 +1537,7 @@ msgstr "Nie znaleziono pliku szablonu:"
 
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
-msgstr ""
+msgstr "W eksportach 32-bitowych dołączony PCK nie może być większy niż 4 GiB."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -4521,7 +4519,7 @@ msgstr "Przejście: "
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "AnimationTree"
+msgstr "Drzewo animacji"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5448,7 +5446,7 @@ msgstr "Edytor listy elementów"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
-msgstr "Stwórz Occluder Polygon"
+msgstr "Utwórz wielokąt przesłaniający"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Mesh is empty!"
@@ -6468,7 +6466,7 @@ msgstr "Podświetlacz składni"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Idź do"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -6476,9 +6474,8 @@ msgid "Bookmarks"
 msgstr "Zakładki"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Breakpoints"
-msgstr "Utwórz punkty."
+msgstr "Punkty wstrzymania"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8342,6 +8339,13 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
+"(Tylko GLES3) Oblicz iloczyn diadyczny pary wektorów.\n"
+"\n"
+"OuterProduct traktuje pierwszy parametr \"c\" jako kolumnowy wektor (macierz "
+"z jedną kolumną) i drugi parametr \"r\" jako rzędowy wektor (macierz z "
+"jednym rzędem) i wykonuje mnożenie macierzy \"c * r\" dając w wyniku "
+"macierz, której ilość rzędów odpowiada ilości komponentów w \"c\" oraz "
+"której ilość kolumn to liczba komponentów w 'r'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
@@ -8414,6 +8418,11 @@ msgid ""
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
+"Zwraca wektor, który wskazuje ten sam kierunek co wektor odniesienia. "
+"Funkcja posiada trzy parametry wektorowe: N, wektor do orientacji, I, wektor "
+"padający i Nref, wektor odniesienia. Jeżeli iloczyn skalarny I i Nref jest "
+"mniejszy od zera, zwracana jest wartość N. W przeciwnym razie zwracana jest "
+"wartość -N."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
@@ -8531,6 +8540,9 @@ msgid ""
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
 msgstr ""
+"Własne wyrażenie w języku shaderów Godota, z własną ilością portów wejścia i "
+"wyjścia. To jest bezpośrednie wstrzyknięcie kodu do funkcji wierzchołków/"
+"fragmentów/światła, nie używaj tego do deklarowania tych funkcji w środku."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8716,7 +8728,7 @@ msgstr "Utwórz ścieżkę"
 
 #: editor/project_export.cpp
 msgid "Features"
-msgstr "Funkcje"
+msgstr "Funkcjonalności"
 
 #: editor/project_export.cpp
 msgid "Custom (comma-separated):"
@@ -9887,7 +9899,7 @@ msgstr "Grupa przycisków"
 
 #: editor/scene_tree_editor.cpp
 msgid "(Connecting From)"
-msgstr "(Połączenie z)"
+msgstr "(łączony teraz)"
 
 #: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
@@ -10924,15 +10936,20 @@ msgstr ""
 #: platform/android/export/export.cpp
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
+"Własny build wymaga poprawnej ścieżki do SDK Androida w Ustawieniach Edytora."
 
 #: platform/android/export/export.cpp
 msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
+"Niepoprawna ścieżka do SDK Androida dla własnego builda w Ustawieniach "
+"Edytora."
 
 #: platform/android/export/export.cpp
 msgid ""
 "Android project is not installed for compiling. Install from Editor menu."
 msgstr ""
+"Projekt Androida nie jest zainstalowany do kompilacji. Zainstaluj z menu "
+"Edytor."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
@@ -10947,6 +10964,8 @@ msgid ""
 "Trying to build from a custom built template, but no version info for it "
 "exists. Please reinstall from the 'Project' menu."
 msgstr ""
+"Próbowano zbudować z własnego szablonu, ale nie istnieje dla niego "
+"informacja o wersji. Zainstaluj ponownie z menu \"Projekt\"."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -10955,20 +10974,27 @@ msgid ""
 "   Godot Version: %s\n"
 "Please reinstall Android build template from 'Project' menu."
 msgstr ""
+"Niezgodna wersja buildu Androida:\n"
+"   Zainstalowany szablon: %s\n"
+"   Wersja Godota: %s\n"
+"Zainstaluj ponownie szablon z menu \"Projekt\"."
 
 #: platform/android/export/export.cpp
 msgid "Building Android Project (gradle)"
-msgstr ""
+msgstr "Budowanie projektu Androida (gradle)"
 
 #: platform/android/export/export.cpp
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
+"Budowanie projektu Androida się nie powiodło, sprawdź wyjście błędu.\n"
+"Alternatywnie, odwiedź docs.godotengine.org po dokumentację budowania dla "
+"Androida."
 
 #: platform/android/export/export.cpp
 msgid "No build apk generated at: "
-msgstr ""
+msgstr "Nie wygenerowano budowanego apk w: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -11092,13 +11118,12 @@ msgstr ""
 "Nieprawidłowe wymiary obrazka ekranu powitalnego (powinno być 620x300)."
 
 #: scene/2d/animated_sprite.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"Aby AnimatedSprite pokazywał poszczególne klatki, pole Frames musi zawierać "
-"odpowiedni zasób SpriteFrames."
+"Właściwość \"Frames\" musi zawierać odpowiedni zasób SpriteFrames, aby "
+"AnimatedSprite wyświetlał klatki."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -11128,7 +11153,8 @@ msgid ""
 msgstr ""
 "CollisionPolygon2D służy jedynie do określenia kształtu kolizji dla jednego "
 "z obiektów dziedziczących z CollisionObject2D. Używaj go tylko jako dziecko "
-"obiektów typu Area2D, StaticBody2D, RigidBody2D, KinematicBody2D itd."
+"obiektów typu Area2D, StaticBody2D, RigidBody2D, KinematicBody2D itp. by "
+"nadać im kształt."
 
 #: scene/2d/collision_polygon_2d.cpp
 msgid "An empty CollisionPolygon2D has no effect on collision."
@@ -11142,7 +11168,8 @@ msgid ""
 msgstr ""
 "CollisionShape2D służy jedynie do określenia kształtu kolizji dla jednego z "
 "obiektów dziedziczących z CollisionObject2D. Używaj go tylko jako dziecko "
-"obiektów typu Area2D, StaticBody2D, RigidBody2D, KinematicBody2D itd."
+"obiektów typu Area2D, StaticBody2D, RigidBody2D, KinematicBody2D itp. by "
+"nadać im kształt."
 
 #: scene/2d/collision_shape_2d.cpp
 msgid ""
@@ -11161,24 +11188,24 @@ msgstr ""
 "\"Particles Animation\"."
 
 #: scene/2d/light_2d.cpp
-#, fuzzy
 msgid ""
 "A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
 msgstr ""
-"Tekstura z kształtem promieni światła musi być dodana do pola Tekstura."
+"Tekstura z kształtem promieni światła musi być dostarczona do właściwości "
+"\"Texture\"."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
 "An occluder polygon must be set (or drawn) for this occluder to take effect."
 msgstr ""
-"Wielokąt zasłaniający musi być ustawiony (lub narysowany) aby Occluder "
-"zadziałał."
+"Wielokąt przesłaniający musi być ustawiony (lub narysowany), aby ten "
+"przesłaniacz zadziałał."
 
 #: scene/2d/light_occluder_2d.cpp
-#, fuzzy
 msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
-msgstr "Poligon zasłaniający jest pusty. Proszę narysować poligon!"
+msgstr ""
+"Wielokąt przesłaniający dla tego przesłaniacza jest pusty. Narysuj wielokąt."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -11265,29 +11292,26 @@ msgstr ""
 "i ustaw ją."
 
 #: scene/2d/tile_map.cpp
-#, fuzzy
 msgid ""
 "TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
 "to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
 "KinematicBody2D, etc. to give them a shape."
 msgstr ""
-"CollisionShape2D służy jedynie do określenia kształtu kolizji dla jednego z "
-"obiektów dziedziczących z CollisionObject2D. Używaj go tylko jako dziecko "
-"obiektów typu Area2D, StaticBody2D, RigidBody2D, KinematicBody2D itd."
+"Węzeł TileMap z włączonym Use Parent potrzebuje nadrzędnego węzła "
+"CollisionObject2D, by dać mu kształty. Używaj go jako dziecko węzłów Area2D, "
+"StaticBody2D, RigidBody2D, KinematicBody2D itp. by nadać im kształt."
 
 #: scene/2d/visibility_notifier_2d.cpp
-#, fuzzy
 msgid ""
 "VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D działa najlepiej, gdy jest bezpośrednio pod korzeniem "
-"aktualnie edytowanej sceny."
+"VisibilityEnabler2D działa najlepiej, gdy jest użyty bezpośrednio pod "
+"korzeniem aktualnie edytowanej sceny."
 
 #: scene/3d/arvr_nodes.cpp
-#, fuzzy
 msgid "ARVRCamera must have an ARVROrigin node as its parent."
-msgstr "ARVRCamera musi dziedziczyć po węźle ARVROrigin"
+msgstr "ARVRCamera musi posiadać węzeł ARVROrigin jako nadrzędny."
 
 #: scene/3d/arvr_nodes.cpp
 msgid "ARVRController must have an ARVROrigin node as its parent."
@@ -11360,7 +11384,8 @@ msgid ""
 msgstr ""
 "CollisionPolygon służy jedynie do określenia kształtu kolizji dla jednego z "
 "obiektów dziedziczących z CollisionObject. Używaj go tylko jako dziecko "
-"obiektów typu Area, StaticBody, RigidBody, KinematicBody itd."
+"obiektów typu Area, StaticBody, RigidBody, KinematicBody itp. by nadać im "
+"kształt."
 
 #: scene/3d/collision_polygon.cpp
 msgid "An empty CollisionPolygon has no effect on collision."
@@ -11374,16 +11399,15 @@ msgid ""
 msgstr ""
 "CollisionShape służy jedynie do określenia kształtu kolizji dla jednego z "
 "węzłów dziedziczących z CollisionObject. Używaj go tylko jako dziecko węzłów "
-"typu Area, StaticBody, RigidBody, KinematicBody itd."
+"typu Area, StaticBody, RigidBody, KinematicBody itp. by nadać im kształt."
 
 #: scene/3d/collision_shape.cpp
-#, fuzzy
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
 "shape resource for it."
 msgstr ""
-"Kształt musi być określony dla CollisionShape, aby spełniał swoje zadanie. "
-"Utwórz zasób typu CollisionShape w odpowiednim polu obiektu!"
+"Kształt musi być zapewniony, aby CollisionShape zadziałał. Utwórz dla niego "
+"zasób typu CollisionShape."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -11419,7 +11443,7 @@ msgstr ""
 
 #: scene/3d/light.cpp
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
-msgstr ""
+msgstr "SpotLight z kątem szerszym niż 90 stopni nie może rzucać cieni."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11464,13 +11488,12 @@ msgid "PathFollow only works when set as a child of a Path node."
 msgstr "PathFollow działa tylko, gdy jest węzłem podrzędnym Path."
 
 #: scene/3d/path.cpp
-#, fuzzy
 msgid ""
 "PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
 "parent Path's Curve resource."
 msgstr ""
-"PathFollow ROTATION_ORIENTED wymaga włączonego \"Wektora w górę\" w zasobie "
-"Curve jego nadrzędnego węzła Path."
+"Właściwość ROTATION_ORIENTED węzła PathFollow wymaga włączonego \"Up Vector"
+"\" w zasobie Curve jego nadrzędnego węzła Path."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -11483,11 +11506,12 @@ msgstr ""
 "Zamiast tego, zmień rozmiary kształtów kolizji w węzłach podrzędnych."
 
 #: scene/3d/remote_transform.cpp
-#, fuzzy
 msgid ""
 "The \"Remote Path\" property must point to a valid Spatial or Spatial-"
 "derived node to work."
-msgstr "Pole Path musi wskazywać na węzeł Spatial."
+msgstr ""
+"Właściwość \"Remote Path\" musi wskazywać na poprawny węzeł typu Spatial lub "
+"pochodnego."
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
@@ -11504,13 +11528,12 @@ msgstr ""
 "Zamiast tego, zmień rozmiary kształtów kolizji w węzłach podrzędnych."
 
 #: scene/3d/sprite_3d.cpp
-#, fuzzy
 msgid ""
 "A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"Zasób SpriteFrames musi być ustawiony jako wartość właściwości \"Frames\" "
-"żeby AnimatedSprite3D wyświetlał klatki."
+"Właściwość \"Frames\" musi zawierać odpowiedni zasób SpriteFrames, aby "
+"AnimatedSprite3D wyświetlał klatki."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
@@ -11525,6 +11548,8 @@ msgid ""
 "WorldEnvironment requires its \"Environment\" property to contain an "
 "Environment to have a visible effect."
 msgstr ""
+"WorldEnvironment wymaga, by jego właściwość \"Environment\" posiadała zasób "
+"Environment, by mieć widoczny efekt."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -11562,9 +11587,8 @@ msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "Nic nie podłączono do wejścia \"%s\" węzła \"%s\"."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "No root AnimationNode for the graph is set."
-msgstr "Korzeń dla grafu AnimationNode nie jest ustawiony."
+msgstr "Nie ustawiono korzenia AnimationNode dla grafu."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
@@ -11577,7 +11601,6 @@ msgstr ""
 "Ścieżka do węzła AnimationPlayer nie prowadzi do węzła AnimationPlayer."
 
 #: scene/animation/animation_tree.cpp
-#, fuzzy
 msgid "The AnimationPlayer root node is not a valid node."
 msgstr "Korzeń AnimationPlayer nie jest poprawnym węzłem."
 
@@ -11606,7 +11629,6 @@ msgid "Add current color as a preset."
 msgstr "Dodaj bieżący kolor do zapisanych."
 
 #: scene/gui/container.cpp
-#, fuzzy
 msgid ""
 "Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
@@ -11614,8 +11636,7 @@ msgid ""
 msgstr ""
 "Kontener sam w sobie nie spełnia żadnego celu, chyba że jakiś skrypt "
 "konfiguruje sposób ustawiania jego podrzędnych węzłów.\n"
-"Jeśli nie zamierzasz dodać skryptu, zamiast tego użyj zwykłego węzła "
-"\"Control\"."
+"Jeśli nie zamierzasz dodać skryptu, zamiast tego użyj zwykłego węzła Control."
 
 #: scene/gui/control.cpp
 msgid ""
@@ -11634,32 +11655,28 @@ msgid "Please Confirm..."
 msgstr "Proszę potwierdzić..."
 
 #: scene/gui/popup.cpp
-#, fuzzy
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
 "functions. Making them visible for editing is fine, but they will hide upon "
 "running."
 msgstr ""
 "Wyskakujące okna będą domyślnie ukryte dopóki nie wywołasz popup() lub "
-"dowolnej funkcji popup*(). Ustawienie ich jako widocznych jest przydatne do "
-"edycji, ale zostaną ukryte po uruchomieniu."
+"dowolnej funkcji popup*(). Ustawienie ich jako widocznych do edycji jest w "
+"porządku, ale zostaną ukryte po uruchomieniu."
 
 #: scene/gui/range.cpp
-#, fuzzy
 msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
-msgstr "Jeśli exp_edit jest prawdziwe, min_value musi być > 0."
+msgstr "Jeśli \"Exp Edit\" jest włączone, \"Min Value\" musi być większe od 0."
 
 #: scene/gui/scroll_container.cpp
-#, fuzzy
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
 "Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer jest zaprojektowany do działania z jednym dzieckiem klasy "
-"Control.\n"
-"Użyj kontenera jako dziecko (VBox,HBox,etc), lub węzła klasy Control i ustaw "
-"ręcznie minimalny rozmiar."
+"ScrollContainer jest zaprojektowany do działania z jedną potomną kontrolką.\n"
+"Użyj kontenera jako dziecko (VBox, HBox, itp.) lub węzła typu Control i "
+"ustaw minimalny rozmiar ręcznie."
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
@@ -11706,9 +11723,8 @@ msgid "Input"
 msgstr "Wejście"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "Niewłaściwe źródło dla shadera."
+msgstr "Nieprawidłowe źródło do podglądu."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."

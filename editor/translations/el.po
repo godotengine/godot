@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:48+0000\n"
+"PO-Revision-Date: 2019-07-15 13:10+0000\n"
 "Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
@@ -455,9 +455,8 @@ msgid "Select All"
 msgstr "Επιλογή όλων"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select None"
-msgstr "Επιλογή κόμβου"
+msgstr "Αποεπιλογή Όλων"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -635,7 +634,7 @@ msgstr "Αρ. γραμμής:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "Βρέθηκαν %d αποτελέσματα."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -793,9 +792,8 @@ msgid "Connect"
 msgstr "Σύνδεση"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
-msgstr "Σήματα:"
+msgstr "Σήμα:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
@@ -962,9 +960,8 @@ msgid "Owners Of:"
 msgstr "Ιδιοκτήτες του:"
 
 #: editor/dependency_editor.cpp
-#, fuzzy
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr "Να αφαιρεθούν τα επιλεγμένα αρχεία από το έργο; (Αδύνατη η αναίρεση)"
+msgstr "Αφαίρεση επιλεγμένων αρχείων από το έργο; (Αδυναμία αναίρεσης)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -1334,7 +1331,6 @@ msgid "Must not collide with an existing engine class name."
 msgstr "Δεν μπορεί να συγχέεται με υπαρκτό όνομα κλάσης της μηχανής."
 
 #: editor/editor_autoload_settings.cpp
-#, fuzzy
 msgid "Must not collide with an existing built-in type name."
 msgstr "Δεν μπορεί να συγχέεται με υπαρκτό ενσωματωμένο όνομα τύπου."
 
@@ -1518,6 +1514,7 @@ msgstr "Δεν βρέθηκε αρχείο προτύπου:"
 #: editor/editor_export.cpp
 msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
+"Σε εξαγωγές 32-bit, το ενσωματωμένο PCK δεν μπορεί να υπερβαίνει τα 4 GiB."
 
 #: editor/editor_feature_profile.cpp
 msgid "3D Editor"
@@ -1544,9 +1541,8 @@ msgid "Node Dock"
 msgstr "Πλατφόρμα Κόμβου"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "FileSystem and Import Docks"
-msgstr "Πλατφόρμα Συστήματος Αρχείων"
+msgstr "Πλατφόρμες Συστήματος Αρχείων και Εισαγωγής"
 
 #: editor/editor_feature_profile.cpp
 msgid "Erase profile '%s'? (no undo)"
@@ -1597,12 +1593,11 @@ msgid "File '%s' format is invalid, import aborted."
 msgstr "Άκυρη μορφή αρχείου «%s», ακύρωση εισαγωγής."
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
-"Υπαρκτό προφίλ «%s». Αφαιρέστε το πριν την εισαγωγή, ακύρωση εισαγωγής."
+"Υπαρκτό προφίλ «%s». Αφαιρέστε το πριν την εισαγωγή. Ματαίωση εισαγωγής."
 
 #: editor/editor_feature_profile.cpp
 msgid "Error saving profile to path: '%s'."
@@ -1613,9 +1608,8 @@ msgid "Unset"
 msgstr "Κατάργηση"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Current Profile:"
-msgstr "Τρέχων Προφίλ"
+msgstr "Τρέχων Προφίλ:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Make Current"
@@ -1637,9 +1631,8 @@ msgid "Export"
 msgstr "Εξαγωγή"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Available Profiles:"
-msgstr "Διαθέσιμα Προφίλ"
+msgstr "Διαθέσιμα Προφίλ:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Class Options"
@@ -2732,32 +2725,30 @@ msgid "Editor Layout"
 msgstr "Διάταξη επεξεργαστή"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Take Screenshot"
-msgstr "Βγάζει νόημα!"
+msgstr "Λήψη Στιγμιότυπου Οθόνης"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
-msgstr "Άνοιγμα φακέλου δεδομένων/ρυθμίσεων επεξεργαστή"
+msgstr ""
+"Τα στιγμιότυπα οθόνης αποθηκεύονται στον φάκελο δεδομένων/ρυθμίσεων του "
+"επεξεργαστή."
 
 #: editor/editor_node.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "Αυτόματο Άνοιγμα Στιγμιοτύπων Οθόνης"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Open in an external image editor."
-msgstr "Άνοιγμα του  επόμενου επεξεργαστή"
+msgstr "Άνοιγμα σε εξωτερικό επεξεργαστή εικόνων."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Εναλλαγή πλήρους οθόνης"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Toggle System Console"
-msgstr "Εναλλαγή ορατότητας CanvasItem"
+msgstr "Εναλλαγή Κονσόλας Συστήματος"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
@@ -2866,19 +2857,16 @@ msgid "Spins when the editor window redraws."
 msgstr "Περιστρέφεται όταν το παράθυρο του επεξεργαστή επαναχρωματίζεται."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "Συνεχόμενη"
+msgstr "Συνεχόμενη Ανανέωση"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "Ενημέρωση αλλαγών"
+msgstr "Ανανέωση στην Αλλαγή"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Hide Update Spinner"
-msgstr "Απενεργοποίηση δείκτη ενημέρωσης"
+msgstr "Απόκρυψη Δείκτη Ενημέρωσης"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -5327,9 +5315,8 @@ msgstr "Φόρτωση μάσκας εκπομπής"
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "Restart"
-msgstr "Επανεκκίνηση τώρα"
+msgstr "Επανεκκίνηση"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -6244,18 +6231,16 @@ msgid "Find Next"
 msgstr "Εύρεση επόμενου"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter scripts"
-msgstr "Φιλτράρισμα ιδιοτήτων"
+msgstr "Φιλτράρισμα δεσμών ενεργειών"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Εναλλαγή αλφαβητικής ταξινόμησης λίστας μεθόδων."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter methods"
-msgstr "Λειτουργία φιλτραρίσματος:"
+msgstr "Φιλτράρισμα μεθόδων"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6490,7 +6475,7 @@ msgstr "Επισημαντής Σύνταξης"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Πήγαινε Σε"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -6498,9 +6483,8 @@ msgid "Bookmarks"
 msgstr "Αγαπημένα"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Breakpoints"
-msgstr "Δημιουργία σημείων."
+msgstr "Σημεία Διακοπής"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -8057,43 +8041,36 @@ msgid "Boolean uniform."
 msgstr "Λογική ενιαία μεταβλητή."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for all shader modes."
-msgstr "Παράμετρος εισόδου «uv» για όλες τις λειτουργίες σκίασης."
+msgstr "Παράμετρος εισόδου «%s» για όλες τις λειτουργίες σκίασης."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Input parameter."
 msgstr "Παράμετρος εισόδου."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for vertex and fragment shader modes."
-msgstr "Παράμετρος εισόδου «uv» για σκίαση κορυφής και τμήματος."
+msgstr "Παράμετρος εισόδου «%s» για σκίαση κορυφής και τμήματος."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for fragment and light shader modes."
-msgstr "Παράμετρος εισόδου «view» για σκίαση τμήματος και φωτός."
+msgstr "Παράμετρος εισόδου «%s» για σκίαση τμήματος και φωτός."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for fragment shader mode."
-msgstr "Παράμετρος εισόδου «side» για σκίαση τμήματος."
+msgstr "Παράμετρος εισόδου «%s» για σκίαση τμήματος."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for light shader mode."
-msgstr "Παράμετρος εισόδου «diffuse» για σκίαση φωτός."
+msgstr "Παράμετρος εισόδου «%s» για σκίαση φωτός."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for vertex shader mode."
-msgstr "Παράμετρος εισόδου «custom» για σκίαση κορυφής."
+msgstr "Παράμετρος εισόδου «%s» για σκίαση κορυφής."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "'%s' input parameter for vertex and fragment shader mode."
-msgstr "Παράμετρος εισόδου «uv» για σκίαση κορυφής και τμήματος."
+msgstr "Παράμετρος εισόδου «%s» για σκίαση κορυφής και τμήματος."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Scalar function."
@@ -8292,7 +8269,7 @@ msgstr ""
 "Συνάρτηση SmoothStep( βαθμωτό(όριο0), βαθμωτό(όριο1), βαθμωτό(x) ).\n"
 "\n"
 "Επιστρέφει 0.0 αν x < όριο0 και 1.0 αν x > όριο1. Αλλιώς επιστρέφει μια "
-"παρεμβεβλημένη τιμή ανάμεσα στο 0.0 και το 1.0 χρησιμοποιώντας πολυώνυμα "
+"παρεμβλημένη τιμή ανάμεσα στο 0.0 και το 1.0 χρησιμοποιώντας πολυώνυμα "
 "Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8375,74 +8352,76 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
+"(Μόνο GLES3) Υπολογισμός τανυστικού γινομένου δύο διανυσμάτων.\n"
+"\n"
+"Το OuterProduct αντιμετωπίζει την πρώτη παράμετρο «c» σαν διάνυσμα στήλης "
+"και την δεύτερη παράμετρο «r» σαν διάνυσμα γραμμής και κάνει τον αλγεβρικό "
+"πολλαπλασιασμό πινάκων «c * r», παράγοντας έναν πίνακα με στήλες όσα και τα "
+"στοιχεία του «c», και γραμμές όσα και τα στοιχεία του «r»."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
-msgstr ""
+msgstr "Συνθέτει μετασχηματισμό από τέσσερα διανύσματα."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes transform to four vectors."
-msgstr ""
+msgstr "Αποσυνθέτει μετασχηματισμό σε τέσσερα διανύσματα."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Calculates the determinant of a transform."
-msgstr ""
+msgstr "(Μόνο GLES3) Υπολογίζει την ορίζουσα ενός μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Calculates the inverse of a transform."
-msgstr ""
+msgstr "(Μόνο GLES3) Υπολογίζει το αντίστροφο ενός μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) Calculates the transpose of a transform."
-msgstr ""
+msgstr "(Μόνο GLES3) Υπολογίζει το ανάστροφο ενός μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies transform by transform."
-msgstr ""
+msgstr "Πολ/σμός δύο μετασχηματισμών."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by transform."
-msgstr ""
+msgstr "Πολ/σμός διανύσματος με μετασχηματισμό."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform constant."
-msgstr "Ο μετασχηματισμός ματαιώθηκε."
+msgstr "Σταθερά μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Transform uniform."
-msgstr "Ο μετασχηματισμός ματαιώθηκε."
+msgstr "Ενιαία μεταβλητή μετασχηματισμού."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector function."
-msgstr "Πήγαινε σε συνάρτηση..."
+msgstr "Συνάρτηση διανύσματος."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector operator."
-msgstr "Αλλαγή διανυσματικού τελεστή"
+msgstr "Τελεστής διανύσματος."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes vector from three scalars."
-msgstr ""
+msgstr "Συνθέτει διάνυσμα από 3 βαθμωτά μεγέθη."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes vector to three scalars."
-msgstr ""
+msgstr "Αποσυνθέτει διάνυσμα σε 3 βαθμωτά μεγέθη."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "Υπολογίζει το εξωτερικό γινόμενο 2 διανυσμάτων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the distance between two points."
-msgstr ""
+msgstr "Επιστρέφει την απόσταση 2 σημείων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
-msgstr ""
+msgstr "Υπολογίζει το εσωτερικό γινόμενο 2 διανυσμάτων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8451,36 +8430,43 @@ msgid ""
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
+"Επιστρέφει ένα διάνυσμα ίδιας κατεύθυνσης με ένα διάνυσμα αναφοράς. Η "
+"συνάρτηση έχει 3 διανυσματικές παραμέτρους: N, το διάνυσμα για "
+"ανακατεύθυνση, I, το διάνυσμα συμβάτος, και Nref, το διάνυσμα αναφοράς. Αν "
+"το εσωτερικό γινόμενο των I και Nref εναι αρνητικό, επιστρέφει N, αλλιώς "
+"επιστρέφει -N."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
-msgstr ""
+msgstr "Υπολογίζει το μήκος ενός διανύσματος."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two vectors."
-msgstr ""
+msgstr "Γραμμική παρεμβολή μεταξύ 2 διανυσμάτων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
-msgstr ""
+msgstr "Κανονικοποιεί ένα διάνυσμα."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - vector"
-msgstr ""
+msgstr "1.0 - διάνυσμα"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / vector"
-msgstr ""
+msgstr "1.0 / διάνυσμα"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns a vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
 msgstr ""
+"Επιστρέφει ένα διάνυσμα που δείχνει προς την κατεύθυνση αντανάκλασης ( a : "
+"διάνυσμα συμβάντος, b : κανονικό διάνυσμα )."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns a vector that points in the direction of refraction."
-msgstr ""
+msgstr "Επιστρέφει ένα διάνυσμα που δείχνει προς την κατεύθυνση διάθλασης."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8490,6 +8476,11 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
+"Συνάρτηση SmoothStep( διάνυσμα(όριο0), διάνυσμα(όριο1), διάνυσμα(x) ).\n"
+"\n"
+"Επιστρέφει 0.0 αν x < όριο0 και 1.0 αν x > όριο1. Αλλιώς επιστρέφει μια "
+"παρεμβλημένη τιμή ανάμεσα στο 0.0 και το 1.0 χρησιμοποιώντας πολυώνυμα "
+"Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8499,6 +8490,11 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
+"Συνάρτηση SmoothStep( βαθμωτό(όριο0), βαθμωτό(όριο1), διάνυσμα(x) ).\n"
+"\n"
+"Επιστρέφει 0.0 αν x < όριο0 και 1.0 αν x > όριο1. Αλλιώς επιστρέφει μια "
+"παρεμβλημένη τιμή ανάμεσα στο 0.0 και το 1.0 χρησιμοποιώντας πολυώνυμα "
+"Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8506,6 +8502,9 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
+"Συνάρτηση Step( διάνυσμα(όριο), διάνυσμα(x) ).\n"
+"\n"
+"Επιστρέφει 0.0 αν x < όριο αλλιώς 1.0."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8513,36 +8512,37 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
+"Συνάρτηση Step( βαθμωτό(όριο), διάνυσμα(x) ).\n"
+"\n"
+"Επιστρέφει 0.0 αν x < όριο αλλιώς 1.0."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds vector to vector."
-msgstr ""
+msgstr "Προσθέτει 2 διανύσματα."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Divides vector by vector."
-msgstr ""
+msgstr "Διαιρεί 2 διανύσματα."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by vector."
-msgstr ""
+msgstr "Πολλαπλασιάζει 2 διανύσματα."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two vectors."
-msgstr ""
+msgstr "Επιστρέφει το υπόλοιπο των 2 διανυσμάτων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts vector from vector."
-msgstr ""
+msgstr "Αφαίρεση 2 διανυσμάτων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector constant."
-msgstr "Αλλαγή διανυσματικής σταθεράς"
+msgstr "Διανυσματική σταθερά."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector uniform."
-msgstr "Αλλαγή διανυσματικής ομοιόμορφης μεταβλητής"
+msgstr "Διανυσματικής ενιαία μεταβλητή."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8550,70 +8550,85 @@ msgid ""
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
 msgstr ""
+"Προσαρμοσμένη έκφραση γλώσσας σκίασης της Godot, με προσαρμοσμένο αριθμό "
+"εισόδων και εξόδων. Αυτό είναι μία άμεση παρεμβολή κώδικα στην συνάρτηση "
+"κορυφής/τμήματος/φωτός, μην γράψετε μέσα ορισμούς συναρτήσεων."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
 msgstr ""
+"Επιστρέφει μείωση βάση του εσωτερικού γινομένου του διανύσματος επιφάνειας "
+"και της κατεύθυνσης της κάμερας (δώστε τις σχετικές εισόδους)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) (Fragment/Light mode only) Scalar derivative function."
-msgstr ""
+msgstr "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) Βαθμωτή παράγωγη συνάρτηση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only) (Fragment/Light mode only) Vector derivative function."
-msgstr ""
+msgstr "(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) Διανυσματική παράγωγη συνάρτηση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'x' using "
 "local differencing."
 msgstr ""
+"(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Διανυσματικά) Παράγωγος στο «x» με "
+"τοπική διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'x' using "
 "local differencing."
 msgstr ""
+"(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Βαθμωτά) Παράγωγος στο «x» με τοπική "
+"διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Vector) Derivative in 'y' using "
 "local differencing."
 msgstr ""
+"(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Διανυσματικά) Παράγωγος στο «y» με "
+"τοπική διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Scalar) Derivative in 'y' using "
 "local differencing."
 msgstr ""
+"(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Βαθμωτά) Παράγωγος στο «y» με τοπική "
+"διαφόριση."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Vector) Sum of absolute derivative "
 "in 'x' and 'y'."
 msgstr ""
+"(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Διανυσματικά) Άθροισμα απόλυτης "
+"παραγώγου σε «x» και «y»."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "(GLES3 only) (Fragment/Light mode only) (Scalar) Sum of absolute derivative "
 "in 'x' and 'y'."
 msgstr ""
+"(Μόνο GLES3 σε σκίαση Τμήματος/Φωτός) (Βαθμωτά) Άθροισμα απόλυτης παραγώγου "
+"σε «x» και «y»."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
 msgstr "Οπτικό Πρόγραμμα Σκίασης"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Visual Property"
-msgstr "Επεξεργασία φίλτρων"
+msgstr "Επεξεργασία Οπτικής Ιδιότητας"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Visual Shader Mode Changed"
-msgstr "Αλλαγές προγράμματος σκίασης"
+msgstr "Αλλαγή Λειτουργίας Οπτικού Προγράμματος Σκίασης"
 
 #: editor/project_export.cpp
 msgid "Runnable"
@@ -8632,6 +8647,8 @@ msgid ""
 "Failed to export the project for platform '%s'.\n"
 "Export templates seem to be missing or invalid."
 msgstr ""
+"Αποτυχία εξαγωγής έργου στην πλατφόρμα «%s».\n"
+"Τα πρότυπα εξαγωγής λείπουν ή είναι άκυρα."
 
 #: editor/project_export.cpp
 msgid ""
@@ -8639,21 +8656,21 @@ msgid ""
 "This might be due to a configuration issue in the export preset or your "
 "export settings."
 msgstr ""
+"Αποτυχία εξαγωγής έργου στην πλατφόρμα «%s».\n"
+"Αυτό μπορεί να οφείλεται σε λάθος της διαμόρφωσης εξαγωγής ή στις ρυθμίσεις "
+"εξαγωγής σας."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Release"
-msgstr "μόλις απελευθερώθηκε"
+msgstr "Κυκλοφορία"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Exporting All"
-msgstr "Εξαγωγή για %s"
+msgstr "Εξαγωγή Όλων"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "The given export path doesn't exist:"
-msgstr "Η διαδρομή δεν υπάρχει."
+msgstr "Η δεδομένη διαδρομή εξαγωγής δεν υπάρχει:"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing/corrupted:"
@@ -8669,9 +8686,8 @@ msgid "Add..."
 msgstr "Προσθήκη..."
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export Path"
-msgstr "Εξαγωγή έργου"
+msgstr "Διαδρομή Εξαγωγής"
 
 #: editor/project_export.cpp
 msgid "Resources"
@@ -8732,50 +8748,44 @@ msgid "Feature List:"
 msgstr "Λίστα δυνατοτήτων:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script"
-msgstr "Νεα δεσμή ενεργειών"
+msgstr "Δέσμες Ενεργειών"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Script Export Mode:"
-msgstr "Λειτουργία εξαγωγής:"
+msgstr "Λειτουργία Εξαγωγής Δεσμών Ενεργειών:"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Text"
-msgstr "Υφή"
+msgstr "Κείμενο"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Compiled"
-msgstr "Συμπίεση"
+msgstr "Μεταγλωτισμένες"
 
 #: editor/project_export.cpp
 msgid "Encrypted (Provide Key Below)"
-msgstr ""
+msgstr "Κρυπτογραφημένες (Δώστε Κλειδί Παρακάτω)"
 
 #: editor/project_export.cpp
 msgid "Invalid Encryption Key (must be 64 characters long)"
-msgstr ""
+msgstr "Άκυρο Κλειδί Κρυπτογράφησης (πρέπει να έχει 64 χαρακτήρες)"
 
 #: editor/project_export.cpp
 msgid "Script Encryption Key (256-bits as hex):"
-msgstr ""
+msgstr "Κλειδί Κρυπτογράφησης Δεσμών Ενεργειών (256-bit σε δεκαεξαδικό):"
 
 #: editor/project_export.cpp
 msgid "Export PCK/Zip"
 msgstr "Εξαγωγή PCK/ZIP"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export mode?"
-msgstr "Λειτουργία εξαγωγής:"
+msgstr "Λειτουργία εξαγωγής;"
 
 #: editor/project_export.cpp
-#, fuzzy
 msgid "Export All"
-msgstr "Εξαγωγή"
+msgstr "Εξαγωγή Όλων"
 
 #: editor/project_export.cpp
 msgid "Export templates for this platform are missing:"
@@ -8790,23 +8800,20 @@ msgid "The path does not exist."
 msgstr "Η διαδρομή δεν υπάρχει."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
-msgstr ""
-"Παρακαλούμε επιλέξτε έναν φάκελο που δεν περιέχει ένα αρχείο 'project.godot'."
+msgstr "Άκυρο αρχείο έργου «.zip», δεν περιέχει αρχείο «project.godot»."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
 msgstr "Παρακαλούμε επιλέξτε έναν άδειο φάκελο."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Please choose a 'project.godot' or '.zip' file."
-msgstr "Παρακαλούμε επιλέκτε ένα αρχείο 'project.godot'."
+msgstr "Παρακαλούμε επιλέξτε ένα αρχείο «project.godot» ή «.zip»."
 
 #: editor/project_manager.cpp
 msgid "Directory already contains a Godot project."
-msgstr ""
+msgstr "Ο κατάλογος περιέχει ήδη ένα έργο της Godot."
 
 #: editor/project_manager.cpp
 msgid "New Game Project"
@@ -8894,17 +8901,16 @@ msgid "Project Path:"
 msgstr "Διαδρομή έργου:"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Project Installation Path:"
-msgstr "Διαδρομή έργου:"
+msgstr "Διαδρομή Εγκατάστασης Εργου:"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
-msgstr ""
+msgstr "Μέθοδος Απόδοσης:"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 3.0"
-msgstr ""
+msgstr "OpenGL ES 3.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8913,10 +8919,14 @@ msgid ""
 "Incompatible with older hardware\n"
 "Not recommended for web games"
 msgstr ""
+"Υψηλότερη οπτική ποιότητα\n"
+"Διάθεση όλων των δυνατοτήτων\n"
+"Μη-συμβατό με παλαιότερο υλικό\n"
+"Δεν προτείνεται για διαδικτυακά παιχνίδια"
 
 #: editor/project_manager.cpp
 msgid "OpenGL ES 2.0"
-msgstr ""
+msgstr "OpenGL ES 2.0"
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8925,19 +8935,24 @@ msgid ""
 "Works on most hardware\n"
 "Recommended for web games"
 msgstr ""
+"Χαμηλότερη οπτική ποιότητα\n"
+"Μερική διάθεση δυνατοτήτων\n"
+"Δουλεύει στο περισσότερο υλικό\n"
+"Προτείνεται για διαδικτυακά παιχνίδια"
 
 #: editor/project_manager.cpp
 msgid "Renderer can be changed later, but scenes may need to be adjusted."
 msgstr ""
+"Η μέθοδος απόδοσης μπορεί να αλλάξει αργότερα, αλλά οι σκηνές μπορεί να "
+"απαιτούν αναπροσαρμογή."
 
 #: editor/project_manager.cpp
 msgid "Unnamed Project"
 msgstr "Ανώνυμο έργο"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Can't open project at '%s'."
-msgstr "Δεν ήταν δυνατό το άνοιγμα του έργου"
+msgstr "Αδυνατό το άνοιγμα του έργου στο «%s»."
 
 #: editor/project_manager.cpp
 msgid "Are you sure to open more than one project?"
@@ -8955,6 +8970,15 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
+"Το ακόλουθο αρχείο ρυθμίσεων έργου δεν ορίζει την έκδοση της Godot με την "
+"οποία δημιουργήθηκε.\n"
+"\n"
+"%s\n"
+"\n"
+"Εάν συνεχίσετε με το άνοιγμα του, θα μετατραπεί στην τρέχουσα μορφή "
+"ρυθμίσεων της Godot.\n"
+"Προσοχή: Δεν θα μπορείτε να ανοίξετε το έργο με προηγούμενες εκδόσεις της "
+"μηχανής στο μέλλον."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8967,23 +8991,32 @@ msgid ""
 "Warning: You won't be able to open the project with previous versions of the "
 "engine anymore."
 msgstr ""
+"Το ακόλουθο αρχείο ρυθμίσεων έργου δημιουργήθηκε από παλαιότερη έκδοση της "
+"μηχανής, και πρέπει να μετατραπεί στην νέα έκδοση:\n"
+"\n"
+"%s\n"
+"\n"
+"Θέλετε να το μετατρέψετε;\n"
+"Προσοχή: Δεν θα μπορείτε να ανοίξετε το έργο με προηγούμενες εκδόσεις της "
+"μηχανής στο μέλλον."
 
 #: editor/project_manager.cpp
 msgid ""
 "The project settings were created by a newer engine version, whose settings "
 "are not compatible with this version."
 msgstr ""
+"Οι ρυθμίσεις έργου δημιουργήθηκαν από μια νεότερη έκδοση της μηχανής, που "
+"δεν έχει συμβατές ρυθμίσεις με αυτήν την έκδοση."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Can't run project: no main scene defined.\n"
 "Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
 msgstr ""
-"Δεν είναι δυνατή η εκτέλεση του έργου: Δεν έχει καθοριστεί κύρια σκηνή.\n"
-"Παρακαλώ επεξεργαστείτε το έργο και ορίστε την κύρια σκηνή στις «Ρυθμίσεις "
-"έργου» κάτω από την κατηγορία «Εφαρμογή»."
+"Αδυναμία εκτέλεσης έργου: Δεν έχει καθοριστεί κύρια σκηνή.\n"
+"Επεξεργαστείτε το έργο και ορίστε την κύρια σκηνή στις «Ρυθμίσεις έργου» "
+"κάτω από την κατηγορία «Application»."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -8994,27 +9027,24 @@ msgstr ""
 "Παρακαλώ επεξεργαστείτε το έργο για να γίνει η αρχική εισαγωγή."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Are you sure to run %d projects at once?"
-msgstr "Είστε σίγουροι πως θέλετε να τρέξετε περισσότερα από ένα έργα;"
+msgstr "Είστε σίγουροι πως θέλετε να τρέξετε %d έργα ταυτόχρονα;"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Remove %d projects from the list?\n"
 "The project folders' contents won't be modified."
 msgstr ""
-"Αφαίρεση έργου από την λίστα; (Τα περιεχόμενα το φακέλου δεν θα "
-"τροποποιηθούν)"
+"Αφαίρεση %d έργων από την λίστα;\n"
+"Τα περιεχόμενα των καταλόγων των έργων δεν θα τροποποιηθούν."
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Remove this project from the list?\n"
 "The project folder's contents won't be modified."
 msgstr ""
-"Αφαίρεση έργου από την λίστα; (Τα περιεχόμενα το φακέλου δεν θα "
-"τροποποιηθούν)"
+"Αφαίρεση έργου από την λίστα;\n"
+"Τα περιεχόμενα του καταλόγου του έργου δεν θα τροποποιηθούν."
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -11748,7 +11778,7 @@ msgid ""
 "obtain a size. Otherwise, make it a RenderTarget and assign its internal "
 "texture to some node for display."
 msgstr ""
-"Το Viewport δεν έχει ορισθεί ως «render target». Αν σκοπεύετε να δείχνει τα "
+"Το Viewport δεν έχει ορισθεί ως στόχος απόδοσης. Αν σκοπεύετε να δείχνει τα "
 "περιεχόμενα του, κάντε το να κληρονομεί ένα Control, ώστε να αποκτήσει "
 "μέγεθος. Αλλιώς, κάντε το ένα RenderTarget και ορίστε το internal texture σε "
 "έναν κόμβο για απεικόνιση."
