@@ -1022,7 +1022,8 @@ void EditorSettings::setup_network() {
 	add_property_hint(PropertyInfo(Variant::INT, "network/debug/remote_port", PROPERTY_HINT_RANGE, "1,65535,1"));
 
 	// Editor SSL certificates override
-	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
+	String certs = has_setting("network/ssl/editor_ssl_certificates") ? get("network/ssl/editor_ssl_certificates") : _SYSTEM_CERTS_PATH;
+	_initial_set("network/ssl/editor_ssl_certificates", certs);
 	add_property_hint(PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
 }
 

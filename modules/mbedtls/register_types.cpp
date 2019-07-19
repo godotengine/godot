@@ -31,7 +31,7 @@
 #include "register_types.h"
 
 #include "crypto_mbedtls.h"
-#include "stream_peer_mbed_tls.h"
+#include "stream_peer_mbedtls.h"
 
 void register_mbedtls_types() {
 

@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.h                                                    */
+/*  ssl_context_mbed_tls.h                                               */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_SSL_H
-#define STREAM_PEER_SSL_H
+#ifndef SSL_CONTEXT_MBED_TLS_H
+#define SSL_CONTEXT_MBED_TLS_H
 
-#include "core/crypto/crypto.h"
-#include "core/io/stream_peer.h"
+#include "crypto_mbedtls.h"
 
-class StreamPeerSSL : public StreamPeer {
-	GDCLASS(StreamPeerSSL, StreamPeer);
+#include "core/os/file_access.h"
+#include "core/pool_vector.h"
+#include "core/reference.h"
+
+#include <mbedtls/config.h>
+#include <mbedtls/ctr_drbg.h>
+#include <mbedtls/debug.h>
+#include <mbedtls/entropy.h>
+#include <mbedtls/net.h>
+#include <mbedtls/ssl.h>
+
+class SSLContextMbedTLS : public Reference {
 
 protected:
-	static StreamPeerSSL *(*_create)();
-	static void _bind_methods();
+	bool inited;
 
-	static bool available;
-
-	bool blocking_handshake;
+	static PoolByteArray _read_file(String p_path);
 
 public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
-	};
+	Ref<X509CertificateMbedTLS> certs;
+	mbedtls_entropy_context entropy;
+	mbedtls_ctr_drbg_context ctr_drbg;
+	mbedtls_ssl_context ssl;
+	mbedtls_ssl_config conf;
 
-	void set_blocking_handshake_enabled(bool p_enabled);
-	bool is_blocking_handshake_enabled() const;
+	Ref<CryptoKeyMbedTLS> pkey;
 
-	virtual void poll() = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) = 0;
-	virtual Status get_status() const = 0;
+	Error _setup(int p_endpoint, int p_transport, int p_authmode);
+	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert);
+	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
+	void clear();
 
-	virtual void disconnect_from_stream() = 0;
+	mbedtls_ssl_context *get_context();
 
-	static StreamPeerSSL *create();
-
-	static bool is_available();
-
-	StreamPeerSSL();
+	SSLContextMbedTLS();
+	~SSLContextMbedTLS();
 };
 
-VARIANT_ENUM_CAST(StreamPeerSSL::Status);
-
-#endif // STREAM_PEER_SSL_H
+#endif // SSL_CONTEXT_MBED_TLS_H
