@@ -272,7 +272,7 @@ class EditorInspector : public ScrollContainer {
 
 	LineEdit *search_box;
 	bool show_categories;
-	bool hide_script;
+	bool hide_object_properties;
 	bool use_doc_hints;
 	bool capitalize_paths;
 	bool use_filter;
@@ -360,7 +360,7 @@ public:
 
 	void set_show_categories(bool p_show);
 	void set_use_doc_hints(bool p_enable);
-	void set_hide_script(bool p_hide);
+	void set_hide_object_properties(bool p_hide);
 
 	void set_use_filter(bool p_use);
 	void register_text_enter(Node *p_line_edit);
