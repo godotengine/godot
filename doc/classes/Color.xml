@@ -42,6 +42,20 @@
 		<method name="Color">
 			<return type="Color">
 			</return>
+			<argument index="0" name="c" type="Color">
+			</argument>
+			<argument index="1" name="a" type="float">
+			</argument>
+			<description>
+				Constructs a color from an existing color, but with a custom alpha value.
+				[codeblock]
+				var red = Color(Color.red, 0.5) # 50% transparent red.
+				[/codeblock]
+			</description>
+		</method>
+		<method name="Color">
+			<return type="Color">
+			</return>
 			<argument index="0" name="r" type="float">
 			</argument>
 			<argument index="1" name="g" type="float">
