@@ -1075,6 +1075,11 @@ struct _VariantCall {
 		r_ret = Color::hex(*p_args[0]);
 	}
 
+	static void Color_init5(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Color(((Color)(*p_args[0])), *p_args[1]);
+	}
+
 	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = ::AABB(*p_args[0], *p_args[1]);
@@ -2211,6 +2216,8 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::FLOAT, "g", Variant::FLOAT, "b", Variant::FLOAT, "a", Variant::FLOAT);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::FLOAT, "g", Variant::FLOAT, "b", Variant::FLOAT);
+	// init3 and init4 are the constructors for HTML hex strings and integers respectively which don't need binding here, so we skip to init5.
+	_VariantCall::add_constructor(_VariantCall::Color_init5, Variant::COLOR, "c", Variant::COLOR, "a", Variant::FLOAT);
 
 	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
