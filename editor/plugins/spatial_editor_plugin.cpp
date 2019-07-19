@@ -514,7 +514,7 @@ void SpatialEditorViewport::_select_region() {
 	for (int i = 0; i < instances.size(); i++) {
 
 		Spatial *sp = Object::cast_to<Spatial>(ObjectDB::get_instance(instances[i]));
-		if (!sp && _is_node_locked(sp))
+		if (!sp || _is_node_locked(sp))
 			continue;
 
 		Node *item = Object::cast_to<Node>(sp);
