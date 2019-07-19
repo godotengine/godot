@@ -70,6 +70,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_REPARENT_TO_NEW_NODE,
 		TOOL_MAKE_ROOT,
 		TOOL_NEW_SCENE_FROM,
 		TOOL_MERGE_FROM_SCENE,
@@ -142,6 +143,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool first_enter;
 
 	void _create();
+	void _do_create(Node *p_parent);
 	Node *scene_root;
 	Node *edited_scene;
 	EditorNode *editor;
