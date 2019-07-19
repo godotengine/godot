@@ -178,7 +178,7 @@ private:
 	};
 
 	const Transform _assimp_matrix_transform(const aiMatrix4x4 p_matrix);
-	String _assimp_get_string(const aiString p_string) const;
+	String _assimp_get_string(const aiString &p_string) const;
 	Transform _get_global_assimp_node_transform(const aiNode *p_current_node);
 
 	void _calc_tangent_from_mesh(const aiMesh *ai_mesh, int i, int tri_index, int index, PoolColorArray::Write &w);
@@ -200,8 +200,8 @@ private:
 
 	Spatial *_generate_scene(const String &p_path, const aiScene *scene, const uint32_t p_flags, int p_bake_fps, const int32_t p_max_bone_weights);
 
-	String _assimp_anim_string_to_string(const aiString p_string) const;
-	String _assimp_raw_string_to_string(const aiString p_string) const;
+	String _assimp_anim_string_to_string(const aiString &p_string) const;
+	String _assimp_raw_string_to_string(const aiString &p_string) const;
 	float _get_fbx_fps(int32_t time_mode, const aiScene *p_scene);
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, AssetImportAnimation::Interpolation p_interp);
