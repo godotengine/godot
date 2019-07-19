@@ -152,7 +152,9 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				datas.push_back(usage.getptr(F->get().name));
 			}
 
-			usage[F->get().name].uses++;
+			// Make sure only properties with the same exact PropertyInfo data will appear
+			if (usage[F->get().name].info == F->get())
+				usage[F->get().name].uses++;
 		}
 
 		nc++;
