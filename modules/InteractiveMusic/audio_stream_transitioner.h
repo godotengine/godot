@@ -20,16 +20,16 @@ private:
 
 	enum {
 		MAX_STREAMS = 64,
-		MAX_TRANSITIONS = 64
+		MAX_TRANSITIONS = 10
 	};
 
 
 	struct Transition {
-		
+		bool t_active;
 		int fade_in_beats;
 		int fade_out_beats;
 	};
-	bool t_active;
+	
 	Transition transitions[MAX_TRANSITIONS];
 	Transition active_transition;
 
@@ -60,8 +60,11 @@ public:
 	void set_transition_fade_out(int transition_number, int fade_out);
 	int get_transition_fade_out(int transition_number);
 
-	void set_active_transition(int transition_number);
-	Transition get_active_transition();
+	void set_active_transition(int transition_number, bool trigger);
+	bool get_transition_state(int transition_number);
+
+	void set_active_clip_number(int clip_number);
+	int get_active_clip_number();
 
 	void go_to_clip(int clip_number, int transition_number);
 
@@ -101,6 +104,10 @@ private:
 	int fade_in_samples_total;
 	int fade_out_samples_total;
 	int transition_samples_total;
+
+	int transition_samples;
+	int fade_in_samples;
+	int fade_out_samples;
 
 	int beat_size;
 
