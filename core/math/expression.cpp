@@ -52,6 +52,7 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"sqrt",
 	"fmod",
 	"fposmod",
+	"posmod",
 	"floor",
 	"ceil",
 	"round",
@@ -175,6 +176,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_ATAN2:
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
+		case MATH_POSMOD:
 		case MATH_POW:
 		case MATH_EASE:
 		case MATH_STEPIFY:
@@ -282,6 +284,12 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::fposmod((double)*p_inputs[0], (double)*p_inputs[1]);
+		} break;
+		case MATH_POSMOD: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			*r_return = Math::posmod((int)*p_inputs[0], (int)*p_inputs[1]);
 		} break;
 		case MATH_FLOOR: {
 

@@ -345,45 +345,78 @@
 		<method name="fmod">
 			<return type="float">
 			</return>
-			<argument index="0" name="x" type="float">
+			<argument index="0" name="a" type="float">
 			</argument>
-			<argument index="1" name="y" type="float">
+			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Returns the floating-point remainder of [code]x/y[/code].
+				Returns the floating-point remainder of [code]a/b[/code], keeping the sign of [code]a[/code].
 				[codeblock]
 				# Remainder is 1.5
 				var remainder = fmod(7, 5.5)
 				[/codeblock]
+				For the integer remainder operation, use the % operator.
 			</description>
 		</method>
 		<method name="fposmod">
 			<return type="float">
 			</return>
-			<argument index="0" name="x" type="float">
+			<argument index="0" name="a" type="float">
 			</argument>
-			<argument index="1" name="y" type="float">
+			<argument index="1" name="b" type="float">
 			</argument>
 			<description>
-				Returns the floating-point remainder of [code]x/y[/code] that wraps equally in positive and negative.
+				Returns the floating-point modulus of [code]a/b[/code] that wraps equally in positive and negative.
 				[codeblock]
-				var i = -10
-				while i &lt; 0:
-				    prints(i, fposmod(i, 10))
+				var i = -6
+				while i &lt; 5:
+				    prints(i, fposmod(i, 3))
 				    i += 1
 				[/codeblock]
 				Produces:
 				[codeblock]
-				-10 10
-				-9 1
-				-8 2
-				-7 3
-				-6 4
-				-5 5
-				-4 6
-				-3 7
-				-2 8
-				-1 9
+				-6 0
+				-5 1
+				-4 2
+				-3 0
+				-2 1
+				-1 2
+				0 0
+				1 1
+				2 2
+				3 0
+				4 1
+				[/codeblock]
+			</description>
+		</method>
+		<method name="posmod">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
+				[codeblock]
+				var i = -6
+				while i &lt; 5:
+				    prints(i, posmod(i, 3))
+				    i += 1
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-6 0
+				-5 1
+				-4 2
+				-3 0
+				-2 1
+				-1 2
+				0 0
+				1 1
+				2 2
+				3 0
+				4 1
 				[/codeblock]
 			</description>
 		</method>

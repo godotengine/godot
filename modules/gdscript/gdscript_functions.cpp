@@ -58,6 +58,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"sqrt",
 		"fmod",
 		"fposmod",
+		"posmod",
 		"floor",
 		"ceil",
 		"round",
@@ -242,6 +243,12 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			r_ret = Math::fposmod((double)*p_args[0], (double)*p_args[1]);
+		} break;
+		case MATH_POSMOD: {
+			VALIDATE_ARG_COUNT(2);
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			r_ret = Math::posmod((int)*p_args[0], (int)*p_args[1]);
 		} break;
 		case MATH_FLOOR: {
 			VALIDATE_ARG_COUNT(1);
@@ -1456,6 +1463,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case MATH_SQRT:
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
+		case MATH_POSMOD:
 		case MATH_FLOOR:
 		case MATH_CEIL:
 		case MATH_ROUND:
@@ -1568,13 +1576,18 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_FMOD: {
-			MethodInfo mi("fmod", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("fmod", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
 		case MATH_FPOSMOD: {
-			MethodInfo mi("fposmod", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("fposmod", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
 			mi.return_val.type = Variant::REAL;
+			return mi;
+		} break;
+		case MATH_POSMOD: {
+			MethodInfo mi("posmod", PropertyInfo(Variant::INT, "a"), PropertyInfo(Variant::INT, "b"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 		} break;
 		case MATH_FLOOR: {
@@ -1603,7 +1616,7 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case MATH_POW: {
-			MethodInfo mi("pow", PropertyInfo(Variant::REAL, "x"), PropertyInfo(Variant::REAL, "y"));
+			MethodInfo mi("pow", PropertyInfo(Variant::REAL, "base"), PropertyInfo(Variant::REAL, "exp"));
 			mi.return_val.type = Variant::REAL;
 			return mi;
 		} break;
