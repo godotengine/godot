@@ -102,11 +102,6 @@ String Variant::get_type_name(Variant::Type p_type) {
 			return "Plane";
 
 		} break;
-		/*
-			case QUAT: {
-
-
-			} break;*/
 		case AABB: {
 
 			return "AABB";
