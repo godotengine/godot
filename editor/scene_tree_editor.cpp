@@ -212,13 +212,19 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		Color accent = get_color("accent_color", "Editor");
 
 		Ref<Script> script = p_node->get_script();
-		if (!script.is_null()) {
+		if (!script.is_null() && EditorNode::get_singleton()->get_object_custom_type_base(p_node) != script) {
 			//has script
 			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT);
 		} else {
-			//has no script
+			//has no script (or script is a custom type)
 			item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 			item->set_selectable(0, false);
+
+			if (!script.is_null()) { // make sure to mark the script if a custom type
+				item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT);
+				item->set_button_disabled(0, item->get_button_count(0) - 1, true);
+			}
+
 			accent.a *= 0.7;
 		}
 
@@ -284,7 +290,10 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		item->add_button(0, get_icon("InstanceOptions", "EditorIcons"), BUTTON_SUBSCENE, false, TTR("Open in Editor"));
 		item->set_tooltip(0, TTR("Instance:") + " " + p_node->get_filename() + "\n" + TTR("Type:") + " " + p_node->get_class());
 	} else {
-		item->set_tooltip(0, String(p_node->get_name()) + "\n" + TTR("Type:") + " " + p_node->get_class());
+		StringName type = EditorNode::get_singleton()->get_object_custom_type_name(p_node);
+		if (type == StringName())
+			type = p_node->get_class();
+		item->set_tooltip(0, String(p_node->get_name()) + "\n" + TTR("Type:") + " " + type);
 	}
 
 	if (can_open_instance && undo_redo) { //Show buttons only when necessary(SceneTreeDock) to avoid crashes
@@ -295,6 +304,9 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 		Ref<Script> script = p_node->get_script();
 		if (!script.is_null()) {
 			item->add_button(0, get_icon("Script", "EditorIcons"), BUTTON_SCRIPT, false, TTR("Open Script:") + " " + script->get_path());
+			if (EditorNode::get_singleton()->get_object_custom_type_base(p_node) == script) {
+				item->set_button_color(0, item->get_button_count(0) - 1, Color(1, 1, 1, 0.5));
+			}
 		}
 
 		if (p_node->is_class("CanvasItem")) {

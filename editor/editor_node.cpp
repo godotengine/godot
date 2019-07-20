@@ -3488,6 +3488,69 @@ void EditorNode::stop_child_process() {
 	_menu_option_confirm(RUN_STOP, false);
 }
 
+Ref<Script> EditorNode::get_object_custom_type_base(const Object *p_object) const {
+	ERR_FAIL_COND_V(!p_object, NULL);
+
+	Ref<Script> script = p_object->get_script();
+
+	if (script.is_valid()) {
+		// Uncommenting would break things! Consider adding a parameter if you need it.
+		// StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
+		// if (name != StringName())
+		// 	return name;
+
+		// should probably be deprecated in 4.x
+		StringName base = script->get_instance_base_type();
+		if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
+			const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
+
+			Ref<Script> base_script = script;
+			while (base_script.is_valid()) {
+				for (int i = 0; i < types.size(); ++i) {
+					if (types[i].script == base_script) {
+						return types[i].script;
+					}
+				}
+				base_script = base_script->get_base_script();
+			}
+		}
+	}
+
+	return NULL;
+}
+
+StringName EditorNode::get_object_custom_type_name(const Object *p_object) const {
+	ERR_FAIL_COND_V(!p_object, StringName());
+
+	Ref<Script> script = p_object->get_script();
+	if (script.is_null() && p_object->is_class("Script")) {
+		script = p_object;
+	}
+
+	if (script.is_valid()) {
+		Ref<Script> base_script = script;
+		while (base_script.is_valid()) {
+			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
+			if (name != StringName())
+				return name;
+
+			// should probably be deprecated in 4.x
+			StringName base = base_script->get_instance_base_type();
+			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
+				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
+				for (int i = 0; i < types.size(); ++i) {
+					if (types[i].script == base_script) {
+						return types[i].name;
+					}
+				}
+			}
+			base_script = base_script->get_base_script();
+		}
+	}
+
+	return StringName();
+}
+
 Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p_fallback) const {
 	ERR_FAIL_COND_V(!p_object || !gui_base, NULL);
 
@@ -3497,23 +3560,24 @@ Ref<Texture> EditorNode::get_object_icon(const Object *p_object, const String &p
 	}
 
 	if (script.is_valid()) {
-		StringName name = EditorNode::get_editor_data().script_class_get_name(script->get_path());
-		String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
-		if (icon_path.length())
-			return ResourceLoader::load(icon_path);
+		Ref<Script> base_script = script;
+		while (base_script.is_valid()) {
+			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
+			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
+			if (icon_path.length())
+				return ResourceLoader::load(icon_path);
 
-		// should probably be deprecated in 4.x
-		StringName base = script->get_instance_base_type();
-		if (base != StringName()) {
-			const Map<String, Vector<EditorData::CustomType> > &p_map = EditorNode::get_editor_data().get_custom_types();
-			for (const Map<String, Vector<EditorData::CustomType> >::Element *E = p_map.front(); E; E = E->next()) {
-				const Vector<EditorData::CustomType> &ct = E->value();
-				for (int i = 0; i < ct.size(); ++i) {
-					if (ct[i].name == base && ct[i].icon.is_valid()) {
-						return ct[i].icon;
+			// should probably be deprecated in 4.x
+			StringName base = base_script->get_instance_base_type();
+			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
+				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
+				for (int i = 0; i < types.size(); ++i) {
+					if (types[i].script == base_script && types[i].icon.is_valid()) {
+						return types[i].icon;
 					}
 				}
 			}
+			base_script = base_script->get_base_script();
 		}
 	}
 

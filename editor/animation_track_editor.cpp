@@ -1274,12 +1274,7 @@ void AnimationTrackEdit::_notification(int p_what) {
 				}
 				text_color.a *= 0.7;
 			} else if (node) {
-				Ref<Texture> icon;
-				if (has_icon(node->get_class(), "EditorIcons")) {
-					icon = get_icon(node->get_class(), "EditorIcons");
-				} else {
-					icon = get_icon("Node", "EditorIcons");
-				}
+				Ref<Texture> icon = EditorNode::get_singleton()->get_object_icon(node, "Node");
 
 				draw_texture(icon, Point2(ofs, int(get_size().height - icon->get_height()) / 2));
 				icon_cache = icon;
@@ -3500,9 +3495,7 @@ void AnimationTrackEditor::_update_tracks() {
 				if (root && root->has_node(base_path)) {
 					Node *n = root->get_node(base_path);
 					if (n) {
-						if (has_icon(n->get_class(), "EditorIcons")) {
-							icon = get_icon(n->get_class(), "EditorIcons");
-						}
+						icon = EditorNode::get_singleton()->get_object_icon(n, "Node");
 						name = n->get_name();
 						tooltip = root->get_path_to(n);
 					}
