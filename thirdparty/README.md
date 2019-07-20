@@ -537,7 +537,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.4.0
+- Version: 1.4.1
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
