@@ -165,6 +165,30 @@ opts.Add("CFLAGS", "Custom flags for the C compiler")
 opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
 
+# define decider function
+
+def decide_if_changed(dependency, target, prev_ni):
+    # Target file may not exist yet
+    if ('csig' not in dir(prev_ni)) or (not os.path.exists(str(target.abspath))):
+        # Generate the MD5 checksum of the dependency
+        dependency.get_csig()
+        
+        return True
+    elif dependency.get_timestamp() != prev_ni.timestamp:
+        # Generate the MD5 checksum of the dependency
+        dep_csig = dependency.get_csig()
+        
+        # Check if the checksums are equal
+        return dep_csig != prev_ni.csig
+    else:
+        try:
+            # Copy checksum data
+            dependency.get_ninfo().csig = prev_ni.csig
+        except AttributeError:
+            dependency.get_csig()
+
+        return False
+
 # add platform specific options
 
 for k in platform_opts.keys():
@@ -206,7 +230,7 @@ if (env_base['target'] == 'debug'):
 
     # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
     # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
-    env_base.Decider('MD5-timestamp')
+    env_base.Decider(decide_if_changed)
     # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
     # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
     env_base.SetOption('implicit_cache', 1)
