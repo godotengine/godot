@@ -768,7 +768,8 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 			DirAccess *da = DirAccess::create_for_path(asset);
 			if (!da) {
 				memdelete(filesystem_da);
-				ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+				ERR_EXPLAIN("Can't create directory: " + asset);
+				ERR_FAIL_V(ERR_CANT_CREATE);
 			}
 			bool file_exists = da->file_exists(asset);
 			bool dir_exists = da->dir_exists(asset);

@@ -193,7 +193,7 @@ void TextureRegionEditor::_region_draw() {
 	updating_scroll = false;
 
 	if (node_ninepatch || obj_styleBox.is_valid()) {
-		float margins[4];
+		float margins[4] = { 0 };
 		if (node_ninepatch) {
 			margins[0] = node_ninepatch->get_patch_margin(MARGIN_TOP);
 			margins[1] = node_ninepatch->get_patch_margin(MARGIN_BOTTOM);
@@ -204,12 +204,8 @@ void TextureRegionEditor::_region_draw() {
 			margins[1] = obj_styleBox->get_margin_size(MARGIN_BOTTOM);
 			margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
 			margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
-		} else {
-			margins[0] = 0;
-			margins[1] = 0;
-			margins[2] = 0;
-			margins[3] = 0;
 		}
+
 		Vector2 pos[4] = {
 			mtx.basis_xform(Vector2(0, margins[0])) + Vector2(0, endpoints[0].y - draw_ofs.y * draw_zoom),
 			-mtx.basis_xform(Vector2(0, margins[1])) + Vector2(0, endpoints[2].y - draw_ofs.y * draw_zoom),
@@ -248,7 +244,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 			if (mb->is_pressed()) {
 				if (node_ninepatch || obj_styleBox.is_valid()) {
 					edited_margin = -1;
-					float margins[4];
+					float margins[4] = { 0 };
 					if (node_ninepatch) {
 						margins[0] = node_ninepatch->get_patch_margin(MARGIN_TOP);
 						margins[1] = node_ninepatch->get_patch_margin(MARGIN_BOTTOM);
@@ -260,6 +256,7 @@ void TextureRegionEditor::_region_input(const Ref<InputEvent> &p_input) {
 						margins[2] = obj_styleBox->get_margin_size(MARGIN_LEFT);
 						margins[3] = obj_styleBox->get_margin_size(MARGIN_RIGHT);
 					}
+
 					Vector2 pos[4] = {
 						mtx.basis_xform(rect.position + Vector2(0, margins[0])) - draw_ofs * draw_zoom,
 						mtx.basis_xform(rect.position + rect.size - Vector2(0, margins[1])) - draw_ofs * draw_zoom,

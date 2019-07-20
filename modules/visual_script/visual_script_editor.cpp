@@ -3670,7 +3670,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	new_virtual_method_select = memnew(VisualScriptPropertySelector);
 	add_child(new_virtual_method_select);
 	new_virtual_method_select->connect("selected", this, "_selected_new_virtual_method");
-	new_virtual_method_select->get_cancel();
 
 	member_popup = memnew(PopupMenu);
 	add_child(member_popup);

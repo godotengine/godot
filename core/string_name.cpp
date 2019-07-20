@@ -205,7 +205,6 @@ StringName::StringName(const char *p_name) {
 			// exists
 			lock->unlock();
 			return;
-		} else {
 		}
 	}
 
@@ -253,7 +252,6 @@ StringName::StringName(const StaticCString &p_static_string) {
 			// exists
 			lock->unlock();
 			return;
-		} else {
 		}
 	}
 
@@ -301,7 +299,6 @@ StringName::StringName(const String &p_name) {
 			// exists
 			lock->unlock();
 			return;
-		} else {
 		}
 	}
 

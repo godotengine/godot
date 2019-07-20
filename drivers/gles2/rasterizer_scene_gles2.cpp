@@ -880,7 +880,11 @@ RID RasterizerSceneGLES2::light_instance_create(RID p_light) {
 
 	light_instance->light_index = 0xFFFF;
 
-	ERR_FAIL_COND_V(!light_instance->light_ptr, RID());
+	if (!light_instance->light_ptr) {
+		memdelete(light_instance);
+		ERR_EXPLAIN("Condition ' !light_instance->light_ptr ' is true.");
+		ERR_FAIL_V(RID());
+	}
 
 	light_instance->self = light_instance_owner.make_rid(light_instance);
 
@@ -1963,9 +1967,7 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 						width /= 2;
 						height /= 2;
 
-						if (k == 0) {
-
-						} else if (k == 1) {
+						if (k == 1) {
 							x += width;
 						} else if (k == 2) {
 							y += height;
@@ -1978,9 +1980,7 @@ void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shado
 
 						height /= 2;
 
-						if (k == 0) {
-
-						} else {
+						if (k != 0) {
 							y += height;
 						}
 					}
@@ -3171,9 +3171,7 @@ void RasterizerSceneGLES2::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 			width /= 2;
 			height /= 2;
 
-			if (p_pass == 0) {
-
-			} else if (p_pass == 1) {
+			if (p_pass == 1) {
 				x += width;
 			} else if (p_pass == 2) {
 				y += height;

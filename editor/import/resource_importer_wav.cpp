@@ -206,6 +206,11 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			frames = chunksize;
 
+			if (format_channels == 0) {
+				file->close();
+				memdelete(file);
+				ERR_FAIL_COND_V(format_channels == 0, ERR_INVALID_DATA);
+			}
 			frames /= format_channels;
 			frames /= (format_bits >> 3);
 

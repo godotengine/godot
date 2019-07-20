@@ -1834,8 +1834,6 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 			return DA();
 		}
 	}
-
-	return DA();
 }
 
 Variant::operator Array() const {
@@ -2299,7 +2297,7 @@ Variant::Variant(const Object *p_object) {
 Variant::Variant(const Dictionary &p_dictionary) {
 
 	type = DICTIONARY;
-	memnew_placement(_data._mem, (Dictionary)(p_dictionary));
+	memnew_placement(_data._mem, Dictionary(p_dictionary));
 }
 
 Variant::Variant(const Array &p_array) {

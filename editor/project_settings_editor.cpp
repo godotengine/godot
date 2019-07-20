@@ -965,8 +965,6 @@ void ProjectSettingsEditor::_action_add() {
 	while (r->get_next())
 		r = r->get_next();
 
-	if (!r)
-		return;
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
 	action_add_error->hide();

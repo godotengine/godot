@@ -712,8 +712,8 @@ Error ResourceInteractiveLoaderBinary::poll() {
 	if (!obj) {
 		error = ERR_FILE_CORRUPT;
 		ERR_EXPLAIN(local_path + ":Resource of unrecognized type in file: " + t);
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
-	ERR_FAIL_COND_V(!obj, ERR_FILE_CORRUPT);
 
 	Resource *r = Object::cast_to<Resource>(obj);
 	if (!r) {

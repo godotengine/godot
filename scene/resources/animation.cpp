@@ -1667,8 +1667,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Vector2 pb = p_post_b;
 
 			return a.cubic_interpolate(b, pa, pb, p_c);
-
-		} break;
+		}
 		case Variant::RECT2: {
 
 			Rect2 a = p_a;
@@ -1679,8 +1678,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			return Rect2(
 					a.position.cubic_interpolate(b.position, pa.position, pb.position, p_c),
 					a.size.cubic_interpolate(b.size, pa.size, pb.size, p_c));
-
-		} break;
+		}
 		case Variant::VECTOR3: {
 
 			Vector3 a = p_a;
@@ -1689,8 +1687,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Vector3 pb = p_post_b;
 
 			return a.cubic_interpolate(b, pa, pb, p_c);
-
-		} break;
+		}
 		case Variant::QUAT: {
 
 			Quat a = p_a;
@@ -1699,8 +1696,7 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			Quat pb = p_post_b;
 
 			return a.cubic_slerp(b, pa, pb, p_c);
-
-		} break;
+		}
 		case Variant::AABB: {
 
 			AABB a = p_a;
@@ -1711,14 +1707,12 @@ Variant Animation::_cubic_interpolate(const Variant &p_pre_a, const Variant &p_a
 			return AABB(
 					a.position.cubic_interpolate(b.position, pa.position, pb.position, p_c),
 					a.size.cubic_interpolate(b.size, pa.size, pb.size, p_c));
-		} break;
+		}
 		default: {
 
 			return _interpolate(p_a, p_b, p_c);
 		}
 	}
-
-	return Variant();
 }
 float Animation::_cubic_interpolate(const float &p_pre_a, const float &p_a, const float &p_b, const float &p_post_b, float p_c) const {
 
@@ -3028,7 +3022,6 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 				//this could be done as a second pass and would be
 				//able to optimize more
 				erase = false;
-			} else {
 			}
 		}
 	}

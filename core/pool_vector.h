@@ -458,7 +458,7 @@ public:
 
 	bool is_locked() const { return alloc && alloc->lock > 0; }
 
-	inline const T operator[](int p_index) const;
+	inline T operator[](int p_index) const;
 
 	Error resize(int p_size);
 
@@ -502,7 +502,7 @@ void PoolVector<T>::push_back(const T &p_val) {
 }
 
 template <class T>
-const T PoolVector<T>::operator[](int p_index) const {
+T PoolVector<T>::operator[](int p_index) const {
 
 	CRASH_BAD_INDEX(p_index, size());
 

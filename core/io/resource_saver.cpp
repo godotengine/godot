@@ -137,7 +137,6 @@ Error ResourceSaver::save(const String &p_path, const RES &p_resource, uint32_t 
 				save_callback(p_resource, p_path);
 
 			return OK;
-		} else {
 		}
 	}
 
