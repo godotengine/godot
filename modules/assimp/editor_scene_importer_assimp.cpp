@@ -1718,7 +1718,7 @@ void EditorSceneImporterAssimp::_find_texture_path(const String &p_path, _Direct
 	}
 }
 
-String EditorSceneImporterAssimp::_assimp_get_string(const aiString p_string) const {
+String EditorSceneImporterAssimp::_assimp_get_string(const aiString &p_string) const {
 	//convert an assimp String to a Godot String
 	String name;
 	name.parse_utf8(p_string.C_Str() /*,p_string.length*/);
@@ -1733,7 +1733,7 @@ String EditorSceneImporterAssimp::_assimp_get_string(const aiString p_string) co
 	return name;
 }
 
-String EditorSceneImporterAssimp::_assimp_anim_string_to_string(const aiString p_string) const {
+String EditorSceneImporterAssimp::_assimp_anim_string_to_string(const aiString &p_string) const {
 
 	String name;
 	name.parse_utf8(p_string.C_Str() /*,p_string.length*/);
@@ -1745,7 +1745,7 @@ String EditorSceneImporterAssimp::_assimp_anim_string_to_string(const aiString p
 	return name;
 }
 
-String EditorSceneImporterAssimp::_assimp_raw_string_to_string(const aiString p_string) const {
+String EditorSceneImporterAssimp::_assimp_raw_string_to_string(const aiString &p_string) const {
 	String name;
 	name.parse_utf8(p_string.C_Str() /*,p_string.length*/);
 	return name;
