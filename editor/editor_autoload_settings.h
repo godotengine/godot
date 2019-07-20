@@ -56,7 +56,7 @@ class EditorAutoloadSettings : public VBoxContainer {
 		int order;
 		Node *node;
 
-		bool operator==(const AutoLoadInfo &p_info) {
+		bool operator==(const AutoLoadInfo &p_info) const {
 			return order == p_info.order;
 		}
 
