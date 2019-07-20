@@ -200,6 +200,7 @@ Important: Some files have Godot-made changes.
 They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
 
+
 ## libtheora
 
 - Upstream: https://www.theora.org
@@ -261,18 +262,6 @@ Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
-
-## wslay
-
-- Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.0
-- License: MIT
-
-File extracted from upstream release tarball:
-
-- All `*.c` and `*.h` in `lib/` and `lib/includes/`
-- `wslay.h` has a small Godot addition to fix MSVC build.
-  See `thirdparty/wslay/msvcfix.diff`
 
 ## mbedtls
 
@@ -508,6 +497,19 @@ They can be reapplied using the patches included in the `vhacd`
 folder.
 
 
+## wslay
+
+- Upstream: https://github.com/tatsuhiro-t/wslay
+- Version: 1.1.0
+- License: MIT
+
+File extracted from upstream release tarball:
+
+- All `*.c` and `*.h` in `lib/` and `lib/includes/`
+- `wslay.h` has a small Godot addition to fix MSVC build.
+  See `thirdparty/wslay/msvcfix.diff`
+
+
 ## xatlas
 
 - Upstream: https://github.com/jpcy/xatlas
@@ -536,7 +538,7 @@ Files extracted from upstream source:
 ## zstd
 
 - Upstream: https://github.com/facebook/zstd
-- Version: 1.4.0
+- Version: 1.4.1
 - License: BSD-3-Clause
 
 Files extracted from upstream source:
