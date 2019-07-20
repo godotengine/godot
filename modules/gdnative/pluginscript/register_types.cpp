@@ -114,6 +114,8 @@ void unregister_pluginscript_types() {
 	for (List<PluginScriptLanguage *>::Element *e = pluginscript_languages.front(); e; e = e->next()) {
 		PluginScriptLanguage *language = e->get();
 		ScriptServer::unregister_language(language);
+		ResourceLoader::remove_resource_format_loader(language->get_resource_loader());
+		ResourceSaver::remove_resource_format_saver(language->get_resource_saver());
 		memdelete(language);
 	}
 }
