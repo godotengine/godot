@@ -832,7 +832,7 @@ void EditorNode::_get_scene_metadata(const String &p_file) {
 	for (List<String>::Element *E = esl.front(); E; E = E->next()) {
 
 		Variant st = cf->get_value("editor_states", E->get());
-		if (st.get_type()) {
+		if (st.get_type() != Variant::NIL) {
 			md[E->get()] = st;
 		}
 	}
@@ -2541,8 +2541,6 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			restart_editor();
 		} break;
 		default: {
-			if (p_option >= IMPORT_PLUGIN_BASE) {
-			}
 		}
 	}
 }

@@ -240,27 +240,27 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_RGTC_RG: { //bc5		case case FORMAT_DXT1:
 
 			return 4;
-		} break;
+		}
 		case FORMAT_PVRTC2:
 		case FORMAT_PVRTC2A: {
 
 			return 4;
-		} break;
+		}
 		case FORMAT_PVRTC4A:
 		case FORMAT_PVRTC4: {
 
 			return 4;
-		} break;
+		}
 		case FORMAT_ETC: {
 
 			return 4;
-		} break;
+		}
 		case FORMAT_BPTC_RGBA:
 		case FORMAT_BPTC_RGBF:
 		case FORMAT_BPTC_RGBFU: {
 
 			return 4;
-		} break;
+		}
 		case FORMAT_ETC2_R11: //etc2
 		case FORMAT_ETC2_R11S: //signed: NOT srgb.
 		case FORMAT_ETC2_RG11:
@@ -270,7 +270,7 @@ int Image::get_format_block_size(Format p_format) {
 		case FORMAT_ETC2_RGB8A1: {
 
 			return 4;
-		} break;
+		}
 		default: {
 		}
 	}
@@ -852,7 +852,7 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 
 static void _overlay(const uint8_t *__restrict p_src, uint8_t *__restrict p_dst, float p_alpha, uint32_t p_width, uint32_t p_height, uint32_t p_pixel_size) {
 
-	uint16_t alpha = CLAMP((uint16_t)(p_alpha * 256.0f), 0, 256);
+	uint16_t alpha = MIN((uint16_t)(p_alpha * 256.0f), 256);
 
 	for (uint32_t i = 0; i < p_width * p_height * p_pixel_size; i++) {
 
@@ -2421,38 +2421,36 @@ Color Image::get_pixel(int p_x, int p_y) const {
 		case FORMAT_L8: {
 			float l = ptr[ofs] / 255.0;
 			return Color(l, l, l, 1);
-		} break;
+		}
 		case FORMAT_LA8: {
 			float l = ptr[ofs * 2 + 0] / 255.0;
 			float a = ptr[ofs * 2 + 1] / 255.0;
 			return Color(l, l, l, a);
-		} break;
+		}
 		case FORMAT_R8: {
 
 			float r = ptr[ofs] / 255.0;
 			return Color(r, 0, 0, 1);
-		} break;
+		}
 		case FORMAT_RG8: {
 
 			float r = ptr[ofs * 2 + 0] / 255.0;
 			float g = ptr[ofs * 2 + 1] / 255.0;
 			return Color(r, g, 0, 1);
-		} break;
+		}
 		case FORMAT_RGB8: {
 			float r = ptr[ofs * 3 + 0] / 255.0;
 			float g = ptr[ofs * 3 + 1] / 255.0;
 			float b = ptr[ofs * 3 + 2] / 255.0;
 			return Color(r, g, b, 1);
-
-		} break;
+		}
 		case FORMAT_RGBA8: {
 			float r = ptr[ofs * 4 + 0] / 255.0;
 			float g = ptr[ofs * 4 + 1] / 255.0;
 			float b = ptr[ofs * 4 + 2] / 255.0;
 			float a = ptr[ofs * 4 + 3] / 255.0;
 			return Color(r, g, b, a);
-
-		} break;
+		}
 		case FORMAT_RGBA4444: {
 			uint16_t u = ((uint16_t *)ptr)[ofs];
 			float r = (u & 0xF) / 15.0;
@@ -2460,8 +2458,7 @@ Color Image::get_pixel(int p_x, int p_y) const {
 			float b = ((u >> 8) & 0xF) / 15.0;
 			float a = ((u >> 12) & 0xF) / 15.0;
 			return Color(r, g, b, a);
-
-		} break;
+		}
 		case FORMAT_RGBA5551: {
 
 			uint16_t u = ((uint16_t *)ptr)[ofs];
@@ -2470,25 +2467,25 @@ Color Image::get_pixel(int p_x, int p_y) const {
 			float b = ((u >> 10) & 0x1F) / 15.0;
 			float a = ((u >> 15) & 0x1) / 1.0;
 			return Color(r, g, b, a);
-		} break;
+		}
 		case FORMAT_RF: {
 
 			float r = ((float *)ptr)[ofs];
 			return Color(r, 0, 0, 1);
-		} break;
+		}
 		case FORMAT_RGF: {
 
 			float r = ((float *)ptr)[ofs * 2 + 0];
 			float g = ((float *)ptr)[ofs * 2 + 1];
 			return Color(r, g, 0, 1);
-		} break;
+		}
 		case FORMAT_RGBF: {
 
 			float r = ((float *)ptr)[ofs * 3 + 0];
 			float g = ((float *)ptr)[ofs * 3 + 1];
 			float b = ((float *)ptr)[ofs * 3 + 2];
 			return Color(r, g, b, 1);
-		} break;
+		}
 		case FORMAT_RGBAF: {
 
 			float r = ((float *)ptr)[ofs * 4 + 0];
@@ -2496,25 +2493,25 @@ Color Image::get_pixel(int p_x, int p_y) const {
 			float b = ((float *)ptr)[ofs * 4 + 2];
 			float a = ((float *)ptr)[ofs * 4 + 3];
 			return Color(r, g, b, a);
-		} break;
+		}
 		case FORMAT_RH: {
 
 			uint16_t r = ((uint16_t *)ptr)[ofs];
 			return Color(Math::half_to_float(r), 0, 0, 1);
-		} break;
+		}
 		case FORMAT_RGH: {
 
 			uint16_t r = ((uint16_t *)ptr)[ofs * 2 + 0];
 			uint16_t g = ((uint16_t *)ptr)[ofs * 2 + 1];
 			return Color(Math::half_to_float(r), Math::half_to_float(g), 0, 1);
-		} break;
+		}
 		case FORMAT_RGBH: {
 
 			uint16_t r = ((uint16_t *)ptr)[ofs * 3 + 0];
 			uint16_t g = ((uint16_t *)ptr)[ofs * 3 + 1];
 			uint16_t b = ((uint16_t *)ptr)[ofs * 3 + 2];
 			return Color(Math::half_to_float(r), Math::half_to_float(g), Math::half_to_float(b), 1);
-		} break;
+		}
 		case FORMAT_RGBAH: {
 
 			uint16_t r = ((uint16_t *)ptr)[ofs * 4 + 0];
@@ -2522,18 +2519,15 @@ Color Image::get_pixel(int p_x, int p_y) const {
 			uint16_t b = ((uint16_t *)ptr)[ofs * 4 + 2];
 			uint16_t a = ((uint16_t *)ptr)[ofs * 4 + 3];
 			return Color(Math::half_to_float(r), Math::half_to_float(g), Math::half_to_float(b), Math::half_to_float(a));
-		} break;
+		}
 		case FORMAT_RGBE9995: {
 			return Color::from_rgbe9995(((uint32_t *)ptr)[ofs]);
-
-		} break;
+		}
 		default: {
 			ERR_EXPLAIN("Can't get_pixel() on compressed image, sorry.");
 			ERR_FAIL_V(Color());
 		}
 	}
-
-	return Color();
 }
 
 void Image::set_pixelv(const Point2 &p_dst, const Color &p_color) {

@@ -70,7 +70,7 @@ struct _VariantCall {
 
 			for (int i = 0; i < arg_count; i++) {
 
-				if (!tptr[i] || tptr[i] == p_args[i]->type)
+				if (tptr[i] == Variant::NIL || tptr[i] == p_args[i]->type)
 					continue; // all good
 				if (!Variant::can_convert(p_args[i]->type, tptr[i])) {
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;

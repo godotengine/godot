@@ -337,7 +337,7 @@ void PropertySelector::_item_selected() {
 	String name = item->get_metadata(0);
 
 	String class_type;
-	if (type) {
+	if (type != Variant::NIL) {
 		class_type = Variant::get_type_name(type);
 
 	} else {

@@ -1537,8 +1537,6 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 				Token token;
 				get_token(p_stream, token, line, r_err_str);
 				Error err = parse_value(token, r_value, p_stream, line, r_err_str, p_res_parser);
-				if (err) {
-				}
 				return err;
 			}
 		} else if (c == '\n') {

@@ -210,7 +210,7 @@ void Node::_propagate_enter_tree() {
 	}
 
 	data.viewport = Object::cast_to<Viewport>(this);
-	if (!data.viewport)
+	if (!data.viewport && data.parent)
 		data.viewport = data.parent->data.viewport;
 
 	data.inside_tree = true;

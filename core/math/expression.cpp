@@ -801,17 +801,13 @@ Error Expression::_get_token(Token &r_token) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
 
 		CharType cchar = GET_CHAR();
-		if (cchar == 0) {
-			r_token.type = TK_EOF;
-			return OK;
-		}
 
 		switch (cchar) {
 
 			case 0: {
 				r_token.type = TK_EOF;
 				return OK;
-			} break;
+			};
 			case '{': {
 
 				r_token.type = TK_CURLY_BRACKET_OPEN;

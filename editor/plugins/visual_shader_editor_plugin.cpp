@@ -1513,7 +1513,6 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
 			_update_graph();
-	} else if (p_what == NOTIFICATION_PROCESS) {
 	}
 }
 

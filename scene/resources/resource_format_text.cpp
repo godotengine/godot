@@ -1371,8 +1371,6 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 			//internal resource
 		}
 	}
-
-	return "null";
 }
 
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
@@ -1513,8 +1511,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 		}
 	}
-
-	ERR_FAIL_COND_V(err != OK, err);
 
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";

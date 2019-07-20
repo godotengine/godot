@@ -215,17 +215,6 @@ float GeometryInstance::get_lod_max_hysteresis() const {
 }
 
 void GeometryInstance::_notification(int p_what) {
-
-	if (p_what == NOTIFICATION_ENTER_WORLD) {
-
-		if (flags[FLAG_USE_BAKED_LIGHT]) {
-		}
-
-	} else if (p_what == NOTIFICATION_EXIT_WORLD) {
-
-		if (flags[FLAG_USE_BAKED_LIGHT]) {
-		}
-	}
 }
 
 void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
@@ -236,8 +225,6 @@ void GeometryInstance::set_flag(Flags p_flag, bool p_value) {
 
 	flags[p_flag] = p_value;
 	VS::get_singleton()->instance_geometry_set_flag(get_instance(), (VS::InstanceFlags)p_flag, p_value);
-	if (p_flag == FLAG_USE_BAKED_LIGHT) {
-	}
 }
 
 bool GeometryInstance::get_flag(Flags p_flag) const {

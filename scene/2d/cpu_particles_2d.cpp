@@ -995,9 +995,6 @@ void CPUParticles2D::_notification(int p_what) {
 		_set_redraw(false);
 	}
 
-	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
-	}
-
 	if (p_what == NOTIFICATION_DRAW) {
 		if (!redraw)
 			return; // don't add to render list

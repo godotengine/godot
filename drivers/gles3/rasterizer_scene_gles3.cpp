@@ -1008,7 +1008,8 @@ RID RasterizerSceneGLES3::light_instance_create(RID p_light) {
 
 	if (!light_instance->light_ptr) {
 		memdelete(light_instance);
-		ERR_FAIL_COND_V(!light_instance->light_ptr, RID());
+		ERR_EXPLAIN("Condition ' !light_instance->light_ptr ' is true.");
+		ERR_FAIL_V(RID());
 	}
 
 	light_instance->self = light_instance_owner.make_rid(light_instance);
@@ -2763,9 +2764,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 				width /= 2;
 				height /= 2;
 
-				if (j == 0) {
-
-				} else if (j == 1) {
+				if (j == 1) {
 					x += width;
 				} else if (j == 2) {
 					y += height;
@@ -2778,9 +2777,7 @@ void RasterizerSceneGLES3::_setup_directional_light(int p_index, const Transform
 
 				height /= 2;
 
-				if (j == 0) {
-
-				} else {
+				if (j != 0) {
 					y += height;
 				}
 			}
@@ -4741,9 +4738,7 @@ void RasterizerSceneGLES3::render_shadow(RID p_light, RID p_shadow_atlas, int p_
 			width /= 2;
 			height /= 2;
 
-			if (p_pass == 0) {
-
-			} else if (p_pass == 1) {
+			if (p_pass == 1) {
 				x += width;
 			} else if (p_pass == 2) {
 				y += height;

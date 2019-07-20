@@ -200,9 +200,6 @@ void Light::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_update_visibility();
 	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-	}
 }
 
 void Light::set_editor_only(bool p_editor_only) {

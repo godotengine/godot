@@ -34,9 +34,6 @@
 
 void MaterialEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
-	}
-
 	if (p_what == NOTIFICATION_READY) {
 
 		//get_scene()->connect("node_removed",this,"_node_removed");

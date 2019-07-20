@@ -2613,7 +2613,7 @@ bool Variant::in(const Variant &p_index, bool *r_valid) const {
 						if (r_valid) {
 							*r_valid = false;
 						}
-						return "Attempted get on stray pointer.";
+						return true; // Attempted get on stray pointer.
 					}
 				}
 #endif

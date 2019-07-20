@@ -390,7 +390,7 @@ void EditorPropertyMember::_property_select() {
 				type = Variant::Type(i);
 			}
 		}
-		if (type)
+		if (type != Variant::NIL)
 			selector->select_method_from_basic_type(type, current);
 
 	} else if (hint == MEMBER_METHOD_OF_BASE_TYPE) {
@@ -2413,7 +2413,6 @@ void EditorPropertyResource::_update_menu_items() {
 			menu->add_separator();
 			menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 		}
-	} else {
 	}
 
 	RES cb = EditorSettings::get_singleton()->get_resource_clipboard();

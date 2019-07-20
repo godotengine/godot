@@ -558,7 +558,7 @@ Rect2 Sprite3D::get_region_rect() const {
 
 void Sprite3D::set_frame(int p_frame) {
 
-	ERR_FAIL_INDEX(p_frame, vframes * hframes);
+	ERR_FAIL_INDEX(p_frame, int64_t(vframes) * hframes);
 
 	if (frame != p_frame)
 

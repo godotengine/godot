@@ -386,8 +386,6 @@ void GDScriptLanguage::debug_get_globals(List<String> *p_globals, List<Variant> 
 
 String GDScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
 
-	if (_debug_parse_err_line >= 0)
-		return "";
 	return "";
 }
 

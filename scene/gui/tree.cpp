@@ -2921,8 +2921,6 @@ void Tree::_notification(int p_what) {
 					drag_touching = false;
 					drag_touching_deaccel = false;
 				}
-
-			} else {
 			}
 		}
 

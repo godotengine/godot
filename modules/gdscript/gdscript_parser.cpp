@@ -1766,8 +1766,6 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 					cn->value = v;
 					cn->datatype = _type_from_variant(v);
 					return cn;
-
-				} else if (op->arguments[0]->type == Node::TYPE_BUILT_IN_FUNCTION && last_not_constant == 0) {
 				}
 
 				return op; //don't reduce yet

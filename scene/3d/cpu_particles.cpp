@@ -1074,9 +1074,6 @@ void CPUParticles::_notification(int p_what) {
 		_set_redraw(false);
 	}
 
-	if (p_what == NOTIFICATION_PAUSED || p_what == NOTIFICATION_UNPAUSED) {
-	}
-
 	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
 
 		if (particles.size() == 0 || !is_visible_in_tree()) {

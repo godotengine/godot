@@ -893,7 +893,6 @@ void ResourceImporterScene::_filter_tracks(Node *scene, const String &p_text) {
 				keep.insert(F->get());
 			}
 			_filter_anim_tracks(anim->get_animation(name), keep);
-		} else {
 		}
 	}
 }
