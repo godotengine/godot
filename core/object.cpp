@@ -639,7 +639,11 @@ void Object::get_property_list(List<PropertyInfo> *p_list, bool p_reversed) cons
 #ifdef TOOLS_ENABLED
 	p_list->push_back(PropertyInfo(Variant::NIL, "Metadata", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_GROUP));
 #endif
-	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT));
+	int metadata_property_usage = PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK;
+	if (!metadata.empty()) {
+		metadata_property_usage |= PROPERTY_USAGE_STORAGE;
+	}
+	p_list->push_back(PropertyInfo(Variant::DICTIONARY, "__meta__", PROPERTY_HINT_NONE, "", metadata_property_usage));
 
 	if (script_instance && !p_reversed) {
 		p_list->push_back(PropertyInfo(Variant::NIL, "Script Variables", PROPERTY_HINT_NONE, String(), PROPERTY_USAGE_CATEGORY));
