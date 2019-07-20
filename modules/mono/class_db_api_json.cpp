@@ -30,6 +30,8 @@
 
 #include "class_db_api_json.h"
 
+#ifdef DEBUG_METHODS_ENABLED
+
 #include "core/io/json.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
@@ -240,3 +242,5 @@ void class_db_api_to_json(const String &p_output_file, ClassDB::APIType p_api) {
 
 	print_line(String() + "ClassDB API JSON written to: " + ProjectSettings::get_singleton()->globalize_path(p_output_file));
 }
+
+#endif // DEBUG_METHODS_ENABLED

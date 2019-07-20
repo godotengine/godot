@@ -719,6 +719,7 @@ bool GDMono::_try_load_api_assemblies() {
 void GDMono::_load_api_assemblies() {
 
 	if (!_try_load_api_assemblies()) {
+#ifdef TOOLS_ENABLED
 		// The API assemblies are out of sync. Fine, try one more time, but this time
 		// update them from the prebuilt assemblies directory before trying to load them.
 
@@ -752,11 +753,9 @@ void GDMono::_load_api_assemblies() {
 					ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed");
 				}
 
-#ifdef TOOLS_ENABLED
 				if (editor_api_assembly_out_of_sync) {
 					ERR_PRINT("The assembly '" EDITOR_API_ASSEMBLY_NAME "' is out of sync");
 				}
-#endif
 
 				CRASH_NOW();
 			} else {
@@ -764,6 +763,10 @@ void GDMono::_load_api_assemblies() {
 				CRASH_NOW();
 			}
 		}
+#else
+		ERR_EXPLAIN("Failed to load one of the API assemblies");
+		CRASH_NOW();
+#endif
 	}
 }
 
