@@ -167,6 +167,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Called by Godot when the user disables the [EditorPlugin] in the Plugin tab of the project settings window
 			</description>
 		</method>
 		<method name="edit" qualifiers="virtual">
@@ -182,6 +183,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Called by Godot when the user enables the [EditorPlugin] in the Plugin tab of the project settings window
 			</description>
 		</method>
 		<method name="forward_canvas_draw_over_viewport" qualifiers="virtual">
