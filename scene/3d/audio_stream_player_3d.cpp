@@ -35,6 +35,99 @@
 #include "scene/3d/listener.h"
 #include "scene/main/viewport.h"
 
+// Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
+// Speaker-Placement Correction Amplitude Panning (SPCAP)
+class Spcap {
+private:
+	struct Speaker {
+		Vector3 direction;
+		real_t effective_number_of_speakers; // precalculated
+		mutable real_t squared_gain; // temporary
+	};
+
+	PoolVector<Speaker> speakers;
+
+public:
+	Spcap(unsigned int speaker_count, const Vector3 *speaker_directions) {
+		this->speakers.resize(speaker_count);
+		PoolVector<Speaker>::Write w = this->speakers.write();
+		for (unsigned int speaker_num = 0; speaker_num < speaker_count; speaker_num++) {
+			w[speaker_num].direction = speaker_directions[speaker_num];
+			w[speaker_num].squared_gain = 0.0;
+			w[speaker_num].effective_number_of_speakers = 0.0;
+			for (unsigned int other_speaker_num = 0; other_speaker_num < speaker_count; other_speaker_num++) {
+				w[speaker_num].effective_number_of_speakers += 0.5 * (1.0 + w[speaker_num].direction.dot(w[other_speaker_num].direction));
+			}
+		}
+	}
+
+	unsigned int get_speaker_count() const {
+		return (unsigned int)this->speakers.size();
+	}
+
+	Vector3 get_speaker_direction(unsigned int index) const {
+		return this->speakers.read()[index].direction;
+	}
+
+	void calculate(const Vector3 &source_direction, real_t tightness, unsigned int volume_count, real_t *volumes) const {
+		PoolVector<Speaker>::Read r = this->speakers.read();
+		real_t sum_squared_gains = 0.0;
+		for (unsigned int speaker_num = 0; speaker_num < (unsigned int)this->speakers.size(); speaker_num++) {
+			real_t initial_gain = 0.5 * powf(1.0 + r[speaker_num].direction.dot(source_direction), tightness) / r[speaker_num].effective_number_of_speakers;
+			r[speaker_num].squared_gain = initial_gain * initial_gain;
+			sum_squared_gains += r[speaker_num].squared_gain;
+		}
+
+		for (unsigned int speaker_num = 0; speaker_num < MIN(volume_count, (unsigned int)this->speakers.size()); speaker_num++) {
+			volumes[speaker_num] = sqrtf(r[speaker_num].squared_gain / sum_squared_gains);
+		}
+	}
+};
+
+//TODO: hardcoded main speaker directions for 2, 3.1, 5.1 and 7.1 setups - these are simplified and could also be made configurable
+static const Vector3 speaker_directions[7] = {
+	Vector3(-1.0, 0.0, -1.0).normalized(), // front-left
+	Vector3(1.0, 0.0, -1.0).normalized(), // front-right
+	Vector3(0.0, 0.0, -1.0).normalized(), // center
+	Vector3(-1.0, 0.0, 1.0).normalized(), // rear-left
+	Vector3(1.0, 0.0, 1.0).normalized(), // rear-right
+	Vector3(-1.0, 0.0, 0.0).normalized(), // side-left
+	Vector3(1.0, 0.0, 0.0).normalized(), // side-right
+};
+
+void AudioStreamPlayer3D::_calc_output_vol(const Vector3 &source_dir, real_t tightness, AudioStreamPlayer3D::Output &output) {
+	unsigned int speaker_count; // only main speakers (no LFE)
+	switch (AudioServer::get_singleton()->get_speaker_mode()) {
+		default: //fallthrough
+		case AudioServer::SPEAKER_MODE_STEREO: speaker_count = 2; break;
+		case AudioServer::SPEAKER_SURROUND_31: speaker_count = 3; break;
+		case AudioServer::SPEAKER_SURROUND_51: speaker_count = 5; break;
+		case AudioServer::SPEAKER_SURROUND_71: speaker_count = 7; break;
+	}
+
+	Spcap spcap(speaker_count, speaker_directions); //TODO: should only be created/recreated once the speaker mode / speaker positions changes
+	real_t volumes[7];
+	spcap.calculate(source_dir, tightness, speaker_count, volumes);
+
+	switch (AudioServer::get_singleton()->get_speaker_mode()) {
+		case AudioServer::SPEAKER_SURROUND_71:
+			output.vol[3].l = volumes[5]; // side-left
+			output.vol[3].r = volumes[6]; // side-right
+			//fallthrough
+		case AudioServer::SPEAKER_SURROUND_51:
+			output.vol[2].l = volumes[3]; // rear-left
+			output.vol[2].r = volumes[4]; // rear-right
+			//fallthrough
+		case AudioServer::SPEAKER_SURROUND_31:
+			output.vol[1].r = 1.0; // LFE - always full power
+			output.vol[1].l = volumes[2]; // center
+			//fallthrough
+		case AudioServer::SPEAKER_MODE_STEREO:
+			output.vol[0].r = volumes[1]; // front-right
+			output.vol[0].l = volumes[0]; // front-left
+	}
+}
+
 void AudioStreamPlayer3D::_mix_audio() {
 
 	if (!stream_playback.is_valid() || !active ||
@@ -381,59 +474,11 @@ void AudioStreamPlayer3D::_notification(int p_what) {
 
 				output.filter_gain = Math::db2linear(db_att);
 
-				Vector3 flat_pos = local_pos;
-				flat_pos.y = 0;
-				flat_pos.normalize();
+				//TODO: The lower the second parameter (tightness) the more the sound will "enclose" the listener (more undirected / playing from
+				//      speakers not facing the source) - this could be made distance dependent.
+				_calc_output_vol(local_pos.normalized(), 4.0, output);
 
 				unsigned int cc = AudioServer::get_singleton()->get_channel_count();
-				if (cc == 1) {
-					// Stereo pair
-					float c = flat_pos.x * 0.5 + 0.5;
-
-					output.vol[0].l = 1.0 - c;
-					output.vol[0].r = c;
-				} else {
-					Vector3 listenertopos = global_pos - listener_node->get_global_transform().origin;
-					float c = listenertopos.normalized().dot(get_global_transform().basis.get_axis(2).normalized()); //it's z negative
-					float angle = Math::rad2deg(Math::acos(c));
-					float av = angle * (flat_pos.x < 0 ? -1 : 1) / 180.0;
-
-					if (cc >= 1) {
-						// Stereo pair
-						float fl = Math::abs(1.0 - Math::abs(-0.8 - av));
-						float fr = Math::abs(1.0 - Math::abs(0.8 - av));
-
-						output.vol[0].l = fl;
-						output.vol[0].r = fr;
-					}
-
-					if (cc >= 2) {
-						// Center pair
-						float center = 1.0 - Math::sin(Math::acos(c));
-
-						output.vol[1].l = center;
-						output.vol[1].r = center;
-					}
-
-					if (cc >= 3) {
-						// Side pair
-						float sleft = Math::abs(1.0 - Math::abs(-0.4 - av));
-						float sright = Math::abs(1.0 - Math::abs(0.4 - av));
-
-						output.vol[2].l = sleft;
-						output.vol[2].r = sright;
-					}
-
-					if (cc >= 4) {
-						// Rear pair
-						float rleft = Math::abs(1.0 - Math::abs(-0.2 - av));
-						float rright = Math::abs(1.0 - Math::abs(0.2 - av));
-
-						output.vol[3].l = rleft;
-						output.vol[3].r = rright;
-					}
-				}
-
 				for (unsigned int k = 0; k < cc; k++) {
 					output.vol[k] *= multiplier;
 				}
