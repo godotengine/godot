@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "core/ustring.h"
+
+
 #include <wchar.h>
 //#include "core/math/math_funcs.h"
 #include "core/io/ip_address.h"
@@ -39,18 +41,6 @@
 #include "test_string.h"
 
 namespace TestString {
-
-bool test_1() {
-
-	OS::get_singleton()->print("\n\nTest 1: Assign from cstr\n");
-
-	String s = "Hello";
-
-	OS::get_singleton()->print("\tExpected: Hello\n");
-	OS::get_singleton()->print("\tResulted: %ls\n", s.c_str());
-
-	return (wcscmp(s.c_str(), L"Hello") == 0);
-}
 
 bool test_2() {
 
@@ -1120,7 +1110,7 @@ typedef bool (*TestFunc)(void);
 
 TestFunc test_funcs[] = {
 
-	test_1,
+	//test_1,
 	test_2,
 	test_3,
 	test_4,
