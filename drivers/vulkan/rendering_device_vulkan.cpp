@@ -4237,19 +4237,19 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 			} break;
 			case UNIFORM_TYPE_UNIFORM_BUFFER: {
 				if (uniform.ids.size() != 1) {
-					ERR_EXPLAIN("Uniform buffer (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
+					ERR_EXPLAIN("Uniform buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
 					ERR_FAIL_V(RID());
 				}
 
 				Buffer *buffer = uniform_buffer_owner.getornull(uniform.ids[0]);
 
 				if (!buffer) {
-					ERR_EXPLAIN("Uniform buffer (binding: " + itos(uniform.binding) + ") is invalid.");
+					ERR_EXPLAIN("Uniform buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 					ERR_FAIL_V(RID());
 				}
 
 				if (buffer->size != (uint32_t)set_uniform.length) {
-					ERR_EXPLAIN("Uniform buffer (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
+					ERR_EXPLAIN("Uniform buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 					ERR_FAIL_V(RID());
 				}
 
@@ -4263,19 +4263,19 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 			} break;
 			case UNIFORM_TYPE_STORAGE_BUFFER: {
 				if (uniform.ids.size() != 1) {
-					ERR_EXPLAIN("Storage buffer (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
+					ERR_EXPLAIN("Storage buffer supplied (binding: " + itos(uniform.binding) + ") must provide one ID (" + itos(uniform.ids.size()) + " provided).");
 					ERR_FAIL_V(RID());
 				}
 
 				Buffer *buffer = storage_buffer_owner.getornull(uniform.ids[0]);
 
 				if (!buffer) {
-					ERR_EXPLAIN("Storage buffer (binding: " + itos(uniform.binding) + ") is invalid.");
+					ERR_EXPLAIN("Storage buffer supplied (binding: " + itos(uniform.binding) + ") is invalid.");
 					ERR_FAIL_V(RID());
 				}
 
 				if (buffer->size != (uint32_t)set_uniform.length) {
-					ERR_EXPLAIN("Storage buffer (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + " does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
+					ERR_EXPLAIN("Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 					ERR_FAIL_V(RID());
 				}
 
