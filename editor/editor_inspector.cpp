@@ -2317,6 +2317,9 @@ EditorInspector::EditorInspector() {
 	set_enable_h_scroll(false);
 	set_enable_v_scroll(true);
 
+	script_create_dialog = memnew(ScriptCreateDialog);
+	add_child(script_create_dialog);
+
 	show_categories = false;
 	hide_script = true;
 	use_doc_hints = false;

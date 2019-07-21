@@ -144,6 +144,11 @@ bool StringName::operator!=(const String &p_name) const {
 	return !(operator==(p_name));
 }
 
+bool StringName::operator!=(const char *p_name) const {
+
+	return !(operator==(p_name));
+}
+
 bool StringName::operator!=(const StringName &p_name) const {
 
 	// the real magic of all this mess happens here.

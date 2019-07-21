@@ -31,6 +31,7 @@
 #ifndef EDITOR_INSPECTOR_H
 #define EDITOR_INSPECTOR_H
 
+#include "editor/script_create_dialog.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/scroll_container.h"
@@ -268,6 +269,8 @@ class EditorInspector : public ScrollContainer {
 	void _clear();
 	Object *object;
 
+	ScriptCreateDialog *script_create_dialog;
+
 	//
 
 	LineEdit *search_box;
@@ -350,6 +353,8 @@ public:
 
 	void edit(Object *p_object);
 	Object *get_edited_object();
+
+	ScriptCreateDialog *get_script_create_dialog() { return script_create_dialog; }
 
 	void set_keying(bool p_active);
 	void set_read_only(bool p_read_only);

@@ -574,6 +574,8 @@ class EditorPropertyResource : public EditorProperty {
 	void _resource_preview(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, ObjectID p_obj);
 	void _resource_selected();
 	void _viewport_selected(const NodePath &p_path);
+	void _script_created(Ref<Script> p_script);
+	void _script_creation_closed();
 
 	void _update_menu_items();
 
