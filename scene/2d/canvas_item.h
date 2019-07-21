@@ -167,16 +167,18 @@ class CanvasItem : public Node {
 
 public:
 	enum TextureFilter {
-		TEXTURE_FILTER_PARENT,
+		TEXTURE_FILTER_PARENT_NODE,
 		TEXTURE_FILTER_NEAREST,
 		TEXTURE_FILTER_LINEAR,
-		TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
 		TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS,
+		TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+		TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC,
+		TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC,
 		TEXTURE_FILTER_MAX
 	};
 
 	enum TextureRepeat {
-		TEXTURE_REPEAT_PARENT,
+		TEXTURE_REPEAT_PARENT_NODE,
 		TEXTURE_REPEAT_DISABLED,
 		TEXTURE_REPEAT_ENABLED,
 		TEXTURE_REPEAT_MIRROR,
@@ -325,16 +327,16 @@ public:
 	void draw_multiline_colors(const Vector<Point2> &p_points, const Vector<Color> &p_colors, float p_width = 1.0);
 	void draw_rect(const Rect2 &p_rect, const Color &p_color, bool p_filled = true, float p_width = 1.0);
 	void draw_circle(const Point2 &p_pos, float p_radius, const Color &p_color);
-	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
-	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
-	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), bool p_clip_uv = false, TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
+	void draw_texture(const Ref<Texture2D> &p_texture, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1, 1), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_texture_rect(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_texture_rect_region(const Ref<Texture2D> &p_texture, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), bool p_clip_uv = false, TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
 	void draw_style_box(const Ref<StyleBox> &p_style_box, const Rect2 &p_rect);
-	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), float p_width = 1, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
-	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
-	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
+	void draw_primitive(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs, Ref<Texture2D> p_texture = Ref<Texture2D>(), float p_width = 1, const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_polygon(const Vector<Point2> &p_points, const Vector<Color> &p_colors, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_colored_polygon(const Vector<Point2> &p_points, const Color &p_color, const Vector<Point2> &p_uvs = Vector<Point2>(), Ref<Texture2D> p_texture = Ref<Texture2D>(), const Ref<Texture2D> &p_normal_map = Ref<Texture2D>(), const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
 
-	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
-	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT);
+	void draw_mesh(const Ref<Mesh> &p_mesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), const Transform2D &p_transform = Transform2D(), const Color &p_modulate = Color(1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
+	void draw_multimesh(const Ref<MultiMesh> &p_multimesh, const Ref<Texture2D> &p_texture, const Ref<Texture2D> &p_normal_map, const Ref<Texture2D> &p_specular_map = Ref<Texture2D>(), const Color &p_specular_color_shininess = Color(1, 1, 1, 1), TextureFilter p_texture_filter = TEXTURE_FILTER_PARENT_NODE, TextureRepeat p_texture_repeat = TEXTURE_REPEAT_PARENT_NODE);
 
 	void draw_string(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_text, const Color &p_modulate = Color(1, 1, 1), int p_clip_w = -1);
 	float draw_char(const Ref<Font> &p_font, const Point2 &p_pos, const String &p_char, const String &p_next = "", const Color &p_modulate = Color(1, 1, 1));

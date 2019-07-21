@@ -243,7 +243,11 @@ void ShaderRD::_compile_version(Version *p_version) {
 			RD::ShaderStageSource stage;
 			stage.shader_source = builder.as_string();
 			stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
-
+#if 0
+			if (stage.shader_stage == RD::SHADER_STAGE_FRAGMENT && p_version->uniforms.length()) {
+				print_line(stage.shader_source.get_with_code_lines());
+			}
+#endif
 			stages.push_back(stage);
 		}
 
@@ -285,6 +289,8 @@ void ShaderRD::version_set_code(RID p_version, const String &p_uniforms, const S
 	version->fragment_light = p_fragment_light.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->fragment_code = p_fragment_code.utf8();
+	version->uniforms = p_uniforms.utf8();
+
 	version->custom_defines.clear();
 	for (int i = 0; i < p_custom_defines.size(); i++) {
 		version->custom_defines.push_back(p_custom_defines[i].utf8());

@@ -39,6 +39,7 @@ class VulkanContext {
 	int frame_index;
 	VkFence fences[FRAME_LAG];
 	VkPhysicalDeviceMemoryProperties memory_properties;
+	VkPhysicalDeviceFeatures physical_device_features;
 
 	typedef struct {
 		VkImage image;
