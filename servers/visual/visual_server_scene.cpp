@@ -301,12 +301,12 @@ void VisualServerScene::scenario_set_reflection_atlas_size(RID p_scenario, int p
 
 /* INSTANCING API */
 
-void VisualServerScene::_instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_materials) {
+void VisualServerScene::_instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies) {
 
 	if (p_update_aabb)
 		p_instance->update_aabb = true;
-	if (p_update_materials)
-		p_instance->update_materials = true;
+	if (p_update_dependencies)
+		p_instance->update_dependencies = true;
 
 	if (p_instance->update_item.in_list())
 		return;
@@ -335,8 +335,6 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 	if (instance->base_type != VS::INSTANCE_NONE) {
 		//free anything related to that base
-
-		VSG::storage->instance_remove_dependency(instance->base, instance);
 
 		if (instance->base_type == VS::INSTANCE_GI_PROBE) {
 			//if gi probe is baking, wait until done baking, else race condition may happen when removing it
@@ -419,12 +417,6 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 		}
 
 		instance->blend_values.clear();
-
-		for (int i = 0; i < instance->materials.size(); i++) {
-			if (instance->materials[i].is_valid()) {
-				VSG::storage->material_remove_instance_owner(instance->materials[i], instance);
-			}
-		}
 		instance->materials.clear();
 	}
 
@@ -491,13 +483,13 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			}
 		}
 
-		VSG::storage->instance_add_dependency(p_base, instance);
-
 		instance->base = p_base;
 
-		if (scenario)
-			_instance_queue_update(instance, true, true);
+		//forcefully update the dependency now, so if for some reason it gets removed, we can immediately clear it
+		VSG::storage->base_update_dependency(p_base, instance);
 	}
+
+	_instance_queue_update(instance, true, true);
 }
 void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 
@@ -633,21 +625,15 @@ void VisualServerScene::instance_set_surface_material(RID p_instance, int p_surf
 	ERR_FAIL_COND(!instance);
 
 	if (instance->base_type == VS::INSTANCE_MESH) {
-		//may not have been updated yet
-		instance->materials.resize(VSG::storage->mesh_get_surface_count(instance->base));
+		//may not have been updated yet, may also have not been set yet. When updated will be correcte, worst case
+		instance->materials.resize(MAX(p_surface + 1, VSG::storage->mesh_get_surface_count(instance->base)));
 	}
 
 	ERR_FAIL_INDEX(p_surface, instance->materials.size());
 
-	if (instance->materials[p_surface].is_valid()) {
-		VSG::storage->material_remove_instance_owner(instance->materials[p_surface], instance);
-	}
 	instance->materials.write[p_surface] = p_material;
-	instance->base_changed(false, true);
 
-	if (instance->materials[p_surface].is_valid()) {
-		VSG::storage->material_add_instance_owner(instance->materials[p_surface], instance);
-	}
+	_instance_queue_update(instance, false, true);
 }
 
 void VisualServerScene::instance_set_visible(RID p_instance, bool p_visible) {
@@ -751,17 +737,13 @@ void VisualServerScene::instance_attach_skeleton(RID p_instance, RID p_skeleton)
 	if (instance->skeleton == p_skeleton)
 		return;
 
-	if (instance->skeleton.is_valid()) {
-		VSG::storage->instance_remove_skeleton(instance->skeleton, instance);
-	}
-
 	instance->skeleton = p_skeleton;
 
-	if (instance->skeleton.is_valid()) {
-		VSG::storage->instance_add_skeleton(instance->skeleton, instance);
+	if (p_skeleton.is_valid()) {
+		//update the dependency now, so if cleared, we remove it
+		VSG::storage->skeleton_update_dependency(p_skeleton, instance);
 	}
-
-	_instance_queue_update(instance, true);
+	_instance_queue_update(instance, true, true);
 }
 
 void VisualServerScene::instance_set_exterior(RID p_instance, bool p_enabled) {
@@ -873,22 +855,15 @@ void VisualServerScene::instance_geometry_set_cast_shadows_setting(RID p_instanc
 	ERR_FAIL_COND(!instance);
 
 	instance->cast_shadows = p_shadow_casting_setting;
-	instance->base_changed(false, true); // to actually compute if shadows are visible or not
+	_instance_queue_update(instance, false, true);
 }
 void VisualServerScene::instance_geometry_set_material_override(RID p_instance, RID p_material) {
 
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
-	if (instance->material_override.is_valid()) {
-		VSG::storage->material_remove_instance_owner(instance->material_override, instance);
-	}
 	instance->material_override = p_material;
-	instance->base_changed(false, true);
-
-	if (instance->material_override.is_valid()) {
-		VSG::storage->material_add_instance_owner(instance->material_override, instance);
-	}
+	_instance_queue_update(instance, false, true);
 }
 
 void VisualServerScene::instance_geometry_set_draw_range(RID p_instance, float p_min, float p_max, float p_min_margin, float p_max_margin) {
@@ -3289,17 +3264,22 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 		_update_instance_aabb(p_instance);
 	}
 
-	if (p_instance->update_materials) {
+	if (p_instance->update_dependencies) {
+
+		p_instance->instance_increase_version();
+
+		if (p_instance->base.is_valid()) {
+			VSG::storage->base_update_dependency(p_instance->base, p_instance);
+		}
+
+		if (p_instance->material_override.is_valid()) {
+			VSG::storage->material_update_dependency(p_instance->material_override, p_instance);
+		}
 
 		if (p_instance->base_type == VS::INSTANCE_MESH) {
 			//remove materials no longer used and un-own them
 
 			int new_mat_count = VSG::storage->mesh_get_surface_count(p_instance->base);
-			for (int i = p_instance->materials.size() - 1; i >= new_mat_count; i--) {
-				if (p_instance->materials[i].is_valid()) {
-					VSG::storage->material_remove_instance_owner(p_instance->materials[i], p_instance);
-				}
-			}
 			p_instance->materials.resize(new_mat_count);
 
 			int new_blend_shape_count = VSG::storage->mesh_get_blend_shape_count(p_instance->base);
@@ -3346,6 +3326,8 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 								if (VSG::storage->material_is_animated(mat)) {
 									is_animated = true;
 								}
+
+								VSG::storage->material_update_dependency(mat, p_instance);
 							}
 						}
 
@@ -3376,6 +3358,8 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 								if (VSG::storage->material_is_animated(mat)) {
 									is_animated = true;
 								}
+
+								VSG::storage->material_update_dependency(mat, p_instance);
 							}
 						}
 
@@ -3392,6 +3376,11 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 					if (mat.is_valid() && VSG::storage->material_is_animated(mat)) {
 						is_animated = true;
 					}
+
+					if (mat.is_valid()) {
+						VSG::storage->material_update_dependency(mat, p_instance);
+					}
+
 				} else if (p_instance->base_type == VS::INSTANCE_PARTICLES) {
 
 					bool cast_shadows = false;
@@ -3420,6 +3409,8 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 								if (VSG::storage->material_is_animated(mat)) {
 									is_animated = true;
 								}
+
+								VSG::storage->material_update_dependency(mat, p_instance);
 							}
 						}
 					}
@@ -3442,6 +3433,12 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 			geom->material_is_animated = is_animated;
 		}
+
+		if (p_instance->skeleton.is_valid()) {
+			VSG::storage->skeleton_update_dependency(p_instance->skeleton, p_instance);
+		}
+
+		p_instance->clean_up_dependencies();
 	}
 
 	_instance_update_list.remove(&p_instance->update_item);
@@ -3449,7 +3446,7 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 	_update_instance(p_instance);
 
 	p_instance->update_aabb = false;
-	p_instance->update_materials = false;
+	p_instance->update_dependencies = false;
 }
 
 void VisualServerScene::update_dirty_instances() {

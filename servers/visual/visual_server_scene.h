@@ -167,7 +167,7 @@ public:
 
 		//aabb stuff
 		bool update_aabb;
-		bool update_materials;
+		bool update_dependencies;
 
 		SelfList<Instance> update_item;
 
@@ -190,14 +190,18 @@ public:
 
 		InstanceBaseData *base_data;
 
-		virtual void base_removed() {
-
-			singleton->instance_set_base(self, RID());
+		virtual void dependency_deleted(RID p_dependency) {
+			if (p_dependency == base) {
+				singleton->instance_set_base(self, RID());
+			} else if (p_dependency == skeleton) {
+				singleton->instance_attach_skeleton(self, RID());
+			} else {
+				singleton->_instance_queue_update(this, false, true);
+			}
 		}
 
-		virtual void base_changed(bool p_aabb, bool p_materials) {
-
-			singleton->_instance_queue_update(this, p_aabb, p_materials);
+		virtual void dependency_changed(bool p_aabb, bool p_dependencies) {
+			singleton->_instance_queue_update(this, p_aabb, p_dependencies);
 		}
 
 		Instance() :
@@ -208,7 +212,7 @@ public:
 			scenario = NULL;
 
 			update_aabb = false;
-			update_materials = false;
+			update_dependencies = false;
 
 			extra_margin = 0;
 
@@ -238,7 +242,7 @@ public:
 	};
 
 	SelfList<Instance>::List _instance_update_list;
-	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_materials = false);
+	void _instance_queue_update(Instance *p_instance, bool p_update_aabb, bool p_update_dependencies = false);
 
 	struct InstanceGeometryData : public InstanceBaseData {
 
