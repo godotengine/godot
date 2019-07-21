@@ -195,7 +195,6 @@ public:
 	virtual RID material_create() = 0;
 
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
-	virtual RID material_get_shader(RID p_shader_material) const = 0;
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
@@ -883,8 +882,10 @@ public:
 		CANVAS_ITEM_TEXTURE_FILTER_DEFAULT, //uses canvas item setting for draw command, uses global setting for canvas item
 		CANVAS_ITEM_TEXTURE_FILTER_NEAREST,
 		CANVAS_ITEM_TEXTURE_FILTER_LINEAR,
-		CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
 		CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS,
+		CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS,
+		CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC,
+		CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC,
 		CANVAS_ITEM_TEXTURE_FILTER_MAX
 	};
 

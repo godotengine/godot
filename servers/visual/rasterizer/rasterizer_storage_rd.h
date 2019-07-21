@@ -3,9 +3,52 @@
 
 #include "core/rid_owner.h"
 #include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer/shader_compiler_rd.h"
 #include "servers/visual/rendering_device.h"
 class RasterizerStorageRD : public RasterizerStorage {
 public:
+	enum ShaderType {
+		SHADER_TYPE_2D,
+		SHADER_TYPE_3D,
+		SHADER_TYPE_PARTICLES,
+		SHADER_TYPE_MAX
+	};
+
+	struct ShaderData {
+		virtual void set_code(const String &p_Code) = 0;
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
+		virtual bool is_param_texture(const StringName &p_param) const = 0;
+		virtual bool is_animated() const = 0;
+		virtual bool casts_shadows() const = 0;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
+		virtual ~ShaderData() {}
+	};
+
+	typedef ShaderData *(*ShaderDataRequestFunction)();
+
+	struct MaterialData {
+
+		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
+		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures);
+
+		virtual void set_render_priority(int p_priority) = 0;
+		virtual void set_next_pass(RID p_pass) = 0;
+		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) = 0;
+		virtual ~MaterialData() {}
+	};
+	typedef MaterialData *(*MaterialDataRequestFunction)(ShaderData *);
+
+	enum DefaultRDTexture {
+		DEFAULT_RD_TEXTURE_WHITE,
+		DEFAULT_RD_TEXTURE_BLACK,
+		DEFAULT_RD_TEXTURE_NORMAL,
+		DEFAULT_RD_TEXTURE_ANISO,
+		DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER,
+		DEFAULT_RD_TEXTURE_MAX
+	};
+
+private:
 	/* TEXTURE API */
 	struct Texture {
 
@@ -68,6 +111,48 @@ public:
 
 	Ref<Image> _validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format);
 
+	RID default_rd_textures[DEFAULT_RD_TEXTURE_MAX];
+	RID default_rd_samplers[VS::CANVAS_ITEM_TEXTURE_FILTER_MAX][VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
+
+	/* SHADER */
+
+	struct Material;
+
+	struct Shader {
+		ShaderData *data;
+		String code;
+		ShaderType type;
+		Map<StringName, RID> default_texture_parameter;
+		Set<Material *> owners;
+	};
+
+	ShaderDataRequestFunction shader_data_request_func[SHADER_TYPE_MAX];
+	mutable RID_Owner<Shader> shader_owner;
+
+	/* Material */
+
+	struct Material {
+		RID self;
+		MaterialData *data;
+		Shader *shader;
+		//shortcut to shader data and type
+		ShaderType shader_type;
+		bool update_requested;
+		bool uniform_dirty;
+		bool texture_dirty;
+		Material *update_next;
+		Map<StringName, Variant> params;
+		int32_t priority;
+		RID next_pass;
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	MaterialDataRequestFunction material_data_request_func[SHADER_TYPE_MAX];
+	mutable RID_Owner<Material> material_owner;
+
+	Material *material_update_list;
+	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
+	void _update_queued_materials();
 	/* RENDER TARGET */
 
 	struct RenderTarget {
@@ -164,6 +249,13 @@ public:
 		return Size2i(tex->width_2d, tex->height_2d);
 	}
 
+	_FORCE_INLINE_ RID texture_rd_get_default(DefaultRDTexture p_texture) {
+		return default_rd_textures[p_texture];
+	}
+	_FORCE_INLINE_ RID sampler_rd_get_default(VS::CanvasItemTextureFilter p_filter, VS::CanvasItemTextureRepeat p_repeat) {
+		return default_rd_samplers[p_filter][p_repeat];
+	}
+
 	/* SKY API */
 
 	struct RDSurface {
@@ -189,63 +281,44 @@ public:
 
 	/* SHADER API */
 
-	enum ShaderType {
-		SHADER_TYPE_2D,
-		SHADER_TYPE_3D,
-		SHADER_TYPE_3D_POST_PROCESS,
-		SHADER_TYPE_PARTICLES
-	};
+	RID shader_create();
 
-	class ShaderData {
-	public:
-		virtual void set_code(const String &p_Code) = 0;
-		virtual void set_default_texture_param(const StringName &p_name, RID p_texture) = 0;
-		virtual void get_param_list(List<PropertyInfo> *p_param_list) const = 0;
-		virtual bool is_animated() const = 0;
-		virtual bool casts_shadows() const = 0;
-		virtual Variant get_default_parameter(const StringName &p_parameter) const = 0;
-		virtual ~ShaderData() {}
-	};
+	void shader_set_code(RID p_shader, const String &p_code);
+	String shader_get_code(RID p_shader) const;
+	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const;
 
-	typedef ShaderData *(ShaderDataRequestFunction)();
-
-	RID shader_create() { return RID(); }
-
-	void shader_set_code(RID p_shader, const String &p_code) {}
-	String shader_get_code(RID p_shader) const { return ""; }
-	void shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {}
-
-	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {}
-	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const { return RID(); }
-	Variant shader_get_param_default(RID p_material, const StringName &p_param) const { return Variant(); }
+	void shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture);
+	RID shader_get_default_texture_param(RID p_shader, const StringName &p_name) const;
+	Variant shader_get_param_default(RID p_shader, const StringName &p_param) const;
+	void shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function);
 
 	/* COMMON MATERIAL API */
 
-	struct MaterialData {
+	RID material_create();
 
-		virtual void set_render_priority(int p_priority) = 0;
-		virtual void set_next_pass(RID p_pass) = 0;
-		virtual void update_parameters(const Map<StringName, Variant> &p_parameters) = 0;
-		virtual ~MaterialData() {}
-	};
-	typedef MaterialData *(MaterialDataRequestFunction)(ShaderData *);
+	void material_set_shader(RID p_material, RID p_shader);
 
-	RID material_create() { return RID(); }
+	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value);
+	Variant material_get_param(RID p_material, const StringName &p_param) const;
 
-	void material_set_shader(RID p_shader_material, RID p_shader) {}
-	RID material_get_shader(RID p_shader_material) const { return RID(); }
+	void material_set_next_pass(RID p_material, RID p_next_material);
+	void material_set_render_priority(RID p_material, int priority);
 
-	void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {}
-	Variant material_get_param(RID p_material, const StringName &p_param) const { return Variant(); }
+	bool material_is_animated(RID p_material);
+	bool material_casts_shadows(RID p_material);
 
-	void material_set_next_pass(RID p_material, RID p_next_material) {}
-	void material_set_render_priority(RID p_material, int priority) {}
+	void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance);
 
-	bool material_is_animated(RID p_material) { return false; }
-	bool material_casts_shadows(RID p_material) { return false; }
+	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
 
-	void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {}
-	void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) {}
+	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
+		Material *material = material_owner.getornull(p_material);
+		if (material->shader_type != p_shader_type) {
+			return NULL;
+		} else {
+			return material->data;
+		}
+	}
 
 	/* MESH API */
 
@@ -498,11 +571,8 @@ public:
 	float reflection_probe_get_origin_max_distance(RID p_probe) const { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const { return false; }
 
-	void instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {}
-	void instance_remove_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {}
-
-	void instance_add_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {}
-	void instance_remove_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {}
+	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {}
+	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {}
 
 	/* GI PROBE API */
 
@@ -551,59 +621,14 @@ public:
 	void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {}
 
 	/* LIGHTMAP CAPTURE */
-	struct Instantiable {
 
-		SelfList<RasterizerScene::InstanceBase>::List instance_list;
-
-		_FORCE_INLINE_ void instance_change_notify(bool p_aabb = true, bool p_materials = true) {
-
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				instances->self()->base_changed(p_aabb, p_materials);
-				instances = instances->next();
-			}
-		}
-
-		_FORCE_INLINE_ void instance_remove_deps() {
-			SelfList<RasterizerScene::InstanceBase> *instances = instance_list.first();
-			while (instances) {
-
-				SelfList<RasterizerScene::InstanceBase> *next = instances->next();
-				instances->self()->base_removed();
-				instances = next;
-			}
-		}
-
-		Instantiable() {}
-		virtual ~Instantiable() {
-		}
-	};
-
-	struct LightmapCapture : public Instantiable {
-
-		PoolVector<LightmapCaptureOctree> octree;
-		AABB bounds;
-		Transform cell_xform;
-		int cell_subdiv;
-		float energy;
-		LightmapCapture() {
-			energy = 1.0;
-			cell_subdiv = 1;
-		}
-	};
-
-	mutable RID_PtrOwner<LightmapCapture> lightmap_capture_data_owner;
 	void lightmap_capture_set_bounds(RID p_capture, const AABB &p_bounds) {}
 	AABB lightmap_capture_get_bounds(RID p_capture) const { return AABB(); }
 	void lightmap_capture_set_octree(RID p_capture, const PoolVector<uint8_t> &p_octree) {}
 	RID lightmap_capture_create() {
-		LightmapCapture *capture = memnew(LightmapCapture);
-		return lightmap_capture_data_owner.make_rid(capture);
+		return RID();
 	}
 	PoolVector<uint8_t> lightmap_capture_get_octree(RID p_capture) const {
-		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, PoolVector<uint8_t>());
 		return PoolVector<uint8_t>();
 	}
 	void lightmap_capture_set_octree_cell_transform(RID p_capture, const Transform &p_xform) {}
@@ -613,9 +638,7 @@ public:
 	void lightmap_capture_set_energy(RID p_capture, float p_energy) {}
 	float lightmap_capture_get_energy(RID p_capture) const { return 0.0; }
 	const PoolVector<LightmapCaptureOctree> *lightmap_capture_get_octree_ptr(RID p_capture) const {
-		const LightmapCapture *capture = lightmap_capture_data_owner.getornull(p_capture);
-		ERR_FAIL_COND_V(!capture, NULL);
-		return &capture->octree;
+		return NULL;
 	}
 
 	/* PARTICLES */
@@ -686,7 +709,7 @@ public:
 
 	bool has_os_feature(const String &p_feature) const { return false; }
 
-	void update_dirty_resources() {}
+	void update_dirty_resources();
 
 	void set_debug_generate_wireframes(bool p_generate) {}
 
@@ -698,8 +721,8 @@ public:
 
 	static RasterizerStorage *base_singleton;
 
-	RasterizerStorageRD(){};
-	~RasterizerStorageRD() {}
+	RasterizerStorageRD();
+	~RasterizerStorageRD();
 };
 
 #endif // RASTERIZER_STORAGE_RD_H

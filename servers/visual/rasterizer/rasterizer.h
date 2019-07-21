@@ -34,6 +34,7 @@
 #include "core/math/camera_matrix.h"
 #include "servers/visual_server.h"
 
+#include "core/pair.h"
 #include "core/self_list.h"
 
 class RasterizerScene {
@@ -85,6 +86,20 @@ public:
 	virtual VS::EnvironmentBG environment_get_background(RID p_env) = 0;
 	virtual int environment_get_canvas_max_layer(RID p_env) = 0;
 
+	struct InstanceBase;
+
+	struct InstanceDependency {
+
+		void instance_notify_changed(bool p_aabb, bool p_dependencies);
+		void instance_notify_deleted(RID p_deleted);
+
+		~InstanceDependency();
+
+	private:
+		friend class InstanceBase;
+		Map<InstanceBase *, uint32_t> instances;
+	};
+
 	struct InstanceBase {
 
 		VS::InstanceType base_type;
@@ -97,6 +112,7 @@ public:
 
 		int depth_layer;
 		uint32_t layer_mask;
+		uint32_t instance_version;
 
 		//RID sampled_light;
 
@@ -124,8 +140,48 @@ public:
 		RID lightmap;
 		Vector<Color> lightmap_capture_data; //in a array (12 values) to avoid wasting space if unused. Alpha is unused, but needed to send to shader
 
-		virtual void base_removed() = 0;
-		virtual void base_changed(bool p_aabb, bool p_materials) = 0;
+		virtual void dependency_deleted(RID p_dependency) = 0;
+		virtual void dependency_changed(bool p_aabb, bool p_dependencies) = 0;
+
+		Set<InstanceDependency *> dependencies;
+
+		void instance_increase_version() {
+			instance_version++;
+		}
+
+		void update_dependency(InstanceDependency *p_dependency) {
+			dependencies.insert(p_dependency);
+			p_dependency->instances[this] = instance_version;
+		}
+
+		void clean_up_dependencies() {
+			List<Pair<InstanceDependency *, Map<InstanceBase *, uint32_t>::Element *> > to_clean_up;
+			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+				InstanceDependency *dep = E->get();
+				Map<InstanceBase *, uint32_t>::Element *F = dep->instances.find(this);
+				ERR_CONTINUE(!F);
+				if (F->get() != instance_version) {
+					Pair<InstanceDependency *, Map<InstanceBase *, uint32_t>::Element *> p;
+					p.first = dep;
+					p.second = F;
+					to_clean_up.push_back(p);
+				}
+			}
+
+			while (to_clean_up.size()) {
+				to_clean_up.front()->get().first->instances.erase(to_clean_up.front()->get().second);
+				to_clean_up.pop_front();
+			}
+		}
+
+		void clear_dependencies() {
+			for (Set<InstanceDependency *>::Element *E = dependencies.front(); E; E = E->next()) {
+				InstanceDependency *dep = E->get();
+				dep->instances.erase(this);
+			}
+			dependencies.clear();
+		}
+
 		InstanceBase() :
 				dependency_item(this) {
 
@@ -135,9 +191,14 @@ public:
 			visible = true;
 			depth_layer = 0;
 			layer_mask = 1;
+			instance_version = 0;
 			baked_light = false;
 			redraw_if_visible = false;
 			lightmap_capture = NULL;
+		}
+
+		virtual ~InstanceBase() {
+			clear_dependencies();
 		}
 	};
 
@@ -241,7 +302,6 @@ public:
 
 	virtual void material_set_render_priority(RID p_material, int priority) = 0;
 	virtual void material_set_shader(RID p_shader_material, RID p_shader) = 0;
-	virtual RID material_get_shader(RID p_shader_material) const = 0;
 
 	virtual void material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) = 0;
 	virtual Variant material_get_param(RID p_material, const StringName &p_param) const = 0;
@@ -251,8 +311,7 @@ public:
 	virtual bool material_is_animated(RID p_material) = 0;
 	virtual bool material_casts_shadows(RID p_material) = 0;
 
-	virtual void material_add_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) = 0;
-	virtual void material_remove_instance_owner(RID p_material, RasterizerScene::InstanceBase *p_instance) = 0;
+	virtual void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) = 0;
 
 	/* MESH API */
 
@@ -414,11 +473,8 @@ public:
 	virtual float reflection_probe_get_origin_max_distance(RID p_probe) const = 0;
 	virtual bool reflection_probe_renders_shadows(RID p_probe) const = 0;
 
-	virtual void instance_add_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) = 0;
-	virtual void instance_remove_skeleton(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) = 0;
-
-	virtual void instance_add_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) = 0;
-	virtual void instance_remove_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) = 0;
+	virtual void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) = 0;
+	virtual void skeleton_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) = 0;
 
 	/* GI PROBE API */
 
@@ -577,6 +633,7 @@ public:
 	virtual int get_render_info(VS::RenderInfo p_info) = 0;
 
 	static RasterizerStorage *base_singleton;
+
 	RasterizerStorage();
 	virtual ~RasterizerStorage() {}
 };
