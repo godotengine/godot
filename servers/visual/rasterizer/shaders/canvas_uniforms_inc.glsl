@@ -59,9 +59,14 @@ layout(set = 0, binding = 5) uniform textureBuffer instancing_buffer;
 
 /* SET1: Is reserved for the material */
 
-//
 
-/* SET2: Canvas Item State */
+#ifdef USE_MATERIAL_SAMPLERS
+
+layout(set = 1, binding = 0) uniform sampler material_samplers[12];
+
+#endif
+
+/* SET2: Canvas Item State (including lighting) */
 
 
 layout(set = 2, binding = 0, std140) uniform CanvasData {
@@ -69,6 +74,9 @@ layout(set = 2, binding = 0, std140) uniform CanvasData {
 	mat4 screen_transform;
 	mat4 canvas_normal_transform;
 	vec4 canvas_modulation;
+	vec2 screen_pixel_size;
+	float time;
+	float time_pad;
 	//uint light_count;
 } canvas_data;
 
@@ -79,9 +87,6 @@ layout(set = 2, binding = 2, std140) uniform SkeletonData {
 	mat4 skeleton_transform_inverse;
 } skeleton_data;
 
-
-
-/* SET3: Lighting */
 
 #ifdef USE_LIGHTING
 
@@ -112,13 +117,21 @@ struct Light {
 	float pad2;
 };
 
-layout(set = 3, binding = 0, std140) uniform LightData {
+layout(set = 2, binding = 3, std140) uniform LightData {
 	Light data[MAX_LIGHTS];
 } light_array;
 
-layout(set = 3, binding = 1) uniform texture2D light_textures[MAX_LIGHT_TEXTURES];
-layout(set = 3, binding = 2) uniform texture2D shadow_textures[MAX_LIGHT_TEXTURES];
+layout(set = 2, binding = 4) uniform texture2D light_textures[MAX_LIGHT_TEXTURES];
+layout(set = 2, binding = 5) uniform texture2D shadow_textures[MAX_LIGHT_TEXTURES];
 
-layout(set = 3, binding = 3) uniform sampler shadow_sampler;
+layout(set = 2, binding = 6) uniform sampler shadow_sampler;
+
+#endif
+
+/* SET3: Render Target Data */
+
+#ifdef SCREEN_TEXTURE_USED
+
+layout(set = 3, binding = 1) uniform texture2D screen_texture;
 
 #endif

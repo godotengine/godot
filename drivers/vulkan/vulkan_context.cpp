@@ -86,7 +86,7 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 
 	free(message);
 
-	abort();
+	//	abort();
 	// Don't bail out, but keep going.
 	return false;
 }
@@ -435,8 +435,7 @@ Error VulkanContext::_create_physical_device() {
 	// Query fine-grained feature support for this device.
 	//  If app has specific feature requirements it should check supported
 	//  features based on this query
-	VkPhysicalDeviceFeatures physDevFeatures;
-	vkGetPhysicalDeviceFeatures(gpu, &physDevFeatures);
+	vkGetPhysicalDeviceFeatures(gpu, &physical_device_features);
 
 #define GET_INSTANCE_PROC_ADDR(inst, entrypoint)                                            \
 	{                                                                                       \
@@ -477,7 +476,7 @@ Error VulkanContext::_create_device() {
 		.ppEnabledLayerNames = NULL,
 		.enabledExtensionCount = enabled_extension_count,
 		.ppEnabledExtensionNames = (const char *const *)extension_names,
-		.pEnabledFeatures = NULL, // If specific features are required, pass them in here
+		.pEnabledFeatures = &physical_device_features, // If specific features are required, pass them in here
 	};
 	if (separate_present_queue) {
 		queues[1].sType = VK_STRUCTURE_TYPE_DEVICE_QUEUE_CREATE_INFO;

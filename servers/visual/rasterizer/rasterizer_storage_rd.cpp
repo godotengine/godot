@@ -1,5 +1,7 @@
 #include "rasterizer_storage_rd.h"
 #include "core/engine.h"
+#include "core/project_settings.h"
+#include "servers/visual/shader_language.h"
 
 Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format) {
 
@@ -775,6 +777,878 @@ Size2 RasterizerStorageRD::texture_size_with_proxy(RID p_proxy) {
 	return texture_2d_get_size(p_proxy);
 }
 
+/* SHADER API */
+
+RID RasterizerStorageRD::shader_create() {
+
+	Shader shader;
+	shader.data = NULL;
+	shader.type = SHADER_TYPE_MAX;
+
+	return shader_owner.make_rid(shader);
+}
+
+void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	print_line("yey set code?");
+	shader->code = p_code;
+	String mode_string = ShaderLanguage::get_shader_type(p_code);
+
+	ShaderType new_type;
+	if (mode_string == "canvas_item")
+		new_type = SHADER_TYPE_2D;
+	else if (mode_string == "particles")
+		new_type = SHADER_TYPE_PARTICLES;
+	else if (mode_string == "spatial")
+		new_type = SHADER_TYPE_3D;
+	else
+		new_type = SHADER_TYPE_MAX;
+
+	if (new_type != shader->type) {
+		if (shader->data) {
+			memdelete(shader->data);
+			shader->data = NULL;
+		}
+
+		for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
+
+			Material *material = E->get();
+			material->shader_type = new_type;
+			if (material->data) {
+				memdelete(material->data);
+				material->data = NULL;
+			}
+		}
+
+		shader->type = new_type;
+
+		if (new_type < SHADER_TYPE_MAX && shader_data_request_func[new_type]) {
+			shader->data = shader_data_request_func[new_type]();
+		} else {
+			shader->type = SHADER_TYPE_MAX; //invalid
+		}
+
+		for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
+			Material *material = E->get();
+			if (shader->data) {
+				material->data = material_data_request_func[new_type](shader->data);
+				material->data->set_next_pass(material->next_pass);
+				material->data->set_render_priority(material->priority);
+			}
+			material->shader_type = new_type;
+		}
+	}
+
+	if (shader->data) {
+		shader->data->set_code(p_code);
+	}
+
+	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
+		Material *material = E->get();
+		material->instance_dependency.instance_notify_changed(false, true);
+		_material_queue_update(material, true, true);
+	}
+}
+
+String RasterizerStorageRD::shader_get_code(RID p_shader) const {
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND_V(!shader, String());
+	return shader->code;
+}
+void RasterizerStorageRD::shader_get_param_list(RID p_shader, List<PropertyInfo> *p_param_list) const {
+
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND(!shader);
+	if (shader->data) {
+		return shader->data->get_param_list(p_param_list);
+	}
+}
+
+void RasterizerStorageRD::shader_set_default_texture_param(RID p_shader, const StringName &p_name, RID p_texture) {
+
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND(!shader);
+
+	if (p_texture.is_valid() && texture_owner.owns(p_texture)) {
+		shader->default_texture_parameter[p_name] = p_texture;
+	} else {
+		shader->default_texture_parameter.erase(p_name);
+	}
+
+	for (Set<Material *>::Element *E = shader->owners.front(); E; E = E->next()) {
+		Material *material = E->get();
+		_material_queue_update(material, false, true);
+	}
+}
+
+RID RasterizerStorageRD::shader_get_default_texture_param(RID p_shader, const StringName &p_name) const {
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND_V(!shader, RID());
+	if (shader->default_texture_parameter.has(p_name)) {
+		return shader->default_texture_parameter[p_name];
+	}
+
+	return RID();
+}
+Variant RasterizerStorageRD::shader_get_param_default(RID p_shader, const StringName &p_param) const {
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND_V(!shader, Variant());
+	if (shader->data) {
+		return shader->data->get_default_parameter(p_param);
+	}
+	return Variant();
+}
+void RasterizerStorageRD::shader_set_data_request_function(ShaderType p_shader_type, ShaderDataRequestFunction p_function) {
+	ERR_FAIL_INDEX(p_shader_type, SHADER_TYPE_MAX);
+	shader_data_request_func[p_shader_type] = p_function;
+}
+
+/* COMMON MATERIAL API */
+
+RID RasterizerStorageRD::material_create() {
+	Material material;
+	material.data = NULL;
+	material.shader = NULL;
+	material.shader_type = SHADER_TYPE_MAX;
+	material.update_next = NULL;
+	material.update_requested = false;
+	material.uniform_dirty = false;
+	material.texture_dirty = false;
+	material.priority = 0;
+	RID id = material_owner.make_rid(material);
+	{
+		Material *material_ptr = material_owner.getornull(id);
+		material_ptr->self = id;
+	}
+	return id;
+}
+
+void RasterizerStorageRD::_material_queue_update(Material *material, bool p_uniform, bool p_texture) {
+	if (material->update_requested) {
+		return;
+	}
+
+	material->update_next = material_update_list;
+	material_update_list = material;
+	material->update_requested = true;
+	material->uniform_dirty = p_uniform;
+	material->texture_dirty = p_texture;
+}
+
+void RasterizerStorageRD::material_set_shader(RID p_material, RID p_shader) {
+
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+
+	if (material->data) {
+		memdelete(material->data);
+		material->data = NULL;
+	}
+
+	if (material->shader) {
+		material->shader->owners.erase(material);
+		material->shader = NULL;
+		material->shader_type = SHADER_TYPE_MAX;
+	}
+
+	if (p_shader.is_null()) {
+		material->instance_dependency.instance_notify_changed(false, true);
+		return;
+	}
+
+	Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND(!shader);
+	material->shader = shader;
+	material->shader_type = shader->type;
+	shader->owners.insert(material);
+
+	if (shader->type == SHADER_TYPE_MAX) {
+		return;
+	}
+
+	ERR_FAIL_COND(shader->data == NULL);
+
+	material->data = material_data_request_func[shader->type](shader->data);
+	material->data->set_next_pass(material->next_pass);
+	material->data->set_render_priority(material->priority);
+	//updating happens later
+	material->instance_dependency.instance_notify_changed(false, true);
+	_material_queue_update(material, true, true);
+}
+
+void RasterizerStorageRD::material_set_param(RID p_material, const StringName &p_param, const Variant &p_value) {
+
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+
+	if (p_value.get_type() == Variant::NIL) {
+		material->params.erase(p_param);
+	} else {
+		material->params[p_param] = p_value;
+	}
+
+	if (material->shader && material->shader->data) { //shader is valid
+		bool is_texture = material->shader->data->is_param_texture(p_param);
+		_material_queue_update(material, !is_texture, is_texture);
+	} else {
+		_material_queue_update(material, true, true);
+	}
+}
+
+Variant RasterizerStorageRD::material_get_param(RID p_material, const StringName &p_param) const {
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND_V(!material, Variant());
+	if (material->params.has(p_param)) {
+		return material->params[p_param];
+	} else {
+		return Variant();
+	}
+}
+
+void RasterizerStorageRD::material_set_next_pass(RID p_material, RID p_next_material) {
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+
+	if (material->next_pass == p_next_material) {
+		return;
+	}
+
+	material->next_pass = p_next_material;
+	if (material->data) {
+		material->data->set_next_pass(p_next_material);
+	}
+
+	material->instance_dependency.instance_notify_changed(false, true);
+}
+void RasterizerStorageRD::material_set_render_priority(RID p_material, int priority) {
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+	material->priority = priority;
+	if (material->data) {
+		material->data->set_render_priority(priority);
+	}
+}
+
+bool RasterizerStorageRD::material_is_animated(RID p_material) {
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND_V(!material, false);
+	if (material->shader && material->shader->data) {
+		if (material->shader->data->is_animated()) {
+			return true;
+		} else if (material->next_pass.is_valid()) {
+			return material_is_animated(material->next_pass);
+		}
+	}
+	return false; //by default nothing is animated
+}
+bool RasterizerStorageRD::material_casts_shadows(RID p_material) {
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND_V(!material, true);
+	if (material->shader && material->shader->data) {
+		if (material->shader->data->casts_shadows()) {
+			return true;
+		} else if (material->next_pass.is_valid()) {
+			return material_casts_shadows(material->next_pass);
+		}
+	}
+	return true; //by default everything casts shadows
+}
+
+void RasterizerStorageRD::material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance) {
+	Material *material = material_owner.getornull(p_material);
+	ERR_FAIL_COND(!material);
+	p_instance->update_dependency(&material->instance_dependency);
+	if (material->next_pass.is_valid()) {
+		material_update_dependency(material->next_pass, p_instance);
+	}
+}
+
+void RasterizerStorageRD::material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function) {
+	ERR_FAIL_INDEX(p_shader_type, SHADER_TYPE_MAX);
+	material_data_request_func[p_shader_type] = p_function;
+}
+
+_FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataType type, const Variant &value, uint8_t *data, bool p_linear_color) {
+	switch (type) {
+		case ShaderLanguage::TYPE_BOOL: {
+
+			bool v = value;
+
+			uint32_t *gui = (uint32_t *)data;
+			*gui = v ? 1 : 0;
+		} break;
+		case ShaderLanguage::TYPE_BVEC2: {
+
+			int v = value;
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = v & 1 ? 1 : 0;
+			gui[1] = v & 2 ? 1 : 0;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC3: {
+
+			int v = value;
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = (v & 1) ? 1 : 0;
+			gui[1] = (v & 2) ? 1 : 0;
+			gui[2] = (v & 4) ? 1 : 0;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC4: {
+
+			int v = value;
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = (v & 1) ? 1 : 0;
+			gui[1] = (v & 2) ? 1 : 0;
+			gui[2] = (v & 4) ? 1 : 0;
+			gui[3] = (v & 8) ? 1 : 0;
+
+		} break;
+		case ShaderLanguage::TYPE_INT: {
+
+			int v = value;
+			int32_t *gui = (int32_t *)data;
+			gui[0] = v;
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC2: {
+
+			PoolVector<int> iv = value;
+			int s = iv.size();
+			int32_t *gui = (int32_t *)data;
+
+			PoolVector<int>::Read r = iv.read();
+
+			for (int i = 0; i < 2; i++) {
+				if (i < s)
+					gui[i] = r[i];
+				else
+					gui[i] = 0;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC3: {
+
+			PoolVector<int> iv = value;
+			int s = iv.size();
+			int32_t *gui = (int32_t *)data;
+
+			PoolVector<int>::Read r = iv.read();
+
+			for (int i = 0; i < 3; i++) {
+				if (i < s)
+					gui[i] = r[i];
+				else
+					gui[i] = 0;
+			}
+		} break;
+		case ShaderLanguage::TYPE_IVEC4: {
+
+			PoolVector<int> iv = value;
+			int s = iv.size();
+			int32_t *gui = (int32_t *)data;
+
+			PoolVector<int>::Read r = iv.read();
+
+			for (int i = 0; i < 4; i++) {
+				if (i < s)
+					gui[i] = r[i];
+				else
+					gui[i] = 0;
+			}
+		} break;
+		case ShaderLanguage::TYPE_UINT: {
+
+			int v = value;
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = v;
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC2: {
+
+			PoolVector<int> iv = value;
+			int s = iv.size();
+			uint32_t *gui = (uint32_t *)data;
+
+			PoolVector<int>::Read r = iv.read();
+
+			for (int i = 0; i < 2; i++) {
+				if (i < s)
+					gui[i] = r[i];
+				else
+					gui[i] = 0;
+			}
+		} break;
+		case ShaderLanguage::TYPE_UVEC3: {
+			PoolVector<int> iv = value;
+			int s = iv.size();
+			uint32_t *gui = (uint32_t *)data;
+
+			PoolVector<int>::Read r = iv.read();
+
+			for (int i = 0; i < 3; i++) {
+				if (i < s)
+					gui[i] = r[i];
+				else
+					gui[i] = 0;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC4: {
+			PoolVector<int> iv = value;
+			int s = iv.size();
+			uint32_t *gui = (uint32_t *)data;
+
+			PoolVector<int>::Read r = iv.read();
+
+			for (int i = 0; i < 4; i++) {
+				if (i < s)
+					gui[i] = r[i];
+				else
+					gui[i] = 0;
+			}
+		} break;
+		case ShaderLanguage::TYPE_FLOAT: {
+			float v = value;
+			float *gui = (float *)data;
+			gui[0] = v;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC2: {
+			Vector2 v = value;
+			float *gui = (float *)data;
+			gui[0] = v.x;
+			gui[1] = v.y;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC3: {
+			Vector3 v = value;
+			float *gui = (float *)data;
+			gui[0] = v.x;
+			gui[1] = v.y;
+			gui[2] = v.z;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC4: {
+
+			float *gui = (float *)data;
+
+			if (value.get_type() == Variant::COLOR) {
+				Color v = value;
+
+				if (p_linear_color) {
+					v = v.to_linear();
+				}
+
+				gui[0] = v.r;
+				gui[1] = v.g;
+				gui[2] = v.b;
+				gui[3] = v.a;
+			} else if (value.get_type() == Variant::RECT2) {
+				Rect2 v = value;
+
+				gui[0] = v.position.x;
+				gui[1] = v.position.y;
+				gui[2] = v.size.x;
+				gui[3] = v.size.y;
+			} else if (value.get_type() == Variant::QUAT) {
+				Quat v = value;
+
+				gui[0] = v.x;
+				gui[1] = v.y;
+				gui[2] = v.z;
+				gui[3] = v.w;
+			} else {
+				Plane v = value;
+
+				gui[0] = v.normal.x;
+				gui[1] = v.normal.y;
+				gui[2] = v.normal.z;
+				gui[3] = v.d;
+			}
+		} break;
+		case ShaderLanguage::TYPE_MAT2: {
+			Transform2D v = value;
+			float *gui = (float *)data;
+
+			//in std140 members of mat2 are treated as vec4s
+			gui[0] = v.elements[0][0];
+			gui[1] = v.elements[0][1];
+			gui[2] = 0;
+			gui[3] = 0;
+			gui[4] = v.elements[1][0];
+			gui[5] = v.elements[1][1];
+			gui[6] = 0;
+			gui[7] = 0;
+		} break;
+		case ShaderLanguage::TYPE_MAT3: {
+
+			Basis v = value;
+			float *gui = (float *)data;
+
+			gui[0] = v.elements[0][0];
+			gui[1] = v.elements[1][0];
+			gui[2] = v.elements[2][0];
+			gui[3] = 0;
+			gui[4] = v.elements[0][1];
+			gui[5] = v.elements[1][1];
+			gui[6] = v.elements[2][1];
+			gui[7] = 0;
+			gui[8] = v.elements[0][2];
+			gui[9] = v.elements[1][2];
+			gui[10] = v.elements[2][2];
+			gui[11] = 0;
+		} break;
+		case ShaderLanguage::TYPE_MAT4: {
+
+			Transform v = value;
+			float *gui = (float *)data;
+
+			gui[0] = v.basis.elements[0][0];
+			gui[1] = v.basis.elements[1][0];
+			gui[2] = v.basis.elements[2][0];
+			gui[3] = 0;
+			gui[4] = v.basis.elements[0][1];
+			gui[5] = v.basis.elements[1][1];
+			gui[6] = v.basis.elements[2][1];
+			gui[7] = 0;
+			gui[8] = v.basis.elements[0][2];
+			gui[9] = v.basis.elements[1][2];
+			gui[10] = v.basis.elements[2][2];
+			gui[11] = 0;
+			gui[12] = v.origin.x;
+			gui[13] = v.origin.y;
+			gui[14] = v.origin.z;
+			gui[15] = 1;
+		} break;
+		default: {
+		}
+	}
+}
+
+_FORCE_INLINE_ static void _fill_std140_ubo_value(ShaderLanguage::DataType type, const Vector<ShaderLanguage::ConstantNode::Value> &value, uint8_t *data) {
+
+	switch (type) {
+		case ShaderLanguage::TYPE_BOOL: {
+
+			uint32_t *gui = (uint32_t *)data;
+			*gui = value[0].boolean ? 1 : 0;
+		} break;
+		case ShaderLanguage::TYPE_BVEC2: {
+
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = value[0].boolean ? 1 : 0;
+			gui[1] = value[1].boolean ? 1 : 0;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC3: {
+
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = value[0].boolean ? 1 : 0;
+			gui[1] = value[1].boolean ? 1 : 0;
+			gui[2] = value[2].boolean ? 1 : 0;
+
+		} break;
+		case ShaderLanguage::TYPE_BVEC4: {
+
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = value[0].boolean ? 1 : 0;
+			gui[1] = value[1].boolean ? 1 : 0;
+			gui[2] = value[2].boolean ? 1 : 0;
+			gui[3] = value[3].boolean ? 1 : 0;
+
+		} break;
+		case ShaderLanguage::TYPE_INT: {
+
+			int32_t *gui = (int32_t *)data;
+			gui[0] = value[0].sint;
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC2: {
+
+			int32_t *gui = (int32_t *)data;
+
+			for (int i = 0; i < 2; i++) {
+				gui[i] = value[i].sint;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC3: {
+
+			int32_t *gui = (int32_t *)data;
+
+			for (int i = 0; i < 3; i++) {
+				gui[i] = value[i].sint;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC4: {
+
+			int32_t *gui = (int32_t *)data;
+
+			for (int i = 0; i < 4; i++) {
+				gui[i] = value[i].sint;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_UINT: {
+
+			uint32_t *gui = (uint32_t *)data;
+			gui[0] = value[0].uint;
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC2: {
+
+			int32_t *gui = (int32_t *)data;
+
+			for (int i = 0; i < 2; i++) {
+				gui[i] = value[i].uint;
+			}
+		} break;
+		case ShaderLanguage::TYPE_UVEC3: {
+			int32_t *gui = (int32_t *)data;
+
+			for (int i = 0; i < 3; i++) {
+				gui[i] = value[i].uint;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_UVEC4: {
+			int32_t *gui = (int32_t *)data;
+
+			for (int i = 0; i < 4; i++) {
+				gui[i] = value[i].uint;
+			}
+		} break;
+		case ShaderLanguage::TYPE_FLOAT: {
+
+			float *gui = (float *)data;
+			gui[0] = value[0].real;
+
+		} break;
+		case ShaderLanguage::TYPE_VEC2: {
+
+			float *gui = (float *)data;
+
+			for (int i = 0; i < 2; i++) {
+				gui[i] = value[i].real;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_VEC3: {
+
+			float *gui = (float *)data;
+
+			for (int i = 0; i < 3; i++) {
+				gui[i] = value[i].real;
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_VEC4: {
+
+			float *gui = (float *)data;
+
+			for (int i = 0; i < 4; i++) {
+				gui[i] = value[i].real;
+			}
+		} break;
+		case ShaderLanguage::TYPE_MAT2: {
+			float *gui = (float *)data;
+
+			//in std140 members of mat2 are treated as vec4s
+			gui[0] = value[0].real;
+			gui[1] = value[1].real;
+			gui[2] = 0;
+			gui[3] = 0;
+			gui[4] = value[2].real;
+			gui[5] = value[3].real;
+			gui[6] = 0;
+			gui[7] = 0;
+		} break;
+		case ShaderLanguage::TYPE_MAT3: {
+
+			float *gui = (float *)data;
+
+			gui[0] = value[0].real;
+			gui[1] = value[1].real;
+			gui[2] = value[2].real;
+			gui[3] = 0;
+			gui[4] = value[3].real;
+			gui[5] = value[4].real;
+			gui[6] = value[5].real;
+			gui[7] = 0;
+			gui[8] = value[6].real;
+			gui[9] = value[7].real;
+			gui[10] = value[8].real;
+			gui[11] = 0;
+		} break;
+		case ShaderLanguage::TYPE_MAT4: {
+
+			float *gui = (float *)data;
+
+			for (int i = 0; i < 16; i++) {
+				gui[i] = value[i].real;
+			}
+		} break;
+		default: {
+		}
+	}
+}
+
+_FORCE_INLINE_ static void _fill_std140_ubo_empty(ShaderLanguage::DataType type, uint8_t *data) {
+
+	switch (type) {
+
+		case ShaderLanguage::TYPE_BOOL:
+		case ShaderLanguage::TYPE_INT:
+		case ShaderLanguage::TYPE_UINT:
+		case ShaderLanguage::TYPE_FLOAT: {
+			zeromem(data, 4);
+		} break;
+		case ShaderLanguage::TYPE_BVEC2:
+		case ShaderLanguage::TYPE_IVEC2:
+		case ShaderLanguage::TYPE_UVEC2:
+		case ShaderLanguage::TYPE_VEC2: {
+			zeromem(data, 8);
+		} break;
+		case ShaderLanguage::TYPE_BVEC3:
+		case ShaderLanguage::TYPE_IVEC3:
+		case ShaderLanguage::TYPE_UVEC3:
+		case ShaderLanguage::TYPE_VEC3:
+		case ShaderLanguage::TYPE_BVEC4:
+		case ShaderLanguage::TYPE_IVEC4:
+		case ShaderLanguage::TYPE_UVEC4:
+		case ShaderLanguage::TYPE_VEC4: {
+
+			zeromem(data, 16);
+		} break;
+		case ShaderLanguage::TYPE_MAT2: {
+
+			zeromem(data, 32);
+		} break;
+		case ShaderLanguage::TYPE_MAT3: {
+
+			zeromem(data, 48);
+		} break;
+		case ShaderLanguage::TYPE_MAT4: {
+			zeromem(data, 64);
+		} break;
+
+		default: {
+		}
+	}
+}
+
+void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color) {
+
+	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = p_uniforms.front(); E; E = E->next()) {
+
+		if (E->get().order < 0)
+			continue; // texture, does not go here
+
+		//regular uniform
+		uint32_t offset = p_uniform_offsets[E->get().order];
+#ifdef DEBUG_ENABLED
+		uint32_t size = ShaderLanguage::get_type_size(E->get().type);
+		ERR_CONTINUE(offset + size > p_buffer_size);
+#endif
+		uint8_t *data = &p_buffer[offset];
+		const Map<StringName, Variant>::Element *V = p_parameters.find(E->key());
+
+		if (V) {
+			//user provided
+			_fill_std140_variant_ubo_value(E->get().type, V->get(), data, p_use_linear_color);
+
+		} else if (E->get().default_value.size()) {
+			//default value
+			_fill_std140_ubo_value(E->get().type, E->get().default_value, data);
+			//value=E->get().default_value;
+		} else {
+			//zero because it was not provided
+			if (E->get().type == ShaderLanguage::TYPE_VEC4 && E->get().hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+				//colors must be set as black, with alpha as 1.0
+				_fill_std140_variant_ubo_value(E->get().type, Color(0, 0, 0, 1), data, p_use_linear_color);
+			} else {
+				//else just zero it out
+				_fill_std140_ubo_empty(E->get().type, data);
+			}
+		}
+	}
+}
+
+void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures) {
+
+	RasterizerStorageRD *singleton = (RasterizerStorageRD *)RasterizerStorage::base_singleton;
+
+	for (int i = 0; i < p_texture_uniforms.size(); i++) {
+
+		const StringName &uniform_name = p_texture_uniforms[i].name;
+
+		RID texture;
+
+		const Map<StringName, Variant>::Element *V = p_parameters.find(uniform_name);
+		if (V) {
+			texture = V->get();
+		}
+
+		if (!texture.is_valid()) {
+			const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
+			if (W) {
+				texture = W->get();
+			}
+		}
+
+		RID rd_texture;
+
+		if (texture.is_null()) {
+			//check default usage
+			switch (p_texture_uniforms[i].hint) {
+				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK:
+				case ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO: {
+					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_BLACK);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_NONE: {
+					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_NORMAL);
+				} break;
+				case ShaderLanguage::ShaderNode::Uniform::HINT_ANISO: {
+					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_ANISO);
+				} break;
+				default: {
+					rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
+				} break;
+			}
+		} else {
+			bool srgb = p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO;
+			rd_texture = singleton->texture_get_rd_texture(texture, srgb);
+			if (rd_texture.is_null()) {
+				//wtf
+				rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
+			}
+		}
+
+		p_textures[i] = rd_texture;
+	}
+}
+
+void RasterizerStorageRD::_update_queued_materials() {
+	Material *material = material_update_list;
+	while (material) {
+		Material *next = material->update_next;
+
+		if (material->data) {
+			material->data->update_parameters(material->params, material->uniform_dirty, material->texture_dirty);
+		}
+		material->update_requested = false;
+		material->texture_dirty = false;
+		material->uniform_dirty = false;
+		material->update_next = NULL;
+		material = next;
+	}
+	material_update_list = NULL;
+}
+
 /* RENDER TARGET API */
 
 void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
@@ -992,6 +1866,10 @@ void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
 	rt->clear_requested = false;
 }
 
+void RasterizerStorageRD::update_dirty_resources() {
+	_update_queued_materials();
+}
+
 bool RasterizerStorageRD::free(RID p_rid) {
 
 	if (texture_owner.owns(p_rid)) {
@@ -1014,6 +1892,25 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		}
 		texture_owner.free(p_rid);
 
+	} else if (shader_owner.owns(p_rid)) {
+		Shader *shader = shader_owner.getornull(p_rid);
+		//make material unreference this
+		while (shader->owners.size()) {
+			material_set_shader(shader->owners.front()->get()->self, RID());
+		}
+		//clear data if exists
+		if (shader->data) {
+			memdelete(shader->data);
+		}
+		shader_owner.free(p_rid);
+
+	} else if (material_owner.owns(p_rid)) {
+		Material *material = material_owner.getornull(p_rid);
+		if (material->update_requested) {
+			_update_queued_materials();
+		}
+		material_set_shader(p_rid, RID()); //clean up shader
+		material->instance_dependency.instance_notify_deleted(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 
@@ -1031,4 +1928,163 @@ bool RasterizerStorageRD::free(RID p_rid) {
 	}
 
 	return true;
+}
+
+RasterizerStorageRD::RasterizerStorageRD() {
+
+	material_update_list = NULL;
+	{ //create default textures
+
+		RD::TextureFormat tformat;
+		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+		tformat.width = 4;
+		tformat.height = 4;
+		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
+		tformat.type = RD::TEXTURE_TYPE_2D;
+
+		PoolVector<uint8_t> pv;
+		pv.resize(16 * 4);
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 255);
+			pv.set(i * 4 + 1, 255);
+			pv.set(i * 4 + 2, 255);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<PoolVector<uint8_t> > vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<PoolVector<uint8_t> > vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 128);
+			pv.set(i * 4 + 1, 128);
+			pv.set(i * 4 + 2, 255);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<PoolVector<uint8_t> > vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_NORMAL] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 255);
+			pv.set(i * 4 + 1, 128);
+			pv.set(i * 4 + 2, 255);
+			pv.set(i * 4 + 3, 255);
+		}
+
+		{
+			Vector<PoolVector<uint8_t> > vpv;
+			vpv.push_back(pv);
+			default_rd_textures[DEFAULT_RD_TEXTURE_ANISO] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
+		}
+
+		for (int i = 0; i < 16; i++) {
+			pv.set(i * 4 + 0, 0);
+			pv.set(i * 4 + 1, 0);
+			pv.set(i * 4 + 2, 0);
+			pv.set(i * 4 + 3, 0);
+		}
+
+		default_rd_textures[DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER] = RD::get_singleton()->texture_buffer_create(16, RD::DATA_FORMAT_R8G8B8A8_UNORM, pv);
+	}
+
+	//default samplers
+	for (int i = 1; i < VS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::SamplerState sampler_state;
+			switch (i) {
+				case VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.max_lod = 0;
+				} break;
+				case VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
+
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.max_lod = 0;
+				} break;
+				case VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+				} break;
+				case VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+
+				} break;
+				case VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = GLOBAL_GET("rendering/quality/filters/max_anisotropy");
+				} break;
+				case VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC: {
+					sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
+					sampler_state.use_anisotropy = true;
+					sampler_state.anisotropy_max = GLOBAL_GET("rendering/quality/filters/max_anisotropy");
+
+				} break;
+				default: {
+				}
+			}
+			switch (j) {
+				case VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
+
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
+
+				} break;
+				case VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
+				} break;
+				case VS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
+					sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+					sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
+				} break;
+				default: {
+				}
+			}
+
+			default_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
+		}
+	}
+}
+
+RasterizerStorageRD::~RasterizerStorageRD() {
+	//def textures
+	for (int i = 0; i < DEFAULT_RD_TEXTURE_MAX; i++) {
+		RD::get_singleton()->free(default_rd_textures[i]);
+	}
+
+	//def samplers
+	for (int i = 1; i < VS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
+		for (int j = 1; j < VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
+			RD::get_singleton()->free(default_rd_samplers[i][j]);
+		}
+	}
 }

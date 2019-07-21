@@ -4,6 +4,7 @@
 #include "servers/visual/rasterizer/rasterizer.h"
 #include "servers/visual/rasterizer/rasterizer_storage_rd.h"
 #include "servers/visual/rasterizer/render_pipeline_vertex_format_cache_rd.h"
+#include "servers/visual/rasterizer/shader_compiler_rd.h"
 #include "servers/visual/rasterizer/shaders/canvas.glsl.gen.h"
 #include "servers/visual/rasterizer/shaders/canvas_occlusion.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
@@ -112,7 +113,76 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		RID default_skeleton_uniform_buffer;
 		RID default_skeleton_texture_buffer;
 
+		ShaderCompilerRD compiler;
 	} shader;
+
+	struct ShaderData : public RasterizerStorageRD::ShaderData {
+
+		enum BlendMode { //used internally
+			BLEND_MODE_MIX,
+			BLEND_MODE_ADD,
+			BLEND_MODE_SUB,
+			BLEND_MODE_MUL,
+			BLEND_MODE_PMALPHA,
+			BLEND_MODE_DISABLED,
+		};
+
+		enum LightMode {
+			LIGHT_MODE_NORMAL,
+			LIGHT_MODE_UNSHADED,
+			LIGHT_MODE_LIGHT_ONLY
+		};
+
+		bool valid;
+		RID version;
+		PipelineVariants pipeline_variants;
+		String path;
+
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String code;
+		Map<StringName, RID> default_texture_params;
+
+		bool uses_screen_texture;
+		bool uses_material_samplers;
+
+		virtual void set_code(const String &p_Code);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual bool is_param_texture(const StringName &p_param) const;
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		ShaderData();
+		virtual ~ShaderData();
+	};
+
+	RasterizerStorageRD::ShaderData *_create_shader_func();
+	static RasterizerStorageRD::ShaderData *_create_shader_funcs() {
+		return static_cast<RasterizerCanvasRD *>(singleton)->_create_shader_func();
+	}
+
+	struct MaterialData : public RasterizerStorageRD::MaterialData {
+		ShaderData *shader_data;
+		RID uniform_buffer;
+		RID uniform_set;
+		Vector<RID> texture_cache;
+		Vector<uint8_t> ubo_data;
+
+		virtual void set_render_priority(int p_priority) {}
+		virtual void set_next_pass(RID p_pass) {}
+		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual ~MaterialData();
+	};
+
+	RasterizerStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
+	static RasterizerStorageRD::MaterialData *_create_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
+		return static_cast<RasterizerCanvasRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
+	}
 
 	/**************************/
 	/**** TEXTURE BINDINGS ****/
@@ -168,18 +238,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	RID _create_texture_binding(RID p_texture, RID p_normalmap, RID p_specular, VisualServer::CanvasItemTextureFilter p_filter, VisualServer::CanvasItemTextureRepeat p_repeat, RID p_multimesh);
 	void _dispose_bindings();
-	struct {
-		RID white_texture;
-		RID black_texture;
-		RID normal_texture;
-		RID aniso_texture;
-
-		RID default_multimesh_tb;
-
-	} default_textures;
 
 	struct {
-		RID samplers[VS::CANVAS_ITEM_TEXTURE_FILTER_MAX][VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX];
 		VS::CanvasItemTextureFilter default_filter;
 		VS::CanvasItemTextureRepeat default_repeat;
 	} default_samplers;
@@ -293,7 +353,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 		LightCache light_cache[DEFAULT_MAX_LIGHTS_PER_ITEM];
 		uint32_t light_cache_count;
-		RID light_uniform_set;
+		RID state_uniform_set_with_light;
 		RID state_uniform_set;
 		ItemStateData() {
 
@@ -305,8 +365,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		}
 
 		~ItemStateData() {
-			if (light_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(light_uniform_set)) {
-				RD::get_singleton()->free(light_uniform_set);
+			if (state_uniform_set_with_light.is_valid() && RD::get_singleton()->uniform_set_is_valid(state_uniform_set_with_light)) {
+				RD::get_singleton()->free(state_uniform_set_with_light);
 			}
 			if (state_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(state_uniform_set)) {
 				RD::get_singleton()->free(state_uniform_set);
@@ -322,6 +382,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			float screen_transform[16];
 			float canvas_normal_transform[16];
 			float canvas_modulate[4];
+			float time;
+			float pad[3];
 			//uint32_t light_count;
 			//uint32_t pad[3];
 		};
@@ -334,6 +396,8 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 		uint32_t max_lights_per_render;
 		uint32_t max_lights_per_item;
+
+		double time;
 	} state;
 
 	struct PushConstant {
@@ -368,7 +432,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	Item *items[MAX_RENDER_ITEMS];
 
 	Size2i _bind_texture_binding(TextureBindingID p_binding, RenderingDevice::DrawListID p_draw_list, uint32_t &flags);
-	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights);
+	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants);
 	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
@@ -401,6 +465,7 @@ public:
 
 	void draw_window_margins(int *p_margins, RID *p_margin_textures) {}
 
+	void set_time(double p_time);
 	void update();
 	bool free(RID p_rid);
 	RasterizerCanvasRD(RasterizerStorageRD *p_storage);
