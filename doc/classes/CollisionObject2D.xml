@@ -19,7 +19,7 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Accepts unhandled [InputEvent]s. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
+				Accepts unhandled [InputEvent]s. Requires [member input_pickable] to be [code]true[/code]. [code]shape_idx[/code] is the child index of the clicked [Shape2D]. Connect to the [code]input_event[/code] signal to easily pick up these events.
 			</description>
 		</method>
 		<method name="create_shape_owner">
@@ -227,17 +227,17 @@
 			<argument index="2" name="shape_idx" type="int">
 			</argument>
 			<description>
-				Emitted when an input event occurs. Requires [code]input_pickable[/code] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set. See [method _input_event] for details.
+				Emitted when an input event occurs. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set. See [method _input_event] for details.
 			</description>
 		</signal>
 		<signal name="mouse_entered">
 			<description>
-				Emitted when the mouse pointer enters any of this object's shapes. Requires [code]input_pickable[/code] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer enters any of this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
 			</description>
 		</signal>
 		<signal name="mouse_exited">
 			<description>
-				Emitted when the mouse pointer exits all this object's shapes. Requires [code]input_pickable[/code] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
+				Emitted when the mouse pointer exits all this object's shapes. Requires [member input_pickable] to be [code]true[/code] and at least one [code]collision_layer[/code] bit to be set.
 			</description>
 		</signal>
 	</signals>
