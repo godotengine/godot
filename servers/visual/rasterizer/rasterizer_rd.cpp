@@ -46,9 +46,12 @@ void RasterizerRD::blit_render_targets_to_screen(int p_screen, const BlitToScree
 }
 
 void RasterizerRD::begin_frame(double frame_step) {
+	time += frame_step;
+	canvas->set_time(time);
 }
 
 void RasterizerRD::end_frame(bool p_swap_buffers) {
+
 	RD::get_singleton()->finalize_frame();
 #warning not swapping buffers likely not an option for now, find another way
 	OS::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
@@ -130,6 +133,7 @@ void RasterizerRD::finalize() {
 }
 
 RasterizerRD::RasterizerRD() {
+	time = 0;
 	storage = memnew(RasterizerStorageRD);
 	canvas = memnew(RasterizerCanvasRD(storage));
 	scene = memnew(RasterizerSceneForwardRD);

@@ -51,9 +51,15 @@ public:
 	struct GeneratedCode {
 
 		Vector<CharString> defines;
-		Vector<StringName> texture_uniforms;
-		Vector<ShaderLanguage::DataType> texture_types;
-		Vector<ShaderLanguage::ShaderNode::Uniform::Hint> texture_hints;
+		struct Texture {
+			StringName name;
+			ShaderLanguage::DataType type;
+			ShaderLanguage::ShaderNode::Uniform::Hint hint;
+			ShaderLanguage::ShaderNode::Uniform::Filter filter;
+			ShaderLanguage::ShaderNode::Uniform::Repeat repeat;
+		};
+
+		Vector<Texture> texture_uniforms;
 
 		Vector<uint32_t> uniform_offsets;
 		uint32_t uniform_total_size;

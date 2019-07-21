@@ -20,6 +20,8 @@ protected:
 
 	Map<RID, RID> render_target_descriptors;
 
+	double time;
+
 public:
 	RasterizerStorage *get_storage() { return storage; }
 	RasterizerCanvas *get_canvas() { return canvas; }

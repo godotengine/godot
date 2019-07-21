@@ -31,10 +31,13 @@ layout(location=3) out vec2 pixel_size_interp;
 
 #endif
 
+#ifdef USE_MATERIAL_UNIFORMS
+layout(set = 1, binding = 1, std140) uniform MaterialUniforms {
 /* clang-format off */
 MATERIAL_UNIFORMS
 /* clang-format on */
-
+} material;
+#endif
 
 /* clang-format off */
 VERTEX_SHADER_GLOBALS
@@ -207,6 +210,7 @@ VERTEX_SHADER_CODE
 #endif
 #endif
 
+
 	vertex = (canvas_data.canvas_transform * vec4(vertex,0.0,1.0)).xy;
 
 	vertex_interp = vertex;
@@ -243,33 +247,41 @@ layout(location=3) in vec2 pixel_size_interp;
 
 layout(location = 0) out vec4 frag_color;
 
+#ifdef USE_MATERIAL_UNIFORMS
+layout(set = 1, binding = 1, std140) uniform MaterialUniforms {
 /* clang-format off */
 MATERIAL_UNIFORMS
 /* clang-format on */
+} material;
+#endif
 
 
 /* clang-format off */
 FRAGMENT_SHADER_GLOBALS
 /* clang-format on */
 
+#ifdef LIGHT_SHADER_CODE_USED
 
-void light_compute(
-		inout vec4 light,
-		inout vec2 light_vec,
-		inout float light_height,
-		inout vec4 light_color,
-		vec2 light_uv,
-		inout vec4 shadow_color,
+vec4 light_compute(
+		vec3 light_vertex,
+		vec3 light_position,
 		vec3 normal,
-		vec2 uv,
+		vec4 light_color,
+		float light_energy,
+		vec4 specular_shininess,
+		inout vec4 shadow_modulate,
 		vec2 screen_uv,
+		vec2 uv,
 		vec4 color) {
 
+	vec4 light = vec4(0.0);
 	/* clang-format off */
 LIGHT_SHADER_CODE
 	/* clang-format on */
+	return light;
 }
 
+#endif
 
 #ifdef USE_NINEPATCH
 
@@ -391,7 +403,12 @@ void main() {
 
 #if defined(SCREEN_UV_USED)
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
+#else
+	vec2 screen_uv = vec2(0.0);
 #endif
+
+	vec3 light_vertex = vec3(vertex,0.0);
+	vec2 shadow_vertex = vertex;
 
 	{
 		float normal_depth = 1.0;
@@ -449,14 +466,25 @@ FRAGMENT_SHADER_CODE
 		light_base&=0xFF;
 
 		vec2 tex_uv = (vec4(vertex,0.0,1.0) * mat4(light_array.data[light_base].matrix[0],light_array.data[light_base].matrix[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
-		vec4 light_color = texture(sampler2D(light_textures[i],texture_sampler),tex_uv);
+		vec4 light_color = texture(sampler2D(light_textures[i],texture_sampler),tex_uv);				
 		vec4 light_base_color = light_array.data[light_base].color;
+
+#ifdef LIGHT_SHADER_CODE_USED
+
+		vec4 shadow_modulate = vec4(1.0);
+		vec3 light_position = vec3(light_array.data[light_base].position,light_array.data[light_base].height);
+
+		light_color.rgb*=light_base_color.rgb;
+		light_color = light_compute(light_vertex,light_position,normal,light_color,light_base_color.a,specular_shininess,shadow_modulate,screen_uv,color,uv);
+#else
+
+
 		light_color.rgb*=light_base_color.rgb*light_base_color.a;
 
 		if (normal_used) {
 
 			vec3 light_pos = vec3(light_array.data[light_base].position,light_array.data[light_base].height);
-			vec3 pos = vec3(vertex,0.0);
+			vec3 pos = light_vertex;
 			vec3 light_vec = normalize(light_pos-pos);
 			float cNdotL = max(0.0,dot(normal,light_vec));
 
@@ -480,7 +508,7 @@ FRAGMENT_SHADER_CODE
 			}
 
 		}
-
+#endif
 		if (any(lessThan(tex_uv, vec2(0.0, 0.0))) || any(greaterThanEqual(tex_uv, vec2(1.0, 1.0)))) {
 			//if outside the light texture, light color is zero
 			light_color.a = 0.0;
@@ -488,7 +516,7 @@ FRAGMENT_SHADER_CODE
 
 		if (bool(light_array.data[light_base].flags&LIGHT_FLAGS_HAS_SHADOW)) {
 
-			vec2 shadow_pos = (vec4(vertex,0.0,1.0) * mat4(light_array.data[light_base].shadow_matrix[0],light_array.data[light_base].shadow_matrix[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
+			vec2 shadow_pos = (vec4(shadow_vertex,0.0,1.0) * mat4(light_array.data[light_base].shadow_matrix[0],light_array.data[light_base].shadow_matrix[1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0))).xy; //multiply inverse given its transposed. Optimizer removes useless operations.
 
 			vec2 pos_norm = normalize(shadow_pos);
 			vec2 pos_abs = abs(pos_norm);
@@ -550,7 +578,11 @@ FRAGMENT_SHADER_CODE
 				shadow/=13.0;
 			}
 
-			light_color = mix(light_color,light_array.data[light_base].shadow_color,shadow);
+			vec4 shadow_color = light_array.data[light_base].shadow_color;
+#ifdef LIGHT_SHADER_CODE_USED
+			shadow_color*=shadow_modulate;
+#endif
+			light_color = mix(light_color,shadow_color,shadow);
 
 		}
 

@@ -1,5 +1,7 @@
 #include "rasterizer_canvas_rd.h"
 #include "core/math/math_funcs.h"
+#include "core/project_settings.h"
+
 void RasterizerCanvasRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 
 	p_mat4[0] = p_transform.elements[0][0];
@@ -82,7 +84,7 @@ RID RasterizerCanvasRD::_create_texture_binding(RID p_texture, RID p_normalmap, 
 		RID texture = storage->texture_get_rd_texture(p_texture);
 		if (!texture.is_valid()) {
 			//use default white texture
-			texture = default_textures.white_texture;
+			texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 		u.ids.push_back(texture);
 		uniform_set.push_back(u);
@@ -95,7 +97,7 @@ RID RasterizerCanvasRD::_create_texture_binding(RID p_texture, RID p_normalmap, 
 		RID texture = storage->texture_get_rd_texture(p_normalmap);
 		if (!texture.is_valid()) {
 			//use default normal texture
-			texture = default_textures.normal_texture;
+			texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_NORMAL);
 		}
 		u.ids.push_back(texture);
 		uniform_set.push_back(u);
@@ -108,7 +110,7 @@ RID RasterizerCanvasRD::_create_texture_binding(RID p_texture, RID p_normalmap, 
 		RID texture = storage->texture_get_rd_texture(p_specular);
 		if (!texture.is_valid()) {
 			//use default white texture
-			texture = default_textures.white_texture;
+			texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
 		}
 		u.ids.push_back(texture);
 		uniform_set.push_back(u);
@@ -118,7 +120,7 @@ RID RasterizerCanvasRD::_create_texture_binding(RID p_texture, RID p_normalmap, 
 		RD::Uniform u;
 		u.type = RD::UNIFORM_TYPE_SAMPLER;
 		u.binding = 4;
-		RID sampler = default_samplers.samplers[p_filter][p_repeat];
+		RID sampler = storage->sampler_rd_get_default(p_filter, p_repeat);
 		ERR_FAIL_COND_V(sampler.is_null(), RID());
 		u.ids.push_back(sampler);
 		uniform_set.push_back(u);
@@ -128,7 +130,7 @@ RID RasterizerCanvasRD::_create_texture_binding(RID p_texture, RID p_normalmap, 
 		RD::Uniform u;
 		u.type = RD::UNIFORM_TYPE_TEXTURE_BUFFER;
 		u.binding = 5;
-		u.ids.push_back(default_textures.default_multimesh_tb);
+		u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER));
 		uniform_set.push_back(u);
 	}
 
@@ -488,7 +490,7 @@ Size2i RasterizerCanvasRD::_bind_texture_binding(TextureBindingID p_binding, RD:
 }
 
 ////////////////////
-void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights) {
+void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_item, RD::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants) {
 
 	//create an empty push constant
 
@@ -566,98 +568,19 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 		base_flags |= light_count << FLAGS_LIGHT_COUNT_SHIFT;
 	}
 
-	if (light_count) {
-
-		//validate and update lighs if they are being used
-		bool invalid_uniform = state_data->light_uniform_set.is_valid() && !RD::get_singleton()->uniform_set_is_valid(state_data->light_uniform_set);
-
-		if (state_data->light_uniform_set.is_null() || invalid_uniform || light_uniform_set_dirty) {
-			//recreate uniform set
-			if (state_data->light_uniform_set.is_valid() && !invalid_uniform) {
-				RD::get_singleton()->free(state_data->light_uniform_set);
-			}
-
-			state_data->light_uniform_set = RID();
-
-			Vector<RD::Uniform> uniforms;
-			{
-				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-				u.binding = 0;
-				u.ids.push_back(state.lights_uniform_buffer);
-				uniforms.push_back(u);
-			}
-
-			{
-
-				RD::Uniform u_lights;
-				u_lights.type = RD::UNIFORM_TYPE_TEXTURE;
-				u_lights.binding = 1;
-
-				RD::Uniform u_shadows;
-				u_shadows.type = RD::UNIFORM_TYPE_TEXTURE;
-				u_shadows.binding = 2;
-
-				//lights
-				for (uint32_t i = 0; i < state.max_lights_per_item; i++) {
-					if (i < light_count) {
-
-						CanvasLight *cl = canvas_light_owner.getornull(light_cache[i]->light_internal);
-						ERR_CONTINUE(!cl);
-
-						RID rd_texture;
-
-						if (cl->texture.is_valid()) {
-							rd_texture = storage->texture_get_rd_texture(cl->texture);
-						}
-						if (rd_texture.is_valid()) {
-							u_lights.ids.push_back(rd_texture);
-						} else {
-							u_lights.ids.push_back(default_textures.white_texture);
-						}
-						if (cl->shadow.texture.is_valid()) {
-							u_shadows.ids.push_back(cl->shadow.texture);
-						} else {
-							u_shadows.ids.push_back(default_textures.black_texture);
-						}
-					} else {
-						u_lights.ids.push_back(default_textures.white_texture);
-						u_shadows.ids.push_back(default_textures.black_texture);
-					}
-				}
-
-				uniforms.push_back(u_lights);
-				uniforms.push_back(u_shadows);
-			}
-
-			{
-				RD::Uniform u;
-				u.type = RD::UNIFORM_TYPE_SAMPLER;
-				u.binding = 3;
-				u.ids.push_back(state.shadow_sampler);
-				uniforms.push_back(u);
-			}
-
-			state_data->light_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader_light, 3);
-		}
-
-		RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, state_data->light_uniform_set, 3);
-		light_mode = PIPELINE_LIGHT_MODE_ENABLED;
-	} else {
-		light_mode = PIPELINE_LIGHT_MODE_DISABLED;
-	}
-
 	{
-		//state uniform
-		bool invalid_uniform = state_data->state_uniform_set.is_valid() && !RD::get_singleton()->uniform_set_is_valid(state_data->state_uniform_set);
 
-		if (state_data->state_uniform_set.is_null() || invalid_uniform) {
-			if (state_data->state_uniform_set.is_valid() && !invalid_uniform) {
-				RD::get_singleton()->free(state_data->state_uniform_set);
-			}
-			state_data->state_uniform_set = RID();
+		RID &canvas_item_state = light_count ? state_data->state_uniform_set_with_light : state_data->state_uniform_set;
 
+		bool invalid_uniform = canvas_item_state.is_valid() && !RD::get_singleton()->uniform_set_is_valid(canvas_item_state);
+
+		if (canvas_item_state.is_null() || invalid_uniform || (light_count > 0 && light_uniform_set_dirty)) {
+			//re create canvas state
 			Vector<RD::Uniform> uniforms;
+
+			if (state_data->state_uniform_set_with_light.is_valid() && !invalid_uniform) {
+				RD::get_singleton()->free(canvas_item_state);
+			}
 
 			{
 				RD::Uniform u;
@@ -671,14 +594,6 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				//bind skeleton stuff
 			} else {
 				//bind default
-
-				{
-					RD::Uniform u;
-					u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-					u.binding = 0;
-					u.ids.push_back(state.canvas_state_buffer);
-					uniforms.push_back(u);
-				}
 
 				{
 					RD::Uniform u;
@@ -697,19 +612,86 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				}
 			}
 
-			state_data->state_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, 2);
+			//validate and update lighs if they are being used
+
+			if (light_count > 0) {
+				//recreate uniform set
+
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+					u.binding = 3;
+					u.ids.push_back(state.lights_uniform_buffer);
+					uniforms.push_back(u);
+				}
+
+				{
+
+					RD::Uniform u_lights;
+					u_lights.type = RD::UNIFORM_TYPE_TEXTURE;
+					u_lights.binding = 4;
+
+					RD::Uniform u_shadows;
+					u_shadows.type = RD::UNIFORM_TYPE_TEXTURE;
+					u_shadows.binding = 5;
+
+					//lights
+					for (uint32_t i = 0; i < state.max_lights_per_item; i++) {
+						if (i < light_count) {
+
+							CanvasLight *cl = canvas_light_owner.getornull(light_cache[i]->light_internal);
+							ERR_CONTINUE(!cl);
+
+							RID rd_texture;
+
+							if (cl->texture.is_valid()) {
+								rd_texture = storage->texture_get_rd_texture(cl->texture);
+							}
+							if (rd_texture.is_valid()) {
+								u_lights.ids.push_back(rd_texture);
+							} else {
+								u_lights.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+							}
+							if (cl->shadow.texture.is_valid()) {
+								u_shadows.ids.push_back(cl->shadow.texture);
+							} else {
+								u_shadows.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+							}
+						} else {
+							u_lights.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
+							u_shadows.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK));
+						}
+					}
+
+					uniforms.push_back(u_lights);
+					uniforms.push_back(u_shadows);
+				}
+
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_SAMPLER;
+					u.binding = 6;
+					u.ids.push_back(state.shadow_sampler);
+					uniforms.push_back(u);
+				}
+
+				canvas_item_state = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader_light, 2);
+			} else {
+				canvas_item_state = RD::get_singleton()->uniform_set_create(uniforms, shader.default_version_rd_shader, 2);
+			}
 		}
 
-		RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, state_data->state_uniform_set, 2);
+		RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, canvas_item_state, 2);
 	}
 
-	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
+	light_mode = light_count > 0 ? PIPELINE_LIGHT_MODE_ENABLED : PIPELINE_LIGHT_MODE_DISABLED;
+
+	PipelineVariants *pipeline_variants = p_pipeline_variants;
 
 	bool reclip = false;
 
 	const Item::Command *c = p_item->commands;
 	while (c) {
-
 		push_constant.flags = base_flags; //reset on each command for sanity
 		push_constant.specular_shininess = 0xFFFFFFFF;
 
@@ -1341,6 +1323,10 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
 
+	RID prev_material;
+
+	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
+
 	for (int i = 0; i < p_item_count; i++) {
 
 		Item *ci = items[i];
@@ -1360,7 +1346,34 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 			}
 		}
 
-		_render_item(draw_list, ci, fb_format, canvas_transform_inverse, current_clip, p_lights);
+		if (ci->material != prev_material) {
+
+			MaterialData *material_data;
+			if (ci->material.is_valid()) {
+				material_data = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
+				print_line("has material data");
+			}
+
+			if (material_data) {
+
+				if (material_data->shader_data->version.is_valid()) {
+					pipeline_variants = &material_data->shader_data->pipeline_variants;
+					if (material_data->uniform_set.is_valid()) {
+						print_line("bound uniform set");
+						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->uniform_set, 1);
+					}
+				} else {
+					pipeline_variants = &shader.pipeline_variants;
+				}
+			} else {
+				pipeline_variants = &shader.pipeline_variants;
+			}
+		}
+
+		print_line("go render");
+		_render_item(draw_list, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants);
+
+		prev_material = ci->material;
 	}
 
 	RD::get_singleton()->draw_list_end();
@@ -1397,6 +1410,7 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 		state_buffer.canvas_modulate[2] = p_modulate.b;
 		state_buffer.canvas_modulate[3] = p_modulate.a;
 
+		state_buffer.time = state.time;
 		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer, true);
 	}
 
@@ -1462,26 +1476,46 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 	}
 
 	//fill the list until rendering is possible.
+	bool material_screen_texture_found = false;
 	Item *ci = p_item_list;
+	Rect2 back_buffer_rect;
+	bool backbuffer_copy = false;
+
 	while (ci) {
+
+		if (ci->copy_back_buffer) {
+			backbuffer_copy = true;
+
+			if (ci->copy_back_buffer->full) {
+				back_buffer_rect = Rect2();
+			} else {
+				back_buffer_rect = ci->copy_back_buffer->rect;
+			}
+		}
+
+		if (!material_screen_texture_found && ci->material.is_valid()) {
+			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
+			if (md->shader_data->uses_screen_texture) {
+				backbuffer_copy = true;
+				back_buffer_rect = Rect2();
+			}
+		}
+
+		if (backbuffer_copy) {
+			//render anything pending, including clearing if no items
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
+			item_count = 0;
+
+			backbuffer_copy = false;
+			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
+		}
 
 		items[item_count++] = ci;
 
-		bool backbuffer_copy = ci->copy_back_buffer; // || shader uses SCREEN_TEXTURE
-		if (!ci->next || backbuffer_copy || item_count == MAX_RENDER_ITEMS - 1) {
+		if (!ci->next || item_count == MAX_RENDER_ITEMS - 1) {
 			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
 			//then reset
 			item_count = 0;
-		}
-
-		if (ci->copy_back_buffer) {
-
-			if (ci->copy_back_buffer->full) {
-
-				//_copy_texscreen(Rect2());
-			} else {
-				//_copy_texscreen(ci->copy_back_buffer->rect);
-			}
 		}
 
 		ci = ci->next;
@@ -1734,6 +1768,382 @@ void RasterizerCanvasRD::occluder_polygon_set_cull_mode(RID p_occluder, VS::Canv
 	oc->cull_mode = p_mode;
 }
 
+void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
+	//compile
+
+	print_line("shader set code?");
+	code = p_code;
+	valid = false;
+	ubo_size = 0;
+	uniforms.clear();
+	uses_screen_texture = false;
+	uses_material_samplers = false;
+
+	if (code == String()) {
+		return; //just invalid, but no error
+	}
+
+	ShaderCompilerRD::GeneratedCode gen_code;
+
+	int light_mode = LIGHT_MODE_NORMAL;
+	int blend_mode = BLEND_MODE_MIX;
+	bool uses_screen_texture = false;
+
+	ShaderCompilerRD::IdentifierActions actions;
+
+	actions.render_mode_values["blend_add"] = Pair<int *, int>(&blend_mode, BLEND_MODE_ADD);
+	actions.render_mode_values["blend_mix"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MIX);
+	actions.render_mode_values["blend_sub"] = Pair<int *, int>(&blend_mode, BLEND_MODE_SUB);
+	actions.render_mode_values["blend_mul"] = Pair<int *, int>(&blend_mode, BLEND_MODE_MUL);
+	actions.render_mode_values["blend_premul_alpha"] = Pair<int *, int>(&blend_mode, BLEND_MODE_PMALPHA);
+	actions.render_mode_values["blend_disabled"] = Pair<int *, int>(&blend_mode, BLEND_MODE_DISABLED);
+
+	actions.render_mode_values["unshaded"] = Pair<int *, int>(&light_mode, LIGHT_MODE_UNSHADED);
+	actions.render_mode_values["light_only"] = Pair<int *, int>(&light_mode, LIGHT_MODE_LIGHT_ONLY);
+
+	actions.usage_flag_pointers["SCREEN_TEXTURE"] = &uses_screen_texture;
+
+	actions.uniforms = &uniforms;
+
+	RasterizerCanvasRD *canvas_singleton = (RasterizerCanvasRD *)RasterizerCanvas::singleton;
+
+	Error err = canvas_singleton->shader.compiler.compile(VS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
+
+	ERR_FAIL_COND(err != OK);
+
+	if (version.is_null()) {
+		version = canvas_singleton->shader.canvas_shader.version_create();
+	}
+
+	if (gen_code.texture_uniforms.size() || uses_screen_texture) { //requires the samplers
+		gen_code.defines.push_back("\n#define USE_MATERIAL_SAMPLERS\n");
+		uses_material_samplers = true;
+	}
+#if 0
+	print_line("**compiling shader:");
+	print_line("**defines:\n");
+	for (int i = 0; i < gen_code.defines.size(); i++) {
+		print_line(gen_code.defines[i]);
+	}
+	print_line("\n**uniforms:\n" + gen_code.uniforms);
+	print_line("\n**vertex_globals:\n" + gen_code.vertex_global);
+	print_line("\n**vertex_code:\n" + gen_code.vertex);
+	print_line("\n**fragment_globals:\n" + gen_code.fragment_global);
+	print_line("\n**fragment_code:\n" + gen_code.fragment);
+	print_line("\n**light_code:\n" + gen_code.light);
+#endif
+	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
+
+	ubo_size = gen_code.uniform_total_size;
+	ubo_offsets = gen_code.uniform_offsets;
+	texture_uniforms = gen_code.texture_uniforms;
+
+	//update them pipelines
+
+	RD::PipelineColorBlendState::Attachment attachment;
+
+	switch (blend_mode) {
+		case BLEND_MODE_DISABLED: {
+
+			// nothing to do here, disabled by default
+
+		} break;
+		case BLEND_MODE_MIX: {
+
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		} break;
+		case BLEND_MODE_ADD: {
+
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+
+		} break;
+		case BLEND_MODE_SUB: {
+
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_SUBTRACT;
+			attachment.color_blend_op = RD::BLEND_OP_SUBTRACT;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_SRC_ALPHA;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+
+		} break;
+		case BLEND_MODE_MUL: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_DST_COLOR;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ZERO;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_DST_ALPHA;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ZERO;
+
+		} break;
+		case BLEND_MODE_PMALPHA: {
+			attachment.enable_blend = true;
+			attachment.alpha_blend_op = RD::BLEND_OP_ADD;
+			attachment.color_blend_op = RD::BLEND_OP_ADD;
+			attachment.src_color_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_color_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+			attachment.src_alpha_blend_factor = RD::BLEND_FACTOR_ONE;
+			attachment.dst_alpha_blend_factor = RD::BLEND_FACTOR_ONE_MINUS_SRC_ALPHA;
+
+		} break;
+	}
+
+	RD::PipelineColorBlendState blend_state;
+	blend_state.attachments.push_back(attachment);
+
+	//update pipelines
+
+	for (int i = 0; i < PIPELINE_LIGHT_MODE_MAX; i++) {
+		for (int j = 0; j < PIPELINE_VARIANT_MAX; j++) {
+			RD::RenderPrimitive primitive[PIPELINE_VARIANT_MAX] = {
+				RD::RENDER_PRIMITIVE_TRIANGLES,
+				RD::RENDER_PRIMITIVE_TRIANGLES,
+				RD::RENDER_PRIMITIVE_TRIANGLES,
+				RD::RENDER_PRIMITIVE_LINES,
+				RD::RENDER_PRIMITIVE_POINTS,
+				RD::RENDER_PRIMITIVE_TRIANGLES,
+				RD::RENDER_PRIMITIVE_LINES,
+				RD::RENDER_PRIMITIVE_POINTS,
+			};
+			ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
+				{ //non lit
+						SHADER_VARIANT_QUAD,
+						SHADER_VARIANT_NINEPATCH,
+						SHADER_VARIANT_PRIMITIVE,
+						SHADER_VARIANT_PRIMITIVE,
+						SHADER_VARIANT_PRIMITIVE_POINTS,
+						SHADER_VARIANT_ATTRIBUTES,
+						SHADER_VARIANT_ATTRIBUTES,
+						SHADER_VARIANT_ATTRIBUTES_POINTS },
+				{ //lit
+						SHADER_VARIANT_QUAD_LIGHT,
+						SHADER_VARIANT_NINEPATCH_LIGHT,
+						SHADER_VARIANT_PRIMITIVE_LIGHT,
+						SHADER_VARIANT_PRIMITIVE_LIGHT,
+						SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT,
+						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT },
+			};
+
+			RID shader_variant = canvas_singleton->shader.canvas_shader.version_get_shader(version, shader_variants[i][j]);
+			pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), blend_state, 0);
+		}
+	}
+
+	valid = true;
+}
+
+void RasterizerCanvasRD::ShaderData::set_default_texture_param(const StringName &p_name, RID p_texture) {
+	if (!p_texture.is_valid()) {
+		default_texture_params.erase(p_name);
+	} else {
+		default_texture_params[p_name] = p_texture;
+	}
+}
+void RasterizerCanvasRD::ShaderData::get_param_list(List<PropertyInfo> *p_param_list) const {
+
+	Map<int, StringName> order;
+
+	for (Map<StringName, ShaderLanguage::ShaderNode::Uniform>::Element *E = uniforms.front(); E; E = E->next()) {
+
+		if (E->get().texture_order >= 0) {
+			order[E->get().texture_order + 100000] = E->key();
+		} else {
+			order[E->get().order] = E->key();
+		}
+	}
+
+	for (Map<int, StringName>::Element *E = order.front(); E; E = E->next()) {
+
+		PropertyInfo pi = ShaderLanguage::uniform_to_property_info(uniforms[E->get()]);
+		pi.name = E->get();
+		p_param_list->push_back(pi);
+	}
+}
+
+bool RasterizerCanvasRD::ShaderData::is_param_texture(const StringName &p_param) const {
+	if (!uniforms.has(p_param)) {
+		return false;
+	}
+
+	return uniforms[p_param].texture_order >= 0;
+}
+
+bool RasterizerCanvasRD::ShaderData::is_animated() const {
+	return false;
+}
+bool RasterizerCanvasRD::ShaderData::casts_shadows() const {
+	return false;
+}
+Variant RasterizerCanvasRD::ShaderData::get_default_parameter(const StringName &p_parameter) const {
+	if (uniforms.has(p_parameter)) {
+		ShaderLanguage::ShaderNode::Uniform uniform = uniforms[p_parameter];
+		Vector<ShaderLanguage::ConstantNode::Value> default_value = uniform.default_value;
+		return ShaderLanguage::constant_value_to_variant(default_value, uniform.type, uniform.hint);
+	}
+	return Variant();
+}
+
+RasterizerCanvasRD::ShaderData::ShaderData() {
+	valid = false;
+	uses_screen_texture = false;
+	uses_material_samplers = false;
+}
+
+RasterizerCanvasRD::ShaderData::~ShaderData() {
+	RasterizerCanvasRD *canvas_singleton = (RasterizerCanvasRD *)RasterizerCanvas::singleton;
+	ERR_FAIL_COND(!canvas_singleton);
+	//pipeline variants will clear themselves if shader is gone
+	if (version.is_valid()) {
+		canvas_singleton->shader.canvas_shader.version_free(version);
+	}
+}
+
+RasterizerStorageRD::ShaderData *RasterizerCanvasRD::_create_shader_func() {
+	ShaderData *shader_data = memnew(ShaderData);
+	return shader_data;
+}
+void RasterizerCanvasRD::MaterialData::update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty) {
+
+	RasterizerCanvasRD *canvas_singleton = (RasterizerCanvasRD *)RasterizerCanvas::singleton;
+
+	if ((uint32_t)ubo_data.size() != shader_data->ubo_size) {
+		p_uniform_dirty = true;
+		if (uniform_buffer.is_valid()) {
+			RD::get_singleton()->free(uniform_buffer);
+			uniform_buffer = RID();
+		}
+
+		ubo_data.resize(shader_data->ubo_size);
+		if (ubo_data.size()) {
+			uniform_buffer = RD::get_singleton()->uniform_buffer_create(ubo_data.size());
+			memset(ubo_data.ptrw(), 0, ubo_data.size()); //clear
+		}
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	//check whether buffer changed
+	if (p_uniform_dirty && ubo_data.size()) {
+
+		update_uniform_buffer(shader_data->uniforms, shader_data->ubo_offsets.ptr(), p_parameters, ubo_data.ptrw(), ubo_data.size(), false);
+		RD::get_singleton()->buffer_update(uniform_buffer, 0, ubo_data.size(), ubo_data.ptrw());
+	}
+
+	uint32_t tex_uniform_count = shader_data->texture_uniforms.size();
+
+	if ((uint32_t)texture_cache.size() != tex_uniform_count) {
+		texture_cache.resize(tex_uniform_count);
+		p_textures_dirty = true;
+
+		//clear previous uniform set
+		if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+			RD::get_singleton()->free(uniform_set);
+			uniform_set = RID();
+		}
+	}
+
+	if (p_textures_dirty && tex_uniform_count) {
+
+		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw());
+	}
+
+	if (shader_data->ubo_size == 0 && !shader_data->uses_material_samplers) {
+		// This material does not require an uniform set, so don't create it.
+		return;
+	}
+
+	if (!p_textures_dirty && uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		//no reason to update uniform set, only UBO (or nothing) was needed to update
+		return;
+	}
+
+	Vector<RD::Uniform> uniforms;
+
+	{
+		if (shader_data->uses_material_samplers) {
+			//needs samplers for the material (uses custom textures) create them
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_SAMPLER;
+			u.binding = 0;
+			u.ids.resize(12);
+			RID *ids_ptr = u.ids.ptrw();
+			ids_ptr[0] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[1] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[2] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[3] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[4] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[5] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+			ids_ptr[6] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[7] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[8] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[9] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[10] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			ids_ptr[11] = canvas_singleton->storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+			uniforms.push_back(u);
+		}
+
+		if (shader_data->ubo_size) {
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+			u.binding = 1;
+			u.ids.push_back(uniform_buffer);
+			uniforms.push_back(u);
+		}
+
+		const RID *textures = texture_cache.ptrw();
+		for (uint32_t i = 0; i < tex_uniform_count; i++) {
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_TEXTURE;
+			u.binding = 2 + i;
+			u.ids.push_back(textures[i]);
+			uniforms.push_back(u);
+		}
+	}
+
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, canvas_singleton->shader.canvas_shader.version_get_shader(shader_data->version, 0), 1);
+}
+RasterizerCanvasRD::MaterialData::~MaterialData() {
+	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
+		RD::get_singleton()->free(uniform_set);
+	}
+
+	if (uniform_buffer.is_valid()) {
+		RD::get_singleton()->free(uniform_buffer);
+	}
+}
+
+RasterizerStorageRD::MaterialData *RasterizerCanvasRD::_create_material_func(ShaderData *p_shader) {
+	MaterialData *material_data = memnew(MaterialData);
+	material_data->shader_data = p_shader;
+	//update will happen later anyway so do nothing.
+	return material_data;
+}
+
+void RasterizerCanvasRD::set_time(double p_time) {
+	state.time = p_time;
+}
+
 void RasterizerCanvasRD::update() {
 	_dispose_bindings();
 }
@@ -1741,132 +2151,7 @@ void RasterizerCanvasRD::update() {
 RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 	storage = p_storage;
 
-	{ //create default textures
-
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_2D;
-
-		PoolVector<uint8_t> pv;
-		pv.resize(16 * 4);
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 255);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<PoolVector<uint8_t> > vpv;
-			vpv.push_back(pv);
-			default_textures.white_texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<PoolVector<uint8_t> > vpv;
-			vpv.push_back(pv);
-			default_textures.black_texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 128);
-			pv.set(i * 4 + 1, 128);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<PoolVector<uint8_t> > vpv;
-			vpv.push_back(pv);
-			default_textures.normal_texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 255);
-			pv.set(i * 4 + 1, 128);
-			pv.set(i * 4 + 2, 255);
-			pv.set(i * 4 + 3, 255);
-		}
-
-		{
-			Vector<PoolVector<uint8_t> > vpv;
-			vpv.push_back(pv);
-			default_textures.aniso_texture = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
-		default_textures.default_multimesh_tb = RD::get_singleton()->texture_buffer_create(16, RD::DATA_FORMAT_R8G8B8A8_UNORM, pv);
-	}
-
 	{ //create default samplers
-
-		for (int i = 1; i < VS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-			for (int j = 1; j < VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-				RD::SamplerState sampler_state;
-				switch (i) {
-					case VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST: {
-						sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-						sampler_state.min_filter = RD::SAMPLER_FILTER_NEAREST;
-						sampler_state.max_lod = 0;
-					} break;
-					case VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR: {
-
-						sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-						sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-						sampler_state.max_lod = 0;
-					} break;
-					case VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS: {
-						sampler_state.mag_filter = RD::SAMPLER_FILTER_LINEAR;
-						sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-
-					} break;
-					case VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS: {
-						sampler_state.mag_filter = RD::SAMPLER_FILTER_NEAREST;
-						sampler_state.min_filter = RD::SAMPLER_FILTER_LINEAR;
-						sampler_state.mip_filter = RD::SAMPLER_FILTER_LINEAR;
-					} break;
-					default: {
-					}
-				}
-				switch (j) {
-					case VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED: {
-
-						sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-						sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_CLAMP_TO_EDGE;
-
-					} break;
-					case VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED: {
-						sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_REPEAT;
-						sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_REPEAT;
-					} break;
-					case VS::CANVAS_ITEM_TEXTURE_REPEAT_MIRROR: {
-						sampler_state.repeat_u = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-						sampler_state.repeat_v = RD::SAMPLER_REPEAT_MODE_MIRRORED_REPEAT;
-					} break;
-					default: {
-					}
-				}
-
-				default_samplers.samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
-			}
-		}
 
 		default_samplers.default_filter = VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR;
 		default_samplers.default_repeat = VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED;
@@ -1961,6 +2246,66 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 				shader.pipeline_variants.variants[i][j].setup(shader_variant, primitive[j], RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_blend(), 0);
 			}
 		}
+	}
+
+	{
+		//shader compiler
+		ShaderCompilerRD::DefaultIdentifierActions actions;
+
+		actions.renames["VERTEX"] = "vertex";
+		actions.renames["LIGHT_VERTEX"] = "light_vertex";
+		actions.renames["SHADOW_VERTEX"] = "shadow_vertex";
+		actions.renames["UV"] = "uv";
+		actions.renames["POINT_SIZE"] = "gl_PointSize";
+
+		actions.renames["WORLD_MATRIX"] = "world_matrix";
+		actions.renames["CANVAS_MATRIX"] = "canvas_data.canvas_transform";
+		actions.renames["SCREEN_MATRIX"] = "canvas_data.screen_transform";
+		actions.renames["TIME"] = "canvas_data.time";
+		actions.renames["AT_LIGHT_PASS"] = "false";
+		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
+
+		actions.renames["COLOR"] = "color";
+		actions.renames["NORMAL"] = "normal";
+		actions.renames["NORMALMAP"] = "normal_map";
+		actions.renames["NORMALMAP_DEPTH"] = "normal_depth";
+		actions.renames["TEXTURE"] = "color_texture";
+		actions.renames["TEXTURE_PIXEL_SIZE"] = "draw_data.color_texture_pixel_size";
+		actions.renames["NORMAL_TEXTURE"] = "normal_texture";
+		actions.renames["SPECULAR_SHININESS_TEXTURE"] = "specular_texture";
+		actions.renames["SPECULAR_SHININESS"] = "specular_shininess";
+		actions.renames["SCREEN_UV"] = "screen_uv";
+		actions.renames["SCREEN_TEXTURE"] = "screen_texture";
+		actions.renames["SCREEN_PIXEL_SIZE"] = "canvas_data.screen_pixel_size";
+		actions.renames["FRAGCOORD"] = "gl_FragCoord";
+		actions.renames["POINT_COORD"] = "gl_PointCoord";
+
+		actions.renames["LIGHT_POSITION"] = "light_pos";
+		actions.renames["LIGHT_COLOR"] = "light_color";
+		actions.renames["LIGHT_ENERGY"] = "light_energy";
+		actions.renames["LIGHT"] = "light";
+		actions.renames["SHADOW_MODULATE"] = "shadow_modulate";
+
+		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
+		actions.usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
+		actions.usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
+		actions.usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
+		actions.usage_defines["NORMAL"] = "#define NORMAL_USED\n";
+		actions.usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
+		actions.usage_defines["LIGHT"] = "#define LIGHT_SHADER_CODE_USED\n";
+
+		actions.render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
+
+		actions.custom_samplers["TEXTURE"] = "texture_sampler";
+		actions.custom_samplers["NORMAL_TEXTURE"] = "texture_sampler";
+		actions.custom_samplers["SPECULAR_SHININESS_TEXTURE"] = "texture_sampler";
+		actions.custom_samplers["SCREEN_TEXTURE"] = "material_samplers[3]"; //mipmap and filter for screen texture
+		actions.sampler_array_name = "material_samplers";
+		actions.base_texture_binding_index = 2;
+		actions.texture_layout_set = 1;
+		actions.base_uniform_string = "material.";
+
+		shader.compiler.initialize(actions);
 	}
 
 	{ //shadow rendering
@@ -2122,6 +2467,12 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		shader.default_skeleton_texture_buffer = RD::get_singleton()->texture_buffer_create(32, RD::DATA_FORMAT_R32G32B32A32_SFLOAT);
 	}
 
+	//create functions for shader and material
+	storage->shader_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_2D, _create_shader_funcs);
+	storage->material_set_data_request_function(RasterizerStorageRD::SHADER_TYPE_2D, _create_material_funcs);
+
+	state.time = 0;
+
 	ERR_FAIL_COND(sizeof(PushConstant) != 128);
 }
 
@@ -2180,18 +2531,4 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 	RD::get_singleton()->free(shader.quad_index_buffer);
 
 	//pipelines don't need freeing, they are all gone after shaders are gone
-
-	//samplers
-	for (int i = 1; i < VS::CANVAS_ITEM_TEXTURE_FILTER_MAX; i++) {
-		for (int j = 1; j < VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
-			RD::get_singleton()->free(default_samplers.samplers[i][j]);
-		}
-	}
-
-	//textures
-	RD::get_singleton()->free(default_textures.white_texture);
-	RD::get_singleton()->free(default_textures.black_texture);
-	RD::get_singleton()->free(default_textures.normal_texture);
-	RD::get_singleton()->free(default_textures.aniso_texture);
-	RD::get_singleton()->free(default_textures.default_multimesh_tb);
 }
