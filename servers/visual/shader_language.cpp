@@ -205,6 +205,14 @@ const char *ShaderLanguage::token_names[TK_MAX] = {
 	"HINT_BLACK_ALBEDO_TEXTURE",
 	"HINT_COLOR",
 	"HINT_RANGE",
+	"FILTER_NEAREST",
+	"FILTER_LINEAR",
+	"FILTER_NEAREST_MIPMAP",
+	"FILTER_LINEAR_MIPMAP",
+	"FILTER_NEAREST_MIPMAP_ANISO",
+	"FILTER_LINEAR_MIPMAP_ANISO",
+	"REPEAT_ENABLE",
+	"REPEAT_DISABLE",
 	"SHADER_TYPE",
 	"CURSOR",
 	"ERROR",
@@ -302,8 +310,15 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo" },
 	{ TK_HINT_COLOR, "hint_color" },
 	{ TK_HINT_RANGE, "hint_range" },
+	{ TK_FILTER_NEAREST, "filter_nearest" },
+	{ TK_FILTER_LINEAR, "filter_linear" },
+	{ TK_FILTER_NEAREST_MIPMAP, "filter_nearest_mipmap" },
+	{ TK_FILTER_LINEAR_MIPMAP, "filter_linear_mipmap" },
+	{ TK_FILTER_NEAREST_MIPMAP_ANISO, "filter_nearest_mipmap_aniso" },
+	{ TK_FILTER_LINEAR_MIPMAP_ANISO, "filter_linear_mipmap_aniso" },
+	{ TK_REPEAT_ENABLE, "repeat_enable" },
+	{ TK_REPEAT_DISABLE, "repeat_disable" },
 	{ TK_SHADER_TYPE, "shader_type" },
-
 	{ TK_ERROR, NULL }
 };
 
@@ -2539,6 +2554,132 @@ Variant ShaderLanguage::constant_value_to_variant(const Vector<ShaderLanguage::C
 	return Variant();
 }
 
+PropertyInfo ShaderLanguage::uniform_to_property_info(const ShaderNode::Uniform &p_uniform) {
+	PropertyInfo pi;
+	switch (p_uniform.type) {
+		case ShaderLanguage::TYPE_VOID: pi.type = Variant::NIL; break;
+		case ShaderLanguage::TYPE_BOOL: pi.type = Variant::BOOL; break;
+		case ShaderLanguage::TYPE_BVEC2:
+			pi.type = Variant::INT;
+			pi.hint = PROPERTY_HINT_FLAGS;
+			pi.hint_string = "x,y";
+			break;
+		case ShaderLanguage::TYPE_BVEC3:
+			pi.type = Variant::INT;
+			pi.hint = PROPERTY_HINT_FLAGS;
+			pi.hint_string = "x,y,z";
+			break;
+		case ShaderLanguage::TYPE_BVEC4:
+			pi.type = Variant::INT;
+			pi.hint = PROPERTY_HINT_FLAGS;
+			pi.hint_string = "x,y,z,w";
+			break;
+		case ShaderLanguage::TYPE_UINT:
+		case ShaderLanguage::TYPE_INT: {
+			pi.type = Variant::INT;
+			if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+				pi.hint = PROPERTY_HINT_RANGE;
+				pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]);
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_IVEC2:
+		case ShaderLanguage::TYPE_IVEC3:
+		case ShaderLanguage::TYPE_IVEC4:
+		case ShaderLanguage::TYPE_UVEC2:
+		case ShaderLanguage::TYPE_UVEC3:
+		case ShaderLanguage::TYPE_UVEC4: {
+
+			pi.type = Variant::POOL_INT_ARRAY;
+		} break;
+		case ShaderLanguage::TYPE_FLOAT: {
+			pi.type = Variant::REAL;
+			if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
+				pi.hint = PROPERTY_HINT_RANGE;
+				pi.hint_string = rtos(p_uniform.hint_range[0]) + "," + rtos(p_uniform.hint_range[1]) + "," + rtos(p_uniform.hint_range[2]);
+			}
+
+		} break;
+		case ShaderLanguage::TYPE_VEC2: pi.type = Variant::VECTOR2; break;
+		case ShaderLanguage::TYPE_VEC3: pi.type = Variant::VECTOR3; break;
+		case ShaderLanguage::TYPE_VEC4: {
+			if (p_uniform.hint == ShaderLanguage::ShaderNode::Uniform::HINT_COLOR) {
+				pi.type = Variant::COLOR;
+			} else {
+				pi.type = Variant::PLANE;
+			}
+		} break;
+		case ShaderLanguage::TYPE_MAT2: pi.type = Variant::TRANSFORM2D; break;
+		case ShaderLanguage::TYPE_MAT3: pi.type = Variant::BASIS; break;
+		case ShaderLanguage::TYPE_MAT4: pi.type = Variant::TRANSFORM; break;
+		case ShaderLanguage::TYPE_SAMPLER2D:
+		case ShaderLanguage::TYPE_ISAMPLER2D:
+		case ShaderLanguage::TYPE_USAMPLER2D: {
+
+			pi.type = Variant::OBJECT;
+			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+			pi.hint_string = "Texture2D";
+		} break;
+		case ShaderLanguage::TYPE_SAMPLER2DARRAY:
+		case ShaderLanguage::TYPE_ISAMPLER2DARRAY:
+		case ShaderLanguage::TYPE_USAMPLER2DARRAY: {
+
+			pi.type = Variant::OBJECT;
+			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+			pi.hint_string = "TextureArray";
+		} break;
+		case ShaderLanguage::TYPE_SAMPLER3D:
+		case ShaderLanguage::TYPE_ISAMPLER3D:
+		case ShaderLanguage::TYPE_USAMPLER3D: {
+			pi.type = Variant::OBJECT;
+			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+			pi.hint_string = "Texture3D";
+		} break;
+		case ShaderLanguage::TYPE_SAMPLERCUBE: {
+
+			pi.type = Variant::OBJECT;
+			pi.hint = PROPERTY_HINT_RESOURCE_TYPE;
+			pi.hint_string = "CubeMap";
+		} break;
+	}
+	return pi;
+}
+
+uint32_t ShaderLanguage::get_type_size(DataType p_type) {
+	switch (p_type) {
+		case TYPE_BOOL:
+		case TYPE_INT:
+		case TYPE_UINT:
+		case TYPE_FLOAT: return 4;
+		case TYPE_BVEC2:
+		case TYPE_IVEC2:
+		case TYPE_UVEC2:
+		case TYPE_VEC2: return 8;
+		case TYPE_BVEC3:
+		case TYPE_IVEC3:
+		case TYPE_UVEC3:
+		case TYPE_VEC3: return 12;
+		case TYPE_BVEC4:
+		case TYPE_IVEC4:
+		case TYPE_UVEC4:
+		case TYPE_VEC4: return 16;
+		case TYPE_MAT2: return 8;
+		case TYPE_MAT3: return 12;
+		case TYPE_MAT4: return 16;
+		case TYPE_SAMPLER2D:
+		case TYPE_ISAMPLER2D:
+		case TYPE_USAMPLER2D:
+		case TYPE_SAMPLER2DARRAY:
+		case TYPE_ISAMPLER2DARRAY:
+		case TYPE_USAMPLER2DARRAY:
+		case TYPE_SAMPLER3D:
+		case TYPE_ISAMPLER3D:
+		case TYPE_USAMPLER3D:
+		case TYPE_SAMPLERCUBE: return 4; //not really, but useful for indices
+	}
+	return 0;
+}
+
 void ShaderLanguage::get_keyword_list(List<String> *r_keywords) {
 
 	Set<String> kws;
@@ -2776,6 +2917,78 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 	return false;
 }
 
+bool ShaderLanguage::_propagate_function_call_sampler_uniform_settings(StringName p_name, int p_argument, TextureFilter p_filter, TextureRepeat p_repeat) {
+	for (int i = 0; shader->functions.size(); i++) {
+		if (shader->functions[i].name == p_name) {
+
+			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
+			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];
+			if (arg->tex_builtin_check) {
+				_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other).");
+				return false;
+			} else if (arg->tex_argument_check) {
+				//was checked, verify that filter and repeat are the same
+				if (arg->tex_argument_filter == p_filter && arg->tex_argument_repeat == p_repeat) {
+					return true;
+				} else {
+
+					_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using textures that differ in either filter or repeat setting.");
+					return false;
+				}
+			} else {
+
+				arg->tex_argument_check = true;
+				arg->tex_argument_filter = p_filter;
+				arg->tex_argument_repeat = p_repeat;
+				for (Map<StringName, Set<int> >::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
+					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
+						if (!_propagate_function_call_sampler_uniform_settings(E->key(), F->get(), p_filter, p_repeat)) {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+		}
+	}
+	ERR_FAIL_V(false); //bug? function not found
+}
+bool ShaderLanguage::_propagate_function_call_sampler_builtin_reference(StringName p_name, int p_argument, const StringName &p_builtin) {
+	for (int i = 0; shader->functions.size(); i++) {
+		if (shader->functions[i].name == p_name) {
+
+			ERR_FAIL_INDEX_V(p_argument, shader->functions[i].function->arguments.size(), false);
+			FunctionNode::Argument *arg = &shader->functions[i].function->arguments.write[p_argument];
+			if (arg->tex_argument_check) {
+				_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using both built-ins and uniform textures, this is not supported (use either one or the other).");
+				return false;
+			} else if (arg->tex_builtin_check) {
+				//was checked, verify that the built-in is the same
+				if (arg->tex_builtin == p_builtin) {
+					return true;
+				} else {
+					_set_error("Sampler argument #" + itos(p_argument) + " of function '" + String(p_name) + "' called more than once using different built-ins. Only calling with the same built-in is supported.");
+					return false;
+				}
+			} else {
+
+				arg->tex_builtin_check = true;
+				arg->tex_builtin = p_builtin;
+
+				for (Map<StringName, Set<int> >::Element *E = arg->tex_argument_connect.front(); E; E = E->next()) {
+					for (Set<int>::Element *F = E->get().front(); F; F = F->next()) {
+						if (!_propagate_function_call_sampler_builtin_reference(E->key(), F->get(), p_builtin)) {
+							return false;
+						}
+					}
+				}
+				return true;
+			}
+		}
+	}
+	ERR_FAIL_V(false); //bug? function not found
+}
+
 ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types) {
 
 	Vector<Expression> expression;
@@ -2925,6 +3138,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 
 				//test if function was parsed first
+				int function_index = -1;
 				for (int i = 0; i < shader->functions.size(); i++) {
 					if (shader->functions[i].name == name) {
 						//add to current function as dependency
@@ -2934,6 +3148,9 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 								break;
 							}
 						}
+
+						//see if texture arguments must connect
+						function_index = i;
 						break;
 					}
 				}
@@ -2955,6 +3172,71 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				}
 				completion_class = TAG_GLOBAL; // reset sub-class
 
+				if (function_index >= 0) {
+					//connect texture arguments, so we can cache in the
+					//argument what type of filter and repeat to use
+
+					FunctionNode *call_function = shader->functions[function_index].function;
+					if (call_function) {
+
+						//get current base function
+						FunctionNode *base_function = NULL;
+						{
+							BlockNode *b = p_block;
+
+							while (b) {
+
+								if (b->parent_function) {
+									base_function = b->parent_function;
+									break;
+								} else {
+									b = b->parent_block;
+								}
+							}
+						}
+
+						ERR_FAIL_COND_V(!base_function, NULL); //bug, wtf
+
+						for (int i = 0; i < call_function->arguments.size(); i++) {
+							int argidx = i + 1;
+							if (argidx < func->arguments.size() && is_sampler_type(call_function->arguments[i].type)) {
+								//let's see where our argument comes from
+								Node *n = func->arguments[argidx];
+								ERR_CONTINUE(n->type != Node::TYPE_VARIABLE); //bug? this should always be a variable
+								VariableNode *vn = static_cast<VariableNode *>(n);
+								StringName varname = vn->name;
+								if (shader->uniforms.has(varname)) {
+									//being sampler, this either comes from a uniform
+									ShaderNode::Uniform *u = &shader->uniforms[varname];
+									ERR_CONTINUE(u->type != call_function->arguments[i].type); //this should have been validated previously
+									//propagate
+									if (!_propagate_function_call_sampler_uniform_settings(name, i, u->filter, u->repeat)) {
+										return NULL;
+									}
+								} else if (p_builtin_types.has(varname)) {
+									//a built-in
+									if (!_propagate_function_call_sampler_builtin_reference(name, i, varname)) {
+										return NULL;
+									}
+								} else {
+									//or this comes from an argument, but nothing else can be a sampler
+									bool found = false;
+									for (int j = 0; j < base_function->arguments.size(); j++) {
+										if (base_function->arguments[j].name == varname) {
+											if (!base_function->arguments[j].tex_argument_connect.has(call_function->name)) {
+												base_function->arguments.write[j].tex_argument_connect[call_function->name] = Set<int>();
+											}
+											base_function->arguments.write[j].tex_argument_connect[call_function->name].insert(i);
+											found = true;
+											break;
+										}
+									}
+									ERR_CONTINUE(!found);
+								}
+							}
+						}
+					}
+				}
 				expr = func;
 
 			} else {
@@ -4861,7 +5143,22 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 								_set_error("Expected ','");
 								return ERR_PARSE_ERROR;
 							}
-
+						} else if (tk.type == TK_FILTER_LINEAR) {
+							uniform2.filter = FILTER_LINEAR;
+						} else if (tk.type == TK_FILTER_NEAREST) {
+							uniform2.filter = FILTER_NEAREST;
+						} else if (tk.type == TK_FILTER_NEAREST_MIPMAP) {
+							uniform2.filter = FILTER_NEAREST_MIPMAP;
+						} else if (tk.type == TK_FILTER_LINEAR_MIPMAP) {
+							uniform2.filter = FILTER_LINEAR_MIPMAP;
+						} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISO) {
+							uniform2.filter = FILTER_NEAREST_MIPMAP_ANISO;
+						} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISO) {
+							uniform2.filter = FILTER_LINEAR_MIPMAP_ANISO;
+						} else if (tk.type == TK_REPEAT_DISABLE) {
+							uniform2.repeat = REPEAT_DISABLE;
+						} else if (tk.type == TK_REPEAT_ENABLE) {
+							uniform2.repeat = REPEAT_ENABLE;
 						} else {
 							_set_error("Expected valid type hint after ':'.");
 						}
@@ -5154,6 +5451,10 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					arg.name = pname;
 					arg.precision = pprecision;
 					arg.qualifier = qualifier;
+					arg.tex_argument_check = false;
+					arg.tex_builtin_check = false;
+					arg.tex_argument_filter = FILTER_DEFAULT;
+					arg.tex_argument_repeat = REPEAT_DEFAULT;
 
 					func_node->arguments.push_back(arg);
 
