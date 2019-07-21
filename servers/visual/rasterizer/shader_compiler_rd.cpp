@@ -1,34 +1,4 @@
-/*************************************************************************/
-/*  shader_compiler_gles3.cpp                                            */
-/*************************************************************************/
-/*                       This file is part of:                           */
-/*                           GODOT ENGINE                                */
-/*                      https://godotengine.org                          */
-/*************************************************************************/
-/* Copyright (c) 2007-2020 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2020 Godot Engine contributors (cf. AUTHORS.md).   */
-/*                                                                       */
-/* Permission is hereby granted, free of charge, to any person obtaining */
-/* a copy of this software and associated documentation files (the       */
-/* "Software"), to deal in the Software without restriction, including   */
-/* without limitation the rights to use, copy, modify, merge, publish,   */
-/* distribute, sublicense, and/or sell copies of the Software, and to    */
-/* permit persons to whom the Software is furnished to do so, subject to */
-/* the following conditions:                                             */
-/*                                                                       */
-/* The above copyright notice and this permission notice shall be        */
-/* included in all copies or substantial portions of the Software.       */
-/*                                                                       */
-/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
-/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
-/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
-/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
-/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
-/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
-/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
-/*************************************************************************/
-
-#include "shader_compiler_gles3.h"
+#include "shader_compiler_rd.h"
 
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -47,7 +17,11 @@ static String _mktab(int p_level) {
 
 static String _typestr(SL::DataType p_type) {
 
-	return ShaderLanguage::get_datatype_name(p_type);
+	String type = ShaderLanguage::get_datatype_name(p_type);
+	if (ShaderLanguage::is_sampler_type(p_type)) {
+		type = type.replace("sampler", "texture"); //we use textures instead of samplers
+	}
+	return type;
 }
 
 static int _get_datatype_size(SL::DataType p_type) {
@@ -166,7 +140,7 @@ static String _opstr(SL::Operator p_op) {
 
 static String _mkid(const String &p_id) {
 
-	String id = "m_" + p_id.replace("__", "_dus_");
+	String id = "m_" + p_id;
 	return id.replace("__", "_dus_"); //doubleunderscore is reserved in glsl
 }
 
@@ -264,7 +238,19 @@ static String get_constant_text(SL::DataType p_type, const Vector<SL::ConstantNo
 	}
 }
 
-void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added) {
+String ShaderCompilerRD::_get_sampler_name(ShaderLanguage::TextureFilter p_filter, ShaderLanguage::TextureRepeat p_repeat) {
+	if (p_filter == ShaderLanguage::FILTER_DEFAULT) {
+		ERR_FAIL_COND_V(actions.default_filter == ShaderLanguage::FILTER_DEFAULT, String());
+		p_filter = actions.default_filter;
+	}
+	if (p_repeat == ShaderLanguage::REPEAT_DEFAULT) {
+		ERR_FAIL_COND_V(actions.default_repeat == ShaderLanguage::REPEAT_DEFAULT, String());
+		p_repeat = actions.default_repeat;
+	}
+	return actions.sampler_array_name + "[" + itos(p_filter + (p_repeat == ShaderLanguage::REPEAT_ENABLE ? ShaderLanguage::FILTER_DEFAULT : 0)) + "]";
+}
+
+void ShaderCompilerRD::_dump_function_deps(const SL::ShaderNode *p_node, const StringName &p_for_func, const Map<StringName, String> &p_func_code, String &r_to_add, Set<StringName> &added) {
 
 	int fidx = -1;
 
@@ -315,7 +301,7 @@ void ShaderCompilerGLES3::_dump_function_deps(SL::ShaderNode *p_node, const Stri
 	}
 }
 
-String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning) {
+String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, GeneratedCode &r_gen_code, IdentifierActions &p_actions, const DefaultIdentifierActions &p_default_actions, bool p_assigning) {
 
 	String code;
 
@@ -329,7 +315,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				if (p_default_actions.render_mode_defines.has(pnode->render_modes[i]) && !used_rmode_defines.has(pnode->render_modes[i])) {
 
-					r_gen_code.defines.push_back(p_default_actions.render_mode_defines[pnode->render_modes[i]].utf8());
+					r_gen_code.defines.push_back(p_default_actions.render_mode_defines[pnode->render_modes[i]]);
 					used_rmode_defines.insert(pnode->render_modes[i]);
 				}
 
@@ -368,7 +354,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				String ucode;
 
 				if (SL::is_sampler_type(E->get().type)) {
-					ucode = "uniform ";
+					ucode = "layout(set = " + itos(actions.texture_layout_set) + ", binding = " + itos(actions.base_texture_binding_index + E->get().texture_order) + ") uniform ";
 				}
 
 				ucode += _prestr(E->get().precision);
@@ -390,7 +376,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				} else {
 					if (!uses_uniforms) {
 
-						r_gen_code.defines.push_back(String("#define USE_MATERIAL\n").ascii());
+						r_gen_code.defines.push_back(String("#define USE_MATERIAL_UNIFORMS\n"));
 						uses_uniforms = true;
 					}
 					uniform_defines.write[E->get().order] = ucode;
@@ -405,6 +391,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				r_gen_code.uniforms += uniform_defines[i];
 			}
 
+#if 1
 			// add up
 			int offset = 0;
 			for (int i = 0; i < uniform_sizes.size(); i++) {
@@ -421,9 +408,49 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			}
 
 			r_gen_code.uniform_total_size = offset;
+			print_line("uniform total: " + itos(r_gen_code.uniform_total_size));
 			if (r_gen_code.uniform_total_size % 16 != 0) { //UBO sizes must be multiples of 16
-				r_gen_code.uniform_total_size += r_gen_code.uniform_total_size % 16;
+				//r_gen_code.uniform_total_size += 16 - (r_gen_code.uniform_total_size % 16);
 			}
+#else
+			// add up
+			for (int i = 0; i < uniform_sizes.size(); i++) {
+
+				if (i > 0) {
+
+					int align = uniform_sizes[i - 1] % uniform_alignments[i];
+					if (align != 0) {
+						uniform_sizes[i - 1] += uniform_alignments[i] - align;
+					}
+
+					uniform_sizes[i] = uniform_sizes[i] + uniform_sizes[i - 1];
+				}
+			}
+			//offset
+			r_gen_code.uniform_offsets.resize(uniform_sizes.size());
+			for (int i = 0; i < uniform_sizes.size(); i++) {
+
+				if (i > 0)
+					r_gen_code.uniform_offsets[i] = uniform_sizes[i - 1];
+				else
+					r_gen_code.uniform_offsets[i] = 0;
+			}
+			/*
+			for(Map<StringName,SL::ShaderNode::Uniform>::Element *E=pnode->uniforms.front();E;E=E->next()) {
+
+				if (SL::is_sampler_type(E->get().type)) {
+					continue;
+				}
+
+			}
+
+*/
+			if (uniform_sizes.size()) {
+				r_gen_code.uniform_total_size = uniform_sizes[uniform_sizes.size() - 1];
+			} else {
+				r_gen_code.uniform_total_size = 0;
+			}
+#endif
 
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
 
@@ -432,11 +459,6 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				vcode += _prestr(E->get().precision);
 				vcode += _typestr(E->get().type);
 				vcode += " " + _mkid(E->key());
-				if (E->get().array_size > 0) {
-					vcode += "[";
-					vcode += itos(E->get().array_size);
-					vcode += "]";
-				}
 				vcode += ";\n";
 				r_gen_code.vertex_global += interp_mode + "out " + vcode;
 				r_gen_code.fragment_global += interp_mode + "in " + vcode;
@@ -473,6 +495,8 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				SL::FunctionNode *fnode = pnode->functions[i].function;
 
+				function = fnode;
+
 				current_func_name = fnode->name;
 
 				if (fnode->name == vertex_name) {
@@ -492,6 +516,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					_dump_function_deps(pnode, fnode->name, function_code, r_gen_code.fragment_global, added_fragment);
 					r_gen_code.light = function_code[light_name];
 				}
+				function = NULL;
 			}
 
 			//code+=dump_node_code(pnode->body,p_level);
@@ -525,12 +550,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 		case SL::Node::TYPE_VARIABLE_DECLARATION: {
 			SL::VariableDeclarationNode *vdnode = (SL::VariableDeclarationNode *)p_node;
 
-			String declaration;
-			if (vdnode->is_const) {
-				declaration += "const ";
-			}
-			declaration += _prestr(vdnode->precision);
-			declaration += _typestr(vdnode->datatype);
+			String declaration = _prestr(vdnode->precision) + _typestr(vdnode->datatype);
 			for (int i = 0; i < vdnode->declarations.size(); i++) {
 				if (i > 0) {
 					declaration += ",";
@@ -558,7 +578,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				if (define.begins_with("@")) {
 					define = p_default_actions.usage_defines[define.substr(1, define.length())];
 				}
-				r_gen_code.defines.push_back(define.utf8());
+				r_gen_code.defines.push_back(define);
 				used_name_defines.insert(vnode->name);
 			}
 
@@ -569,97 +589,14 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 			if (p_default_actions.renames.has(vnode->name))
 				code = p_default_actions.renames[vnode->name];
-			else
+			else {
 				code = _mkid(vnode->name);
+				if (actions.base_uniform_string != String() && shader->uniforms.has(vnode->name) && shader->uniforms[vnode->name].texture_order < 0) {
+					code = actions.base_uniform_string + code;
+				}
+			}
 
 			if (vnode->name == time_name) {
-				if (current_func_name == vertex_name) {
-					r_gen_code.uses_vertex_time = true;
-				}
-				if (current_func_name == fragment_name || current_func_name == light_name) {
-					r_gen_code.uses_fragment_time = true;
-				}
-			}
-
-		} break;
-		case SL::Node::TYPE_ARRAY_DECLARATION: {
-
-			SL::ArrayDeclarationNode *adnode = (SL::ArrayDeclarationNode *)p_node;
-
-			String declaration;
-			if (adnode->is_const) {
-				declaration += "const ";
-			}
-			declaration += _prestr(adnode->precision);
-			declaration += _typestr(adnode->datatype);
-			for (int i = 0; i < adnode->declarations.size(); i++) {
-				if (i > 0) {
-					declaration += ",";
-				} else {
-					declaration += " ";
-				}
-				declaration += _mkid(adnode->declarations[i].name);
-				declaration += "[";
-				declaration += itos(adnode->declarations[i].size);
-				declaration += "]";
-				int sz = adnode->declarations[i].initializer.size();
-				if (sz > 0) {
-					declaration += "=";
-					declaration += _typestr(adnode->datatype);
-					declaration += "[";
-					declaration += itos(sz);
-					declaration += "]";
-					declaration += "(";
-					for (int j = 0; j < sz; j++) {
-						declaration += _dump_node_code(adnode->declarations[i].initializer[j], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-						if (j != sz - 1) {
-							declaration += ", ";
-						}
-					}
-					declaration += ")";
-				}
-			}
-
-			code += declaration;
-		} break;
-		case SL::Node::TYPE_ARRAY: {
-			SL::ArrayNode *anode = (SL::ArrayNode *)p_node;
-
-			if (p_assigning && p_actions.write_flag_pointers.has(anode->name)) {
-				*p_actions.write_flag_pointers[anode->name] = true;
-			}
-
-			if (p_default_actions.usage_defines.has(anode->name) && !used_name_defines.has(anode->name)) {
-				String define = p_default_actions.usage_defines[anode->name];
-				if (define.begins_with("@")) {
-					define = p_default_actions.usage_defines[define.substr(1, define.length())];
-				}
-				r_gen_code.defines.push_back(define.utf8());
-				used_name_defines.insert(anode->name);
-			}
-
-			if (p_actions.usage_flag_pointers.has(anode->name) && !used_flag_pointers.has(anode->name)) {
-				*p_actions.usage_flag_pointers[anode->name] = true;
-				used_flag_pointers.insert(anode->name);
-			}
-
-			if (p_default_actions.renames.has(anode->name))
-				code = p_default_actions.renames[anode->name];
-			else
-				code = _mkid(anode->name);
-
-			if (anode->call_expression != NULL) {
-				code += ".";
-				code += _dump_node_code(anode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-			}
-
-			if (anode->index_expression != NULL) {
-				code += "[";
-				code += _dump_node_code(anode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-				code += "]";
-			}
-
-			if (anode->name == time_name) {
 				if (current_func_name == vertex_name) {
 					r_gen_code.uses_vertex_time = true;
 				}
@@ -710,12 +647,14 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 					SL::VariableNode *vnode = (SL::VariableNode *)onode->arguments[0];
 
+					bool is_texture_func = false;
 					if (onode->op == SL::OP_CONSTRUCT) {
 						code += String(vnode->name);
 					} else {
 
 						if (internal_functions.has(vnode->name)) {
 							code += vnode->name;
+							is_texture_func = texture_functions.has(vnode->name);
 						} else if (p_default_actions.renames.has(vnode->name)) {
 							code += p_default_actions.renames[vnode->name];
 						} else {
@@ -728,7 +667,50 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					for (int i = 1; i < onode->arguments.size(); i++) {
 						if (i > 1)
 							code += ", ";
-						code += _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+						String node_code = _dump_node_code(onode->arguments[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+						if (is_texture_func && i == 1 && onode->arguments[i]->type == SL::Node::TYPE_VARIABLE) {
+
+							//need to map from texture to sampler in order to sample
+							const SL::VariableNode *varnode = static_cast<const SL::VariableNode *>(onode->arguments[i]);
+
+							StringName texture_uniform = varnode->name;
+
+							String sampler_name;
+
+							if (actions.custom_samplers.has(texture_uniform)) {
+								sampler_name = actions.custom_samplers[texture_uniform];
+							} else {
+								if (shader->uniforms.has(texture_uniform)) {
+									sampler_name = _get_sampler_name(shader->uniforms[texture_uniform].filter, shader->uniforms[texture_uniform].repeat);
+								} else {
+									bool found = false;
+
+									for (int j = 0; j < function->arguments.size(); j++) {
+										if (function->arguments[j].name == texture_uniform) {
+											if (function->arguments[j].tex_builtin_check) {
+												ERR_CONTINUE(!actions.custom_samplers.has(function->arguments[j].tex_builtin));
+												sampler_name = actions.custom_samplers[function->arguments[j].tex_builtin];
+												found = true;
+												break;
+											}
+											if (function->arguments[j].tex_argument_check) {
+												sampler_name = _get_sampler_name(function->arguments[j].tex_argument_filter, function->arguments[j].tex_argument_repeat);
+												found = true;
+												break;
+											}
+										}
+									}
+									if (!found) {
+										//function was most likely unused, so use anything (compiler will remove it anyway)
+										sampler_name = _get_sampler_name(ShaderLanguage::FILTER_DEFAULT, ShaderLanguage::REPEAT_DEFAULT);
+									}
+								}
+							}
+
+							code += ShaderLanguage::get_datatype_name(onode->arguments[i]->get_datatype()) + "(" + node_code + ", " + sampler_name + ")";
+						} else {
+							code += node_code;
+						}
 					}
 					code += ")";
 				} break;
@@ -742,13 +724,11 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 				} break;
 				case SL::OP_SELECT_IF: {
 
-					code += "(";
 					code += _dump_node_code(onode->arguments[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += "?";
 					code += _dump_node_code(onode->arguments[1], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 					code += ":";
 					code += _dump_node_code(onode->arguments[2], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
-					code += ")";
 
 				} break;
 
@@ -771,20 +751,6 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 					code += _mktab(p_level) + "else\n";
 					code += _dump_node_code(cfnode->blocks[1], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
 				}
-			} else if (cfnode->flow_op == SL::FLOW_OP_SWITCH) {
-				code += _mktab(p_level) + "switch (" + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ")\n";
-				code += _dump_node_code(cfnode->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
-			} else if (cfnode->flow_op == SL::FLOW_OP_CASE) {
-				code += _mktab(p_level) + "case " + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ":\n";
-				code += _dump_node_code(cfnode->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
-			} else if (cfnode->flow_op == SL::FLOW_OP_DEFAULT) {
-				code += _mktab(p_level) + "default:\n";
-				code += _dump_node_code(cfnode->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
-			} else if (cfnode->flow_op == SL::FLOW_OP_DO) {
-				code += _mktab(p_level) + "do";
-				code += _dump_node_code(cfnode->blocks[0], p_level + 1, r_gen_code, p_actions, p_default_actions, p_assigning);
-				code += _mktab(p_level) + "while (" + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ");";
-
 			} else if (cfnode->flow_op == SL::FLOW_OP_WHILE) {
 
 				code += _mktab(p_level) + "while (" + _dump_node_code(cfnode->expressions[0], p_level, r_gen_code, p_actions, p_default_actions, p_assigning) + ")\n";
@@ -831,7 +797,7 @@ String ShaderCompilerGLES3::_dump_node_code(SL::Node *p_node, int p_level, Gener
 	return code;
 }
 
-Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
+Error ShaderCompilerRD::compile(VS::ShaderMode p_mode, const String &p_code, IdentifierActions *p_actions, const String &p_path, GeneratedCode &r_gen_code) {
 
 	Error err = parser.compile(p_code, ShaderTypes::get_singleton()->get_functions(p_mode), ShaderTypes::get_singleton()->get_modes(p_mode), ShaderTypes::get_singleton()->get_types());
 
@@ -859,64 +825,37 @@ Error ShaderCompilerGLES3::compile(VS::ShaderMode p_mode, const String &p_code, 
 	used_rmode_defines.clear();
 	used_flag_pointers.clear();
 
-	_dump_node_code(parser.get_shader(), 1, r_gen_code, *p_actions, actions[p_mode], false);
-
-	if (r_gen_code.uniform_total_size) { //uniforms used?
-		int md = sizeof(float) * 4;
-		if (r_gen_code.uniform_total_size % md) {
-			r_gen_code.uniform_total_size += md - (r_gen_code.uniform_total_size % md);
-		}
-		r_gen_code.uniform_total_size += md; //pad just in case
-	}
+	shader = parser.get_shader();
+	function = NULL;
+	_dump_node_code(shader, 1, r_gen_code, *p_actions, actions, false);
 
 	return OK;
 }
 
-ShaderCompilerGLES3::ShaderCompilerGLES3() {
+void ShaderCompilerRD::initialize(DefaultIdentifierActions p_actions) {
+	actions = p_actions;
 
-	/** CANVAS ITEM SHADER **/
+	vertex_name = "vertex";
+	fragment_name = "fragment";
+	light_name = "light";
+	time_name = "TIME";
 
-	actions[VS::SHADER_CANVAS_ITEM].renames["VERTEX"] = "outvec.xy";
-	actions[VS::SHADER_CANVAS_ITEM].renames["UV"] = "uv";
-	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_SIZE"] = "point_size";
+	List<String> func_list;
 
-	actions[VS::SHADER_CANVAS_ITEM].renames["WORLD_MATRIX"] = "modelview_matrix";
-	actions[VS::SHADER_CANVAS_ITEM].renames["PROJECTION_MATRIX"] = "projection_matrix";
-	actions[VS::SHADER_CANVAS_ITEM].renames["EXTRA_MATRIX"] = "extra_matrix";
-	actions[VS::SHADER_CANVAS_ITEM].renames["TIME"] = "time";
-	actions[VS::SHADER_CANVAS_ITEM].renames["AT_LIGHT_PASS"] = "at_light_pass";
-	actions[VS::SHADER_CANVAS_ITEM].renames["INSTANCE_CUSTOM"] = "instance_custom";
+	ShaderLanguage::get_builtin_funcs(&func_list);
 
-	actions[VS::SHADER_CANVAS_ITEM].renames["COLOR"] = "color";
-	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL"] = "normal";
-	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP"] = "normal_map";
-	actions[VS::SHADER_CANVAS_ITEM].renames["NORMALMAP_DEPTH"] = "normal_depth";
-	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE"] = "color_texture";
-	actions[VS::SHADER_CANVAS_ITEM].renames["TEXTURE_PIXEL_SIZE"] = "color_texpixel_size";
-	actions[VS::SHADER_CANVAS_ITEM].renames["NORMAL_TEXTURE"] = "normal_texture";
-	actions[VS::SHADER_CANVAS_ITEM].renames["SCREEN_UV"] = "screen_uv";
-	actions[VS::SHADER_CANVAS_ITEM].renames["SCREEN_TEXTURE"] = "screen_texture";
-	actions[VS::SHADER_CANVAS_ITEM].renames["SCREEN_PIXEL_SIZE"] = "screen_pixel_size";
-	actions[VS::SHADER_CANVAS_ITEM].renames["FRAGCOORD"] = "gl_FragCoord";
-	actions[VS::SHADER_CANVAS_ITEM].renames["POINT_COORD"] = "gl_PointCoord";
+	for (List<String>::Element *E = func_list.front(); E; E = E->next()) {
+		internal_functions.insert(E->get());
+	}
+	texture_functions.insert("texture");
+	texture_functions.insert("textureProj");
+	texture_functions.insert("textureLod");
+	texture_functions.insert("textureProjLod");
+	texture_functions.insert("textureGrad");
+}
 
-	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_VEC"] = "light_vec";
-	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_HEIGHT"] = "light_height";
-	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_COLOR"] = "light_color";
-	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT_UV"] = "light_uv";
-	actions[VS::SHADER_CANVAS_ITEM].renames["LIGHT"] = "light";
-	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_COLOR"] = "shadow_color";
-	actions[VS::SHADER_CANVAS_ITEM].renames["SHADOW_VEC"] = "shadow_vec";
-
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["COLOR"] = "#define COLOR_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_TEXTURE"] = "#define SCREEN_TEXTURE_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_UV"] = "#define SCREEN_UV_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SCREEN_PIXEL_SIZE"] = "@SCREEN_UV";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMAL"] = "#define NORMAL_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["SHADOW_VEC"] = "#define SHADOW_VEC_USED\n";
-	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
+ShaderCompilerRD::ShaderCompilerRD() {
+#if 0
 
 	/** SPATIAL SHADER **/
 
@@ -935,7 +874,7 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_SPATIAL].renames["UV"] = "uv_interp";
 	actions[VS::SHADER_SPATIAL].renames["UV2"] = "uv2_interp";
 	actions[VS::SHADER_SPATIAL].renames["COLOR"] = "color_interp";
-	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "point_size";
+	actions[VS::SHADER_SPATIAL].renames["POINT_SIZE"] = "gl_PointSize";
 	actions[VS::SHADER_SPATIAL].renames["INSTANCE_ID"] = "gl_InstanceID";
 
 	//builtins
@@ -1060,17 +999,5 @@ ShaderCompilerGLES3::ShaderCompilerGLES3() {
 	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_force"] = "#define DISABLE_FORCE\n";
 	actions[VS::SHADER_PARTICLES].render_mode_defines["disable_velocity"] = "#define DISABLE_VELOCITY\n";
 	actions[VS::SHADER_PARTICLES].render_mode_defines["keep_data"] = "#define ENABLE_KEEP_DATA\n";
-
-	vertex_name = "vertex";
-	fragment_name = "fragment";
-	light_name = "light";
-	time_name = "TIME";
-
-	List<String> func_list;
-
-	ShaderLanguage::get_builtin_funcs(&func_list);
-
-	for (List<String>::Element *E = func_list.front(); E; E = E->next()) {
-		internal_functions.insert(E->get());
-	}
+#endif
 }
