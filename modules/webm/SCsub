@@ -17,10 +17,6 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_webm.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "libwebm/"])
 
-# upstream uses c++11
-if (not env_webm.msvc):
-	env_webm.Append(CXXFLAGS="-std=c++11")
-
 # also requires libogg, libvorbis and libopus
 if env['builtin_libogg']:
     env_webm.Prepend(CPPPATH=["#thirdparty/libogg"])
