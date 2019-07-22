@@ -128,7 +128,6 @@ def configure(env):
     ## Link flags
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])
-    env.Append(LINKFLAGS=['-s', 'BINARYEN_TRAP_MODE=\'clamp\''])
 
     # Allow increasing memory buffer size during runtime. This is efficient
     # when using WebAssembly (in comparison to asm.js) and works well for
