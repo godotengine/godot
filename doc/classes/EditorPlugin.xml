@@ -229,7 +229,6 @@
 						forward = true
 					return forward
 				[/codeblock]
-
 			</description>
 		</method>
 		<method name="forward_spatial_gui_input" qualifiers="virtual">
@@ -261,7 +260,6 @@
 						forward = true
 					return forward
 				[/codeblock]
-
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">

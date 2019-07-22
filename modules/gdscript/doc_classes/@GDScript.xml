@@ -389,37 +389,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="posmod">
-			<return type="int">
-			</return>
-			<argument index="0" name="a" type="int">
-			</argument>
-			<argument index="1" name="b" type="int">
-			</argument>
-			<description>
-				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
-				[codeblock]
-				var i = -6
-				while i &lt; 5:
-				    prints(i, posmod(i, 3))
-				    i += 1
-				[/codeblock]
-				Produces:
-				[codeblock]
-				-6 0
-				-5 1
-				-4 2
-				-3 0
-				-2 1
-				-1 2
-				0 0
-				1 1
-				2 2
-				3 0
-				4 1
-				[/codeblock]
-			</description>
-		</method>
 		<method name="funcref">
 			<return type="FuncRef">
 			</return>
@@ -753,12 +722,43 @@
 				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
 			</description>
 		</method>
+		<method name="posmod">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
+				[codeblock]
+				var i = -6
+				while i &lt; 5:
+				    prints(i, posmod(i, 3))
+				    i += 1
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-6 0
+				-5 1
+				-4 2
+				-3 0
+				-2 1
+				-1 2
+				0 0
+				1 1
+				2 2
+				3 0
+				4 1
+				[/codeblock]
+			</description>
+		</method>
 		<method name="pow">
 			<return type="float">
 			</return>
-			<argument index="0" name="x" type="float">
+			<argument index="0" name="base" type="float">
 			</argument>
-			<argument index="1" name="y" type="float">
+			<argument index="1" name="exp" type="float">
 			</argument>
 			<description>
 				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
