@@ -3369,7 +3369,7 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 
 void TilesetEditorContext::_bind_methods() {
 
-	ClassDB::bind_method("_hide_object_properties_from_inspector", &TilesetEditorContext::_hide_object_properties_from_inspector);
+	ClassDB::bind_method("_hide_script_from_inspector", &TilesetEditorContext::_hide_script_from_inspector);
 }
 
 TilesetEditorContext::TilesetEditorContext(TileSetEditor *p_tileset_editor) {

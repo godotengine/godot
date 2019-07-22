@@ -252,7 +252,7 @@ class TilesetEditorContext : public Object {
 	bool snap_options_visible;
 
 public:
-	bool _hide_object_properties_from_inspector() { return true; }
+	bool _hide_script_from_inspector() { return true; }
 	void set_tileset(const Ref<TileSet> &p_tileset);
 
 private:

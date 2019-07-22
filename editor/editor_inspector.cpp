@@ -1550,7 +1550,7 @@ void EditorInspector::update_tree() {
 		if (p.usage & PROPERTY_USAGE_HIGH_END_GFX && VS::get_singleton()->is_low_end())
 			continue; //do not show this property in low end gfx
 
-		if ((hide_object_properties || bool(object->call("_hide_object_properties_from_inspector"))) && (p.name == "script" || p.name == "__meta__")) {
+		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
 			continue;
 		}
 
@@ -1877,8 +1877,8 @@ void EditorInspector::set_use_doc_hints(bool p_enable) {
 	use_doc_hints = p_enable;
 	update_tree();
 }
-void EditorInspector::set_hide_object_properties(bool p_hide) {
-	hide_object_properties = p_hide;
+void EditorInspector::set_hide_script(bool p_hide) {
+	hide_script = p_hide;
 	update_tree();
 }
 void EditorInspector::set_use_filter(bool p_use) {
@@ -2318,7 +2318,7 @@ EditorInspector::EditorInspector() {
 	set_enable_v_scroll(true);
 
 	show_categories = false;
-	hide_object_properties = true;
+	hide_script = true;
 	use_doc_hints = false;
 	capitalize_paths = true;
 	use_filter = false;
