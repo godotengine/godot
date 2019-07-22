@@ -5296,7 +5296,7 @@ void RasterizerSceneGLES3::initialize() {
 		GLOBAL_DEF("rendering/quality/subsurface_scattering/follow_surface", false);
 		GLOBAL_DEF("rendering/quality/subsurface_scattering/weight_samples", true);
 
-		GLOBAL_DEF("rendering/quality/voxel_cone_tracing/high_quality", true);
+		GLOBAL_DEF("rendering/quality/voxel_cone_tracing/high_quality", false);
 	}
 
 	exposure_shrink_size = 243;
