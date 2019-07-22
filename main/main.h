@@ -57,6 +57,7 @@ public:
 	static bool start();
 
 	static bool iteration();
+	static uint64_t physics_tick(float p_physics_delta);
 	static void force_redraw();
 
 	static bool is_iterating();
