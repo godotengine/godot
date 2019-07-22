@@ -246,6 +246,7 @@ public:
 };
 
 class AnimationTrackKeyEdit;
+class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
@@ -415,6 +416,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _move_selection_cancel();
 
 	AnimationTrackKeyEdit *key_edit;
+	AnimationMultiTrackKeyEdit *multi_key_edit;
 	void _update_key_edit();
 
 	void _clear_key_edit();
