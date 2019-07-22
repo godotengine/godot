@@ -166,6 +166,7 @@
 			<argument index="0" name="file" type="String">
 			</argument>
 			<description>
+				Selects the file, with the path provided by [code]file[/code], in the FileSystem dock.
 			</description>
 		</method>
 		<method name="set_plugin_enabled">
