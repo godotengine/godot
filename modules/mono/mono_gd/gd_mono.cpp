@@ -602,12 +602,12 @@ bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type) {
 
 String GDMono::update_api_assemblies_from_prebuilt() {
 
-#define FAIL_REASON(m_out_of_sync, m_prebuilt_exist)                             \
+#define FAIL_REASON(m_out_of_sync, m_prebuilt_exists)                            \
 	(                                                                            \
 			(m_out_of_sync ?                                                     \
 							String("The assembly is invalidated") :              \
 							String("The assembly was not found")) +              \
-			(m_prebuilt_exist ?                                                  \
+			(m_prebuilt_exists ?                                                 \
 							String(" and the prebuilt assemblies are missing") : \
 							String(" and we failed to copy the prebuilt assemblies")))
 
@@ -619,16 +619,18 @@ String GDMono::update_api_assemblies_from_prebuilt() {
 	if (!api_assembly_out_of_sync && FileAccess::exists(core_assembly_path) && FileAccess::exists(editor_assembly_path))
 		return String(); // No update needed
 
+	print_verbose("Updating API assemblies");
+
 	String prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug");
 	String prebuilt_core_dll_path = prebuilt_api_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
 	String prebuilt_editor_dll_path = prebuilt_api_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
 
 	if (!FileAccess::exists(prebuilt_core_dll_path) || !FileAccess::exists(prebuilt_editor_dll_path))
-		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exist: */ false);
+		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ false);
 
 	// Copy the prebuilt Api
 	if (!copy_prebuilt_api_assembly(APIAssembly::API_CORE) || !copy_prebuilt_api_assembly(APIAssembly::API_EDITOR))
-		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exist: */ true);
+		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ true);
 
 	return String(); // Updated successfully
 
@@ -699,9 +701,6 @@ bool GDMono::_try_load_api_assemblies() {
 		return false;
 	}
 
-	if (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)
-		return false;
-
 #ifdef TOOLS_ENABLED
 	if (!_load_editor_api_assembly()) {
 		if (OS::get_singleton()->is_stdout_verbose())
@@ -712,6 +711,12 @@ bool GDMono::_try_load_api_assemblies() {
 	if (editor_api_assembly_out_of_sync)
 		return false;
 #endif
+
+	// Check if the core API assembly is out of sync only after trying to load the
+	// editor API assembly. Otherwise, if both assemblies are out of sync, we would
+	// only update the former as we won't know the latter also needs to be updated.
+	if (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)
+		return false;
 
 	return true;
 }
