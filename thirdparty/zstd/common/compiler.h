@@ -127,6 +127,13 @@
     }                                     \
 }
 
+/* vectorization */
+#if !defined(__clang__) && defined(__GNUC__)
+#  define DONT_VECTORIZE __attribute__((optimize("no-tree-vectorize")))
+#else
+#  define DONT_VECTORIZE
+#endif
+
 /* disable warnings */
 #ifdef _MSC_VER    /* Visual Studio */
 #  include <intrin.h>                    /* For Visual 2005 */
