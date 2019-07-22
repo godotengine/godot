@@ -1327,7 +1327,9 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 				if (bct.has("index")) {
 					Ref<Texture> t = _get_texture(state, bct["index"]);
 					material->set_texture(SpatialMaterial::TEXTURE_METALLIC, t);
+					material->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
 					material->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, t);
+					material->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GREEN);
 					if (!mr.has("metallicFactor")) {
 						material->set_metallic(1);
 					}
@@ -1352,6 +1354,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			Dictionary bct = d["occlusionTexture"];
 			if (bct.has("index")) {
 				material->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, _get_texture(state, bct["index"]));
+				material->set_ao_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_RED);
 				material->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
 			}
 		}
