@@ -1737,7 +1737,7 @@ void EditorInspector::update_tree() {
 			continue; //do not show this property in low end gfx
 		}
 
-		if (p.name == "script" && (hide_script || bool(object->call("_hide_script_from_inspector")))) {
+		if ((hide_object_properties || bool(object->call("_hide_object_properties_from_inspector"))) && (p.name == "script" || p.name == "__meta__")) {
 			continue;
 		}
 
@@ -2095,8 +2095,8 @@ void EditorInspector::set_use_doc_hints(bool p_enable) {
 	update_tree();
 }
 
-void EditorInspector::set_hide_script(bool p_hide) {
-	hide_script = p_hide;
+void EditorInspector::set_hide_object_properties(bool p_hide) {
+	hide_object_properties = p_hide;
 	update_tree();
 }
 
@@ -2614,7 +2614,7 @@ EditorInspector::EditorInspector() {
 
 	wide_editors = false;
 	show_categories = false;
-	hide_script = true;
+	hide_object_properties = true;
 	use_doc_hints = false;
 	capitalize_paths = true;
 	use_filter = false;
