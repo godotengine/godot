@@ -99,9 +99,11 @@ Ref<AudioStream> AudioStreamTransitioner::get_list_clip(int clip_number) {
 void AudioStreamTransitioner::set_active_transition(int transition_number, bool trigger) {
 	for (int i = 0; i < transition_count; i++) {
 		transitions[i].t_active = false;
+		_change_notify();
 	}
 	transitions[transition_number].t_active = trigger;
 	active_transition = transitions[transition_number];
+	
 }
 
 bool AudioStreamTransitioner::get_transition_state(int transition_number) {
