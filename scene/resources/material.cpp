@@ -2353,8 +2353,8 @@ SpatialMaterial::SpatialMaterial() :
 
 	set_ao_light_affect(0.0);
 
-	set_metallic_texture_channel(TEXTURE_CHANNEL_BLUE);
-	set_roughness_texture_channel(TEXTURE_CHANNEL_GREEN);
+	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
+	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);
 	set_ao_texture_channel(TEXTURE_CHANNEL_RED);
 	set_refraction_texture_channel(TEXTURE_CHANNEL_RED);
 
