@@ -218,7 +218,7 @@
 				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
 				[codeblock]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types
- 				func forward_canvas_gui_input(event):
+				func forward_canvas_gui_input(event):
 				    var forward = false
 				    if event is InputEventMouseMotion:
 				        forward = true
@@ -244,7 +244,7 @@
 				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
 				[codeblock]
 				# Consumes InputEventMouseMotion and forwards other InputEvent types
- 				func forward_spatial_gui_input(camera, event):
+				func forward_spatial_gui_input(camera, event):
 				    var forward = false
 				    if event is InputEventMouseMotion:
 				        forward = true
