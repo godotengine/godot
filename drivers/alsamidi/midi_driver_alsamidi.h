@@ -36,6 +36,7 @@
 #include "core/os/midi_driver.h"
 #include "core/os/mutex.h"
 #include "core/os/thread.h"
+#include "core/variant.h"
 #include "core/vector.h"
 
 #include <alsa/asoundlib.h>

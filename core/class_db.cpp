@@ -31,8 +31,11 @@
 #include "class_db.h"
 
 #include "core/engine.h"
-#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
+
+#ifdef DEBUG_METHODS_ENABLED
 #include "core/version.h"
+#endif
 
 #define OBJTYPE_RLOCK RWLockRead _rw_lockr_(lock);
 #define OBJTYPE_WLOCK RWLockWrite _rw_lockw_(lock);

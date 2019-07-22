@@ -32,10 +32,13 @@
 
 #include "core/io/marshalls.h"
 #include "core/message_queue.h"
+#include "core/pair.h"
 #include "scene/3d/light.h"
 #include "scene/resources/mesh_library.h"
 #include "scene/resources/surface_tool.h"
+#include "scene/resources/world.h"
 #include "scene/scene_string_names.h"
+#include "servers/physics_server.h"
 #include "servers/visual_server.h"
 
 bool GridMap::_set(const StringName &p_name, const Variant &p_value) {

@@ -32,6 +32,7 @@
 
 #include <mono/metadata/exception.h>
 
+#include "core/engine.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"

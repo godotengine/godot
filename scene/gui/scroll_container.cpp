@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "scroll_container.h"
+
 #include "core/os/os.h"
+#include "core/project_settings.h"
 
 bool ScrollContainer::clips_input() const {
 

@@ -32,6 +32,8 @@
 // If you fix something here, make sure you fix it there as wel!
 
 #include "camera_osx.h"
+
+#include "core/print_string.h"
 #include "servers/camera/camera_feed.h"
 #import <AVFoundation/AVFoundation.h>
 

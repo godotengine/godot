@@ -33,17 +33,18 @@
 
 #include "core/io/multiplayer_api.h"
 #include "core/os/main_loop.h"
-#include "core/os/thread_safe.h"
+#include "core/os/thread_safe.h" // for _THREAD_SAFE_CLASS_ macro
 #include "core/self_list.h"
 #include "scene/resources/mesh.h"
-#include "scene/resources/world.h"
-#include "scene/resources/world_2d.h"
+
+#ifdef DEBUG_ENABLED
+#include "core/script_language.h"
+#endif
 
 class PackedScene;
 class Node;
 class Viewport;
 class Material;
-class Mesh;
 
 class SceneTreeTimer : public Reference {
 	GDCLASS(SceneTreeTimer, Reference);

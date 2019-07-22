@@ -30,6 +30,7 @@
 
 #include "gdnative.h"
 
+#include "core/engine.h"
 #include "core/global_constants.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"

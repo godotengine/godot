@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "sprite.h"
+
 #include "core/core_string_names.h"
+#include "core/engine.h"
 #include "core/os/os.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"

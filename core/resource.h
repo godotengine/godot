@@ -32,6 +32,7 @@
 #define RESOURCE_H
 
 #include "core/class_db.h"
+#include "core/map.h"
 #include "core/object.h"
 #include "core/ref_ptr.h"
 #include "core/reference.h"

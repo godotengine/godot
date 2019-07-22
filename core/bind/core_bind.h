@@ -31,15 +31,17 @@
 #ifndef CORE_BIND_H
 #define CORE_BIND_H
 
-#include "core/image.h"
 #include "core/io/compression.h"
-#include "core/io/resource_loader.h"
-#include "core/io/resource_saver.h"
-#include "core/os/dir_access.h"
-#include "core/os/file_access.h"
-#include "core/os/os.h"
-#include "core/os/semaphore.h"
-#include "core/os/thread.h"
+#include "core/resource.h"
+
+class DirAccess; // for _Directory
+class FileAccess; // for _File
+class Image; // for _OS
+class _JSON; // for JsonParseResult
+class MainLoop; // for _OS
+class ResourceInteractiveLoader;
+class Semaphore; // for _Semaphore
+class Thread; // for _Thread
 
 class _ResourceLoader : public Object {
 	GDCLASS(_ResourceLoader, Object);
@@ -92,8 +94,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(_ResourceSaver::SaverFlags);
-
-class MainLoop;
 
 class _OS : public Object {
 	GDCLASS(_OS, Object);
@@ -777,8 +777,6 @@ public:
 
 	_Engine();
 };
-
-class _JSON;
 
 class JSONParseResult : public Reference {
 	GDCLASS(JSONParseResult, Reference);

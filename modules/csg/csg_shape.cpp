@@ -29,7 +29,10 @@
 /*************************************************************************/
 
 #include "csg_shape.h"
+
 #include "scene/3d/path.h"
+#include "scene/resources/world.h"
+#include "servers/physics_server.h"
 
 void CSGShape::set_use_collision(bool p_enable) {
 

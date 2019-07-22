@@ -34,6 +34,7 @@
 #include "scene/3d/navigation_mesh.h"
 #include "scene/3d/physics_body.h"
 #include "scene/gui/box_container.h"
+#include "scene/resources/environment.h"
 #include "spatial_editor_plugin.h"
 
 void MeshInstanceEditor::_node_removed(Node *p_node) {

@@ -30,6 +30,7 @@
 
 #include "animation_tree_player_editor_plugin.h"
 
+#include "core/engine.h"
 #include "core/io/resource_loader.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"

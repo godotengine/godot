@@ -30,11 +30,13 @@
 
 #include "tile_map.h"
 
-#include "collision_object_2d.h"
 #include "core/io/marshalls.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "scene/2d/area_2d.h"
+#include "scene/2d/collision_object_2d.h"
+#include "scene/resources/world_2d.h"
 #include "servers/physics_2d_server.h"
 
 int TileMap::_get_quadrant_size() const {

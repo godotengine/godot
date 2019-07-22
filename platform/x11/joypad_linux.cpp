@@ -32,6 +32,8 @@
 
 #include "joypad_linux.h"
 
+#include "core/print_string.h"
+
 #include <errno.h>
 #include <fcntl.h>
 #include <linux/input.h>

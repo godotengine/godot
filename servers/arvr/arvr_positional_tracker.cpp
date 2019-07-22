@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "arvr_positional_tracker.h"
+
 #include "core/os/input.h"
 
 void ARVRPositionalTracker::_bind_methods() {

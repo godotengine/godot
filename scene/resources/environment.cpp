@@ -29,9 +29,8 @@
 /*************************************************************************/
 
 #include "environment.h"
-#include "core/project_settings.h"
+
 #include "servers/visual_server.h"
-#include "texture.h"
 
 RID Environment::get_rid() const {
 

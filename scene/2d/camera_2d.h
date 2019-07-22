@@ -32,7 +32,8 @@
 #define CAMERA_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/main/viewport.h"
+
+class Viewport;
 
 class Camera2D : public Node2D {
 

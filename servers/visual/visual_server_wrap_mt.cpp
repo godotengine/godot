@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "visual_server_wrap_mt.h"
+
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 
 void VisualServerWrapMT::thread_exit() {

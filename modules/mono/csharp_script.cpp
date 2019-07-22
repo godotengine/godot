@@ -32,10 +32,13 @@
 
 #include <mono/metadata/threads.h>
 
+#include "core/engine.h"
 #include "core/io/json.h"
+#include "core/method_bind.h" // for checking DEBUG_METHODS_ENABLED
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 
 #ifdef TOOLS_ENABLED

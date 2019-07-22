@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
 #include "core/translation.h"
 
 String PopupMenu::_get_accel_text(int p_item) const {

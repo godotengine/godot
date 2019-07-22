@@ -30,6 +30,7 @@
 
 #include "message_queue.h"
 
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
 

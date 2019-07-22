@@ -30,6 +30,7 @@
 
 #include "touch_screen_button.h"
 
+#include "core/engine.h"
 #include "core/input_map.h"
 #include "core/os/input.h"
 #include "core/os/os.h"

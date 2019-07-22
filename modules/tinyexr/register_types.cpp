@@ -30,6 +30,7 @@
 
 #include "register_types.h"
 
+#include "core/image.h"
 #include "image_loader_tinyexr.h"
 #include "image_saver_tinyexr.h"
 

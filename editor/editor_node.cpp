@@ -32,6 +32,7 @@
 
 #include "core/bind/core_bind.h"
 #include "core/class_db.h"
+#include "core/engine.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
@@ -50,6 +51,7 @@
 #include "main/main.h"
 #include "scene/resources/packed_scene.h"
 #include "servers/physics_2d_server.h"
+#include "servers/physics_server.h"
 
 #include "editor/editor_audio_buses.h"
 #include "editor/editor_file_system.h"

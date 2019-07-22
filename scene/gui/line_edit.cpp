@@ -30,6 +30,7 @@
 
 #include "line_edit.h"
 
+#include "core/engine.h"
 #include "core/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"

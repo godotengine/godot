@@ -31,7 +31,6 @@
 #ifndef REFERENCE_H
 #define REFERENCE_H
 
-#include "core/class_db.h"
 #include "core/object.h"
 #include "core/ref_ptr.h"
 #include "core/safe_refcount.h"

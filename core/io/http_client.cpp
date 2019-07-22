@@ -30,7 +30,10 @@
 
 #include "http_client.h"
 
+#include "core/io/stream_peer.h"
 #include "core/io/stream_peer_ssl.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/os/os.h"
 #include "core/version.h"
 
 const char *HTTPClient::_methods[METHOD_MAX] = {

@@ -39,10 +39,10 @@
 #include "scene/resources/texture.h"
 
 class CanvasLayer;
-class Viewport;
 class Font;
-
 class StyleBox;
+class Viewport;
+class World2D;
 
 class CanvasItemMaterial : public Material {
 

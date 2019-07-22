@@ -31,7 +31,7 @@
 #include "a_star.h"
 
 #include "core/math/geometry.h"
-#include "core/script_language.h"
+#include "core/script_language.h" // for the get_script_instance() calls
 #include "scene/scene_string_names.h"
 
 int AStar::get_available_point_id() const {

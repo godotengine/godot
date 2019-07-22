@@ -30,6 +30,8 @@
 
 #include "material.h"
 
+#include "servers/visual_server.h"
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif

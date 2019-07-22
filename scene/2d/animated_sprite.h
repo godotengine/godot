@@ -32,7 +32,8 @@
 #define ANIMATED_SPRITE_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/texture.h"
+
+class Texture;
 
 class SpriteFrames : public Resource {
 

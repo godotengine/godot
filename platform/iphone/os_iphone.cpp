@@ -32,22 +32,20 @@
 
 #include "os_iphone.h"
 
-#include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
-#include "servers/visual/visual_server_raster.h"
-#include "servers/visual/visual_server_wrap_mt.h"
-
-#include "main/main.h"
-
+#include "core/engine.h"
 #include "core/io/file_access_pack.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
+#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/syslog_logger.h"
-
-#include "semaphore_iphone.h"
+#include "main/main.h"
+#include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 
 #include "ios.h"
+#include "semaphore_iphone.h"
 
 #include <dlfcn.h>
 

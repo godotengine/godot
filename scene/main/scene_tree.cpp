@@ -30,6 +30,7 @@
 
 #include "scene_tree.h"
 
+#include "core/engine.h"
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
@@ -40,9 +41,11 @@
 #include "main/input_default.h"
 #include "node.h"
 #include "scene/resources/dynamic_font.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/material.h"
 #include "scene/resources/mesh.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/resources/world.h"
 #include "scene/scene_string_names.h"
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"

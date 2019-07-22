@@ -32,6 +32,10 @@
 #define INPUT_DEFAULT_H
 
 #include "core/os/input.h"
+#include "core/os/input_event.h"
+#include "core/os/thread_safe.h" // for macro _THREAD_SAFE_CLASS_
+
+class MainLoop;
 
 class InputDefault : public Input {
 

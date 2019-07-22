@@ -31,6 +31,7 @@
 #include "zip_io.h"
 
 #include "core/os/copymem.h"
+#include "core/os/file_access.h"
 
 void *zipio_open(void *data, const char *p_fname, int mode) {
 

@@ -30,7 +30,9 @@
 
 #include "input_default.h"
 
+#include "core/engine.h"
 #include "core/input_map.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "main/default_controller_mappings.h"
 #include "scene/resources/texture.h"

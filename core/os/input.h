@@ -32,8 +32,10 @@
 #define INPUT_H
 
 #include "core/object.h"
-#include "core/os/main_loop.h"
-#include "core/os/thread_safe.h"
+#include "core/resource.h"
+
+class InputEvent;
+class InputEventMouseMotion;
 
 class Input : public Object {
 

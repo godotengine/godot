@@ -32,7 +32,9 @@
 #define PACKED_SCENE_H
 
 #include "core/resource.h"
-#include "scene/main/node.h"
+
+class Node;
+class PackedScene;
 
 class SceneState : public Reference {
 

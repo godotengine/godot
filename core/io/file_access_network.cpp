@@ -32,7 +32,10 @@
 
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/os/os.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 #include "core/project_settings.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)

@@ -32,7 +32,8 @@
 #define MULTIMESH_INSTANCE_2D_H
 
 #include "scene/2d/node_2d.h"
-#include "scene/resources/multimesh.h"
+
+class MultiMesh;
 
 class MultiMeshInstance2D : public Node2D {
 	GDCLASS(MultiMeshInstance2D, Node2D);

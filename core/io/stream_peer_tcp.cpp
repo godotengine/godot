@@ -30,6 +30,9 @@
 
 #include "stream_peer_tcp.h"
 
+#include "core/io/ip.h"
+#include "core/io/net_socket.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
 
 Error StreamPeerTCP::_poll_connection() {

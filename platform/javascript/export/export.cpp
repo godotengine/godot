@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "core/io/zip_io.h"
+#include "core/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor_export.h"
 #include "main/splash.gen.h"

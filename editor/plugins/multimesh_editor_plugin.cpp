@@ -32,6 +32,7 @@
 
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/box_container.h"
+#include "scene/resources/environment.h"
 #include "spatial_editor_plugin.h"
 
 void MultiMeshEditor::_node_removed(Node *p_node) {

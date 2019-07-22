@@ -31,7 +31,8 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "core/safe_refcount.h"
+#include "core/int_types.h"
+#include "core/typedefs.h"
 
 #include <stddef.h>
 

@@ -30,6 +30,7 @@
 
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 #include "editor/editor_export.h"
 #include "editor/editor_settings.h"
 #include "platform/windows/logo.gen.h"

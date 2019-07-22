@@ -30,6 +30,9 @@
 
 #include "image_loader_bmp.h"
 
+#include "core/image.h"
+#include "core/os/file_access.h"
+
 Error ImageLoaderBMP::convert_to_image(Ref<Image> p_image,
 		const uint8_t *p_buffer,
 		const uint8_t *p_color_buffer,

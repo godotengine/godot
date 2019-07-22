@@ -31,10 +31,10 @@
 #ifndef STREAM_PEER_TCP_H
 #define STREAM_PEER_TCP_H
 
-#include "core/io/ip.h"
 #include "core/io/ip_address.h"
-#include "core/io/net_socket.h"
 #include "core/io/stream_peer.h"
+
+class NetSocket;
 
 class StreamPeerTCP : public StreamPeer {
 

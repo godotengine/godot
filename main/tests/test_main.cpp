@@ -30,6 +30,7 @@
 
 #include "core/list.h"
 #include "core/os/main_loop.h"
+#include "core/print_string.h"
 
 #ifdef DEBUG_ENABLED
 

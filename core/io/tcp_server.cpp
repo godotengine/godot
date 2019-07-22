@@ -30,6 +30,10 @@
 
 #include "tcp_server.h"
 
+#include "core/io/ip.h"
+#include "core/io/net_socket.h"
+#include "core/io/stream_peer_tcp.h"
+
 void TCP_Server::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));

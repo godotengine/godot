@@ -35,6 +35,7 @@
 #include "core/core_string_names.h"
 #include "core/global_constants.h"
 #include "core/io/file_access_encrypted.h"
+#include "core/method_bind.h" // for checking DEBUG_METHODS_ENABLED
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"

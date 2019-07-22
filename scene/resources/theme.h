@@ -31,7 +31,6 @@
 #ifndef THEME_H
 #define THEME_H
 
-#include "core/io/resource_loader.h"
 #include "core/resource.h"
 #include "scene/resources/font.h"
 #include "scene/resources/shader.h"

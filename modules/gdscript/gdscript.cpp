@@ -36,6 +36,7 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "gdscript_compiler.h"
 

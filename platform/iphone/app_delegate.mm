@@ -30,6 +30,7 @@
 
 #import "app_delegate.h"
 
+#include "core/os/main_loop.h"
 #include "core/project_settings.h"
 #include "drivers/coreaudio/audio_driver_coreaudio.h"
 #import "gl_view.h"

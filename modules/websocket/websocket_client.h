@@ -32,6 +32,7 @@
 #define WEBSOCKET_CLIENT_H
 
 #include "core/error_list.h"
+#include "core/map.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
 

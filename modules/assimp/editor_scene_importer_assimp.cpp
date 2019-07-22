@@ -42,6 +42,8 @@
 
 #include "core/bind/core_bind.h"
 #include "core/io/image_loader.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
 #include "editor/editor_file_system.h"
 #include "editor/import/resource_importer_scene.h"
 #include "editor_scene_importer_assimp.h"

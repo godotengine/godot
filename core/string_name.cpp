@@ -30,6 +30,7 @@
 
 #include "string_name.h"
 
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 

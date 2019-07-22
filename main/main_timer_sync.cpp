@@ -30,6 +30,9 @@
 
 #include "main_timer_sync.h"
 
+#include "core/list.h"
+#include "core/math/math_funcs.h"
+
 void MainFrameTime::clamp_idle(float min_idle_step, float max_idle_step) {
 	if (idle_step < min_idle_step) {
 		idle_step = min_idle_step;

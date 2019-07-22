@@ -32,6 +32,7 @@
 #define MULTIPLAYER_PROTOCOL_H
 
 #include "core/io/networked_multiplayer_peer.h"
+#include "core/map.h"
 #include "core/reference.h"
 
 class MultiplayerAPI : public Reference {

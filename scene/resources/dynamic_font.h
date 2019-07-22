@@ -33,7 +33,6 @@
 
 #ifdef FREETYPE_ENABLED
 #include "core/io/resource_loader.h"
-#include "core/os/mutex.h"
 #include "core/os/thread_safe.h"
 #include "core/pair.h"
 #include "scene/resources/font.h"
@@ -43,6 +42,7 @@
 
 class DynamicFontAtSize;
 class DynamicFont;
+class Mutex;
 
 class DynamicFontData : public Resource {
 

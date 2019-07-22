@@ -31,14 +31,18 @@
 #include "os_x11.h"
 #include "detect_prime.h"
 
+#include "core/engine.cpp"
 #include "core/os/dir_access.h"
 #include "core/print_string.h"
+#include "core/project_settings.h" // for GLOBAL_GET macro
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
+#include "servers/camera_server.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/visual_server.h"
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>

@@ -35,6 +35,7 @@
 #include "core/array.h"
 #include "core/io/marshalls.h"
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/ustring.h"
 #include "core/variant.h"
 #include "core/variant_parser.h"

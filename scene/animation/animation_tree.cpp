@@ -33,6 +33,7 @@
 #include "animation_blend_tree.h"
 #include "core/engine.h"
 #include "core/method_bind_ext.gen.inc"
+#include "core/script_language.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
 

@@ -42,7 +42,7 @@
 #define DEBUG_METHODS_ENABLED
 #endif
 
-#include "core/type_info.h"
+#include "core/type_info.h" // must be included after defining DEBUG_METHODS_ENABLED
 
 enum MethodFlags {
 

@@ -32,8 +32,10 @@
 
 #include "core/class_db.h"
 #include "core/core_string_names.h"
+#include "core/engine.h"
 #include "core/message_queue.h"
 #include "core/os/os.h"
+#include "core/os/rw_lock.h"
 #include "core/print_string.h"
 #include "core/resource.h"
 #include "core/script_language.h"

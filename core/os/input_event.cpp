@@ -31,6 +31,7 @@
 #include "input_event.h"
 
 #include "core/input_map.h"
+#include "core/math/transform_2d.h"
 #include "core/os/keyboard.h"
 
 const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;

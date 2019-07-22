@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "import_dock.h"
+
+#include "core/project_settings.h"
 #include "editor_node.h"
 
 class ImportDockParameters : public Object {

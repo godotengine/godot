@@ -31,6 +31,7 @@
 #ifndef JAVA_CLASS_WRAPPER_H
 #define JAVA_CLASS_WRAPPER_H
 
+#include "core/map.h"
 #include "core/reference.h"
 #include <android/log.h>
 #include <jni.h>

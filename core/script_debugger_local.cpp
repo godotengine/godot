@@ -31,6 +31,7 @@
 #include "script_debugger_local.h"
 
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "scene/main/scene_tree.h"
 
 void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {

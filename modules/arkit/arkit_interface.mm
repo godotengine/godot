@@ -31,6 +31,7 @@
 #include "camera_ios.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "scene/resources/surface_tool.h"
 #include "servers/visual/visual_server_globals.h"
 

@@ -31,6 +31,7 @@
 #include "audio_driver_jandroid.h"
 
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "thread_jandroid.h"
 

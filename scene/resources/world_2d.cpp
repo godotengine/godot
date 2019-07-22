@@ -31,7 +31,6 @@
 #include "world_2d.h"
 
 #include "core/project_settings.h"
-#include "scene/2d/camera_2d.h"
 #include "scene/2d/visibility_notifier_2d.h"
 #include "scene/main/viewport.h"
 #include "servers/physics_2d_server.h"

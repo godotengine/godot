@@ -31,6 +31,7 @@
 #ifndef GLOBAL_CONFIG_H
 #define GLOBAL_CONFIG_H
 
+#include "core/map.h"
 #include "core/object.h"
 #include "core/os/thread_safe.h"
 #include "core/set.h"

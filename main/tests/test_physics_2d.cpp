@@ -31,6 +31,7 @@
 #include "test_physics_2d.h"
 
 #include "core/map.h"
+#include "core/os/input_event.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/print_string.h"

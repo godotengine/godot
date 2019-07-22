@@ -30,6 +30,8 @@
 
 #include "image_loader_hdr.h"
 
+#include "core/image.h"
+#include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 

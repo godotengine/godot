@@ -31,10 +31,9 @@
 #ifndef WORLD_2D_H
 #define WORLD_2D_H
 
-#include "core/project_settings.h"
 #include "core/resource.h"
-#include "servers/physics_2d_server.h"
 
+class Physics2DDirectSpaceState;
 class VisibilityNotifier2D;
 class Viewport;
 struct SpatialIndexer2D;

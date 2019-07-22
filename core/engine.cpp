@@ -33,6 +33,7 @@
 #include "core/authors.gen.h"
 #include "core/donors.gen.h"
 #include "core/license.gen.h"
+#include "core/variant.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"
 

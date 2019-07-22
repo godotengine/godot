@@ -32,10 +32,9 @@
 
 #include "core/io/resource_importer.h"
 #include "core/os/file_access.h"
-#include "core/os/os.h"
-#include "core/path_remap.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
+#include "core/script_language.h"
 #include "core/translation.h"
 #include "core/variant_parser.h"
 

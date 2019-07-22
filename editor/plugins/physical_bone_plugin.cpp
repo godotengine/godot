@@ -31,6 +31,7 @@
 #include "physical_bone_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/3d/physics_body.h"
+#include "scene/resources/environment.h"
 
 void PhysicalBoneEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_on_toggle_button_transform_joint", "is_pressed"), &PhysicalBoneEditor::_on_toggle_button_transform_joint);

@@ -30,6 +30,9 @@
 
 #include "collision_object.h"
 
+#include "core/os/input_event.h"
+#include "core/script_language.h"
+#include "scene/resources/world.h"
 #include "scene/scene_string_names.h"
 #include "servers/physics_server.h"
 

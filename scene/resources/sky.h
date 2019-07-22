@@ -31,8 +31,9 @@
 #ifndef SKY_H
 #define SKY_H
 
-#include "core/os/thread.h"
 #include "scene/resources/texture.h"
+
+class Thread;
 
 class Sky : public Resource {
 	GDCLASS(Sky, Resource);

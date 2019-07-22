@@ -36,7 +36,9 @@
 #include "core/math/math_funcs.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/object.h"
+#include "core/project_settings.h"
 #include "core/rid.h"
+#include "core/script_language.h"
 #include "scene/scene_string_names.h"
 
 void PhysicsBody2D::_notification(int p_what) {

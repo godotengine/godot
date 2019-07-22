@@ -31,13 +31,23 @@
 #include "core_bind.h"
 
 #include "core/crypto/crypto_core.h"
+#include "core/engine.h"
+#include "core/image.h"
 #include "core/io/file_access_compressed.h"
 #include "core/io/file_access_encrypted.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
 #include "core/math/geometry.h"
+#include "core/method_bind.h" // for checking DEBUG_METHODS_ENABLED
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
+#include "core/os/semaphore.h"
+#include "core/os/thread.h"
 #include "core/project_settings.h"
 
 /**

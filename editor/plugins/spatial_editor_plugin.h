@@ -39,6 +39,7 @@
 #include "scene/gui/panel_container.h"
 
 class Camera;
+class Environment;
 class SpatialEditor;
 class EditorSpatialGizmoPlugin;
 

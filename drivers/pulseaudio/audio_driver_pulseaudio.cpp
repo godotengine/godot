@@ -33,6 +33,7 @@
 #ifdef PULSEAUDIO_ENABLED
 
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 
 void AudioDriverPulseAudio::pa_state_cb(pa_context *c, void *userdata) {

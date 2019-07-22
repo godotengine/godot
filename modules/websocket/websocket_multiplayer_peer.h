@@ -34,6 +34,7 @@
 #include "core/error_list.h"
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/list.h"
+#include "core/map.h"
 #include "websocket_peer.h"
 
 class WebSocketMultiplayerPeer : public NetworkedMultiplayerPeer {

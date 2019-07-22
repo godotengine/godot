@@ -32,14 +32,15 @@
 #define GEOMETRY_H
 
 #include "core/math/delaunay.h"
-#include "core/math/face3.h"
+#include "core/math/plane.h"
 #include "core/math/rect2.h"
+#include "core/math/transform_2d.h"
 #include "core/math/triangulate.h"
 #include "core/math/vector3.h"
-#include "core/object.h"
 #include "core/pool_vector.h"
-#include "core/print_string.h"
 #include "core/vector.h"
+
+class Face3;
 
 class Geometry {
 	Geometry();

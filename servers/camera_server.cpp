@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "camera_server.h"
+
+#include "core/print_string.h"
 #include "servers/camera/camera_feed.h"
 #include "visual_server.h"
 

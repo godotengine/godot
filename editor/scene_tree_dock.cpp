@@ -44,6 +44,7 @@
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/packed_scene.h"
 
 void SceneTreeDock::_nodes_drag_begin() {

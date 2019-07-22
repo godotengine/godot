@@ -31,16 +31,18 @@
 #ifndef OS_H
 #define OS_H
 
-#include "core/engine.h"
-#include "core/image.h"
 #include "core/io/logger.h"
 #include "core/list.h"
-#include "core/os/main_loop.h"
+#include "core/math/vector2.h"
+#include "core/resource.h"
 #include "core/ustring.h"
+#include "core/variant.h"
 #include "core/vector.h"
 
 #include <stdarg.h>
 
+class Image;
+class MainLoop;
 class Mutex;
 
 class OS {

@@ -31,7 +31,6 @@
 #ifndef STRING_NAME_H
 #define STRING_NAME_H
 
-#include "core/os/mutex.h"
 #include "core/safe_refcount.h"
 #include "core/ustring.h"
 

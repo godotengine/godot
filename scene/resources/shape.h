@@ -32,6 +32,7 @@
 #define SHAPE_H
 
 #include "core/resource.h"
+
 class ArrayMesh;
 
 class Shape : public Resource {

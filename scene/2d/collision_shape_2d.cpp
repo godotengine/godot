@@ -39,6 +39,7 @@
 #include "scene/resources/line_shape_2d.h"
 #include "scene/resources/rectangle_shape_2d.h"
 #include "scene/resources/segment_shape_2d.h"
+#include "scene/resources/shape_2d.h"
 
 void CollisionShape2D::_shape_changed() {
 

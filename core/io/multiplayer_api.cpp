@@ -31,6 +31,7 @@
 #include "multiplayer_api.h"
 
 #include "core/io/marshalls.h"
+#include "core/script_language.h"
 #include "scene/main/node.h"
 
 _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc) {

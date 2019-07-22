@@ -30,6 +30,7 @@
 
 #include "canvas_item_editor_plugin.h"
 
+#include "core/engine.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"

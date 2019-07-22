@@ -29,14 +29,18 @@
 /*************************************************************************/
 
 #include "canvas_item.h"
+
 #include "core/message_queue.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/os/input.h"
+#include "core/os/input_event.h"
+#include "core/script_language.h"
 #include "scene/main/canvas_layer.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/font.h"
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/world_2d.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual_server.h"

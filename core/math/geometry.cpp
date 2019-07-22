@@ -30,7 +30,8 @@
 
 #include "geometry.h"
 
-#include "core/print_string.h"
+#include "core/map.h"
+#include "core/math/face3.h"
 #include "thirdparty/misc/clipper.hpp"
 #include "thirdparty/misc/triangulator.h"
 

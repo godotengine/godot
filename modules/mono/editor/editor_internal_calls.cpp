@@ -31,6 +31,7 @@
 #include "editor_internal_calls.h"
 
 #include "core/os/os.h"
+#include "core/project_settings.h"
 #include "core/version.h"
 #include "editor/editor_node.h"
 #include "editor/plugins/script_editor_plugin.h"

@@ -30,6 +30,8 @@
 
 #include "space_2d.h"
 
+#include "servers/physics_2d_server.h"
+
 RID Space2D::get_rid() const {
 
 	return space;

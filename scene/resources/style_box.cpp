@@ -30,6 +30,7 @@
 
 #include "style_box.h"
 #include "scene/2d/canvas_item.h"
+#include "servers/visual_server.h"
 
 #include <limits.h>
 

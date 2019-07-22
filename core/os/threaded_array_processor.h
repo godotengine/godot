@@ -31,11 +31,8 @@
 #ifndef THREADED_ARRAY_PROCESSOR_H
 #define THREADED_ARRAY_PROCESSOR_H
 
-#include "core/os/mutex.h"
 #include "core/os/os.h"
 #include "core/os/thread.h"
-#include "core/os/thread_safe.h"
-#include "core/safe_refcount.h"
 
 template <class C, class U>
 struct ThreadArrayProcessData {

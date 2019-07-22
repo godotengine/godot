@@ -30,9 +30,10 @@
 
 #include "visual_instance.h"
 
+#include "scene/3d/skeleton.h"
+#include "scene/resources/world.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual_server.h"
-#include "skeleton.h"
 
 AABB VisualInstance::get_transformed_aabb() const {
 

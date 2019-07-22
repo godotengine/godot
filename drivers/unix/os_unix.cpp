@@ -34,6 +34,7 @@
 
 #include "core/os/thread_dummy.h"
 #include "core/project_settings.h"
+#include "core/script_language.h"
 #include "drivers/unix/dir_access_unix.h"
 #include "drivers/unix/file_access_unix.h"
 #include "drivers/unix/mutex_posix.h"

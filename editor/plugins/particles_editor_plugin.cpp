@@ -33,6 +33,7 @@
 #include "core/io/resource_loader.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/3d/cpu_particles.h"
+#include "scene/resources/environment.h"
 #include "scene/resources/particles_material.h"
 
 bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vector3> &normals) {

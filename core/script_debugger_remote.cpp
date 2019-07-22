@@ -33,6 +33,8 @@
 #include "core/engine.h"
 #include "core/io/ip.h"
 #include "core/io/marshalls.h"
+#include "core/io/packet_peer.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"

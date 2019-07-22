@@ -32,8 +32,10 @@
 
 #include "core/engine.h"
 #include "core/message_queue.h"
+#include "core/script_language.h"
 #include "scene/main/scene_tree.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/world.h"
 #include "scene/scene_string_names.h"
 
 /*

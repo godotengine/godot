@@ -49,7 +49,6 @@
 #include "core/rid.h"
 #include "core/ustring.h"
 
-class RefPtr;
 class Object;
 class Node; // helper
 class Control; // helper

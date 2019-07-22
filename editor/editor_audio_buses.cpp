@@ -32,6 +32,7 @@
 
 #include "core/io/resource_saver.h"
 #include "core/os/keyboard.h"
+#include "core/project_settings.h"
 #include "editor_node.h"
 #include "filesystem_dock.h"
 #include "scene/resources/font.h"

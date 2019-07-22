@@ -30,6 +30,7 @@
 
 #include "register_types.h"
 
+#include "core/engine.h"
 #include "navigation_mesh_editor_plugin.h"
 
 #ifdef TOOLS_ENABLED

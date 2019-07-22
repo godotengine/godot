@@ -37,6 +37,7 @@
 #include "core/project_settings.h"
 #include "editor/animation_track_editor.h"
 #include "editor/editor_settings.h"
+#include "scene/resources/environment.h"
 
 // For onion skinning
 #include "editor/plugins/canvas_item_editor_plugin.h"

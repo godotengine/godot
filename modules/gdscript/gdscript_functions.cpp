@@ -36,6 +36,7 @@
 #include "core/io/marshalls.h"
 #include "core/math/math_funcs.h"
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/reference.h"
 #include "core/variant_parser.h"
 #include "gdscript.h"

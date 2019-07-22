@@ -30,7 +30,11 @@
 
 #include "stream_peer_ssl.h"
 
-#include "core/engine.h"
+#include "core/io/certs_compressed.gen.h"
+#include "core/io/compression.h"
+#include "core/os/file_access.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
 
 StreamPeerSSL *(*StreamPeerSSL::_create)() = NULL;
 

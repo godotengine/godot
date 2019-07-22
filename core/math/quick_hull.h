@@ -32,9 +32,7 @@
 #define QUICK_HULL_H
 
 #include "core/list.h"
-#include "core/math/aabb.h"
 #include "core/math/geometry.h"
-#include "core/set.h"
 
 class QuickHull {
 

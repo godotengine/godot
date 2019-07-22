@@ -30,9 +30,8 @@
 
 #include "marshalls.h"
 
-#include "core/os/keyboard.h"
 #include "core/print_string.h"
-#include "core/reference.h"
+#include "core/variant.h"
 
 #include <limits.h>
 #include <stdio.h>

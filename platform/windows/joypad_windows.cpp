@@ -30,6 +30,8 @@
 
 #include "joypad_windows.h"
 
+#include "core/print_string.h"
+
 #include <oleauto.h>
 #include <wbemidl.h>
 

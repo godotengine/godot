@@ -31,12 +31,15 @@
 #ifndef FILE_ACCESS_NETWORK_H
 #define FILE_ACCESS_NETWORK_H
 
-#include "core/io/stream_peer_tcp.h"
+#include "core/list.h"
+#include "core/map.h"
 #include "core/os/file_access.h"
-#include "core/os/semaphore.h"
-#include "core/os/thread.h"
+#include "core/reference.h"
 
 class FileAccessNetwork;
+class Semaphore;
+class StreamPeerTCP;
+class Thread;
 
 class FileAccessNetworkClient {
 

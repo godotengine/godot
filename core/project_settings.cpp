@@ -32,11 +32,13 @@
 
 #include "core/bind/core_bind.h"
 #include "core/core_string_names.h"
+#include "core/engine.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
+#include "core/os/input_event.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/variant_parser.h"

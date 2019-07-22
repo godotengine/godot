@@ -32,9 +32,10 @@
 #define HTTP_CLIENT_H
 
 #include "core/io/ip.h"
-#include "core/io/stream_peer.h"
-#include "core/io/stream_peer_tcp.h"
 #include "core/reference.h"
+
+class StreamPeer;
+class StreamPeerTCP;
 
 class HTTPClient : public Reference {
 

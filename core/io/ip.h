@@ -32,7 +32,9 @@
 #define IP_H
 
 #include "core/io/ip_address.h"
-#include "core/os/os.h"
+#include "core/list.h"
+#include "core/map.h"
+#include "core/object.h"
 
 struct _IP_ResolverPrivate;
 

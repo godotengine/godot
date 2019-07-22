@@ -34,6 +34,7 @@
 #include "core/engine.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
+#include "scene/resources/shape_2d.h"
 
 #include "thirdparty/misc/triangulator.h"
 

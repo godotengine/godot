@@ -32,12 +32,13 @@
 #define BSP_TREE_H
 
 #include "core/math/aabb.h"
-#include "core/math/face3.h"
-#include "core/math/plane.h"
 #include "core/method_ptrcall.h"
 #include "core/pool_vector.h"
 #include "core/variant.h"
 #include "core/vector.h"
+
+class Face3;
+class Plane;
 
 class BSP_Tree {
 public:

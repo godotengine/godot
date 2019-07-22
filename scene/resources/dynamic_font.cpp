@@ -31,6 +31,7 @@
 #ifdef FREETYPE_ENABLED
 #include "dynamic_font.h"
 #include "core/os/file_access.h"
+#include "core/os/mutex.h"
 #include "core/os/os.h"
 
 #include FT_STROKER_H

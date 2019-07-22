@@ -33,7 +33,8 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
-#include "core/os/file_access.h"
+
+class FileAccess;
 
 class ResourceInteractiveLoaderBinary : public ResourceInteractiveLoader {
 

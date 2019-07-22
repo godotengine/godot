@@ -33,7 +33,6 @@
 
 #include "core/array.h"
 #include "core/cowdata.h"
-#include "core/typedefs.h"
 #include "core/vector.h"
 
 template <class T>

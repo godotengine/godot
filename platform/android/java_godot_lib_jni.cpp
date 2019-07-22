@@ -36,6 +36,7 @@
 #include "audio_driver_jandroid.h"
 #include "core/engine.h"
 #include "core/os/keyboard.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "dir_access_jandroid.h"
 #include "file_access_android.h"

@@ -30,8 +30,10 @@
 
 #include "os_osx.h"
 
+#include "core/engine.h"
 #include "core/os/keyboard.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
 #include "core/version_generated.gen.h"
 #include "dir_access_osx.h"
 #include "drivers/gles2/rasterizer_gles2.h"

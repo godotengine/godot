@@ -31,6 +31,7 @@
 #include "script_editor_debugger.h"
 
 #include "core/io/marshalls.h"
+#include "core/io/stream_peer_tcp.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
 #include "editor_node.h"

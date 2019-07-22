@@ -32,7 +32,6 @@
 #define BIT_MAP_H
 
 #include "core/image.h"
-#include "core/io/resource_loader.h"
 #include "core/resource.h"
 
 class BitMap : public Resource {

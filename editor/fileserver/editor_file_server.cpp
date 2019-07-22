@@ -32,6 +32,9 @@
 
 #include "../editor_settings.h"
 #include "core/io/marshalls.h"
+#include "core/io/stream_peer_tcp.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
 //#define DEBUG_TIME(m_what) printf("MS: %s - %lu\n", m_what, OS::get_singleton()->get_ticks_usec());

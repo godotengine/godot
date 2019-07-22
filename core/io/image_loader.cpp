@@ -30,6 +30,8 @@
 
 #include "image_loader.h"
 
+#include "core/image.h"
+#include "core/os/file_access.h"
 #include "core/print_string.h"
 
 bool ImageFormatLoader::recognize(const String &p_extension) const {

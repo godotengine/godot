@@ -32,10 +32,11 @@
 #define HTTPREQUEST_H
 
 #include "core/io/http_client.h"
-#include "core/os/file_access.h"
-#include "core/os/thread.h"
 #include "node.h"
-#include "scene/main/timer.h"
+
+class FileAccess;
+class Thread;
+class Timer;
 
 class HTTPRequest : public Node {
 

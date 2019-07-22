@@ -31,8 +31,10 @@
 #ifndef ENGINE_H
 #define ENGINE_H
 
+#include "core/dictionary.h"
 #include "core/list.h"
-#include "core/os/main_loop.h"
+#include "core/map.h"
+#include "core/string_name.h"
 #include "core/ustring.h"
 #include "core/vector.h"
 

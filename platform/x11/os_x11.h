@@ -42,16 +42,15 @@
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
-#include "servers/camera_server.h"
-#include "servers/visual/rasterizer.h"
-#include "servers/visual_server.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
 #include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
+
+class CameraServer;
+class VisualServer;
 
 // Hints for X11 fullscreen
 typedef struct {

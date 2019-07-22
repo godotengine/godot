@@ -31,7 +31,9 @@
 #include "translation.h"
 
 #include "core/io/resource_loader.h"
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 
 // ISO 639-1 language codes, with the addition of glibc locales with their

@@ -32,8 +32,9 @@
 #define CONFIG_FILE_H
 
 #include "core/ordered_hash_map.h"
-#include "core/os/file_access.h"
 #include "core/reference.h"
+
+class FileAccess;
 
 class ConfigFile : public Reference {
 

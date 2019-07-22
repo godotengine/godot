@@ -30,7 +30,6 @@
 
 #include "midi_driver.h"
 
-#include "core/os/os.h"
 #include "main/input_default.h"
 
 MIDIDriver *MIDIDriver::singleton = NULL;

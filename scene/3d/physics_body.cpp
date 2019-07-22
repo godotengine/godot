@@ -35,11 +35,14 @@
 #include "core/list.h"
 #include "core/method_bind_ext.gen.inc"
 #include "core/object.h"
+#include "core/project_settings.h"
 #include "core/rid.h"
+#include "core/script_language.h"
 #include "scene/scene_string_names.h"
 
 #ifdef TOOLS_ENABLED
 #include "editor/plugins/spatial_editor_plugin.h"
+#include "scene/resources/environment.h"
 #endif
 
 void PhysicsBody::_notification(int p_what) {

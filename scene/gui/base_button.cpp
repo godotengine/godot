@@ -31,6 +31,7 @@
 #include "base_button.h"
 
 #include "core/os/keyboard.h"
+#include "core/script_language.h"
 #include "scene/main/viewport.h"
 #include "scene/scene_string_names.h"
 

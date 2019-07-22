@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "core/io/resource_loader.h"
+#include "core/print_string.h"
 #include "main/main.h"
 #include "os_javascript.h"
 

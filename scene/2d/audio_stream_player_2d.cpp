@@ -33,6 +33,7 @@
 #include "core/engine.h"
 #include "scene/2d/area_2d.h"
 #include "scene/main/viewport.h"
+#include "servers/physics_2d_server.h"
 
 void AudioStreamPlayer2D::_mix_audio() {
 

@@ -29,6 +29,8 @@
 /*************************************************************************/
 
 #include "soft_body.h"
+
+#include "core/engine.h"
 #include "core/list.h"
 #include "core/object.h"
 #include "core/os/os.h"
@@ -36,6 +38,8 @@
 #include "scene/3d/collision_object.h"
 #include "scene/3d/physics_body.h"
 #include "scene/3d/skeleton.h"
+#include "scene/resources/environment.h"
+#include "scene/resources/world.h"
 #include "servers/physics_server.h"
 
 SoftBodyVisualServerHandler::SoftBodyVisualServerHandler() {}

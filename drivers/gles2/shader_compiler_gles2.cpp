@@ -31,6 +31,7 @@
 #include "shader_compiler_gles2.h"
 
 #include "core/os/os.h"
+#include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/string_buffer.h"
 #include "core/string_builder.h"

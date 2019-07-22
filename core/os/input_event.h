@@ -31,11 +31,12 @@
 #ifndef INPUT_EVENT_H
 #define INPUT_EVENT_H
 
-#include "core/math/transform_2d.h"
 #include "core/os/copymem.h"
 #include "core/resource.h"
 #include "core/typedefs.h"
 #include "core/ustring.h"
+
+struct Transform2D;
 
 /**
  * Input Event classes. These are used in the main loop.

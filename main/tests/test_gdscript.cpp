@@ -33,6 +33,7 @@
 #include "core/os/file_access.h"
 #include "core/os/main_loop.h"
 #include "core/os/os.h"
+#include "core/print_string.h"
 
 #ifdef GDSCRIPT_ENABLED
 

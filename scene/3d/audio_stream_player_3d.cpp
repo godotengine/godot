@@ -29,11 +29,13 @@
 /*************************************************************************/
 
 #include "audio_stream_player_3d.h"
+
 #include "core/engine.h"
 #include "scene/3d/area.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/listener.h"
 #include "scene/main/viewport.h"
+#include "servers/physics_server.h"
 
 // Based on "A Novel Multichannel Panning Method for Standard and Arbitrary Loudspeaker Configurations" by Ramy Sadek and Chris Kyriakakis (2004)
 // Speaker-Placement Correction Amplitude Panning (SPCAP)

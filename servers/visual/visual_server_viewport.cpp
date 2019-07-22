@@ -30,6 +30,7 @@
 
 #include "visual_server_viewport.h"
 
+#include "core/engine.h"
 #include "core/project_settings.h"
 #include "visual_server_canvas.h"
 #include "visual_server_globals.h"

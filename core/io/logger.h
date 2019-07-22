@@ -31,7 +31,6 @@
 #ifndef LOGGER_H
 #define LOGGER_H
 
-#include "core/os/file_access.h"
 #include "core/ustring.h"
 #include "core/vector.h"
 
@@ -74,6 +73,9 @@ public:
  * When maximum is reached, the oldest backups are erased. With the maximum being equal to 1,
  * it acts as a simple file logger.
  */
+
+class FileAccess;
+
 class RotatedFileLogger : public Logger {
 	String base_path;
 	int max_files;

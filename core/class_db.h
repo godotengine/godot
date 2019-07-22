@@ -31,9 +31,13 @@
 #ifndef CLASS_DB_H
 #define CLASS_DB_H
 
+#include "core/hash_map.h"
+#include "core/list.h"
 #include "core/method_bind.h"
-#include "core/object.h"
-#include "core/print_string.h"
+#include "core/string_name.h"
+#include "core/variant.h"
+
+class RWLock;
 
 /**	To bind more then 6 parameters include this:
  *  #include "core/method_bind_ext.gen.inc"

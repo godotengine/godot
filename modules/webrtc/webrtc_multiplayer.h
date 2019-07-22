@@ -32,6 +32,7 @@
 #define WEBRTC_MULTIPLAYER_H
 
 #include "core/io/networked_multiplayer_peer.h"
+#include "core/map.h"
 #include "webrtc_peer_connection.h"
 
 class WebRTCMultiplayer : public NetworkedMultiplayerPeer {

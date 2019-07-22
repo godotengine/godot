@@ -30,6 +30,7 @@
 
 #include "crash_handler_windows.h"
 
+#include "core/os/main_loop.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 #include "main/main.h"

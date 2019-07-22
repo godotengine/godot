@@ -30,6 +30,11 @@
 
 #include "http_request.h"
 
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/os/thread.h"
+#include "scene/main/timer.h"
+
 void HTTPRequest::_redirect_request(const String &p_new_url) {
 }
 

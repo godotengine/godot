@@ -32,7 +32,10 @@
 
 #include "core/engine.h"
 #include "core/global_constants.h"
+#include "core/method_bind.h" // for checking DEBUG_METHODS_ENABLED
 #include "core/os/file_access.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
 #include "gdscript_compiler.h"
 
 #ifdef TOOLS_ENABLED

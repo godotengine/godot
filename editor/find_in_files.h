@@ -32,6 +32,7 @@
 #define FIND_IN_FILES_H
 
 #include "core/hash_map.h"
+#include "core/project_settings.h"
 #include "scene/gui/dialogs.h"
 
 // Performs the actual search

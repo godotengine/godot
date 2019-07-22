@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "canvas_layer.h"
+
 #include "viewport.h"
 
 void CanvasLayer::set_layer(int p_xform) {

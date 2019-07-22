@@ -29,14 +29,17 @@
 /*************************************************************************/
 
 #include "ip_address.h"
+
+#include "core/ustring.h"
+
+#include <stdio.h>
+#include <string.h>
+
 /*
 IP_Address::operator Variant() const {
 
 	return operator String();
 }*/
-
-#include <stdio.h>
-#include <string.h>
 
 IP_Address::operator String() const {
 

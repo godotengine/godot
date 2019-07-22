@@ -30,6 +30,7 @@
 
 #include "project_manager.h"
 
+#include "core/engine.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_saver.h"
 #include "core/io/stream_peer_ssl.h"
@@ -38,6 +39,8 @@
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
+#include "core/print_string.h"
+#include "core/project_settings.h"
 #include "core/translation.h"
 #include "core/version.h"
 #include "core/version_hash.gen.h"

@@ -31,7 +31,9 @@
 #ifndef CRYPTO_CORE_H
 #define CRYPTO_CORE_H
 
-#include "core/reference.h"
+#include "core/error_list.h"
+#include "core/typedefs.h"
+#include "core/ustring.h"
 
 class CryptoCore {
 

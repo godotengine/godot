@@ -34,7 +34,9 @@
 #include "core/global_constants.h"
 #include "core/io/compression.h"
 #include "core/io/marshalls.h"
+#include "core/method_bind.h" // for checking DEBUG_METHODS_ENABLED
 #include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
 #include "core/version.h"

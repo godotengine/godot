@@ -31,10 +31,10 @@
 #ifndef VISUAL_SHADER_H
 #define VISUAL_SHADER_H
 
-#include "core/string_builder.h"
-#include "scene/gui/control.h"
 #include "scene/resources/shader.h"
 
+class Control;
+class StringBuilder;
 class VisualShaderNodeUniform;
 class VisualShaderNode;
 

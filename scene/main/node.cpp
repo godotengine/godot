@@ -30,10 +30,13 @@
 
 #include "node.h"
 
+#include "core/class_db.h"
 #include "core/core_string_names.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 #include "instance_placeholder.h"
 #include "scene/resources/packed_scene.h"
 #include "scene/scene_string_names.h"

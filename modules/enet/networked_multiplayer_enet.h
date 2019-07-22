@@ -33,6 +33,7 @@
 
 #include "core/io/compression.h"
 #include "core/io/networked_multiplayer_peer.h"
+#include "core/map.h"
 
 #include <enet/enet.h>
 

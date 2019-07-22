@@ -33,6 +33,7 @@
 #include "core/io/file_access_memory.h"
 #include "core/io/resource_loader.h"
 #include "core/os/os.h"
+#include "core/project_settings.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
 #include "editor/editor_settings.h"

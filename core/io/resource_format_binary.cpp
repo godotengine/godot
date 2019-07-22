@@ -34,6 +34,7 @@
 #include "core/io/file_access_compressed.h"
 #include "core/io/marshalls.h"
 #include "core/os/dir_access.h"
+#include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/version.h"
 

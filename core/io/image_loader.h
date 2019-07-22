@@ -31,12 +31,12 @@
 #ifndef IMAGE_LOADER_H
 #define IMAGE_LOADER_H
 
-#include "core/image.h"
 #include "core/io/resource_loader.h"
 #include "core/list.h"
-#include "core/os/file_access.h"
 #include "core/ustring.h"
 
+class FileAccess;
+class Image;
 class ImageLoader;
 
 class ImageFormatLoader {

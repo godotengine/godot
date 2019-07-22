@@ -35,6 +35,8 @@
 #include "core/math/camera_matrix.h"
 #include "scene/resources/material.h"
 #include "scene/resources/surface_tool.h"
+#include "servers/physics_server.h"
+
 void Camera::_update_audio_listener_state() {
 }
 

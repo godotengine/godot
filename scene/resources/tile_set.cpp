@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "tile_set.h"
-#include "core/array.h"
+
 #include "core/engine.h"
+#include "core/script_language.h"
 
 bool TileSet::_set(const StringName &p_name, const Variant &p_value) {
 

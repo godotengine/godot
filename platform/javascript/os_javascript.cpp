@@ -31,6 +31,7 @@
 #include "os_javascript.h"
 
 #include "core/io/file_access_buffered_fa.h"
+#include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "drivers/unix/dir_access_unix.h"

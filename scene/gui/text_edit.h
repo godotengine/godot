@@ -31,6 +31,7 @@
 #ifndef TEXT_EDIT_H
 #define TEXT_EDIT_H
 
+#include "core/script_language.h"
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"

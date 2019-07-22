@@ -30,7 +30,9 @@
 
 #include "visual_shader.h"
 
+#include "core/string_builder.h"
 #include "core/vmap.h"
+#include "scene/gui/control.h"
 #include "servers/visual/shader_types.h"
 
 void VisualShaderNode::set_output_port_for_preview(int p_index) {

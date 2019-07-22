@@ -30,8 +30,6 @@
 
 #include "aabb.h"
 
-#include "core/print_string.h"
-
 real_t AABB::get_area() const {
 
 	return size.x * size.y * size.z;
