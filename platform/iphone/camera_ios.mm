@@ -158,7 +158,7 @@
 	} else if (dataCbCr == NULL) {
 		print_line("Couldn't access CbCr pixel buffer data");
 	} else {
-		UIDeviceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+		UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
 		Ref<Image> img[2];
 
 		{
