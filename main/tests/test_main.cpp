@@ -31,8 +31,11 @@
 #include "core/list.h"
 #include "core/os/main_loop.h"
 
+
 #ifdef DEBUG_ENABLED
-#include "thirdparty/doctest/doctest.h"
+
+#include <thirdparty/doctest/doctest.h>
+
 #include "test_astar.h"
 #include "test_gdscript.h"
 #include "test_gui.h"
@@ -77,7 +80,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 	test_context.setOption("no-breaks", true);       
 	test_context.run(); // run tests
 
-	if(test_context.shouldExit())
+	if (test_context.shouldExit())
 		return NULL;
 		
 	return NULL;

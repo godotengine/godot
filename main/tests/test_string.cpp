@@ -30,7 +30,6 @@
 
 #include "core/ustring.h"
 
-
 #include <wchar.h>
 //#include "core/math/math_funcs.h"
 #include "core/io/ip_address.h"

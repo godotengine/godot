@@ -31,15 +31,15 @@
 #ifndef TEST_STRING_H
 #define TEST_STRING_H
 
+#include <thirdparty/doctest/doctest.h>
 
-#include "core/os/os.h"
 #include "core/os/main_loop.h"
+#include "core/os/os.h"
 #include "core/ustring.h"
-#include "thirdparty/doctest/doctest.h"
 
 namespace TestString {
 
-TEST_CASE("Assign from cstr"){
+TEST_CASE("Assign from cstr") {
 
 	OS::get_singleton()->print("\n\nTest 1: Assign from cstr\n");
 
@@ -48,10 +48,10 @@ TEST_CASE("Assign from cstr"){
 	OS::get_singleton()->print("\tExpected: Hello\n");
 	OS::get_singleton()->print("\tResulted: %ls\n", s.c_str());
 
-	CHECK (wcscmp(s.c_str(), L"Hello") == 0);
+	CHECK(wcscmp(s.c_str(), L"Hello") == 0);
 }
 
 MainLoop *test();
-}
+} // namespace TestString
 
 #endif
