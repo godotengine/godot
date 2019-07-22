@@ -1549,7 +1549,7 @@ FRAGMENT_SHADER_CODE
 #endif // ALPHA_SCISSOR_USED
 
 #ifdef USE_DEPTH_PREPASS
-	if (alpha < 0.99) {
+	if (alpha < 0.1) {
 		discard;
 	}
 #endif // USE_DEPTH_PREPASS
@@ -2112,7 +2112,7 @@ FRAGMENT_SHADER_CODE
 #endif // ALPHA_SCISSOR_USED
 
 #ifdef USE_DEPTH_PREPASS
-	if (alpha < 0.99) {
+	if (alpha < 0.1) {
 		discard;
 	}
 #endif // USE_DEPTH_PREPASS
