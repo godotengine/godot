@@ -8,14 +8,28 @@ import subprocess
 from compat import iteritems, isbasestring, decode_utf8
 
 
-def add_source_files(self, sources, filetype, lib_env=None, shared=False):
+def add_source_files(self, sources, files, warn_duplicates=True):
+    # Convert string to list of absolute paths (including expanding wildcard)
+    if isbasestring(files):
+        # Keep SCons project-absolute path as they are (no wildcard support)
+        if files.startswith('#'):
+            if '*' in files:
+                print("ERROR: Wildcards can't be expanded in SCons project-absolute path: '{}'".format(files))
+                return
+            files = [files]
+        else:
+            dir_path = self.Dir('.').abspath
+            files = sorted(glob.glob(dir_path + "/" + files))
 
-    if isbasestring(filetype):
-        dir_path = self.Dir('.').abspath
-        filetype = sorted(glob.glob(dir_path + "/" + filetype))
-
-    for path in filetype:
-        sources.append(self.Object(path))
+    # Add each path as compiled Object following environment (self) configuration
+    for path in files:
+        obj = self.Object(path)
+        if obj in sources:
+            if warn_duplicates:
+                print("WARNING: Object \"{}\" already included in environment sources.".format(obj))
+            else:
+                continue
+        sources.append(obj)
 
 
 def disable_warnings(self):
