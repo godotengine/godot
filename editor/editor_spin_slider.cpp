@@ -38,9 +38,9 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 }
 
 String EditorSpinSlider::get_text_value() const {
-	int zeros = Math::step_decimals(get_step());
-	return String::num(get_value(), zeros);
+	return String::num(get_value(), Math::range_step_decimals(get_step()));
 }
+
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (read_only)

@@ -1315,7 +1315,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 						Ref<Texture> updown = cache.updown;
 
-						String valtext = String::num(p_item->cells[i].val, Math::step_decimals(p_item->cells[i].step));
+						String valtext = String::num(p_item->cells[i].val, Math::range_step_decimals(p_item->cells[i].step));
 						//String valtext = rtos( p_item->cells[i].val );
 
 						if (p_item->cells[i].suffix != String())
@@ -1926,7 +1926,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 					} else {
 
-						editor_text = String::num(p_item->cells[col].val, Math::step_decimals(p_item->cells[col].step));
+						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
 						if (select_mode == SELECT_MULTI && get_tree()->get_event_count() == focus_in_id)
 							bring_up_editor = false;
 					}
@@ -2755,7 +2755,7 @@ bool Tree::edit_selected() {
 		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
-		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::step_decimals(c.step)));
+		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE) {
