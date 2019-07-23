@@ -39,6 +39,7 @@
 #include "scene/gui/tree.h"
 
 class ProjectDialog;
+class ProjectList;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
@@ -68,16 +69,13 @@ class ProjectManager : public Control {
 	AcceptDialog *dialog_error;
 	ProjectDialog *npdialog;
 
-	ScrollContainer *scroll;
-	VBoxContainer *scroll_children;
 	HBoxContainer *projects_hb;
 	TabContainer *tabs;
+	ProjectList *_project_list;
 
 	OptionButton *language_btn;
 	Control *gui_base;
 
-	Map<String, String> selected_list; // name -> main_scene
-	String last_clicked;
 	bool importing;
 
 	void _open_asset_library();
@@ -86,7 +84,6 @@ class ProjectManager : public Control {
 	void _run_project_confirm();
 	void _open_selected_projects();
 	void _open_selected_projects_ask();
-	void _show_project(const String &p_path);
 	void _import_project();
 	void _new_project();
 	void _rename_project();
@@ -111,12 +108,12 @@ class ProjectManager : public Control {
 	void _install_project(const String &p_zip_path, const String &p_title);
 
 	void _dim_window();
-	void _panel_draw(Node *p_hb);
-	void _panel_input(const Ref<InputEvent> &p_ev, Node *p_hb);
 	void _unhandled_input(const Ref<InputEvent> &p_ev);
-	void _favorite_pressed(Node *p_hb);
 	void _files_dropped(PoolStringArray p_files, int p_screen);
 	void _scan_multiple_folders(PoolStringArray p_files);
+
+	void _on_order_option_changed();
+	void _on_filter_option_changed();
 
 protected:
 	void _notification(int p_what);
