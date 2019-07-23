@@ -106,6 +106,8 @@ godot_vector3 GDAPI godot_vector3_floor(const godot_vector3 *p_self);
 
 godot_vector3 GDAPI godot_vector3_ceil(const godot_vector3 *p_self);
 
+godot_vector3 GDAPI godot_vector3_direction_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
+
 godot_real GDAPI godot_vector3_distance_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
 
 godot_real GDAPI godot_vector3_distance_squared_to(const godot_vector3 *p_self, const godot_vector3 *p_b);
