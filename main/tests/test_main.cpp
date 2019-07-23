@@ -31,7 +31,6 @@
 #include "core/list.h"
 #include "core/os/main_loop.h"
 
-
 #ifdef DEBUG_ENABLED
 
 #include <thirdparty/doctest/doctest.h>
@@ -76,13 +75,13 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 	// tests should be ordered by name for humans
 	test_context.setOption("order-by", "name");
-	test_context.setOption("abort-after", 5);  
-	test_context.setOption("no-breaks", true);       
+	test_context.setOption("abort-after", 5);
+	test_context.setOption("no-breaks", true);
 	test_context.run(); // run tests
 
 	if (test_context.shouldExit())
 		return NULL;
-		
+
 	return NULL;
 
 	/*if (p_test == "string") {
