@@ -110,10 +110,11 @@ Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
 	Variant var;
-	get_var(var, p_allow_objects);
+	Error err = get_var(var, p_allow_objects);
 
+	ERR_FAIL_COND_V(err != OK, Variant());
 	return var;
-};
+}
 
 Error PacketPeer::_put_packet(const PoolVector<uint8_t> &p_buffer) {
 	return put_packet_buffer(p_buffer);

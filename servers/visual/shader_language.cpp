@@ -967,7 +967,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 bool ShaderLanguage::_validate_operator(OperatorNode *p_op, DataType *r_ret_type) {
 
 	bool valid = false;
-	DataType ret_type;
+	DataType ret_type = TYPE_VOID;
 
 	switch (p_op->op) {
 		case OP_EQUAL:
@@ -3059,7 +3059,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 				String ident = identifier;
 
 				bool ok = true;
-				DataType member_type;
+				DataType member_type = TYPE_VOID;
 				switch (dt) {
 					case TYPE_BVEC2:
 					case TYPE_IVEC2:

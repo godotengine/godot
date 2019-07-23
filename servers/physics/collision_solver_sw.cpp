@@ -233,8 +233,6 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 
 		return collision_solver(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A, p_margin_B);
 	}
-
-	return false;
 }
 
 void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_convex) {
@@ -371,6 +369,4 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 
 		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); //should pass sepaxis..
 	}
-
-	return false;
 }

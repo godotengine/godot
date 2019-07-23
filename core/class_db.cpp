@@ -480,6 +480,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
 
 				PropertySetGet *psg = t->property_setget.getptr(F->get());
+				ERR_FAIL_COND_V(!psg, 0);
 
 				hash = hash_djb2_one_64(F->get().hash(), hash);
 				hash = hash_djb2_one_64(psg->setter.hash(), hash);

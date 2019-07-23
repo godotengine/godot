@@ -1118,7 +1118,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 				}
 				offsets[i] = elem_size;
 				continue;
-			} break;
+			}
 			default: {
 				ERR_FAIL();
 			}
@@ -1286,7 +1286,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				}
 				offsets[i] = elem_size;
 				continue;
-			} break;
+			}
 			default: {
 				ERR_FAIL_V(Array());
 			}

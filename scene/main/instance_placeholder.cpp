@@ -92,6 +92,8 @@ Node *InstancePlaceholder::create_instance(bool p_replace, const Ref<PackedScene
 	if (!ps.is_valid())
 		return NULL;
 	Node *scene = ps->instance();
+	if (!scene)
+		return NULL;
 	scene->set_name(get_name());
 	int pos = get_position_in_parent();
 

@@ -519,7 +519,9 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 			int total_out_before = strm.total_out;
 
-			deflate(&strm, Z_FULL_FLUSH);
+			int err = deflate(&strm, Z_FULL_FLUSH);
+			ERR_FAIL_COND_V(err >= 0, ERR_BUG); // Negative means bug
+
 			bh.compressed_size = strm.total_out - total_out_before;
 
 			//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);

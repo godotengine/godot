@@ -1507,8 +1507,11 @@ void SceneTree::_live_edit_instance_node_func(const NodePath &p_parent, const St
 		Node *n2 = n->get_node(p_parent);
 
 		Node *no = ps->instance();
-		no->set_name(p_name);
+		if (!no) {
+			continue;
+		}
 
+		no->set_name(p_name);
 		n2->add_child(no);
 	}
 }
