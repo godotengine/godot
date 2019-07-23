@@ -301,6 +301,8 @@ bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_de
 			Ref<PackedScene> data = ResourceLoader::load(path);
 			if (data.is_valid()) {
 				p = data->instance(PackedScene::GEN_EDIT_STATE_INSTANCE);
+				if (!p)
+					continue;
 				instances.push_back(p);
 			} else
 				break;

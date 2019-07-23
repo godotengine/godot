@@ -718,8 +718,8 @@ Error ResourceInteractiveLoaderBinary::poll() {
 	Resource *r = Object::cast_to<Resource>(obj);
 	if (!r) {
 		error = ERR_FILE_CORRUPT;
-		memdelete(obj); //bye
 		ERR_EXPLAIN(local_path + ":Resource type in resource field not a resource, type is: " + obj->get_class());
+		memdelete(obj); //bye
 		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 

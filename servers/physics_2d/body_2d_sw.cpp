@@ -185,28 +185,28 @@ real_t Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 		case Physics2DServer::BODY_PARAM_BOUNCE: {
 
 			return bounce;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_FRICTION: {
 
 			return friction;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_MASS: {
 			return mass;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_INERTIA: {
 			return _inv_inertia == 0 ? 0 : 1.0 / _inv_inertia;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_LINEAR_DAMP: {
 
 			return linear_damp;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_ANGULAR_DAMP: {
 
 			return angular_damp;
-		} break;
+		}
 		default: {
 		}
 	}
@@ -343,19 +343,19 @@ Variant Body2DSW::get_state(Physics2DServer::BodyState p_state) const {
 	switch (p_state) {
 		case Physics2DServer::BODY_STATE_TRANSFORM: {
 			return get_transform();
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_LINEAR_VELOCITY: {
 			return linear_velocity;
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_ANGULAR_VELOCITY: {
 			return angular_velocity;
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_SLEEPING: {
 			return !is_active();
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_CAN_SLEEP: {
 			return can_sleep;
-		} break;
+		}
 	}
 
 	return Variant();
