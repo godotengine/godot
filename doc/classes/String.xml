@@ -272,6 +272,34 @@
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
 			</description>
 		</method>
+		<method name="count">
+			<return type="int">
+			</return>
+			<argument index="0" name="what" type="String">
+			</argument>
+			<argument index="1" name="from" type="int" default="0">
+			</argument>
+			<argument index="2" name="to" type="int" default="0">
+			</argument>
+			</argument>
+			<description>
+				Returns the number of occurrences of substring [code]what[/code] between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
+			</description>
+		</method>
+		<method name="countn">
+			<return type="int">
+			</return>
+			<argument index="0" name="what" type="String">
+			</argument>
+			<argument index="1" name="from" type="int" default="0">
+			</argument>
+			<argument index="2" name="to" type="int" default="0">
+			</argument>
+			</argument>
+			<description>
+				Returns the number of occurrences of substring [code]what[/code] (ignoring case) between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
+			</description>
+		</method>
 		<method name="dedent">
 			<return type="String">
 			</return>

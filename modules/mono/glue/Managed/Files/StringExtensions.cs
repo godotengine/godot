@@ -98,6 +98,66 @@ namespace Godot
         }
 
         // <summary>
+        // Return the amount of substrings in string.
+        // </summary>
+        public static int Count(this string instance, string what, bool caseSensitive = true, int from = 0, int to = 0)
+        {
+            if (what.Length == 0)
+            {
+                return 0;
+            }
+
+            int len = instance.Length;
+            int slen = what.Length;
+
+            if (len < slen)
+            {
+                return 0;
+            }
+
+            string str;
+
+            if (from >= 0 && to >= 0)
+            {
+                if (to == 0)
+                {
+                    to = len;
+                }
+                else if (from >= to)
+                {
+                    return 0;
+                }
+                if (from == 0 && to == len)
+                {
+                    str = instance;
+                }
+                else
+                {
+                    str = instance.Substring(from, to - from);
+                }
+            }
+            else
+            {
+                return 0;
+            }
+
+            int c = 0;
+            int idx;
+
+            do
+            {
+                idx = str.IndexOf(what, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+                if (idx != -1)
+                {
+                    str = str.Substring(idx + slen);
+                    ++c;
+                }
+            } while (idx != -1);
+
+            return c;
+        }
+
+        // <summary>
         // Return a copy of the string with special characters escaped using the C language standard.
         // </summary>
         public static string CEscape(this string instance)
