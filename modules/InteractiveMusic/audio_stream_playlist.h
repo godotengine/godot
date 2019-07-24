@@ -78,6 +78,7 @@ private:
 	bool fading;
 	int fading_samples_total;
 	int fading_time;
+	int fading_samples;
 	float beat_size;
 	int beat_amount_remaining;
 

@@ -165,7 +165,7 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	ERR_FAIL_COND_V(p_stream.is_null(), Ref<AudioStreamPreview>());
 
 	//print_line("HACK. Disabling stream preview generator for now.");
-	return Ref<AudioStreamPreview>();
+	//return Ref<AudioStreamPreview>();
 
 	if (previews.has(p_stream->get_instance_id())) {
 		return previews[p_stream->get_instance_id()].preview;

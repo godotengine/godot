@@ -176,9 +176,9 @@ void AudioStreamTransitioner::_bind_methods() {
 	}
 
 	for (int i = 0; i < MAX_TRANSITIONS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition" + itos(i) + "/fade_in_beats", PROPERTY_HINT_RANGE, "0,40", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_in", "get_transition_fade_in", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition" + itos(i) + "/fade_out_beats", PROPERTY_HINT_RANGE, "0,40", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_out", "get_transition_fade_out", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transition" + itos(i) + "/active"), "set_active_transition", "get_transition_state", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i) + "/fade_in_beats", PROPERTY_HINT_RANGE, "0,40", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_in", "get_transition_fade_in", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i) + "/fade_out_beats", PROPERTY_HINT_RANGE, "0,40", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_out", "get_transition_fade_out", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transition_" + itos(i) + "/active"), "set_active_transition", "get_transition_state", i);
 	}
 
 	BIND_CONSTANT(MAX_STREAMS);

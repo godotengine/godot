@@ -119,6 +119,7 @@ AudioStreamPlaybackPlaylist::AudioStreamPlaybackPlaylist() :
 	current = 0;
 	fading = false;
 	fading_time = 1;
+	fading_samples = 0;
 }
 
 AudioStreamPlaybackPlaylist::~AudioStreamPlaybackPlaylist() {
@@ -187,14 +188,17 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 		
 	} else {
 		int dst_offset = 0;
-		int fading_samples = 0;
 
 		while (p_frames > 0) {
 
 			if (beat_amount_remaining == 0) {
 				fading = true;
-				current = (current + 1) % playlist->stream_count;
-				playback[current]->start();
+				if ((current+1) < playlist->stream_count){
+					current = (current + 1) % playlist->stream_count;
+					playback[current]->start();
+				} else {
+					stop();
+				}
 				fading_samples = fading_samples_total;
 				if (playlist->audio_streams[current]->get_bpm() == 0) {
 					beat_size = playlist->sample_rate * 60 / playlist->bpm;
@@ -221,7 +225,7 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 				float to_volume = 1.0 - float(fading_samples_total-(fading_samples - to_fade)) / fading_samples_total;
 				if (to_volume < 0.0) to_volume = 0.0;
 				add_stream_to_buffer(playback[current - 1], to_fade, p_rate_scale, from_volume, to_volume);
-				//add_stream_to_buffer(playback[current], to_fade, p_rate_scale, (1.0-from_volume), (1.0-to_volume));
+				add_stream_to_buffer(playback[current], to_fade, p_rate_scale, (1.0-from_volume), (1.0-to_volume));
 				fading_samples -= to_fade;
 				if (fading_samples == 0) {
 					fading = false;
