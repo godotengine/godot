@@ -995,15 +995,14 @@ TEST_CASE("[String] Cyrillic to_lower()") {
 	CHECK(state);
 }
 
-TEST_CASE("[String] Count and countn functionality")
-{
-	#define COUNT_TEST(x)                                        \
+TEST_CASE("[String] Count and countn functionality") {
+#define COUNT_TEST(x)                                            \
 	{                                                            \
 		bool success = x;                                        \
 		state = state && success;                                \
 		if (!success) {                                          \
 			OS::get_singleton()->print("\tfailed at: %s\n", #x); \
-		}			                                             \
+		}                                                        \
 	}
 
 	OS::get_singleton()->print("\n\nTest 35: count and countn function\n");

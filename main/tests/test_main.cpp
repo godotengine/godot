@@ -50,7 +50,7 @@
 const char **tests_get_names() {
 
 	static const char *test_names[] = {
-		"string",
+		"doctest",
 		"math",
 		"physics",
 		"physics_2d",
@@ -73,20 +73,13 @@ const char **tests_get_names() {
 MainLoop *test_main(String p_test, const List<String> &p_args) {
 	doctest::Context test_context;
 
-	// tests should be ordered by name for humans
-	test_context.setOption("order-by", "name");
-	test_context.setOption("abort-after", 5);
-	test_context.setOption("no-breaks", true);
-	test_context.run(); // run tests
-
-	if (test_context.shouldExit())
+	if (p_test == "doctest") {
+		// tests should be ordered by name for humans
+		test_context.setOption("order-by", "name");
+		test_context.setOption("abort-after", 5);
+		test_context.setOption("no-breaks", true);
+		test_context.run(); // run tests
 		return NULL;
-
-	return NULL;
-
-	/*if (p_test == "string") {
-
-		return TestString::test();
 	}
 
 	if (p_test == "math") {
@@ -155,9 +148,9 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 
 		return TestAStar::test();
 	}
-*/
-	/*print_line("Unknown test: " + p_test);
-	return NULL;*/
+
+	print_line("Unknown test: " + p_test);
+	return NULL;
 }
 
 #else
