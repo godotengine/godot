@@ -108,9 +108,18 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 void unhandled_exception(MonoException *p_exc) {
 	mono_unhandled_exception((MonoObject *)p_exc); // prints the exception as well
-	// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders
-	GDMono::unhandled_exception_hook((MonoObject *)p_exc, NULL);
-	GD_UNREACHABLE();
+
+	if (GDMono::get_singleton()->get_unhandled_exception_policy() == GDMono::POLICY_TERMINATE_APP) {
+		// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders
+		GDMono::unhandled_exception_hook((MonoObject *)p_exc, NULL);
+		GD_UNREACHABLE();
+	} else {
+#ifdef DEBUG_ENABLED
+		GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
+		if (ScriptDebugger::get_singleton())
+			ScriptDebugger::get_singleton()->idle_poll();
+#endif
+	}
 }
 
 } // namespace GDMonoInternals

@@ -629,7 +629,6 @@ void CSharpLanguage::frame() {
 
 				if (exc) {
 					GDMonoUtils::debug_unhandled_exception(exc);
-					GD_UNREACHABLE();
 				}
 			}
 		}

@@ -37,6 +37,10 @@
 #include "core/project_settings.h"
 #include "core/reference.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/script_editor_debugger.h"
+#endif
+
 #include "../csharp_script.h"
 #include "../utils/macros.h"
 #include "../utils/mutex_utils.h"
@@ -596,8 +600,14 @@ void debug_print_unhandled_exception(MonoException *p_exc) {
 
 void debug_send_unhandled_exception_error(MonoException *p_exc) {
 #ifdef DEBUG_ENABLED
-	if (!ScriptDebugger::get_singleton())
+	if (!ScriptDebugger::get_singleton()) {
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			ERR_PRINTS(GDMonoUtils::get_exception_name_and_message(p_exc));
+		}
+#endif
 		return;
+	}
 
 	_TLS_RECURSION_GUARD_;
 
@@ -621,7 +631,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 		if (unexpected_exc) {
 			GDMonoInternals::unhandled_exception(unexpected_exc);
-			GD_UNREACHABLE();
+			return;
 		}
 
 		Vector<ScriptLanguage::StackInfo> _si;
@@ -655,7 +665,6 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 void debug_unhandled_exception(MonoException *p_exc) {
 	GDMonoInternals::unhandled_exception(p_exc); // prints the exception as well
-	GD_UNREACHABLE();
 }
 
 void print_unhandled_exception(MonoException *p_exc) {
@@ -665,11 +674,9 @@ void print_unhandled_exception(MonoException *p_exc) {
 void set_pending_exception(MonoException *p_exc) {
 #ifdef NO_PENDING_EXCEPTIONS
 	debug_unhandled_exception(p_exc);
-	GD_UNREACHABLE();
 #else
 	if (get_runtime_invoke_count() == 0) {
 		debug_unhandled_exception(p_exc);
-		GD_UNREACHABLE();
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {
