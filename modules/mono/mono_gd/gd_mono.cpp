@@ -283,6 +283,18 @@ void GDMono::initialize() {
 
 	add_mono_shared_libs_dir_to_path();
 
+	{
+		PropertyInfo exc_policy_prop = PropertyInfo(Variant::INT, "mono/unhandled_exception_policy", PROPERTY_HINT_ENUM,
+				vformat("Terminate Application:%s,Log Error:%s", (int)POLICY_TERMINATE_APP, (int)POLICY_LOG_ERROR));
+		unhandled_exception_policy = (UnhandledExceptionPolicy)(int)GLOBAL_DEF(exc_policy_prop.name, (int)POLICY_TERMINATE_APP);
+		ProjectSettings::get_singleton()->set_custom_property_info(exc_policy_prop.name, exc_policy_prop);
+
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// Unhandled exceptions should not terminate the editor
+			unhandled_exception_policy = POLICY_LOG_ERROR;
+		}
+	}
+
 	GDMonoAssembly::initialize();
 
 	gdmono_profiler_init();
@@ -1063,6 +1075,8 @@ GDMono::GDMono() {
 #ifdef TOOLS_ENABLED
 	api_editor_hash = 0;
 #endif
+
+	unhandled_exception_policy = POLICY_TERMINATE_APP;
 }
 
 GDMono::~GDMono() {

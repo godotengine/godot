@@ -289,7 +289,7 @@ void set_exception_message(MonoException *p_exc, String message);
 
 void debug_print_unhandled_exception(MonoException *p_exc);
 void debug_send_unhandled_exception_error(MonoException *p_exc);
-GD_NORETURN void debug_unhandled_exception(MonoException *p_exc);
+void debug_unhandled_exception(MonoException *p_exc);
 void print_unhandled_exception(MonoException *p_exc);
 
 /**

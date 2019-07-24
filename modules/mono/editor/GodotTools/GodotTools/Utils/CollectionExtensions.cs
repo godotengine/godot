@@ -10,8 +10,9 @@ namespace GodotTools.Utils
         {
             foreach (T elem in enumerable)
             {
-                if (predicate(elem) != null)
-                    return elem;
+                T result = predicate(elem);
+                if (result != null)
+                    return result;
             }
 
             return orElse;

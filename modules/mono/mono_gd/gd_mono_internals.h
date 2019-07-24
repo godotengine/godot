@@ -45,7 +45,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged);
  * Do not call this function directly.
  * Use GDMonoUtils::debug_unhandled_exception(MonoException *) instead.
  */
-GD_NORETURN void unhandled_exception(MonoException *p_exc);
+void unhandled_exception(MonoException *p_exc);
 
 } // namespace GDMonoInternals
 
