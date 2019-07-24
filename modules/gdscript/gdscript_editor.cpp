@@ -265,7 +265,7 @@ int GDScriptLanguage::debug_get_stack_level_line(int p_level) const {
 
 	int l = _debug_call_stack_pos - p_level - 1;
 
-	return *(_call_stack[l].line);
+	return _call_stack[l].function->_get_ip_line(*_call_stack[l].ip);
 }
 String GDScriptLanguage::debug_get_stack_level_function(int p_level) const {
 
@@ -297,7 +297,7 @@ void GDScriptLanguage::debug_get_stack_level_locals(int p_level, List<String> *p
 
 	List<Pair<StringName, int> > locals;
 
-	f->debug_get_stack_member_state(*_call_stack[l].line, &locals);
+	f->debug_get_stack_member_state(_call_stack[l].function->_get_ip_line(*_call_stack[l].ip), &locals);
 	for (List<Pair<StringName, int> >::Element *E = locals.front(); E; E = E->next()) {
 
 		p_locals->push_back(E->get().first);

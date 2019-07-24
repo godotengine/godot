@@ -420,7 +420,7 @@ class ScriptDebugger {
 	int depth;
 
 	static ScriptDebugger *singleton;
-	Map<int, Set<StringName> > breakpoints;
+	Map<StringName, Set<int> > breakpoints;
 
 	ScriptLanguage *break_lang;
 
@@ -461,9 +461,8 @@ public:
 	void insert_breakpoint(int p_line, const StringName &p_source);
 	void remove_breakpoint(int p_line, const StringName &p_source);
 	bool is_breakpoint(int p_line, const StringName &p_source) const;
-	bool is_breakpoint_line(int p_line) const;
 	void clear_breakpoints();
-	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
+	const Map<StringName, Set<int> > &get_breakpoints() const { return breakpoints; }
 
 	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true) = 0;
 	virtual void idle_poll();

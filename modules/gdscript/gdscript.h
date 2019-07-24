@@ -328,7 +328,6 @@ class GDScriptLanguage : public ScriptLanguage {
 		GDScriptFunction *function;
 		GDScriptInstance *instance;
 		int *ip;
-		int *line;
 	};
 
 	int _debug_parse_err_line;
@@ -359,7 +358,7 @@ public:
 	bool debug_break(const String &p_error, bool p_allow_continue = true);
 	bool debug_break_parse(const String &p_file, int p_line, const String &p_error);
 
-	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip, int *p_line) {
+	_FORCE_INLINE_ void enter_function(GDScriptInstance *p_instance, GDScriptFunction *p_function, Variant *p_stack, int *p_ip) {
 
 		if (Thread::get_main_id() != Thread::get_caller_id())
 			return; //no support for other threads than main for now
@@ -378,7 +377,6 @@ public:
 		_call_stack[_debug_call_stack_pos].instance = p_instance;
 		_call_stack[_debug_call_stack_pos].function = p_function;
 		_call_stack[_debug_call_stack_pos].ip = p_ip;
-		_call_stack[_debug_call_stack_pos].line = p_line;
 		_debug_call_stack_pos++;
 	}
 
@@ -407,7 +405,7 @@ public:
 		Vector<StackInfo> csi;
 		csi.resize(_debug_call_stack_pos);
 		for (int i = 0; i < _debug_call_stack_pos; i++) {
-			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
+			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].ip ? _call_stack[i].function->_get_ip_line(*_call_stack[i].ip) : 0;
 			if (_call_stack[i].function) {
 				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
 				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();

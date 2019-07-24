@@ -885,15 +885,6 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 					incr += 5;
 
 				} break;
-				case GDScriptFunction::OPCODE_LINE: {
-
-					int line = code[ip + 1] - 1;
-					if (line >= 0 && line < p_code.size())
-						txt = "\n" + itos(line + 1) + ": " + p_code[line] + "\n";
-					else
-						txt = "";
-					incr += 2;
-				} break;
 				case GDScriptFunction::OPCODE_END: {
 
 					txt += " end";

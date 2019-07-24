@@ -191,6 +191,35 @@ String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const 
 	return err_text;
 }
 
+int GDScriptFunction::_get_next_breakpoint(const int &p_ip) const {
+
+	int next_line = _get_ip_line(p_ip + 1);
+
+	if (ScriptDebugger::get_singleton()) {
+		ScriptDebugger::get_singleton()->line_poll();
+
+		if (ScriptDebugger::get_singleton()->get_lines_left() > 0 && next_line - _initial_line < _line_indices_size) {
+
+			return _line_indices_ptr[next_line - _initial_line];
+		}
+
+		if (ScriptDebugger::get_singleton()->get_breakpoints().has(source)) {
+
+			const Set<int> &breakpoints = ScriptDebugger::get_singleton()->get_breakpoints()[source];
+			const Set<int>::Element *line_element = breakpoints.lower_bound(next_line);
+
+			if (line_element && line_element->get() <= next_line && p_ip != 0)
+				line_element = line_element->next();
+
+			if (line_element && line_element->get() - _initial_line - 1 < _line_indices_size) {
+				return line_element->get() > _initial_line ? _line_indices_ptr[line_element->get() - _initial_line - 1] : 0;
+			}
+		}
+	}
+
+	return _code_size;
+}
+
 #if defined(__GNUC__)
 #define OPCODES_TABLE                         \
 	static const void *switch_table_ops[] = { \
@@ -232,31 +261,43 @@ String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const 
 		&&OPCODE_ITERATE,                     \
 		&&OPCODE_ASSERT,                      \
 		&&OPCODE_BREAKPOINT,                  \
-		&&OPCODE_LINE,                        \
 		&&OPCODE_END                          \
 	};
 
 #define OPCODE(m_op) \
-	m_op:
-#define OPCODE_WHILE(m_test)
+	m_op:            \
+	BEFORE_OPCODE
+#define OPCODE_WHILE
 #define OPCODES_END \
 	OPSEXIT:
 #define OPCODES_OUT \
 	OPSOUT:
 #define DISPATCH_OPCODE goto *switch_table_ops[_code_ptr[ip]]
-#define OPCODE_SWITCH(m_test) DISPATCH_OPCODE;
+#define OPCODE_SWITCH DISPATCH_OPCODE;
 #define OPCODE_BREAK goto OPSEXIT
 #define OPCODE_OUT goto OPSOUT
 #else
 #define OPCODES_TABLE
-#define OPCODE(m_op) case m_op:
-#define OPCODE_WHILE(m_test) while (m_test)
+#define OPCODE(m_op) \
+	case m_op:       \
+		BEFORE_OPCODE
+#define OPCODE_WHILE while (true)
 #define OPCODES_END
 #define OPCODES_OUT
 #define DISPATCH_OPCODE continue
-#define OPCODE_SWITCH(m_test) switch (m_test)
+#define OPCODE_SWITCH switch (_code_ptr[ip])
 #define OPCODE_BREAK break
 #define OPCODE_OUT break
+#endif
+
+#ifdef DEBUG_ENABLED
+#define BEFORE_OPCODE                        \
+	{                                        \
+		if (unlikely(ip >= next_breakpoint)) \
+			OPCODE_BREAK;                    \
+	}
+#else
+#define BEFORE_OPCODE
 #endif
 
 Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_args, int p_argcount, Variant::CallError &r_err, CallState *p_state) {
@@ -285,13 +326,11 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	uint32_t alloca_size = 0;
 	GDScript *script;
 	int ip = 0;
-	int line = _initial_line;
 
 	if (p_state) {
 		//use existing (supplied) state (yielded)
 		stack = (Variant *)p_state->stack.ptr();
 		call_args = (Variant **)&p_state->stack.ptr()[sizeof(Variant) * p_state->stack_size]; //ptr() to avoid bounds check
-		line = p_state->line;
 		ip = p_state->ip;
 		alloca_size = p_state->stack.size();
 		script = p_state->script.ptr();
@@ -392,7 +431,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #ifdef DEBUG_ENABLED
 
 	if (ScriptDebugger::get_singleton())
-		GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip, &line);
+		GDScriptLanguage::get_singleton()->enter_function(p_instance, this, stack, &ip);
 
 #define GD_ERR_BREAK(m_cond)                                                                                           \
 	{                                                                                                                  \
@@ -435,14 +474,15 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 	bool exit_ok = false;
 #endif
 
+	int next_breakpoint = _get_next_breakpoint(ip);
+	print_line("NB: " + itos(next_breakpoint));
+
+	OPCODE_WHILE {
 #ifdef DEBUG_ENABLED
-	OPCODE_WHILE(ip < _code_size) {
 		int last_opcode = _code_ptr[ip];
-#else
-	OPCODE_WHILE(true) {
 #endif
 
-		OPCODE_SWITCH(_code_ptr[ip]) {
+		OPCODE_SWITCH {
 
 			OPCODE(OPCODE_OPERATOR) {
 
@@ -1268,7 +1308,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 				gdfs->state.alloca_size = alloca_size;
 				gdfs->state.script = Ref<GDScript>(_script);
 				gdfs->state.ip = ip + ipofs;
-				gdfs->state.line = line;
+				gdfs->state.line = _get_ip_line(gdfs->state.ip);
 				gdfs->state.instance_id = (p_instance && p_instance->get_owner()) ? p_instance->get_owner()->get_instance_id() : 0;
 				//gdfs->state.result_pos=ip+ipofs-1;
 				gdfs->state.defarg = defarg;
@@ -1351,6 +1391,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				GD_ERR_BREAK(to < 0 || to > _code_size);
 				ip = to;
+				next_breakpoint = _get_next_breakpoint(ip);
 			}
 			DISPATCH_OPCODE;
 
@@ -1366,6 +1407,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					int to = _code_ptr[ip + 2];
 					GD_ERR_BREAK(to < 0 || to > _code_size);
 					ip = to;
+					next_breakpoint = _get_next_breakpoint(ip);
 				} else {
 					ip += 3;
 				}
@@ -1384,6 +1426,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					int to = _code_ptr[ip + 2];
 					GD_ERR_BREAK(to < 0 || to > _code_size);
 					ip = to;
+					next_breakpoint = _get_next_breakpoint(ip);
 				} else {
 					ip += 3;
 				}
@@ -1394,6 +1437,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				CHECK_SPACE(2);
 				ip = _default_arg_ptr[defarg];
+				next_breakpoint = _get_next_breakpoint(ip);
 			}
 			DISPATCH_OPCODE;
 
@@ -1426,6 +1470,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					int jumpto = _code_ptr[ip + 3];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
+					next_breakpoint = _get_next_breakpoint(ip);
 				} else {
 					GET_VARIANT_PTR(iterator, 4);
 
@@ -1459,6 +1504,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 					int jumpto = _code_ptr[ip + 3];
 					GD_ERR_BREAK(jumpto < 0 || jumpto > _code_size);
 					ip = jumpto;
+					next_breakpoint = _get_next_breakpoint(ip);
 				} else {
 					GET_VARIANT_PTR(iterator, 4);
 
@@ -1502,36 +1548,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			}
 			DISPATCH_OPCODE;
 
-			OPCODE(OPCODE_LINE) {
-				CHECK_SPACE(2);
-
-				line = _code_ptr[ip + 1];
-				ip += 2;
-
-				if (ScriptDebugger::get_singleton()) {
-					// line
-					bool do_break = false;
-
-					if (ScriptDebugger::get_singleton()->get_lines_left() > 0) {
-
-						if (ScriptDebugger::get_singleton()->get_depth() <= 0)
-							ScriptDebugger::get_singleton()->set_lines_left(ScriptDebugger::get_singleton()->get_lines_left() - 1);
-						if (ScriptDebugger::get_singleton()->get_lines_left() <= 0)
-							do_break = true;
-					}
-
-					if (ScriptDebugger::get_singleton()->is_breakpoint(line, source))
-						do_break = true;
-
-					if (do_break) {
-						GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
-					}
-
-					ScriptDebugger::get_singleton()->line_poll();
-				}
-			}
-			DISPATCH_OPCODE;
-
 			OPCODE(OPCODE_END) {
 #ifdef DEBUG_ENABLED
 				exit_ok = true;
@@ -1551,29 +1567,58 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 		OPCODES_END
 #ifdef DEBUG_ENABLED
-		if (exit_ok)
-			OPCODE_OUT;
-		//error
-		// function, file, line, error, explanation
-		String err_file;
-		if (p_instance && p_instance->script->is_valid() && p_instance->script->path != "")
-			err_file = p_instance->script->path;
-		else if (script)
-			err_file = script->path;
-		if (err_file == "")
-			err_file = "<built-in>";
-		String err_func = name;
-		if (p_instance && p_instance->script->is_valid() && p_instance->script->name != "")
-			err_func = p_instance->script->name + "." + err_func;
-		int err_line = line;
-		if (err_text == "") {
-			err_text = "Internal Script Error! - opcode #" + itos(last_opcode) + " (report please).";
-		}
+		if (ip >= next_breakpoint) {
+			// breakpoint
+			int line = _get_ip_line(ip);
 
-		if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
-			// debugger break did not happen
+			if (ScriptDebugger::get_singleton()) {
+				bool do_break = false;
 
-			_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), ERR_HANDLER_SCRIPT);
+				if (ScriptDebugger::get_singleton()->get_lines_left() > 0) {
+
+					if (ScriptDebugger::get_singleton()->get_depth() <= 0)
+						ScriptDebugger::get_singleton()->set_lines_left(ScriptDebugger::get_singleton()->get_lines_left() - 1);
+					if (ScriptDebugger::get_singleton()->get_lines_left() <= 0)
+						do_break = true;
+				}
+
+				do {
+					if (ScriptDebugger::get_singleton()->is_breakpoint(line, source))
+						do_break = true;
+					line--; // since _get_ip_line returns the last line for that instruction pointer
+				} while (line > _initial_line && _line_indices_ptr[line - _initial_line] == ip);
+
+				if (do_break) {
+					GDScriptLanguage::get_singleton()->debug_break("Breakpoint", true);
+				}
+			}
+			next_breakpoint = _get_next_breakpoint(ip);
+			DISPATCH_OPCODE;
+		} else {
+			if (exit_ok)
+				OPCODE_OUT;
+			//error
+			// function, file, line, error, explanation
+			String err_file;
+			if (p_instance && p_instance->script->is_valid() && p_instance->script->path != "")
+				err_file = p_instance->script->path;
+			else if (script)
+				err_file = script->path;
+			if (err_file == "")
+				err_file = "<built-in>";
+			String err_func = name;
+			if (p_instance && p_instance->script->is_valid() && p_instance->script->name != "")
+				err_func = p_instance->script->name + "." + err_func;
+			int err_line = _get_ip_line(ip);
+			if (err_text == "") {
+				err_text = "Internal Script Error! - opcode #" + itos(last_opcode) + " (report please).";
+			}
+
+			if (!GDScriptLanguage::get_singleton()->debug_break(err_text, false)) {
+				// debugger break did not happen
+
+				_err_print_error(err_func.utf8().get_data(), err_file.utf8().get_data(), err_line, err_text.utf8().get_data(), ERR_HANDLER_SCRIPT);
+			}
 		}
 
 #endif

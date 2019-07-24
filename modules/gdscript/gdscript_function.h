@@ -185,7 +185,6 @@ public:
 		OPCODE_ITERATE,
 		OPCODE_ASSERT,
 		OPCODE_BREAKPOINT,
-		OPCODE_LINE,
 		OPCODE_END
 	};
 
@@ -231,6 +230,8 @@ private:
 	int _default_arg_count;
 	const int *_code_ptr;
 	int _code_size;
+	const int *_line_indices_ptr;
+	int _line_indices_size;
 	int _argument_count;
 	int _stack_size;
 	int _call_size;
@@ -248,6 +249,7 @@ private:
 #endif
 	Vector<int> default_arguments;
 	Vector<int> code;
+	Vector<int> line_indices;
 	Vector<GDScriptDataType> argument_types;
 	GDScriptDataType return_type;
 
@@ -259,8 +261,25 @@ private:
 
 	_FORCE_INLINE_ Variant *_get_variant(int p_address, GDScriptInstance *p_instance, GDScript *p_script, Variant &self, Variant *p_stack, String &r_error) const;
 	_FORCE_INLINE_ String _get_call_error(const Variant::CallError &p_err, const String &p_where, const Variant **argptrs) const;
+	_FORCE_INLINE_ int _get_next_breakpoint(const int &p_ip) const;
 
 	friend class GDScriptLanguage;
+
+	_FORCE_INLINE_ int _get_ip_line(const int &p_ip) const {
+		int lo = 0;
+		int hi = _line_indices_size;
+
+		while (lo < hi) {
+			const int mid = (lo + hi) / 2;
+			if (_line_indices_ptr[mid] <= p_ip) {
+				lo = mid + 1;
+			} else {
+				hi = mid;
+			}
+		}
+
+		return _initial_line + lo;
+	}
 
 	SelfList<GDScriptFunction> function_list;
 #ifdef DEBUG_ENABLED

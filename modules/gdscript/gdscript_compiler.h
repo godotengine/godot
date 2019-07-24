@@ -122,6 +122,7 @@ class GDScriptCompiler {
 		}
 
 		Vector<int> opcodes;
+		Vector<int> line_indices;
 		void alloc_stack(int p_level) {
 			if (p_level >= stack_max) stack_max = p_level + 1;
 		}

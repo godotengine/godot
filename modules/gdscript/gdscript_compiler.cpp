@@ -1273,12 +1273,11 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 
 		switch (s->type) {
 			case GDScriptParser::Node::TYPE_NEWLINE: {
-#ifdef DEBUG_ENABLED
 				const GDScriptParser::NewLineNode *nl = static_cast<const GDScriptParser::NewLineNode *>(s);
-				codegen.opcodes.push_back(GDScriptFunction::OPCODE_LINE);
-				codegen.opcodes.push_back(nl->line);
+				for (int j = 0; j < nl->line - codegen.current_line; j++) {
+					codegen.line_indices.push_back(codegen.opcodes.size());
+				}
 				codegen.current_line = nl->line;
-#endif
 			} break;
 			case GDScriptParser::Node::TYPE_CONTROL_FLOW: {
 				// try subblocks
@@ -1740,6 +1739,18 @@ Error GDScriptCompiler::_parse_function(GDScript *p_script, const GDScriptParser
 
 		gdfunc->_code_ptr = NULL;
 		gdfunc->_code_size = 0;
+	}
+
+	if (codegen.line_indices.size()) {
+
+		gdfunc->line_indices = codegen.line_indices;
+		gdfunc->_line_indices_ptr = &gdfunc->line_indices[0];
+		gdfunc->_line_indices_size = codegen.line_indices.size();
+
+	} else {
+
+		gdfunc->_line_indices_ptr = NULL;
+		gdfunc->_line_indices_size = 0;
 	}
 
 	if (defarg_addr.size()) {
