@@ -298,7 +298,16 @@ namespace GodotTools
                     if (line >= 0)
                         scriptPath += $";{line + 1};{col}";
 
-                    GetMonoDevelopInstance(GodotSharpDirs.ProjectSlnPath).Execute(scriptPath);
+                    try
+                    {
+                        GetMonoDevelopInstance(GodotSharpDirs.ProjectSlnPath).Execute(scriptPath);
+                    }
+                    catch (FileNotFoundException)
+                    {
+                        string editorName = editor == ExternalEditor.VisualStudioForMac ? "Visual Studio" : "MonoDevelop";
+                        GD.PushError($"Cannot find code editor: {editorName}");
+                        return Error.FileNotFound;
+                    }
 
                     break;
                 }

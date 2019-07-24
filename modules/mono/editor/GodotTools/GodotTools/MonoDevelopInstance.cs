@@ -4,6 +4,7 @@ using System.IO;
 using System.Collections.Generic;
 using System.Diagnostics;
 using GodotTools.Internals;
+using GodotTools.Utils;
 
 namespace GodotTools
 {
@@ -30,7 +31,7 @@ namespace GodotTools
 
             if (Utils.OS.IsOSX())
             {
-                string bundleId = CodeEditorBundleIds[editorId];
+                string bundleId = BundleIds[editorId];
 
                 if (Internal.IsOsxAppBundleInstalled(bundleId))
                 {
@@ -47,12 +48,12 @@ namespace GodotTools
                 }
                 else
                 {
-                    command = CodeEditorPaths[editorId];
+                    command = OS.PathWhich(ExecutableNames[editorId]);
                 }
             }
             else
             {
-                command = CodeEditorPaths[editorId];
+                command = OS.PathWhich(ExecutableNames[editorId]);
             }
 
             args.Add("--ipc-tcp");
@@ -69,6 +70,9 @@ namespace GodotTools
 
                 args.Add("\"" + Path.GetFullPath(filePath.NormalizePath()) + cursor + "\"");
             }
+
+            if (command == null)
+                throw new FileNotFoundException();
 
             if (newWindow)
             {
@@ -99,20 +103,20 @@ namespace GodotTools
             this.editorId = editorId;
         }
 
-        private static readonly IReadOnlyDictionary<EditorId, string> CodeEditorPaths;
-        private static readonly IReadOnlyDictionary<EditorId, string> CodeEditorBundleIds;
+        private static readonly IReadOnlyDictionary<EditorId, string> ExecutableNames;
+        private static readonly IReadOnlyDictionary<EditorId, string> BundleIds;
 
         static MonoDevelopInstance()
         {
             if (Utils.OS.IsOSX())
             {
-                CodeEditorPaths = new Dictionary<EditorId, string>
+                ExecutableNames = new Dictionary<EditorId, string>
                 {
                     // Rely on PATH
                     {EditorId.MonoDevelop, "monodevelop"},
                     {EditorId.VisualStudioForMac, "VisualStudio"}
                 };
-                CodeEditorBundleIds = new Dictionary<EditorId, string>
+                BundleIds = new Dictionary<EditorId, string>
                 {
                     // TODO EditorId.MonoDevelop
                     {EditorId.VisualStudioForMac, "com.microsoft.visual-studio"}
@@ -120,7 +124,7 @@ namespace GodotTools
             }
             else if (Utils.OS.IsWindows())
             {
-                CodeEditorPaths = new Dictionary<EditorId, string>
+                ExecutableNames = new Dictionary<EditorId, string>
                 {
                     // XamarinStudio is no longer a thing, and the latest version is quite old
                     // MonoDevelop is available from source only on Windows. The recommendation
@@ -131,7 +135,7 @@ namespace GodotTools
             }
             else if (Utils.OS.IsUnix())
             {
-                CodeEditorPaths = new Dictionary<EditorId, string>
+                ExecutableNames = new Dictionary<EditorId, string>
                 {
                     // Rely on PATH
                     {EditorId.MonoDevelop, "monodevelop"}
