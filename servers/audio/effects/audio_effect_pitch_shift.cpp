@@ -70,7 +70,7 @@
 * documentation for any purpose is hereby granted without fee, provided that
 * the above copyright notice and this license appear in all source copies.
 * THIS SOFTWARE IS PROVIDED "AS IS" WITHOUT EXPRESS OR IMPLIED WARRANTY OF
-* ANY KIND. See http://www.dspguru.com/wol.htm for more information.
+* ANY KIND. See https://dspguru.com/wide-open-license/ for more information.
 *
 *****************************************************************************/
 
