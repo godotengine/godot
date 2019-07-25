@@ -741,10 +741,9 @@ Error DocData::load_classes(const String &p_dir) {
 
 	da->list_dir_begin();
 	String path;
-	bool isdir;
-	path = da->get_next(&isdir);
+	path = da->get_next();
 	while (path != String()) {
-		if (!isdir && path.ends_with("xml")) {
+		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
 			Error err2 = parser->open(p_dir.plus_file(path));
 			if (err2)
@@ -752,7 +751,7 @@ Error DocData::load_classes(const String &p_dir) {
 
 			_load(parser);
 		}
-		path = da->get_next(&isdir);
+		path = da->get_next();
 	}
 
 	da->list_dir_end();
@@ -771,13 +770,12 @@ Error DocData::erase_classes(const String &p_dir) {
 
 	da->list_dir_begin();
 	String path;
-	bool isdir;
-	path = da->get_next(&isdir);
+	path = da->get_next();
 	while (path != String()) {
-		if (!isdir && path.ends_with("xml")) {
+		if (!da->current_is_dir() && path.ends_with("xml")) {
 			to_erase.push_back(path);
 		}
-		path = da->get_next(&isdir);
+		path = da->get_next();
 	}
 	da->list_dir_end();
 

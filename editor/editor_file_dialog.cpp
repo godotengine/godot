@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_file_dialog.h"
+
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -731,19 +732,15 @@ void EditorFileDialog::update_file_list() {
 	List<String> files;
 	List<String> dirs;
 
-	bool is_dir;
-	bool is_hidden;
 	String item;
 
-	while ((item = dir_access->get_next(&is_dir)) != "") {
+	while ((item = dir_access->get_next()) != "") {
 
 		if (item == "." || item == "..")
 			continue;
 
-		is_hidden = dir_access->current_is_hidden();
-
-		if (show_hidden_files || !is_hidden) {
-			if (!is_dir)
+		if (show_hidden_files || !dir_access->current_is_hidden()) {
+			if (!dir_access->current_is_dir())
 				files.push_back(item);
 			else
 				dirs.push_back(item);
