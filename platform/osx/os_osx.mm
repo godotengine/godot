@@ -1599,6 +1599,7 @@ void OS_OSX::finalize() {
 	memdelete(joypad_osx);
 	memdelete(input);
 
+	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);

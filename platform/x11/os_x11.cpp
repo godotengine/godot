@@ -788,6 +788,7 @@ void OS_X11::finalize() {
 
 	memdelete(camera_server);
 
+	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);

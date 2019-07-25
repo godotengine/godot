@@ -1537,6 +1537,7 @@ void OS_Windows::finalize() {
 	memdelete(camera_server);
 	touch_state.clear();
 
+	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
 #ifdef OPENGL_ENABLED
