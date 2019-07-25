@@ -109,8 +109,6 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_MERGE_FROM_SCENE);
 	} else if (ED_IS_SHORTCUT("scene_tree/save_branch_as_scene", p_event)) {
 		_tool_selected(TOOL_NEW_SCENE_FROM);
-	} else if (ED_IS_SHORTCUT("scene_tree/delete_no_confirm", p_event)) {
-		_tool_selected(TOOL_ERASE, true);
 	} else if (ED_IS_SHORTCUT("scene_tree/copy_node_path", p_event)) {
 		_tool_selected(TOOL_COPY_NODE_PATH);
 	} else if (ED_IS_SHORTCUT("scene_tree/delete", p_event)) {
@@ -752,13 +750,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (!_validate_no_foreign())
 				break;
 
-			if (p_confirm_override) {
-				_delete_confirm();
-
-			} else {
-				delete_dialog->set_text(TTR("Delete Node(s)?"));
-				delete_dialog->popup_centered_minsize();
-			}
+			_delete_confirm();
 
 		} break;
 		case TOOL_MERGE_FROM_SCENE: {
@@ -2737,7 +2729,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
 	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
-	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 
 	button_add = memnew(ToolButton);
@@ -2843,10 +2834,6 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	add_child(quick_open);
 	quick_open->connect("quick_open", this, "_quick_open");
 	set_process_unhandled_key_input(true);
-
-	delete_dialog = memnew(ConfirmationDialog);
-	add_child(delete_dialog);
-	delete_dialog->connect("confirmed", this, "_delete_confirm");
 
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(editable_instance_remove_dialog);
