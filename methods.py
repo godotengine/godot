@@ -617,7 +617,11 @@ def detect_darwin_sdk_path(platform, env):
             raise
 
 def get_compiler_version(env):
-    version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
+    # Not using this method on clang because it returns 4.2.1 # https://reviews.llvm.org/D56803
+    if using_gcc(env):
+        version = decode_utf8(subprocess.check_output([env['CXX'], '-dumpversion']).strip())
+    else:
+        version = decode_utf8(subprocess.check_output([env['CXX'], '--version']).strip())
     match = re.search('[0-9][0-9.]*', version)
     if match is not None:
         return match.group().split('.')
