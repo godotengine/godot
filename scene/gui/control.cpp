@@ -850,6 +850,12 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_typ
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_icon(p_name, type)) {
+			return Theme::get_project_default()->get_icon(p_name, type);
+		}
+	}
+
 	return Theme::get_default()->get_icon(p_name, type);
 }
 
@@ -884,6 +890,12 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_ty
 			theme_owner = parent->data.theme_owner;
 		else
 			theme_owner = NULL;
+	}
+
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_shader(p_name, type)) {
+			return Theme::get_project_default()->get_shader(p_name, type);
+		}
 	}
 
 	return Theme::get_default()->get_shader(p_name, type);
@@ -925,6 +937,9 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 	}
 
 	while (class_name != StringName()) {
+		if (Theme::get_project_default().is_valid() && Theme::get_project_default()->has_stylebox(p_name, type))
+			return Theme::get_project_default()->get_stylebox(p_name, type);
+
 		if (Theme::get_default()->has_stylebox(p_name, class_name))
 			return Theme::get_default()->get_stylebox(p_name, class_name);
 
@@ -1001,6 +1016,11 @@ Color Control::get_color(const StringName &p_name, const StringName &p_type) con
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_color(p_name, type)) {
+			return Theme::get_project_default()->get_color(p_name, type);
+		}
+	}
 	return Theme::get_default()->get_color(p_name, type);
 }
 
@@ -1036,6 +1056,11 @@ int Control::get_constant(const StringName &p_name, const StringName &p_type) co
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_constant(p_name, type)) {
+			return Theme::get_project_default()->get_constant(p_name, type);
+		}
+	}
 	return Theme::get_default()->get_constant(p_name, type);
 }
 
@@ -1106,6 +1131,11 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_type) const
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_color(p_name, type)) {
+			return true;
+		}
+	}
 	return Theme::get_default()->has_icon(p_name, type);
 }
 
@@ -1140,6 +1170,11 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_type) con
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_shader(p_name, type)) {
+			return true;
+		}
+	}
 	return Theme::get_default()->has_shader(p_name, type);
 }
 bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) const {
@@ -1173,6 +1208,11 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) c
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_stylebox(p_name, type)) {
+			return true;
+		}
+	}
 	return Theme::get_default()->has_stylebox(p_name, type);
 }
 bool Control::has_font(const StringName &p_name, const StringName &p_type) const {
@@ -1206,6 +1246,11 @@ bool Control::has_font(const StringName &p_name, const StringName &p_type) const
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_font(p_name, type)) {
+			return true;
+		}
+	}
 	return Theme::get_default()->has_font(p_name, type);
 }
 
@@ -1240,6 +1285,11 @@ bool Control::has_color(const StringName &p_name, const StringName &p_type) cons
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_color(p_name, type)) {
+			return true;
+		}
+	}
 	return Theme::get_default()->has_color(p_name, type);
 }
 
@@ -1274,6 +1324,11 @@ bool Control::has_constant(const StringName &p_name, const StringName &p_type) c
 			theme_owner = NULL;
 	}
 
+	if (Theme::get_project_default().is_valid()) {
+		if (Theme::get_project_default()->has_constant(p_name, type)) {
+			return true;
+		}
+	}
 	return Theme::get_default()->has_constant(p_name, type);
 }
 

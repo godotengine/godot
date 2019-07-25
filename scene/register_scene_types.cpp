@@ -752,7 +752,7 @@ void register_scene_types() {
 	if (theme_path != String()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
 		if (theme.is_valid()) {
-			Theme::set_default(theme);
+			Theme::set_project_default(theme);
 			if (font.is_valid()) {
 				Theme::set_default_font(font);
 			}
