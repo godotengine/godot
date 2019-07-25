@@ -270,6 +270,7 @@ public:
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
+	static int range_step_decimals(double p_step);
 	static double stepify(double p_value, double p_step);
 	static double dectime(double p_value, double p_amount, double p_step);
 
