@@ -1009,7 +1009,10 @@ void ScriptEditorDebugger::_performance_draw() {
 	Ref<Font> graph_font = get_font("font", "TextEdit");
 
 	if (which.empty()) {
-		perf_draw->draw_string(graph_font, Point2(0, graph_font->get_ascent()), TTR("Pick one or more items from the list to display the graph."), get_color("font_color", "Label"), perf_draw->get_size().x);
+		String text = TTR("Pick one or more items from the list to display the graph.");
+
+		perf_draw->draw_string(graph_font, Point2(MAX(0, perf_draw->get_size().x - graph_font->get_string_size(text).x), perf_draw->get_size().y + graph_font->get_ascent()) / 2, text, get_color("font_color", "Label"), perf_draw->get_size().x);
+
 		return;
 	}
 
