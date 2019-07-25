@@ -695,5 +695,14 @@ TextEditor::TextEditor() {
 	code_editor->get_text_edit()->set_drag_forwarding(this);
 }
 
+TextEditor::~TextEditor() {
+	for (const Map<String, SyntaxHighlighter *>::Element *E = highlighters.front(); E; E = E->next()) {
+		if (E->get() != NULL) {
+			memdelete(E->get());
+		}
+	}
+	highlighters.clear();
+}
+
 void TextEditor::validate() {
 }

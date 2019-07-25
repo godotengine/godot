@@ -2088,16 +2088,18 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	}
 	ERR_FAIL_COND_V(!se, false);
 
-	bool highlighter_set = false;
-	for (int i = 0; i < syntax_highlighters_func_count; i++) {
-		SyntaxHighlighter *highlighter = syntax_highlighters_funcs[i]();
-		se->add_syntax_highlighter(highlighter);
+	if (p_resource->get_class_name() != StringName("VisualScript")) {
+		bool highlighter_set = false;
+		for (int i = 0; i < syntax_highlighters_func_count; i++) {
+			SyntaxHighlighter *highlighter = syntax_highlighters_funcs[i]();
+			se->add_syntax_highlighter(highlighter);
 
-		if (script != NULL && !highlighter_set) {
-			List<String> languages = highlighter->get_supported_languages();
-			if (languages.find(script->get_language()->get_name())) {
-				se->set_syntax_highlighter(highlighter);
-				highlighter_set = true;
+			if (script != NULL && !highlighter_set) {
+				List<String> languages = highlighter->get_supported_languages();
+				if (languages.find(script->get_language()->get_name())) {
+					se->set_syntax_highlighter(highlighter);
+					highlighter_set = true;
+				}
 			}
 		}
 	}

@@ -154,6 +154,7 @@ public:
 	static void register_editor();
 
 	TextEditor();
+	~TextEditor();
 };
 
 #endif // TEXT_EDITOR_H
