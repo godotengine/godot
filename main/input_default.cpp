@@ -686,7 +686,8 @@ void InputDefault::release_pressed_events() {
 	_joy_axis.clear();
 
 	for (Map<StringName, InputDefault::Action>::Element *E = action_state.front(); E; E = E->next()) {
-		action_release(E->key());
+		if (E->get().pressed)
+			action_release(E->key());
 	}
 }
 
