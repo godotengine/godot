@@ -370,7 +370,7 @@ String CollisionObject::get_configuration_warning() const {
 	String warning = Spatial::get_configuration_warning();
 
 	if (shapes.empty()) {
-		if (warning == String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape or CollisionPolygon as a child to define its shape.");
