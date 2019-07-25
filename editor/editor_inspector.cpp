@@ -504,7 +504,7 @@ bool EditorProperty::use_keying_next() const {
 		PropertyInfo &p = I->get();
 
 		if (p.name == property) {
-			return p.hint == PROPERTY_HINT_SPRITE_FRAME;
+			return (p.usage & PROPERTY_USAGE_KEYING_INCREMENTS);
 		}
 	}
 
