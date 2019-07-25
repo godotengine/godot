@@ -231,6 +231,7 @@ public:
 	virtual void validate();
 
 	ScriptTextEditor();
+	~ScriptTextEditor();
 };
 
 #endif // SCRIPT_TEXT_EDITOR_H

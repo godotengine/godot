@@ -1819,6 +1819,15 @@ ScriptTextEditor::ScriptTextEditor() {
 	code_editor->get_text_edit()->set_drag_forwarding(this);
 }
 
+ScriptTextEditor::~ScriptTextEditor() {
+	for (const Map<String, SyntaxHighlighter *>::Element *E = highlighters.front(); E; E = E->next()) {
+		if (E->get() != NULL) {
+			memdelete(E->get());
+		}
+	}
+	highlighters.clear();
+}
+
 static ScriptEditorBase *create_editor(const RES &p_resource) {
 
 	if (Object::cast_to<Script>(*p_resource)) {
