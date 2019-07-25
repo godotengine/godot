@@ -1574,6 +1574,7 @@ void EditorNode::push_item(Object *p_object, const String &p_property, bool p_in
 		get_inspector()->edit(NULL);
 		node_dock->set_node(NULL);
 		scene_tree_dock->set_selected(NULL);
+		inspector_dock->update(NULL);
 		return;
 	}
 
@@ -1662,9 +1663,10 @@ void EditorNode::_edit_current() {
 
 		Resource *current_res = Object::cast_to<Resource>(current_obj);
 		ERR_FAIL_COND(!current_res);
-		scene_tree_dock->set_selected(NULL);
 		get_inspector()->edit(current_res);
+		scene_tree_dock->set_selected(NULL);
 		node_dock->set_node(NULL);
+		inspector_dock->update(NULL);
 		EditorNode::get_singleton()->get_import_dock()->set_edit_path(current_res->get_path());
 
 		int subr_idx = current_res->get_path().find("::");
@@ -1691,9 +1693,11 @@ void EditorNode::_edit_current() {
 		if (current_node->is_inside_tree()) {
 			node_dock->set_node(current_node);
 			scene_tree_dock->set_selected(current_node);
+			inspector_dock->update(current_node);
 		} else {
 			node_dock->set_node(NULL);
 			scene_tree_dock->set_selected(NULL);
+			inspector_dock->update(NULL);
 		}
 
 		if (get_edited_scene() && get_edited_scene()->get_filename() != String()) {
@@ -1713,6 +1717,8 @@ void EditorNode::_edit_current() {
 
 		get_inspector()->edit(current_obj);
 		node_dock->set_node(NULL);
+		scene_tree_dock->set_selected(NULL);
+		inspector_dock->update(NULL);
 	}
 
 	inspector_dock->set_warning(editable_warning);
