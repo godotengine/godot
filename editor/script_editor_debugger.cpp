@@ -1011,7 +1011,7 @@ void ScriptEditorDebugger::_performance_draw() {
 	if (which.empty()) {
 		String text = TTR("Pick one or more items from the list to display the graph.");
 
-		perf_draw->draw_string(graph_font, Point2(MAX(0, perf_draw->get_size().x - graph_font->get_string_size(text).x), perf_draw->get_size().y + graph_font->get_ascent()) / 2, text, get_color("font_color", "Label"), perf_draw->get_size().x);
+		perf_draw->draw_string(graph_font, Point2i(MAX(0, perf_draw->get_size().x - graph_font->get_string_size(text).x), perf_draw->get_size().y + graph_font->get_ascent()) / 2, text, get_color("font_color", "Label"), perf_draw->get_size().x);
 
 		return;
 	}
