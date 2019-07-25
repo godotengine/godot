@@ -61,41 +61,48 @@ namespace GodotTools
         {
             using (var file = new Godot.File())
             {
-                Error openError = file.Open(csvFile, Godot.File.ModeFlags.Read);
-
-                if (openError != Error.Ok)
-                    return;
-
-                while (!file.EofReached())
+                try
                 {
-                    string[] csvColumns = file.GetCsvLine();
+                    Error openError = file.Open(csvFile, Godot.File.ModeFlags.Read);
 
-                    if (csvColumns.Length == 1 && csvColumns[0].Empty())
+                    if (openError != Error.Ok)
                         return;
 
-                    if (csvColumns.Length != 7)
+                    while (!file.EofReached())
                     {
-                        GD.PushError($"Expected 7 columns, got {csvColumns.Length}");
-                        continue;
+                        string[] csvColumns = file.GetCsvLine();
+
+                        if (csvColumns.Length == 1 && csvColumns[0].Empty())
+                            return;
+
+                        if (csvColumns.Length != 7)
+                        {
+                            GD.PushError($"Expected 7 columns, got {csvColumns.Length}");
+                            continue;
+                        }
+
+                        var issue = new BuildIssue
+                        {
+                            Warning = csvColumns[0] == "warning",
+                            File = csvColumns[1],
+                            Line = int.Parse(csvColumns[2]),
+                            Column = int.Parse(csvColumns[3]),
+                            Code = csvColumns[4],
+                            Message = csvColumns[5],
+                            ProjectFile = csvColumns[6]
+                        };
+
+                        if (issue.Warning)
+                            WarningCount += 1;
+                        else
+                            ErrorCount += 1;
+
+                        issues.Add(issue);
                     }
-
-                    var issue = new BuildIssue
-                    {
-                        Warning = csvColumns[0] == "warning",
-                        File = csvColumns[1],
-                        Line = int.Parse(csvColumns[2]),
-                        Column = int.Parse(csvColumns[3]),
-                        Code = csvColumns[4],
-                        Message = csvColumns[5],
-                        ProjectFile = csvColumns[6]
-                    };
-
-                    if (issue.Warning)
-                        WarningCount += 1;
-                    else
-                        ErrorCount += 1;
-
-                    issues.Add(issue);
+                }
+                finally
+                {
+                    file.Close(); // Disposing it is not enough. We need to call Close()
                 }
             }
         }

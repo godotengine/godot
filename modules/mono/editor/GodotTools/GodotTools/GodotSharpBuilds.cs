@@ -64,7 +64,7 @@ namespace GodotTools
 
         private static string GetIssuesFilePath(MonoBuildInfo buildInfo)
         {
-            return Path.Combine(Godot.ProjectSettings.LocalizePath(buildInfo.LogsDirPath), MsBuildIssuesFileName);
+            return Path.Combine(buildInfo.LogsDirPath, MsBuildIssuesFileName);
         }
 
         private static void PrintVerbose(string text)

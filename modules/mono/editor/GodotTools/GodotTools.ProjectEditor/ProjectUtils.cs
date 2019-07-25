@@ -85,7 +85,7 @@ namespace GodotTools.ProjectEditor
             void AddPropertyIfNotPresent(string name, string condition, string value)
             {
                 if (root.PropertyGroups
-                    .Any(g => g.Condition == string.Empty || g.Condition == condition &&
+                    .Any(g => (g.Condition == string.Empty || g.Condition == condition) &&
                               g.Properties
                                   .Any(p => p.Name == name &&
                                             p.Value == value &&
