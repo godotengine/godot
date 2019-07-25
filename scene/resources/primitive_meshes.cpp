@@ -1572,3 +1572,19 @@ SphereMesh::SphereMesh() {
 	rings = 32;
 	is_hemisphere = false;
 }
+
+/**
+  PointMesh
+*/
+
+void PointMesh::_create_mesh_array(Array &p_arr) const {
+	PoolVector<Vector3> faces;
+	faces.resize(1);
+	faces.set(0, Vector3(0.0, 0.0, 0.0));
+
+	p_arr[VS::ARRAY_VERTEX] = faces;
+}
+
+PointMesh::PointMesh() {
+	primitive_type = PRIMITIVE_POINTS;
+}

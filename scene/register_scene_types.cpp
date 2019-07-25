@@ -607,6 +607,7 @@ void register_scene_types() {
 	ClassDB::register_class<PrismMesh>();
 	ClassDB::register_class<QuadMesh>();
 	ClassDB::register_class<SphereMesh>();
+	ClassDB::register_class<PointMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
 	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
