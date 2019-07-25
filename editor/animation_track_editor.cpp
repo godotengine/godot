@@ -170,7 +170,7 @@ public:
 			case Animation::TYPE_TRANSFORM: {
 
 				Dictionary d_old = animation->track_get_key_value(track, key);
-				Dictionary d_new = d_old;
+				Dictionary d_new = d_old.duplicate();
 				d_new[p_name] = p_value;
 				setting = true;
 				undo_redo->create_action(TTR("Anim Change Transform"));
@@ -209,7 +209,7 @@ public:
 			case Animation::TYPE_METHOD: {
 
 				Dictionary d_old = animation->track_get_key_value(track, key);
-				Dictionary d_new = d_old;
+				Dictionary d_new = d_old.duplicate();
 
 				bool change_notify_deserved = false;
 				bool mergeable = false;
@@ -840,7 +840,7 @@ public:
 					case Animation::TYPE_TRANSFORM: {
 
 						Dictionary d_old = animation->track_get_key_value(track, key);
-						Dictionary d_new = d_old;
+						Dictionary d_new = d_old.duplicate();
 						d_new[p_name] = p_value;
 
 						if (!setting) {
@@ -874,7 +874,7 @@ public:
 					case Animation::TYPE_METHOD: {
 
 						Dictionary d_old = animation->track_get_key_value(track, key);
-						Dictionary d_new = d_old;
+						Dictionary d_new = d_old.duplicate();
 
 						bool mergeable = false;
 
