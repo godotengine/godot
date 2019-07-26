@@ -110,6 +110,7 @@ private:
 	int fade_out_samples;
 
 	int beat_size;
+	int fading_beat_size;
 
 	bool fading;
 

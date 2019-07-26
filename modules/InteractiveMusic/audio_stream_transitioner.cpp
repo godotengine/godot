@@ -205,8 +205,13 @@ void AudioStreamPlaybackTransitioner::stop() {
 
 void AudioStreamPlaybackTransitioner::start(float p_from_pos) {
 	current = transitioner->active_clip_number;
-	beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
+	
 	if (transitioner->clips[current].is_valid()) {
+		if (transitioner->clips[current]->get_bpm() == 0) {
+			beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
+		} else {
+			beat_size = transitioner->sample_rate * 60 / transitioner->clips[current]->get_bpm();
+		}
 		seek(p_from_pos);
 		active = true;
 		playbacks[current]->start();
@@ -254,7 +259,17 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 				current = transitioner->active_clip_number;
 				previous = transitioner->fading_clip_number;
 				fading = true;
-				fade_out_samples_total = transitioner->active_transition.fade_out_beats * beat_size;//beat size is not set anywhere
+				if (transitioner->clips[current]->get_bpm() == 0) {
+					beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
+				} else {
+					beat_size = transitioner->sample_rate * 60 / transitioner->clips[current]->get_bpm();
+				}
+				if (transitioner->clips[previous]->get_bpm() == 0) {
+					fading_beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
+				} else {
+					fading_beat_size = transitioner->sample_rate * 60 / transitioner->clips[previous]->get_bpm();
+				}
+				fade_out_samples_total = transitioner->active_transition.fade_out_beats * fading_beat_size;
 				fade_in_samples_total = transitioner->active_transition.fade_in_beats * beat_size;
 				transition_samples_total = MAX(fade_in_samples_total, fade_out_samples_total);
 				playbacks[current]->start();
