@@ -1504,9 +1504,9 @@ EditorFileDialog::EditorFileDialog() {
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 
 	dir_prev = memnew(ToolButton);
-	dir_prev->set_tooltip(TTR("Previous Folder"));
+	dir_prev->set_tooltip(TTR("Go to previous folder."));
 	dir_next = memnew(ToolButton);
-	dir_next->set_tooltip(TTR("Next Folder"));
+	dir_next->set_tooltip(TTR("Go to next folder."));
 	dir_up = memnew(ToolButton);
 	dir_up->set_tooltip(TTR("Go to parent folder."));
 
@@ -1525,7 +1525,7 @@ EditorFileDialog::EditorFileDialog() {
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	refresh = memnew(ToolButton);
-	refresh->set_tooltip(TTR("Refresh"));
+	refresh->set_tooltip(TTR("Refresh files."));
 	refresh->connect("pressed", this, "_update_file_list");
 	pathhb->add_child(refresh);
 
@@ -1538,7 +1538,7 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden = memnew(ToolButton);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_tooltip(TTR("Toggle visibility of hidden files."));
+	show_hidden->set_tooltip(TTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", this, "set_show_hidden_files");
 	pathhb->add_child(show_hidden);
 
