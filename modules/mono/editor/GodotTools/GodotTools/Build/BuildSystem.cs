@@ -137,7 +137,7 @@ namespace GodotTools.Build
 
         private static string BuildArguments(string solution, string config, string loggerOutputDir, List<string> customProperties)
         {
-            string arguments = $@"""{solution}"" /v:normal /t:Rebuild ""/p:{"Configuration=" + config}"" " +
+            string arguments = $@"""{solution}"" /v:normal /t:Build ""/p:{"Configuration=" + config}"" " +
                                $@"""/l:{typeof(GodotBuildLogger).FullName},{GodotBuildLogger.AssemblyPath};{loggerOutputDir}""";
 
             foreach (string customProperty in customProperties)

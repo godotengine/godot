@@ -15,7 +15,6 @@ namespace GodotTools.Build
     {
         private static string _msbuildToolsPath = string.Empty;
         private static string _msbuildUnixPath = string.Empty;
-        private static string _xbuildUnixPath = string.Empty;
 
         public static string FindMsBuild()
         {
@@ -44,7 +43,6 @@ namespace GodotTools.Build
 
                         return Path.Combine(_msbuildToolsPath, "MSBuild.exe");
                     }
-
                     case GodotSharpBuilds.BuildTool.MsBuildMono:
                     {
                         string msbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "msbuild.bat");
@@ -56,19 +54,6 @@ namespace GodotTools.Build
 
                         return msbuildPath;
                     }
-
-                    case GodotSharpBuilds.BuildTool.XBuild:
-                    {
-                        string xbuildPath = Path.Combine(Internal.MonoWindowsInstallRoot, "bin", "xbuild.bat");
-
-                        if (!File.Exists(xbuildPath))
-                        {
-                            throw new FileNotFoundException($"Cannot find executable for '{GodotSharpBuilds.PropNameXbuild}'. Tried with path: {xbuildPath}");
-                        }
-
-                        return xbuildPath;
-                    }
-
                     default:
                         throw new IndexOutOfRangeException("Invalid build tool in editor settings");
                 }
@@ -76,20 +61,7 @@ namespace GodotTools.Build
 
             if (OS.IsUnix())
             {
-                if (buildTool == GodotSharpBuilds.BuildTool.XBuild)
-                {
-                    if (_xbuildUnixPath.Empty() || !File.Exists(_xbuildUnixPath))
-                    {
-                        // Try to search it again if it wasn't found last time or if it was removed from its location
-                        _xbuildUnixPath = FindBuildEngineOnUnix("msbuild");
-                    }
-
-                    if (_xbuildUnixPath.Empty())
-                    {
-                        throw new FileNotFoundException($"Cannot find binary for '{GodotSharpBuilds.PropNameXbuild}'");
-                    }
-                }
-                else
+                if (buildTool == GodotSharpBuilds.BuildTool.MsBuildMono)
                 {
                     if (_msbuildUnixPath.Empty() || !File.Exists(_msbuildUnixPath))
                     {
@@ -101,9 +73,13 @@ namespace GodotTools.Build
                     {
                         throw new FileNotFoundException($"Cannot find binary for '{GodotSharpBuilds.PropNameMsbuildMono}'");
                     }
-                }
 
-                return buildTool != GodotSharpBuilds.BuildTool.XBuild ? _msbuildUnixPath : _xbuildUnixPath;
+                    return _msbuildUnixPath;
+                }
+                else
+                {
+                    throw new IndexOutOfRangeException("Invalid build tool in editor settings");
+                }
             }
 
             throw new PlatformNotSupportedException();
