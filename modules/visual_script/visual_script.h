@@ -247,6 +247,8 @@ private:
 
 	Map<Object *, VisualScriptInstance *> instances;
 
+	bool is_tool_script;
+
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
 	//void _update_placeholder(PlaceHolderScriptInstance *p_placeholder);
@@ -273,6 +275,7 @@ public:
 	Vector2 get_function_scroll(const StringName &p_name) const;
 	void get_function_list(List<StringName> *r_functions) const;
 	int get_function_node_id(const StringName &p_name) const;
+	void set_tool_enabled(bool p_enabled);
 
 	void add_node(const StringName &p_func, int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos = Point2());
 	void remove_node(const StringName &p_func, int p_id);
