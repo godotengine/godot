@@ -18,7 +18,6 @@ namespace GodotTools
 
         public const string PropNameMsbuildMono = "MSBuild (Mono)";
         public const string PropNameMsbuildVs = "MSBuild (VS Build Tools)";
-        public const string PropNameXbuild = "xbuild (Deprecated)";
 
         public const string MsBuildIssuesFileName = "msbuild_issues.csv";
         public const string MsBuildLogFileName = "msbuild_log.txt";
@@ -26,8 +25,7 @@ namespace GodotTools
         public enum BuildTool
         {
             MsBuildMono,
-            MsBuildVs,
-            XBuild // Deprecated
+            MsBuildVs
         }
 
         private static void RemoveOldIssuesFile(MonoBuildInfo buildInfo)
@@ -202,6 +200,9 @@ namespace GodotTools
             // case the user decided to delete them at some point after they were loaded.
             Internal.UpdateApiAssembliesFromPrebuilt();
 
+            var editorSettings = GodotSharpEditor.Instance.GetEditorInterface().GetEditorSettings();
+            var buildTool = (BuildTool)editorSettings.GetSetting("mono/builds/build_tool");
+
             using (var pr = new EditorProgress("mono_project_debug_build", "Building project solution...", 1))
             {
                 pr.Step("Building project solution", 0);
@@ -209,7 +210,7 @@ namespace GodotTools
                 var buildInfo = new MonoBuildInfo(GodotSharpDirs.ProjectSlnPath, config);
 
                 // Add Godot defines
-                string constants = OS.IsWindows() ? "GodotDefineConstants=\"" : "GodotDefineConstants=\\\"";
+                string constants = buildTool == BuildTool.MsBuildVs ? "GodotDefineConstants=\"" : "GodotDefineConstants=\\\"";
 
                 foreach (var godotDefine in godotDefines)
                     constants += $"GODOT_{godotDefine.ToUpper().Replace("-", "_").Replace(" ", "_").Replace(";", "_")};";
@@ -217,7 +218,7 @@ namespace GodotTools
                 if (Internal.GodotIsRealTDouble())
                     constants += "GODOT_REAL_T_IS_DOUBLE;";
 
-                constants += OS.IsWindows() ? "\"" : "\\\"";
+                constants += buildTool == BuildTool.MsBuildVs ? "\"" : "\\\"";
 
                 buildInfo.CustomProperties.Add(constants);
 
@@ -267,8 +268,8 @@ namespace GodotTools
                 ["name"] = "mono/builds/build_tool",
                 ["hint"] = Godot.PropertyHint.Enum,
                 ["hint_string"] = OS.IsWindows() ?
-                    $"{PropNameMsbuildMono},{PropNameMsbuildVs},{PropNameXbuild}" :
-                    $"{PropNameMsbuildMono},{PropNameXbuild}"
+                    $"{PropNameMsbuildMono},{PropNameMsbuildVs}" :
+                    $"{PropNameMsbuildMono}"
             });
 
             EditorDef("mono/builds/print_build_output", false);
