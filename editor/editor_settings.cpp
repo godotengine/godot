@@ -336,10 +336,6 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("interface/editor/code_font", "");
 	hints["interface/editor/code_font"] = PropertyInfo(Variant::STRING, "interface/editor/code_font", PROPERTY_HINT_GLOBAL_FILE, "*.ttf,*.otf", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/dim_editor_on_dialog_popup", true);
-	_initial_set("interface/editor/dim_amount", 0.6f);
-	hints["interface/editor/dim_amount"] = PropertyInfo(Variant::REAL, "interface/editor/dim_amount", PROPERTY_HINT_RANGE, "0,1,0.01", PROPERTY_USAGE_DEFAULT);
-	_initial_set("interface/editor/dim_transition_time", 0.08f);
-	hints["interface/editor/dim_transition_time"] = PropertyInfo(Variant::REAL, "interface/editor/dim_transition_time", PROPERTY_HINT_RANGE, "0,1,0.001", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/low_processor_mode_sleep_usec", 6900); // ~144 FPS
 	hints["interface/editor/low_processor_mode_sleep_usec"] = PropertyInfo(Variant::REAL, "interface/editor/low_processor_mode_sleep_usec", PROPERTY_HINT_RANGE, "1,100000,1", PROPERTY_USAGE_DEFAULT);
 	_initial_set("interface/editor/unfocused_low_processor_mode_sleep_usec", 50000); // 20 FPS
