@@ -110,6 +110,9 @@ public:
 	void set_frame(int p_frame);
 	int get_frame() const;
 
+	void set_frame_coords(const Vector2 &p_row);
+	Vector2 get_frame_coords() const;
+
 	void set_vframes(int p_amount);
 	int get_vframes() const;
 
