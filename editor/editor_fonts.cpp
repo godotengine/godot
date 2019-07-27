@@ -93,8 +93,8 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	/* Custom font */
 
-	bool font_antialiased = (bool)EditorSettings::get_singleton()->get("interface/editor/main_font_antialiased");
-	DynamicFontData::Hinting font_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/main_font_hinting");
+	bool font_antialiased = (bool)EditorSettings::get_singleton()->get("interface/editor/font_antialiased");
+	DynamicFontData::Hinting font_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/font_hinting");
 
 	String custom_font_path = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	Ref<DynamicFontData> CustomFont;
@@ -125,13 +125,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Custom source code font */
 
 	String custom_font_path_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
-	bool font_source_antialiased = (bool)EditorSettings::get_singleton()->get("interface/editor/code_font_antialiased");
-	DynamicFontData::Hinting font_source_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/code_font_hinting");
 	Ref<DynamicFontData> CustomFontSource;
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
 		CustomFontSource.instance();
-		CustomFontSource->set_antialiased(font_source_antialiased);
-		CustomFontSource->set_hinting(font_source_hinting);
+		CustomFontSource->set_antialiased(font_antialiased);
+		CustomFontSource->set_hinting(font_hinting);
 		CustomFontSource->set_font_path(custom_font_path_source);
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/code_font", "");
@@ -201,8 +199,8 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
-	dfmono->set_antialiased(font_source_antialiased);
-	dfmono->set_hinting(font_source_hinting);
+	dfmono->set_antialiased(font_antialiased);
+	dfmono->set_hinting(font_hinting);
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
 
 	int default_font_size = int(EDITOR_GET("interface/editor/main_font_size")) * EDSCALE;
