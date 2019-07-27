@@ -385,6 +385,74 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	/**** SHADER ****/
 	/****************/
 
+	// Vulkan specifies a really complex behavior for the application
+	// in order to tell when descriptor sets need to be re-bound (or not).
+	// "When binding a descriptor set (see Descriptor Set Binding) to set
+	//  number N, if the previously bound descriptor sets for sets zero
+	//  through N-1 were all bound using compatible pipeline layouts,
+	//  then performing this binding does not disturb any of the lower numbered sets.
+	//  If, additionally, the previous bound descriptor set for set N was
+	//  bound using a pipeline layout compatible for set N, then the bindings
+	//  in sets numbered greater than N are also not disturbed."
+	// As a result, we need to figure out quickly when something is no longer "compatible".
+	// in order to avoid costly rebinds.
+
+	enum {
+		MAX_UNIFORM_SETS = 16
+	};
+
+	struct UniformInfo {
+		UniformType type;
+		int binding;
+		uint32_t stages;
+		int length; //size of arrays (in total elements), or ubos (in bytes * total elements)
+
+		bool operator!=(const UniformInfo &p_info) const {
+			return (binding != p_info.binding || type != p_info.type || stages != p_info.stages || length != p_info.length);
+		}
+
+		bool operator<(const UniformInfo &p_info) const {
+			if (binding != p_info.binding) {
+				return binding < p_info.binding;
+			}
+			if (type != p_info.type) {
+				return type < p_info.type;
+			}
+			if (stages != p_info.stages) {
+				return stages < p_info.stages;
+			}
+			return length < p_info.length;
+		}
+	};
+
+	struct UniformSetFormat {
+		Vector<UniformInfo> uniform_info;
+		bool operator<(const UniformSetFormat &p_format) const {
+			uint32_t size = uniform_info.size();
+			uint32_t psize = p_format.uniform_info.size();
+
+			if (size != psize) {
+				return size < psize;
+			}
+
+			const UniformInfo *infoptr = uniform_info.ptr();
+			const UniformInfo *pinfoptr = p_format.uniform_info.ptr();
+
+			for (uint32_t i = 0; i < size; i++) {
+				if (infoptr[i] != pinfoptr[i]) {
+					return infoptr[i] < pinfoptr[i];
+				}
+			}
+
+			return false;
+		}
+	};
+
+	// Always grows, never shrinks, ensuring unique IDs, but we assume
+	// the amount of formats will never be a problem, as the amount of shaders
+	// in a game is limited.
+	Map<UniformSetFormat, uint32_t> uniform_set_format_cache;
+
 	// Shaders in Vulkan are just pretty much
 	// precompiled blocks of SPIR-V bytecode. They
 	// are most likely not really compiled to host
@@ -401,25 +469,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// does not submit something invalid.
 
 	struct Shader {
-
-		struct UniformInfo {
-			UniformType type;
-			int binding;
-			uint32_t stages;
-			int length; //size of arrays (in total elements), or ubos (in bytes * total elements)
-			bool operator<(const UniformInfo &p_info) const {
-				if (type != p_info.type) {
-					return type < p_info.type;
-				}
-				if (binding != p_info.binding) {
-					return binding < p_info.binding;
-				}
-				if (stages != p_info.stages) {
-					return stages < p_info.stages;
-				}
-				return length < p_info.length;
-			}
-		};
 
 		struct Set {
 
@@ -439,12 +488,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		int max_output;
 		Vector<Set> sets;
-		Vector<uint32_t> set_hashes;
+		Vector<uint32_t> set_formats;
 		Vector<VkPipelineShaderStageCreateInfo> pipeline_stages;
 		VkPipelineLayout pipeline_layout;
 	};
 
-	bool _uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<Shader::UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error);
+	String _shader_uniform_debug(RID p_shader, int p_set = -1);
+	bool _uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error);
 
 	RID_Owner<Shader> shader_owner;
 
@@ -530,12 +580,13 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// the above restriction is not too serious.
 
 	struct UniformSet {
-		uint32_t hash;
+		uint32_t format;
 		RID shader_id;
+		uint32_t shader_set;
 		DescriptorPool *pool;
 		DescriptorPoolKey pool_key;
 		VkDescriptorSet descriptor_set;
-		VkPipelineLayout pipeline_layout; //not owned, inherited from shader
+		//VkPipelineLayout pipeline_layout; //not owned, inherited from shader
 		Vector<RID> attachable_textures; //used for validation
 	};
 
@@ -558,18 +609,23 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 	struct RenderPipeline {
 		//Cached values for validation
-		FramebufferFormatID framebuffer_format;
-		uint32_t dynamic_state;
-		VertexFormatID vertex_format;
-		bool uses_restart_indices;
-		uint32_t primitive_minimum;
-		uint32_t primitive_divisor;
-		Vector<uint32_t> set_hashes;
-		uint32_t push_constant_size;
-		uint32_t push_constant_stages;
+#ifdef DEBUG_ENABLED
+		struct Validation {
+			FramebufferFormatID framebuffer_format;
+			uint32_t dynamic_state;
+			VertexFormatID vertex_format;
+			bool uses_restart_indices;
+			uint32_t primitive_minimum;
+			uint32_t primitive_divisor;
+		} validation;
+#endif
 		//Actual pipeline
+		RID shader;
+		Vector<uint32_t> set_formats;
 		VkPipelineLayout pipeline_layout; // not owned, needed for push constants
 		VkPipeline pipeline;
+		uint32_t push_constant_size;
+		uint32_t push_constant_stages;
 	};
 
 	RID_Owner<RenderPipeline> pipeline_owner;
@@ -600,6 +656,39 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		VkCommandBuffer command_buffer; //if persistent, this is owned, otherwise it's shared with the ringbuffer
 		Rect2i viewport;
+
+		struct SetState {
+			uint32_t pipeline_expected_format;
+			uint32_t uniform_set_format;
+			VkDescriptorSet descriptor_set;
+			RID uniform_set;
+			bool bound;
+			SetState() {
+				bound = false;
+				pipeline_expected_format = 0;
+				uniform_set_format = 0;
+				descriptor_set = VK_NULL_HANDLE;
+			}
+		};
+
+		struct State {
+			SetState sets[MAX_UNIFORM_SETS];
+			uint32_t set_count;
+			RID pipeline;
+			RID pipeline_shader;
+			VkPipelineLayout pipeline_layout;
+			RID vertex_array;
+			RID index_array;
+			uint32_t pipeline_push_constant_stages;
+
+			State() {
+				set_count = 0;
+				pipeline_layout = VK_NULL_HANDLE;
+				pipeline_push_constant_stages = 0;
+			}
+		} state;
+#ifdef DEBUG_ENABLED
+
 		struct Validation {
 			bool active; //means command buffer was not closes, so you can keep adding things
 			FramebufferFormatID framebuffer_format;
@@ -612,18 +701,20 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			uint32_t index_array_size; //0 if index buffer not set
 			uint32_t index_array_max_index;
 			uint32_t index_array_offset;
-			Vector<uint32_t> set_hashes;
+			Vector<uint32_t> set_formats;
+			Vector<bool> set_bound;
+			Vector<RID> set_rids;
 			//last pipeline set values
 			bool pipeline_active;
 			uint32_t pipeline_dynamic_state;
 			VertexFormatID pipeline_vertex_format;
+			RID pipeline_shader;
+			uint32_t invalid_set_from;
 			bool pipeline_uses_restart_indices;
 			uint32_t pipeline_primitive_divisor;
 			uint32_t pipeline_primitive_minimum;
-			Vector<uint32_t> pipeline_set_hashes;
-			VkPipelineLayout pipeline_push_constant_layout;
+			Vector<uint32_t> pipeline_set_formats;
 			uint32_t pipeline_push_constant_size;
-			uint32_t pipeline_push_constant_stages;
 			bool pipeline_push_constant_suppplied;
 
 			Validation() {
@@ -636,6 +727,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				index_array_size = 0; //not sent
 				index_array_max_index = 0; //not set
 				index_buffer_uses_restart_indices = false;
+				invalid_set_from = 0;
 
 				//pipeline state initalize
 				pipeline_active = false;
@@ -643,10 +735,11 @@ class RenderingDeviceVulkan : public RenderingDevice {
 				pipeline_vertex_format = INVALID_ID;
 				pipeline_uses_restart_indices = false;
 				pipeline_push_constant_size = 0;
-				pipeline_push_constant_stages = 0;
 				pipeline_push_constant_suppplied = false;
 			}
 		} validation;
+
+#endif
 	};
 
 	DrawList *draw_list; //one for regular draw lists, multiple for split.
@@ -715,13 +808,15 @@ class RenderingDeviceVulkan : public RenderingDevice {
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, int p_layer, int p_mipmap);
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
 	virtual PoolVector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const;
 	virtual bool texture_is_shared(RID p_texture);
 	virtual bool texture_is_valid(RID p_texture);
+
+	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false);
 
 	/*********************/
 	/**** FRAMEBUFFER ****/

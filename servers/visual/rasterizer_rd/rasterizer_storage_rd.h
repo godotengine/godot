@@ -2,9 +2,11 @@
 #define RASTERIZER_STORAGE_RD_H
 
 #include "core/rid_owner.h"
-#include "servers/visual/rasterizer/rasterizer.h"
-#include "servers/visual/rasterizer/shader_compiler_rd.h"
+#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer_rd/effects_rd.h"
 #include "servers/visual/rendering_device.h"
+#include "servers/visual/rasterizer_rd/shader_compiler_rd.h"
+
 class RasterizerStorageRD : public RasterizerStorage {
 public:
 	enum ShaderType {
@@ -168,6 +170,19 @@ private:
 
 		bool flags[RENDER_TARGET_FLAG_MAX];
 
+		RID backbuffer; //used for effects
+		RID backbuffer_fb;
+
+		struct BackbufferMipmap {
+			RID mipmap;
+			RID mipmap_fb;
+			RID mipmap_copy;
+			RID mipmap_copy_fb;
+		};
+
+		Vector<BackbufferMipmap> backbuffer_mipmaps;
+		RID backbuffer_uniform_set;
+
 		//texture generated for this owner (nor RD).
 		RID texture;
 		bool was_used;
@@ -181,6 +196,11 @@ private:
 
 	void _clear_render_target(RenderTarget *rt);
 	void _update_render_target(RenderTarget *rt);
+	void _create_render_target_backbuffer(RenderTarget *rt);
+
+	/* EFFECTS */
+
+	EffectsRD effects;
 
 public:
 	/* TEXTURE API */
@@ -687,6 +707,8 @@ public:
 	void render_target_set_flag(RID p_render_target, RenderTargetFlags p_flag, bool p_value);
 	bool render_target_was_used(RID p_render_target);
 	void render_target_set_as_unused(RID p_render_target);
+	void render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region);
+	RID render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader);
 
 	virtual void render_target_request_clear(RID p_render_target, const Color &p_clear_color);
 	virtual bool render_target_is_clear_requested(RID p_render_target);
@@ -722,6 +744,8 @@ public:
 	String get_video_adapter_vendor() const { return String(); }
 
 	static RasterizerStorage *base_singleton;
+
+	EffectsRD *get_effects();
 
 	RasterizerStorageRD();
 	~RasterizerStorageRD();

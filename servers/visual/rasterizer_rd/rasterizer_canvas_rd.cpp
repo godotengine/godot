@@ -1303,7 +1303,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 	}
 }
 
-void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights) {
+void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, RID p_screen_uniform_set) {
 
 	Item *current_clip = NULL;
 
@@ -1323,6 +1323,9 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 
 	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
 
+	if (p_screen_uniform_set.is_valid()) {
+		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_screen_uniform_set, 3);
+	}
 	RID prev_material;
 
 	PipelineVariants *pipeline_variants = &shader.pipeline_variants;
@@ -1348,18 +1351,16 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 
 		if (ci->material != prev_material) {
 
-			MaterialData *material_data;
+			MaterialData *material_data = NULL;
 			if (ci->material.is_valid()) {
 				material_data = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
-				print_line("has material data");
 			}
 
 			if (material_data) {
 
-				if (material_data->shader_data->version.is_valid()) {
+				if (material_data->shader_data->version.is_valid() && material_data->shader_data->valid) {
 					pipeline_variants = &material_data->shader_data->pipeline_variants;
 					if (material_data->uniform_set.is_valid()) {
-						print_line("bound uniform set");
 						RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material_data->uniform_set, 1);
 					}
 				} else {
@@ -1370,7 +1371,6 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 			}
 		}
 
-		print_line("go render");
 		_render_item(draw_list, ci, fb_format, canvas_transform_inverse, current_clip, p_lights, pipeline_variants);
 
 		prev_material = ci->material;
@@ -1409,6 +1409,10 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 		state_buffer.canvas_modulate[1] = p_modulate.g;
 		state_buffer.canvas_modulate[2] = p_modulate.b;
 		state_buffer.canvas_modulate[3] = p_modulate.a;
+
+		Size2 render_target_size = storage->render_target_get_size(p_to_render_target);
+		state_buffer.screen_pixel_size[0] = 1.0 / render_target_size.x;
+		state_buffer.screen_pixel_size[1] = 1.0 / render_target_size.y;
 
 		state_buffer.time = state.time;
 		RD::get_singleton()->buffer_update(state.canvas_state_buffer, 0, sizeof(State::Buffer), &state_buffer, true);
@@ -1480,6 +1484,7 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 	Item *ci = p_item_list;
 	Rect2 back_buffer_rect;
 	bool backbuffer_copy = false;
+	RID screen_uniform_set;
 
 	while (ci) {
 
@@ -1493,18 +1498,26 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 			}
 		}
 
-		if (!material_screen_texture_found && ci->material.is_valid()) {
+		if (ci->material.is_valid()) {
 			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
-			if (md->shader_data->uses_screen_texture) {
-				backbuffer_copy = true;
-				back_buffer_rect = Rect2();
+			if (md && md->shader_data->valid && md->shader_data->uses_screen_texture) {
+				if (!material_screen_texture_found) {
+					backbuffer_copy = true;
+					back_buffer_rect = Rect2();
+				}
+				if (screen_uniform_set.is_null()) {
+					RID backbuffer_shader = shader.canvas_shader.version_get_shader(md->shader_data->version, 0); //any version is fine
+					screen_uniform_set = storage->render_target_get_back_buffer_uniform_set(p_to_render_target, backbuffer_shader);
+				}
 			}
 		}
 
 		if (backbuffer_copy) {
 			//render anything pending, including clearing if no items
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, screen_uniform_set);
 			item_count = 0;
+
+			storage->render_target_copy_to_back_buffer(p_to_render_target, back_buffer_rect);
 
 			backbuffer_copy = false;
 			material_screen_texture_found = true; //after a backbuffer copy, screen texture makes no further copies
@@ -1513,7 +1526,7 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 		items[item_count++] = ci;
 
 		if (!ci->next || item_count == MAX_RENDER_ITEMS - 1) {
-			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list);
+			_render_items(p_to_render_target, item_count, canvas_transform_inverse, p_light_list, screen_uniform_set);
 			//then reset
 			item_count = 0;
 		}
@@ -1771,7 +1784,6 @@ void RasterizerCanvasRD::occluder_polygon_set_cull_mode(RID p_occluder, VS::Canv
 void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 	//compile
 
-	print_line("shader set code?");
 	code = p_code;
 	valid = false;
 	ubo_size = 0;
@@ -1787,7 +1799,7 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 
 	int light_mode = LIGHT_MODE_NORMAL;
 	int blend_mode = BLEND_MODE_MIX;
-	bool uses_screen_texture = false;
+	uses_screen_texture = false;
 
 	ShaderCompilerRD::IdentifierActions actions;
 
@@ -1833,6 +1845,7 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 	print_line("\n**light_code:\n" + gen_code.light);
 #endif
 	canvas_singleton->shader.canvas_shader.version_set_code(version, gen_code.uniforms, gen_code.vertex_global, gen_code.vertex, gen_code.fragment_global, gen_code.light, gen_code.fragment, gen_code.defines);
+	ERR_FAIL_COND(!canvas_singleton->shader.canvas_shader.version_is_valid(version));
 
 	ubo_size = gen_code.uniform_total_size;
 	ubo_offsets = gen_code.uniform_offsets;
@@ -2304,6 +2317,8 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 		actions.base_texture_binding_index = 2;
 		actions.texture_layout_set = 1;
 		actions.base_uniform_string = "material.";
+		actions.default_filter = ShaderLanguage::FILTER_LINEAR;
+		actions.default_repeat = ShaderLanguage::REPEAT_DISABLE;
 
 		shader.compiler.initialize(actions);
 	}

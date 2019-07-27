@@ -2,10 +2,10 @@
 #define RASTERIZER_RD_H
 
 #include "core/os/os.h"
-#include "servers/visual/rasterizer/rasterizer.h"
-#include "servers/visual/rasterizer/rasterizer_canvas_rd.h"
-#include "servers/visual/rasterizer/rasterizer_scene_forward_rd.h"
-#include "servers/visual/rasterizer/rasterizer_storage_rd.h"
+#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer_rd/rasterizer_canvas_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_scene_forward_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
 class RasterizerRD : public Rasterizer {
 protected:
 	RasterizerCanvasRD *canvas;

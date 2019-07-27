@@ -1,5 +1,5 @@
 
-/* SET0: Draw Primitive */
+
 
 #define M_PI 3.14159265359
 
@@ -24,6 +24,14 @@
 
 #define FLAGS_DEFAULT_NORMAL_MAP_USED (1 << 26)
 #define FLAGS_DEFAULT_SPECULAR_MAP_USED (1 << 27)
+
+// In vulkan, sets should always be ordered using the following logic:
+// Lower Sets: Sets that change format and layout less often
+// Higher sets: Sets that change format and layout very often
+// This is because changing a set for another with a different layout or format,
+// invalidates all the upper ones.
+
+/* SET0: Draw Primitive */
 
 layout(push_constant, binding = 0, std430) uniform DrawData {
 	vec2 world_x;
@@ -132,6 +140,6 @@ layout(set = 2, binding = 6) uniform sampler shadow_sampler;
 
 #ifdef SCREEN_TEXTURE_USED
 
-layout(set = 3, binding = 1) uniform texture2D screen_texture;
+layout(set = 3, binding = 0) uniform texture2D screen_texture;
 
 #endif

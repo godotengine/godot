@@ -1215,7 +1215,7 @@ void Image::flip_x() {
 	}
 }
 
-int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps) {
+int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps, int *r_mm_width, int *r_mm_height) {
 
 	int size = 0;
 	int w = p_width;
@@ -1241,6 +1241,13 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 		s >>= pixshift;
 
 		size += s;
+
+		if (r_mm_width) {
+			*r_mm_width = bw;
+		}
+		if (r_mm_height) {
+			*r_mm_height = bh;
+		}
 
 		if (p_mipmaps >= 0 && mm == p_mipmaps)
 			break;
@@ -1912,6 +1919,13 @@ int Image::get_image_required_mipmaps(int p_width, int p_height, Format p_format
 	int mm;
 	_get_dst_image_size(p_width, p_height, p_format, mm, -1);
 	return mm;
+}
+
+Size2i Image::get_image_mipmap_size(int p_width, int p_height, Format p_format, int p_mipmap) {
+	int mm;
+	Size2i ret;
+	_get_dst_image_size(p_width, p_height, p_format, mm, p_mipmap, &ret.x, &ret.y);
+	return ret;
 }
 
 int Image::get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap) {
