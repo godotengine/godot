@@ -1747,7 +1747,6 @@ void register_variant_methods() {
 	ADDFUNC2R(ARRAY, INT, Array, bsearch, NIL, "value", BOOL, "before", varray(true));
 	ADDFUNC4R(ARRAY, INT, Array, bsearch_custom, NIL, "value", OBJECT, "obj", STRING, "func", BOOL, "before", varray(true));
 	ADDFUNC0NC(ARRAY, NIL, Array, invert, varray());
-	VCALL_LOCALMEM3R(Array, filter);
 	ADDFUNC1R(ARRAY, ARRAY, Array, duplicate, BOOL, "deep", varray(false));
 	ADDFUNC0R(ARRAY, NIL, Array, max, varray());
 	ADDFUNC0R(ARRAY, NIL, Array, min, varray());
