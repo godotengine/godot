@@ -986,7 +986,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				Ref<SurfaceTool> st;
 				st.instance();
 				st->create_from_triangle_arrays(array);
-				if (p.has("targets")) {
+				if (!p.has("targets")) {
 					//morph targets should not be reindexed, as array size might differ
 					//removing indices is the best bet here
 					st->deindex();
