@@ -4616,10 +4616,6 @@ void EditorNode::_bottom_panel_switch(bool p_enable, int p_idx) {
 
 	ERR_FAIL_INDEX(p_idx, bottom_panel_items.size());
 
-	if (bottom_panel_items[p_idx].control->is_visible() == p_enable) {
-		return;
-	}
-
 	if (p_enable) {
 		for (int i = 0; i < bottom_panel_items.size(); i++) {
 
@@ -6263,13 +6259,13 @@ EditorNode::EditorNode() {
 
 	bottom_panel_raise = memnew(ToolButton);
 	bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
+	bottom_panel_raise->set_toggle_mode(true);
 
+	bottom_panel_raise->hide();
 	bottom_panel_raise->set_shortcut(ED_SHORTCUT("editor/bottom_panel_expand", TTR("Expand Bottom Panel"), KEY_MASK_SHIFT | KEY_F12));
+	bottom_panel_raise->connect("toggled", this, "_bottom_panel_raise_toggled");
 
 	bottom_panel_hb->add_child(bottom_panel_raise);
-	bottom_panel_raise->hide();
-	bottom_panel_raise->set_toggle_mode(true);
-	bottom_panel_raise->connect("toggled", this, "_bottom_panel_raise_toggled");
 
 	log = memnew(EditorLog);
 	ToolButton *output_button = add_bottom_panel_item(TTR("Output"), log);
