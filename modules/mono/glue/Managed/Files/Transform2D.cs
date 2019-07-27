@@ -98,6 +98,8 @@ namespace Godot
                         return x[columnIndex];
                     case 1:
                         return y[columnIndex];
+                    case 2:
+                        return origin[columnIndex];
                     default:
                         throw new IndexOutOfRangeException();
                 }
@@ -111,6 +113,9 @@ namespace Godot
                         return;
                     case 1:
                         y[columnIndex] = value;
+                        return;
+                    case 2:
+                        origin[columnIndex] = value;
                         return;
                     default:
                         throw new IndexOutOfRangeException();
@@ -136,7 +141,7 @@ namespace Godot
             inv[0] *= new Vector2(detInv, -detInv);
             inv[1] *= new Vector2(-detInv, detInv);
 
-            inv[2] = BasisXform(-inv[2]);
+            inv[2] = inv.BasisXform(-inv[2]);
 
             return inv;
         }
