@@ -32,7 +32,7 @@
 #define RASTERIZERSTORAGEGLES3_H
 
 #include "core/self_list.h"
-#include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer.h"
 #include "servers/visual/shader_language.h"
 #include "shader_compiler_gles3.h"
 #include "shader_gles3.h"

@@ -1009,6 +1009,7 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 
 uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw, uint32_t *r_blockh, uint32_t *r_depth) {
 
+	ERR_FAIL_COND_V(p_mipmaps == 0, 0);
 	uint32_t w = p_width;
 	uint32_t h = p_height;
 	uint32_t d = p_depth;
@@ -1559,8 +1560,12 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	if (p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT) {
 		image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
-	if (p_format.usage_bits & TEXTURE_USAGE_CAN_RETRIEVE_BIT) {
+	if (p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_FROM_BIT) {
 		image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_SRC_BIT;
+	}
+
+	if (p_format.usage_bits & TEXTURE_USAGE_CAN_COPY_TO_BIT) {
+		image_create_info.usage |= VK_IMAGE_USAGE_TRANSFER_DST_BIT;
 	}
 
 	image_create_info.sharingMode = VK_SHARING_MODE_EXCLUSIVE;
@@ -1866,7 +1871,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, int p_layer, int p_mipmap) {
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap) {
 
 	Texture *src_texture = texture_owner.getornull(p_with_texture);
 	ERR_FAIL_COND_V(!src_texture, RID());
@@ -1879,12 +1884,18 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 
 	//create view
 
-	Texture texture = *src_texture;
+	ERR_FAIL_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
 
 	uint32_t array_layer_multiplier = 1;
-	if (texture.type == TEXTURE_TYPE_CUBE_ARRAY || texture.type == TEXTURE_TYPE_CUBE) {
+	if (src_texture->type == TEXTURE_TYPE_CUBE_ARRAY || src_texture->type == TEXTURE_TYPE_CUBE) {
 		array_layer_multiplier = 6;
 	}
+	ERR_FAIL_INDEX_V(p_layer, src_texture->layers * array_layer_multiplier, RID());
+
+	Texture texture = *src_texture;
+	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
+	texture.mipmaps = 1;
+	texture.layers = 1;
 
 	VkImageViewCreateInfo image_view_create_info;
 	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1928,7 +1939,6 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	image_view_create_info.components.b = component_swizzles[p_view.swizzle_b];
 	image_view_create_info.components.a = component_swizzles[p_view.swizzle_a];
 
-	ERR_FAIL_INDEX_V(p_mipmap, texture.mipmaps, RID());
 	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
 	image_view_create_info.subresourceRange.levelCount = 1;
 	image_view_create_info.subresourceRange.layerCount = 1;
@@ -2237,8 +2247,8 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 
 	ERR_FAIL_COND_V_MSG(tex->bound, PoolVector<uint8_t>(),
 			"Texture can't be retrieved while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
-	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_RETRIEVE_BIT), PoolVector<uint8_t>(),
-			"Texture requires the TEXTURE_USAGE_CAN_RETRIEVE_BIT in order to be retrieved.");
+	ERR_FAIL_COND_V_MSG(!(tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), PoolVector<uint8_t>(),
+			"Texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
 
 	uint32_t layer_count = tex->layers;
 	if (tex->type == TEXTURE_TYPE_CUBE || tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
@@ -2426,6 +2436,173 @@ bool RenderingDeviceVulkan::texture_is_shared(RID p_texture) {
 
 bool RenderingDeviceVulkan::texture_is_valid(RID p_texture) {
 	return texture_owner.owns(p_texture);
+}
+
+Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw) {
+
+	Texture *src_tex = texture_owner.getornull(p_from_texture);
+	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
+
+	ERR_FAIL_COND_V_MSG(p_sync_with_draw && src_tex->bound, ERR_INVALID_PARAMETER,
+			"Source texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+	ERR_FAIL_COND_V_MSG(!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_FROM_BIT), ERR_INVALID_PARAMETER,
+			"Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retrieved.");
+
+	uint32_t src_layer_count = src_tex->layers;
+	uint32_t src_width, src_height, src_depth;
+	get_image_format_required_size(src_tex->format, src_tex->width, src_tex->height, src_tex->depth, p_src_mipmap + 1, &src_width, &src_height, &src_depth);
+	if (src_tex->type == TEXTURE_TYPE_CUBE || src_tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
+		src_layer_count *= 6;
+	}
+
+	ERR_FAIL_COND_V(p_from.x < 0 || p_from.x + p_size.x > src_width, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_from.y < 0 || p_from.y + p_size.y > src_height, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_from.z < 0 || p_from.z + p_size.z > src_depth, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_src_mipmap >= src_tex->mipmaps, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_src_layer >= src_layer_count, ERR_INVALID_PARAMETER);
+
+	Texture *dst_tex = texture_owner.getornull(p_to_texture);
+	ERR_FAIL_COND_V(!dst_tex, ERR_INVALID_PARAMETER);
+
+	ERR_FAIL_COND_V_MSG(p_sync_with_draw && dst_tex->bound, ERR_INVALID_PARAMETER,
+			"Destination texture can't be copied while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+	ERR_FAIL_COND_V_MSG(!(dst_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT), ERR_INVALID_PARAMETER,
+			"Destination texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be retrieved.");
+
+	uint32_t dst_layer_count = dst_tex->layers;
+	uint32_t dst_width, dst_height, dst_depth;
+	get_image_format_required_size(dst_tex->format, dst_tex->width, dst_tex->height, dst_tex->depth, p_dst_mipmap + 1, &dst_width, &dst_height, &dst_depth);
+	if (dst_tex->type == TEXTURE_TYPE_CUBE || dst_tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
+		dst_layer_count *= 6;
+	}
+
+	ERR_FAIL_COND_V(p_to.x < 0 || p_to.x + p_size.x > dst_width, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_to.y < 0 || p_to.y + p_size.y > dst_height, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_to.z < 0 || p_to.z + p_size.z > dst_depth, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_dst_mipmap >= dst_tex->mipmaps, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_dst_layer >= dst_layer_count, ERR_INVALID_PARAMETER);
+
+	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
+
+	{
+
+		//PRE Copy the image
+
+		{ //Source
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			image_memory_barrier.oldLayout = src_tex->unbound_layout;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = src_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = src_tex->aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = p_src_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = 1;
+			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+		{ //Dest
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = 0;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.oldLayout = dst_tex->unbound_layout;
+			image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = dst_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = dst_tex->aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = p_dst_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = 1;
+			image_memory_barrier.subresourceRange.baseArrayLayer = p_dst_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+
+		//COPY
+
+		{
+
+			VkImageCopy image_copy_region;
+			image_copy_region.srcSubresource.aspectMask = src_tex->aspect_mask;
+			image_copy_region.srcSubresource.baseArrayLayer = p_src_layer;
+			image_copy_region.srcSubresource.layerCount = 1;
+			image_copy_region.srcSubresource.mipLevel = p_src_mipmap;
+			image_copy_region.srcOffset.x = p_from.x;
+			image_copy_region.srcOffset.y = p_from.y;
+			image_copy_region.srcOffset.z = p_from.z;
+
+			image_copy_region.dstSubresource.aspectMask = src_tex->aspect_mask;
+			image_copy_region.dstSubresource.baseArrayLayer = p_dst_layer;
+			image_copy_region.dstSubresource.layerCount = 1;
+			image_copy_region.dstSubresource.mipLevel = p_dst_mipmap;
+			image_copy_region.dstOffset.x = p_to.x;
+			image_copy_region.dstOffset.y = p_to.y;
+			image_copy_region.dstOffset.z = p_to.z;
+
+			image_copy_region.extent.width = p_size.x;
+			image_copy_region.extent.height = p_size.y;
+			image_copy_region.extent.depth = p_size.z;
+
+			vkCmdCopyImage(command_buffer, src_tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, dst_tex->image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy_region);
+		}
+
+		// RESTORE LAYOUT for SRC and DST
+
+		{ //restore src
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_READ_BIT;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL;
+			image_memory_barrier.newLayout = src_tex->unbound_layout;
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = src_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = src_tex->aspect_mask;
+			image_memory_barrier.subresourceRange.baseMipLevel = p_src_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = src_tex->mipmaps;
+			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_ACCESS_TRANSFER_WRITE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+
+		{ //make dst readable
+
+			VkImageMemoryBarrier image_memory_barrier;
+			image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+			image_memory_barrier.pNext = NULL;
+			image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+			image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+			image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+			image_memory_barrier.newLayout = dst_tex->unbound_layout;
+
+			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+			image_memory_barrier.image = dst_tex->image;
+			image_memory_barrier.subresourceRange.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+			image_memory_barrier.subresourceRange.baseMipLevel = p_src_mipmap;
+			image_memory_barrier.subresourceRange.levelCount = 1;
+			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
+			image_memory_barrier.subresourceRange.layerCount = 1;
+
+			vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+		}
+	}
+
+	return OK;
 }
 
 bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const {
@@ -3152,10 +3329,29 @@ static VkShaderStageFlagBits shader_stage_masks[RenderingDevice::SHADER_STAGE_MA
 	VK_SHADER_STAGE_COMPUTE_BIT,
 };
 
-bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<Shader::UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error) {
+String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
+	String ret;
+	const Shader *shader = shader_owner.getornull(p_shader);
+	ERR_FAIL_COND_V(!shader, String());
+	for (int i = 0; i < shader->sets.size(); i++) {
+		if (p_set >= 0 && i != p_set) {
+			continue;
+		}
+		for (int j = 0; j < shader->sets[i].uniform_info.size(); j++) {
+			const UniformInfo &ui = shader->sets[i].uniform_info[j];
+			if (ret != String()) {
+				ret += "\n";
+			}
+			ret += "Set: " + itos(i) + " Binding: " + itos(ui.binding) + " Type: " + shader_uniform_names[ui.type] + " Length: " + itos(ui.length);
+		}
+	}
+	return ret;
+}
+
+bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error) {
 
 	VkDescriptorSetLayoutBinding layout_binding;
-	Shader::UniformInfo info;
+	UniformInfo info;
 
 	switch (reflection.getType()->getBasicType()) {
 		case glslang::EbtSampler: {
@@ -3285,6 +3481,13 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 	uint32_t set = reflection.getType()->getQualifier().hasSet() ? reflection.getType()->getQualifier().layoutSet : 0;
 
+	if (set >= MAX_UNIFORM_SETS) {
+		if (r_error) {
+			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").";
+		}
+		return false;
+	}
+
 	if (set >= limits.maxBoundDescriptorSets) {
 		if (r_error) {
 			*r_error = "On shader stage '" + String(shader_stage_names[p_stage]) + "', uniform '" + reflection.name.c_str() + "' uses a set (" + itos(set) + ") index larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").";
@@ -3366,7 +3569,7 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 
 	//descriptor layouts
 	Vector<Vector<VkDescriptorSetLayoutBinding> > bindings;
-	Vector<Vector<Shader::UniformInfo> > uniform_info;
+	Vector<Vector<UniformInfo> > uniform_info;
 	Shader::PushConstant push_constant;
 	push_constant.push_constant_size = 0;
 	push_constant.push_constants_vk_stage = 0;
@@ -3451,7 +3654,7 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 
 		//obtain bindings for descriptor layout
 		program.mapIO();
-		program.buildReflection();
+		program.buildReflection(EShReflectionAllBlockVariables);
 		//program.dumpReflection();
 
 		for (int j = 0; j < program.getNumUniformVariables(); j++) {
@@ -3580,17 +3783,23 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			//sort and hash
 			set.uniform_info.sort();
 
-			uint32_t h = set.uniform_info.size() ? hash_djb2_one_32(0) : 0;
-			for (int j = 0; j < set.uniform_info.size(); j++) {
-				const Shader::UniformInfo &ui = set.uniform_info[j];
-				h = hash_djb2_one_32(ui.type, h);
-				h = hash_djb2_one_32(ui.binding, h);
-				h = hash_djb2_one_32(ui.length, h);
-				h = hash_djb2_one_32(ui.stages, h);
+			uint32_t format = 0; //no format, default
+
+			if (set.uniform_info.size()) {
+				//has data, needs an actual format;
+				UniformSetFormat usformat;
+				usformat.uniform_info = set.uniform_info;
+				Map<UniformSetFormat, uint32_t>::Element *E = uniform_set_format_cache.find(usformat);
+				if (E) {
+					format = E->get();
+				} else {
+					format = uniform_set_format_cache.size() + 1;
+					uniform_set_format_cache.insert(usformat, format);
+				}
 			}
 
 			shader.sets.push_back(set);
-			shader.set_hashes.push_back(h);
+			shader.set_formats.push_back(format);
 		}
 	}
 
@@ -3874,7 +4083,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	const Uniform *uniforms = p_uniforms.ptr();
 
 	uint32_t set_uniform_count = set.uniform_info.size();
-	const Shader::UniformInfo *set_uniforms = set.uniform_info.ptr();
+	const UniformInfo *set_uniforms = set.uniform_info.ptr();
 
 	Vector<VkWriteDescriptorSet> writes;
 	DescriptorPoolKey pool_key;
@@ -3887,7 +4096,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	Vector<RID> attachable_textures;
 
 	for (uint32_t i = 0; i < set_uniform_count; i++) {
-		const Shader::UniformInfo &set_uniform = set_uniforms[i];
+		const UniformInfo &set_uniform = set_uniforms[i];
 		int uniform_idx = -1;
 		for (int j = 0; j < (int)uniform_count; j++) {
 			if (uniforms[j].binding == set_uniform.binding) {
@@ -4192,9 +4401,10 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 	uniform_set.pool = pool;
 	uniform_set.pool_key = pool_key;
 	uniform_set.descriptor_set = descriptor_set;
-	uniform_set.pipeline_layout = shader->pipeline_layout;
-	uniform_set.hash = shader->set_hashes[p_shader_set];
+	uniform_set.format = shader->set_formats[p_shader_set];
 	uniform_set.attachable_textures = attachable_textures;
+	uniform_set.shader_set = p_shader_set;
+	uniform_set.shader_id = p_shader;
 
 	RID id = uniform_set_owner.make_rid(uniform_set);
 	//add dependencies
@@ -4593,19 +4803,22 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 	VkResult err = vkCreateGraphicsPipelines(device, NULL, 1, &graphics_pipeline_create_info, NULL, &pipeline.pipeline);
 	ERR_FAIL_COND_V(err, RID());
 
-	pipeline.dynamic_state = p_dynamic_state_flags;
-	pipeline.framebuffer_format = p_framebuffer_format;
-	pipeline.vertex_format = p_vertex_format;
-	pipeline.uses_restart_indices = input_assembly_create_info.primitiveRestartEnable;
-	pipeline.set_hashes = shader->set_hashes;
-	pipeline.push_constant_size = shader->push_constant.push_constant_size;
+	pipeline.set_formats = shader->set_formats;
 	pipeline.push_constant_stages = shader->push_constant.push_constants_vk_stage;
 	pipeline.pipeline_layout = shader->pipeline_layout;
+	pipeline.shader = p_shader;
+	pipeline.push_constant_size = shader->push_constant.push_constant_size;
+
+#ifdef DEBUG_ENABLED
+	pipeline.validation.dynamic_state = p_dynamic_state_flags;
+	pipeline.validation.framebuffer_format = p_framebuffer_format;
+	pipeline.validation.vertex_format = p_vertex_format;
+	pipeline.validation.uses_restart_indices = input_assembly_create_info.primitiveRestartEnable;
 
 	static const uint32_t primitive_divisor[RENDER_PRIMITIVE_MAX] = {
 		1, 2, 1, 1, 1, 3, 1, 1, 1, 1, 1
 	};
-	pipeline.primitive_divisor = primitive_divisor[p_render_primitive];
+	pipeline.validation.primitive_divisor = primitive_divisor[p_render_primitive];
 	static const uint32_t primitive_minimum[RENDER_PRIMITIVE_MAX] = {
 		1,
 		2,
@@ -4619,8 +4832,8 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		3,
 		1,
 	};
-	pipeline.primitive_minimum = primitive_minimum[p_render_primitive];
-
+	pipeline.validation.primitive_minimum = primitive_minimum[p_render_primitive];
+#endif
 	//create ID to associate with this pipeline
 	RID id = pipeline_owner.make_rid(pipeline);
 	//now add aall the dependencies
@@ -4757,6 +4970,8 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 			Texture *texture = texture_owner.getornull(p_framebuffer->texture_ids[i]);
 			ERR_FAIL_COND_V(!texture, ERR_BUG);
 			attachments.push_back(texture->view);
+			ERR_FAIL_COND_V(texture->width != p_framebuffer->size.width, ERR_BUG);
+			ERR_FAIL_COND_V(texture->height != p_framebuffer->size.height, ERR_BUG);
 		}
 		framebuffer_create_info.attachmentCount = attachments.size();
 		framebuffer_create_info.pAttachments = attachments.ptr();
@@ -5083,51 +5298,97 @@ void RenderingDeviceVulkan::draw_list_bind_render_pipeline(DrawListID p_list, RI
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
 
 	const RenderPipeline *pipeline = pipeline_owner.getornull(p_render_pipeline);
 	ERR_FAIL_COND(!pipeline);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND(pipeline->validation.framebuffer_format != dl->validation.framebuffer_format);
+#endif
 
-	ERR_FAIL_COND(pipeline->framebuffer_format != dl->validation.framebuffer_format);
+	if (p_render_pipeline == dl->state.pipeline) {
+		return; //redundant state, return.
+	}
+
+	dl->state.pipeline = p_render_pipeline;
+	dl->state.pipeline_layout = pipeline->pipeline_layout;
 
 	vkCmdBindPipeline(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, pipeline->pipeline);
 
+	if (dl->state.pipeline_shader != pipeline->shader) {
+		// shader changed, so descriptor sets may become incompatible.
+
+		//go through ALL sets, and unbind them (and all those above) if the format is different
+
+		uint32_t pcount = pipeline->set_formats.size(); //formats count in this pipeline
+		dl->state.set_count = MAX(dl->state.set_count, pcount);
+		const uint32_t *pformats = pipeline->set_formats.ptr(); //pipeline set formats
+
+		bool sets_valid = true; //once invalid, all above become invalid
+		for (uint32_t i = 0; i < pcount; i++) {
+			//if a part of the format is different, invalidate it (and the rest)
+			if (!sets_valid || dl->state.sets[i].pipeline_expected_format != pformats[i]) {
+				dl->state.sets[i].bound = false;
+				dl->state.sets[i].pipeline_expected_format = pformats[i];
+				sets_valid = false;
+			}
+		}
+
+		for (uint32_t i = pcount; i < dl->state.set_count; i++) {
+			//unbind the ones above (not used) if exist
+			dl->state.sets[i].bound = false;
+		}
+
+		dl->state.set_count = pcount; //update set count
+
+		if (pipeline->push_constant_size) {
+			dl->state.pipeline_push_constant_stages = pipeline->push_constant_stages;
+#ifdef DEBUG_ENABLED
+			dl->validation.pipeline_push_constant_suppplied = false;
+#endif
+		}
+	}
+
+#ifdef DEBUG_ENABLED
 	//update render pass pipeline info
 	dl->validation.pipeline_active = true;
-	dl->validation.pipeline_dynamic_state = pipeline->dynamic_state;
-	dl->validation.pipeline_vertex_format = pipeline->vertex_format;
-	dl->validation.pipeline_uses_restart_indices = pipeline->uses_restart_indices;
-	dl->validation.pipeline_primitive_divisor = pipeline->primitive_divisor;
-
-	dl->validation.pipeline_primitive_minimum = pipeline->primitive_minimum;
-	dl->validation.pipeline_set_hashes = pipeline->set_hashes;
+	dl->validation.pipeline_dynamic_state = pipeline->validation.dynamic_state;
+	dl->validation.pipeline_vertex_format = pipeline->validation.vertex_format;
+	dl->validation.pipeline_uses_restart_indices = pipeline->validation.uses_restart_indices;
+	dl->validation.pipeline_primitive_divisor = pipeline->validation.primitive_divisor;
+	dl->validation.pipeline_primitive_minimum = pipeline->validation.primitive_minimum;
 	dl->validation.pipeline_push_constant_size = pipeline->push_constant_size;
-	if (pipeline->push_constant_size) {
-		dl->validation.pipeline_push_constant_stages = pipeline->push_constant_stages;
-		dl->validation.pipeline_push_constant_suppplied = false;
-		dl->validation.pipeline_push_constant_layout = pipeline->pipeline_layout;
-	}
+#endif
 }
 
 void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) {
-	ERR_FAIL_COND_MSG(p_index >= limits.maxBoundDescriptorSets,
+
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(p_index >= limits.maxBoundDescriptorSets || p_index > MAX_UNIFORM_SETS,
 			"Attempting to bind a descriptor set (" + itos(p_index) + ") greater than what the hardware supports (" + itos(limits.maxBoundDescriptorSets) + ").");
+#endif
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
+
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
 
 	const UniformSet *uniform_set = uniform_set_owner.getornull(p_uniform_set);
 	ERR_FAIL_COND(!uniform_set);
 
-	if ((uint32_t)dl->validation.set_hashes.size() <= p_index) {
-		uint32_t csize = dl->validation.set_hashes.size();
-		uint32_t new_size = p_index + 1;
-		dl->validation.set_hashes.resize(new_size);
-		for (uint32_t i = csize; i < new_size; i++) {
-			dl->validation.set_hashes.write[i] = 0;
-		}
+	if (p_index > dl->state.set_count) {
+		dl->state.set_count = p_index;
 	}
 
+	dl->state.sets[p_index].descriptor_set = uniform_set->descriptor_set; //update set pointer
+	dl->state.sets[p_index].bound = false; //needs rebind
+	dl->state.sets[p_index].uniform_set_format = uniform_set->format;
+	dl->state.sets[p_index].uniform_set = p_uniform_set;
+
+#ifdef DEBUG_ENABLED
 	{ //validate that textures bound are not attached as framebuffer bindings
 		uint32_t attachable_count = uniform_set->attachable_textures.size();
 		const RID *attachable_ptr = uniform_set->attachable_textures.ptr();
@@ -5140,38 +5401,53 @@ void RenderingDeviceVulkan::draw_list_bind_uniform_set(DrawListID p_list, RID p_
 			}
 		}
 	}
-
-	dl->validation.set_hashes.write[p_index] = uniform_set->hash;
-
-	vkCmdBindDescriptorSets(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, uniform_set->pipeline_layout, p_index, 1, &uniform_set->descriptor_set, 0, NULL);
+#endif
 }
 
 void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p_vertex_array) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
 
 	const VertexArray *vertex_array = vertex_array_owner.getornull(p_vertex_array);
 	ERR_FAIL_COND(!vertex_array);
+
+	if (dl->state.vertex_array == p_vertex_array) {
+		return; //already set
+	}
+
+	dl->state.vertex_array = p_vertex_array;
+
+#ifdef DEBUG_ENABLED
 	dl->validation.vertex_format = vertex_array->description;
 	dl->validation.vertex_array_size = vertex_array->vertex_count;
 	dl->validation.vertex_max_instances_allowed = vertex_array->max_instances_allowed;
-
+#endif
 	vkCmdBindVertexBuffers(dl->command_buffer, 0, vertex_array->buffers.size(), vertex_array->buffers.ptr(), vertex_array->offsets.ptr());
 }
 void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_index_array) {
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
 
 	const IndexArray *index_array = index_array_owner.getornull(p_index_array);
 	ERR_FAIL_COND(!index_array);
 
+	if (dl->state.index_array == p_index_array) {
+		return; //already set
+	}
+
+	dl->state.index_array = p_index_array;
+#ifdef DEBUG_ENABLED
 	dl->validation.index_array_size = index_array->indices;
 	dl->validation.index_array_max_index = index_array->max_index;
 	dl->validation.index_array_offset = index_array->offset;
-
+#endif
 	vkCmdBindIndexBuffer(dl->command_buffer, index_array->buffer, index_array->offset, index_array->index_type);
 }
 
@@ -5188,10 +5464,15 @@ void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, void 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
 
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
+
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(p_data_size != dl->validation.pipeline_push_constant_size,
 			"This render pipeline requires (" + itos(dl->validation.pipeline_push_constant_size) + ") bytes of push constant data, supplied: (" + itos(p_data_size) + ")");
-
-	vkCmdPushConstants(dl->command_buffer, dl->validation.pipeline_push_constant_layout, dl->validation.pipeline_push_constant_stages, 0, p_data_size, p_data);
+#endif
+	vkCmdPushConstants(dl->command_buffer, dl->state.pipeline_layout, dl->state.pipeline_push_constant_stages, 0, p_data_size, p_data);
 	dl->validation.pipeline_push_constant_suppplied = true;
 }
 
@@ -5199,8 +5480,11 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
 
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.pipeline_active,
 			"No render pipeline was set before attempting to draw.");
 	if (dl->validation.pipeline_vertex_format != INVALID_ID) {
@@ -5220,30 +5504,39 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 		ERR_FAIL_COND_MSG(!dl->validation.pipeline_push_constant_suppplied,
 				"The shader in this pipeline requires a push constant to be set before drawing, but it's not present.");
 	}
-	//compare hashes
-	if (dl->validation.pipeline_set_hashes.size()) {
-		ERR_FAIL_COND_MSG(dl->validation.pipeline_set_hashes.size() > dl->validation.set_hashes.size(),
-				"Render pipeline requires uniform sets which were not set at the time of drawing.");
 
-		uint32_t hash_count = dl->validation.pipeline_set_hashes.size();
-		const uint32_t *phashes = dl->validation.pipeline_set_hashes.ptr();
-		const uint32_t *shashes = dl->validation.set_hashes.ptr();
+#endif
 
-		for (uint32_t i = 0; i < hash_count; i++) {
-			if (phashes[i] == 0) {
-				continue; //not used by pipeline, no need to check
+	//Bind descriptor sets
+
+	for (uint32_t i = 0; i < dl->state.set_count; i++) {
+
+		if (dl->state.sets[i].pipeline_expected_format == 0) {
+			continue; //nothing expected by this pipeline
+		}
+#ifdef DEBUG_ENABLED
+		if (dl->state.sets[i].pipeline_expected_format != dl->state.sets[i].uniform_set_format) {
+
+			if (dl->state.sets[i].uniform_set_format == 0) {
+				ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
+			} else if (uniform_set_owner.owns(dl->state.sets[i].uniform_set)) {
+				UniformSet *us = uniform_set_owner.getornull(dl->state.sets[i].uniform_set);
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + "):\n" + _shader_uniform_debug(us->shader_id, us->shader_set) + "\nare not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
+			} else {
+				ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ", which was was just freed) are not the same format as required by the pipeline shader. Pipeline shader requires the following bindings:\n" + _shader_uniform_debug(dl->state.pipeline_shader));
 			}
-			if (phashes[i] != shashes[i]) {
-				if (shashes[i] == 0) {
-					ERR_FAIL_MSG("Uniforms were never supplied for set (" + itos(i) + ") at the time of drawing, which are required by the pipeline");
-				} else {
-					ERR_FAIL_MSG("Uniforms supplied for set (" + itos(i) + ") are not the same format as required by the pipeline shader.");
-				}
-			}
+		}
+#endif
+		if (!dl->state.sets[i].bound) {
+			//All good, see if this requires re-binding
+			vkCmdBindDescriptorSets(dl->command_buffer, VK_PIPELINE_BIND_POINT_GRAPHICS, dl->state.pipeline_layout, i, 1, &dl->state.sets[i].descriptor_set, 0, NULL);
+			dl->state.sets[i].bound = true;
 		}
 	}
 
 	if (p_use_indices) {
+
+#ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(!dl->validation.index_array_size,
 				"Draw command requested indices, but no index buffer was set.");
 		if (dl->validation.pipeline_vertex_format != INVALID_ID) {
@@ -5254,37 +5547,42 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 
 		ERR_FAIL_COND_MSG(dl->validation.pipeline_uses_restart_indices != dl->validation.index_buffer_uses_restart_indices,
 				"The usage of restart indices in index buffer does not match the render primitive in the pipeline.");
-
+#endif
 		uint32_t to_draw = dl->validation.index_array_size;
 
+#ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(to_draw < dl->validation.pipeline_primitive_minimum,
 				"Too few indices (" + itos(to_draw) + ") for the render primitive set in the render pipeline (" + itos(dl->validation.pipeline_primitive_minimum) + ").");
 
 		ERR_FAIL_COND_MSG((to_draw % dl->validation.pipeline_primitive_divisor) != 0,
 				"Index amount (" + itos(to_draw) + ") must be a multiple of the amount of indices required by the render primitive (" + itos(dl->validation.pipeline_primitive_divisor) + ").");
-
+#endif
 		vkCmdDrawIndexed(dl->command_buffer, to_draw, p_instances, dl->validation.index_array_offset, 0, 0);
 	} else {
+#ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(dl->validation.pipeline_vertex_format == INVALID_ID,
 				"Draw command lacks indices, but pipeline format does not use vertices.");
-
+#endif
 		uint32_t to_draw = dl->validation.vertex_array_size;
 
+#ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(to_draw < dl->validation.pipeline_primitive_minimum,
 				"Too few vertices (" + itos(to_draw) + ") for the render primitive set in the render pipeline (" + itos(dl->validation.pipeline_primitive_minimum) + ").");
 
 		ERR_FAIL_COND_MSG((to_draw % dl->validation.pipeline_primitive_divisor) != 0,
 				"Vertex amount (" + itos(to_draw) + ") must be a multiple of the amount of vertices required by the render primitive (" + itos(dl->validation.pipeline_primitive_divisor) + ").");
-
+#endif
 		vkCmdDraw(dl->command_buffer, to_draw, p_instances, 0, 0);
 	}
 }
 
 void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
-	ERR_FAIL_COND(!dl);
-	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
 
+	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
+	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
 	Rect2i rect = p_rect;
 	rect.position += dl->viewport.position;
 
@@ -5304,7 +5602,9 @@ void RenderingDeviceVulkan::draw_list_enable_scissor(DrawListID p_list, const Re
 void RenderingDeviceVulkan::draw_list_disable_scissor(DrawListID p_list) {
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
+#ifdef DEBUG_ENABLED
 	ERR_FAIL_COND_MSG(!dl->validation.active, "Submitted Draw Lists can no longer be modified.");
+#endif
 
 	VkRect2D scissor;
 	scissor.offset.x = dl->viewport.position.x;
