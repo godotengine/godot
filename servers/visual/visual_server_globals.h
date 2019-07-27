@@ -31,7 +31,7 @@
 #ifndef VISUAL_SERVER_GLOBALS_H
 #define VISUAL_SERVER_GLOBALS_H
 
-#include "rasterizer/rasterizer.h"
+#include "rasterizer.h"
 
 class VisualServerCanvas;
 class VisualServerViewport;

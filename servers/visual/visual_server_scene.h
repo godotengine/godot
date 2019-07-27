@@ -31,7 +31,7 @@
 #ifndef VISUALSERVERSCENE_H
 #define VISUALSERVERSCENE_H
 
-#include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer.h"
 
 #include "core/math/geometry.h"
 #include "core/math/octree.h"

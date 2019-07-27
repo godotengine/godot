@@ -303,6 +303,17 @@ void ShaderRD::version_set_code(RID p_version, const String &p_uniforms, const S
 	}
 }
 
+bool ShaderRD::version_is_valid(RID p_version) {
+	Version *version = version_owner.getornull(p_version);
+	ERR_FAIL_COND_V(!version, false);
+
+	if (version->dirty) {
+		_compile_version(version);
+	}
+
+	return version->valid;
+}
+
 bool ShaderRD::version_free(RID p_version) {
 
 	if (version_owner.owns(p_version)) {

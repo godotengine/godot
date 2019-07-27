@@ -681,6 +681,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 								sampler_name = actions.custom_samplers[texture_uniform];
 							} else {
 								if (shader->uniforms.has(texture_uniform)) {
+									print_line("shader from texture uniform " + itos(shader->uniforms[texture_uniform].filter) + ", " + itos(shader->uniforms[texture_uniform].repeat));
 									sampler_name = _get_sampler_name(shader->uniforms[texture_uniform].filter, shader->uniforms[texture_uniform].repeat);
 								} else {
 									bool found = false;

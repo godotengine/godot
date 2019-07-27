@@ -43,7 +43,7 @@
 #include "power_x11.h"
 #include "servers/audio_server.h"
 #include "servers/camera_server.h"
-#include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 //#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/vulkan/rendering_device_vulkan.h"

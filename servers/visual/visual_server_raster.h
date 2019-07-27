@@ -32,7 +32,7 @@
 #define VISUAL_SERVER_RASTER_H
 
 #include "core/math/octree.h"
-#include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 #include "visual_server_canvas.h"
 #include "visual_server_globals.h"

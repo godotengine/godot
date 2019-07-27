@@ -33,7 +33,7 @@
 
 #include "core/rid_owner.h"
 #include "core/self_list.h"
-#include "rasterizer/rasterizer.h"
+#include "rasterizer.h"
 #include "servers/arvr/arvr_interface.h"
 #include "servers/visual_server.h"
 
