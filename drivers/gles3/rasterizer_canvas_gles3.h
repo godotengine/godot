@@ -32,7 +32,7 @@
 #define RASTERIZERCANVASGLES3_H
 
 #include "rasterizer_storage_gles3.h"
-#include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer.h"
 
 #include "shaders/canvas_shadow.glsl.gen.h"
 #include "shaders/lens_distorted.glsl.gen.h"

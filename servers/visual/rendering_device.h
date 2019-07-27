@@ -294,8 +294,9 @@ public:
 		TEXTURE_USAGE_STORAGE_ATOMIC_BIT = (1 << 4),
 		TEXTURE_USAGE_CPU_READ_BIT = (1 << 5),
 		TEXTURE_USAGE_CAN_UPDATE_BIT = (1 << 6),
-		TEXTURE_USAGE_CAN_RETRIEVE_BIT = (1 << 7),
-		TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT = (1 << 8),
+		TEXTURE_USAGE_CAN_COPY_FROM_BIT = (1 << 7),
+		TEXTURE_USAGE_CAN_COPY_TO_BIT = (1 << 8),
+		TEXTURE_USAGE_RESOLVE_ATTACHMENT_BIT = (1 << 9),
 	};
 
 	enum TextureSwizzle {
@@ -328,12 +329,11 @@ public:
 			depth = 1;
 			array_layers = 1;
 			mipmaps = 1;
-			type = TEXTURE_TYPE_1D;
+			type = TEXTURE_TYPE_2D;
 			samples = TEXTURE_SAMPLES_1;
 			usage_bits = 0;
 		}
 	};
-
 
 	struct TextureView {
 		DataFormat format_override;
@@ -353,15 +353,16 @@ public:
 
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >()) = 0;
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture) = 0;
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture,int p_layer,int p_mipmap) = 0;
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap) = 0;
 
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 	virtual PoolVector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer) = 0; // CPU textures will return immediately, while GPU textures will most likely force a flush
 
 	virtual bool texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const = 0;
-	virtual bool texture_is_shared(RID p_texture) =0;
+	virtual bool texture_is_shared(RID p_texture) = 0;
 	virtual bool texture_is_valid(RID p_texture) = 0;
 
+	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false) = 0;
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
@@ -371,9 +372,9 @@ public:
 		TextureSamples samples;
 		uint32_t usage_flags;
 		AttachmentFormat() {
-			format=DATA_FORMAT_R8G8B8A8_UNORM;
-			samples=TEXTURE_SAMPLES_1;
-			usage_flags=0;
+			format = DATA_FORMAT_R8G8B8A8_UNORM;
+			samples = TEXTURE_SAMPLES_1;
+			usage_flags = 0;
 		}
 	};
 
@@ -381,7 +382,7 @@ public:
 
 	// This ID is warranted to be unique for the same formats, does not need to be freed
 	virtual FramebufferFormatID framebuffer_format_create(const Vector<AttachmentFormat> &p_format) = 0;
-	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format) =0;
+	virtual TextureSamples framebuffer_format_get_texture_samples(FramebufferFormatID p_format) = 0;
 
 	virtual RID framebuffer_create(const Vector<RID> &p_texture_attachments, FramebufferFormatID p_format_check = INVALID_ID) = 0;
 
@@ -563,7 +564,7 @@ public:
 	virtual RID uniform_set_create(const Vector<Uniform> &p_uniforms, RID p_shader, uint32_t p_shader_set) = 0;
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 
-	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size,const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
 
 	/*************************/
 	/**** RENDER PIPELINE ****/
@@ -824,7 +825,7 @@ public:
 	};
 
 	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0) = 0;
-	virtual bool render_pipeline_is_valid(RID p_pipeline) =0;
+	virtual bool render_pipeline_is_valid(RID p_pipeline) = 0;
 
 	/****************/
 	/**** SCREEN ****/
@@ -874,7 +875,6 @@ public:
 
 	virtual void draw_list_end() = 0;
 
-
 	/***************/
 	/**** FREE! ****/
 	/***************/
@@ -912,13 +912,13 @@ public:
 		LIMIT_MAX_VERTEX_INPUT_ATTRIBUTES,
 		LIMIT_MAX_VERTEX_INPUT_BINDINGS,
 		LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE,
-		LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT	,
+		LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
 	};
 
-	virtual int limit_get(Limit p_limit) =0;
+	virtual int limit_get(Limit p_limit) = 0;
 
 	//methods below not exposed, used by RenderingDeviceRD
-	virtual void prepare_screen_for_drawing() =0;
+	virtual void prepare_screen_for_drawing() = 0;
 	virtual void finalize_frame() = 0;
 	virtual void advance_frame() = 0;
 

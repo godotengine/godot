@@ -113,6 +113,8 @@ public:
 		return version->variants[p_variant];
 	}
 
+	bool version_is_valid(RID p_version);
+
 	bool version_free(RID p_version);
 
 	void initialize(const Vector<String> &p_variant_defines, const String &p_general_defines = "");

@@ -31,7 +31,7 @@
 #ifndef VISUALSERVERCANVAS_H
 #define VISUALSERVERCANVAS_H
 
-#include "rasterizer/rasterizer.h"
+#include "rasterizer.h"
 #include "visual_server_viewport.h"
 
 class VisualServerCanvas {

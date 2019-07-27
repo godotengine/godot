@@ -354,13 +354,7 @@ void main() {
 
 #endif
 
-#if !defined(COLOR_USED)
-	//default behavior, texture by color
-
 	color *= texture(sampler2D(color_texture,texture_sampler), uv);
-
-#endif
-
 
 	uint light_count = (draw_data.flags>>FLAGS_LIGHT_COUNT_SHIFT)&0xF; //max 16 lights
 
@@ -402,7 +396,7 @@ void main() {
 
 
 #if defined(SCREEN_UV_USED)
-	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
+	vec2 screen_uv = gl_FragCoord.xy * canvas_data.screen_pixel_size;
 #else
 	vec2 screen_uv = vec2(0.0);
 #endif
