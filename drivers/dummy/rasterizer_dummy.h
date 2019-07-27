@@ -35,7 +35,7 @@
 #include "core/rid_owner.h"
 #include "core/self_list.h"
 #include "scene/resources/mesh.h"
-#include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
 
 class RasterizerSceneDummy : public RasterizerScene {
