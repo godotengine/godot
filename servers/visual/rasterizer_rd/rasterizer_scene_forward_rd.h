@@ -1,7 +1,7 @@
 #ifndef RASTERIZER_SCENE_FORWARD_RD_H
 #define RASTERIZER_SCENE_FORWARD_RD_H
 
-#include "servers/visual/rasterizer/rasterizer.h"
+#include "servers/visual/rasterizer.h"
 
 class RasterizerSceneForwardRD : public RasterizerScene {
 public:
