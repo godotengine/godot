@@ -1,13 +1,13 @@
 #ifndef RASTERIZER_CANVAS_RD_H
 #define RASTERIZER_CANVAS_RD_H
 
-#include "servers/visual/rasterizer/rasterizer.h"
-#include "servers/visual/rasterizer/rasterizer_storage_rd.h"
-#include "servers/visual/rasterizer/render_pipeline_vertex_format_cache_rd.h"
-#include "servers/visual/rasterizer/shader_compiler_rd.h"
-#include "servers/visual/rasterizer/shaders/canvas.glsl.gen.h"
-#include "servers/visual/rasterizer/shaders/canvas_occlusion.glsl.gen.h"
+#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
+#include "servers/visual/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rendering_device.h"
+#include "servers/visual/rasterizer_rd/shader_compiler_rd.h"
+#include "servers/visual/rasterizer_rd/shaders/canvas.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/canvas_occlusion.glsl.gen.h"
 
 class RasterizerCanvasRD : public RasterizerCanvas {
 
@@ -382,8 +382,10 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 			float screen_transform[16];
 			float canvas_normal_transform[16];
 			float canvas_modulate[4];
+			float screen_pixel_size[2];
 			float time;
-			float pad[3];
+			float pad;
+
 			//uint32_t light_count;
 			//uint32_t pad[3];
 		};
@@ -433,7 +435,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 
 	Size2i _bind_texture_binding(TextureBindingID p_binding, RenderingDevice::DrawListID p_draw_list, uint32_t &flags);
 	void _render_item(RenderingDevice::DrawListID p_draw_list, const Item *p_item, RenderingDevice::FramebufferFormatID p_framebuffer_format, const Transform2D &p_canvas_transform_inverse, Item *&current_clip, Light *p_lights, PipelineVariants *p_pipeline_variants);
-	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights);
+	void _render_items(RID p_to_render_target, int p_item_count, const Transform2D &p_canvas_transform_inverse, Light *p_lights, RID p_screen_uniform_set);
 
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x4(const Transform2D &p_transform, float *p_mat2x4);
 	_FORCE_INLINE_ void _update_transform_2d_to_mat2x3(const Transform2D &p_transform, float *p_mat2x3);
