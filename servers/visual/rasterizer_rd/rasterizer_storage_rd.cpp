@@ -507,7 +507,7 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 		rd_format.mipmaps = texture.mipmaps;
 		rd_format.type = texture.rd_type;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_RETRIEVE_BIT;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		if (texture.rd_format_srgb != RD::DATA_FORMAT_MAX) {
 			rd_format.shareable_formats.push_back(texture.rd_format);
 			rd_format.shareable_formats.push_back(texture.rd_format_srgb);
@@ -792,7 +792,6 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 	Shader *shader = shader_owner.getornull(p_shader);
 	ERR_FAIL_COND(!shader);
 
-	print_line("yey set code?");
 	shader->code = p_code;
 	String mode_string = ShaderLanguage::get_shader_type(p_code);
 
@@ -1662,6 +1661,21 @@ void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
 		RD::get_singleton()->free(rt->color);
 	}
 
+	if (rt->backbuffer.is_valid()) {
+		RD::get_singleton()->free(rt->backbuffer);
+		rt->backbuffer = RID();
+		rt->backbuffer_fb = RID();
+		for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
+			//just erase copies, since the rest are erased by dependency
+			RD::get_singleton()->free(rt->backbuffer_mipmaps[i].mipmap_copy);
+		}
+		rt->backbuffer_mipmaps.clear();
+		if (rt->backbuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->backbuffer_uniform_set)) {
+			RD::get_singleton()->free(rt->backbuffer_uniform_set);
+		}
+		rt->backbuffer_uniform_set = RID();
+	}
+
 	rt->framebuffer = RID();
 	rt->color = RID();
 }
@@ -1696,7 +1710,7 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 		rd_format.mipmaps = 1;
 		rd_format.type = RD::TEXTURE_TYPE_2D;
 		rd_format.samples = RD::TEXTURE_SAMPLES_1;
-		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_RETRIEVE_BIT;
+		rd_format.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_CAN_COPY_FROM_BIT;
 		rd_format.shareable_formats.push_back(rt->color_format);
 		rd_format.shareable_formats.push_back(rt->color_format_srgb);
 	}
@@ -1752,6 +1766,56 @@ void RasterizerStorageRD::_update_render_target(RenderTarget *rt) {
 		for (int i = 0; i < proxies.size(); i++) {
 			texture_proxy_update(proxies[i], rt->texture);
 		}
+	}
+}
+
+void RasterizerStorageRD::_create_render_target_backbuffer(RenderTarget *rt) {
+	ERR_FAIL_COND(rt->backbuffer.is_valid());
+
+	uint32_t mipmaps_required = Image::get_image_required_mipmaps(rt->size.width, rt->size.height, Image::FORMAT_RGBA8);
+	RD::TextureFormat tf;
+	tf.format = rt->color_format;
+	tf.width = rt->size.width;
+	tf.height = rt->size.height;
+	tf.type = RD::TEXTURE_TYPE_2D;
+	tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+	tf.mipmaps = mipmaps_required;
+
+	rt->backbuffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+	{
+		Vector<RID> backbuffer_att;
+		RID backbuffer_fb_tex = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, 0);
+		backbuffer_att.push_back(backbuffer_fb_tex);
+		rt->backbuffer_fb = RD::get_singleton()->framebuffer_create(backbuffer_att);
+	}
+
+	//create mipmaps
+	for (uint32_t i = 1; i < mipmaps_required; i++) {
+
+		RenderTarget::BackbufferMipmap mm;
+		{
+			mm.mipmap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rt->backbuffer, 0, i);
+			Vector<RID> mm_fb_at;
+			mm_fb_at.push_back(mm.mipmap);
+			mm.mipmap_fb = RD::get_singleton()->framebuffer_create(mm_fb_at);
+		}
+
+		{
+			Size2 mm_size = Image::get_image_mipmap_size(tf.width, tf.height, Image::FORMAT_RGBA8, i);
+
+			RD::TextureFormat mmtf = tf;
+			mmtf.width = mm_size.width;
+			mmtf.height = mm_size.height;
+			mmtf.mipmaps = 1;
+
+			mm.mipmap_copy = RD::get_singleton()->texture_create(mmtf, RD::TextureView());
+			Vector<RID> mm_fb_at;
+			mm_fb_at.push_back(mm.mipmap_copy);
+			mm.mipmap_copy_fb = RD::get_singleton()->framebuffer_create(mm_fb_at);
+		}
+
+		rt->backbuffer_mipmaps.push_back(mm);
 	}
 }
 
@@ -1866,6 +1930,65 @@ void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
 	rt->clear_requested = false;
 }
 
+void RasterizerStorageRD::render_target_copy_to_back_buffer(RID p_render_target, const Rect2i &p_region) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND(!rt);
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	Rect2i region = p_region;
+	Rect2 blur_region;
+	if (region == Rect2i()) {
+		region.size = rt->size;
+	} else {
+		blur_region = region;
+		blur_region.position /= rt->size;
+		blur_region.size /= rt->size;
+	}
+
+	//single texture copy for backbuffer
+	RD::get_singleton()->texture_copy(rt->color, rt->backbuffer, Vector3(region.position.x, region.position.y, 0), Vector3(region.position.x, region.position.y, 0), Vector3(region.size.x, region.size.y, 1), 0, 0, 0, 0, true);
+	//effects.copy(rt->color, rt->backbuffer_fb, blur_region);
+
+	//then mipmap blur
+	RID prev_texture = rt->color; //use color, not backbuffer, as bb has mipmaps.
+	Vector2 pixel_size = Vector2(1.0 / rt->size.width, 1.0 / rt->size.height);
+
+	for (int i = 0; i < rt->backbuffer_mipmaps.size(); i++) {
+		pixel_size *= 2.0; //go halfway
+		const RenderTarget::BackbufferMipmap &mm = rt->backbuffer_mipmaps[i];
+		effects.gaussian_blur(prev_texture, mm.mipmap_copy_fb, mm.mipmap_copy, mm.mipmap_fb, pixel_size, blur_region);
+		prev_texture = mm.mipmap;
+	}
+}
+
+RID RasterizerStorageRD::render_target_get_back_buffer_uniform_set(RID p_render_target, RID p_base_shader) {
+	RenderTarget *rt = render_target_owner.getornull(p_render_target);
+	ERR_FAIL_COND_V(!rt, RID());
+
+	if (!rt->backbuffer.is_valid()) {
+		_create_render_target_backbuffer(rt);
+	}
+
+	if (rt->backbuffer_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(rt->backbuffer_uniform_set)) {
+		return rt->backbuffer_uniform_set; //if still valid, return/reuse it.
+	}
+
+	//create otherwise
+	Vector<RD::Uniform> uniforms;
+	RD::Uniform u;
+	u.type = RD::UNIFORM_TYPE_TEXTURE;
+	u.binding = 0;
+	u.ids.push_back(rt->backbuffer);
+	uniforms.push_back(u);
+
+	rt->backbuffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, p_base_shader, 3);
+	ERR_FAIL_COND_V(!rt->backbuffer_uniform_set.is_valid(), RID());
+
+	return rt->backbuffer_uniform_set;
+}
+
 void RasterizerStorageRD::update_dirty_resources() {
 	_update_queued_materials();
 }
@@ -1928,6 +2051,10 @@ bool RasterizerStorageRD::free(RID p_rid) {
 	}
 
 	return true;
+}
+
+EffectsRD *RasterizerStorageRD::get_effects() {
+	return &effects;
 }
 
 RasterizerStorageRD::RasterizerStorageRD() {

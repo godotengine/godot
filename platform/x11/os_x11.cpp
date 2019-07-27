@@ -37,7 +37,7 @@
 //#include "drivers/gles3/rasterizer_gles3.h"
 #include "errno.h"
 #include "key_mapping_x11.h"
-#include "servers/visual/rasterizer/rasterizer_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
 #include "servers/visual/visual_server_raster.h"
 #include "servers/visual/visual_server_wrap_mt.h"
 
