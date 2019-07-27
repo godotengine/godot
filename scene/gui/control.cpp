@@ -289,7 +289,7 @@ void Control::_update_minimum_size() {
 	Size2 minsize = get_combined_minimum_size();
 	if (minsize.x > data.size_cache.x ||
 			minsize.y > data.size_cache.y) {
-		set_size(data.size_cache);
+		_size_changed();
 	}
 
 	data.updating_last_minimum_size = false;
