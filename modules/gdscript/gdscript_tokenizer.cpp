@@ -517,7 +517,22 @@ void GDScriptTokenizerText::_advance() {
 				INCPOS(1);
 				column = 1;
 				int i = 0;
-				while (GETCHAR(i) == ' ' || GETCHAR(i) == '\t') {
+				while (true) {
+					if (GETCHAR(i) == ' ') {
+						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_SPACES;
+						if (file_indent_type != INDENT_SPACES) {
+							_make_error("Spaces used for indentation in tab-indented file!");
+							return;
+						}
+					} else if (GETCHAR(i) == '\t') {
+						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_TABS;
+						if (file_indent_type != INDENT_TABS) {
+							_make_error("Tabs used for indentation in space-indented file!");
+							return;
+						}
+					} else {
+						break; // not indentation anymore
+					}
 					i++;
 				}
 
@@ -555,9 +570,25 @@ void GDScriptTokenizerText::_advance() {
 				column = 1;
 				line++;
 				int i = 0;
-				while (GETCHAR(i) == ' ' || GETCHAR(i) == '\t') {
+				while (true) {
+					if (GETCHAR(i) == ' ') {
+						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_SPACES;
+						if (file_indent_type != INDENT_SPACES) {
+							_make_error("Spaces used for indentation in tab-indented file!");
+							return;
+						}
+					} else if (GETCHAR(i) == '\t') {
+						if (file_indent_type == INDENT_NONE) file_indent_type = INDENT_TABS;
+						if (file_indent_type != INDENT_TABS) {
+							_make_error("Tabs used for indentation in space-indented file!");
+							return;
+						}
+					} else {
+						break; // not indentation anymore
+					}
 					i++;
 				}
+
 				_make_newline(i);
 				return;
 
@@ -1082,6 +1113,7 @@ void GDScriptTokenizerText::set_code(const String &p_code) {
 	ignore_warnings = false;
 #endif // DEBUG_ENABLED
 	last_error = "";
+	file_indent_type = INDENT_NONE;
 	for (int i = 0; i < MAX_LOOKAHEAD + 1; i++)
 		_advance();
 }
