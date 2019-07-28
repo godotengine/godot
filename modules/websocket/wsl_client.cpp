@@ -190,8 +190,8 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 
 	Error err = _tcp->connect_to_host(addr, p_port);
 	if (err != OK) {
-		_on_error();
 		_tcp->disconnect_from_host();
+		_on_error();
 		return err;
 	}
 	_connection = _tcp;
@@ -230,8 +230,8 @@ void WSLClient::poll() {
 	if (_peer->is_connected_to_host()) {
 		_peer->poll();
 		if (!_peer->is_connected_to_host()) {
-			_on_disconnect(_peer->close_code != -1);
 			disconnect_from_host();
+			_on_disconnect(_peer->close_code != -1);
 		}
 		return;
 	}
@@ -242,8 +242,8 @@ void WSLClient::poll() {
 	switch (_tcp->get_status()) {
 		case StreamPeerTCP::STATUS_NONE:
 			// Clean close
-			_on_error();
 			disconnect_from_host();
+			_on_error();
 			break;
 		case StreamPeerTCP::STATUS_CONNECTED: {
 			Ref<StreamPeerSSL> ssl;
@@ -255,8 +255,8 @@ void WSLClient::poll() {
 					ERR_FAIL_COND(ssl.is_null());
 					ssl->set_blocking_handshake_enabled(false);
 					if (ssl->connect_to_stream(_tcp, verify_ssl, _host) != OK) {
-						_on_error();
 						disconnect_from_host();
+						_on_error();
 						return;
 					}
 					_connection = ssl;
@@ -268,8 +268,8 @@ void WSLClient::poll() {
 				if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING)
 					return; // Need more polling.
 				else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED) {
-					_on_error();
 					disconnect_from_host();
+					_on_error();
 					return; // Error.
 				}
 			}
@@ -277,8 +277,8 @@ void WSLClient::poll() {
 			_do_handshake();
 		} break;
 		case StreamPeerTCP::STATUS_ERROR:
-			_on_error();
 			disconnect_from_host();
+			_on_error();
 			break;
 		case StreamPeerTCP::STATUS_CONNECTING:
 			break; // Wait for connection
