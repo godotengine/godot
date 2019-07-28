@@ -33,11 +33,13 @@ else:
 
 # Core dependencies
 SConscript("png/SCsub")
+SConscript("spirv-reflect/SCsub")
 
 # Tools override
 # FIXME: Should likely be integrated in the tools/ codebase
 if env['tools']:
     SConscript("convex_decomp/SCsub")
+
 
 if env['vsproj']:
     import os
