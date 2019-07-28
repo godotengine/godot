@@ -33,6 +33,7 @@ else:
 
 # Core dependencies
 SConscript("png/SCsub")
+SConscript("spirv-reflect/SCsub")
 
 if env['vsproj']:
     import os
