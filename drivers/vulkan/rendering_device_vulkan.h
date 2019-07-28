@@ -5,7 +5,7 @@
 #include "core/os/thread_safe.h"
 #include "core/rid_owner.h"
 #include "servers/visual/rendering_device.h"
-#include "thirdparty/glslang/glslang/Public/ShaderLang.h"
+
 #ifdef DEBUG_ENABLED
 #define _DEBUG
 #endif
@@ -494,7 +494,6 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	};
 
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
-	bool _uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error);
 
 	RID_Owner<Shader> shader_owner;
 
@@ -608,7 +607,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// was not supplied as intended.
 
 	struct RenderPipeline {
-		//Cached values for validation
+	//Cached values for validation
 #ifdef DEBUG_ENABLED
 		struct Validation {
 			FramebufferFormatID framebuffer_format;
@@ -853,7 +852,7 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	virtual RID shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error = NULL, ShaderStage *r_error_stage = NULL, bool p_allow_cache = true);
+	virtual RID shader_create(const Vector<ShaderStageData> &p_stages);
 	virtual Vector<int> shader_get_vertex_input_locations_used(RID p_shader);
 
 	/*****************/
