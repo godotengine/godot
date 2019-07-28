@@ -137,6 +137,7 @@ def detect_modules():
     includes_cpp = ""
     register_cpp = ""
     unregister_cpp = ""
+    preregister_cpp = ""
 
     files = glob.glob("modules/*")
     files.sort()  # so register_module_types does not change that often, and also plugins are registered in alphabetic order
@@ -154,6 +155,11 @@ def detect_modules():
                 register_cpp += '#ifdef MODULE_' + x.upper() + '_ENABLED\n'
                 register_cpp += '\tregister_' + x + '_types();\n'
                 register_cpp += '#endif\n'
+                preregister_cpp += '#ifdef MODULE_' + x.upper() + '_ENABLED\n'
+                preregister_cpp += '#ifdef MODULE_' + x.upper() + '_HAS_PREREGISTER\n'
+                preregister_cpp += '\tpreregister_' + x + '_types();\n'
+                preregister_cpp += '#endif\n'
+                preregister_cpp += '#endif\n'
                 unregister_cpp += '#ifdef MODULE_' + x.upper() + '_ENABLED\n'
                 unregister_cpp += '\tunregister_' + x + '_types();\n'
                 unregister_cpp += '#endif\n'
@@ -168,6 +174,10 @@ def detect_modules():
 
 %s
 
+void preregister_module_types() {
+%s
+}
+
 void register_module_types() {
 %s
 }
@@ -175,7 +185,7 @@ void register_module_types() {
 void unregister_module_types() {
 %s
 }
-""" % (includes_cpp, register_cpp, unregister_cpp)
+""" % (includes_cpp, preregister_cpp, register_cpp, unregister_cpp)
 
     # NOTE: It is safe to generate this file here, since this is still executed serially
     with open("modules/register_module_types.gen.cpp", "w") as f:

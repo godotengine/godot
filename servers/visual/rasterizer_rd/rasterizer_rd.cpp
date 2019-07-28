@@ -61,9 +61,9 @@ void RasterizerRD::end_frame(bool p_swap_buffers) {
 void RasterizerRD::initialize() {
 
 	{ //create framebuffer copy shader
-		RenderingDevice::ShaderStageSource vert;
+		RenderingDevice::ShaderStageData vert;
 		vert.shader_stage = RenderingDevice::SHADER_STAGE_VERTEX;
-		vert.shader_source =
+		vert.spir_v = RenderingDevice::get_singleton()->shader_compile_from_source(RenderingDevice::SHADER_STAGE_VERTEX,
 				"#version 450\n"
 				"layout(push_constant, binding = 0, std140) uniform Pos { vec4 dst_rect; } pos;\n"
 				"layout(location =0) out vec2 uv;\n"
@@ -72,22 +72,22 @@ void RasterizerRD::initialize() {
 				" uv = base_arr[gl_VertexIndex];\n"
 				" vec2 vtx = pos.dst_rect.xy+uv*pos.dst_rect.zw;\n"
 				" gl_Position = vec4(vtx * 2.0 - 1.0,0.0,1.0);\n"
-				"}\n";
+				"}\n");
 
-		RenderingDevice::ShaderStageSource frag;
+		RenderingDevice::ShaderStageData frag;
 		frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
-		frag.shader_source =
+		frag.spir_v =RenderingDevice::get_singleton()->shader_compile_from_source(RenderingDevice::SHADER_STAGE_FRAGMENT,
 				"#version 450\n"
 				"layout (location = 0) in vec2 uv;\n"
 				"layout (location = 0) out vec4 color;\n"
 				"layout (binding = 0) uniform sampler2D src_rt;\n"
-				"void main() { color=texture(src_rt,uv); }\n";
+				"void main() { color=texture(src_rt,uv); }\n");
 
-		Vector<RenderingDevice::ShaderStageSource> source;
+		Vector<RenderingDevice::ShaderStageData> source;
 		source.push_back(vert);
 		source.push_back(frag);
 		String error;
-		copy_viewports_rd_shader = RD::get_singleton()->shader_create_from_source(source, &error);
+		copy_viewports_rd_shader = RD::get_singleton()->shader_create(source);
 		if (!copy_viewports_rd_shader.is_valid()) {
 			print_line("failed compilation: " + error);
 		} else {

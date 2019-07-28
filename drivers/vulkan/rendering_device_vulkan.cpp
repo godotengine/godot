@@ -3,8 +3,6 @@
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "drivers/vulkan/vulkan_context.h"
-#include "thirdparty/glslang/SPIRV/GlslangToSpv.h"
-#include "thirdparty/glslang/glslang/Include/Types.h"
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
@@ -3212,103 +3210,6 @@ RID RenderingDeviceVulkan::index_array_create(RID p_index_buffer, uint32_t p_ind
 /**** SHADER ****/
 /****************/
 
-static const TBuiltInResource default_builtin_resource = {
-	.maxLights = 32,
-	.maxClipPlanes = 6,
-	.maxTextureUnits = 32,
-	.maxTextureCoords = 32,
-	.maxVertexAttribs = 64,
-	.maxVertexUniformComponents = 4096,
-	.maxVaryingFloats = 64,
-	.maxVertexTextureImageUnits = 32,
-	.maxCombinedTextureImageUnits = 80,
-	.maxTextureImageUnits = 32,
-	.maxFragmentUniformComponents = 4096,
-	.maxDrawBuffers = 32,
-	.maxVertexUniformVectors = 128,
-	.maxVaryingVectors = 8,
-	.maxFragmentUniformVectors = 16,
-	.maxVertexOutputVectors = 16,
-	.maxFragmentInputVectors = 15,
-	.minProgramTexelOffset = -8,
-	.maxProgramTexelOffset = 7,
-	.maxClipDistances = 8,
-	.maxComputeWorkGroupCountX = 65535,
-	.maxComputeWorkGroupCountY = 65535,
-	.maxComputeWorkGroupCountZ = 65535,
-	.maxComputeWorkGroupSizeX = 1024,
-	.maxComputeWorkGroupSizeY = 1024,
-	.maxComputeWorkGroupSizeZ = 64,
-	.maxComputeUniformComponents = 1024,
-	.maxComputeTextureImageUnits = 16,
-	.maxComputeImageUniforms = 8,
-	.maxComputeAtomicCounters = 8,
-	.maxComputeAtomicCounterBuffers = 1,
-	.maxVaryingComponents = 60,
-	.maxVertexOutputComponents = 64,
-	.maxGeometryInputComponents = 64,
-	.maxGeometryOutputComponents = 128,
-	.maxFragmentInputComponents = 128,
-	.maxImageUnits = 8,
-	.maxCombinedImageUnitsAndFragmentOutputs = 8,
-	.maxCombinedShaderOutputResources = 8,
-	.maxImageSamples = 0,
-	.maxVertexImageUniforms = 0,
-	.maxTessControlImageUniforms = 0,
-	.maxTessEvaluationImageUniforms = 0,
-	.maxGeometryImageUniforms = 0,
-	.maxFragmentImageUniforms = 8,
-	.maxCombinedImageUniforms = 8,
-	.maxGeometryTextureImageUnits = 16,
-	.maxGeometryOutputVertices = 256,
-	.maxGeometryTotalOutputComponents = 1024,
-	.maxGeometryUniformComponents = 1024,
-	.maxGeometryVaryingComponents = 64,
-	.maxTessControlInputComponents = 128,
-	.maxTessControlOutputComponents = 128,
-	.maxTessControlTextureImageUnits = 16,
-	.maxTessControlUniformComponents = 1024,
-	.maxTessControlTotalOutputComponents = 4096,
-	.maxTessEvaluationInputComponents = 128,
-	.maxTessEvaluationOutputComponents = 128,
-	.maxTessEvaluationTextureImageUnits = 16,
-	.maxTessEvaluationUniformComponents = 1024,
-	.maxTessPatchComponents = 120,
-	.maxPatchVertices = 32,
-	.maxTessGenLevel = 64,
-	.maxViewports = 16,
-	.maxVertexAtomicCounters = 0,
-	.maxTessControlAtomicCounters = 0,
-	.maxTessEvaluationAtomicCounters = 0,
-	.maxGeometryAtomicCounters = 0,
-	.maxFragmentAtomicCounters = 8,
-	.maxCombinedAtomicCounters = 8,
-	.maxAtomicCounterBindings = 1,
-	.maxVertexAtomicCounterBuffers = 0,
-	.maxTessControlAtomicCounterBuffers = 0,
-	.maxTessEvaluationAtomicCounterBuffers = 0,
-	.maxGeometryAtomicCounterBuffers = 0,
-	.maxFragmentAtomicCounterBuffers = 1,
-	.maxCombinedAtomicCounterBuffers = 1,
-	.maxAtomicCounterBufferSize = 16384,
-	.maxTransformFeedbackBuffers = 4,
-	.maxTransformFeedbackInterleavedComponents = 64,
-	.maxCullDistances = 8,
-	.maxCombinedClipAndCullDistances = 8,
-	.maxSamples = 4,
-	.limits = {
-			.nonInductiveForLoops = 1,
-			.whileLoops = 1,
-			.doWhileLoops = 1,
-			.generalUniformIndexing = 1,
-			.generalAttributeMatrixVectorIndexing = 1,
-			.generalVaryingIndexing = 1,
-			.generalSamplerIndexing = 1,
-			.generalVariableIndexing = 1,
-			.generalConstantMatrixVectorIndexing = 1,
-	}
-};
-
 static const char *shader_stage_names[RenderingDevice::SHADER_STAGE_MAX] = {
 	"Vertex",
 	"Fragment",
@@ -3347,7 +3248,7 @@ String RenderingDeviceVulkan::_shader_uniform_debug(RID p_shader, int p_set) {
 	}
 	return ret;
 }
-
+#if 0
 bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error) {
 
 	VkDescriptorSetLayoutBinding layout_binding;
@@ -3543,29 +3444,11 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 	return true;
 }
+#endif
 
-RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error, ShaderStage *r_error_stage, bool p_allow_cache) {
+RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages) {
 
 	_THREAD_SAFE_METHOD_
-
-	// initialize in case it's not initialized. This is done once per thread
-	// and it's safe to call multiple times
-	glslang::InitializeProcess();
-	EShLanguage stages[SHADER_STAGE_MAX] = {
-		EShLangVertex,
-		EShLangFragment,
-		EShLangTessControl,
-		EShLangTessEvaluation,
-		EShLangCompute
-	};
-
-	int ClientInputSemanticsVersion = 100; // maps to, say, #define VULKAN 100
-	glslang::EShTargetClientVersion VulkanClientVersion = glslang::EShTargetVulkan_1_0;
-	glslang::EShTargetLanguageVersion TargetVersion = glslang::EShTargetSpv_1_0;
-
-	Vector<std::vector<unsigned int> > spirv_code;
-
-	glslang::TShader::ForbidIncluder includer;
 
 	//descriptor layouts
 	Vector<Vector<VkDescriptorSetLayoutBinding> > set_bindings;
@@ -3581,148 +3464,13 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 
 	for (int i = 0; i < p_stages.size(); i++) {
 
-		if (stages_processed & (1 << p_stages[i].shader_stage)) {
-			if (r_error) {
-				(*r_error) = "Stage " + String(shader_stage_names[p_stages[i].shader_stage]) + " submitted more than once.";
-			}
-			return RID();
-		}
-		glslang::TShader shader(stages[p_stages[i].shader_stage]);
-		CharString cs = p_stages[i].shader_source.utf8();
-		const char *cs_strings = cs.get_data();
-		shader.setStrings(&cs_strings, 1);
-		shader.setEnvInput(glslang::EShSourceGlsl, stages[p_stages[i].shader_stage], glslang::EShClientVulkan, ClientInputSemanticsVersion);
-		shader.setEnvClient(glslang::EShClientVulkan, VulkanClientVersion);
-		shader.setEnvTarget(glslang::EShTargetSpv, TargetVersion);
-
-		EShMessages messages = (EShMessages)(EShMsgSpvRules | EShMsgVulkanRules);
-		const int DefaultVersion = 100;
-		std::string pre_processed_code;
-
-		//preprocess
-		if (!shader.preprocess(&default_builtin_resource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
-
-			if (r_error) {
-				(*r_error) = "Failed pre-processing on shader stage: " + String(shader_stage_names[p_stages[i].shader_stage]) + "\n";
-				(*r_error) += shader.getInfoLog();
-				(*r_error) += "\n";
-				(*r_error) += shader.getInfoDebugLog();
-			}
-
-			if (r_error_stage) {
-				*r_error_stage = p_stages[i].shader_stage;
-			}
-
-			return RID();
-		}
-		//set back..
-		cs_strings = pre_processed_code.c_str();
-		shader.setStrings(&cs_strings, 1);
-
-		//parse
-		if (!shader.parse(&default_builtin_resource, DefaultVersion, false, messages)) {
-			if (r_error) {
-				(*r_error) = "Failed parsing on shader stage: " + String(shader_stage_names[p_stages[i].shader_stage]) + "\n";
-				(*r_error) += shader.getInfoLog();
-				(*r_error) += "\n";
-				(*r_error) += shader.getInfoDebugLog();
-			}
-			if (r_error_stage) {
-				*r_error_stage = p_stages[i].shader_stage;
-			}
-
-			return RID();
-		}
-
-		//link
-		glslang::TProgram program;
-		program.addShader(&shader);
-
-		if (!program.link(messages)) {
-			if (r_error) {
-				(*r_error) = "Failed linking on shader stage: " + String(shader_stage_names[p_stages[i].shader_stage]) + "\n";
-				(*r_error) += program.getInfoLog();
-				(*r_error) += "\n";
-				(*r_error) += program.getInfoDebugLog();
-			}
-			if (r_error_stage) {
-				*r_error_stage = p_stages[i].shader_stage;
-			}
-
-			return RID();
-		}
-
-#if 0
-		//obtain bindings for descriptor layout
-		program.mapIO();
-		program.buildReflection(EShReflectionAllBlockVariables);
-		//program.dumpReflection();
-
-		for (int j = 0; j < program.getNumUniformBlocks(); j++) {
-			const glslang::TObjectReflection &reflection = program.getUniformBlock(j);
-			if (reflection.getType()->getBasicType() == glslang::EbtBlock && reflection.getType()->getQualifier().storage == glslang::EvqUniform && reflection.getType()->getQualifier().layoutPushConstant) {
-				uint32_t len = reflection.size;
-				if (push_constant_debug.push_constant_size != 0 && push_constant_debug.push_constant_size != len) {
-					print_line("eep");
-				}
-
-				push_constant_debug.push_constant_size = len;
-				push_constant_debug.push_constants_vk_stage |= shader_stage_masks[p_stages[i].shader_stage];
-				//print_line("Debug stage " + String(shader_stage_names[p_stages[i].shader_stage]) + " push constant size: " + itos(push_constant_debug.push_constant_size));
-			}
-		}
-
-
-		for (int j = 0; j < program.getNumUniformVariables(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getUniform(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return RID();
-			}
-		}
-
-		for (int j = 0; j < program.getNumUniformBlocks(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getUniformBlock(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return RID();
-			}
-		}
-
-		for (int j = 0; j < program.getNumBufferVariables(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferVariable(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return RID();
-			}
-		}
-
-		for (int j = 0; j < program.getNumBufferBlocks(); j++) {
-			if (!_uniform_add_binding(bindings, uniform_info, program.getBufferBlock(j), p_stages[i].shader_stage, push_constant, r_error)) {
-				return RID();
-			}
-		}
-
-		if (p_stages[i].shader_stage == SHADER_STAGE_VERTEX) {
-			for (int j = 0; j < program.getNumPipeInputs(); j++) {
-				if (program.getPipeInput(i).getType()->getQualifier().hasLocation()) {
-					int location = program.getPipeInput(i).getType()->getQualifier().layoutLocation;
-
-					if (vertex_input_locations.find(location) == -1) {
-						vertex_input_locations.push_back(location);
-					}
-				}
-			}
-		}
-
-		if (p_stages[i].shader_stage == SHADER_STAGE_FRAGMENT) {
-
-			fragment_outputs = program.getNumPipeOutputs();
-		}
-
-#endif
-		std::vector<uint32_t> SpirV;
-		spv::SpvBuildLogger logger;
-		glslang::SpvOptions spvOptions;
-		glslang::GlslangToSpv(*program.getIntermediate(stages[p_stages[i].shader_stage]), SpirV, &logger, &spvOptions);
+		ERR_FAIL_COND_V_MSG(stages_processed & (1 << p_stages[i].shader_stage), RID(),
+				"Stage " + String(shader_stage_names[p_stages[i].shader_stage]) + " submitted more than once.");
 
 		{
 			SpvReflectShaderModule module;
-			SpvReflectResult result = spvReflectCreateShaderModule(SpirV.size() * sizeof(uint32_t), &SpirV[0], &module);
+			PoolVector<uint8_t>::Read spirv = p_stages[i].spir_v.read();
+			SpvReflectResult result = spvReflectCreateShaderModule(p_stages[i].spir_v.size(), spirv.ptr(), &module);
 			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
 					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed parsing shader.");
 
@@ -3941,8 +3689,6 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			spvReflectDestroyShaderModule(&module);
 		}
 
-		spirv_code.push_back(SpirV);
-
 		stages_processed |= (1 << p_stages[i].shader_stage);
 	}
 
@@ -3962,8 +3708,10 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 		shader_module_create_info.sType = VK_STRUCTURE_TYPE_SHADER_MODULE_CREATE_INFO;
 		shader_module_create_info.pNext = NULL;
 		shader_module_create_info.flags = 0;
-		shader_module_create_info.codeSize = spirv_code[i].size() * sizeof(uint32_t);
-		shader_module_create_info.pCode = &spirv_code[i][0];
+		shader_module_create_info.codeSize = p_stages[i].spir_v.size();
+		PoolVector<uint8_t>::Read r = p_stages[i].spir_v.read();
+
+		shader_module_create_info.pCode = (const uint32_t *)r.ptr();
 
 		VkShaderModule module;
 		VkResult res = vkCreateShaderModule(device, &shader_module_create_info, NULL, &module);
@@ -4087,14 +3835,7 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			vkDestroyDescriptorSetLayout(device, shader.sets[i].descriptor_set_layout, NULL);
 		}
 
-		if (r_error) {
-			*r_error = error_text;
-		}
-		if (r_error_stage) {
-			*r_error_stage = SHADER_STAGE_MAX;
-		}
-
-		return RID();
+		ERR_FAIL_V_MSG(RID(), error_text);
 	}
 
 	return shader_owner.make_rid(shader);

@@ -5,6 +5,32 @@
 
 class RenderingDevice : public Object {
 	GDCLASS(RenderingDevice, Object)
+public:
+	enum ShaderStage {
+		SHADER_STAGE_VERTEX,
+		SHADER_STAGE_FRAGMENT,
+		SHADER_STAGE_TESSELATION_CONTROL,
+		SHADER_STAGE_TESSELATION_EVALUATION,
+		SHADER_STAGE_COMPUTE,
+		SHADER_STAGE_MAX,
+		SHADER_STAGE_VERTEX_BIT = (1 << SHADER_STAGE_VERTEX),
+		SHADER_STAGE_FRAGMENT_BIT = (1 << SHADER_STAGE_FRAGMENT),
+		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
+		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
+		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
+	};
+
+	enum ShaderLanguage {
+		SHADER_LANGUAGE_GLSL,
+		SHADER_LANGUAGE_HLSL
+	};
+
+	typedef PoolVector<uint8_t> (*ShaderCompileFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language, String *r_error);
+	typedef PoolVector<uint8_t> (*ShaderCacheFunction)(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language);
+
+private:
+	static ShaderCompileFunction compile_function;
+	static ShaderCacheFunction cache_function;
 
 	static RenderingDevice *singleton;
 
@@ -497,29 +523,21 @@ public:
 	/**** SHADER ****/
 	/****************/
 
-	enum ShaderStage {
-		SHADER_STAGE_VERTEX,
-		SHADER_STAGE_FRAGMENT,
-		SHADER_STAGE_TESSELATION_CONTROL,
-		SHADER_STAGE_TESSELATION_EVALUATION,
-		SHADER_STAGE_COMPUTE,
-		SHADER_STAGE_MAX,
-		SHADER_STAGE_VERTEX_BIT = (1 << SHADER_STAGE_VERTEX),
-		SHADER_STAGE_FRAGMENT_BIT = (1 << SHADER_STAGE_FRAGMENT),
-		SHADER_STAGE_TESSELATION_CONTROL_BIT = (1 << SHADER_STAGE_TESSELATION_CONTROL),
-		SHADER_STAGE_TESSELATION_EVALUATION_BIT = (1 << SHADER_STAGE_TESSELATION_EVALUATION),
-		SHADER_STAGE_COMPUTE_BIT = (1 << SHADER_STAGE_COMPUTE),
-	};
+	virtual PoolVector<uint8_t> shader_compile_from_source(ShaderStage p_stage, const String &p_source_code, ShaderLanguage p_language = SHADER_LANGUAGE_GLSL, String *r_error = NULL, bool p_allow_cache = true);
 
-	struct ShaderStageSource {
+	static void shader_set_compile_function(ShaderCompileFunction p_function);
+	static void shader_set_cache_function(ShaderCacheFunction p_function);
+
+	struct ShaderStageData {
 		ShaderStage shader_stage;
-		String shader_source;
-		ShaderStageSource() {
+		PoolVector<uint8_t> spir_v;
+
+		ShaderStageData() {
 			shader_stage = SHADER_STAGE_VERTEX;
 		}
 	};
 
-	virtual RID shader_create_from_source(const Vector<ShaderStageSource> &p_stages, String *r_error = NULL, ShaderStage *r_error_stage = NULL, bool p_allow_cache = true) = 0;
+	virtual RID shader_create(const Vector<ShaderStageData> &p_stages) = 0;
 	virtual Vector<int> shader_get_vertex_input_locations_used(RID p_shader) = 0;
 
 	/******************/
