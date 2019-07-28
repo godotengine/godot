@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_module_types.h                                              */
+/*  register_types.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,13 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef REGISTER_MODULE_TYPES_H
-#define REGISTER_MODULE_TYPES_H
-
-//
-
-void preregister_module_types();
-void register_module_types();
-void unregister_module_types();
-
-#endif
+#define MODULE_GLSLANG_HAS_PREREGISTER
+void preregister_glslang_types();
+void register_glslang_types();
+void unregister_glslang_types();
