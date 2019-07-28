@@ -9,6 +9,15 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="_disabled" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="button_disabled" type="bool">
+			</argument>
+			<description>
+				Called when the disabled state of the button is changed.
+			</description>
+		</method>
 		<method name="_pressed" qualifiers="virtual">
 			<return type="void">
 			</return>

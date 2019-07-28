@@ -314,6 +314,10 @@ void BaseButton::set_disabled(bool p_disabled) {
 	if (status.disabled == p_disabled)
 		return;
 
+	if (get_script_instance()) {
+		get_script_instance()->call("_disabled", p_disabled);
+	}
+
 	status.disabled = p_disabled;
 	if (p_disabled) {
 		if (!toggle_mode) {
@@ -540,6 +544,7 @@ void BaseButton::_bind_methods() {
 
 	BIND_VMETHOD(MethodInfo("_pressed"));
 	BIND_VMETHOD(MethodInfo("_toggled", PropertyInfo(Variant::BOOL, "button_pressed")));
+	BIND_VMETHOD(MethodInfo("_disabled", PropertyInfo(Variant::BOOL, "button_disabled")));
 
 	ADD_SIGNAL(MethodInfo("pressed"));
 	ADD_SIGNAL(MethodInfo("button_up"));
