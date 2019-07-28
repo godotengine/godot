@@ -1058,9 +1058,9 @@ bool CanvasItemEditor::_gui_input_rulers_and_guides(const Ref<InputEvent> &p_eve
 	return false;
 }
 
-bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
+bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted) {
 	Ref<InputEventMouseButton> b = p_event;
-	if (b.is_valid()) {
+	if (b.is_valid() && !p_already_accepted) {
 		bool pan_on_scroll = bool(EditorSettings::get_singleton()->get("editors/2d/scroll_to_pan")) && !b->get_control();
 
 		if (b->is_pressed() && b->get_button_index() == BUTTON_WHEEL_DOWN) {
@@ -1162,14 +1162,14 @@ bool CanvasItemEditor::_gui_input_zoom_or_pan(const Ref<InputEvent> &p_event) {
 	}
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_event;
-	if (magnify_gesture.is_valid()) {
+	if (magnify_gesture.is_valid() && !p_already_accepted) {
 		// Zoom gesture
 		_zoom_on_position(zoom * magnify_gesture->get_factor(), magnify_gesture->get_position());
 		return true;
 	}
 
 	Ref<InputEventPanGesture> pan_gesture = p_event;
-	if (pan_gesture.is_valid()) {
+	if (pan_gesture.is_valid() && !p_already_accepted) {
 		// Pan gesture
 		const Vector2 delta = (int(EditorSettings::get_singleton()->get("editors/2d/pan_speed")) / zoom) * pan_gesture->get_delta();
 		view_offset.x += delta.x;
@@ -2268,7 +2268,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 		}
 	}
 
-	accepted = (_gui_input_zoom_or_pan(p_event) || accepted);
+	accepted = (_gui_input_zoom_or_pan(p_event, accepted) || accepted);
 
 	if (accepted)
 		accept_event();

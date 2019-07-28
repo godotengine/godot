@@ -466,7 +466,7 @@ private:
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
 	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
 	bool _gui_input_select(const Ref<InputEvent> &p_event);
-	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event);
+	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted);
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 
