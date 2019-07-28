@@ -171,7 +171,12 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 	for (int i = 0; i < variant_defines.size(); i++) {
 
-		Vector<RD::ShaderStageSource> stages;
+		Vector<RD::ShaderStageData> stages;
+
+		String error;
+		String current_source;
+		RD::ShaderStage current_stage = RD::SHADER_STAGE_VERTEX;
+		bool build_ok=true;
 
 		{
 			//vertex stage
@@ -201,15 +206,21 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 			builder.append(vertex_code3.get_data()); //fourth of vertex
 
-			RD::ShaderStageSource stage;
-			stage.shader_source = builder.as_string();
-			stage.shader_stage = RD::SHADER_STAGE_VERTEX;
+			current_source = builder.as_string();
+			RD::ShaderStageData stage;
+			stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_VERTEX,current_source,RD::SHADER_LANGUAGE_GLSL,&error);
+			if (stage.spir_v.size()==0) {
+				build_ok=false;
+			} else {
 
-			stages.push_back(stage);
+				stage.shader_stage = RD::SHADER_STAGE_VERTEX;
+				stages.push_back(stage);
+			}
 		}
 
-		{
+		if (build_ok){
 			//fragment stage
+			current_stage =RD::SHADER_STAGE_FRAGMENT;
 
 			StringBuilder builder;
 
@@ -240,30 +251,40 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 			builder.append(fragment_code4.get_data()); //fourth part of fragment
 
-			RD::ShaderStageSource stage;
-			stage.shader_source = builder.as_string();
-			stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
-#if 0
-			if (stage.shader_stage == RD::SHADER_STAGE_FRAGMENT && p_version->uniforms.length()) {
-				print_line(stage.shader_source.get_with_code_lines());
+			current_source = builder.as_string();
+			RD::ShaderStageData stage;
+			stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_FRAGMENT,current_source,RD::SHADER_LANGUAGE_GLSL,&error);
+			if (stage.spir_v.size()==0) {
+				build_ok=false;
+			} else {
+
+				stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
+				stages.push_back(stage);
 			}
-#endif
-			stages.push_back(stage);
+
 		}
 
-		String error;
-		RD::ShaderStage error_stage;
-		RID shader = RD::get_singleton()->shader_create_from_source(stages, &error, &error_stage);
 
-		if (shader.is_null() && error != String()) {
-			ERR_PRINT("Error compiling shader, variant #" + itos(i) + " (" + variant_defines[i].get_data() + ").");
+		if (!build_ok) {
+			ERR_PRINT("Error compiling " + String(current_stage == RD::SHADER_STAGE_VERTEX ? "Vertex" : "Fragment") + " shader, variant #" + itos(i) + " (" + variant_defines[i].get_data() + ").");
 			ERR_PRINT(error);
 
 #ifdef DEBUG_ENABLED
-			if (error_stage < RD::SHADER_STAGE_MAX) {
-				ERR_PRINT("code:\n" + stages[error_stage].shader_source.get_with_code_lines());
-			}
+			ERR_PRINT("code:\n" + current_source.get_with_code_lines());
 #endif
+			//clear versions if they exist
+			for (int j = 0; j < i; j++) {
+				RD::get_singleton()->free(p_version->variants[j]);
+			}
+
+			memdelete_arr(p_version->variants);
+			p_version->variants = NULL;
+			return;
+		}
+
+		RID shader = RD::get_singleton()->shader_create(stages);
+
+		if (shader.is_null()) {
 			//clear versions if they exist
 			for (int j = 0; j < i; j++) {
 				RD::get_singleton()->free(p_version->variants[j]);
