@@ -424,6 +424,7 @@ if selected_platform in platform_list:
                   "`can_build(env, platform)`." % x)
             can_build = config.can_build(selected_platform)
         if (can_build):
+        
             config.configure(env)
             env.module_list.append(x)
 
