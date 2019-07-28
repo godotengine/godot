@@ -1,10 +1,11 @@
 #include "rendering_device_vulkan.h"
-#include "drivers/vulkan/vulkan_context.h"
-
 #include "core/hashfuncs.h"
+#include "core/os/file_access.h"
 #include "core/project_settings.h"
+#include "drivers/vulkan/vulkan_context.h"
 #include "thirdparty/glslang/SPIRV/GlslangToSpv.h"
 #include "thirdparty/glslang/glslang/Include/Types.h"
+#include "thirdparty/spirv-reflect/spirv_reflect.h"
 
 void RenderingDeviceVulkan::_add_dependency(RID p_id, RID p_depends_on) {
 
@@ -2371,7 +2372,6 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 				image_copy_region.extent.depth = mm_depth;
 
 				vkCmdCopyImage(command_buffer, tex->image, VK_IMAGE_LAYOUT_TRANSFER_SRC_OPTIMAL, image, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, 1, &image_copy_region);
-				print_line("copying mipmap " + itos(i) + " w: " + itos(mm_width) + " h " + itos(mm_height) + " d " + itos(mm_depth));
 			}
 		}
 
@@ -3568,7 +3568,7 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 	glslang::TShader::ForbidIncluder includer;
 
 	//descriptor layouts
-	Vector<Vector<VkDescriptorSetLayoutBinding> > bindings;
+	Vector<Vector<VkDescriptorSetLayoutBinding> > set_bindings;
 	Vector<Vector<UniformInfo> > uniform_info;
 	Shader::PushConstant push_constant;
 	push_constant.push_constant_size = 0;
@@ -3652,10 +3652,26 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			return RID();
 		}
 
+#if 0
 		//obtain bindings for descriptor layout
 		program.mapIO();
 		program.buildReflection(EShReflectionAllBlockVariables);
 		//program.dumpReflection();
+
+		for (int j = 0; j < program.getNumUniformBlocks(); j++) {
+			const glslang::TObjectReflection &reflection = program.getUniformBlock(j);
+			if (reflection.getType()->getBasicType() == glslang::EbtBlock && reflection.getType()->getQualifier().storage == glslang::EvqUniform && reflection.getType()->getQualifier().layoutPushConstant) {
+				uint32_t len = reflection.size;
+				if (push_constant_debug.push_constant_size != 0 && push_constant_debug.push_constant_size != len) {
+					print_line("eep");
+				}
+
+				push_constant_debug.push_constant_size = len;
+				push_constant_debug.push_constants_vk_stage |= shader_stage_masks[p_stages[i].shader_stage];
+				//print_line("Debug stage " + String(shader_stage_names[p_stages[i].shader_stage]) + " push constant size: " + itos(push_constant_debug.push_constant_size));
+			}
+		}
+
 
 		for (int j = 0; j < program.getNumUniformVariables(); j++) {
 			if (!_uniform_add_binding(bindings, uniform_info, program.getUniform(j), p_stages[i].shader_stage, push_constant, r_error)) {
@@ -3698,10 +3714,232 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 			fragment_outputs = program.getNumPipeOutputs();
 		}
 
+#endif
 		std::vector<uint32_t> SpirV;
 		spv::SpvBuildLogger logger;
 		glslang::SpvOptions spvOptions;
 		glslang::GlslangToSpv(*program.getIntermediate(stages[p_stages[i].shader_stage]), SpirV, &logger, &spvOptions);
+
+		{
+			SpvReflectShaderModule module;
+			SpvReflectResult result = spvReflectCreateShaderModule(SpirV.size() * sizeof(uint32_t), &SpirV[0], &module);
+			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
+					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed parsing shader.");
+
+			uint32_t binding_count = 0;
+			result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, NULL);
+			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
+					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed enumerating descriptor bindings.");
+
+			uint32_t stage = p_stages[i].shader_stage;
+
+			if (binding_count > 0) {
+
+				//Parse bindings
+
+				Vector<SpvReflectDescriptorBinding *> bindings;
+				bindings.resize(binding_count);
+				result = spvReflectEnumerateDescriptorBindings(&module, &binding_count, bindings.ptrw());
+
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed getting descriptor bindings.");
+
+				for (uint32_t j = 0; j < binding_count; j++) {
+					const SpvReflectDescriptorBinding &binding = *bindings[j];
+
+					VkDescriptorSetLayoutBinding layout_binding;
+					UniformInfo info;
+
+					bool need_array_dimensions = false;
+					bool need_block_size = false;
+
+					switch (binding.descriptor_type) {
+						case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLER: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLER;
+							info.type = UNIFORM_TYPE_SAMPLER;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_COMBINED_IMAGE_SAMPLER;
+							info.type = UNIFORM_TYPE_SAMPLER_WITH_TEXTURE;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_SAMPLED_IMAGE: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_SAMPLED_IMAGE;
+							info.type = UNIFORM_TYPE_TEXTURE;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_IMAGE: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_IMAGE;
+							info.type = UNIFORM_TYPE_IMAGE;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_TEXEL_BUFFER;
+							info.type = UNIFORM_TYPE_TEXTURE_BUFFER;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_TEXEL_BUFFER;
+							info.type = UNIFORM_TYPE_IMAGE_BUFFER;
+							need_array_dimensions = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_UNIFORM_BUFFER;
+							info.type = UNIFORM_TYPE_UNIFORM_BUFFER;
+							need_block_size = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_STORAGE_BUFFER;
+							info.type = UNIFORM_TYPE_STORAGE_BUFFER;
+							need_block_size = true;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_UNIFORM_BUFFER_DYNAMIC: {
+							ERR_PRINT("Dynamic uniform buffer not supported.");
+							continue;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_STORAGE_BUFFER_DYNAMIC: {
+							ERR_PRINT("Dynamic storage buffer not supported.");
+							continue;
+						} break;
+						case SPV_REFLECT_DESCRIPTOR_TYPE_INPUT_ATTACHMENT: {
+							layout_binding.descriptorType = VK_DESCRIPTOR_TYPE_INPUT_ATTACHMENT;
+							info.type = UNIFORM_TYPE_INPUT_ATTACHMENT;
+						} break;
+					}
+
+					if (need_array_dimensions) {
+						if (binding.array.dims_count == 0) {
+							info.length = 1;
+						} else {
+							for (uint32_t k = 0; k < binding.array.dims_count; k++) {
+								if (k == 0) {
+									info.length = binding.array.dims[0];
+								} else {
+									info.length *= binding.array.dims[k];
+								}
+							}
+						}
+
+						layout_binding.descriptorCount = info.length;
+
+					} else if (need_block_size) {
+						info.length = binding.block.size;
+						layout_binding.descriptorCount = 1;
+					} else {
+						info.length = 0;
+						layout_binding.descriptorCount = 1;
+					}
+
+					info.binding = binding.binding;
+					uint32_t set = binding.set;
+
+					//print_line("Stage: " + String(shader_stage_names[stage]) + " set=" + itos(set) + " binding=" + itos(info.binding) + " type=" + shader_uniform_names[info.type] + " length=" + itos(info.length));
+
+					ERR_FAIL_COND_V_MSG(set >= MAX_UNIFORM_SETS, RID(),
+							"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' uses a set (" + itos(set) + ") index larger than what is supported (" + itos(MAX_UNIFORM_SETS) + ").");
+
+					ERR_FAIL_COND_V_MSG(set >= limits.maxBoundDescriptorSets, RID(),
+							"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' uses a set (" + itos(set) + ") index larger than what is supported by the hardware (" + itos(limits.maxBoundDescriptorSets) + ").");
+
+					if (set < (uint32_t)set_bindings.size()) {
+						//check if this already exists
+						bool exists = false;
+						for (int k = 0; k < set_bindings[set].size(); k++) {
+							if (set_bindings[set][k].binding == (uint32_t)info.binding) {
+								//already exists, verify that it's the same type
+								ERR_FAIL_COND_V_MSG(set_bindings[set][k].descriptorType != layout_binding.descriptorType, RID(),
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform type.");
+
+								//also, verify that it's the same size
+								ERR_FAIL_COND_V_MSG(set_bindings[set][k].descriptorCount != layout_binding.descriptorCount || uniform_info[set][k].length != info.length, RID(),
+										"On shader stage '" + String(shader_stage_names[stage]) + "', uniform '" + binding.name + "' trying to re-use location for set=" + itos(set) + ", binding=" + itos(info.binding) + " with different uniform size.");
+
+								//just append stage mask and return
+								set_bindings.write[set].write[k].stageFlags |= shader_stage_masks[stage];
+								uniform_info.write[set].write[k].stages |= 1 << stage;
+								exists = true;
+							}
+						}
+
+						if (exists) {
+							continue; //merged
+						}
+					}
+
+					layout_binding.binding = info.binding;
+					layout_binding.stageFlags = shader_stage_masks[stage];
+					layout_binding.pImmutableSamplers = NULL; //no support for this yet
+
+					info.stages = 1 << stage;
+					info.binding = info.binding;
+
+					if (set >= (uint32_t)set_bindings.size()) {
+						set_bindings.resize(set + 1);
+						uniform_info.resize(set + 1);
+					}
+
+					set_bindings.write[set].push_back(layout_binding);
+					uniform_info.write[set].push_back(info);
+				}
+			}
+
+			if (stage == SHADER_STAGE_FRAGMENT) {
+
+				uint32_t ov_count = 0;
+				result = spvReflectEnumerateOutputVariables(&module, &ov_count, NULL);
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed enumerating output variables.");
+
+				if (ov_count) {
+					Vector<SpvReflectInterfaceVariable *> output_vars;
+					output_vars.resize(ov_count);
+
+					result = spvReflectEnumerateOutputVariables(&module, &ov_count, output_vars.ptrw());
+					ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
+							"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed obtaining output variables.");
+
+					for (uint32_t j = 0; j < ov_count; j++) {
+						if (output_vars[j]) {
+							fragment_outputs = MAX(fragment_outputs, output_vars[j]->location + 1);
+						}
+					}
+				}
+			}
+			uint32_t pc_count = 0;
+			result = spvReflectEnumeratePushConstantBlocks(&module, &pc_count, NULL);
+			ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
+					"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed enumerating push constants.");
+
+			if (pc_count) {
+				ERR_FAIL_COND_V_MSG(pc_count > 1, RID(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "': Only one push constant is supported, which should be the same across shader stages.");
+
+				Vector<SpvReflectBlockVariable *> pconstants;
+				pconstants.resize(pc_count);
+				result = spvReflectEnumeratePushConstantBlocks(&module, &pc_count, pconstants.ptrw());
+				ERR_FAIL_COND_V_MSG(result != SPV_REFLECT_RESULT_SUCCESS, RID(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed obtaining push constants.");
+#if 0
+				if (pconstants[0] == NULL) {
+					FileAccess *f = FileAccess::open("res://popo.spv", FileAccess::WRITE);
+					f->store_buffer((const uint8_t *)&SpirV[0], SpirV.size() * sizeof(uint32_t));
+					memdelete(f);
+				}
+#endif
+
+				ERR_FAIL_COND_V_MSG(push_constant.push_constant_size && push_constant.push_constant_size != pconstants[0]->size, RID(),
+						"Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "': Push constant block must be the same across shader stages.");
+
+				push_constant.push_constant_size = pconstants[0]->size;
+				push_constant.push_constants_vk_stage |= shader_stage_masks[stage];
+
+				//print_line("Stage: " + String(shader_stage_names[stage]) + " push constant of size=" + itos(push_constant.push_constant_size));
+			}
+
+			// Destroy the reflection data when no longer required.
+			spvReflectDestroyShaderModule(&module);
+		}
 
 		spirv_code.push_back(SpirV);
 
@@ -3758,15 +3996,15 @@ RID RenderingDeviceVulkan::shader_create_from_source(const Vector<ShaderStageSou
 
 	if (success) {
 
-		for (int i = 0; i < bindings.size(); i++) {
+		for (int i = 0; i < set_bindings.size(); i++) {
 
 			//empty ones are fine if they were not used according to spec (binding count will be 0)
 			VkDescriptorSetLayoutCreateInfo layout_create_info;
 			layout_create_info.sType = VK_STRUCTURE_TYPE_DESCRIPTOR_SET_LAYOUT_CREATE_INFO;
 			layout_create_info.pNext = NULL;
 			layout_create_info.flags = 0;
-			layout_create_info.bindingCount = bindings[i].size();
-			layout_create_info.pBindings = bindings[i].ptr();
+			layout_create_info.bindingCount = set_bindings[i].size();
+			layout_create_info.pBindings = set_bindings[i].ptr();
 
 			VkDescriptorSetLayout layout;
 			VkResult res = vkCreateDescriptorSetLayout(device, &layout_create_info, NULL, &layout);
@@ -4108,7 +4346,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 		const Uniform &uniform = uniforms[uniform_idx];
 
 		ERR_FAIL_COND_V_MSG(uniform.type != set_uniform.type, RID(),
-				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + ").");
+				"Mismatch uniform type for binding (" + itos(set_uniform.binding) + "). Expected '" + shader_uniform_names[set_uniform.type] + "', supplied: '" + shader_uniform_names[uniform.type] + "'.");
 
 		VkWriteDescriptorSet write; //common header
 		write.sType = VK_STRUCTURE_TYPE_WRITE_DESCRIPTOR_SET;
@@ -6048,7 +6286,6 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 	}
 	texture_upload_region_size_px = GLOBAL_DEF("rendering/vulkan/staging_buffer/texture_upload_region_size_px", 64);
 	texture_upload_region_size_px = nearest_power_of_2_templated(texture_upload_region_size_px);
-	print_line("update size: " + itos(texture_upload_region_size_px));
 
 	frames_drawn = frame_count; //start from frame count, so everything else is immediately old
 
