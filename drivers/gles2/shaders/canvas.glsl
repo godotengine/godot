@@ -258,6 +258,8 @@ precision mediump int;
 #endif
 #endif
 
+#include "stdlib.glsl"
+
 uniform sampler2D color_texture; // texunit:-1
 /* clang-format on */
 uniform highp vec2 color_texpixel_size;

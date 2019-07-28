@@ -35,6 +35,23 @@ highp vec4 texel2DFetch(highp sampler2D tex, ivec2 size, ivec2 coord) {
 
 	return texture2DLod(tex, vec2(x_coord, y_coord), 0.0);
 }
+#ifdef ROUND_USED
+highp float round(highp float x) {
+	return floor(x + 0.5);
+}
+
+highp vec2 round(highp vec2 x) {
+	return floor(x + vec2(0.5));
+}
+
+highp vec3 round(highp vec3 x) {
+	return floor(x + vec3(0.5));
+}
+
+highp vec4 round(highp vec4 x) {
+	return floor(x + vec4(0.5));
+}
+#endif
 
 #ifndef USE_GLES_OVER_GL
 highp mat4 transpose(highp mat4 src) {
