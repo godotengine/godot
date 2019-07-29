@@ -733,6 +733,17 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 					code += ")";
 
+					if (p_default_actions.usage_defines.has(var_node->name) && !used_name_defines.has(var_node->name)) {
+						String define = p_default_actions.usage_defines[var_node->name];
+
+						if (define.begins_with("@")) {
+							define = p_default_actions.usage_defines[define.substr(1, define.length())];
+						}
+
+						r_gen_code.custom_defines.push_back(define.utf8());
+						used_name_defines.insert(var_node->name);
+					}
+
 				} break;
 
 				case SL::OP_INDEX: {
@@ -917,6 +928,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["round"] = "#define ROUND_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 
 	/** SPATIAL SHADER **/
