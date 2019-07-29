@@ -93,13 +93,13 @@
 		<member name="emission_points" type="PoolVector2Array" setter="set_emission_points" getter="get_emission_points">
 		</member>
 		<member name="emission_rect_extents" type="Vector2" setter="set_emission_rect_extents" getter="get_emission_rect_extents">
-			The rectangle's extents if [member emission_shape] is set to [const EMISSION_SHAPE_RECTANGLE].
+			The rectangle's extents if [member emission_shape] is set to [constant EMISSION_SHAPE_RECTANGLE].
 		</member>
 		<member name="emission_shape" type="int" setter="set_emission_shape" getter="get_emission_shape" enum="CPUParticles2D.EmissionShape">
 			Particles will be emitted inside this region. Use [enum EmissionShape] for values. Default value: [constant EMISSION_SHAPE_POINT].
 		</member>
 		<member name="emission_sphere_radius" type="float" setter="set_emission_sphere_radius" getter="get_emission_sphere_radius">
-			The circle's radius if [member emission_shape] is set to [const EMISSION_SHAPE_CIRCLE].
+			The circle's radius if [member emission_shape] is set to [constant EMISSION_SHAPE_CIRCLE].
 		</member>
 		<member name="emitting" type="bool" setter="set_emitting" getter="is_emitting">
 			If [code]true[/code], particles are being emitted. Default value: [code]true[/code].
@@ -261,10 +261,10 @@
 			Particles will be emitted in the area of a rectangle.
 		</constant>
 		<constant name="EMISSION_SHAPE_POINTS" value="3" enum="EmissionShape">
-			Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle color will be modulated by [member emission_color_texture].
+			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle color will be modulated by [member emission_colors].
 		</constant>
 		<constant name="EMISSION_SHAPE_DIRECTED_POINTS" value="4" enum="EmissionShape">
-			Particles will be emitted at a position determined by sampling a random point on the [member emission_point_texture]. Particle velocity and rotation will be set based on [member emission_normal_texture]. Particle color will be modulated by [member emission_color_texture].
+			Particles will be emitted at a position chosen randomly among [member emission_points]. Particle velocity and rotation will be set based on [member emission_normals]. Particle color will be modulated by [member emission_colors].
 		</constant>
 	</constants>
 </class>

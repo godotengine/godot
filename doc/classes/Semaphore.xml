@@ -13,14 +13,14 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Lowers the [code]Semaphore[/code], allowing one more thread in. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Lowers the [code]Semaphore[/code], allowing one more thread in. Returns [constant @GlobalScope.OK] on success, [constant @GlobalScope.ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Tries to wait for the [code]Semaphore[/code], if its value is zero, blocks until non-zero. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Tries to wait for the [code]Semaphore[/code], if its value is zero, blocks until non-zero. Returns [constant @GlobalScope.OK] on success, [constant @GlobalScope.ERR_BUSY] otherwise.
 			</description>
 		</method>
 	</methods>

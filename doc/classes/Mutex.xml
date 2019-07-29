@@ -20,7 +20,7 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Try locking this [code]Mutex[/code], does not block. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
+				Try locking this [code]Mutex[/code], does not block. Returns [constant @GlobalScope.OK] on success, [constant @GlobalScope.ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="unlock">

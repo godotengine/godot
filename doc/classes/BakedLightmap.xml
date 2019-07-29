@@ -36,6 +36,8 @@
 		<member name="bake_energy" type="float" setter="set_energy" getter="get_energy">
 			Multiplies the light sources' intensity by this value. For instance, if the value is set to 2, lights will be twice as bright. If the value is set to 0.5, lights will be half as bright.
 		</member>
+		<member name="bake_extents" type="Vector3" setter="set_extents" getter="get_extents">
+		</member>
 		<member name="bake_hdr" type="bool" setter="set_hdr" getter="is_hdr">
 			If [code]true[/code], lightmap can capture light values greater than [code]1.0[/code]. Turning this off will result in a smaller lightmap. Default value:[code]false[/code].
 		</member>

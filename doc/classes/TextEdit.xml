@@ -104,7 +104,7 @@
 			<description>
 				Moves the cursor at the specified [code]line[/code] index.
 				If [code]adjust_viewport[/code] is set to true, the viewport will center at the cursor position after the move occurs. Default value is [code]true[/code].
-				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [member set_line_as_hidden]. Default value is [code]true[/code].
+				If [code]can_be_hidden[/code] is set to true, the specified [code]line[/code] can be hidden using [method set_line_as_hidden]. Default value is [code]true[/code].
 			</description>
 		</method>
 		<method name="cut">
@@ -364,7 +364,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Unhide all lines that were previously set to hidden by [member set_line_as_hidden].
+				Unhide all lines that were previously set to hidden by [method set_line_as_hidden].
 			</description>
 		</method>
 	</methods>
@@ -388,6 +388,8 @@
 		</member>
 		<member name="context_menu_enabled" type="bool" setter="set_context_menu_enabled" getter="is_context_menu_enabled">
 			If [code]true[/code], a right click displays the context menu.
+		</member>
+		<member name="hiding_enabled" type="int" setter="set_hiding_enabled" getter="is_hiding_enabled">
 		</member>
 		<member name="highlight_all_occurrences" type="bool" setter="set_highlight_all_occurrences" getter="is_highlight_all_occurrences_enabled">
 			If [code]true[/code], all occurrences of the selected text will be highlighted.

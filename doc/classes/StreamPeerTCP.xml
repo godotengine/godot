@@ -17,7 +17,7 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [constant OK] on success or [constant FAILED] on failure.
+				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [constant @GlobalScope.OK] on success or [constant @GlobalScope.FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
