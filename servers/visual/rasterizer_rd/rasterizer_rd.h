@@ -2,10 +2,12 @@
 #define RASTERIZER_RD_H
 
 #include "core/os/os.h"
+#include "core/thread_work_pool.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/rasterizer_rd/rasterizer_canvas_rd.h"
 #include "servers/visual/rasterizer_rd/rasterizer_scene_forward_rd.h"
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
+
 class RasterizerRD : public Rasterizer {
 protected:
 	RasterizerCanvasRD *canvas;
@@ -50,6 +52,8 @@ public:
 	}
 
 	virtual bool is_low_end() const { return true; }
+
+	static ThreadWorkPool thread_work_pool;
 
 	RasterizerRD();
 	~RasterizerRD() {}

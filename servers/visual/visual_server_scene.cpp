@@ -3509,7 +3509,7 @@ VisualServerScene *VisualServerScene::singleton = NULL;
 VisualServerScene::VisualServerScene() {
 
 #ifndef NO_THREADS
-	probe_bake_sem = Semaphore::create();
+	probe_bake_sem = SemaphoreOld::create();
 	probe_bake_mutex = Mutex::create();
 	probe_bake_thread = Thread::create(_gi_probe_bake_threads, this);
 	probe_bake_thread_exit = false;

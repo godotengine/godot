@@ -231,7 +231,7 @@ FileAccessNetworkClient::FileAccessNetworkClient() {
 	singleton = this;
 	last_id = 0;
 	client.instance();
-	sem = Semaphore::create();
+	sem = SemaphoreOld::create();
 	lockcount = 0;
 }
 
@@ -522,8 +522,8 @@ FileAccessNetwork::FileAccessNetwork() {
 	eof_flag = false;
 	opened = false;
 	pos = 0;
-	sem = Semaphore::create();
-	page_sem = Semaphore::create();
+	sem = SemaphoreOld::create();
+	page_sem = SemaphoreOld::create();
 	buffer_mutex = Mutex::create();
 	FileAccessNetworkClient *nc = FileAccessNetworkClient::singleton;
 	nc->lock_mutex();

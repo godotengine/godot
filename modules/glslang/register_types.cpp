@@ -140,9 +140,6 @@ static PoolVector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_s
 
 	ERR_FAIL_COND_V(p_language==RenderingDevice::SHADER_LANGUAGE_HLSL,ret);
 
-	// initialize in case it's not initialized. This is done once per thread
-	// and it's safe to call multiple times
-	glslang::InitializeProcess();
 	EShLanguage stages[RenderingDevice::SHADER_STAGE_MAX] = {
 		EShLangVertex,
 		EShLangFragment,
@@ -229,6 +226,9 @@ static PoolVector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_s
 }
 
 void preregister_glslang_types() {
+	// initialize in case it's not initialized. This is done once per thread
+	// and it's safe to call multiple times
+	glslang::InitializeProcess();
 	RenderingDevice::shader_set_compile_function(_compile_shader_glsl);
 }
 
@@ -236,5 +236,5 @@ void register_glslang_types() {
 }
 void unregister_glslang_types() {
 
-
+	glslang::FinalizeProcess();
 }
