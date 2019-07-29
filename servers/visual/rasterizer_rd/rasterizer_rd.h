@@ -24,6 +24,8 @@ protected:
 
 	double time;
 
+	static uint32_t frame;
+
 public:
 	RasterizerStorage *get_storage() { return storage; }
 	RasterizerCanvas *get_canvas() { return canvas; }
@@ -38,6 +40,8 @@ public:
 
 	void end_frame(bool p_swap_buffers);
 	void finalize();
+
+	static _ALWAYS_INLINE_ uint64_t get_frame_number() { return frame; }
 
 	static Error is_viable() {
 		return OK;
