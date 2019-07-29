@@ -67,12 +67,17 @@ void GDNativeLibraryEditor::_update_tree() {
 	TreeItem *root = tree->create_item();
 
 	PopupMenu *filter_list = filter->get_popup();
+	String text = "";
 	for (int i = 0; i < filter_list->get_item_count(); i++) {
 
 		if (!filter_list->is_item_checked(i)) {
 			continue;
 		}
 		Map<String, NativePlatformConfig>::Element *E = platforms.find(filter_list->get_item_metadata(i));
+		if (!text.empty()) {
+			text += ", ";
+		}
+		text += E->get().name;
 
 		TreeItem *platform = tree->create_item(root);
 		platform->set_text(0, E->get().name);
@@ -122,6 +127,7 @@ void GDNativeLibraryEditor::_update_tree() {
 
 		platform->set_collapsed(collapsed_items.find(E->get().name) != NULL);
 	}
+	filter->set_text(text);
 }
 
 void GDNativeLibraryEditor::_on_item_button(Object *item, int column, int id) {
@@ -339,11 +345,11 @@ GDNativeLibraryEditor::GDNativeLibraryEditor() {
 	label->set_text(TTR("Platform:"));
 	hbox->add_child(label);
 	filter = memnew(MenuButton);
-	filter->set_text(TTR("Choose platform"));
+	filter->set_h_size_flags(SIZE_EXPAND_FILL);
+	filter->set_text_align(filter->ALIGN_LEFT);
 	hbox->add_child(filter);
 	PopupMenu *filter_list = filter->get_popup();
 	filter_list->set_hide_on_checkable_item_selection(false);
-	filter_list->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	int idx = 0;
 	for (Map<String, NativePlatformConfig>::Element *E = platforms.front(); E; E = E->next()) {
