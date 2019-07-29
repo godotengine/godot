@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  rendering_device_vulkan.cpp                                          */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "rendering_device_vulkan.h"
 #include "core/hashfuncs.h"
 #include "core/os/file_access.h"
@@ -5065,7 +5095,9 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(in
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
 	draw_list = memnew(DrawList);
 	draw_list->command_buffer = command_buffer;
+#ifdef DEBUG_ENABLED
 	draw_list->validation.framebuffer_format = screen_get_framebuffer_format();
+#endif
 	draw_list_count = 0;
 	draw_list_split = false;
 
@@ -5264,7 +5296,9 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 	draw_list = memnew(DrawList);
 	draw_list->command_buffer = command_buffer;
+#ifdef DEBUG_ENABLED
 	draw_list->validation.framebuffer_format = framebuffer->format_id;
+#endif
 	draw_list_count = 0;
 	draw_list_split = false;
 
@@ -5412,7 +5446,9 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		}
 
 		draw_list[i].command_buffer = command_buffer;
+#ifdef DEBUG_ENABLED
 		draw_list[i].validation.framebuffer_format = framebuffer->format_id;
+#endif
 
 		VkViewport viewport;
 		viewport.x = viewport_offset.x;
@@ -5609,9 +5645,9 @@ void RenderingDeviceVulkan::draw_list_bind_vertex_array(DrawListID p_list, RID p
 
 #ifdef DEBUG_ENABLED
 	dl->validation.vertex_format = vertex_array->description;
-	dl->validation.vertex_array_size = vertex_array->vertex_count;
 	dl->validation.vertex_max_instances_allowed = vertex_array->max_instances_allowed;
 #endif
+	dl->validation.vertex_array_size = vertex_array->vertex_count;
 	vkCmdBindVertexBuffers(dl->command_buffer, 0, vertex_array->buffers.size(), vertex_array->buffers.ptr(), vertex_array->offsets.ptr());
 }
 void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_index_array) {
@@ -5635,10 +5671,11 @@ void RenderingDeviceVulkan::draw_list_bind_index_array(DrawListID p_list, RID p_
 
 	dl->state.index_array = p_index_array;
 #ifdef DEBUG_ENABLED
-	dl->validation.index_array_size = index_array->indices;
 	dl->validation.index_array_max_index = index_array->max_index;
-	dl->validation.index_array_offset = index_array->offset;
 #endif
+	dl->validation.index_array_size = index_array->indices;
+	dl->validation.index_array_offset = index_array->offset;
+
 	vkCmdBindIndexBuffer(dl->command_buffer, index_array->buffer, index_array->offset, index_array->index_type);
 }
 
@@ -5646,10 +5683,13 @@ void RenderingDeviceVulkan::draw_list_set_line_width(DrawListID p_list, float p_
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
+
+#ifdef DEBUG_ENABLED
 	if (!dl->validation.active) {
 		ERR_EXPLAIN("Submitted Draw Lists can no longer be modified.");
 		ERR_FAIL();
 	}
+#endif
 
 	vkCmdSetLineWidth(dl->command_buffer, p_width);
 }
@@ -5672,7 +5712,9 @@ void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, void 
 	}
 #endif
 	vkCmdPushConstants(dl->command_buffer, dl->state.pipeline_layout, dl->state.pipeline_push_constant_stages, 0, p_data_size, p_data);
+#ifdef DEBUG_ENABLED
 	dl->validation.pipeline_push_constant_suppplied = true;
+#endif
 }
 
 void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances) {
