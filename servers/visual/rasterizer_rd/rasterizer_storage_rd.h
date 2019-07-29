@@ -4,8 +4,8 @@
 #include "core/rid_owner.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/rasterizer_rd/effects_rd.h"
-#include "servers/visual/rendering_device.h"
 #include "servers/visual/rasterizer_rd/shader_compiler_rd.h"
+#include "servers/visual/rendering_device.h"
 
 class RasterizerStorageRD : public RasterizerStorage {
 public:
@@ -109,7 +109,8 @@ private:
 		}
 	};
 
-	mutable RID_Owner<Texture> texture_owner;
+	//textures can be created from threads, so this RID_Owner is thread safe
+	mutable RID_Owner<Texture, true> texture_owner;
 
 	Ref<Image> _validate_texture_format(const Ref<Image> &p_image, TextureToRDFormat &r_format);
 

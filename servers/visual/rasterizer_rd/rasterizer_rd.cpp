@@ -76,7 +76,7 @@ void RasterizerRD::initialize() {
 
 		RenderingDevice::ShaderStageData frag;
 		frag.shader_stage = RenderingDevice::SHADER_STAGE_FRAGMENT;
-		frag.spir_v =RenderingDevice::get_singleton()->shader_compile_from_source(RenderingDevice::SHADER_STAGE_FRAGMENT,
+		frag.spir_v = RenderingDevice::get_singleton()->shader_compile_from_source(RenderingDevice::SHADER_STAGE_FRAGMENT,
 				"#version 450\n"
 				"layout (location = 0) in vec2 uv;\n"
 				"layout (location = 0) out vec4 color;\n"
@@ -120,7 +120,11 @@ void RasterizerRD::initialize() {
 	}
 }
 
+ThreadWorkPool RasterizerRD::thread_work_pool;
+
 void RasterizerRD::finalize() {
+
+	thread_work_pool.finish();
 
 	memdelete(scene);
 	memdelete(canvas);
@@ -133,6 +137,7 @@ void RasterizerRD::finalize() {
 }
 
 RasterizerRD::RasterizerRD() {
+	thread_work_pool.init();
 	time = 0;
 	storage = memnew(RasterizerStorageRD);
 	canvas = memnew(RasterizerCanvasRD(storage));

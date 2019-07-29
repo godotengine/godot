@@ -37,11 +37,11 @@
 
 #include <semaphore.h>
 
-class SemaphorePosix : public Semaphore {
+class SemaphorePosix : public SemaphoreOld {
 
 	mutable sem_t sem;
 
-	static Semaphore *create_semaphore_posix();
+	static SemaphoreOld *create_semaphore_posix();
 
 public:
 	virtual Error wait();

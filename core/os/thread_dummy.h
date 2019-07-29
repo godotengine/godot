@@ -58,9 +58,9 @@ public:
 	static void make_default();
 };
 
-class SemaphoreDummy : public Semaphore {
+class SemaphoreDummy : public SemaphoreOld {
 
-	static Semaphore *create();
+	static SemaphoreOld *create();
 
 public:
 	virtual Error wait() { return OK; };
