@@ -5,12 +5,13 @@
 # Milos Ponjavusic <brane@branegames.com>, 2018.
 # BLu <blmasfon@gmail.com>, 2018.
 # Vojislav Bajakic <ch3d4.ns@gmail.com>, 2018.
+# LT <lakizvezdas@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:42+0100\n"
-"Last-Translator: Vojislav Bajakic <ch3d4.ns@gmail.com>\n"
+"PO-Revision-Date: 2019-07-29 19:21+0000\n"
+"Last-Translator: LT <lakizvezdas@gmail.com>\n"
 "Language-Team: Serbian (latin) <https://hosted.weblate.org/projects/godot-"
 "engine/godot/sr_Latn/>\n"
 "Language: sr_Latn\n"
@@ -19,7 +20,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n%10==1 && n%100!=11 ? 0 : n%10>=2 && n"
 "%10<=4 && (n%100<10 || n%100>=20) ? 1 : 2;\n"
-"X-Generator: Poedit 2.2\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -63,33 +64,31 @@ msgstr ""
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Slobodno"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Balansirano"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "Ogledalo"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Vreme:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Vrednost:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Animacija dodaj ključ"
+msgstr "Dodaj ključ ovde"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Uduplaj Selekciju"
+msgstr "Dupliraj Selektovane Ključeve"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -97,11 +96,11 @@ msgstr "Izbriši označeni ključ(eve)"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Dodaj Bezier Tačku"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr ""
+msgstr "Pomeri Bezier Tačke"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -132,9 +131,8 @@ msgid "Anim Change Call"
 msgstr "Animacija Promjeni Poziv"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Promijeni Dužinu Animacije"
+msgstr "Promeni Dužinu Animacije"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
@@ -159,26 +157,24 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Playback Track"
-msgstr ""
+msgstr "Audio Plejbek Traka"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Playback Track"
-msgstr ""
+msgstr "Animacija Plejbek Traka"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Optimizuj Animaciju"
+msgstr "Dužina Animacije (frames)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Promijeni Dužinu Animacije"
+msgstr "Dužina Animacije (secunde)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Add Track"
-msgstr "Animacija Dodaj Kanal"
+msgstr "Dodaj Traku"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation Looping"
@@ -186,16 +182,18 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
 msgid "Functions:"
-msgstr ""
+msgstr "Funkcije:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr ""
+msgstr "Audio Klipovi:"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Clips:"
-msgstr ""
+msgstr "Anim Klipovi:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
@@ -224,7 +222,7 @@ msgstr "Odstrani Kanal Animacije"
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
-msgstr ""
+msgstr "Vreme (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -247,8 +245,9 @@ msgid "Capture"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Nearest"
-msgstr ""
+msgstr "Najbliže"
 
 #: editor/animation_track_editor.cpp editor/plugins/curve_editor_plugin.cpp
 #: editor/property_editor.cpp
@@ -275,12 +274,12 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Duplicate Key(s)"
-msgstr "Animacija Uduplaj Ključeve"
+msgstr "Dupliraj Ključeve"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Delete Key(s)"
-msgstr "Animacija Obriši Ključeve"
+msgstr "Obriši Ključeve"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -376,7 +375,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Add Bezier Track"
-msgstr "Animacija Dodaj Kanal"
+msgstr "Dodaj Bezier Kanal"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
@@ -392,9 +391,8 @@ msgid "Add Transform Track Key"
 msgstr "Animacija Dodaj kanal i ključ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "Animacija Dodaj Kanal"
+msgstr "Dodaj Kljuc Kanal"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."

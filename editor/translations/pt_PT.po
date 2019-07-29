@@ -18,7 +18,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-15 13:10+0000\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
 "Last-Translator: João Lopes <linux-man@hotmail.com>\n"
 "Language-Team: Portuguese (Portugal) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_PT/>\n"
@@ -2516,9 +2516,8 @@ msgid "Go to previously opened scene."
 msgstr "Ir para Cena aberta anteriormente."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "Copiar Caminho"
+msgstr "Copiar Texto"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -4718,9 +4717,8 @@ msgid "Idle"
 msgstr "Inativo"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Instalar"
+msgstr "Instalar..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
@@ -4765,9 +4763,8 @@ msgid "Sort:"
 msgstr "Ordenar:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Reverse sorting."
-msgstr "A solicitar..."
+msgstr "Inverter ordenação."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4846,39 +4843,32 @@ msgid "Rotation Step:"
 msgstr "Passo da rotação:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Vertical Guide"
-msgstr "Mover guia vertical"
+msgstr "Mover Guia Vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Vertical Guide"
-msgstr "Criar nova guia vertical"
+msgstr "Criar Guia Vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Vertical Guide"
-msgstr "Remover guia vertical"
+msgstr "Remover Guia Vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Horizontal Guide"
-msgstr "Mover guia horizontal"
+msgstr "Mover Guia Horizontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal Guide"
-msgstr "Criar nova guia horizontal"
+msgstr "Criar Guia Horizontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Horizontal Guide"
-msgstr "Remover guia horizontal"
+msgstr "Remover Guia Horizontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal and Vertical Guides"
-msgstr "Criar guias horizontal e vertical"
+msgstr "Criar Guias Horizontais e Verticais"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move pivot"
@@ -7909,7 +7899,7 @@ msgstr "Alterado Tipo de Entrada do Visual Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
-msgstr ""
+msgstr "(Apenas GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -7996,21 +7986,20 @@ msgid "Color uniform."
 msgstr "Uniforme Cor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the boolean result of the %s comparison between two parameters."
-msgstr "Devolve o inverso da raiz quadrada do parâmetro."
+msgstr "Devolve o resultado lógico da comparação %s entre dois parâmetros."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
-msgstr ""
+msgstr "Igual (==)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than (>)"
-msgstr ""
+msgstr "Maior Que (>)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than or Equal (>=)"
-msgstr ""
+msgstr "Maior ou Igual a (>=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8024,24 +8013,26 @@ msgid ""
 "Returns the boolean result of the comparison between INF and a scalar "
 "parameter."
 msgstr ""
+"Devolve o resultado lógico da comparação entre INF e um parâmetro escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between NaN and a scalar "
 "parameter."
 msgstr ""
+"Devolve o resultado lógico da comparação entre NaN e um parâmetro escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
-msgstr ""
+msgstr "Menor Que (<)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
-msgstr ""
+msgstr "Menor ou Igual a (<=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Not Equal (!=)"
-msgstr ""
+msgstr "Diferente (!=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8051,15 +8042,16 @@ msgstr ""
 "falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the boolean result of the comparison between two parameters."
-msgstr "Devolve a tangente do parâmetro."
+msgstr "Devolve o resultado lógico da comparação entre dois parâmetros."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
 msgstr ""
+"Devolve o resultado lógico da comparação entre INF (ou NaN) e um parâmetro "
+"escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean constant."
@@ -8150,18 +8142,16 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "Devolve o arco seno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr "(Apenas GLES3) Devolve o arco cosseno hiperbólico do parâmetro."
+msgstr "Devolve o arco cosseno hiperbólico do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
 msgstr "Devolve o arco seno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr "(Apenas GLES3) Devolve o arco seno hiperbólico do parâmetro."
+msgstr "Devolve o arco seno hiperbólico do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
@@ -8172,9 +8162,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "Devolve o arco tangente do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr "(Apenas GLES3) Devolve o arco tangente hiperbólico do parâmetro."
+msgstr "Devolve o arco tangente hiperbólico do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8190,9 +8179,8 @@ msgid "Returns the cosine of the parameter."
 msgstr "Devolve o cosseno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "(Apenas GLES3) Devolve o cosseno hiperbólico do parâmetro."
+msgstr "Devolve o cosseno hiperbólico do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
@@ -8260,14 +8248,12 @@ msgid "1.0 / scalar"
 msgstr "1.0 / escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the nearest integer to the parameter."
-msgstr "(Apenas GLES3) Encontra o inteiro mais próximo do parâmetro."
+msgstr "Encontra o inteiro mais próximo do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the nearest even integer to the parameter."
-msgstr "(Apenas GLES3) Encontra o inteiro ímpar mais próximo do parâmetro."
+msgstr "Encontra o inteiro ímpar mais próximo do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
@@ -8282,9 +8268,8 @@ msgid "Returns the sine of the parameter."
 msgstr "Devolve o seno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr "(Apenas GLES3) Devolve o seno hiperbólico do parâmetro."
+msgstr "Devolve o seno hiperbólico do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the square root of the parameter."
@@ -8319,14 +8304,12 @@ msgid "Returns the tangent of the parameter."
 msgstr "Devolve a tangente do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr "(Apenas GLES3) Devolve a tangente hiperbólica do parâmetro."
+msgstr "Devolve a tangente hiperbólica do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the truncated value of the parameter."
-msgstr "(Apenas GLES3) Encontra o valor truncado do parâmetro."
+msgstr "Encontra o valor truncado do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds scalar to scalar."
@@ -8365,26 +8348,22 @@ msgid "Perform the texture lookup."
 msgstr "Executa texture lookup."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Cubic texture uniform lookup."
-msgstr "Uniforme Textura Cúbica."
+msgstr "Consulta uniforme de textura cúbica."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform lookup."
-msgstr "Uniforme Textura 2D."
+msgstr "Consulta uniforme de textura 2D."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform lookup with triplanar."
-msgstr "Uniforme Textura 2D."
+msgstr "Consulta uniforme de textura 2D com triplanar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform function."
 msgstr "Função Transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Calculate the outer product of a pair of vectors.\n"
 "\n"
@@ -8394,7 +8373,7 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
-"(Apenas GLES3) Calcula o produto tensorial de um par de vetores.\n"
+"Calcula o produto tensorial de um par de vetores.\n"
 "\n"
 "OuterProduct trata o primeiro parâmetro 'c' como um vetor coluna (matriz com "
 "uma coluna) e o segundo parâmetro 'r' como um vetor linha (matriz com uma "
@@ -8411,19 +8390,16 @@ msgid "Decomposes transform to four vectors."
 msgstr "Decompõe transformação em quatro vetores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Calculates the determinant of a transform."
-msgstr "(Apenas GLES3) Calcula o determinante de uma transformação."
+msgstr "Calcula o determinante de uma transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Calculates the inverse of a transform."
-msgstr "(Apenas GLES3) Calcula o inverso de uma transformação."
+msgstr "Calcula o inverso de uma transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Calculates the transpose of a transform."
-msgstr "(Apenas GLES3) Calcula a transposta de uma transformação."
+msgstr "Calcula a transposta de uma transformação."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies transform by transform."
@@ -8470,7 +8446,6 @@ msgid "Calculates the dot product of two vectors."
 msgstr "Calcula o produto escalar de dois vetores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
@@ -8503,7 +8478,6 @@ msgid "1.0 / vector"
 msgstr "1.0 / vetor"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
@@ -8512,7 +8486,6 @@ msgstr ""
 "b : vetor normal )."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "Devolve um vetor que aponta na direção da refração."
 
@@ -8612,68 +8585,57 @@ msgstr ""
 "da câmara (passa entradas associadas)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "(Fragment/Light mode only) Scalar derivative function."
-msgstr "(Apenas GLES3) (apenas modo Fragment/Light) Função derivada escalar."
+msgstr "(Apenas modo Fragment/Light) Função derivada escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr "(Apenas GLES3) (apenas modo Fragment/Light) Função derivada vetorial."
+msgstr "(Apenas modo Fragment/Light) Função derivada vetorial."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
-msgstr ""
-"(Apenas GLES3) (apenas modo Fragment/Light) Derivação em 'x' usando "
-"derivação local."
+msgstr "(Apenas modo Fragment/Light) Derivada em 'x' usando derivação local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(Apenas GLES3) (apenas modo Fragment/Light) (Escalar) Derivação em 'x' "
-"usando derivação local."
+"(Apenas modo Fragment/Light) (Escalar) Derivada em 'x' usando derivação "
+"local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(Apenas GLES3) (apenas modo Fragment/Light) (Vetor) Derivação em 'y' usando "
-"derivação local."
+"(Apenas modo Fragment/Light) (Vetor) Derivada em 'y' usando derivação local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(Apenas GLES3) (apenas modo Fragment/Light) (Escalar) Derivação em 'y' "
-"usando derivação local."
+"(Apenas modo Fragment/Light) (Escalar) Derivada em 'y' usando derivação "
+"local."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(Apenas GLES3) (apenas modo Fragment/Light) (Vetor) Soma das derivadas "
-"absolutas em 'x' e 'y'."
+"(Apenas modo Fragment/Light) (Vetor) Soma das derivadas absolutas em 'x' e "
+"'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(Apenas GLES3) (apenas modo Fragment/Light) (Escalar) Soma das derivadas "
-"absolutas em 'x' e 'y'."
+"(Apenas modo Fragment/Light) (Escalar) Soma das derivadas absolutas em 'x' e "
+"'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -10113,9 +10075,8 @@ msgid "Script is valid."
 msgstr "Script é válido."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "Permitido: a-z, A-Z, 0-9 e _"
+msgstr "Permitido: a-z, A-Z, 0-9,  _ e ."
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)."
@@ -11794,9 +11755,8 @@ msgid "Invalid source for shader."
 msgstr "Fonte inválida para Shader."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "Fonte inválida para Shader."
+msgstr "Função de comparação inválida para este tipo."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

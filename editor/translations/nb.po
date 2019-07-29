@@ -19,8 +19,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:51+0000\n"
-"Last-Translator: Petter Reinholdtsen <pere-weblate@hungry.com>\n"
+"PO-Revision-Date: 2019-07-29 19:21+0000\n"
+"Last-Translator: Allan Nordhøy <epost@anotheragency.no>\n"
 "Language-Team: Norwegian Bokmål <https://hosted.weblate.org/projects/godot-"
 "engine/godot/nb_NO/>\n"
 "Language: nb\n"
@@ -50,24 +50,20 @@ msgid "self can't be used because instance is null (not passed)"
 msgstr "self kan ikke brukes siden instansen er lik null (ikke bestått)"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Ugyldig indeks egenskap navn '%s' i node %s."
+msgstr "Ugyldige argumenter til operator %s, %s og %s."
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid index of type %s for base type %s"
-msgstr "Ugyldig indeks egenskap navn '%s' i node %s."
+msgstr "Ugyldig indeks av type %s for basistype %s"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid named index '%s' for base type %s"
 msgstr "Ugyldig navngitt indeks \"%s\" for grunntypen %s"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": Ugyldig argument av type: "
+msgstr "Ugyldige argumenter for å lage \"%s\""
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -91,14 +87,12 @@ msgid "Time:"
 msgstr "Tid:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Nytt navn:"
+msgstr "Verdi:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Sett inn Nøkkel"
+msgstr "Sett inn nøkkel her"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
@@ -1877,14 +1871,12 @@ msgid "Next Folder"
 msgstr "Lag mappe"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Go to parent folder."
-msgstr "Gå til overnevnt mappe"
+msgstr "Gå til ovennevnt mappe."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "(Un)favorite current folder."
-msgstr "Kunne ikke opprette mappe."
+msgstr "(Av)favoriser gjeldende mappe."
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
@@ -12093,7 +12085,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Konstanter kan ikke endres."
 
 #~ msgid "Reverse"
 #~ msgstr "Reverser"

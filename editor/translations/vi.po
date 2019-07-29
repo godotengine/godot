@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:49+0000\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
 "Last-Translator: Steve Dang <itsnguu@outlook.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Hàm convert() có đối số không hợp lệ, sử dụng các hằng TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -71,7 +71,7 @@ msgstr "Miễn phí"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Cân bằng"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -86,14 +86,12 @@ msgid "Value:"
 msgstr "Giá trị:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Chèn Key Anim"
+msgstr "Thêm Khoá Tại Đây"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Nhân đôi lựa chọn"
+msgstr "Nhân đôi các khoá đã chọn"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -101,12 +99,11 @@ msgstr "Xoá Key(s) được chọn"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Thêm điểm Bezier"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Di chuyển đến..."
+msgstr "Di chuyển điểm Bezier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -137,14 +134,13 @@ msgid "Anim Change Call"
 msgstr "Đổi Function Gọi Animation"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Length"
-msgstr "Đổi vòng lặp Anim"
+msgstr "Thay Độ Dài Hoạt Ảnh"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Chỉnh Vòng Lặp Hoạt Ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -172,14 +168,12 @@ msgid "Animation Playback Track"
 msgstr "Ngưng chạy animation. (S)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Độ dài Animation (giây)."
+msgstr "Độ dài hoạt ảnh (khung hình)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Độ dài Animation (giây)."
+msgstr "Độ dài hoạt ảnh (giây)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -187,9 +181,8 @@ msgid "Add Track"
 msgstr "Thêm Track Animation"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Phóng Animation."
+msgstr "Vòng Lặp Hoạt Ảnh"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -366,7 +359,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Các bản hoạt ảnh chỉ có thể trỏ tới các nút AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -454,12 +447,11 @@ msgstr "Cảnh bảo: Chỉnh sửa hoạt ảnh đã nhập"
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr ""
+msgstr "Chọn Toàn Bộ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select None"
-msgstr "Chế độ chọn"
+msgstr "Chọn Không có"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -470,14 +462,12 @@ msgid "Group tracks by node or display them as plain list."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Bước (s):"
+msgstr "Chụp:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Phóng Animation."
+msgstr "Giá trị bước hoạt ảnh."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -521,27 +511,24 @@ msgid "Duplicate Transposed"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Nhân đôi lựa chọn"
+msgstr "Xoá lựa chọn"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
-msgstr "Đến Step tiếp theo"
+msgstr "Đến Bước tiếp theo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
-msgstr "Đến Step trước đó"
+msgstr "Đến Bước trước đó"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr "Tối ưu Animation"
+msgstr "Tối ưu Hoạt ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Dọn dẹp Animation"
+msgstr "Dọn dẹp Hoạt ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
@@ -573,12 +560,11 @@ msgstr "Tối ưu"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Hủy key không đúng chuẩn"
+msgstr "Gỡ bỏ các khoá không hợp lệ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove unresolved and empty tracks"
-msgstr "Gỡ bỏ track trống và không tìm thấy"
+msgstr "Gỡ bỏ các Tracks không thể xử lý và trống"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
@@ -586,7 +572,7 @@ msgstr "Dọn dẹp tất cả animations"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Dọn dẹp tất cả Animation (KHÔNG THỂ HỒI LẠI)"
+msgstr "Dọn dẹp tất cả Hoạt ảnh (KHÔNG THỂ HỒI LẠI)"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
@@ -598,7 +584,7 @@ msgstr "Tỉ lệ Scale:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "Chọn các Track để sao chép:"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -610,9 +596,8 @@ msgid "Copy"
 msgstr "Sao chép"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Thêm Track Animation"
+msgstr "Thêm Track Âm thanh"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -644,20 +629,19 @@ msgstr "Dòng số:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "Tìm thấy %d khớp."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
-msgstr "Không tìm thấy"
+msgstr "Không khớp"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr ""
+msgstr "Đã thay thế %d biến cố."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
-#, fuzzy
 msgid "Match Case"
-msgstr "Trùng khớp"
+msgstr "Khớp Trường Hợp"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
@@ -705,37 +689,32 @@ msgid "Line and column numbers."
 msgstr "Số dòng và cột."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "Cách thức trong Node được chọn phải được ghi rõ!"
+msgstr "Phương thức trong nút đích phải được chỉ định."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Cách thức của đối tượng không tìm thấy! ghi rõ một cách thức hợp lệ hoặc "
-"đính kèm một script cho đối tượng Node."
+"Phương thức không tìm thấy. Chỉ định phương thức hợp lệ hoặc đính kèm tệp "
+"lệnh vào nút."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
-msgstr "Kết nối đến Node:"
+msgstr "Kết nối đến Nút:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Không thể kết nối tới host:"
+msgstr "Kết nối Tệp lệnh:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "Đang kết nối Signal:"
+msgstr "Từ tín hiệu:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr "Cảnh không chứa mã lệnh."
+msgstr "Cảnh không chứa tệp lệnh."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -755,27 +734,26 @@ msgid "Remove"
 msgstr "Xóa"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Add Extra Call Argument:"
-msgstr "Thêm đối số:"
+msgstr "Thêm đối số mở rộng:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Mở rộng Đối số được gọi:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
 msgstr "Nâng cao"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Deferred"
-msgstr "Hoãn lại"
+msgstr "Trì hoãn"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
 msgstr ""
+"Trì hoãn tín hiệu, lưu vào một hàng chờ và chỉ kích nó vào thời gian rãnh."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -808,7 +786,6 @@ msgid "Connect"
 msgstr "Kết nối"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
 msgstr "Tín hiệu:"
 
@@ -821,9 +798,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Hủy kết nối '%s' từ '%s'"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
-msgstr "Hủy kết nối '%s' từ '%s'"
+msgstr "Dừng kết nối tất cả từ tín hiệu: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -868,7 +844,7 @@ msgstr "Đến Method"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr "Đổi %s Type"
+msgstr "Đổi %s Loại"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
@@ -921,38 +897,42 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Cảnh '%s' hiện đang được chỉnh sửa.\n"
+"Các thay đổi chỉ có hiệu lực khi tải lại."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Tài nguyên '%s' đang sử dụng.\n"
+"Thay đổi sẽ chỉ hiệu lực khi tải lại."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Các phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Tài nguyên"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
-msgstr ""
+msgstr "Đường dẫn"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Các phụ thuộc:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr ""
+msgstr "Sửa chữa"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr ""
+msgstr "Trình chỉnh sửa Phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
@@ -970,11 +950,11 @@ msgstr "Mở"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr ""
+msgstr "Sở hữu của:"
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr ""
+msgstr "Gỡ bỏ các tệp đã chọn trong dự án? (Không thể khôi phục)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -997,15 +977,15 @@ msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr ""
+msgstr "Luôn mở"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr ""
+msgstr "Chọn hành động nên thực hiện?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Sửa các phần phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
@@ -1034,7 +1014,7 @@ msgstr "Xóa"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "Sở hữu"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
@@ -1119,6 +1099,10 @@ msgid ""
 "is an exhaustive list of all such thirdparty components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot Engine dựa trên một số thư viện mã nguồn mở và miễn phí của bên thứ "
+"ba, tất cả đều phù hợp với các điều khoản trong giấy phép MIT. Sau đây là "
+"danh sách tất cả các thành phần của bên thứ ba với các điều khoản bản quyền "
+"và điều khoản cấp phép tương ứng."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1138,7 +1122,7 @@ msgstr "Lỗi không thể mở gói, không phải dạng nén."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr ""
+msgstr "Giải nén Assets"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1159,7 +1143,7 @@ msgstr "Gói cài đặt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Máy phát thanh"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
@@ -1268,7 +1252,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr ""
+msgstr "Vị trí cho Bố cục mới..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -3913,7 +3897,7 @@ msgstr ""
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr "Thêm Animation"
+msgstr "Thêm Hoạt ảnh"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4115,7 +4099,7 @@ msgstr "Đổi bộ lọc"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
-msgstr ""
+msgstr "Không có trình phát hoạt ảnh, không thể truy xuất tên."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
@@ -4127,6 +4111,7 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+"Trính phát hoạt ảnh không có đường dẫn nút Gốc, không thể truy xuất tên."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4231,7 +4216,7 @@ msgstr "Chạy hoạt ảnh đã chọn ngược lại từ cuối. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr "Ngưng chạy hoạt ảnh. (S)"
+msgstr "Dừng chạy lại hoạt ảnh. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"

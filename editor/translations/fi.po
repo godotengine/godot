@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-15 13:10+0000\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -2498,9 +2498,8 @@ msgid "Go to previously opened scene."
 msgstr "Mene aiemmin avattuun skeneen."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "Kopioi polku"
+msgstr "Kopioi teksti"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -4707,9 +4706,8 @@ msgid "Idle"
 msgstr "Toimeton"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Asenna"
+msgstr "Asenna..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
@@ -4754,9 +4752,8 @@ msgid "Sort:"
 msgstr "Lajittele:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Reverse sorting."
-msgstr "Pyydetään..."
+msgstr "Käännä lajittelu."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4837,39 +4834,32 @@ msgid "Rotation Step:"
 msgstr "Kierron välistys:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Vertical Guide"
 msgstr "Siirrä pystysuoraa apuviivaa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Vertical Guide"
-msgstr "Luo uusi pystysuora apuviiva"
+msgstr "Luo pystysuora apuviiva"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Vertical Guide"
 msgstr "Poista pystysuora apuviiva"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Horizontal Guide"
 msgstr "Siirrä vaakasuoraa apuviivaa"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal Guide"
-msgstr "Luo uusi vaakasuora apuviiva"
+msgstr "Luo vaakasuora apuviiva"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Horizontal Guide"
 msgstr "Poista vaakasuora apuviiva"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal and Vertical Guides"
-msgstr "Luo uudet vaaka- ja pystysuorat apuviivat"
+msgstr "Luo vaaka- ja pystysuorat apuviivat"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move pivot"
@@ -7906,7 +7896,7 @@ msgstr "Visual Shaderin syötteen tyyppi vaihdettu"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
-msgstr ""
+msgstr "(Vain GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -7993,21 +7983,20 @@ msgid "Color uniform."
 msgstr "Väri-uniform."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the boolean result of the %s comparison between two parameters."
-msgstr "Palauttaa parametrin käänteisen neliöjuuren."
+msgstr "Palauttaa kahden parametrin %s vertailun totuusarvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
-msgstr ""
+msgstr "Yhtä suuri (==)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than (>)"
-msgstr ""
+msgstr "Suurempi kuin (>)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than or Equal (>=)"
-msgstr ""
+msgstr "Yhtä suuri tai suurempi kuin (>=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8021,25 +8010,25 @@ msgstr ""
 msgid ""
 "Returns the boolean result of the comparison between INF and a scalar "
 "parameter."
-msgstr ""
+msgstr "Palauttaa INF ja skalaarin parametrien vertailun totuusarvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between NaN and a scalar "
 "parameter."
-msgstr ""
+msgstr "Palauttaa NaN- ja skalaariparametrien vertailun totuusarvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
-msgstr ""
+msgstr "Pienempi kuin (<)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
-msgstr ""
+msgstr "Yhtä suuri tai pienempi kuin (<=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Not Equal (!=)"
-msgstr ""
+msgstr "Erisuuri (!=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8048,15 +8037,15 @@ msgstr ""
 "Palauttaa liitetyn vektorin, jos annettu totuusarvo on tosi tai epätosi."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the boolean result of the comparison between two parameters."
-msgstr "Palauttaa parametrin tangentin."
+msgstr "Palauttaa kahden parametrin vertailun totuusarvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
 msgstr ""
+"Palauttaa INF- (tai NaN-) ja skalaariparametrien vertailun totuusarvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean constant."
@@ -8147,18 +8136,16 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "Palauttaa parametrin arkuskosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr "(Vain GLES3) Palauttaa parametrin käänteisen hyperbolisen kosinin."
+msgstr "Palauttaa parametrin käänteisen hyperbolisen kosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
 msgstr "Palauttaa parametrin arkussinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr "(Vain GLES3) Palauttaa parametrin käänteisen hyperbolisen sinin."
+msgstr "Palauttaa parametrin käänteisen hyperbolisen sinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
@@ -8169,9 +8156,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "Palauttaa parametrien arkustangentin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr "(Vain GLES3) Palauttaa parametrin käänteisen hyperbolisen tangentin."
+msgstr "Palauttaa parametrin käänteisen hyperbolisen tangentin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8188,9 +8174,8 @@ msgid "Returns the cosine of the parameter."
 msgstr "Palauttaa parametrin kosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "(Vain GLES3) Palauttaa parametrin hyperbolisen kosinin."
+msgstr "Palauttaa parametrin hyperbolisen kosinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
@@ -8261,14 +8246,12 @@ msgid "1.0 / scalar"
 msgstr "1.0 / skalaari"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the nearest integer to the parameter."
-msgstr "(Vain GLES3) Etsii parametria lähinnä olevan kokonaisluvun."
+msgstr "Etsii parametria lähinnä olevan kokonaisluvun."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the nearest even integer to the parameter."
-msgstr "(Vain GLES3) Etsii parametria lähinnä olevan parillisen kokonaisluvun."
+msgstr "Etsii parametria lähinnä olevan parillisen kokonaisluvun."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
@@ -8283,9 +8266,8 @@ msgid "Returns the sine of the parameter."
 msgstr "Palauttaa parametrin sinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr "(Vain GLES3) Palauttaa parametrin hyperbolisen sinin."
+msgstr "Palauttaa parametrin hyperbolisen sinin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the square root of the parameter."
@@ -8320,14 +8302,12 @@ msgid "Returns the tangent of the parameter."
 msgstr "Palauttaa parametrin tangentin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr "(Vain GLES3) Palauttaa parametrin hyperbolisen tangentin."
+msgstr "Palauttaa parametrin hyperbolisen tangentin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the truncated value of the parameter."
-msgstr "(Vain GLES3) Hakee parametrin katkaistun arvon."
+msgstr "Hakee parametrin katkaistun arvon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds scalar to scalar."
@@ -8366,26 +8346,22 @@ msgid "Perform the texture lookup."
 msgstr "Suorittaa tekstuurin haun."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Cubic texture uniform lookup."
-msgstr "Kuutiollinen tekstuuriuniformi."
+msgstr "Kuutiollisen tekstuuriuniformin haku."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform lookup."
-msgstr "2D-tekstuuriuniformi."
+msgstr "2D-tekstuuriuniformin haku."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform lookup with triplanar."
-msgstr "2D-tekstuuriuniformi."
+msgstr "2D-tekstuuriuniformin haku kolmitasolla."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform function."
 msgstr "Muunnosfunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Calculate the outer product of a pair of vectors.\n"
 "\n"
@@ -8395,7 +8371,7 @@ msgid ""
 "whose number of rows is the number of components in 'c' and whose number of "
 "columns is the number of components in 'r'."
 msgstr ""
-"(Vain GLES3) Laskee vektoriparin ulkotulon.\n"
+"Laskee vektoriparin ulkotulon.\n"
 "\n"
 "Ulkotulo ottaa ensimmäisen parametrin 'c' sarakevektorina (matriisi, jolla "
 "on yksi sarake) ja toisen parametrin 'r' rivivektorina (matriisi, jolla on "
@@ -8412,19 +8388,16 @@ msgid "Decomposes transform to four vectors."
 msgstr "Hajoittaa muunnoksen neljään vektoriin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Calculates the determinant of a transform."
-msgstr "(Vain GLES3) Laskee muunnoksen determinantin."
+msgstr "Laskee muunnoksen determinantin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Calculates the inverse of a transform."
-msgstr "(Vain GLES3) Laskee muunnoksen käänteismatriisin."
+msgstr "Laskee muunnoksen käänteismatriisin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Calculates the transpose of a transform."
-msgstr "(Vain GLES3) Laskee muunnoksen transpoosin."
+msgstr "Laskee muunnoksen transpoosin."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies transform by transform."
@@ -8471,17 +8444,16 @@ msgid "Calculates the dot product of two vectors."
 msgstr "Laskee kahden vektorin pistetulon."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
-"Palauttaa vektorin, joka osoittaa samaan suuntaan kuin viitevektori. "
-"Funktiolla on kolme parametria: N eli suunnattava vektori, I eli "
-"tulovektori, ja Nref eli viitevektori. Jos I ja Nref pistetulo on pienempi "
-"kuin nolla, paluuarvo on N. Muutoin palautetaan -N."
+"Palauttaa vektorin, joka osoittaa samaan suuntaan kuin viitevektori. Funktio "
+"ottaa kolme vektoriparametria: N eli suunnattava vektori, I eli tulovektori, "
+"ja Nref eli viitevektori. Jos I ja Nref pistetulo on pienempi kuin nolla, "
+"paluuarvo on N. Muutoin palautetaan -N."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
@@ -8504,7 +8476,6 @@ msgid "1.0 / vector"
 msgstr "1.0 / vektori"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
@@ -8513,7 +8484,6 @@ msgstr ""
 "b : normaalivektori )."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "Palauttaa vektorin, joka osoittaa taittumisen suuntaan."
 
@@ -8612,67 +8582,59 @@ msgstr ""
 "suuntavektorin pistetuloon (välitä nämä syötteinä)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "(Fragment/Light mode only) Scalar derivative function."
-msgstr "(Vain GLES3) (Vain Fragment/Light tilat) Skalaariderivaattafunktio."
+msgstr "(Vain Fragment/Light tilat) Skalaariderivaattafunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr "(Vain GLES3) (Vain Fragment/Light tilat) Vektoriderivaattafunktio."
+msgstr "(Vain Fragment/Light tilat) Vektoriderivaattafunktio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(Vain GLES3) (Vain Fragment/Light tilat) (Vektori) 'x' derivaatta käyttäen "
+"(Vain Fragment/Light tilat) (Vektori) 'x' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(Vain GLES3) (Vain Fragment/Light tilat) (Skalaari) 'x' derivaatta käyttäen "
+"(Vain Fragment/Light tilat) (Skalaari) 'x' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(Vain GLES3) (Vain Fragment/Light tilat) (Vektori) 'y' derivaatta käyttäen "
+"(Vain Fragment/Light tilat) (Vektori) 'y' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(Vain GLES3) (Vain Fragment/Light tilat) (Skalaari) 'y' derivaatta käyttäen "
+"(Vain Fragment/Light tilat) (Skalaari) 'y' derivaatta käyttäen "
 "paikallisdifferentiaalia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(Vain GLES3) (Vain Fragment/Light tilat) (Vektori) 'x' ja 'y' derivaattojen "
-"itseisarvojen summa."
+"(Vain Fragment/Light tilat) (Vektori) 'x' ja 'y' derivaattojen itseisarvojen "
+"summa."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(Vain GLES3) (Vain Fragment/Light tilat) (Skalaari) 'x' ja 'y' derivaattojen "
+"(Vain Fragment/Light tilat) (Skalaari) 'x' ja 'y' derivaattojen "
 "itseisarvojen summa."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -10113,9 +10075,8 @@ msgid "Script is valid."
 msgstr "Skripti kelpaa."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "Sallittu: a-z, A-Z, 0-9 ja _"
+msgstr "Sallittu: a-z, A-Z, 0-9, _ ja ."
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)."
@@ -11792,9 +11753,8 @@ msgid "Invalid source for shader."
 msgstr "Virheellinen lähde sävyttimelle."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "Virheellinen lähde sävyttimelle."
+msgstr "Virheellinen vertailufunktio tälle tyypille."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

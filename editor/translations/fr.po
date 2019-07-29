@@ -58,12 +58,13 @@
 # Patrick Zoch Alves <patrickzochalves@gmail.com>, 2019.
 # Alexis Comte <comtealexis@gmail.com>, 2019.
 # Julian Murgia <the.straton@gmail.com>, 2019.
+# Ducoté <Raphalielle@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-17 09:20+0000\n"
-"Last-Translator: Julian Murgia <the.straton@gmail.com>\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"Last-Translator: Hugo Locurcio <hugo.locurcio@hugo.pro>\n"
 "Language-Team: French <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fr/>\n"
 "Language: fr\n"
@@ -1158,7 +1159,7 @@ msgstr "Licence"
 
 #: editor/editor_about.cpp
 msgid "Thirdparty License"
-msgstr "Licence tierce partie"
+msgstr "Licences tierce partie"
 
 #: editor/editor_about.cpp
 msgid ""
@@ -2014,7 +2015,7 @@ msgstr ""
 #: editor/editor_help_search.cpp editor/editor_node.cpp
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search Help"
-msgstr "Chercher dans l'aide"
+msgstr "Rechercher dans l'aide"
 
 #: editor/editor_help_search.cpp
 msgid "Display All"
@@ -2542,8 +2543,9 @@ msgid "Close Other Tabs"
 msgstr "Fermer les autres onglets"
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid "Close Tabs to the Right"
-msgstr ""
+msgstr "Fermer la fenêtre à droite"
 
 #: editor/editor_node.cpp
 msgid "Close All Tabs"
@@ -2686,7 +2688,7 @@ msgstr "Ouvrir le dossier de données du projets"
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template"
-msgstr ""
+msgstr "Installer un modèle de compilation Android"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2799,9 +2801,8 @@ msgid "Editor Layout"
 msgstr "Disposition de l'éditeur"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Take Screenshot"
-msgstr "Choisir comme racine de scène"
+msgstr "Prendre une capture d'écran"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2865,7 +2866,7 @@ msgstr "Documentation en ligne"
 
 #: editor/editor_node.cpp
 msgid "Q&A"
-msgstr "Q & R"
+msgstr "Questions et réponses"
 
 #: editor/editor_node.cpp
 msgid "Issue Tracker"
@@ -2974,6 +2975,8 @@ msgstr "Ne pas enregistrer"
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
 msgstr ""
+"Le modèle de compilation Android est manquant, veuillez installer les "
+"modèles appropriés."
 
 #: editor/editor_node.cpp
 msgid "Manage Templates"
@@ -2984,6 +2987,9 @@ msgid ""
 "This will install the Android project for custom builds.\n"
 "Note that, in order to use it, it needs to be enabled per export preset."
 msgstr ""
+"Ceci va installer le projet Android pour des compilations personnalisées.\n"
+"Notez que pour l'utiliser, vous devez l'activer pour chaque préréglage "
+"d'exportation."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -4884,7 +4890,7 @@ msgstr "Officiel"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
-msgstr "Tester"
+msgstr "En période de test"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -6467,7 +6473,7 @@ msgstr "Aider à améliorer la documentation de Godot en donnant vos réactions.
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
-msgstr "Chercher dans la documentation de référence."
+msgstr "Rechercher dans la documentation de référence."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Go to previous edited document."
@@ -9191,7 +9197,6 @@ msgstr ""
 "Supprimer le projet de la liste ? (Le contenu du dossier ne sera pas modifié)"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Language changed.\n"
 "The interface will update after restarting the editor or project manager."
@@ -9230,9 +9235,8 @@ msgid "New Project"
 msgstr "Nouveau projet"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid "Remove Missing"
-msgstr "Supprimer point"
+msgstr "Nettoyer la liste"
 
 #: editor/project_manager.cpp
 msgid "Templates"
@@ -9566,14 +9570,12 @@ msgid "Locales Filter"
 msgstr "Filtre de langues"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Show All Locales"
-msgstr "Montrer toutes les langues"
+msgstr "Afficher toutes les langues"
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Show Selected Locales Only"
-msgstr "Montrer uniquement les langues sélectionnées"
+msgstr "Afficher uniquement les langues sélectionnées"
 
 #: editor/project_settings_editor.cpp
 msgid "Filter mode:"
@@ -11140,6 +11142,8 @@ msgstr ""
 msgid ""
 "Android project is not installed for compiling. Install from Editor menu."
 msgstr ""
+"Le projet Android n'est pas installé et ne peut donc pas être compilé. "
+"Installez-le depuis le menu Éditeur."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."

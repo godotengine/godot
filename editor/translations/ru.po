@@ -52,12 +52,13 @@
 # Дмитрий Ефимов <daefimov@gmail.com>, 2019.
 # Sergey <www.window1@mail.ru>, 2019.
 # Vladislav <onion.ring@mail.ru>, 2019.
+# knightpp <kotteam99@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-15 13:10+0000\n"
-"Last-Translator: Sergey <www.window1@mail.ru>\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"Last-Translator: knightpp <kotteam99@gmail.com>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -503,9 +504,8 @@ msgid "Group tracks by node or display them as plain list."
 msgstr "Группировать треки по узлам или показывать их как простой список."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Привязка"
+msgstr "Привязка:"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation step value."
@@ -1648,6 +1648,7 @@ msgid ""
 "Profile '%s' already exists. Remove it first before importing, import "
 "aborted."
 msgstr ""
+"Профиль '%s' уже существует. Удалите его перед импортом, импорт отменен."
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1656,7 +1657,7 @@ msgstr "Ошибка при загрузке шаблона '%s'"
 
 #: editor/editor_feature_profile.cpp
 msgid "Unset"
-msgstr ""
+msgstr "Сбросить"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -2524,7 +2525,7 @@ msgstr "Закрыть другие вкладки"
 
 #: editor/editor_node.cpp
 msgid "Close Tabs to the Right"
-msgstr ""
+msgstr "Закрыть вкладки справа"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2668,7 +2669,7 @@ msgstr "Открыть папку с данными проекта"
 
 #: editor/editor_node.cpp
 msgid "Install Android Build Template"
-msgstr ""
+msgstr "Установить шаблон сборки Android"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2790,7 +2791,7 @@ msgstr "Открыть папку Данные/Настройки редакто
 
 #: editor/editor_node.cpp
 msgid "Automatically Open Screenshots"
-msgstr ""
+msgstr "Автоматически открывать скриншоты"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2955,6 +2956,8 @@ msgstr "Не сохранять"
 #: editor/editor_node.cpp
 msgid "Android build template is missing, please install relevant templates."
 msgstr ""
+"Шаблон сборки Android отсутствует, пожалуйста, установите соответствующие "
+"шаблоны."
 
 #: editor/editor_node.cpp
 #, fuzzy

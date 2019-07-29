@@ -6,14 +6,15 @@
 # Nagy Lajos <neutron9707@gmail.com>, 2017.
 # Sandor Domokos <sandor.domokos@gmail.com>, 2017-2018.
 # Varga Dániel <danikah.danikah@gmail.com>, 2016-2018.
-# Gabor Csordas <gaborcsordas@yahoo.com>, 2018.
+# Gabor Csordas <gaborcsordas@yahoo.com>, 2018, 2019.
 # Tusa Gamer <tusagamer@mailinator.com>, 2018.
+# Máté Lugosi <mate.lugosi@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-29 12:09+0000\n"
-"Last-Translator: Tusa Gamer <tusagamer@mailinator.com>\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"Last-Translator: Gabor Csordas <gaborcsordas@yahoo.com>\n"
 "Language-Team: Hungarian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/hu/>\n"
 "Language: hu\n"
@@ -21,7 +22,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -45,15 +46,15 @@ msgstr "self nem használható, mert a példány null (nincs átadva)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "Érvénytelen operandus a %s, %s és %s operátorokhoz."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Érvénytelen %s típusú index a %s alap típushoz."
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Érvénytelen nevezett index '%s' %s alaptípushoz"
 
 #: core/math/expression.cpp
 #, fuzzy
@@ -63,7 +64,7 @@ msgstr ""
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "'%s' hívásánál:"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -72,21 +73,19 @@ msgstr "Ingyenes"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Kiegyensúlyozott"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Mirror"
-msgstr "Hiba!"
+msgstr "Tükör"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
 msgstr "Idő:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Új név:"
+msgstr "Érték:"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -94,24 +93,20 @@ msgid "Insert Key Here"
 msgstr "Kulcs Beszúrása"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Kiválasztás megkettőzés"
+msgstr "Kiválasztott elem(ek) megkettőzése"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Delete Selected Key(s)"
-msgstr "Törli a kiválasztott fájlokat?"
+msgstr "Kiválasztott kulcsok törlése"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Add Bezier Point"
-msgstr "Pont hozzáadása"
+msgstr "Bezier pont hozzáadása"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Pont Mozgatása"
+msgstr "Bezier pont Mozgatása"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -119,7 +114,7 @@ msgstr "Animáció kulcsok megkettőzése"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr "Animáció kulcs törlés"
+msgstr "Animáció kulcs törlése"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
@@ -149,11 +144,12 @@ msgstr "Animáció Nevének Megváltoztatása:"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Animációs ciklus változtatása"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Property Track"
-msgstr ""
+msgstr "Tulajdonság Követés"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -178,14 +174,12 @@ msgid "Animation Playback Track"
 msgstr "Animáció lejátszásának leállítása. (S)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Animáció hossza (másodpercben)."
+msgstr "Animáció hossza (képkockákban)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Animáció hossza (másodpercben)."
+msgstr "Animáció hossza (másodpercben)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -200,7 +194,7 @@ msgstr "Animáció nagyítás."
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Functions:"
-msgstr ""
+msgstr "Funkciók:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
@@ -225,9 +219,8 @@ msgid "Update Mode (How this property is set)"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Interpolation Mode"
-msgstr "Animáció Node"
+msgstr "Interpoláció mód"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"

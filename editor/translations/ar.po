@@ -28,12 +28,13 @@
 # DiscoverSquishy <noaimi@discoversquishy.me>, 2019.
 # ButterflyOfFire <ButterflyOfFire@protonmail.com>, 2019.
 # PhoenixHO <oussamahaddouche0@gmail.com>, 2019.
+# orcstudio <orcstudio@orcstudio.org>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-09 10:47+0000\n"
-"Last-Translator: PhoenixHO <oussamahaddouche0@gmail.com>\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"Last-Translator: orcstudio <orcstudio@orcstudio.org>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -469,7 +470,7 @@ msgstr ""
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr ""
+msgstr "تحديد الكل"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -733,9 +734,8 @@ msgid "Connect to Node:"
 msgstr "صلها بالعقدة:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "لا يمكن الإتصال بالمُضيف:"
+msgstr "الإتصال بالمخطوطة:"
 
 #: editor/connections_dialog.cpp
 #, fuzzy
@@ -773,9 +773,8 @@ msgid "Extra Call Arguments:"
 msgstr "وسائط إستدعاء إضافية :"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "إعدادات الكبس"
+msgstr "إعدادات متقدمة"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"

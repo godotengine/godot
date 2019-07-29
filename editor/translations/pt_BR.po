@@ -64,12 +64,13 @@
 # Douglas Fiedler <dognew@gmail.com>, 2019.
 # Rarysson Guilherme <r_guilherme12@hotmail.com>, 2019.
 # Gustavo da Silva Santos <gustavo94.rb@gmail.com>, 2019.
+# Rafael Roque <rafael.roquec@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-07-15 13:10+0000\n"
-"Last-Translator: Esdras Tarsis <esdrastarsis@gmail.com>\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"Last-Translator: Rafael Roque <rafael.roquec@gmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -2562,9 +2563,8 @@ msgid "Go to previously opened scene."
 msgstr "Ir para cena aberta anteriormente."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "Copiar Caminho"
+msgstr "Copiar Texto"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -2945,13 +2945,12 @@ msgid "Manage Templates"
 msgstr "Gerenciar Templates"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This will install the Android project for custom builds.\n"
 "Note that, in order to use it, it needs to be enabled per export preset."
 msgstr ""
 "Isso instalará o projeto Android para compilações personalizadas.\n"
-"Observe que, para usá-lo, ele precisa ser ativado por predefinição de "
+"Note que, para usá-lo, ele precisa estar habilitado por predefinição de "
 "exportação."
 
 #: editor/editor_node.cpp
@@ -3071,7 +3070,7 @@ msgstr "Medida:"
 
 #: editor/editor_profiler.cpp
 msgid "Frame Time (sec)"
-msgstr "Tempo de Quadro (seg)"
+msgstr "Tempo do Frame (seg)"
 
 #: editor/editor_profiler.cpp
 msgid "Average Time (sec)"
@@ -3079,11 +3078,11 @@ msgstr "Tempo Médio (seg)"
 
 #: editor/editor_profiler.cpp
 msgid "Frame %"
-msgstr "% de Quadro"
+msgstr "Frame %"
 
 #: editor/editor_profiler.cpp
 msgid "Physics Frame %"
-msgstr "Quadro Físico %"
+msgstr "Frame de Física %"
 
 #: editor/editor_profiler.cpp
 msgid "Inclusive"
@@ -4776,9 +4775,8 @@ msgid "Idle"
 msgstr "Ocioso"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Install..."
-msgstr "Instalar"
+msgstr "Instalar..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
@@ -4823,9 +4821,8 @@ msgid "Sort:"
 msgstr "Ordenar:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Reverse sorting."
-msgstr "Solicitando..."
+msgstr "Inverter ordenação."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4906,39 +4903,32 @@ msgid "Rotation Step:"
 msgstr "Passo de Rotação:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Vertical Guide"
-msgstr "Mover guia vertical"
+msgstr "Mover Guia Vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Vertical Guide"
-msgstr "Criar novo guia vertical"
+msgstr "Criar Guia Vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Vertical Guide"
-msgstr "Remover guia vertical"
+msgstr "Remover Guia Vertical"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Move Horizontal Guide"
-msgstr "Mover guia horizontal"
+msgstr "Mover Guia Horizontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal Guide"
-msgstr "Criar novo guia horizontal"
+msgstr "Criar Guia Horizontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Remove Horizontal Guide"
-msgstr "Remover guia horizontal"
+msgstr "Remover Guia Horizontal"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Create Horizontal and Vertical Guides"
-msgstr "Criar novos guias horizontais e verticais"
+msgstr "Criar Guias Horizontais e Verticais"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move pivot"
@@ -5299,9 +5289,8 @@ msgid "Divide grid step by 2"
 msgstr "Dividir o passo da grade por 2"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Pan View"
-msgstr "Visão Traseira"
+msgstr "Vista Panorâmica"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
@@ -5525,9 +5514,8 @@ msgid "This doesn't work on scene root!"
 msgstr "Não funciona na raiz da cena!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Create Trimesh Static Shape"
-msgstr "Criar Forma Trimesh"
+msgstr "Criar Forma Estática Trimesh"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Failed creating shapes!"
@@ -5955,9 +5943,8 @@ msgid "Split Segment (in curve)"
 msgstr "Dividir Segmentos (na curva)"
 
 #: editor/plugins/physical_bone_plugin.cpp
-#, fuzzy
 msgid "Move Joint"
-msgstr "Mover junta"
+msgstr "Mover Junta"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid ""
@@ -6290,18 +6277,16 @@ msgid "Find Next"
 msgstr "Localizar próximo"
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter scripts"
-msgstr "Filtrar propriedades"
+msgstr "Filtrar scripts"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "Alternar ordenação alfabética da lista de métodos."
 
 #: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
 msgid "Filter methods"
-msgstr "Modo de filtragem:"
+msgstr "Métodos de filtragem"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -6544,7 +6529,7 @@ msgstr "Marcadores"
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Breakpoints"
-msgstr "Criar pontos."
+msgstr "Pontos de interrupção(Breakpoints)"
 
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
@@ -6572,19 +6557,16 @@ msgid "Toggle Bookmark"
 msgstr "Alternar Marcador"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Next Bookmark"
-msgstr "Vá para o próximo ponto de interrupção"
+msgstr "Ir para o Próximo Marcador"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Go to Previous Bookmark"
-msgstr "Ir para ponto de interrupção anterior"
+msgstr "Ir para o Marcador Anterior"
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Remove All Bookmarks"
-msgstr "Remover Todos os Itens"
+msgstr "Remover Todos os Marcadores"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -6665,8 +6647,8 @@ msgid ""
 "This shader has been modified on on disk.\n"
 "What action should be taken?"
 msgstr ""
-"Os seguintes arquivos são mais recentes no disco.\n"
-"Que ação deve ser tomada?:"
+"Este shader foi modificado no disco.\n"
+"Que ação deve ser tomada?"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
@@ -7246,21 +7228,20 @@ msgid "Settings:"
 msgstr "Configurações:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "No Frames Selected"
-msgstr "Seleção de Quadros"
+msgstr "Nenhum Frame Selecionado"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add %d Frame(s)"
-msgstr "Adicionar %d Quadro(s)"
+msgstr "Adicionar %d Frame(s)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
-msgstr "Adicionar Quadro"
+msgstr "Adicionar Frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "ERROR: Couldn't load frame resource!"
-msgstr "ERRO: Não foi possível carregar recurso de quadro!"
+msgstr "ERRO: Não foi possível carregar o recurso de frame!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Resource clipboard is empty or not a texture!"
@@ -7268,7 +7249,7 @@ msgstr "Recurso da área de transferência está vazio ou não é uma textura!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Paste Frame"
-msgstr "Colar Quadro"
+msgstr "Colar Frame"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Empty"
@@ -7300,7 +7281,7 @@ msgstr "Repetir"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Animation Frames:"
-msgstr "Quadros da Animação:"
+msgstr "Frames da Animação:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add a Texture from File"
@@ -7308,7 +7289,7 @@ msgstr "Adicionar Textura de um Arquivo"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frames from a Sprite Sheet"
-msgstr "Adicionar Quadros de uma Sprite Sheet"
+msgstr "Adicionar Frames de uma Sprite Sheet"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
@@ -7327,9 +7308,8 @@ msgid "Move (After)"
 msgstr "Mover (Depois)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select Frames"
-msgstr "Pilha de Quadros"
+msgstr "Selecionar Frames"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Horizontal:"
@@ -7340,14 +7320,13 @@ msgid "Vertical:"
 msgstr "Vertical:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-#, fuzzy
 msgid "Select/Clear All Frames"
-msgstr "Selecionar Tudo"
+msgstr "Selecionar/Deselecionar Todos os Frames"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
 msgid "Create Frames from Sprite Sheet"
-msgstr "Criar a partir de Cena"
+msgstr "Criar Frames a partir da Planilha de Sprites"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
@@ -7419,9 +7398,8 @@ msgid "Remove All"
 msgstr "Remover Tudo"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Edit Theme"
-msgstr "Editar tema..."
+msgstr "Editar Tema"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -7448,23 +7426,20 @@ msgid "Create From Current Editor Theme"
 msgstr "Criar a Partir do Tema Atual do Editor"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Toggle Button"
-msgstr "Botão do Mous"
+msgstr "Alternar Botão"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled Button"
-msgstr "Botão do Meio"
+msgstr "Botão Desativado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
 msgstr "Item"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled Item"
-msgstr "Desabilitado"
+msgstr "Item Desativado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Check Item"
@@ -7483,7 +7458,6 @@ msgid "Checked Radio Item"
 msgstr "Item Rádio Marcado"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Named Sep."
 msgstr "Sep. Nomeado"
 
@@ -7492,14 +7466,12 @@ msgid "Submenu"
 msgstr "Submenu"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Item 1"
-msgstr "Item"
+msgstr "Item 1"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Item 2"
-msgstr "Item"
+msgstr "Item 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
@@ -7510,9 +7482,8 @@ msgid "Many"
 msgstr "Muitas"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Disabled LineEdit"
-msgstr "Desabilitado"
+msgstr "LineEdit Desativado"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -7527,9 +7498,8 @@ msgid "Tab 3"
 msgstr "Guia 3"
 
 #: editor/plugins/theme_editor_plugin.cpp
-#, fuzzy
 msgid "Editable Item"
-msgstr "Filhos Editáveis"
+msgstr "Item Editável"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subtree"
@@ -7605,14 +7575,12 @@ msgid "Transpose"
 msgstr "Transpor"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Disable Autotile"
-msgstr "Autotiles"
+msgstr "Desativar Autotile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Enable Priority"
-msgstr "Editar prioridade da telha"
+msgstr "Ativar Prioridade"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
@@ -7631,27 +7599,22 @@ msgid "Pick Tile"
 msgstr "Pegar Tile"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Left"
 msgstr "Rotacionar para a esquerda"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Rotate Right"
 msgstr "Rotacionar para a direita"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Horizontally"
-msgstr "Girar horizontalmente"
+msgstr "Inverter Horizontalmente"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Flip Vertically"
-msgstr "Girar verticalmente"
+msgstr "Inverter Verticalmente"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-#, fuzzy
 msgid "Clear Transform"
 msgstr "Limpar Transformação"
 
@@ -7690,42 +7653,35 @@ msgstr "Selecione a forma, subtile ou tile anterior."
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
 msgid "Region Mode"
-msgstr "Modo de Início:"
+msgstr "Modo de Região"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Collision Mode"
-msgstr "Modo de Interpolação"
+msgstr "Modo de Colisão"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Occlusion Mode"
-msgstr "Editar polígono de oclusão"
+msgstr "Modo de Oclusão"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Navigation Mode"
-msgstr "Criar Malha de Navegação"
+msgstr "Modo de Navegação"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Bitmask Mode"
-msgstr "Modo Rotacionar"
+msgstr "Modo Bitmask"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Priority Mode"
-msgstr "Modo de Exportação:"
+msgstr "Modo de Prioridade"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Icon Mode"
-msgstr "Modo Panorâmico"
+msgstr "Modo de Ícone"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
-#, fuzzy
 msgid "Z Index Mode"
-msgstr "Modo Panorâmico"
+msgstr "Modo Índice Z"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7815,8 +7771,9 @@ msgid ""
 "Shift+LMB: Set wildcard bit.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"LMB: ligar bit.\n"
-"RMB: desligar bit.\n"
+"BEM: ligar bit.\n"
+"BDM: desligar bit.\n"
+"Shift+BEM: Escolher wildcard.\n"
 "Clique em outro Mosaico para editá-lo."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7930,19 +7887,16 @@ msgid "TileSet"
 msgstr "Conjunto de Telha"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add input +"
-msgstr "Adicionar Entrada"
+msgstr "Adicionar Entrada +"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add output +"
-msgstr "Adicionar Entrada"
+msgstr "Adicionar saída +"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar"
-msgstr "Escala:"
+msgstr "Escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vector"
@@ -7953,9 +7907,8 @@ msgid "Boolean"
 msgstr "Booleano"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Add input port"
-msgstr "Adicionar Entrada"
+msgstr "Adicionar porta de entrada"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Add output port"
@@ -7964,42 +7917,36 @@ msgstr "Adicionar porta de saída"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Change input port type"
-msgstr "Mudar tipo padrão"
+msgstr "Mudar tipo de porta de entrada"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Change output port type"
-msgstr "Mudar tipo padrão"
+msgstr "Mudar tipo de porta de saída"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change input port name"
-msgstr "Alterar Nome da Entrada"
+msgstr "Alterar nome da porta de entrada"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change output port name"
-msgstr "Alterar Nome da Entrada"
+msgstr "Alterar nome da porta de saída"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Remove input port"
-msgstr "Remover ponto"
+msgstr "Remover porta de entrada"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Remove output port"
-msgstr "Remover ponto"
+msgstr "Remover porta de saída"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Set expression"
-msgstr "Alterar Expressão"
+msgstr "Definir expressão"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Resize VisualShader node"
-msgstr "VisualShader"
+msgstr "Redimensionar nó VisualShader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
@@ -8027,7 +7974,7 @@ msgstr "Tipo de Entrada de Shader Visual Alterado"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
-msgstr ""
+msgstr "(Apenas GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -8044,21 +7991,19 @@ msgstr "Luz"
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Create Shader Node"
-msgstr "Criar Nó"
+msgstr "Criar Nó Shader"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color function."
-msgstr "Ir para Função"
+msgstr "Função cor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Color operator."
 msgstr "Operador de cor."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Grayscale function."
-msgstr "Fazer Função"
+msgstr "Função Escala de Cinza."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts HSV vector to RGB equivalent."
@@ -8069,9 +8014,8 @@ msgid "Converts RGB vector to HSV equivalent."
 msgstr "Converter vetor RGB para um HSV equivalente."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Sepia function."
-msgstr "Renomear Função"
+msgstr "Função Sépia."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Burn operator."
@@ -8082,13 +8026,12 @@ msgid "Darken operator."
 msgstr "Operador de escurecimento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Difference operator."
-msgstr "Apenas Diferenças"
+msgstr "Operador de diferença."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Dodge operator."
-msgstr ""
+msgstr "Operador de desvio."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "HardLight operator"
@@ -8108,34 +8051,33 @@ msgstr "Operador de tela."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
-msgstr ""
+msgstr "Operador SoftLight."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Color constant."
-msgstr "Constante"
+msgstr "Cor constante."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Color uniform."
-msgstr "Limpar Transformação"
+msgstr "Cor uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the boolean result of the %s comparison between two parameters."
-msgstr "Retorna o inverso da raiz quadrada do parâmetro."
+msgstr "Retorna o resultado booleano da comparação %s entre dois parâmetros."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
-msgstr ""
+msgstr "Igual (==)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than (>)"
-msgstr ""
+msgstr "Maior Que (>)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than or Equal (>=)"
-msgstr ""
+msgstr "Maior ou Igual (>=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8149,24 +8091,26 @@ msgid ""
 "Returns the boolean result of the comparison between INF and a scalar "
 "parameter."
 msgstr ""
+"Retorna o resultado booleano da comparação entre INF e o parâmetro escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between NaN and a scalar "
 "parameter."
 msgstr ""
+"Retorna o resultado booleano da comparação entre NaN e um parâmetro escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
-msgstr ""
+msgstr "Menor Que (<)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
-msgstr ""
+msgstr "Menor ou Igual (<=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Not Equal (!=)"
-msgstr ""
+msgstr "Diferente (!=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8176,20 +8120,20 @@ msgstr ""
 "falso."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the boolean result of the comparison between two parameters."
-msgstr "Retorna a tangente do parâmetro."
+msgstr "Retorna o resultado booleano da comparação entre dois parâmetros."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
 msgstr ""
+"Retorna o resultado booleano da comparação entre INF (ou NaN) e um parâmetro "
+"escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Boolean constant."
-msgstr "Alterar Constante Vet"
+msgstr "Constante booleana."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean uniform."
@@ -8197,46 +8141,53 @@ msgstr "Booleano uniforme."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for all shader modes."
-msgstr ""
+msgstr "Parâmetro de entrada '%s' para todos os modos de sombreamento."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Input parameter."
+msgstr "Parâmetro de entrada."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
-msgid "Input parameter."
-msgstr "Encaixar no pai"
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader modes."
 msgstr ""
+"Parâmetro de entrada '%s' para os modos de sombreamento de vértice e "
+"fragmento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for fragment and light shader modes."
 msgstr ""
+"Parâmetro de entrada '%s' para os modos de sombreamento de fragmento e luz."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for fragment shader mode."
-msgstr ""
+msgstr "Parâmetro de entrada '%s' para o modo de sombreamento de fragmento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for light shader mode."
-msgstr ""
+msgstr "Parâmetro de entrada '%s' para o modo de sombreamento de luz."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for vertex shader mode."
-msgstr ""
+msgstr "Parâmetro de entrada '%s' para o modo de sombreamento de vértice."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for vertex and fragment shader mode."
 msgstr ""
+"Parâmetro de entrada '%s' para o modo de sombreamento de vértice e fragmento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar function."
-msgstr "Alterar Função Escalar"
+msgstr "Função escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar operator."
-msgstr "Alterar Operador Escalar"
+msgstr "Operador escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
@@ -8279,18 +8230,16 @@ msgid "Returns the arc-cosine of the parameter."
 msgstr "Retorna o arco-cosseno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr "(Somente em GLES3) Retorna o coseno hiperbólico inverso do parâmetro."
+msgstr "Retorna o cosseno hiperbólico inverso do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
 msgstr "Retorna o arco-seno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr "(Somente em GLES3) Retorna o seno hiperbólico inverso do parâmetro."
+msgstr "Retorna o seno hiperbólico inverso do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
@@ -8301,10 +8250,8 @@ msgid "Returns the arc-tangent of the parameters."
 msgstr "Retorna o arco-tangente dos parâmetros."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
-"(Somente em GLES3) Retorna a tangente hiperbólica inversa do parâmetro."
+msgstr "Retorna a tangente hiperbólica inversa do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8313,21 +8260,19 @@ msgstr "Encontra o inteiro mais próximo que é maior ou igual ao parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
-msgstr ""
+msgstr "Limita um valor para permanecer entre dois outros valores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
 msgstr "Retorna o cosseno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr "(Somente em GLES3) Retorna o coseno hiperbólico do parâmetro."
+msgstr "Retorna o cosseno hiperbólico do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Converts a quantity in radians to degrees."
-msgstr "Converte uma quantidade em radianos para graus."
+msgstr "Converte um valor em radianos para graus."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
@@ -8343,8 +8288,9 @@ msgid "Finds the nearest integer less than or equal to the parameter."
 msgstr "Encontra o inteiro mais próximo que é menor ou igual ao parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "Calcula a parte decimal do argumento."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse of the square root of the parameter."
@@ -8361,11 +8307,11 @@ msgstr "Logaritmo de Base-2."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
-msgstr ""
+msgstr "Retorna o maior entre dois valores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the lesser of two values."
-msgstr ""
+msgstr "Retorna o menor entre dois valores."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two scalars."
@@ -8393,18 +8339,16 @@ msgid "1.0 / scalar"
 msgstr "1,0 / escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the nearest integer to the parameter."
-msgstr "(Somente em GLES3) Encontra o inteiro mais próximo ao parâmetro."
+msgstr "Encontra o inteiro mais próximo do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the nearest even integer to the parameter."
-msgstr "(Somente em GLES3) Encontra o inteiro par mais próximo ao parâmetro."
+msgstr "Encontra o inteiro par mais próximo do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
-msgstr ""
+msgstr "Limita o valor entre 0.0 e 1.0."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Extracts the sign of the parameter."
@@ -8415,15 +8359,15 @@ msgid "Returns the sine of the parameter."
 msgstr "Retorna o seno do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr "(Somente em GLES3) Retorna o seno hiperbólico do parâmetro."
+msgstr "Retorna o seno hiperbólico do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the square root of the parameter."
 msgstr "Retorna a raiz quadrada do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
 "\n"
@@ -8431,13 +8375,22 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
+"Função SmoothStep( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"\n"
+"Retorna 0.0 se 'x' é menor que 'edge0' e 1.0 se 'x' é maior que 'edge1'. "
+"Caso contrário o valor retornado é interpolado entre 0.0 e 1.0 utilizando "
+"polinômios de Hermite."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Step function( scalar(edge), scalar(x) ).\n"
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
+"Função Step( scalar(edge), scalar(x) ).\n"
+"\n"
+"Retorna 0.0 se 'x' é menor que 'edge' e 1.0 caso contrário."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the tangent of the parameter."
@@ -8489,8 +8442,9 @@ msgid "Scalar uniform."
 msgstr "Alterar Uniforme Escalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Perform the cubic texture lookup."
-msgstr ""
+msgstr "Faça a pesquisa da textura cúbica."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Perform the texture lookup."

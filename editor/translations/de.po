@@ -43,12 +43,13 @@
 # Marcus Naschke <marcus.naschke@gmail.com>, 2019.
 # datenbauer <d-vaupel@web.de>, 2019.
 # Alexander Hausmann <alexander-hausmann+weblate@posteo.de>, 2019.
+# Nicolas Mohr <81moni1bif@hft-stuttgart.de>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-15 13:10+0000\n"
-"Last-Translator: So Wieso <sowieso@dukun.de>\n"
+"PO-Revision-Date: 2019-07-21 11:06+0000\n"
+"Last-Translator: Nicolas Mohr <81moni1bif@hft-stuttgart.de>\n"
 "Language-Team: German <https://hosted.weblate.org/projects/godot-engine/"
 "godot/de/>\n"
 "Language: de\n"
@@ -2559,9 +2560,8 @@ msgid "Go to previously opened scene."
 msgstr "Gehe zu vorher geöffneter Szene."
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "Pfad kopieren"
+msgstr "Text kopieren"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
