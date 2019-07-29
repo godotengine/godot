@@ -148,7 +148,6 @@ ViewportTexture::ViewportTexture() {
 
 	vp = NULL;
 	set_local_to_scene(true);
-	proxy = VS::get_singleton()->texture_2d_placeholder_create();
 }
 
 ViewportTexture::~ViewportTexture() {
@@ -160,7 +159,9 @@ ViewportTexture::~ViewportTexture() {
 	if (proxy_ph.is_valid()) {
 		VS::get_singleton()->free(proxy_ph);
 	}
-	VS::get_singleton()->free(proxy);
+	if (proxy.is_valid()) {
+		VS::get_singleton()->free(proxy);
+	}
 }
 
 /////////////////////////////////////
