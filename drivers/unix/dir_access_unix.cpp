@@ -126,37 +126,32 @@ String DirAccessUnix::get_next() {
 
 	if (!dir_stream)
 		return "";
-	dirent *entry;
 
-	entry = readdir(dir_stream);
+	dirent *entry = readdir(dir_stream);
 
 	if (entry == NULL) {
-
 		list_dir_end();
 		return "";
 	}
 
-	//typedef struct stat Stat;
-	struct stat flags;
-
 	String fname = fix_unicode_name(entry->d_name);
 
-	String f = current_dir.plus_file(fname);
+	// Look at d_type to determine if the entry is a directory, unless
+	// its type is unknown (the file system does not support it) or if
+	// the type is a link, in that case we want to resolve the link to
+	// known if it points to a directory. stat() will resolve the link
+	// for us.
+	if (entry->d_type == DT_UNKNOWN || entry->d_type == DT_LNK) {
+		String f = current_dir.plus_file(fname);
 
-	if (stat(f.utf8().get_data(), &flags) == 0) {
-
-		if (S_ISDIR(flags.st_mode)) {
-
-			_cisdir = true;
-
+		struct stat flags;
+		if (stat(f.utf8().get_data(), &flags) == 0) {
+			_cisdir = S_ISDIR(flags.st_mode);
 		} else {
-
 			_cisdir = false;
 		}
-
 	} else {
-
-		_cisdir = false;
+		_cisdir = (entry->d_type == DT_DIR);
 	}
 
 	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
