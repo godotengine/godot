@@ -46,7 +46,7 @@
 		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			Current frame to display from sprite sheet. [member vframes] or [member hframes] must be greater than 1.
 		</member>
-		<member name="frame_coords" type="Vector2" setter="set_frame_coords" getter="get_frame_coords">
+		<member name="frame_coords" type="Vector2" setter="set_frame_coords" getter="get_frame_coords" default="Vector2( 0, 0 )">
 			Coordinates of the frame to display from sprite sheet. This is as an alias for the [member frame] property. [member vframes] or [member hframes] must be greater than 1.
 		</member>
 		<member name="hframes" type="int" setter="set_hframes" getter="get_hframes" default="1">

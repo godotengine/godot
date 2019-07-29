@@ -281,7 +281,6 @@
 			</argument>
 			<argument index="2" name="to" type="int" default="0">
 			</argument>
-			</argument>
 			<description>
 				Returns the number of occurrences of substring [code]what[/code] between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
 			</description>
@@ -294,7 +293,6 @@
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
 			<argument index="2" name="to" type="int" default="0">
-			</argument>
 			</argument>
 			<description>
 				Returns the number of occurrences of substring [code]what[/code] (ignoring case) between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
