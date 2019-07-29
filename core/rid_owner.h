@@ -4,7 +4,7 @@
 #include "core/print_string.h"
 #include "core/rid.h"
 #include "core/spin_lock.h"
-
+#include <stdio.h>
 #include <typeinfo>
 
 class RID_AllocBase {
@@ -189,7 +189,7 @@ public:
 		return alloc_count;
 	}
 
-	_FORCE_INLINE_ T *get_rid_by_index(uint32_t p_index) {
+	_FORCE_INLINE_ T *get_ptr_by_index(uint32_t p_index) {
 		ERR_FAIL_INDEX_V(p_index, alloc_count, NULL);
 		if (THREAD_SAFE) {
 			spin_lock.lock();
@@ -200,6 +200,21 @@ public:
 			spin_lock.unlock();
 		}
 		return ptr;
+	}
+
+	_FORCE_INLINE_ RID get_rid_by_index(uint32_t p_index) {
+		ERR_FAIL_INDEX_V(p_index, alloc_count, RID());
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
+		uint64_t idx = free_list_chunks[p_index / elements_in_chunk][p_index % elements_in_chunk];
+		uint64_t validator = validator_chunks[idx / elements_in_chunk][idx % elements_in_chunk];
+
+		RID rid = _make_from_id((validator << 32) | idx);
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+		return rid;
 	}
 
 	void get_owned_list(List<RID> *p_owned) {
@@ -315,8 +330,12 @@ public:
 		return alloc.get_rid_count();
 	}
 
-	_FORCE_INLINE_ T *get_rid_by_index(uint32_t p_index) {
+	_FORCE_INLINE_ RID get_rid_by_index(uint32_t p_index) {
 		return alloc.get_rid_by_index(p_index);
+	}
+
+	_FORCE_INLINE_ T *get_ptr_by_index(uint32_t p_index) {
+		return alloc.get_ptr_by_index(p_index);
 	}
 
 	_FORCE_INLINE_ void get_owned_list(List<RID> *p_owned) {

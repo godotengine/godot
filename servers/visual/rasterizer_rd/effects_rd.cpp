@@ -139,4 +139,7 @@ EffectsRD::EffectsRD() {
 }
 
 EffectsRD::~EffectsRD() {
+	RD::get_singleton()->free(default_sampler);
+	blur.shader.version_free(blur.shader_version);
+	RD::get_singleton()->free(index_buffer); //array gets freed as dependency
 }
