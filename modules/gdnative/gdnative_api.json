@@ -44,7 +44,7 @@
               ["const godot_vector2 *", "p_to"],
               ["const godot_real", "p_delta"]
             ]
-          },       
+          },
           {
             "name": "godot_string_count",
             "return_type": "godot_int",
@@ -54,7 +54,7 @@
               ["godot_int", "p_from"],
               ["godot_int", "p_to"]
             ]
-          }, 
+          },
           {
             "name": "godot_string_countn",
             "return_type": "godot_int",
@@ -6548,24 +6548,24 @@
           "name": "godot_net_bind_stream_peer",
           "return_type": "void",
           "arguments": [
-		  ["godot_object *", "p_obj"],
-		  ["const godot_net_stream_peer *", "p_interface"]
+            ["godot_object *", "p_obj"],
+            ["const godot_net_stream_peer *", "p_interface"]
           ]
         },
         {
           "name": "godot_net_bind_packet_peer",
           "return_type": "void",
           "arguments": [
-		  ["godot_object *", "p_obj"],
-		  ["const godot_net_packet_peer *", "p_interface"]
+            ["godot_object *", "p_obj"],
+            ["const godot_net_packet_peer *", "p_interface"]
           ]
         },
         {
           "name": "godot_net_bind_multiplayer_peer",
           "return_type": "void",
           "arguments": [
-		  ["godot_object *", "p_obj"],
-		  ["const godot_net_multiplayer_peer *", "p_interface"]
+            ["godot_object *", "p_obj"],
+            ["const godot_net_multiplayer_peer *", "p_interface"]
           ]
         }
       ]
