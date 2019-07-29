@@ -329,6 +329,7 @@ public:
 	bool material_casts_shadows(RID p_material);
 
 	void material_update_dependency(RID p_material, RasterizerScene::InstanceBase *p_instance);
+	void material_force_update_textures(RID p_material, ShaderType p_shader_type);
 
 	void material_set_data_request_function(ShaderType p_shader_type, MaterialDataRequestFunction p_function);
 
