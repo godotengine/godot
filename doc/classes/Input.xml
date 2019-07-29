@@ -318,6 +318,7 @@
 			<description>
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
+				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
 			</description>
 		</method>
 		<method name="set_mouse_mode">
