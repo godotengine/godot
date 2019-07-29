@@ -71,7 +71,7 @@ struct _IP_ResolverPrivate {
 	}
 
 	Mutex *mutex;
-	Semaphore *sem;
+	SemaphoreOld *sem;
 
 	Thread *thread;
 	//Semaphore* semaphore;
@@ -319,7 +319,7 @@ IP::IP() {
 
 #ifndef NO_THREADS
 
-	resolver->sem = Semaphore::create();
+	resolver->sem = SemaphoreOld::create();
 	if (resolver->sem) {
 		resolver->thread_abort = false;
 

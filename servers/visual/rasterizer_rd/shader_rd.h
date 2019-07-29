@@ -36,7 +36,7 @@
 #include "core/rid_owner.h"
 #include "core/variant.h"
 #include <stdio.h>
-
+#include <mutex>
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
@@ -66,6 +66,10 @@ class ShaderRD {
 		bool dirty;
 		bool initialize_needed;
 	};
+
+	std::mutex variant_set_mutex;
+
+	void _compile_variant(uint32_t p_variant, Version *p_version);
 
 	void _clear_version(Version *p_version);
 	void _compile_version(Version *p_version);

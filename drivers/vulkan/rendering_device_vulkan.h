@@ -114,7 +114,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		RID owner;
 	};
 
-	RID_Owner<Texture> texture_owner;
+	RID_Owner<Texture, true> texture_owner;
 	uint32_t texture_upload_region_size_px;
 
 	PoolVector<uint8_t> _texture_get_data_from_image(Texture *tex, VkImage p_image, VmaAllocation p_allocation, uint32_t p_layer);
@@ -264,7 +264,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Size2 size;
 	};
 
-	RID_Owner<Framebuffer> framebuffer_owner;
+	RID_Owner<Framebuffer, true> framebuffer_owner;
 
 	/***********************/
 	/**** VERTEX BUFFER ****/
@@ -279,7 +279,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	// This mapping is done here internally, and it's not
 	// exposed.
 
-	RID_Owner<Buffer> vertex_buffer_owner;
+	RID_Owner<Buffer, true> vertex_buffer_owner;
 
 	struct VertexDescriptionKey {
 		Vector<VertexDescription> vertex_formats;
@@ -359,7 +359,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<VkDeviceSize> offsets;
 	};
 
-	RID_Owner<VertexArray> vertex_array_owner;
+	RID_Owner<VertexArray, true> vertex_array_owner;
 
 	struct IndexBuffer : public Buffer {
 		uint32_t max_index; //used for validation
@@ -368,7 +368,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		bool supports_restart_indices;
 	};
 
-	RID_Owner<IndexBuffer> index_buffer_owner;
+	RID_Owner<IndexBuffer, true> index_buffer_owner;
 
 	struct IndexArray {
 		uint32_t max_index; //remember the maximum index here too, for validation
@@ -379,7 +379,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		bool supports_restart_indices;
 	};
 
-	RID_Owner<IndexArray> index_array_owner;
+	RID_Owner<IndexArray, true> index_array_owner;
 
 	/****************/
 	/**** SHADER ****/
@@ -496,7 +496,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	String _shader_uniform_debug(RID p_shader, int p_set = -1);
 	bool _uniform_add_binding(Vector<Vector<VkDescriptorSetLayoutBinding> > &bindings, Vector<Vector<UniformInfo> > &uniform_infos, const glslang::TObjectReflection &reflection, RenderingDevice::ShaderStage p_stage, Shader::PushConstant &push_constant, String *r_error);
 
-	RID_Owner<Shader> shader_owner;
+	RID_Owner<Shader, true> shader_owner;
 
 	/******************/
 	/**** UNIFORMS ****/
@@ -560,8 +560,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	DescriptorPool *_descriptor_pool_allocate(const DescriptorPoolKey &p_key);
 	void _descriptor_pool_free(const DescriptorPoolKey &p_key, DescriptorPool *p_pool);
 
-	RID_Owner<Buffer> uniform_buffer_owner;
-	RID_Owner<Buffer> storage_buffer_owner;
+	RID_Owner<Buffer, true> uniform_buffer_owner;
+	RID_Owner<Buffer, true> storage_buffer_owner;
 
 	//texture buffer needs a view
 	struct TextureBuffer {
@@ -569,7 +569,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkBufferView view;
 	};
 
-	RID_Owner<TextureBuffer> texture_buffer_owner;
+	RID_Owner<TextureBuffer, true> texture_buffer_owner;
 
 	// This structure contains the descriptor set. They _need_ to be allocated
 	// for a shader (and will be erased when this shader is erased), but should
@@ -590,7 +590,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		Vector<RID> attachable_textures; //used for validation
 	};
 
-	RID_Owner<UniformSet> uniform_set_owner;
+	RID_Owner<UniformSet, true> uniform_set_owner;
 
 	/*******************/
 	/**** PIPELINES ****/
@@ -628,7 +628,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t push_constant_stages;
 	};
 
-	RID_Owner<RenderPipeline> pipeline_owner;
+	RID_Owner<RenderPipeline, true> pipeline_owner;
 
 	/*******************/
 	/**** DRAW LIST ****/

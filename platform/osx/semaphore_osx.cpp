@@ -86,7 +86,7 @@ int SemaphoreOSX::get() const {
 	return 0;
 }
 
-Semaphore *SemaphoreOSX::create_semaphore_osx() {
+SemaphoreOld *SemaphoreOSX::create_semaphore_osx() {
 
 	return memnew(SemaphoreOSX);
 }
