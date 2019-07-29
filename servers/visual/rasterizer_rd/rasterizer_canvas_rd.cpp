@@ -2559,10 +2559,24 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 
 	//canvas state
 
-	if (state.canvas_state_buffer.is_valid()) {
-		RD::get_singleton()->free(state.canvas_state_buffer);
+	{
+		if (state.canvas_state_buffer.is_valid()) {
+			RD::get_singleton()->free(state.canvas_state_buffer);
+		}
+
+		memdelete_arr(state.light_uniforms);
+		RD::get_singleton()->free(state.lights_uniform_buffer);
+		RD::get_singleton()->free(shader.default_skeleton_uniform_buffer);
+		RD::get_singleton()->free(shader.default_skeleton_texture_buffer);
 	}
 
+	//shadow rendering
+	{
+
+		shadow_render.shader.version_free(shadow_render.shader_version);
+		//this will also automatically clear all pipelines
+		RD::get_singleton()->free(state.shadow_sampler);
+	}
 	//bindings
 	{
 
@@ -2589,8 +2603,15 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 	shader.canvas_shader.version_free(shader.default_version);
 
 	//buffers
-	RD::get_singleton()->free(shader.quad_index_array);
-	RD::get_singleton()->free(shader.quad_index_buffer);
+	{
+		RD::get_singleton()->free(shader.quad_index_array);
+		RD::get_singleton()->free(shader.quad_index_buffer);
+		RD::get_singleton()->free(polygon_buffers.default_bone_buffer);
+		RD::get_singleton()->free(polygon_buffers.default_weight_buffer);
+		RD::get_singleton()->free(polygon_buffers.default_color_buffer);
+		RD::get_singleton()->free(polygon_buffers.default_uv_buffer);
+		//primitives are erase by dependency
+	}
 
 	//pipelines don't need freeing, they are all gone after shaders are gone
 }
