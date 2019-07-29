@@ -32,7 +32,6 @@
 #define OS_WINDOWS_H
 
 #include "camera_win.h"
-#include "context_gl_windows.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -48,6 +47,15 @@
 #include "servers/visual_server.h"
 #ifdef XAUDIO2_ENABLED
 #include "drivers/xaudio2/audio_driver_xaudio2.h"
+#endif
+
+#if defined(OPENGL_ENABLED)
+#include "context_gl_windows.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "drivers/vulkan/rendering_device_vulkan.h"
+#include "platform/windows/vulkan_context_win.h"
 #endif
 
 #include <fcntl.h>
@@ -101,9 +109,16 @@ class OS_Windows : public OS {
 	bool outside;
 	int old_x, old_y;
 	Point2i center;
+
 #if defined(OPENGL_ENABLED)
-	ContextGL_Windows *gl_context;
+	ContextGL_Windows *context_gles2;
 #endif
+
+#if defined(VULKAN_ENABLED)
+	VulkanContextWindows *context_vulkan;
+	RenderingDeviceVulkan *rendering_device_vulkan;
+#endif
+
 	VisualServer *visual_server;
 	CameraWindows *camera_server;
 	int pressrc;
