@@ -109,12 +109,15 @@ class ScriptEditorDebugger : public Control {
 
 	bool hide_on_stop;
 	bool enable_external_editor;
+
+	bool skip_breakpoints_value = false;
 	Ref<Script> stack_script;
 
 	TabContainer *tabs;
 
 	Label *reason;
 
+	Button *skip_breakpoints;
 	Button *copy;
 	Button *step;
 	Button *next;
@@ -219,6 +222,7 @@ public:
 	void unpause();
 	void stop();
 
+	void debug_skip_breakpoints();
 	void debug_copy();
 
 	void debug_next();
@@ -255,6 +259,8 @@ public:
 	void set_tool_button(Button *p_tb) { debugger_button = p_tb; }
 
 	void reload_scripts();
+
+	bool is_skip_breakpoints();
 
 	virtual Size2 get_minimum_size() const;
 	ScriptEditorDebugger(EditorNode *p_editor = NULL);

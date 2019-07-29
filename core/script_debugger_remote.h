@@ -140,6 +140,8 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 
 	void _save_node(ObjectID id, const String &p_path);
 
+	bool skip_breakpoints;
+
 public:
 	struct ResourceUsage {
 
@@ -156,7 +158,7 @@ public:
 	static ResourceUsageFunc resource_usage_func;
 
 	Error connect_to_host(const String &p_host, uint16_t p_port);
-	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true);
+	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false);
 	virtual void idle_poll();
 	virtual void line_poll();
 
@@ -175,6 +177,8 @@ public:
 	virtual void profiling_start();
 	virtual void profiling_end();
 	virtual void profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time);
+
+	virtual void set_skip_breakpoints(bool p_skip_breakpoints);
 
 	ScriptDebuggerRemote();
 	~ScriptDebuggerRemote();

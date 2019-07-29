@@ -37,7 +37,8 @@ EditorRun::Status EditorRun::get_status() const {
 
 	return status;
 }
-Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints) {
+
+Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
 
 	List<String> args;
 
@@ -160,6 +161,10 @@ Error EditorRun::run(const String &p_scene, const String &p_custom_args, const L
 		}
 
 		args.push_back(bpoints);
+	}
+
+	if (p_skip_breakpoints) {
+		args.push_back("--skip-breakpoints");
 	}
 
 	if (p_scene != "") {

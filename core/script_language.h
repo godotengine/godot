@@ -467,7 +467,7 @@ public:
 	void clear_breakpoints();
 	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
 
-	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true) = 0;
+	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
 	virtual void idle_poll();
 	virtual void line_poll();
 
