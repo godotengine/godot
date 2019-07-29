@@ -4,7 +4,7 @@
 ## assimp
 
 - Upstream: http://github.com/assimp/assimp
-- Version: git (d3d98a7ec0c8d38e1952b46dfe53f7e9233dc92d)
+- Version: git (1d565b0aab5a2ee00462f18c5b8a81f6a5454a48)
 - License: BSD-3-Clause
 
 
