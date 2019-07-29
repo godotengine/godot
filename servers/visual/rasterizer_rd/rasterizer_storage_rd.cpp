@@ -573,9 +573,7 @@ RID RasterizerStorageRD::texture_2d_create(const Ref<Image> &p_image) {
 	texture.is_render_target = false;
 	texture.rd_view = rd_view;
 	texture.is_proxy = false;
-#ifndef _MSC_VER
-#warning texture owner needs a spinlock to make this really callable from any thread
-#endif
+
 	return texture_owner.make_rid(texture);
 }
 
@@ -607,6 +605,7 @@ RID RasterizerStorageRD::texture_proxy_create(RID p_base) {
 	RID rid = texture_owner.make_rid(proxy_tex);
 
 	tex->proxies.push_back(rid);
+
 	return rid;
 }
 
@@ -2045,11 +2044,13 @@ bool RasterizerStorageRD::free(RID p_rid) {
 
 		ERR_FAIL_COND_V(t->is_render_target, false);
 
-		if (t->rd_texture_srgb.is_valid()) {
+		if (RD::get_singleton()->texture_is_valid(t->rd_texture_srgb)) {
 			//erase this first, as it's a dependency of the one below
 			RD::get_singleton()->free(t->rd_texture_srgb);
 		}
-		RD::get_singleton()->free(t->rd_texture);
+		if (RD::get_singleton()->texture_is_valid(t->rd_texture)) {
+			RD::get_singleton()->free(t->rd_texture);
+		}
 
 		for (int i = 0; i < t->proxies.size(); i++) {
 			Texture *p = texture_owner.getornull(t->proxies[i]);
@@ -2079,6 +2080,7 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		}
 		material_set_shader(p_rid, RID()); //clean up shader
 		material->instance_dependency.instance_notify_deleted(p_rid);
+		material_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 
@@ -2252,6 +2254,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 }
 
 RasterizerStorageRD::~RasterizerStorageRD() {
+
 	//def textures
 	for (int i = 0; i < DEFAULT_RD_TEXTURE_MAX; i++) {
 		RD::get_singleton()->free(default_rd_textures[i]);
