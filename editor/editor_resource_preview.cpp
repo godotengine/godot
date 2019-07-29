@@ -478,7 +478,7 @@ EditorResourcePreview::EditorResourcePreview() {
 	thread = NULL;
 	singleton = this;
 	preview_mutex = Mutex::create();
-	preview_sem = Semaphore::create();
+	preview_sem = SemaphoreOld::create();
 	order = 0;
 	exit = false;
 	exited = false;

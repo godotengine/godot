@@ -91,7 +91,7 @@ int SemaphoreIphone::get() const {
 	return 0;
 }
 
-Semaphore *SemaphoreIphone::create_semaphore_iphone() {
+SemaphoreOld *SemaphoreIphone::create_semaphore_iphone() {
 
 	return memnew(SemaphoreIphone);
 }

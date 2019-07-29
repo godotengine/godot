@@ -3448,8 +3448,6 @@ bool RenderingDeviceVulkan::_uniform_add_binding(Vector<Vector<VkDescriptorSetLa
 
 RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages) {
 
-	_THREAD_SAFE_METHOD_
-
 	//descriptor layouts
 	Vector<Vector<VkDescriptorSetLayoutBinding> > set_bindings;
 	Vector<Vector<UniformInfo> > uniform_info;
@@ -3693,6 +3691,8 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 	}
 
 	//all good, let's create modules
+
+	_THREAD_SAFE_METHOD_
 
 	Shader shader;
 
