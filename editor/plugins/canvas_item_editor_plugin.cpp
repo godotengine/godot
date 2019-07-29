@@ -3842,7 +3842,7 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 }
 
 void CanvasItemEditor::_button_zoom_minus() {
-	_zoom_on_position(zoom / 1.5, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(zoom / Math_SQRT2, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_zoom_reset() {
@@ -3850,7 +3850,7 @@ void CanvasItemEditor::_button_zoom_reset() {
 }
 
 void CanvasItemEditor::_button_zoom_plus() {
-	_zoom_on_position(zoom * 1.5, viewport_scrollable->get_size() / 2.0);
+	_zoom_on_position(zoom * Math_SQRT2, viewport_scrollable->get_size() / 2.0);
 }
 
 void CanvasItemEditor::_button_toggle_snap(bool p_status) {
