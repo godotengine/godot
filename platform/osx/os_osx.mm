@@ -34,11 +34,19 @@
 #include "core/print_string.h"
 #include "core/version_generated.gen.h"
 #include "dir_access_osx.h"
+
+#if defined(OPENGL_ENABLED)
 #include "drivers/gles2/rasterizer_gles2.h"
-#include "drivers/gles3/rasterizer_gles3.h"
+#endif
+
+#if defined(VULKAN_ENABLED)
+#include "servers/visual/rasterizer_rd/rasterizer_rd.h"
+#endif
+
 #include "main/main.h"
 #include "semaphore_osx.h"
 #include "servers/visual/visual_server_raster.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 
 #include <mach-o/dyld.h>
 
@@ -51,6 +59,9 @@
 #if MAC_OS_X_VERSION_MAX_ALLOWED >= 101200
 #include <os/log.h>
 #endif
+
+#import <QuartzCore/CAMetalLayer.h>
+#include <vulkan/vulkan_metal.h>
 
 #include <dlfcn.h>
 #include <fcntl.h>
@@ -113,21 +124,6 @@ static Vector2 get_mouse_pos(NSPoint locationInWindow, CGFloat backingScaleFacto
 	mouse_x = p.x * s;
 	mouse_y = (contentRect.size.height - p.y) * s;
 	return Vector2(mouse_x, mouse_y);
-}
-
-// DisplayLinkCallback is called from our DisplayLink OS thread informing us right before
-// a screen update is required. We can use it to work around the broken vsync.
-static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeStamp *now, const CVTimeStamp *outputTime, CVOptionFlags flagsIn, CVOptionFlags *flagsOut, void *displayLinkContext) {
-	OS_OSX *os = (OS_OSX *)displayLinkContext;
-
-	// Set flag so we know we can output our next frame and signal our conditional lock
-	// if we're not doing vsync this will be ignored
-	[os->vsync_condition lock];
-	os->waiting_for_vsync = false;
-	[os->vsync_condition signal];
-	[os->vsync_condition unlock];
-
-	return kCVReturnSuccess;
 }
 
 @interface GodotApplication : NSApplication
@@ -261,29 +257,6 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	return NSTerminateCancel;
 }
 
-- (void)applicationDidHide:(NSNotification *)notification {
-	/*
-	_Godotwindow* window;
-	for (window = _Godot.windowListHead;  window;  window = window->next)
-		_GodotInputWindowVisibility(window, GL_FALSE);
-*/
-}
-
-- (void)applicationDidUnhide:(NSNotification *)notification {
-	/*
-	_Godotwindow* window;
-
-	for (window = _Godot.windowListHead;  window;  window = window->next) {
-		if ([window_object isVisible])
-			_GodotInputWindowVisibility(window, GL_TRUE);
-	}
-*/
-}
-
-- (void)applicationDidChangeScreenParameters:(NSNotification *)notification {
-	//_GodotInputMonitorChange();
-}
-
 - (void)showAbout:(id)sender {
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_ABOUT);
@@ -337,9 +310,14 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	NSWindow *window = (NSWindow *)[notification object];
 	CGFloat newBackingScaleFactor = [window backingScaleFactor];
 	CGFloat oldBackingScaleFactor = [[[notification userInfo] objectForKey:@"NSBackingPropertyOldScaleFactorKey"] doubleValue];
-	if (OS_OSX::singleton->is_hidpi_allowed()) {
-		[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:YES];
+
+#if defined(OPENGL_ENABLED)
+	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_GLES2) {
+		if (OS_OSX::singleton->is_hidpi_allowed()) {
+			[OS_OSX::singleton->window_view setWantsBestResolutionOpenGLSurface:YES];
+		}
 	}
+#endif
 
 	if (newBackingScaleFactor != oldBackingScaleFactor) {
 		//Set new display scale and window size
@@ -353,7 +331,21 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
 		//Update context
 		if (OS_OSX::singleton->main_loop) {
-			[OS_OSX::singleton->context update];
+
+#if defined(OPENGL_ENABLED)
+			if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_GLES2) {
+
+				OS_OSX::singleton->context_gles2->update();
+			}
+#endif
+
+#if defined(VULKAN_ENABLED)
+			if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
+				CALayer* layer = [OS_OSX::singleton->window_view layer];
+				layer.contentsScale = OS_OSX::singleton->_display_scale();
+				OS_OSX::singleton->context_vulkan->window_resize(0, OS_OSX::singleton->window_size.width, OS_OSX::singleton->window_size.height);
+			}
+#endif
 
 			//Force window resize ???
 			NSRect frame = [OS_OSX::singleton->window_object frame];
@@ -364,14 +356,26 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 }
 
 - (void)windowDidResize:(NSNotification *)notification {
-	[OS_OSX::singleton->context update];
 
+#if defined(OPENGL_ENABLED)
+	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_GLES2) {
+		OS_OSX::singleton->context_gles2->update();
+	}
+#endif
 	const NSRect contentRect = [OS_OSX::singleton->window_view frame];
 	const NSRect fbRect = contentRect;
 
 	float displayScale = OS_OSX::singleton->_display_scale();
 	OS_OSX::singleton->window_size.width = fbRect.size.width * displayScale;
 	OS_OSX::singleton->window_size.height = fbRect.size.height * displayScale;
+
+#if defined(VULKAN_ENABLED)
+	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
+		CALayer* layer = [OS_OSX::singleton->window_view layer];
+		layer.contentsScale = OS_OSX::singleton->_display_scale();
+		OS_OSX::singleton->context_vulkan->window_resize(0, OS_OSX::singleton->window_size.width, OS_OSX::singleton->window_size.height);
+	}
+#endif
 
 	if (OS_OSX::singleton->main_loop) {
 		Main::force_redraw();
@@ -380,15 +384,6 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 			Main::iteration();
 		}
 	}
-
-	/*
-	_GodotInputFramebufferSize(window, fbRect.size.width, fbRect.size.height);
-	_GodotInputWindowSize(window, contentRect.size.width, contentRect.size.height);
-	_GodotInputWindowDamage(window);
-
-	if (window->cursorMode == Godot_CURSOR_DISABLED)
-		centerCursor(window);
-*/
 }
 
 - (void)windowDidMove:(NSNotification *)notification {
@@ -396,22 +391,9 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	if (OS_OSX::singleton->get_main_loop()) {
 		OS_OSX::singleton->input->release_pressed_events();
 	}
-
-	/*
-	[window->nsgl.context update];
-
-	int x, y;
-	_GodotPlatformGetWindowPos(window, &x, &y);
-	_GodotInputWindowPos(window, x, y);
-
-	if (window->cursorMode == Godot_CURSOR_DISABLED)
-		centerCursor(window);
-*/
 }
 
 - (void)windowDidBecomeKey:(NSNotification *)notification {
-	//_GodotInputWindowFocus(window, GL_TRUE);
-	//_GodotPlatformSetCursorMode(window, window->cursorMode);
 
 	if (OS_OSX::singleton->get_main_loop()) {
 		get_mouse_pos(
@@ -424,8 +406,7 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 }
 
 - (void)windowDidResignKey:(NSNotification *)notification {
-	//_GodotInputWindowFocus(window, GL_FALSE);
-	//_GodotPlatformSetCursorMode(window, Godot_CURSOR_NORMAL);
+
 	if (OS_OSX::singleton->get_main_loop())
 		OS_OSX::singleton->get_main_loop()->notification(MainLoop::NOTIFICATION_WM_FOCUS_OUT);
 }
@@ -450,8 +431,12 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	bool imeInputEventInProgress;
 }
 - (void)cancelComposition;
+
+- (CALayer*)makeBackingLayer;
+
 - (BOOL)wantsUpdateLayer;
 - (void)updateLayer;
+
 @end
 
 @implementation GodotContentView
@@ -462,12 +447,32 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	}
 }
 
-- (BOOL)wantsUpdateLayer {
-	return YES;
+- (CALayer*)makeBackingLayer {
+#if defined(VULKAN_ENABLED)
+	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
+		CALayer* layer = [[CAMetalLayer class] layer];
+		layer.contentsScale = OS_OSX::singleton->_display_scale();
+		return layer;
+	}
+#endif
+	return [super makeBackingLayer];
 }
 
 - (void)updateLayer {
-	[OS_OSX::singleton->context update];
+#if defined(VULKAN_ENABLED)
+	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_VULKAN) {
+		[super updateLayer];
+	}
+#endif
+#if defined(OPENGL_ENABLED)
+	if (OS_OSX::singleton->video_driver_index == OS::VIDEO_DRIVER_GLES2) {
+		OS_OSX::singleton->context_gles2->update();
+	}
+#endif
+}
+
+- (BOOL)wantsUpdateLayer {
+	return YES;
 }
 
 - (id)init {
@@ -1449,6 +1454,14 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	// Register to be notified on displays arrangement changes
 	CGDisplayRegisterReconfigurationCallback(displays_arrangement_changed, NULL);
 
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
+	//TODO - do Vulkan and GLES2 support checks, driver selection and fallback
+	video_driver_index = p_video_driver;
+	print_verbose("Driver: " + String(get_video_driver_name(video_driver_index)) + " [" + itos(video_driver_index) + "]");
+	//!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+	//Create window
+
 	window_delegate = [[GodotWindowDelegate alloc] init];
 
 	// Don't use accumulation buffer support; it's not accelerated
@@ -1489,12 +1502,14 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	window_size.height = p_desired.height * displayScale;
 
 	if (displayScale > 1.0) {
-		[window_view setWantsBestResolutionOpenGLSurface:YES];
-		//if (current_videomode.resizable)
+#if defined(OPENGL_ENABLED)
+		if (video_driver_index == VIDEO_DRIVER_GLES2) {
+			[window_view setWantsBestResolutionOpenGLSurface:YES];
+		}
+#endif
 		[window_object setCollectionBehavior:NSWindowCollectionBehaviorFullScreenPrimary];
 	}
 
-	//[window_object setTitle:[NSString stringWithUTF8String:"GodotEnginies"]];
 	[window_object setContentView:window_view];
 	[window_object setDelegate:window_delegate];
 	[window_object setAcceptsMouseMovedEvents:YES];
@@ -1502,86 +1517,51 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	[window_object setRestorable:NO];
 
-	unsigned int attributeCount = 0;
+	// Init context and rendering device
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		
+		context_gles2 = memnew(ContextGL_OSX(window_view, false));
 
-	// OS X needs non-zero color size, so set reasonable values
-	int colorBits = 32;
+		if (context_gles2->initialize() != OK) {
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
 
-	// Fail if a robustness strategy was requested
+		context_gles2->set_use_vsync(p_desired.use_vsync);
 
-#define ADD_ATTR(x) \
-	{ attributes[attributeCount++] = x; }
-#define ADD_ATTR2(x, y) \
-	{                   \
-		ADD_ATTR(x);    \
-		ADD_ATTR(y);    \
+		if (RasterizerGLES2::is_viable() == OK) {
+			RasterizerGLES2::register_config();
+			RasterizerGLES2::make_current();
+		} else {
+			memdelete(context_gles2);
+			context_gles2 = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
 	}
+#endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
 
-	// Arbitrary array size here
-	NSOpenGLPixelFormatAttribute attributes[40];
+		context_vulkan = memnew(VulkanContextOSX);
+		if (context_vulkan->initialize() != OK) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
+		if (context_vulkan->window_create(window_view, get_video_mode().width, get_video_mode().height) == -1) {
+			memdelete(context_vulkan);
+			context_vulkan = NULL;
+			ERR_FAIL_V(ERR_UNAVAILABLE);
+		}
 
-	ADD_ATTR(NSOpenGLPFADoubleBuffer);
-	ADD_ATTR(NSOpenGLPFAClosestPolicy);
+		rendering_device_vulkan = memnew(RenderingDeviceVulkan);
+		rendering_device_vulkan->initialize(context_vulkan);
 
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersionLegacy);
-	} else {
-		//we now need OpenGL 3 or better, maybe even change this to 3_3Core ?
-		ADD_ATTR2(NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core);
+		RasterizerRD::make_current();
 	}
-
-	ADD_ATTR2(NSOpenGLPFAColorSize, colorBits);
-
-	/*
-	if (fbconfig->alphaBits > 0)
-		ADD_ATTR2(NSOpenGLPFAAlphaSize, fbconfig->alphaBits);
-*/
-
-	ADD_ATTR2(NSOpenGLPFADepthSize, 24);
-
-	ADD_ATTR2(NSOpenGLPFAStencilSize, 8);
-
-	/*
-	if (fbconfig->stereo)
-		ADD_ATTR(NSOpenGLPFAStereo);
-*/
-
-	/*
-	if (fbconfig->samples > 0) {
-		ADD_ATTR2(NSOpenGLPFASampleBuffers, 1);
-		ADD_ATTR2(NSOpenGLPFASamples, fbconfig->samples);
-	}
-*/
-
-	// NOTE: All NSOpenGLPixelFormats on the relevant cards support sRGB
-	//       framebuffer, so there's no need (and no way) to request it
-
-	ADD_ATTR(0);
-
-#undef ADD_ATTR
-#undef ADD_ATTR2
-
-	pixelFormat = [[NSOpenGLPixelFormat alloc] initWithAttributes:attributes];
-	ERR_FAIL_COND_V(pixelFormat == nil, ERR_UNAVAILABLE);
-
-	context = [[NSOpenGLContext alloc] initWithFormat:pixelFormat shareContext:nil];
-
-	ERR_FAIL_COND_V(context == nil, ERR_UNAVAILABLE);
-
-	[context setView:window_view];
-
-	[context makeCurrentContext];
-
-	// setup our display link, this will inform us when a refresh is needed
-	CVDisplayLinkCreateWithActiveCGDisplays(&displayLink);
-	CVDisplayLinkSetOutputCallback(displayLink, &DisplayLinkCallback, this);
-	CVDisplayLinkSetCurrentCGDisplayFromOpenGLContext(displayLink, context.CGLContextObj, pixelFormat.CGLPixelFormatObj);
-	CVDisplayLinkStart(displayLink);
-
-	// initialise a conditional lock object
-	vsync_condition = [[NSCondition alloc] init];
-
-	set_use_vsync(p_desired.use_vsync);
+#endif
 
 	[NSApp activateIgnoringOtherApps:YES];
 
@@ -1591,53 +1571,6 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 
 	if (p_desired.fullscreen)
 		zoomed = true;
-
-	/*** END OSX INITIALIZATION ***/
-
-	bool gles3 = true;
-	if (p_video_driver == VIDEO_DRIVER_GLES2) {
-		gles3 = false;
-	}
-
-	bool editor = Engine::get_singleton()->is_editor_hint();
-	bool gl_initialization_error = false;
-
-	while (true) {
-		if (gles3) {
-			if (RasterizerGLES3::is_viable() == OK) {
-				RasterizerGLES3::register_config();
-				RasterizerGLES3::make_current();
-				break;
-			} else {
-				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2") || editor) {
-					p_video_driver = VIDEO_DRIVER_GLES2;
-					gles3 = false;
-					continue;
-				} else {
-					gl_initialization_error = true;
-					break;
-				}
-			}
-		} else {
-			if (RasterizerGLES2::is_viable() == OK) {
-				RasterizerGLES2::register_config();
-				RasterizerGLES2::make_current();
-				break;
-			} else {
-				gl_initialization_error = true;
-				break;
-			}
-		}
-	}
-
-	if (gl_initialization_error) {
-		OS::get_singleton()->alert("Your video card driver does not support any of the supported OpenGL versions.\n"
-								   "Please update your drivers or if you have a very old or integrated GPU upgrade it.",
-				"Unable to initialize Video driver");
-		return ERR_UNAVAILABLE;
-	}
-
-	video_driver_index = p_video_driver;
 
 	visual_server = memnew(VisualServerRaster);
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
@@ -1673,10 +1606,26 @@ void OS_OSX::finalize() {
 	midi_driver.close();
 #endif
 
-	if (displayLink) {
-		CVDisplayLinkRelease(displayLink);
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+
+		if (context_gles2)
+			memdelete(context_gles2);
 	}
-	[vsync_condition release];
+#endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+
+		if (rendering_device_vulkan) {
+			rendering_device_vulkan->finalize();
+			memdelete(rendering_device_vulkan);
+		}
+
+		if (context_vulkan)
+			memdelete(context_vulkan);
+
+	}
+#endif
 
 	CFNotificationCenterRemoveObserver(CFNotificationCenterGetDistributedCenter(), NULL, kTISNotifySelectedKeyboardInputSourceChanged, NULL);
 	CGDisplayRemoveReconfigurationCallback(displays_arrangement_changed, NULL);
@@ -1694,7 +1643,6 @@ void OS_OSX::finalize() {
 	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
-	//memdelete(rasterizer);
 }
 
 void OS_OSX::set_main_loop(MainLoop *p_main_loop) {
@@ -1929,7 +1877,6 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 
 		image->lock();
 
-		/* Premultiply the alpha channel */
 		for (int i = 0; i < len; i++) {
 			int row_index = floor(i / texture_size.width) + atlas_rect.position.y;
 			int column_index = (i % int(texture_size.width)) + atlas_rect.position.x;
@@ -1979,6 +1926,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		cursor_shape = CURSOR_MAX;
 		set_cursor_shape(c);
 	}
+
 }
 
 void OS_OSX::set_mouse_show(bool p_show) {
@@ -2223,13 +2171,19 @@ String OS_OSX::get_clipboard() const {
 }
 
 void OS_OSX::release_rendering_thread() {
-
-	[NSOpenGLContext clearCurrentContext];
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->release_current();
+	}
+#endif
 }
 
 void OS_OSX::make_rendering_thread() {
-
-	[context makeCurrentContext];
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->make_current();
+	}
+#endif
 }
 
 Error OS_OSX::shell_open(String p_uri) {
@@ -2244,19 +2198,16 @@ String OS_OSX::get_locale() const {
 }
 
 void OS_OSX::swap_buffers() {
-	if (is_vsync_enabled()) {
-		// Wait until our DisplayLink callback unsets our flag...
-		[vsync_condition lock];
-		while (waiting_for_vsync)
-			[vsync_condition wait];
-
-		// Make sure we wait again next frame around
-		waiting_for_vsync = true;
-
-		[vsync_condition unlock];
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		context_gles2->swap_buffers();
 	}
-
-	[context flushBuffer];
+#endif
+#if defined(VULKAN_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
+		context_vulkan->swap_buffers();
+	}
+#endif
 }
 
 void OS_OSX::wm_minimized(bool p_minimized) {
@@ -2662,21 +2613,31 @@ void OS_OSX::set_window_per_pixel_transparency_enabled(bool p_enabled) {
 	if (layered_window != p_enabled) {
 		if (p_enabled) {
 			set_borderless_window(true);
-			GLint opacity = 0;
 			[window_object setBackgroundColor:[NSColor clearColor]];
 			[window_object setOpaque:NO];
 			[window_object setHasShadow:NO];
-			[context setValues:&opacity forParameter:NSOpenGLCPSurfaceOpacity];
+#if defined(OPENGL_ENABLED)
+			if (video_driver_index == VIDEO_DRIVER_GLES2) {
+				context_gles2->set_opacity(0);
+			}
+#endif
 			layered_window = true;
 		} else {
-			GLint opacity = 1;
 			[window_object setBackgroundColor:[NSColor colorWithCalibratedWhite:1 alpha:1]];
 			[window_object setOpaque:YES];
 			[window_object setHasShadow:YES];
-			[context setValues:&opacity forParameter:NSOpenGLCPSurfaceOpacity];
+#if defined(OPENGL_ENABLED)
+			if (video_driver_index == VIDEO_DRIVER_GLES2) {
+				context_gles2->set_opacity(1);
+			}
+#endif
 			layered_window = false;
 		}
-		[context update];
+#if defined(OPENGL_ENABLED)
+		if (video_driver_index == VIDEO_DRIVER_GLES2) {
+			context_gles2->update();
+		}
+#endif
 		NSRect frame = [window_object frame];
 		[window_object setFrame:NSMakeRect(frame.origin.x, frame.origin.y, 1, 1) display:YES];
 		[window_object setFrame:frame display:YES];
@@ -2995,20 +2956,12 @@ Error OS_OSX::move_to_trash(const String &p_path) {
 }
 
 void OS_OSX::_set_use_vsync(bool p_enable) {
-	// CGLCPSwapInterval broke in OSX 10.14 and it seems Apple is not interested in fixing
-	// it as OpenGL is now deprecated and Metal solves this differently.
-	// Following SDLs example we're working around this using DisplayLink
-	// When vsync is enabled we set a flag "waiting_for_vsync" to true.
-	// This flag is set to false when DisplayLink informs us our display is about to refresh.
-
-	/*	CGLContextObj ctx = CGLGetCurrentContext();
-	if (ctx) {
-		GLint swapInterval = p_enable ? 1 : 0;
-		CGLSetParameter(ctx, kCGLCPSwapInterval, &swapInterval);
-	}*/
-
-	///TODO Maybe pause/unpause display link?
-	waiting_for_vsync = p_enable;
+#if defined(OPENGL_ENABLED)
+	if (video_driver_index == VIDEO_DRIVER_GLES2) {
+		if (context_gles2)
+			context_gles2->set_use_vsync(p_enable);
+	}
+#endif
 }
 
 OS_OSX *OS_OSX::singleton = NULL;
@@ -3029,16 +2982,6 @@ OS_OSX::OS_OSX() {
 	ERR_FAIL_COND(!eventSource);
 
 	CGEventSourceSetLocalEventsSuppressionInterval(eventSource, 0.0);
-
-	/*
-	if (pthread_key_create(&_Godot.nsgl.current, NULL) != 0) {
-		_GodotInputError(Godot_PLATFORM_ERROR, "NSGL: Failed to create context TLS");
-		return GL_FALSE;
-	}
-*/
-
-	framework = CFBundleGetBundleWithIdentifier(CFSTR("com.apple.opengl"));
-	ERR_FAIL_COND(!framework);
 
 	// Implicitly create shared NSApplication instance
 	[GodotApplication sharedApplication];
