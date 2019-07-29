@@ -51,7 +51,6 @@ void OptionButton::_notification(int p_what) {
 
 			RID ci = get_canvas_item();
 			Ref<Texture> arrow = Control::get_icon("arrow");
-			Ref<StyleBox> normal = get_stylebox("normal");
 			Color clr = Color(1, 1, 1);
 			if (get_constant("modulate_arrow")) {
 				switch (get_draw_mode()) {
