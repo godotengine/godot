@@ -62,7 +62,7 @@ int SemaphorePosix::get() const {
 	return val;
 }
 
-Semaphore *SemaphorePosix::create_semaphore_posix() {
+SemaphoreOld *SemaphorePosix::create_semaphore_posix() {
 
 	return memnew(SemaphorePosix);
 }

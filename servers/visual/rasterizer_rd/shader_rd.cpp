@@ -30,6 +30,7 @@
 
 #include "shader_rd.h"
 #include "core/string_builder.h"
+#include "rasterizer_rd.h"
 #include "servers/visual/rendering_device.h"
 
 void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name) {
@@ -160,6 +161,121 @@ void ShaderRD::_clear_version(Version *p_version) {
 		p_version->variants = NULL;
 	}
 }
+
+void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
+
+	Vector<RD::ShaderStageData> stages;
+
+	String error;
+	String current_source;
+	RD::ShaderStage current_stage = RD::SHADER_STAGE_VERTEX;
+	bool build_ok = true;
+
+	{
+		//vertex stage
+
+		StringBuilder builder;
+
+		builder.append(vertex_codev.get_data()); // version info (if exists)
+		builder.append("\n"); //make sure defines begin at newline
+		builder.append(general_defines.get_data());
+		builder.append(variant_defines[p_variant].get_data());
+
+		for (int j = 0; j < p_version->custom_defines.size(); j++) {
+			builder.append(p_version->custom_defines[j].get_data());
+		}
+
+		builder.append(vertex_code0.get_data()); //first part of vertex
+
+		builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
+
+		builder.append(vertex_code1.get_data()); //second part of vertex
+
+		builder.append(p_version->vertex_globals.get_data()); // vertex globals
+
+		builder.append(vertex_code2.get_data()); //third part of vertex
+
+		builder.append(p_version->vertex_code.get_data()); // code
+
+		builder.append(vertex_code3.get_data()); //fourth of vertex
+
+		current_source = builder.as_string();
+		RD::ShaderStageData stage;
+		stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_VERTEX, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		if (stage.spir_v.size() == 0) {
+			build_ok = false;
+		} else {
+
+			stage.shader_stage = RD::SHADER_STAGE_VERTEX;
+			stages.push_back(stage);
+		}
+	}
+
+	if (build_ok) {
+		//fragment stage
+		current_stage = RD::SHADER_STAGE_FRAGMENT;
+
+		StringBuilder builder;
+
+		builder.append(fragment_codev.get_data()); // version info (if exists)
+		builder.append("\n"); //make sure defines begin at newline
+
+		builder.append(general_defines.get_data());
+		builder.append(variant_defines[p_variant].get_data());
+		for (int j = 0; j < p_version->custom_defines.size(); j++) {
+			builder.append(p_version->custom_defines[j].get_data());
+		}
+
+		builder.append(fragment_code0.get_data()); //first part of fragment
+
+		builder.append(p_version->uniforms.get_data()); //uniforms (same for fragment and fragment)
+
+		builder.append(fragment_code1.get_data()); //first part of fragment
+
+		builder.append(p_version->fragment_globals.get_data()); // fragment globals
+
+		builder.append(fragment_code2.get_data()); //third part of fragment
+
+		builder.append(p_version->fragment_light.get_data()); // fragment light
+
+		builder.append(fragment_code3.get_data()); //fourth part of fragment
+
+		builder.append(p_version->fragment_code.get_data()); // fragment code
+
+		builder.append(fragment_code4.get_data()); //fourth part of fragment
+
+		current_source = builder.as_string();
+		RD::ShaderStageData stage;
+		stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_FRAGMENT, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		if (stage.spir_v.size() == 0) {
+			build_ok = false;
+		} else {
+
+			stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
+			stages.push_back(stage);
+		}
+	}
+
+	if (!build_ok) {
+		variant_set_mutex.lock(); //properly print the errors
+		ERR_PRINT("Error compiling " + String(current_stage == RD::SHADER_STAGE_VERTEX ? "Vertex" : "Fragment") + " shader, variant #" + itos(p_variant) + " (" + variant_defines[p_variant].get_data() + ").");
+		ERR_PRINT(error);
+
+#ifdef DEBUG_ENABLED
+		ERR_PRINT("code:\n" + current_source.get_with_code_lines());
+#endif
+
+		variant_set_mutex.unlock();
+		return;
+	}
+
+	RID shader = RD::get_singleton()->shader_create(stages);
+
+	variant_set_mutex.lock();
+	p_version->variants[p_variant] = shader;
+	variant_set_mutex.unlock();
+}
+
 void ShaderRD::_compile_version(Version *p_version) {
 
 	_clear_version(p_version);
@@ -168,134 +284,34 @@ void ShaderRD::_compile_version(Version *p_version) {
 	p_version->dirty = false;
 
 	p_version->variants = memnew_arr(RID, variant_defines.size());
+#if 1
 
+	RasterizerRD::thread_work_pool.do_work(variant_defines.size(), this, &ShaderRD::_compile_variant, p_version);
+#else
 	for (int i = 0; i < variant_defines.size(); i++) {
 
-		Vector<RD::ShaderStageData> stages;
-
-		String error;
-		String current_source;
-		RD::ShaderStage current_stage = RD::SHADER_STAGE_VERTEX;
-		bool build_ok=true;
-
-		{
-			//vertex stage
-
-			StringBuilder builder;
-
-			builder.append(vertex_codev.get_data()); // version info (if exists)
-			builder.append("\n"); //make sure defines begin at newline
-			builder.append(general_defines.get_data());
-			builder.append(variant_defines[i].get_data());
-
-			for (int j = 0; j < p_version->custom_defines.size(); j++) {
-				builder.append(p_version->custom_defines[j].get_data());
-			}
-
-			builder.append(vertex_code0.get_data()); //first part of vertex
-
-			builder.append(p_version->uniforms.get_data()); //uniforms (same for vertex and fragment)
-
-			builder.append(vertex_code1.get_data()); //second part of vertex
-
-			builder.append(p_version->vertex_globals.get_data()); // vertex globals
-
-			builder.append(vertex_code2.get_data()); //third part of vertex
-
-			builder.append(p_version->vertex_code.get_data()); // code
-
-			builder.append(vertex_code3.get_data()); //fourth of vertex
-
-			current_source = builder.as_string();
-			RD::ShaderStageData stage;
-			stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_VERTEX,current_source,RD::SHADER_LANGUAGE_GLSL,&error);
-			if (stage.spir_v.size()==0) {
-				build_ok=false;
-			} else {
-
-				stage.shader_stage = RD::SHADER_STAGE_VERTEX;
-				stages.push_back(stage);
-			}
-		}
-
-		if (build_ok){
-			//fragment stage
-			current_stage =RD::SHADER_STAGE_FRAGMENT;
-
-			StringBuilder builder;
-
-			builder.append(fragment_codev.get_data()); // version info (if exists)
-			builder.append("\n"); //make sure defines begin at newline
-
-			builder.append(general_defines.get_data());
-			builder.append(variant_defines[i].get_data());
-			for (int j = 0; j < p_version->custom_defines.size(); j++) {
-				builder.append(p_version->custom_defines[j].get_data());
-			}
-
-			builder.append(fragment_code0.get_data()); //first part of fragment
-
-			builder.append(p_version->uniforms.get_data()); //uniforms (same for fragment and fragment)
-
-			builder.append(fragment_code1.get_data()); //first part of fragment
-
-			builder.append(p_version->fragment_globals.get_data()); // fragment globals
-
-			builder.append(fragment_code2.get_data()); //third part of fragment
-
-			builder.append(p_version->fragment_light.get_data()); // fragment light
-
-			builder.append(fragment_code3.get_data()); //fourth part of fragment
-
-			builder.append(p_version->fragment_code.get_data()); // fragment code
-
-			builder.append(fragment_code4.get_data()); //fourth part of fragment
-
-			current_source = builder.as_string();
-			RD::ShaderStageData stage;
-			stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_FRAGMENT,current_source,RD::SHADER_LANGUAGE_GLSL,&error);
-			if (stage.spir_v.size()==0) {
-				build_ok=false;
-			} else {
-
-				stage.shader_stage = RD::SHADER_STAGE_FRAGMENT;
-				stages.push_back(stage);
-			}
-
-		}
-
-
-		if (!build_ok) {
-			ERR_PRINT("Error compiling " + String(current_stage == RD::SHADER_STAGE_VERTEX ? "Vertex" : "Fragment") + " shader, variant #" + itos(i) + " (" + variant_defines[i].get_data() + ").");
-			ERR_PRINT(error);
-
-#ifdef DEBUG_ENABLED
-			ERR_PRINT("code:\n" + current_source.get_with_code_lines());
+		_compile_variant(i, p_version);
+	}
 #endif
-			//clear versions if they exist
-			for (int j = 0; j < i; j++) {
-				RD::get_singleton()->free(p_version->variants[j]);
-			}
 
-			memdelete_arr(p_version->variants);
-			p_version->variants = NULL;
-			return;
+	bool all_valid = true;
+	for (int i = 0; i < variant_defines.size(); i++) {
+		if (p_version->variants[i].is_null()) {
+			all_valid = false;
+			break;
 		}
+	}
 
-		RID shader = RD::get_singleton()->shader_create(stages);
-
-		if (shader.is_null()) {
-			//clear versions if they exist
-			for (int j = 0; j < i; j++) {
-				RD::get_singleton()->free(p_version->variants[j]);
+	if (!all_valid) {
+		//clear versions if they exist
+		for (int i = 0; i < variant_defines.size(); i++) {
+			if (!p_version->variants[i].is_null()) {
+				RD::get_singleton()->free(p_version->variants[i]);
 			}
-
-			memdelete_arr(p_version->variants);
-			p_version->variants = NULL;
-			return;
 		}
-
-		p_version->variants[i] = shader;
+		memdelete_arr(p_version->variants);
+		p_version->variants = NULL;
+		return;
 	}
 
 	p_version->valid = true;
