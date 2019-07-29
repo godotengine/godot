@@ -4,10 +4,10 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
 #include "servers/visual/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
-#include "servers/visual/rendering_device.h"
 #include "servers/visual/rasterizer_rd/shader_compiler_rd.h"
 #include "servers/visual/rasterizer_rd/shaders/canvas.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/canvas_occlusion.glsl.gen.h"
+#include "servers/visual/rendering_device.h"
 
 class RasterizerCanvasRD : public RasterizerCanvas {
 
@@ -167,6 +167,7 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	}
 
 	struct MaterialData : public RasterizerStorageRD::MaterialData {
+		uint64_t last_frame;
 		ShaderData *shader_data;
 		RID uniform_buffer;
 		RID uniform_set;
