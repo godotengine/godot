@@ -61,7 +61,7 @@ int SemaphoreWindows::get() const {
 	ERR_FAIL_V(-1);
 }
 
-Semaphore *SemaphoreWindows::create_semaphore_windows() {
+SemaphoreOld *SemaphoreWindows::create_semaphore_windows() {
 
 	return memnew(SemaphoreWindows);
 }

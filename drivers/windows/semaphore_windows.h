@@ -41,11 +41,11 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-class SemaphoreWindows : public Semaphore {
+class SemaphoreWindows : public SemaphoreOld {
 
 	mutable HANDLE semaphore;
 
-	static Semaphore *create_semaphore_windows();
+	static SemaphoreOld *create_semaphore_windows();
 
 public:
 	virtual Error wait();

@@ -49,7 +49,7 @@ class FileAccessNetworkClient {
 
 	List<BlockRequest> block_requests;
 
-	Semaphore *sem;
+	SemaphoreOld *sem;
 	Thread *thread;
 	bool quit;
 	Mutex *mutex;
@@ -85,8 +85,8 @@ public:
 
 class FileAccessNetwork : public FileAccess {
 
-	Semaphore *sem;
-	Semaphore *page_sem;
+	SemaphoreOld *sem;
+	SemaphoreOld *page_sem;
 	Mutex *buffer_mutex;
 	bool opened;
 	size_t total_size;

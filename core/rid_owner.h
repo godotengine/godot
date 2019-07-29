@@ -3,6 +3,8 @@
 
 #include "core/print_string.h"
 #include "core/rid.h"
+#include "core/spin_lock.h"
+
 #include <typeinfo>
 
 class RID_AllocBase {
@@ -28,7 +30,7 @@ public:
 	virtual ~RID_AllocBase() {}
 };
 
-template <class T>
+template <class T, bool THREAD_SAFE = false>
 class RID_Alloc : public RID_AllocBase {
 
 	T **chunks;
@@ -41,8 +43,14 @@ class RID_Alloc : public RID_AllocBase {
 
 	const char *description;
 
+	SpinLock spin_lock;
+
 public:
 	RID make_rid(const T &p_value) {
+
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
 
 		if (alloc_count == max_alloc) {
 			//allocate a new chunk
@@ -85,10 +93,18 @@ public:
 		validator_chunks[free_chunk][free_element] = validator;
 		alloc_count++;
 
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+
 		return _make_from_id(id);
 	}
 
 	_FORCE_INLINE_ T *getornull(const RID &p_rid) {
+
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
@@ -104,14 +120,27 @@ public:
 			return NULL;
 		}
 
-		return &chunks[idx_chunk][idx_element];
+		T *ptr = &chunks[idx_chunk][idx_element];
+
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+
+		return ptr;
 	}
 
 	_FORCE_INLINE_ bool owns(const RID &p_rid) {
 
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
+
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
+			if (THREAD_SAFE) {
+				spin_lock.unlock();
+			}
 			return false;
 		}
 
@@ -119,10 +148,21 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		return validator_chunks[idx_chunk][idx_element] == validator;
+
+		bool owned = validator_chunks[idx_chunk][idx_element] == validator;
+
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+
+		return owned;
 	}
 
 	_FORCE_INLINE_ void free(const RID &p_rid) {
+
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
@@ -139,6 +179,10 @@ public:
 
 		alloc_count--;
 		free_list_chunks[alloc_count / elements_in_chunk][alloc_count % elements_in_chunk] = idx;
+
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
 	}
 
 	_FORCE_INLINE_ uint32_t get_rid_count() const {
@@ -147,8 +191,15 @@ public:
 
 	_FORCE_INLINE_ T *get_rid_by_index(uint32_t p_index) {
 		ERR_FAIL_INDEX_V(p_index, alloc_count, NULL);
+		if (THREAD_SAFE) {
+			spin_lock.lock();
+		}
 		uint64_t idx = free_list_chunks[p_index / elements_in_chunk][p_index % elements_in_chunk];
-		return &chunks[idx / elements_in_chunk][idx % elements_in_chunk];
+		T *ptr = &chunks[idx / elements_in_chunk][idx % elements_in_chunk];
+		if (THREAD_SAFE) {
+			spin_lock.unlock();
+		}
+		return ptr;
 	}
 
 	void get_owned_list(List<RID> *p_owned) {
@@ -203,9 +254,9 @@ public:
 	}
 };
 
-template <class T>
+template <class T, bool THREAD_SAFE = false>
 class RID_PtrOwner {
-	RID_Alloc<T *> alloc;
+	RID_Alloc<T *, THREAD_SAFE> alloc;
 
 public:
 	_FORCE_INLINE_ RID make_rid(T *p_ptr) {
@@ -239,9 +290,9 @@ public:
 			alloc(p_target_chunk_byte_size) {}
 };
 
-template <class T>
+template <class T, bool THREAD_SAFE = false>
 class RID_Owner {
-	RID_Alloc<T> alloc;
+	RID_Alloc<T, THREAD_SAFE> alloc;
 
 public:
 	_FORCE_INLINE_ RID make_rid(const T &p_ptr) {

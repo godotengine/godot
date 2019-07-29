@@ -39,11 +39,11 @@ typedef struct cgsem cgsem_t;
 
 #include "core/os/semaphore.h"
 
-class SemaphoreOSX : public Semaphore {
+class SemaphoreOSX : public SemaphoreOld {
 
 	mutable cgsem_t sem;
 
-	static Semaphore *create_semaphore_osx();
+	static SemaphoreOld *create_semaphore_osx();
 
 public:
 	virtual Error wait();

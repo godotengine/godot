@@ -301,7 +301,7 @@ class CommandQueueMT {
 
 	struct SyncSemaphore {
 
-		Semaphore *sem;
+		SemaphoreOld *sem;
 		bool in_use;
 	};
 
@@ -346,7 +346,7 @@ class CommandQueueMT {
 	uint32_t dealloc_ptr;
 	SyncSemaphore sync_sems[SYNC_SEMAPHORES];
 	Mutex *mutex;
-	Semaphore *sync;
+	SemaphoreOld *sync;
 
 	template <class T>
 	T *allocate() {
