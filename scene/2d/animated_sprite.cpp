@@ -580,6 +580,16 @@ bool AnimatedSprite::is_flipped_v() const {
 	return vflip;
 }
 
+void AnimatedSprite::set_backwards(bool p_backwards) {
+
+	backwards = p_backwards;
+	update();
+}
+bool AnimatedSprite::is_backwards() const {
+
+	return backwards;
+}
+
 void AnimatedSprite::_res_changed() {
 
 	set_frame(frame);
@@ -696,6 +706,9 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_flip_v", "flip_v"), &AnimatedSprite::set_flip_v);
 	ClassDB::bind_method(D_METHOD("is_flipped_v"), &AnimatedSprite::is_flipped_v);
 
+	ClassDB::bind_method(D_METHOD("set_backwards", "backwards"), &AnimatedSprite::set_backwards);
+	ClassDB::bind_method(D_METHOD("is_backwards"), &AnimatedSprite::is_backwards);
+
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &AnimatedSprite::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &AnimatedSprite::get_frame);
 
@@ -712,6 +725,7 @@ void AnimatedSprite::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "backwards"), "set_backwards", "is_backwards");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
