@@ -684,7 +684,7 @@ void GraphEdit::_draw_cos_line(CanvasItem *p_where, const Vector2 &p_from, const
 #ifdef TOOLS_ENABLED
 	p_where->draw_polyline_colors(points, colors, Math::floor(2 * EDSCALE));
 #else
-	p_where->draw_polyline_colors(points, colors, 2, true);
+	p_where->draw_polyline_colors(points, colors, 2);
 #endif
 }
 
