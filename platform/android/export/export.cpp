@@ -847,6 +847,138 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 					uint32_t name = decode_uint32(&p_manifest[iofs + 12]);
 					String tname = string_table[name];
 
+					int dof_index = p_preset->get("graphics/degrees_of_freedom"); // 0: none, 1: 3dof and 6dof, 2: 6dof
+
+					if (tname == "uses-feature" && dof_index > 0) {
+						if (xr_mode_index == 0) {
+							WARN_PRINT("VR DOF feature setting is only valid for oculus HMDs with an XR mode set to VR");
+						}
+						ofs += 24; // skip over end tag
+
+						// save manifest ending so we can restore it
+						Vector<uint8_t> manifest_end;
+						uint32_t manifest_cur_size = p_manifest.size();
+
+						manifest_end.resize(p_manifest.size() - ofs);
+						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
+
+						int32_t attr_name_string = string_table.find("name");
+						ERR_EXPLAIN("Template does not have 'name' attribute");
+						ERR_FAIL_COND(attr_name_string == -1);
+
+						int32_t ns_android_string = string_table.find("http://schemas.android.com/apk/res/android");
+						if (ns_android_string == -1) {
+							string_table.push_back("http://schemas.android.com/apk/res/android");
+							ns_android_string = string_table.size() - 1;
+						}
+
+						int32_t attr_uses_permission_string = string_table.find("uses-feature");
+						if (attr_uses_permission_string == -1) {
+							string_table.push_back("uses-feature");
+							attr_uses_permission_string = string_table.size() - 1;
+						}
+
+						int32_t attr_required_string = string_table.find("required");
+						if (attr_required_string == -1) {
+							string_table.push_back("required");
+							attr_required_string = string_table.size() - 1;
+						}
+
+						int32_t attr_version_string = string_table.find("version");
+						if (attr_version_string == -1) {
+							string_table.push_back("version");
+							attr_version_string = string_table.size() - 1;
+						}
+
+						String required_value_string;
+						if (dof_index == 1) {
+							required_value_string = "false";
+						} else if (dof_index == 2) {
+							required_value_string = "true";
+						} else {
+							ERR_EXPLAIN("Unknown dof index " + itos(dof_index));
+							ERR_FAIL();
+						}
+						int32_t required_value = string_table.find(required_value_string);
+						if (required_value == -1) {
+							string_table.push_back(required_value_string);
+							required_value = string_table.size() - 1;
+						}
+
+						int32_t version_value = string_table.find("1");
+						if (version_value == -1) {
+							string_table.push_back("1");
+							version_value = string_table.size() - 1;
+						}
+
+						int32_t feature_string = string_table.find("android.hardware.vr.headtracking");
+						if (feature_string == -1) {
+							string_table.push_back("android.hardware.vr.headtracking");
+							feature_string = string_table.size() - 1;
+						}
+
+						{
+							manifest_cur_size += 96 + 20; // node and three attrs + end node
+							p_manifest.resize(manifest_cur_size);
+
+							// start tag
+							encode_uint16(0x102, &p_manifest.write[ofs]); // type
+							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
+							encode_uint32(96, &p_manifest.write[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+							encode_uint16(20, &p_manifest.write[ofs + 24]); // attr_start
+							encode_uint16(20, &p_manifest.write[ofs + 26]); // attr_size
+							encode_uint16(3, &p_manifest.write[ofs + 28]); // num_attrs
+							encode_uint16(0, &p_manifest.write[ofs + 30]); // id_index
+							encode_uint16(0, &p_manifest.write[ofs + 32]); // class_index
+							encode_uint16(0, &p_manifest.write[ofs + 34]); // style_index
+
+							// android:name attribute
+							encode_uint32(ns_android_string, &p_manifest.write[ofs + 36]); // ns
+							encode_uint32(attr_name_string, &p_manifest.write[ofs + 40]); // 'name'
+							encode_uint32(feature_string, &p_manifest.write[ofs + 44]); // raw_value
+							encode_uint16(8, &p_manifest.write[ofs + 48]); // typedvalue_size
+							p_manifest.write[ofs + 50] = 0; // typedvalue_always0
+							p_manifest.write[ofs + 51] = 0x03; // typedvalue_type (string)
+							encode_uint32(feature_string, &p_manifest.write[ofs + 52]); // typedvalue reference
+
+							// android:required attribute
+							encode_uint32(ns_android_string, &p_manifest.write[ofs + 56]); // ns
+							encode_uint32(attr_required_string, &p_manifest.write[ofs + 60]); // 'name'
+							encode_uint32(required_value, &p_manifest.write[ofs + 64]); // raw_value
+							encode_uint16(8, &p_manifest.write[ofs + 68]); // typedvalue_size
+							p_manifest.write[ofs + 70] = 0; // typedvalue_always0
+							p_manifest.write[ofs + 71] = 0x03; // typedvalue_type (string)
+							encode_uint32(required_value, &p_manifest.write[ofs + 72]); // typedvalue reference
+
+							// android:version attribute
+							encode_uint32(ns_android_string, &p_manifest.write[ofs + 76]); // ns
+							encode_uint32(attr_version_string, &p_manifest.write[ofs + 80]); // 'name'
+							encode_uint32(version_value, &p_manifest.write[ofs + 84]); // raw_value
+							encode_uint16(8, &p_manifest.write[ofs + 88]); // typedvalue_size
+							p_manifest.write[ofs + 90] = 0; // typedvalue_always0
+							p_manifest.write[ofs + 91] = 0x03; // typedvalue_type (string)
+							encode_uint32(version_value, &p_manifest.write[ofs + 92]); // typedvalue reference
+
+							ofs += 96;
+
+							// end tag
+							encode_uint16(0x103, &p_manifest.write[ofs]); // type
+							encode_uint16(16, &p_manifest.write[ofs + 2]); // headersize
+							encode_uint32(24, &p_manifest.write[ofs + 4]); // size
+							encode_uint32(0, &p_manifest.write[ofs + 8]); // lineno
+							encode_uint32(-1, &p_manifest.write[ofs + 12]); // comment
+							encode_uint32(-1, &p_manifest.write[ofs + 16]); // ns
+							encode_uint32(attr_uses_permission_string, &p_manifest.write[ofs + 20]); // name
+
+							ofs += 24;
+						}
+						memcpy(&p_manifest.write[ofs], manifest_end.ptr(), manifest_end.size());
+						ofs -= 24; // go back over back end
+					}
 					if (tname == "manifest") {
 
 						// save manifest ending so we can restore it
@@ -1156,6 +1288,7 @@ public:
 	virtual void get_export_options(List<ExportOption> *r_options) {
 
 		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/xr_mode", PROPERTY_HINT_ENUM, "Regular,Oculus Mobile VR"), 0));
+		r_options->push_back(ExportOption(PropertyInfo(Variant::INT, "graphics/degrees_of_freedom", PROPERTY_HINT_ENUM, "None,3DOF and 6DOF,6DOF"), 0));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "graphics/32_bits_framebuffer"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "one_click_deploy/clear_previous_install"), true));
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_package/debug", PROPERTY_HINT_GLOBAL_FILE, "*.apk"), ""));
