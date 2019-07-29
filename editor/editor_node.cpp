@@ -1963,6 +1963,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 			opening_prev = true;
 			open_request(previous_scenes.back()->get());
+			previous_scenes.pop_back();
 
 		} break;
 		case FILE_CLOSE_OTHERS:
@@ -2634,6 +2635,12 @@ void EditorNode::_discard_changes(const String &p_str) {
 		case FILE_CLOSE_ALL:
 		case SCENE_TAB_CLOSE: {
 
+			Node *scene = editor_data.get_edited_scene_root(tab_closing);
+			if (scene != NULL) {
+				String scene_filename = scene->get_filename();
+				previous_scenes.push_back(scene_filename);
+			}
+
 			_remove_scene(tab_closing);
 			_update_scene_tabs();
 
@@ -2697,6 +2704,21 @@ void EditorNode::_update_debug_options() {
 	if (check_debug_navigation) _menu_option_confirm(RUN_DEBUG_NAVIGATION, true);
 	if (check_live_debug) _menu_option_confirm(RUN_LIVE_DEBUG, true);
 	if (check_reload_scripts) _menu_option_confirm(RUN_RELOAD_SCRIPTS, true);
+}
+
+void EditorNode::_update_file_menu_opened() {
+
+	Ref<ShortCut> close_scene_sc = ED_GET_SHORTCUT("editor/close_scene");
+	close_scene_sc->set_name(TTR("Close Scene"));
+	Ref<ShortCut> reopen_closed_scene_sc = ED_GET_SHORTCUT("editor/reopen_closed_scene");
+	reopen_closed_scene_sc->set_name(TTR("Reopen Closed Scene"));
+	PopupMenu *pop = file_menu->get_popup();
+	pop->set_item_disabled(pop->get_item_index(FILE_OPEN_PREV), previous_scenes.empty());
+}
+
+void EditorNode::_update_file_menu_closed() {
+	PopupMenu *pop = file_menu->get_popup();
+	pop->set_item_disabled(pop->get_item_index(FILE_OPEN_PREV), false);
 }
 
 Control *EditorNode::get_viewport() {
@@ -3270,6 +3292,13 @@ Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, b
 }
 
 void EditorNode::open_request(const String &p_path) {
+
+	if (!opening_prev) {
+		List<String>::Element *prev_scene = previous_scenes.find(p_path);
+		if (prev_scene != NULL) {
+			prev_scene->erase();
+		}
+	}
 
 	load_scene(p_path); // as it will be opened in separate tab
 }
@@ -4471,8 +4500,17 @@ void EditorNode::_scene_tab_input(const Ref<InputEvent> &p_input) {
 				scene_tabs_context_menu->add_separator();
 				scene_tabs_context_menu->add_item(TTR("Show in FileSystem"), FILE_SHOW_IN_FILESYSTEM);
 				scene_tabs_context_menu->add_item(TTR("Play This Scene"), RUN_PLAY_SCENE);
+
 				scene_tabs_context_menu->add_separator();
-				scene_tabs_context_menu->add_item(TTR("Close Tab"), FILE_CLOSE);
+				Ref<ShortCut> close_tab_sc = ED_GET_SHORTCUT("editor/close_scene");
+				close_tab_sc->set_name(TTR("Close Tab"));
+				scene_tabs_context_menu->add_shortcut(close_tab_sc, FILE_CLOSE);
+				Ref<ShortCut> undo_close_tab_sc = ED_GET_SHORTCUT("editor/reopen_closed_scene");
+				undo_close_tab_sc->set_name(TTR("Undo Close Tab"));
+				scene_tabs_context_menu->add_shortcut(undo_close_tab_sc, FILE_OPEN_PREV);
+				if (previous_scenes.empty()) {
+					scene_tabs_context_menu->set_item_disabled(scene_tabs_context_menu->get_item_index(FILE_OPEN_PREV), true);
+				}
 				scene_tabs_context_menu->add_item(TTR("Close Other Tabs"), FILE_CLOSE_OTHERS);
 				scene_tabs_context_menu->add_item(TTR("Close Tabs to the Right"), FILE_CLOSE_RIGHT);
 				scene_tabs_context_menu->add_item(TTR("Close All Tabs"), FILE_CLOSE_ALL);
@@ -5189,6 +5227,8 @@ void EditorNode::_bind_methods() {
 	ClassDB::bind_method("_node_renamed", &EditorNode::_node_renamed);
 	ClassDB::bind_method("edit_node", &EditorNode::edit_node);
 	ClassDB::bind_method("_unhandled_input", &EditorNode::_unhandled_input);
+	ClassDB::bind_method("_update_file_menu_opened", &EditorNode::_update_file_menu_opened);
+	ClassDB::bind_method("_update_file_menu_closed", &EditorNode::_update_file_menu_closed);
 
 	ClassDB::bind_method(D_METHOD("push_item", "object", "property", "inspector_only"), &EditorNode::push_item, DEFVAL(""), DEFVAL(false));
 
@@ -5865,6 +5905,7 @@ EditorNode::EditorNode() {
 	PopupMenu *p;
 
 	file_menu->set_tooltip(TTR("Operations with scene files."));
+
 	p = file_menu->get_popup();
 	p->set_hide_on_window_lose_focus(true);
 	p->add_shortcut(ED_SHORTCUT("editor/new_scene", TTR("New Scene")), FILE_NEW_SCENE);
@@ -5878,6 +5919,7 @@ EditorNode::EditorNode() {
 	p->add_shortcut(ED_SHORTCUT("editor/close_scene", TTR("Close Scene"), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_W), FILE_CLOSE);
 	p->add_separator();
 	p->add_submenu_item(TTR("Open Recent"), "RecentScenes", FILE_OPEN_RECENT);
+	p->add_shortcut(ED_SHORTCUT("editor/reopen_closed_scene", TTR("Reopen Closed Scene"), KEY_MASK_CMD + KEY_MASK_SHIFT + KEY_T), FILE_OPEN_PREV);
 	p->add_separator();
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open", TTR("Quick Open..."), KEY_MASK_SHIFT + KEY_MASK_ALT + KEY_O), FILE_QUICK_OPEN);
 	p->add_shortcut(ED_SHORTCUT("editor/quick_open_scene", TTR("Quick Open Scene..."), KEY_MASK_SHIFT + KEY_MASK_CMD + KEY_O), FILE_QUICK_OPEN_SCENE);
@@ -6357,6 +6399,8 @@ EditorNode::EditorNode() {
 	file_script->connect("file_selected", this, "_dialog_action");
 
 	file_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+	file_menu->connect("about_to_show", this, "_update_file_menu_opened");
+	file_menu->get_popup()->connect("popup_hide", this, "_update_file_menu_closed");
 
 	settings_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 

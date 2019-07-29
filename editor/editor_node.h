@@ -461,6 +461,8 @@ private:
 
 	void _tool_menu_option(int p_idx);
 	void _update_debug_options();
+	void _update_file_menu_opened();
+	void _update_file_menu_closed();
 
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
