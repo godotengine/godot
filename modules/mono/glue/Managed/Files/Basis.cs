@@ -225,7 +225,7 @@ namespace Godot
             return orthonormalizedBasis.Quat();
         }
 
-        internal void SetQuantScale(Quat quat, Vector3 scale)
+        internal void SetQuatScale(Quat quat, Vector3 scale)
         {
             SetDiagonal(scale);
             Rotate(quat);
@@ -241,7 +241,6 @@ namespace Godot
             Row0 = new Vector3(diagonal.x, 0, 0);
             Row1 = new Vector3(0, diagonal.y, 0);
             Row2 = new Vector3(0, 0, diagonal.z);
-
         }
 
         public real_t Determinant()

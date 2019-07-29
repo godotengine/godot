@@ -914,7 +914,7 @@ struct _VariantCall {
 
 	static void Quat_init2(Variant &r_ret, const Variant **p_args) {
 
-		r_ret = Quat(((Vector3)(*p_args[0])), ((float)(*p_args[1])));
+		r_ret = Quat(((Vector3)(*p_args[0])), ((real_t)(*p_args[1])));
 	}
 
 	static void Quat_init3(Variant &r_ret, const Variant **p_args) {
