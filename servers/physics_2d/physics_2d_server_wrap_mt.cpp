@@ -107,7 +107,7 @@ void Physics2DServerWrapMT::init() {
 
 	if (create_thread) {
 
-		step_sem = Semaphore::create();
+		step_sem = SemaphoreOld::create();
 		//OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
 			thread = Thread::create(_thread_callback, this);

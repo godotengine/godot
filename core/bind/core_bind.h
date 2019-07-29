@@ -633,7 +633,7 @@ public:
 class _Semaphore : public Reference {
 
 	GDCLASS(_Semaphore, Reference);
-	Semaphore *semaphore;
+	SemaphoreOld *semaphore;
 
 	static void _bind_methods();
 
