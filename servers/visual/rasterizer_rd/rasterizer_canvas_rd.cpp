@@ -1,6 +1,7 @@
 #include "rasterizer_canvas_rd.h"
 #include "core/math/math_funcs.h"
 #include "core/project_settings.h"
+#include "rasterizer_rd.h"
 
 void RasterizerCanvasRD::_update_transform_2d_to_mat4(const Transform2D &p_transform, float *p_mat4) {
 
@@ -1500,14 +1501,25 @@ void RasterizerCanvasRD::canvas_render_items(RID p_to_render_target, Item *p_ite
 
 		if (ci->material.is_valid()) {
 			MaterialData *md = (MaterialData *)storage->material_get_data(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
-			if (md && md->shader_data->valid && md->shader_data->uses_screen_texture) {
-				if (!material_screen_texture_found) {
-					backbuffer_copy = true;
-					back_buffer_rect = Rect2();
+			if (md && md->shader_data->valid) {
+
+				if (md->shader_data->uses_screen_texture) {
+					if (!material_screen_texture_found) {
+						backbuffer_copy = true;
+						back_buffer_rect = Rect2();
+					}
+					if (screen_uniform_set.is_null()) {
+						RID backbuffer_shader = shader.canvas_shader.version_get_shader(md->shader_data->version, 0); //any version is fine
+						screen_uniform_set = storage->render_target_get_back_buffer_uniform_set(p_to_render_target, backbuffer_shader);
+					}
 				}
-				if (screen_uniform_set.is_null()) {
-					RID backbuffer_shader = shader.canvas_shader.version_get_shader(md->shader_data->version, 0); //any version is fine
-					screen_uniform_set = storage->render_target_get_back_buffer_uniform_set(p_to_render_target, backbuffer_shader);
+
+				if (md->last_frame != RasterizerRD::get_frame_number()) {
+					md->last_frame = RasterizerRD::get_frame_number();
+					if (!RD::get_singleton()->uniform_set_is_valid(md->uniform_set)) {
+						//textures may have been removed, hence invalidating this uniform set.
+						storage->material_force_update_textures(ci->material, RasterizerStorageRD::SHADER_TYPE_2D);
+					}
 				}
 			}
 		}
@@ -2149,6 +2161,7 @@ RasterizerCanvasRD::MaterialData::~MaterialData() {
 RasterizerStorageRD::MaterialData *RasterizerCanvasRD::_create_material_func(ShaderData *p_shader) {
 	MaterialData *material_data = memnew(MaterialData);
 	material_data->shader_data = p_shader;
+	material_data->last_frame = false;
 	//update will happen later anyway so do nothing.
 	return material_data;
 }
