@@ -133,6 +133,26 @@ msgid "Anim Change Call"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Keyframe Time"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Transition"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Transform"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Keyframe Value"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Call"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr ""
 
@@ -1669,7 +1689,7 @@ msgstr ""
 msgid "New Folder..."
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr ""
 
@@ -1720,7 +1740,7 @@ msgstr ""
 msgid "Go Up"
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr ""
 
@@ -1747,24 +1767,30 @@ msgid "Move Favorite Down"
 msgstr "پسندیدہ نیچے منتقل کریں"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr ""
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "سب سکریپشن بنائیں"
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr ""
+#, fuzzy
+msgid "Go to next folder."
+msgstr "سب سکریپشن بنائیں"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "سب سکریپشن بنائیں"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Refresh files."
+msgstr ""
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr ""
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Toggle the visibility of hidden files."
 msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2646,14 +2672,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr ""
 
@@ -2967,6 +2985,11 @@ msgstr ""
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr ""
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr ".تمام کا انتخاب"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4653,7 +4676,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr ""
 
@@ -6669,7 +6691,12 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr ".تمام کا انتخاب"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
 msgstr ".تمام کا انتخاب"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6852,11 +6879,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Focus Selection"
-msgstr ".تمام کا انتخاب"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Align Selection With View"
 msgstr ".تمام کا انتخاب"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9685,6 +9707,11 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 #, fuzzy
 msgid "Extend Script"
+msgstr "سب سکریپشن بنائیں"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
 msgstr "سب سکریپشن بنائیں"
 
 #: editor/scene_tree_dock.cpp

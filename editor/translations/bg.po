@@ -139,6 +139,26 @@ msgid "Anim Change Call"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Keyframe Time"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Transition"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Transform"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Keyframe Value"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
+msgid "Anim Multi Change Call"
+msgstr ""
+
+#: editor/animation_track_editor.cpp
 #, fuzzy
 msgid "Change Animation Length"
 msgstr "Промени Името на Анимацията:"
@@ -1713,7 +1733,7 @@ msgstr "Покажи във Файлов Мениджър"
 msgid "New Folder..."
 msgstr "Нова папка..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr ""
 
@@ -1764,7 +1784,7 @@ msgstr ""
 msgid "Go Up"
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Покажи Скрити Файлове"
 
@@ -1790,27 +1810,32 @@ msgstr ""
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "Предишен подпрозорец"
+msgid "Go to previous folder."
+msgstr "Към горната папка"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "Създаване на папка"
+msgid "Go to next folder."
+msgstr "Към горната папка"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "Към горната папка"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Търсене"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "Неуспешно създаване на папка."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Покажи Скрити Файлове"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2715,14 +2740,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Настройки на редактора"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr ""
 
@@ -3041,6 +3058,11 @@ msgstr ""
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr ""
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Файл:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4807,7 +4829,6 @@ msgid "Last"
 msgstr "Последна"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Всички"
 
@@ -6857,7 +6878,12 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr "Изглед Отдясно."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
 msgstr "Изглед Отдясно."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -7041,10 +7067,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9951,6 +9973,11 @@ msgstr "Нова сцена"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "Създай нови възли."
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "Запазване на сцената"
 
@@ -11793,6 +11820,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "Предишен подпрозорец"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "Създаване на папка"
 
 #~ msgid "Reverse"
 #~ msgstr "В обратен ред"

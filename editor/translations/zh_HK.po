@@ -137,6 +137,31 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "動畫變化數值"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "動畫變化過渡"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "動畫變化過渡"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "動畫變化數值"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "動畫軌跡變化數值模式"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "更改動畫名稱："
 
@@ -1785,7 +1810,7 @@ msgstr "開啟 Project Manager?"
 msgid "New Folder..."
 msgstr "新增資料夾"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "重新整理"
 
@@ -1836,7 +1861,7 @@ msgstr ""
 msgid "Go Up"
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "（不）顯示隱藏的文件"
 
@@ -1864,27 +1889,32 @@ msgstr "下移最愛"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "上一個tab"
+msgid "Go to previous folder."
+msgstr "無法新增資料夾"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "新增資料夾"
+msgid "Go to next folder."
+msgstr "無法新增資料夾"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "無法新增資料夾"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "在幫助檔搜尋"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "無法新增資料夾"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "（不）顯示隱藏的文件"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2827,15 +2857,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "編輯器設定"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "要離開編輯器嗎?"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "全螢幕"
 
@@ -3167,6 +3188,11 @@ msgstr "時間："
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr ""
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "檔案"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4959,7 +4985,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "全部"
 
@@ -7037,7 +7062,11 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Rotation with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -7228,10 +7257,6 @@ msgstr ""
 #, fuzzy
 msgid "Focus Selection"
 msgstr "只限選中"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -10159,6 +10184,11 @@ msgstr "下一個腳本"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "新增"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "儲存場景"
 
@@ -11980,6 +12010,18 @@ msgid "Constants cannot be modified."
 msgstr ""
 
 #, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "上一個tab"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "新增資料夾"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "要離開編輯器嗎?"
+
+#, fuzzy
 #~ msgid "Failed to create solution."
 #~ msgstr "資源加載失敗。"
 
@@ -12142,9 +12184,6 @@ msgstr ""
 
 #~ msgid "Anim Track Change Interpolation"
 #~ msgstr "動畫軌跡變化Interpolation"
-
-#~ msgid "Anim Track Change Value Mode"
-#~ msgstr "動畫軌跡變化數值模式"
 
 #~ msgid "Edit Selection Curve"
 #~ msgstr "編輯Selection Curve"

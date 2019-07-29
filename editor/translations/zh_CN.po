@@ -176,6 +176,31 @@ msgid "Anim Change Call"
 msgstr "修改回调"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "修改动画关键帧的时长"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "修改动画过渡方式"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "修改动画变换"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "修改动画关键帧的值"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "修改回调"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "修改动画长度"
 
@@ -1700,7 +1725,7 @@ msgstr "在文件管理器中显示"
 msgid "New Folder..."
 msgstr "新建文件夹 ..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "刷新"
 
@@ -1751,7 +1776,7 @@ msgstr "前进"
 msgid "Go Up"
 msgstr "上一级"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "切换显示隐藏文件"
 
@@ -1776,23 +1801,31 @@ msgid "Move Favorite Down"
 msgstr "向下移动收藏"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "上一个文件夹"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "转到父文件夹。"
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "下一个文件夹"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "转到父文件夹。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "转到父文件夹。"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "搜索文件"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "（取消）收藏当前文件夹。"
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
 msgstr "切换显示隐藏文件。"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2704,14 +2737,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "截图已保存到编辑器设置/数据目录。"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr "自动打开截图"
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr "使用外部图像编辑器打开。"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "全屏模式"
 
@@ -3031,6 +3056,11 @@ msgstr "时间"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "调用次数"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "编辑主题..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4716,7 +4746,6 @@ msgid "Last"
 msgstr "最后一项"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "全部"
 
@@ -6747,8 +6776,14 @@ msgid "Rear"
 msgstr "后方"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+#, fuzzy
+msgid "Align Transform with View"
 msgstr "对齐视图"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "选中项与视图对齐"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -6936,10 +6971,6 @@ msgstr "显示原点"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "选中选中项"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "选中项与视图对齐"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -9844,6 +9875,11 @@ msgid "Extend Script"
 msgstr "打开脚本"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "重设父节点"
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr "创建场景根节点"
 
@@ -11708,6 +11744,18 @@ msgstr "变量只能在顶点函数中指定。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "不允许修改常量。"
+
+#~ msgid "Previous Folder"
+#~ msgstr "上一个文件夹"
+
+#~ msgid "Next Folder"
+#~ msgstr "下一个文件夹"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "自动打开截图"
+
+#~ msgid "Open in an external image editor."
+#~ msgstr "使用外部图像编辑器打开。"
 
 #~ msgid "Reverse"
 #~ msgstr "反选"

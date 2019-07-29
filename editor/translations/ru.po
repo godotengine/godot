@@ -179,6 +179,31 @@ msgid "Anim Change Call"
 msgstr "Изменить вызов анимации"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Изменить время ключевого кадра"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Изменить переход"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Изменить положение"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Измененить значение ключевого кадра"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Изменить вызов анимации"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Изменить длину анимации"
 
@@ -1748,7 +1773,7 @@ msgstr "Просмотреть в проводнике"
 msgid "New Folder..."
 msgstr "Новая папка..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Обновить"
 
@@ -1799,7 +1824,7 @@ msgstr "Вперёд"
 msgid "Go Up"
 msgstr "Вверх"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Скрыть файлы"
 
@@ -1824,24 +1849,31 @@ msgid "Move Favorite Down"
 msgstr "Переместить избранное вниз"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Предыдущая папка"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Перейти к родительской папке."
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Следующая папка"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Перейти к родительской папке."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Перейти к родительской папке."
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Поиск файлов"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Добавить или удалить текущую папку из избранных."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Скрыть файлы"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2790,15 +2822,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Открыть папку Данные/Настройки редактора"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr "Автоматически открывать скриншоты"
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "Открыть следующий редактор"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Переключить полноэкранный режим"
 
@@ -3118,6 +3141,11 @@ msgstr "Время"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Вызовы"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Редактировать тему..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4829,7 +4857,6 @@ msgid "Last"
 msgstr "Последняя"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Все"
 
@@ -6889,8 +6916,13 @@ msgstr "Зад"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "Выравнять с областью просмотра"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "Совместить выбранное с видом"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7080,10 +7112,6 @@ msgstr "Фокус на центре"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Показать выбранное"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "Совместить выбранное с видом"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -10038,6 +10066,11 @@ msgid "Extend Script"
 msgstr "Расширить скрипт"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Переподчинить узел"
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr "Создать корневой узел сцены"
 
@@ -11980,6 +12013,19 @@ msgstr "Изменения могут быть назначены только �
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Константы не могут быть изменены."
+
+#~ msgid "Previous Folder"
+#~ msgstr "Предыдущая папка"
+
+#~ msgid "Next Folder"
+#~ msgstr "Следующая папка"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "Автоматически открывать скриншоты"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "Открыть следующий редактор"
 
 #~ msgid "Reverse"
 #~ msgstr "Обратно"

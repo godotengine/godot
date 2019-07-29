@@ -144,6 +144,31 @@ msgstr "অ্যানিমেশন (Anim) কল পরিবর্তন �
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "অ্যানিমেশন (Anim) ট্র্যানজিশন পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "অ্যানিমেশন (Anim) ট্রান্সফর্ম পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "অ্যানিমেশন (Anim) কল পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "অ্যানিমেশনের লুপ পরিবর্তন করুন"
 
@@ -1783,7 +1808,7 @@ msgstr "ফাইল-ম্যানেজারে দেখুন"
 msgid "New Folder..."
 msgstr "ফোল্ডার তৈরি করুন"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "রিফ্রেস করুন"
 
@@ -1834,7 +1859,7 @@ msgstr "সামনের দিকে যান"
 msgid "Go Up"
 msgstr "উপরের দিকে যান"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "অদৃশ্য ফাইলসমূহ অদলবদল/টগল করুন"
 
@@ -1860,27 +1885,32 @@ msgstr "ফেবরিট/প্রিয়কে নিচের দিকে
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "পূর্বের ট্যাব"
+msgid "Go to previous folder."
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "ফোল্ডার তৈরি করুন"
+msgid "Go to next folder."
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "ক্লাসের অনুসন্ধান করুন"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "অদৃশ্য ফাইলসমূহ অদলবদল/টগল করুন"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2881,15 +2911,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "এডিটরের সেটিংস"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "এডিটরে খুলুন"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "পূর্ণ-পর্দা অদলবদল/টগল করুন"
 
@@ -3228,6 +3249,11 @@ msgstr "সময়:"
 #, fuzzy
 msgid "Calls"
 msgstr "ডাকুন (Call)"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "থিম এডিট করুন..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -5079,7 +5105,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "সকল"
 
@@ -7232,8 +7257,13 @@ msgstr "পশ্চাৎ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "দর্শনের সাথে সারিবদ্ধ করুন"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "নির্বাচনকে দর্শনের সাথে সারিবদ্ধ করুন"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7433,10 +7463,6 @@ msgstr "অরিজিনে ফোকাস করুন"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "নির্বাচনে ফোকাস করুন"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "নির্বাচনকে দর্শনের সাথে সারিবদ্ধ করুন"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -10466,6 +10492,11 @@ msgstr "পরবর্তী স্ক্রিপ্ট"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "নোডের নতুন অভিভাবক দান করুন"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "অর্থপূর্ন!"
 
@@ -12421,6 +12452,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "পূর্বের ট্যাব"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "ফোল্ডার তৈরি করুন"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "এডিটরে খুলুন"
 
 #~ msgid "Reverse"
 #~ msgstr "উল্টান/বিপরীত দিকে ফিরান"

@@ -165,6 +165,31 @@ msgid "Anim Change Call"
 msgstr "Cambiar Llamada de Animación"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Cambiar Tiempo del Fotograma Clave de Animación"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Cambiar Transición de Animación"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Cambiar Transformación de la Animación"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Cambiar Valor de la Clave de Animación"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Cambiar Llamada de Animación"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Cambiar Duración de la Animación"
 
@@ -1727,7 +1752,7 @@ msgstr "Mostrar en Explorador de Archivos"
 msgid "New Folder..."
 msgstr "Nueva Carpeta..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Recargar"
 
@@ -1778,7 +1803,7 @@ msgstr "Avanzar"
 msgid "Go Up"
 msgstr "Subir"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Act./Desact. Archivos Ocultos"
 
@@ -1803,23 +1828,31 @@ msgid "Move Favorite Down"
 msgstr "Bajar Favorito"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Carpeta Anterior"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Ir a la carpeta padre."
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Carpeta Siguiente"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Ir a la carpeta padre."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Ir a la carpeta padre."
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Buscar archivos"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Eliminar carpeta actual de favoritos."
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
 msgstr "Ver/Ocultar archivos ocultos."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2777,14 +2810,6 @@ msgstr ""
 "Configuración."
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr "Abrir Capturas de Pantalla Automáticamente"
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr "Abrir en un editor de imágenes externo."
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Cambiar a Pantalla Completa"
 
@@ -3104,6 +3129,11 @@ msgstr "Tiempo"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Llamadas"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Editar Tema"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4811,7 +4841,6 @@ msgid "Last"
 msgstr "Último"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Todos"
 
@@ -6821,8 +6850,14 @@ msgid "Rear"
 msgstr "Detrás"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+#, fuzzy
+msgid "Align Transform with View"
 msgstr "Alinear con Vista"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "Alinear Selección Con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7009,10 +7044,6 @@ msgstr "Foco en Origen"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Foco en Selección"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "Alinear Selección Con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -9944,6 +9975,11 @@ msgid "Extend Script"
 msgstr "Extender Script"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Reemparentar nodo"
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr "Convertir en Raíz de Escena"
 
@@ -11887,6 +11923,18 @@ msgstr "Solo se pueden asignar variaciones en funciones de vértice."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Las constantes no pueden modificarse."
+
+#~ msgid "Previous Folder"
+#~ msgstr "Carpeta Anterior"
+
+#~ msgid "Next Folder"
+#~ msgstr "Carpeta Siguiente"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "Abrir Capturas de Pantalla Automáticamente"
+
+#~ msgid "Open in an external image editor."
+#~ msgstr "Abrir en un editor de imágenes externo."
 
 #~ msgid "Reverse"
 #~ msgstr "Invertir"

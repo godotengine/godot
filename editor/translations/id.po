@@ -146,6 +146,31 @@ msgid "Anim Change Call"
 msgstr "Ubah Panggilan Anim"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Ubah Waktu Keyframe Animasi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Ubah Transisi Animasi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Ubah Transformasi Animasi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Ubah Nilai Keyframe Animasi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Ubah Panggilan Anim"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Ubah Panjang Animasi"
 
@@ -1695,7 +1720,7 @@ msgstr "Tampilkan di Manajer Berkas"
 msgid "New Folder..."
 msgstr "Buat Direktori..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Segarkan"
 
@@ -1746,7 +1771,7 @@ msgstr "Maju"
 msgid "Go Up"
 msgstr "Naik"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Beralih File Tersembunyi"
 
@@ -1771,23 +1796,31 @@ msgid "Move Favorite Down"
 msgstr "Pindahkan Favorit Kebawah"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Direktori Sebelumnya"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Pergi ke direktori atasnya."
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Folder Berikutnya"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Pergi ke direktori atasnya."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Pergi ke direktori atasnya."
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Cari berkas"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Hapus favorit direktori saat ini."
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
 msgstr "Beralih visibilitas berkas yang tersembunyi."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2733,14 +2766,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Screenshot disimpan di folder Editor Data/Settings"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr "Buka Screenshoots secara otomatis"
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr "Buka di pengolah gambar lainnya"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Mode Layar Penuh"
 
@@ -3057,6 +3082,11 @@ msgstr "Waktu"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Panggil"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Sunting tema..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4756,7 +4786,6 @@ msgid "Last"
 msgstr "Terakhir"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Semua"
 
@@ -6782,7 +6811,12 @@ msgstr "Belakang"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr "Tampilan Kanan."
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
 msgstr "Tampilan Kanan."
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6973,10 +7007,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9927,6 +9957,11 @@ msgid "Extend Script"
 msgstr "Buka Cepat Script..."
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Buat Baru %s"
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr "Jadikan Skena Dasar"
 
@@ -11876,6 +11911,18 @@ msgstr "Variasi hanya bisa ditetapkan dalam fungsi vertex."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanta tidak dapat dimodifikasi."
+
+#~ msgid "Previous Folder"
+#~ msgstr "Direktori Sebelumnya"
+
+#~ msgid "Next Folder"
+#~ msgstr "Folder Berikutnya"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "Buka Screenshoots secara otomatis"
+
+#~ msgid "Open in an external image editor."
+#~ msgstr "Buka di pengolah gambar lainnya"
 
 #~ msgid "Reverse"
 #~ msgstr "Terbalik"

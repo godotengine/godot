@@ -138,6 +138,31 @@ msgstr "Промени позив анимације"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Промени вредност"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Промени прелаз"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Промени положај"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Промени вредност"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Промени позив анимације"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "Промени циклус анимације"
 
@@ -1759,7 +1784,7 @@ msgstr "Покажи у менаџеру датотека"
 msgid "New Folder..."
 msgstr "Нови директоријум..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Освежи"
 
@@ -1810,7 +1835,7 @@ msgstr "Напред"
 msgid "Go Up"
 msgstr "Иди горе"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Прикажи сакривене датотеке"
 
@@ -1836,27 +1861,32 @@ msgstr "Помери надоле омиљену"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "Претодни спрат"
+msgid "Go to previous folder."
+msgstr "Иди у родитељски директоријум"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "Направи директоријум"
+msgid "Go to next folder."
+msgstr "Иди у родитељски директоријум"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "Иди у родитељски директоријум"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Потражи класе"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "Неуспех при прављењу директоријума."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Прикажи сакривене датотеке"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2827,15 +2857,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Поставке уредника"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "Отвори следећи уредник"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Укљ./Искљ. режим целог екрана"
 
@@ -3163,6 +3184,11 @@ msgstr "Време:"
 #, fuzzy
 msgid "Calls"
 msgstr "Позиви цртања"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Измени тему..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4948,7 +4974,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "сви"
 
@@ -7062,8 +7087,13 @@ msgstr "Бок"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "Поравнавање са погледом"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "Поравнај одабрано са погледом"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7256,10 +7286,6 @@ msgstr "Фокус на центар"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Фокус на селекцију"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "Поравнај одабрано са погледом"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -10218,6 +10244,11 @@ msgstr "Покрени скриптицу"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "Направи нов"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "Сачувај сцену"
 
@@ -12017,6 +12048,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "Претодни спрат"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "Направи директоријум"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "Отвори следећи уредник"
 
 #~ msgid "Reverse"
 #~ msgstr "Обрнут"

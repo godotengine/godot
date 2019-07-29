@@ -152,6 +152,31 @@ msgid "Anim Change Call"
 msgstr "Animasyon Değişikliği Çağrısı"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Anim Anahtar-kare Zamanını Değiştir"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Animasyon Geçişinin Değişimi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Animasyon Değişikliği Dönüşümü"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Anim Anahtar-kare Değerini Değiştir"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Animasyon Değişikliği Çağrısı"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Animasyon Uzunluğunu Değiştir"
 
@@ -1739,7 +1764,7 @@ msgstr "Dosya Yöneticisinde Göster"
 msgid "New Folder..."
 msgstr "Yeni Klasör..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Yenile"
 
@@ -1790,7 +1815,7 @@ msgstr "İleri Git"
 msgid "Go Up"
 msgstr "Yukarı Git"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Gizli Dosyalari Aç / Kapat"
 
@@ -1815,25 +1840,32 @@ msgid "Move Favorite Down"
 msgstr "Beğenileni Aşağı Taşı"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Önceki Klasör"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Üst klasöre git"
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Sonraki Klasör"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Üst klasöre git"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "Üst klasöre git"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Dosyaları ara"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Bu klasörü favorilerden çıkar/favorilere ekle."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Gizli Dosyalari Aç / Kapat"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2785,15 +2817,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Düzenleyici Verileri/Ayarları Klasörünü Aç"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "Sonraki Düzenleyiciyi aç"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Tam Ekran Aç / Kapat"
 
@@ -3112,6 +3135,11 @@ msgstr "Zaman"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Çağrılar"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Tema düzenle..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4861,7 +4889,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Hepsi"
 
@@ -6971,8 +6998,13 @@ msgstr "Arka"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "Görünüme Ayarla"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "Seçimi Görünüme Ayarla"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7162,10 +7194,6 @@ msgstr "Başlatıma Odaklan"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Seçime Odaklan"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "Seçimi Görünüme Ayarla"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -10144,6 +10172,11 @@ msgstr "Betik Aç"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "Düğümün Ebeveynliğini Değiştir"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "Anlamlı!"
 
@@ -12083,6 +12116,16 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Previous Folder"
+#~ msgstr "Önceki Klasör"
+
+#~ msgid "Next Folder"
+#~ msgstr "Sonraki Klasör"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "Sonraki Düzenleyiciyi aç"
 
 #~ msgid "Reverse"
 #~ msgstr "Tersi"

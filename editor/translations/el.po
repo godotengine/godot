@@ -131,6 +131,31 @@ msgid "Anim Change Call"
 msgstr "Anim Αλλαγή κλήσης"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Anim Αλλαγή χρόνου στιγμιοτύπου"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Anim Αλλαγή μετάβασης"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Anim Αλλαγή μετασχηματισμού"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Anim Αλλαγή τιμής στιγμιοτύπου"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Anim Αλλαγή κλήσης"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Αλλαγή Μήκους Κίνησης"
 
@@ -1686,7 +1711,7 @@ msgstr "Εμφάνιση στη διαχείριση αρχείων"
 msgid "New Folder..."
 msgstr "Νέος φάκελος..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Αναναίωση"
 
@@ -1737,7 +1762,7 @@ msgstr "Πήγαινε μπροστά"
 msgid "Go Up"
 msgstr "Πήγαινε πάνω"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Εναλλαγή κρυμμένων αρχείων"
 
@@ -1762,23 +1787,31 @@ msgid "Move Favorite Down"
 msgstr "Μετακίνηση αγαπημένου κάτω"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Προηγούμενος φάκελος"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Πήγαινε στον γονικό φάκελο."
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Επόμενος φάκελος"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Πήγαινε στον γονικό φάκελο."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Πήγαινε στον γονικό φάκελο."
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Αναζήτηση αρχείων"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Εναλλαγή αγαπημένου τρέχοντος φακέλου."
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
 msgstr "Εναλλαγή ορατότητας κρυμένων αρχείων."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2739,14 +2772,6 @@ msgstr ""
 "επεξεργαστή."
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr "Αυτόματο Άνοιγμα Στιγμιοτύπων Οθόνης"
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr "Άνοιγμα σε εξωτερικό επεξεργαστή εικόνων."
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Εναλλαγή πλήρους οθόνης"
 
@@ -3066,6 +3091,11 @@ msgstr "Χρόνος"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Κλήσεις"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Επεξεργασία Θέματος"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4770,7 +4800,6 @@ msgid "Last"
 msgstr "Τελευταίο"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Όλα"
 
@@ -6792,8 +6821,14 @@ msgid "Rear"
 msgstr "Πίσω"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+#, fuzzy
+msgid "Align Transform with View"
 msgstr "Στοίχιση με Προβολή"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "Στοίχηση επιλογής με την προβολή"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -6982,10 +7017,6 @@ msgstr "Εστίαση στην αρχή"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Εστίαση στην επιλογή"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "Στοίχηση επιλογής με την προβολή"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -9973,6 +10004,11 @@ msgstr "Άνοιγμα δεσμής ενεργειών"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "Επαναπροσδιορισμός γονέα κόμβου"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "Βγάζει νόημα!"
 
@@ -11930,6 +11966,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Previous Folder"
+#~ msgstr "Προηγούμενος φάκελος"
+
+#~ msgid "Next Folder"
+#~ msgstr "Επόμενος φάκελος"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "Αυτόματο Άνοιγμα Στιγμιοτύπων Οθόνης"
+
+#~ msgid "Open in an external image editor."
+#~ msgstr "Άνοιγμα σε εξωτερικό επεξεργαστή εικόνων."
 
 #~ msgid "Reverse"
 #~ msgstr "Αντιστροφή"

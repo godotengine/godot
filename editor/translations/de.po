@@ -170,6 +170,31 @@ msgid "Anim Change Call"
 msgstr "Aufruf ändern"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Schlüsselbildzeit ändern"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Übergang bearbeiten"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Transformation bearbeiten"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Schlüsselbildwert ändern"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Aufruf ändern"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Animationslänge ändern"
 
@@ -1727,7 +1752,7 @@ msgstr "Im Dateimanager anzeigen"
 msgid "New Folder..."
 msgstr "Neuer Ordner..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Aktualisieren"
 
@@ -1778,7 +1803,7 @@ msgstr "Vor"
 msgid "Go Up"
 msgstr "Hoch"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Versteckte Dateien ein- und ausblenden"
 
@@ -1803,23 +1828,31 @@ msgid "Move Favorite Down"
 msgstr "Favorit nach unten schieben"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Vorheriger Ordner"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Gehe zu übergeordnetem Ordner."
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Nächster Ordner"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Gehe zu übergeordnetem Ordner."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Gehe zu übergeordnetem Ordner."
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Dateien suchen"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Gegenwärtigen Ordner (de)favorisieren."
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
 msgstr "Versteckte Dateien ein- oder ausblenden."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2776,14 +2809,6 @@ msgstr ""
 "Bildschirmfotos werden im „Editor Data/Settings“-Verzeichnis gespeichert."
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr "Bildschirmfotos automatisch öffnen"
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr "In externem Bildbearbeitungsprogramm öffnen."
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Vollbildmodus umschalten"
 
@@ -3103,6 +3128,11 @@ msgstr "Zeit"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Aufrufe"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Thema bearbeiten"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4807,7 +4837,6 @@ msgid "Last"
 msgstr "Letzte"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Alle"
 
@@ -6831,8 +6860,14 @@ msgid "Rear"
 msgstr "Hinten"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+#, fuzzy
+msgid "Align Transform with View"
 msgstr "Mit Sicht ausrichten"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "Auswahl auf Ansicht ausrichten"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7020,10 +7055,6 @@ msgstr "Auf Ursprung zentrieren"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Auswahl fokussieren"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "Auswahl auf Ansicht ausrichten"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -9991,6 +10022,11 @@ msgid "Extend Script"
 msgstr "Skript erweitern"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Node umhängen"
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr "Szenen-Wurzel erstellen"
 
@@ -11938,6 +11974,18 @@ msgstr "Varyings können nur in Vertex-Funktion zugewiesen werden."
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanten können nicht verändert werden."
+
+#~ msgid "Previous Folder"
+#~ msgstr "Vorheriger Ordner"
+
+#~ msgid "Next Folder"
+#~ msgstr "Nächster Ordner"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "Bildschirmfotos automatisch öffnen"
+
+#~ msgid "Open in an external image editor."
+#~ msgstr "In externem Bildbearbeitungsprogramm öffnen."
 
 #~ msgid "Reverse"
 #~ msgstr "Umkehren"

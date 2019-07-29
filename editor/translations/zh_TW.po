@@ -141,6 +141,31 @@ msgstr "更改回調"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "變更關鍵畫格的時間"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "變更轉場效果"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "變更動畫變換"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "變更關鍵畫格的數值"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "更改回調"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "變更動畫長度"
 
@@ -1764,7 +1789,7 @@ msgstr "在檔案管理員內顯示"
 msgid "New Folder..."
 msgstr "新增資料夾..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "重新整理"
 
@@ -1815,7 +1840,7 @@ msgstr "往前"
 msgid "Go Up"
 msgstr "往上"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "切換顯示隱藏檔案"
 
@@ -1842,27 +1867,32 @@ msgstr "向下移動收藏"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "上個分頁"
+msgid "Go to previous folder."
+msgstr "無法新增資料夾"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "新增資料夾"
+msgid "Go to next folder."
+msgstr "無法新增資料夾"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "無法新增資料夾"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "搜尋 Class"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "無法新增資料夾"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "切換顯示隱藏檔案"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2790,15 +2820,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "開啟 編輯器數據/設定 資料夾"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "開啟下一個編輯器"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "全螢幕顯示"
 
@@ -3119,6 +3140,11 @@ msgstr "時間"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "調用"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "編輯主題…"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4877,7 +4903,6 @@ msgid "Last"
 msgstr "最後"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "全部"
 
@@ -6953,8 +6978,14 @@ msgid "Rear"
 msgstr "後"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+#, fuzzy
+msgid "Align Transform with View"
 msgstr "與視圖對齊"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "將所選內容與視圖對齊"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7139,10 +7170,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "將所選內容與視圖對齊"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -10067,6 +10094,11 @@ msgstr "開啟最近存取"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "新增 %s"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "儲存場景"
 
@@ -11909,6 +11941,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "上個分頁"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "新增資料夾"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "開啟下一個編輯器"
 
 #~ msgid "Reverse"
 #~ msgstr "反轉"

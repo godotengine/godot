@@ -142,6 +142,31 @@ msgstr "Anim Forandre Kall"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Anim Endre Nøkkelbildetid"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Anim Forandre Overgang"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Anim Forandre Omforming"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Anim Endre Nøkkelbildeverdi"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Anim Forandre Kall"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "Endre Animasjonsnavn:"
 
@@ -1785,7 +1810,7 @@ msgstr "Vis I Filutforsker"
 msgid "New Folder..."
 msgstr "Ny Mappe..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Oppdater"
 
@@ -1836,7 +1861,7 @@ msgstr "Gå framover"
 msgid "Go Up"
 msgstr "Gå oppover"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Veksle visning av skjulte filer"
 
@@ -1862,25 +1887,30 @@ msgstr "Flytt Favoritt Nedover"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "Forrige fane"
+msgid "Go to previous folder."
+msgstr "Gå til ovennevnt mappe."
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "Lag mappe"
+msgid "Go to next folder."
+msgstr "Gå til ovennevnt mappe."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Gå til ovennevnt mappe."
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Søk i klasser"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "(Av)favoriser gjeldende mappe."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Veksle visning av skjulte filer"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2863,15 +2893,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Redigeringsverktøy-instillinger"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "Åpne den neste Editoren"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Skru av/på Fullskjerm"
 
@@ -3205,6 +3226,11 @@ msgstr "Tid:"
 #, fuzzy
 msgid "Calls"
 msgstr "Ring"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Medlemmer"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -5023,7 +5049,6 @@ msgid "Last"
 msgstr "Siste"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Alle"
 
@@ -7135,7 +7160,12 @@ msgstr "Bak"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr "Høyrevisning"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
 msgstr "Høyrevisning"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -7323,10 +7353,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -10266,6 +10292,11 @@ msgstr "Kjør Skript"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "Lag ny %s"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "Lagre Scene"
 
@@ -12086,6 +12117,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanter kan ikke endres."
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "Forrige fane"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "Lag mappe"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "Åpne den neste Editoren"
 
 #~ msgid "Reverse"
 #~ msgstr "Reverser"

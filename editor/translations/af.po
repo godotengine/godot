@@ -137,6 +137,31 @@ msgstr "Anim Verander Roep"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Anim Verander Waarde"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Anim Verander Oorgang"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Anim Verander Transform"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Anim Verander Waarde"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Anim Verander Roep"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "Verander Anim Lente"
 
@@ -1740,7 +1765,7 @@ msgstr "Open 'n Lêer"
 msgid "New Folder..."
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Verfris"
 
@@ -1791,7 +1816,7 @@ msgstr "Gaan Vorentoe"
 msgid "Go Up"
 msgstr "Gaan Op"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Wissel Versteekte Lêers"
 
@@ -1817,27 +1842,32 @@ msgstr "Skuif Gunsteling Af"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "Voorskou:"
+msgid "Go to previous folder."
+msgstr "Gaan na ouer vouer"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "Skep Vouer"
+msgid "Go to next folder."
+msgstr "Gaan na ouer vouer"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "Gaan na ouer vouer"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Deursoek Klasse"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "Kon nie vouer skep nie."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Wissel Versteekte Lêers"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2740,14 +2770,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr ""
 
@@ -3061,6 +3083,11 @@ msgstr ""
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr ""
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Lede"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4793,7 +4820,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr ""
 
@@ -6829,7 +6855,11 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Rotation with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -7011,10 +7041,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9865,6 +9891,11 @@ msgid "Extend Script"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Skep Nuwe"
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr ""
 
@@ -11636,6 +11667,14 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "Voorskou:"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "Skep Vouer"
 
 #, fuzzy
 #~ msgid "Failed to create solution."

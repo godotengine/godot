@@ -141,6 +141,31 @@ msgstr "แก้ไขการเรียกฟังก์ชันแอน
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "แก้ไขเวลาคีย์เฟรมแอนิเมชัน"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "แก้ไขทรานสิชันแอนิเมชัน"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "เคลื่อนย้ายแอนิเมชัน"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "แก้ไขค่าคีย์เฟรมแอนิเมชัน"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "แก้ไขการเรียกฟังก์ชันแอนิเมชัน"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "แก้ไขการวนซ้ำแอนิเมชัน"
 
@@ -1759,7 +1784,7 @@ msgstr "แสดงในตัวจัดการไฟล์"
 msgid "New Folder..."
 msgstr "สร้างโฟลเดอร์..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "รีเฟรช"
 
@@ -1810,7 +1835,7 @@ msgstr "ไปหน้า"
 msgid "Go Up"
 msgstr "ขึ้นบน"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "เปิด/ปิดไฟล์ที่ซ่อน"
 
@@ -1836,27 +1861,32 @@ msgstr "เลื่อนโฟลเดอร์ที่ชอบลง"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "ไปชั้นล่าง"
+msgid "Go to previous folder."
+msgstr "ไปยังโฟลเดอร์หลัก"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "ไปชั้นบน"
+msgid "Go to next folder."
+msgstr "ไปยังโฟลเดอร์หลัก"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "ไปยังโฟลเดอร์หลัก"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "ค้นหาคลาส"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "ไม่สามารถสร้างโฟลเดอร์"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "เปิด/ปิดไฟล์ที่ซ่อน"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2792,15 +2822,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "ตัวเลือกโปรแกรมสร้างเกม"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "เปิดตัวแก้ไขถัดไป"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "สลับเต็มจอ"
 
@@ -3126,6 +3147,11 @@ msgstr "เวลา"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "จำนวนครั้ง"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "แก้ไขธีม..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4899,7 +4925,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "ทั้งหมด"
 
@@ -7006,8 +7031,13 @@ msgstr "หลัง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "ย้ายมาที่กล้อง"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "ย้ายวัตถุที่เลือกมาที่กล้อง"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7197,10 +7227,6 @@ msgstr "มองไปที่จุดกำเนิด"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "มองวัตถุที่เลือก"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "ย้ายวัตถุที่เลือกมาที่กล้อง"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -10170,6 +10196,11 @@ msgstr "เปิดสคริปต์"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "หาโหนดแม่ใหม่"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "เข้าใจ!"
 
@@ -12044,6 +12075,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "ไปชั้นล่าง"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "ไปชั้นบน"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "เปิดตัวแก้ไขถัดไป"
 
 #~ msgid "Reverse"
 #~ msgstr "ย้อนกลับ"

@@ -142,6 +142,31 @@ msgid "Anim Change Call"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "שינוי זמן פריים-מפתח אנימציה"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "שינוי מיקום אנימציה"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "שינוי מיקום אנימציה"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "שינוי ערך קיפריים אנימציה"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "שינוי מיקום אנימציה"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "שנה אורך אנימציה"
 
@@ -1733,7 +1758,7 @@ msgstr "הצגה במנהל הקבצים"
 msgid "New Folder..."
 msgstr "תיקייה חדשה…"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "רענון"
 
@@ -1784,7 +1809,7 @@ msgstr "התקדמות קדימה"
 msgid "Go Up"
 msgstr "עלייה למעלה"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "החלפת מצב תצוגה לקבצים מוסתרים"
 
@@ -1810,27 +1835,32 @@ msgstr "העברת מועדף למטה"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "המישור הקודם"
+msgid "Go to previous folder."
+msgstr "מעבר לתיקייה שמעל"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "יצירת תיקייה"
+msgid "Go to next folder."
+msgstr "מעבר לתיקייה שמעל"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "מעבר לתיקייה שמעל"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "חיפוש במחלקות"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "לא ניתן ליצור תיקייה."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "החלפת מצב תצוגה לקבצים מוסתרים"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2740,15 +2770,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "הגדרות עורך"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "פתיחת העורך הבא"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "כניסה אל/יציאה ממסך מלא"
 
@@ -3073,6 +3094,11 @@ msgstr "זמן"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "קריאות"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "חברים"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4819,7 +4845,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr ""
 
@@ -6885,7 +6910,12 @@ msgstr "אחורי"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr "יישור עם התצוגה"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
 msgstr "יישור עם התצוגה"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -7074,10 +7104,6 @@ msgstr ""
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "בחירת מיקוד"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -9973,6 +9999,11 @@ msgstr "הרצת סקריפט"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "יצירת %s חדש"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "שמירת סצנה"
 
@@ -11760,6 +11791,18 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "המישור הקודם"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "יצירת תיקייה"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "פתיחת העורך הבא"
 
 #~ msgid "Generating solution..."
 #~ msgstr "הפתרון נוצר…"

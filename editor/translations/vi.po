@@ -134,6 +134,31 @@ msgid "Anim Change Call"
 msgstr "Đổi Function Gọi Animation"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Đổi thời gian khung hình"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Đổi Transition Animation"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Đổi Transform Animation"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Đổi giá trị khung hình"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Đổi Function Gọi Animation"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Thay Độ Dài Hoạt Ảnh"
 
@@ -1671,7 +1696,7 @@ msgstr "Xem trong trình quản lý tệp"
 msgid "New Folder..."
 msgstr "Thư mục mới ..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Làm mới"
 
@@ -1722,7 +1747,7 @@ msgstr "Tiến tới"
 msgid "Go Up"
 msgstr "Đi Lên"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Bật tắt File ẩn"
 
@@ -1747,23 +1772,31 @@ msgid "Move Favorite Down"
 msgstr "Di chuyển Ưa thích xuống"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Thư mục trước"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Đến thư mục cha"
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Thư mục sau"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Đến thư mục cha"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Đến thư mục cha"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Tìm kiếm tệp tin"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Bỏ yêu thích thư mục hiện tại."
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
 msgstr "Bật tắt hiện các tệp tin ẩn."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2671,14 +2704,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Mở thư mục dữ liệu Trình biên tập"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Chế độ Toàn màn hình"
 
@@ -2993,6 +3018,11 @@ msgstr ""
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr ""
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Lưu Theme"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4675,7 +4705,6 @@ msgid "Last"
 msgstr "Cuối cùng"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Tất cả"
 
@@ -6698,7 +6727,11 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Rotation with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6880,10 +6913,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9749,6 +9778,11 @@ msgid "Extend Script"
 msgstr "Tạo Script"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Tạo các nút mới."
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr ""
 
@@ -11524,6 +11558,12 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Previous Folder"
+#~ msgstr "Thư mục trước"
+
+#~ msgid "Next Folder"
+#~ msgstr "Thư mục sau"
 
 #~ msgid "Reverse"
 #~ msgstr "Ngược lại"

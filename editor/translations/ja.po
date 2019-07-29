@@ -147,6 +147,31 @@ msgid "Anim Change Call"
 msgstr "アニメーション呼出しの変更"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "アニメーションキーフレームの時間を変更"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "アニメーションのトランジションを変更"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "アニメーションのトランスフォームを変更"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "アニメーションキーフレームの値を変更"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "アニメーション呼出しの変更"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "アニメーションの長さを変更"
 
@@ -1712,7 +1737,7 @@ msgstr "ファイルマネージャーで表示"
 msgid "New Folder..."
 msgstr "新規フォルダ..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "再読込"
 
@@ -1763,7 +1788,7 @@ msgstr "進む"
 msgid "Go Up"
 msgstr "上へ"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "隠しファイルの切り替え"
 
@@ -1788,26 +1813,32 @@ msgid "Move Favorite Down"
 msgstr "お気に入りを下へ"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "前のフォルダ"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "親フォルダへ移動する。"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "次の床面"
+msgid "Go to next folder."
+msgstr "親フォルダへ移動する。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "親フォルダへ移動する。"
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "ファイル検索"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "フォルダを作成できませんでした。"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "隠しファイルの切り替え"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2754,14 +2785,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "スクリーンショットはEditor Data / Settingsフォルダに保存されています。"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr "スクリーンショットを自動的に開く"
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr "外部のイメージエディタで開きます。"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "フルスクリーン切り替え"
 
@@ -3081,6 +3104,11 @@ msgstr "時間"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "呼出し"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "テーマを編集..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4806,7 +4834,6 @@ msgid "Last"
 msgstr "最後"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "すべて"
 
@@ -6888,8 +6915,13 @@ msgstr "後面"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "シーンビューにカメラを合わせる（Align With View）"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "選択をビューに整列"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 #, fuzzy
@@ -7082,10 +7114,6 @@ msgstr "原点にフォーカス"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "選択にフォーカス"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "選択をビューに整列"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -10172,6 +10200,11 @@ msgid "Extend Script"
 msgstr "スクリプトを拡張"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "親ノードを変更"
+
+#: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
 msgstr "シーンをルートにする"
 
@@ -12216,6 +12249,19 @@ msgstr "Varyingは頂点関数にのみ割り当てることができます。"
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "定数は変更できません。"
+
+#~ msgid "Previous Folder"
+#~ msgstr "前のフォルダ"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "次の床面"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "スクリーンショットを自動的に開く"
+
+#~ msgid "Open in an external image editor."
+#~ msgstr "外部のイメージエディタで開きます。"
 
 #~ msgid "Reverse"
 #~ msgstr "逆"

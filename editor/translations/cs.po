@@ -136,6 +136,31 @@ msgid "Anim Change Call"
 msgstr "Animace: změna volání"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Animace: Změnit čas klíčového snímku"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Animace: změna přechodu"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Animace: změna transformace"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Animace: Změnit hodnotu klíčového snímku"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Animace: změna volání"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "Změnit délku animace"
 
@@ -1728,7 +1753,7 @@ msgstr "Zobrazit ve správci souborů"
 msgid "New Folder..."
 msgstr "Nová složka..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Obnovit"
 
@@ -1779,7 +1804,7 @@ msgstr "Jit dopředu"
 msgid "Go Up"
 msgstr "Jít o úroveň výš"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Zobrazit skryté soubory"
 
@@ -1804,26 +1829,33 @@ msgid "Move Favorite Down"
 msgstr "Přesunout oblíbenou položku dolů"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Předchozí složka"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Jít na nadřazenou složku"
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Další složka"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Jít na nadřazenou složku"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "Jít na nadřazenou složku"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Hledat soubory"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "Nelze vytvořit složku."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Zobrazit skryté soubory"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2764,15 +2796,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Otevřít složku s daty a nastavením editoru"
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "Otevřít další editor"
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "Celá obrazovka"
 
@@ -3090,6 +3113,11 @@ msgstr "Čas"
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr "Volání"
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Editovat téma..."
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4790,7 +4818,6 @@ msgid "Last"
 msgstr "Poslední"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Všechny"
 
@@ -6832,8 +6859,13 @@ msgstr "Zadní"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "Zarovnat s výhledem"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "Zarovnat výběr s pohledem"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7023,10 +7055,6 @@ msgstr "Zaměřit počátek"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "Zaměřit výběr"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "Zarovnat výběr s pohledem"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -9942,6 +9970,11 @@ msgstr "Otevřít skript"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
+msgid "Reparent to New Node"
+msgstr "Přidat/Vytvořit nový uzel"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Make Scene Root"
 msgstr "Dává smysl!"
 
@@ -11832,6 +11865,16 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr "Konstanty není možné upravovat."
+
+#~ msgid "Previous Folder"
+#~ msgstr "Předchozí složka"
+
+#~ msgid "Next Folder"
+#~ msgstr "Další složka"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "Otevřít další editor"
 
 #~ msgid "Reverse"
 #~ msgstr "Naopak"

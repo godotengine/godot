@@ -134,6 +134,31 @@ msgstr "ანიმაციის ძახილის ცვლილებ�
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "ანიმაციის გასაღებური კადრის დროის ცვლილება"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "ანიმაციის გარდამამვლობის შეცვლა"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "ანიმაციის გარდაქმნის ცვლილება"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "ანიმაციის გასაღებური კადრის მნიშვნელობის ცვლილება"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "ანიმაციის ძახილის ცვლილება"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Change Animation Length"
 msgstr "ანიმ სიგრძის შეცვლა"
 
@@ -1721,7 +1746,7 @@ msgstr ""
 msgid "New Folder..."
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr ""
 
@@ -1772,7 +1797,7 @@ msgstr ""
 msgid "Go Up"
 msgstr ""
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr ""
 
@@ -1797,23 +1822,30 @@ msgid "Move Favorite Down"
 msgstr ""
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr ""
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "წინამდებარე ნაბიჯზე გადასვლა"
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr ""
+#, fuzzy
+msgid "Go to next folder."
+msgstr "მომდევნო ნაბიჯზე გადასვლა"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr ""
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "ძებნა:"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr ""
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Toggle the visibility of hidden files."
 msgstr ""
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2699,14 +2731,6 @@ msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr ""
-
-#: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr ""
 
@@ -3019,6 +3043,11 @@ msgstr ""
 #: editor/editor_profiler.cpp
 msgid "Calls"
 msgstr ""
+
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "მონიშვნის მრუდის ცვლილება"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4713,7 +4742,6 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr ""
 
@@ -6728,7 +6756,11 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Rotation with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6910,10 +6942,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -9745,6 +9773,11 @@ msgstr ""
 #: editor/scene_tree_dock.cpp
 msgid "Extend Script"
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "ახალი %s შექმნა"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
