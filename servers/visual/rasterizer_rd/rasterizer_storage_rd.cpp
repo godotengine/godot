@@ -1631,6 +1631,16 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 	}
 }
 
+void RasterizerStorageRD::material_force_update_textures(RID p_material, ShaderType p_shader_type) {
+	Material *material = material_owner.getornull(p_material);
+	if (material->shader_type != p_shader_type) {
+		return;
+	}
+	if (material->data) {
+		material->data->update_parameters(material->params, false, true);
+	}
+}
+
 void RasterizerStorageRD::_update_queued_materials() {
 	Material *material = material_update_list;
 	while (material) {
