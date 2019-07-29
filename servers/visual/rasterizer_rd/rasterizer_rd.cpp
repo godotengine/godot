@@ -46,6 +46,7 @@ void RasterizerRD::blit_render_targets_to_screen(int p_screen, const BlitToScree
 }
 
 void RasterizerRD::begin_frame(double frame_step) {
+	frame++;
 	time += frame_step;
 	canvas->set_time(time);
 }
@@ -121,6 +122,7 @@ void RasterizerRD::initialize() {
 }
 
 ThreadWorkPool RasterizerRD::thread_work_pool;
+uint32_t RasterizerRD::frame = 1;
 
 void RasterizerRD::finalize() {
 
@@ -139,6 +141,7 @@ void RasterizerRD::finalize() {
 RasterizerRD::RasterizerRD() {
 	thread_work_pool.init();
 	time = 0;
+
 	storage = memnew(RasterizerStorageRD);
 	canvas = memnew(RasterizerCanvasRD(storage));
 	scene = memnew(RasterizerSceneForwardRD);
