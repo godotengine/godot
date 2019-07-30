@@ -397,6 +397,8 @@ void EditorNode::_notification(int p_what) {
 			distraction_free->set_icon(gui_base->get_icon("DistractionFree", "EditorIcons"));
 			scene_tab_add->set_icon(gui_base->get_icon("Add", "EditorIcons"));
 
+			bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
+
 			// clear_button->set_icon(gui_base->get_icon("Close", "EditorIcons")); don't have access to that node. needs to become a class property
 			dock_tab_move_left->set_icon(theme->get_icon("Back", "EditorIcons"));
 			dock_tab_move_right->set_icon(theme->get_icon("Forward", "EditorIcons"));
@@ -5131,18 +5133,12 @@ Vector<Ref<EditorResourceConversionPlugin> > EditorNode::find_resource_conversio
 
 void EditorNode::_bottom_panel_raise_toggled(bool p_pressed) {
 
-	if (p_pressed) {
-		top_split->hide();
-		bottom_panel_raise->set_icon(gui_base->get_icon("ShrinkBottomDock", "EditorIcons"));
-	} else {
-		top_split->show();
-		bottom_panel_raise->set_icon(gui_base->get_icon("ExpandBottomDock", "EditorIcons"));
-	}
+	top_split->set_visible(!p_pressed);
 }
 
 void EditorNode::_update_video_driver_color() {
 
-	//todo probably should de-harcode this and add to editor settings
+	// TODO: Probably should de-hardcode this and add to editor settings.
 	if (video_driver->get_text() == "GLES2") {
 		video_driver->add_color_override("font_color", Color::hex(0x5586a4ff));
 	} else if (video_driver->get_text() == "GLES3") {
