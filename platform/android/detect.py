@@ -205,9 +205,8 @@ def configure(env):
 
     common_opts = ['-fno-integrated-as', '-gcc-toolchain', gcc_toolchain_path]
 
-    lib_sysroot = env["ANDROID_NDK_ROOT"] + "/platforms/" + env['ndk_platform'] + "/" + env['ARCH']
-
     ## Compile flags
+
     # Disable exceptions and rtti on non-tools (template) builds
     if env['tools'] or env['android_stl']:
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/include"])
@@ -218,18 +217,15 @@ def configure(env):
         # Don't use dynamic_cast, necessary with no-rtti.
         env.Append(CPPDEFINES=['NO_SAFE_CAST'])
 
-    ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
-    if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
-        print("Using NDK unified headers")
-        sysroot = env["ANDROID_NDK_ROOT"] + "/sysroot"
-        env.Append(CPPFLAGS=["--sysroot=" + sysroot])
-        env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
-        env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/android/support/include"])
-        # For unified headers this define has to be set manually
-        env.Append(CPPDEFINES=[('__ANDROID_API__', str(get_platform(env['ndk_platform'])))])
-    else:
-        print("Using NDK deprecated headers")
-        env.Append(CPPFLAGS=["-isystem", lib_sysroot + "/usr/include"])
+    lib_sysroot = env["ANDROID_NDK_ROOT"] + "/platforms/" + env['ndk_platform'] + "/" + env['ARCH']
+
+    # Using NDK unified headers (NDK r15+)
+    sysroot = env["ANDROID_NDK_ROOT"] + "/sysroot"
+    env.Append(CPPFLAGS=["--sysroot=" + sysroot])
+    env.Append(CPPFLAGS=["-isystem", sysroot + "/usr/include/" + abi_subpath])
+    env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/android/support/include"])
+    # For unified headers this define has to be set manually
+    env.Append(CPPDEFINES=[('__ANDROID_API__', str(get_platform(env['ndk_platform'])))])
 
     env.Append(CCFLAGS='-fpic -ffunction-sections -funwind-tables -fstack-protector-strong -fvisibility=hidden -fno-strict-aliasing'.split())
     env.Append(CPPDEFINES=['NO_STATVFS', 'GLES_ENABLED'])
@@ -263,18 +259,15 @@ def configure(env):
     env.Append(CCFLAGS=common_opts)
 
     ## Link flags
-    if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
-        if LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
-            env.Append(LINKFLAGS=['-Wl,--exclude-libs,libgcc.a', '-Wl,--exclude-libs,libatomic.a', '-nostdlib++'])
-        else:
-            env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libandroid_support.a"])
-        env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
-        env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/"])
-        env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libc++_shared.so"])
+
+    ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
+    if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
+        env.Append(LINKFLAGS=['-Wl,--exclude-libs,libgcc.a', '-Wl,--exclude-libs,libatomic.a', '-nostdlib++'])
     else:
-        env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
-        if mt_link:
-            env.Append(LINKFLAGS=['-Wl,--threads'])
+        env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libandroid_support.a"])
+    env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
+    env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/"])
+    env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/" + arch_subpath + "/libc++_shared.so"])
 
     if env["android_arch"] == "armv7":
         env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
