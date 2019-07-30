@@ -418,6 +418,13 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	}
 	item->set_metadata(0, id);
 
+	// Set current item as collapsed if necessary
+	if (parent) {
+		if (!unfold_cache.has(id)) {
+			item->set_collapsed(true);
+		}
+	}
+
 	int children_count = nodes[current_index];
 	// Tracks the total number of items parsed in nodes, this is used to skips nodes that
 	// are not direct children of the current node since we can't know in advance the total
