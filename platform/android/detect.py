@@ -259,6 +259,9 @@ def configure(env):
                 env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libandroid_support.a"])
             env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/"])
             env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libc++_shared.so"])
+        else:
+            # This is the legacy and minimal 'System STL' with support for basic features like new and delete
+            env.Append(LINKFLAGS=['-stdlib=libstdc++'])
     else:
         if mt_link:
             env.Append(LINKFLAGS=['-Wl,--threads'])
