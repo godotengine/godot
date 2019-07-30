@@ -2252,9 +2252,17 @@ uint64_t OS_Windows::get_unix_time() const {
 	FILETIME fep;
 	SystemTimeToFileTime(&ep, &fep);
 
-	// FIXME: dereferencing type-punned pointer will break strict-aliasing rules (GCC warning)
+	// Type punning through unions (rather than pointer cast) as per:
 	// https://docs.microsoft.com/en-us/windows/desktop/api/minwinbase/ns-minwinbase-filetime#remarks
-	return (*(uint64_t *)&ft - *(uint64_t *)&fep) / 10000000;
+	ULARGE_INTEGER ft_punning;
+	ft_punning.LowPart = ft.dwLowDateTime;
+	ft_punning.HighPart = ft.dwHighDateTime;
+
+	ULARGE_INTEGER fep_punning;
+	fep_punning.LowPart = fep.dwLowDateTime;
+	fep_punning.HighPart = fep.dwHighDateTime;
+
+	return (ft_punning.QuadPart - fep_punning.QuadPart) / 10000000;
 };
 
 uint64_t OS_Windows::get_system_time_secs() const {
