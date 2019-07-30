@@ -214,6 +214,11 @@ def configure(env):
         env.Append(CPPFLAGS=["-isystem", env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++abi/include"])
         env.Append(CXXFLAGS=['-frtti',"-std=gnu++14"])
     else:
+        # Bullet and Webm need STL, so they can't be used with this option.
+        if (env['module_bullet_enabled'] or env['module_webm_enabled']):
+            print("\nERROR: The `android_stl=no` option is not compatible with the bullet and webm modules.\n"
+                  "If you want to use it, disable those modules with `module_bullet_enabled=no module_webm_enabled=no`.\n")
+            sys.exit(255)
         env.Append(CXXFLAGS=['-fno-rtti', '-fno-exceptions', '-DNO_SAFE_CAST'])
 
     ndk_version = get_ndk_version(env["ANDROID_NDK_ROOT"])
@@ -264,17 +269,20 @@ def configure(env):
 
     ## Link flags
     if ndk_version != None and LooseVersion(ndk_version) >= LooseVersion("15.0.4075724"):
-        if LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
-            env.Append(LINKFLAGS=['-Wl,--exclude-libs,libgcc.a','-Wl,--exclude-libs,libatomic.a','-nostdlib++'])
+        if env['android_stl']:
+            if LooseVersion(ndk_version) >= LooseVersion("17.1.4828580"):
+                env.Append(LINKFLAGS=['-Wl,--exclude-libs,libgcc.a','-Wl,--exclude-libs,libatomic.a','-nostdlib++'])
+            else:
+                env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libandroid_support.a"])
+            env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/"])
+            env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libc++_shared.so"])
         else:
-            env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libandroid_support.a"])
-        env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
-        env.Append(LIBPATH=[env["ANDROID_NDK_ROOT"] + "/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/"])
-        env.Append(LINKFLAGS=[env["ANDROID_NDK_ROOT"] +"/sources/cxx-stl/llvm-libc++/libs/"+arch_subpath+"/libc++_shared.so"])
+            # This is the legacy and minimal 'System STL' with support for basic features like new and delete
+            env.Append(LINKFLAGS=['-stdlib=libstdc++'])
     else:
-        env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
         if mt_link:
             env.Append(LINKFLAGS=['-Wl,--threads'])
+    env.Append(LINKFLAGS=['-shared', '--sysroot=' + lib_sysroot, '-Wl,--warn-shared-textrel'])
 
     if env["android_arch"] == "armv7":
         env.Append(LINKFLAGS='-Wl,--fix-cortex-a8'.split())
