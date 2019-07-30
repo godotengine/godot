@@ -190,7 +190,7 @@ public:
     * @note Use aiCopyScene() to get a modifiable copy of a previously
     *   imported scene. */
     const aiExportDataBlob* ExportToBlob(const aiScene* pScene, const char* pFormatId,
-        unsigned int pPreprocessing = 0u, const ExportProperties* = nullptr);
+        unsigned int pPreprocessing = 0u, const ExportProperties* pProperties = nullptr);
     const aiExportDataBlob* ExportToBlob(  const aiScene* pScene, const std::string& pFormatId,
         unsigned int pPreprocessing = 0u, const ExportProperties* pProperties = nullptr);
 

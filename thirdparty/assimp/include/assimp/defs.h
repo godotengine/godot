@@ -122,7 +122,8 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
  * OPTIMIZEANIMS
  * OPTIMIZEGRAPH
  * GENENTITYMESHES
- * FIXTEXTUREPATHS */
+ * FIXTEXTUREPATHS
+ * GENBOUNDINGBOXES */
 //////////////////////////////////////////////////////////////////////////
 
 #ifdef _MSC_VER
@@ -214,10 +215,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #endif
 
 #if (defined(__BORLANDC__) || defined (__BCPLUSPLUS__))
-#error Currently, Borland is unsupported. Feel free to port Assimp.
-
-// "W8059 Packgröße der Struktur geändert"
-
+#   error Currently, Borland is unsupported. Feel free to port Assimp.
 #endif
 
 
@@ -243,10 +241,16 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
     typedef double ai_real;
     typedef signed long long int ai_int;
     typedef unsigned long long int ai_uint;
+#ifndef ASSIMP_AI_REAL_TEXT_PRECISION
+#define ASSIMP_AI_REAL_TEXT_PRECISION 16
+#endif // ASSIMP_AI_REAL_TEXT_PRECISION
 #else // ASSIMP_DOUBLE_PRECISION
     typedef float ai_real;
     typedef signed int ai_int;
     typedef unsigned int ai_uint;
+#ifndef ASSIMP_AI_REAL_TEXT_PRECISION
+#define ASSIMP_AI_REAL_TEXT_PRECISION 8
+#endif // ASSIMP_AI_REAL_TEXT_PRECISION
 #endif // ASSIMP_DOUBLE_PRECISION
 
     //////////////////////////////////////////////////////////////////////////
@@ -266,6 +270,9 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 /* Tiny macro to convert from radians to degrees and back */
 #define AI_DEG_TO_RAD(x) ((x)*(ai_real)0.0174532925)
 #define AI_RAD_TO_DEG(x) ((x)*(ai_real)57.2957795)
+
+/* Numerical limits */
+static const ai_real ai_epsilon = (ai_real) 0.00001;
 
 /* Support for big-endian builds */
 #if defined(__BYTE_ORDER__)
@@ -293,11 +300,11 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #ifndef _MSC_VER
 #  define AI_NO_EXCEPT noexcept
 #else
-#  if (_MSC_VER == 1915 )
+#  if (_MSC_VER >= 1915 )
 #    define AI_NO_EXCEPT noexcept
 #  else
 #    define AI_NO_EXCEPT
 #  endif
-#endif
+#endif // _MSC_VER
 
 #endif // !! AI_DEFINES_H_INC
