@@ -51,7 +51,7 @@ TEST_CASE("[String] Assign from cstr") {
 	OS::get_singleton()->print("\n\nTest 1: Assign from cstr\n");
 
 	String s = "Hello";
-
+	
 	OS::get_singleton()->print("\tExpected: Hello\n");
 	OS::get_singleton()->print("\tResulted: %ls\n", s.c_str());
 

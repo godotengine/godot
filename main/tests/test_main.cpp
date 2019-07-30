@@ -70,87 +70,92 @@ const char **tests_get_names() {
 	return test_names;
 }
 
-MainLoop *test_main(String p_test, const List<String> &p_args) {
+int test_main(String p_test, const List<String> &p_args) {
 	doctest::Context test_context;
 
-	if (p_test == "doctest") {
+	if (p_test == "doctest" || p_test == "string") {
 		// tests should be ordered by name for humans
 		test_context.setOption("order-by", "name");
 		test_context.setOption("abort-after", 5);
 		test_context.setOption("no-breaks", true);
-		test_context.run(); // run tests
-		return NULL;
+	
+		int status = test_context.run(); // run tests
+
+		if(test_context.shouldExit()) // wait for testing to complete
+			return status;
+
+		return status;
 	}
 
 	if (p_test == "math") {
 
-		return TestMath::test();
+		return TestMath::test() == NULL;
 	}
 
 	if (p_test == "physics") {
 
-		return TestPhysics::test();
+		return TestPhysics::test() == NULL;
 	}
 
 	if (p_test == "physics_2d") {
 
-		return TestPhysics2D::test();
+		return TestPhysics2D::test() == NULL;
 	}
 
 	if (p_test == "render") {
 
-		return TestRender::test();
+		return TestRender::test() == NULL;
 	}
 
 	if (p_test == "oa_hash_map") {
 
-		return TestOAHashMap::test();
+		return TestOAHashMap::test() == NULL;
 	}
 
 #ifndef _3D_DISABLED
 	if (p_test == "gui") {
 
-		return TestGUI::test();
+		return TestGUI::test() == NULL;
 	}
 #endif
 
 	if (p_test == "shaderlang") {
 
-		return TestShaderLang::test();
+		return TestShaderLang::test() == NULL;
 	}
 
 	if (p_test == "gd_tokenizer") {
 
-		return TestGDScript::test(TestGDScript::TEST_TOKENIZER);
+		return TestGDScript::test(TestGDScript::TEST_TOKENIZER) == NULL;
 	}
 
 	if (p_test == "gd_parser") {
 
-		return TestGDScript::test(TestGDScript::TEST_PARSER);
+		return TestGDScript::test(TestGDScript::TEST_PARSER) == NULL;
 	}
 
 	if (p_test == "gd_compiler") {
 
-		return TestGDScript::test(TestGDScript::TEST_COMPILER);
+		return TestGDScript::test(TestGDScript::TEST_COMPILER) == NULL;
 	}
 
 	if (p_test == "gd_bytecode") {
 
-		return TestGDScript::test(TestGDScript::TEST_BYTECODE);
+		return TestGDScript::test(TestGDScript::TEST_BYTECODE) == NULL;
 	}
 
 	if (p_test == "ordered_hash_map") {
 
-		return TestOrderedHashMap::test();
+		return TestOrderedHashMap::test() == NULL;
 	}
 
 	if (p_test == "astar") {
 
-		return TestAStar::test();
+		return TestAStar::test() == NULL;
 	}
 
 	print_line("Unknown test: " + p_test);
-	return NULL;
+	return 1;
 }
 
 #else
@@ -164,9 +169,9 @@ const char **tests_get_names() {
 	return test_names;
 }
 
-MainLoop *test_main(String p_test, const List<String> &p_args) {
+int test_main(String p_test, const List<String> &p_args) {
 
-	return NULL;
+	return 0;
 }
 
 #endif

@@ -1450,10 +1450,8 @@ bool Main::start() {
 
 	if (test != "") {
 #ifdef DEBUG_ENABLED
-		main_loop = test_main(test, args);
-
-		if (!main_loop)
-			return false;
+	return test_main(test, args);
+	
 
 #endif
 
