@@ -29,6 +29,10 @@
 #define JPGD_MAX(a,b) (((a)>(b)) ? (a) : (b))
 #define JPGD_MIN(a,b) (((a)<(b)) ? (a) : (b))
 
+// TODO: Move to header and use these constants when declaring the arrays.
+#define JPGD_HUFF_TREE_MAX_LENGTH 512
+#define JPGD_HUFF_CODE_SIZE_MAX_LENGTH 256
+
 namespace jpgd {
 
 static inline void *jpgd_malloc(size_t nSize) { return malloc(nSize); }
@@ -491,8 +495,9 @@ inline uint jpeg_decoder::get_bits_no_markers(int num_bits)
 // Decodes a Huffman encoded symbol.
 inline int jpeg_decoder::huff_decode(huff_tables *pH)
 {
-  int symbol;
+  JPGD_ASSERT(pH);
 
+  int symbol;
   // Check first 8-bits: do we have a complete symbol?
   if ((symbol = pH->look_up[m_bit_buf >> 24]) < 0)
   {
@@ -500,14 +505,19 @@ inline int jpeg_decoder::huff_decode(huff_tables *pH)
     int ofs = 23;
     do
     {
-      symbol = pH->tree[-(int)(symbol + ((m_bit_buf >> ofs) & 1))];
+      unsigned int idx = -(int)(symbol + ((m_bit_buf >> ofs) & 1));
+      JPGD_ASSERT(idx < JPGD_HUFF_TREE_MAX_LENGTH);
+      symbol = pH->tree[idx];
       ofs--;
     } while (symbol < 0);
 
     get_bits_no_markers(8 + (23 - ofs));
   }
   else
+  {
+    JPGD_ASSERT(symbol < JPGD_HUFF_CODE_SIZE_MAX_LENGTH);
     get_bits_no_markers(pH->code_size[symbol]);
+  }
 
   return symbol;
 }
@@ -517,6 +527,8 @@ inline int jpeg_decoder::huff_decode(huff_tables *pH, int& extra_bits)
 {
   int symbol;
 
+  JPGD_ASSERT(pH);
+
   // Check first 8-bits: do we have a complete symbol?
   if ((symbol = pH->look_up2[m_bit_buf >> 24]) < 0)
   {
@@ -524,7 +536,9 @@ inline int jpeg_decoder::huff_decode(huff_tables *pH, int& extra_bits)
     int ofs = 23;
     do
     {
-      symbol = pH->tree[-(int)(symbol + ((m_bit_buf >> ofs) & 1))];
+      unsigned int idx = -(int)(symbol + ((m_bit_buf >> ofs) & 1));
+      JPGD_ASSERT(idx < JPGD_HUFF_TREE_MAX_LENGTH);
+      symbol = pH->tree[idx];
       ofs--;
     } while (symbol < 0);
 
@@ -1495,6 +1509,12 @@ void jpeg_decoder::fix_in_buffer()
 void jpeg_decoder::transform_mcu(int mcu_row)
 {
   jpgd_block_t* pSrc_ptr = m_pMCU_coefficients;
+  if (m_freq_domain_chroma_upsample) {
+     JPGD_ASSERT(mcu_row * m_blocks_per_mcu < m_expanded_blocks_per_row);
+  }
+  else {
+     JPGD_ASSERT(mcu_row * m_blocks_per_mcu < m_max_blocks_per_row);
+  }
   uint8* pDst_ptr = m_pSample_buf + mcu_row * m_blocks_per_mcu * 64;
 
   for (int mcu_block = 0; mcu_block < m_blocks_per_mcu; mcu_block++)
@@ -1650,6 +1670,7 @@ void jpeg_decoder::load_next_row()
     for (mcu_block = 0; mcu_block < m_blocks_per_mcu; mcu_block++)
     {
       component_id = m_mcu_org[mcu_block];
+      JPGD_ASSERT(m_comp_quant[component_id] < JPGD_MAX_QUANT_TABLES);
       q = m_quant[m_comp_quant[component_id]];
 
       p = m_pMCU_coefficients + 64 * mcu_block;
@@ -1770,6 +1791,7 @@ void jpeg_decoder::decode_next_row()
     for (int mcu_block = 0; mcu_block < m_blocks_per_mcu; mcu_block++, p += 64)
     {
       int component_id = m_mcu_org[mcu_block];
+      JPGD_ASSERT(m_comp_quant[component_id] < JPGD_MAX_QUANT_TABLES);
       jpgd_quant_t* q = m_quant[m_comp_quant[component_id]];
 
       int r, s;
@@ -2229,7 +2251,10 @@ void jpeg_decoder::make_huff_table(int index, huff_tables *pH)
   for (l = 1; l <= 16; l++)
   {
     for (i = 1; i <= m_huff_num[index][l]; i++)
+    {
+      JPGD_ASSERT(p < 257);
       huffsize[p++] = static_cast<uint8>(l);
+    }
   }
 
   huffsize[p] = 0;
@@ -2244,6 +2269,7 @@ void jpeg_decoder::make_huff_table(int index, huff_tables *pH)
   {
     while (huffsize[p] == si)
     {
+      JPGD_ASSERT(p < 257);
       huffcode[p++] = code;
       code++;
     }
@@ -2275,7 +2301,8 @@ void jpeg_decoder::make_huff_table(int index, huff_tables *pH)
 
       for (l = 1 << (8 - code_size); l > 0; l--)
       {
-        JPGD_ASSERT(i < 256);
+        JPGD_ASSERT(i < JPGD_HUFF_CODE_SIZE_MAX_LENGTH);
+        JPGD_ASSERT(code < JPGD_HUFF_CODE_SIZE_MAX_LENGTH);
 
         pH->look_up[code] = i;
 
@@ -2325,16 +2352,19 @@ void jpeg_decoder::make_huff_table(int index, huff_tables *pH)
         if ((code & 0x8000) == 0)
           currententry--;
 
-        if (pH->tree[-currententry - 1] == 0)
+        unsigned int idx = -currententry - 1;
+        JPGD_ASSERT(idx < JPGD_HUFF_TREE_MAX_LENGTH);
+        if (pH->tree[idx] == 0)
         {
-          pH->tree[-currententry - 1] = nextfreeentry;
+          pH->tree[idx] = nextfreeentry;
 
           currententry = nextfreeentry;
 
           nextfreeentry -= 2;
         }
-        else
-          currententry = pH->tree[-currententry - 1];
+        else {
+          currententry = pH->tree[idx];
+        }
 
         code <<= 1;
       }
@@ -2636,7 +2666,9 @@ void jpeg_decoder::decode_block_ac_first(jpeg_decoder *pD, int component_id, int
 
   for (k = pD->m_spectral_start; k <= pD->m_spectral_end; k++)
   {
-    s = pD->huff_decode(pD->m_pHuff_tabs[pD->m_comp_ac_tab[component_id]]);
+    unsigned int idx = pD->m_comp_ac_tab[component_id];
+    JPGD_ASSERT(idx < JPGD_MAX_HUFF_TABLES);
+    s = pD->huff_decode(pD->m_pHuff_tabs[idx]);
 
     r = s >> 4;
     s &= 15;
@@ -2679,7 +2711,6 @@ void jpeg_decoder::decode_block_ac_refine(jpeg_decoder *pD, int component_id, in
   int p1 = 1 << pD->m_successive_low;
   int m1 = (-1) << pD->m_successive_low;
   jpgd_block_t *p = pD->coeff_buf_getp(pD->m_ac_coeffs[component_id], block_x, block_y);
-  
   JPGD_ASSERT(pD->m_spectral_end <= 63);
   
   k = pD->m_spectral_start;
@@ -2688,7 +2719,9 @@ void jpeg_decoder::decode_block_ac_refine(jpeg_decoder *pD, int component_id, in
   {
     for ( ; k <= pD->m_spectral_end; k++)
     {
-      s = pD->huff_decode(pD->m_pHuff_tabs[pD->m_comp_ac_tab[component_id]]);
+      unsigned int idx = pD->m_comp_ac_tab[component_id];
+      JPGD_ASSERT(idx < JPGD_MAX_HUFF_TABLES);
+      s = pD->huff_decode(pD->m_pHuff_tabs[idx]);
 
       r = s >> 4;
       s &= 15;
