@@ -1813,7 +1813,7 @@ Size2 OS_Windows::get_min_window_size() const {
 void OS_Windows::set_min_window_size(const Size2 p_size) {
 
 	if ((p_size != Size2()) && (max_size != Size2()) && ((p_size.x > max_size.x) || (p_size.y > max_size.y))) {
-		WARN_PRINT("Minimum window size can't be larger than maximum window size!");
+		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
 		return;
 	}
 	min_size = p_size;
@@ -1822,7 +1822,7 @@ void OS_Windows::set_min_window_size(const Size2 p_size) {
 void OS_Windows::set_max_window_size(const Size2 p_size) {
 
 	if ((p_size != Size2()) && ((p_size.x < min_size.x) || (p_size.y < min_size.y))) {
-		WARN_PRINT("Maximum window size can't be smaller than minimum window size!");
+		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
 		return;
 	}
 	max_size = p_size;
