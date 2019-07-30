@@ -1610,6 +1610,12 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 						glBindTexture(t->target, t->tex_id);
 					}
 
+
+					if (storage->frame.current_rt) {
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
+					} else {
+						state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0, 1.0));
+					}
 					glActiveTexture(GL_TEXTURE0);
 					_canvas_item_render_commands(ci, current_clip, reclip); //redraw using light
 				}
