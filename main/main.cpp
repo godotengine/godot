@@ -606,7 +606,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 #endif
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
-			if (I->next()) {
+			if (I->next()) { 
 
 				String p = I->next()->get();
 				if (OS::get_singleton()->set_cwd(p) == OK) {
@@ -759,6 +759,8 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 		FileAccess::make_default<FileAccessNetwork>(FileAccess::ACCESS_RESOURCES);
 	}
+
+	OS::get_singleton()->print("Project path: %ls, main_pack %ls, upwards %d\n", project_path.c_str(), main_pack.c_str(), upwards);
 
 	if (globals->setup(project_path, main_pack, upwards) == OK) {
 #ifdef TOOLS_ENABLED
