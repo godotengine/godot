@@ -233,6 +233,9 @@
 				Signal sent when user dragging connection from output port into empty space of the graph.
 			</description>
 		</signal>
+		<signal name="copy_nodes_request">
+			Signal sent when the user presses [code]Ctrl + C[/code].
+		</signal>
 		<signal name="delete_nodes_request">
 			<description>
 				Signal sent when a GraphNode is attempted to be removed from the GraphEdit.
@@ -262,6 +265,9 @@
 			<description>
 				Emitted when a GraphNode is selected.
 			</description>
+		</signal>
+		<signal name="paste_nodes_request">
+			Signal sent when the user presses [code]Ctrl + V[/code].
 		</signal>
 		<signal name="popup_request">
 			<argument index="0" name="position" type="Vector2">
