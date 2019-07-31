@@ -279,6 +279,7 @@ public:
 
 	virtual String get_name() const = 0;
 	virtual List<String> get_cmdline_args() const { return _cmdline; }
+	virtual void clear_cmdline_args() { _cmdline.clear(); }
 	virtual String get_model_name() const;
 
 	virtual MainLoop *get_main_loop() const = 0;
