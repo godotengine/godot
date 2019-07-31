@@ -84,9 +84,9 @@ matrix:
       os: osx
       compiler: clang
 
-    - name: Linux headless editor (release_debug, GCC 9)
+    - name: Linux headless editor (release_debug, GCC 9, testing project exporting and script running)
       stage: build
-      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes"
+      env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes" TEST_PROJECT=yes
       os: linux
       compiler: gcc-9
       addons:
@@ -136,4 +136,10 @@ script:
       sh ./misc/travis/clang-format.sh;
     else
       scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS;
+
+      if [ "$TEST_PROJECT" = "yes" ]; then
+        git clone --depth 1 "https://github.com/godotengine/godot-tests.git";
+        sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.x11.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;
+        godot-tests/tests/project_export/test_project.sh "bin/godot_server.x11.opt.tools.64";
+      fi
     fi
