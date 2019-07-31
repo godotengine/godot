@@ -142,7 +142,7 @@ void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
 			beat_size = playlist->sample_rate * 60 / playlist->audio_streams[current]->get_bpm();
 		}
 		if (playlist->audio_streams[current]->get_beat_count() == 0) {
-			beat_amount_remaining = playlist->audio_streams[current]->get_length() * beat_size;
+			beat_amount_remaining = playlist->audio_streams[current]->get_length() * playlist->sample_rate;
 		}else{
 			beat_amount_remaining = playlist->audio_streams[current]->get_beat_count() * beat_size;
 		}
@@ -191,7 +191,7 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 		while (p_frames > 0) {
 
-			if (beat_amount_remaining == 0) {
+			if (beat_amount_remaining == 0) {// maybe need to include some kind of functionality for looping 
 				fading = true;
 				if ((current+1) < playlist->stream_count){
 					current = (current + 1) % playlist->stream_count;
