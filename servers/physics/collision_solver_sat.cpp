@@ -274,8 +274,8 @@ static void _generate_contacts_from_supports(const Vector3 *p_points_A, int p_po
 		points_B = p_points_B;
 	}
 
-	int version_A = (pointcount_A > 2 ? 2 : pointcount_A) - 1;
-	int version_B = (pointcount_B > 2 ? 2 : pointcount_B) - 1;
+	int version_A = (pointcount_A > 3 ? 3 : pointcount_A) - 1;
+	int version_B = (pointcount_B > 3 ? 3 : pointcount_B) - 1;
 
 	GenerateContactsFunc contacts_func = generate_contacts_func_table[version_A][version_B];
 	ERR_FAIL_COND(!contacts_func);
