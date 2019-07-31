@@ -53,7 +53,9 @@
 #include "servers/visual_server.h"
 #include "core/io/resource_loader.h"
 #include "core/project_settings.h"
+#include "core/node_path.h"
 #include "scene/resources/packed_scene.h"
+#include "scene/3d/skeleton.h"
 
 namespace TestFbxImport {
 
@@ -162,7 +164,18 @@ TEST_CASE("[Model import] Godot initialisation test") {
 	// instance scene
 	Node *ptr = scene->instance();
 	ptr->print_tree_pretty();
-	OS::get_singleton()->print("load successful filename %ls", ptr->get_filename().c_str() );
+	OS::get_singleton()->print("load successful filename %ls\n", ptr->get_filename().c_str() );
+
+	Node * skeletonNode = ptr->get_node(NodePath(String("ANA ARMATURE/ROOT/Skeleton")));
+	Skeleton * skeleton = Object::cast_to<Skeleton>(skeletonNode);
+	CHECK(skeleton);
+
+	OS::get_singleton()->print("bone count: %d\n", skeleton->get_bone_count());
+
+	// ana has 10 bones
+	CHECK( skeleton->get_bone_count() == 10 ); // has bone check
+
+	
 	//CHECK(ptr->data.filename == "blah"); // expect fail
 	// ensure object is valid
 	//CHECK(object);			
