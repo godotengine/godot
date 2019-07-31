@@ -7,7 +7,6 @@ void AnimationNodeMotionMatch::get_parameter_list(
       PropertyInfo(Variant::VECTOR3, vel, PROPERTY_HINT_NONE, ""));
   r_list->push_back(
       PropertyInfo(Variant::VECTOR3, pos, PROPERTY_HINT_NONE, ""));
-  r_list->push_back(PropertyInfo(Variant::INT, min, PROPERTY_HINT_NONE, "", 0));
 }
 
 Variant
@@ -430,11 +429,6 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
   float min_cost_time;
   AnimationPlayer *player = state->player;
   int anim = 0;
-  if (p_seek) {
-    min_key = get_parameter_default_value(min);
-  } else {
-    min_key = get_parameter(min);
-  }
   print_line(itos(min_key));
   for (int p = 0; p < keys->size() && p != this->min_key; p++) {
     float pos_cost = 0.0f;
@@ -462,10 +456,6 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 
     tot_cost = pos_cost + traj_cost;
 
-    if (first_time) {
-      first_time = false;
-    }
-
     if (tot_cost < min_cost) {
       min_cost = tot_cost;
       min_cost_time = keys->read()[p]->time;
@@ -473,8 +463,6 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
       min_key = p;
     }
   }
-  set_parameter(min, min_key);
-
   List<StringName> a_nam;
   player->get_animation_list(&a_nam);
   player->play(a_nam[anim]);

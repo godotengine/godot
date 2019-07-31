@@ -71,7 +71,6 @@ public:
   virtual Variant get_parameter_default_value(const StringName &p_param);
 
   float process(float p_time, bool p_seek);
-  bool first_time = true;
 
   int min_key = -1;
   void add_matching_track(const NodePath &p_track_path);
