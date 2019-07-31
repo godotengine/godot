@@ -783,8 +783,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_chars_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_chars_per_second", PROPERTY_HINT_RANGE, "0, 4096, 1, or_greater"));
 	GLOBAL_DEF("network/limits/debugger_stdout/max_messages_per_frame", 10);
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_messages_per_frame", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_messages_per_frame", PROPERTY_HINT_RANGE, "0, 20, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_frame", 10);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_errors_per_frame", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_errors_per_frame", PROPERTY_HINT_RANGE, "0, 20, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_second", 100);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_errors_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_errors_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger_stdout/max_warnings_per_second", 100);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_warnings_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_warnings_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
 
 	if (debug_mode == "remote") {
 
