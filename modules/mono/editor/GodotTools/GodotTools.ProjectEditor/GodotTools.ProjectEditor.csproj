@@ -38,7 +38,7 @@
       -->
       <HintPath Condition=" '$(SolutionDir)' != '' ">$(SolutionDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
       <HintPath>$(ProjectDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
-      <HintPath>packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath> <!-- Are you happy CI? -->
+      <HintPath>..\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath> <!-- Are you happy CI? -->
     </Reference>
   </ItemGroup>
   <ItemGroup>
