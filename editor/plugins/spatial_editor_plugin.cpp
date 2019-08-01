@@ -250,15 +250,7 @@ Vector3 SpatialEditorViewport::_get_ray(const Vector2 &p_pos) const {
 
 	return camera->project_ray_normal(p_pos / viewport_container->get_stretch_shrink());
 }
-/*
-void SpatialEditorViewport::_clear_id(Spatial *p_node) {
 
-
-	editor_selection->remove_node(p_node);
-
-
-}
-*/
 void SpatialEditorViewport::_clear_selected() {
 
 	editor_selection->clear();
@@ -4001,11 +3993,11 @@ void SpatialEditor::select_gizmo_highlight_axis(int p_axis) {
 
 	for (int i = 0; i < 3; i++) {
 
-		move_gizmo[i]->surface_set_material(0, i == p_axis ? gizmo_hl : gizmo_color[i]);
-		move_plane_gizmo[i]->surface_set_material(0, (i + 6) == p_axis ? gizmo_hl : plane_gizmo_color[i]);
-		rotate_gizmo[i]->surface_set_material(0, (i + 3) == p_axis ? gizmo_hl : gizmo_color[i]);
-		scale_gizmo[i]->surface_set_material(0, (i + 9) == p_axis ? gizmo_hl : gizmo_color[i]);
-		scale_plane_gizmo[i]->surface_set_material(0, (i + 12) == p_axis ? gizmo_hl : plane_gizmo_color[i]);
+		move_gizmo[i]->surface_set_material(0, i == p_axis ? gizmo_color_hl[i] : gizmo_color[i]);
+		move_plane_gizmo[i]->surface_set_material(0, (i + 6) == p_axis ? plane_gizmo_color_hl[i] : plane_gizmo_color[i]);
+		rotate_gizmo[i]->surface_set_material(0, (i + 3) == p_axis ? gizmo_color_hl[i] : gizmo_color[i]);
+		scale_gizmo[i]->surface_set_material(0, (i + 9) == p_axis ? gizmo_color_hl[i] : gizmo_color[i]);
+		scale_plane_gizmo[i]->surface_set_material(0, (i + 12) == p_axis ? plane_gizmo_color_hl[i] : plane_gizmo_color[i]);
 	}
 }
 
@@ -4084,6 +4076,23 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 	return si;
 }
 
+Color SpatialEditor::_get_axis_color(int axis) {
+
+	switch (axis) {
+		case 0:
+			// X axis
+			return Color(0.96, 0.20, 0.32);
+		case 1:
+			// Y axis
+			return Color(0.53, 0.84, 0.01);
+		case 2:
+			// Z axis
+			return Color(0.16, 0.55, 0.96);
+		default:
+			return Color(0, 0, 0);
+	}
+}
+
 void SpatialEditor::_generate_selection_box() {
 
 	AABB aabb(Vector3(), Vector3(1, 1, 1));
@@ -4096,11 +4105,6 @@ void SpatialEditor::_generate_selection_box() {
 
 		Vector3 a, b;
 		aabb.get_edge(i, a, b);
-
-		/*Vector<Vector3> points;
-		Vector<Color> colors;
-		points.push_back(a);
-		points.push_back(b);*/
 
 		st->add_color(Color(1.0, 1.0, 0.8, 0.8));
 		st->add_vertex(a);
@@ -4640,12 +4644,13 @@ void SpatialEditor::_init_indicators() {
 		for (int i = 0; i < 3; i++) {
 			Vector3 axis;
 			axis[i] = 1;
+			Color origin_color = _get_axis_color(i);
 
 			grid_enable[i] = false;
 			grid_visible[i] = false;
 
-			origin_colors.push_back(Color(axis.x, axis.y, axis.z));
-			origin_colors.push_back(Color(axis.x, axis.y, axis.z));
+			origin_colors.push_back(origin_color);
+			origin_colors.push_back(origin_color);
 			origin_points.push_back(axis * 4096);
 			origin_points.push_back(axis * -4096);
 		}
@@ -4674,16 +4679,10 @@ void SpatialEditor::_init_indicators() {
 
 		//move gizmo
 
-		float gizmo_alph = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_opacity");
-
-		gizmo_hl = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-		gizmo_hl->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		gizmo_hl->set_on_top_of_alpha();
-		gizmo_hl->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		gizmo_hl->set_albedo(Color(1, 1, 1, gizmo_alph + 0.2f));
-		gizmo_hl->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-
 		for (int i = 0; i < 3; i++) {
+
+			Color col = _get_axis_color(i);
+			col.a = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_opacity");
 
 			move_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 			move_plane_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
@@ -4695,12 +4694,12 @@ void SpatialEditor::_init_indicators() {
 			mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 			mat->set_on_top_of_alpha();
 			mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-			Color col;
-			col[i] = 1.0;
-			col.a = gizmo_alph;
 			mat->set_albedo(col);
-
 			gizmo_color[i] = mat;
+
+			Ref<SpatialMaterial> mat_hl = mat->duplicate();
+			mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
+			gizmo_color_hl[i] = mat_hl;
 
 			Vector3 ivec;
 			ivec[i] = 1;
@@ -4791,13 +4790,14 @@ void SpatialEditor::_init_indicators() {
 				plane_mat->set_on_top_of_alpha();
 				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-				Color col2;
-				col2[i] = 1.0;
-				col2.a = gizmo_alph;
-				plane_mat->set_albedo(col2);
+				plane_mat->set_albedo(col);
 				plane_gizmo_color[i] = plane_mat; // needed, so we can draw planes from both sides
 				surftool->set_material(plane_mat);
 				surftool->commit(move_plane_gizmo[i]);
+
+				Ref<SpatialMaterial> plane_mat_hl = plane_mat->duplicate();
+				plane_mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
+				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
 
 			// Rotate
@@ -4920,13 +4920,14 @@ void SpatialEditor::_init_indicators() {
 				plane_mat->set_on_top_of_alpha();
 				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-				Color col2;
-				col2[i] = 1.0;
-				col2.a = gizmo_alph;
-				plane_mat->set_albedo(col2);
+				plane_mat->set_albedo(col);
 				plane_gizmo_color[i] = plane_mat; // needed, so we can draw planes from both sides
 				surftool->set_material(plane_mat);
 				surftool->commit(scale_plane_gizmo[i]);
+
+				Ref<SpatialMaterial> plane_mat_hl = plane_mat->duplicate();
+				plane_mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
+				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
 		}
 	}
@@ -5824,7 +5825,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	EDITOR_DEF("editors/3d/manipulator_gizmo_size", 80);
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::INT, "editors/3d/manipulator_gizmo_size", PROPERTY_HINT_RANGE, "16,1024,1"));
-	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.2);
+	EDITOR_DEF("editors/3d/manipulator_gizmo_opacity", 0.4);
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::REAL, "editors/3d/manipulator_gizmo_opacity", PROPERTY_HINT_RANGE, "0,1,0.01"));
 
 	over_gizmo_handle = -1;
 }
