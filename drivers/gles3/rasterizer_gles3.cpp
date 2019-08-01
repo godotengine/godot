@@ -191,6 +191,7 @@ void RasterizerGLES3::initialize() {
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
+	state.lut_shader.init();
 }
 
 void RasterizerGLES3::begin_frame(double frame_step) {
@@ -333,6 +334,34 @@ void RasterizerGLES3::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	end_frame(true);
 }
 
+void RasterizerGLES3::set_screen_lut(const Ref<Image> &p_lut, int p_h_slices, int p_v_slices) {
+
+	if (state.screen_lut.is_valid()) {
+		storage->free(state.screen_lut);
+		state.screen_lut = RID();
+	}
+
+	if (p_lut.is_null() || p_lut->empty())
+		return;
+
+	int slice_w = p_lut->get_width() / p_h_slices;
+	int slice_h = p_lut->get_height() / p_v_slices;
+
+	RID texture = storage->texture_create();
+	storage->texture_allocate(texture, slice_w, slice_h, p_h_slices * p_v_slices, p_lut->get_format(), VS::TEXTURE_TYPE_3D, VS::TEXTURE_FLAG_FILTER);
+
+	for (int i = 0; i < p_v_slices; i++) {
+		for (int j = 0; j < p_h_slices; j++) {
+			int x = slice_w * j;
+			int y = slice_h * i;
+			storage->texture_set_data(texture, p_lut->get_rect(Rect2(x, y, slice_w, slice_h)), i * p_h_slices + j);
+		}
+	}
+
+	state.screen_lut = texture;
+	state.lut_texel_count = Vector3(slice_w, slice_h, p_h_slices * p_v_slices);
+}
+
 void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
 
 	ERR_FAIL_COND(storage->frame.current_rt);
@@ -341,17 +370,39 @@ void RasterizerGLES3::blit_render_target_to_screen(RID p_render_target, const Re
 	ERR_FAIL_COND(!rt);
 
 #if 1
-
 	Size2 win_size = OS::get_singleton()->get_window_size();
-	if (rt->external.fbo != 0) {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
-	} else {
-		glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
-	}
-	glReadBuffer(GL_COLOR_ATTACHMENT0);
-	glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
-	glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
 
+	if (!state.screen_lut.is_valid()) {
+		// no lut, just blit buffer
+		if (rt->external.fbo != 0) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
+		} else {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		}
+		glReadBuffer(GL_COLOR_ATTACHMENT0);
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+		glBlitFramebuffer(0, 0, rt->width, rt->height, p_screen_rect.position.x, win_size.height - p_screen_rect.position.y - p_screen_rect.size.height, p_screen_rect.position.x + p_screen_rect.size.width, win_size.height - p_screen_rect.position.y, GL_COLOR_BUFFER_BIT, GL_NEAREST);
+	} else {
+		// draw with lut
+		glDisable(GL_BLEND);
+		if (rt->external.fbo != 0) {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->external.fbo);
+		} else {
+			glBindFramebuffer(GL_READ_FRAMEBUFFER, rt->fbo);
+		}
+		glBindFramebuffer(GL_DRAW_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
+		glActiveTexture(GL_TEXTURE0);
+		glBindTexture(GL_TEXTURE_2D, rt->color);
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_3D, storage->texture_owner.get(state.screen_lut)->tex_id);
+		state.lut_shader.bind();
+		state.lut_shader.set_uniform(LutTransformShaderGLES3::SCREEN_RECT, Color(p_screen_rect.position.x / win_size.width, 1.0 - (p_screen_rect.position.y + p_screen_rect.size.height) / win_size.height, p_screen_rect.size.width / win_size.width, p_screen_rect.size.height / win_size.height));
+		state.lut_shader.set_uniform(LutTransformShaderGLES3::TEXEL_COUNT, state.lut_texel_count);
+		glBindVertexArray(storage->resources.quadie_array);
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glBindVertexArray(0);
+		glBindTexture(GL_TEXTURE_2D, 0);
+	}
 #else
 	canvas->canvas_begin();
 	glDisable(GL_BLEND);
@@ -418,6 +469,9 @@ void RasterizerGLES3::end_frame(bool p_swap_buffers) {
 }
 
 void RasterizerGLES3::finalize() {
+	if (state.screen_lut.is_valid()) {
+		storage->free(state.screen_lut);
+	}
 
 	storage->finalize();
 	canvas->finalize();

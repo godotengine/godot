@@ -1033,6 +1033,7 @@ public:
 	virtual void mesh_add_surface_from_planes(RID p_mesh, const PoolVector<Plane> &p_planes);
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true) = 0;
+	virtual void set_screen_lut(const Ref<Image> &p_lut, int p_h_slices, int p_v_slices) = 0;
 	virtual void set_default_clear_color(const Color &p_color) = 0;
 
 	enum Features {

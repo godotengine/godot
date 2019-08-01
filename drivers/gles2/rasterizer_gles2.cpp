@@ -268,6 +268,7 @@ void RasterizerGLES2::initialize() {
 	storage->initialize();
 	canvas->initialize();
 	scene->initialize();
+	state.lut_shader.init();
 }
 
 void RasterizerGLES2::begin_frame(double frame_step) {
@@ -397,6 +398,25 @@ void RasterizerGLES2::set_boot_image(const Ref<Image> &p_image, const Color &p_c
 	end_frame(true);
 }
 
+void RasterizerGLES2::set_screen_lut(const Ref<Image> &p_lut, int p_h_slices, int p_v_slices) {
+
+	if (state.screen_lut.is_valid()) {
+		storage->free(state.screen_lut);
+		state.screen_lut = RID();
+	}
+
+	if (p_lut.is_null() || p_lut->empty())
+		return;
+
+	RID texture = storage->texture_create();
+	storage->texture_allocate(texture, p_lut->get_width(), p_lut->get_height(), 0, p_lut->get_format(), VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
+	storage->texture_set_data(texture, p_lut);
+
+	state.screen_lut = texture;
+	state.lut_texel_count = Vector2(p_lut->get_width(), p_lut->get_height());
+	state.lut_chunk_count = Vector2(p_h_slices, p_v_slices);
+}
+
 void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Rect2 &p_screen_rect, int p_screen) {
 
 	ERR_FAIL_COND(storage->frame.current_rt);
@@ -404,27 +424,47 @@ void RasterizerGLES2::blit_render_target_to_screen(RID p_render_target, const Re
 	RasterizerStorageGLES2::RenderTarget *rt = storage->render_target_owner.getornull(p_render_target);
 	ERR_FAIL_COND(!rt);
 
-	canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
+	if (!state.screen_lut.is_valid()) {
+		// draw normally
+		canvas->state.canvas_shader.set_conditional(CanvasShaderGLES2::USE_TEXTURE_RECT, true);
 
-	canvas->state.canvas_shader.set_custom_shader(0);
-	canvas->state.canvas_shader.bind();
+		canvas->state.canvas_shader.set_custom_shader(0);
+		canvas->state.canvas_shader.bind();
 
-	canvas->canvas_begin();
-	glDisable(GL_BLEND);
-	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
-	glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
-	if (rt->external.fbo != 0) {
-		glBindTexture(GL_TEXTURE_2D, rt->external.color);
+		canvas->canvas_begin();
+		glDisable(GL_BLEND);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
+		glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 1);
+		if (rt->external.fbo != 0) {
+			glBindTexture(GL_TEXTURE_2D, rt->external.color);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, rt->color);
+		}
+		canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
+		glBindTexture(GL_TEXTURE_2D, 0);
+		canvas->canvas_end();
 	} else {
-		glBindTexture(GL_TEXTURE_2D, rt->color);
+		// draw with lut
+		Size2 win_size = OS::get_singleton()->get_window_size();
+		glDisable(GL_BLEND);
+		glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES2::system_fbo);
+		glActiveTexture(GL_TEXTURE0);
+		if (rt->external.fbo != 0) {
+			glBindTexture(GL_TEXTURE_2D, rt->external.color);
+		} else {
+			glBindTexture(GL_TEXTURE_2D, rt->color);
+		}
+		glActiveTexture(GL_TEXTURE1);
+		glBindTexture(GL_TEXTURE_2D, storage->texture_owner.get(state.screen_lut)->tex_id);
+		state.lut_shader.bind();
+		state.lut_shader.set_uniform(LutTransformShaderGLES2::SCREEN_RECT, Color(p_screen_rect.position.x / win_size.width, 1.0 - (p_screen_rect.position.y + p_screen_rect.size.height) / win_size.height, p_screen_rect.size.width / win_size.width, p_screen_rect.size.height / win_size.height));
+		state.lut_shader.set_uniform(LutTransformShaderGLES2::TEXEL_COUNT, state.lut_texel_count);
+		state.lut_shader.set_uniform(LutTransformShaderGLES2::CHUNK_COUNT, state.lut_chunk_count);
+		storage->bind_quad_array();
+		glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
+		glBindBuffer(GL_ARRAY_BUFFER, 0);
+		glBindTexture(GL_TEXTURE_2D, 0);
 	}
-
-	// TODO normals
-
-	canvas->draw_generic_textured_rect(p_screen_rect, Rect2(0, 0, 1, -1));
-
-	glBindTexture(GL_TEXTURE_2D, 0);
-	canvas->canvas_end();
 }
 
 void RasterizerGLES2::output_lens_distorted_to_screen(RID p_render_target, const Rect2 &p_screen_rect, float p_k1, float p_k2, const Vector2 &p_eye_center, float p_oversample) {
@@ -477,6 +517,10 @@ void RasterizerGLES2::end_frame(bool p_swap_buffers) {
 }
 
 void RasterizerGLES2::finalize() {
+
+	if (state.screen_lut.is_valid()) {
+		storage->free(state.screen_lut);
+	}
 }
 
 Rasterizer *RasterizerGLES2::_create_current() {

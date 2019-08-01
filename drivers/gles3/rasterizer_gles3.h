@@ -36,6 +36,8 @@
 #include "rasterizer_storage_gles3.h"
 #include "servers/visual/rasterizer.h"
 
+#include "shaders/lut_transform.glsl.gen.h"
+
 class RasterizerGLES3 : public Rasterizer {
 
 	static Rasterizer *_create_current();
@@ -46,12 +48,19 @@ class RasterizerGLES3 : public Rasterizer {
 
 	double time_total;
 
+	struct State {
+		RID screen_lut;
+		Vector3 lut_texel_count;
+		LutTransformShaderGLES3 lut_shader;
+	} state;
+
 public:
 	virtual RasterizerStorage *get_storage();
 	virtual RasterizerCanvas *get_canvas();
 	virtual RasterizerScene *get_scene();
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	virtual void set_screen_lut(const Ref<Image> &p_lut, int p_h_slices, int p_v_slices);
 
 	virtual void initialize();
 	virtual void begin_frame(double frame_step);

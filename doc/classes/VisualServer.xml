@@ -3165,6 +3165,19 @@
 				Sets a boot image. The color defines the background color. If [code]scale[/code] is [code]true[/code], the image will be scaled to fit the screen size. If [code]use_filter[/code] is [code]true[/code], the image will be scaled with linear interpolation. If [code]use_filter[/code] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
+		<method name="set_screen_lut">
+			<return type="void">
+			</return>
+			<argument index="0" name="lut" type="Image">
+			</argument>
+			<argument index="1" name="h_slices" type="int">
+			</argument>
+			<argument index="2" name="v_slices" type="int">
+			</argument>
+			<description>
+				Sets a 3D output LUT. It will be used to transform all screen output. If lut is [code]null[/code] the current LUT will be removed.
+			</description>
+		</method>
 		<method name="set_debug_generate_wireframes">
 			<return type="void">
 			</return>

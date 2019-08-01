@@ -688,6 +688,7 @@ public:
 	/* TESTING */
 
 	virtual void set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter = true);
+	virtual void set_screen_lut(const Ref<Image> &p_lut, int p_h_slices, int p_v_slices);
 	virtual void set_default_clear_color(const Color &p_color);
 
 	virtual bool has_feature(Features p_feature) const;

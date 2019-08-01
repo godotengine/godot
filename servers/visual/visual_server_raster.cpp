@@ -160,6 +160,11 @@ void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &
 	redraw_request();
 	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
 }
+void VisualServerRaster::set_screen_lut(const Ref<Image> &p_lut, int p_h_slices, int p_v_slices) {
+
+	redraw_request();
+	VSG::rasterizer->set_screen_lut(p_lut, p_h_slices, p_v_slices);
+}
 void VisualServerRaster::set_default_clear_color(const Color &p_color) {
 	VSG::viewport->set_default_clear_color(p_color);
 }
