@@ -2640,7 +2640,9 @@ void EditorNode::_discard_changes(const String &p_str) {
 			Node *scene = editor_data.get_edited_scene_root(tab_closing);
 			if (scene != NULL) {
 				String scene_filename = scene->get_filename();
-				previous_scenes.push_back(scene_filename);
+				if (scene_filename != "") {
+					previous_scenes.push_back(scene_filename);
+				}
 			}
 
 			_remove_scene(tab_closing);
