@@ -341,7 +341,7 @@ void EditorSceneImporterAssimp::_fill_node_relationships(ImportState &state, con
 		hole.pose = pose;
 		hole.node = p_assimp_node;
 		hole.parent = p_parent_name;
-	//	holes.push_back(hole);
+		//	holes.push_back(hole);
 
 		for (size_t i = 0; i < p_assimp_node->mNumChildren; i++) {
 			_fill_node_relationships(state, p_assimp_node->mChildren[i], ownership, skeleton_map, p_skeleton_id, p_skeleton, name, holecount, holes, bind_xforms);
@@ -447,22 +447,6 @@ Spatial *EditorSceneImporterAssimp::_generate_scene(const String &p_path, const 
 	state.root = memnew(Spatial);
 	state.fbx = false;
 	state.animation_player = NULL;
-
-	real_t scale_factor = 1.0f;
-	{
-		//handle scale
-		String ext = p_path.get_file().get_extension().to_lower();
-		if (ext == "fbx") {
-			if (scene->mMetaData != NULL) {
-				float factor = 1.0;
-				scene->mMetaData->Get("UnitScaleFactor", factor);
-				scale_factor = factor * 0.01f;
-			}
-			state.fbx = true;
-		}
-	}
-
-	state.root->set_scale(Vector3(scale_factor, scale_factor, scale_factor));
 
 	//fill light map cache
 	for (size_t l = 0; l < scene->mNumLights; l++) {
