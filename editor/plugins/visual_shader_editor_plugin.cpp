@@ -438,7 +438,7 @@ void VisualShaderEditor::_update_graph() {
 		int port_offset = 0;
 
 		if (is_group) {
-			port_offset++;
+			port_offset += 2;
 		}
 
 		Ref<VisualShaderNodeUniform> uniform = vsnode;
@@ -477,6 +477,11 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		if (is_group) {
+
+			offset = memnew(Control);
+			offset->set_custom_minimum_size(Size2(0, 6 * EDSCALE));
+			node->add_child(offset);
+
 			HBoxContainer *hb2 = memnew(HBoxContainer);
 
 			Button *add_input_btn = memnew(Button);
@@ -524,6 +529,7 @@ void VisualShaderEditor::_update_graph() {
 			}
 
 			HBoxContainer *hb = memnew(HBoxContainer);
+			hb->add_constant_override("separation", 7 * EDSCALE);
 
 			Variant default_value;
 
@@ -559,7 +565,6 @@ void VisualShaderEditor::_update_graph() {
 			}
 
 			if (i == 0 && custom_editor) {
-
 				hb->add_child(custom_editor);
 				custom_editor->set_h_size_flags(SIZE_EXPAND_FILL);
 			} else {
@@ -567,7 +572,6 @@ void VisualShaderEditor::_update_graph() {
 				if (valid_left) {
 
 					if (is_group) {
-
 						OptionButton *type_box = memnew(OptionButton);
 						hb->add_child(type_box);
 						type_box->add_item(TTR("Scalar"));
@@ -580,9 +584,9 @@ void VisualShaderEditor::_update_graph() {
 
 						LineEdit *name_box = memnew(LineEdit);
 						hb->add_child(name_box);
-						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+						name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
+						name_box->set_h_size_flags(SIZE_EXPAND_FILL);
 						name_box->set_text(name_left);
-						name_box->set_expand_to_text_length(true);
 						name_box->connect("text_entered", this, "_change_input_port_name", varray(name_box, nodes[n_i], i));
 						name_box->connect("focus_exited", this, "_port_name_focus_out", varray(name_box, nodes[n_i], i, false));
 
@@ -600,8 +604,6 @@ void VisualShaderEditor::_update_graph() {
 					}
 				}
 
-				hb->add_spacer();
-
 				if (valid_right) {
 					if (is_group) {
 						Button *remove_btn = memnew(Button);
@@ -612,9 +614,9 @@ void VisualShaderEditor::_update_graph() {
 
 						LineEdit *name_box = memnew(LineEdit);
 						hb->add_child(name_box);
-						name_box->set_custom_minimum_size(Size2(60 * EDSCALE, 0));
+						name_box->set_custom_minimum_size(Size2(65 * EDSCALE, 0));
+						name_box->set_h_size_flags(SIZE_EXPAND_FILL);
 						name_box->set_text(name_right);
-						name_box->set_expand_to_text_length(true);
 						name_box->connect("text_entered", this, "_change_output_port_name", varray(name_box, nodes[n_i], i));
 						name_box->connect("focus_exited", this, "_port_name_focus_out", varray(name_box, nodes[n_i], i, true));
 
@@ -675,7 +677,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		offset = memnew(Control);
-		offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+		offset->set_custom_minimum_size(Size2(0, 4 * EDSCALE));
 		node->add_child(offset);
 
 		String error = vsnode->get_warning(visual_shader->get_mode(), type);
@@ -692,12 +694,14 @@ void VisualShaderEditor::_update_graph() {
 			expression_node->set_control(expression_box, 0);
 			node->add_child(expression_box);
 
+			Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
 			Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
 			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
 			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
 
 			expression_box->set_syntax_coloring(true);
+			expression_box->add_color_override("background_color", background_color);
 
 			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
 
@@ -1010,7 +1014,7 @@ void VisualShaderEditor::_node_resized(const Vector2 &p_new_size, int p_type, in
 	}
 
 	undo_redo->create_action(TTR("Resize VisualShader node"), UndoRedo::MERGE_ENDS);
-	undo_redo->add_do_method(this, "_set_node_size", p_type, p_node, p_new_size / EDSCALE);
+	undo_redo->add_do_method(this, "_set_node_size", p_type, p_node, p_new_size);
 	undo_redo->add_undo_method(this, "_set_node_size", p_type, p_node, node->get_size());
 	undo_redo->commit_action();
 }
