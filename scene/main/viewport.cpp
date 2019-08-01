@@ -389,7 +389,7 @@ void Viewport::_notification(int p_what) {
 				VS::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, point_count);
 			}
 
-			if (physics_object_picking && (to_screen_rect == Rect2() || Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED)) {
+			if (physics_object_picking) {
 
 #ifndef _3D_DISABLED
 				Vector2 last_pos(1e20, 1e20);
@@ -2803,15 +2803,12 @@ void Viewport::unhandled_input(const Ref<InputEvent> &p_event) {
 	}
 
 	if (physics_object_picking && !get_tree()->input_handled) {
-
-		if (Input::get_singleton()->get_mouse_mode() != Input::MOUSE_MODE_CAPTURED &&
-				(Object::cast_to<InputEventMouseButton>(*p_event) ||
-						Object::cast_to<InputEventMouseMotion>(*p_event) ||
-						Object::cast_to<InputEventScreenDrag>(*p_event) ||
-						Object::cast_to<InputEventScreenTouch>(*p_event) ||
-						Object::cast_to<InputEventKey>(*p_event) //to remember state
-
-						)) {
+		if (Object::cast_to<InputEventMouseButton>(*p_event) ||
+			Object::cast_to<InputEventMouseMotion>(*p_event) ||
+			Object::cast_to<InputEventScreenDrag>(*p_event) ||
+			Object::cast_to<InputEventScreenTouch>(*p_event) ||
+			Object::cast_to<InputEventKey>(*p_event) //to remember state
+		) {
 			physics_picking_events.push_back(p_event);
 		}
 	}
