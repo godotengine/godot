@@ -122,6 +122,9 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 	//}
 
 	importer.SetPropertyInteger(AI_CONFIG_PP_SBP_REMOVE, aiPrimitiveType_LINE | aiPrimitiveType_POINT);
+
+	importer.SetPropertyBool(AI_CONFIG_FBX_CONVERT_TO_M, true);
+
 	//importer.SetPropertyFloat(AI_CONFIG_PP_DB_THRESHOLD, 1.0f);
 	int32_t post_process_Steps = aiProcess_CalcTangentSpace |
 								 //aiProcess_FlipUVs |
@@ -146,7 +149,7 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 								 //aiProcess_OptimizeGraph |
 								 //aiProcess_Debone |
 								 aiProcess_EmbedTextures |
-								 aiProcess_SplitByBoneCount |
+								 //aiProcess_SplitByBoneCount |
 								 0;
 	const aiScene *scene = importer.ReadFile(s_path.c_str(),
 			post_process_Steps);
@@ -284,7 +287,7 @@ T EditorSceneImporterAssimp::_interpolate_track(const Vector<float> &p_times, co
 
 void EditorSceneImporterAssimp::_generate_bone_groups(ImportState &state, const aiNode *p_assimp_node, Map<String, int> &ownership, Map<String, Transform> &bind_xforms) {
 
-	Transform mesh_offset = _get_global_assimp_node_transform(p_assimp_node);
+	//Transform mesh_offset = Transform(); // _get_global_assimp_node_transform(p_assimp_node);
 	//mesh_offset.basis = Basis();
 	for (uint32_t i = 0; i < p_assimp_node->mNumMeshes; i++) {
 		const aiMesh *mesh = state.assimp_scene->mMeshes[i];
@@ -312,7 +315,7 @@ void EditorSceneImporterAssimp::_generate_bone_groups(ImportState &state, const 
 			ownership[name] = owned_by;
 			//store the actual full path for the bone transform
 			//when skeleton finds its place in the tree, it will be restored
-			bind_xforms[name] = mesh_offset * _assimp_matrix_transform(bone->mOffsetMatrix);
+			bind_xforms[name] = _assimp_matrix_transform(bone->mOffsetMatrix);
 		}
 	}
 
@@ -338,7 +341,7 @@ void EditorSceneImporterAssimp::_fill_node_relationships(ImportState &state, con
 		hole.pose = pose;
 		hole.node = p_assimp_node;
 		hole.parent = p_parent_name;
-		holes.push_back(hole);
+	//	holes.push_back(hole);
 
 		for (size_t i = 0; i < p_assimp_node->mNumChildren; i++) {
 			_fill_node_relationships(state, p_assimp_node->mChildren[i], ownership, skeleton_map, p_skeleton_id, p_skeleton, name, holecount, holes, bind_xforms);

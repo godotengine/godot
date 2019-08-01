@@ -118,8 +118,8 @@ namespace Assimp {
             }
 
             ConvertGlobalSettings();
-            TransferDataToScene();
             ConvertToUnitScale(unit);
+            TransferDataToScene();
 
             // if we didn't read any meshes set the AI_SCENE_FLAGS_INCOMPLETE
             // to make sure the scene passes assimp's validation. FBX files
