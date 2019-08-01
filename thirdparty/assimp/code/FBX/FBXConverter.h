@@ -149,6 +149,9 @@ private:
 
     // ------------------------------------------------------------------------------------------------
     void GetUniqueName( const std::string &name, std::string& uniqueName );
+    
+    // ------------------------------------------------------------------------------------------------
+    void RecursiveNodeConverter( aiNode * node, ai_real scale );
 
     // ------------------------------------------------------------------------------------------------
     // this returns unified names usable within assimp identifiers (i.e. no space characters -
@@ -431,8 +434,12 @@ private:
     void ConvertGlobalSettings();
 
     // ------------------------------------------------------------------------------------------------
+    // Will return unit scaling for units used in file
+    ai_real GetUnitScale( FbxUnit unit );
+
+    // ------------------------------------------------------------------------------------------------
     //  Will perform the conversion from a given unit to the requested unit.
-    void ConvertToUnitScale(FbxUnit unit);
+    void ConvertToUnitScale(ai_real scale);
 
     // ------------------------------------------------------------------------------------------------
     // copy generated meshes, animations, lights, cameras and textures to the output scene

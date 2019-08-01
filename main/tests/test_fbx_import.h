@@ -124,6 +124,7 @@ TEST_CASE("[Model import] Simple bone count test") {
 		path_to_armature = String("Armature/Skeleton");
 		expected_bone_count = 13;
 	}
+	// note add skeleton lookup using get_node
 
 	Ref<PackedScene> scene = ResourceLoader::load(path_to_load, "PackedScene", false, &err);
 
