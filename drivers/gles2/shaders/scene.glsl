@@ -10,7 +10,9 @@ precision highp float;
 precision highp int;
 #endif
 
+/* clang-format on */
 #include "stdlib.glsl"
+/* clang-format off */
 
 #define SHADER_IS_SRGB true
 

@@ -928,8 +928,24 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMAL"] = "#define NORMAL_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
-	actions[VS::SHADER_CANVAS_ITEM].usage_defines["round"] = "#define ROUND_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
+
+	// Ported from GLES3
+
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["sinh"] = "#define SINH_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["cosh"] = "#define COSH_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["tanh"] = "#define TANH_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["asinh"] = "#define ASINH_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["acosh"] = "#define ACOSH_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["atanh"] = "#define ATANH_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["determinant"] = "#define DETERMINANT_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["transpose"] = "#define TRANSPOSE_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["outerProduct"] = "#define OUTER_PRODUCT_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["round"] = "#define ROUND_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["roundEven"] = "#define ROUND_EVEN_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["isinf"] = "#define IS_INF_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["isnan"] = "#define IS_NAN_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["trunc"] = "#define TRUNC_USED\n";
 
 	/** SPATIAL SHADER **/
 
@@ -1022,6 +1038,23 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 
 	actions[VS::SHADER_SPATIAL].usage_defines["DIFFUSE_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["SPECULAR_LIGHT"] = "#define USE_LIGHT_SHADER_CODE\n";
+
+	// Ported from GLES3
+
+	actions[VS::SHADER_SPATIAL].usage_defines["sinh"] = "#define SINH_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["cosh"] = "#define COSH_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["tanh"] = "#define TANH_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["asinh"] = "#define ASINH_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["acosh"] = "#define ACOSH_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["atanh"] = "#define ATANH_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["determinant"] = "#define DETERMINANT_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["transpose"] = "#define TRANSPOSE_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["outerProduct"] = "#define OUTER_PRODUCT_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["round"] = "#define ROUND_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["roundEven"] = "#define ROUND_EVEN_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["isinf"] = "#define IS_INF_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["isnan"] = "#define IS_NAN_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["trunc"] = "#define TRUNC_USED\n";
 
 	actions[VS::SHADER_SPATIAL].render_mode_defines["skip_vertex_transform"] = "#define SKIP_TRANSFORM_USED\n";
 	actions[VS::SHADER_SPATIAL].render_mode_defines["world_vertex_coords"] = "#define VERTEX_WORLD_COORDS_USED\n";
