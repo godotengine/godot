@@ -1283,7 +1283,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 					//all is a wall
 					on_wall = true;
 				} else {
-					if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //floor
+					if (Math::acos(collision.normal.dot(p_floor_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 
 						on_floor = true;
 						on_floor_body = collision.collider_rid;
@@ -1298,7 +1298,7 @@ Vector2 KinematicBody2D::move_and_slide(const Vector2 &p_linear_velocity, const 
 							}
 						}
 
-					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
+					} else if (Math::acos(collision.normal.dot(-p_floor_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 						on_ceiling = true;
 					} else {
 						on_wall = true;
