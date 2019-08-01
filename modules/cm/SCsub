@@ -1,0 +1,60 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_cm = env_modules.Clone()
+
+# Thirdparty source files
+if env['builtin_lcms']:
+    thirdparty_dir = "#thirdparty/lcms2/"
+    thirdparty_sources = [
+        "cmscnvrt.c",
+        "cmserr.c",
+        "cmsgamma.c",
+        "cmsgmt.c",
+        "cmsintrp.c",
+        "cmsio0.c",
+        "cmsio1.c",
+        "cmslut.c",
+        "cmsplugin.c",
+        "cmssm.c",
+        "cmsmd5.c",
+        "cmsmtrx.c",
+        "cmspack.c",
+        "cmspcs.c",
+        "cmswtpnt.c",
+        "cmsxform.c",
+        "cmssamp.c",
+        "cmsnamed.c",
+        "cmscam02.c",
+        "cmsvirt.c",
+        "cmstypes.c",
+        "cmscgats.c",
+        "cmsps2.c",
+        "cmsopt.c",
+        "cmshalf.c",
+        "cmsalpha.c",
+    ]
+
+    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+    env_cm.Append(CPPPATH=[thirdparty_dir])
+    if not env.msvc:
+        # cl.exe does not understand -isystem
+        env_cm.Append(CPPFLAGS=["-isystem", Dir(thirdparty_dir)])
+
+    env_thirdparty = env_cm.Clone()
+
+    if not env.msvc:
+        env_thirdparty.Append(CFLAGS=['-w', '-std=c99', '-O3'])
+        env_thirdparty.Append(CXXFLAGS=['-w', '-std=c99', '-O3'])
+    else:
+        # msvc doesn't understand c99 & looks like /w is not needed
+        env_thirdparty.Append(CFLAGS=['/O2'])
+        env_thirdparty.Append(CXXFLAGS=['/O2'])
+
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
+# Godot source files
+env_cm.add_source_files(env.modules_sources, "*.cpp")
