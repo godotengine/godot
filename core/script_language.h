@@ -113,6 +113,12 @@ protected:
 	friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
 
+	Variant _get_property_default_value(const StringName &p_property);
+	Array _get_script_property_list();
+	Array _get_script_method_list();
+	Array _get_script_signal_list();
+	Dictionary _get_script_constant_map();
+
 public:
 	virtual bool can_instance() const = 0;
 
