@@ -821,11 +821,7 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
-			if (is_inside_tree() && use_bbcode) {
-				parse_bbcode(bbcode);
-				//first_invalid_line=0; //invalidate ALL
-				//update();
-			}
+			update();
 
 		} break;
 		case NOTIFICATION_DRAW: {
