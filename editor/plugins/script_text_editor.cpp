@@ -1329,7 +1329,9 @@ void ScriptTextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 			if (has_color) {
 				String line = tx->get_line(row);
-				color_line = row;
+				color_position.x = row;
+				color_position.y = col;
+
 				int begin = 0;
 				int end = 0;
 				bool valid = false;
@@ -1369,10 +1371,15 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 		new_args = String("(" + rtos(p_color.r) + ", " + rtos(p_color.g) + ", " + rtos(p_color.b) + ", " + rtos(p_color.a) + ")");
 	}
 
-	String line = code_editor->get_text_edit()->get_line(color_line);
-	String new_line = line.replace(color_args, new_args);
+	String line = code_editor->get_text_edit()->get_line(color_position.x);
+	int color_args_pos = line.find(color_args, color_position.y);
+	String line_with_replaced_args = line;
+	line_with_replaced_args.erase(color_args_pos, color_args.length());
+	line_with_replaced_args = line_with_replaced_args.insert(color_args_pos, new_args);
+
 	color_args = new_args;
-	code_editor->get_text_edit()->set_line(color_line, new_line);
+	code_editor->get_text_edit()->set_line(color_position.x, line_with_replaced_args);
+	code_editor->get_text_edit()->update();
 }
 
 void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p_foldable, bool p_open_docs, bool p_goto_definition) {
@@ -1465,6 +1472,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	color_panel = memnew(PopupPanel);
 	add_child(color_panel);
 	color_picker = memnew(ColorPicker);
+	color_picker->set_deferred_mode(true);
 	color_panel->add_child(color_picker);
 	color_picker->connect("color_changed", this, "_color_changed");
 
