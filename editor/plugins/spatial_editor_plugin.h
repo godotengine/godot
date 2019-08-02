@@ -528,7 +528,8 @@ private:
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> plane_gizmo_color[3];
-	Ref<SpatialMaterial> gizmo_hl;
+	Ref<SpatialMaterial> gizmo_color_hl[3];
+	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
 
@@ -635,6 +636,7 @@ private:
 	Node *custom_camera;
 
 	Object *_get_editor_data(Object *p_what);
+	Color _get_axis_color(int axis);
 
 	Ref<Environment> viewport_environment;
 
