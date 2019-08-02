@@ -342,6 +342,9 @@ void ShaderEditor::_menu_option(int p_option) {
 
 			shader_editor->remove_all_bookmarks();
 		} break;
+		case HELP_DOCS: {
+			OS::get_singleton()->shell_open("https://docs.godotengine.org/en/stable/tutorials/shading/shading_reference/index.html");
+		} break;
 	}
 	if (p_option != SEARCH_FIND && p_option != SEARCH_REPLACE && p_option != SEARCH_GOTO_LINE) {
 		shader_editor->get_text_edit()->call_deferred("grab_focus");
@@ -657,11 +660,18 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
 	bookmarks_menu->get_popup()->connect("index_pressed", this, "_bookmark_item_pressed");
 
+	help_menu = memnew(MenuButton);
+	help_menu->set_text(TTR("Help"));
+	help_menu->set_switch_on_hover(true);
+	help_menu->get_popup()->add_icon_item(p_node->get_gui_base()->get_icon("Instance", "EditorIcons"), TTR("Online Docs"), HELP_DOCS);
+	help_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
 	add_child(main_container);
 	main_container->add_child(hbc);
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
 	hbc->add_child(bookmarks_menu);
+	hbc->add_child(help_menu);
 	hbc->add_style_override("panel", p_node->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
 	main_container->add_child(shader_editor);
 
