@@ -557,6 +557,12 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			line_edit->add_font_override("font", get_font("source", "EditorFonts"));
 			gnode->add_child(line_edit);
 			line_edit->connect("text_changed", this, "_expression_text_changed", varray(E->get()));
+		} else if (Object::cast_to<VisualScriptInstanceNode>(node.ptr())) {
+			has_gnode_text = true;
+			Button *btn = memnew(Button);
+			btn->set_text("Select Object");
+			gnode->add_child(btn);
+			btn->connect("pressed", this, "_select_instance_type", varray(E->get()));
 		} else {
 			String text = node->get_text();
 			if (!text.empty()) {
@@ -1095,6 +1101,51 @@ void VisualScriptEditor::_expression_text_changed(const String &p_text, int p_id
 		Object::cast_to<Control>(node)->set_size(Vector2(1, 1)); //shrink if text is smaller
 
 	updating_graph = false;
+}
+
+void VisualScriptEditor::_select_instance_type(int p_id) {
+	// pop up a dialog box to select the type
+	current_instance_node = p_id;
+	instance_select->popup();
+	instance_select->set_position(graph->get_global_position() + Vector2(100, 100));
+	_inst_filter_changed("");
+}
+
+void VisualScriptEditor::_inst_filter_changed(const String &filter) {
+	// update the tree here
+	inst_tree->clear();
+
+	TreeItem *root = inst_tree->create_item();
+
+	Map<String, TreeItem *> path_cache;
+
+	List<StringName> fnodes;
+	ClassDB::get_class_list(&fnodes);
+
+	for (List<StringName>::Element *E = fnodes.front(); E; E = E->next()) {
+
+		String class_name = String(E->get());
+
+		if (!ClassDB::can_instance(class_name) || (filter != String() && class_name.findn(filter) == -1))
+			continue;
+
+		TreeItem *item = inst_tree->create_item(root);
+		item->set_text(0, class_name);
+		item->set_selectable(0, true);
+		item->set_metadata(0, E->get());
+	}
+}
+
+void VisualScriptEditor::_set_inst_type() {
+	TreeItem *item = inst_tree->get_selected();
+	String cln = item->get_metadata(0); // name of the class
+	// get the corresponding visual script node
+	Ref<VisualScriptInstanceNode> node = script->get_node(edited_func, current_instance_node);
+	// call the function to set it's instance type
+	if (node.is_null() || !ClassDB::can_instance(cln))
+		return;
+	node->set_instance_type(cln);
+	_update_graph(current_instance_node);
 }
 
 void VisualScriptEditor::_available_node_doubleclicked() {
@@ -3470,6 +3521,9 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_cancel_connect_node", &VisualScriptEditor::_cancel_connect_node);
 	ClassDB::bind_method("_create_new_node", &VisualScriptEditor::_create_new_node);
 	ClassDB::bind_method("_expression_text_changed", &VisualScriptEditor::_expression_text_changed);
+	ClassDB::bind_method("_select_instance_type", &VisualScriptEditor::_select_instance_type);
+	ClassDB::bind_method("_inst_filter_changed", &VisualScriptEditor::_inst_filter_changed);
+	ClassDB::bind_method("_set_inst_type", &VisualScriptEditor::_set_inst_type);
 
 	ClassDB::bind_method("get_drag_data_fw", &VisualScriptEditor::get_drag_data_fw);
 	ClassDB::bind_method("can_drop_data_fw", &VisualScriptEditor::can_drop_data_fw);
@@ -3507,6 +3561,34 @@ VisualScriptEditor::VisualScriptEditor() {
 		clipboard = memnew(Clipboard);
 	}
 	updating_graph = false;
+
+	// VisualScriptInstanceNode dialog
+	{
+		instance_select = memnew(ConfirmationDialog);
+		instance_select->set_title("Select Class");
+
+		// instance_select->add_child(); // LineEdit
+		VBoxContainer *vbc_nodes = memnew(VBoxContainer);
+		HBoxContainer *hbc_nodes = memnew(HBoxContainer);
+		inst_filter = memnew(LineEdit);
+		inst_filter->connect("text_changed", this, "_inst_filter_changed");
+		hbc_nodes->add_child(inst_filter);
+		inst_filter->set_h_size_flags(SIZE_EXPAND_FILL);
+		vbc_nodes->add_child(hbc_nodes);
+
+		inst_tree = memnew(Tree);
+		vbc_nodes->add_child(inst_tree);
+		inst_tree->set_custom_minimum_size(Size2(200, 400));
+		inst_tree->set_v_size_flags(SIZE_EXPAND_FILL);
+
+		inst_tree->set_hide_root(true);
+		inst_tree->connect("item_activated", this, "_set_inst_type");
+		inst_tree->set_drag_forwarding(this);
+
+		instance_select->get_ok()->connect("pressed", this, "_set_inst_type");
+		instance_select->add_child(vbc_nodes);
+		add_child(instance_select);
+	}
 
 	edit_menu = memnew(MenuButton);
 	edit_menu->set_text(TTR("Edit"));

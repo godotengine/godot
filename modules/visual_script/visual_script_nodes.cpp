@@ -2924,6 +2924,78 @@ VisualScriptComment::VisualScriptComment() {
 }
 
 //////////////////////////////////////////
+//////////////////Instance////////////////
+//////////////////////////////////////////
+
+PropertyInfo VisualScriptInstanceNode::get_output_value_port_info(int p_idx) const {
+	if (p_idx != 0)
+		return PropertyInfo();
+	PropertyInfo pi;
+	pi.type = Variant::OBJECT;
+	return pi;
+}
+
+String VisualScriptInstanceNode::get_caption() const {
+	return "Instance " + type;
+}
+
+void VisualScriptInstanceNode::set_instance_type(const String &p_type) {
+	ERR_FAIL_COND(!ClassDB::class_exists(p_type));
+	ERR_FAIL_COND(!ClassDB::can_instance(p_type));
+	type = p_type;
+	_change_notify();
+}
+
+String VisualScriptInstanceNode::get_instance_type() const {
+	return type;
+}
+
+class VisualScriptInstanceNodeInstance : public VisualScriptNodeInstance {
+public:
+	VisualScriptInstanceNode *instance;
+	//virtual int get_working_memory_size() const { return 0; }
+
+	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
+		if (instance->get_object_to_clean()) {
+			memdelete(instance->get_object_to_clean());
+		}
+		if (ClassDB::can_instance(instance->get_instance_type())) {
+			instance->set_object_to_clean(ClassDB::instance(instance->get_instance_type()));
+			*p_outputs[0] = Variant(instance->get_object_to_clean());
+		} else
+			r_error_str = "Not Proper Type Provided";
+		return 0;
+	}
+};
+
+VisualScriptNodeInstance *VisualScriptInstanceNode::instance(VisualScriptInstance *p_instance) {
+
+	VisualScriptInstanceNodeInstance *instance = memnew(VisualScriptInstanceNodeInstance);
+	instance->instance = this;
+	return instance;
+}
+
+void VisualScriptInstanceNode::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_instance_type", "type"), &VisualScriptInstanceNode::set_instance_type);
+	ClassDB::bind_method(D_METHOD("get_instance_type"), &VisualScriptInstanceNode::get_instance_type);
+
+	ClassDB::bind_method(D_METHOD("set_object_to_clean", "obj"), &VisualScriptInstanceNode::set_object_to_clean);
+	ClassDB::bind_method(D_METHOD("get_object_to_clean"), &VisualScriptInstanceNode::get_object_to_clean);
+
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "type", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_instance_type", "get_instance_type");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "to_clean", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_object_to_clean", "get_object_to_clean");
+}
+
+VisualScriptInstanceNode::VisualScriptInstanceNode() {
+	type = "Object";
+	to_clean = NULL;
+}
+
+VisualScriptInstanceNode::~VisualScriptInstanceNode() {
+	if (to_clean)
+		memdelete(to_clean);
+}
+//////////////////////////////////////////
 ////////////////Constructor///////////
 //////////////////////////////////////////
 
@@ -3654,6 +3726,7 @@ void register_visual_script_nodes() {
 	VisualScriptLanguage::singleton->add_register_func("data/set_local_variable", create_node_generic<VisualScriptLocalVarSet>);
 	VisualScriptLanguage::singleton->add_register_func("data/preload", create_node_generic<VisualScriptPreload>);
 	VisualScriptLanguage::singleton->add_register_func("data/action", create_node_generic<VisualScriptInputAction>);
+	VisualScriptLanguage::singleton->add_register_func("data/instance", create_node_generic<VisualScriptInstanceNode>);
 
 	VisualScriptLanguage::singleton->add_register_func("constants/constant", create_node_generic<VisualScriptConstant>);
 	VisualScriptLanguage::singleton->add_register_func("constants/math_constant", create_node_generic<VisualScriptMathConstant>);

@@ -107,6 +107,11 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	CustomPropertyEditor *default_value_edit;
 
+	ConfirmationDialog *instance_select;
+	LineEdit *inst_filter;
+	Tree *inst_tree;
+	int current_instance_node;
+
 	UndoRedo *undo_redo;
 
 	Tree *members;
@@ -207,6 +212,9 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _member_button(Object *p_item, int p_column, int p_button);
 
 	void _expression_text_changed(const String &p_text, int p_id);
+	void _select_instance_type(int p_id);
+	void _set_inst_type();
+	void _inst_filter_changed(const String &filter);
 
 	String revert_on_drag;
 

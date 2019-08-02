@@ -787,6 +787,43 @@ public:
 	VisualScriptComment();
 };
 
+class VisualScriptInstanceNode : public VisualScriptNode {
+
+	GDCLASS(VisualScriptInstanceNode, VisualScriptNode);
+
+	String type;
+	Object *to_clean;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_output_sequence_port_count() const { return 0; }
+	virtual bool has_input_sequence_port() const { return false; }
+
+	virtual String get_output_sequence_port_text(int p_port) const { return ""; }
+
+	virtual int get_input_value_port_count() const { return 0; }
+	virtual int get_output_value_port_count() const { return 1; }
+
+	virtual PropertyInfo get_input_value_port_info(int p_idx) const { return PropertyInfo(); }
+	virtual PropertyInfo get_output_value_port_info(int p_idx) const;
+
+	virtual String get_caption() const;
+	virtual String get_category() const { return "data"; }
+
+	void set_instance_type(const String &p_type);
+	String get_instance_type() const;
+
+	void set_object_to_clean(Object *obj) { to_clean = obj; }
+	Object *get_object_to_clean() { return to_clean; }
+
+	virtual VisualScriptNodeInstance *instance(VisualScriptInstance *p_instance);
+
+	VisualScriptInstanceNode();
+	~VisualScriptInstanceNode();
+};
+
 class VisualScriptConstructor : public VisualScriptNode {
 
 	GDCLASS(VisualScriptConstructor, VisualScriptNode);

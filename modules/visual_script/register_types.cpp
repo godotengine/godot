@@ -81,6 +81,7 @@ void register_visual_script_types() {
 	ClassDB::register_class<VisualScriptDeconstruct>();
 	ClassDB::register_class<VisualScriptPreload>();
 	ClassDB::register_class<VisualScriptTypeCast>();
+	ClassDB::register_class<VisualScriptInstanceNode>();
 
 	ClassDB::register_class<VisualScriptFunctionCall>();
 	ClassDB::register_class<VisualScriptPropertySet>();
