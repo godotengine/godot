@@ -485,7 +485,7 @@ void ScriptEditor::_update_recent_scripts() {
 	Array rc = EditorSettings::get_singleton()->get_project_metadata("recent_files", "scripts", Array());
 	recent_scripts->clear();
 
-	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T));
+	recent_scripts->add_shortcut(ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent")));
 	recent_scripts->add_separator();
 
 	String path;
@@ -579,6 +579,7 @@ void ScriptEditor::_close_tab(int p_idx, bool p_save, bool p_history_back) {
 
 		Ref<Script> script = current->get_edited_resource();
 		if (script != NULL) {
+			previous_scripts.push_back(script->get_path());
 			notify_script_close(script);
 		}
 	}
@@ -907,7 +908,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			if (extensions.find(p_file.get_extension())) {
 				Ref<Script> scr = ResourceLoader::load(p_file);
 				if (!scr.is_valid()) {
-					editor->show_warning(TTR("Error: could not load file."), TTR("Error!"));
+					editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
 					file_dialog_option = -1;
 					return;
 				}
@@ -920,7 +921,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			Error error;
 			Ref<TextFile> text_file = _load_text_file(p_file, &error);
 			if (error != OK) {
-				editor->show_warning(TTR("Error could not load file."), TTR("Error!"));
+				editor->show_warning(TTR("Could not load file at:") + "\n\n" + p_file, TTR("Error!"));
 			}
 
 			if (text_file.is_valid()) {
@@ -1011,6 +1012,52 @@ void ScriptEditor::_menu_option(int p_option) {
 			file_dialog->popup_centered_ratio();
 			file_dialog->set_title(TTR("Open File"));
 			return;
+		} break;
+		case FILE_REOPEN_CLOSED: {
+
+			if (previous_scripts.empty())
+				return;
+
+			String path = previous_scripts.back()->get();
+			previous_scripts.pop_back();
+
+			List<String> extensions;
+			ResourceLoader::get_recognized_extensions_for_type("Script", &extensions);
+			bool built_in = !path.is_resource_file();
+
+			if (extensions.find(path.get_extension()) || built_in) {
+				if (built_in) {
+					String scene_path = path.get_slice("::", 0);
+					if (!EditorNode::get_singleton()->is_scene_open(scene_path)) {
+						EditorNode::get_singleton()->load_scene(scene_path);
+						script_editor->call_deferred("_menu_option", p_option);
+						previous_scripts.push_back(path); //repeat the operation
+						return;
+					}
+				}
+
+				Ref<Script> scr = ResourceLoader::load(path);
+				if (!scr.is_valid()) {
+					editor->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
+					file_dialog_option = -1;
+					return;
+				}
+
+				edit(scr);
+				file_dialog_option = -1;
+				return;
+			} else {
+				Error error;
+				Ref<TextFile> text_file = _load_text_file(path, &error);
+				if (error != OK)
+					editor->show_warning(TTR("Could not load file at:") + "\n\n" + path, TTR("Error!"));
+
+				if (text_file.is_valid()) {
+					edit(text_file);
+					file_dialog_option = -1;
+					return;
+				}
+			}
 		} break;
 		case FILE_SAVE_ALL: {
 
@@ -1894,6 +1941,8 @@ void ScriptEditor::_update_script_names() {
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 	_update_script_colors();
+
+	file_menu->get_popup()->set_item_disabled(file_menu->get_popup()->get_item_index(FILE_REOPEN_CLOSED), previous_scripts.empty());
 }
 
 void ScriptEditor::_update_script_connections() {
@@ -3172,6 +3221,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new", TTR("New Script...")), FILE_NEW);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/new_textfile", TTR("New TextFile...")), FILE_NEW_TEXTFILE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open", TTR("Open...")), FILE_OPEN);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T), FILE_REOPEN_CLOSED);
 	file_menu->get_popup()->add_submenu_item(TTR("Open Recent"), "RecentScripts", FILE_OPEN_RECENT);
 
 	recent_scripts = memnew(PopupMenu);
@@ -3500,7 +3550,8 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 	EDITOR_DEF("text_editor/external/exec_flags", "{file}");
 	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "text_editor/external/exec_flags", PROPERTY_HINT_PLACEHOLDER_TEXT, "Call flags with placeholders: {project}, {file}, {col}, {line}."));
 
-	ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);
+	ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);
+	ED_SHORTCUT("script_editor/open_recent", TTR("Open Recent"));
 	ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Files"));
 }
 
