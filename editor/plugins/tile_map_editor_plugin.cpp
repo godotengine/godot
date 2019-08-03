@@ -521,7 +521,13 @@ void TileMapEditor::_update_palette() {
 			for (const Map<Vector2, uint32_t>::Element *E = tiles2.front(); E; E = E->next()) {
 				entries2.push_back(E->key());
 			}
-			entries2.sort();
+			// Sort tiles in row-major order
+			struct SwapComparator {
+				_FORCE_INLINE_ bool operator()(const Vector2 &v_l, const Vector2 &v_r) const {
+					return v_l.y != v_r.y ? v_l.y < v_r.y : v_l.x < v_r.x;
+				}
+			};
+			entries2.sort_custom<SwapComparator>();
 
 			Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
 
