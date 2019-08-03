@@ -36,7 +36,7 @@ highp vec4 texel2DFetch(highp sampler2D tex, ivec2 size, ivec2 coord) {
 	return texture2DLod(tex, vec2(x_coord, y_coord), 0.0);
 }
 
-#ifdef SINH_USED
+#if defined(SINH_USED)
 
 highp float sinh(highp float x) {
 	return 0.5 * (exp(x) - exp(-x));
@@ -56,7 +56,7 @@ highp vec4 sinh(highp vec4 x) {
 
 #endif
 
-#ifdef COSH_USED
+#if defined(COSH_USED)
 
 highp float cosh(highp float x) {
 	return 0.5 * (exp(x) + exp(-x));
@@ -76,7 +76,7 @@ highp vec4 cosh(highp vec4 x) {
 
 #endif
 
-#ifdef TANH_USED
+#if defined(TANH_USED)
 
 highp float tanh(highp float x) {
 	highp float exp2x = exp(2.0 * x);
@@ -106,7 +106,7 @@ highp vec4 tanh(highp vec4 x) {
 
 #endif
 
-#ifdef ASINH_USED
+#if defined(ASINH_USED)
 
 highp float asinh(highp float x) {
 	return sign(x) * log(abs(x) + sqrt(1.0 + x * x));
@@ -126,7 +126,7 @@ highp vec4 asinh(highp vec4 x) {
 
 #endif
 
-#ifdef ACOSH_USED
+#if defined(ACOSH_USED)
 
 highp float acosh(highp float x) {
 	return log(x + sqrt(x * x - 1.0));
@@ -146,7 +146,7 @@ highp vec4 acosh(highp vec4 x) {
 
 #endif
 
-#ifdef ATANH_USED
+#if defined(ATANH_USED)
 
 highp float atanh(highp float x) {
 	return 0.5 * log((1.0 + x) / (1.0 - x));
@@ -166,7 +166,7 @@ highp vec4 atanh(highp vec4 x) {
 
 #endif
 
-#ifdef ROUND_USED
+#if defined(ROUND_USED)
 
 highp float round(highp float x) {
 	return floor(x + 0.5);
@@ -186,7 +186,7 @@ highp vec4 round(highp vec4 x) {
 
 #endif
 
-#ifdef ROUND_EVEN_USED
+#if defined(ROUND_EVEN_USED)
 
 highp float roundEven(highp float x) {
 	highp float t = x + 0.5;
@@ -216,7 +216,7 @@ highp vec4 roundEven(highp vec4 x) {
 
 #endif
 
-#ifdef IS_INF_USED
+#if defined(IS_INF_USED)
 
 bool isinf(highp float x) {
 	return (2 * x == x) && (x != 0);
@@ -236,7 +236,7 @@ bvec4 isinf(highp vec4 x) {
 
 #endif
 
-#ifdef IS_NAN_USED
+#if defined(IS_NAN_USED)
 
 bool isnan(highp float x) {
 	return x != x;
@@ -256,7 +256,7 @@ bvec4 isnan(highp vec4 x) {
 
 #endif
 
-#ifdef TRUNC_USED
+#if defined(TRUNC_USED)
 
 highp float trunc(highp float x) {
 	return x < 0 ? -floor(-x) : floor(x);
@@ -276,7 +276,7 @@ highp vec4 trunc(highp vec4 x) {
 
 #endif
 
-#ifdef DETERMINANT_USED
+#if defined(DETERMINANT_USED)
 
 highp float determinant(highp mat2 m) {
 	return m[0].x * m[1].y - m[1].x * m[0].y;
@@ -301,7 +301,7 @@ highp float determinant(highp mat4 m) {
 
 #ifndef USE_GLES_OVER_GL
 
-#ifdef TRANSPOSE_USED
+#if defined(TRANSPOSE_USED)
 
 highp mat2 transpose(highp mat2 m) {
 	return mat2(
@@ -326,7 +326,7 @@ highp mat4 transpose(highp mat4 m) {
 			vec4(m[0].w, m[1].w, m[2].w, m[3].w));
 }
 
-#ifdef OUTER_PRODUCT_USED
+#if defined(OUTER_PRODUCT_USED)
 
 highp mat2 outerProduct(highp vec2 c, highp vec2 r) {
 	return mat2(c * r.x, c * r.y);
