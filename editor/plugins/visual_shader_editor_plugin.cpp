@@ -604,6 +604,10 @@ void VisualShaderEditor::_update_graph() {
 					}
 				}
 
+				if (!is_group) {
+					hb->add_spacer();
+				}
+
 				if (valid_right) {
 					if (is_group) {
 						Button *remove_btn = memnew(Button);
