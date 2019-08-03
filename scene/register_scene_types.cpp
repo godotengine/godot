@@ -509,6 +509,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVectorRefract>();
 	ClassDB::register_class<VisualShaderNodeScalarInterp>();
 	ClassDB::register_class<VisualShaderNodeVectorInterp>();
+	ClassDB::register_class<VisualShaderNodeVectorScalarMix>();
 	ClassDB::register_class<VisualShaderNodeVectorCompose>();
 	ClassDB::register_class<VisualShaderNodeTransformCompose>();
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
