@@ -83,6 +83,7 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 };
 
 SavePNGFunc Image::save_png_func = NULL;
+SaveEXRFunc Image::save_exr_func = NULL;
 
 void Image::_put_pixelb(int p_x, int p_y, uint32_t p_pixelsize, uint8_t *p_data, const uint8_t *p_pixel) {
 
@@ -1917,6 +1918,14 @@ Error Image::save_png(const String &p_path) const {
 	return save_png_func(p_path, Ref<Image>((Image *)this));
 }
 
+Error Image::save_exr(const String &p_path, bool p_grayscale) const {
+
+	if (save_exr_func == NULL)
+		return ERR_UNAVAILABLE;
+
+	return save_exr_func(p_path, Ref<Image>((Image *)this), p_grayscale);
+}
+
 int Image::get_image_data_size(int p_width, int p_height, Format p_format, bool p_mipmaps) {
 
 	int mm;
@@ -2746,6 +2755,7 @@ void Image::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &Image::load);
 	ClassDB::bind_method(D_METHOD("save_png", "path"), &Image::save_png);
+	ClassDB::bind_method(D_METHOD("save_exr", "path", "grayscale"), &Image::save_exr, DEFVAL(false));
 
 	ClassDB::bind_method(D_METHOD("detect_alpha"), &Image::detect_alpha);
 	ClassDB::bind_method(D_METHOD("is_invisible"), &Image::is_invisible);
