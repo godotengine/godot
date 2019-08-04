@@ -590,6 +590,8 @@ private:
 	ToolButton *lock_button;
 	ToolButton *unlock_button;
 
+	ToolButton *pause_button;
+
 	AcceptDialog *accept;
 
 	ConfirmationDialog *snap_dialog;
@@ -617,8 +619,11 @@ private:
 	void _menu_item_pressed(int p_option);
 	void _menu_item_toggled(bool pressed, int p_option);
 	void _menu_gizmo_toggled(int p_option);
+	void _timeline_pause_button_toggled(bool pressed);
 
+	HBoxContainer *main_hbc_menu;
 	HBoxContainer *hbc_menu;
+	HBoxContainer *extra_hbc_menu;
 
 	void _generate_selection_box();
 	UndoRedo *undo_redo;
@@ -729,6 +734,8 @@ public:
 	void edit(Spatial *p_spatial);
 	void clear();
 
+	void set_pause_button_pressed(bool p_pressed);
+
 	SpatialEditor(EditorNode *p_editor);
 	~SpatialEditor();
 };
@@ -752,6 +759,7 @@ public:
 	virtual void make_visible(bool p_visible);
 	virtual void edit(Object *p_object);
 	virtual bool handles(Object *p_object) const;
+	virtual void selected_notify();
 
 	virtual Dictionary get_state() const;
 	virtual void set_state(const Dictionary &p_state);

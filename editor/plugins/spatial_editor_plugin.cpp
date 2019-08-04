@@ -4366,6 +4366,14 @@ void SpatialEditor::_menu_item_toggled(bool pressed, int p_option) {
 	}
 }
 
+void SpatialEditor::_timeline_pause_button_toggled(bool pressed) {
+	if (pressed) {
+		Engine::get_singleton()->set_time_scale(0.0);
+	} else {
+		Engine::get_singleton()->set_time_scale(1.0);
+	}
+}
+
 void SpatialEditor::_menu_gizmo_toggled(int p_option) {
 
 	const int idx = gizmos_menu->get_item_index(p_option);
@@ -5264,6 +5272,8 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_GROUP_SELECTED]->set_icon(get_icon("Group", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_icon("Ungroup", "EditorIcons"));
 
+		pause_button->set_icon(get_icon("Pause", "EditorIcons"));
+
 		tool_option_button[SpatialEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_icon("Object", "EditorIcons"));
 		tool_option_button[SpatialEditor::TOOL_OPT_USE_SNAP]->set_icon(get_icon("Snap", "EditorIcons"));
 
@@ -5297,6 +5307,8 @@ void SpatialEditor::_notification(int p_what) {
 		tool_button[SpatialEditor::TOOL_MODE_ROTATE]->set_icon(get_icon("ToolRotate", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_MODE_SCALE]->set_icon(get_icon("ToolScale", "EditorIcons"));
 		tool_button[SpatialEditor::TOOL_MODE_LIST_SELECT]->set_icon(get_icon("ListSelect", "EditorIcons"));
+
+		pause_button->set_icon(get_icon("Pause", "EditorIcons"));
 
 		tool_option_button[SpatialEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_icon("Object", "EditorIcons"));
 		tool_option_button[SpatialEditor::TOOL_OPT_USE_SNAP]->set_icon(get_icon("Snap", "EditorIcons"));
@@ -5454,6 +5466,8 @@ void SpatialEditor::_bind_methods() {
 	ClassDB::bind_method("_request_gizmo", &SpatialEditor::_request_gizmo);
 	ClassDB::bind_method("_toggle_maximize_view", &SpatialEditor::_toggle_maximize_view);
 	ClassDB::bind_method("_refresh_menu_icons", &SpatialEditor::_refresh_menu_icons);
+	ClassDB::bind_method("_timeline_pause_button_toggled", &SpatialEditor::_timeline_pause_button_toggled);
+	ClassDB::bind_method("set_pause_button_pressed", &SpatialEditor::set_pause_button_pressed);
 
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
@@ -5488,6 +5502,10 @@ void SpatialEditor::clear() {
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(MENU_VIEW_GRID), true);
 }
 
+void SpatialEditor::set_pause_button_pressed(bool p_pressed) {
+	pause_button->set_pressed(p_pressed);
+}
+
 SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 
 	gizmo.visible = true;
@@ -5507,8 +5525,11 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	snap_key_enabled = false;
 	tool_mode = TOOL_MODE_SELECT;
 
+	main_hbc_menu = memnew(HBoxContainer);
+	vbc->add_child(main_hbc_menu);
+
 	hbc_menu = memnew(HBoxContainer);
-	vbc->add_child(hbc_menu);
+	main_hbc_menu->add_child(hbc_menu);
 
 	Vector<Variant> button_binds;
 	button_binds.resize(1);
@@ -5650,6 +5671,18 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	view_menu->set_text(TTR("View"));
 	view_menu->set_switch_on_hover(true);
 	hbc_menu->add_child(view_menu);
+
+	main_hbc_menu->add_spacer();
+
+	extra_hbc_menu = memnew(HBoxContainer);
+	main_hbc_menu->add_child(extra_hbc_menu);
+
+	pause_button = memnew(ToolButton);
+	extra_hbc_menu->add_child(pause_button);
+	pause_button->set_toggle_mode(true);
+	pause_button->set_flat(true);
+	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/editor_timeline_pause"));
+	pause_button->connect("toggled", this, "_timeline_pause_button_toggled");
 
 	p = view_menu->get_popup();
 
@@ -5912,6 +5945,14 @@ float SpatialEditor::get_scale_snap() const {
 	}
 
 	return snap_value;
+}
+
+void SpatialEditorPlugin::selected_notify() {
+	if (Engine::get_singleton()->get_time_scale() <= 0.0) {
+		spatial_editor->set_pause_button_pressed(true);
+	} else {
+		spatial_editor->set_pause_button_pressed(false);
+	}
 }
 
 void SpatialEditorPlugin::_bind_methods() {

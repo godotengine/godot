@@ -218,11 +218,16 @@ private:
 
 	HScrollBar *h_scroll;
 	VScrollBar *v_scroll;
+
+	HBoxContainer *main_hb;
 	HBoxContainer *hb;
+	HBoxContainer *extra_hb;
 
 	ToolButton *zoom_minus;
 	ToolButton *zoom_reset;
 	ToolButton *zoom_plus;
+
+	ToolButton *pause_button;
 
 	Map<Control *, Timer *> popup_temporarily_timers;
 
@@ -420,6 +425,7 @@ private:
 	void _snap_changed();
 	void _selection_result_pressed(int);
 	void _selection_menu_hide();
+	void _timeline_pause_button_toggled(bool pressed);
 
 	UndoRedo *undo_redo;
 	bool _build_bones_list(Node *p_node);
@@ -588,6 +594,8 @@ public:
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);
 
+	void set_pause_button_pressed(bool p_pressed);
+
 	void focus_selection();
 
 	bool is_anchors_mode_enabled() { return anchors_mode; };
@@ -610,6 +618,7 @@ public:
 	virtual void make_visible(bool p_visible);
 	virtual Dictionary get_state() const;
 	virtual void set_state(const Dictionary &p_state);
+	virtual void selected_notify();
 
 	CanvasItemEditor *get_canvas_item_editor() { return canvas_item_editor; }
 
