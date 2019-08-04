@@ -1450,6 +1450,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										undo_redo->create_action(TTR("Edit Navigation Polygon"));
 										undo_redo->add_do_method(edited_navigation_shape.ptr(), "set_vertices", polygon);
 										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "set_vertices", edited_navigation_shape->get_vertices());
+										undo_redo->add_do_method(edited_navigation_shape.ptr(), "clear_polygons");
+										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "clear_polygons");
 										undo_redo->add_do_method(edited_navigation_shape.ptr(), "add_polygon", indices);
 										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "add_polygon", edited_navigation_shape->get_polygon(0));
 										undo_redo->add_do_method(this, "_select_edited_shape_coord");
