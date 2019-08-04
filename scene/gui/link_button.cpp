@@ -111,11 +111,11 @@ void LinkButton::_notification(int p_what) {
 			draw_string(font, Vector2(0, font->get_ascent()), text, color);
 
 			if (do_underline) {
-				int underline_spacing = get_theme_constant("underline_spacing");
+				int underline_spacing = get_theme_constant("underline_spacing") + font->get_underline_position();
 				int width = font->get_string_size(text).width;
 				int y = font->get_ascent() + underline_spacing;
 
-				draw_line(Vector2(0, y), Vector2(width, y), color);
+				draw_line(Vector2(0, y), Vector2(width, y), color, font->get_underline_thickness());
 			}
 
 		} break;
