@@ -600,8 +600,8 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						if (underline) {
 							Color uc = color;
 							uc.a *= 0.5;
-							int uy = y + lh - line_descent + 2;
-							float underline_width = 1.0;
+							int uy = y + lh - line_descent + font->get_underline_position();
+							float underline_width = font->get_underline_thickness();
 #ifdef TOOLS_ENABLED
 							underline_width *= EDSCALE;
 #endif
@@ -610,7 +610,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 							Color uc = color;
 							uc.a *= 0.5;
 							int uy = y + lh - (line_ascent + line_descent) / 2;
-							float strikethrough_width = 1.0;
+							float strikethrough_width = font->get_underline_thickness();
 #ifdef TOOLS_ENABLED
 							strikethrough_width *= EDSCALE;
 #endif
