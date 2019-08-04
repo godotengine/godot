@@ -6704,6 +6704,9 @@ EditorNode::EditorNode() {
 
 	preview_gen = memnew(AudioStreamPreviewGenerator);
 	add_child(preview_gen);
+
+	ED_SHORTCUT("editor/editor_timeline_pause", TTR("Pause Timeline"), KEY_PAUSE);
+
 	//plugin stuff
 
 	add_editor_plugin(memnew(DebuggerEditorPlugin(this, debug_menu)));

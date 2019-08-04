@@ -4986,6 +4986,14 @@ void Node3DEditor::_menu_item_toggled(bool pressed, int p_option) {
 	}
 }
 
+void Node3DEditor::_timeline_pause_button_toggled(bool pressed) {
+	if (pressed) {
+		Engine::get_singleton()->set_time_scale(0.0);
+	} else {
+		Engine::get_singleton()->set_time_scale(1.0);
+	}
+}
+
 void Node3DEditor::_menu_gizmo_toggled(int p_option) {
 	const int idx = gizmos_menu->get_item_index(p_option);
 	gizmos_menu->toggle_item_multistate(idx);
@@ -6218,6 +6226,10 @@ void Node3DEditor::_notification(int p_what) {
 		tool_button[Node3DEditor::TOOL_GROUP_SELECTED]->set_icon(get_theme_icon("Group", "EditorIcons"));
 		tool_button[Node3DEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon("Ungroup", "EditorIcons"));
 
+		// Use a different icon to avoid confusion with the project "pause" icon.
+		pause_button->set_icon(get_theme_icon("ToolFreeze", "EditorIcons"));
+		pause_button->set_tooltip(TTR("Pause the scene processing such as particles and shaders. This can be used to decrease CPU and GPU usage while in the editor."));
+
 		tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon("Object", "EditorIcons"));
 		tool_option_button[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon("Snap", "EditorIcons"));
 		tool_option_button[Node3DEditor::TOOL_OPT_OVERRIDE_CAMERA]->set_icon(get_theme_icon("Camera3D", "EditorIcons"));
@@ -6271,6 +6283,9 @@ void Node3DEditor::_notification(int p_what) {
 		tool_button[Node3DEditor::TOOL_UNLOCK_SELECTED]->set_icon(get_theme_icon("Unlock", "EditorIcons"));
 		tool_button[Node3DEditor::TOOL_GROUP_SELECTED]->set_icon(get_theme_icon("Group", "EditorIcons"));
 		tool_button[Node3DEditor::TOOL_UNGROUP_SELECTED]->set_icon(get_theme_icon("Ungroup", "EditorIcons"));
+
+		// Use a different icon to avoid confusion with the project "pause" icon.
+		pause_button->set_icon(get_theme_icon("ToolFreeze", "EditorIcons"));
 
 		tool_option_button[Node3DEditor::TOOL_OPT_LOCAL_COORDS]->set_icon(get_theme_icon("Object", "EditorIcons"));
 		tool_option_button[Node3DEditor::TOOL_OPT_USE_SNAP]->set_icon(get_theme_icon("Snap", "EditorIcons"));
@@ -6465,6 +6480,8 @@ void Node3DEditor::_bind_methods() {
 	ClassDB::bind_method("_get_editor_data", &Node3DEditor::_get_editor_data);
 	ClassDB::bind_method("_request_gizmo", &Node3DEditor::_request_gizmo);
 	ClassDB::bind_method("_refresh_menu_icons", &Node3DEditor::_refresh_menu_icons);
+	ClassDB::bind_method("_timeline_pause_button_toggled", &Node3DEditor::_timeline_pause_button_toggled);
+	ClassDB::bind_method("set_pause_button_pressed", &Node3DEditor::set_pause_button_pressed);
 
 	ADD_SIGNAL(MethodInfo("transform_key_request"));
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
@@ -6618,6 +6635,10 @@ void Node3DEditor::_sun_direction_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void Node3DEditor::set_pause_button_pressed(bool p_pressed) {
+	pause_button->set_pressed(p_pressed);
+}
+
 Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	gizmo.visible = true;
 	gizmo.scale = 1.0;
@@ -6638,8 +6659,11 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 
 	camera_override_viewport_id = 0;
 
+	main_hbc_menu = memnew(HBoxContainer);
+	vbc->add_child(main_hbc_menu);
+
 	hbc_menu = memnew(HBoxContainer);
-	vbc->add_child(hbc_menu);
+	main_hbc_menu->add_child(hbc_menu);
 
 	Vector<Variant> button_binds;
 	button_binds.resize(1);
@@ -6822,6 +6846,19 @@ Node3DEditor::Node3DEditor(EditorNode *p_editor) {
 	view_menu->set_switch_on_hover(true);
 	view_menu->set_shortcut_context(this);
 	hbc_menu->add_child(view_menu);
+
+	main_hbc_menu->add_spacer();
+
+	extra_hbc_menu = memnew(HBoxContainer);
+	main_hbc_menu->add_child(extra_hbc_menu);
+
+	pause_button = memnew(Button);
+	extra_hbc_menu->add_child(pause_button);
+	pause_button->set_flat(true);
+	pause_button->set_toggle_mode(true);
+	pause_button->set_focus_mode(FOCUS_NONE);
+	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/editor_timeline_pause"));
+	pause_button->connect("toggled", callable_mp(this, &Node3DEditor::_timeline_pause_button_toggled));
 
 	p = view_menu->get_popup();
 
@@ -7233,6 +7270,11 @@ float Node3DEditor::get_scale_snap() const {
 	}
 
 	return snap_value;
+}
+
+void Node3DEditorPlugin::selected_notify() {
+	// Toggle pause.
+	spatial_editor->set_pause_button_pressed(Engine::get_singleton()->get_time_scale() <= CMP_EPSILON);
 }
 
 void Node3DEditorPlugin::_bind_methods() {

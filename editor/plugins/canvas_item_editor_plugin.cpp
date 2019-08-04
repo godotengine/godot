@@ -4213,6 +4213,10 @@ void CanvasItemEditor::_notification(int p_what) {
 		zoom_minus->set_icon(get_theme_icon("ZoomLess", "EditorIcons"));
 		zoom_plus->set_icon(get_theme_icon("ZoomMore", "EditorIcons"));
 
+		// Use a different icon to avoid confusion with the project "pause" icon.
+		pause_button->set_icon(get_theme_icon("ToolFreeze", "EditorIcons"));
+		pause_button->set_tooltip(TTR("Pause the scene processing such as particles and shaders. This can be used to decrease CPU and GPU usage while in the editor."));
+
 		presets_menu->set_icon(get_theme_icon("ControlLayout", "EditorIcons"));
 		PopupMenu *p = presets_menu->get_popup();
 
@@ -5401,6 +5405,14 @@ void CanvasItemEditor::_focus_selection(int p_op) {
 	}
 }
 
+void CanvasItemEditor::_timeline_pause_button_toggled(bool pressed) {
+	if (pressed) {
+		Engine::get_singleton()->set_time_scale(0.0);
+	} else {
+		Engine::get_singleton()->set_time_scale(1.0);
+	}
+}
+
 void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_update_override_camera_button", "game_running"), &CanvasItemEditor::_update_override_camera_button);
 	ClassDB::bind_method("_get_editor_data", &CanvasItemEditor::_get_editor_data);
@@ -5410,6 +5422,8 @@ void CanvasItemEditor::_bind_methods() {
 	ClassDB::bind_method("_reset_create_position", &CanvasItemEditor::_reset_create_position);
 	ClassDB::bind_method(D_METHOD("set_state"), &CanvasItemEditor::set_state);
 	ClassDB::bind_method(D_METHOD("update_viewport"), &CanvasItemEditor::update_viewport);
+	ClassDB::bind_method("_timeline_pause_button_toggled", &CanvasItemEditor::_timeline_pause_button_toggled);
+	ClassDB::bind_method(D_METHOD("set_pause_button_pressed", "pressed"), &CanvasItemEditor::set_pause_button_pressed);
 
 	ADD_SIGNAL(MethodInfo("item_lock_status_changed"));
 	ADD_SIGNAL(MethodInfo("item_group_status_changed"));
@@ -5658,6 +5672,10 @@ VSplitContainer *CanvasItemEditor::get_bottom_split() {
 	return bottom_split;
 }
 
+void CanvasItemEditor::set_pause_button_pressed(bool p_pressed) {
+	pause_button->set_pressed(p_pressed);
+}
+
 void CanvasItemEditor::focus_selection() {
 	_focus_selection(VIEW_CENTER_TO_SELECTION);
 }
@@ -5735,8 +5753,11 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	editor->call_deferred("connect", "play_pressed", Callable(this, "_update_override_camera_button"), make_binds(true));
 	editor->call_deferred("connect", "stop_pressed", Callable(this, "_update_override_camera_button"), make_binds(false));
 
+	main_hb = memnew(HBoxContainer);
+	add_child(main_hb);
+
 	hb = memnew(HBoxContainer);
-	add_child(hb);
+	main_hb->add_child(hb);
 	hb->set_anchors_and_offsets_preset(Control::PRESET_WIDE);
 
 	bottom_split = memnew(VSplitContainer);
@@ -6081,6 +6102,19 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	animation_hb->add_child(memnew(VSeparator));
 	animation_hb->hide();
 
+	main_hb->add_spacer();
+
+	extra_hb = memnew(HBoxContainer);
+	main_hb->add_child(extra_hb);
+
+	pause_button = memnew(Button);
+	extra_hb->add_child(pause_button);
+	pause_button->set_flat(true);
+	pause_button->set_toggle_mode(true);
+	pause_button->set_focus_mode(FOCUS_NONE);
+	pause_button->set_shortcut(ED_GET_SHORTCUT("editor/editor_timeline_pause"));
+	pause_button->connect("toggled", callable_mp(this, &CanvasItemEditor::_timeline_pause_button_toggled));
+
 	key_loc_button = memnew(Button);
 	key_loc_button->set_toggle_mode(true);
 	key_loc_button->set_flat(true);
@@ -6202,6 +6236,11 @@ Dictionary CanvasItemEditorPlugin::get_state() const {
 
 void CanvasItemEditorPlugin::set_state(const Dictionary &p_state) {
 	canvas_item_editor->set_state(p_state);
+}
+
+void CanvasItemEditorPlugin::selected_notify() {
+	// Toggle pause.
+	canvas_item_editor->set_pause_button_pressed(Engine::get_singleton()->get_time_scale() <= CMP_EPSILON);
 }
 
 CanvasItemEditorPlugin::CanvasItemEditorPlugin(EditorNode *p_node) {
