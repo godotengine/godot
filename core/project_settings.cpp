@@ -916,7 +916,7 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 
 	PropertyInfo pinfo;
 	pinfo.name = p_info["name"];
-	ERR_FAIL_COND(!props.has(pinfo.name));
+	ERR_FAIL_COND(props.has(pinfo.name));
 	pinfo.type = Variant::Type(p_info["type"].operator int());
 	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
 
