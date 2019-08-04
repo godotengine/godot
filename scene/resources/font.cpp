@@ -356,6 +356,16 @@ float BitmapFont::get_descent() const {
 	return height - ascent;
 }
 
+float BitmapFont::get_underline_position() const {
+
+	return 2;
+}
+
+float BitmapFont::get_underline_thickness() const {
+
+	return 1;
+}
+
 void BitmapFont::add_texture(const Ref<Texture2D> &p_texture) {
 
 	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
