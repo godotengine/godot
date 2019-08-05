@@ -810,7 +810,7 @@ void Node::set_process(bool p_idle_process) {
 		add_to_group("idle_process", false);
 	else
 		remove_from_group("idle_process");
-	
+
 	_change_notify("idle_process");
 }
 
