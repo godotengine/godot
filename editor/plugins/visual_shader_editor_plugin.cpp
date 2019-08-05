@@ -42,17 +42,17 @@
 #include "scene/main/viewport.h"
 #include "scene/resources/visual_shader_nodes.h"
 
-Control *VisualShaderNodePlugin::create_editor(const Ref<VisualShaderNode> &p_node) {
+Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
 
 	if (get_script_instance()) {
-		return get_script_instance()->call("create_editor", p_node);
+		return get_script_instance()->call("create_editor", p_parent_resource, p_node);
 	}
 	return NULL;
 }
 
 void VisualShaderNodePlugin::_bind_methods() {
 
-	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "create_editor", PropertyInfo(Variant::OBJECT, "for_node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode")));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "create_editor", PropertyInfo(Variant::OBJECT, "parent_resource", PROPERTY_HINT_RESOURCE_TYPE, "Resource"), PropertyInfo(Variant::OBJECT, "for_node", PROPERTY_HINT_RESOURCE_TYPE, "VisualShaderNode")));
 }
 
 ///////////////////
@@ -462,7 +462,7 @@ void VisualShaderEditor::_update_graph() {
 		}
 
 		for (int i = 0; i < plugins.size(); i++) {
-			custom_editor = plugins.write[i]->create_editor(vsnode);
+			custom_editor = plugins.write[i]->create_editor(visual_shader, vsnode);
 			if (custom_editor) {
 				break;
 			}
@@ -2590,6 +2590,7 @@ public:
 
 class VisualShaderNodePluginDefaultEditor : public VBoxContainer {
 	GDCLASS(VisualShaderNodePluginDefaultEditor, VBoxContainer);
+	Ref<Resource> parent_resource;
 
 public:
 	void _property_changed(const String &prop, const Variant &p_value, const String &p_field, bool p_changing = false) {
@@ -2603,7 +2604,27 @@ public:
 		undo_redo->create_action(TTR("Edit Visual Property") + ": " + prop, UndoRedo::MERGE_ENDS);
 		undo_redo->add_do_property(node.ptr(), prop, p_value);
 		undo_redo->add_undo_property(node.ptr(), prop, node->get(prop));
+
+		if (p_value.get_type() == Variant::OBJECT) {
+
+			RES prev_res = node->get(prop);
+			RES curr_res = p_value;
+
+			if (curr_res.is_null()) {
+				undo_redo->add_do_method(this, "_open_inspector", (RES)parent_resource.ptr());
+			} else {
+				undo_redo->add_do_method(this, "_open_inspector", (RES)curr_res.ptr());
+			}
+			if (!prev_res.is_null()) {
+				undo_redo->add_undo_method(this, "_open_inspector", (RES)prev_res.ptr());
+			} else {
+				undo_redo->add_undo_method(this, "_open_inspector", (RES)parent_resource.ptr());
+			}
+			undo_redo->add_do_method(this, "_refresh_request");
+			undo_redo->add_undo_method(this, "_refresh_request");
+		}
 		undo_redo->commit_action();
+
 		updating = false;
 	}
 
@@ -2619,11 +2640,20 @@ public:
 		VisualShaderEditor::get_singleton()->call_deferred("_update_graph");
 	}
 
+	void _resource_selected(const String &p_path, RES p_resource) {
+		_open_inspector(p_resource);
+	}
+
+	void _open_inspector(RES p_resource) {
+		EditorNode::get_singleton()->get_inspector()->edit(p_resource.ptr());
+	}
+
 	bool updating;
 	Ref<VisualShaderNode> node;
 	Vector<EditorProperty *> properties;
 
-	void setup(Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, Ref<VisualShaderNode> p_node) {
+	void setup(Ref<Resource> p_parent_resource, Vector<EditorProperty *> p_properties, const Vector<StringName> &p_names, Ref<VisualShaderNode> p_node) {
+		parent_resource = p_parent_resource;
 		updating = false;
 		node = p_node;
 		properties = p_properties;
@@ -2631,6 +2661,11 @@ public:
 		for (int i = 0; i < p_properties.size(); i++) {
 
 			add_child(p_properties[i]);
+
+			bool res_prop = Object::cast_to<EditorPropertyResource>(p_properties[i]);
+			if (res_prop) {
+				p_properties[i]->connect("resource_selected", this, "_resource_selected");
+			}
 
 			properties[i]->connect("property_changed", this, "_property_changed");
 			properties[i]->set_object_and_property(node.ptr(), p_names[i]);
@@ -2645,10 +2680,12 @@ public:
 		ClassDB::bind_method("_property_changed", &VisualShaderNodePluginDefaultEditor::_property_changed, DEFVAL(String()), DEFVAL(false));
 		ClassDB::bind_method("_node_changed", &VisualShaderNodePluginDefaultEditor::_node_changed);
 		ClassDB::bind_method("_refresh_request", &VisualShaderNodePluginDefaultEditor::_refresh_request);
+		ClassDB::bind_method("_resource_selected", &VisualShaderNodePluginDefaultEditor::_resource_selected);
+		ClassDB::bind_method("_open_inspector", &VisualShaderNodePluginDefaultEditor::_open_inspector);
 	}
 };
 
-Control *VisualShaderNodePluginDefault::create_editor(const Ref<VisualShaderNode> &p_node) {
+Control *VisualShaderNodePluginDefault::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
 
 	if (p_node->is_class("VisualShaderNodeInput")) {
 		//create input
@@ -2706,7 +2743,7 @@ Control *VisualShaderNodePluginDefault::create_editor(const Ref<VisualShaderNode
 		properties.push_back(pinfo[i].name);
 	}
 	VisualShaderNodePluginDefaultEditor *editor = memnew(VisualShaderNodePluginDefaultEditor);
-	editor->setup(editors, properties, p_node);
+	editor->setup(p_parent_resource, editors, properties, p_node);
 	return editor;
 }
 

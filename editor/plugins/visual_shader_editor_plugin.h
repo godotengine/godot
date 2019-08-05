@@ -48,7 +48,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Control *create_editor(const Ref<VisualShaderNode> &p_node);
+	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
 class VisualShaderEditor : public VBoxContainer {
@@ -272,7 +272,7 @@ class VisualShaderNodePluginDefault : public VisualShaderNodePlugin {
 	GDCLASS(VisualShaderNodePluginDefault, VisualShaderNodePlugin);
 
 public:
-	virtual Control *create_editor(const Ref<VisualShaderNode> &p_node);
+	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
 class EditorPropertyShaderMode : public EditorProperty {
