@@ -2,6 +2,7 @@
 #include "core/resource.h"
 #include "servers/audio/audio_stream.h"
 
+
 class AudioStreamPlaybackPlaylist;
 
 class AudioStreamPlaylist : public AudioStream {
@@ -23,7 +24,8 @@ private:
 	};
 
 	int beat_count;
-	
+	bool shuffle;
+	bool loop;
 
 	Ref<AudioStream> audio_streams[MAX_STREAMS];
 	Set<AudioStreamPlaybackPlaylist *> playbacks;
@@ -38,6 +40,10 @@ public:
 	int get_bpm();
 	void set_stream_count(int count);
 	int get_stream_count();
+	void set_shuffle(bool p_shuffle);
+	bool get_shuffle();
+	void set_loop(bool p_loop);
+	bool get_loop();
 	void set_list_stream(int stream_number, Ref<AudioStream> p_stream);
 	Ref<AudioStream> get_list_stream(int stream_number);
 	

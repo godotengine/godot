@@ -104,6 +104,7 @@ private:
 	int fade_in_samples_total;
 	int fade_out_samples_total;
 	int transition_samples_total;
+	int clip_samples_total;
 
 	int transition_samples;
 	int fade_in_samples;

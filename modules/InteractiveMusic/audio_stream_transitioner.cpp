@@ -9,7 +9,7 @@ AudioStreamTransitioner::AudioStreamTransitioner() {
 	clip_count = 1;
 	sample_rate = 44100;
 	stereo = true;
-	
+	active_transition.t_active = false;
 	active_clip_number = 0;
 	for (int i = 0; i < transition_count; i++) {
 		transitions[i].t_active = false;
@@ -207,6 +207,7 @@ void AudioStreamPlaybackTransitioner::start(float p_from_pos) {
 	current = transitioner->active_clip_number;
 	
 	if (transitioner->clips[current].is_valid()) {
+		clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate; 
 		if (transitioner->clips[current]->get_bpm() == 0) {
 			beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
 		} else {
@@ -259,6 +260,7 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 				current = transitioner->active_clip_number;
 				previous = transitioner->fading_clip_number;
 				fading = true;
+				clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate; 
 				if (transitioner->clips[current]->get_bpm() == 0) {
 					beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
 				} else {
@@ -281,6 +283,11 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 
 			int to_mix = MIN(MIX_BUFFER_SIZE, p_frames);
 			clear_buffer(to_mix);
+
+			if (clip_samples_total <= 0) {
+				playbacks[current]->seek(0.0);
+				clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate; 
+			}
 
 			if (fading) {
 				if (transition_samples < 0) {
@@ -315,6 +322,7 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 			}
 			dst_offset += to_mix;
 			p_frames -= to_mix;
+			clip_samples_total -= to_mix;
 		}
 	}
 }

@@ -2,14 +2,16 @@
 #include "core/math/math_funcs.h"
 #include "core/print_string.h"
 #include <iostream>
+#include <utility> 
+
 
 AudioStreamPlaylist::AudioStreamPlaylist() {
 	bpm = 120;
 	stream_count = 1;
 	sample_rate = 44100;
 	stereo = true;
-
-	beat_count = 20;
+	shuffle = false;
+	beat_count = 16;
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() {
@@ -77,6 +79,22 @@ int AudioStreamPlaylist::get_bpm() {
 	return bpm;
 }
 
+void AudioStreamPlaylist::set_shuffle(bool p_shuffle) {
+	shuffle = p_shuffle;
+}
+
+bool AudioStreamPlaylist::get_shuffle() {
+	return shuffle;
+}
+
+void AudioStreamPlaylist::set_loop(bool p_loop) {
+	loop = p_loop;
+}
+
+bool AudioStreamPlaylist::get_loop() {
+	return loop;
+}
+
 void AudioStreamPlaylist::_validate_property(PropertyInfo &property) const {
 	String prop = property.name;
 	if (prop.begins_with("stream_")) {
@@ -100,9 +118,17 @@ void AudioStreamPlaylist::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stream_beats", "beat_count"), &AudioStreamPlaylist::set_stream_beats);
 	ClassDB::bind_method(D_METHOD("get_stream_beats"), &AudioStreamPlaylist::get_stream_beats);
 
+	ClassDB::bind_method(D_METHOD("set_shuffle", "shuffle"), &AudioStreamPlaylist::set_shuffle);
+	ClassDB::bind_method(D_METHOD("get_shuffle"), &AudioStreamPlaylist::get_shuffle);
+
+	ClassDB::bind_method(D_METHOD("set_loop", "loop"), &AudioStreamPlaylist::set_loop);
+	ClassDB::bind_method(D_METHOD("get_loop"), &AudioStreamPlaylist::get_loop);
+
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_stream_count", "get_stream_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,400"), "set_stream_beats", "get_stream_beats");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shuffle"), "set_shuffle", "get_shuffle");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "get_loop");
 
 	for (int i = 0; i < MAX_STREAMS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "stream_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_stream", "get_list_stream", i);
@@ -132,6 +158,21 @@ void AudioStreamPlaybackPlaylist::stop() {
 }
 
 void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
+	if (playlist->shuffle == true) {
+		for (int i; i < playlist->stream_count; i++) {
+			std::swap(playback[i], playback[std::rand()%playlist->stream_count]);
+		}
+	} else {
+		for (int i = 0; i < playlist->stream_count; i++) {
+
+			if (playlist->audio_streams[i].is_valid()) {
+				playback[i] = playlist->audio_streams[i]->instance_playback();
+			} else {
+				playback[i].unref();
+			}
+		}
+	}
+
 	current = 0;
 	
 	if (playlist->audio_streams[current].is_valid()) {
@@ -197,7 +238,17 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 					current = (current + 1) % playlist->stream_count;
 					playback[current]->start();
 				} else {
-					stop();
+					if (playlist->loop == true) {
+						current = 0;
+						if (playlist->shuffle == true) {
+							for (int i; i < playlist->stream_count; i++) {
+								std::swap(playback[i], playback[std::rand() % playlist->stream_count]);
+							}
+							
+						} 
+					} else {
+						stop();
+					}
 				}
 				fading_samples = fading_samples_total;
 				if (playlist->audio_streams[current]->get_bpm() == 0) {
@@ -224,12 +275,20 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 				float from_volume = 1.0 - float(fading_samples_total - fading_samples) / fading_samples_total;
 				float to_volume = 1.0 - float(fading_samples_total-(fading_samples - to_fade)) / fading_samples_total;
 				if (to_volume < 0.0) to_volume = 0.0;
-				add_stream_to_buffer(playback[current - 1], to_fade, p_rate_scale, from_volume, to_volume);
+				if (playlist->loop == true && current == 0) {
+					add_stream_to_buffer(playback[playlist->stream_count - 1], to_fade, p_rate_scale, from_volume, to_volume);
+				} else {
+					add_stream_to_buffer(playback[current - 1], to_fade, p_rate_scale, from_volume, to_volume);
+				}
 				add_stream_to_buffer(playback[current], to_fade, p_rate_scale, (1.0-from_volume), (1.0-to_volume));
 				fading_samples -= to_fade;
 				if (fading_samples == 0) {
 					fading = false;
-					playback[current - 1]->stop();
+					if (playlist->loop == true && current == 0) {
+						playback[playlist->stream_count - 1]->stop();
+					} else {
+						playback[current - 1]->stop();
+					}
 				}
 			} else {
 				add_stream_to_buffer(playback[current], to_mix, p_rate_scale, 1.0, 1.0);
