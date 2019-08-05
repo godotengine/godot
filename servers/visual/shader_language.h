@@ -330,15 +330,18 @@ public:
 		DataType datatype_cache;
 		StringName name;
 		virtual DataType get_datatype() const { return datatype_cache; }
+		bool is_const;
 
 		VariableNode() :
 				Node(TYPE_VARIABLE),
-				datatype_cache(TYPE_VOID) {}
+				datatype_cache(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		bool is_const;
 
 		struct Declaration {
 			StringName name;
@@ -351,7 +354,8 @@ public:
 		VariableDeclarationNode() :
 				Node(TYPE_VARIABLE_DECLARATION),
 				precision(PRECISION_DEFAULT),
-				datatype(TYPE_VOID) {}
+				datatype(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct ArrayNode : public Node {
@@ -359,6 +363,7 @@ public:
 		StringName name;
 		Node *index_expression;
 		Node *call_expression;
+		bool is_const;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
 
@@ -366,12 +371,14 @@ public:
 				Node(TYPE_ARRAY),
 				datatype_cache(TYPE_VOID),
 				index_expression(NULL),
-				call_expression(NULL) {}
+				call_expression(NULL),
+				is_const(false) {}
 	};
 
 	struct ArrayDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		bool is_const;
 
 		struct Declaration {
 			StringName name;
@@ -385,7 +392,8 @@ public:
 		ArrayDeclarationNode() :
 				Node(TYPE_ARRAY_DECLARATION),
 				precision(PRECISION_DEFAULT),
-				datatype(TYPE_VOID) {}
+				datatype(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct ConstantNode : public Node {
@@ -417,6 +425,7 @@ public:
 			DataPrecision precision;
 			int line; //for completion
 			int array_size;
+			bool is_const;
 		};
 
 		Map<StringName, Variable> variables;
@@ -683,7 +692,7 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, int *r_array_size = NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
