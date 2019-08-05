@@ -234,7 +234,9 @@
 			</description>
 		</signal>
 		<signal name="copy_nodes_request">
-			Signal sent when the user presses [code]Ctrl + C[/code].
+			<description>
+				Signal sent when the user presses [code]Ctrl + C[/code].
+			</description>
 		</signal>
 		<signal name="delete_nodes_request">
 			<description>
@@ -267,7 +269,9 @@
 			</description>
 		</signal>
 		<signal name="paste_nodes_request">
-			Signal sent when the user presses [code]Ctrl + V[/code].
+			<description>
+				Signal sent when the user presses [code]Ctrl + V[/code].
+			</description>
 		</signal>
 		<signal name="popup_request">
 			<argument index="0" name="position" type="Vector2">
