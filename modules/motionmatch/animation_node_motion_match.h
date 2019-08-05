@@ -68,11 +68,9 @@ public:
   Skeleton *skeleton;
 
   virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
-  virtual Variant get_parameter_default_value(const StringName &p_param);
 
   float process(float p_time, bool p_seek);
-
-  int min_key = -1;
+  bool first_time = true;
   void add_matching_track(const NodePath &p_track_path);
   void remove_matching_track(const NodePath &p_track_path);
   bool is_matching_track(const NodePath &p_track_path) const;
@@ -110,8 +108,7 @@ public:
   float get_delta_time() { return delta_time; }
   void set_delta_time(float p) { delta_time = p; }
 
-  PoolRealArray Predict_traj(Vector3 L_Velocity, Vector3 CurrentPosition,
-                             int samples);
+  PoolRealArray Predict_traj(Vector3 L_Velocity, int samples);
 
   AnimationNodeMotionMatch();
   ~AnimationNodeMotionMatch();

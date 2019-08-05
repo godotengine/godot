@@ -264,6 +264,27 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
                                             ->get_root_motion_track());
 
     for (int j = 0; j < max_count - samples; j++) {
+      int quad = 0;
+      float x = 0;
+      float z = 0;
+      for (int p = 0; p < 2; p++) {
+        x += Math::pow(-1.0, double(p + 1)) *
+             Vector3(Dictionary(anim->track_get_key_value(root, j + p))
+                         .get("location", Variant()))[0];
+        z += Math::pow(-1.0, double(p + 1)) *
+             Vector3(Dictionary(anim->track_get_key_value(root, j + p))
+                         .get("location", Variant()))[2];
+      }
+
+      if (x > 0 && z > 0) {
+        quad = 1;
+      } else if (x < 0 && z > 0) {
+        quad = 2;
+      } else if (x < 0 && z < 0) {
+        quad = 3;
+      } else {
+        quad = 4;
+      }
       frame_model *key = new frame_model;
       for (int y = 0; y < motion_match->get_matching_tracks().size(); y++) {
         int track = anim->find_track(motion_match->get_matching_tracks()[y]);
@@ -277,16 +298,37 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
         }
         key->bone_data->append(arr);
       }
-
+      Vector3 r_loc = Vector3(Dictionary(anim->track_get_key_value(root, j))
+                                  .get("location", Variant()));
       for (int k = 0; k < samples; k++) {
         Vector3 loc = Vector3(Dictionary(anim->track_get_key_value(root, j + k))
                                   .get("location", Variant()));
         for (int l = 0; l < 3; l++) {
           if (l != 1) {
-            key->traj->append(loc[l]);
+            key->traj->append(loc[l] - r_loc[l]);
           }
         }
       }
+
+      if (quad == 2) {
+        for (int m = 0; m < key->traj->size(); m += 2) {
+          float t = key->traj->read()[m];
+          key->traj->write()[m] = -key->traj->read()[m + 1];
+          key->traj->write()[m + 1] = t;
+        }
+      } else if (quad == 3) {
+        for (int m = 0; m < key->traj->size(); m += 2) {
+          key->traj->write()[m] = -key->traj->read()[m];
+          key->traj->write()[m + 1] = -key->traj->read()[m + 1];
+        }
+      } else if (quad == 4) {
+        for (int m = 0; m < key->traj->size(); m += 2) {
+          float t = key->traj->read()[m];
+          key->traj->write()[m] = key->traj->read()[m + 1];
+          key->traj->write()[m + 1] = -t;
+        }
+      }
+
       key->time = anim->track_get_key_time(root, j);
       key->anim_num = i;
       keys->append(key);

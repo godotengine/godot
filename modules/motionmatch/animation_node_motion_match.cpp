@@ -5,17 +5,7 @@ void AnimationNodeMotionMatch::get_parameter_list(
     List<PropertyInfo> *r_list) const {
   r_list->push_back(
       PropertyInfo(Variant::VECTOR3, vel, PROPERTY_HINT_NONE, ""));
-  r_list->push_back(
-      PropertyInfo(Variant::VECTOR3, pos, PROPERTY_HINT_NONE, ""));
-}
-
-Variant
-AnimationNodeMotionMatch::get_parameter_default_value(const StringName &param) {
-  if (param == min) {
-    return -1;
-  } else {
-    return Vector3();
-  }
+  r_list->push_back(PropertyInfo(Variant::INT, min, PROPERTY_HINT_NONE, ""));
 }
 
 void AnimationNodeMotionMatch::add_matching_track(
@@ -114,6 +104,9 @@ void AnimationNodeMotionMatch::_bind_methods() {
                        &AnimationNodeMotionMatch::KDNode::set_th);
   ClassDB::bind_method(D_METHOD("get_th"),
                        &AnimationNodeMotionMatch::KDNode::get_th);
+
+  ClassDB::bind_method(D_METHOD("Predict_traj", "vel", "samples"),
+                       &AnimationNodeMotionMatch::Predict_traj);
 }
 
 AnimationNodeMotionMatch::AnimationNodeMotionMatch() {
@@ -423,44 +416,56 @@ AnimationNodeMotionMatch::KDNode::get_right() {
 }
 
 float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
-  PoolRealArray future_traj =
-      Predict_traj(get_parameter(vel), get_parameter(pos), 10);
+  PoolRealArray future_traj = Predict_traj(get_parameter(vel), 10);
   float min_cost = std::numeric_limits<float>::max();
   float min_cost_time;
   AnimationPlayer *player = state->player;
   int anim = 0;
-  print_line(itos(min_key));
-  for (int p = 0; p < keys->size() && p != this->min_key; p++) {
-    float pos_cost = 0.0f;
-    float traj_cost = 0.0f;
-    float tot_cost = 0.0f;
+  int dup;
+  if (first_time) {
+    dup = -1;
+    print_line("true");
+  } else {
+    dup = get_parameter(min);
+    print_line("false");
+  }
+  for (int p = 0; p < keys->size(); p++) {
+    if (first_time)
+      first_time = false;
 
-    PoolVector<frame_model *>::Read read = keys->read();
+    if (p != dup) {
+      float pos_cost = 0.0f;
+      float traj_cost = 0.0f;
+      float tot_cost = 0.0f;
 
-    for (int i = 0; i < matching_tracks.size(); i++) {
+      PoolVector<frame_model *>::Read read = keys->read();
 
-      Vector<String> s = String(matching_tracks[i]).split(":");
-      Vector3 pos = skeleton->get_bone_global_pose(skeleton->find_bone(s[1]))
-                        .get_origin();
+      for (int i = 0; i < matching_tracks.size(); i++) {
 
-      for (int po = 0; po < 2; po++) {
-        pos_cost += (pos[po] - read[p]->bone_data->read()[i][po]) *
-                    (pos[po] - read[p]->bone_data->read()[i][po]);
+        Vector<String> s = String(matching_tracks[i]).split(":");
+        Vector3 pos = skeleton->get_bone_global_pose(skeleton->find_bone(s[1]))
+                          .get_origin();
+
+        for (int po = 0; po < 2; po++) {
+          pos_cost += (pos[po] - read[p]->bone_data->read()[i][po]) *
+                      (pos[po] - read[p]->bone_data->read()[i][po]);
+        }
       }
-    }
 
-    for (int t = 0; t < 2; t++) {
-      traj_cost += (read[p]->traj->read()[t] - future_traj[t]) *
-                   (read[p]->traj->read()[t] - future_traj[t]);
-    }
+      for (int t = 0; t < 2; t++) {
+        traj_cost += (read[p]->traj->read()[t] - future_traj[t]) *
+                     (read[p]->traj->read()[t] - future_traj[t]);
+      }
 
-    tot_cost = pos_cost + traj_cost;
+      tot_cost = pos_cost + traj_cost;
 
-    if (tot_cost < min_cost) {
-      min_cost = tot_cost;
-      min_cost_time = keys->read()[p]->time;
-      anim = keys->read()[p]->anim_num;
-      min_key = p;
+      if (tot_cost < min_cost) {
+        min_cost = tot_cost;
+        min_cost_time = keys->read()[p]->time;
+        anim = keys->read()[p]->anim_num;
+        set_parameter(min, p);
+        print_line("Change of min:" + itos(get_parameter(min)));
+      }
     }
   }
   List<StringName> a_nam;
@@ -471,15 +476,15 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 }
 
 PoolRealArray AnimationNodeMotionMatch::Predict_traj(Vector3 L_Velocity,
-                                                     Vector3 CurrentPosition,
                                                      int samples) {
   PoolRealArray futurepath = {};
-  Vector3 c_pos = CurrentPosition;
+  Vector3 c_pos = Vector3();
   float time = 0.0f;
   for (int i = 0; i < samples; i++) {
     for (int j = 0; j < 3; j++) {
       if (j != 1) {
-        c_pos[j] = c_pos[j] + L_Velocity[j] * (1 - Math::exp(-time));
+        print_line(itos(L_Velocity[j] * (1 - Math::exp(-200000 * time))));
+        c_pos[j] = c_pos[j] + L_Velocity[j] * (1 - Math::exp(-200 * time));
         futurepath.append(c_pos[j]);
       }
     }
