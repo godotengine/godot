@@ -109,6 +109,9 @@ public:
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
 		if (unlikely(idx >= max_alloc)) {
+			if (THREAD_SAFE) {
+				spin_lock.unlock();
+			}
 			return NULL;
 		}
 
@@ -116,7 +119,10 @@ public:
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		if (validator_chunks[idx_chunk][idx_element] != validator) {
+		if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
+			if (THREAD_SAFE) {
+				spin_lock.unlock();
+			}
 			return NULL;
 		}
 
@@ -166,13 +172,23 @@ public:
 
 		uint64_t id = p_rid.get_id();
 		uint32_t idx = uint32_t(id & 0xFFFFFFFF);
-		ERR_FAIL_COND(idx >= max_alloc);
+		if (unlikely(idx >= max_alloc)) {
+			if (THREAD_SAFE) {
+				spin_lock.unlock();
+			}
+			ERR_FAIL();
+		}
 
 		uint32_t idx_chunk = idx / elements_in_chunk;
 		uint32_t idx_element = idx % elements_in_chunk;
 
 		uint32_t validator = uint32_t(id >> 32);
-		ERR_FAIL_COND(validator_chunks[idx_chunk][idx_element] != validator);
+		if (unlikely(validator_chunks[idx_chunk][idx_element] != validator)) {
+			if (THREAD_SAFE) {
+				spin_lock.unlock();
+			}
+			ERR_FAIL();
+		}
 
 		chunks[idx_chunk][idx_element].~T();
 		validator_chunks[idx_chunk][idx_element] = 0xFFFFFFFF; // go invalid
