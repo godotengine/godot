@@ -25,7 +25,7 @@
 
 #if defined(_WIN32)
 // WinSock2.h must be included *BEFORE* windows.h
-#include <WinSock2.h>
+#include <winsock2.h>
 #endif  // _WIN32
 
 #include "vulkan/vk_platform.h"
