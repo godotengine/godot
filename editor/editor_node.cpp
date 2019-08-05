@@ -334,6 +334,11 @@ void EditorNode::_notification(int p_what) {
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/unfocused_low_processor_mode_sleep_usec")));
 		} break;
 
+		case MainLoop::NOTIFICATION_WM_ABOUT: {
+
+			show_about();
+		} break;
+
 		case MainLoop::NOTIFICATION_WM_QUIT_REQUEST: {
 
 			_menu_option_confirm(FILE_QUIT, false);

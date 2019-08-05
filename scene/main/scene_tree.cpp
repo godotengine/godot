@@ -37,7 +37,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
-#include "editor/editor_node.h"
 #include "main/input_default.h"
 #include "node.h"
 #include "scene/resources/dynamic_font.h"
@@ -647,7 +646,8 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_MOUSE_ENTER:
 		case NOTIFICATION_WM_MOUSE_EXIT:
 		case NOTIFICATION_WM_FOCUS_IN:
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT:
+		case NOTIFICATION_WM_ABOUT: {
 
 			if (p_notification == NOTIFICATION_WM_FOCUS_IN) {
 				InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
@@ -669,19 +669,6 @@ void SceneTree::_notification(int p_notification) {
 
 			get_root()->propagate_notification(p_notification);
 
-		} break;
-
-		case NOTIFICATION_WM_ABOUT: {
-
-#ifdef TOOLS_ENABLED
-			if (EditorNode::get_singleton()) {
-				EditorNode::get_singleton()->show_about();
-			} else {
-#endif
-				get_root()->propagate_notification(p_notification);
-#ifdef TOOLS_ENABLED
-			}
-#endif
 		} break;
 
 		case NOTIFICATION_CRASH: {
