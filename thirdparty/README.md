@@ -1,5 +1,10 @@
 # Third party libraries
 
+Please keep categories (`##` level) listed alphabetically and matching their
+respective folder names. Use two empty lines to separate categories for
+readability.
+Subcategories (`###` level) where needed are separated by a single empty line.
+
 
 ## assimp
 
@@ -152,6 +157,7 @@ the GLES version Godot targets.
 Important: File `glslang/glslang/Include/Common.h` has
 Godot-made change marked with `// -- GODOT --` comments.
 
+
 ## jpeg-compressor
 
 - Upstream: https://github.com/richgel999/jpeg-compressor
@@ -271,25 +277,6 @@ Important: The files `utils/bit_reader_utils.{c,h}` have Godot-made
 changes to ensure they build for Javascript/HTML5. Those
 changes are marked with `// -- GODOT --` comments.
 
-
-## Vulkan Ecosystem Components (Vulkan ICD loader and headers)
-
-- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
-- Version: 1.1.113 
-- License: Apache 2.0
-
-
-## wslay
-
-- Upstream: https://github.com/tatsuhiro-t/wslay
-- Version: 1.1.0
-- License: MIT
-
-File extracted from upstream release tarball:
-
-- All `*.c` and `*.h` in `lib/` and `lib/includes/`
-- `wslay.h` has a small Godot addition to fix MSVC build.
-  See `thirdparty/wslay/msvcfix.diff`
 
 ## mbedtls
 
@@ -519,6 +506,26 @@ Some downstream changes have been made and are identified by
 `// -- GODOT start --` and `// -- GODOT end --` comments.
 They can be reapplied using the patches included in the `vhacd`
 folder.
+
+
+## vulkan
+
+- Upstream: https://github.com/KhronosGroup/Vulkan-Loader
+- Version: 1.1.113
+- License: Apache 2.0
+
+Unless there is a specific reason to package a more recent version, please stick
+to Vulkan SDK releases (prefixed by `sdk-`) for all components.
+
+NOTE: Use `scripts/update_deps.py --ref <version>` in the Loader git repository
+to retrieve the `Vulkan-Headers` repository matching the loader version.
+
+Files extracted from upstream source:
+
+- `Vulkan-Headers/include/` as `include/`
+- All `.c` and `.h` files in `loader/` and `loader/generated/`, put in a common
+  `loader/` folder
+- `LICENSE.txt`
 
 
 ## wslay
