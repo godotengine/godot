@@ -59,6 +59,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			menu->set_scale(get_global_transform().get_scale());
 			menu->popup();
 			grab_focus();
+			accept_event();
 			return;
 		}
 
