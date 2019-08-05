@@ -719,7 +719,7 @@ LRESULT OS_Windows::WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) 
 						pressrc = 0;
 					}
 				}
-			} else if (mouse_mode != MOUSE_MODE_CAPTURED) {
+			} else {
 				// for reasons unknown to mankind, wheel comes in screen coordinates
 				POINT coords;
 				coords.x = mb->get_position().x;
