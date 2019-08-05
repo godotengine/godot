@@ -210,6 +210,7 @@ void Camera::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p
 }
 
 void Camera::set_projection(Camera::Projection p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
 		mode = p_mode;
 		_update_camera_mode();
@@ -477,6 +478,7 @@ Camera::KeepAspect Camera::get_keep_aspect_mode() const {
 
 void Camera::set_doppler_tracking(DopplerTracking p_tracking) {
 
+	ERR_FAIL_INDEX(p_tracking, 3);
 	if (doppler_tracking == p_tracking)
 		return;
 

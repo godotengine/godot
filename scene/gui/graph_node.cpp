@@ -637,6 +637,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 
 void GraphNode::set_overlay(Overlay p_overlay) {
 
+	ERR_FAIL_INDEX(p_overlay, 3);
 	overlay = p_overlay;
 	update();
 }

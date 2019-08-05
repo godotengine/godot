@@ -627,7 +627,7 @@ void Animation::_get_property_list(List<PropertyInfo> *p_list) const {
 }
 
 int Animation::add_track(TrackType p_type, int p_at_pos) {
-
+	ERR_FAIL_INDEX_V(p_type, 6, 0);
 	if (p_at_pos < 0 || p_at_pos >= tracks.size())
 		p_at_pos = tracks.size();
 

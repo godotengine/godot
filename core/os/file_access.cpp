@@ -65,8 +65,9 @@ bool FileAccess::exists(const String &p_name) {
 
 void FileAccess::_set_access_type(AccessType p_access) {
 
+	ERR_FAIL_INDEX(p_access, ACCESS_MAX);
 	_access_type = p_access;
-};
+}
 
 FileAccess *FileAccess::create_for_path(const String &p_path) {
 

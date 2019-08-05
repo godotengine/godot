@@ -1464,6 +1464,7 @@ String AnimationPlayer::get_autoplay() const {
 
 void AnimationPlayer::set_animation_process_mode(AnimationProcessMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	if (animation_process_mode == p_mode)
 		return;
 

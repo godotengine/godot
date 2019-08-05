@@ -114,6 +114,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 }
 
 void SpriteEditor::_menu_option(int p_option) {
+	ERR_FAIL_INDEX(p_option, 4);
 
 	if (!node) {
 		return;

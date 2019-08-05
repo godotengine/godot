@@ -1205,6 +1205,7 @@ bool Viewport::get_vflip() const {
 
 void Viewport::set_clear_mode(ClearMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	clear_mode = p_mode;
 	VS::get_singleton()->viewport_set_clear_mode(viewport, VS::ViewportClearMode(p_mode));
 }
@@ -2890,6 +2891,7 @@ Viewport::DebugDraw Viewport::get_debug_draw() const {
 
 int Viewport::get_render_info(RenderInfo p_info) {
 
+	ERR_FAIL_INDEX_V(p_info, RENDER_INFO_MAX, 0);
 	return VS::get_singleton()->viewport_get_render_info(viewport, VS::ViewportRenderInfo(p_info));
 }
 

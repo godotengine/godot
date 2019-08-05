@@ -121,6 +121,7 @@ void TreeItem::_cell_deselected(int p_cell) {
 /* cell mode */
 void TreeItem::set_cell_mode(int p_column, TreeCellMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 5);
 	ERR_FAIL_INDEX(p_column, cells.size());
 	Cell &c = cells.write[p_column];
 	c.mode = p_mode;
@@ -691,6 +692,7 @@ bool TreeItem::is_custom_set_as_button(int p_column) const {
 }
 
 void TreeItem::set_text_align(int p_column, TextAlign p_align) {
+	ERR_FAIL_INDEX(p_align, 3);
 	ERR_FAIL_INDEX(p_column, cells.size());
 	cells.write[p_column].text_align = p_align;
 	_changed_notify(p_column);
@@ -3141,6 +3143,7 @@ void Tree::item_deselected(int p_column, TreeItem *p_item) {
 
 void Tree::set_select_mode(SelectMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	select_mode = p_mode;
 }
 

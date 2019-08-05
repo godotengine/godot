@@ -763,6 +763,8 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, NetworkedMultiplayerPeer::TransferMode p_mode) {
 
+	ERR_EXPLAIN("Trying to set wrong TransferMode");
+	ERR_FAIL_INDEX_V(p_mode, 3, ERR_INVALID_PARAMETER);
 	ERR_EXPLAIN("Trying to send an empty raw packet.");
 	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
 	ERR_EXPLAIN("Trying to send a raw packet while no network peer is active.");

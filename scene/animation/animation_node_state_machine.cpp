@@ -34,6 +34,7 @@
 
 void AnimationNodeStateMachineTransition::set_switch_mode(SwitchMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	switch_mode = p_mode;
 }
 

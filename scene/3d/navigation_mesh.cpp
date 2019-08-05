@@ -65,7 +65,7 @@ void NavigationMesh::create_from_mesh(const Ref<Mesh> &p_mesh) {
 }
 
 void NavigationMesh::set_sample_partition_type(int p_value) {
-	ERR_FAIL_COND(p_value >= SAMPLE_PARTITION_MAX);
+	ERR_FAIL_INDEX(p_value, SAMPLE_PARTITION_MAX);
 	partition_type = static_cast<SamplePartitionType>(p_value);
 }
 
@@ -74,7 +74,7 @@ int NavigationMesh::get_sample_partition_type() const {
 }
 
 void NavigationMesh::set_parsed_geometry_type(int p_value) {
-	ERR_FAIL_COND(p_value >= PARSED_GEOMETRY_MAX);
+	ERR_FAIL_INDEX(p_value, PARSED_GEOMETRY_MAX);
 	parsed_geometry_type = static_cast<ParsedGeometryType>(p_value);
 	_change_notify();
 }

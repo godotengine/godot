@@ -199,6 +199,7 @@ void Polygon2DEditor::_bone_paint_selected(int p_index) {
 }
 
 void Polygon2DEditor::_uv_edit_mode_select(int p_mode) {
+	ERR_FAIL_INDEX(p_mode, UV_MODE_MAX);
 
 	if (p_mode == 0) { //uv
 
@@ -277,6 +278,7 @@ void Polygon2DEditor::_uv_edit_popup_hide() {
 }
 
 void Polygon2DEditor::_menu_option(int p_option) {
+	ERR_FAIL_COND(p_option > 8 || p_option < 3);
 
 	switch (p_option) {
 
@@ -438,6 +440,7 @@ void Polygon2DEditor::_set_snap_step_y(float p_val) {
 }
 
 void Polygon2DEditor::_uv_mode(int p_mode) {
+	ERR_FAIL_INDEX(p_mode, UV_MODE_MAX);
 
 	polygon_create.clear();
 	uv_drag = false;

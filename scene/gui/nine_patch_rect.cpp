@@ -164,6 +164,7 @@ bool NinePatchRect::is_draw_center_enabled() const {
 }
 
 void NinePatchRect::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_h = p_mode;
 	update();
 }
@@ -173,7 +174,7 @@ NinePatchRect::AxisStretchMode NinePatchRect::get_h_axis_stretch_mode() const {
 }
 
 void NinePatchRect::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
-
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_v = p_mode;
 	update();
 }

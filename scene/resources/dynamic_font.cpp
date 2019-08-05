@@ -792,6 +792,7 @@ DynamicFontData::Hinting DynamicFontData::get_hinting() const {
 
 void DynamicFontData::set_hinting(Hinting p_hinting) {
 
+	ERR_FAIL_INDEX(p_hinting, 3);
 	if (hinting == p_hinting)
 		return;
 	hinting = p_hinting;

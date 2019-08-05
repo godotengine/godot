@@ -195,7 +195,10 @@ public:
 	void set_static_global_body(RID p_body) { static_global_body = p_body; }
 	RID get_static_global_body() { return static_global_body; }
 
-	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) { elapsed_time[p_time] = p_msec; }
+	void set_elapsed_time(ElapsedTime p_time, uint64_t p_msec) {
+		ERR_FAIL_INDEX(p_time, ELAPSED_TIME_MAX);
+		elapsed_time[p_time] = p_msec;
+	}
 	uint64_t get_elapsed_time(ElapsedTime p_time) const { return elapsed_time[p_time]; }
 
 	int test_body_ray_separation(BodySW *p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, PhysicsServer::SeparationResult *r_results, int p_result_max, real_t p_margin);

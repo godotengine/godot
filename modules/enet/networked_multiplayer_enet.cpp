@@ -649,7 +649,7 @@ bool NetworkedMultiplayerENet::is_refusing_new_connections() const {
 }
 
 void NetworkedMultiplayerENet::set_compression_mode(CompressionMode p_mode) {
-
+	ERR_FAIL_INDEX(p_mode, 5);
 	compression_mode = p_mode;
 }
 

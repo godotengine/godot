@@ -828,6 +828,7 @@ void ArrayMesh::add_surface(uint32_t p_format, PrimitiveType p_primitive, const 
 
 void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes, uint32_t p_flags) {
 
+	ERR_FAIL_INDEX(p_primitive, 7);
 	ERR_FAIL_COND(p_arrays.size() != ARRAY_MAX);
 
 	Surface s;

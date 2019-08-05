@@ -554,7 +554,7 @@ void CSGShape::_notification(int p_what) {
 }
 
 void CSGShape::set_operation(Operation p_operation) {
-
+	ERR_FAIL_INDEX(p_operation, 3);
 	operation = p_operation;
 	_make_dirty();
 	update_gizmo();
@@ -2344,6 +2344,7 @@ Vector<Vector2> CSGPolygon::get_polygon() const {
 }
 
 void CSGPolygon::set_mode(Mode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	mode = p_mode;
 	_make_dirty();
 	update_gizmo();
@@ -2417,6 +2418,7 @@ float CSGPolygon::get_path_interval() const {
 }
 
 void CSGPolygon::set_path_rotation(PathRotation p_rotation) {
+	ERR_FAIL_INDEX(p_rotation, 3);
 	path_rotation = p_rotation;
 	_make_dirty();
 	update_gizmo();

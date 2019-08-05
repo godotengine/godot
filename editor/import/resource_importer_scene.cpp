@@ -298,6 +298,7 @@ static void _gen_shape_list(const Ref<Mesh> &mesh, List<Ref<Shape> > &r_shape_li
 
 Node *ResourceImporterScene::_fix_node(Node *p_node, Node *p_root, Map<Ref<Mesh>, List<Ref<Shape> > > &collision_map, LightBakeMode p_light_bake_mode) {
 
+	ERR_FAIL_INDEX_V(p_light_bake_mode, 3, NULL);
 	// children first
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 

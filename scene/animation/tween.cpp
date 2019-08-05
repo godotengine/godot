@@ -1208,12 +1208,12 @@ bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 
 	// Transition type
 	ERR_EXPLAIN("Invalid transition type provided to Tween");
-	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false); // Is the transition type valid
+	ERR_FAIL_INDEX_V(p_trans_type, TRANS_COUNT, false); // Is the transition type valid
 	data.trans_type = p_trans_type;
 
 	// Easing type
 	ERR_EXPLAIN("Invalid easing type provided to Tween");
-	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false); // Is the easing type valid
+	ERR_FAIL_INDEX_V(p_ease_type, EASE_COUNT, false); // Is the easing type valid
 	data.ease_type = p_ease_type;
 
 	// Is the property defined?

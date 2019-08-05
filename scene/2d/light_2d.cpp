@@ -302,6 +302,7 @@ float Light2D::get_shadow_gradient_length() const {
 }
 
 void Light2D::set_shadow_filter(ShadowFilter p_filter) {
+	ERR_FAIL_INDEX(p_filter, 6);
 	shadow_filter = p_filter;
 	VS::get_singleton()->canvas_light_set_shadow_filter(canvas_light, VS::CanvasLightShadowFilter(p_filter));
 }

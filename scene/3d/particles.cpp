@@ -177,6 +177,7 @@ float Particles::get_speed_scale() const {
 
 void Particles::set_draw_order(DrawOrder p_order) {
 
+	ERR_FAIL_INDEX(p_order, 3);
 	draw_order = p_order;
 	VS::get_singleton()->particles_set_draw_order(particles, VS::ParticlesDrawOrder(p_order));
 }

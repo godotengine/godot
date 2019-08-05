@@ -195,6 +195,7 @@ Ref<Texture> Line2D::get_texture() const {
 }
 
 void Line2D::set_texture_mode(const LineTextureMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	_texture_mode = p_mode;
 	update();
 }
@@ -204,6 +205,7 @@ Line2D::LineTextureMode Line2D::get_texture_mode() const {
 }
 
 void Line2D::set_joint_mode(LineJointMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	_joint_mode = p_mode;
 	update();
 }
@@ -213,6 +215,7 @@ Line2D::LineJointMode Line2D::get_joint_mode() const {
 }
 
 void Line2D::set_begin_cap_mode(LineCapMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	_begin_cap_mode = p_mode;
 	update();
 }
@@ -222,6 +225,7 @@ Line2D::LineCapMode Line2D::get_begin_cap_mode() const {
 }
 
 void Line2D::set_end_cap_mode(LineCapMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	_end_cap_mode = p_mode;
 	update();
 }

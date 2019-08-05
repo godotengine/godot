@@ -1022,6 +1022,7 @@ void CodeTextEditor::convert_indent_to_tabs() {
 }
 
 void CodeTextEditor::convert_case(CaseStyle p_case) {
+	ERR_FAIL_INDEX(p_case, 3);
 	if (!text_editor->is_selection_active()) {
 		return;
 	}

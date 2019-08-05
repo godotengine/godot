@@ -2600,6 +2600,7 @@ ProjectListFilter::FilterOption ProjectListFilter::get_filter_option() {
 }
 
 void ProjectListFilter::set_filter_option(FilterOption option) {
+	ERR_FAIL_INDEX(option, 3);
 	filter_option->select((int)option);
 	_filter_option_selected(0);
 }

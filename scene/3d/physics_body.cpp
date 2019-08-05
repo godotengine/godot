@@ -2419,6 +2419,7 @@ Skeleton *PhysicalBone::find_skeleton_parent() {
 
 void PhysicalBone::set_joint_type(JointType p_joint_type) {
 
+	ERR_FAIL_INDEX(p_joint_type, 6);
 	if (p_joint_type == get_joint_type())
 		return;
 

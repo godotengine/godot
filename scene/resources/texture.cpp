@@ -366,6 +366,7 @@ void ImageTexture::set_path(const String &p_path, bool p_take_over) {
 
 void ImageTexture::set_storage(Storage p_storage) {
 
+	ERR_FAIL_INDEX(p_storage, 3);
 	storage = p_storage;
 }
 
@@ -1530,6 +1531,7 @@ RID CubeMap::get_rid() const {
 
 void CubeMap::set_storage(Storage p_storage) {
 
+	ERR_FAIL_INDEX(p_storage, 3);
 	storage = p_storage;
 }
 

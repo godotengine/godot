@@ -591,6 +591,7 @@ void AnimationNodeBlendSpace2D::_tree_changed() {
 }
 
 void AnimationNodeBlendSpace2D::set_blend_mode(BlendMode p_blend_mode) {
+	ERR_FAIL_INDEX(p_blend_mode, 3);
 	blend_mode = p_blend_mode;
 }
 

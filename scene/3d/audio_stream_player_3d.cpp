@@ -892,6 +892,7 @@ AudioStreamPlayer3D::OutOfRangeMode AudioStreamPlayer3D::get_out_of_range_mode()
 
 void AudioStreamPlayer3D::set_doppler_tracking(DopplerTracking p_tracking) {
 
+	ERR_FAIL_INDEX(p_tracking, 3);
 	if (doppler_tracking == p_tracking)
 		return;
 

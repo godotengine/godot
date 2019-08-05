@@ -401,6 +401,7 @@ NodePath VisualScriptYieldSignal::get_base_path() const {
 
 void VisualScriptYieldSignal::set_call_mode(CallMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	if (call_mode == p_mode)
 		return;
 

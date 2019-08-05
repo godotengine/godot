@@ -502,6 +502,7 @@ void ReverbSW::adjust_current_params() {
 
 void ReverbSW::set_mode(ReverbMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 9);
 	if (mode == p_mode)
 		return;
 

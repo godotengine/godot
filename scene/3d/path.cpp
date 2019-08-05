@@ -370,6 +370,7 @@ float PathFollow::get_unit_offset() const {
 
 void PathFollow::set_rotation_mode(RotationMode p_rotation_mode) {
 
+	ERR_FAIL_INDEX(p_rotation_mode, 5);
 	rotation_mode = p_rotation_mode;
 
 	update_configuration_warning();

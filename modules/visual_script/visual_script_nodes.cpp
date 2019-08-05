@@ -1794,7 +1794,7 @@ String VisualScriptMathConstant::get_caption() const {
 }
 
 void VisualScriptMathConstant::set_math_constant(MathConstant p_which) {
-
+	ERR_FAIL_INDEX(p_which, MATH_CONSTANT_MAX);
 	constant = p_which;
 	_change_notify();
 	ports_changed_notify();
@@ -3390,6 +3390,7 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
+		ERR_FAIL_INDEX_V(p_start_mode, 3, 0);
 		switch (mode) {
 			case VisualScriptInputAction::MODE_PRESSED: {
 				*p_outputs[0] = Input::get_singleton()->is_action_pressed(action);

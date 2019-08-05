@@ -43,6 +43,7 @@ String LinkButton::get_text() const {
 
 void LinkButton::set_underline_mode(UnderlineMode p_underline_mode) {
 
+	ERR_FAIL_INDEX(p_underline_mode, 3);
 	underline_mode = p_underline_mode;
 	update();
 }

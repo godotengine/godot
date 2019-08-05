@@ -595,6 +595,7 @@ DependencyRemoveDialog::DependencyRemoveDialog() {
 
 void DependencyErrorDialog::show(Mode p_mode, const String &p_for_file, const Vector<String> &report) {
 
+	ERR_FAIL_INDEX(p_mode, 1);
 	mode = p_mode;
 	for_file = p_for_file;
 	set_title(TTR("Error loading:") + " " + p_for_file.get_file());

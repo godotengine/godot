@@ -318,6 +318,7 @@ void SplitContainer::set_collapsed(bool p_collapsed) {
 
 void SplitContainer::set_dragger_visibility(DraggerVisibility p_visibility) {
 
+	ERR_FAIL_INDEX(p_visibility, 3);
 	dragger_visibility = p_visibility;
 	queue_sort();
 	update();

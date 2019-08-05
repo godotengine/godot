@@ -125,6 +125,7 @@ bool EditorExportPreset::is_runnable() const {
 
 void EditorExportPreset::set_export_filter(ExportFilter p_filter) {
 
+	ERR_FAIL_INDEX(p_filter, 3);
 	export_filter = p_filter;
 	EditorExport::singleton->save_presets();
 }

@@ -93,6 +93,7 @@ void EditorLog::copy() {
 
 void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 
+	ERR_FAIL_INDEX(p_type, 3);
 	log->add_newline();
 
 	bool restore = p_type != MSG_TYPE_STD;

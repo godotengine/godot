@@ -929,6 +929,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 
 void AnimationTreePlayer::add_node(NodeType p_type, const StringName &p_node) {
 
+	ERR_FAIL_INDEX(p_type, NODE_MAX);
 	ERR_FAIL_COND(p_type == NODE_OUTPUT);
 	ERR_FAIL_COND(node_map.has(p_node));
 

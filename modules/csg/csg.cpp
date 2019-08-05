@@ -1326,7 +1326,7 @@ void CSGBrushOperation::MeshMerge::add_face(const Vector3 &p_a, const Vector3 &p
 }
 
 void CSGBrushOperation::merge_brushes(Operation p_operation, const CSGBrush &p_A, const CSGBrush &p_B, CSGBrush &result, float p_snap) {
-
+	ERR_FAIL_INDEX(p_operation, 3);
 	CallbackData cd;
 	cd.self = this;
 	cd.A = &p_A;

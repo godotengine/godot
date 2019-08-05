@@ -951,6 +951,7 @@ PoolVector<Plane> Geometry::build_cylinder_planes(real_t p_radius, real_t p_heig
 }
 
 PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
@@ -984,6 +985,7 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 }
 
 PoolVector<Plane> Geometry::build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis) {
+	ERR_FAIL_INDEX_V(p_axis, 3, PoolVector<Plane>());
 
 	PoolVector<Plane> planes;
 
@@ -1191,6 +1193,9 @@ Vector<Vector<Point2> > Geometry::_polypaths_do_operation(PolyBooleanOperation p
 }
 
 Vector<Vector<Point2> > Geometry::_polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+
+	ERR_FAIL_INDEX_V(p_join_type, 3, Vector<Vector<Point2> >());
+	ERR_FAIL_INDEX_V(p_end_type, 3, Vector<Vector<Point2> >());
 
 	using namespace ClipperLib;
 

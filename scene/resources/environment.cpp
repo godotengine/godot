@@ -40,6 +40,7 @@ RID Environment::get_rid() const {
 
 void Environment::set_background(BGMode p_bg) {
 
+	ERR_FAIL_INDEX(p_bg, BG_MAX);
 	bg_mode = p_bg;
 	VS::get_singleton()->environment_set_background(environment, VS::EnvironmentBG(p_bg));
 	_change_notify();
@@ -558,6 +559,7 @@ Environment::SSAOBlur Environment::get_ssao_blur() const {
 
 void Environment::set_ssao_quality(SSAOQuality p_quality) {
 
+	ERR_FAIL_INDEX(p_quality, 3);
 	ssao_quality = p_quality;
 	VS::get_singleton()->environment_set_ssao(environment, ssao_enabled, ssao_radius, ssao_intensity, ssao_radius2, ssao_intensity2, ssao_bias, ssao_direct_light_affect, ssao_ao_channel_affect, ssao_color, VS::EnvironmentSSAOQuality(ssao_quality), VS::EnvironmentSSAOBlur(ssao_blur), ssao_edge_sharpness);
 }
@@ -739,6 +741,7 @@ float Environment::get_dof_blur_far_amount() const {
 
 void Environment::set_dof_blur_far_quality(DOFBlurQuality p_quality) {
 
+	ERR_FAIL_INDEX(p_quality, 3);
 	dof_blur_far_quality = p_quality;
 	VS::get_singleton()->environment_set_dof_blur_far(environment, dof_blur_far_enabled, dof_blur_far_distance, dof_blur_far_transition, dof_blur_far_amount, VS::EnvironmentDOFBlurQuality(dof_blur_far_quality));
 }
@@ -795,6 +798,7 @@ float Environment::get_dof_blur_near_amount() const {
 
 void Environment::set_dof_blur_near_quality(DOFBlurQuality p_quality) {
 
+	ERR_FAIL_INDEX(p_quality, 3);
 	dof_blur_near_quality = p_quality;
 	VS::get_singleton()->environment_set_dof_blur_near(environment, dof_blur_near_enabled, dof_blur_near_distance, dof_blur_near_transition, dof_blur_near_amount, VS::EnvironmentDOFBlurQuality(dof_blur_near_quality));
 }

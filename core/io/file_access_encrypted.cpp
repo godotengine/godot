@@ -41,6 +41,7 @@
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
 
+	ERR_FAIL_INDEX_V(p_mode, MODE_MAX, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(file != NULL, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 

@@ -49,7 +49,7 @@ void Skeleton2DEditor::edit(Skeleton2D *p_sprite) {
 }
 
 void Skeleton2DEditor::_menu_option(int p_option) {
-
+	ERR_FAIL_INDEX(p_option, 2);
 	if (!node) {
 		return;
 	}

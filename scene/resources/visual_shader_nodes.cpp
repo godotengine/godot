@@ -522,6 +522,7 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 }
 
 void VisualShaderNodeTexture::set_source(Source p_source) {
+	ERR_FAIL_INDEX(p_source, 5);
 	source = p_source;
 	emit_changed();
 	emit_signal("editor_refresh_request");
@@ -543,6 +544,7 @@ Ref<Texture> VisualShaderNodeTexture::get_texture() const {
 }
 
 void VisualShaderNodeTexture::set_texture_type(TextureType p_type) {
+	ERR_FAIL_INDEX(p_type, 3);
 	texture_type = p_type;
 	emit_changed();
 }
@@ -701,6 +703,7 @@ Ref<CubeMap> VisualShaderNodeCubeMap::get_cube_map() const {
 }
 
 void VisualShaderNodeCubeMap::set_texture_type(TextureType p_type) {
+	ERR_FAIL_INDEX(p_type, 3);
 	texture_type = p_type;
 	emit_changed();
 }
@@ -783,6 +786,7 @@ String VisualShaderNodeScalarOp::generate_code(Shader::Mode p_mode, VisualShader
 
 void VisualShaderNodeScalarOp::set_operator(Operator p_op) {
 
+	ERR_FAIL_INDEX(p_op, 10);
 	op = p_op;
 	emit_changed();
 }
@@ -873,6 +877,7 @@ String VisualShaderNodeVectorOp::generate_code(Shader::Mode p_mode, VisualShader
 
 void VisualShaderNodeVectorOp::set_operator(Operator p_op) {
 
+	ERR_FAIL_INDEX(p_op, 10);
 	op = p_op;
 	emit_changed();
 }
@@ -1024,6 +1029,7 @@ String VisualShaderNodeColorOp::generate_code(Shader::Mode p_mode, VisualShader:
 
 void VisualShaderNodeColorOp::set_operator(Operator p_op) {
 
+	ERR_FAIL_INDEX(p_op, 9);
 	op = p_op;
 	emit_changed();
 }
@@ -1436,6 +1442,7 @@ String VisualShaderNodeVectorFunc::generate_code(Shader::Mode p_mode, VisualShad
 
 void VisualShaderNodeVectorFunc::set_function(Function p_func) {
 
+	ERR_FAIL_INDEX(p_func, 35);
 	func = p_func;
 	emit_changed();
 }
@@ -1818,6 +1825,7 @@ String VisualShaderNodeScalarDerivativeFunc::generate_code(Shader::Mode p_mode, 
 
 void VisualShaderNodeScalarDerivativeFunc::set_function(Function p_func) {
 
+	ERR_FAIL_INDEX(p_func, 3);
 	func = p_func;
 	emit_changed();
 }
@@ -1895,6 +1903,7 @@ String VisualShaderNodeVectorDerivativeFunc::generate_code(Shader::Mode p_mode, 
 
 void VisualShaderNodeVectorDerivativeFunc::set_function(Function p_func) {
 
+	ERR_FAIL_INDEX(p_func, 3);
 	func = p_func;
 	emit_changed();
 }
@@ -3538,6 +3547,7 @@ VisualShaderNodeCompare::ComparsionType VisualShaderNodeCompare::get_comparsion_
 
 void VisualShaderNodeCompare::set_function(Function p_func) {
 
+	ERR_FAIL_INDEX(p_func, 6);
 	func = p_func;
 	emit_changed();
 }

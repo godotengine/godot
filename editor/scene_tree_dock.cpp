@@ -316,7 +316,7 @@ bool SceneTreeDock::_track_inherit(const String &p_target_scene_path, Node *p_de
 }
 
 void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
-
+	ERR_FAIL_INDEX(p_tool, 32);
 	current_option = p_tool;
 
 	switch (p_tool) {
@@ -1168,7 +1168,7 @@ void SceneTreeDock::_notification(int p_what) {
 }
 
 void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode) {
-
+	ERR_FAIL_INDEX(p_mode, 3);
 	if (p_node->get_owner() == p_base && p_node != p_root) {
 		UndoRedo *undo_redo = &editor_data->get_undo_redo();
 		switch (p_mode) {

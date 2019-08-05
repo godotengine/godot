@@ -202,6 +202,7 @@ Point2 TextureProgress::get_relative_center() {
 }
 
 void TextureProgress::draw_nine_patch_stretched(const Ref<Texture> &p_texture, FillMode p_mode, double p_ratio, const Color &p_modulate) {
+	ERR_FAIL_INDEX(p_mode, 9);
 	Vector2 texture_size = p_texture->get_size();
 	Vector2 topleft = Vector2(stretch_margin[MARGIN_LEFT], stretch_margin[MARGIN_TOP]);
 	Vector2 bottomright = Vector2(stretch_margin[MARGIN_RIGHT], stretch_margin[MARGIN_BOTTOM]);

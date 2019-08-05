@@ -518,6 +518,7 @@ bool GDMono::load_assembly_from(const String &p_name, const String &p_path, GDMo
 }
 
 APIAssembly::Version APIAssembly::Version::get_from_loaded_assembly(GDMonoAssembly *p_api_assembly, APIAssembly::Type p_api_type) {
+	ERR_FAIL_INDEX_V(p_api_type, 2, APIAssembly::Version());
 	APIAssembly::Version api_assembly_version;
 
 	const char *nativecalls_name = p_api_type == APIAssembly::API_CORE ?
@@ -544,6 +545,7 @@ APIAssembly::Version APIAssembly::Version::get_from_loaded_assembly(GDMonoAssemb
 }
 
 String APIAssembly::to_string(APIAssembly::Type p_type) {
+	ERR_FAIL_INDEX_V(p_type, 2, "<error>");
 	return p_type == APIAssembly::API_CORE ? "API_CORE" : "API_EDITOR";
 }
 
@@ -562,6 +564,7 @@ bool GDMono::_load_corlib_assembly() {
 
 #ifdef TOOLS_ENABLED
 bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type) {
+	ERR_FAIL_INDEX_V(p_api_type, 2, false);
 
 	bool &api_assembly_out_of_sync = (p_api_type == APIAssembly::API_CORE) ?
 											 GDMono::get_singleton()->core_api_assembly_out_of_sync :

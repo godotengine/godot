@@ -151,6 +151,7 @@ float CPUParticles::get_speed_scale() const {
 
 void CPUParticles::set_draw_order(DrawOrder p_order) {
 
+	ERR_FAIL_INDEX(p_order, 3);
 	draw_order = p_order;
 }
 
@@ -397,6 +398,7 @@ bool CPUParticles::get_particle_flag(Flags p_flag) const {
 
 void CPUParticles::set_emission_shape(EmissionShape p_shape) {
 
+	ERR_FAIL_INDEX(p_shape, 5);
 	emission_shape = p_shape;
 }
 

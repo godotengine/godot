@@ -76,6 +76,7 @@ Rect2 BackBufferCopy::get_rect() const {
 
 void BackBufferCopy::set_copy_mode(CopyMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	copy_mode = p_mode;
 	_update_copy_mode();
 }

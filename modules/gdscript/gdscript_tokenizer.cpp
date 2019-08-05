@@ -382,7 +382,7 @@ static bool _is_bin(CharType c) {
 }
 
 void GDScriptTokenizerText::_make_token(Token p_type) {
-
+	ERR_FAIL_INDEX(p_type, TK_MAX);
 	TokenData &tk = tk_rb[tk_rb_pos];
 
 	tk.type = p_type;

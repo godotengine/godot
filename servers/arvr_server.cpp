@@ -109,6 +109,7 @@ Transform ARVRServer::get_reference_frame() const {
 };
 
 void ARVRServer::center_on_hmd(RotationMode p_rotation_mode, bool p_keep_height) {
+	ERR_FAIL_INDEX(p_rotation_mode, 3);
 	if (primary_interface != NULL) {
 		// clear our current reference frame or we'll end up double adjusting it
 		reference_frame = Transform();

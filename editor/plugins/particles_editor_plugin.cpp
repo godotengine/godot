@@ -270,7 +270,7 @@ void ParticlesEditor::_notification(int p_notification) {
 }
 
 void ParticlesEditor::_menu_option(int p_option) {
-
+	ERR_FAIL_INDEX(p_option, 6);
 	switch (p_option) {
 
 		case MENU_OPTION_GENERATE_AABB: {

@@ -833,11 +833,14 @@ public:
 
 	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
 
+		ERR_FAIL_INDEX_V(p_join_type, 3, Vector<Vector<Point2> >());
 		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
 	}
 
 	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
 
+		ERR_FAIL_INDEX_V(p_join_type, 3, Vector<Vector<Point2> >());
+		ERR_FAIL_INDEX_V(p_end_type, 5, Vector<Vector<Point2> >());
 		ERR_EXPLAIN("Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
 		ERR_FAIL_COND_V(p_end_type == END_POLYGON, Vector<Vector<Point2> >());
 

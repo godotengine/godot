@@ -133,6 +133,7 @@ String UPNPDevice::get_igd_our_addr() const {
 }
 
 void UPNPDevice::set_igd_status(IGDStatus status) {
+	ERR_FAIL_INDEX(status, 10);
 	igd_status = status;
 }
 

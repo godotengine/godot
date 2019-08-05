@@ -152,10 +152,12 @@ protected:
 
 private:
 	void _create_empty(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
+		ERR_FAIL_INDEX(p_format, FORMAT_MAX);
 		create(p_width, p_height, p_use_mipmaps, p_format);
 	}
 
 	void _create_from_data(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const PoolVector<uint8_t> &p_data) {
+		ERR_FAIL_INDEX(p_format, FORMAT_MAX);
 		create(p_width, p_height, p_use_mipmaps, p_format, p_data);
 	}
 

@@ -196,7 +196,7 @@ void GDScriptParser::_make_completable_call(int p_arg) {
 }
 
 bool GDScriptParser::_get_completable_identifier(CompletionType p_type, StringName &identifier) {
-
+	ERR_FAIL_INDEX_V(p_type, 15, false);
 	identifier = StringName();
 	if (tokenizer->is_token_literal()) {
 		identifier = tokenizer->get_token_literal();

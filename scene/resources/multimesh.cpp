@@ -280,6 +280,7 @@ RID MultiMesh::get_rid() const {
 
 void MultiMesh::set_color_format(ColorFormat p_color_format) {
 
+	ERR_FAIL_INDEX(p_color_format, 3);
 	ERR_FAIL_COND(instance_count > 0);
 	color_format = p_color_format;
 }
@@ -291,6 +292,7 @@ MultiMesh::ColorFormat MultiMesh::get_color_format() const {
 
 void MultiMesh::set_custom_data_format(CustomDataFormat p_custom_data_format) {
 
+	ERR_FAIL_INDEX(p_custom_data_format, 3);
 	ERR_FAIL_COND(instance_count > 0);
 	custom_data_format = p_custom_data_format;
 }

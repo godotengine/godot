@@ -156,6 +156,7 @@ PoolVector<Face3> Light::get_faces(uint32_t p_usage_flags) const {
 }
 
 void Light::set_bake_mode(BakeMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	bake_mode = p_mode;
 	VS::get_singleton()->light_set_use_gi(light, p_mode != BAKE_DISABLED);
 }
@@ -345,6 +346,7 @@ Light::~Light() {
 
 void DirectionalLight::set_shadow_mode(ShadowMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	shadow_mode = p_mode;
 	VS::get_singleton()->light_directional_set_shadow_mode(light, VS::LightDirectionalShadowMode(p_mode));
 }

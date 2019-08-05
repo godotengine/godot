@@ -141,6 +141,7 @@ Rect2 RichTextLabel::_get_text_rect() {
 }
 int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &y, int p_width, int p_line, ProcessMode p_mode, const Ref<Font> &p_base_font, const Color &p_base_color, const Color &p_font_color_shadow, bool p_shadow_as_outline, const Point2 &shadow_ofs, const Point2i &p_click_pos, Item **r_click_item, int *r_click_char, bool *r_outside, int p_char_count) {
 
+	ERR_FAIL_INDEX_V(p_mode, 3, 0);
 	RID ci;
 	if (r_outside)
 		*r_outside = false;

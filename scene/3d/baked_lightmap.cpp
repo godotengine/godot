@@ -749,6 +749,7 @@ float BakedLightmap::get_energy() const {
 }
 
 void BakedLightmap::set_bake_quality(BakeQuality p_quality) {
+	ERR_FAIL_INDEX(p_quality, 3);
 	bake_quality = p_quality;
 }
 

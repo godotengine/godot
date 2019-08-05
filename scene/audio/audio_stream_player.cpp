@@ -315,6 +315,7 @@ bool AudioStreamPlayer::is_autoplay_enabled() {
 
 void AudioStreamPlayer::set_mix_target(MixTarget p_target) {
 
+	ERR_FAIL_INDEX(p_target, 3);
 	mix_target = p_target;
 }
 

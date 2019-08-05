@@ -515,6 +515,7 @@ bool AnimationTree::is_active() const {
 
 void AnimationTree::set_process_mode(AnimationProcessMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	if (process_mode == p_mode)
 		return;
 

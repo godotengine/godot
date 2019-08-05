@@ -55,6 +55,8 @@ Curve::Curve() {
 }
 
 int Curve::add_point(Vector2 p_pos, real_t left_tangent, real_t right_tangent, TangentMode left_mode, TangentMode right_mode) {
+	ERR_FAIL_INDEX_V(left_mode, 3, 0);
+	ERR_FAIL_INDEX_V(right_mode, 3, 0);
 	// Add a point and preserve order
 
 	// Curve bounds is in 0..1
@@ -167,6 +169,7 @@ void Curve::set_point_right_tangent(int i, real_t tangent) {
 }
 
 void Curve::set_point_left_mode(int i, TangentMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	ERR_FAIL_INDEX(i, _points.size());
 	_points.write[i].left_mode = p_mode;
 	if (i > 0) {
@@ -179,6 +182,7 @@ void Curve::set_point_left_mode(int i, TangentMode p_mode) {
 }
 
 void Curve::set_point_right_mode(int i, TangentMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	ERR_FAIL_INDEX(i, _points.size());
 	_points.write[i].right_mode = p_mode;
 	if (i + 1 < _points.size()) {

@@ -110,6 +110,7 @@ Ref<AudioEffectInstance> AudioEffectDistortion::instance() {
 
 void AudioEffectDistortion::set_mode(Mode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 5);
 	mode = p_mode;
 }
 

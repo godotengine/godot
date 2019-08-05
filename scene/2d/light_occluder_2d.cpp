@@ -111,6 +111,7 @@ bool OccluderPolygon2D::is_closed() const {
 
 void OccluderPolygon2D::set_cull_mode(CullMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	cull = p_mode;
 	VS::get_singleton()->canvas_occluder_polygon_set_cull_mode(occ_polygon, VS::CanvasOccluderPolygonCullMode(p_mode));
 }

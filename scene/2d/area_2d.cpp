@@ -35,6 +35,7 @@
 
 void Area2D::set_space_override_mode(SpaceOverride p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 5);
 	space_override = p_mode;
 	Physics2DServer::get_singleton()->area_set_space_override_mode(get_rid(), Physics2DServer::AreaSpaceOverrideMode(p_mode));
 }

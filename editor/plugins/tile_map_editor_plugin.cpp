@@ -121,6 +121,7 @@ void TileMapEditor::_update_button_tool() {
 }
 
 void TileMapEditor::_button_tool_select(int p_tool) {
+	ERR_FAIL_INDEX(p_tool, 11);
 	tool = (Tool)p_tool;
 	_update_button_tool();
 	switch (tool) {

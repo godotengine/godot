@@ -116,6 +116,7 @@ public:
 	template <class T>
 	static void make_default(AccessType p_access) {
 
+		ERR_FAIL_INDEX(p_access, ACCESS_MAX);
 		create_func[p_access] = _create_builtin<T>;
 	}
 

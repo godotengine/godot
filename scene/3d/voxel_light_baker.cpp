@@ -718,6 +718,7 @@ void VoxelLightBaker::_init_light_plot(int p_idx, int p_level, int p_x, int p_y,
 }
 
 void VoxelLightBaker::begin_bake_light(BakeQuality p_quality, BakeMode p_bake_mode, float p_propagation, float p_energy) {
+	ERR_FAIL_INDEX(p_quality, 3);
 	_check_init_light();
 	propagation = p_propagation;
 	bake_quality = p_quality;

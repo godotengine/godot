@@ -250,6 +250,7 @@ bool Button::get_clip_text() const {
 
 void Button::set_text_align(TextAlign p_align) {
 
+	ERR_FAIL_INDEX(p_align, 3);
 	align = p_align;
 	update();
 }

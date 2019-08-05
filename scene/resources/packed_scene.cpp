@@ -48,6 +48,7 @@ bool SceneState::can_instance() const {
 
 Node *SceneState::instance(GenEditState p_edit_state) const {
 
+	ERR_FAIL_INDEX_V(p_edit_state, 3, NULL);
 	// nodes where instancing failed (because something is missing)
 	List<Node *> stray_instances;
 
@@ -1689,6 +1690,7 @@ bool PackedScene::can_instance() const {
 
 Node *PackedScene::instance(GenEditState p_edit_state) const {
 
+	ERR_FAIL_INDEX_V(p_edit_state, 3, NULL);
 #ifndef TOOLS_ENABLED
 	if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
 		ERR_EXPLAIN("Edit state is only for editors, does not work without tools compiled");

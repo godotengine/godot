@@ -345,6 +345,7 @@ void TileSet::create_tile(int p_id) {
 }
 
 void TileSet::autotile_set_bitmask_mode(int p_id, BitmaskMode p_mode) {
+	ERR_FAIL_INDEX(p_mode, 3);
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].autotile_data.bitmask_mode = p_mode;
 	_change_notify("");
@@ -439,6 +440,7 @@ Rect2 TileSet::tile_get_region(int p_id) const {
 }
 
 void TileSet::tile_set_tile_mode(int p_id, TileMode p_tile_mode) {
+	ERR_FAIL_INDEX(p_tile_mode, 3);
 	ERR_FAIL_COND(!tile_map.has(p_id));
 	tile_map[p_id].tile_mode = p_tile_mode;
 	emit_changed();

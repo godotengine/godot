@@ -876,6 +876,7 @@ void EditorAssetLibrary::_update_image_queue() {
 
 void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, ImageType p_type, int p_image_index) {
 
+	ERR_FAIL_INDEX(p_type, 3);
 	ImageQueue iq;
 	iq.image_url = p_image_url;
 	iq.image_index = p_image_index;
@@ -907,6 +908,7 @@ void EditorAssetLibrary::_repository_changed(int p_repository_id) {
 }
 
 void EditorAssetLibrary::_support_toggled(int p_support) {
+	ERR_FAIL_INDEX(p_support, SUPPORT_MAX);
 	support->get_popup()->set_item_checked(p_support, !support->get_popup()->is_item_checked(p_support));
 	_search();
 }

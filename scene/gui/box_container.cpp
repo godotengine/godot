@@ -262,6 +262,7 @@ void BoxContainer::_notification(int p_what) {
 }
 
 void BoxContainer::set_alignment(AlignMode p_align) {
+	ERR_FAIL_INDEX(p_align, 3);
 	align = p_align;
 	_resort();
 }

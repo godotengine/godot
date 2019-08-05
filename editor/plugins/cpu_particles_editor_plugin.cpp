@@ -48,7 +48,7 @@ void CPUParticlesEditor::_notification(int p_notification) {
 }
 
 void CPUParticlesEditor::_menu_option(int p_option) {
-
+	ERR_FAIL_INDEX(p_option, 4);
 	switch (p_option) {
 
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH: {

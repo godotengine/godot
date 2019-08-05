@@ -172,6 +172,7 @@ ARVRPositionalTracker::TrackerHand ARVRPositionalTracker::get_hand() const {
 };
 
 void ARVRPositionalTracker::set_hand(const ARVRPositionalTracker::TrackerHand p_hand) {
+	ERR_FAIL_INDEX(p_hand, 3);
 	ARVRServer *arvr_server = ARVRServer::get_singleton();
 	ERR_FAIL_NULL(arvr_server);
 

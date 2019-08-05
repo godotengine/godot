@@ -985,6 +985,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 }
 
 void ScriptEditorDebugger::_set_reason_text(const String &p_reason, MessageType p_type) {
+	ERR_FAIL_INDEX(p_type, 3);
 	switch (p_type) {
 		case MESSAGE_ERROR:
 			reason->add_color_override("font_color", get_color("error_color", "Editor"));

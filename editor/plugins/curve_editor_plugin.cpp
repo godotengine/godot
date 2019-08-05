@@ -451,6 +451,7 @@ void CurveEditor::remove_point(int index) {
 
 void CurveEditor::toggle_linear(TangentIndex tangent) {
 	ERR_FAIL_COND(_curve_ref.is_null());
+	ERR_FAIL_COND(tangent < -1 || tangent > 1);
 
 	UndoRedo &ur = *EditorNode::get_singleton()->get_undo_redo();
 	ur.create_action(TTR("Toggle Curve Linear Tangent"));
@@ -520,6 +521,7 @@ void CurveEditor::update_view_transform() {
 }
 
 Vector2 CurveEditor::get_tangent_view_pos(int i, TangentIndex tangent) const {
+	ERR_FAIL_COND_V(tangent < -1 || tangent > 1, Vector2());
 
 	Vector2 dir;
 	if (tangent == TANGENT_LEFT)

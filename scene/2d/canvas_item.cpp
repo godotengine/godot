@@ -197,6 +197,7 @@ bool CanvasItemMaterial::_is_shader_dirty() const {
 }
 void CanvasItemMaterial::set_blend_mode(BlendMode p_blend_mode) {
 
+	ERR_FAIL_INDEX(p_blend_mode, 6);
 	blend_mode = p_blend_mode;
 	_queue_shader_change();
 }
@@ -207,6 +208,7 @@ CanvasItemMaterial::BlendMode CanvasItemMaterial::get_blend_mode() const {
 
 void CanvasItemMaterial::set_light_mode(LightMode p_light_mode) {
 
+	ERR_FAIL_INDEX(p_light_mode, 3);
 	light_mode = p_light_mode;
 	_queue_shader_change();
 }

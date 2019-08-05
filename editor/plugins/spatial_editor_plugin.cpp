@@ -3951,7 +3951,7 @@ void SpatialEditorViewportContainer::_notification(int p_what) {
 }
 
 void SpatialEditorViewportContainer::set_view(View p_view) {
-
+	ERR_FAIL_INDEX(p_view, 6);
 	view = p_view;
 	queue_sort();
 }

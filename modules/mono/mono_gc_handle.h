@@ -63,6 +63,7 @@ public:
 	_FORCE_INLINE_ MonoObject *get_target() const { return released ? NULL : mono_gchandle_get_target(handle); }
 
 	_FORCE_INLINE_ void set_handle(uint32_t p_handle, HandleType p_handle_type) {
+		ERR_FAIL_INDEX(p_handle_type, 2);
 		released = false;
 		weak = p_handle_type == WEAK_HANDLE;
 		handle = p_handle;

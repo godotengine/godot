@@ -414,6 +414,8 @@ static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p
 
 void Image::convert(Format p_new_format) {
 
+	ERR_FAIL_INDEX(p_new_format, FORMAT_MAX);
+
 	if (data.size() == 0)
 		return;
 
@@ -885,6 +887,8 @@ void Image::resize_to_po2(bool p_square) {
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
+	ERR_FAIL_INDEX(p_interpolation, 5); //7);
+
 	if (data.size() == 0) {
 		ERR_EXPLAIN("Cannot resize image before creating it, use create() or create_from_data() first.");
 		ERR_FAIL();
@@ -1282,6 +1286,7 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 
 bool Image::_can_modify(Format p_format) const {
 
+	ERR_FAIL_INDEX_V(p_format, FORMAT_MAX, false);
 	return p_format <= FORMAT_RGBE9995;
 }
 
@@ -1595,6 +1600,7 @@ PoolVector<uint8_t> Image::get_data() const {
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format) {
 
+	ERR_FAIL_INDEX(p_format, FORMAT_MAX);
 	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
 	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
 
@@ -1614,6 +1620,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 
 void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_format, const PoolVector<uint8_t> &p_data) {
 
+	ERR_FAIL_INDEX(p_format, FORMAT_MAX);
 	ERR_FAIL_INDEX(p_width - 1, MAX_WIDTH);
 	ERR_FAIL_INDEX(p_height - 1, MAX_HEIGHT);
 
@@ -1962,6 +1969,7 @@ Error Image::decompress() {
 
 Error Image::compress(CompressMode p_mode, CompressSource p_source, float p_lossy_quality) {
 
+	ERR_FAIL_INDEX_V(p_mode, 6, ERR_INVALID_PARAMETER);
 	switch (p_mode) {
 
 		case COMPRESS_S3TC: {

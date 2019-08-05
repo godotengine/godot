@@ -870,6 +870,7 @@ void RigidBody2D::add_torque(const float p_torque) {
 
 void RigidBody2D::set_continuous_collision_detection_mode(CCDMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	ccd_mode = p_mode;
 	Physics2DServer::get_singleton()->body_set_continuous_collision_detection_mode(get_rid(), Physics2DServer::CCDMode(p_mode));
 }

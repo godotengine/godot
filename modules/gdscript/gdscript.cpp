@@ -2068,7 +2068,7 @@ String GDScriptWarning::get_name() const {
 }
 
 String GDScriptWarning::get_name_from_code(Code p_code) {
-	ERR_FAIL_COND_V(p_code < 0 || p_code >= WARNING_MAX, String());
+	ERR_FAIL_INDEX_V(p_code, WARNING_MAX, String());
 
 	static const char *names[] = {
 		"UNASSIGNED_VARIABLE",

@@ -1961,6 +1961,7 @@ void Control::add_constant_override(const StringName &p_name, int p_constant) {
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 
+	ERR_FAIL_INDEX(p_focus_mode, 3);
 	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus())
 		release_focus();
 
@@ -2320,6 +2321,7 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
 
+	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 	data.default_cursor = p_shape;
 }
 
@@ -2787,6 +2789,7 @@ bool Control::is_clipping_contents() {
 
 void Control::set_h_grow_direction(GrowDirection p_direction) {
 
+	ERR_FAIL_INDEX(p_direction, 3);
 	data.h_grow = p_direction;
 	_size_changed();
 }
@@ -2798,6 +2801,7 @@ Control::GrowDirection Control::get_h_grow_direction() const {
 
 void Control::set_v_grow_direction(GrowDirection p_direction) {
 
+	ERR_FAIL_INDEX(p_direction, 3);
 	data.v_grow = p_direction;
 	_size_changed();
 }

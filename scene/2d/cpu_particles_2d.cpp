@@ -419,6 +419,7 @@ bool CPUParticles2D::get_particle_flag(Flags p_flag) const {
 
 void CPUParticles2D::set_emission_shape(EmissionShape p_shape) {
 
+	ERR_FAIL_INDEX(p_shape, 5);
 	emission_shape = p_shape;
 	_change_notify();
 }

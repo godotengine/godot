@@ -250,6 +250,7 @@ Rect2 StyleBoxTexture::get_region_rect() const {
 
 void StyleBoxTexture::set_h_axis_stretch_mode(AxisStretchMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_h = p_mode;
 	emit_changed();
 }
@@ -261,6 +262,7 @@ StyleBoxTexture::AxisStretchMode StyleBoxTexture::get_h_axis_stretch_mode() cons
 
 void StyleBoxTexture::set_v_axis_stretch_mode(AxisStretchMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	axis_v = p_mode;
 	emit_changed();
 }

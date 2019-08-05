@@ -407,6 +407,7 @@ AudioStreamPlaybackSample::AudioStreamPlaybackSample() {
 
 void AudioStreamSample::set_format(Format p_format) {
 
+	ERR_FAIL_INDEX(p_format, 3);
 	format = p_format;
 }
 

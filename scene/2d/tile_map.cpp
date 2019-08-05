@@ -1425,6 +1425,7 @@ bool TileMap::get_collision_mask_bit(int p_bit) const {
 
 void TileMap::set_mode(Mode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	_clear_quadrants();
 	mode = p_mode;
 	_recreate_quadrants();
@@ -1437,6 +1438,7 @@ TileMap::Mode TileMap::get_mode() const {
 
 void TileMap::set_half_offset(HalfOffset p_half_offset) {
 
+	ERR_FAIL_INDEX(p_half_offset, 5);
 	_clear_quadrants();
 	half_offset = p_half_offset;
 	_recreate_quadrants();
@@ -1445,6 +1447,7 @@ void TileMap::set_half_offset(HalfOffset p_half_offset) {
 
 void TileMap::set_tile_origin(TileOrigin p_tile_origin) {
 
+	ERR_FAIL_INDEX(p_tile_origin, 3);
 	_clear_quadrants();
 	tile_origin = p_tile_origin;
 	_recreate_quadrants();

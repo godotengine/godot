@@ -258,6 +258,8 @@ DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
 
 DirAccess *DirAccess::create(AccessType p_access) {
 
+	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, NULL);
+
 	DirAccess *da = create_func[p_access] ? create_func[p_access]() : NULL;
 	if (da) {
 		da->_access_type = p_access;
@@ -267,6 +269,8 @@ DirAccess *DirAccess::create(AccessType p_access) {
 };
 
 String DirAccess::get_full_path(const String &p_path, AccessType p_access) {
+
+	ERR_FAIL_INDEX_V(p_access, ACCESS_MAX, "");
 
 	DirAccess *d = DirAccess::create(p_access);
 	if (!d)

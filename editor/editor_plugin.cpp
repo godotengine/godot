@@ -326,6 +326,7 @@ ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const 
 
 void EditorPlugin::add_control_to_dock(DockSlot p_slot, Control *p_control) {
 
+	ERR_FAIL_INDEX(p_slot, DOCK_SLOT_MAX);
 	ERR_FAIL_NULL(p_control);
 	EditorNode::get_singleton()->add_control_to_dock(EditorNode::DockSlot(p_slot), p_control);
 }
@@ -344,7 +345,7 @@ void EditorPlugin::remove_control_from_bottom_panel(Control *p_control) {
 
 void EditorPlugin::add_control_to_container(CustomControlContainer p_location, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
-
+	ERR_FAIL_INDEX(p_location, 12);
 	switch (p_location) {
 
 		case CONTAINER_TOOLBAR: {
@@ -418,6 +419,7 @@ void EditorPlugin::add_control_to_container(CustomControlContainer p_location, C
 
 void EditorPlugin::remove_control_from_container(CustomControlContainer p_location, Control *p_control) {
 	ERR_FAIL_NULL(p_control);
+	ERR_FAIL_INDEX(p_location, 12);
 
 	switch (p_location) {
 

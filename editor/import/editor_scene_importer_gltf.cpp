@@ -471,7 +471,7 @@ String EditorSceneImporterGLTF::_get_component_type_name(uint32_t p_component) {
 }
 
 String EditorSceneImporterGLTF::_get_type_name(GLTFType p_component) {
-
+	ERR_FAIL_INDEX_V(p_component, 7, "");
 	static const char *names[] = {
 		"float",
 		"vec2",
@@ -487,6 +487,7 @@ String EditorSceneImporterGLTF::_get_type_name(GLTFType p_component) {
 
 Error EditorSceneImporterGLTF::_decode_buffer_view(GLTFState &state, int p_buffer_view, double *dst, int skip_every, int skip_bytes, int element_size, int count, GLTFType type, int component_count, int component_type, int component_size, bool normalized, int byte_offset, bool for_vertex) {
 
+	ERR_FAIL_INDEX_V(type, 7, ERR_INVALID_PARAMETER);
 	const GLTFBufferView &bv = state.buffer_views[p_buffer_view];
 
 	int stride = bv.byte_stride ? bv.byte_stride : element_size;

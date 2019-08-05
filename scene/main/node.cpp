@@ -440,6 +440,7 @@ bool Node::is_physics_processing_internal() const {
 
 void Node::set_pause_mode(PauseMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	if (data.pause_mode == p_mode)
 		return;
 

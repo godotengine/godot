@@ -117,6 +117,7 @@ void EQ::recalculate_band_coefficients() {
 
 void EQ::set_preset_band_mode(Preset p_preset) {
 
+	ERR_FAIL_INDEX(p_preset, 5);
 	band.clear();
 
 #define PUSH_BANDS(m_bands)             \

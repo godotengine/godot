@@ -847,6 +847,7 @@ void VisualShader::_get_property_list(List<PropertyInfo> *p_list) const {
 
 Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBuilder &global_code_per_node, Map<Type, StringBuilder> &global_code_per_func, StringBuilder &code, Vector<VisualShader::DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview, Set<StringName> &r_classes) const {
 
+	ERR_FAIL_INDEX_V(type, TYPE_MAX, ERR_INVALID_PARAMETER);
 	const Ref<VisualShaderNode> vsnode = graph[type].nodes[node].node;
 
 	//check inputs recursively first

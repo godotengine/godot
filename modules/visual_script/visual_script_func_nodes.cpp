@@ -465,6 +465,7 @@ NodePath VisualScriptFunctionCall::get_base_path() const {
 
 void VisualScriptFunctionCall::set_call_mode(CallMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 5);
 	if (call_mode == p_mode)
 		return;
 
@@ -488,6 +489,7 @@ void VisualScriptFunctionCall::set_use_default_args(int p_amount) {
 
 void VisualScriptFunctionCall::set_rpc_call_mode(VisualScriptFunctionCall::RPCCallMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 5);
 	if (rpc_call_mode == p_mode)
 		return;
 	rpc_call_mode = p_mode;

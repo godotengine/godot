@@ -1312,6 +1312,7 @@ SpatialMaterial::DepthDrawMode SpatialMaterial::get_depth_draw_mode() const {
 
 void SpatialMaterial::set_cull_mode(CullMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 3);
 	if (cull_mode == p_mode)
 		return;
 
@@ -1325,6 +1326,7 @@ SpatialMaterial::CullMode SpatialMaterial::get_cull_mode() const {
 
 void SpatialMaterial::set_diffuse_mode(DiffuseMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 5);
 	if (diffuse_mode == p_mode)
 		return;
 
@@ -1338,6 +1340,7 @@ SpatialMaterial::DiffuseMode SpatialMaterial::get_diffuse_mode() const {
 
 void SpatialMaterial::set_specular_mode(SpecularMode p_mode) {
 
+	ERR_FAIL_INDEX(p_mode, 5);
 	if (specular_mode == p_mode)
 		return;
 
@@ -1410,6 +1413,7 @@ Ref<Texture> SpatialMaterial::get_texture_by_name(StringName p_name) const {
 }
 
 void SpatialMaterial::_validate_feature(const String &text, Feature feature, PropertyInfo &property) const {
+	ERR_FAIL_INDEX(feature, FEATURE_MAX);
 	if (property.name.begins_with(text) && property.name != text + "_enabled" && !features[feature]) {
 		property.usage = 0;
 	}
@@ -1757,6 +1761,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_roughness_texture_channel()
 
 void SpatialMaterial::set_ao_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	ao_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->ao_texture_channel, _get_texture_mask(p_channel));
 }
@@ -1767,6 +1772,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_ao_texture_channel() const 
 
 void SpatialMaterial::set_refraction_texture_channel(TextureChannel p_channel) {
 
+	ERR_FAIL_INDEX(p_channel, 5);
 	refraction_texture_channel = p_channel;
 	VS::get_singleton()->material_set_param(_get_material(), shader_names->refraction_texture_channel, _get_texture_mask(p_channel));
 }

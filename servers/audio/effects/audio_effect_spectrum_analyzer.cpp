@@ -156,6 +156,7 @@ void AudioEffectSpectrumAnalyzerInstance::_bind_methods() {
 
 Vector2 AudioEffectSpectrumAnalyzerInstance::get_magnitude_for_frequency_range(float p_begin, float p_end, MagnitudeMode p_mode) const {
 
+	ERR_FAIL_INDEX_V(p_mode, MAGNITUDE_MAX, Vector2());
 	if (last_fft_time == 0) {
 		return Vector2();
 	}
