@@ -224,9 +224,8 @@ def configure_msvc(env, manual_msvc_config):
             'shell32', 'advapi32', 'dinput8', 'dxguid', 'imm32', 'bcrypt', 'Avrt',
             'dwmapi']
 
-    env.Prepend(CPPPATH=['#thirdparty/vulkan/include/', "#thirdparty/vulkan/registry/"])
-    env.AppendUnique(CPPDEFINES = ['VULKAN_ENABLED'])
-    if not env["builtin_vulkan_loader"]:
+    env.AppendUnique(CPPDEFINES=['VULKAN_ENABLED'])
+    if not env['builtin_vulkan']:
         LIBS += ['vulkan']
     else:
         LIBS += ['cfgmgr32']
@@ -361,13 +360,12 @@ def configure_mingw(env):
     env.Append(CPPDEFINES=[('WINVER', env['target_win_version']), ('_WIN32_WINNT', env['target_win_version'])])
     env.Append(LIBS=['mingw32', 'dsound', 'ole32', 'd3d9', 'winmm', 'gdi32', 'iphlpapi', 'shlwapi', 'wsock32', 'ws2_32', 'kernel32', 'oleaut32', 'dinput8', 'dxguid', 'ksuser', 'imm32', 'bcrypt', 'avrt', 'uuid', 'dwmapi'])
 
-    env.Prepend(CPPPATH=['#thirdparty/vulkan/include/', "#thirdparty/vulkan/registry/"])
     env.Append(CPPDEFINES=['VULKAN_ENABLED'])
-    if not env["builtin_vulkan_loader"]:
+    if not env['builtin_vulkan']:
         env.Append(LIBS=['vulkan'])
     else:
         env.Append(LIBS=['cfgmgr32'])
-    
+
     ## TODO !!! Reenable when OpenGLES Rendering Device is implemented !!!
     #env.Append(CPPDEFINES=['OPENGL_ENABLED'])
     env.Append(LIBS=['opengl32'])
