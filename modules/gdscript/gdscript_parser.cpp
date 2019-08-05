@@ -3487,6 +3487,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 			} break;
 			case GDScriptTokenizer::TK_PR_CLASS_NAME: {
 
+				_mark_line_as_safe(tokenizer->get_token_line());
 				if (p_class->owner) {
 					_set_error("'class_name' is only valid for the main class namespace.");
 					return;
