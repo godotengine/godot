@@ -520,8 +520,8 @@ public:
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;
 	bool is_moving_selection() const;
+	bool is_snap_enabled() const;
 	float get_moving_selection_offset() const;
-	bool is_snap_enabled();
 	float snap_time(float p_value);
 	bool is_grouping_tracks();
 
