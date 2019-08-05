@@ -60,9 +60,9 @@
 #include "murmurhash.h"
 
 #if defined(_WIN32)
-#include <Cfgmgr32.h>
+#include <cfgmgr32.h>
 #include <initguid.h>
-#include <Devpkey.h>
+#include <devpkey.h>
 #endif
 
 // This is a CMake generated file with #defines for any functions/includes
