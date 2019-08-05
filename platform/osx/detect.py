@@ -136,16 +136,15 @@ def configure(env):
     env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'CoreVideo', '-framework', 'AVFoundation', '-framework', 'CoreMedia'])
     env.Append(LIBS=['pthread', 'z'])
 
-    env.Prepend(CPPPATH=['#thirdparty/vulkan/include/', "#thirdparty/vulkan/registry/"])
     env.Append(CPPDEFINES=['VULKAN_ENABLED'])
-
-    #env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])
-
     env.Append(LINKFLAGS=['-framework', 'Metal', '-framework', 'QuartzCore', '-framework', 'IOSurface'])
     if (env['use_static_mvk']):
         env.Append(LINKFLAGS=['-framework', 'MoltenVK'])
-    elif not env["builtin_vulkan_loader"]:
+        env['builtin_vulkan'] = False
+    elif not env['builtin_vulkan']:
         env.Append(LIBS=['vulkan'])
+
+    #env.Append(CPPDEFINES=['GLES_ENABLED', 'OPENGL_ENABLED'])
 
     env.Append(CCFLAGS=['-mmacosx-version-min=10.11'])
     env.Append(LINKFLAGS=['-mmacosx-version-min=10.11'])
