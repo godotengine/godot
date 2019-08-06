@@ -3280,15 +3280,36 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 			case GDScriptTokenizer::TK_PR_ASSERT: {
 
 				tokenizer->advance();
-				Node *condition = _parse_and_reduce_expression(p_block, p_static);
-				if (!condition) {
-					if (_recover_from_completion()) {
-						break;
-					}
+
+				if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+					_set_error("Expected '(' after assert");
 					return;
 				}
+
+				tokenizer->advance();
+
+				Vector<Node *> args;
+				const bool result = _parse_arguments(p_block, args, p_static);
+				if (!result) {
+					return;
+				}
+
+				if (args.empty() || args.size() > 2) {
+					_set_error("Wrong number of arguments, expected 1 or 2");
+					return;
+				}
+
 				AssertNode *an = alloc_node<AssertNode>();
-				an->condition = condition;
+				an->condition = _reduce_expression(args[0], p_static);
+
+				if (args.size() == 2) {
+					an->message = _reduce_expression(args[1], p_static);
+				} else {
+					ConstantNode *message_node = alloc_node<ConstantNode>();
+					message_node->value = String();
+					an->message = message_node;
+				}
+
 				p_block->statements.push_back(an);
 
 				if (!_end_statement()) {

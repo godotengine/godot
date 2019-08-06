@@ -1520,8 +1520,16 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 				if (ret2 < 0)
 					return ERR_PARSE_ERROR;
 
+				int message_ret = 0;
+				if (as->message) {
+					message_ret = _parse_expression(codegen, as->message, p_stack_level + 1, false);
+					if (message_ret < 0)
+						return ERR_PARSE_ERROR;
+				}
+
 				codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSERT);
 				codegen.opcodes.push_back(ret2);
+				codegen.opcodes.push_back(message_ret);
 #endif
 			} break;
 			case GDScriptParser::Node::TYPE_BREAKPOINT: {

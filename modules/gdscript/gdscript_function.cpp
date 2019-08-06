@@ -1475,20 +1475,25 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 			DISPATCH_OPCODE;
 
 			OPCODE(OPCODE_ASSERT) {
-				CHECK_SPACE(2);
+				CHECK_SPACE(3);
 
 #ifdef DEBUG_ENABLED
 				GET_VARIANT_PTR(test, 1);
+				GET_VARIANT_PTR(message, 2);
 				bool result = test->booleanize();
 
 				if (!result) {
-
-					err_text = "Assertion failed.";
+					const String &message_str = *message;
+					if (message_str.empty()) {
+						err_text = "Assertion failed.";
+					} else {
+						err_text = "Assertion failed: " + message_str;
+					}
 					OPCODE_BREAK;
 				}
 
 #endif
-				ip += 2;
+				ip += 3;
 			}
 			DISPATCH_OPCODE;
 
