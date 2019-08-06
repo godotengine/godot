@@ -1606,7 +1606,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	hb->add_child(frame);
 	frame->set_custom_minimum_size(Size2(60, 0));
 	frame->set_stretch_ratio(2);
-	frame->set_step(0.00001);
+	frame->set_step(0.0001);
 	frame->set_tooltip(TTR("Animation position (in seconds)."));
 
 	hb->add_child(memnew(VSeparator));
