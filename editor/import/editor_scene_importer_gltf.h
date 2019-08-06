@@ -94,12 +94,12 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		struct Joint {
 			int skin;
-			int bone;
+			int skin_bone_index;
 			int godot_bone_index;
 
 			Joint() {
 				skin = -1;
-				bone = -1;
+				skin_bone_index = -1;
 				godot_bone_index = -1;
 			}
 		};

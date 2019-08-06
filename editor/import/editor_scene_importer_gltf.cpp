@@ -1448,9 +1448,15 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 			new_skin.name = d["name"];
 		}
 
-		// The target skin for these nodes
-		int target_skin_id = duplicate_skin_id == -1 ? i : duplicate_skin_id;
-		GLTFSkin *target_skin = duplicate_skin_id == -1 ? &new_skin : &state.skins[duplicate_skin_id];
+		// Set these to the new_skin by default
+		int target_skin_id = i;
+		GLTFSkin *target_skin = &new_skin;
+
+		// if we have a valid duplicate_skin, then use that skin as the target instead
+		if (duplicate_skin_id != -1) {
+			target_skin_id = duplicate_skin_id;
+			target_skin = &state.skins.write[duplicate_skin_id];
+		}
 
 		for (int j = 0; j < joints_to_add.size(); ++j) {
 			const int node_index = joints_to_add[j];
@@ -1461,7 +1467,7 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 
 			GLTFNode::Joint joint;
 			joint.skin = target_skin_id;
-			joint.bone = node_index; // Check this
+			joint.skin_bone_index = state.nodes[node_index]->joints.size();
 			state.nodes[node_index]->joints.push_back(joint);
 
 			GLTFSkin::Bone bone;
@@ -1845,7 +1851,7 @@ void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vecto
 		ERR_FAIL_COND(skin < 0);
 
 		Skeleton *s = skeletons[skin];
-		const GLTFNode *gltf_bone_node = state.nodes[state.skins[skin].bones[n->joints[i].bone].node];
+		const GLTFNode *gltf_bone_node = state.nodes[state.skins[skin].bones[n->joints[i].skin_bone_index].node];
 		const String bone_name = gltf_bone_node->name;
 		const int parent = gltf_bone_node->parent;
 		const int parent_index = s->find_bone(state.nodes[parent]->name);
