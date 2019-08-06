@@ -732,6 +732,8 @@ public:
 	bool item_has_editor(Object *p_object);
 	void hide_top_editors();
 
+	void select_editor_by_name(const String &p_name);
+
 	void open_request(const String &p_path);
 
 	bool is_changing_scene() const;

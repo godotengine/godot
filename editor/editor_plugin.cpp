@@ -149,6 +149,10 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 	return textures;
 }
 
+void EditorInterface::set_main_screen_editor(const String &p_name) {
+	EditorNode::get_singleton()->select_editor_by_name(p_name);
+}
+
 Control *EditorInterface::get_editor_viewport() {
 
 	return EditorNode::get_singleton()->get_viewport();
@@ -260,6 +264,10 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
 }
 
+void EditorInterface::set_distraction_free_mode(bool p_enter) {
+	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
+}
+
 EditorInterface *EditorInterface::singleton = NULL;
 
 void EditorInterface::_bind_methods() {
@@ -288,6 +296,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
+	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 }
 
 EditorInterface::EditorInterface() {

@@ -2782,6 +2782,20 @@ void EditorNode::_editor_select(int p_which) {
 	}
 }
 
+void EditorNode::select_editor_by_name(const String &p_name) {
+	ERR_FAIL_COND(p_name == "");
+
+	for (int i = 0; i < main_editor_buttons.size(); i++) {
+		if (main_editor_buttons[i]->get_text() == p_name) {
+			_editor_select(i);
+			return;
+		}
+	}
+
+	ERR_EXPLAIN("The editor name '" + p_name + "' was not found.");
+	ERR_FAIL();
+}
+
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
 
 	if (p_editor->has_main_screen()) {
