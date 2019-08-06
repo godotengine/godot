@@ -357,10 +357,11 @@ void ScriptDebuggerRemote::_get_output() {
 		locking = false;
 	}
 
-	if (n_errors_dropped > 0) {
+	if (n_errors_dropped == 1) {
+		// Only print one message about dropping per second
 		OutputError oe;
 		oe.error = "TOO_MANY_ERRORS";
-		oe.error_descr = "Too many errors! " + String::num_int64(n_errors_dropped) + " errors were dropped.";
+		oe.error_descr = "Too many errors! Ignoring errors for up to 1 second.";
 		oe.warning = false;
 		uint64_t time = OS::get_singleton()->get_ticks_msec();
 		oe.hr = time / 3600000;
@@ -368,7 +369,20 @@ void ScriptDebuggerRemote::_get_output() {
 		oe.sec = (time / 1000) % 60;
 		oe.msec = time % 1000;
 		errors.push_back(oe);
-		n_errors_dropped = 0;
+	}
+
+	if (n_warnings_dropped == 1) {
+		// Only print one message about dropping per second
+		OutputError oe;
+		oe.error = "TOO_MANY_WARNINGS";
+		oe.error_descr = "Too many warnings! Ignoring warnings for up to 1 second.";
+		oe.warning = true;
+		uint64_t time = OS::get_singleton()->get_ticks_msec();
+		oe.hr = time / 3600000;
+		oe.min = (time / 60000) % 60;
+		oe.sec = (time / 1000) % 60;
+		oe.msec = time % 1000;
+		errors.push_back(oe);
 	}
 
 	while (errors.size()) {
@@ -934,6 +948,19 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 	oe.msec = time % 1000;
 	Array cstack;
 
+	uint64_t ticks = OS::get_singleton()->get_ticks_usec() / 1000;
+	msec_count += ticks - last_msec;
+	last_msec = ticks;
+
+	if (msec_count > 1000) {
+		msec_count = 0;
+
+		err_count = 0;
+		n_errors_dropped = 0;
+		warn_count = 0;
+		n_warnings_dropped = 0;
+	}
+
 	cstack.resize(p_stack_info.size() * 3);
 	for (int i = 0; i < p_stack_info.size(); i++) {
 		cstack[i * 3 + 0] = p_stack_info[i].file;
@@ -942,15 +969,28 @@ void ScriptDebuggerRemote::send_error(const String &p_func, const String &p_file
 	}
 
 	oe.callstack = cstack;
+	if (oe.warning) {
+		warn_count++;
+	} else {
+		err_count++;
+	}
 
 	mutex->lock();
 
 	if (!locking && tcp_client->is_connected_to_host()) {
 
-		if (errors.size() >= max_errors_per_frame) {
-			n_errors_dropped++;
+		if (oe.warning) {
+			if (warn_count > max_warnings_per_second) {
+				n_warnings_dropped++;
+			} else {
+				errors.push_back(oe);
+			}
 		} else {
-			errors.push_back(oe);
+			if (err_count > max_errors_per_second) {
+				n_errors_dropped++;
+			} else {
+				errors.push_back(oe);
+			}
 		}
 	}
 
@@ -1070,10 +1110,13 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		mutex(Mutex::create()),
 		max_messages_per_frame(GLOBAL_GET("network/limits/debugger_stdout/max_messages_per_frame")),
 		n_messages_dropped(0),
-		max_errors_per_frame(GLOBAL_GET("network/limits/debugger_stdout/max_errors_per_frame")),
+		max_errors_per_second(GLOBAL_GET("network/limits/debugger_stdout/max_errors_per_second")),
+		max_warnings_per_second(GLOBAL_GET("network/limits/debugger_stdout/max_warnings_per_second")),
 		n_errors_dropped(0),
 		max_cps(GLOBAL_GET("network/limits/debugger_stdout/max_chars_per_second")),
 		char_count(0),
+		err_count(0),
+		warn_count(0),
 		last_msec(0),
 		msec_count(0),
 		locking(false),

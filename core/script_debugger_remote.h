@@ -91,11 +91,15 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	int max_messages_per_frame;
 	int n_messages_dropped;
 	List<OutputError> errors;
-	int max_errors_per_frame;
+	int max_errors_per_second;
+	int max_warnings_per_second;
 	int n_errors_dropped;
+	int n_warnings_dropped;
 
 	int max_cps;
 	int char_count;
+	int err_count;
+	int warn_count;
 	uint64_t last_msec;
 	uint64_t msec_count;
 
