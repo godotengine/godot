@@ -1580,15 +1580,15 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::BOOL: {
 
-			p_store_string_func(p_store_string_ud, p_variant.operator bool() ? "true" : "false");
+			p_store_string_func(p_store_string_ud, static_cast<bool>(p_variant) ? "true" : "false");
 		} break;
 		case Variant::INT: {
 
-			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
+			p_store_string_func(p_store_string_ud, itos(static_cast<int64_t>(p_variant)));
 		} break;
 		case Variant::REAL: {
 
-			String s = rtosfix(p_variant.operator real_t());
+			String s = rtosfix(static_cast<real_t>(p_variant));
 			if (s.find(".") == -1 && s.find("e") == -1)
 				s += ".0";
 			p_store_string_func(p_store_string_ud, s);

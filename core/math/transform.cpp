@@ -206,7 +206,7 @@ Transform Transform::operator*(const Transform &p_transform) const {
 
 Transform::operator String() const {
 
-	return basis.operator String() + " - " + origin.operator String();
+	return static_cast<String>(basis) + " - " + static_cast<String>(origin);
 }
 
 Transform::Transform(const Basis &p_basis, const Vector3 &p_origin) :

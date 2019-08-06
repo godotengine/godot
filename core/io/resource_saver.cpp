@@ -43,7 +43,7 @@ ResourceSavedCallback ResourceSaver::save_callback = 0;
 Error ResourceFormatSaver::save(const String &p_path, const RES &p_resource, uint32_t p_flags) {
 
 	if (get_script_instance() && get_script_instance()->has_method("save")) {
-		return (Error)get_script_instance()->call("save", p_path, p_resource, p_flags).operator int64_t();
+		return static_cast<Error>(static_cast<int64_t>(get_script_instance()->call("save", p_path, p_resource, p_flags)));
 	}
 
 	return ERR_METHOD_NOT_FOUND;

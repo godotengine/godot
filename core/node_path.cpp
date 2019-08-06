@@ -52,7 +52,7 @@ void NodePath::_update_hash_cache() const {
 
 void NodePath::prepend_period() {
 
-	if (data->path.size() && data->path[0].operator String() != ".") {
+	if (data->path.size() && static_cast<String>(data->path[0]) != ".") {
 		data->path.insert(0, ".");
 		data->hash_cache_valid = false;
 	}
@@ -176,12 +176,12 @@ NodePath::operator String() const {
 
 		if (i > 0)
 			ret += "/";
-		ret += data->path[i].operator String();
+		ret += static_cast<String>(data->path[i]);
 	}
 
 	for (int i = 0; i < data->subpath.size(); i++) {
 
-		ret += ":" + data->subpath[i].operator String();
+		ret += ":" + static_cast<String>(data->subpath[i]);
 	}
 
 	return ret;
@@ -219,7 +219,7 @@ StringName NodePath::get_concatenated_subnames() const {
 		String concatenated;
 		const StringName *ssn = data->subpath.ptr();
 		for (int i = 0; i < spc; i++) {
-			concatenated += i == 0 ? ssn[i].operator String() : ":" + ssn[i];
+			concatenated += i == 0 ? static_cast<String>(ssn[i]) : ":" + ssn[i];
 		}
 		data->concatenated_subpath = concatenated;
 	}
@@ -323,10 +323,10 @@ void NodePath::simplify() {
 	for (int i = 0; i < data->path.size(); i++) {
 		if (data->path.size() == 1)
 			break;
-		if (data->path[i].operator String() == ".") {
+		if (static_cast<String>(data->path[i]) == ".") {
 			data->path.remove(i);
 			i--;
-		} else if (data->path[i].operator String() == ".." && i > 0 && data->path[i - 1].operator String() != "." && data->path[i - 1].operator String() != "..") {
+		} else if (static_cast<String>(data->path[i]) == ".." && i > 0 && static_cast<String>(data->path[i - 1]) != "." && static_cast<String>(data->path[i - 1]) != "..") {
 			//remove both
 			data->path.remove(i - 1);
 			data->path.remove(i - 1);

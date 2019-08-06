@@ -66,8 +66,10 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
 
+		const String &p_key = static_cast<String>(E->get());
+
 		//hash string
-		CharString cs = E->get().operator String().utf8();
+		CharString cs = p_key.utf8();
 		uint32_t h = hash(0, cs.get_data());
 		Pair<int, CharString> p;
 		p.first = idx;
@@ -75,7 +77,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		buckets.write[h % size].push_back(p);
 
 		//compress string
-		CharString src_s = p_from->get_message(E->get()).operator String().utf8();
+		CharString src_s = static_cast<String>(p_from->get_message(p_key)).utf8();
 		_PHashTranslationCmp ps;
 		ps.orig_len = src_s.size();
 		ps.offset = total_compression_size;
@@ -186,7 +188,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 bool PHashTranslation::_set(const StringName &p_name, const Variant &p_value) {
 
-	String name = p_name.operator String();
+	String name = static_cast<String>(p_name);
 	if (name == "hash_table") {
 		hash_table = p_value;
 	} else if (name == "bucket_table") {
@@ -203,7 +205,7 @@ bool PHashTranslation::_set(const StringName &p_name, const Variant &p_value) {
 
 bool PHashTranslation::_get(const StringName &p_name, Variant &r_ret) const {
 
-	String name = p_name.operator String();
+	String name = static_cast<String>(p_name);
 	if (name == "hash_table")
 		r_ret = hash_table;
 	else if (name == "bucket_table")
@@ -223,7 +225,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	if (htsize == 0)
 		return StringName();
 
-	CharString str = p_src_text.operator String().utf8();
+	CharString str = static_cast<String>(p_src_text).utf8();
 	uint32_t h = hash(0, str.get_data());
 
 	PoolVector<int>::Read htr = hash_table.read();

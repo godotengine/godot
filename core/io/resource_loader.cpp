@@ -176,7 +176,7 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 		if (res.get_type() == Variant::INT) {
 
 			if (r_error)
-				*r_error = (Error)res.operator int64_t();
+				*r_error = static_cast<Error>(static_cast<int64_t>(res));
 
 		} else {
 

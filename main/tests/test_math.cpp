@@ -524,7 +524,7 @@ MainLoop *test() {
 
 		for (List<StringName>::Element *E = tl.front(); E; E = E->next()) {
 
-			Vector<uint8_t> m5b = E->get().operator String().md5_buffer();
+			Vector<uint8_t> m5b = static_cast<String>(E->get()).md5_buffer();
 			hashes.push_back(hashes.size());
 		}
 
