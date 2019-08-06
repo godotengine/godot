@@ -162,9 +162,9 @@ bool ProjectSettings::_set(const StringName &p_name, const Variant &p_value) {
 		}
 
 		if (!disable_feature_overrides) {
-			int dot = p_name.operator String().find(".");
+			int dot = static_cast<String>(p_name).find(".");
 			if (dot != -1) {
-				Vector<String> s = p_name.operator String().split(".");
+				Vector<String> s = static_cast<String>(p_name).split(".");
 
 				bool override_valid = false;
 				for (int i = 1; i < s.size(); i++) {
@@ -917,11 +917,11 @@ void ProjectSettings::_add_property_info_bind(const Dictionary &p_info) {
 	PropertyInfo pinfo;
 	pinfo.name = p_info["name"];
 	ERR_FAIL_COND(!props.has(pinfo.name));
-	pinfo.type = Variant::Type(p_info["type"].operator int());
+	pinfo.type = Variant::Type(static_cast<signed int>(p_info["type"]));
 	ERR_FAIL_INDEX(pinfo.type, Variant::VARIANT_MAX);
 
 	if (p_info.has("hint"))
-		pinfo.hint = PropertyHint(p_info["hint"].operator int());
+		pinfo.hint = PropertyHint(static_cast<signed int>(p_info["hint"]));
 	if (p_info.has("hint_string"))
 		pinfo.hint_string = p_info["hint_string"];
 

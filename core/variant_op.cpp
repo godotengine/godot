@@ -1111,7 +1111,7 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 		SWITCH_OP(math, OP_STRING_CONCAT, p_a.type) {
 			CASE_TYPE_ALL(math, OP_STRING_CONCAT)
 
-			_RETURN(p_a.operator String() + p_b.operator String());
+			_RETURN(static_cast<String>(p_a) + static_cast<String>(p_b));
 		}
 
 		SWITCH_OP(math, OP_SHIFT_LEFT, p_a.type) {
@@ -1520,7 +1520,7 @@ void Variant::set_named(const StringName &p_index, const Variant &p_value, bool 
 
 		} break;
 		default: {
-			set(p_index.operator String(), p_value, &valid);
+			set(static_cast<String>(p_index), p_value, &valid);
 		} break;
 	}
 
@@ -1693,7 +1693,7 @@ Variant Variant::get_named(const StringName &p_index, bool *r_valid) const {
 
 		} break;
 		default: {
-			return get(p_index.operator String(), r_valid);
+			return get(static_cast<String>(p_index), r_valid);
 		}
 	}
 

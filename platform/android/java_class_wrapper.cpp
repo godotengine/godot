@@ -118,7 +118,7 @@ bool JavaClass::_call_method(JavaObject *p_instance, const StringName &p_method,
 
 								Ref<JavaObject> jo = ref;
 								//could be faster
-								jclass c = env->FindClass(E->get().param_sigs[i].operator String().utf8().get_data());
+								jclass c = env->FindClass(static_cast<String>(E->get().param_sigs[i]).utf8().get_data());
 								if (!c || !env->IsInstanceOf(jo->instance, c)) {
 
 									arg_expected = Variant::OBJECT;

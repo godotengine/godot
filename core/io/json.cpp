@@ -68,7 +68,7 @@ String JSON::_print_var(const Variant &p_var, const String &p_indent, int p_cur_
 	switch (p_var.get_type()) {
 
 		case Variant::NIL: return "null";
-		case Variant::BOOL: return p_var.operator bool() ? "true" : "false";
+		case Variant::BOOL: return static_cast<bool>(p_var) ? "true" : "false";
 		case Variant::INT: return itos(p_var);
 		case Variant::REAL: return rtos(p_var);
 		case Variant::POOL_INT_ARRAY:

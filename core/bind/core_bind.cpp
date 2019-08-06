@@ -2621,7 +2621,7 @@ void _Thread::_start_func(void *ud) {
 			}
 		}
 
-		ERR_EXPLAIN("Could not call function '" + t->target_method.operator String() + "'' starting thread ID: " + t->get_id() + " Reason: " + reason);
+		ERR_EXPLAIN("Could not call function '" + static_cast<String>(t->target_method) + "'' starting thread ID: " + t->get_id() + " Reason: " + reason);
 		ERR_FAIL();
 	}
 }
@@ -2777,7 +2777,7 @@ Dictionary _ClassDB::get_signal(StringName p_class, StringName p_signal) const {
 
 	MethodInfo signal;
 	if (ClassDB::get_signal(p_class, p_signal, &signal)) {
-		return signal.operator Dictionary();
+		return static_cast<Dictionary>(signal);
 	} else {
 		return Dictionary();
 	}
@@ -2789,7 +2789,7 @@ Array _ClassDB::get_signal_list(StringName p_class, bool p_no_inheritance) const
 	Array ret;
 
 	for (List<MethodInfo>::Element *E = signals.front(); E; E = E->next()) {
-		ret.push_back(E->get().operator Dictionary());
+		ret.push_back(static_cast<Dictionary>(E->get()));
 	}
 
 	return ret;
@@ -2801,7 +2801,7 @@ Array _ClassDB::get_property_list(StringName p_class, bool p_no_inheritance) con
 	ClassDB::get_property_list(p_class, &plist, p_no_inheritance);
 	Array ret;
 	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
-		ret.push_back(E->get().operator Dictionary());
+		ret.push_back(static_cast<Dictionary>(E->get()));
 	}
 
 	return ret;
@@ -2837,7 +2837,7 @@ Array _ClassDB::get_method_list(StringName p_class, bool p_no_inheritance) const
 
 	for (List<MethodInfo>::Element *E = methods.front(); E; E = E->next()) {
 #ifdef DEBUG_METHODS_ENABLED
-		ret.push_back(E->get().operator Dictionary());
+		ret.push_back(static_cast<Dictionary>(E->get()));
 #else
 		Dictionary dict;
 		dict["name"] = E->get().name;

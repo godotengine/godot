@@ -99,7 +99,7 @@ struct VariantCaster<const T &> {
 	struct VariantCaster<m_enum> {                                           \
                                                                              \
 		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) {        \
-			return (m_enum)p_variant.operator int();                         \
+			return static_cast<signed int>(p_variant);                       \
 		}                                                                    \
 	};                                                                       \
 	template <>                                                              \
@@ -120,7 +120,7 @@ struct VariantCaster<const T &> {
 	struct VariantCaster<m_enum> {                                    \
                                                                       \
 		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) { \
-			return (m_enum)p_variant.operator int();                  \
+			return static_cast<signed int>(p_variant);                \
 		}                                                             \
 	};
 
@@ -193,7 +193,7 @@ VARIANT_ENUM_CAST(Variant::Operator);
 template <>
 struct VariantCaster<wchar_t> {
 	static _FORCE_INLINE_ wchar_t cast(const Variant &p_variant) {
-		return (wchar_t)p_variant.operator int();
+		return static_cast<wchar_t>(static_cast<signed int>(p_variant));
 	}
 };
 #ifdef PTRCALL_ENABLED

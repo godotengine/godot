@@ -276,7 +276,7 @@ bool ClassDB::is_parent_class(const StringName &p_class, const StringName &p_inh
 
 	StringName inherits = p_class;
 
-	while (inherits.operator String().length()) {
+	while (static_cast<String>(inherits).length()) {
 
 		if (inherits == p_inherits)
 			return true;

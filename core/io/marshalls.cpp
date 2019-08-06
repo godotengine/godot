@@ -831,7 +831,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 		case Variant::BOOL: {
 
 			if (buf) {
-				encode_uint32(p_variant.operator bool(), buf);
+				encode_uint32(static_cast<bool>(p_variant), buf);
 			}
 
 			r_len += 4;
@@ -842,13 +842,13 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			if (flags & ENCODE_FLAG_64) {
 				//64 bits
 				if (buf) {
-					encode_uint64(p_variant.operator int64_t(), buf);
+					encode_uint64(static_cast<int64_t>(p_variant), buf);
 				}
 
 				r_len += 8;
 			} else {
 				if (buf) {
-					encode_uint32(p_variant.operator int32_t(), buf);
+					encode_uint32(static_cast<int32_t>(p_variant), buf);
 				}
 
 				r_len += 4;
@@ -858,7 +858,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			if (flags & ENCODE_FLAG_64) {
 				if (buf) {
-					encode_double(p_variant.operator double(), buf);
+					encode_double(static_cast<double>(p_variant), buf);
 				}
 
 				r_len += 8;
@@ -866,7 +866,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			} else {
 
 				if (buf) {
-					encode_float(p_variant.operator float(), buf);
+					encode_float(static_cast<float>(p_variant), buf);
 				}
 
 				r_len += 4;

@@ -1809,7 +1809,7 @@ bool Main::start() {
 
 		if (project_manager || editor) {
 			// Load SSL Certificates from Editor Settings (or builtin)
-			String certs = EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String();
+			String certs = static_cast<String>(EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates"));
 			if (certs != "")
 				StreamPeerSSL::load_certs_from_file(certs);
 			else

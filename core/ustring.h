@@ -70,7 +70,7 @@ public:
 	}
 
 	_FORCE_INLINE_ void operator=(const CharProxy<T> &other) const {
-		_cowdata.set(_index, other.operator T());
+		_cowdata.set(_index, static_cast<T>(other));
 	}
 };
 

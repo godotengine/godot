@@ -1413,7 +1413,7 @@ String Variant::stringify(List<const void *> &stack) const {
 		case TRANSFORM2D: {
 
 			Transform2D mat32 = operator Transform2D();
-			return "(" + Variant(mat32.elements[0]).operator String() + ", " + Variant(mat32.elements[1]).operator String() + ", " + Variant(mat32.elements[2]).operator String() + ")";
+			return "(" + static_cast<String>(Variant(mat32.elements[0])) + ", " + static_cast<String>(Variant(mat32.elements[1])) + ", " + static_cast<String>(Variant(mat32.elements[2])) + ")";
 		} break;
 		case VECTOR3: return "(" + operator Vector3() + ")";
 		case PLANE:
@@ -1438,7 +1438,7 @@ String Variant::stringify(List<const void *> &stack) const {
 					if (j != 0)
 						mtx += ", ";
 
-					mtx += Variant(mat3.elements[i][j]).operator String();
+					mtx += static_cast<String>(Variant(mat3.elements[i][j]));
 				}
 
 				mtx += ")";
@@ -1807,28 +1807,28 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 	switch (p_variant.get_type()) {
 
 		case Variant::ARRAY: {
-			return _convert_array<DA, Array>(p_variant.operator Array());
+			return _convert_array<DA, Array>(static_cast<Array>(p_variant));
 		}
 		case Variant::POOL_BYTE_ARRAY: {
-			return _convert_array<DA, PoolVector<uint8_t> >(p_variant.operator PoolVector<uint8_t>());
+			return _convert_array<DA, PoolVector<uint8_t> >(static_cast<PoolVector<uint8_t>>(p_variant));
 		}
 		case Variant::POOL_INT_ARRAY: {
-			return _convert_array<DA, PoolVector<int> >(p_variant.operator PoolVector<int>());
+			return _convert_array<DA, PoolVector<int> >(static_cast<PoolVector<signed int>>(p_variant));
 		}
 		case Variant::POOL_REAL_ARRAY: {
-			return _convert_array<DA, PoolVector<real_t> >(p_variant.operator PoolVector<real_t>());
+			return _convert_array<DA, PoolVector<real_t> >(static_cast<PoolVector<real_t>>(p_variant));
 		}
 		case Variant::POOL_STRING_ARRAY: {
-			return _convert_array<DA, PoolVector<String> >(p_variant.operator PoolVector<String>());
+			return _convert_array<DA, PoolVector<String> >(static_cast<PoolVector<String>>(p_variant));
 		}
 		case Variant::POOL_VECTOR2_ARRAY: {
-			return _convert_array<DA, PoolVector<Vector2> >(p_variant.operator PoolVector<Vector2>());
+			return _convert_array<DA, PoolVector<Vector2> >(static_cast<PoolVector<Vector2>>(p_variant));
 		}
 		case Variant::POOL_VECTOR3_ARRAY: {
-			return _convert_array<DA, PoolVector<Vector3> >(p_variant.operator PoolVector<Vector3>());
+			return _convert_array<DA, PoolVector<Vector3> >(static_cast<PoolVector<Vector3>>(p_variant));
 		}
 		case Variant::POOL_COLOR_ARRAY: {
-			return _convert_array<DA, PoolVector<Color> >(p_variant.operator PoolVector<Color>());
+			return _convert_array<DA, PoolVector<Color> >(static_cast<PoolVector<Color>>(p_variant));
 		}
 		default: {
 			return DA();
@@ -2191,7 +2191,7 @@ Variant::Variant(double p_double) {
 Variant::Variant(const StringName &p_string) {
 
 	type = STRING;
-	memnew_placement(_data._mem, String(p_string.operator String()));
+	memnew_placement(_data._mem, static_cast<String>(p_string));
 }
 Variant::Variant(const String &p_string) {
 
