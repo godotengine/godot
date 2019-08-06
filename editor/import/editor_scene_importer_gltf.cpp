@@ -1404,16 +1404,20 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 	if (!state.json.has("skins"))
 		return OK;
 
-	Array skins = state.json["skins"];
+	// Map of joints (nodes) to their appropriate skins
+	Map<int, int> joints_to_skins;
+
+	// Map of copies of a skin to its original instance
+	Map<int, int> skincopy_to_skin;
+
+	const Array &skins = state.json["skins"];
 	for (int i = 0; i < skins.size(); i++) {
 
-		Dictionary d = skins[i];
-
-		GLTFSkin skin;
+		const Dictionary &d = skins[i];
 
 		ERR_FAIL_COND_V(!d.has("joints"), ERR_PARSE_ERROR);
 
-		Array joints = d["joints"];
+		const Array &joints = d["joints"];
 		Vector<Transform> bind_matrices;
 
 		if (d.has("inverseBindMatrices")) {
@@ -1421,36 +1425,60 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 			ERR_FAIL_COND_V(bind_matrices.size() != joints.size(), ERR_PARSE_ERROR);
 		}
 
+		int duplicate_skin_id = -1;
+
+		// Find any nodes we possibly missed. Ideally, if this is a skin_copy the joints_to_add
+		// should always be empty, otherwise there is an exporter problem.
+		// Thankfully, we can handle it by adding them to the real skin
+		Vector<int> joints_to_add;
 		for (int j = 0; j < joints.size(); j++) {
-			int index = joints[j];
-			ERR_FAIL_INDEX_V(index, state.nodes.size(), ERR_PARSE_ERROR);
+			const int node_index = joints[j];
+
+			if (Map<int, int>::Element *joint_to_skin = joints_to_skins.find(node_index)) {
+				duplicate_skin_id = joint_to_skin->value();
+				continue;
+			}
+
+			joints_to_add.push_back(node_index);
+		}
+
+		GLTFSkin new_skin;
+
+		if (d.has("name")) {
+			new_skin.name = d["name"];
+		}
+
+		// The target skin for these nodes
+		int target_skin_id = duplicate_skin_id == -1 ? i : duplicate_skin_id;
+		GLTFSkin *target_skin = duplicate_skin_id == -1 ? &new_skin : &state.skins[duplicate_skin_id];
+
+		for (int j = 0; j < joints_to_add.size(); ++j) {
+			const int node_index = joints_to_add[j];
+
+			joints_to_skins.insert(node_index, target_skin_id);
+
+			ERR_FAIL_INDEX_V(node_index, state.nodes.size(), ERR_PARSE_ERROR);
+
 			GLTFNode::Joint joint;
-			joint.skin = state.skins.size();
-			joint.bone = j;
-			state.nodes[index]->joints.push_back(joint);
+			joint.skin = target_skin_id;
+			joint.bone = node_index; // Check this
+			state.nodes[node_index]->joints.push_back(joint);
+
 			GLTFSkin::Bone bone;
-			bone.node = index;
+			bone.node = node_index;
 			if (bind_matrices.size()) {
 				bone.inverse_bind = bind_matrices[j];
 			}
 
-			skin.bones.push_back(bone);
+			target_skin->bones.push_back(bone);
 		}
 
-		print_verbose("glTF: Skin has skeleton? " + itos(d.has("skeleton")));
-		if (d.has("skeleton")) {
-			int skeleton = d["skeleton"];
-			ERR_FAIL_INDEX_V(skeleton, state.nodes.size(), ERR_PARSE_ERROR);
-			print_verbose("glTF: Setting skeleton skin to" + itos(skeleton));
-			skin.skeleton = skeleton;
-			if (!state.skeleton_nodes.has(skeleton)) {
-				state.skeleton_nodes[skeleton] = Vector<int>();
-			}
-			state.skeleton_nodes[skeleton].push_back(i);
-		}
+		// We also add in the mapping i->i here if this is the original
+		skincopy_to_skin.insert(i, target_skin_id);
 
-		if (d.has("name")) {
-			skin.name = d["name"];
+		// If this *was* a duplicate, we dont want to make a whole new skin!
+		if (duplicate_skin_id != -1) {
+			continue;
 		}
 
 		//locate the right place to put a Skeleton node
@@ -1496,11 +1524,20 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 			}
 		}
 		*/
-		state.skins.push_back(skin);
-	}
-	print_verbose("glTF: Total skins: " + itos(state.skins.size()));
 
-	//now
+		state.skins.push_back(new_skin);
+	}
+
+	// We need to update any nodes that had a reference to a skin copy to actually
+	// points to the original skin
+	for (int i = 0; i < state.nodes.size(); ++i) {
+		const int old_skin = state.nodes[i]->skin;
+		if (old_skin != -1) {
+			state.nodes[i]->skin = skincopy_to_skin[old_skin];
+		}
+	}
+
+	print_verbose("glTF: Total skins: " + itos(state.skins.size()));
 
 	return OK;
 }

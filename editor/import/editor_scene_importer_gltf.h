@@ -187,14 +187,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 			int node;
 		};
 
-		int skeleton;
 		Vector<Bone> bones;
 
-		//matrices need to be transformed to this
-
-		GLTFSkin() {
-			skeleton = -1;
-		}
+		// matrices need to be transformed to this
 	};
 
 	struct GLTFMesh {
