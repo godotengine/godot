@@ -422,17 +422,13 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
   AnimationPlayer *player = state->player;
   int anim = 0;
   int dup;
-  if (first_time) {
+  if (first_time == true) {
     dup = -1;
-    print_line("true");
   } else {
     dup = get_parameter(min);
-    print_line("false");
   }
-  for (int p = 0; p < keys->size(); p++) {
-    if (first_time)
-      first_time = false;
 
+  for (int p = 0; p < keys->size(); p++) {
     if (p != dup) {
       float pos_cost = 0.0f;
       float traj_cost = 0.0f;
@@ -464,10 +460,13 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
         min_cost_time = keys->read()[p]->time;
         anim = keys->read()[p]->anim_num;
         set_parameter(min, p);
-        print_line("Change of min:" + itos(get_parameter(min)));
+        print_line(rtos(min_cost));
       }
     }
   }
+
+  if (first_time)
+    first_time = false;
   List<StringName> a_nam;
   player->get_animation_list(&a_nam);
   player->play(a_nam[anim]);
@@ -479,17 +478,16 @@ PoolRealArray AnimationNodeMotionMatch::Predict_traj(Vector3 L_Velocity,
                                                      int samples) {
   PoolRealArray futurepath = {};
   Vector3 c_pos = Vector3();
-  float time = 0.0f;
+  float time = 1.0f;
   for (int i = 0; i < samples; i++) {
     for (int j = 0; j < 3; j++) {
       if (j != 1) {
-        print_line(itos(L_Velocity[j] * (1 - Math::exp(-200000 * time))));
-        c_pos[j] = c_pos[j] + L_Velocity[j] * (1 - Math::exp(-200 * time));
+        c_pos[j] = c_pos[j] + L_Velocity[j] * (1 - Math::exp(-time));
         futurepath.append(c_pos[j]);
       }
     }
 
-    time += delta_time;
+    time += 1.0f;
   }
 
   return futurepath;

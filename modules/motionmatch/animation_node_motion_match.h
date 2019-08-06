@@ -17,6 +17,8 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
   StringName pos;
   StringName min;
 
+  bool first_time = true;
+
   struct KDNode : public Reference {
     /*th -> Threshold*/
     // Variables
@@ -70,7 +72,6 @@ public:
   virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 
   float process(float p_time, bool p_seek);
-  bool first_time = true;
   void add_matching_track(const NodePath &p_track_path);
   void remove_matching_track(const NodePath &p_track_path);
   bool is_matching_track(const NodePath &p_track_path) const;
