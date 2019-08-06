@@ -5862,7 +5862,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);
 	step->set_max(1000000);
-	step->set_step(0.01);
+	step->set_step(0.001);
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip(TTR("Animation step value."));
