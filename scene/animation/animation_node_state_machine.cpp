@@ -235,6 +235,7 @@ bool AnimationNodeStateMachinePlayback::_travel(AnimationNodeStateMachine *sm, c
 
 			if (cost < least_cost) {
 				least_cost_transition = E;
+				least_cost = cost;
 			}
 		}
 
