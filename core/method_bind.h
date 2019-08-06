@@ -99,7 +99,7 @@ struct VariantCaster<const T &> {
 	struct VariantCaster<m_enum> {                                           \
                                                                              \
 		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) {        \
-			return static_cast<signed int>(p_variant);                       \
+			return static_cast<m_enum>(static_cast<signed int>(p_variant));  \
 		}                                                                    \
 	};                                                                       \
 	template <>                                                              \
@@ -120,7 +120,7 @@ struct VariantCaster<const T &> {
 	struct VariantCaster<m_enum> {                                    \
                                                                       \
 		static _FORCE_INLINE_ m_enum cast(const Variant &p_variant) { \
-			return static_cast<signed int>(p_variant);                \
+			return static_cast<m_enum>(static_cast<signed int>(p_variant)); \
 		}                                                             \
 	};
 
