@@ -1467,7 +1467,7 @@ Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 
 			GLTFNode::Joint joint;
 			joint.skin = target_skin_id;
-			joint.skin_bone_index = state.nodes[node_index]->joints.size();
+			joint.skin_bone_index = target_skin->bones.size();
 			state.nodes[node_index]->joints.push_back(joint);
 
 			GLTFSkin::Bone bone;
