@@ -1668,6 +1668,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 
 NodePath Node::get_path() const {
 
+	ERR_EXPLAIN("Cannot get path of node as it is not in a scene tree");
 	ERR_FAIL_COND_V(!is_inside_tree(), NodePath());
 
 	if (data.path_cache)
