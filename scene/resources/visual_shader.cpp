@@ -2260,6 +2260,7 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 	static Vector<String> pre_symbols;
 	if (pre_symbols.empty()) {
 		pre_symbols.push_back("\t");
+		pre_symbols.push_back(",");
 		pre_symbols.push_back("{");
 		pre_symbols.push_back("[");
 		pre_symbols.push_back("(");
