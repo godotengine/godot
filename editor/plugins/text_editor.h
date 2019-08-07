@@ -131,6 +131,7 @@ public:
 	virtual Vector<String> get_functions();
 	virtual void get_breakpoints(List<int> *p_breakpoints);
 	virtual void goto_line(int p_line, bool p_with_error = false);
+	void goto_line_selection(int p_line, int p_begin, int p_end);
 	virtual void set_executing_line(int p_line);
 	virtual void clear_executing_line();
 	virtual void trim_trailing_whitespace();
