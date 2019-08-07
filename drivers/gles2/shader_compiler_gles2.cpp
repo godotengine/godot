@@ -449,7 +449,9 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			SL::VariableDeclarationNode *var_dec_node = (SL::VariableDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
-
+			if (var_dec_node->is_const) {
+				declaration += "const ";
+			}
 			declaration += _prestr(var_dec_node->precision);
 			declaration += _typestr(var_dec_node->datatype);
 
@@ -512,14 +514,16 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 		} break;
 		case SL::Node::TYPE_ARRAY_DECLARATION: {
 
-			SL::ArrayDeclarationNode *var_dec_node = (SL::ArrayDeclarationNode *)p_node;
+			SL::ArrayDeclarationNode *arr_dec_node = (SL::ArrayDeclarationNode *)p_node;
 
 			StringBuffer<> declaration;
+			if (arr_dec_node->is_const) {
+				declaration += "const ";
+			}
+			declaration += _prestr(arr_dec_node->precision);
+			declaration += _typestr(arr_dec_node->datatype);
 
-			declaration += _prestr(var_dec_node->precision);
-			declaration += _typestr(var_dec_node->datatype);
-
-			for (int i = 0; i < var_dec_node->declarations.size(); i++) {
+			for (int i = 0; i < arr_dec_node->declarations.size(); i++) {
 
 				if (i > 0) {
 					declaration += ",";
@@ -527,20 +531,20 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 
 				declaration += " ";
 
-				declaration += _mkid(var_dec_node->declarations[i].name);
+				declaration += _mkid(arr_dec_node->declarations[i].name);
 				declaration += "[";
-				declaration += itos(var_dec_node->declarations[i].size);
+				declaration += itos(arr_dec_node->declarations[i].size);
 				declaration += "]";
-				int sz = var_dec_node->declarations[i].initializer.size();
+				int sz = arr_dec_node->declarations[i].initializer.size();
 				if (sz > 0) {
 					declaration += "=";
-					declaration += _typestr(var_dec_node->datatype);
+					declaration += _typestr(arr_dec_node->datatype);
 					declaration += "[";
 					declaration += itos(sz);
 					declaration += "]";
 					declaration += "(";
 					for (int j = 0; j < sz; j++) {
-						declaration += _dump_node_code(var_dec_node->declarations[i].initializer[j], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+						declaration += _dump_node_code(arr_dec_node->declarations[i].initializer[j], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 						if (j != sz - 1) {
 							declaration += ", ";
 						}
@@ -552,46 +556,46 @@ String ShaderCompilerGLES2::_dump_node_code(SL::Node *p_node, int p_level, Gener
 			code += declaration.as_string();
 		} break;
 		case SL::Node::TYPE_ARRAY: {
-			SL::ArrayNode *var_node = (SL::ArrayNode *)p_node;
+			SL::ArrayNode *arr_node = (SL::ArrayNode *)p_node;
 
-			if (p_assigning && p_actions.write_flag_pointers.has(var_node->name)) {
-				*p_actions.write_flag_pointers[var_node->name] = true;
+			if (p_assigning && p_actions.write_flag_pointers.has(arr_node->name)) {
+				*p_actions.write_flag_pointers[arr_node->name] = true;
 			}
 
-			if (p_default_actions.usage_defines.has(var_node->name) && !used_name_defines.has(var_node->name)) {
-				String define = p_default_actions.usage_defines[var_node->name];
+			if (p_default_actions.usage_defines.has(arr_node->name) && !used_name_defines.has(arr_node->name)) {
+				String define = p_default_actions.usage_defines[arr_node->name];
 
 				if (define.begins_with("@")) {
 					define = p_default_actions.usage_defines[define.substr(1, define.length())];
 				}
 
 				r_gen_code.custom_defines.push_back(define.utf8());
-				used_name_defines.insert(var_node->name);
+				used_name_defines.insert(arr_node->name);
 			}
 
-			if (p_actions.usage_flag_pointers.has(var_node->name) && !used_flag_pointers.has(var_node->name)) {
-				*p_actions.usage_flag_pointers[var_node->name] = true;
-				used_flag_pointers.insert(var_node->name);
+			if (p_actions.usage_flag_pointers.has(arr_node->name) && !used_flag_pointers.has(arr_node->name)) {
+				*p_actions.usage_flag_pointers[arr_node->name] = true;
+				used_flag_pointers.insert(arr_node->name);
 			}
 
-			if (p_default_actions.renames.has(var_node->name)) {
-				code += p_default_actions.renames[var_node->name];
+			if (p_default_actions.renames.has(arr_node->name)) {
+				code += p_default_actions.renames[arr_node->name];
 			} else {
-				code += _mkid(var_node->name);
+				code += _mkid(arr_node->name);
 			}
 
-			if (var_node->call_expression != NULL) {
+			if (arr_node->call_expression != NULL) {
 				code += ".";
-				code += _dump_node_code(var_node->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				code += _dump_node_code(arr_node->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 			}
 
-			if (var_node->index_expression != NULL) {
+			if (arr_node->index_expression != NULL) {
 				code += "[";
-				code += _dump_node_code(var_node->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				code += _dump_node_code(arr_node->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				code += "]";
 			}
 
-			if (var_node->name == time_name) {
+			if (arr_node->name == time_name) {
 				if (current_func_name == vertex_name) {
 					r_gen_code.uses_vertex_time = true;
 				}

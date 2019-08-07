@@ -860,7 +860,7 @@ void ShaderLanguage::clear() {
 	}
 }
 
-bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, int *r_array_size) {
+bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type, IdentifierType *r_type, bool *r_is_const, int *r_array_size) {
 
 	if (p_builtin_types.has(p_identifier)) {
 
@@ -881,6 +881,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 		if (p_block->variables.has(p_identifier)) {
 			if (r_data_type) {
 				*r_data_type = p_block->variables[p_identifier].type;
+			}
+			if (r_is_const) {
+				*r_is_const = p_block->variables[p_identifier].is_const;
 			}
 			if (r_array_size) {
 				*r_array_size = p_block->variables[p_identifier].array_size;
@@ -2735,7 +2738,7 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 			return false;
 		}
 
-		if (shader->constants.has(var->name)) {
+		if (shader->constants.has(var->name) || var->is_const) {
 			if (r_message)
 				*r_message = RTR("Constants cannot be modified.");
 			return false;
@@ -2745,6 +2748,15 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 			return true;
 		}
 	} else if (p_node->type == Node::TYPE_ARRAY) {
+
+		ArrayNode *arr = static_cast<ArrayNode *>(p_node);
+
+		if (arr->is_const) {
+			if (r_message)
+				*r_message = RTR("Constants cannot be modified.");
+			return false;
+		}
+
 		return true;
 	}
 
@@ -2931,9 +2943,10 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 
 				DataType data_type;
 				IdentifierType ident_type;
+				bool is_const = false;
 				int array_size = 0;
 
-				if (!_find_identifier(p_block, p_builtin_types, identifier, &data_type, &ident_type, &array_size)) {
+				if (!_find_identifier(p_block, p_builtin_types, identifier, &data_type, &ident_type, &is_const, &array_size)) {
 					_set_error("Unknown identifier in expression: " + String(identifier));
 					return NULL;
 				}
@@ -2996,6 +3009,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					arrname->datatype_cache = data_type;
 					arrname->index_expression = index_expression;
 					arrname->call_expression = call_expression;
+					arrname->is_const = is_const;
 					expr = arrname;
 
 				} else {
@@ -3003,6 +3017,7 @@ ShaderLanguage::Node *ShaderLanguage::_parse_expression(BlockNode *p_block, cons
 					VariableNode *varname = alloc_node<VariableNode>();
 					varname->name = identifier;
 					varname->datatype_cache = data_type;
+					varname->is_const = is_const;
 					expr = varname;
 				}
 			}
@@ -3770,7 +3785,15 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 
 			return OK;
 
-		} else if (is_token_precision(tk.type) || is_token_nonvoid_datatype(tk.type)) {
+		} else if (tk.type == TK_CONST || is_token_precision(tk.type) || is_token_nonvoid_datatype(tk.type)) {
+
+			bool is_const = false;
+
+			if (tk.type == TK_CONST) {
+				is_const = true;
+				tk = _get_token();
+			}
+
 			DataPrecision precision = PRECISION_DEFAULT;
 			if (is_token_precision(tk.type)) {
 				precision = get_token_precision(tk.type);
@@ -3810,6 +3833,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				var.precision = precision;
 				var.line = tk_line;
 				var.array_size = 0;
+				var.is_const = is_const;
 
 				tk = _get_token();
 
@@ -3819,6 +3843,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					ArrayDeclarationNode *node = alloc_node<ArrayDeclarationNode>();
 					node->datatype = type;
 					node->precision = precision;
+					node->is_const = is_const;
 					vardecl = (Node *)node;
 
 					ArrayDeclarationNode::Declaration decl;
@@ -4004,6 +4029,7 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					VariableDeclarationNode *node = alloc_node<VariableDeclarationNode>();
 					node->datatype = type;
 					node->precision = precision;
+					node->is_const = is_const;
 					vardecl = (Node *)node;
 
 					VariableDeclarationNode::Declaration decl;
