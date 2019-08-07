@@ -44,6 +44,7 @@
 #include "editor/script_editor_debugger.h"
 #include "scene/main/viewport.h"
 #include "script_text_editor.h"
+#include "text_editor.h"
 
 /*** SCRIPT EDITOR ****/
 
@@ -2995,11 +2996,26 @@ void ScriptEditor::_on_find_in_files_result_selected(String fpath, int line_numb
 		shader_editor->make_visible(true);
 		shader_editor->get_shader_editor()->goto_line_selection(line_number - 1, begin, end);
 	} else {
-		edit(res);
+		Ref<Script> script = res;
+		if (script.is_valid()) {
+			edit(script);
 
-		ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
-		if (ste) {
-			ste->goto_line_selection(line_number - 1, begin, end);
+			ScriptTextEditor *ste = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+			if (ste) {
+				ste->goto_line_selection(line_number - 1, begin, end);
+			}
+		} else { //if file is not valid script, load as text file
+
+			Error err;
+			Ref<TextFile> text_file = _load_text_file(fpath, &err);
+			if (text_file.is_valid()) {
+				edit(text_file);
+
+				TextEditor *te = Object::cast_to<TextEditor>(_get_current_editor());
+				if (te) {
+					te->goto_line_selection(line_number - 1, begin, end);
+				}
+			}
 		}
 	}
 }
