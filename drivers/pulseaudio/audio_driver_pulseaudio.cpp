@@ -266,7 +266,10 @@ Error AudioDriverPulseAudio::init() {
 	}
 
 	while (pa_ready == 0) {
-		pa_mainloop_iterate(pa_ml, 1, NULL);
+		ret = pa_mainloop_iterate(pa_ml, 1, NULL);
+		if (ret < 0) {
+			ERR_PRINT("pa_mainloop_iterate error");
+		}
 	}
 
 	if (pa_ready < 0) {

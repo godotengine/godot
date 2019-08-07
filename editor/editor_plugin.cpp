@@ -326,7 +326,8 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 
 Ref<ConfigFile> EditorPlugin::get_config() {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	cf->load(_dir_cache.plus_file("plugin.cfg"));
+	Error err = cf->load(_dir_cache.plus_file("plugin.cfg"));
+	ERR_FAIL_COND_V(err != OK, cf);
 	return cf;
 }
 

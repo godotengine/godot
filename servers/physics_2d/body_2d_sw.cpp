@@ -608,7 +608,7 @@ void Body2DSW::call_queries() {
 			set_force_integration_callback(0, StringName());
 		} else {
 			Variant::CallError ce;
-			if (fi_callback->callback_udata.get_type()) {
+			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
 
 				obj->call(fi_callback->method, vp, 2, ce);
 

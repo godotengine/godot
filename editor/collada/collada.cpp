@@ -1696,7 +1696,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 					}
 				}
 
-			} else if (section == "node") {
+			} else {
 
 				/* Found a child node!! what to do..*/
 

@@ -130,12 +130,14 @@ void VisualScriptPropertySelector::_update_search() {
 		{
 			String b = String(E->get());
 			category = search_options->create_item(root);
-			category->set_text(0, b.replace_first("*", ""));
-			category->set_selectable(0, false);
-			Ref<Texture> icon;
-			String rep = b.replace("*", "");
-			icon = EditorNode::get_singleton()->get_class_icon(rep);
-			category->set_icon(0, icon);
+			if (category) {
+				category->set_text(0, b.replace_first("*", ""));
+				category->set_selectable(0, false);
+				Ref<Texture> icon;
+				String rep = b.replace("*", "");
+				icon = EditorNode::get_singleton()->get_class_icon(rep);
+				category->set_icon(0, icon);
+			}
 		}
 		if (properties || seq_connect) {
 			if (instance) {

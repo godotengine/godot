@@ -539,6 +539,10 @@ void PoolAllocator::unlock(ID p_mem) {
 		return;
 	mt_lock();
 	Entry *e = get_entry(p_mem);
+	if (!e) {
+		mt_unlock();
+		ERR_FAIL_COND(!e);
+	}
 	if (e->lock == 0) {
 		mt_unlock();
 		ERR_PRINT("e->lock == 0");

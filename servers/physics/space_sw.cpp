@@ -348,11 +348,9 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_sh
 	cbk.max = p_result_max;
 	cbk.amount = 0;
 	cbk.ptr = r_results;
-	CollisionSolverSW::CallbackResult cbkres = NULL;
+	CollisionSolverSW::CallbackResult cbkres = PhysicsServerSW::_shape_col_cbk;
 
-	PhysicsServerSW::CollCbkData *cbkptr = NULL;
-	cbkptr = &cbk;
-	cbkres = PhysicsServerSW::_shape_col_cbk;
+	PhysicsServerSW::CollCbkData *cbkptr = &cbk;
 
 	for (int i = 0; i < amount; i++) {
 

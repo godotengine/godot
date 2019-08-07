@@ -222,8 +222,7 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	ERR_EXPLAIN("Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt));
 	ERR_FAIL_COND_V(obj == NULL, false);
 
-	ResourceFormatSaver *crl = NULL;
-	crl = Object::cast_to<ResourceFormatSaver>(obj);
+	ResourceFormatSaver *crl = Object::cast_to<ResourceFormatSaver>(obj);
 	crl->set_script(s.get_ref_ptr());
 	ResourceSaver::add_resource_format_saver(crl);
 

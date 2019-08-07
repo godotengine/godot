@@ -2913,11 +2913,10 @@ Variant CSharpScript::_new(const Variant **p_args, int p_argcount, Variant::Call
 
 	r_error.error = Variant::CallError::CALL_OK;
 	REF ref;
-	Object *owner = NULL;
 
 	ERR_FAIL_NULL_V(native, Variant());
 
-	owner = ClassDB::instance(NATIVE_GDMONOCLASS_NAME(native));
+	Object *owner = ClassDB::instance(NATIVE_GDMONOCLASS_NAME(native));
 
 	Reference *r = Object::cast_to<Reference>(owner);
 	if (r) {
