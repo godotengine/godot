@@ -30,6 +30,7 @@
 
 #include "script_text_editor.h"
 
+#include "core/math/expression.h"
 #include "core/os/keyboard.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -1147,6 +1148,32 @@ void ScriptTextEditor::_edit_option(int p_op) {
 
 			_convert_case(CodeTextEditor::CAPITALIZE);
 		} break;
+		case EDIT_EVALUATE: {
+
+			Expression expression;
+			Vector<String> lines = code_editor->get_text_edit()->get_selection_text().split("\n");
+			PoolStringArray results;
+
+			for (int i = 0; i < lines.size(); i++) {
+				String line = lines[i];
+				String whitespace = line.substr(0, line.size() - line.strip_edges(true, false).size()); //extract the whitespace at the beginning
+
+				if (expression.parse(line) == OK) {
+					Variant result = expression.execute(Array(), Variant(), false);
+					if (expression.get_error_text() == "") {
+						results.append(whitespace + (String)result);
+					} else {
+						results.append(line);
+					}
+				} else {
+					results.append(line);
+				}
+			}
+
+			code_editor->get_text_edit()->begin_complex_operation(); //prevents creating a two-step undo
+			code_editor->get_text_edit()->insert_text_at_cursor(results.join("\n"));
+			code_editor->get_text_edit()->end_complex_operation();
+		} break;
 		case SEARCH_FIND: {
 
 			code_editor->get_find_replace_bar()->popup_search();
@@ -1641,6 +1668,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 		context_menu->add_separator();
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_uppercase"), EDIT_TO_UPPERCASE);
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_to_lowercase"), EDIT_TO_LOWERCASE);
+		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	}
 	if (p_foldable)
 		context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_fold_line"), EDIT_TOGGLE_FOLD_LINE);
@@ -1740,6 +1768,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/clone_down"), EDIT_CLONE_DOWN);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/complete_symbol"), EDIT_COMPLETE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/evaluate_selection"), EDIT_EVALUATE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/trim_trailing_whitespace"), EDIT_TRIM_TRAILING_WHITESAPCE);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_spaces"), EDIT_CONVERT_INDENT_TO_SPACES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/convert_indent_to_tabs"), EDIT_CONVERT_INDENT_TO_TABS);
@@ -1868,6 +1897,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/clone_down", TTR("Clone Down"), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("script_text_editor/complete_symbol", TTR("Complete Symbol"), KEY_MASK_CMD | KEY_SPACE);
 #endif
+	ED_SHORTCUT("script_text_editor/evaluate_selection", TTR("Evaluate Selection"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_E);
 	ED_SHORTCUT("script_text_editor/trim_trailing_whitespace", TTR("Trim Trailing Whitespace"), KEY_MASK_CMD | KEY_MASK_ALT | KEY_T);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_spaces", TTR("Convert Indent to Spaces"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Y);
 	ED_SHORTCUT("script_text_editor/convert_indent_to_tabs", TTR("Convert Indent to Tabs"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_I);
