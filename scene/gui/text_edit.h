@@ -324,6 +324,7 @@ private:
 	bool insert_mode;
 	bool select_identifiers_enabled;
 
+	bool independent_selection;
 	bool smooth_scroll_enabled;
 	bool scrolling;
 	float target_v_scroll;
@@ -585,6 +586,9 @@ public:
 
 	void set_wrap_enabled(bool p_wrap_enabled);
 	bool is_wrap_enabled() const;
+
+	void set_independent_selection(bool p_independent_selection);
+	bool get_independent_selection() const;
 
 	void clear();
 

@@ -36,12 +36,17 @@
 /**
 	@author Juan Linietsky <reduzio@gmail.com>
 */
+
+class TextSelectionManager;
+
 class Popup : public Control {
 
 	GDCLASS(Popup, Control);
 
+	friend class TextSelectionManager;
 	bool exclusive;
 	bool popped_up;
+	ObjectID current_selection_control;
 
 private:
 	void _popup(const Rect2 &p_bounds = Rect2(), const bool p_centered = false);
@@ -88,6 +93,23 @@ public:
 	void set_child_rect(Control *p_child);
 	virtual Size2 get_minimum_size() const;
 	PopupPanel();
+};
+
+class TextSelectionManager {
+public:
+	static TextSelectionManager *get_singleton() {
+
+		static TextSelectionManager sm;
+		return &sm;
+	}
+	void set_selection_control(Control *p_control);
+	enum {
+		NOTIFICATION_DESELECT_TEXT = 100
+	};
+
+private:
+	TextSelectionManager() { root_current_selection_control = 0; }
+	ObjectID root_current_selection_control;
 };
 
 #endif
