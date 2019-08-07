@@ -607,6 +607,21 @@ struct _VariantCall {
 		r_ret = s;
 	}
 
+	static void _call_PoolByteArray_sha256_buffer(Variant &r_ret, Variant &p_self, const Variant **p_args) {
+		PoolByteArray *ba = reinterpret_cast<PoolByteArray *>(p_self._data._mem);
+		PoolByteArray::Read r = ba->read();
+
+		unsigned char hash[32];
+		CryptoCore::sha256((unsigned char *)r.ptr(), ba->size(), hash);
+
+		Vector<uint8_t> ret;
+		ret.resize(32);
+		for (int i = 0; i < 32; i++) {
+			ret.write[i] = hash[i];
+		}
+		r_ret = ret;
+	}
+
 	VCALL_LOCALMEM0R(PoolByteArray, size);
 	VCALL_LOCALMEM2(PoolByteArray, set);
 	VCALL_LOCALMEM1R(PoolByteArray, get);
@@ -1764,6 +1779,7 @@ void register_variant_methods() {
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_ascii, varray());
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, get_string_from_utf8, varray());
 	ADDFUNC0R(POOL_BYTE_ARRAY, STRING, PoolByteArray, sha256_string, varray());
+	ADDFUNC0R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, sha256_buffer, varray());
 	ADDFUNC1R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, compress, INT, "compression_mode", varray(0));
 	ADDFUNC2R(POOL_BYTE_ARRAY, POOL_BYTE_ARRAY, PoolByteArray, decompress, INT, "buffer_size", INT, "compression_mode", varray(0));
 
