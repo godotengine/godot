@@ -611,7 +611,7 @@ void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards)
 	_set_playing(true);
 }
 
-void AnimatedSprite::stop() {
+void AnimatedSprite::pause() {
 
 	_set_playing(false);
 }
@@ -681,7 +681,7 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite::_is_playing);
 
 	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite::play, DEFVAL(StringName()), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite::stop);
+	ClassDB::bind_method(D_METHOD("pause"), &AnimatedSprite::pause);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &AnimatedSprite::set_centered);

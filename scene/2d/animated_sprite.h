@@ -171,7 +171,7 @@ public:
 	Ref<SpriteFrames> get_sprite_frames() const;
 
 	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
-	void stop();
+	void pause();
 	bool is_playing() const;
 
 	void set_animation(const StringName &p_animation);
