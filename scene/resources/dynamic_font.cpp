@@ -494,7 +494,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 						int byte = i * bitmap.pitch + (j >> 3);
 						int bit = 1 << (7 - (j % 8));
 						wr[ofs + 0] = 255; //grayscale as 1
-						wr[ofs + 1] = bitmap.buffer[byte] & bit ? 255 : 0;
+						wr[ofs + 1] = (bitmap.buffer[byte] & bit) ? 255 : 0;
 					} break;
 					case FT_PIXEL_MODE_GRAY:
 						wr[ofs + 0] = 255; //grayscale as 1

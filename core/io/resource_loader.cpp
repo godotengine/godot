@@ -940,8 +940,7 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	ERR_EXPLAIN("Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt));
 	ERR_FAIL_COND_V(obj == NULL, false);
 
-	ResourceFormatLoader *crl = NULL;
-	crl = Object::cast_to<ResourceFormatLoader>(obj);
+	ResourceFormatLoader *crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s.get_ref_ptr());
 	ResourceLoader::add_resource_format_loader(crl);
 

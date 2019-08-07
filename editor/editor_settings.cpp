@@ -773,10 +773,16 @@ void EditorSettings::create() {
 
 	if (d->file_exists(exe_path + "/._sc_")) {
 		self_contained = true;
-		extra_config->load(exe_path + "/._sc_");
+		Error err = extra_config->load(exe_path + "/._sc_");
+		if (err != OK) {
+			ERR_PRINTS("Can't load config from path: " + exe_path + "/._sc_");
+		}
 	} else if (d->file_exists(exe_path + "/_sc_")) {
 		self_contained = true;
-		extra_config->load(exe_path + "/_sc_");
+		Error err = extra_config->load(exe_path + "/_sc_");
+		if (err != OK) {
+			ERR_PRINTS("Can't load config from path: " + exe_path + "/_sc_");
+		}
 	}
 	memdelete(d);
 
@@ -1208,9 +1214,12 @@ String EditorSettings::get_feature_profiles_dir() const {
 void EditorSettings::set_project_metadata(const String &p_section, const String &p_key, Variant p_data) {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
 	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
-	cf->load(path);
+	Error err;
+	err = cf->load(path);
+	ERR_FAIL_COND(err != OK);
 	cf->set_value(p_section, p_key, p_data);
-	cf->save(path);
+	err = cf->save(path);
+	ERR_FAIL_COND(err != OK);
 }
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {

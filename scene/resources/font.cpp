@@ -133,6 +133,7 @@ PoolVector<int> BitmapFont::_get_chars() const {
 	while ((key = char_map.next(key))) {
 
 		const Character *c = char_map.getptr(*key);
+		ERR_FAIL_COND_V(!c, PoolVector<int>());
 		chars.push_back(*key);
 		chars.push_back(c->texture_idx);
 		chars.push_back(c->rect.position.x);
