@@ -408,7 +408,6 @@ void Node::set_physics_process(bool p_process) {
 	else
 		remove_from_group("physics_process");
 
-	data.physics_process = p_process;
 	_change_notify("physics_process");
 }
 
@@ -429,7 +428,6 @@ void Node::set_physics_process_internal(bool p_process_internal) {
 	else
 		remove_from_group("physics_process_internal");
 
-	data.physics_process_internal = p_process_internal;
 	_change_notify("physics_process_internal");
 }
 
@@ -811,7 +809,6 @@ void Node::set_process(bool p_idle_process) {
 	else
 		remove_from_group("idle_process");
 
-	data.idle_process = p_idle_process;
 	_change_notify("idle_process");
 }
 
@@ -832,7 +829,6 @@ void Node::set_process_internal(bool p_idle_process_internal) {
 	else
 		remove_from_group("idle_process_internal");
 
-	data.idle_process_internal = p_idle_process_internal;
 	_change_notify("idle_process_internal");
 }
 
