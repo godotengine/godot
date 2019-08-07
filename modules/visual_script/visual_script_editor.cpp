@@ -2116,10 +2116,10 @@ void VisualScriptEditor::trim_trailing_whitespace() {
 void VisualScriptEditor::insert_final_newline() {
 }
 
-void VisualScriptEditor::convert_indent_to_spaces() {
+void VisualScriptEditor::convert_indent_to_spaces(int p_from, int p_to) {
 }
 
-void VisualScriptEditor::convert_indent_to_tabs() {
+void VisualScriptEditor::convert_indent_to_tabs(int p_from, int p_to) {
 }
 
 void VisualScriptEditor::ensure_focus() {

@@ -928,7 +928,15 @@ void CodeTextEditor::insert_final_newline() {
 	}
 }
 
-void CodeTextEditor::convert_indent_to_spaces() {
+void CodeTextEditor::convert_indent_to_spaces(int p_from, int p_to) {
+
+	int line_count = text_editor->get_line_count();
+	ERR_FAIL_INDEX(p_from, line_count);
+	if (p_to < 0) {
+		p_to = line_count - 1;
+	}
+	ERR_FAIL_INDEX(p_to, line_count);
+
 	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
 	String indent = "";
 
@@ -940,7 +948,7 @@ void CodeTextEditor::convert_indent_to_spaces() {
 	int cursor_column = text_editor->cursor_get_column();
 
 	bool changed_indentation = false;
-	for (int i = 0; i < text_editor->get_line_count(); i++) {
+	for (int i = p_from; i < p_to + 1; i++) {
 		String line = text_editor->get_line(i);
 
 		if (line.length() <= 0) {
@@ -972,7 +980,15 @@ void CodeTextEditor::convert_indent_to_spaces() {
 	}
 }
 
-void CodeTextEditor::convert_indent_to_tabs() {
+void CodeTextEditor::convert_indent_to_tabs(int p_from, int p_to) {
+
+	int line_count = text_editor->get_line_count();
+	ERR_FAIL_INDEX(p_from, line_count);
+	if (p_to < 0) {
+		p_to = line_count - 1;
+	}
+	ERR_FAIL_INDEX(p_to, line_count);
+
 	int indent_size = EditorSettings::get_singleton()->get("text_editor/indent/size");
 	indent_size -= 1;
 
@@ -980,7 +996,7 @@ void CodeTextEditor::convert_indent_to_tabs() {
 	int cursor_column = text_editor->cursor_get_column();
 
 	bool changed_indentation = false;
-	for (int i = 0; i < text_editor->get_line_count(); i++) {
+	for (int i = p_from; i < p_to + 1; i++) {
 		String line = text_editor->get_line(i);
 
 		if (line.length() <= 0) {

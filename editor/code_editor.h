@@ -201,8 +201,8 @@ public:
 	void trim_trailing_whitespace();
 	void insert_final_newline();
 
-	void convert_indent_to_spaces();
-	void convert_indent_to_tabs();
+	void convert_indent_to_spaces(int p_from = 0, int p_to = -1);
+	void convert_indent_to_tabs(int p_from = 0, int p_to = -1);
 
 	enum CaseStyle {
 		UPPER,

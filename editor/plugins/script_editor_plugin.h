@@ -101,8 +101,8 @@ public:
 	virtual void clear_executing_line() = 0;
 	virtual void trim_trailing_whitespace() = 0;
 	virtual void insert_final_newline() = 0;
-	virtual void convert_indent_to_spaces() = 0;
-	virtual void convert_indent_to_tabs() = 0;
+	virtual void convert_indent_to_spaces(int p_from = 0, int p_to = -1) = 0;
+	virtual void convert_indent_to_tabs(int p_from = 0, int p_to = -1) = 0;
 	virtual void ensure_focus() = 0;
 	virtual void tag_saved_version() = 0;
 	virtual void reload(bool p_soft) {}

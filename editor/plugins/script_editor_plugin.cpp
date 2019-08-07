@@ -3445,7 +3445,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	edit_pass = 0;
 	trim_trailing_whitespace_on_save = EditorSettings::get_singleton()->get("text_editor/files/trim_trailing_whitespace_on_save");
 	convert_indent_on_save = EditorSettings::get_singleton()->get("text_editor/indent/convert_indent_on_save");
-	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type");
+	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type"); // Tabs 0, spaces 1
 
 	ScriptServer::edit_request_func = _open_script_request;
 

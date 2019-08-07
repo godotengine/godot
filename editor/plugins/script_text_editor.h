@@ -96,6 +96,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 	} colors_cache;
 
 	bool theme_loaded;
+	bool use_space_indentation;
 
 	enum {
 		EDIT_UNDO,
@@ -103,6 +104,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_CUT,
 		EDIT_COPY,
 		EDIT_PASTE,
+		EDIT_PASTE_ORIGINAL_INDENT,
 		EDIT_SELECT_ALL,
 		EDIT_COMPLETE,
 		EDIT_AUTO_INDENT,
@@ -202,8 +204,8 @@ public:
 	virtual void ensure_focus();
 	virtual void trim_trailing_whitespace();
 	virtual void insert_final_newline();
-	virtual void convert_indent_to_spaces();
-	virtual void convert_indent_to_tabs();
+	virtual void convert_indent_to_spaces(int p_from = 0, int p_to = -1);
+	virtual void convert_indent_to_tabs(int p_from = 0, int p_to = -1);
 	virtual void tag_saved_version();
 
 	virtual void goto_line(int p_line, bool p_with_error = false);

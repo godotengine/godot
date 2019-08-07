@@ -293,14 +293,14 @@ void TextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void TextEditor::convert_indent_to_spaces() {
+void TextEditor::convert_indent_to_spaces(int p_from, int p_to) {
 
-	code_editor->convert_indent_to_spaces();
+	code_editor->convert_indent_to_spaces(p_from, p_to);
 }
 
-void TextEditor::convert_indent_to_tabs() {
+void TextEditor::convert_indent_to_tabs(int p_from, int p_to) {
 
-	code_editor->convert_indent_to_tabs();
+	code_editor->convert_indent_to_tabs(p_from, p_to);
 }
 
 void TextEditor::tag_saved_version() {

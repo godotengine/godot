@@ -462,14 +462,14 @@ void ScriptTextEditor::insert_final_newline() {
 	code_editor->insert_final_newline();
 }
 
-void ScriptTextEditor::convert_indent_to_spaces() {
+void ScriptTextEditor::convert_indent_to_spaces(int p_from, int p_to) {
 
-	code_editor->convert_indent_to_spaces();
+	code_editor->convert_indent_to_spaces(p_from, p_to);
 }
 
-void ScriptTextEditor::convert_indent_to_tabs() {
+void ScriptTextEditor::convert_indent_to_tabs(int p_from, int p_to) {
 
-	code_editor->convert_indent_to_tabs();
+	code_editor->convert_indent_to_tabs(p_from, p_to);
 }
 
 void ScriptTextEditor::tag_saved_version() {
@@ -1027,6 +1027,19 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			tx->call_deferred("grab_focus");
 		} break;
 		case EDIT_PASTE: {
+
+			int from = tx->cursor_get_line(); // Save original position.
+			tx->paste();
+			int to = tx->cursor_get_line();
+			// Convert clipboard indentation to match configured indent style
+			if (use_space_indentation) {
+				convert_indent_to_spaces(from, to);
+			} else {
+				convert_indent_to_tabs(from, to);
+			}
+			tx->call_deferred("grab_focus");
+		} break;
+		case EDIT_PASTE_ORIGINAL_INDENT: {
 
 			tx->paste();
 			tx->call_deferred("grab_focus");
@@ -1627,6 +1640,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 	}
 
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste"), EDIT_PASTE);
+	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste_original_indent"), EDIT_PASTE_ORIGINAL_INDENT);
 	context_menu->add_separator();
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/select_all"), EDIT_SELECT_ALL);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
@@ -1661,6 +1675,7 @@ void ScriptTextEditor::_make_context_menu(bool p_selection, bool p_color, bool p
 ScriptTextEditor::ScriptTextEditor() {
 
 	theme_loaded = false;
+	use_space_indentation = EditorSettings::get_singleton()->get("text_editor/indent/type"); // Tabs 0, spaces 1
 
 	VSplitContainer *editor_box = memnew(VSplitContainer);
 	add_child(editor_box);
@@ -1725,6 +1740,7 @@ ScriptTextEditor::ScriptTextEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/cut"), EDIT_CUT);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/copy"), EDIT_COPY);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste"), EDIT_PASTE);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/paste_original_indent"), EDIT_PASTE_ORIGINAL_INDENT);
 	edit_menu->get_popup()->add_separator();
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/select_all"), EDIT_SELECT_ALL);
 	edit_menu->get_popup()->add_separator();
@@ -1843,6 +1859,7 @@ void ScriptTextEditor::register_editor() {
 	ED_SHORTCUT("script_text_editor/cut", TTR("Cut"), KEY_MASK_CMD | KEY_X);
 	ED_SHORTCUT("script_text_editor/copy", TTR("Copy"), KEY_MASK_CMD | KEY_C);
 	ED_SHORTCUT("script_text_editor/paste", TTR("Paste"), KEY_MASK_CMD | KEY_V);
+	ED_SHORTCUT("script_text_editor/paste_original_indent", TTR("Paste with Original Indent"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_V);
 	ED_SHORTCUT("script_text_editor/select_all", TTR("Select All"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("script_text_editor/move_up", TTR("Move Up"), KEY_MASK_ALT | KEY_UP);
 	ED_SHORTCUT("script_text_editor/move_down", TTR("Move Down"), KEY_MASK_ALT | KEY_DOWN);
