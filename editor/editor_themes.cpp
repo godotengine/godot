@@ -108,16 +108,17 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 #ifdef SVG_ENABLED
 	Dictionary dark_icon_color_dictionary;
 	if (!p_dark_theme) {
-		//convert color:                              FROM       TO
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#4f4f4f"); // common icon color
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#000000"); // white
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b4b4b4", "#000000"); // script darker color
+		// convert color:                             FROM       TO
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#e0e0e0", "#5a5a5a"); // common icon color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ffffff", "#414141"); // white
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b4b4b4", "#363636"); // script darker color
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#f9f9f9", "#606060"); // scrollbar grabber highlight color
 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#cea4f1", "#a85de9"); // animation
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fc9c9c", "#cd3838"); // spatial
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5b7f3", "#3d64dd"); // 2d
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#708cea", "#1a3eac"); // 2d dark
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5efac", "#2aa235"); // control
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#a5efac", "#2fa139"); // control
 
 		// rainbow
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ff7070", "#ff2929"); // red
@@ -145,8 +146,13 @@ void editor_register_and_generate_icons(Ref<Theme> p_theme, bool p_dark_theme = 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#ea9568", "#bd5e2c"); // 3D Transform track
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#66f376", "#16a827"); // Call Method track
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#5792f6", "#236be6"); // Bezier Curve track
-		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#eae668", "#aea923"); // Audio Playback track
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#eae668", "#9f9722"); // Audio Playback track
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#b76ef0", "#9853ce"); // Animation Playback track
+
+		// TileSet editor icons
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#fce844", "#aa8d24"); // New Single Tile
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#4490fc", "#0350bd"); // New Autotile
+		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#c9cfd4", "#828f9b"); // New Atlas
 
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#69ecbd", "#25e3a0"); // VS variant
 		ADD_CONVERT_COLOR(dark_icon_color_dictionary, "#8da6f0", "#6d8eeb"); // VS bool
@@ -338,6 +344,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	const Color font_color_selection = accent_color * Color(1, 1, 1, 0.4);
 	const Color color_disabled = mono_color.inverted().linear_interpolate(base_color, 0.7);
 	const Color color_disabled_bg = mono_color.inverted().linear_interpolate(base_color, 0.9);
+
+	Color icon_color_hover = Color(1, 1, 1) * (dark_theme ? 1.15 : 1.45);
+	icon_color_hover.a = 1.0;
+	// Make the pressed icon color overbright because icons are not completely white on a dark theme.
+	// On a light theme, icons are dark, so we need to modulate them with an even brighter color.
+	Color icon_color_pressed = accent_color * (dark_theme ? 1.15 : 3.5);
+	icon_color_pressed.a = 1.0;
 
 	const Color separator_color = Color(mono_color.r, mono_color.g, mono_color.b, 0.1);
 
@@ -565,9 +578,8 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_hover", "Button", font_color_hl);
 	theme->set_color("font_color_pressed", "Button", accent_color);
 	theme->set_color("font_color_disabled", "Button", font_color_disabled);
-	theme->set_color("icon_color_hover", "Button", font_color_hl);
-	// make icon color value bigger because icon image is not complete white
-	theme->set_color("icon_color_pressed", "Button", Color(accent_color.r * 1.15, accent_color.g * 1.15, accent_color.b * 1.15, accent_color.a));
+	theme->set_color("icon_color_hover", "Button", icon_color_hover);
+	theme->set_color("icon_color_pressed", "Button", icon_color_pressed);
 
 	// OptionButton
 	theme->set_stylebox("normal", "OptionButton", style_widget);
@@ -580,7 +592,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_hover", "OptionButton", font_color_hl);
 	theme->set_color("font_color_pressed", "OptionButton", accent_color);
 	theme->set_color("font_color_disabled", "OptionButton", font_color_disabled);
-	theme->set_color("icon_color_hover", "OptionButton", font_color_hl);
+	theme->set_color("icon_color_hover", "OptionButton", icon_color_hover);
 	theme->set_icon("arrow", "OptionButton", theme->get_icon("GuiOptionArrow", "EditorIcons"));
 	theme->set_constant("arrow_margin", "OptionButton", default_margin_size * EDSCALE);
 	theme->set_constant("modulate_arrow", "OptionButton", true);
@@ -601,7 +613,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_hover", "CheckButton", font_color_hl);
 	theme->set_color("font_color_pressed", "CheckButton", accent_color);
 	theme->set_color("font_color_disabled", "CheckButton", font_color_disabled);
-	theme->set_color("icon_color_hover", "CheckButton", font_color_hl);
+	theme->set_color("icon_color_hover", "CheckButton", icon_color_hover);
 
 	theme->set_constant("hseparation", "CheckButton", 4 * EDSCALE);
 	theme->set_constant("check_vadjust", "CheckButton", 0 * EDSCALE);
@@ -626,7 +638,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color_hover", "CheckBox", font_color_hl);
 	theme->set_color("font_color_pressed", "CheckBox", accent_color);
 	theme->set_color("font_color_disabled", "CheckBox", font_color_disabled);
-	theme->set_color("icon_color_hover", "CheckBox", font_color_hl);
+	theme->set_color("icon_color_hover", "CheckBox", icon_color_hover);
 
 	theme->set_constant("hseparation", "CheckBox", 4 * EDSCALE);
 	theme->set_constant("check_vadjust", "CheckBox", 0 * EDSCALE);
@@ -1068,7 +1080,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("folder", "FileDialog", theme->get_icon("Folder", "EditorIcons"));
 	// Use a different color for folder icons to make them easier to distinguish from files.
 	// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
-	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(5, 5, 5)).linear_interpolate(accent_color, 0.7));
+	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(4.25, 4.25, 4.25)).linear_interpolate(accent_color, 0.7));
 	theme->set_color("files_disabled", "FileDialog", font_color_disabled);
 
 	// color picker
