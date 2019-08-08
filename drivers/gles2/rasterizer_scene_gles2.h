@@ -398,8 +398,8 @@ public:
 				fog_transmit_enabled(true),
 				fog_transmit_curve(1),
 				fog_height_enabled(false),
-				fog_height_min(0),
-				fog_height_max(100),
+				fog_height_min(10),
+				fog_height_max(0),
 				fog_height_curve(1) {
 		}
 	};

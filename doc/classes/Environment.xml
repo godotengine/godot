@@ -157,11 +157,11 @@
 		<member name="fog_height_enabled" type="bool" setter="set_fog_height_enabled" getter="is_fog_height_enabled" default="false">
 			Enables the fog height.
 		</member>
-		<member name="fog_height_max" type="float" setter="set_fog_height_max" getter="get_fog_height_max" default="100.0">
-			Maximum height of fog.
+		<member name="fog_height_max" type="float" setter="set_fog_height_max" getter="get_fog_height_max" default="0.0">
+			The Y coordinate where the height fog will be the most intense. If this value is greater than [member fog_height_min], fog will be displayed from bottom to top. Otherwise, it will be displayed from top to bottom.
 		</member>
-		<member name="fog_height_min" type="float" setter="set_fog_height_min" getter="get_fog_height_min" default="0.0">
-			Minimum height of fog.
+		<member name="fog_height_min" type="float" setter="set_fog_height_min" getter="get_fog_height_min" default="10.0">
+			The Y coordinate where the height fog will be the least intense. If this value is greater than [member fog_height_max], fog will be displayed from top to bottom. Otherwise, it will be displayed from bottom to top.
 		</member>
 		<member name="fog_sun_amount" type="float" setter="set_fog_sun_amount" getter="get_fog_sun_amount" default="0.0">
 			Amount of sun that affects the fog rendering.
