@@ -1203,6 +1203,8 @@ void TileMap::clear() {
 
 void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 
+	ERR_FAIL_COND(format > FORMAT_2);
+
 	int c = p_data.size();
 	PoolVector<int>::Read r = p_data.read();
 
@@ -1245,8 +1247,6 @@ void TileMap::_set_tile_data(const PoolVector<int> &p_data) {
 
 		set_cell(x, y, v, flip_h, flip_v, transpose, Vector2(coord_x, coord_y));
 	}
-
-	format = FORMAT_2;
 }
 
 PoolVector<int> TileMap::_get_tile_data() const {
@@ -1255,7 +1255,7 @@ PoolVector<int> TileMap::_get_tile_data() const {
 	data.resize(tile_map.size() * 3);
 	PoolVector<int>::Write w = data.write();
 
-	format = FORMAT_2;
+	// Save in highest format
 
 	int idx = 0;
 	for (const Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
@@ -1560,7 +1560,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 
 	if (p_name == "format") {
 		if (p_value.get_type() == Variant::INT) {
-			format = (DataFormat)(p_value.operator int64_t());
+			format = (DataFormat)(p_value.operator int64_t()); // Set format used for loading
 			return true;
 		}
 	} else if (p_name == "tile_data") {
@@ -1576,7 +1576,7 @@ bool TileMap::_set(const StringName &p_name, const Variant &p_value) {
 bool TileMap::_get(const StringName &p_name, Variant &r_ret) const {
 
 	if (p_name == "format") {
-		r_ret = format;
+		r_ret = FORMAT_2; // When saving, always save highest format
 		return true;
 	} else if (p_name == "tile_data") {
 		r_ret = _get_tile_data();
@@ -1909,6 +1909,8 @@ void TileMap::_bind_methods() {
 	ADD_GROUP("Occluder", "occluder_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "occluder_light_mask", PROPERTY_HINT_LAYERS_2D_RENDER), "set_occluder_light_mask", "get_occluder_light_mask");
 
+	ADD_PROPERTY_DEFAULT("format", FORMAT_1);
+
 	ADD_SIGNAL(MethodInfo("settings_changed"));
 
 	BIND_CONSTANT(INVALID_CELL);
@@ -1957,7 +1959,7 @@ TileMap::TileMap() {
 	centered_textures = false;
 	occluder_light_mask = 1;
 	clip_uv = false;
-	format = FORMAT_1; //Always initialize with the lowest format
+	format = FORMAT_1; // Assume lowest possible format if none is present
 
 	fp_adjust = 0.00001;
 	tile_origin = TILE_ORIGIN_TOP_LEFT;
