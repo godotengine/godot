@@ -1265,6 +1265,7 @@ void Node::remove_child(Node *p_child) {
 		}
 	}
 
+	ERR_EXPLAIN("Cannot remove child node " + p_child->to_string() + " as it is not in our list of children");
 	ERR_FAIL_COND(idx == -1);
 	//ERR_FAIL_COND( p_child->data.blocked > 0 );
 
