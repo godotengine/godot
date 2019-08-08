@@ -44,6 +44,7 @@ protected:
 
 public:
 	Variant call_func(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+	Variant call_funcv(const Array &p_args);
 	void set_instance(Object *p_obj);
 	void set_function(const StringName &p_func);
 	bool is_valid() const;

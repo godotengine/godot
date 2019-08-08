@@ -112,7 +112,7 @@
 			<argument index="1" name="arg_array" type="Array">
 			</argument>
 			<description>
-				Calls the [code]method[/code] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expected all parameters passed via a single [Array].
+				Calls the [code]method[/code] on the object and returns the result. Contrarily to [method call], this method does not support a variable number of arguments but expects all parameters to be via a single [Array].
 				[codeblock]
 				callv("set", [ "position", Vector2(42.0, 0.0) ])
 				[/codeblock]
