@@ -211,6 +211,9 @@ void VisualShaderEditor::_update_options_menu() {
 
 		if (!use_filter || add_options[i].name.findn(filter) != -1) {
 
+			if ((add_options[i].func != current_func && add_options[i].func != -1) || !_is_available(add_options[i].mode))
+				continue;
+
 			if (prev_category != add_options[i].category) {
 				if (category != NULL && item_count == 0) {
 					memdelete(category);
@@ -241,73 +244,53 @@ void VisualShaderEditor::_update_options_menu() {
 							sub_category->set_collapsed(true);
 					}
 				}
-				if (sub_category != NULL) {
-					if ((add_options[i].func == current_func || add_options[i].func == -1) && _is_available(add_options[i].mode)) {
-						++item_count2;
-						TreeItem *item = members->create_item(sub_category);
-						if (add_options[i].highend && low_driver)
-							item->set_custom_color(0, unsupported_color);
-						else if (add_options[i].highend)
-							item->set_custom_color(0, supported_color);
-						item->set_text(0, add_options[i].name);
-						if (is_first_item) {
-							item->select(0);
-							is_first_item = false;
-						}
-						switch (add_options[i].return_type) {
-							case VisualShaderNode::PORT_TYPE_SCALAR:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_VECTOR:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_BOOLEAN:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_TRANSFORM:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_COLOR:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Color", "EditorIcons"));
-								break;
-							default:
-								break;
-						}
-						item->set_meta("id", i);
-					}
-				}
 			} else {
-				if (category != NULL) {
-					if ((add_options[i].func == current_func || add_options[i].func == -1) && _is_available(add_options[i].mode)) {
-						++item_count;
-						TreeItem *item = members->create_item(category);
-						if (add_options[i].highend && low_driver)
-							item->set_custom_color(0, unsupported_color);
-						else if (add_options[i].highend)
-							item->set_custom_color(0, supported_color);
-						item->set_text(0, add_options[i].name);
-						switch (add_options[i].return_type) {
-							case VisualShaderNode::PORT_TYPE_SCALAR:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_VECTOR:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_BOOLEAN:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_TRANSFORM:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
-								break;
-							case VisualShaderNode::PORT_TYPE_COLOR:
-								item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Color", "EditorIcons"));
-								break;
-							default:
-								break;
-						}
-						item->set_meta("id", i);
+				sub_category = NULL;
+			}
+
+			TreeItem *p_category = NULL;
+
+			if (sub_category != NULL) {
+				p_category = sub_category;
+				++item_count2;
+			} else if (category != NULL) {
+				p_category = category;
+				++item_count;
+			}
+
+			if (p_category != NULL) {
+				TreeItem *item = members->create_item(p_category);
+				if (add_options[i].highend && low_driver)
+					item->set_custom_color(0, unsupported_color);
+				else if (add_options[i].highend)
+					item->set_custom_color(0, supported_color);
+				item->set_text(0, add_options[i].name);
+				if (p_category == sub_category) {
+					if (is_first_item) {
+						item->select(0);
+						is_first_item = false;
 					}
 				}
+				switch (add_options[i].return_type) {
+					case VisualShaderNode::PORT_TYPE_SCALAR:
+						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("float", "EditorIcons"));
+						break;
+					case VisualShaderNode::PORT_TYPE_VECTOR:
+						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Vector3", "EditorIcons"));
+						break;
+					case VisualShaderNode::PORT_TYPE_BOOLEAN:
+						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("bool", "EditorIcons"));
+						break;
+					case VisualShaderNode::PORT_TYPE_TRANSFORM:
+						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
+						break;
+					case VisualShaderNode::PORT_TYPE_COLOR:
+						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Color", "EditorIcons"));
+						break;
+					default:
+						break;
+				}
+				item->set_meta("id", i);
 			}
 
 			prev_sub_category = add_options[i].sub_category;
