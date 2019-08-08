@@ -118,8 +118,7 @@ Error DynamicFontAtSize::_load() {
 
 	int error = FT_Init_FreeType(&library);
 
-	ERR_EXPLAIN(TTR("Error initializing FreeType."));
-	ERR_FAIL_COND_V(error != 0, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(error != 0, ERR_CANT_CREATE, "Error initializing FreeType.");
 
 	// FT_OPEN_STREAM is extremely slow only on Android.
 	if (OS::get_singleton()->get_name() == "Android" && font->font_mem == NULL && font->font_path != String()) {
@@ -177,19 +176,18 @@ Error DynamicFontAtSize::_load() {
 		error = FT_Open_Face(library, &fargs, 0, &face);
 
 	} else {
-		ERR_EXPLAIN("DynamicFont uninitialized");
-		ERR_FAIL_V(ERR_UNCONFIGURED);
+		ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "DynamicFont uninitialized.");
 	}
 
 	//error = FT_New_Face( library, src_path.utf8().get_data(),0,&face );
 
 	if (error == FT_Err_Unknown_File_Format) {
-		ERR_EXPLAIN(TTR("Unknown font format."));
+		ERR_EXPLAIN("Unknown font format.");
 		FT_Done_FreeType(library);
 
 	} else if (error) {
 
-		ERR_EXPLAIN(TTR("Error loading font."));
+		ERR_EXPLAIN("Error loading font.");
 		FT_Done_FreeType(library);
 	}
 
@@ -509,8 +507,7 @@ DynamicFontAtSize::Character DynamicFontAtSize::_bitmap_to_character(FT_Bitmap b
 					} break;
 					// TODO: FT_PIXEL_MODE_LCD
 					default:
-						ERR_EXPLAIN("Font uses unsupported pixel format: " + itos(bitmap.pixel_mode));
-						ERR_FAIL_V(Character::not_found());
+						ERR_FAIL_V_MSG(Character::not_found(), "Font uses unsupported pixel format: " + itos(bitmap.pixel_mode) + ".");
 						break;
 				}
 			}

@@ -202,10 +202,7 @@ Error BitmapFont::create_from_fnt(const String &p_file) {
 
 	FileAccess *f = FileAccess::open(p_file, FileAccess::READ);
 
-	if (!f) {
-		ERR_EXPLAIN("Can't open font: " + p_file);
-		ERR_FAIL_V(ERR_FILE_NOT_FOUND);
-	}
+	ERR_FAIL_COND_V_MSG(!f, ERR_FILE_NOT_FOUND, "Can't open font: " + p_file + ".");
 
 	clear();
 
@@ -532,10 +529,7 @@ Size2 Font::get_wordwrap_string_size(const String &p_string, float p_width) cons
 void BitmapFont::set_fallback(const Ref<BitmapFont> &p_fallback) {
 
 	for (Ref<BitmapFont> fallback_child = p_fallback; fallback_child != NULL; fallback_child = fallback_child->get_fallback()) {
-		if (fallback_child == this) {
-			ERR_EXPLAIN("Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
-			ERR_FAIL_COND(fallback_child == this);
-		}
+		ERR_FAIL_COND_MSG(fallback_child == this, "Can't set as fallback one of its parents to prevent crashes due to recursive loop.");
 	}
 
 	fallback = p_fallback;

@@ -1185,35 +1185,29 @@ bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 	// Validate and apply interpolation data
 
 	// Give it the object
-	ERR_EXPLAIN("Invalid object provided to Tween!");
-	ERR_FAIL_COND_V(p_object == NULL, false); // Is the object real
-	ERR_FAIL_COND_V(!ObjectDB::instance_validate(p_object), false); // Is the object a valid instance?
+	ERR_FAIL_COND_V_MSG(p_object == NULL, false, "Invalid object provided to Tween.");
+	ERR_FAIL_COND_V_MSG(!ObjectDB::instance_validate(p_object), false, "Invalid object provided to Tween.");
 	data.id = p_object->get_instance_id();
 
 	// Validate the initial and final values
-	ERR_EXPLAIN("Initial value type does not match final value type!"); // TODO: Print both types to make debugging easier
-	ERR_FAIL_COND_V(p_initial_val.get_type() != p_final_val.get_type(), false); // Do the initial and final value types match?
+	ERR_FAIL_COND_V_MSG(p_initial_val.get_type() != p_final_val.get_type(), false, "Initial value type '" + Variant::get_type_name(p_initial_val.get_type()) + "' does not match final value type '" + Variant::get_type_name(p_final_val.get_type()) + "'.");
 	data.initial_val = p_initial_val;
 	data.final_val = p_final_val;
 
 	// Check the Duration
-	ERR_EXPLAIN("Only non-negative duration values allowed in Tweens!");
-	ERR_FAIL_COND_V(p_duration < 0, false); // Is the tween duration non-negative
+	ERR_FAIL_COND_V_MSG(p_duration < 0, false, "Only non-negative duration values allowed in Tweens.");
 	data.duration = p_duration;
 
 	// Tween Delay
-	ERR_EXPLAIN("Only non-negative delay values allowed in Tweens!");
-	ERR_FAIL_COND_V(p_delay < 0, false); // Is the delay non-negative?
+	ERR_FAIL_COND_V_MSG(p_delay < 0, false, "Only non-negative delay values allowed in Tweens.");
 	data.delay = p_delay;
 
 	// Transition type
-	ERR_EXPLAIN("Invalid transition type provided to Tween");
-	ERR_FAIL_COND_V(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false); // Is the transition type valid
+	ERR_FAIL_COND_V_MSG(p_trans_type < 0 || p_trans_type >= TRANS_COUNT, false, "Invalid transition type provided to Tween.");
 	data.trans_type = p_trans_type;
 
 	// Easing type
-	ERR_EXPLAIN("Invalid easing type provided to Tween");
-	ERR_FAIL_COND_V(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false); // Is the easing type valid
+	ERR_FAIL_COND_V_MSG(p_ease_type < 0 || p_ease_type >= EASE_COUNT, false, "Invalid easing type provided to Tween.");
 	data.ease_type = p_ease_type;
 
 	// Is the property defined?
@@ -1221,8 +1215,7 @@ bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 		// Check that the object actually contains the given property
 		bool prop_valid = false;
 		p_object->get_indexed(p_property->get_subnames(), &prop_valid);
-		ERR_EXPLAIN("Tween target object has no property named: " + p_property->get_concatenated_subnames());
-		ERR_FAIL_COND_V(!prop_valid, false);
+		ERR_FAIL_COND_V_MSG(!prop_valid, false, "Tween target object has no property named: " + p_property->get_concatenated_subnames() + ".");
 
 		data.key = p_property->get_subnames();
 		data.concatenated_key = p_property->get_concatenated_subnames();
@@ -1231,8 +1224,7 @@ bool Tween::_build_interpolation(InterpolateType p_interpolation_type, Object *p
 	// Is the method defined?
 	if (p_method) {
 		// Does the object even have the requested method?
-		ERR_EXPLAIN("Tween target object has no method named: " + *p_method); // TODO: Fix this error message
-		ERR_FAIL_COND_V(!p_object->has_method(*p_method), false);
+		ERR_FAIL_COND_V_MSG(!p_object->has_method(*p_method), false, "Tween target object has no method named: " + *p_method + ".");
 
 		data.key.push_back(*p_method);
 		data.concatenated_key = *p_method;
@@ -1301,8 +1293,7 @@ bool Tween::interpolate_callback(Object *p_object, real_t p_duration, String p_c
 	ERR_FAIL_COND_V(p_duration < 0, false);
 
 	// Check whether the object even has the callback
-	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
-	ERR_FAIL_COND_V(!p_object->has_method(p_callback), false);
+	ERR_FAIL_COND_V_MSG(!p_object->has_method(p_callback), false, "Object has no callback named: " + p_callback + ".");
 
 	// Build a new InterpolationData
 	InterpolateData data;
@@ -1361,8 +1352,7 @@ bool Tween::interpolate_deferred_callback(Object *p_object, real_t p_duration, S
 	ERR_FAIL_COND_V(p_duration < 0, false);
 
 	// Confirm the callback exists on the object
-	ERR_EXPLAIN("Object has no callback named: %s" + p_callback);
-	ERR_FAIL_COND_V(!p_object->has_method(p_callback), false);
+	ERR_FAIL_COND_V_MSG(!p_object->has_method(p_callback), false, "Object has no callback named: " + p_callback + ".");
 
 	// Create a new InterpolateData for the callback
 	InterpolateData data;
@@ -1505,10 +1495,8 @@ bool Tween::follow_method(Object *p_object, StringName p_method, Variant p_initi
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
 	// Confirm both objects have the target methods
-	ERR_EXPLAIN("Object has no method named: %s" + p_method);
-	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
-	ERR_EXPLAIN("Target has no method named: %s" + p_target_method);
-	ERR_FAIL_COND_V(!p_target->has_method(p_target_method), false);
+	ERR_FAIL_COND_V_MSG(!p_object->has_method(p_method), false, "Object has no method named: " + p_method + ".");
+	ERR_FAIL_COND_V_MSG(!p_target->has_method(p_target_method), false, "Target has no method named: " + p_target_method + ".");
 
 	// Call the method to get the target value
 	Variant::CallError error;
@@ -1641,10 +1629,8 @@ bool Tween::targeting_method(Object *p_object, StringName p_method, Object *p_in
 	ERR_FAIL_COND_V(p_delay < 0, false);
 
 	// Make sure both objects have the given method
-	ERR_EXPLAIN("Object has no method named: %s" + p_method);
-	ERR_FAIL_COND_V(!p_object->has_method(p_method), false);
-	ERR_EXPLAIN("Initial Object has no method named: %s" + p_initial_method);
-	ERR_FAIL_COND_V(!p_initial->has_method(p_initial_method), false);
+	ERR_FAIL_COND_V_MSG(!p_object->has_method(p_method), false, "Object has no method named: " + p_method + ".");
+	ERR_FAIL_COND_V_MSG(!p_initial->has_method(p_initial_method), false, "Initial Object has no method named: " + p_initial_method + ".");
 
 	// Call the method to get the initial value
 	Variant::CallError error;

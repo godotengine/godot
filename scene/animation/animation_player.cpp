@@ -248,10 +248,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 		RES resource;
 		Vector<StringName> leftover_path;
 		Node *child = parent->get_node_and_resource(a->track_get_path(i), resource, leftover_path);
-		if (!child) {
-			ERR_EXPLAIN("On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'");
-		}
-		ERR_CONTINUE(!child); // couldn't find the child node
+		ERR_CONTINUE_MSG(!child, "On Animation: '" + p_anim->name + "', couldn't resolve track:  '" + String(a->track_get_path(i)) + "'."); // couldn't find the child node
 		uint32_t id = resource.is_valid() ? resource->get_instance_id() : child->get_instance_id();
 		int bone_idx = -1;
 
@@ -973,8 +970,7 @@ void AnimationPlayer::_animation_process(float p_delta) {
 Error AnimationPlayer::add_animation(const StringName &p_name, const Ref<Animation> &p_animation) {
 
 #ifdef DEBUG_ENABLED
-	ERR_EXPLAIN("Invalid animation name: " + String(p_name));
-	ERR_FAIL_COND_V(String(p_name).find("/") != -1 || String(p_name).find(":") != -1 || String(p_name).find(",") != -1 || String(p_name).find("[") != -1, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(String(p_name).find("/") != -1 || String(p_name).find(":") != -1 || String(p_name).find(",") != -1 || String(p_name).find("[") != -1, ERR_INVALID_PARAMETER, "Invalid animation name: " + String(p_name) + ".");
 #endif
 
 	ERR_FAIL_COND_V(p_animation.is_null(), ERR_INVALID_PARAMETER);
@@ -1158,10 +1154,7 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 	if (String(name) == "")
 		name = playback.assigned;
 
-	if (!animation_set.has(name)) {
-		ERR_EXPLAIN("Animation not found: " + name);
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!animation_set.has(name), "Animation not found: " + name + ".");
 
 	Playback &c = playback;
 
