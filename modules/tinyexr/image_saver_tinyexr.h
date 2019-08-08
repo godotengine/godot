@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  register_types.cpp                                                   */
+/*  image_saver_tinyexr.h                                                */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,24 +28,11 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "register_types.h"
+#ifndef IMAGE_SAVER_TINYEXR_H
+#define IMAGE_SAVER_TINYEXR_H
 
-#include "image_loader_tinyexr.h"
-#include "image_saver_tinyexr.h"
+#include "core/os/os.h"
 
-static ImageLoaderTinyEXR *image_loader_tinyexr = NULL;
+Error save_exr(const String &p_path, const Ref<Image> &p_img, bool p_grayscale);
 
-void register_tinyexr_types() {
-
-	image_loader_tinyexr = memnew(ImageLoaderTinyEXR);
-	ImageLoader::add_image_format_loader(image_loader_tinyexr);
-
-	Image::save_exr_func = save_exr;
-}
-
-void unregister_tinyexr_types() {
-
-	memdelete(image_loader_tinyexr);
-
-	Image::save_exr_func = NULL;
-}
+#endif // IMAGE_SAVER_TINYEXR_H
