@@ -524,6 +524,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_progress_bar = memnew(ProgressBar);
 		_progress_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+		_progress_bar->set_v_size_flags(SIZE_SHRINK_CENTER);
 		hbc->add_child(_progress_bar);
 		set_progress_visible(false);
 
