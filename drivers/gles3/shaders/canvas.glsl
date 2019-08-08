@@ -345,6 +345,7 @@ void light_compute(
 		inout vec4 light_color,
 		vec2 light_uv,
 		inout vec4 shadow_color,
+		inout vec2 shadow_vec,
 		vec3 normal,
 		vec2 uv,
 #if defined(SCREEN_UV_USED)
@@ -512,6 +513,7 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_LIGHTING
 
 	vec2 light_vec = transformed_light_uv;
+	vec2 shadow_vec = transformed_light_uv;
 
 	if (normal_used) {
 		normal.xy = mat2(local_rot.xy, local_rot.zw) * normal.xy;
@@ -539,6 +541,7 @@ FRAGMENT_SHADER_CODE
 				real_light_color,
 				light_uv,
 				real_light_shadow_color,
+				shadow_vec,
 				normal,
 				uv,
 #if defined(SCREEN_UV_USED)
@@ -557,11 +560,16 @@ FRAGMENT_SHADER_CODE
 		color *= light;
 
 #ifdef USE_SHADOWS
-		// Reset light_vec to compute shadows, the shadow map is created from the light origin, so it only
-		// makes sense to compute shadows from there.
-		light_vec = light_uv_interp.zw;
-
-		float angle_to_light = -atan(light_vec.x, light_vec.y);
+#ifdef SHADOW_VEC_USED
+		mat3 inverse_light_matrix = mat3(light_matrix);
+		inverse_light_matrix[0] = normalize(inverse_light_matrix[0]);
+		inverse_light_matrix[1] = normalize(inverse_light_matrix[1]);
+		inverse_light_matrix[2] = normalize(inverse_light_matrix[2]);
+		shadow_vec = (mat3(inverse_light_matrix) * vec3(shadow_vec, 0.0)).xy;
+#else
+		shadow_vec = light_uv_interp.zw;
+#endif
+		float angle_to_light = -atan(shadow_vec.x, shadow_vec.y);
 		float PI = 3.14159265358979323846264;
 		/*int i = int(mod(floor((angle_to_light+7.0*PI/6.0)/(4.0*PI/6.0))+1.0, 3.0)); // +1 pq os indices estao em ordem 2,0,1 nos arrays
 		float ang*/
@@ -572,18 +580,18 @@ FRAGMENT_SHADER_CODE
 		vec2 point;
 		float sh;
 		if (abs_angle < 45.0 * PI / 180.0) {
-			point = light_vec;
+			point = shadow_vec;
 			sh = 0.0 + (1.0 / 8.0);
 		} else if (abs_angle > 135.0 * PI / 180.0) {
-			point = -light_vec;
+			point = -shadow_vec;
 			sh = 0.5 + (1.0 / 8.0);
 		} else if (angle_to_light > 0.0) {
 
-			point = vec2(light_vec.y, -light_vec.x);
+			point = vec2(shadow_vec.y, -shadow_vec.x);
 			sh = 0.25 + (1.0 / 8.0);
 		} else {
 
-			point = vec2(-light_vec.y, light_vec.x);
+			point = vec2(-shadow_vec.y, shadow_vec.x);
 			sh = 0.75 + (1.0 / 8.0);
 		}
 
