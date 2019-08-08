@@ -36,6 +36,7 @@
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/collision_shape.h"
+#include "scene/3d/cpu_particles.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
@@ -2411,6 +2412,33 @@ void VisibilityNotifierGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_handles(handles, get_material("handles"));
+}
+
+////
+
+CPUParticlesGizmoPlugin::CPUParticlesGizmoPlugin() {
+	create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoCPUParticles", "EditorIcons"));
+}
+
+bool CPUParticlesGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<CPUParticles>(p_spatial) != NULL;
+}
+
+String CPUParticlesGizmoPlugin::get_name() const {
+	return "CPUParticles";
+}
+
+int CPUParticlesGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+bool CPUParticlesGizmoPlugin::is_selectable_when_hidden() const {
+	return true;
+}
+
+void CPUParticlesGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	Ref<Material> icon = get_material("particles_icon", p_gizmo);
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
 ////
