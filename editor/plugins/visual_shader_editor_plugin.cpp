@@ -78,6 +78,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 		hide();
 	} else {
 		if (changed) { // to avoid tree collapse
+			_clear_buffer();
 			_update_options_menu();
 		}
 		_update_graph();
@@ -1594,22 +1595,38 @@ void VisualShaderEditor::_dup_copy_nodes(int p_type, List<int> &r_nodes, Set<int
 	selection_center /= (float)r_nodes.size();
 }
 
-void VisualShaderEditor::_dup_paste_nodes(int p_type, List<int> &r_nodes, Set<int> &r_excluded, const Vector2 &p_offset, bool p_select) {
+void VisualShaderEditor::_dup_paste_nodes(int p_type, int p_pasted_type, List<int> &r_nodes, Set<int> &r_excluded, const Vector2 &p_offset, bool p_select) {
 
 	VisualShader::Type type = (VisualShader::Type)p_type;
+	VisualShader::Type pasted_type = (VisualShader::Type)p_pasted_type;
 
 	int base_id = visual_shader->get_valid_node_id(type);
 	int id_from = base_id;
 	Map<int, int> connection_remap;
+	Set<int> unsupported_set;
 
 	for (List<int>::Element *E = r_nodes.front(); E; E = E->next()) {
 
 		connection_remap[E->get()] = id_from;
-		Ref<VisualShaderNode> node = visual_shader->get_node(type, E->get());
+		Ref<VisualShaderNode> node = visual_shader->get_node(pasted_type, E->get());
+
+		bool unsupported = false;
+		for (int i = 0; i < add_options.size(); i++) {
+			if (add_options[i].type == node->get_class_name()) {
+				if (!_is_available(add_options[i].mode)) {
+					unsupported = true;
+				}
+				break;
+			}
+		}
+		if (unsupported) {
+			unsupported_set.insert(E->get());
+			continue;
+		}
 
 		Ref<VisualShaderNode> dupli = node->duplicate();
 
-		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, dupli, visual_shader->get_node_position(type, E->get()) + p_offset, id_from);
+		undo_redo->add_do_method(visual_shader.ptr(), "add_node", type, dupli, visual_shader->get_node_position(pasted_type, E->get()) + p_offset, id_from);
 		undo_redo->add_undo_method(visual_shader.ptr(), "remove_node", type, id_from);
 
 		// duplicate size, inputs and outputs if node is group
@@ -1629,9 +1646,12 @@ void VisualShaderEditor::_dup_paste_nodes(int p_type, List<int> &r_nodes, Set<in
 	}
 
 	List<VisualShader::Connection> conns;
-	visual_shader->get_node_connections(type, &conns);
+	visual_shader->get_node_connections(pasted_type, &conns);
 
 	for (List<VisualShader::Connection>::Element *E = conns.front(); E; E = E->next()) {
+		if (unsupported_set.has(E->get().from_node) || unsupported_set.has(E->get().to_node)) {
+			continue;
+		}
 		if (connection_remap.has(E->get().from_node) && connection_remap.has(E->get().to_node)) {
 			undo_redo->add_do_method(visual_shader.ptr(), "connect_nodes_forced", type, connection_remap[E->get().from_node], E->get().from_port, connection_remap[E->get().to_node], E->get().to_port);
 		}
@@ -1678,7 +1698,7 @@ void VisualShaderEditor::_duplicate_nodes() {
 
 	undo_redo->create_action(TTR("Duplicate Nodes"));
 
-	_dup_paste_nodes(type, nodes, excluded, Vector2(10, 10) * EDSCALE, true);
+	_dup_paste_nodes(type, type, nodes, excluded, Vector2(10, 10) * EDSCALE, true);
 }
 
 void VisualShaderEditor::_copy_nodes() {
@@ -1701,7 +1721,7 @@ void VisualShaderEditor::_paste_nodes() {
 
 	float scale = graph->get_zoom();
 
-	_dup_paste_nodes(type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + graph->get_local_mouse_position() / scale - selection_center), false);
+	_dup_paste_nodes(type, copy_type, copy_nodes_buffer, copy_nodes_excluded_buffer, (graph->get_scroll_ofs() / scale + graph->get_local_mouse_position() / scale - selection_center), false);
 
 	_dup_update_excluded(type, copy_nodes_excluded_buffer); // to prevent selection of previous copies at new paste
 }
@@ -1779,9 +1799,6 @@ void VisualShaderEditor::_on_nodes_delete() {
 }
 
 void VisualShaderEditor::_mode_selected(int p_id) {
-
-	copy_nodes_buffer.clear();
-	copy_nodes_excluded_buffer.clear();
 
 	_update_options_menu();
 	_update_graph();

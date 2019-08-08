@@ -178,7 +178,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _dup_copy_nodes(int p_type, List<int> &r_nodes, Set<int> &r_excluded);
 	void _dup_update_excluded(int p_type, Set<int> &r_excluded);
-	void _dup_paste_nodes(int p_type, List<int> &r_nodes, Set<int> &r_excluded, const Vector2 &p_offset, bool p_select);
+	void _dup_paste_nodes(int p_type, int p_pasted_type, List<int> &r_nodes, Set<int> &r_excluded, const Vector2 &p_offset, bool p_select);
 
 	void _duplicate_nodes();
 
