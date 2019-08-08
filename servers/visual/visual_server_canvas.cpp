@@ -386,8 +386,7 @@ void VisualServerCanvas::canvas_item_set_parent(RID p_item, RID p_parent) {
 
 		} else {
 
-			ERR_EXPLAIN("Invalid parent");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Invalid parent.");
 		}
 	}
 
@@ -754,12 +753,7 @@ void VisualServerCanvas::canvas_item_add_polygon(RID p_item, const Vector<Point2
 	ERR_FAIL_COND(uv_size != 0 && (uv_size != pointcount));
 #endif
 	Vector<int> indices = Geometry::triangulate_polygon(p_points);
-
-	if (indices.empty()) {
-
-		ERR_EXPLAIN("Bad Polygon!");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(indices.empty(), "Invalid polygon data, triangulation failed.");
 
 	Item::CommandPolygon *polygon = memnew(Item::CommandPolygon);
 	ERR_FAIL_COND(!polygon);
