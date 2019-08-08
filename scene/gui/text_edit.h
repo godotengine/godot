@@ -365,9 +365,14 @@ private:
 	int search_result_line;
 	int search_result_col;
 
+	bool selecting_enabled;
+
 	bool context_menu_enabled;
+	bool shortcut_keys_enabled;
 
 	int executing_line;
+
+	void _generate_context_menu();
 
 	int get_visible_rows() const;
 	int get_total_visible_rows() const;
@@ -736,6 +741,12 @@ public:
 
 	void set_context_menu_enabled(bool p_enable);
 	bool is_context_menu_enabled();
+
+	void set_selecting_enabled(bool p_enabled);
+	bool is_selecting_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
 
 	PopupMenu *get_menu() const;
 
