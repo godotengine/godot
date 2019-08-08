@@ -652,7 +652,18 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data].
+				Shows the given control at the mouse pointer. A good time to call this method is in [method get_drag_data]. The control must not be in the scene tree.
+				[codeblock]
+				export (Color, RGBA) var color = Color(1, 0, 0, 1)
+
+				func get_drag_data(position):
+				    # Use a control that is not in the tree
+				    var cpb = ColorPickerButton.new()
+				    cpb.color = color
+				    cpb.rect_size = Vector2(50, 50)
+				    set_drag_preview(cpb)
+				    return color
+				[/codeblock]
 			</description>
 		</method>
 		<method name="set_end">
