@@ -1420,15 +1420,25 @@ void ScriptEditor::_notification(int p_what) {
 			}
 
 			EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
+			FALLTHROUGH;
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+
 			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
 			site_search->set_icon(get_icon("Instance", "EditorIcons"));
 			request_docs->set_icon(get_icon("Issue", "EditorIcons"));
 
 			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
 			script_back->set_icon(get_icon("Back", "EditorIcons"));
+
 			members_overview_alphabeta_sort_button->set_icon(get_icon("Sort", "EditorIcons"));
+
 			filter_scripts->set_right_icon(get_icon("Search", "EditorIcons"));
 			filter_methods->set_right_icon(get_icon("Search", "EditorIcons"));
+
+			filename->add_style_override("normal", editor->get_gui_base()->get_stylebox("normal", "LineEdit"));
+
+			recent_scripts->set_as_minsize();
 		} break;
 
 		case NOTIFICATION_READY: {
@@ -1449,20 +1459,6 @@ void ScriptEditor::_notification(int p_what) {
 
 			_test_script_times_on_disk();
 			_update_modified_scripts_for_external_editor();
-		} break;
-
-		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
-			help_search->set_icon(get_icon("HelpSearch", "EditorIcons"));
-			site_search->set_icon(get_icon("Instance", "EditorIcons"));
-
-			script_forward->set_icon(get_icon("Forward", "EditorIcons"));
-			script_back->set_icon(get_icon("Back", "EditorIcons"));
-
-			members_overview_alphabeta_sort_button->set_icon(get_icon("Sort", "EditorIcons"));
-			filename->add_style_override("normal", editor->get_gui_base()->get_stylebox("normal", "LineEdit"));
-
-			recent_scripts->set_as_minsize();
 		} break;
 
 		case CanvasItem::NOTIFICATION_VISIBILITY_CHANGED: {
