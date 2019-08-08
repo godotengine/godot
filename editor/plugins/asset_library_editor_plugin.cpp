@@ -333,18 +333,14 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 	switch (p_status) {
 
-		case HTTPRequest::RESULT_CANT_RESOLVE: {
-			error_text = TTR("Can't resolve hostname:") + " " + host;
-			status->set_text(TTR("Can't resolve."));
-		} break;
-		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
-		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
+		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED: {
 			error_text = TTR("Connection error, please try again.");
 			status->set_text(TTR("Can't connect."));
 		} break;
-		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
-		case HTTPRequest::RESULT_CANT_CONNECT: {
+		case HTTPRequest::RESULT_CANT_CONNECT:
+		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR: {
 			error_text = TTR("Can't connect to host:") + " " + host;
 			status->set_text(TTR("Can't connect."));
 		} break;
@@ -352,13 +348,26 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 			error_text = TTR("No response from host:") + " " + host;
 			status->set_text(TTR("No response."));
 		} break;
+		case HTTPRequest::RESULT_CANT_RESOLVE: {
+			error_text = TTR("Can't resolve hostname:") + " " + host;
+			status->set_text(TTR("Can't resolve."));
+		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
 			error_text = TTR("Request failed, return code:") + " " + itos(p_code);
 			status->set_text(TTR("Request Failed."));
 		} break;
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN:
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR: {
+			error_text = TTR("Cannot save response to") + " " + download->get_download_file();
+			status->set_text(TTR("Write error."));
+		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
 			error_text = TTR("Request failed, too many redirects");
 			status->set_text(TTR("Redirect Loop."));
+		} break;
+		case HTTPRequest::RESULT_TIMEOUT: {
+			error_text = TTR("Request failed, timeout");
+			status->set_text(TTR("Timeout."));
 		} break;
 		default: {
 			if (p_code != 200) {
