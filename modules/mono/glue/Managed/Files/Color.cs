@@ -1,7 +1,10 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
     public struct Color : IEquatable<Color>
     {
         public float r;
