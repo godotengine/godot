@@ -725,8 +725,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						uint32_t string_at = decode_uint32(&p_manifest[st_offset + i * 4]);
 						string_at += st_offset + string_count * 4;
 
-						ERR_EXPLAIN("Unimplemented, can't read utf8 string table.");
-						ERR_FAIL_COND(string_flags & UTF8_FLAG);
+						ERR_FAIL_COND_MSG(string_flags & UTF8_FLAG, "Unimplemented, can't read UTF-8 string table.");
 
 						if (string_flags & UTF8_FLAG) {
 
@@ -863,8 +862,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
 
 						int32_t attr_name_string = string_table.find("name");
-						ERR_EXPLAIN("Template does not have 'name' attribute");
-						ERR_FAIL_COND(attr_name_string == -1);
+						ERR_FAIL_COND_MSG(attr_name_string == -1, "Template does not have 'name' attribute.");
 
 						int32_t ns_android_string = string_table.find("http://schemas.android.com/apk/res/android");
 						if (ns_android_string == -1) {
@@ -896,8 +894,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						} else if (dof_index == 2) {
 							required_value_string = "true";
 						} else {
-							ERR_EXPLAIN("Unknown dof index " + itos(dof_index));
-							ERR_FAIL();
+							ERR_FAIL_MSG("Unknown DoF index: " + itos(dof_index) + ".");
 						}
 						int32_t required_value = string_table.find(required_value_string);
 						if (required_value == -1) {
@@ -989,12 +986,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 						memcpy(manifest_end.ptrw(), &p_manifest[ofs], manifest_end.size());
 
 						int32_t attr_name_string = string_table.find("name");
-						ERR_EXPLAIN("Template does not have 'name' attribute");
-						ERR_FAIL_COND(attr_name_string == -1);
+						ERR_FAIL_COND_MSG(attr_name_string == -1, "Template does not have 'name' attribute.");
 
 						int32_t ns_android_string = string_table.find("android");
-						ERR_EXPLAIN("Template does not have 'android' namespace");
-						ERR_FAIL_COND(ns_android_string == -1);
+						ERR_FAIL_COND_MSG(ns_android_string == -1, "Template does not have 'android' namespace.");
 
 						int32_t attr_uses_permission_string = string_table.find("uses-permission");
 						if (attr_uses_permission_string == -1) {

@@ -67,10 +67,7 @@ void GDScriptNativeClass::_bind_methods() {
 Variant GDScriptNativeClass::_new() {
 
 	Object *o = instance();
-	if (!o) {
-		ERR_EXPLAIN("Class type: '" + String(name) + "' is not instantiable.");
-		ERR_FAIL_V(Variant());
-	}
+	ERR_FAIL_COND_V_MSG(!o, Variant(), "Class type: '" + String(name) + "' is not instantiable.");
 
 	Reference *ref = Object::cast_to<Reference>(o);
 	if (ref) {
@@ -158,8 +155,7 @@ Variant GDScript::_new(const Variant **p_args, int p_argcount, Variant::CallErro
 	} else {
 		owner = memnew(Reference); //by default, no base means use reference
 	}
-	ERR_EXPLAIN("Can't inherit from a virtual class");
-	ERR_FAIL_COND_V(!owner, Variant());
+	ERR_FAIL_COND_V_MSG(!owner, Variant(), "Can't inherit from a virtual class.");
 
 	Reference *r = Object::cast_to<Reference>(owner);
 	if (r) {
@@ -326,8 +322,7 @@ ScriptInstance *GDScript::instance_create(Object *p_this) {
 			if (ScriptDebugger::get_singleton()) {
 				GDScriptLanguage::get_singleton()->debug_break_parse(get_path(), 0, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
 			}
-			ERR_EXPLAIN("Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type: '" + p_this->get_class() + "'");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, "Script inherits from native type '" + String(top->native->get_name()) + "', so it can't be instanced in object of type '" + p_this->get_class() + "'" + ".");
 		}
 	}
 
@@ -648,10 +643,7 @@ Variant GDScript::call(const StringName &p_method, const Variant **p_args, int p
 		Map<StringName, GDScriptFunction *>::Element *E = top->member_functions.find(p_method);
 		if (E) {
 
-			if (!E->get()->is_static()) {
-				ERR_EXPLAIN("Can't call non-static function: '" + String(p_method) + "' in script.");
-				ERR_FAIL_V(Variant());
-			}
+			ERR_FAIL_COND_V_MSG(!E->get()->is_static(), Variant(), "Can't call non-static function '" + String(p_method) + "' in script.");
 
 			return E->get()->call(NULL, p_args, p_argcount, r_error);
 		}
@@ -826,8 +818,7 @@ Error GDScript::load_source_code(const String &p_path) {
 	String s;
 	if (s.parse_utf8((const char *)w.ptr())) {
 
-		ERR_EXPLAIN("Script '" + p_path + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		ERR_FAIL_V(ERR_INVALID_DATA);
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 
 	source = s;
@@ -1079,11 +1070,8 @@ void GDScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const
 			Variant ret = const_cast<GDScriptFunction *>(E->get())->call(const_cast<GDScriptInstance *>(this), NULL, 0, err);
 			if (err.error == Variant::CallError::CALL_OK) {
 
-				if (ret.get_type() != Variant::ARRAY) {
+				ERR_FAIL_COND_MSG(ret.get_type() != Variant::ARRAY, "Wrong type for _get_property_list, must be an array of dictionaries.");
 
-					ERR_EXPLAIN("Wrong type for _get_property list, must be an array of dictionaries.");
-					ERR_FAIL();
-				}
 				Array arr = ret;
 				for (int i = 0; i < arr.size(); i++) {
 
@@ -1243,8 +1231,7 @@ String GDScriptInstance::to_string(bool *r_valid) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid)
 					*r_valid = false;
-				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
-				ERR_FAIL_V(String());
+				ERR_FAIL_V_MSG(String(), "Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
 			}
 			if (r_valid)
 				*r_valid = true;
@@ -2057,8 +2044,7 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case WARNING_MAX: break; // Can't happen, but silences warning
 	}
-	ERR_EXPLAIN("Invalid GDScript warning code: " + get_name_from_code(code));
-	ERR_FAIL_V(String());
+	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
 
 #undef CHECK_SYMBOLS
 }
@@ -2110,8 +2096,7 @@ GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) 
 		}
 	}
 
-	ERR_EXPLAIN("Invalid GDScript warning name: " + p_name);
-	ERR_FAIL_V(WARNING_MAX);
+	ERR_FAIL_V_MSG(WARNING_MAX, "Invalid GDScript warning name: " + p_name);
 }
 
 #endif // DEBUG_ENABLED

@@ -71,8 +71,7 @@ const char *OS_Android::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 }
 int OS_Android::get_audio_driver_count() const {
 
@@ -223,10 +222,7 @@ bool OS_Android::request_permission(const String &p_name) {
 
 Error OS_Android::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
 	p_library_handle = dlopen(p_path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 	return OK;
 }
 

@@ -97,17 +97,10 @@ Error AudioDriverOpenSL::init() {
 		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
 	};
 	res = slCreateEngine(&sl, 1, EngineOption, 0, NULL, NULL);
-	if (res != SL_RESULT_SUCCESS) {
+	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not initialize OpenSL.");
 
-		ERR_EXPLAIN("Could not Initialize OpenSL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
 	res = (*sl)->Realize(sl, SL_BOOLEAN_FALSE);
-	if (res != SL_RESULT_SUCCESS) {
-
-		ERR_EXPLAIN("Could not Realize OpenSL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
+	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not realize OpenSL.");
 
 	return OK;
 }

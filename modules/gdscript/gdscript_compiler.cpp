@@ -1241,8 +1241,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 				} break;
 				default: {
 
-					ERR_EXPLAIN("Bug in bytecode compiler, unexpected operator #" + itos(on->op) + " in parse tree while parsing expression.");
-					ERR_FAIL_V(0); //unreachable code
+					ERR_FAIL_V_MSG(0, "Bug in bytecode compiler, unexpected operator #" + itos(on->op) + " in parse tree while parsing expression."); //unreachable code
 
 				} break;
 			}
@@ -1255,8 +1254,7 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 		//TYPE_TYPE,
 		default: {
 
-			ERR_EXPLAIN("Bug in bytecode compiler, unexpected node in parse tree while parsing expression.");
-			ERR_FAIL_V(-1); //unreachable code
+			ERR_FAIL_V_MSG(-1, "Bug in bytecode compiler, unexpected node in parse tree while parsing expression."); //unreachable code
 		} break;
 	}
 }
