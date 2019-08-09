@@ -312,7 +312,8 @@ void EditorPropertyArray::update_property() {
 		} else {
 			//bye bye children of the box
 			while (vbox->get_child_count() > 2) {
-				memdelete(vbox->get_child(2));
+				vbox->get_child(2)->queue_delete(); // button still needed after pressed is called
+				vbox->remove_child(vbox->get_child(2));
 			}
 		}
 
