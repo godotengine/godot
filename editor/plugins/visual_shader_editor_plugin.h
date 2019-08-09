@@ -104,6 +104,7 @@ class VisualShaderEditor : public VBoxContainer {
 		int func;
 		float value;
 		bool highend;
+		bool is_custom;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
 			name = p_name;
@@ -117,6 +118,7 @@ class VisualShaderEditor : public VBoxContainer {
 			func = p_func;
 			value = p_value;
 			highend = p_highend;
+			is_custom = false;
 		}
 
 		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
@@ -131,6 +133,7 @@ class VisualShaderEditor : public VBoxContainer {
 			func = p_func;
 			value = p_value;
 			highend = p_highend;
+			is_custom = false;
 		}
 	};
 
@@ -140,6 +143,7 @@ class VisualShaderEditor : public VBoxContainer {
 	void _draw_color_over_button(Object *obj, Color p_color);
 
 	void _add_node(int p_idx, int p_op_idx = -1);
+	void _update_custom_nodes();
 	void _update_options_menu();
 
 	static VisualShaderEditor *singleton;
@@ -240,8 +244,8 @@ public:
 
 	static VisualShaderEditor *get_singleton() { return singleton; }
 
-	void add_custom_type(const String &p_name, const String &p_category, const Ref<Script> &p_script);
-	void remove_custom_type(const Ref<Script> &p_script);
+	void clear_custom_types();
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_sub_category);
 
 	virtual Size2 get_minimum_size() const;
 	void edit(VisualShader *p_visual_shader);

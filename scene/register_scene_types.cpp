@@ -475,6 +475,7 @@ void register_scene_types() {
 	ClassDB::register_class<Shader>();
 	ClassDB::register_class<VisualShader>();
 	ClassDB::register_virtual_class<VisualShaderNode>();
+	ClassDB::register_class<VisualShaderNodeCustom>();
 	ClassDB::register_class<VisualShaderNodeInput>();
 	ClassDB::register_virtual_class<VisualShaderNodeOutput>();
 	ClassDB::register_class<VisualShaderNodeGroupBase>();

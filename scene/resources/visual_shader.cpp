@@ -117,10 +117,157 @@ void VisualShaderNode::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "output_port_for_preview"), "set_output_port_for_preview", "get_output_port_for_preview");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "default_input_values", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_default_input_values", "_get_default_input_values");
 	ADD_SIGNAL(MethodInfo("editor_refresh_request"));
+
+	BIND_ENUM_CONSTANT(PORT_TYPE_SCALAR);
+	BIND_ENUM_CONSTANT(PORT_TYPE_VECTOR);
+	BIND_ENUM_CONSTANT(PORT_TYPE_BOOLEAN);
+	BIND_ENUM_CONSTANT(PORT_TYPE_TRANSFORM);
+	BIND_ENUM_CONSTANT(PORT_TYPE_ICON_COLOR);
 }
 
 VisualShaderNode::VisualShaderNode() {
 	port_preview = -1;
+}
+
+/////////////////////////////////////////////////////////
+
+void VisualShaderNodeCustom::update_ports() {
+	ERR_FAIL_COND(!get_script_instance());
+
+	input_ports.clear();
+	if (get_script_instance()->has_method("_get_input_port_count")) {
+		int input_port_count = (int)get_script_instance()->call("_get_input_port_count");
+		bool has_name = get_script_instance()->has_method("_get_input_port_name");
+		bool has_type = get_script_instance()->has_method("_get_input_port_type");
+		for (int i = 0; i < input_port_count; i++) {
+			Port port;
+			if (has_name) {
+				port.name = (String)get_script_instance()->call("_get_input_port_name", i);
+			} else {
+				port.name = "in" + itos(i);
+			}
+			if (has_type) {
+				port.type = (int)get_script_instance()->call("_get_input_port_type", i);
+			} else {
+				port.type = (int)PortType::PORT_TYPE_SCALAR;
+			}
+			input_ports.push_back(port);
+		}
+	}
+	output_ports.clear();
+	if (get_script_instance()->has_method("_get_output_port_count")) {
+		int output_port_count = (int)get_script_instance()->call("_get_output_port_count");
+		bool has_name = get_script_instance()->has_method("_get_output_port_name");
+		bool has_type = get_script_instance()->has_method("_get_output_port_type");
+		for (int i = 0; i < output_port_count; i++) {
+			Port port;
+			if (has_name) {
+				port.name = (String)get_script_instance()->call("_get_output_port_name", i);
+			} else {
+				port.name = "out" + itos(i);
+			}
+			if (has_type) {
+				port.type = (int)get_script_instance()->call("_get_output_port_type", i);
+			} else {
+				port.type = (int)PortType::PORT_TYPE_SCALAR;
+			}
+			output_ports.push_back(port);
+		}
+	}
+}
+
+String VisualShaderNodeCustom::get_caption() const {
+	ERR_FAIL_COND_V(!get_script_instance(), "");
+	if (get_script_instance()->has_method("_get_name")) {
+		return (String)get_script_instance()->call("_get_name");
+	}
+	return "Unnamed";
+}
+
+int VisualShaderNodeCustom::get_input_port_count() const {
+	return input_ports.size();
+}
+
+VisualShaderNodeCustom::PortType VisualShaderNodeCustom::get_input_port_type(int p_port) const {
+	ERR_FAIL_INDEX_V(p_port, input_ports.size(), PORT_TYPE_SCALAR);
+	return (PortType)input_ports[p_port].type;
+}
+
+String VisualShaderNodeCustom::get_input_port_name(int p_port) const {
+	ERR_FAIL_INDEX_V(p_port, input_ports.size(), "");
+	return input_ports[p_port].name;
+}
+
+int VisualShaderNodeCustom::get_output_port_count() const {
+	return output_ports.size();
+}
+
+VisualShaderNodeCustom::PortType VisualShaderNodeCustom::get_output_port_type(int p_port) const {
+	ERR_FAIL_INDEX_V(p_port, output_ports.size(), PORT_TYPE_SCALAR);
+	return (PortType)output_ports[p_port].type;
+}
+
+String VisualShaderNodeCustom::get_output_port_name(int p_port) const {
+	ERR_FAIL_INDEX_V(p_port, output_ports.size(), "");
+	return output_ports[p_port].name;
+}
+
+String VisualShaderNodeCustom::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+
+	ERR_FAIL_COND_V(!get_script_instance(), "");
+	ERR_FAIL_COND_V(!get_script_instance()->has_method("_get_code"), "");
+	Array input_vars;
+	for (int i = 0; i < get_input_port_count(); i++) {
+		input_vars.push_back(p_input_vars[i]);
+	}
+	Array output_vars;
+	for (int i = 0; i < get_output_port_count(); i++) {
+		output_vars.push_back(p_output_vars[i]);
+	}
+	String code = "\t{\n";
+	String _code = (String)get_script_instance()->call("_get_code", input_vars, output_vars, (int)p_mode, (int)p_type);
+	bool nend = _code.ends_with("\n");
+	_code = _code.insert(0, "\t\t");
+	_code = _code.replace("\n", "\n\t\t");
+	code += _code;
+	if (!nend) {
+		code += "\n\t}";
+	} else {
+		code.remove(code.size() - 1);
+		code += "}";
+	}
+	return code;
+}
+
+String VisualShaderNodeCustom::generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	ERR_FAIL_COND_V(!get_script_instance(), "");
+	if (get_script_instance()->has_method("_get_global_code")) {
+		String code = "// " + get_caption() + "\n";
+		code += (String)get_script_instance()->call("_get_global_code", (int)p_mode);
+		code += "\n";
+		return code;
+	}
+	return "";
+}
+
+void VisualShaderNodeCustom::_bind_methods() {
+
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_name"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_description"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_category"));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_subcategory"));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_return_icon_type"));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_port_count"));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_input_port_type", PropertyInfo(Variant::INT, "port")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_input_port_name", PropertyInfo(Variant::INT, "port")));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_port_count"));
+	BIND_VMETHOD(MethodInfo(Variant::INT, "_get_output_port_type", PropertyInfo(Variant::INT, "port")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_output_port_name", PropertyInfo(Variant::INT, "port")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_code", PropertyInfo(Variant::ARRAY, "input_vars"), PropertyInfo(Variant::ARRAY, "output_vars"), PropertyInfo(Variant::INT, "mode"), PropertyInfo(Variant::INT, "type")));
+	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_global_code", PropertyInfo(Variant::INT, "mode")));
+}
+
+VisualShaderNodeCustom::VisualShaderNodeCustom() {
 }
 
 /////////////////////////////////////////////////////////
@@ -149,6 +296,11 @@ void VisualShader::add_node(Type p_type, const Ref<VisualShaderNode> &p_node, co
 	}
 
 	n.node->connect("changed", this, "_queue_update");
+
+	Ref<VisualShaderNodeCustom> custom = n.node;
+	if (custom.is_valid()) {
+		custom->update_ports();
+	}
 
 	g->nodes[p_id] = n;
 
@@ -965,6 +1117,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 	bool skip_global = input.is_valid() && for_preview;
 
 	if (!skip_global) {
+
 		global_code += vsnode->generate_global(get_mode(), type, node);
 
 		if (!r_classes.has(vsnode->get_class_name())) {
@@ -976,7 +1129,6 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 		}
 	}
 
-	//handle normally
 	code += vsnode->generate_code(get_mode(), type, node, inputs, outputs, for_preview);
 
 	code += "\n"; //
