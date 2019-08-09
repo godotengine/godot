@@ -67,10 +67,8 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 #ifdef DEBUG_ENABLED
-	if (conn_target_id && !ObjectDB::get_instance(conn_target_id)) {
-		ERR_EXPLAIN("Resumed after await, but class instance is gone");
-		ERR_FAIL_V(Variant());
-	}
+	ERR_FAIL_COND_V_MSG(conn_target_id && !ObjectDB::get_instance(conn_target_id), Variant(),
+			"Resumed after await, but class instance is gone.");
 #endif
 
 	if (p_argcount < 1) {

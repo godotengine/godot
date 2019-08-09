@@ -81,16 +81,14 @@ bool generate_api_solution(const String &p_solution_dir, const String &p_core_pr
 
 		_GDMONO_SCOPE_DOMAIN_(temp_domain);
 
-		GDMonoAssembly *tools_project_editor_assembly = NULL;
+		GDMonoAssembly *tools_project_editor_asm = NULL;
 
-		if (!GDMono::get_singleton()->load_assembly("GodotTools.ProjectEditor", &tools_project_editor_assembly)) {
-			ERR_EXPLAIN("Failed to load assembly: 'GodotTools.ProjectEditor'");
-			ERR_FAIL_V(false);
-		}
+		bool assembly_loaded = GDMono::get_singleton()->load_assembly(TOOLS_PROJECT_EDITOR_ASM_NAME, &tools_project_editor_asm);
+		ERR_FAIL_COND_V_MSG(!assembly_loaded, false, "Failed to load assembly: '" TOOLS_PROJECT_EDITOR_ASM_NAME "'.");
 
 		return generate_api_solution_impl(p_solution_dir, p_core_proj_dir, p_core_compile_items,
 				p_editor_proj_dir, p_editor_compile_items,
-				tools_project_editor_assembly);
+				tools_project_editor_asm);
 	}
 }
 
