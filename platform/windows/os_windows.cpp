@@ -2743,11 +2743,11 @@ void OS_Windows::set_native_icon(const String &p_filename) {
 
 	SendMessage(hWnd, WM_SETICON, ICON_SMALL, (LPARAM)icon_small);
 	err = GetLastError();
-	ERR_FAIL_COND(err, "Error setting ICON_SMALL: " + format_error_message(err) + ".");
+	ERR_FAIL_COND_MSG(err, "Error setting ICON_SMALL: " + format_error_message(err) + ".");
 
 	SendMessage(hWnd, WM_SETICON, ICON_BIG, (LPARAM)icon_big);
 	err = GetLastError();
-	ERR_FAIL_COND(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
+	ERR_FAIL_COND_MSG(err, "Error setting ICON_BIG: " + format_error_message(err) + ".");
 
 	memdelete(f);
 	memdelete(icon_dir);
