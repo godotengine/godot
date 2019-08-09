@@ -407,8 +407,6 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 		icon->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
-	asset_installer->connect("confirmed", this, "_close");
-	dismiss->set_normal_texture(get_icon("Close", "EditorIcons"));
 	_make_request();
 }
 
@@ -416,9 +414,11 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_READY: {
+		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
+		case NOTIFICATION_ENTER_TREE: {
 
 			add_style_override("panel", get_stylebox("panel", "TabContainer"));
+			dismiss->set_normal_texture(get_icon("Close", "EditorIcons"));
 		} break;
 		case NOTIFICATION_PROCESS: {
 
@@ -571,6 +571,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	add_child(asset_installer);
+	asset_installer->connect("confirmed", this, "_close");
 
 	prev_status = -1;
 
