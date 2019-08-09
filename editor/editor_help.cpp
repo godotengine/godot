@@ -1738,19 +1738,13 @@ void FindBar::_update_results_count() {
 
 void FindBar::_update_matches_label() {
 
-	if (results_count > 0) {
-		matches_label->show();
-
-		matches_label->add_color_override("font_color", Color(1, 1, 1));
-		matches_label->set_text(vformat(TTR("Found %d match(es)."), results_count));
-	} else if (search_text->get_text().empty()) {
-
+	if (search_text->get_text().empty() || results_count == -1) {
 		matches_label->hide();
 	} else {
 		matches_label->show();
 
-		matches_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
-		matches_label->set_text(TTR("No Matches"));
+		matches_label->add_color_override("font_color", results_count > 0 ? Color(1, 1, 1) : EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }
 
