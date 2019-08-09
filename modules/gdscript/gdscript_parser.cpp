@@ -898,6 +898,10 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_IS && tokenizer->get_token(1) == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
 			// 'is' operator with built-in type
+			if (!expr) {
+				_set_error("Expected identifier before 'is' operator");
+				return NULL;
+			}
 			OperatorNode *op = alloc_node<OperatorNode>();
 			op->op = OperatorNode::OP_IS_BUILTIN;
 			op->arguments.push_back(expr);
