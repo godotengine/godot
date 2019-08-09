@@ -2146,7 +2146,9 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1) {
 		p_popup->add_item(TTR("Copy Path"), FILE_COPY_PATH);
-		p_popup->add_item(TTR("Rename..."), FILE_RENAME);
+		if (p_paths[0] != "res://") {
+			p_popup->add_item(TTR("Rename..."), FILE_RENAME);
+		}
 		p_popup->add_item(TTR("Duplicate..."), FILE_DUPLICATE);
 	}
 
