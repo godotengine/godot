@@ -1955,19 +1955,27 @@ void register_variant_methods() {
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "UP", Vector2(0, -1));
 	_VariantCall::add_variant_constant(Variant::VECTOR2, "DOWN", Vector2(0, 1));
 
-	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D(1, 0, 0, 1, 0, 0));
+	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "IDENTITY", Transform2D());
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_X", Transform2D(-1, 0, 0, 1, 0, 0));
 	_VariantCall::add_variant_constant(Variant::TRANSFORM2D, "FLIP_Y", Transform2D(1, 0, 0, -1, 0, 0));
 
-	Transform identity_transform, transform_x, transform_y, transform_z;
-	identity_transform.set(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
+	Transform identity_transform = Transform();
+	Transform flip_x_transform = Transform(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
+	Transform flip_y_transform = Transform(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
+	Transform flip_z_transform = Transform(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
 	_VariantCall::add_variant_constant(Variant::TRANSFORM, "IDENTITY", identity_transform);
-	transform_x.set(-1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_X", transform_x);
-	transform_y.set(1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Y", transform_y);
-	transform_z.set(1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0);
-	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Z", transform_z);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_X", flip_x_transform);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Y", flip_y_transform);
+	_VariantCall::add_variant_constant(Variant::TRANSFORM, "FLIP_Z", flip_z_transform);
+
+	Basis identity_basis = Basis();
+	Basis flip_x_basis = Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1);
+	Basis flip_y_basis = Basis(1, 0, 0, 0, -1, 0, 0, 0, 1);
+	Basis flip_z_basis = Basis(1, 0, 0, 0, 1, 0, 0, 0, -1);
+	_VariantCall::add_variant_constant(Variant::BASIS, "IDENTITY", identity_basis);
+	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_X", flip_x_basis);
+	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Y", flip_y_basis);
+	_VariantCall::add_variant_constant(Variant::BASIS, "FLIP_Z", flip_z_basis);
 
 	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_YZ", Plane(Vector3(1, 0, 0), 0));
 	_VariantCall::add_variant_constant(Variant::PLANE, "PLANE_XZ", Plane(Vector3(0, 1, 0), 0));
