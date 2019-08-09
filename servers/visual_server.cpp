@@ -1145,11 +1145,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	Vector<AABB> bone_aabb;
 
 	Error err = _surface_set_data(p_arrays, format, offsets, total_elem_size, vertex_array, array_len, index_array, index_array_len, aabb, bone_aabb);
-
-	if (err) {
-		ERR_EXPLAIN("Invalid array format for surface");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(err, "Invalid array format for surface.");
 
 	Vector<PoolVector<uint8_t> > blend_shape_data;
 
@@ -1162,10 +1158,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 		AABB laabb;
 		Error err2 = _surface_set_data(p_blend_shapes[i], format & ~ARRAY_FORMAT_INDEX, offsets, total_elem_size, vertex_array_shape, array_len, noindex, 0, laabb, bone_aabb);
 		aabb.merge_with(laabb);
-		if (err2 != OK) {
-			ERR_EXPLAIN("Invalid blend shape array format for surface");
-			ERR_FAIL();
-		}
+		ERR_FAIL_COND_MSG(err2 != OK, "Invalid blend shape array format for surface.");
 
 		blend_shape_data.push_back(vertex_array_shape);
 	}
