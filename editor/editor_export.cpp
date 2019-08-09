@@ -35,6 +35,7 @@
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
 #include "core/math/crypto_core.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
@@ -884,6 +885,7 @@ Error EditorExportPlatform::export_project_files(const Ref<EditorExportPreset> &
 	String engine_cfb = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp" + config_file);
 	ProjectSettings::get_singleton()->save_custom(engine_cfb, custom_map, custom_list);
 	Vector<uint8_t> data = FileAccess::get_file_as_array(engine_cfb);
+	DirAccess::remove_file_or_error(engine_cfb);
 
 	p_func(p_udata, "res://" + config_file, data, idx, total);
 
@@ -916,8 +918,10 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 
 	memdelete(ftmp); //close tmp file
 
-	if (err)
+	if (err != OK) {
+		DirAccess::remove_file_or_error(tmppath);
 		return err;
+	}
 
 	pd.file_ofs.sort(); //do sort, so we can do binary search later
 
@@ -926,11 +930,17 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	if (!p_embed) {
 		// Regular output to separate PCK file
 		f = FileAccess::open(p_path, FileAccess::WRITE);
-		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		if (!f) {
+			DirAccess::remove_file_or_error(tmppath);
+			ERR_FAIL_V(ERR_CANT_CREATE);
+		}
 	} else {
 		// Append to executable
 		f = FileAccess::open(p_path, FileAccess::READ_WRITE);
-		ERR_FAIL_COND_V(!f, ERR_FILE_CANT_OPEN);
+		if (!f) {
+			DirAccess::remove_file_or_error(tmppath);
+			ERR_FAIL_V(ERR_FILE_CANT_OPEN);
+		}
 
 		f->seek_end();
 		embed_pos = f->get_position();
@@ -995,13 +1005,13 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 		f->store_8(0);
 	}
 
-	//save the rest of the data
+	// Save the rest of the data.
 
 	ftmp = FileAccess::open(tmppath, FileAccess::READ);
 	if (!ftmp) {
 		memdelete(f);
-		ERR_EXPLAIN("Can't open file to read from path: " + String(tmppath));
-		ERR_FAIL_V(ERR_CANT_CREATE);
+		DirAccess::remove_file_or_error(tmppath);
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't open file to read from path: " + String(tmppath));
 	}
 
 	const int bufsize = 16384;
@@ -1035,6 +1045,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	}
 
 	memdelete(f);
+	DirAccess::remove_file_or_error(tmppath);
 
 	return OK;
 }
@@ -1042,8 +1053,6 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 Error EditorExportPlatform::save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path) {
 
 	EditorProgress ep("savezip", TTR("Packing"), 102, true);
-
-	//FileAccess *tmp = FileAccess::open(tmppath,FileAccess::WRITE);
 
 	FileAccess *src_f;
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
@@ -1694,11 +1703,18 @@ void EditorExportTextSceneToBinaryPlugin::_export_file(const String &p_path, con
 	bool convert = GLOBAL_GET("editor/convert_text_resources_to_binary_on_export");
 	if (!convert)
 		return;
-	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("file.res");
+	String tmp_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpfile.res");
 	Error err = ResourceFormatLoaderText::convert_file_to_binary(p_path, tmp_path);
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		DirAccess::remove_file_or_error(tmp_path);
+		ERR_FAIL();
+	}
 	Vector<uint8_t> data = FileAccess::get_file_as_array(tmp_path);
-	ERR_FAIL_COND(data.size() == 0);
+	if (data.size() == 0) {
+		DirAccess::remove_file_or_error(tmp_path);
+		ERR_FAIL();
+	}
+	DirAccess::remove_file_or_error(tmp_path);
 	add_file(p_path + ".converted.res", data, true);
 }
 

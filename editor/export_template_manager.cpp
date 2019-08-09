@@ -422,14 +422,16 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 				String path = download_templates->get_download_file();
 				template_list_state->set_text(TTR("Download Complete."));
 				template_downloader->hide();
-				int ret = _install_from_file(path, false);
+				bool ret = _install_from_file(path, false);
 				if (ret) {
-					Error err = OS::get_singleton()->move_to_trash(path);
+					// Clean up downloaded file.
+					DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+					Error err = da->remove(path);
 					if (err != OK) {
-						EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + path + "\n");
+						EditorNode::get_singleton()->add_io_error(TTR("Cannot remove temporary file:") + "\n" + path + "\n");
 					}
 				} else {
-					WARN_PRINTS(vformat(TTR("Templates installation failed. The problematic templates archives can be found at '%s'."), path));
+					EditorNode::get_singleton()->add_io_error(vformat(TTR("Templates installation failed.\nThe problematic templates archives can be found at '%s'."), path));
 				}
 			}
 		} break;
@@ -458,7 +460,7 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Error requesting url: ") + p_url);
+		EditorNode::get_singleton()->show_warning(TTR("Error requesting URL:") + " " + p_url);
 		return;
 	}
 

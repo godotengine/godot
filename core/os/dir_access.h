@@ -97,6 +97,18 @@ public:
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
 
+	// Meant for editor code when we want to quickly remove a file without custom
+	// handling (e.g. removing a cache file).
+	static void remove_file_or_error(String p_path) {
+		DirAccess *da = create(ACCESS_FILESYSTEM);
+		if (da->file_exists(p_path)) {
+			if (da->remove(p_path) != OK) {
+				ERR_FAIL_MSG("Cannot remove file or directory: " + p_path);
+			}
+		}
+		memdelete(da);
+	}
+
 	virtual String get_filesystem_type() const = 0;
 	static String get_full_path(const String &p_path, AccessType p_access);
 	static DirAccess *create_for_path(const String &p_path);
