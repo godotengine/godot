@@ -46,7 +46,7 @@ private:
 	MenuButton *edit_menu;
 	PopupMenu *highlighter_menu;
 	MenuButton *search_menu;
-	MenuButton *bookmarks_menu;
+	PopupMenu *bookmarks_menu;
 	PopupMenu *context_menu;
 
 	GotoLineDialog *goto_line_dialog;
