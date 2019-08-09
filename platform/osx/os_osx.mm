@@ -1719,10 +1719,7 @@ Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle,
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 	return OK;
 }
 
@@ -1962,15 +1959,10 @@ void OS_OSX::set_native_icon(const String &p_filename) {
 	memdelete(f);
 
 	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write[0] length:len] autorelease];
-	if (!icon_data) {
-		ERR_EXPLAIN("Error reading icon data");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
+
 	NSImage *icon = [[[NSImage alloc] initWithData:icon_data] autorelease];
-	if (!icon) {
-		ERR_EXPLAIN("Error loading icon");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
 
 	[NSApp setApplicationIconImage:icon];
 }

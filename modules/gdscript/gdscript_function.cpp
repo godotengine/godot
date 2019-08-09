@@ -86,8 +86,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 				o = o->_owner;
 			}
 
-			ERR_EXPLAIN("GDScriptCompiler bug...");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, "GDScriptCompiler bug.");
 		} break;
 		case ADDR_TYPE_LOCAL_CONSTANT: {
 #ifdef DEBUG_ENABLED
@@ -128,8 +127,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 		} break;
 	}
 
-	ERR_EXPLAIN("Bad Code! (Addressing Mode)");
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Bad code! (unknown addressing mode).");
 	return NULL;
 }
 
@@ -1834,8 +1832,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_COND_V(!function, Variant());
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
-		ERR_EXPLAIN("Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
-		ERR_FAIL_V(Variant());
+		ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
 #else
 		return Variant();
 #endif

@@ -901,8 +901,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			String err_string = "Couldn't save temp logo file.";
 
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		FileAccess *f = FileAccess::open(tmp_path, FileAccess::READ, &err);
@@ -912,8 +911,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			String err_string = "Couldn't open temp logo file.";
 
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		data.resize(f->get_len());
@@ -930,8 +928,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			String err_string = "Couldn't open temp path to remove temp logo file.";
 
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		err = dir->remove(tmp_path);
@@ -943,8 +940,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			String err_string = "Couldn't remove temp logo file.";
 
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		return data;

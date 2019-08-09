@@ -686,20 +686,11 @@ static void _initialize_java_modules() {
 			print_line("Loading Android module: " + m);
 			jstring strClassName = env->NewStringUTF(m.utf8().get_data());
 			jclass singletonClass = (jclass)env->CallObjectMethod(cls, findClass, strClassName);
-
-			if (!singletonClass) {
-
-				ERR_EXPLAIN("Couldn't find singleton for class: " + m);
-				ERR_CONTINUE(!singletonClass);
-			}
+			ERR_CONTINUE_MSG(!singletonClass, "Couldn't find singleton for class: " + m + ".");
 
 			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lorg/godotengine/godot/Godot$SingletonBase;");
+			ERR_CONTINUE_MSG(!initialize, "Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: " + m + ".");
 
-			if (!initialize) {
-
-				ERR_EXPLAIN("Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: " + m);
-				ERR_CONTINUE(!initialize);
-			}
 			jobject obj = env->CallStaticObjectMethod(singletonClass, initialize, godot_java->get_activity());
 			env->NewGlobalRef(obj);
 		}
