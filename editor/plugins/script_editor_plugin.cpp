@@ -1072,6 +1072,7 @@ void ScriptEditor::_menu_option(int p_option) {
 			save_all_scripts();
 		} break;
 		case SEARCH_IN_FILES: {
+
 			_on_find_in_files_requested("");
 		} break;
 		case SEARCH_HELP: {
