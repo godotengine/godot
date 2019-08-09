@@ -1405,8 +1405,7 @@ void LineEdit::set_secret_character(const String &p_string) {
 
 	// An empty string as the secret character would crash the engine
 	// It also wouldn't make sense to use multiple characters as the secret character
-	ERR_EXPLAIN("Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given)");
-	ERR_FAIL_COND(p_string.length() != 1);
+	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
 
 	secret_character = p_string;
 	update();

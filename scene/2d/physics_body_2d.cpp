@@ -157,10 +157,7 @@ void PhysicsBody2D::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	if (!physics_body) {
-		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
-	}
-	ERR_FAIL_COND(!physics_body);
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody type.");
 	Physics2DServer::get_singleton()->body_add_collision_exception(get_rid(), physics_body->get_rid());
 }
 
@@ -168,10 +165,7 @@ void PhysicsBody2D::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	PhysicsBody2D *physics_body = Object::cast_to<PhysicsBody2D>(p_node);
-	if (!physics_body) {
-		ERR_EXPLAIN("Collision exception only works between two objects of PhysicsBody type");
-	}
-	ERR_FAIL_COND(!physics_body);
+	ERR_FAIL_COND_MSG(!physics_body, "Collision exception only works between two objects of PhysicsBody type.");
 	Physics2DServer::get_singleton()->body_remove_collision_exception(get_rid(), physics_body->get_rid());
 }
 
@@ -203,8 +197,7 @@ void StaticBody2D::set_friction(real_t p_friction) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -217,8 +210,7 @@ void StaticBody2D::set_friction(real_t p_friction) {
 
 real_t StaticBody2D::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -233,8 +225,7 @@ void StaticBody2D::set_bounce(real_t p_bounce) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -247,8 +238,7 @@ void StaticBody2D::set_bounce(real_t p_bounce) {
 
 real_t StaticBody2D::get_bounce() const {
 
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 0;
@@ -630,8 +620,7 @@ void RigidBody2D::set_friction(real_t p_friction) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -643,8 +632,7 @@ void RigidBody2D::set_friction(real_t p_friction) {
 }
 real_t RigidBody2D::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -659,8 +647,7 @@ void RigidBody2D::set_bounce(real_t p_bounce) {
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -672,8 +659,7 @@ void RigidBody2D::set_bounce(real_t p_bounce) {
 }
 real_t RigidBody2D::get_bounce() const {
 
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
-	WARN_DEPRECATED;
+	WARN_DEPRECATED_MSG("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 0;
@@ -905,10 +891,7 @@ void RigidBody2D::set_contact_monitor(bool p_enabled) {
 
 	if (!p_enabled) {
 
-		if (contact_monitor->locked) {
-			ERR_EXPLAIN("Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\",false) instead");
-		}
-		ERR_FAIL_COND(contact_monitor->locked);
+		ERR_FAIL_COND_MSG(contact_monitor->locked, "Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\", false) instead.");
 
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 

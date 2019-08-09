@@ -2700,12 +2700,10 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 bool Tree::edit_selected() {
 
 	TreeItem *s = get_selected();
-	ERR_EXPLAIN("No item selected!");
-	ERR_FAIL_COND_V(!s, false);
+	ERR_FAIL_COND_V_MSG(!s, false, "No item selected.");
 	ensure_cursor_is_visible();
 	int col = get_selected_column();
-	ERR_EXPLAIN("No item column selected!");
-	ERR_FAIL_INDEX_V(col, columns.size(), false);
+	ERR_FAIL_INDEX_V_MSG(col, columns.size(), false, "No item column selected.");
 
 	if (!s->cells[col].editable)
 		return false;

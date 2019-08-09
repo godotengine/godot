@@ -1006,8 +1006,7 @@ void TileSet::_tile_set_shapes(int p_id, const Array &p_shapes) {
 				s.autotile_coord = default_autotile_coord;
 
 		} else {
-			ERR_EXPLAIN("Expected an array of objects or dictionaries for tile_set_shapes");
-			ERR_CONTINUE(true);
+			ERR_CONTINUE_MSG(true, "Expected an array of objects or dictionaries for tile_set_shapes.");
 		}
 
 		shapes_data.push_back(s);

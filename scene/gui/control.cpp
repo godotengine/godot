@@ -1995,12 +1995,7 @@ Control *Control::find_next_valid_focus() const {
 			Node *n = get_node(data.focus_next);
 			if (n) {
 				from = Object::cast_to<Control>(n);
-
-				if (!from) {
-
-					ERR_EXPLAIN("Next focus node is not a control: " + n->get_name());
-					ERR_FAIL_V(NULL);
-				}
+				ERR_FAIL_COND_V_MSG(!from, NULL, "Next focus node is not a control: " + n->get_name() + ".");
 			} else {
 				return NULL;
 			}
@@ -2090,12 +2085,7 @@ Control *Control::find_prev_valid_focus() const {
 			Node *n = get_node(data.focus_prev);
 			if (n) {
 				from = Object::cast_to<Control>(n);
-
-				if (!from) {
-
-					ERR_EXPLAIN("Previous focus node is not a control: " + n->get_name());
-					ERR_FAIL_V(NULL);
-				}
+				ERR_FAIL_COND_V_MSG(!from, NULL, "Previous focus node is not a control: " + n->get_name() + ".");
 			} else {
 				return NULL;
 			}
@@ -2377,12 +2367,7 @@ Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
 		Node *n = get_node(data.focus_neighbour[p_margin]);
 		if (n) {
 			c = Object::cast_to<Control>(n);
-
-			if (!c) {
-
-				ERR_EXPLAIN("Neighbour focus node is not a control: " + n->get_name());
-				ERR_FAIL_V(NULL);
-			}
+			ERR_FAIL_COND_V_MSG(!c, NULL, "Neighbor focus node is not a control: " + n->get_name() + ".");
 		} else {
 			return NULL;
 		}
