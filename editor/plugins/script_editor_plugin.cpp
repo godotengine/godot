@@ -56,7 +56,7 @@ void ScriptEditorBase::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("request_open_script_at_line", PropertyInfo(Variant::OBJECT, "script"), PropertyInfo(Variant::INT, "line")));
 	ADD_SIGNAL(MethodInfo("request_save_history"));
 	ADD_SIGNAL(MethodInfo("go_to_help", PropertyInfo(Variant::STRING, "what")));
-	// TODO This signal is no use for VisualScript...
+	// TODO: This signal is no use for VisualScript.
 	ADD_SIGNAL(MethodInfo("search_in_files_requested", PropertyInfo(Variant::STRING, "text")));
 }
 
@@ -205,11 +205,13 @@ void ScriptEditorQuickOpen::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
 			connect("confirmed", this, "_confirmed");
 
-			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
+			FALLTHROUGH;
+		}
+		case NOTIFICATION_THEME_CHANGED: {
+			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
 			disconnect("confirmed", this, "_confirmed");
@@ -242,6 +244,8 @@ ScriptEditorQuickOpen::ScriptEditorQuickOpen() {
 	set_hide_on_ok(false);
 	search_options->connect("item_activated", this, "_confirmed");
 	search_options->set_hide_root(true);
+	search_options->set_hide_folding(true);
+	search_options->add_constant_override("draw_guides", 1);
 }
 
 /////////////////////////////////
