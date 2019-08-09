@@ -99,7 +99,7 @@ class ShaderEditor : public PanelContainer {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
-	MenuButton *bookmarks_menu;
+	PopupMenu *bookmarks_menu;
 	MenuButton *help_menu;
 	PopupMenu *context_menu;
 	uint64_t idle;

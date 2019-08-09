@@ -529,19 +529,19 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 
 void ShaderEditor::_update_bookmark_list() {
 
-	bookmarks_menu->get_popup()->clear();
+	bookmarks_menu->clear();
 
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
 	Array bookmark_list = shader_editor->get_text_edit()->get_bookmarks_array();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
 
-	bookmarks_menu->get_popup()->add_separator();
+	bookmarks_menu->add_separator();
 
 	for (int i = 0; i < bookmark_list.size(); i++) {
 		String line = shader_editor->get_text_edit()->get_line(bookmark_list[i]).strip_edges();
@@ -550,17 +550,17 @@ void ShaderEditor::_update_bookmark_list() {
 			line = line.substr(0, 50);
 		}
 
-		bookmarks_menu->get_popup()->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
-		bookmarks_menu->get_popup()->set_item_metadata(bookmarks_menu->get_popup()->get_item_count() - 1, bookmark_list[i]);
+		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->set_item_metadata(bookmarks_menu->get_item_count() - 1, bookmark_list[i]);
 	}
 }
 
 void ShaderEditor::_bookmark_item_pressed(int p_idx) {
 
 	if (p_idx < 4) { // Any item before the separator.
-		_menu_option(bookmarks_menu->get_popup()->get_item_id(p_idx));
+		_menu_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
-		shader_editor->goto_line(bookmarks_menu->get_popup()->get_item_metadata(p_idx));
+		shader_editor->goto_line(bookmarks_menu->get_item_metadata(p_idx));
 	}
 }
 
@@ -649,16 +649,23 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
-	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
 	search_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
-	bookmarks_menu = memnew(MenuButton);
-	bookmarks_menu->set_text(TTR("Bookmarks"));
-	bookmarks_menu->set_switch_on_hover(true);
+	MenuButton *goto_menu = memnew(MenuButton);
+	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_switch_on_hover(true);
+	goto_menu->get_popup()->connect("id_pressed", this, "_menu_option");
+
+	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
+	goto_menu->get_popup()->add_separator();
+
+	bookmarks_menu = memnew(PopupMenu);
+	bookmarks_menu->set_name("Bookmarks");
+	goto_menu->get_popup()->add_child(bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
-	bookmarks_menu->get_popup()->connect("index_pressed", this, "_bookmark_item_pressed");
+	bookmarks_menu->connect("index_pressed", this, "_bookmark_item_pressed");
 
 	help_menu = memnew(MenuButton);
 	help_menu->set_text(TTR("Help"));
@@ -670,7 +677,7 @@ ShaderEditor::ShaderEditor(EditorNode *p_node) {
 	main_container->add_child(hbc);
 	hbc->add_child(search_menu);
 	hbc->add_child(edit_menu);
-	hbc->add_child(bookmarks_menu);
+	hbc->add_child(goto_menu);
 	hbc->add_child(help_menu);
 	hbc->add_style_override("panel", p_node->get_gui_base()->get_stylebox("ScriptEditorPanel", "EditorStyles"));
 	main_container->add_child(shader_editor);
