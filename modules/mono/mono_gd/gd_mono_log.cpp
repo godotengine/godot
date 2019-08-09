@@ -72,7 +72,7 @@ static void mono_log_callback(const char *log_domain, const char *log_level, con
 	}
 
 	if (fatal) {
-		ERR_PRINTS("Mono: FATAL ERROR, ABORTING! Logfile: " + GDMonoLog::get_singleton()->get_log_file_path() + "\n");
+		ERR_PRINTS("Mono: FATAL ERROR, ABORTING! Logfile: '" + GDMonoLog::get_singleton()->get_log_file_path() + "'.");
 		// Make sure to flush before aborting
 		f->flush();
 		f->close();
@@ -90,8 +90,7 @@ bool GDMonoLog::_try_create_logs_dir(const String &p_logs_dir) {
 		DirAccessRef diraccess = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 		ERR_FAIL_COND_V(!diraccess, false);
 		Error logs_mkdir_err = diraccess->make_dir_recursive(p_logs_dir);
-		ERR_EXPLAIN("Failed to create mono logs directory");
-		ERR_FAIL_COND_V(logs_mkdir_err != OK, false);
+		ERR_FAIL_COND_V_MSG(logs_mkdir_err != OK, false, "Failed to create mono logs directory.");
 	}
 
 	return true;
@@ -131,7 +130,7 @@ void GDMonoLog::initialize() {
 	CharString log_level = OS::get_singleton()->get_environment("GODOT_MONO_LOG_LEVEL").utf8();
 
 	if (log_level.length() != 0 && log_level_get_id(log_level.get_data()) == -1) {
-		ERR_PRINTS(String() + "Mono: Ignoring invalid log level (GODOT_MONO_LOG_LEVEL): " + log_level.get_data());
+		ERR_PRINTS(String() + "Mono: Ignoring invalid log level (GODOT_MONO_LOG_LEVEL): '" + log_level.get_data() + "'.");
 		log_level = CharString();
 	}
 
@@ -160,7 +159,7 @@ void GDMonoLog::initialize() {
 
 		log_file = FileAccess::open(log_file_path, FileAccess::WRITE);
 		if (!log_file) {
-			ERR_PRINT("Mono: Cannot create log file");
+			ERR_PRINT("Mono: Cannot create log file.");
 		}
 	}
 

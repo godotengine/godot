@@ -147,7 +147,7 @@ class BindingsGenerator {
 		bool requires_object_call;
 
 		/**
-		 * Determines if the method visibility is `internal` (visible only to files in the same assembly).
+		 * Determines if the method visibility is 'internal' (visible only to files in the same assembly).
 		 * Currently, we only use this for methods that are not meant to be exposed,
 		 * but are required by properties as getters or setters.
 		 * Methods that are not meant to be exposed are those that begin with underscore and are not virtual.

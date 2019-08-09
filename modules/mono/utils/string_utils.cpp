@@ -55,10 +55,7 @@ int sfind(const String &p_text, int p_from) {
 		for (int j = 0; j < src_len; j++) {
 			int read_pos = i + j;
 
-			if (read_pos >= len) {
-				ERR_PRINT("read_pos >= len");
-				return -1;
-			};
+			ERR_FAIL_COND_V(read_pos >= len, -1);
 
 			switch (j) {
 				case 0:
