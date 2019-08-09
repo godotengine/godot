@@ -399,6 +399,9 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			}
 
 			Node *selected = scene_tree->get_selected();
+			if (!selected && !editor_selection->get_selected_node_list().empty())
+				selected = editor_selection->get_selected_node_list().front()->get();
+
 			if (selected)
 				create_dialog->popup_create(false, true, selected->get_class());
 
@@ -1983,6 +1986,10 @@ void SceneTreeDock::_create() {
 	} else if (current_option == TOOL_REPLACE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
 		ERR_FAIL_COND(selection.size() <= 0);
+
+		UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+		ur->create_action(TTR("Change type of node(s)"));
+
 		for (List<Node *>::Element *E = selection.front(); E; E = E->next()) {
 			Node *n = E->get();
 			ERR_FAIL_COND(!n);
@@ -1993,8 +2000,13 @@ void SceneTreeDock::_create() {
 			Node *newnode = Object::cast_to<Node>(c);
 			ERR_FAIL_COND(!newnode);
 
-			replace_node(n, newnode);
+			ur->add_do_method(this, "replace_node", n, newnode, true, false);
+			ur->add_do_reference(newnode);
+			ur->add_undo_method(this, "replace_node", newnode, n, false, false);
+			ur->add_undo_reference(n);
 		}
+
+		ur->commit_action();
 	} else if (current_option == TOOL_REPARENT_TO_NEW_NODE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
 		ERR_FAIL_COND(selection.size() <= 0);
