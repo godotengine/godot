@@ -1427,11 +1427,10 @@ void EditorHelp::generate_doc() {
 void EditorHelp::_notification(int p_what) {
 
 	switch (p_what) {
-
 		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_doc();
 
+			_update_doc();
 		} break;
 		default: break;
 	}
@@ -1573,7 +1572,6 @@ void EditorHelpBit::_notification(int p_what) {
 
 			rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 		} break;
-
 		default: break;
 	}
 }
@@ -1603,6 +1601,10 @@ FindBar::FindBar() {
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
 
+	matches_label = memnew(Label);
+	add_child(matches_label);
+	matches_label->hide();
+
 	find_prev = memnew(ToolButton);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
@@ -1613,9 +1615,9 @@ FindBar::FindBar() {
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", this, "_search_next");
 
-	error_label = memnew(Label);
-	add_child(error_label);
-	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	Control *space = memnew(Control);
+	add_child(space);
+	space->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
@@ -1645,25 +1647,21 @@ void FindBar::popup_search() {
 
 void FindBar::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_READY) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 
-		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
-		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
-		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+			find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
+			find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
+			hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
+			hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
+			hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
+			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-		set_process_unhandled_input(is_visible_in_tree());
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-
-		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
-		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
-		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			set_process_unhandled_input(is_visible_in_tree());
+		} break;
 	}
 }
 
@@ -1708,17 +1706,52 @@ bool FindBar::_search(bool p_search_previous) {
 	prev_search = stext;
 
 	if (ret) {
-		set_error("");
+		_update_results_count();
 	} else {
-		set_error(stext.empty() ? "" : TTR("No Matches"));
+		results_count = 0;
 	}
+	_update_matches_label();
 
 	return ret;
 }
 
-void FindBar::set_error(const String &p_label) {
+void FindBar::_update_results_count() {
 
-	error_label->set_text(p_label);
+	results_count = 0;
+
+	String searched = search_text->get_text();
+	if (searched.empty()) return;
+
+	String full_text = rich_text_label->get_text();
+
+	int from_pos = 0;
+
+	while (true) {
+		int pos = full_text.find(searched, from_pos);
+		if (pos == -1)
+			break;
+
+		results_count++;
+		from_pos = pos + searched.length();
+	}
+}
+
+void FindBar::_update_matches_label() {
+
+	if (results_count > 0) {
+		matches_label->show();
+
+		matches_label->add_color_override("font_color", Color(1, 1, 1));
+		matches_label->set_text(vformat(TTR("Found %d match(es)."), results_count));
+	} else if (search_text->get_text().empty()) {
+
+		matches_label->hide();
+	} else {
+		matches_label->show();
+
+		matches_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->set_text(TTR("No Matches"));
+	}
 }
 
 void FindBar::_hide_bar() {
