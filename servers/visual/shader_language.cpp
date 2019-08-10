@@ -961,6 +961,7 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 			if (r_type) {
 				*r_type = IDENTIFIER_FUNCTION;
 			}
+			return true;
 		}
 	}
 
