@@ -200,6 +200,8 @@ void RasterizerCanvasGLES3::canvas_end() {
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
 	glColorMask(1, 1, 1, 1);
 
+	glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
+
 	state.using_texture_rect = false;
 	state.using_ninepatch = false;
 }
