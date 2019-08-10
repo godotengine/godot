@@ -124,7 +124,7 @@ class ResourceFormatSaverBinaryInstance {
 	String magic;
 	Set<RES> resource_set;
 
-	struct NonPersistentKey { //for resource properties generated on the fly
+	struct NonPersistentKey { //EXPLAIN_THIS_COMMENT: for resource properties generated on the fly
 		RES base;
 		StringName property;
 		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }

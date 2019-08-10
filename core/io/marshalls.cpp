@@ -335,7 +335,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 			int32_t strlen = decode_uint32(buf);
 
 			if (strlen & 0x80000000) {
-				//new format
+				//EXPLAIN_THIS_COMMENT: new format
 				ERR_FAIL_COND_V(len < 12, ERR_INVALID_DATA);
 				Vector<StringName> names;
 				Vector<StringName> subnames;
@@ -371,7 +371,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 				r_variant = NodePath(names, subnames, flags & 1);
 
 			} else {
-				//old format, just a string
+				//EXPLAIN_THIS_COMMENT: old format, just a string
 
 				ERR_FAIL_V(ERR_INVALID_DATA);
 			}

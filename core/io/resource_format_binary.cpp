@@ -1922,7 +1922,7 @@ Error ResourceFormatSaverBinaryInstance::save(const String &p_path, const RES &p
 
 	Vector<uint64_t> ofs_table;
 
-	//now actually save the resources
+	//EXPLAIN_THIS_COMMENT: now actually save the resources
 	for (List<ResourceData>::Element *E = resources.front(); E; E = E->next()) {
 
 		ResourceData &rd = E->get();

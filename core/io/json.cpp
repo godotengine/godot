@@ -233,7 +233,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 									res <<= 4;
 									res |= v;
 								}
-								index += 4; //will add at the end anyway
+								index += 4; //EXPLAIN_THIS_COMMENT: will add at the end anyway
 
 							} break;
 							//case '\"': res='\"'; break;
@@ -269,7 +269,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 				}
 
 				if (p_str[index] == '-' || (p_str[index] >= '0' && p_str[index] <= '9')) {
-					//a number
+					//EXPLAIN_THIS_COMMENT: a number
 					const CharType *rptr;
 					double number = String::to_double(&p_str[index], &rptr);
 					index += (rptr - &p_str[index]);

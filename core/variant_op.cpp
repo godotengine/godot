@@ -2164,7 +2164,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 		case OBJECT: {
 
 			Object *obj = _get_obj().obj;
-			//only if debugging!
+			//EXPLAIN_THIS_COMMENT: only if debugging!
 
 			if (obj) {
 #ifdef DEBUG_ENABLED

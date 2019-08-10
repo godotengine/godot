@@ -140,7 +140,7 @@ public:
 
 Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const String &p_path, const String &p_original_path, Error *r_error) {
 
-	//either this
+	//EXPLAIN_THIS_COMMENT: either this
 	Ref<Resource> res = load(p_path, p_original_path, r_error);
 	if (res.is_null())
 		return Ref<ResourceInteractiveLoader>();
@@ -151,7 +151,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoader::load_interactive(const Stri
 }
 
 bool ResourceFormatLoader::exists(const String &p_path) const {
-	return FileAccess::exists(p_path); //by default just check file
+	return FileAccess::exists(p_path); //EXPLAIN_THIS_COMMENT: by default just check file
 }
 
 void ResourceFormatLoader::get_recognized_extensions(List<String> *p_extensions) const {
@@ -361,7 +361,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 			}
 		}
 
-		//lock first if possible
+		// Lock first if possible.
 		if (ResourceCache::lock) {
 			ResourceCache::lock->read_lock();
 		}
@@ -371,9 +371,9 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 
 		if (rptr) {
 			RES res(*rptr);
-			//it is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached
+			// It is possible this resource was just freed in a thread. If so, this referencing will not work and resource is considered not cached.
 			if (res.is_valid()) {
-				//referencing is fine
+				//EXPLAIN_THIS_COMMENT: referencing is fine
 				if (r_error)
 					*r_error = OK;
 				if (ResourceCache::lock) {
@@ -775,8 +775,8 @@ String ResourceLoader::_path_remap(const String &p_path, bool *r_translation_rem
 		new_path = path_remaps[new_path];
 	}
 
-	if (new_path == p_path) { //did not remap
-		//try file remap
+	if (new_path == p_path) { //EXPLAIN_THIS_COMMENT: did not remap
+		//EXPLAIN_THIS_COMMENT: try file remap
 		Error err;
 		FileAccess *f = FileAccess::open(p_path + ".remap", FileAccess::READ, &err);
 
@@ -852,7 +852,7 @@ void ResourceLoader::reload_translation_remaps() {
 		ResourceCache::lock->read_unlock();
 	}
 
-	//now just make sure to not delete any of these resources while changing locale..
+	//EXPLAIN_THIS_COMMENT: now just make sure to not delete any of these resources while changing locale..
 	while (to_reload.front()) {
 		to_reload.front()->get()->reload_from_file();
 		to_reload.pop_front();
@@ -891,7 +891,7 @@ void ResourceLoader::load_path_remaps() {
 
 	PoolVector<String> remaps = ProjectSettings::get_singleton()->get("path_remap/remapped_paths");
 	int rc = remaps.size();
-	ERR_FAIL_COND(rc & 1); //must be even
+	ERR_FAIL_COND(rc & 1); //EXPLAIN_THIS_COMMENT: must be even
 	PoolVector<String>::Read r = remaps.read();
 
 	for (int i = 0; i < rc; i += 2) {

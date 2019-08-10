@@ -213,7 +213,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				packet_peer_stream->put_var("stack_frame_vars");
 				packet_peer_stream->put_var(3 + (locals.size() + members.size() + globals.size()) * 2);
 
-				{ //locals
+				{ //EXPLAIN_THIS_COMMENT: locals
 					packet_peer_stream->put_var(locals.size());
 
 					List<String>::Element *E = locals.front();
@@ -227,7 +227,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 					}
 				}
 
-				{ //members
+				{ //EXPLAIN_THIS_COMMENT: members
 					packet_peer_stream->put_var(members.size());
 
 					List<String>::Element *E = members.front();
@@ -242,7 +242,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 					}
 				}
 
-				{ //globals
+				{ //EXPLAIN_THIS_COMMENT: globals
 					packet_peer_stream->put_var(globals.size());
 
 					List<String>::Element *E = globals.front();
@@ -1123,7 +1123,7 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		live_edit_funcs(NULL) {
 
 	packet_peer_stream->set_stream_peer(tcp_client);
-	packet_peer_stream->set_output_buffer_max_size(1024 * 1024 * 8); //8mb should be way more than enough
+	packet_peer_stream->set_output_buffer_max_size(1024 * 1024 * 8); //EXPLAIN_THIS_COMMENT: 8mb should be way more than enough
 
 	phl.printfunc = _print_handler;
 	phl.userdata = this;
