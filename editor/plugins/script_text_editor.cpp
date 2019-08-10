@@ -1621,7 +1621,9 @@ void ScriptTextEditor::_color_changed(const Color &p_color) {
 	line_with_replaced_args = line_with_replaced_args.insert(color_args_pos, new_args);
 
 	color_args = new_args;
+	code_editor->get_text_edit()->begin_complex_operation();
 	code_editor->get_text_edit()->set_line(color_position.x, line_with_replaced_args);
+	code_editor->get_text_edit()->end_complex_operation();
 	code_editor->get_text_edit()->update();
 }
 
