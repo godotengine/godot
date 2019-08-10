@@ -373,10 +373,10 @@ Variant Array::min() const {
 			Variant test = get(i);
 			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
 			if (!valid) {
-				return Variant(); //not a valid comparison
+				return Variant(); // Not a valid comparison.
 			}
 			if (bool(ret)) {
-				//is less
+				//EXPLAIN_THIS_COMMENT: is less
 				minval = test;
 			}
 		}
@@ -396,10 +396,10 @@ Variant Array::max() const {
 			Variant test = get(i);
 			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
 			if (!valid) {
-				return Variant(); //not a valid comparison
+				return Variant(); // Not a valid comparison.
 			}
 			if (bool(ret)) {
-				//is less
+				//EXPLAIN_THIS_COMMENT: is less
 				maxval = test;
 			}
 		}

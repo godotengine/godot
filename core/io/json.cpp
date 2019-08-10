@@ -186,7 +186,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 						index++;
 						break;
 					} else if (p_str[index] == '\\') {
-						//escaped characters...
+						//EXPLAIN_THIS_COMMENT: escaped characters...
 						index++;
 						CharType next = p_str[index];
 						if (next == 0) {
@@ -203,7 +203,7 @@ Error JSON::_get_token(const CharType *p_str, int &index, int p_len, Token &r_to
 							case 'f': res = 12; break;
 							case 'r': res = 13; break;
 							case 'u': {
-								//hexnumbarh - oct is deprecated
+								//EXPLAIN_THIS_COMMENT: hexnumbarh - oct is deprecated
 
 								for (int j = 0; j < 4; j++) {
 									CharType c = p_str[index + j + 1];

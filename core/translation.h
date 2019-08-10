@@ -55,7 +55,7 @@ public:
 	_FORCE_INLINE_ String get_locale() const { return locale; }
 
 	void add_message(const StringName &p_src_text, const StringName &p_xlated_text);
-	virtual StringName get_message(const StringName &p_src_text) const; //overridable for other implementations
+	virtual StringName get_message(const StringName &p_src_text) const; //EXPLAIN_THIS_COMMENT: overridable for other implementations
 	void erase_message(const StringName &p_src_text);
 
 	void get_message_list(List<StringName> *r_messages) const;

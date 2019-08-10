@@ -212,7 +212,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 					} else if (ch == '"') {
 						break;
 					} else if (ch == '\\') {
-						//escaped characters...
+						//EXPLAIN_THIS_COMMENT: escaped characters...
 						CharType next = p_stream->get_char();
 						if (next == 0) {
 							r_err_str = "Unterminated String";
@@ -1712,31 +1712,31 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 
 			RES res = p_variant;
 			if (res.is_valid()) {
-				//is resource
+				//EXPLAIN_THIS_COMMENT: is resource
 				String res_text;
 
-				//try external function
+				//EXPLAIN_THIS_COMMENT: try external function
 				if (p_encode_res_func) {
 
 					res_text = p_encode_res_func(p_encode_res_ud, res);
 				}
 
-				//try path because it's a file
+				//EXPLAIN_THIS_COMMENT: try path because it's a file
 				if (res_text == String() && res->get_path().is_resource_file()) {
 
-					//external resource
+					//EXPLAIN_THIS_COMMENT: external resource
 					String path = res->get_path();
 					res_text = "Resource( \"" + path + "\")";
 				}
 
-				//could come up with some sort of text
+				//EXPLAIN_THIS_COMMENT: could come up with some sort of text
 				if (res_text != String()) {
 					p_store_string_func(p_store_string_ud, res_text);
 					break;
 				}
 			}
 
-			//store as generic object
+			// Store as a generic object.
 
 			p_store_string_func(p_store_string_ud, "Object(" + obj->get_class() + ",");
 
@@ -1746,7 +1746,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
 
 				if (E->get().usage & PROPERTY_USAGE_STORAGE || E->get().usage & PROPERTY_USAGE_SCRIPT_VARIABLE) {
-					//must be serialized
+					//EXPLAIN_THIS_COMMENT: must be serialized
 
 					if (first) {
 						first = false;

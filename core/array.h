@@ -61,7 +61,7 @@ public:
 	void operator=(const Array &p_array);
 
 	void push_back(const Variant &p_value);
-	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } //for python compatibility
+	_FORCE_INLINE_ void append(const Variant &p_value) { push_back(p_value); } // This is for python compatibility.
 	Error resize(int p_new_size);
 
 	void insert(int p_pos, const Variant &p_value);

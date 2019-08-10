@@ -270,7 +270,7 @@ public:
 	PropertyInfo get_argument_info(int p_argument) const;
 	PropertyInfo get_return_info() const;
 
-	void set_argument_names(const Vector<StringName> &p_names); //set by class, db, can't be inferred otherwise
+	void set_argument_names(const Vector<StringName> &p_names); //EXPLAIN_THIS_COMMENT: set by class, db, can't be inferred otherwise
 	Vector<StringName> get_argument_names() const;
 
 	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const = 0;
@@ -374,8 +374,8 @@ public:
 
 #ifdef PTRCALL_ENABLED
 	virtual void ptrcall(Object *p_object, const void **p_args, void *r_ret) {
-		ERR_FAIL(); //can't call
-	} //todo
+		ERR_FAIL(); // Can not call.
+	} //EXPLAIN_THIS_COMMENT: todo
 #endif
 
 	void set_method(NativeCall p_method) { call_method = p_method; }

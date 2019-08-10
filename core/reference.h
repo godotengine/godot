@@ -343,7 +343,7 @@ struct PtrToArg<const Ref<T> &> {
 	}
 };
 
-//this is for RefPtr
+// This is for the RefPtr class.
 
 template <>
 struct PtrToArg<RefPtr> {

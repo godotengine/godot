@@ -466,14 +466,14 @@ signed char String::nocasecmp_to(const String &p_str) const {
 	while (true) {
 
 		if (*that_str == 0 && *this_str == 0)
-			return 0; //we're equal
+			return 0; // They are equal.
 		else if (*this_str == 0)
-			return -1; //if this is empty, and the other one is not, then we're less.. I think?
+			return -1; // If this is empty, and the other one is not, then we are less... I think?
 		else if (*that_str == 0)
-			return 1; //otherwise the other one is smaller..
-		else if (_find_upper(*this_str) < _find_upper(*that_str)) //more than
+			return 1; // Otherwise, the other one is smaller...
+		else if (_find_upper(*this_str) < _find_upper(*that_str)) //EXPLAIN_THIS_COMMENT: more than
 			return -1;
-		else if (_find_upper(*this_str) > _find_upper(*that_str)) //less than
+		else if (_find_upper(*this_str) > _find_upper(*that_str)) //EXPLAIN_THIS_COMMENT: less than
 			return 1;
 
 		this_str++;
@@ -496,14 +496,14 @@ signed char String::casecmp_to(const String &p_str) const {
 	while (true) {
 
 		if (*that_str == 0 && *this_str == 0)
-			return 0; //we're equal
+			return 0; // They are equal.
 		else if (*this_str == 0)
-			return -1; //if this is empty, and the other one is not, then we're less.. I think?
+			return -1; // If this is empty, and the other one is not, then we are less... I think?
 		else if (*that_str == 0)
-			return 1; //otherwise the other one is smaller..
-		else if (*this_str < *that_str) //more than
+			return 1; // Otherwise, the other one is smaller...
+		else if (*this_str < *that_str) //EXPLAIN_THIS_COMMENT: more than
 			return -1;
-		else if (*this_str > *that_str) //less than
+		else if (*this_str > *that_str) //EXPLAIN_THIS_COMMENT: less than
 			return 1;
 
 		this_str++;
@@ -557,9 +557,9 @@ signed char String::naturalnocasecmp_to(const String &p_str) const {
 			} else if (IS_DIGIT(*that_str))
 				return 1;
 			else {
-				if (_find_upper(*this_str) < _find_upper(*that_str)) //more than
+				if (_find_upper(*this_str) < _find_upper(*that_str)) //EXPLAIN_THIS_COMMENT: more than
 					return -1;
-				else if (_find_upper(*this_str) > _find_upper(*that_str)) //less than
+				else if (_find_upper(*this_str) > _find_upper(*that_str)) //EXPLAIN_THIS_COMMENT: less than
 					return 1;
 
 				this_str++;
@@ -676,7 +676,7 @@ String String::get_slice(String p_splitter, int p_slice) const {
 
 		pos = find(p_splitter, pos);
 		if (pos == -1)
-			pos = length(); //reached end
+			pos = length(); //EXPLAIN_THIS_COMMENT: reached end
 
 		int from = prev_pos;
 		//int to=pos;
@@ -686,14 +686,14 @@ String String::get_slice(String p_splitter, int p_slice) const {
 			return substr(from, pos - from);
 		}
 
-		if (pos == length()) //reached end and no find
+		if (pos == length()) //EXPLAIN_THIS_COMMENT: reached end and no find
 			break;
 		pos += p_splitter.length();
 		prev_pos = pos;
 		i++;
 	}
 
-	return ""; //no find!
+	return ""; //EXPLAIN_THIS_COMMENT: no find!
 }
 
 String String::get_slicec(CharType p_splitter, int p_slice) const {
@@ -1062,7 +1062,7 @@ String String::num(double p_num, int p_decimals) {
 #endif
 
 	buf[255] = 0;
-	//destroy trailing zeroes
+	// Destroy trailing the zeroes.
 	{
 
 		bool period = false;
@@ -1390,7 +1390,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		bool has_bom = uint8_t(p_utf8[0]) == 0xEF && uint8_t(p_utf8[1]) == 0xBB && uint8_t(p_utf8[2]) == 0xBF;
 		if (has_bom) {
 
-			//just skip it
+			//EXPLAIN_THIS_COMMENT: just skip it
 			if (p_len >= 0)
 				p_len -= 3;
 			p_utf8 += 3;
@@ -1422,13 +1422,13 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 					skip = 5;
 				else {
 					_UNICERROR("invalid skip");
-					return true; //invalid utf8
+					return true; //EXPLAIN_THIS_COMMENT: invalid utf8
 				}
 
 				if (skip == 1 && (c & 0x1E) == 0) {
 					//printf("overlong rejected\n");
 					_UNICERROR("overlong rejected");
-					return true; //reject overlong
+					return true; //EXPLAIN_THIS_COMMENT: reject overlong
 				}
 
 				str_size++;

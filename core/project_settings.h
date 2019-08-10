@@ -48,7 +48,7 @@ public:
 	typedef Map<String, Variant> CustomMap;
 
 	enum {
-		//properties that are not for built in values begin from this value, so builtin ones are displayed first
+		// Properties that are not for builtin values begin from this value, so builtin ones are displayed first.
 		NO_BUILTIN_ORDER_BASE = 1 << 16
 	};
 
@@ -164,7 +164,7 @@ public:
 	~ProjectSettings();
 };
 
-//not a macro any longer
+//EXPLAIN_THIS_COMMENT: not a macro any longer
 Variant _GLOBAL_DEF(const String &p_var, const Variant &p_default, bool p_restart_if_changed = false);
 #define GLOBAL_DEF(m_var, m_value) _GLOBAL_DEF(m_var, m_value)
 #define GLOBAL_DEF_RST(m_var, m_value) _GLOBAL_DEF(m_var, m_value, true)

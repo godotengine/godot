@@ -2191,7 +2191,7 @@ void Variant::set(const Variant &p_index, const Variant &p_value, bool *r_valid)
 
 			Dictionary *dic = reinterpret_cast<Dictionary *>(_data._mem);
 			dic->operator[](p_index) = p_value;
-			valid = true; //always valid, i guess? should this really be ok?
+			valid = true; //TODO: Always valid, I guess? Should this really be ok?
 			return;
 		} break;
 			DEFAULT_OP_ARRAY_CMD(ARRAY, Array, ;, (*arr)[index] = p_value; return ) // 20
@@ -2912,7 +2912,7 @@ void Variant::get_property_list(List<PropertyInfo> *p_list) const {
 		case POOL_VECTOR3_ARRAY:
 		case POOL_COLOR_ARRAY: {
 
-			//nothing
+			//EXPLAIN_THIS_COMMENT: nothing
 		} break;
 		default: {
 		}
@@ -3523,7 +3523,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 
 	if (a.type != b.type) {
 		if (a.is_num() && b.is_num()) {
-			//not as efficient but..
+			//EXPLAIN_THIS_COMMENT: not as efficient but..
 			real_t va = a;
 			real_t vb = b;
 			r_dst = va + (vb - va) * c;
@@ -3557,7 +3557,7 @@ void Variant::interpolate(const Variant &a, const Variant &b, float c, Variant &
 		}
 			return;
 		case STRING: {
-			//this is pretty funny and bizarre, but artists like to use it for typewritter effects
+			//EXPLAIN_THIS_COMMENT: this is pretty funny and bizarre, but artists like to use it for typewritter effects
 			String sa = *reinterpret_cast<const String *>(a._data._mem);
 			String sb = *reinterpret_cast<const String *>(b._data._mem);
 			String dst;

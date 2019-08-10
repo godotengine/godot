@@ -135,7 +135,7 @@ Quat Quat::normalized() const {
 }
 
 bool Quat::is_normalized() const {
-	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON); //use less epsilon
+	return Math::is_equal_approx(length_squared(), 1.0, UNIT_EPSILON); //EXPLAIN_THIS_COMMENT: use less epsilon
 }
 
 Quat Quat::inverse() const {
@@ -219,7 +219,7 @@ Quat Quat::cubic_slerp(const Quat &q, const Quat &prep, const Quat &postq, const
 	ERR_FAIL_COND_V(!is_normalized(), Quat());
 	ERR_FAIL_COND_V(!q.is_normalized(), Quat());
 #endif
-	//the only way to do slerp :|
+	//EXPLAIN_THIS_COMMENT: the only way to do slerp :|
 	real_t t2 = (1.0 - t) * t * 2;
 	Quat sp = this->slerp(q, t);
 	Quat sq = prep.slerpni(postq, t);

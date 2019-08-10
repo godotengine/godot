@@ -85,7 +85,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 			dst_s.resize(src_s.size());
 			int ret = smaz_compress(src_s.get_data(), src_s.size(), dst_s.ptrw(), src_s.size());
 			if (ret >= src_s.size()) {
-				//if compressed is larger than original, just use original
+				// If compressed is larger than original, just use original.
 				ps.orig_len = src_s.size();
 				ps.compressed = src_s;
 			} else {
@@ -152,7 +152,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 		const Map<uint32_t, int> &t = table[i];
 		if (t.size() == 0) {
-			htw[i] = 0xFFFFFFFF; //nothing
+			htw[i] = 0xFFFFFFFF; //EXPLAIN_THIS_COMMENT: nothing
 			continue;
 		} else if (t.size() > 1) {
 			collisions += t.size() - 1;
@@ -236,7 +236,7 @@ StringName PHashTranslation::get_message(const StringName &p_src_text) const {
 	uint32_t p = htptr[h % htsize];
 
 	if (p == 0xFFFFFFFF) {
-		return StringName(); //nothing
+		return StringName(); //EXPLAIN_THIS_COMMENT: nothing
 	}
 
 	const Bucket &bucket = *(const Bucket *)&btptr[p];

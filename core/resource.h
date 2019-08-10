@@ -92,7 +92,7 @@ protected:
 	Map<String, int> id_for_path;
 #endif
 public:
-	static Node *(*_get_local_scene_func)(); //used by editor
+	static Node *(*_get_local_scene_func)(); // This is used by the editor.
 
 	virtual bool editor_can_reload_from_file();
 	virtual void reload_from_file();
@@ -140,7 +140,7 @@ public:
 	virtual RID get_rid() const; // some resources may offer conversion to RID
 
 #ifdef TOOLS_ENABLED
-	//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+	//EXPLAIN_THIS_COMMENT: helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 	void set_id_for_path(const String &p_path, int p_id);
 	int get_id_for_path(const String &p_path) const;
 #endif
@@ -153,7 +153,7 @@ typedef Ref<Resource> RES;
 
 class ResourceCache {
 	friend class Resource;
-	friend class ResourceLoader; //need the lock
+	friend class ResourceLoader; //EXPLAIN_THIS_COMMENT: need the lock
 	static RWLock *lock;
 	static HashMap<String, Resource *> resources;
 	friend void unregister_core_types();

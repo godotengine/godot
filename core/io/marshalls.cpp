@@ -389,7 +389,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		case Variant::OBJECT: {
 
 			if (type & ENCODE_FLAG_OBJECT_AS_ID) {
-				//this _is_ allowed
+				//EXPLAIN_THIS_COMMENT: this _is_ allowed
 				ERR_FAIL_COND_V(len < 8, ERR_INVALID_DATA);
 				ObjectID val = decode_uint64(buf);
 				if (r_len)
@@ -804,7 +804,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 			double d = p_variant;
 			float f = d;
 			if (double(f) != d) {
-				flags |= ENCODE_FLAG_64; //always encode real as double
+				flags |= ENCODE_FLAG_64; //EXPLAIN_THIS_COMMENT: always encode real as double
 			}
 		} break;
 		case Variant::OBJECT: {
@@ -826,7 +826,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 		case Variant::NIL: {
 
-			//nothing to do
+			//EXPLAIN_THIS_COMMENT: nothing to do
 		} break;
 		case Variant::BOOL: {
 
@@ -877,7 +877,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 			NodePath np = p_variant;
 			if (buf) {
-				encode_uint32(uint32_t(np.get_name_count()) | 0x80000000, buf); //for compatibility with the old format
+				encode_uint32(uint32_t(np.get_name_count()) | 0x80000000, buf); // This is done for compatibility with the old format.
 				encode_uint32(np.get_subname_count(), buf + 4);
 				uint32_t np_flags = 0;
 				if (np.is_absolute())

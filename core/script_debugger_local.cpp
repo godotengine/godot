@@ -68,7 +68,7 @@ void ScriptDebuggerLocal::debug(ScriptLanguage *p_script, bool p_can_continue) {
 
 			for (int i = 0; i < total_frames; i++) {
 
-				String cfi = (current_frame == i) ? "*" : " "; //current frame indicator
+				String cfi = (current_frame == i) ? "*" : " "; // This is the current frame indicator.
 				print_line(cfi + "Frame " + itos(i) + " - " + p_script->debug_get_stack_level_source(i) + ":" + itos(p_script->debug_get_stack_level_line(i)) + " in function '" + p_script->debug_get_stack_level_function(i) + "'");
 			}
 
@@ -318,7 +318,7 @@ void ScriptDebuggerLocal::idle_poll() {
 
 	uint64_t diff = OS::get_singleton()->get_ticks_usec() - idle_accum;
 
-	if (diff < 1000000) //show every one second
+	if (diff < 1000000) // Show every one second.
 		return;
 
 	idle_accum = OS::get_singleton()->get_ticks_usec();
@@ -331,7 +331,7 @@ void ScriptDebuggerLocal::idle_poll() {
 	SortArray<ScriptLanguage::ProfilingInfo, _ScriptDebuggerLocalProfileInfoSort> sort;
 	sort.sort(pinfo.ptrw(), ofs);
 
-	//falta el frame time
+	// Frame time is missing.
 
 	uint64_t script_time_us = 0;
 
@@ -344,7 +344,7 @@ void ScriptDebuggerLocal::idle_poll() {
 
 	float total_time = frame_time;
 
-	//print script total
+	// Print the script total.
 
 	print_line("FRAME: total: " + rtos(frame_time) + " script: " + rtos(script_time) + "/" + itos(script_time * 100 / total_time) + " %");
 

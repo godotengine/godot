@@ -112,7 +112,7 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	if (err != OK)
 		ERR_PRINT("Failed to encode variant");
 
-	if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+	if (len > packet_peer_stream->get_output_buffer_max_size()) { // Limit to max size.
 		packet_peer_stream->put_var(Variant());
 	} else {
 		packet_peer_stream->put_var(var);
@@ -131,8 +131,7 @@ void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
 
 void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) {
 
-	//this function is called when there is a debugger break (bug on script)
-	//or when execution is paused from editor
+	// This function is called when there is a debugger break (bug on script) or when execution is paused from editor.
 
 	if (!tcp_client->is_connected_to_host()) {
 		ERR_EXPLAIN("Script Debugger failed to connect, but being used anyway.");
@@ -144,7 +143,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 	packet_peer_stream->put_var(p_can_continue);
 	packet_peer_stream->put_var(p_script->debug_get_error());
 
-	skip_profile_frame = true; // to avoid super long frame time for the frame
+	skip_profile_frame = true; // This is to avoid super long frame time for the frame.
 
 	Input::MouseMode mouse_mode = Input::get_singleton()->get_mouse_mode();
 	if (mouse_mode != Input::MOUSE_MODE_VISIBLE)
@@ -418,8 +417,8 @@ void ScriptDebuggerRemote::_get_output() {
 
 void ScriptDebuggerRemote::line_poll() {
 
-	//the purpose of this is just processing events every now and then when the script might get too busy
-	//otherwise bugs like infinite loops can't be caught
+	// The purpose of this is just processing events every now and then when the script might get too busy otherwise
+	//	bugs like infinite loops can't be caught.
 	if (poll_every % 2048 == 0)
 		_poll_events();
 	poll_every++;
@@ -428,7 +427,7 @@ void ScriptDebuggerRemote::line_poll() {
 void ScriptDebuggerRemote::_err_handler(void *ud, const char *p_func, const char *p_file, int p_line, const char *p_err, const char *p_descr, ErrorHandlerType p_type) {
 
 	if (p_type == ERR_HANDLER_SCRIPT)
-		return; //ignore script errors, those go through debugger
+		return; // Ignore script errors, those go through the debugger.
 
 	Vector<ScriptLanguage::StackInfo> si;
 
@@ -645,10 +644,10 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 		prop.push_back(pi.name);
 		prop.push_back(pi.type);
 
-		//only send information that can be sent..
-		int len = 0; //test how big is this to encode
+		// Only send information that can be sent...
+		int len = 0; // Test how big is this to encode.
 		encode_variant(var, NULL, len);
-		if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
+		if (len > packet_peer_stream->get_output_buffer_max_size()) { // Limit to max size.
 			prop.push_back(PROPERTY_HINT_OBJECT_TOO_BIG);
 			prop.push_back("");
 			prop.push_back(pi.usage);
@@ -691,14 +690,13 @@ void ScriptDebuggerRemote::_set_object_property(ObjectID p_id, const String &p_p
 
 void ScriptDebuggerRemote::_poll_events() {
 
-	//this si called from ::idle_poll, happens only when running the game,
-	//does not get called while on debug break
+	// This is called from ::idle_poll, happens only when running the game, does not get called while on debug break.
 
 	while (packet_peer_stream->get_available_packet_count() > 0) {
 
 		_get_output();
 
-		//send over output_strings
+		//EXPLAIN_THIS_COMMENT: send over output_strings
 
 		Variant var;
 		Error err = packet_peer_stream->get_var(var);
@@ -792,7 +790,7 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 
 	int to_send = MIN(ofs, max_frame_functions);
 
-	//check signatures first
+	// Check signatures first.
 	uint64_t total_script_time = 0;
 
 	for (int i = 0; i < to_send; i++) {
@@ -811,7 +809,7 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 		total_script_time += profile_info_ptrs[i]->self_time;
 	}
 
-	//send frames then
+	//EXPLAIN_THIS_COMMENT: send frames then
 
 	if (p_for_frame) {
 		packet_peer_stream->put_var("profile_frame");
@@ -821,26 +819,26 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 		packet_peer_stream->put_var(8 + to_send * 4);
 	}
 
-	packet_peer_stream->put_var(Engine::get_singleton()->get_frames_drawn()); //total frame time
-	packet_peer_stream->put_var(frame_time); //total frame time
-	packet_peer_stream->put_var(idle_time); //idle frame time
-	packet_peer_stream->put_var(physics_time); //fixed frame time
-	packet_peer_stream->put_var(physics_frame_time); //fixed frame time
+	packet_peer_stream->put_var(Engine::get_singleton()->get_frames_drawn()); // Total frame time.
+	packet_peer_stream->put_var(frame_time); // Total frame time.
+	packet_peer_stream->put_var(idle_time); // Idle frame time.
+	packet_peer_stream->put_var(physics_time); // Fixed frame time.
+	packet_peer_stream->put_var(physics_frame_time); // Fixed frame time.
 
-	packet_peer_stream->put_var(USEC_TO_SEC(total_script_time)); //total script execution time
+	packet_peer_stream->put_var(USEC_TO_SEC(total_script_time)); // Total script execution time.
 
 	if (p_for_frame) {
 
-		packet_peer_stream->put_var(profile_frame_data.size()); //how many profile framedatas to send
-		packet_peer_stream->put_var(to_send); //how many script functions to send
+		packet_peer_stream->put_var(profile_frame_data.size()); // How many profile frame datas to send.
+		packet_peer_stream->put_var(to_send); // How many script functions to send.
 		for (int i = 0; i < profile_frame_data.size(); i++) {
 
 			packet_peer_stream->put_var(profile_frame_data[i].name);
 			packet_peer_stream->put_var(profile_frame_data[i].data);
 		}
 	} else {
-		packet_peer_stream->put_var(0); //how many script functions to send
-		packet_peer_stream->put_var(to_send); //how many script functions to send
+		packet_peer_stream->put_var(0); // How many script functions to send.
+		packet_peer_stream->put_var(to_send); // How many script functions to send.
 	}
 
 	for (int i = 0; i < to_send; i++) {
@@ -864,8 +862,8 @@ void ScriptDebuggerRemote::_send_profiling_data(bool p_for_frame) {
 
 void ScriptDebuggerRemote::idle_poll() {
 
-	// this function is called every frame, except when there is a debugger break (::debug() in this class)
-	// execution stops and remains in the ::debug function
+	// This function is called every frame, except when there is a debugger break (::debug() in this class) execution
+	//	stops and remains in the ::debug function.
 
 	_get_output();
 
@@ -899,7 +897,7 @@ void ScriptDebuggerRemote::idle_poll() {
 		if (skip_profile_frame) {
 			skip_profile_frame = false;
 		} else {
-			//send profiling info normally
+			// Send profiling info normally.
 			_send_profiling_data(true);
 		}
 	}
@@ -1080,11 +1078,11 @@ void ScriptDebuggerRemote::add_profiling_frame_data(const StringName &p_name, co
 }
 
 void ScriptDebuggerRemote::profiling_start() {
-	//ignores this, uses it via connection
+	//EXPLAIN_THIS_COMMENT: ignores this, uses it via connection
 }
 
 void ScriptDebuggerRemote::profiling_end() {
-	//ignores this, uses it via connection
+	//EXPLAIN_THIS_COMMENT: ignores this, uses it via connection
 }
 
 void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p_idle_time, float p_physics_time, float p_physics_frame_time) {

@@ -182,7 +182,7 @@ StringName::StringName(const char *p_name) {
 	ERR_FAIL_COND(!configured);
 
 	if (!p_name || p_name[0] == 0)
-		return; //empty, ignore
+		return; // Empty, so it is ignored.
 
 	lock->lock();
 
@@ -348,7 +348,7 @@ StringName StringName::search(const char *p_name) {
 	}
 
 	lock->unlock();
-	return StringName(); //does not exist
+	return StringName(); //EXPLAIN_THIS_COMMENT: does not exist
 }
 
 StringName StringName::search(const CharType *p_name) {
@@ -381,7 +381,7 @@ StringName StringName::search(const CharType *p_name) {
 	}
 
 	lock->unlock();
-	return StringName(); //does not exist
+	return StringName(); //EXPLAIN_THIS_COMMENT: does not exist
 }
 StringName StringName::search(const String &p_name) {
 
@@ -409,7 +409,7 @@ StringName StringName::search(const String &p_name) {
 	}
 
 	lock->unlock();
-	return StringName(); //does not exist
+	return StringName(); //EXPLAIN_THIS_COMMENT: does not exist
 }
 
 StringName::StringName() {

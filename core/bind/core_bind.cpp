@@ -1130,7 +1130,7 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_clipboard", "clipboard"), &_OS::set_clipboard);
 	ClassDB::bind_method(D_METHOD("get_clipboard"), &_OS::get_clipboard);
 
-	//will not delete for now, just unexpose
+	//TODO: Will not delete the following for now, just un-expose them.
 	//ClassDB::bind_method(D_METHOD("set_video_mode","size","fullscreen","resizable","screen"),&_OS::set_video_mode,DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("get_video_mode_size","screen"),&_OS::get_video_mode,DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
@@ -2348,7 +2348,7 @@ bool _Directory::dir_exists(String p_dir) {
 int _Directory::get_space_left() {
 
 	ERR_FAIL_COND_V(!d, 0);
-	return d->get_space_left() / 1024 * 1024; //return value in megabytes, given binding is int
+	return d->get_space_left() / 1024 * 1024; // The return value is in megabytes, given binding as an int.
 }
 
 Error _Directory::copy(String p_from, String p_to) {
@@ -2974,7 +2974,7 @@ int _Engine::get_frames_drawn() {
 
 MainLoop *_Engine::get_main_loop() const {
 
-	//needs to remain in OS, since it's actually OS that interacts with it, but it's better exposed here
+	// Needs to remain in OS, since it's actually OS that interacts with it, but it is better exposed here.
 	return OS::get_singleton()->get_main_loop();
 }
 

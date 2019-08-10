@@ -125,7 +125,7 @@ FileAccess::CreateFunc FileAccess::get_create_func(AccessType p_access) {
 };
 
 String FileAccess::fix_path(const String &p_path) const {
-	//helper used by file accesses that use a single filesystem
+	//EXPLAIN_THIS_COMMENT: helper used by file accesses that use a single filesystem
 
 	String r_path = p_path.replace("\\", "/");
 

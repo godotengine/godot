@@ -37,12 +37,12 @@ class PHashTranslation : public Translation {
 
 	GDCLASS(PHashTranslation, Translation);
 
-	//this translation uses a sort of modified perfect hash algorithm
-	//it requires hashing strings twice and then does a binary search,
-	//so it's slower, but at the same time it has an extreemly high chance
-	//of catching untranslated strings
+	// This translation uses a sort of modified perfect hash algorithm
+	//	it requires hashing strings twice and then does a binary search,
+	//	so it's slower. However at the same time it has an extremely high
+	//	chance of catching untranslated strings.
 
-	//load/store friendly types
+	//EXPLAIN_THIS_COMMENT: load/store friendly types
 	PoolVector<int> hash_table;
 	PoolVector<int> bucket_table;
 	PoolVector<uint8_t> strings;
@@ -83,7 +83,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual StringName get_message(const StringName &p_src_text) const; //overridable for other implementations
+	virtual StringName get_message(const StringName &p_src_text) const; // Overridable for other implementations.
 	void generate(const Ref<Translation> &p_from);
 
 	PHashTranslation();

@@ -137,8 +137,7 @@ bool Basis::is_symmetric() const {
 
 Basis Basis::diagonalize() {
 
-//NOTE: only implemented for symmetric matrices
-//with the Jacobi iterative method method
+//NOTE: Only implemented for symmetric matrices with the Jacobi iterative method method.
 #ifdef MATH_CHECKS
 	ERR_FAIL_COND_V(!is_symmetric(), Basis());
 #endif
@@ -481,7 +480,7 @@ void Basis::set_euler_xyz(const Vector3 &p_euler) {
 	s = Math::sin(p_euler.z);
 	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
 
-	//optimizer will optimize away all this anyway
+	// The optimizer will optimize away all this anyway.
 	*this = xmat * (ymat * zmat);
 }
 

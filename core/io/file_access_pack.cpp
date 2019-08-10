@@ -144,7 +144,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	uint32_t magic = f->get_32();
 
 	if (magic != 0x43504447) {
-		//maybe at the end.... self contained exe
+		//EXPLAIN_THIS_COMMENT: maybe at the end.... self contained exe
 		f->seek_end();
 		f->seek(f->get_position() - 4);
 		magic = f->get_32();
@@ -177,7 +177,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false);
 
 	for (int i = 0; i < 16; i++) {
-		//reserved
+		//EXPLAIN_THIS_COMMENT: reserved
 		f->get_32();
 	}
 

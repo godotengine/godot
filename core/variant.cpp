@@ -190,7 +190,7 @@ bool Variant::can_convert(Variant::Type p_type_from, Variant::Type p_type_to) {
 
 	if (p_type_from == p_type_to)
 		return true;
-	if (p_type_to == NIL && p_type_from != NIL) //nil can convert to anything
+	if (p_type_to == NIL && p_type_from != NIL) // Nil can be converted to anything.
 		return true;
 
 	if (p_type_from == NIL) {
@@ -671,7 +671,7 @@ bool Variant::can_convert_strict(Variant::Type p_type_from, Variant::Type p_type
 
 bool Variant::operator==(const Variant &p_variant) const {
 
-	if (type != p_variant.type) //evaluation of operator== needs to be more strict
+	if (type != p_variant.type) //EXPLAIN_THIS_COMMENT: evaluation of operator== needs to be more strict
 		return false;
 	bool v;
 	Variant r;
@@ -681,7 +681,7 @@ bool Variant::operator==(const Variant &p_variant) const {
 
 bool Variant::operator!=(const Variant &p_variant) const {
 
-	if (type != p_variant.type) //evaluation of operator== needs to be more strict
+	if (type != p_variant.type) //EXPLAIN_THIS_COMMENT: evaluation of operator== needs to be more strict
 		return true;
 	bool v;
 	Variant r;
@@ -690,7 +690,7 @@ bool Variant::operator!=(const Variant &p_variant) const {
 }
 
 bool Variant::operator<(const Variant &p_variant) const {
-	if (type != p_variant.type) //if types differ, then order by type first
+	if (type != p_variant.type) // If types differ, then order by type first.
 		return type < p_variant.type;
 	bool v;
 	Variant r;
@@ -1575,7 +1575,7 @@ String Variant::stringify(List<const void *> &stack) const {
 			if (_get_obj().obj) {
 #ifdef DEBUG_ENABLED
 				if (ScriptDebugger::get_singleton() && _get_obj().ref.is_null()) {
-					//only if debugging!
+					//EXPLAIN_THIS_COMMENT: only if debugging!
 					if (!ObjectDB::instance_validate(_get_obj().obj)) {
 						return "[Deleted Object]";
 					};

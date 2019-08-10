@@ -210,7 +210,7 @@ void MessageQueue::statistics() {
 			}
 
 		} else {
-			//object was deleted
+			//EXPLAIN_THIS_COMMENT: object was deleted
 			print_line("Object was deleted while awaiting a callback");
 
 			null_count++;
@@ -268,15 +268,15 @@ void MessageQueue::flush() {
 
 	uint32_t read_pos = 0;
 
-	//using reverse locking strategy
+	// Using reverse locking strategy.
 	_THREAD_SAFE_LOCK_
 
-	ERR_FAIL_COND(flushing); //already flushing, you did something odd
+	ERR_FAIL_COND(flushing); // Already flushing, you did something odd.
 	flushing = true;
 
 	while (read_pos < buffer_end) {
 
-		//lock on each iteration, so a call can re-add itself to the message queue
+		// Lock on each iteration, so a call can re-add itself to the message queue.
 
 		Message *message = (Message *)&buffer[read_pos];
 
@@ -284,7 +284,7 @@ void MessageQueue::flush() {
 		if ((message->type & FLAG_MASK) != TYPE_NOTIFICATION)
 			advance += sizeof(Variant) * message->args;
 
-		//pre-advance so this function is reentrant
+		// Pre-advance so this function is re-entrant.
 		read_pos += advance;
 
 		_THREAD_SAFE_UNLOCK_
@@ -298,21 +298,21 @@ void MessageQueue::flush() {
 
 					Variant *args = (Variant *)(message + 1);
 
-					// messages don't expect a return value
+					// Each message does not expect a return value.
 
 					_call_function(target, message->target, args, message->args, message->type & FLAG_SHOW_ERROR);
 
 				} break;
 				case TYPE_NOTIFICATION: {
 
-					// messages don't expect a return value
+					// Each message does not expect a return value.
 					target->notification(message->notification);
 
 				} break;
 				case TYPE_SET: {
 
 					Variant *arg = (Variant *)(message + 1);
-					// messages don't expect a return value
+					// Each message does not expect a return value.
 					target->set(message->target, *arg);
 
 				} break;

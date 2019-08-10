@@ -116,9 +116,9 @@ protected:
 public:
 	virtual bool can_instance() const = 0;
 
-	virtual Ref<Script> get_base_script() const = 0; //for script inheritance
+	virtual Ref<Script> get_base_script() const = 0; //This is for script inheritance.
 
-	virtual StringName get_instance_base_type() const = 0; // this may not work in all scripts, will return empty if so
+	virtual StringName get_instance_base_type() const = 0; //EXPLAIN_THIS_COMMENT: this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
 	virtual PlaceHolderScriptInstance *placeholder_instance_create(Object *p_this) { return NULL; }
 	virtual bool instance_has(const Object *p_this) const = 0;
@@ -141,7 +141,7 @@ public:
 
 	virtual bool get_property_default_value(const StringName &p_property, Variant &r_value) const = 0;
 
-	virtual void update_exports() {} //editor tool
+	virtual void update_exports() {} //EXPLAIN_THIS_COMMENT: editor tool
 	virtual void get_script_method_list(List<MethodInfo> *p_list) const = 0;
 	virtual void get_script_property_list(List<PropertyInfo> *p_list) const = 0;
 
@@ -179,12 +179,11 @@ public:
 		return String();
 	}
 
-	//this is used by script languages that keep a reference counter of their own
-	//you can make make Ref<> not die when it reaches zero, so deleting the reference
-	//depends entirely from the script
+	// This is used by script languages that keep a reference counter of their own you can make make Ref<> not die when
+	//	it reaches zero, so deleting the reference depends entirely from the script.
 
 	virtual void refcount_incremented() {}
-	virtual bool refcount_decremented() { return true; } //return true if it can die
+	virtual bool refcount_decremented() { return true; } //EXPLAIN_THIS_COMMENT: return true if it can die
 
 	virtual Ref<Script> get_script() const = 0;
 
@@ -307,7 +306,7 @@ public:
 
 	/* MULTITHREAD FUNCTIONS */
 
-	//some VMs need to be notified of thread creation/exiting to allocate a stack
+	// Some VMs need to be notified of thread creation/exiting to allocate a stack.
 	virtual void thread_enter() {}
 	virtual void thread_exit() {}
 

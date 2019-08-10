@@ -139,7 +139,7 @@ struct PropertyInfo {
 
 	Variant::Type type;
 	String name;
-	StringName class_name; //for classes
+	StringName class_name; //EXPLAIN_THIS_COMMENT: for classes
 	PropertyHint hint;
 	String hint_string;
 	uint32_t usage;
@@ -568,7 +568,7 @@ protected:
 
 	void _disconnect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, bool p_force = false);
 
-public: //should be protected, but bug in clang++
+public: // This should be protected, however there is a bug in the clang++ compiler.
 	static void initialize_class();
 	_FORCE_INLINE_ static void register_custom_data_to_otdb(){};
 
@@ -637,7 +637,7 @@ public:
 	static String get_category_static() { return String(); }
 
 	virtual String get_class() const { return "Object"; }
-	virtual String get_save_class() const { return get_class(); } //class stored when saving
+	virtual String get_save_class() const { return get_class(); } //EXPLAIN_THIS_COMMENT: class stored when saving
 
 	virtual bool is_class(const String &p_class) const { return (p_class == "Object"); }
 	virtual bool is_class_ptr(void *p_ptr) const { return get_class_ptr_static() == p_ptr; }
@@ -673,7 +673,7 @@ public:
 	void notification(int p_notification, bool p_reversed = false);
 	String to_string();
 
-	//used mainly by script, get and set all INCLUDING string
+	//EXPLAIN_THIS_COMMENT: used mainly by script, get and set all INCLUDING string
 	virtual Variant getvar(const Variant &p_key, bool *r_valid = NULL) const;
 	virtual void setvar(const Variant &p_key, const Variant &p_value, bool *r_valid = NULL);
 
@@ -693,13 +693,13 @@ public:
 #ifdef TOOLS_ENABLED
 	void set_edited(bool p_edited);
 	bool is_edited() const;
-	uint32_t get_edited_version() const; //this function is used to check when something changed beyond a point, it's used mainly for generating previews
+	uint32_t get_edited_version() const; // This function is used to check when something changed beyond a point, it's used mainly for generating previews.
 #endif
 
 	void set_script_instance(ScriptInstance *p_instance);
 	_FORCE_INLINE_ ScriptInstance *get_script_instance() const { return script_instance; }
 
-	void set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_instance); //some script languages can't control instance creation, so this function eases the process
+	void set_script_and_instance(const RefPtr &p_script, ScriptInstance *p_instance); // Some script languages cannot control instance creation, so this function eases the process.
 
 	void add_user_signal(const MethodInfo &p_signal);
 	Error emit_signal(const StringName &p_name, VARIANT_ARG_LIST);
@@ -743,7 +743,7 @@ public:
 
 #endif
 
-	//used by script languages to store binding data
+	// Used by script languages to store binding data.
 	void *get_script_instance_binding(int p_script_language_index);
 	bool has_script_instance_binding(int p_script_language_index);
 	void set_script_instance_binding(int p_script_language_index, void *p_data);
@@ -804,7 +804,7 @@ public:
 	}
 };
 
-//needed by macros
+// Needed by macros.
 #include "core/class_db.h"
 
 #endif

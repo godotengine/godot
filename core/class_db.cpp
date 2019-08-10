@@ -369,7 +369,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 
 		names.push_back(*k);
 	}
-	//must be alphabetically sorted for hash to compute
+	// Must be alphabetically sorted for hash to compute.
 	names.sort_custom<StringName::AlphCompare>();
 
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
@@ -412,7 +412,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 				hash = hash_djb2_one_64(mb->get_default_argument_count(), hash);
 
 				for (int i = 0; i < mb->get_default_argument_count(); i++) {
-					//hash should not change, i hope for tis
+					// Hash should not change, I hope for this.
 					Variant da = mb->get_default_argument(i);
 					hash = hash_djb2_one_64(da.hash(), hash);
 				}

@@ -41,25 +41,26 @@
 
 #include <stdio.h>
 
+//EXPLAIN_THIS_COMMENT: How should the following be formatted?
 const char *Image::format_names[Image::FORMAT_MAX] = {
-	"Lum8", //luminance
-	"LumAlpha8", //luminance-alpha
+	"Lum8", // luminance
+	"LumAlpha8", // luminance-alpha
 	"Red8",
 	"RedGreen",
 	"RGB8",
 	"RGBA8",
 	"RGBA4444",
 	"RGBA5551",
-	"RFloat", //float
+	"RFloat", // float
 	"RGFloat",
 	"RGBFloat",
 	"RGBAFloat",
-	"RHalf", //half float
+	"RHalf", // half float
 	"RGHalf",
 	"RGBHalf",
 	"RGBAHalf",
 	"RGBE9995",
-	"DXT1 RGB8", //s3tc
+	"DXT1 RGB8", // s3tc
 	"DXT3 RGBA8",
 	"DXT5 RGBA8",
 	"RGTC Red8",
@@ -67,13 +68,13 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"PVRTC2", //pvrtc
+	"PVRTC2", // pvrtc
 	"PVRTC2A",
 	"PVRTC4",
 	"PVRTC4A",
-	"ETC", //etc1
-	"ETC2_R11", //etc2
-	"ETC2_R11S", //signed", NOT srgb.
+	"ETC", // etc1
+	"ETC2_R11", // etc2
+	"ETC2_R11S", // signed", NOT srgb.
 	"ETC2_RG11",
 	"ETC2_RG11S",
 	"ETC2_RGB8",
@@ -366,7 +367,7 @@ int Image::get_mipmap_count() const {
 		return 0;
 }
 
-//using template generates perfectly optimized code due to constant expression reduction and unused variable removal present in all compilers
+// Using template generates perfectly optimized code. This is due to constant expression reduction and unused variable removal (present in all compilers).
 template <uint32_t read_bytes, bool read_alpha, uint32_t write_bytes, bool write_alpha, bool read_gray, bool write_gray>
 static void _convert(int p_width, int p_height, const uint8_t *p_src, uint8_t *p_dst) {
 
@@ -428,7 +429,7 @@ void Image::convert(Format p_new_format) {
 
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
 
-		//use put/set pixel which is slower but works with non byte formats
+		// Use put/set pixel which is slower, but works with non-byte formats.
 		Image new_img(width, height, 0, p_new_format);
 		lock();
 		new_img.lock();
@@ -1244,7 +1245,7 @@ int Image::_get_dst_image_size(int p_width, int p_height, Format p_format, int &
 	int pixsize = get_format_pixel_size(p_format);
 	int pixshift = get_format_pixel_rshift(p_format);
 	int block = get_format_block_size(p_format);
-	//technically, you can still compress up to 1 px no matter the format, so commenting this
+	// Technically, you can still compress up to 1px no matter the format, so commenting the following lines.
 	//int minw, minh;
 	//get_format_min_pixel_size(p_format, minw, minh);
 	int minw = 1, minh = 1;
@@ -1291,7 +1292,7 @@ template <class Component, int CC, bool renormalize,
 		void (*renormalize_func)(Component *)>
 static void _generate_po2_mipmap(const Component *p_src, Component *p_dst, uint32_t p_width, uint32_t p_height) {
 
-	//fast power of 2 mipmap generation
+	// Fast power of 2 mipmap generation.
 	uint32_t dst_w = MAX(p_width >> 1, 1);
 	uint32_t dst_h = MAX(p_height >> 1, 1);
 
@@ -1366,7 +1367,7 @@ void Image::shrink_x2() {
 
 	if (mipmaps) {
 
-		//just use the lower mipmap as base and copy all
+		// Just use the lower mipmap as base and copy all.
 		PoolVector<uint8_t> new_img;
 
 		int ofs = get_mipmap_offset(1);
@@ -1685,7 +1686,7 @@ void Image::create(const char **p_xpm) {
 					colorstring += *line_ptr;
 					line_ptr++;
 				}
-				//skip spaces
+				//EXPLAIN_THIS_COMMENT: skip spaces
 				while (*line_ptr == ' ' || *line_ptr == '\t' || *line_ptr == 0) {
 					if (*line_ptr == 0)
 						break;
@@ -3006,7 +3007,7 @@ void Image::premultiply_alpha() {
 		return;
 
 	if (format != FORMAT_RGBA8)
-		return; //not needed
+		return; // This is not needed.
 
 	PoolVector<uint8_t>::Write wp = data.write();
 	unsigned char *data_ptr = wp.ptr();
@@ -3029,7 +3030,7 @@ void Image::fix_alpha_edges() {
 		return;
 
 	if (format != FORMAT_RGBA8)
-		return; //not needed
+		return; // This is not needed.
 
 	PoolVector<uint8_t> dcopy = data;
 	PoolVector<uint8_t>::Read rp = dcopy.read();

@@ -42,7 +42,7 @@
 
 enum {
 
-	//numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
+	//EXPLAIN_THIS_COMMENT: numbering must be different from variant, in case new variant types are added (variant must be always contiguous for jumptable optimization)
 	VARIANT_NIL = 1,
 	VARIANT_BOOL = 2,
 	VARIANT_INT = 3,

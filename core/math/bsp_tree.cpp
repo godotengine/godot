@@ -158,7 +158,7 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 		return 0;
 
 #if 1
-	//this version is easier to debug, and and MUCH faster in real world cases
+	// This version is easier to debug, and and MUCH faster in real world cases.
 
 	int pass_count = 0;
 	const Node *nodesptr = &nodes[0];
@@ -210,7 +210,7 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 	return pass_count;
 
 #else
-	//this version scales better but it's slower for real world cases
+	// This version scales better but it's slower for real world cases.
 
 	int *indices = (int *)alloca(p_point_count * sizeof(int));
 	AABB bounds;
@@ -391,14 +391,14 @@ static int _bsp_create_node(const Face3 *p_faces, const Vector<int> &p_indices, 
 
 	uint16_t over_idx = BSP_Tree::OVER_LEAF, under_idx = BSP_Tree::UNDER_LEAF;
 
-	if (faces_over.size() > 0) { //have facess above?
+	if (faces_over.size() > 0) { //EXPLAIN_THIS_COMMENT: have facess above?
 
 		int idx = _bsp_create_node(p_faces, faces_over, p_planes, p_nodes, p_tolerance);
 		if (idx >= 0)
 			over_idx = idx;
 	}
 
-	if (faces_under.size() > 0) { //have facess above?
+	if (faces_under.size() > 0) { //EXPLAIN_THIS_COMMENT: have facess above?
 
 		int idx = _bsp_create_node(p_faces, faces_under, p_planes, p_nodes, p_tolerance);
 		if (idx >= 0)

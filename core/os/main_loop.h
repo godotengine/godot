@@ -51,7 +51,7 @@ protected:
 
 public:
 	enum {
-		//make sure these are replicated in Node
+		//EXPLAIN_THIS_COMMENT: make sure these are replicated in Node
 		NOTIFICATION_WM_MOUSE_ENTER = 1002,
 		NOTIFICATION_WM_MOUSE_EXIT = 1003,
 		NOTIFICATION_WM_FOCUS_IN = 1004,

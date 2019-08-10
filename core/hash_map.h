@@ -422,7 +422,7 @@ public:
 
 					p->next = e->next;
 				} else {
-					//begin of list
+					// Beginning of the list.
 					hash_table[index] = e->next;
 				}
 

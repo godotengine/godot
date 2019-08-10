@@ -71,7 +71,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	int longest_axis = aabb.get_longest_axis_index();
 
-	//first two vertices are the most distant
+	// First two vertices are the most distant.
 	int simplex[4] = { 0 };
 
 	{
@@ -95,7 +95,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		}
 	}
 
-	//third vertex is one most further away from the line
+	// Third vertex is one most further away from the line.
 
 	{
 		real_t maxd = 0;
@@ -117,7 +117,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		}
 	}
 
-	//fourth vertex is the one  most further away from the plane
+	// Fourth vertex is the one most further away from the plane.
 
 	{
 		real_t maxd = 0;
@@ -138,7 +138,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		}
 	}
 
-	//compute center of simplex, this is a point always warranted to be inside
+	// Compute center of simplex, this is a point always warranted to be inside.
 	Vector3 center;
 
 	for (int i = 0; i < 4; i++) {
@@ -147,7 +147,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	center /= 4.0;
 
-	//add faces
+	// Add the faces.
 
 	List<Face> faces;
 
@@ -168,7 +168,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		Plane p(p_points[f.vertices[0]], p_points[f.vertices[1]], p_points[f.vertices[2]]);
 
 		if (p.is_point_over(center)) {
-			//flip face to clockwise if facing inwards
+			// If facing inwards, then flip face to clockwise.
 			SWAP(f.vertices[0], f.vertices[1]);
 			p = -p;
 		}

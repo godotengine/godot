@@ -1039,7 +1039,7 @@ void TranslationServer::clear() {
 
 StringName TranslationServer::translate(const StringName &p_message) const {
 
-	//translate using locale
+	//EXPLAIN_THIS_COMMENT: translate using locale
 
 	if (!enabled)
 		return p_message;
@@ -1162,7 +1162,7 @@ void TranslationServer::setup() {
 		ProjectSettings::get_singleton()->set_custom_property_info("locale/fallback", PropertyInfo(Variant::STRING, "locale/fallback", PROPERTY_HINT_ENUM, options));
 	}
 #endif
-	//load translations
+	//EXPLAIN_THIS_COMMENT: load translations
 }
 
 void TranslationServer::set_tool_translation(const Ref<Translation> &p_translation) {
@@ -1202,7 +1202,7 @@ void TranslationServer::_bind_methods() {
 void TranslationServer::load_translations() {
 
 	String locale = get_locale();
-	_load_translations("locale/translations"); //all
+	_load_translations("locale/translations"); //EXPLAIN_THIS_COMMENT: all
 	_load_translations("locale/translations_" + locale.substr(0, 2));
 
 	if (locale.substr(0, 2) != locale) {

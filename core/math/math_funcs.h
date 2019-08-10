@@ -338,7 +338,7 @@ public:
 		return u.d;
 	}
 
-	//this function should be as fast as possible and rounding mode should not matter
+	//EXPLAIN_THIS_COMMENT: this function should be as fast as possible and rounding mode should not matter
 	static _ALWAYS_INLINE_ int fast_ftoi(float a) {
 
 		static int b;
@@ -448,7 +448,7 @@ public:
 
 		hf = (((uint16_t)sign) << 15) | (uint16_t)(mantissa);
 		*/
-			hf = 0; //denormals do not work for 3D, convert to zero
+			hf = 0; //EXPLAIN_THIS_COMMENT: denormals do not work for 3D, convert to zero
 		} else {
 			hf = (((uint16_t)sign) << 15) |
 				 (uint16_t)((exp - 0x38000000) >> 13) |

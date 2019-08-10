@@ -415,7 +415,7 @@ class CommandQueueMT {
 		uint32_t size = *(uint32_t *)&command_mem[read_ptr] >> 1;
 
 		if (size == 0) {
-			//end of ringbuffer, wrap
+			// End of ringbuffer, then wrap.
 			read_ptr = 0;
 			goto tryagain;
 		}

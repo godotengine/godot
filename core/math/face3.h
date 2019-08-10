@@ -114,7 +114,7 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 	real_t dist_b = perp.dot(ofs - sup) - d;
 
 	if (dist_a * dist_b > 0)
-		return false; //does not intersect the plane
+		return false; // Does not intersect the plane.
 
 #define TEST_AXIS(m_ax)                                            \
 	{                                                              \

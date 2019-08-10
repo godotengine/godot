@@ -226,8 +226,8 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 	ERR_FAIL_COND_V(remaining < (int)len, ERR_UNAVAILABLE);
 
 	ERR_FAIL_COND_V(input_buffer.size() < (int)len, ERR_UNAVAILABLE);
-	ring_buffer.read(lbuf, 4); //get rid of first 4 bytes
-	ring_buffer.read(input_buffer.ptrw(), len); // read packet
+	ring_buffer.read(lbuf, 4); // Get rid of first 4 bytes.
+	ring_buffer.read(input_buffer.ptrw(), len); // Read the packet.
 
 	*r_buffer = &input_buffer[0];
 	r_buffer_size = len;
@@ -237,7 +237,7 @@ Error PacketPeerStream::get_packet(const uint8_t **r_buffer, int &r_buffer_size)
 Error PacketPeerStream::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
 	ERR_FAIL_COND_V(peer.is_null(), ERR_UNCONFIGURED);
-	Error err = _poll_buffer(); //won't hurt to poll here too
+	Error err = _poll_buffer(); //TODO: It would not hurt to poll here too.
 
 	if (err)
 		return err;
@@ -279,7 +279,7 @@ Ref<StreamPeer> PacketPeerStream::get_stream_peer() const {
 
 void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 
-	//warning may lose packets
+	//EXPLAIN_THIS_COMMENT: warning may lose packets
 	ERR_EXPLAIN("Buffer in use, resizing would cause loss of data");
 	ERR_FAIL_COND(ring_buffer.data_left());
 	ring_buffer.resize(nearest_shift(p_max_size + 4));

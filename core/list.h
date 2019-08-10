@@ -650,8 +650,8 @@ public:
 	template <class C>
 	void sort_custom() {
 
-		//this version uses auxiliary memory for speed.
-		//if you don't want to use auxiliary memory, use the in_place version
+		// This version uses auxiliary memory for speed. However, if you don't want to use auxiliary memory, use the
+		//	in_place version.
 
 		int s = size();
 		if (s < 2)

@@ -516,7 +516,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 		Variant defval;
 		if (script->get_property_default_value(E->key(), defval)) {
-			//remove because it's the same as the default value
+			// Remove because it is the same as the default value.
 			if (defval == E->get()) {
 				to_remove.push_back(E->key());
 			}
@@ -533,7 +533,7 @@ void PlaceHolderScriptInstance::update(const List<PropertyInfo> &p_properties, c
 
 		owner->_change_notify();
 	}
-	//change notify
+	//EXPLAIN_THIS_COMMENT: change notify
 
 	constants.clear();
 	script->get_constants(&constants);

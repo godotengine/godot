@@ -137,7 +137,7 @@ MAKE_PTRARG(PoolVector3Array);
 MAKE_PTRARG(PoolColorArray);
 MAKE_PTRARG_BY_REFERENCE(Variant);
 
-//this is for Object
+// This is for Object.
 
 template <class T>
 struct PtrToArg<T *> {
@@ -167,7 +167,7 @@ struct PtrToArg<const T *> {
 	}
 };
 
-//this is for the special cases used by Variant
+// This is for the special cases used by Variant.
 
 #define MAKE_VECARG(m_type)                                                                      \
 	template <>                                                                                  \
@@ -267,7 +267,7 @@ MAKE_VECARG(Vector3);
 MAKE_VECARG(Color);
 MAKE_VECARG_ALT(String, StringName);
 
-//for stuff that gets converted to Array vectors
+// For stuff that gets converted to Array vectors.
 #define MAKE_VECARR(m_type)                                                    \
 	template <>                                                                \
 	struct PtrToArg<Vector<m_type> > {                                         \
@@ -354,7 +354,7 @@ MAKE_VECARR(Plane);
 	}
 
 MAKE_DVECARR(Plane);
-//for special case StringName
+// For special case StringName.
 
 #define MAKE_STRINGCONV(m_type)                                        \
 	template <>                                                        \

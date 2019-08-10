@@ -1285,7 +1285,7 @@ void Octree<T, use_pairs, AL>::_cull_point(Octant *p_octant, const Vector3 &p_po
 
 	for (int i = 0; i < 8; i++) {
 
-		//could be optimized..
+		//TODO: This could be optimized...
 		if (p_octant->children[i] && p_octant->children[i]->aabb.has_point(p_point)) {
 			_cull_point(p_octant->children[i], p_point, p_result_array, p_result_idx, p_result_max, p_subindex_array, p_mask);
 		}

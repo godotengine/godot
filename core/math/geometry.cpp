@@ -753,7 +753,7 @@ Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> po
 	inp.SetOrientation(TRIANGULATOR_CCW);
 	in_poly.push_back(inp);
 	TriangulatorPartition tpart;
-	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //failed!
+	if (tpart.ConvexPartition_HM(&in_poly, &out_poly) == 0) { //EXPLAIN_THIS_COMMENT: failed!
 		ERR_PRINT("Convex decomposing failed!");
 		return decomp;
 	}
@@ -854,7 +854,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 		if (vertices.size() < 3)
 			continue;
 
-		//result is a clockwise face
+		// The result is a clockwise face.
 
 		MeshData::Face face;
 
@@ -972,7 +972,7 @@ PoolVector<Plane> Geometry::build_sphere_planes(real_t p_radius, int p_lats, int
 
 		for (int j = 1; j <= p_lats; j++) {
 
-			//todo this is stupid, fix
+			//EXPLAIN_THIS_COMMENT: todo this is stupid, fix
 			Vector3 angle = normal.linear_interpolate(axis, j / (real_t)p_lats).normalized();
 			Vector3 pos = angle * p_radius;
 			planes.push_back(Plane(pos, angle));

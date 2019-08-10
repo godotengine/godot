@@ -124,7 +124,7 @@ public:
 		COMPRESS_SOURCE_LAYERED,
 	};
 
-	//some functions provided by something else
+	// Some functions provided by something else.
 
 	static ImageMemLoadFunc _png_mem_loader_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
@@ -175,7 +175,7 @@ private:
 		data = p_image.data;
 	}
 
-	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_width, int &r_height) const; //get where the mipmap begins in data
+	_FORCE_INLINE_ void _get_mipmap_offset_and_size(int p_mipmap, int &r_offset, int &r_width, int &r_height) const; // Get where the mipmap begins in data.
 
 	static int _get_dst_image_size(int p_width, int p_height, Format p_format, int &r_mipmaps, int p_mipmaps = -1);
 	bool _can_modify(Format p_format) const;
@@ -214,9 +214,9 @@ public:
 	 */
 	Format get_format() const;
 
-	int get_mipmap_offset(int p_mipmap) const; //get where the mipmap begins in data
-	void get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const; //get where the mipmap begins in data
-	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int &r_ofs, int &r_size, int &w, int &h) const; //get where the mipmap begins in data
+	int get_mipmap_offset(int p_mipmap) const; // Get where the mipmap begins in data.
+	void get_mipmap_offset_and_size(int p_mipmap, int &r_ofs, int &r_size) const; // Get where the mipmap begins in data.
+	void get_mipmap_offset_size_and_dimensions(int p_mipmap, int &r_ofs, int &r_size, int &w, int &h) const; // Get where the mipmap begins in data.
 
 	/**
 	 * Resize the image, using the preferred interpolation method.
@@ -243,7 +243,7 @@ public:
 	Error generate_mipmaps(bool p_renormalize = false);
 
 	void clear_mipmaps();
-	void normalize(); //for normal maps
+	void normalize(); // For normal maps.
 
 	/**
 	 * Create a new image of a given size and format. Current image will be lost
@@ -339,7 +339,7 @@ public:
 	void lock();
 	void unlock();
 
-	//this is used for compression
+	// This is used for compression.
 	enum DetectChannels {
 		DETECTED_L,
 		DETECTED_LA,
