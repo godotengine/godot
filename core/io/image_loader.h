@@ -41,19 +41,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-/**
- * @class ImageScanLineLoader
- * @author Juan Linietsky <reduzio@gmail.com>
- *
-
- */
 class ImageLoader;
-
-/**
- * @class ImageLoader
- * Base Class and singleton for loading images from disk
- * Can load images in one go, or by scanline
- */
 
 class ImageFormatLoader {
 	friend class ImageLoader;
