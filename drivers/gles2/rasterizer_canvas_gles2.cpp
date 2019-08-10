@@ -1650,6 +1650,7 @@ void RasterizerCanvasGLES2::canvas_render_items(Item *p_item_list, int p_z, cons
 
 					//always re-set uniforms, since light parameters changed
 					_set_uniforms();
+					state.canvas_shader.use_material((void *)material_ptr);
 
 					glActiveTexture(GL_TEXTURE0 + storage->config.max_texture_image_units - 4);
 					RasterizerStorageGLES2::Texture *t = storage->texture_owner.getornull(light->texture);
