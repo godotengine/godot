@@ -50,9 +50,6 @@
 #include <stdio.h>
 #include <windows.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class OS_UWP : public OS {
 
 public:

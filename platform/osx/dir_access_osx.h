@@ -41,9 +41,6 @@
 #include "core/os/dir_access.h"
 #include "drivers/unix/dir_access_unix.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class DirAccessOSX : public DirAccessUnix {
 protected:
 	virtual String fix_unicode_name(const char *p_name) const;

@@ -39,9 +39,6 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class CanvasItemEditorViewport;
 

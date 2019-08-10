@@ -35,10 +35,6 @@
 #include "core/math/basis.h"
 #include "core/math/plane.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Transform {
 public:
 	Basis basis;

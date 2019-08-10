@@ -41,10 +41,6 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class EditorNode;
 class Spatial;
 class Camera;

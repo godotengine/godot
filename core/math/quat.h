@@ -38,10 +38,6 @@
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Quat {
 public:
 	real_t x, y, z, w;

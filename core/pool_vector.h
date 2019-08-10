@@ -77,10 +77,6 @@ struct MemoryPool {
 	static void cleanup();
 };
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 template <class T>
 class PoolVector {
 

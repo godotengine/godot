@@ -37,10 +37,6 @@
 #include "core/set.h"
 #include "core/typedefs.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class RID_OwnerBase;
 
 class RID_Data {

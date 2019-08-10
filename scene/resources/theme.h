@@ -38,9 +38,6 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Theme : public Resource {
 
 	GDCLASS(Theme, Resource);

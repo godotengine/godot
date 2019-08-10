@@ -38,10 +38,6 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 typedef void (*CloseNotificationFunc)(const String &p_file, int p_flags);
 
 class FileAccessUnix : public FileAccess {

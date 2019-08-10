@@ -34,10 +34,6 @@
 #include "core/string_name.h"
 #include "core/ustring.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class NodePath {
 
 	struct Data {

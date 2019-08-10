@@ -33,9 +33,6 @@
 
 #include "core/io/image_loader.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class ImageLoaderTinyEXR : public ImageFormatLoader {
 
 public:

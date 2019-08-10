@@ -36,9 +36,6 @@
 #include "scene/resources/texture.h"
 #include "scene/resources/world_2d.h"
 #include "servers/visual_server.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Camera;
 class Camera2D;

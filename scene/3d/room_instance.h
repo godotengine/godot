@@ -34,10 +34,6 @@
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/room.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 /* RoomInstance Logic:
    a) Instances that belong to the room are drawn only if the room is visible (seen through portal, or player inside)
    b) Instances that don't belong to any room are considered to belong to the root room (RID empty)

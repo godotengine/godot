@@ -35,9 +35,6 @@
 #include "editor/editor_plugin.h"
 #include "editor/pane_drag.h"
 #include "grid_map.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class SpatialEditorPlugin;
 

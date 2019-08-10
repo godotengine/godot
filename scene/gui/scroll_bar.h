@@ -33,10 +33,6 @@
 
 #include "scene/gui/range.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ScrollBar : public Range {
 
 	GDCLASS(ScrollBar, Range);

@@ -41,10 +41,6 @@
 
 #include <stdarg.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Mutex;
 
 class OS {

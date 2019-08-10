@@ -56,10 +56,6 @@
 #include <windows.h>
 #include <windowsx.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 typedef struct {
 	BYTE bWidth; // Width, in pixels, of the image
 	BYTE bHeight; // Height, in pixels, of the image

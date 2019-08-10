@@ -35,10 +35,6 @@
 #include "core/os/thread_safe.h"
 #include "core/set.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ProjectSettings : public Object {
 
 	GDCLASS(ProjectSettings, Object);

@@ -32,9 +32,7 @@
 #define PANEL_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class Panel : public Control {
 
 	GDCLASS(Panel, Control);

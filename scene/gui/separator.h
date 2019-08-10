@@ -31,10 +31,6 @@
 #ifndef SEPARATOR_H
 #define SEPARATOR_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #include "scene/gui/control.h"
 class Separator : public Control {
 

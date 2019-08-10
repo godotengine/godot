@@ -37,10 +37,6 @@
 #include "core/os/file_access.h"
 #include "core/ustring.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ImageLoader;
 
 class ImageFormatLoader {

@@ -37,10 +37,6 @@
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Tree;
 
 class TreeItem : public Object {

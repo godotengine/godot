@@ -31,10 +31,6 @@
 #ifndef THREAD_POSIX_H
 #define THREAD_POSIX_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
 
 #include "core/os/thread.h"

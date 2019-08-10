@@ -38,9 +38,6 @@
 #include "scene/main/node.h"
 #include "scene/main/timer.h"
 #include "scene/resources/theme.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Viewport;
 class Label;

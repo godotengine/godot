@@ -36,10 +36,6 @@
 #include "core/typedefs.h"
 #include "core/vector.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 template <class T>
 class CharProxy {
 	friend class CharString;

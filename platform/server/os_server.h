@@ -47,9 +47,6 @@
 #include "servers/visual_server.h"
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_Server : public OS_Unix {
 

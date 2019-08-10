@@ -31,10 +31,6 @@
 #ifndef REGISTER_DRIVER_TYPES_H
 #define REGISTER_DRIVER_TYPES_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 void register_core_driver_types();
 void unregister_core_driver_types();
 
