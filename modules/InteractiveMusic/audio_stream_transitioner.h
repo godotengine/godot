@@ -23,17 +23,18 @@ private:
 		MAX_TRANSITIONS = 10
 	};
 
-
 	struct Transition {
 		bool t_active;
 		int fade_in_beats;
 		int fade_out_beats;
 	};
-	
+
 	Transition transitions[MAX_TRANSITIONS];
 	Transition active_transition;
 
 	Ref<AudioStream> clips[MAX_STREAMS];
+	Ref<AudioStream> t_clip;
+	bool t_clip_active;
 	int active_clip_number;
 	int fading_clip_number;
 	Set<AudioStreamPlaybackTransitioner *> playbacks;
@@ -53,6 +54,12 @@ public:
 
 	void set_clip_count(int p_clip_count);
 	int get_clip_count();
+
+	void set_transition_clip_active(bool active);
+	bool get_transition_clip_active();
+
+	void add_transition_clip(Ref<AudioStream> transition_clip);
+	Ref<AudioStream> get_transition_clip();
 
 	void set_transition_fade_in(int transition_number, int fade_in);
 	int get_transition_fade_in(int transition_number);
@@ -78,7 +85,6 @@ protected:
 	void _validate_property(PropertyInfo &property) const;
 };
 
-
 class AudioStreamPlaybackTransitioner : public AudioStreamPlayback {
 	GDCLASS(AudioStreamPlaybackTransitioner, AudioStreamPlayback)
 	friend class AudioStreamTransitioner;
@@ -97,21 +103,28 @@ private:
 
 	Ref<AudioStreamTransitioner> transitioner;
 	Ref<AudioStreamPlayback> playbacks[AudioStreamTransitioner::MAX_STREAMS];
-	
+	Ref<AudioStreamPlayback> t_playback;
 
 	int current;
 	int previous;
 	int fade_in_samples_total;
 	int fade_out_samples_total;
+	int fade_in_t_clip_samples_total;
+	int fade_out_t_clip_samples_total;
 	int transition_samples_total;
 	int clip_samples_total;
+	int t_clip_samples_total;
 
 	int transition_samples;
 	int fade_in_samples;
 	int fade_out_samples;
+	int fade_in_t_clip_samples;
+	int fade_out_t_clip_samples;
+	int t_clip_samples;
 
 	int beat_size;
 	int fading_beat_size;
+	int t_clip_beat_size;
 
 	bool fading;
 
@@ -132,6 +145,4 @@ public:
 	virtual float get_length() const;
 	AudioStreamPlaybackTransitioner();
 	~AudioStreamPlaybackTransitioner();
-
-
 };
