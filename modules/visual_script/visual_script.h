@@ -237,6 +237,8 @@ private:
 
 	struct Variable {
 		PropertyInfo info;
+		String getter;
+		String setter;
 		Variant default_value;
 		bool _export;
 	};
@@ -303,6 +305,12 @@ public:
 	PropertyInfo get_variable_info(const StringName &p_name) const;
 	void set_variable_export(const StringName &p_name, bool p_export);
 	bool get_variable_export(const StringName &p_name) const;
+
+	void set_variable_getter(const StringName &p_name, const String &p_getter);
+	void set_variable_setter(const StringName &p_name, const String &p_setter);
+	String get_variable_getter(const StringName &p_name) const;
+	String get_variable_setter(const StringName &p_name) const;
+
 	void get_variable_list(List<StringName> *r_variables) const;
 	void rename_variable(const StringName &p_name, const StringName &p_new_name);
 
@@ -369,6 +377,9 @@ class VisualScriptInstance : public ScriptInstance {
 	Ref<VisualScript> script;
 
 	Map<StringName, Variant> variables; //using variable path, not script
+	HashMap<StringName, StringName> variable_getter; // getter
+	HashMap<StringName, StringName> variable_setter; // setter
+
 	Map<int, VisualScriptNodeInstance *> instances;
 
 	struct Function {

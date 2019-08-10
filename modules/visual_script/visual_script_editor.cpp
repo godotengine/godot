@@ -190,6 +190,8 @@ class VisualScriptEditorVariableEdit : public Object {
 
 	StringName var;
 
+	// function list to be updated on each call of the get_property_list
+	List<StringName> funcs;
 public:
 	UndoRedo *undo_redo;
 	Ref<VisualScript> script;
@@ -308,6 +310,14 @@ protected:
 			return true;
 		}
 
+		if (String(p_name) == "getter") {
+			// TODO:
+		}
+
+		if (String(p_name) == "setter") {
+			// TODO:
+		}
+
 		return false;
 	}
 	void _get_property_list(List<PropertyInfo> *p_list) const {
@@ -325,7 +335,19 @@ protected:
 		p_list->push_back(PropertyInfo(Variant::INT, "hint", PROPERTY_HINT_ENUM, "None,Range,ExpRange,Enum,ExpEasing,Length,SpriteFrame,KeyAccel,Flags,Layers2dRender,Layers2dPhysics,Layer3dRender,Layer3dPhysics,File,Dir,GlobalFile,GlobalDir,ResourceType,MultilineText,PlaceholderText,ColorNoAlpha,ImageCompressLossy,ImageCompressLossLess,ObjectId,String,NodePathToEditedNode,MethodOfVariantType,MethodOfBaseType,MethodOfInstance,MethodOfScript,PropertyOfVariantType,PropertyOfBaseType,PropertyOfInstance,PropertyOfScript,ObjectTooBig,NodePathValidTypes"));
 		p_list->push_back(PropertyInfo(Variant::STRING, "hint_string"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "export"));
+
+		// hold a list of the functions and use that list to show a enum
+		// update on each get_property call
+		// create the enum from the list of the functions from the Script
+		const_cast<List<StringName> *>(&funcs)->clear();
+		script->get_function_list(const_cast<List<StringName> *>(&funcs));
+
+		// use the list to frame a ENUM list to show and get/set objects
+
+		p_list->push_back(PropertyInfo(Variant::INT, "getter")); // do same as "hint" Property
+		p_list->push_back(PropertyInfo(Variant::INT, "setter"));
 	}
+
 
 public:
 	void edit(const StringName &p_var) {

@@ -692,6 +692,28 @@ Dictionary VisualScript::_get_variable_info(const StringName &p_name) const {
 	return d;
 }
 
+void VisualScript::set_variable_getter(const StringName &p_name, const String &p_getter) {
+	if (variables.has(p_name))
+		variables[p_name].getter = p_getter;
+}
+
+void VisualScript::set_variable_setter(const StringName &p_name, const String &p_setter) {
+	if (variables.has(p_name))
+		variables[p_name].setter = p_setter;
+}
+
+String VisualScript::get_variable_getter(const StringName &p_name) const {
+	if (variables.has(p_name))
+		return variables[p_name].getter;
+	return "";
+}
+
+String VisualScript::get_variable_setter(const StringName &p_name) const {
+	if (variables.has(p_name))
+		return variables[p_name].setter;
+	return "";
+}
+
 void VisualScript::get_variable_list(List<StringName> *r_variables) const {
 
 	for (Map<StringName, Variable>::Element *E = variables.front(); E; E = E->next()) {
@@ -1116,6 +1138,8 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 		_set_variable_info(name, v);
 		set_variable_default_value(name, v["default_value"]);
 		set_variable_export(name, v.has("export") && bool(v["export"]));
+		set_variable_getter(name, v.has("getter") ? v["getter"] : "");
+		set_variable_setter(name, v.has("setter") ? v["setter"] : "");
 	}
 
 	custom_signals.clear();
@@ -1178,6 +1202,8 @@ Dictionary VisualScript::_get_data() const {
 		var["name"] = E->key(); //make sure it's the right one
 		var["default_value"] = E->get().default_value;
 		var["export"] = E->get()._export;
+		var["getter"] = E->get().getter;
+		var["setter"] = E->get().setter;
 		vars.push_back(var);
 	}
 	d["variables"] = vars;
@@ -1287,6 +1313,12 @@ void VisualScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_variable_info", "name"), &VisualScript::_get_variable_info);
 	ClassDB::bind_method(D_METHOD("set_variable_export", "name", "enable"), &VisualScript::set_variable_export);
 	ClassDB::bind_method(D_METHOD("get_variable_export", "name"), &VisualScript::get_variable_export);
+
+	ClassDB::bind_method(D_METHOD("set_variable_getter", "name", "func"), &VisualScript::set_variable_getter);
+	ClassDB::bind_method(D_METHOD("set_variable_setter", "name", "func"), &VisualScript::set_variable_setter);
+	ClassDB::bind_method(D_METHOD("get_variable_getter", "name"), &VisualScript::get_variable_getter);
+	ClassDB::bind_method(D_METHOD("get_variable_setter", "name"), &VisualScript::get_variable_setter);
+
 	ClassDB::bind_method(D_METHOD("rename_variable", "name", "new_name"), &VisualScript::rename_variable);
 
 	ClassDB::bind_method(D_METHOD("add_custom_signal", "name"), &VisualScript::add_custom_signal);
@@ -1348,7 +1380,17 @@ bool VisualScriptInstance::set(const StringName &p_name, const Variant &p_value)
 	if (!E)
 		return false;
 
-	E->get() = p_value;
+	// check if the variable has setter
+	if (variable_setter.has(p_name)) {
+		// if it does, call the set function and pass the set value as parameter
+		Variant::CallError err;
+		const Variant *vt = &p_value;
+		call(variable_setter[p_name], &vt, 1, err);
+		if (err.error != Variant::CallError::CALL_OK)
+			return false;
+	} else {
+		E->get() = p_value;
+	}
 
 	return true;
 }
@@ -1359,7 +1401,18 @@ bool VisualScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	if (!E)
 		return false;
 
-	r_ret = E->get();
+	// check if the variable has a getter
+	if (variable_getter.has(p_name)) {
+		// if it does, call the get function and use the returned value as r_ret
+		Variant::CallError err;
+		// why the FUCK do I have to do this ??
+		r_ret = const_cast<VisualScriptInstance *>(this)->call(variable_getter[p_name], NULL, 0, err);
+		if (err.error != Variant::CallError::CALL_OK)
+			return false;
+	} else {
+		r_ret = E->get();
+	}
+
 	return true;
 }
 void VisualScriptInstance::get_property_list(List<PropertyInfo> *p_properties) const {
@@ -2042,7 +2095,12 @@ void VisualScriptInstance::create(const Ref<VisualScript> &p_script, Object *p_o
 
 	for (const Map<StringName, VisualScript::Variable>::Element *E = script->variables.front(); E; E = E->next()) {
 		variables[E->key()] = E->get().default_value;
-		//no hacer que todo exporte, solo las que queres!
+
+		if (E->get().getter != "")
+			variable_getter.set(E->key(), E->get().getter);
+
+		if (E->get().setter != "")
+			variable_setter.set(E->key(), E->get().setter);
 	}
 
 	for (const Map<StringName, VisualScript::Function>::Element *E = script->functions.front(); E; E = E->next()) {
