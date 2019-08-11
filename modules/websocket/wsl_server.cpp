@@ -45,29 +45,18 @@ WSLServer::PendingPeer::PendingPeer() {
 bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
-	if (len < 4) {
-		ERR_EXPLAIN("Not enough response headers.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
 
 	Vector<String> req = psa[0].split(" ", false);
-	if (req.size() < 2) {
-		ERR_EXPLAIN("Invalid protocol or status code.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(req.size() < 2, false, "Invalid protocol or status code.");
+
 	// Wrong protocol
-	if (req[0] != "GET" || req[2] != "HTTP/1.1") {
-		ERR_EXPLAIN("Invalid method or HTTP version.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(req[0] != "GET" || req[2] != "HTTP/1.1", false, "Invalid method or HTTP version.");
 
 	Map<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
-		if (header.size() != 2) {
-			ERR_EXPLAIN("Invalid header -> " + psa[i]);
-			ERR_FAIL_V(false);
-		}
+		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i]);
 		String name = header[0].to_lower();
 		String value = header[1].strip_edges();
 		if (headers.has(name))
@@ -115,11 +104,7 @@ Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
 	if (!has_request) {
 		int read = 0;
 		while (true) {
-			if (req_pos >= WSL_MAX_HEADER_SIZE) {
-				// Header is too big
-				ERR_EXPLAIN("Response headers too big");
-				ERR_FAIL_V(ERR_OUT_OF_MEMORY);
-			}
+			ERR_FAIL_COND_V_MSG(req_pos >= WSL_MAX_HEADER_SIZE, ERR_OUT_OF_MEMORY, "Response headers too big.");
 			Error err = connection->get_partial_data(&req_buf[req_pos], 1, read);
 			if (err != OK) // Got an error
 				return FAILED;
@@ -277,8 +262,7 @@ void WSLServer::disconnect_peer(int p_peer_id, int p_code, String p_reason) {
 }
 
 Error WSLServer::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
-	ERR_EXPLAIN("Buffers sizes can only be set before listening or connecting");
-	ERR_FAIL_COND_V(_server->is_listening(), FAILED);
+	ERR_FAIL_COND_V_MSG(_server->is_listening(), FAILED, "Buffers sizes can only be set before listening or connecting.");
 
 	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
 	_in_pkt_size = nearest_shift(p_in_packets - 1);

@@ -84,8 +84,7 @@ static Ref<Image> _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(r[0] != 'W' || r[1] != 'E' || r[2] != 'B' || r[3] != 'P', Ref<Image>());
 	WebPBitstreamFeatures features;
 	if (WebPGetFeatures(&r[4], size, &features) != VP8_STATUS_OK) {
-		ERR_EXPLAIN("Error unpacking WEBP image:");
-		ERR_FAIL_V(Ref<Image>());
+		ERR_FAIL_V_MSG(Ref<Image>(), "Error unpacking WEBP image.");
 	}
 
 	/*

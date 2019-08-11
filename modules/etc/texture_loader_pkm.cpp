@@ -56,8 +56,7 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	if (r_error)
 		*r_error = ERR_FILE_CORRUPT;
 
-	ERR_EXPLAIN("Unable to open PKM texture file: " + p_path);
-	ERR_FAIL_COND_V(err != OK, RES());
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open PKM texture file: " + p_path + ".");
 
 	// big endian
 	f->set_endian_swap(true);

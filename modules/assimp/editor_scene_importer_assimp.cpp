@@ -150,8 +150,7 @@ Node *EditorSceneImporterAssimp::import_scene(const String &p_path, uint32_t p_f
 								 0;
 	const aiScene *scene = importer.ReadFile(s_path.c_str(),
 			post_process_Steps);
-	ERR_EXPLAIN(String("Open Asset Import failed to open: ") + String(importer.GetErrorString()));
-	ERR_FAIL_COND_V(scene == NULL, NULL);
+	ERR_FAIL_COND_V_MSG(scene == NULL, NULL, String("Open Asset Import failed to open: ") + String(importer.GetErrorString()) + ".");
 	return _generate_scene(p_path, scene, p_flags, p_bake_fps, max_bone_weights);
 }
 
@@ -348,8 +347,7 @@ void EditorSceneImporterAssimp::_fill_node_relationships(ImportState &state, con
 	} else if (ownership[name] != p_skeleton_id) {
 		//oh, it's from another skeleton? fine.. reparent all bones to this skeleton.
 		int prev_owner = ownership[name];
-		ERR_EXPLAIN("A previous skeleton exists for bone '" + name + "', this type of skeleton layout is unsupported.");
-		ERR_FAIL_COND(skeleton_map.has(prev_owner));
+		ERR_FAIL_COND_MSG(skeleton_map.has(prev_owner), "A previous skeleton exists for bone '" + name + "', this type of skeleton layout is unsupported.");
 		for (Map<String, int>::Element *E = ownership.front(); E; E = E->next()) {
 			if (E->get() == prev_owner) {
 				E->get() = p_skeleton_id;
@@ -779,8 +777,7 @@ Ref<Texture> EditorSceneImporterAssimp::_load_texture(ImportState &state, String
 				t->set_storage(ImageTexture::STORAGE_COMPRESS_LOSSY);
 				return t;
 			} else if (tex->CheckFormat("dds")) {
-				ERR_EXPLAIN("Open Asset Import: Embedded dds not implemented");
-				ERR_FAIL_COND_V(true, Ref<Texture>());
+				ERR_FAIL_V_MSG(Ref<Texture>(), "Open Asset Import: Embedded dds not implemented.");
 				//Ref<Image> img = Image::_dds_mem_loader_func((uint8_t *)tex->pcData, tex->mWidth);
 				//ERR_FAIL_COND_V(img.is_null(), Ref<Texture>());
 				//Ref<ImageTexture> t;

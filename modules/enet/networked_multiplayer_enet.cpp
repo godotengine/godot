@@ -543,10 +543,7 @@ Error NetworkedMultiplayerENet::put_packet(const uint8_t *p_buffer, int p_buffer
 	if (target_peer != 0) {
 
 		E = peer_map.find(ABS(target_peer));
-		if (!E) {
-			ERR_EXPLAIN("Invalid Target Peer: " + itos(target_peer));
-			ERR_FAIL_V(ERR_INVALID_PARAMETER);
-		}
+		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
 	}
 
 	ENetPacket *packet = enet_packet_create(NULL, p_buffer_size + 8, packet_flags);
@@ -794,11 +791,7 @@ int NetworkedMultiplayerENet::get_peer_port(int p_peer_id) const {
 void NetworkedMultiplayerENet::set_transfer_channel(int p_channel) {
 
 	ERR_FAIL_COND(p_channel < -1 || p_channel >= channel_count);
-
-	if (p_channel == SYSCH_CONFIG) {
-		ERR_EXPLAIN("Channel " + itos(SYSCH_CONFIG) + " is reserved");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(p_channel == SYSCH_CONFIG, "Channel " + itos(SYSCH_CONFIG) + " is reserved.");
 	transfer_channel = p_channel;
 }
 
