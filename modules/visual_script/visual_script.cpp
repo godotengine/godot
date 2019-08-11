@@ -1381,7 +1381,7 @@ bool VisualScriptInstance::set(const StringName &p_name, const Variant &p_value)
 		return false;
 
 	// check if the variable has setter
-	if (variable_setter.has(p_name)) {
+	if (variable_setter.has(p_name)  && String(variable_getter[p_name]) != "") {
 		// if it does, call the set function and pass the set value as parameter
 		Variant::CallError err;
 		const Variant *vt = &p_value;
@@ -1402,7 +1402,7 @@ bool VisualScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 		return false;
 
 	// check if the variable has a getter
-	if (variable_getter.has(p_name)) {
+	if (variable_getter.has(p_name) && String(variable_getter[p_name]) != "") {
 		// if it does, call the get function and use the returned value as r_ret
 		Variant::CallError err;
 		// why the FUCK do I have to do this ??

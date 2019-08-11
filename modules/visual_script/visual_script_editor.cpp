@@ -277,6 +277,32 @@ protected:
 			return true;
 		}
 
+		if (String(p_name) == "getter") {
+			int t = p_value, i = 0;
+			for (const List<StringName>::Element *E = funcs.front(); i <= funcs.size() && E; i++, E = E->next()) {
+				if (i == t) {
+					script->set_variable_getter(var, E->get());
+					return true;
+				}
+			}
+			script->set_variable_getter(var, "");
+			_var_changed();
+			return true;
+		}
+
+		if (String(p_name) == "setter") {
+			int t = p_value, i = 0;
+			for (const List<StringName>::Element *E = funcs.front(); i <= funcs.size() && E; i++, E = E->next()) {
+				if (i == t) {
+					script->set_variable_setter(var, E->get());
+					return true;
+				}
+			}
+			script->set_variable_setter(var, "");
+			_var_changed();
+			return true;
+		}
+
 		return false;
 	}
 
@@ -311,11 +337,29 @@ protected:
 		}
 
 		if (String(p_name) == "getter") {
-			// TODO:
+			String st = script->get_variable_getter(var);
+			int rt = -1, i = 0;
+			for (const List<StringName>::Element *E = funcs.front(); i < funcs.size() && E; i++, E = E->next()) {
+				if (String(E->get()) == String(var)) {
+					rt = i;
+					break;
+				}
+			}
+			r_ret = rt + 1;
+			return true;
 		}
 
 		if (String(p_name) == "setter") {
-			// TODO:
+			String st = script->get_variable_setter(var);
+			int rt = -1, i = 0;
+			for (const List<StringName>::Element *E = funcs.front(); i < funcs.size() && E; i++, E = E->next()) {
+				if (String(E->get()) == String(var)) {
+					rt = i;
+					break;
+				}
+			}
+			r_ret = rt + 1;
+			return true;
 		}
 
 		return false;
@@ -343,9 +387,13 @@ protected:
 		script->get_function_list(const_cast<List<StringName> *>(&funcs));
 
 		// use the list to frame a ENUM list to show and get/set objects
-
-		p_list->push_back(PropertyInfo(Variant::INT, "getter")); // do same as "hint" Property
-		p_list->push_back(PropertyInfo(Variant::INT, "setter"));
+		String enum_lst = "";
+		enum_lst += "None";
+		for (const List<StringName>::Element *E = funcs.front(); E; E = E->next()) {
+			enum_lst += ","+E->get();
+		}
+		p_list->push_back(PropertyInfo(Variant::INT, "getter", PROPERTY_HINT_ENUM, enum_lst));
+		p_list->push_back(PropertyInfo(Variant::INT, "setter", PROPERTY_HINT_ENUM, enum_lst));
 	}
 
 
