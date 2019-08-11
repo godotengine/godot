@@ -601,9 +601,19 @@ void ScriptDebuggerRemote::_send_object_id(ObjectID p_id) {
 			}
 		}
 	}
+
 	if (Node *node = Object::cast_to<Node>(obj)) {
-		PropertyInfo pi(Variant::NODE_PATH, String("Node/path"));
-		properties.push_front(PropertyDesc(pi, node->get_path()));
+		// in some cases node will not be in tree here
+		// for instance where it created as variable and not yet added to tree
+		// in such cases we can't ask for it's path
+		if (node->is_inside_tree()) {
+			PropertyInfo pi(Variant::NODE_PATH, String("Node/path"));
+			properties.push_front(PropertyDesc(pi, node->get_path()));
+		} else {
+			PropertyInfo pi(Variant::STRING, String("Node/path"));
+			properties.push_front(PropertyDesc(pi, "[Orphan]"));
+		}
+
 	} else if (Resource *res = Object::cast_to<Resource>(obj)) {
 		if (Script *s = Object::cast_to<Script>(res)) {
 			Map<StringName, Variant> constants;
