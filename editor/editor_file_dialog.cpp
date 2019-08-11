@@ -109,7 +109,7 @@ void EditorFileDialog::_notification(int p_what) {
 	}
 }
 
-void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
+void EditorFileDialog::_item_list_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventKey> k = p_event;
 
@@ -1344,7 +1344,7 @@ EditorFileDialog::DisplayMode EditorFileDialog::get_display_mode() const {
 
 void EditorFileDialog::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_unhandled_input"), &EditorFileDialog::_unhandled_input);
+	ClassDB::bind_method(D_METHOD("_item_list_input"), &EditorFileDialog::_item_list_input);
 
 	ClassDB::bind_method(D_METHOD("_item_selected"), &EditorFileDialog::_item_selected);
 	ClassDB::bind_method(D_METHOD("_multi_selected"), &EditorFileDialog::_multi_selected);
@@ -1634,6 +1634,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	item_list->connect("item_rmb_selected", this, "_item_list_item_rmb_selected");
 	item_list->connect("rmb_clicked", this, "_item_list_rmb_clicked");
+	item_list->connect("gui_input", this, "_item_list_input");
 	item_list->set_allow_rmb_select(true);
 	list_vb->add_child(item_list);
 

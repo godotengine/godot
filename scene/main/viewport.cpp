@@ -2250,9 +2250,9 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 
 			gui.key_event_accepted = false;
 			if (gui.key_focus->can_process()) {
-				gui.key_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, p_event);
-				if (gui.key_focus) //maybe lost it
-					gui.key_focus->emit_signal(SceneStringNames::get_singleton()->gui_input, p_event);
+				gui.key_focus->emit_signal(SceneStringNames::get_singleton()->gui_input, p_event);
+				if (gui.key_focus && !gui.key_event_accepted) //maybe lost it
+					gui.key_focus->call_multilevel(SceneStringNames::get_singleton()->_gui_input, p_event);
 			}
 
 			if (gui.key_event_accepted) {

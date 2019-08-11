@@ -196,7 +196,7 @@ private:
 	void _thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata);
 	void _request_single_thumbnail(const String &p_path);
 
-	void _unhandled_input(const Ref<InputEvent> &p_event);
+	void _item_list_input(const Ref<InputEvent> &p_event);
 
 	bool _is_open_should_be_disabled();
 
