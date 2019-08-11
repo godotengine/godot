@@ -573,6 +573,7 @@ void TextEdit::_notification(int p_what) {
 
 			_update_caches();
 			_update_wrap_at();
+			syntax_highlighting_cache.clear();
 		} break;
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
 			window_has_focus = true;
@@ -3714,6 +3715,15 @@ void TextEdit::_line_edited_from(int p_line) {
 	for (int i = p_line; i < cache_size; i++) {
 		color_region_cache.erase(i);
 	}
+
+	if (syntax_highlighting_cache.size() > 0) {
+		cache_size = syntax_highlighting_cache.back()->key();
+		for (int i = p_line - 1; i < cache_size; i++) {
+			if (syntax_highlighting_cache.has(i)) {
+				syntax_highlighting_cache.erase(i);
+			}
+		}
+	}
 }
 
 int TextEdit::get_char_count() {
@@ -4569,6 +4579,7 @@ void TextEdit::_set_syntax_highlighting(SyntaxHighlighter *p_syntax_highlighter)
 		syntax_highlighter->set_text_editor(this);
 		syntax_highlighter->_update_cache();
 	}
+	syntax_highlighting_cache.clear();
 	update();
 }
 
@@ -4635,6 +4646,7 @@ void TextEdit::clear_colors() {
 	keywords.clear();
 	color_regions.clear();
 	color_region_cache.clear();
+	syntax_highlighting_cache.clear();
 	text.clear_width_cache();
 }
 
@@ -6707,8 +6719,14 @@ TextEdit::~TextEdit() {
 ///////////////////////////////////////////////////////////////////////////////
 
 Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int p_line) {
+	if (syntax_highlighting_cache.has(p_line)) {
+		return syntax_highlighting_cache[p_line];
+	}
+
 	if (syntax_highlighter != NULL) {
-		return syntax_highlighter->_get_line_syntax_highlighting(p_line);
+		Map<int, HighlighterInfo> color_map = syntax_highlighter->_get_line_syntax_highlighting(p_line);
+		syntax_highlighting_cache[p_line] = color_map;
+		return color_map;
 	}
 
 	Map<int, HighlighterInfo> color_map;
@@ -6890,6 +6908,7 @@ Map<int, TextEdit::HighlighterInfo> TextEdit::_get_line_syntax_highlighting(int 
 		}
 	}
 
+	syntax_highlighting_cache[p_line] = color_map;
 	return color_map;
 }
 

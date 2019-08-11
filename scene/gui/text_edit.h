@@ -214,6 +214,7 @@ private:
 	} cache;
 
 	Map<int, int> color_region_cache;
+	Map<int, Map<int, HighlighterInfo> > syntax_highlighting_cache;
 
 	struct TextOperation {
 
