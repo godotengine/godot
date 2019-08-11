@@ -244,7 +244,7 @@ Dictionary GDScriptTextDocument::resolve(const Dictionary &p_params) {
 		item.documentation = symbol->render();
 	}
 
-	if (item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) {
+	if ((item.kind == lsp::CompletionItemKind::Method || item.kind == lsp::CompletionItemKind::Function) && !item.label.ends_with("):")) {
 		item.insertText = item.label + "(";
 		if (symbol && symbol->detail.find(",") == -1) {
 			item.insertText += ")";
