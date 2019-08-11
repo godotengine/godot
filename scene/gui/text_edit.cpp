@@ -367,6 +367,10 @@ void TextEdit::_update_scrollbars() {
 		total_width += cache.fold_gutter_width;
 	}
 
+	if (draw_minimap) {
+		total_width += cache.minimap_width;
+	}
+
 	bool use_hscroll = true;
 	bool use_vscroll = true;
 
@@ -457,6 +461,7 @@ void TextEdit::_click_selection_held() {
 }
 
 void TextEdit::_update_selection_mode_pointer() {
+	dragging_selection = true;
 	Point2 mp = get_local_mouse_position();
 
 	int row, col;
@@ -472,6 +477,7 @@ void TextEdit::_update_selection_mode_pointer() {
 }
 
 void TextEdit::_update_selection_mode_word() {
+	dragging_selection = true;
 	Point2 mp = get_local_mouse_position();
 
 	int row, col;
@@ -528,6 +534,7 @@ void TextEdit::_update_selection_mode_word() {
 }
 
 void TextEdit::_update_selection_mode_line() {
+	dragging_selection = true;
 	Point2 mp = get_local_mouse_position();
 
 	int row, col;
@@ -550,6 +557,30 @@ void TextEdit::_update_selection_mode_line() {
 	update();
 
 	click_select_held->start();
+}
+
+void TextEdit::_update_minimap_scroll() {
+	Point2 mp = get_local_mouse_position();
+
+	int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
+	if (!dragging_minimap && (mp.x < xmargin_end - minimap_width || mp.y > xmargin_end)) {
+		minimap_clicked = false;
+		return;
+	}
+	minimap_clicked = true;
+	dragging_minimap = true;
+
+	int row;
+	_get_minimap_mouse_row(Point2i(mp.x, mp.y), row);
+
+	int wi;
+	int first_line = row - num_lines_from_rows(row, 0, -get_visible_rows() / 2, wi) + 1;
+	double delta = get_scroll_pos_for_line(first_line, wi) - get_v_scroll();
+	if (delta < 0) {
+		_scroll_up(-delta);
+	} else {
+		_scroll_down(delta);
+	}
 }
 
 void TextEdit::_notification(int p_what) {
@@ -589,22 +620,24 @@ void TextEdit::_notification(int p_what) {
 			if (scrolling && get_v_scroll() != target_v_scroll) {
 				double target_y = target_v_scroll - get_v_scroll();
 				double dist = sqrt(target_y * target_y);
-				double vel = ((target_y / dist) * v_scroll_speed) * get_physics_process_delta_time();
+				// To ensure minimap is responsive overide the speed setting.
+				double vel = ((target_y / dist) * ((minimap_clicked) ? 3000 : v_scroll_speed)) * get_physics_process_delta_time();
 
 				if (Math::abs(vel) >= dist) {
 					set_v_scroll(target_v_scroll);
 					scrolling = false;
+					minimap_clicked = false;
 					set_physics_process_internal(false);
 				} else {
 					set_v_scroll(get_v_scroll() + vel);
 				}
 			} else {
 				scrolling = false;
+				minimap_clicked = false;
 				set_physics_process_internal(false);
 			}
 		} break;
 		case NOTIFICATION_DRAW: {
-
 			if (first_draw) {
 				// Size may not be the final one, so attempts to ensure cursor was visible may have failed.
 				adjust_viewport_to_cursor();
@@ -636,6 +669,11 @@ void TextEdit::_notification(int p_what) {
 				cache.fold_gutter_width = 0;
 			}
 
+			cache.minimap_width = 0;
+			if (draw_minimap) {
+				cache.minimap_width = minimap_width;
+			}
+
 			int line_number_char_count = 0;
 
 			{
@@ -659,7 +697,8 @@ void TextEdit::_notification(int p_what) {
 			RID ci = get_canvas_item();
 			VisualServer::get_singleton()->canvas_item_set_clip(get_canvas_item(), true);
 			int xmargin_beg = cache.style_normal->get_margin(MARGIN_LEFT) + cache.line_number_w + cache.breakpoint_gutter_width + cache.fold_gutter_width + cache.info_gutter_width;
-			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT);
+
+			int xmargin_end = size.width - cache.style_normal->get_margin(MARGIN_RIGHT) - cache.minimap_width;
 			// Let's do it easy for now.
 			cache.style_normal->draw(ci, Rect2(Point2(), size));
 			if (readonly) {
@@ -848,9 +887,162 @@ void TextEdit::_notification(int p_what) {
 
 			FontDrawer drawer(cache.font, Color(1, 1, 1));
 
-			int line = get_first_visible_line() - 1;
+			int first_visible_line = get_first_visible_line() - 1;
 			int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
-			draw_amount += times_line_wraps(line + 1);
+			draw_amount += times_line_wraps(first_visible_line + 1);
+
+			// minimap
+			if (draw_minimap) {
+				int minimap_visible_lines = _get_minimap_visible_rows();
+				int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
+				int minimap_tab_size = minimap_char_size.x * indent_size;
+
+				// calculate viewport size and y offset
+				int viewport_height = (draw_amount - 1) * minimap_line_height;
+				int control_height = size.height;
+				control_height -= cache.style_normal->get_minimum_size().height;
+				if (h_scroll->is_visible_in_tree()) {
+					control_height -= h_scroll->get_size().height;
+				}
+				control_height -= viewport_height;
+				int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+
+				// calculate the first line.
+				int num_lines_before = round((viewport_offset_y) / minimap_line_height);
+				int wi;
+				int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_visible_line;
+				if (minimap_line >= 0) {
+					minimap_line -= num_lines_from_rows(first_visible_line, 0, -num_lines_before, wi);
+					minimap_line -= (smooth_scroll_enabled ? 1 : 0);
+				}
+				int minimap_draw_amount = minimap_visible_lines + times_line_wraps(minimap_line + 1);
+
+				// draw the minimap
+				Color viewport_color = cache.current_line_color;
+				viewport_color.a /= 2;
+				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, cache.minimap_width, viewport_height), viewport_color);
+				for (int i = 0; i < minimap_draw_amount; i++) {
+
+					minimap_line++;
+
+					if (minimap_line < 0 || minimap_line >= (int)text.size()) {
+						break;
+					}
+
+					while (is_line_hidden(minimap_line)) {
+						minimap_line++;
+						if (minimap_line < 0 || minimap_line >= (int)text.size()) {
+							break;
+						}
+					}
+
+					Map<int, HighlighterInfo> color_map;
+					if (syntax_coloring) {
+						color_map = _get_line_syntax_highlighting(minimap_line);
+					}
+
+					Color current_color = cache.font_color;
+					if (readonly) {
+						current_color = cache.font_color_readonly;
+					}
+
+					Vector<String> wrap_rows = get_wrap_rows_text(minimap_line);
+					int line_wrap_amount = times_line_wraps(minimap_line);
+					int last_wrap_column = 0;
+
+					for (int line_wrap_index = 0; line_wrap_index < line_wrap_amount + 1; line_wrap_index++) {
+						if (line_wrap_index != 0) {
+							i++;
+							if (i >= minimap_draw_amount)
+								break;
+						}
+
+						const String &str = wrap_rows[line_wrap_index];
+						int indent_px = line_wrap_index != 0 ? get_indent_level(minimap_line) : 0;
+						if (indent_px >= wrap_at) {
+							indent_px = 0;
+						}
+						indent_px = minimap_char_size.x * indent_px;
+
+						if (line_wrap_index > 0) {
+							last_wrap_column += wrap_rows[line_wrap_index - 1].length();
+						}
+
+						if (minimap_line == cursor.line && cursor_wrap_index == line_wrap_index && highlight_current_line) {
+							VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), i * 3, cache.minimap_width, 2), cache.current_line_color);
+						}
+
+						Color previous_color;
+						int characters = 0;
+						int tabs = 0;
+						for (int j = 0; j < str.length(); j++) {
+							if (syntax_coloring) {
+								if (color_map.has(last_wrap_column + j)) {
+									current_color = color_map[last_wrap_column + j].color;
+									if (readonly) {
+										current_color.a = cache.font_color_readonly.a;
+									}
+								}
+								color = current_color;
+							}
+
+							if (j == 0) {
+								previous_color = color;
+							}
+
+							int xpos = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * j)) + tabs;
+							bool out_of_bounds = (xpos >= xmargin_end + cache.minimap_width);
+
+							bool is_whitespace = _is_whitespace(str[j]);
+							if (!is_whitespace) {
+								characters++;
+
+								if (j < str.length() - 1 && color == previous_color && !out_of_bounds) {
+									continue;
+								}
+
+								// If we've changed colour we are at the start of a new section, therefore we need to go back to the end
+								// of the previous section to draw it, we'll also add the character back on.
+								if (color != previous_color) {
+									characters--;
+									j--;
+
+									if (str[j] == '\t') {
+										tabs -= minimap_tab_size;
+									}
+								}
+							}
+
+							if (characters > 0) {
+								previous_color.a *= 0.6;
+								// take one for zero indexing, and if we hit whitespace / the end of a word.
+								int chars = MAX(0, (j - (characters - 1)) - (is_whitespace ? 1 : 0)) + 1;
+								int char_x_ofs = indent_px + ((xmargin_end + minimap_char_size.x) + (minimap_char_size.x * chars)) + tabs;
+								VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(char_x_ofs, minimap_line_height * i), Point2(minimap_char_size.x * characters, minimap_char_size.y)), previous_color);
+							}
+
+							if (out_of_bounds) {
+								break;
+							}
+
+							// re-adjust if we went backwards.
+							if (color != previous_color && !is_whitespace) {
+								characters++;
+							}
+
+							if (str[j] == '\t') {
+								tabs += minimap_tab_size;
+							}
+
+							previous_color = color;
+							characters = 0;
+						}
+					}
+				}
+			}
+
+			// draw main text
+			int line = first_visible_line;
 			for (int i = 0; i < draw_amount; i++) {
 
 				line++;
@@ -1522,7 +1714,6 @@ void TextEdit::_notification(int p_what) {
 				OS::get_singleton()->set_ime_active(true);
 				OS::get_singleton()->set_ime_position(get_global_position() + cursor_pos + Point2(0, get_row_height()));
 			}
-
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
@@ -1863,6 +2054,66 @@ void TextEdit::_get_mouse_pos(const Point2i &p_mouse, int &r_row, int &r_col) co
 	r_col = col;
 }
 
+void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const {
+
+	float rows = p_mouse.y;
+	rows -= cache.style_normal->get_margin(MARGIN_TOP);
+	rows /= (minimap_char_size.y + minimap_line_spacing);
+	rows += get_v_scroll_offset();
+
+	// calculate visible lines
+	int minimap_visible_lines = _get_minimap_visible_rows();
+	int visible_rows = get_visible_rows() + 1;
+	int first_visible_line = get_first_visible_line() - 1;
+	int draw_amount = visible_rows + (smooth_scroll_enabled ? 1 : 0);
+	draw_amount += times_line_wraps(first_visible_line + 1);
+	int minimap_line_height = (minimap_char_size.y + minimap_line_spacing);
+
+	// calculate viewport size and y offset
+	int viewport_height = (draw_amount - 1) * minimap_line_height;
+	int control_height = get_size().height;
+	control_height -= cache.style_normal->get_minimum_size().height;
+	if (h_scroll->is_visible_in_tree()) {
+		control_height -= h_scroll->get_size().height;
+	}
+	control_height -= viewport_height;
+	int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
+
+	// calculate the first line.
+	int num_lines_before = round((viewport_offset_y) / minimap_line_height);
+	int wi;
+	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_visible_line;
+	if (first_visible_line >= 0 && minimap_line >= 0) {
+		minimap_line -= num_lines_from_rows(first_visible_line, 0, -num_lines_before, wi);
+		minimap_line -= (smooth_scroll_enabled ? 1 : 0);
+	} else {
+		minimap_line = 0;
+	}
+
+	int row = minimap_line + Math::floor(rows);
+	int wrap_index = 0;
+
+	if (is_wrap_enabled() || is_hiding_enabled()) {
+
+		int f_ofs = num_lines_from_rows(minimap_line, cursor.wrap_ofs, rows + (1 * SGN(rows)), wrap_index) - 1;
+		if (rows < 0) {
+			row = minimap_line - f_ofs;
+		} else {
+			row = minimap_line + f_ofs;
+		}
+	}
+
+	if (row < 0) {
+		row = 0;
+	}
+
+	if (row >= text.size()) {
+		row = text.size() - 1;
+	}
+
+	r_row = row;
+}
+
 void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 	double prev_v_scroll = v_scroll->get_value();
@@ -1987,6 +2238,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					}
 				}
 
+				// minimap
+				if (draw_minimap) {
+					_update_minimap_scroll();
+					if (dragging_minimap) {
+						return;
+					}
+				}
+
 				int prev_col = cursor.column;
 				int prev_line = cursor.line;
 
@@ -2101,8 +2360,11 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			}
 		} else {
 
-			if (mb->get_button_index() == BUTTON_LEFT)
+			if (mb->get_button_index() == BUTTON_LEFT) {
+				dragging_minimap = false;
+				dragging_selection = false;
 				click_select_held->stop();
+			}
 
 			// Notify to show soft keyboard.
 			notification(NOTIFICATION_FOCUS_ENTER);
@@ -2148,18 +2410,24 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		if (mm->get_button_mask() & BUTTON_MASK_LEFT && get_viewport()->gui_get_drag_data() == Variant()) { // Ignore if dragging.
 			_reset_caret_blink_timer();
 
-			switch (selection.selecting_mode) {
-				case Selection::MODE_POINTER: {
-					_update_selection_mode_pointer();
-				} break;
-				case Selection::MODE_WORD: {
-					_update_selection_mode_word();
-				} break;
-				case Selection::MODE_LINE: {
-					_update_selection_mode_line();
-				} break;
-				default: {
-					break;
+			if (draw_minimap && !dragging_selection) {
+				_update_minimap_scroll();
+			}
+
+			if (!dragging_minimap) {
+				switch (selection.selecting_mode) {
+					case Selection::MODE_POINTER: {
+						_update_selection_mode_pointer();
+					} break;
+					case Selection::MODE_WORD: {
+						_update_selection_mode_word();
+					} break;
+					case Selection::MODE_LINE: {
+						_update_selection_mode_line();
+					} break;
+					default: {
+						break;
+					}
 				}
 			}
 		}
@@ -3344,8 +3612,10 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 void TextEdit::_scroll_up(real_t p_delta) {
 
-	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(-p_delta))
+	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(-p_delta)) {
 		scrolling = false;
+		minimap_clicked = false;
+	}
 
 	if (scrolling) {
 		target_v_scroll = (target_v_scroll - p_delta);
@@ -3370,8 +3640,10 @@ void TextEdit::_scroll_up(real_t p_delta) {
 
 void TextEdit::_scroll_down(real_t p_delta) {
 
-	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(p_delta))
+	if (scrolling && smooth_scroll_enabled && SGN(target_v_scroll - v_scroll->get_value()) != SGN(p_delta)) {
 		scrolling = false;
+		minimap_clicked = false;
+	}
 
 	if (scrolling) {
 		target_v_scroll = (target_v_scroll + p_delta);
@@ -3420,6 +3692,7 @@ void TextEdit::_post_shift_selection() {
 
 void TextEdit::_scroll_lines_up() {
 	scrolling = false;
+	minimap_clicked = false;
 
 	// Adjust the vertical scroll.
 	set_v_scroll(get_v_scroll() - 1);
@@ -3439,6 +3712,7 @@ void TextEdit::_scroll_lines_up() {
 
 void TextEdit::_scroll_lines_down() {
 	scrolling = false;
+	minimap_clicked = false;
 
 	// Adjust the vertical scroll.
 	set_v_scroll(get_v_scroll() + 1);
@@ -3755,6 +4029,15 @@ int TextEdit::get_visible_rows() const {
 	return total;
 }
 
+int TextEdit::_get_minimap_visible_rows() const {
+	int total = get_size().height;
+	total -= cache.style_normal->get_minimum_size().height;
+	if (h_scroll->is_visible_in_tree())
+		total -= h_scroll->get_size().height;
+	total /= (minimap_char_size.y + minimap_line_spacing);
+	return total;
+}
+
 int TextEdit::get_total_visible_rows() const {
 
 	// Returns the total amount of rows we need in the editor.
@@ -3774,7 +4057,7 @@ int TextEdit::get_total_visible_rows() const {
 
 void TextEdit::_update_wrap_at() {
 
-	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - wrap_right_offset;
+	wrap_at = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width - wrap_right_offset;
 	update_cursor_wrap_offset();
 	text.clear_wrap_cache();
 
@@ -3791,6 +4074,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 
 	// Make sure cursor is visible on the screen.
 	scrolling = false;
+	minimap_clicked = false;
 
 	int cur_line = cursor.line;
 	int cur_wrap = get_cursor_wrap_index();
@@ -3808,7 +4092,7 @@ void TextEdit::adjust_viewport_to_cursor() {
 		set_line_as_last_visible(cur_line, cur_wrap);
 	}
 
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree())
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	visible_width -= 20; // Give it a little more space.
@@ -3834,12 +4118,13 @@ void TextEdit::center_viewport_to_cursor() {
 
 	// Move viewport so the cursor is in the center of the screen.
 	scrolling = false;
+	minimap_clicked = false;
 
 	if (is_line_hidden(cursor.line))
 		unfold_line(cursor.line);
 
 	set_line_as_center_visible(cursor.line, get_cursor_wrap_index());
-	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width;
+	int visible_width = get_size().width - cache.style_normal->get_minimum_size().width - cache.line_number_w - cache.breakpoint_gutter_width - cache.fold_gutter_width - cache.info_gutter_width - cache.minimap_width;
 	if (v_scroll->is_visible_in_tree())
 		visible_width -= v_scroll->get_combined_minimum_size().width;
 	visible_width -= 20; // Give it a little more space.
@@ -4122,6 +4407,7 @@ bool TextEdit::is_right_click_moving_caret() const {
 
 void TextEdit::_v_scroll_input() {
 	scrolling = false;
+	minimap_clicked = false;
 }
 
 void TextEdit::_scroll_moved(double p_to_val) {
@@ -4312,6 +4598,11 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 
 		return CURSOR_ARROW;
 	} else {
+		int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
+		if (p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
+			return CURSOR_ARROW;
+		}
+
 		int row, col;
 		_get_mouse_pos(p_pos, row, col);
 		// EOL fold icon.
@@ -6342,6 +6633,24 @@ int TextEdit::get_info_gutter_width() const {
 	return info_gutter_width;
 }
 
+void TextEdit::set_draw_minimap(bool p_draw) {
+	draw_minimap = p_draw;
+	update();
+}
+
+bool TextEdit::is_drawing_minimap() const {
+	return draw_minimap;
+}
+
+void TextEdit::set_minimap_width(int p_minimap_width) {
+	minimap_width = p_minimap_width;
+	update();
+}
+
+int TextEdit::get_minimap_width() const {
+	return minimap_width;
+}
+
 void TextEdit::set_hiding_enabled(bool p_enabled) {
 	if (!p_enabled)
 		unhide_all_lines();
@@ -6546,6 +6855,11 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_breakpoints"), &TextEdit::get_breakpoints_array);
 	ClassDB::bind_method(D_METHOD("remove_breakpoints"), &TextEdit::remove_breakpoints);
 
+	ClassDB::bind_method(D_METHOD("draw_minimap", "draw"), &TextEdit::set_draw_minimap);
+	ClassDB::bind_method(D_METHOD("is_drawing_minimap"), &TextEdit::is_drawing_minimap);
+	ClassDB::bind_method(D_METHOD("set_minimap_width", "width"), &TextEdit::set_minimap_width);
+	ClassDB::bind_method(D_METHOD("get_minimap_width"), &TextEdit::get_minimap_width);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_MULTILINE_TEXT), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "readonly"), "set_readonly", "is_readonly");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_current_line"), "set_highlight_current_line", "is_highlight_current_line_enabled");
@@ -6562,6 +6876,10 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "wrap_enabled"), "set_wrap_enabled", "is_wrap_enabled");
+
+	ADD_GROUP("Minimap", "minimap_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "minimap_draw"), "draw_minimap", "is_drawing_minimap");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "minimap_width"), "set_minimap_width", "get_minimap_width");
 
 	ADD_GROUP("Caret", "caret_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "caret_block_mode"), "cursor_set_block_mode", "cursor_is_block_mode");
@@ -6699,8 +7017,15 @@ TextEdit::TextEdit() {
 	select_identifiers_enabled = false;
 	smooth_scroll_enabled = false;
 	scrolling = false;
+	minimap_clicked = false;
+	dragging_minimap = false;
+	dragging_selection = false;
 	target_v_scroll = 0;
 	v_scroll_speed = 80;
+	draw_minimap = false;
+	minimap_width = 80;
+	minimap_char_size = Point2(1, 2);
+	minimap_line_spacing = 1;
 
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
