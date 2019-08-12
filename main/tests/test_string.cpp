@@ -432,6 +432,10 @@ bool test_26() {
 
 	OS::get_singleton()->print("\n\nTest 26: RegEx substitution\n");
 
+#ifndef MODULE_REGEX_ENABLED
+	OS::get_singleton()->print("\tRegEx module disabled, can't run test.");
+	return false;
+#else
 	String s = "Double all the vowels.";
 
 	OS::get_singleton()->print("\tString: %ls\n", s.c_str());
@@ -443,6 +447,7 @@ bool test_26() {
 	OS::get_singleton()->print("\tResult: %ls\n", s.c_str());
 
 	return (s == "Doouublee aall thee vooweels.");
+#endif
 }
 
 struct test_27_data {
