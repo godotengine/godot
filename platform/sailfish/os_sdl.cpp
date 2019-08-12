@@ -136,7 +136,11 @@ Error OS_SDL::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 //#if defined(OPENGL_ENABLED)
 
 	context_gl = memnew(ContextGL_SDL(sdl_display_mode, current_videomode, true));
-	context_gl->initialize();
+	if( context_gl->initialize() == FAILED )
+	{
+		memdelete(context_gl);
+		return FAILED;
+	}
 	context_gl->set_screen_orientation(get_screen_orientation());
 	sdl_window = context_gl->get_window_pointer();
 

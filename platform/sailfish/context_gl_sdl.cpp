@@ -84,6 +84,11 @@ struct ContextGL_SDL_Private {
 
 /// 
 
+#define print_verbose(x) \
+	if(OS::get_singleton()->is_stdout_verbose()) {\
+		OS::get_singleton()->print(x);\
+	}
+
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /// Wayland Output Listener (for listen when device change orientation) 
 static void
@@ -196,22 +201,24 @@ void ContextGL_SDL::swap_buffers() {
 }
 
 Error ContextGL_SDL::initialize() {
+	print_verbose("Begin SDL2 initialization\n");
+
+	//  if (opengl_3_context == true) {
+	//  	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
+	//  	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
+	//  } else {
+		// Try OpenGL ES 2.0
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY);
+	SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
+	//  }
 	SDL_GL_SetAttribute(SDL_GL_RED_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_GREEN_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 8);
 	SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, 1);
 
-	 if (opengl_3_context == true) {
-	 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 3);
-	 	SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 3);
-	 } else {
-		// Try OpenGL ES 2.0
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MAJOR_VERSION, 2);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_MINOR_VERSION, 0);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_ES);
-		SDL_GL_SetAttribute(SDL_GL_CONTEXT_FLAGS, SDL_GL_CONTEXT_FORWARD_COMPATIBLE_FLAG);
-	 }
 	SDL_DisplayMode dm;
 	OS::get_singleton()->print("Get display mode\n");
 	SDL_GetCurrentDisplayMode(0, &dm);
@@ -233,6 +240,7 @@ Error ContextGL_SDL::initialize() {
 	if(p->gl_context == NULL) {
 		ERR_EXPLAIN("Could not obtain an OpenGL ES 2.0 context!");
 		ERR_FAIL_COND_V(p->gl_context == NULL, ERR_UNCONFIGURED);
+		return FAILED;
 	}
 	//sdl_window.
 
