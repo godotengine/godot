@@ -547,6 +547,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->connect("item_edited", this, "_on_item_edited");
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);
+	_results_display->set_allow_rmb_select(true);
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 
