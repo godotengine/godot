@@ -69,6 +69,9 @@ void ExportTemplateManager::_update_template_list() {
 	memdelete(d);
 
 	String current_version = VERSION_FULL_CONFIG;
+	// Downloadable export templates are only available for stable, alpha, beta and RC versions.
+	// Therefore, don't display download-related features when using a development version
+	const bool downloads_available = String(VERSION_STATUS) != String("dev");
 
 	Label *current = memnew(Label);
 	current->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -76,10 +79,14 @@ void ExportTemplateManager::_update_template_list() {
 
 	if (templates.has(current_version)) {
 		current->add_color_override("font_color", get_color("success_color", "Editor"));
-		Button *redownload = memnew(Button);
-		redownload->set_text(TTR("Re-Download"));
-		current_hb->add_child(redownload);
-		redownload->connect("pressed", this, "_download_template", varray(current_version));
+
+		// Only display a redownload button if it can be downloaded in the first place
+		if (downloads_available) {
+			Button *redownload = memnew(Button);
+			redownload->set_text(TTR("Redownload"));
+			current_hb->add_child(redownload);
+			redownload->connect("pressed", this, "_download_template", varray(current_version));
+		}
 
 		Button *uninstall = memnew(Button);
 		uninstall->set_text(TTR("Uninstall"));
@@ -91,6 +98,12 @@ void ExportTemplateManager::_update_template_list() {
 		current->add_color_override("font_color", get_color("error_color", "Editor"));
 		Button *redownload = memnew(Button);
 		redownload->set_text(TTR("Download"));
+
+		if (!downloads_available) {
+			redownload->set_disabled(true);
+			redownload->set_tooltip(TTR("Official export templates aren't available for development builds."));
+		}
+
 		redownload->connect("pressed", this, "_download_template", varray(current_version));
 		current_hb->add_child(redownload);
 		current->set_text(current_version + " " + TTR("(Missing)"));
