@@ -29,9 +29,11 @@
 /*************************************************************************/
 
 #include "export.h"
+
 #include "core/io/marshalls.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -244,13 +246,17 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 		copy->resize(icon_infos[i].size, icon_infos[i].size);
 
 		if (icon_infos[i].is_png) {
-			//encode png icon
+			// Encode PNG icon.
 			it->create_from_image(copy);
 			String path = EditorSettings::get_singleton()->get_cache_dir().plus_file("icon.png");
 			ResourceSaver::save(path, it);
 
 			FileAccess *f = FileAccess::open(path, FileAccess::READ);
-			ERR_FAIL_COND(!f);
+			if (!f) {
+				// Clean up generated file.
+				DirAccess::remove_file_or_error(path);
+				ERR_FAIL();
+			}
 
 			int ofs = data.size();
 			uint32_t len = f->get_len();
@@ -261,6 +267,10 @@ void EditorExportPlatformOSX::_make_icon(const Ref<Image> &p_icon, Vector<uint8_
 			len = BSWAP32(len);
 			copymem(&data.write[ofs], icon_infos[i].name, 4);
 			encode_uint32(len, &data.write[ofs + 4]);
+
+			// Clean up generated file.
+			DirAccess::remove_file_or_error(path);
+
 		} else {
 			PoolVector<uint8_t> src_data = copy->get_data();
 
@@ -561,7 +571,6 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					}
 				}
 			}
-			//bleh?
 		}
 
 		if (data.size() > 0) {
@@ -687,7 +696,8 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 
 			// Clean up temporary .app dir
 			OS::get_singleton()->move_to_trash(tmp_app_path_name);
-		} else {
+
+		} else { // pck
 
 			String pack_path = EditorSettings::get_singleton()->get_cache_dir().plus_file(pkg_name + ".pck");
 
@@ -747,6 +757,9 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 					zipCloseFileInZip(dst_pkg_zip);
 				}
 			}
+
+			// Clean up generated file.
+			DirAccess::remove_file_or_error(pack_path);
 		}
 	}
 

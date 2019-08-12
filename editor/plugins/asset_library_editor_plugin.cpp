@@ -354,16 +354,16 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
 			error_text = TTR("Request failed, return code:") + " " + itos(p_code);
-			status->set_text(TTR("Request Failed."));
+			status->set_text(TTR("Request failed."));
 		} break;
 		case HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN:
 		case HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR: {
-			error_text = TTR("Cannot save response to") + " " + download->get_download_file();
+			error_text = TTR("Cannot save response to:") + " " + download->get_download_file();
 			status->set_text(TTR("Write error."));
 		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
 			error_text = TTR("Request failed, too many redirects");
-			status->set_text(TTR("Redirect Loop."));
+			status->set_text(TTR("Redirect loop."));
 		} break;
 		case HTTPRequest::RESULT_TIMEOUT: {
 			error_text = TTR("Request failed, timeout");
@@ -472,9 +472,8 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 }
 void EditorAssetLibraryItemDownload::_close() {
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->remove(download->get_download_file()); //clean up removed file
-	memdelete(da);
+	// Clean up downloaded file.
+	DirAccess::remove_file_or_error(download->get_download_file());
 	queue_delete();
 }
 

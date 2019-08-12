@@ -32,6 +32,7 @@
 
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
@@ -1398,8 +1399,9 @@ public:
 			return ERR_UNCONFIGURED;
 		}
 
-		//export_temp
+		// Export_temp APK.
 		if (ep.step("Exporting APK", 0)) {
+			device_lock->unlock();
 			return ERR_SKIP;
 		}
 
@@ -1409,11 +1411,20 @@ public:
 		if (use_reverse)
 			p_debug_flags |= DEBUG_FLAG_REMOTE_DEBUG_LOCALHOST;
 
-		String export_to = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport.apk");
-		Error err = export_project(p_preset, true, export_to, p_debug_flags);
-		if (err) {
-			device_lock->unlock();
-			return err;
+		String tmp_export_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport.apk");
+
+#define CLEANUP_AND_RETURN(m_err)                         \
+	{                                                     \
+		DirAccess::remove_file_or_error(tmp_export_path); \
+		device_lock->unlock();                            \
+		return m_err;                                     \
+	}
+
+		// Export to temporary APK before sending to device.
+		Error err = export_project(p_preset, true, tmp_export_path, p_debug_flags);
+
+		if (err != OK) {
+			CLEANUP_AND_RETURN(err);
 		}
 
 		List<String> args;
@@ -1425,7 +1436,7 @@ public:
 
 		if (remove_prev) {
 			if (ep.step("Uninstalling...", 1)) {
-				return ERR_SKIP;
+				CLEANUP_AND_RETURN(ERR_SKIP);
 			}
 
 			print_line("Uninstalling previous version: " + devices[p_device].name);
@@ -1440,7 +1451,7 @@ public:
 
 		print_line("Installing to device (please wait...): " + devices[p_device].name);
 		if (ep.step("Installing to device (please wait...)", 2)) {
-			return ERR_SKIP;
+			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 
 		args.clear();
@@ -1448,13 +1459,12 @@ public:
 		args.push_back(devices[p_device].id);
 		args.push_back("install");
 		args.push_back("-r");
-		args.push_back(export_to);
+		args.push_back(tmp_export_path);
 
 		err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not install to device.");
-			device_lock->unlock();
-			return ERR_CANT_CREATE;
+			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 		}
 
 		if (use_remote) {
@@ -1508,7 +1518,7 @@ public:
 		}
 
 		if (ep.step("Running on Device...", 3)) {
-			return ERR_SKIP;
+			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 		args.clear();
 		args.push_back("-s");
@@ -1528,11 +1538,11 @@ public:
 		err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 		if (err || rv != 0) {
 			EditorNode::add_io_error("Could not execute on device.");
-			device_lock->unlock();
-			return ERR_CANT_CREATE;
+			CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 		}
-		device_lock->unlock();
-		return OK;
+
+		CLEANUP_AND_RETURN(OK);
+#undef CLEANUP_AND_RETURN
 	}
 
 	virtual Ref<Texture> get_run_icon() const {
@@ -2023,8 +2033,16 @@ public:
 		zlib_filefunc_def io2 = io;
 		FileAccess *dst_f = NULL;
 		io2.opaque = &dst_f;
-		String unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned.apk");
-		zipFile unaligned_apk = zipOpen2(unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
+
+		String tmp_unaligned_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpexport-unaligned.apk");
+
+#define CLEANUP_AND_RETURN(m_err)                            \
+	{                                                        \
+		DirAccess::remove_file_or_error(tmp_unaligned_path); \
+		return m_err;                                        \
+	}
+
+		zipFile unaligned_apk = zipOpen2(tmp_unaligned_path.utf8().get_data(), APPEND_STATUS_CREATE, NULL, &io2);
 
 		bool use_32_fb = p_preset->get("graphics/32_bits_framebuffer");
 		bool immersive = p_preset->get("screen/immersive_mode");
@@ -2152,7 +2170,7 @@ public:
 		}
 
 		if (ep.step("Adding Files...", 1)) {
-			return ERR_SKIP;
+			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 		Error err = OK;
 		Vector<String> cl = cmdline.strip_edges().split(" ");
@@ -2184,7 +2202,7 @@ public:
 					unzClose(pkg);
 					EditorNode::add_io_error("Could not write expansion package file: " + apkfname);
 
-					return OK;
+					CLEANUP_AND_RETURN(ERR_SKIP);
 				}
 
 				cl.push_back("--use_apk_expansion");
@@ -2271,8 +2289,8 @@ public:
 		zipClose(unaligned_apk, NULL);
 		unzClose(pkg);
 
-		if (err) {
-			return err;
+		if (err != OK) {
+			CLEANUP_AND_RETURN(err);
 		}
 
 		if (_signed) {
@@ -2280,7 +2298,7 @@ public:
 			String jarsigner = EditorSettings::get_singleton()->get("export/android/jarsigner");
 			if (!FileAccess::exists(jarsigner)) {
 				EditorNode::add_io_error("'jarsigner' could not be found.\nPlease supply a path in the Editor Settings.\nThe resulting APK is unsigned.");
-				return OK;
+				CLEANUP_AND_RETURN(OK);
 			}
 
 			String keystore;
@@ -2300,7 +2318,7 @@ public:
 				}
 
 				if (ep.step("Signing debug APK...", 103)) {
-					return ERR_SKIP;
+					CLEANUP_AND_RETURN(ERR_SKIP);
 				}
 
 			} else {
@@ -2309,13 +2327,13 @@ public:
 				user = release_username;
 
 				if (ep.step("Signing release APK...", 103)) {
-					return ERR_SKIP;
+					CLEANUP_AND_RETURN(ERR_SKIP);
 				}
 			}
 
 			if (!FileAccess::exists(keystore)) {
 				EditorNode::add_io_error("Could not find keystore, unable to export.");
-				return ERR_FILE_CANT_OPEN;
+				CLEANUP_AND_RETURN(ERR_FILE_CANT_OPEN);
 			}
 
 			List<String> args;
@@ -2333,30 +2351,30 @@ public:
 			args.push_back(keystore);
 			args.push_back("-storepass");
 			args.push_back(password);
-			args.push_back(unaligned_path);
+			args.push_back(tmp_unaligned_path);
 			args.push_back(user);
 			int retval;
 			OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
 			if (retval) {
 				EditorNode::add_io_error("'jarsigner' returned with error #" + itos(retval));
-				return ERR_CANT_CREATE;
+				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 			}
 
 			if (ep.step("Verifying APK...", 104)) {
-				return ERR_SKIP;
+				CLEANUP_AND_RETURN(ERR_SKIP);
 			}
 
 			args.clear();
 			args.push_back("-verify");
 			args.push_back("-keystore");
 			args.push_back(keystore);
-			args.push_back(unaligned_path);
+			args.push_back(tmp_unaligned_path);
 			args.push_back("-verbose");
 
 			OS::get_singleton()->execute(jarsigner, args, true, NULL, NULL, &retval);
 			if (retval) {
 				EditorNode::add_io_error("'jarsigner' verification of APK failed. Make sure to use a jarsigner from OpenJDK 8.");
-				return ERR_CANT_CREATE;
+				CLEANUP_AND_RETURN(ERR_CANT_CREATE);
 			}
 		}
 
@@ -2365,14 +2383,14 @@ public:
 		static const int ZIP_ALIGNMENT = 4;
 
 		if (ep.step("Aligning APK...", 105)) {
-			return ERR_SKIP;
+			CLEANUP_AND_RETURN(ERR_SKIP);
 		}
 
-		unzFile tmp_unaligned = unzOpen2(unaligned_path.utf8().get_data(), &io);
+		unzFile tmp_unaligned = unzOpen2(tmp_unaligned_path.utf8().get_data(), &io);
 		if (!tmp_unaligned) {
 
-			EditorNode::add_io_error("Could not find temp unaligned APK.");
-			return ERR_FILE_NOT_FOUND;
+			EditorNode::add_io_error("Could not unzip temporary unaligned APK.");
+			CLEANUP_AND_RETURN(ERR_FILE_NOT_FOUND);
 		}
 
 		ret = unzGoToFirstFile(tmp_unaligned);
@@ -2442,7 +2460,7 @@ public:
 		zipClose(final_apk, NULL);
 		unzClose(tmp_unaligned);
 
-		return OK;
+		CLEANUP_AND_RETURN(OK);
 	}
 
 	virtual void get_platform_features(List<String> *r_features) {

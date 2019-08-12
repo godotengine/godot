@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
 #include "editor_settings.h"
@@ -52,57 +53,75 @@ static void _compress_image(Image::CompressMode p_mode, Image *p_image) {
 					_base_image_compress_pvrtc2_func(p_image);
 				else if (_base_image_compress_pvrtc4_func)
 					_base_image_compress_pvrtc4_func(p_image);
-
 				break;
 			case Image::COMPRESS_PVRTC4:
 				if (_base_image_compress_pvrtc4_func)
 					_base_image_compress_pvrtc4_func(p_image);
-
 				break;
-			default: ERR_FAIL();
+			default:
+				ERR_FAIL_MSG("Unsupported Image compress mode used in PVRTC module.");
 		}
 		return;
 	}
+
 	String tmppath = EditorSettings::get_singleton()->get_cache_dir();
-
-	List<String> args;
-
 	String src_img = tmppath.plus_file("_tmp_src_img.png");
 	String dst_img = tmppath.plus_file("_tmp_dst_img.pvr");
 
+	List<String> args;
 	args.push_back("-i");
 	args.push_back(src_img);
 	args.push_back("-o");
 	args.push_back(dst_img);
 	args.push_back("-f");
-	switch (p_mode) {
 
-		case Image::COMPRESS_PVRTC2: args.push_back("PVRTC2"); break;
-		case Image::COMPRESS_PVRTC4: args.push_back("PVRTC4"); break;
-		case Image::COMPRESS_ETC: args.push_back("ETC"); break;
-		default: ERR_FAIL();
+	switch (p_mode) {
+		case Image::COMPRESS_PVRTC2:
+			args.push_back("PVRTC2");
+			break;
+		case Image::COMPRESS_PVRTC4:
+			args.push_back("PVRTC4");
+			break;
+		case Image::COMPRESS_ETC:
+			args.push_back("ETC");
+			break;
+		default:
+			ERR_FAIL_MSG("Unsupported Image compress mode used in PVRTC module.");
 	}
 
 	if (EditorSettings::get_singleton()->get("filesystem/import/pvrtc_fast_conversion").operator bool()) {
 		args.push_back("-pvrtcfast");
 	}
-	if (p_image->has_mipmaps())
+	if (p_image->has_mipmaps()) {
 		args.push_back("-m");
+	}
 
+	// Save source PNG.
 	Ref<ImageTexture> t = memnew(ImageTexture);
 	t->create_from_image(Ref<Image>(p_image), 0);
 	ResourceSaver::save(src_img, t);
 
 	Error err = OS::get_singleton()->execute(ttpath, args, true);
-	ERR_EXPLAIN(TTR("Could not execute PVRTC tool:") + " " + ttpath);
-	ERR_FAIL_COND(err != OK);
+	if (err != OK) {
+		// Clean up generated files.
+		DirAccess::remove_file_or_error(src_img);
+		DirAccess::remove_file_or_error(dst_img);
+		ERR_FAIL_MSG("Could not execute PVRTC tool: " + ttpath);
+	}
 
 	t = ResourceLoader::load(dst_img, "Texture");
-
-	ERR_EXPLAIN(TTR("Can't load back converted image using PVRTC tool:") + " " + dst_img);
-	ERR_FAIL_COND(t.is_null());
+	if (t.is_null()) {
+		// Clean up generated files.
+		DirAccess::remove_file_or_error(src_img);
+		DirAccess::remove_file_or_error(dst_img);
+		ERR_FAIL_MSG("Can't load back converted image using PVRTC tool.");
+	}
 
 	p_image->copy_internals_from(t->get_data());
+
+	// Clean up generated files.
+	DirAccess::remove_file_or_error(src_img);
+	DirAccess::remove_file_or_error(dst_img);
 }
 
 static void _compress_pvrtc2(Image *p_image) {

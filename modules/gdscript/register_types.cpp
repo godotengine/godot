@@ -32,6 +32,7 @@
 
 #include "core/io/file_access_encrypted.h"
 #include "core/io/resource_loader.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "editor/gdscript_highlighter.h"
 #include "gdscript.h"
@@ -116,6 +117,9 @@ public:
 
 				file = FileAccess::get_file_as_array(tmp_path);
 				add_file(p_path.get_basename() + ".gde", file, true);
+
+				// Clean up temporary file.
+				DirAccess::remove_file_or_error(tmp_path);
 
 			} else {
 
