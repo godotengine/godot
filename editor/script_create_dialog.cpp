@@ -44,6 +44,23 @@ void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				String lang = ScriptServer::get_language(i)->get_name();
+				Ref<Texture> lang_icon = get_icon(lang, "EditorIcons");
+				if (lang_icon.is_valid()) {
+					language_menu->set_item_icon(i, lang_icon);
+				}
+			}
+			String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
+			Ref<Texture> last_lang_icon;
+			if (!last_lang.empty()) {
+				last_lang_icon = get_icon(last_lang, "EditorIcons");
+			} else {
+				last_lang_icon = language_menu->get_item_icon(default_language);
+			}
+			if (last_lang_icon.is_valid()) {
+				language_menu->set_icon(last_lang_icon);
+			}
 			path_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_browse_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_search_button->set_icon(get_icon("ClassList", "EditorIcons"));
@@ -671,13 +688,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(l);
 	gc->add_child(language_menu);
 
-	int default_lang = 0;
+	default_language = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 
 		String lang = ScriptServer::get_language(i)->get_name();
 		language_menu->add_item(lang);
 		if (lang == "GDScript") {
-			default_lang = i;
+			default_language = i;
 		}
 	}
 
@@ -691,8 +708,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			}
 		}
 	} else {
-		language_menu->select(default_lang);
-		current_language = default_lang;
+		language_menu->select(default_language);
+		current_language = default_language;
 	}
 
 	language_menu->connect("item_selected", this, "_lang_changed");

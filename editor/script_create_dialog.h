@@ -76,6 +76,7 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_built_in;
 	bool built_in_enabled;
 	int current_language;
+	int default_language;
 	bool re_check_path;
 	String script_template;
 	Vector<String> template_list;
