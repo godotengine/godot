@@ -631,14 +631,12 @@ ThemeEditor::ThemeEditor() {
 
 	scroll = memnew(ScrollContainer);
 	add_child(scroll);
-	scroll->set_theme(Theme::get_default());
 	scroll->set_enable_v_scroll(true);
 	scroll->set_enable_h_scroll(false);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	main_container = memnew(MarginContainer);
 	scroll->add_child(main_container);
-	main_container->set_theme(Theme::get_default());
 	main_container->set_clip_contents(true);
 	main_container->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
 	main_container->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -648,9 +646,11 @@ ThemeEditor::ThemeEditor() {
 
 	Panel *panel = memnew(Panel);
 	main_container->add_child(panel);
+	panel->set_theme(Theme::get_default());
 
 	MarginContainer *mc = memnew(MarginContainer);
 	main_container->add_child(mc);
+	mc->set_theme(Theme::get_default());
 	mc->add_constant_override("margin_right", 4 * EDSCALE);
 	mc->add_constant_override("margin_top", 4 * EDSCALE);
 	mc->add_constant_override("margin_left", 4 * EDSCALE);
@@ -695,19 +695,19 @@ ThemeEditor::ThemeEditor() {
 	test_menu_button->get_popup()->add_separator();
 	test_menu_button->get_popup()->add_check_item(TTR("Check Item"));
 	test_menu_button->get_popup()->add_check_item(TTR("Checked Item"));
-	test_menu_button->get_popup()->set_item_checked(3, true);
+	test_menu_button->get_popup()->set_item_checked(4, true);
 	test_menu_button->get_popup()->add_separator();
 	test_menu_button->get_popup()->add_radio_check_item(TTR("Radio Item"));
 	test_menu_button->get_popup()->add_radio_check_item(TTR("Checked Radio Item"));
-	test_menu_button->get_popup()->set_item_checked(6, true);
+	test_menu_button->get_popup()->set_item_checked(7, true);
 	test_menu_button->get_popup()->add_separator(TTR("Named Sep."));
 
 	PopupMenu *test_submenu = memnew(PopupMenu);
 	test_menu_button->get_popup()->add_child(test_submenu);
 	test_submenu->set_name("submenu");
 	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "submenu");
-	test_submenu->add_item(TTR("Item 1"));
-	test_submenu->add_item(TTR("Item 2"));
+	test_submenu->add_item(TTR("Subitem 1"));
+	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);
 
 	OptionButton *test_option_button = memnew(OptionButton);
