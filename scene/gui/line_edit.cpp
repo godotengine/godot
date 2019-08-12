@@ -1368,18 +1368,28 @@ void LineEdit::set_editable(bool p_editable) {
 
 	// Reorganize context menu.
 	menu->clear();
-	if (editable)
-		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
-	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
-	if (editable)
-		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
-	menu->add_separator();
-	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
 	if (editable) {
-		menu->add_item(RTR("Clear"), MENU_CLEAR);
-		menu->add_separator();
 		menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
 		menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
+	}
+
+	if (editable) {
+		menu->add_separator();
+		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
+	}
+
+	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
+
+	if (editable) {
+		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
+	}
+
+	menu->add_separator();
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
+	if (editable) {
+		menu->add_item(RTR("Clear"), MENU_CLEAR);
 	}
 
 	update();
