@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSetEditor" inherits="Object" category="Core" version="3.2">
+	<brief_description>
+		Context for [TileSetEditor].
+	</brief_description>
+	<description>
+		The context for the editor for creating and editing tilesets in [TileSetEditor]. Most of the functionality of this class is accessed through [TileSetEditorPlugin]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+    <method name="_hide_script_from_inspector">
+			<return type="bool">
+			</return>
+			<description>
+				Only returns true.
+			</description>
+		</method>
+    <method name="set_tileset">
+      <return type="void">
+      </return>
+      <argument index="0" name="p_tileset" type="TileSet">
+      </argument>
+      <description>
+        Sets the editor's current tileset.
+      </description>
+    </method>
+	</methods>
+  <signals>
+  </signals>
+	<constants>
+	</constants>
+</class>

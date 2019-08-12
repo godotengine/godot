@@ -1,0 +1,86 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSetEditor" inherits="EditorPlugin" category="Core" version="3.2">
+	<brief_description>
+		Editor for tilesets.
+	</brief_description>
+	<description>
+		This class is the main access point for most of the functionality for [TileSetEditor].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+    <method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the string "TileSet".
+			</description>
+		</method>
+    <method name="has_main_screen" qualifiers="const">
+			<return type="bool">
+			</return>
+			<description>
+				Returns false.
+			</description>
+		</method>
+    <method name="edit">
+			<return type="void">
+			</return>
+      <argument index="0" name="p_node" type="Object">
+			</argument>
+			<description>
+        Sets the [code]p_tileset[/code] to the [TileSet] to be edited.
+			</description>
+		</method>
+    <method name="handles" qualifiers="const">
+			<return type="bool">
+			</return>
+      <argument index="0" name="p_node" type="Object">
+			</argument>
+			<description>
+        Returns [code]true[/code] if [code]p_node[/code] is of type [TileSet] or [TileSetEditorContext].
+			</description>
+		</method>
+    <method name="make_visible">
+			<return type="void">
+			</return>
+      <argument index="0" name="p_visible" type="bool">
+			</argument>
+			<description>
+        Toggles ([code]true[/code]/[code]false[/code]) the visibility of the bottom panel of the [TileSetEditor].
+			</description>
+		</method>
+    <method name="set_state">
+      <return type="void">
+      </return>
+      <argument index="0" name="p_node" type="Dictionary">
+      </argument>
+      <description>
+        Sets the state with a dictionary passed by [code]p_node[/code]. Currently sets the following values:
+        state["snap_step"]
+        state["snap_offset"]
+        state["snap_separation"]
+        state["snap_enabled"]
+        state["keep_inside_tile"]
+        state["show_information"]
+      </description>
+    </method>
+    <method name="get_state" type="void" qualifiers="const">
+      <return type="Dictionary">
+      </return>
+      <description>
+        Returns the state as a dictionary with the following values:
+        state["snap_step"]
+        state["snap_offset"]
+        state["snap_separation"]
+        state["snap_enabled"]
+        state["keep_inside_tile"]
+        state["show_information"]
+      </description>
+    </method>
+	</methods>
+  <signals>
+  </signals>
+	<constants>
+	</constants>
+</class>

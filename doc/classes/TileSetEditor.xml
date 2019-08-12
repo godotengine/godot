@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="TileSetEditor" inherits="HSplitContainer" category="Core" version="3.2">
+	<brief_description>
+		Editor for tilesets.
+	</brief_description>
+	<description>
+		An editor for creating and editing tilesets, including using autotile. Most of the functionality of this class is accessable through [TileSetEditorPlugin].
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+    <method name="edit">
+			<return type="void">
+			</return>
+      <argument index="0" name="p_tileset" type="TileSet">
+      </argument>
+			<description>
+        Sets the [code]p_tileset[/code] to the [TileSet] to be edited.
+			</description>
+		</method>
+    <method name="update_library_file">
+      <return type="Error">
+      </return>
+      <argument index="0" name="p_base_scene" type="Node">
+      </argument>
+      <argument index="1" name="ml" type="TileSet">
+      </argument>
+      <argument index="2" name="p_merge" type="bool" default="true">
+      </argument>
+      <description>
+        Updates the current scene with the tileset passed to [code]ml[/code].
+        If [code]p_merge[/code] is set to true (default) [code]ml[/code] is cleared ([code]p_library->clear()[/code] is called).
+      </description>
+    </method>
+	</methods>
+  <signals>
+  </signals>
+	<constants>
+	</constants>
+</class>
