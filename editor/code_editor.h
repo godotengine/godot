@@ -93,7 +93,7 @@ class FindReplaceBar : public HBoxContainer {
 	void _update_results_count();
 	void _update_matches_label();
 
-	void _show_search();
+	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
 	void _hide_bar();
 
 	void _editor_text_changed();
@@ -125,7 +125,7 @@ public:
 
 	void set_text_edit(TextEdit *p_text_edit);
 
-	void popup_search();
+	void popup_search(bool p_show_only = false);
 	void popup_replace();
 
 	bool search_current();
