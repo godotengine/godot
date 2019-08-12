@@ -3126,6 +3126,11 @@ void CanvasItemEditor::_draw_hover() {
 
 		previous_rects.push_back(Rect2(pos, item_size));
 
+		// Adjust position to center icon and name
+		Size2 text_size = font->get_string_size(node_name);
+		text_size.x += node_icon->get_size().x + 4;
+		pos += Vector2(-text_size.x / 2, 0);
+
 		// Draw icon
 		viewport->draw_texture(node_icon, pos, Color(1.0, 1.0, 1.0, 0.5));
 
