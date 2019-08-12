@@ -4450,18 +4450,28 @@ void TextEdit::set_readonly(bool p_readonly) {
 
 	// Reorganize context menu.
 	menu->clear();
-	if (!readonly)
-		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
-	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
-	if (!readonly)
-		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
-	menu->add_separator();
-	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
 	if (!readonly) {
-		menu->add_item(RTR("Clear"), MENU_CLEAR);
-		menu->add_separator();
 		menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
 		menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
+	}
+
+	if (!readonly) {
+		menu->add_separator();
+		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
+	}
+
+	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
+
+	if (!readonly) {
+		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
+	}
+
+	menu->add_separator();
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
+	if (!readonly) {
+		menu->add_item(RTR("Clear"), MENU_CLEAR);
 	}
 
 	update();
@@ -6592,8 +6602,6 @@ TextEdit::TextEdit() {
 	indent_size = 4;
 	text.set_indent_size(indent_size);
 	text.clear();
-	//text.insert(1,"Mongolia...");
-	//text.insert(2,"PAIS GENEROSO!!");
 	text.set_color_regions(&color_regions);
 
 	h_scroll = memnew(HScrollBar);
