@@ -1121,13 +1121,23 @@ bool RasterizerSceneGLES3::_setup_material(RasterizerStorageGLES3::Material *p_m
 
 	if (state.current_depth_draw != p_material->shader->spatial.depth_draw_mode) {
 		switch (p_material->shader->spatial.depth_draw_mode) {
-			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS:
+			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS: {
+				glDepthMask(GL_TRUE);
+				// If some transparent objects write to depth, we need to re-copy depth texture when we need it
+				if (p_alpha_pass && !state.used_depth_prepass) {
+					state.prepared_depth_texture = false;
+				}
+			} break;
 			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_OPAQUE: {
 
 				glDepthMask(!p_alpha_pass);
 			} break;
 			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_ALWAYS: {
 				glDepthMask(GL_TRUE);
+				// If some transparent objects write to depth, we need to re-copy depth texture when we need it
+				if (p_alpha_pass) {
+					state.prepared_depth_texture = false;
+				}
 			} break;
 			case RasterizerStorageGLES3::Shader::Spatial::DEPTH_DRAW_NEVER: {
 				glDepthMask(GL_FALSE);
@@ -4616,6 +4626,8 @@ void RasterizerSceneGLES3::render_scene(const Transform &p_cam_transform, const 
 		return;
 	}
 
+	if (env && (env->dof_blur_far_enabled || env->dof_blur_near_enabled) && storage->frame.current_rt && storage->frame.current_rt->buffers.active)
+		_prepare_depth_texture();
 	_post_process(env, p_cam_projection);
 	// Needed only for debugging
 	/*	if (shadow_atlas && storage->frame.current_rt) {
