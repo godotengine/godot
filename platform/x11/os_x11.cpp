@@ -1518,9 +1518,12 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-	if (is_window_maximize_allowed()) {
-		while (p_enabled && !is_window_maximized()) {
-			// Wait for effective resizing (so the GLX context is too).
+	if (p_enabled && is_window_maximize_allowed()) {
+		// Wait for effective resizing (so the GLX context is too).
+		// Give up after 0.5s, it's not going to happen on this WM.
+		// https://github.com/godotengine/godot/issues/19978
+		for (int attempt = 0; !is_window_maximized() && attempt < 50; attempt++) {
+			usleep(10000);
 		}
 	}
 
