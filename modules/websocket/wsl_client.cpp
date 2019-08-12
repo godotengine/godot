@@ -53,8 +53,7 @@ void WSLClient::_do_handshake() {
 				// Header is too big
 				disconnect_from_host();
 				_on_error();
-				ERR_EXPLAIN("Response headers too big");
-				ERR_FAIL();
+				ERR_FAIL_MSG("Response headers too big.");
 			}
 			Error err = _connection->get_partial_data(&_resp_buf[_resp_pos], 1, read);
 			if (err == ERR_FILE_EOF) {
@@ -81,8 +80,7 @@ void WSLClient::_do_handshake() {
 				if (!_verify_headers(protocol)) {
 					disconnect_from_host();
 					_on_error();
-					ERR_EXPLAIN("Invalid response headers");
-					ERR_FAIL();
+					ERR_FAIL_MSG("Invalid response headers.");
 				}
 				// Create peer.
 				WSLPeer::PeerData *data = memnew(struct WSLPeer::PeerData);
@@ -103,29 +101,18 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 	String s = (char *)_resp_buf;
 	Vector<String> psa = s.split("\r\n");
 	int len = psa.size();
-	if (len < 4) {
-		ERR_EXPLAIN("Not enough response headers.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
 
 	Vector<String> req = psa[0].split(" ", false);
-	if (req.size() < 2) {
-		ERR_EXPLAIN("Invalid protocol or status code.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(req.size() < 2, false, "Invalid protocol or status code.");
+
 	// Wrong protocol
-	if (req[0] != "HTTP/1.1" || req[1] != "101") {
-		ERR_EXPLAIN("Invalid protocol or status code.");
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(req[0] != "HTTP/1.1" || req[1] != "101", false, "Invalid protocol or status code.");
 
 	Map<String, String> headers;
 	for (int i = 1; i < len; i++) {
 		Vector<String> header = psa[i].split(":", false, 1);
-		if (header.size() != 2) {
-			ERR_EXPLAIN("Invalid header -> " + psa[i]);
-			ERR_FAIL_V(false);
-		}
+		ERR_FAIL_COND_V_MSG(header.size() != 2, false, "Invalid header -> " + psa[i] + ".");
 		String name = header[0].to_lower();
 		String value = header[1].strip_edges();
 		if (headers.has(name))
@@ -251,8 +238,7 @@ void WSLClient::poll() {
 				if (_connection == _tcp) {
 					// Start SSL handshake
 					ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
-					ERR_EXPLAIN("SSL is not available in this build");
-					ERR_FAIL_COND(ssl.is_null());
+					ERR_FAIL_COND_MSG(ssl.is_null(), "SSL is not available in this build.");
 					ssl->set_blocking_handshake_enabled(false);
 					if (ssl->connect_to_stream(_tcp, verify_ssl, _host) != OK) {
 						disconnect_from_host();
@@ -332,8 +318,7 @@ uint16_t WSLClient::get_connected_port() const {
 }
 
 Error WSLClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {
-	ERR_EXPLAIN("Buffers sizes can only be set before listening or connecting");
-	ERR_FAIL_COND_V(_connection.is_valid(), FAILED);
+	ERR_FAIL_COND_V_MSG(_connection.is_valid(), FAILED, "Buffers sizes can only be set before listening or connecting.");
 
 	_in_buf_size = nearest_shift(p_in_buffer - 1) + 10;
 	_in_pkt_size = nearest_shift(p_in_packets - 1);

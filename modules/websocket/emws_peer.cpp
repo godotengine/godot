@@ -131,14 +131,12 @@ void EMWSPeer::close(int p_code, String p_reason) {
 
 IP_Address EMWSPeer::get_connected_host() const {
 
-	ERR_EXPLAIN("Not supported in HTML5 export");
-	ERR_FAIL_V(IP_Address());
+	ERR_FAIL_V_MSG(IP_Address(), "Not supported in HTML5 export.");
 };
 
 uint16_t EMWSPeer::get_connected_port() const {
 
-	ERR_EXPLAIN("Not supported in HTML5 export");
-	ERR_FAIL_V(0);
+	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
 
 EMWSPeer::EMWSPeer() {

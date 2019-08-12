@@ -102,10 +102,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 				len <<= 8;
 				len |= f->get_8();
 
-				if (len != width) {
-					ERR_EXPLAIN("invalid decoded scanline length, corrupt HDR");
-					ERR_FAIL_V(ERR_FILE_CORRUPT);
-				}
+				ERR_FAIL_COND_V_MSG(len != width, ERR_FILE_CORRUPT, "Invalid decoded scanline length, corrupt HDR.");
 
 				for (int k = 0; k < 4; ++k) {
 					int i = 0;

@@ -241,9 +241,9 @@ Error ImageLoaderBMP::load_image(Ref<Image> p_image, FileAccess *f,
 				case BI_CMYKRLE8:
 				case BI_CMYKRLE4: {
 					// Stop parsing
-					ERR_EXPLAIN("Compressed BMP files are not supported: " + f->get_path());
+					String bmp_path = f->get_path();
 					f->close();
-					ERR_FAIL_V(ERR_UNAVAILABLE);
+					ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Compressed BMP files are not supported: " + bmp_path + ".");
 				} break;
 			}
 			// Don't rely on sizeof(bmp_file_header) as structure padding
