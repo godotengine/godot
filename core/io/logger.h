@@ -49,11 +49,20 @@ public:
 		ERR_SHADER
 	};
 
+	enum LogLevel {
+		LOG_DEBUG,
+		LOG_INFO,
+		LOG_WARN,
+		LOG_ERROR
+	};
+
 	virtual void logv(const char *p_format, va_list p_list, bool p_err) _PRINTF_FORMAT_ATTRIBUTE_2_0 = 0;
 	virtual void log_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, ErrorType p_type = ERR_ERROR);
 
 	void logf(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void logf_error(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
+
+	void log_message(LogLevel log_level, const String &category, const String &message);
 
 	virtual ~Logger();
 };

@@ -1819,6 +1819,10 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"remotesync",
 		"mastersync",
 		"puppetsync",
+		"log_debug",
+		"log_info",
+		"log_warn",
+		"log_error",
 		0
 	};
 

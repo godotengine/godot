@@ -151,6 +151,8 @@ public:
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 	void printerr(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
 
+	void log_message(Logger::LogLevel log_level, const String &category, const String &message);
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!") = 0;
 	virtual String get_stdin_string(bool p_block = true) = 0;
 

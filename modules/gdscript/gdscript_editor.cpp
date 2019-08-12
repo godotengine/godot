@@ -2174,7 +2174,7 @@ static void _find_identifiers(const GDScriptCompletionContext &p_context, bool p
 		"breakpoint", "class", "extends", "is", "func", "preload", "setget", "signal", "tool", "yield",
 		"const", "enum", "export", "onready", "static", "var", "break", "continue", "if", "elif",
 		"else", "for", "pass", "return", "match", "while", "remote", "sync", "master", "puppet", "slave",
-		"remotesync", "mastersync", "puppetsync",
+		"remotesync", "mastersync", "puppetsync", "log_debug", "log_info", "log_warn", "log_error",
 		0
 	};
 

@@ -125,6 +125,7 @@ public:
 			TYPE_ASSERT,
 			TYPE_BREAKPOINT,
 			TYPE_NEWLINE,
+			TYPE_LOG
 		};
 
 		Node *next;
@@ -492,6 +493,26 @@ public:
 		NewLineNode() { type = TYPE_NEWLINE; }
 	};
 
+	enum LogLevel {
+		LOG_DEBUG,
+		LOG_INFO,
+		LOG_WARN,
+		LOG_ERROR
+	};
+
+	struct LogNode : public Node {
+		LogLevel level;
+		Node *category;
+		Node *message;
+
+		LogNode() :
+				level(LOG_DEBUG),
+				category(0),
+				message(0) {
+			type = TYPE_LOG;
+		}
+	};
+
 	struct Expression {
 
 		bool is_op;
@@ -598,6 +619,8 @@ private:
 	void _parse_extends(ClassNode *p_class);
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
+
+	void _parse_log(BlockNode *p_block, bool p_static, LogLevel log_level);
 
 	void _determine_inheritance(ClassNode *p_class, bool p_recursive = true);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);

@@ -137,6 +137,11 @@ void OS::printerr(const char *p_format, ...) {
 	_logger->logv(p_format, argp, true);
 
 	va_end(argp);
+}
+
+void OS::log_message(Logger::LogLevel log_level, const String &category, const String &message)
+{
+	_logger->log_message(log_level, category, message);
 };
 
 void OS::set_keep_screen_on(bool p_enabled) {

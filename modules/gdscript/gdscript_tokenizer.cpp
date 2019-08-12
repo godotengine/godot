@@ -114,6 +114,10 @@ const char *GDScriptTokenizer::token_names[TK_MAX] = {
 	"remotesync",
 	"mastersync",
 	"puppetsync",
+	"log_debug",
+	"log_info",
+	"log_warn",
+	"log_error",
 	"'['",
 	"']'",
 	"'{'",
@@ -215,6 +219,10 @@ static const _kws _keyword_list[] = {
 	{ GDScriptTokenizer::TK_PR_PUPPETSYNC, "puppetsync" },
 	{ GDScriptTokenizer::TK_PR_CONST, "const" },
 	{ GDScriptTokenizer::TK_PR_ENUM, "enum" },
+	{ GDScriptTokenizer::TK_PR_LOG_DEBUG, "log_debug" },
+	{ GDScriptTokenizer::TK_PR_LOG_INFO, "log_info" },
+	{ GDScriptTokenizer::TK_PR_LOG_WARN, "log_warn" },
+	{ GDScriptTokenizer::TK_PR_LOG_ERROR, "log_error" },
 	//controlflow
 	{ GDScriptTokenizer::TK_CF_IF, "if" },
 	{ GDScriptTokenizer::TK_CF_ELIF, "elif" },
@@ -279,6 +287,7 @@ bool GDScriptTokenizer::is_token_literal(int p_offset, bool variable_safe) const
 		case TK_PR_ASSERT:
 		case TK_PR_YIELD:
 		case TK_PR_VAR:
+		case TK_PR_LOG_DEBUG:
 
 		case TK_CF_IF:
 		case TK_CF_ELIF:

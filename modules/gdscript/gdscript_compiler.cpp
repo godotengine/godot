@@ -1546,6 +1546,38 @@ Error GDScriptCompiler::_parse_block(CodeGen &codegen, const GDScriptParser::Blo
 				new_identifiers++;
 
 			} break;
+			case GDScriptParser::Node::TYPE_LOG: {
+#ifdef DEBUG_ENABLED
+				const GDScriptParser::LogNode *log_node = static_cast<const GDScriptParser::LogNode *>(s);
+
+				int category_ret = _parse_expression(codegen, log_node->category, p_stack_level, false);
+				if (category_ret < 0)
+					return ERR_PARSE_ERROR;
+
+				int message_ret = _parse_expression(codegen, log_node->message, p_stack_level + 1, false);
+				if (message_ret < 0)
+					return ERR_PARSE_ERROR;
+
+				GDScriptFunction::Opcode code;
+				switch (log_node->level) {
+				case GDScriptParser::LOG_DEBUG:
+					code = GDScriptFunction::OPCODE_LOG_DEBUG;
+					break;
+				case GDScriptParser::LOG_INFO:
+					code = GDScriptFunction::OPCODE_LOG_INFO;
+					break;
+				case GDScriptParser::LOG_WARN:
+					code = GDScriptFunction::OPCODE_LOG_WARN;
+					break;
+				case GDScriptParser::LOG_ERROR:
+					code = GDScriptFunction::OPCODE_LOG_ERROR;
+					break;
+				}
+				codegen.opcodes.push_back(code);
+				codegen.opcodes.push_back(category_ret);
+				codegen.opcodes.push_back(message_ret);
+#endif
+			} break;
 			default: {
 				//expression
 				int ret2 = _parse_expression(codegen, s, p_stack_level, true);

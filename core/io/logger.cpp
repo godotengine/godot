@@ -33,6 +33,7 @@
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
+#include "core/project_settings.h"
 
 // va_copy was defined in the C99, but not in C++ standards before C++11.
 // When you compile C++ without --std=c++<XX> option, compilers still define
@@ -101,6 +102,34 @@ void Logger::logf_error(const char *p_format, ...) {
 	logv(p_format, argp, true);
 
 	va_end(argp);
+}
+
+void Logger::log_message(Logger::LogLevel log_level, const String &category, const String &message)
+{
+	const ProjectSettings *project_settings = ProjectSettings::get_singleton();
+	switch (log_level) {
+	case Logger::LOG_DEBUG:
+		if (project_settings->get_setting("logging/categories/enable_debug_logging_level").booleanize()) {
+			// TODO: respect format specified in project settings
+			logf("[%s] %s", category.utf8().get_data(), message.utf8().get_data());
+		}
+		break;
+	case Logger::LOG_INFO:
+		if (project_settings->get_setting("logging/categories/enable_info_logging_level").booleanize()) {
+			logf("[%s] %s", category.utf8().get_data(), message.utf8().get_data());
+		}
+		break;
+	case Logger::LOG_WARN:
+		if (project_settings->get_setting("logging/categories/enable_warn_logging_level").booleanize()) {
+			logf("[%s] %s", category.utf8().get_data(), message.utf8().get_data());
+		}
+		break;
+	case Logger::LOG_ERROR:
+		if (project_settings->get_setting("logging/categories/enable_error_logging_level").booleanize()) {
+			logf("[%s] %s", category.utf8().get_data(), message.utf8().get_data());
+		}
+		break;
+	}
 }
 
 Logger::~Logger() {}

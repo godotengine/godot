@@ -72,6 +72,53 @@ bool GDScriptParser::_end_statement() {
 	return false;
 }
 
+void GDScriptParser::_parse_log(GDScriptParser::BlockNode *p_block, bool p_static, GDScriptParser::LogLevel log_level)
+{
+#ifdef DEBUG_ENABLED
+		// Store the logging category and message.
+
+		tokenizer->advance();
+
+		if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
+			_set_error("Expected '(' after debug_log");
+			return;
+		}
+
+		tokenizer->advance();
+
+		Vector<Node *> args;
+		const bool result = _parse_arguments(p_block, args, p_static);
+		if (!result) {
+			return;
+		}
+
+		if (args.size() != 2) {
+			_set_error("debug_log expects two arguments: category and message");
+			return;
+		}
+
+		LogNode *log_node = alloc_node<LogNode>();
+		log_node->level = log_level;
+		log_node->category = _reduce_expression(args[0], p_static);
+		log_node->message = _reduce_expression(args[1], p_static);
+
+		p_block->statements.push_back(log_node);
+
+		if (!_end_statement()) {
+			_set_error("Expected end of statement after debug_log.");
+			return;
+		}
+#else
+		// Otherwise, make sure that we skip the line entirely for performance reasons.
+		while (tokenizer->get_token() != GDScriptTokenizer::TK_NEWLINE) {
+			tokenizer->advance();
+		}
+		fprintf(stderr, "token before advancing: %i\n", tokenizer->get_token());
+		tokenizer->advance();
+		fprintf(stderr, "token after advancing: %i\n", tokenizer->get_token());
+#endif
+}
+
 bool GDScriptParser::_enter_indent_block(BlockNode *p_block) {
 
 	if (tokenizer->get_token() != GDScriptTokenizer::TK_COLON) {
@@ -3294,6 +3341,18 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					_set_error("Expected end of statement after breakpoint.");
 					return;
 				}
+			} break;
+			case GDScriptTokenizer::TK_PR_LOG_DEBUG: {
+				_parse_log(p_block, p_static, LOG_DEBUG);
+			} break;
+			case GDScriptTokenizer::TK_PR_LOG_INFO: {
+				_parse_log(p_block, p_static, LOG_INFO);
+			} break;
+			case GDScriptTokenizer::TK_PR_LOG_WARN: {
+				_parse_log(p_block, p_static, LOG_WARN);
+			} break;
+			case GDScriptTokenizer::TK_PR_LOG_ERROR: {
+				_parse_log(p_block, p_static, LOG_ERROR);
 			} break;
 			default: {
 

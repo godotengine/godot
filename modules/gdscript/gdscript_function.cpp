@@ -189,6 +189,29 @@ String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const 
 	return err_text;
 }
 
+void GDScriptFunction::log_message(GDScriptFunction::Opcode log_opcode, const String &category, const String &message)
+{
+	Logger::LogLevel log_level;
+	switch (log_opcode) {
+	case OPCODE_LOG_DEBUG:
+		log_level = Logger::LOG_DEBUG;
+		break;
+	case OPCODE_LOG_INFO:
+		log_level = Logger::LOG_INFO;
+		break;
+	case OPCODE_LOG_WARN:
+		log_level = Logger::LOG_WARN;
+		break;
+	case OPCODE_LOG_ERROR:
+		log_level = Logger::LOG_ERROR;
+		break;
+	default:
+		// Should never happen.
+		ERR_FAIL_MSG("Non-logging OPCODE passed to GDScriptFunction::log_message()");
+	}
+	OS::get_singleton()->log_message(log_level, category, message);
+}
+
 #if defined(__GNUC__)
 #define OPCODES_TABLE                         \
 	static const void *switch_table_ops[] = { \
@@ -231,7 +254,11 @@ String GDScriptFunction::_get_call_error(const Variant::CallError &p_err, const 
 		&&OPCODE_ASSERT,                      \
 		&&OPCODE_BREAKPOINT,                  \
 		&&OPCODE_LINE,                        \
-		&&OPCODE_END                          \
+		&&OPCODE_END,                         \
+		&&OPCODE_LOG_DEBUG,                   \
+		&&OPCODE_LOG_INFO,                    \
+		&&OPCODE_LOG_WARN,                    \
+		&&OPCODE_LOG_ERROR                    \
 	};
 
 #define OPCODE(m_op) \
@@ -1536,6 +1563,53 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 #endif
 				OPCODE_BREAK;
 			}
+
+// We shouldn't generate OPCODE_LOG_* opcodes in non-debug builds.
+#ifdef DEBUG_ENABLED
+			OPCODE(OPCODE_LOG_DEBUG) {
+				CHECK_SPACE(2);
+
+				GET_VARIANT_PTR(category, 1);
+				GET_VARIANT_PTR(message, 2);
+
+				log_message(OPCODE_LOG_DEBUG, String(*category), String(*message));
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_LOG_INFO) {
+				CHECK_SPACE(2);
+
+				GET_VARIANT_PTR(category, 1);
+				GET_VARIANT_PTR(message, 2);
+
+				log_message(OPCODE_LOG_INFO, String(*category), String(*message));
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_LOG_WARN) {
+				CHECK_SPACE(2);
+
+				GET_VARIANT_PTR(category, 1);
+				GET_VARIANT_PTR(message, 2);
+
+				log_message(OPCODE_LOG_WARN, String(*category), String(*message));
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+
+			OPCODE(OPCODE_LOG_ERROR) {
+				CHECK_SPACE(2);
+
+				GET_VARIANT_PTR(category, 1);
+				GET_VARIANT_PTR(message, 2);
+
+				log_message(OPCODE_LOG_ERROR, String(*category), String(*message));
+				ip += 3;
+			}
+			DISPATCH_OPCODE;
+#endif
 
 // Enable for debugging
 #if 0
