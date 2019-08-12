@@ -185,7 +185,7 @@ def _build_gdnative_api_struct_source(api):
             'extern const godot_gdnative_core_' + ('{0}_{1}_api_struct api_{0}_{1}'.format(core['version']['major'], core['version']['minor'])) + ' = {',
             '\tGDNATIVE_' + core['type'] + ',',
             '\t{' + str(core['version']['major']) + ', ' + str(core['version']['minor']) + '},',
-            '\t' + ('NULL' if not core['next'] else ('(const godot_gdnative_api_struct *)& api_{0}_{1}'.format(core['version']['major'], core['version']['minor']))) + ','
+            '\t' + ('NULL' if not core['next'] else ('(const godot_gdnative_api_struct *)& api_{0}_{1}'.format(core['next']['version']['major'], core['next']['version']['minor']))) + ','
         ]
 
         for funcdef in core['api']:
