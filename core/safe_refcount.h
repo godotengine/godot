@@ -97,8 +97,8 @@ static _ALWAYS_INLINE_ T atomic_exchange_if_greater(volatile T *pw, volatile V v
 
 /* Implementation for GCC & Clang */
 
-// GCC guarantees atomic intrinsics for sizes of 1, 2, 4 and 8 bytes.
-// Clang states it supports GCC atomic builtins.
+#include <stdbool.h>
+#include <atomic>
 
 template <class T>
 static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
@@ -107,7 +107,7 @@ static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
 		T tmp = static_cast<T const volatile &>(*pw);
 		if (tmp == 0)
 			return 0; // if zero, can't add to it anymore
-		if (__sync_val_compare_and_swap(pw, tmp, tmp + 1) == tmp)
+		if (__atomic_compare_exchange_n(pw, &tmp, tmp + 1, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST) == true)
 			return tmp + 1;
 	}
 }
@@ -115,25 +115,25 @@ static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
 template <class T>
 static _ALWAYS_INLINE_ T atomic_decrement(volatile T *pw) {
 
-	return __sync_sub_and_fetch(pw, 1);
+	return __atomic_sub_fetch(pw, 1, __ATOMIC_SEQ_CST);
 }
 
 template <class T>
 static _ALWAYS_INLINE_ T atomic_increment(volatile T *pw) {
 
-	return __sync_add_and_fetch(pw, 1);
+	return __atomic_add_fetch(pw, 1, __ATOMIC_SEQ_CST);
 }
 
 template <class T, class V>
 static _ALWAYS_INLINE_ T atomic_sub(volatile T *pw, volatile V val) {
 
-	return __sync_sub_and_fetch(pw, val);
+	return __atomic_sub_fetch(pw, val, __ATOMIC_SEQ_CST);
 }
 
 template <class T, class V>
 static _ALWAYS_INLINE_ T atomic_add(volatile T *pw, volatile V val) {
 
-	return __sync_add_and_fetch(pw, val);
+	return __atomic_add_fetch(pw, val, __ATOMIC_SEQ_CST);
 }
 
 template <class T, class V>
@@ -143,7 +143,7 @@ static _ALWAYS_INLINE_ T atomic_exchange_if_greater(volatile T *pw, volatile V v
 		T tmp = static_cast<T const volatile &>(*pw);
 		if (tmp >= val)
 			return tmp; // already greater, or equal
-		if (__sync_val_compare_and_swap(pw, tmp, val) == tmp)
+		if (__atomic_compare_exchange_n(pw, &tmp, val, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST) == true)
 			return val;
 	}
 }
