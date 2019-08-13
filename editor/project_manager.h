@@ -152,6 +152,7 @@ protected:
 
 public:
 	void _setup_filters(Vector<String> options);
+	void add_filter_option();
 	void add_search_box();
 	void set_filter_size(int h_size);
 	String get_search_term();
