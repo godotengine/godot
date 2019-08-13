@@ -36,6 +36,7 @@
 void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 
 	theme = p_theme;
+	main_panel->set_theme(p_theme);
 	main_container->set_theme(p_theme);
 }
 
@@ -53,6 +54,7 @@ void ThemeEditor::_propagate_redraw(Control *p_at) {
 
 void ThemeEditor::_refresh_interval() {
 
+	_propagate_redraw(main_panel);
 	_propagate_redraw(main_container);
 }
 
@@ -130,14 +132,14 @@ void ThemeEditor::_save_template_cbk(String fname) {
 
 	Map<String, _TECategory> categories;
 
-	//fill types
+	// Fill types.
 	List<StringName> type_list;
 	Theme::get_default()->get_type_list(&type_list);
 	for (List<StringName>::Element *E = type_list.front(); E; E = E->next()) {
 		categories.insert(E->get(), _TECategory());
 	}
 
-	//fill default theme
+	// Fill default theme.
 	for (Map<String, _TECategory>::Element *E = categories.front(); E; E = E->next()) {
 
 		_TECategory &tc = E->get();
@@ -256,7 +258,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 	file->store_line("");
 	file->store_line("");
 
-	//write default theme
+	// Write default theme.
 	for (Map<String, _TECategory>::Element *E = categories.front(); E; E = E->next()) {
 
 		_TECategory &tc = E->get();
@@ -501,7 +503,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	type_select_label->show();
 	type_select->show();
 
-	if (p_option == POPUP_ADD) { //add
+	if (p_option == POPUP_ADD) { // Add.
 
 		add_del_dialog->set_title(TTR("Add Item"));
 		add_del_dialog->get_ok()->set_text(TTR("Add"));
@@ -509,7 +511,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		base_theme = Theme::get_default();
 
-	} else if (p_option == POPUP_CLASS_ADD) { //add
+	} else if (p_option == POPUP_CLASS_ADD) { // Add.
 
 		add_del_dialog->set_title(TTR("Add All Items"));
 		add_del_dialog->get_ok()->set_text(TTR("Add All"));
@@ -552,12 +554,10 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	type_menu->get_popup()->clear();
 
-	if (p_option == 0 || p_option == 1) { //add
+	if (p_option == 0 || p_option == 1) { // Add.
 
 		List<StringName> new_types;
 		theme->get_type_list(&new_types);
-
-		//uh kind of sucks
 		for (List<StringName>::Element *F = new_types.front(); F; F = F->next()) {
 
 			bool found = false;
@@ -583,15 +583,17 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 void ThemeEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_PROCESS) {
-
-		time_left -= get_process_delta_time();
-		if (time_left < 0) {
-			time_left = 1.5;
-			_refresh_interval();
-		}
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		theme_menu->set_icon(get_icon("Theme", "EditorIcons"));
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			time_left -= get_process_delta_time();
+			if (time_left < 0) {
+				time_left = 1.5;
+				_refresh_interval();
+			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			theme_menu->set_icon(get_icon("Theme", "EditorIcons"));
+		} break;
 	}
 }
 
@@ -629,35 +631,34 @@ ThemeEditor::ThemeEditor() {
 	top_menu->add_child(theme_menu);
 	theme_menu->get_popup()->connect("id_pressed", this, "_theme_menu_cbk");
 
-	scroll = memnew(ScrollContainer);
+	ScrollContainer *scroll = memnew(ScrollContainer);
 	add_child(scroll);
 	scroll->set_enable_v_scroll(true);
 	scroll->set_enable_h_scroll(false);
 	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
 
-	main_container = memnew(MarginContainer);
-	scroll->add_child(main_container);
-	main_container->set_clip_contents(true);
-	main_container->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
-	main_container->set_v_size_flags(SIZE_EXPAND_FILL);
-	main_container->set_h_size_flags(SIZE_EXPAND_FILL);
+	MarginContainer *root_container = memnew(MarginContainer);
+	scroll->add_child(root_container);
+	root_container->set_theme(Theme::get_default());
+	root_container->set_clip_contents(true);
+	root_container->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
+	root_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	root_container->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	//// Preview Controls ////
 
-	Panel *panel = memnew(Panel);
-	main_container->add_child(panel);
-	panel->set_theme(Theme::get_default());
+	main_panel = memnew(Panel);
+	root_container->add_child(main_panel);
 
-	MarginContainer *mc = memnew(MarginContainer);
-	main_container->add_child(mc);
-	mc->set_theme(Theme::get_default());
-	mc->add_constant_override("margin_right", 4 * EDSCALE);
-	mc->add_constant_override("margin_top", 4 * EDSCALE);
-	mc->add_constant_override("margin_left", 4 * EDSCALE);
-	mc->add_constant_override("margin_bottom", 4 * EDSCALE);
+	main_container = memnew(MarginContainer);
+	root_container->add_child(main_container);
+	main_container->add_constant_override("margin_right", 4 * EDSCALE);
+	main_container->add_constant_override("margin_top", 4 * EDSCALE);
+	main_container->add_constant_override("margin_left", 4 * EDSCALE);
+	main_container->add_constant_override("margin_bottom", 4 * EDSCALE);
 
 	HBoxContainer *main_hb = memnew(HBoxContainer);
-	mc->add_child(main_hb);
+	main_container->add_child(main_hb);
 
 	VBoxContainer *first_vb = memnew(VBoxContainer);
 	main_hb->add_child(first_vb);
