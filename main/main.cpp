@@ -840,6 +840,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 		OS::get_singleton()->add_logger(memnew(RotatedFileLogger(base_path, max_files)));
 	}
 
+	// TODO: p_restart_if_changed seems to have no effect?
+	_GLOBAL_DEF("logging/categories/enable_debug_logging_level", true);
+	_GLOBAL_DEF("logging/categories/enable_info_logging_level", true);
+	_GLOBAL_DEF("logging/categories/enable_warn_logging_level", true);
+	_GLOBAL_DEF("logging/categories/enable_error_logging_level", true);
+	//	ProjectSettings::get_singleton()->set_custom_property_info("logging/categories/enable_error_logging_level", PropertyInfo(Variant::BOOL, "logging/categories/enable_error_logging_level", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED));
+
 #ifdef TOOLS_ENABLED
 	if (editor) {
 		Engine::get_singleton()->set_editor_hint(true);
