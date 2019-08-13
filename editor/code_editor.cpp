@@ -163,15 +163,15 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		result_col = col;
 
 		_update_results_count();
-		set_error(vformat(TTR("Found %d match(es)."), results_count));
 	} else {
 		result_line = -1;
 		result_col = -1;
 		text_edit->set_search_text("");
 		text_edit->set_search_flags(p_flags);
 		text_edit->set_current_search_result(line, col);
-		set_error(text.empty() ? "" : TTR("No Matches"));
 	}
+
+	_update_matches_label();
 
 	return found;
 }
@@ -332,6 +332,18 @@ void FindReplaceBar::_update_results_count() {
 	}
 }
 
+void FindReplaceBar::_update_matches_label() {
+
+	if (search_text->get_text().empty() || results_count == -1) {
+		matches_label->hide();
+	} else {
+		matches_label->show();
+
+		matches_label->add_color_override("font_color", results_count > 0 ? Color(1, 1, 1) : EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
+	}
+}
+
 bool FindReplaceBar::search_current() {
 
 	uint32_t flags = 0;
@@ -411,7 +423,6 @@ void FindReplaceBar::_hide_bar() {
 	text_edit->set_search_text("");
 	result_line = -1;
 	result_col = -1;
-	set_error("");
 	hide();
 }
 
@@ -557,6 +568,7 @@ FindReplaceBar::FindReplaceBar() {
 
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
+	vbc_lineedit->set_alignment(ALIGN_CENTER);
 	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *vbc_button = memnew(VBoxContainer);
 	add_child(vbc_button);
@@ -565,8 +577,10 @@ FindReplaceBar::FindReplaceBar() {
 
 	HBoxContainer *hbc_button_search = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_search);
+	hbc_button_search->set_alignment(ALIGN_END);
 	hbc_button_replace = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_replace);
+	hbc_button_replace->set_alignment(ALIGN_END);
 
 	HBoxContainer *hbc_option_search = memnew(HBoxContainer);
 	vbc_option->add_child(hbc_option_search);
@@ -579,6 +593,10 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
+
+	matches_label = memnew(Label);
+	hbc_button_search->add_child(matches_label);
+	matches_label->hide();
 
 	find_prev = memnew(ToolButton);
 	hbc_button_search->add_child(find_prev);
