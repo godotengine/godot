@@ -229,7 +229,7 @@
 				[codeblock]
 				func _ready():
 				    modulate = get_color("font_color", "Button") #get the color defined for button fonts
-				[/codeblock] 
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_combined_minimum_size" qualifiers="const">
