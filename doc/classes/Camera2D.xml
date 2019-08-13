@@ -110,7 +110,7 @@
 		<member name="drag_margin_bottom" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
 			Bottom margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
-		<member name="drag_margin_h_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled" default="true">
+		<member name="drag_margin_h_enabled" type="bool" setter="set_h_drag_enabled" getter="is_h_drag_enabled" default="false">
 			If [code]true[/code], the camera only moves when reaching the horizontal drag margins. If [code]false[/code], the camera moves horizontally regardless of margins.
 		</member>
 		<member name="drag_margin_left" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
@@ -122,7 +122,7 @@
 		<member name="drag_margin_top" type="float" setter="set_drag_margin" getter="get_drag_margin" default="0.2">
 			Top margin needed to drag the camera. A value of [code]1[/code] makes the camera move only when reaching the edge of the screen.
 		</member>
-		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled" default="true">
+		<member name="drag_margin_v_enabled" type="bool" setter="set_v_drag_enabled" getter="is_v_drag_enabled" default="false">
 			If [code]true[/code], the camera only moves when reaching the vertical drag margins. If [code]false[/code], the camera moves vertically regardless of margins.
 		</member>
 		<member name="editor_draw_drag_margin" type="bool" setter="set_margin_drawing_enabled" getter="is_margin_drawing_enabled" default="false">
