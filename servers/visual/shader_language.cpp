@@ -3862,14 +3862,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 							return ERR_PARSE_ERROR;
 						}
 
+						decl.size = ((uint32_t)tk.constant);
 						tk = _get_token();
 
 						if (tk.type != TK_BRACKET_CLOSE) {
 							_set_error("Expected ']'");
 							return ERR_PARSE_ERROR;
 						}
-
-						decl.size = ((uint32_t)tk.constant);
 						var.array_size = decl.size;
 					}
 
@@ -4133,16 +4132,40 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			} else {
 				_set_tkpos(pos); //rollback
 			}
-		} else if (tk.type == TK_CF_WHILE) {
-			//if () {}
+		} else if (tk.type == TK_CF_DO || tk.type == TK_CF_WHILE) {
+			// do {} while()
+			// while() {}
+			bool is_do = tk.type == TK_CF_DO;
+
+			BlockNode *do_block = NULL;
+			if (is_do) {
+
+				do_block = alloc_node<BlockNode>();
+				do_block->parent_block = p_block;
+
+				Error err = _parse_block(do_block, p_builtin_types, true, true, true);
+				if (err)
+					return err;
+
+				tk = _get_token();
+				if (tk.type != TK_CF_WHILE) {
+					_set_error("Expected while after do");
+					return ERR_PARSE_ERROR;
+				}
+			}
 			tk = _get_token();
+
 			if (tk.type != TK_PARENTHESIS_OPEN) {
 				_set_error("Expected '(' after while");
 				return ERR_PARSE_ERROR;
 			}
 
 			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
-			cf->flow_op = FLOW_OP_WHILE;
+			if (is_do) {
+				cf->flow_op = FLOW_OP_DO;
+			} else {
+				cf->flow_op = FLOW_OP_WHILE;
+			}
 			Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
 			if (!n)
 				return ERR_PARSE_ERROR;
@@ -4152,18 +4175,30 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				_set_error("Expected ')' after expression");
 				return ERR_PARSE_ERROR;
 			}
+			if (!is_do) {
+				BlockNode *block = alloc_node<BlockNode>();
+				block->parent_block = p_block;
+				cf->expressions.push_back(n);
+				cf->blocks.push_back(block);
+				p_block->statements.push_back(cf);
 
-			BlockNode *block = alloc_node<BlockNode>();
-			block->parent_block = p_block;
-			cf->expressions.push_back(n);
-			cf->blocks.push_back(block);
-			p_block->statements.push_back(cf);
+				Error err = _parse_block(block, p_builtin_types, true, true, true);
+				if (err)
+					return err;
+			} else {
 
-			Error err = _parse_block(block, p_builtin_types, true, true, true);
-			if (err)
-				return err;
+				cf->expressions.push_back(n);
+				cf->blocks.push_back(do_block);
+				p_block->statements.push_back(cf);
+
+				tk = _get_token();
+				if (tk.type != TK_SEMICOLON) {
+					_set_error("Expected ';'");
+					return ERR_PARSE_ERROR;
+				}
+			}
 		} else if (tk.type == TK_CF_FOR) {
-			//if () {}
+			// for() {}
 			tk = _get_token();
 			if (tk.type != TK_PARENTHESIS_OPEN) {
 				_set_error("Expected '(' after for");
