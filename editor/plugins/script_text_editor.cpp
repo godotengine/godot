@@ -1197,7 +1197,6 @@ void ScriptTextEditor::_edit_option(int p_op) {
 			// Yep, because it doesn't make sense to instance this dialog for every single script open...
 			// So this will be delegated to the ScriptEditor.
 			emit_signal("search_in_files_requested", selected_text);
-
 		} break;
 		case SEARCH_LOCATE_FUNCTION: {
 

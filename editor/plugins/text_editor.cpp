@@ -482,6 +482,14 @@ void TextEditor::_edit_option(int p_op) {
 
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
+		case SEARCH_IN_FILES: {
+
+			String selected_text = code_editor->get_text_edit()->get_selection_text();
+
+			// Yep, because it doesn't make sense to instance this dialog for every single script open...
+			// So this will be delegated to the ScriptEditor.
+			emit_signal("search_in_files_requested", selected_text);
+		} break;
 		case SEARCH_GOTO_LINE: {
 
 			goto_line_dialog->popup_find_line(tx);
@@ -558,7 +566,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					int to_column = tx->get_selection_to_column();
 
 					if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-						// Right click is outside the selected text
+						// Right click is outside the selected text.
 						tx->deselect();
 					}
 				}
@@ -636,13 +644,15 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_next"), SEARCH_FIND_NEXT);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
+	search_menu->get_popup()->add_separator();
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
 
 	edit_menu = memnew(MenuButton);
+	edit_hb->add_child(edit_menu);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
-	edit_hb->add_child(edit_menu);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
