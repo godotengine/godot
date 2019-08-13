@@ -45,7 +45,7 @@ class ThemeEditor : public VBoxContainer {
 
 	GDCLASS(ThemeEditor, VBoxContainer);
 
-	ScrollContainer *scroll;
+	Panel *main_panel;
 	MarginContainer *main_container;
 	Ref<Theme> theme;
 
