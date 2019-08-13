@@ -374,12 +374,14 @@ bool FindReplaceBar::search_prev() {
 	int line, col;
 	_get_search_from(line, col);
 
-	col -= text.length();
-	if (col < 0) {
-		line -= 1;
-		if (line < 0)
-			line = text_edit->get_line_count() - 1;
-		col = text_edit->get_line(line).length();
+	if (line == result_line && col == result_col) {
+		col -= text.length();
+		if (col < 0) {
+			line -= 1;
+			if (line < 0)
+				line = text_edit->get_line_count() - 1;
+			col = text_edit->get_line(line).length();
+		}
 	}
 
 	return _search(flags, line, col);
