@@ -4022,6 +4022,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 							_set_error("Expected array initialization");
 							return ERR_PARSE_ERROR;
 						}
+						if (is_const) {
+							_set_error("Expected initialization of constant");
+							return ERR_PARSE_ERROR;
+						}
 					}
 
 					node->declarations.push_back(decl);
@@ -4051,6 +4055,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					tk = _get_token();
 					node->declarations.push_back(decl);
 				} else {
+					if (is_const) {
+						_set_error("Expected initialization of constant");
+						return ERR_PARSE_ERROR;
+					}
+
 					VariableDeclarationNode *node = alloc_node<VariableDeclarationNode>();
 					node->datatype = type;
 					node->precision = precision;
