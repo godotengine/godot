@@ -230,6 +230,25 @@ void GridMapEditor::_menu_option(int p_option) {
 			_update_cursor_transform();
 		} break;
 
+		case MENU_OPTION_CURSOR_MIRROR_X: {
+			int idx = options->get_popup()->get_item_index(MENU_OPTION_CURSOR_MIRROR_X);
+			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
+			cursor_scale.x *= -1;
+			_update_cursor_transform();
+		} break;
+		case MENU_OPTION_CURSOR_MIRROR_Y: {
+			int idx = options->get_popup()->get_item_index(MENU_OPTION_CURSOR_MIRROR_Y);
+			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
+			cursor_scale.y *= -1;
+			_update_cursor_transform();
+		} break;
+		case MENU_OPTION_CURSOR_MIRROR_Z: {
+			int idx = options->get_popup()->get_item_index(MENU_OPTION_CURSOR_MIRROR_Z);
+			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
+			cursor_scale.z *= -1;
+			_update_cursor_transform();
+		} break;
+
 		case MENU_OPTION_PASTE_SELECTS: {
 			int idx = options->get_popup()->get_item_index(MENU_OPTION_PASTE_SELECTS);
 			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
@@ -279,6 +298,7 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = Transform();
 	cursor_transform.origin = cursor_origin;
 	cursor_transform.basis.set_orthogonal_index(cursor_rot);
+	cursor_transform.basis.scale(cursor_scale);
 	cursor_transform = node->get_global_transform() * cursor_transform;
 
 	if (cursor_instance.is_valid()) {
@@ -467,7 +487,7 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 		si.old_value = node->get_cell_item(cell[0], cell[1], cell[2]);
 		si.old_orientation = node->get_cell_item_orientation(cell[0], cell[1], cell[2]);
 		set_items.push_back(si);
-		node->set_cell_item(cell[0], cell[1], cell[2], selected_palette, cursor_rot);
+		node->set_cell_item(cell[0], cell[1], cell[2], selected_palette, cursor_rot, !!(cursor_scale.x - 1), !!(cursor_scale.y - 1), !!(cursor_scale.z - 1));
 		return true;
 	} else if (input_action == INPUT_ERASE) {
 		SetItem si;
@@ -1262,6 +1282,9 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Cursor Back Rotate Y"), MENU_OPTION_CURSOR_BACK_ROTATE_Y, KEY_MASK_SHIFT + KEY_S);
 	options->get_popup()->add_item(TTR("Cursor Back Rotate Z"), MENU_OPTION_CURSOR_BACK_ROTATE_Z, KEY_MASK_SHIFT + KEY_D);
 	options->get_popup()->add_item(TTR("Cursor Clear Rotation"), MENU_OPTION_CURSOR_CLEAR_ROTATION, KEY_W);
+	options->get_popup()->add_check_item(TTR("Cursor Mirror X"), MENU_OPTION_CURSOR_MIRROR_X, KEY_T);
+	options->get_popup()->add_check_item(TTR("Cursor Mirror Y"), MENU_OPTION_CURSOR_MIRROR_Y, KEY_Y);
+	options->get_popup()->add_check_item(TTR("Cursor Mirror Z"), MENU_OPTION_CURSOR_MIRROR_Z, KEY_U);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_check_item("Paste Selects", MENU_OPTION_PASTE_SELECTS);
 	options->get_popup()->add_separator();
@@ -1340,6 +1363,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	selected_palette = -1;
 	lock_view = false;
 	cursor_rot = 0;
+	cursor_scale = Vector3(1, 1, 1);
 	last_mouseover = Vector3(-1, -1, -1);
 
 	selection_mesh = VisualServer::get_singleton()->mesh_create();

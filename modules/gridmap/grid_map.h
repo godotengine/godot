@@ -69,18 +69,23 @@ class GridMap : public Spatial {
 	 * @brief A Cell is a single cell in the cube map space; it is defined by its coordinates and the populating Item, identified by int id.
 	 */
 	union Cell {
-
 		struct {
 			unsigned int item : 16;
 			unsigned int rot : 5;
 			unsigned int layer : 8;
+			bool mirrored_x : 1;
+			bool mirrored_y : 1;
+			bool mirrored_z : 1;
 		};
 		uint32_t cell;
-
+	
 		Cell() {
 			item = 0;
 			rot = 0;
 			layer = 0;
+			mirrored_x = true;
+			mirrored_y = false;
+			mirrored_z = false;
 		}
 	};
 
@@ -248,7 +253,7 @@ public:
 	void set_center_z(bool p_enable);
 	bool get_center_z() const;
 
-	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot = 0);
+	void set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot = 0, bool p_mirrored_x = false, bool p_mirrored_y = false, bool p_mirrored_z = false);
 	int get_cell_item(int p_x, int p_y, int p_z) const;
 	int get_cell_item_orientation(int p_x, int p_y, int p_z) const;
 

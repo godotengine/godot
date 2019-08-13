@@ -278,7 +278,7 @@ bool GridMap::get_center_z() const {
 	return center_z;
 }
 
-void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
+void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot, bool p_mirrored_x, bool p_mirrored_y, bool p_mirrored_z) {
 
 	if (baked_meshes.size() && !recreating_octants) {
 		//if you set a cell item, baked meshes go good bye
@@ -350,6 +350,9 @@ void GridMap::set_cell_item(int p_x, int p_y, int p_z, int p_item, int p_rot) {
 	Cell c;
 	c.item = p_item;
 	c.rot = p_rot;
+	c.mirrored_x = p_mirrored_x;
+	c.mirrored_y = p_mirrored_y;
+	c.mirrored_z = p_mirrored_z;
 
 	cell_map[key] = c;
 }
@@ -481,7 +484,7 @@ bool GridMap::_octant_update(const OctantKey &p_key) {
 
 		xform.basis.set_orthogonal_index(c.rot);
 		xform.set_origin(cellpos * cell_size + ofs);
-		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+		xform.basis.scale(Vector3(cell_scale * -((!!c.mirrored_x) * 2 - 1), cell_scale * -((!!c.mirrored_y) * 2 - 1), cell_scale * -((!!c.mirrored_z) * 2 - 1)));
 		if (baked_meshes.size() == 0) {
 			if (mesh_library->get_item_mesh(c.item).is_valid()) {
 				if (!multimesh_items.has(c.item)) {
@@ -772,7 +775,7 @@ void GridMap::_recreate_octant_data() {
 	_clear_internal();
 	for (Map<IndexKey, Cell>::Element *E = cell_copy.front(); E; E = E->next()) {
 
-		set_cell_item(E->key().x, E->key().y, E->key().z, E->get().item, E->get().rot);
+		set_cell_item(E->key().x, E->key().y, E->key().z, E->get().item, E->get().rot, E->get().mirrored_x, E->get().mirrored_y, E->get().mirrored_z);
 	}
 	recreating_octants = false;
 }
@@ -855,7 +858,7 @@ void GridMap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_octant_size", "size"), &GridMap::set_octant_size);
 	ClassDB::bind_method(D_METHOD("get_octant_size"), &GridMap::get_octant_size);
 
-	ClassDB::bind_method(D_METHOD("set_cell_item", "x", "y", "z", "item", "orientation"), &GridMap::set_cell_item, DEFVAL(0));
+	//ClassDB::bind_method(D_METHOD("set_cell_item", "x", "y", "z", "item", "orientation", "mirrored_x", "mirrored_y", "mirrored_z"), &GridMap::set_cell_item, DEFVAL(0), DEFVAL(false), DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_cell_item", "x", "y", "z"), &GridMap::get_cell_item);
 	ClassDB::bind_method(D_METHOD("get_cell_item_orientation", "x", "y", "z"), &GridMap::get_cell_item_orientation);
 
@@ -976,7 +979,7 @@ Array GridMap::get_meshes() {
 		xform.basis.set_orthogonal_index(E->get().rot);
 
 		xform.set_origin(cellpos * cell_size + ofs);
-		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+		xform.basis.scale(Vector3(cell_scale * -((!!E->get().mirrored_x) * 2 - 1), cell_scale * -((!!E->get().mirrored_y) * 2 - 1), cell_scale * -((!!E->get().mirrored_z) * 2 - 1)));
 
 		meshes.push_back(xform);
 		meshes.push_back(mesh);
@@ -1029,7 +1032,7 @@ void GridMap::make_baked_meshes(bool p_gen_lightmap_uv, float p_lightmap_uv_texe
 
 		xform.basis.set_orthogonal_index(E->get().rot);
 		xform.set_origin(cellpos * cell_size + ofs);
-		xform.basis.scale(Vector3(cell_scale, cell_scale, cell_scale));
+		xform.basis.scale(Vector3(cell_scale * -((!!E->get().mirrored_x) * 2 - 1), cell_scale * -((!!E->get().mirrored_y) * 2 - 1), cell_scale * -((!!E->get().mirrored_z) * 2 - 1)));
 
 		OctantKey ok;
 		ok.x = key.x / octant_size;

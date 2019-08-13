@@ -160,6 +160,7 @@ class GridMapEditor : public VBoxContainer {
 
 	Vector3 cursor_origin;
 	Vector3 last_mouseover;
+	Vector3 cursor_scale;
 
 	int display_mode;
 	int selected_palette;
@@ -183,6 +184,9 @@ class GridMapEditor : public VBoxContainer {
 		MENU_OPTION_CURSOR_BACK_ROTATE_X,
 		MENU_OPTION_CURSOR_BACK_ROTATE_Z,
 		MENU_OPTION_CURSOR_CLEAR_ROTATION,
+		MENU_OPTION_CURSOR_MIRROR_Y,
+		MENU_OPTION_CURSOR_MIRROR_X,
+		MENU_OPTION_CURSOR_MIRROR_Z,
 		MENU_OPTION_PASTE_SELECTS,
 		MENU_OPTION_SELECTION_DUPLICATE,
 		MENU_OPTION_SELECTION_CUT,
