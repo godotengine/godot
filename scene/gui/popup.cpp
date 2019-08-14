@@ -74,7 +74,7 @@ void Popup::_fix_size() {
 
 	Point2 pos = get_global_position();
 	Size2 size = get_size() * get_scale();
-	Point2 window_size = get_viewport_rect().size;
+	Point2 window_size = get_viewport_rect().size - get_viewport_transform().get_origin();
 
 	if (pos.x + size.width > window_size.width)
 		pos.x = window_size.width - size.width;
