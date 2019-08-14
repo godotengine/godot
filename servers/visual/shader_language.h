@@ -125,6 +125,7 @@ public:
 		TK_CF_DO,
 		TK_CF_SWITCH,
 		TK_CF_CASE,
+		TK_CF_DEFAULT,
 		TK_CF_BREAK,
 		TK_CF_CONTINUE,
 		TK_CF_RETURN,
@@ -266,6 +267,8 @@ public:
 		FLOW_OP_DO,
 		FLOW_OP_BREAK,
 		FLOW_OP_SWITCH,
+		FLOW_OP_CASE,
+		FLOW_OP_DEFAULT,
 		FLOW_OP_CONTINUE,
 		FLOW_OP_DISCARD
 	};
@@ -420,6 +423,15 @@ public:
 		FunctionNode *parent_function;
 		BlockNode *parent_block;
 
+		enum BlockType {
+			BLOCK_TYPE_STANDART,
+			BLOCK_TYPE_SWITCH,
+			BLOCK_TYPE_CASE,
+			BLOCK_TYPE_DEFAULT,
+		};
+
+		int block_type;
+
 		struct Variable {
 			DataType type;
 			DataPrecision precision;
@@ -436,6 +448,7 @@ public:
 				Node(TYPE_BLOCK),
 				parent_function(NULL),
 				parent_block(NULL),
+				block_type(BLOCK_TYPE_STANDART),
 				single_statement(false) {}
 	};
 
