@@ -4366,6 +4366,15 @@ bool EditorNode::ensure_main_scene(bool p_from_native) {
 	return true;
 }
 
+void EditorNode::run_play() {
+	_menu_option_confirm(RUN_STOP, true);
+	_run(false);
+}
+
+void EditorNode::run_stop() {
+	_menu_option_confirm(RUN_STOP, false);
+}
+
 int EditorNode::get_current_tab() {
 	return scene_tabs->get_current_tab();
 }

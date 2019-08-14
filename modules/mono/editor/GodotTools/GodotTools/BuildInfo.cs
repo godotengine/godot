@@ -7,7 +7,7 @@ using Path = System.IO.Path;
 namespace GodotTools
 {
     [Serializable]
-    public sealed class MonoBuildInfo : Reference // TODO Remove Reference once we have proper serialization
+    public sealed class BuildInfo : Reference // TODO Remove Reference once we have proper serialization
     {
         public string Solution { get; }
         public string Configuration { get; }
@@ -17,7 +17,7 @@ namespace GodotTools
 
         public override bool Equals(object obj)
         {
-            if (obj is MonoBuildInfo other)
+            if (obj is BuildInfo other)
                 return other.Solution == Solution && other.Configuration == Configuration;
 
             return false;
@@ -34,11 +34,11 @@ namespace GodotTools
             }
         }
 
-        private MonoBuildInfo()
+        private BuildInfo()
         {
         }
 
-        public MonoBuildInfo(string solution, string configuration)
+        public BuildInfo(string solution, string configuration)
         {
             Solution = solution;
             Configuration = configuration;

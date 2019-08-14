@@ -46,8 +46,8 @@ namespace GodotTools.Build
             {
                 if (OS.IsWindows())
                 {
-                    return (GodotSharpBuilds.BuildTool) EditorSettings.GetSetting("mono/builds/build_tool")
-                           == GodotSharpBuilds.BuildTool.MsBuildMono;
+                    return (BuildManager.BuildTool) EditorSettings.GetSetting("mono/builds/build_tool")
+                           == BuildManager.BuildTool.MsBuildMono;
                 }
 
                 return false;
@@ -103,16 +103,16 @@ namespace GodotTools.Build
             return process;
         }
 
-        public static int Build(MonoBuildInfo monoBuildInfo)
+        public static int Build(BuildInfo buildInfo)
         {
-            return Build(monoBuildInfo.Solution, monoBuildInfo.Configuration,
-                monoBuildInfo.LogsDirPath, monoBuildInfo.CustomProperties);
+            return Build(buildInfo.Solution, buildInfo.Configuration,
+                buildInfo.LogsDirPath, buildInfo.CustomProperties);
         }
 
-        public static async Task<int> BuildAsync(MonoBuildInfo monoBuildInfo)
+        public static async Task<int> BuildAsync(BuildInfo buildInfo)
         {
-            return await BuildAsync(monoBuildInfo.Solution, monoBuildInfo.Configuration,
-                monoBuildInfo.LogsDirPath, monoBuildInfo.CustomProperties);
+            return await BuildAsync(buildInfo.Solution, buildInfo.Configuration,
+                buildInfo.LogsDirPath, buildInfo.CustomProperties);
         }
 
         public static int Build(string solution, string config, string loggerOutputDir, IEnumerable<string> customProperties = null)

@@ -556,14 +556,14 @@ bool GDMono::_load_corlib_assembly() {
 }
 
 #ifdef TOOLS_ENABLED
-bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type) {
+bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type, const String &p_config) {
 
 	bool &api_assembly_out_of_sync = (p_api_type == APIAssembly::API_CORE) ?
 											 GDMono::get_singleton()->core_api_assembly_out_of_sync :
 											 GDMono::get_singleton()->editor_api_assembly_out_of_sync;
 
-	String src_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug");
-	String dst_dir = GodotSharpDirs::get_res_assemblies_dir();
+	String src_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+	String dst_dir = GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config);
 
 	String assembly_name = p_api_type == APIAssembly::API_CORE ? CORE_API_ASSEMBLY_NAME : EDITOR_API_ASSEMBLY_NAME;
 
@@ -626,18 +626,28 @@ String GDMono::update_api_assemblies_from_prebuilt() {
 	if (!api_assembly_out_of_sync && FileAccess::exists(core_assembly_path) && FileAccess::exists(editor_assembly_path))
 		return String(); // No update needed
 
-	print_verbose("Updating API assemblies");
+	const int CONFIGS_LEN = 2;
+	String configs[CONFIGS_LEN] = { String("Debug"), String("Release") };
 
-	String prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug");
-	String prebuilt_core_dll_path = prebuilt_api_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
-	String prebuilt_editor_dll_path = prebuilt_api_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+	for (int i = 0; i < CONFIGS_LEN; i++) {
+		String config = configs[i];
 
-	if (!FileAccess::exists(prebuilt_core_dll_path) || !FileAccess::exists(prebuilt_editor_dll_path))
-		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ false);
+		print_verbose("Updating '" + config + "' API assemblies");
 
-	// Copy the prebuilt Api
-	if (!copy_prebuilt_api_assembly(APIAssembly::API_CORE) || !copy_prebuilt_api_assembly(APIAssembly::API_EDITOR))
-		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ true);
+		String prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(config);
+		String prebuilt_core_dll_path = prebuilt_api_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
+		String prebuilt_editor_dll_path = prebuilt_api_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+
+		if (!FileAccess::exists(prebuilt_core_dll_path) || !FileAccess::exists(prebuilt_editor_dll_path)) {
+			return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ false);
+		}
+
+		// Copy the prebuilt Api
+		if (!copy_prebuilt_api_assembly(APIAssembly::API_CORE, config) ||
+				!copy_prebuilt_api_assembly(APIAssembly::API_EDITOR, config)) {
+			return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ true);
+		}
+	}
 
 	return String(); // Updated successfully
 

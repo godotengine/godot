@@ -210,6 +210,10 @@ MonoString *godot_icall_GD_var2str(MonoObject *p_var) {
 	return GDMonoMarshal::mono_string_from_godot(vars);
 }
 
+MonoObject *godot_icall_DefaultGodotTaskScheduler() {
+	return GDMonoUtils::mono_cache.task_scheduler_handle->get_target();
+}
+
 void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_bytes2var", (void *)godot_icall_GD_bytes2var);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_convert", (void *)godot_icall_GD_convert);
@@ -233,6 +237,9 @@ void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_type_exists", (void *)godot_icall_GD_type_exists);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_var2bytes", (void *)godot_icall_GD_var2bytes);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_var2str", (void *)godot_icall_GD_var2str);
+
+	// Dispatcher
+	mono_add_internal_call("Godot.Dispatcher::godot_icall_DefaultGodotTaskScheduler", (void *)godot_icall_DefaultGodotTaskScheduler);
 }
 
 #endif // MONO_GLUE_ENABLED

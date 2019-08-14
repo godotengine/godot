@@ -7,7 +7,7 @@ using Path = System.IO.Path;
 
 namespace GodotTools
 {
-    public class MonoBuildTab : VBoxContainer
+    public class BuildTab : VBoxContainer
     {
         public enum BuildResults
         {
@@ -55,7 +55,7 @@ namespace GodotTools
             }
         }
 
-        public MonoBuildInfo BuildInfo { get; private set; }
+        public BuildInfo BuildInfo { get; private set; }
 
         private void _LoadIssuesFromFile(string csvFile)
         {
@@ -199,7 +199,7 @@ namespace GodotTools
             ErrorCount = 0;
             UpdateIssuesList();
 
-            GodotSharpEditor.Instance.MonoBottomPanel.RaiseBuildTab(this);
+            GodotSharpEditor.Instance.BottomPanel.RaiseBuildTab(this);
         }
 
         public void OnBuildExit(BuildResults result)
@@ -207,10 +207,10 @@ namespace GodotTools
             BuildExited = true;
             BuildResult = result;
 
-            _LoadIssuesFromFile(Path.Combine(BuildInfo.LogsDirPath, GodotSharpBuilds.MsBuildIssuesFileName));
+            _LoadIssuesFromFile(Path.Combine(BuildInfo.LogsDirPath, BuildManager.MsBuildIssuesFileName));
             UpdateIssuesList();
 
-            GodotSharpEditor.Instance.MonoBottomPanel.RaiseBuildTab(this);
+            GodotSharpEditor.Instance.BottomPanel.RaiseBuildTab(this);
         }
 
         public void OnBuildExecFailed(string cause)
@@ -227,7 +227,7 @@ namespace GodotTools
 
             UpdateIssuesList();
 
-            GodotSharpEditor.Instance.MonoBottomPanel.RaiseBuildTab(this);
+            GodotSharpEditor.Instance.BottomPanel.RaiseBuildTab(this);
         }
 
         public void RestartBuild()
@@ -235,7 +235,7 @@ namespace GodotTools
             if (!BuildExited)
                 throw new InvalidOperationException("Build already started");
 
-            GodotSharpBuilds.RestartBuild(this);
+            BuildManager.RestartBuild(this);
         }
 
         public void StopBuild()
@@ -243,7 +243,7 @@ namespace GodotTools
             if (!BuildExited)
                 throw new InvalidOperationException("Build is not in progress");
 
-            GodotSharpBuilds.StopBuild(this);
+            BuildManager.StopBuild(this);
         }
 
         public override void _Ready()
@@ -255,11 +255,11 @@ namespace GodotTools
             AddChild(issuesList);
         }
 
-        private MonoBuildTab()
+        private BuildTab()
         {
         }
 
-        public MonoBuildTab(MonoBuildInfo buildInfo)
+        public BuildTab(BuildInfo buildInfo)
         {
             BuildInfo = buildInfo;
         }
