@@ -55,7 +55,7 @@ void DynamicFontData::lock() {
 
 void DynamicFontData::unlock() {
 
-	fr = PoolVector<uint8_t>::Read();
+	fr.release();
 }
 
 void DynamicFontData::set_font_data(const PoolVector<uint8_t> &p_font) {

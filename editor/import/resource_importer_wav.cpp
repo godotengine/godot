@@ -62,6 +62,10 @@ String ResourceImporterWAV::get_resource_type() const {
 
 bool ResourceImporterWAV::get_option_visibility(const String &p_option, const Map<StringName, Variant> &p_options) const {
 
+	if (p_option == "force/max_rate_hz" && !bool(p_options["force/max_rate"])) {
+		return false;
+	}
+
 	return true;
 }
 
@@ -77,7 +81,7 @@ void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int 
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/8_bit"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/mono"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "force/max_rate_hz", PROPERTY_HINT_EXP_RANGE, "11025,192000,1"), 44100));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/trim"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), true));
@@ -204,6 +208,11 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 
 			frames = chunksize;
 
+			if (format_channels == 0) {
+				file->close();
+				memdelete(file);
+				ERR_FAIL_COND_V(format_channels == 0, ERR_INVALID_DATA);
+			}
 			frames /= format_channels;
 			frames /= (format_bits >> 3);
 
@@ -211,12 +220,6 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			print_line("channels: "+itos(format_channels));
 			print_line("bits: "+itos(format_bits));
 			*/
-
-			int len = frames;
-			if (format_channels == 2)
-				len *= 2;
-			if (format_bits > 8)
-				len *= 2;
 
 			data.resize(frames * format_channels);
 

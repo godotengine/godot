@@ -32,7 +32,9 @@
 #include "core/bind/core_bind.h"
 #include "core/io/marshalls.h"
 #include "core/io/zip_io.h"
+#include "core/math/crypto_core.h"
 #include "core/object.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/version.h"
@@ -42,8 +44,6 @@
 
 #include "thirdparty/minizip/unzip.h"
 #include "thirdparty/minizip/zip.h"
-#include "thirdparty/misc/base64.h"
-#include "thirdparty/misc/sha256.h"
 
 #include <zlib.h>
 
@@ -134,8 +134,6 @@ class AppxPackager {
 
 	String progress_task;
 	FileAccess *package;
-	String tmp_blockmap_file_path;
-	String tmp_content_types_file_path;
 
 	Set<String> mime_types;
 
@@ -147,8 +145,8 @@ class AppxPackager {
 
 	String hash_block(const uint8_t *p_block_data, size_t p_block_len);
 
-	void make_block_map();
-	void make_content_types();
+	void make_block_map(const String &p_path);
+	void make_content_types(const String &p_path);
 
 	_FORCE_INLINE_ unsigned int buf_put_int16(uint16_t p_val, uint8_t *p_buf) {
 		for (int i = 0; i < 2; i++) {
@@ -198,23 +196,20 @@ public:
 
 String AppxPackager::hash_block(const uint8_t *p_block_data, size_t p_block_len) {
 
-	char hash[32];
+	unsigned char hash[32];
 	char base64[45];
 
-	sha256_context ctx;
-	sha256_init(&ctx);
-	sha256_hash(&ctx, (uint8_t *)p_block_data, p_block_len);
-	sha256_done(&ctx, (uint8_t *)hash);
-
-	base64_encode(base64, hash, 32);
+	CryptoCore::sha256(p_block_data, p_block_len, hash);
+	size_t len = 0;
+	CryptoCore::b64_encode((unsigned char *)base64, 45, &len, (unsigned char *)hash, 32);
 	base64[44] = '\0';
 
 	return String(base64);
 }
 
-void AppxPackager::make_block_map() {
+void AppxPackager::make_block_map(const String &p_path) {
 
-	FileAccess *tmp_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::WRITE);
+	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"no\"?>");
 	tmp_file->store_string("<BlockMap xmlns=\"http://schemas.microsoft.com/appx/2010/blockmap\" HashMethod=\"http://www.w3.org/2001/04/xmlenc#sha256\">");
@@ -257,9 +252,9 @@ String AppxPackager::content_type(String p_extension) {
 		return "application/octet-stream";
 }
 
-void AppxPackager::make_content_types() {
+void AppxPackager::make_content_types(const String &p_path) {
 
-	FileAccess *tmp_file = FileAccess::open(tmp_content_types_file_path, FileAccess::WRITE);
+	FileAccess *tmp_file = FileAccess::open(p_path, FileAccess::WRITE);
 
 	tmp_file->store_string("<?xml version=\"1.0\" encoding=\"UTF-8\"?>");
 	tmp_file->store_string("<Types xmlns=\"http://schemas.openxmlformats.org/package/2006/content-types\">");
@@ -462,8 +457,6 @@ void AppxPackager::init(FileAccess *p_fa) {
 	package = p_fa;
 	central_dir_offset = 0;
 	end_of_central_dir_offset = 0;
-	tmp_blockmap_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
-	tmp_content_types_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
 }
 
 Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t p_len, int p_file_no, int p_total_files, bool p_compress) {
@@ -523,7 +516,9 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 			int total_out_before = strm.total_out;
 
-			deflate(&strm, Z_FULL_FLUSH);
+			int err = deflate(&strm, Z_FULL_FLUSH);
+			ERR_FAIL_COND_V(err >= 0, ERR_BUG); // Negative means bug
+
 			bh.compressed_size = strm.total_out - total_out_before;
 
 			//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
@@ -593,7 +588,9 @@ void AppxPackager::finish() {
 	// Create and add block map file
 	EditorNode::progress_task_step("export", "Creating block map...", 4);
 
-	make_block_map();
+	const String &tmp_blockmap_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpblockmap.xml");
+	make_block_map(tmp_blockmap_file_path);
+
 	FileAccess *blockmap_file = FileAccess::open(tmp_blockmap_file_path, FileAccess::READ);
 	Vector<uint8_t> blockmap_buffer;
 	blockmap_buffer.resize(blockmap_file->get_len());
@@ -606,8 +603,11 @@ void AppxPackager::finish() {
 	memdelete(blockmap_file);
 
 	// Add content types
+
 	EditorNode::progress_task_step("export", "Setting content types...", 5);
-	make_content_types();
+
+	const String &tmp_content_types_file_path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmpcontenttypes.xml");
+	make_content_types(tmp_content_types_file_path);
 
 	FileAccess *types_file = FileAccess::open(tmp_content_types_file_path, FileAccess::READ);
 	Vector<uint8_t> types_buffer;
@@ -619,6 +619,10 @@ void AppxPackager::finish() {
 
 	types_file->close();
 	memdelete(types_file);
+
+	// Cleanup generated files.
+	DirAccess::remove_file_or_error(tmp_blockmap_file_path);
+	DirAccess::remove_file_or_error(tmp_content_types_file_path);
 
 	// Pre-process central directory before signing
 	for (int i = 0; i < file_metadata.size(); i++) {
@@ -903,8 +907,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 			String err_string = "Couldn't save temp logo file.";
 
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		FileAccess *f = FileAccess::open(tmp_path, FileAccess::READ, &err);
@@ -912,10 +915,10 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 		if (err != OK) {
 
 			String err_string = "Couldn't open temp logo file.";
-
+			// Cleanup generated file.
+			DirAccess::remove_file_or_error(tmp_path);
 			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
+			ERR_FAIL_V_MSG(data, err_string);
 		}
 
 		data.resize(f->get_len());
@@ -923,31 +926,7 @@ class EditorExportPlatformUWP : public EditorExportPlatform {
 
 		f->close();
 		memdelete(f);
-
-		// Delete temp file
-		DirAccess *dir = DirAccess::open(tmp_path.get_base_dir(), &err);
-
-		if (err != OK) {
-
-			String err_string = "Couldn't open temp path to remove temp logo file.";
-
-			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
-		}
-
-		err = dir->remove(tmp_path);
-
-		memdelete(dir);
-
-		if (err != OK) {
-
-			String err_string = "Couldn't remove temp logo file.";
-
-			EditorNode::add_io_error(err_string);
-			ERR_EXPLAIN(err_string);
-			ERR_FAIL_V(data);
-		}
+		DirAccess::remove_file_or_error(tmp_path);
 
 		return data;
 	}

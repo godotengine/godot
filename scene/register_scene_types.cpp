@@ -509,6 +509,7 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVectorRefract>();
 	ClassDB::register_class<VisualShaderNodeScalarInterp>();
 	ClassDB::register_class<VisualShaderNodeVectorInterp>();
+	ClassDB::register_class<VisualShaderNodeVectorScalarMix>();
 	ClassDB::register_class<VisualShaderNodeVectorCompose>();
 	ClassDB::register_class<VisualShaderNodeTransformCompose>();
 	ClassDB::register_class<VisualShaderNodeVectorDecompose>();
@@ -522,11 +523,14 @@ void register_scene_types() {
 	ClassDB::register_class<VisualShaderNodeVec3Uniform>();
 	ClassDB::register_class<VisualShaderNodeTransformUniform>();
 	ClassDB::register_class<VisualShaderNodeTextureUniform>();
+	ClassDB::register_class<VisualShaderNodeTextureUniformTriplanar>();
 	ClassDB::register_class<VisualShaderNodeCubeMapUniform>();
 	ClassDB::register_class<VisualShaderNodeIf>();
 	ClassDB::register_class<VisualShaderNodeSwitch>();
 	ClassDB::register_class<VisualShaderNodeFresnel>();
 	ClassDB::register_class<VisualShaderNodeExpression>();
+	ClassDB::register_class<VisualShaderNodeIs>();
+	ClassDB::register_class<VisualShaderNodeCompare>();
 
 	ClassDB::register_class<ShaderMaterial>();
 	ClassDB::register_virtual_class<CanvasItem>();
@@ -604,6 +608,7 @@ void register_scene_types() {
 	ClassDB::register_class<PrismMesh>();
 	ClassDB::register_class<QuadMesh>();
 	ClassDB::register_class<SphereMesh>();
+	ClassDB::register_class<PointMesh>();
 	ClassDB::register_virtual_class<Material>();
 	ClassDB::register_class<SpatialMaterial>();
 	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
@@ -748,7 +753,7 @@ void register_scene_types() {
 	if (theme_path != String()) {
 		Ref<Theme> theme = ResourceLoader::load(theme_path);
 		if (theme.is_valid()) {
-			Theme::set_default(theme);
+			Theme::set_project_default(theme);
 			if (font.is_valid()) {
 				Theme::set_default_font(font);
 			}

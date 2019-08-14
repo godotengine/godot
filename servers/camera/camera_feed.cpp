@@ -3,10 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,8 +60,8 @@ void CameraFeed::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FEED_NOIMAGE);
 	BIND_ENUM_CONSTANT(FEED_RGB);
-	BIND_ENUM_CONSTANT(FEED_YCbCr);
-	BIND_ENUM_CONSTANT(FEED_YCbCr_Sep);
+	BIND_ENUM_CONSTANT(FEED_YCBCR);
+	BIND_ENUM_CONSTANT(FEED_YCBCR_SEP);
 
 	BIND_ENUM_CONSTANT(FEED_UNSPECIFIED);
 	BIND_ENUM_CONSTANT(FEED_FRONT);
@@ -145,7 +145,7 @@ CameraFeed::CameraFeed() {
 	// create a texture object
 	VisualServer *vs = VisualServer::get_singleton();
 	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
-	texture[CameraServer::FEED_CbCr_IMAGE] = vs->texture_create();
+	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
 }
 
 CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
@@ -162,14 +162,14 @@ CameraFeed::CameraFeed(String p_name, FeedPosition p_position) {
 	// create a texture object
 	VisualServer *vs = VisualServer::get_singleton();
 	texture[CameraServer::FEED_Y_IMAGE] = vs->texture_create(); // also used for RGBA
-	texture[CameraServer::FEED_CbCr_IMAGE] = vs->texture_create();
+	texture[CameraServer::FEED_CBCR_IMAGE] = vs->texture_create();
 }
 
 CameraFeed::~CameraFeed() {
 	// Free our textures
 	VisualServer *vs = VisualServer::get_singleton();
 	vs->free(texture[CameraServer::FEED_Y_IMAGE]);
-	vs->free(texture[CameraServer::FEED_CbCr_IMAGE]);
+	vs->free(texture[CameraServer::FEED_CBCR_IMAGE]);
 }
 
 void CameraFeed::set_RGB_img(Ref<Image> p_rgb_img) {
@@ -208,7 +208,7 @@ void CameraFeed::set_YCbCr_img(Ref<Image> p_ycbcr_img) {
 		}
 
 		vs->texture_set_data(texture[CameraServer::FEED_RGBA_IMAGE], p_ycbcr_img);
-		datatype = CameraFeed::FEED_YCbCr;
+		datatype = CameraFeed::FEED_YCBCR;
 	}
 }
 
@@ -233,12 +233,12 @@ void CameraFeed::set_YCbCr_imgs(Ref<Image> p_y_img, Ref<Image> p_cbcr_img) {
 			vs->texture_allocate(texture[CameraServer::FEED_Y_IMAGE], new_y_width, new_y_height, 0, Image::FORMAT_R8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_USED_FOR_STREAMING);
 
 			///@TODO GLES2 doesn't support FORMAT_RG8, need to do some form of conversion
-			vs->texture_allocate(texture[CameraServer::FEED_CbCr_IMAGE], new_cbcr_width, new_cbcr_height, 0, Image::FORMAT_RG8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_USED_FOR_STREAMING);
+			vs->texture_allocate(texture[CameraServer::FEED_CBCR_IMAGE], new_cbcr_width, new_cbcr_height, 0, Image::FORMAT_RG8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_USED_FOR_STREAMING);
 		}
 
 		vs->texture_set_data(texture[CameraServer::FEED_Y_IMAGE], p_y_img);
-		vs->texture_set_data(texture[CameraServer::FEED_CbCr_IMAGE], p_cbcr_img);
-		datatype = CameraFeed::FEED_YCbCr_Sep;
+		vs->texture_set_data(texture[CameraServer::FEED_CBCR_IMAGE], p_cbcr_img);
+		datatype = CameraFeed::FEED_YCBCR_SEP;
 	}
 }
 

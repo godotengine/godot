@@ -330,11 +330,9 @@ bool Physics2DDirectSpaceStateSW::collide_shape(RID p_shape, const Transform2D &
 	cbk.amount = 0;
 	cbk.passed = 0;
 	cbk.ptr = r_results;
-	CollisionSolver2DSW::CallbackResult cbkres = NULL;
+	CollisionSolver2DSW::CallbackResult cbkres = Physics2DServerSW::_shape_col_cbk;
 
-	Physics2DServerSW::CollCbkData *cbkptr = NULL;
-	cbkptr = &cbk;
-	cbkres = Physics2DServerSW::_shape_col_cbk;
+	Physics2DServerSW::CollCbkData *cbkptr = &cbk;
 
 	for (int i = 0; i < amount; i++) {
 
@@ -442,7 +440,7 @@ bool Physics2DDirectSpaceStateSW::rest_info(RID p_shape, const Transform2D &p_sh
 			continue;
 	}
 
-	if (rcd.best_len == 0)
+	if (rcd.best_len == 0 || !rcd.best_object)
 		return false;
 
 	r_info->collider_id = rcd.best_object->get_instance_id();

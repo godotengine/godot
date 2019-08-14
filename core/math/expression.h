@@ -34,7 +34,8 @@
 #include "core/reference.h"
 
 class Expression : public Reference {
-	GDCLASS(Expression, Reference)
+	GDCLASS(Expression, Reference);
+
 public:
 	enum BuiltinFunc {
 		MATH_SIN,
@@ -50,6 +51,7 @@ public:
 		MATH_SQRT,
 		MATH_FMOD,
 		MATH_FPOSMOD,
+		MATH_POSMOD,
 		MATH_FLOOR,
 		MATH_CEIL,
 		MATH_ROUND,
@@ -65,6 +67,7 @@ public:
 		MATH_STEP_DECIMALS,
 		MATH_STEPIFY,
 		MATH_LERP,
+		MATH_LERP_ANGLE,
 		MATH_INVERSE_LERP,
 		MATH_RANGE_LERP,
 		MATH_SMOOTHSTEP,

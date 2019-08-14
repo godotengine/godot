@@ -31,6 +31,11 @@
 #ifndef ANIMATION_TRACK_EDITOR_H
 #define ANIMATION_TRACK_EDITOR_H
 
+#include "editor/editor_data.h"
+#include "editor/editor_spin_slider.h"
+#include "editor/property_editor.h"
+#include "editor/property_selector.h"
+#include "scene/animation/animation_cache.h"
 #include "scene/gui/control.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/menu_button.h"
@@ -40,17 +45,11 @@
 #include "scene/gui/tab_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
-
-#include "editor/property_selector.h"
-#include "editor_data.h"
-#include "editor_spin_slider.h"
-#include "property_editor.h"
-#include "scene/animation/animation_cache.h"
 #include "scene/resources/animation.h"
 #include "scene_tree_editor.h"
 
 class AnimationTimelineEdit : public Range {
-	GDCLASS(AnimationTimelineEdit, Range)
+	GDCLASS(AnimationTimelineEdit, Range);
 
 	Ref<Animation> animation;
 	int name_limit;
@@ -123,7 +122,7 @@ class AnimationTrackEditor;
 
 class AnimationTrackEdit : public Control {
 
-	GDCLASS(AnimationTrackEdit, Control)
+	GDCLASS(AnimationTrackEdit, Control);
 
 	enum {
 		MENU_CALL_MODE_CONTINUOUS,
@@ -175,8 +174,9 @@ class AnimationTrackEdit : public Control {
 
 	void _path_entered(const String &p_text);
 	void _play_position_draw();
-	mutable int dropping_at;
+	bool _is_value_key_valid(const Variant &p_key_value, Variant::Type &r_valid_type) const;
 
+	mutable int dropping_at;
 	float insert_at_pos;
 	bool moving_selection_attempt;
 	int select_single_attempt;
@@ -231,13 +231,14 @@ public:
 	void cancel_drop();
 
 	void set_in_group(bool p_enable);
-	void append_to_selection(const Rect2 &p_box);
+	void append_to_selection(const Rect2 &p_box, bool p_deselection);
 
 	AnimationTrackEdit();
 };
 
 class AnimationTrackEditPlugin : public Reference {
-	GDCLASS(AnimationTrackEditPlugin, Reference)
+	GDCLASS(AnimationTrackEditPlugin, Reference);
+
 public:
 	virtual AnimationTrackEdit *create_value_track_edit(Object *p_object, Variant::Type p_type, const String &p_property, PropertyHint p_hint, const String &p_hint_string, int p_usage);
 	virtual AnimationTrackEdit *create_audio_track_edit();
@@ -245,10 +246,11 @@ public:
 };
 
 class AnimationTrackKeyEdit;
+class AnimationMultiTrackKeyEdit;
 class AnimationBezierTrackEdit;
 
 class AnimationTrackEditGroup : public Control {
-	GDCLASS(AnimationTrackEditGroup, Control)
+	GDCLASS(AnimationTrackEditGroup, Control);
 	Ref<Texture> icon;
 	String node_name;
 	NodePath node;
@@ -271,7 +273,7 @@ public:
 };
 
 class AnimationTrackEditor : public VBoxContainer {
-	GDCLASS(AnimationTrackEditor, VBoxContainer)
+	GDCLASS(AnimationTrackEditor, VBoxContainer);
 
 	enum {
 		EDIT_COPY_TRACKS,
@@ -331,7 +333,7 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _update_scroll(double);
 	void _update_step(double p_new_step);
-	void _update_length(double p_new_step);
+	void _update_length(double p_new_len);
 	void _dropped_track(int p_from_track, int p_to_track);
 
 	void _add_track(int p_type);
@@ -414,6 +416,7 @@ class AnimationTrackEditor : public VBoxContainer {
 	void _move_selection_cancel();
 
 	AnimationTrackKeyEdit *key_edit;
+	AnimationMultiTrackKeyEdit *multi_key_edit;
 	void _update_key_edit();
 
 	void _clear_key_edit();
@@ -438,12 +441,14 @@ class AnimationTrackEditor : public VBoxContainer {
 	SpinBox *optimize_max_angle;
 
 	ConfirmationDialog *cleanup_dialog;
-	CheckButton *cleanup_keys;
-	CheckButton *cleanup_tracks;
-	CheckButton *cleanup_all;
+	CheckBox *cleanup_keys;
+	CheckBox *cleanup_tracks;
+	CheckBox *cleanup_all;
 
 	ConfirmationDialog *scale_dialog;
 	SpinBox *scale;
+
+	void _select_all_tracks_for_copy();
 
 	void _edit_menu_pressed(int p_option);
 	int last_menu_track_opt;
@@ -458,8 +463,12 @@ class AnimationTrackEditor : public VBoxContainer {
 
 	void _selection_changed();
 
+	bool selected_all_tracks;
 	ConfirmationDialog *track_copy_dialog;
 	Tree *track_copy_select;
+	HBoxContainer *track_copy_options;
+	Button *select_all_button;
+
 	struct TrackClipboard {
 		NodePath full_path;
 		NodePath base_path;
@@ -511,8 +520,8 @@ public:
 	bool is_key_selected(int p_track, int p_key) const;
 	bool is_selection_active() const;
 	bool is_moving_selection() const;
+	bool is_snap_enabled() const;
 	float get_moving_selection_offset() const;
-	bool is_snap_enabled();
 	float snap_time(float p_value);
 	bool is_grouping_tracks();
 

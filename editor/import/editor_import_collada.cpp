@@ -1175,35 +1175,33 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					morph = &collada.state.morph_controller_data_map[ngsource];
 					meshid = morph->mesh;
 
-					Vector<String> targets;
+					if (morph->targets.has("MORPH_TARGET")) {
+						String target = morph->targets["MORPH_TARGET"];
+						bool valid = false;
+						if (morph->sources.has(target)) {
+							valid = true;
+							Vector<String> names = morph->sources[target].sarray;
+							for (int i = 0; i < names.size(); i++) {
 
-					morph->targets.has("MORPH_TARGET");
-					String target = morph->targets["MORPH_TARGET"];
-					bool valid = false;
-					if (morph->sources.has(target)) {
-						valid = true;
-						Vector<String> names = morph->sources[target].sarray;
-						for (int i = 0; i < names.size(); i++) {
+								String meshid2 = names[i];
+								if (collada.state.mesh_data_map.has(meshid2)) {
+									Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
+									mesh->set_name(meshdata.name);
+									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
+									ERR_FAIL_COND_V(err, err);
 
-							String meshid2 = names[i];
-							if (collada.state.mesh_data_map.has(meshid2)) {
-								Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
-								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
-								mesh->set_name(meshdata.name);
-								Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
-								ERR_FAIL_COND_V(err, err);
-
-								morphs.push_back(mesh);
-							} else {
-								valid = false;
+									morphs.push_back(mesh);
+								} else {
+									valid = false;
+								}
 							}
 						}
+
+						if (!valid)
+							morphs.clear();
+						ngsource = "";
 					}
-
-					if (!valid)
-						morphs.clear();
-
-					ngsource = "";
 				}
 
 				if (ngsource != "") {

@@ -44,6 +44,23 @@ void ScriptCreateDialog::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_THEME_CHANGED:
 		case NOTIFICATION_ENTER_TREE: {
+			for (int i = 0; i < ScriptServer::get_language_count(); i++) {
+				String lang = ScriptServer::get_language(i)->get_name();
+				Ref<Texture> lang_icon = get_icon(lang, "EditorIcons");
+				if (lang_icon.is_valid()) {
+					language_menu->set_item_icon(i, lang_icon);
+				}
+			}
+			String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
+			Ref<Texture> last_lang_icon;
+			if (!last_lang.empty()) {
+				last_lang_icon = get_icon(last_lang, "EditorIcons");
+			} else {
+				last_lang_icon = language_menu->get_item_icon(default_language);
+			}
+			if (last_lang_icon.is_valid()) {
+				language_menu->set_icon(last_lang_icon);
+			}
 			path_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_browse_button->set_icon(get_icon("Folder", "EditorIcons"));
 			parent_search_button->set_icon(get_icon("ClassList", "EditorIcons"));
@@ -126,7 +143,7 @@ bool ScriptCreateDialog::_validate_class(const String &p_string) {
 				return false; // no start with number plz
 		}
 
-		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_';
+		bool valid_char = (p_string[i] >= '0' && p_string[i] <= '9') || (p_string[i] >= 'a' && p_string[i] <= 'z') || (p_string[i] >= 'A' && p_string[i] <= 'Z') || p_string[i] == '_' || p_string[i] == '.';
 
 		if (!valid_char)
 			return false;
@@ -286,8 +303,8 @@ void ScriptCreateDialog::_create_new() {
 		}
 	}
 
-	hide();
 	emit_signal("script_created", scr);
+	hide();
 }
 
 void ScriptCreateDialog::_load_exist() {
@@ -300,8 +317,8 @@ void ScriptCreateDialog::_load_exist() {
 		return;
 	}
 
-	hide();
 	emit_signal("script_created", p_script.get_ref_ptr());
+	hide();
 }
 
 void ScriptCreateDialog::_lang_changed(int l) {
@@ -528,7 +545,7 @@ void ScriptCreateDialog::_update_dialog() {
 	if (has_named_classes) {
 		if (is_new_script_created) {
 			class_name->set_editable(true);
-			class_name->set_placeholder(TTR("Allowed: a-z, A-Z, 0-9 and _"));
+			class_name->set_placeholder(TTR("Allowed: a-z, A-Z, 0-9, _ and ."));
 			class_name->set_placeholder_alpha(0.3);
 		} else {
 			class_name->set_editable(false);
@@ -671,13 +688,13 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	gc->add_child(l);
 	gc->add_child(language_menu);
 
-	int default_lang = 0;
+	default_language = 0;
 	for (int i = 0; i < ScriptServer::get_language_count(); i++) {
 
 		String lang = ScriptServer::get_language(i)->get_name();
 		language_menu->add_item(lang);
 		if (lang == "GDScript") {
-			default_lang = i;
+			default_language = i;
 		}
 	}
 
@@ -691,8 +708,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 			}
 		}
 	} else {
-		language_menu->select(default_lang);
-		current_language = default_lang;
+		language_menu->select(default_language);
+		current_language = default_language;
 	}
 
 	language_menu->connect("item_selected", this, "_lang_changed");
@@ -742,8 +759,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	/* Built-in Script */
 
-	internal = memnew(CheckButton);
-	internal->set_h_size_flags(0);
+	internal = memnew(CheckBox);
+	internal->set_text(TTR("On"));
 	internal->connect("pressed", this, "_built_in_pressed");
 	internal_label = memnew(Label(TTR("Built-in Script")));
 	internal_label->set_align(Label::ALIGN_RIGHT);

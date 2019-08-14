@@ -49,6 +49,7 @@ public:
 		int index;
 		bool children_order_dirty;
 		int ysort_children_count;
+		Color ysort_modulate;
 		Transform2D ysort_xform;
 		Vector2 ysort_pos;
 
@@ -84,8 +85,8 @@ public:
 
 			if (Math::is_equal_approx(p_left->ysort_pos.y, p_right->ysort_pos.y))
 				return p_left->ysort_pos.x < p_right->ysort_pos.x;
-			else
-				return p_left->ysort_pos.y < p_right->ysort_pos.y;
+
+			return p_left->ysort_pos.y < p_right->ysort_pos.y;
 		}
 	};
 

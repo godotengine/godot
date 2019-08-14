@@ -494,7 +494,7 @@ static void clear_touches() {
 #ifdef DEBUG_ENABLED
 	GLenum err = glGetError();
 	if (err)
-		NSLog(@"%x error", err);
+		NSLog(@"DrawView: %x error", err);
 #endif
 }
 

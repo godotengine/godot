@@ -279,15 +279,24 @@ int mbedtls_x509_csr_parse( mbedtls_x509_csr *csr, const unsigned char *buf, siz
     {
         mbedtls_pem_init( &pem );
         ret = mbedtls_pem_read_buffer( &pem,
-                               "-----BEGIN CERTIFICATE REQUEST-----",
-                               "-----END CERTIFICATE REQUEST-----",
-                               buf, NULL, 0, &use_len );
+                                       "-----BEGIN CERTIFICATE REQUEST-----",
+                                       "-----END CERTIFICATE REQUEST-----",
+                                       buf, NULL, 0, &use_len );
+        if( ret == MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT )
+        {
+            ret = mbedtls_pem_read_buffer( &pem,
+                                           "-----BEGIN NEW CERTIFICATE REQUEST-----",
+                                           "-----END NEW CERTIFICATE REQUEST-----",
+                                           buf, NULL, 0, &use_len );
+        }
 
         if( ret == 0 )
+        {
             /*
              * Was PEM encoded, parse the result
              */
             ret = mbedtls_x509_csr_parse_der( csr, pem.buf, pem.buflen );
+        }
 
         mbedtls_pem_free( &pem );
         if( ret != MBEDTLS_ERR_PEM_NO_HEADER_FOOTER_PRESENT )

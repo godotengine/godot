@@ -200,6 +200,8 @@ void RasterizerCanvasGLES3::canvas_end() {
 	glBindBufferBase(GL_UNIFORM_BUFFER, 0, 0);
 	glColorMask(1, 1, 1, 1);
 
+	glVertexAttrib4f(VS::ARRAY_COLOR, 1, 1, 1, 1);
+
 	state.using_texture_rect = false;
 	state.using_ninepatch = false;
 }
@@ -327,9 +329,6 @@ void RasterizerCanvasGLES3::_draw_polygon(const int *p_indices, int p_index_coun
 	uint32_t buffer_ofs = 0;
 
 	//vertex
-#ifdef DEBUG_ENABLED
-	ERR_FAIL_COND(buffer_ofs > data.polygon_buffer_size);
-#endif
 	glBufferSubData(GL_ARRAY_BUFFER, buffer_ofs, sizeof(Vector2) * p_vertex_count, p_vertices);
 	glEnableVertexAttribArray(VS::ARRAY_VERTEX);
 	glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, false, sizeof(Vector2), CAST_INT_TO_UCHAR_PTR(buffer_ofs));
@@ -694,7 +693,7 @@ void RasterizerCanvasGLES3::_canvas_item_render_commands(Item *p_item, Item *cur
 
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::DST_RECT, Color(dst_rect.position.x, dst_rect.position.y, dst_rect.size.x, dst_rect.size.y));
 					state.canvas_shader.set_uniform(CanvasShaderGLES3::SRC_RECT, Color(src_rect.position.x, src_rect.position.y, src_rect.size.x, src_rect.size.y));
-					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, (rect->flags & CANVAS_RECT_CLIP_UV) ? true : false);
+					state.canvas_shader.set_uniform(CanvasShaderGLES3::CLIP_RECT_UV, rect->flags & CANVAS_RECT_CLIP_UV);
 
 					glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
 
@@ -1588,6 +1587,11 @@ void RasterizerCanvasGLES3::canvas_render_items(Item *p_item_list, int p_z, cons
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::FINAL_MODULATE, state.canvas_item_modulate);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::MODELVIEW_MATRIX, state.final_transform);
 						state.canvas_shader.set_uniform(CanvasShaderGLES3::EXTRA_MATRIX, Transform2D());
+						if (storage->frame.current_rt) {
+							state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0 / storage->frame.current_rt->width, 1.0 / storage->frame.current_rt->height));
+						} else {
+							state.canvas_shader.set_uniform(CanvasShaderGLES3::SCREEN_PIXEL_SIZE, Vector2(1.0, 1.0));
+						}
 					}
 
 					glBindBufferBase(GL_UNIFORM_BUFFER, 1, static_cast<LightInternal *>(light->light_internal.get_data())->ubo);
@@ -1935,7 +1939,7 @@ void RasterizerCanvasGLES3::draw_window_margins(int *black_margin, RID *black_im
 	int window_h = window_size.height;
 	int window_w = window_size.width;
 
-	glBindFramebuffer(GL_FRAMEBUFFER, storage->system_fbo);
+	glBindFramebuffer(GL_FRAMEBUFFER, RasterizerStorageGLES3::system_fbo);
 	glViewport(0, 0, window_size.width, window_size.height);
 	canvas_begin();
 

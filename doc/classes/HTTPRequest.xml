@@ -54,21 +54,23 @@
 			</argument>
 			<description>
 				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
-				Returns [code]OK[/code] if request is successfully created. (Does not imply that the server has responded), [code]ERR_UNCONFIGURED[/code] if not in the tree, [code]ERR_BUSY[/code] if still processing previous request, [code]ERR_INVALID_PARAMETER[/code] if given string is not a valid URL format, or [code]ERR_CANT_CONNECT[/code] if not using thread and the [HTTPClient] cannot connect to host.
+				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit">
+		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
 			Maximum allowed size for response bodies.
 		</member>
-		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file">
+		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
 			The file to download into. Will output any received file into it.
 		</member>
-		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects">
+		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
 		</member>
-		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads">
+		<member name="timeout" type="int" setter="set_timeout" getter="get_timeout" default="0">
+		</member>
+		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
 			If [code]true[/code], multithreading is used to improve performance.
 		</member>
 	</members>
@@ -83,7 +85,7 @@
 			<argument index="3" name="body" type="PoolByteArray">
 			</argument>
 			<description>
-				This signal is emitted upon request completion.
+				Emitted when a request is completed.
 			</description>
 		</signal>
 	</signals>
@@ -122,6 +124,8 @@
 		</constant>
 		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11" enum="Result">
 			Request reached its maximum redirect limit, see [member max_redirects].
+		</constant>
+		<constant name="RESULT_TIMEOUT" value="12" enum="Result">
 		</constant>
 	</constants>
 </class>

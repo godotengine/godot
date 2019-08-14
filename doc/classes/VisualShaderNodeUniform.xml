@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="uniform_name" type="String" setter="set_uniform_name" getter="get_uniform_name">
+		<member name="uniform_name" type="String" setter="set_uniform_name" getter="get_uniform_name" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

@@ -4,8 +4,8 @@
 		Hyper-text transfer protocol client.
 	</brief_description>
 	<description>
-		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases.
-		Note that this client only needs to connect to a host once (see [method connect_to_host]) to send multiple requests. Because of this, methods that take URLs usually take just the part after the host instead of the full URL, as the client is already connected to a host. See [method request] for a full example and to get started.
+		Hyper-text transfer protocol client (sometimes called "User Agent"). Used to make HTTP requests to download web content, upload files and other data or to communicate with various services, among other use cases. See [HTTPRequest] for an higher-level alternative.
+		[b]Note:[/b] This client only needs to connect to a host once (see [method connect_to_host]) to send multiple requests. Because of this, methods that take URLs usually take just the part after the host instead of the full URL, as the client is already connected to a host. See [method request] for a full example and to get started.
 		A [HTTPClient] should be reused between multiple requests or to connect to different hosts instead of creating one client per request. Supports SSL and SSL server certificate verification. HTTP status codes in the 2xx range indicate success, 3xx redirection (i.e. "try again, but over here"), 4xx something was wrong with the request, and 5xx something went wrong on the server's side.
 		For more information on HTTP, see https://developer.mozilla.org/en-US/docs/Web/HTTP (or read RFC 2616 to get it straight from the source: https://tools.ietf.org/html/rfc2616).
 	</description>
@@ -33,7 +33,7 @@
 			<argument index="3" name="verify_host" type="bool" default="true">
 			</argument>
 			<description>
-				Connect to a host. This needs to be done before any requests are sent.
+				Connects to a host. This needs to be done before any requests are sent.
 				The host should not have http:// prepended but will strip the protocol identifier if provided.
 				If no [code]port[/code] is specified (or [code]-1[/code] is used), it is automatically set to 80 for HTTP and 443 for HTTPS (if [code]use_ssl[/code] is enabled).
 				[code]verify_host[/code] will check the SSL identity of the host if set to [code]true[/code].
@@ -64,16 +64,21 @@
 			<return type="Dictionary">
 			</return>
 			<description>
-				Returns all response headers as dictionary where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
-				Structure: ("key":"value1; value2")
-				Example: (content-length:12), (Content-Type:application/json; charset=UTF-8)
+				Returns all response headers as a Dictionary of structure [code]{ "key": "value1; value2" }[/code] where the case-sensitivity of the keys and values is kept like the server delivers it. A value is a simple String, this string can have more than one value where "; " is used as separator.
+				[b]Example:[/b]
+				[codeblock]
+				{
+				    "content-length": 12,
+					"Content-Type": "application/json; charset=UTF-8",
+				}
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_status" qualifiers="const">
 			<return type="int" enum="HTTPClient.Status">
 			</return>
 			<description>
-				Returns a STATUS_* enum constant. Need to call [method poll] in order to get status updates.
+				Returns a [code]STATUS_*[/code] enum constant. Need to call [method poll] in order to get status updates.
 			</description>
 		</method>
 		<method name="has_response" qualifiers="const">
@@ -107,13 +112,13 @@
 				[codeblock]
 				var fields = {"username": "user", "password": "pass"}
 				String query_string = http_client.query_string_from_dict(fields)
-				# returns: "username=user&amp;password=pass"
+				# Returns "username=user&amp;password=pass"
 				[/codeblock]
-				Furthermore, if a key has a null value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
+				Furthermore, if a key has a [code]null[/code] value, only the key itself is added, without equal sign and value. If the value is an array, for each value in it a pair with the same key is added.
 				[codeblock]
 				var fields = {"single": 123, "not_valued": null, "multiple": [22, 33, 44]}
 				String query_string = http_client.query_string_from_dict(fields)
-				# returns: "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
+				# Returns "single=123&amp;not_valued&amp;multiple=22&amp;multiple=33&amp;multiple=44"
 				[/codeblock]
 			</description>
 		</method>
@@ -175,7 +180,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled">
+		<member name="blocking_mode_enabled" type="bool" setter="set_blocking_mode" getter="is_blocking_mode_enabled" default="false">
 			If [code]true[/code], execution will block until all data is read from the response.
 		</member>
 		<member name="connection" type="StreamPeer" setter="set_connection" getter="get_connection">
@@ -193,7 +198,7 @@
 			HTTP POST method. The POST method is used to submit an entity to the specified resource, often causing a change in state or side effects on the server. This is often used for forms and submitting data or uploading files.
 		</constant>
 		<constant name="METHOD_PUT" value="3" enum="Method">
-			HTTP PUT method. The PUT method asks to replace all current representations of the target resource with the request payload. (You can think of [code]POST[/code] as "create or update" and [code]PUT[/code] as "update", although many services tend to not make a clear distinction or change their meaning).
+			HTTP PUT method. The PUT method asks to replace all current representations of the target resource with the request payload. (You can think of POST as "create or update" and PUT as "update", although many services tend to not make a clear distinction or change their meaning).
 		</constant>
 		<constant name="METHOD_DELETE" value="4" enum="Method">
 			HTTP DELETE method. The DELETE method requests to delete the specified resource.
@@ -211,7 +216,7 @@
 			HTTP PATCH method. The PATCH method is used to apply partial modifications to a resource.
 		</constant>
 		<constant name="METHOD_MAX" value="9" enum="Method">
-			Marker for end of [code]METHOD_*[/code] enum. Not used.
+			Represents the size of the [enum Method] enum.
 		</constant>
 		<constant name="STATUS_DISCONNECTED" value="0" enum="Status">
 			Status: Disconnected from the server.
@@ -298,10 +303,10 @@
 			HTTP status code [code]304 Not Modified[/code]. A conditional GET or HEAD request has been received and would have resulted in a 200 OK response if it were not for the fact that the condition evaluated to [code]false[/code].
 		</constant>
 		<constant name="RESPONSE_USE_PROXY" value="305" enum="ResponseCode">
-			HTTP status code [code]305 Use Proxy[/code]. Deprecated. Do not use.
+			HTTP status code [code]305 Use Proxy[/code]. [i]Deprecated. Do not use.[/i]
 		</constant>
 		<constant name="RESPONSE_SWITCH_PROXY" value="306" enum="ResponseCode">
-			HTTP status code [code]306 Switch Proxy[/code]. Deprecated. Do not use.
+			HTTP status code [code]306 Switch Proxy[/code]. [i]Deprecated. Do not use.[/i]
 		</constant>
 		<constant name="RESPONSE_TEMPORARY_REDIRECT" value="307" enum="ResponseCode">
 			HTTP status code [code]307 Temporary Redirect[/code]. The target resource resides temporarily under a different URI and the user agent MUST NOT change the request method if it performs an automatic redirection to that URI.

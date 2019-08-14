@@ -7,7 +7,7 @@
 		A WebRTC connection between the local computer and a remote peer. Provides an interface to connect, maintain and monitor the connection.
 		Setting up a WebRTC connection between two peers from now on) may not seem a trivial task, but it can be broken down into 3 main steps:
 		- The peer that wants to initiate the connection ([code]A[/code] from now on) creates an offer and send it to the other peer ([code]B[/code] from now on).
-		- [code]B[/code] receives the offer, generate and answer, and sends it to [code]B[/code]).
+		- [code]B[/code] receives the offer, generate and answer, and sends it to [code]A[/code]).
 		- [code]A[/code] and [code]B[/code] then generates and exchange ICE candidates with each other.
 		After these steps, the connection should become connected. Keep on reading or look into the tutorial for more information.
 	</description>
@@ -60,7 +60,7 @@
 				    "protocol": "my-custom-protocol", # A custom sub-protocol string for this channel.
 				}
 				[/codeblock]
-				NOTE: You must keep a reference to channels created this way, or it will be closed.
+				[b]Note:[/b] You must keep a reference to channels created this way, or it will be closed.
 			</description>
 		</method>
 		<method name="create_offer">
@@ -68,7 +68,7 @@
 			</return>
 			<description>
 				Creates a new SDP offer to start a WebRTC connection with a remote peer. At least one [WebRTCDataChannel] must have been created before calling this method.
-				If this functions returns [code]OK[/code], [signal session_description_created] will be called when the session is ready to be sent.
+				If this functions returns [constant OK], [signal session_description_created] will be called when the session is ready to be sent.
 			</description>
 		</method>
 		<method name="get_connection_state" qualifiers="const">
@@ -172,7 +172,7 @@
 			The connection is new, data channels and an offer can be created in this state.
 		</constant>
 		<constant name="STATE_CONNECTING" value="1" enum="ConnectionState">
-			The peer is connecting, ICE is in progress, non of the transports has failed.
+			The peer is connecting, ICE is in progress, none of the transports has failed.
 		</constant>
 		<constant name="STATE_CONNECTED" value="2" enum="ConnectionState">
 			The peer is connected, all ICE transports are connected.

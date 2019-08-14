@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Semaphore" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
-		A synchronization Semaphore.
+		A synchronization semaphore.
 	</brief_description>
 	<description>
-		A synchronization Semaphore. Element used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
+		A synchronization semaphore which can be used to synchronize multiple [Thread]s. Initialized to zero on creation. Be careful to avoid deadlocks. For a binary version, see [Mutex].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,14 +13,14 @@
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Lowers the [Semaphore], allowing one more thread in. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
+				Lowers the [Semaphore], allowing one more thread in. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
 			</description>
 		</method>
 		<method name="wait">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero. Returns [code]OK[/code] on success, [code]ERR_BUSY[/code] otherwise.
+				Tries to wait for the [Semaphore], if its value is zero, blocks until non-zero. Returns [constant OK] on success, [constant ERR_BUSY] otherwise.
 			</description>
 		</method>
 	</methods>

@@ -207,8 +207,6 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 
 		ERR_FAIL_COND_V(err != OK, RES());
 	}
-
-	return RES();
 }
 
 void ResourceFormatLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {
@@ -283,7 +281,6 @@ RES ResourceLoader::_load(const String &p_path, const String &p_original_path, c
 		ERR_EXPLAIN("No loader found for resource: " + p_path);
 	}
 	ERR_FAIL_V(RES());
-	return RES();
 }
 
 bool ResourceLoader::_add_to_loading_map(const String &p_path) {
@@ -543,7 +540,6 @@ Ref<ResourceInteractiveLoader> ResourceLoader::load_interactive(const String &p_
 		ERR_EXPLAIN("No loader found for resource: " + path);
 	}
 	ERR_FAIL_V(Ref<ResourceInteractiveLoader>());
-	return Ref<ResourceInteractiveLoader>();
 }
 
 void ResourceLoader::add_resource_format_loader(Ref<ResourceFormatLoader> p_format_loader, bool p_at_front) {
@@ -944,8 +940,7 @@ bool ResourceLoader::add_custom_resource_format_loader(String script_path) {
 	ERR_EXPLAIN("Cannot instance script as custom resource loader, expected 'ResourceFormatLoader' inheritance, got: " + String(ibt));
 	ERR_FAIL_COND_V(obj == NULL, false);
 
-	ResourceFormatLoader *crl = NULL;
-	crl = Object::cast_to<ResourceFormatLoader>(obj);
+	ResourceFormatLoader *crl = Object::cast_to<ResourceFormatLoader>(obj);
 	crl->set_script(s.get_ref_ptr());
 	ResourceLoader::add_resource_format_loader(crl);
 

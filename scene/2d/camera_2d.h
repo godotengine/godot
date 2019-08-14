@@ -77,6 +77,9 @@ protected:
 	float h_ofs;
 	float v_ofs;
 
+	bool h_offset_changed;
+	bool v_offset_changed;
+
 	Point2 camera_screen_center;
 	void _update_process_mode();
 	void _update_scroll();

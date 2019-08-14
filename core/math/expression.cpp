@@ -52,6 +52,7 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"sqrt",
 	"fmod",
 	"fposmod",
+	"posmod",
 	"floor",
 	"ceil",
 	"round",
@@ -67,6 +68,7 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"step_decimals",
 	"stepify",
 	"lerp",
+	"lerp_angle",
 	"inverse_lerp",
 	"range_lerp",
 	"smoothstep",
@@ -175,6 +177,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_ATAN2:
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
+		case MATH_POSMOD:
 		case MATH_POW:
 		case MATH_EASE:
 		case MATH_STEPIFY:
@@ -188,6 +191,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case COLORN:
 			return 2;
 		case MATH_LERP:
+		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
 		case MATH_SMOOTHSTEP:
 		case MATH_MOVE_TOWARD:
@@ -282,6 +286,12 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::fposmod((double)*p_inputs[0], (double)*p_inputs[1]);
+		} break;
+		case MATH_POSMOD: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			*r_return = Math::posmod((int)*p_inputs[0], (int)*p_inputs[1]);
 		} break;
 		case MATH_FLOOR: {
 
@@ -386,6 +396,13 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case MATH_LERP_ANGLE: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::lerp_angle((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case MATH_INVERSE_LERP: {
 
@@ -793,17 +810,13 @@ Error Expression::_get_token(Token &r_token) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
 
 		CharType cchar = GET_CHAR();
-		if (cchar == 0) {
-			r_token.type = TK_EOF;
-			return OK;
-		}
 
 		switch (cchar) {
 
 			case 0: {
 				r_token.type = TK_EOF;
 				return OK;
-			} break;
+			};
 			case '{': {
 
 				r_token.type = TK_CURLY_BRACKET_OPEN;
@@ -1794,7 +1807,7 @@ Expression::ENode *Expression::_parse_expression() {
 		if (next_op == -1) {
 
 			_set_error("Yet another parser bug....");
-			ERR_FAIL_COND_V(next_op == -1, NULL);
+			ERR_FAIL_V(NULL);
 		}
 
 		// OK! create operator..

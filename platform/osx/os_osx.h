@@ -119,6 +119,7 @@ public:
 
 	CursorShape cursor_shape;
 	NSCursor *cursors[CURSOR_MAX];
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 	MouseMode mouse_mode;
 
 	String title;
@@ -136,6 +137,9 @@ public:
 	bool im_active;
 	String im_text;
 	Point2 im_selection;
+
+	Size2 min_size;
+	Size2 max_size;
 
 	PowerOSX *power_manager;
 
@@ -185,6 +189,7 @@ public:
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
+	void update_real_mouse_position();
 	virtual void set_window_title(const String &p_title);
 
 	virtual Size2 get_window_size() const;
@@ -235,6 +240,10 @@ public:
 
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
+	virtual Size2 get_max_window_size() const;
+	virtual Size2 get_min_window_size() const;
+	virtual void set_min_window_size(const Size2 p_size);
+	virtual void set_max_window_size(const Size2 p_size);
 	virtual void set_window_size(const Size2 p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;

@@ -2396,7 +2396,7 @@ void VisualServerScene::_setup_gi_probe(Instance *p_instance) {
 		mipmap.resize(size);
 		PoolVector<uint8_t>::Write w = mipmap.write();
 		zeromem(w.ptr(), size);
-		w = PoolVector<uint8_t>::Write();
+		w.release();
 
 		probe->dynamic.mipmaps_3d.push_back(mipmap);
 
@@ -3387,11 +3387,7 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 
 					RID mat = VSG::storage->immediate_get_material(p_instance->base);
 
-					if (!mat.is_valid() || VSG::storage->material_casts_shadows(mat)) {
-						can_cast_shadows = true;
-					} else {
-						can_cast_shadows = false;
-					}
+					can_cast_shadows = !mat.is_valid() || VSG::storage->material_casts_shadows(mat);
 
 					if (mat.is_valid() && VSG::storage->material_is_animated(mat)) {
 						is_animated = true;

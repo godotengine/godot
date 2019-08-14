@@ -709,7 +709,7 @@ bool Variant::is_zero() const {
 		// atomic types
 		case BOOL: {
 
-			return _data._bool == false;
+			return !(_data._bool);
 		} break;
 		case INT: {
 
@@ -1171,8 +1171,6 @@ Variant::operator signed int() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 Variant::operator unsigned int() const {
 
@@ -1188,8 +1186,6 @@ Variant::operator unsigned int() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 
 Variant::operator int64_t() const {
@@ -1206,8 +1202,6 @@ Variant::operator int64_t() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 
 /*
@@ -1244,8 +1238,6 @@ Variant::operator uint64_t() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 
 #ifdef NEED_LONG_INT
@@ -1300,8 +1292,6 @@ Variant::operator signed short() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 Variant::operator unsigned short() const {
 
@@ -1317,8 +1307,6 @@ Variant::operator unsigned short() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 Variant::operator signed char() const {
 
@@ -1334,8 +1322,6 @@ Variant::operator signed char() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 Variant::operator unsigned char() const {
 
@@ -1351,8 +1337,6 @@ Variant::operator unsigned char() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 
 Variant::operator CharType() const {
@@ -1374,8 +1358,6 @@ Variant::operator float() const {
 			return 0;
 		}
 	}
-
-	return 0;
 }
 Variant::operator double() const {
 
@@ -1391,8 +1373,6 @@ Variant::operator double() const {
 			return 0;
 		}
 	}
-
-	return true;
 }
 
 Variant::operator StringName() const {
@@ -1854,8 +1834,6 @@ inline DA _convert_array_from_variant(const Variant &p_variant) {
 			return DA();
 		}
 	}
-
-	return DA();
 }
 
 Variant::operator Array() const {
@@ -2319,7 +2297,7 @@ Variant::Variant(const Object *p_object) {
 Variant::Variant(const Dictionary &p_dictionary) {
 
 	type = DICTIONARY;
-	memnew_placement(_data._mem, (Dictionary)(p_dictionary));
+	memnew_placement(_data._mem, Dictionary(p_dictionary));
 }
 
 Variant::Variant(const Array &p_array) {
@@ -2438,9 +2416,6 @@ Variant::Variant(const PoolVector<Face3> &p_face_array) {
 			for (int j = 0; j < 3; j++)
 				w[i * 3 + j] = r[i].vertex[j];
 		}
-
-		r = PoolVector<Face3>::Read();
-		w = PoolVector<Vector3>::Write();
 	}
 
 	type = NIL;

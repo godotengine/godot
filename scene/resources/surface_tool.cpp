@@ -307,7 +307,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<Vector3>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -335,7 +335,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<Vector2>::Write();
+				w.release();
 				a[i] = array;
 			} break;
 			case Mesh::ARRAY_TANGENT: {
@@ -358,7 +358,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx + 3] = d < 0 ? -1 : 1;
 				}
 
-				w = PoolVector<float>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -375,7 +375,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx] = v.color;
 				}
 
-				w = PoolVector<Color>::Write();
+				w.release();
 				a[i] = array;
 			} break;
 			case Mesh::ARRAY_BONES: {
@@ -396,7 +396,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<int>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -418,7 +418,7 @@ Array SurfaceTool::commit_to_arrays() {
 					}
 				}
 
-				w = PoolVector<float>::Write();
+				w.release();
 				a[i] = array;
 
 			} break;
@@ -436,7 +436,7 @@ Array SurfaceTool::commit_to_arrays() {
 					w[idx] = E->get();
 				}
 
-				w = PoolVector<int>::Write();
+				w.release();
 
 				a[i] = array;
 			} break;
@@ -769,7 +769,7 @@ void SurfaceTool::create_from(const Ref<Mesh> &p_existing, int p_surface) {
 	material = p_existing->surface_get_material(p_surface);
 }
 
-void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String p_blend_shape_name) {
+void SurfaceTool::create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name) {
 	clear();
 	primitive = p_existing->surface_get_primitive_type(p_surface);
 	Array arr = p_existing->surface_get_blend_shape_arrays(p_surface);

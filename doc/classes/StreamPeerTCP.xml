@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.2">
 	<brief_description>
-		TCP Stream peer.
+		TCP stream peer.
 	</brief_description>
 	<description>
-		TCP Stream peer. This object can be used to connect to TCP servers, or also is returned by a TCP server.
+		TCP stream peer. This object can be used to connect to TCP servers, or also is returned by a TCP server.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,14 +17,14 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [code]OK[/code] on success or [code]FAILED[/code] on failure.
+				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success or [constant FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
 			<return type="void">
 			</return>
 			<description>
-				Disconnect from host.
+				Disconnects from host.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">
@@ -45,7 +45,7 @@
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
-				Returns the status of the connection, see [enum StreamPeerTCP.Status].
+				Returns the status of the connection, see [enum Status].
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">
@@ -61,14 +61,14 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Disable Nagle algorithm to improve latency for small packets.
-				Note that for applications that send large packets, or need to transfer a lot of data, this can reduce total bandwidth.
+				Disables Nagle's algorithm to improve latency for small packets.
+				[b]Note:[/b] For applications that send large packets or need to transfer a lot of data, this can decrease the total available bandwidth.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0" enum="Status">
-			The initial status of the [StreamPeerTCP], also the status after a disconnect.
+			The initial status of the [StreamPeerTCP]. This is also the status after disconnecting.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1" enum="Status">
 			A status representing a [StreamPeerTCP] that is connecting to a host.

@@ -78,7 +78,7 @@ public:
 };
 
 class EditorPropertyArray : public EditorProperty {
-	GDCLASS(EditorPropertyArray, EditorProperty)
+	GDCLASS(EditorPropertyArray, EditorProperty);
 
 	PopupMenu *change_type;
 	bool updating;
@@ -105,6 +105,7 @@ class EditorPropertyArray : public EditorProperty {
 	void _change_type_menu(int p_index);
 
 	void _object_id_selected(const String &p_property, ObjectID p_id);
+	void _remove_pressed(int p_index);
 
 protected:
 	static void _bind_methods();
@@ -117,7 +118,7 @@ public:
 };
 
 class EditorPropertyDictionary : public EditorProperty {
-	GDCLASS(EditorPropertyDictionary, EditorProperty)
+	GDCLASS(EditorPropertyDictionary, EditorProperty);
 
 	PopupMenu *change_type;
 	bool updating;

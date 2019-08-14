@@ -123,7 +123,7 @@ public:
 		and in the virtual world out of sync
 	*/
 	Transform get_world_origin() const;
-	void set_world_origin(const Transform p_world_origin);
+	void set_world_origin(const Transform &p_world_origin);
 
 	/*
 		center_on_hmd calculates a new reference frame. This ensures the HMD is positioned to 0,0,0 facing 0,0,-1 (need to verify this direction)

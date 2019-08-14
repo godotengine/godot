@@ -145,7 +145,7 @@ opts.Add(BoolVariable('builtin_libtheora', "Use the built-in libtheora library",
 opts.Add(BoolVariable('builtin_libvorbis', "Use the built-in libvorbis library", True))
 opts.Add(BoolVariable('builtin_libvpx', "Use the built-in libvpx library", True))
 opts.Add(BoolVariable('builtin_libwebp', "Use the built-in libwebp library", True))
-opts.Add(BoolVariable('builtin_libwebsockets', "Use the built-in libwebsockets library", True))
+opts.Add(BoolVariable('builtin_wslay', "Use the built-in wslay library", True))
 opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
@@ -311,6 +311,10 @@ if selected_platform in platform_list:
     # must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
     detect.configure(env)
 
+    # Enable C++11 support
+    if not env.msvc:
+        env.Append(CXXFLAGS=['-std=c++11'])
+
     # Configure compiler warnings
     if env.msvc:
         # Truncations, narrowing conversions, signed/unsigned comparisons...
@@ -327,6 +331,8 @@ if selected_platform in platform_list:
         env.Append(CCFLAGS=['/EHsc'])
         if (env["werror"]):
             env.Append(CCFLAGS=['/WX'])
+        # Force to use Unicode encoding
+        env.Append(MSVC_FLAGS=['/utf8'])
     else: # Rest of the world
         shadow_local_warning = []
         all_plus_warnings = ['-Wwrite-strings']
@@ -337,14 +343,13 @@ if selected_platform in platform_list:
                 shadow_local_warning = ['-Wshadow-local']
 
         if (env["warnings"] == 'extra'):
-            # FIXME: enable -Wclobbered once #26351 is fixed
             # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
             # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
             env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
                 + all_plus_warnings + shadow_local_warning)
             env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
             if methods.using_gcc(env):
-                env.Append(CCFLAGS=['-Wno-clobbered', '-Walloc-zero',
+                env.Append(CCFLAGS=['-Walloc-zero',
                     '-Wduplicated-branches', '-Wduplicated-cond',
                     '-Wstringop-overflow=4', '-Wlogical-op'])
                 env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
@@ -398,6 +403,7 @@ if selected_platform in platform_list:
     sys.modules.pop('detect')
 
     env.module_list = []
+    env.module_icons_paths = []
     env.doc_class_path = {}
 
     for x in module_list:
@@ -420,13 +426,22 @@ if selected_platform in platform_list:
         if (can_build):
             config.configure(env)
             env.module_list.append(x)
+
+            # Get doc classes paths (if present)
             try:
-                 doc_classes = config.get_doc_classes()
-                 doc_path = config.get_doc_path()
-                 for c in doc_classes:
-                     env.doc_class_path[c] = "modules/" + x + "/" + doc_path
+                doc_classes = config.get_doc_classes()
+                doc_path = config.get_doc_path()
+                for c in doc_classes:
+                    env.doc_class_path[c] = "modules/" + x + "/" + doc_path
             except:
                 pass
+            # Get icon paths (if present)
+            try:
+                icons_path = config.get_icons_path()
+                env.module_icons_paths.append("modules/" + x + "/" + icons_path)
+            except:
+                # Default path for module icons
+                env.module_icons_paths.append("modules/" + x + "/" + "icons")
 
         sys.path.remove(tmppath)
         sys.modules.pop('config')
@@ -468,6 +483,13 @@ if selected_platform in platform_list:
             env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
+
+    editor_module_list = ['regex']
+    for x in editor_module_list:
+        if not env['module_' + x + '_enabled']:
+            if env['tools']:
+                print("Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
+                sys.exit(255)
 
     if not env['verbose']:
         methods.no_verbose(sys, env)
@@ -511,12 +533,22 @@ if selected_platform in platform_list:
                 env.AppendUnique(CPPDEFINES=[header[1]])
 
 elif selected_platform != "":
+    if selected_platform == "list":
+        print("The following platforms are available:\n")
+    else:
+        print('Invalid target platform "' + selected_platform + '".')
+        print("The following platforms were detected:\n")
 
-    print("Invalid target platform: " + selected_platform)
-    print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
+
     print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform == "list":
+        # Exit early to suppress the rest of the built-in SCons messages
+        sys.exit(0)
+    else:
+        sys.exit(255)
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():

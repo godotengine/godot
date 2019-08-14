@@ -235,7 +235,7 @@ void GridMapEditor::_menu_option(int p_option) {
 			options->get_popup()->set_item_checked(idx, !options->get_popup()->is_item_checked(idx));
 		} break;
 
-		case MENU_OPTION_SELECTION_DUPLICATE: // fallthrough
+		case MENU_OPTION_SELECTION_DUPLICATE:
 		case MENU_OPTION_SELECTION_CUT: {
 			if (!(selection.active && input_action == INPUT_NONE))
 				break;
@@ -279,7 +279,7 @@ void GridMapEditor::_update_cursor_transform() {
 	cursor_transform = Transform();
 	cursor_transform.origin = cursor_origin;
 	cursor_transform.basis.set_orthogonal_index(cursor_rot);
-	cursor_transform = node->get_transform() * cursor_transform;
+	cursor_transform = node->get_global_transform() * cursor_transform;
 
 	if (cursor_instance.is_valid()) {
 		VisualServer::get_singleton()->instance_set_transform(cursor_instance, cursor_transform);
@@ -345,7 +345,7 @@ void GridMapEditor::_validate_selection() {
 	_update_selection_transform();
 }
 
-void GridMapEditor::_set_selection(bool p_active, const Vector3 p_begin, const Vector3 p_end) {
+void GridMapEditor::_set_selection(bool p_active, const Vector3 &p_begin, const Vector3 &p_end) {
 
 	selection.active = p_active;
 	selection.begin = p_begin;
@@ -420,7 +420,7 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	}
 
 	last_mouseover = Vector3(cell[0], cell[1], cell[2]);
-	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], Transform(Basis(), grid_ofs));
+	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
 
 	if (cursor_instance.is_valid()) {
 
@@ -578,7 +578,7 @@ void GridMapEditor::_update_paste_indicator() {
 		return;
 	}
 
-	Vector3 center = 0.5 * Vector3(node->get_center_x(), node->get_center_y(), node->get_center_z());
+	Vector3 center = 0.5 * Vector3(float(node->get_center_x()), float(node->get_center_y()), float(node->get_center_z()));
 	Vector3 scale = (Vector3(1, 1, 1) + (paste_indicator.end - paste_indicator.begin)) * node->get_cell_size();
 	Transform xf;
 	xf.scale(scale);
@@ -664,8 +664,10 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 		}
 
 		if (mb->is_pressed()) {
-
-			if (mb->get_button_index() == BUTTON_LEFT) {
+			SpatialEditorViewport::NavigationScheme nav_scheme = (SpatialEditorViewport::NavigationScheme)EditorSettings::get_singleton()->get("editors/3d/navigation/navigation_scheme").operator int();
+			if ((nav_scheme == SpatialEditorViewport::NAVIGATION_MAYA || nav_scheme == SpatialEditorViewport::NAVIGATION_MODO) && mb->get_alt()) {
+				input_action = INPUT_NONE;
+			} else if (mb->get_button_index() == BUTTON_LEFT) {
 
 				if (input_action == INPUT_PASTE) {
 					_do_paste();
@@ -861,19 +863,21 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
+	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	min_size *= EDSCALE;
+
 	mesh_library_palette->clear();
 	if (display_mode == DISPLAY_THUMBNAIL) {
 		mesh_library_palette->set_max_columns(0);
 		mesh_library_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
+		mesh_library_palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1.5));
 	} else if (display_mode == DISPLAY_LIST) {
 		mesh_library_palette->set_max_columns(1);
 		mesh_library_palette->set_icon_mode(ItemList::ICON_MODE_LEFT);
+		mesh_library_palette->set_fixed_column_width(0);
 	}
 
-	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
-	min_size *= EDSCALE;
 	mesh_library_palette->set_fixed_icon_size(Size2(min_size, min_size));
-	mesh_library_palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1.5));
 	mesh_library_palette->set_max_text_lines(2);
 
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
@@ -1267,7 +1271,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KEY_MASK_CTRL + KEY_F);
 
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);
+	options->get_popup()->add_item(TTR("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);
 
 	settings_dialog = memnew(ConfirmationDialog);
 	settings_dialog->set_title(TTR("GridMap Settings"));

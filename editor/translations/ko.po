@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-10 08:15+0000\n"
+"PO-Revision-Date: 2019-07-21 11:06+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -26,19 +26,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
-"convert()하기 위한 인수 타입이 유효하지 않습니다, TYPE_* 상수를 사용하세요."
+"convert()하기 위한 인수 타입이 올바르지 않습니다, TYPE_* 상수를 사용하세요."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
-msgstr "디코딩할 바이트가 모자라거나, 유효하지 않은 형식입니다."
+msgstr "디코딩할 바이트가 모자라거나, 올바르지 않은 형식입니다."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -50,19 +50,19 @@ msgstr "인스턴스가 비어있기 때문에 Self를 사용할 수 없습니�
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "연산자 %s, %s 그리고 %s의 연산 대상이 유효하지 않습니다."
+msgstr "연산자 %s, %s 그리고 %s의 연산 대상이 올바르지 않습니다."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr "베이스 타입 %s에 유효하지 않은 인덱스 타입 %s"
+msgstr "베이스 타입 %s에 올바르지 않은 인덱스 타입 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr "베이스 타입 %s에 유효하지 않은 인덱스 이름 %s"
+msgstr "베이스 타입 %s에 올바르지 않은 인덱스 이름 %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr "'%s'을(를) 구성하기에 유효하지 않은 인수"
+msgstr "'%s'을(를) 구성하기에 올바르지 않은 인수"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
@@ -80,6 +80,14 @@ msgstr "균형"
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
 msgstr "거울"
+
+#: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
+msgid "Time:"
+msgstr "시간:"
+
+#: editor/animation_bezier_editor.cpp
+msgid "Value:"
+msgstr "값:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -130,6 +138,31 @@ msgid "Anim Change Call"
 msgstr "애니메이션 호출 변경"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "애니메이션 키프레임 시간 변경"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "애니메이션 전환 변경"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "애니메이션 변형 변경"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "애니메이션 키프레임 값 변경"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "애니메이션 호출 변경"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
 msgstr "애니메이션 길이 변경"
 
@@ -163,14 +196,12 @@ msgid "Animation Playback Track"
 msgstr "애니메이션 재생 트랙"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "애니메이션 길이 시간 (초)"
+msgstr "애니메이션 길이 (프레임)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "애니메이션 길이 시간 (초)"
+msgstr "애니메이션 길이 (초)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -300,11 +331,13 @@ msgid "Create %d NEW tracks and insert keys?"
 msgstr "%d개의 새 트랙을 생성하고 키를 삽입하시겠습니까?"
 
 #: editor/animation_track_editor.cpp editor/create_dialog.cpp
-#: editor/editor_audio_buses.cpp editor/editor_plugin_settings.cpp
-#: editor/plugin_config_dialog.cpp
+#: editor/editor_audio_buses.cpp editor/editor_feature_profile.cpp
+#: editor/editor_plugin_settings.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/abstract_polygon_2d_editor.cpp
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp editor/script_create_dialog.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/script_create_dialog.cpp
 msgid "Create"
 msgstr "만들기"
 
@@ -372,7 +405,7 @@ msgstr "베지어 트랙 추가"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a key."
-msgstr "트랙 경로가 유효하지 않습니다, 키를 추가하실 수 없습니다."
+msgstr "트랙 경로가 올바르지 않습니다, 키를 추가할 수 없습니다."
 
 #: editor/animation_track_editor.cpp
 msgid "Track is not of type Spatial, can't insert key"
@@ -388,7 +421,7 @@ msgstr "트랙 키 추가"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
-msgstr "트랙 경로가 유효하지 않습니다, 메서드 키를 추가하실 수 없습니다."
+msgstr "트랙 경로가 올바르지 않습니다, 메서드 키를 추가할 수 없습니다."
 
 #: editor/animation_track_editor.cpp
 msgid "Add Method Track Key"
@@ -418,6 +451,39 @@ msgstr "애니메이션 키 크기 조절"
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr "이 옵션은 베지어 편집에서 단일 트랙이기 때문에, 작동하지 않습니다."
+
+#: editor/animation_track_editor.cpp
+msgid ""
+"This animation belongs to an imported scene, so changes to imported tracks "
+"will not be saved.\n"
+"\n"
+"To enable the ability to add custom tracks, navigate to the scene's import "
+"settings and set\n"
+"\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
+"\", then re-import.\n"
+"Alternatively, use an import preset that imports animations to separate "
+"files."
+msgstr ""
+"이 애니메이션은 가져온 씬에 속해있습니다, 따라서 가져온 트랙에는 변경사항이 "
+"저장되지 않습니다.\n"
+"\n"
+"커스텀 트랟을 추가하기 위해서는, 씬의 가져오기 설정으로 가서\n"
+"\"Animation > Storage\"를 \"Files\"로 설정하고 \"Animation > Keep Custom "
+"Tracks\"을 켠 다음 다시 가져오세요.\n"
+"또는 애니메이션을 개별 파일로 가져오는 가져오기 프리셋을 사용하세요."
+
+#: editor/animation_track_editor.cpp
+msgid "Warning: Editing imported animation"
+msgstr "경고: 가져온 애니메이션을 편집하고 있음"
+
+#: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
+#: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
+msgid "Select All"
+msgstr "전체선택"
+
+#: editor/animation_track_editor.cpp
+msgid "Select None"
+msgstr "모든 선택 해제"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -526,7 +592,7 @@ msgstr "최적화"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "유효하지 않은 키 삭제"
+msgstr "올바르지 않은 키 삭제"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove unresolved and empty tracks"
@@ -552,7 +618,8 @@ msgstr "스케일 비율:"
 msgid "Select tracks to copy:"
 msgstr "복사할 트랙 선택:"
 
-#: editor/animation_track_editor.cpp editor/editor_properties.cpp
+#: editor/animation_track_editor.cpp editor/editor_log.cpp
+#: editor/editor_properties.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp editor/property_editor.cpp
@@ -592,13 +659,17 @@ msgstr "라인으로 이동"
 msgid "Line Number:"
 msgstr "라인 번호:"
 
+#: editor/code_editor.cpp
+msgid "Found %d match(es)."
+msgstr "%d 개가 일치합니다."
+
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
 msgstr "일치 결과 없음"
 
 #: editor/code_editor.cpp
 msgid "Replaced %d occurrence(s)."
-msgstr "%d 회 교체됨."
+msgstr "%d 개의 발생을 교체했습니다."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -620,6 +691,11 @@ msgstr "전체 바꾸기"
 msgid "Selection Only"
 msgstr "선택 영역만"
 
+#: editor/code_editor.cpp editor/plugins/script_text_editor.cpp
+#: editor/plugins/text_editor.cpp
+msgid "Standard"
+msgstr "표준"
+
 #: editor/code_editor.cpp editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/texture_region_editor_plugin.cpp
 #: editor/plugins/tile_set_editor_plugin.cpp scene/gui/graph_edit.cpp
@@ -636,7 +712,7 @@ msgstr "축소"
 msgid "Reset Zoom"
 msgstr "줌 리셋"
 
-#: editor/code_editor.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/code_editor.cpp
 msgid "Warnings"
 msgstr "경고"
 
@@ -645,20 +721,32 @@ msgid "Line and column numbers."
 msgstr "라인 및 컬럼 번호."
 
 #: editor/connections_dialog.cpp
-msgid "Method in target Node must be specified!"
-msgstr "대상 노드의 메서드를 명시해야 합니다!"
+msgid "Method in target node must be specified."
+msgstr "대상 노드의 메서드가 명시되어야 합니다."
 
 #: editor/connections_dialog.cpp
 msgid ""
-"Target method not found! Specify a valid method or attach a script to target "
-"Node."
+"Target method not found. Specify a valid method or attach a script to the "
+"target node."
 msgstr ""
-"대상 메서드를 찾을 수 없습니다! 유효한 메서드를 지정하거나, 대상 노드에 스크"
-"립트를 추가하세요."
+"대상 메서드를 찾을 수 없습니다! 올바른 메서드를 지정하거나, 대상 노드에 스크"
+"립트를 붙이세요."
 
 #: editor/connections_dialog.cpp
-msgid "Connect To Node:"
-msgstr "연결할 노드:"
+msgid "Connect to Node:"
+msgstr "다음 노드에 연결:"
+
+#: editor/connections_dialog.cpp
+msgid "Connect to Script:"
+msgstr "다음 스크립트에 연결:"
+
+#: editor/connections_dialog.cpp
+msgid "From Signal:"
+msgstr "다음 시그널로부터:"
+
+#: editor/connections_dialog.cpp
+msgid "Scene does not contain any script."
+msgstr "씬이 스크립트를 갖고 있지 않습니다."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -667,10 +755,12 @@ msgid "Add"
 msgstr "추가"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
-#: editor/groups_editor.cpp editor/plugins/animation_player_editor_plugin.cpp
+#: editor/editor_feature_profile.cpp editor/groups_editor.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
 msgstr "삭제"
@@ -684,20 +774,29 @@ msgid "Extra Call Arguments:"
 msgstr "별도의 호출 인수:"
 
 #: editor/connections_dialog.cpp
-msgid "Path to Node:"
-msgstr "노드 경로:"
-
-#: editor/connections_dialog.cpp
-msgid "Make Function"
-msgstr "함수 만들기"
+msgid "Advanced"
+msgstr "고급"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
 msgstr "지연"
 
 #: editor/connections_dialog.cpp
+msgid ""
+"Defers the signal, storing it in a queue and only firing it at idle time."
+msgstr "시그널을 지연하는 것으로, 큐에 저장하고 대기 시간에 실행합니다."
+
+#: editor/connections_dialog.cpp
 msgid "Oneshot"
 msgstr "1회"
+
+#: editor/connections_dialog.cpp
+msgid "Disconnects the signal after its first emission."
+msgstr "첫 방출 이후 시그널을 연결 해제합니다."
+
+#: editor/connections_dialog.cpp
+msgid "Cannot connect signal"
+msgstr "시그널을 연결할 수 없음"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -718,6 +817,10 @@ msgid "Connect"
 msgstr "연결"
 
 #: editor/connections_dialog.cpp
+msgid "Signal:"
+msgstr "시그널:"
+
+#: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
 msgstr "'%s'을(를) '%s'에 연결"
 
@@ -736,19 +839,19 @@ msgstr "연결하기..."
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "연결해제"
+msgstr "연결 해제"
 
 #: editor/connections_dialog.cpp
-msgid "Connect Signal: "
-msgstr "시그널 연결: "
+msgid "Connect a Signal to a Method"
+msgstr "시그널을 메서드에 연결"
 
 #: editor/connections_dialog.cpp
-msgid "Edit Connection: "
-msgstr "연결 편집 "
+msgid "Edit Connection:"
+msgstr "연결 편집:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
-msgstr "\"%s\" 시그널에서 모든 연결을 삭제하시겠습니까?"
+msgstr "\"%s\" 시그널의 모든 연결을 삭제하시겠습니까?"
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
@@ -775,7 +878,6 @@ msgid "Change %s Type"
 msgstr "%s(으)로 타입 변경"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
-#: modules/visual_script/visual_script_editor.cpp
 msgid "Change"
 msgstr "변경"
 
@@ -806,7 +908,8 @@ msgid "Matches:"
 msgstr "일치:"
 
 #: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp editor/property_selector.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
 msgstr "설명:"
@@ -822,18 +925,18 @@ msgstr "종속 관계:"
 #: editor/dependency_editor.cpp
 msgid ""
 "Scene '%s' is currently being edited.\n"
-"Changes will not take effect unless reloaded."
+"Changes will only take effect when reloaded."
 msgstr ""
 "씬 '%s'이(가) 현재 편집 중입니다.\n"
-"다시 불러올 때 변경 사항이 적용됩니다."
+"다시 불러올 때 변경사항이 적용됩니다."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
-"Changes will take effect when reloaded."
+"Changes will only take effect when reloaded."
 msgstr ""
 "리소스 '%s'이(가) 사용 중입니다.\n"
-"다시 불러올 때 변경 사항이 적용됩니다."
+"다시 불러올 때 변경사항이 적용됩니다."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
@@ -859,7 +962,7 @@ msgstr "깨진 종속성 수정"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr "종속 관계 에디터"
+msgstr "종속 관계 편집기"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
@@ -880,8 +983,8 @@ msgid "Owners Of:"
 msgstr "소유자:"
 
 #: editor/dependency_editor.cpp
-msgid "Remove selected files from the project? (no undo)"
-msgstr "프로젝트에서 선택된 파일들을 삭제하시겠습니까? (되돌리기 불가)"
+msgid "Remove selected files from the project? (Can't be restored)"
+msgstr "프로젝트에서 선택한 파일을 삭제하시겠습니까? (되돌리기 불가)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -925,20 +1028,12 @@ msgid "Permanently delete %d item(s)? (No undo!)"
 msgstr "%d개 항목을 영구적으로 삭제하시겠습니까? (되돌리기 불가)"
 
 #: editor/dependency_editor.cpp
-msgid "Owns"
-msgstr "소유"
-
-#: editor/dependency_editor.cpp
-msgid "Resources Without Explicit Ownership:"
-msgstr "명확하게 사용되지 않은 리소스:"
+msgid "Show Dependencies"
+msgstr "종속 관계 보이기"
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Orphan Resource Explorer"
 msgstr "미사용 리소스 탐색기"
-
-#: editor/dependency_editor.cpp
-msgid "Delete selected files?"
-msgstr "선택된 파일들을 삭제하시겠습니까?"
 
 #: editor/dependency_editor.cpp editor/editor_audio_buses.cpp
 #: editor/editor_file_dialog.cpp editor/editor_node.cpp
@@ -947,6 +1042,14 @@ msgstr "선택된 파일들을 삭제하시겠습니까?"
 #: editor/project_settings_editor.cpp editor/scene_tree_dock.cpp
 msgid "Delete"
 msgstr "삭제"
+
+#: editor/dependency_editor.cpp
+msgid "Owns"
+msgstr "소유"
+
+#: editor/dependency_editor.cpp
+msgid "Resources Without Explicit Ownership:"
+msgstr "명확하게 사용되지 않은 리소스:"
 
 #: editor/dictionary_property_edit.cpp
 msgid "Change Dictionary Key"
@@ -1049,7 +1152,7 @@ msgstr "패키지 파일을 여는 데 오류가 발생했습니다. zip 형식�
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr "에셋 압축해제"
+msgstr "애셋 압축해제"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1060,8 +1163,7 @@ msgstr "패키지가 성공적으로 설치되었습니다!"
 msgid "Success!"
 msgstr "성공!"
 
-#: editor/editor_asset_installer.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
+#: editor/editor_asset_installer.cpp editor/editor_node.cpp
 msgid "Install"
 msgstr "설치"
 
@@ -1187,8 +1289,12 @@ msgid "Open Audio Bus Layout"
 msgstr "오디오 버스 레이아웃 열기"
 
 #: editor/editor_audio_buses.cpp
-msgid "There is no 'res://default_bus_layout.tres' file."
-msgstr "'res://default_bus_layout.tres' 파일이 없습니다."
+msgid "There is no '%s' file."
+msgstr "'%s' 파일이 없습니다."
+
+#: editor/editor_audio_buses.cpp editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Layout"
+msgstr "레이아웃"
 
 #: editor/editor_audio_buses.cpp
 msgid "Invalid file, not an audio bus layout."
@@ -1234,25 +1340,27 @@ msgstr "새로운 버스 레이아웃을 만듭니다."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Invalid name."
-msgstr "유효하지 않은 이름."
+msgstr "올바르지 않은 이름."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Valid characters:"
-msgstr "유효한 문자:"
+msgstr "올바른 문자:"
 
 #: editor/editor_autoload_settings.cpp
-msgid "Invalid name. Must not collide with an existing engine class name."
-msgstr ""
-"유효하지 않은 이름입니다. 엔진에 존재하는 클래스 이름과 충돌하지 않아야 합니"
-"다."
+msgid "Must not collide with an existing engine class name."
+msgstr "엔진에 존재하는 클래스 이름과 충돌하지 않아야 합니다."
 
 #: editor/editor_autoload_settings.cpp
-msgid "Invalid name. Must not collide with an existing buit-in type name."
-msgstr "유효하지 않은 이름입니다. 내장 타입 이름과 충돌하지 않아야 합니다."
+msgid "Must not collide with an existing built-in type name."
+msgstr "기존 내장 타입 이름과 충돌하지 않아야 합니다."
 
 #: editor/editor_autoload_settings.cpp
-msgid "Invalid name. Must not collide with an existing global constant name."
-msgstr "유효하지 않은 이름입니다. 전역 상수 이름과 충돌하지 않아야 합니다."
+msgid "Must not collide with an existing global constant name."
+msgstr "전역 상수 이름과 충돌하지 않아야 합니다."
+
+#: editor/editor_autoload_settings.cpp
+msgid "Keyword cannot be used as an autoload name."
+msgstr "키워드를 오토로드 이름으로 사용할 수 없습니다."
 
 #: editor/editor_autoload_settings.cpp
 msgid "Autoload '%s' already exists!"
@@ -1282,11 +1390,11 @@ msgstr "활성화"
 msgid "Rearrange Autoloads"
 msgstr "오토로드 재정렬"
 
-#: editor/editor_autoload_settings.cpp
-msgid "Invalid Path."
-msgstr "유효하지 않은 경로."
+#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
+msgid "Invalid path."
+msgstr "올바르지 않은 경로."
 
-#: editor/editor_autoload_settings.cpp
+#: editor/editor_autoload_settings.cpp editor/script_create_dialog.cpp
 msgid "File does not exist."
 msgstr "파일이 존재하지 않습니다."
 
@@ -1337,15 +1445,16 @@ msgid "[unsaved]"
 msgstr "[저장되지 않음]"
 
 #: editor/editor_dir_dialog.cpp
-msgid "Please select a base directory first"
-msgstr "먼저 기본 디렉토리를 선택해주세요"
+msgid "Please select a base directory first."
+msgstr "먼저 기본 디렉토리를 선택해주세요."
 
 #: editor/editor_dir_dialog.cpp
 msgid "Choose a Directory"
 msgstr "디렉토리 선택"
 
 #: editor/editor_dir_dialog.cpp editor/editor_file_dialog.cpp
-#: editor/filesystem_dock.cpp scene/gui/file_dialog.cpp
+#: editor/filesystem_dock.cpp editor/project_manager.cpp
+#: scene/gui/file_dialog.cpp
 msgid "Create Folder"
 msgstr "폴더 만들기"
 
@@ -1421,6 +1530,155 @@ msgstr "커스텀 릴리즈 템플릿을 찾을 수 없습니다."
 msgid "Template file not found:"
 msgstr "템플릿을 찾을 수 없습니다:"
 
+#: editor/editor_export.cpp
+msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
+msgstr ""
+"32 비트 환경에서 내장된 PCK를 내보내려면 4 GiB(기가 이진 바이트)보다 작아야 "
+"합니다."
+
+#: editor/editor_feature_profile.cpp
+msgid "3D Editor"
+msgstr "3D 편집기"
+
+#: editor/editor_feature_profile.cpp
+msgid "Script Editor"
+msgstr "스크립트 편집기"
+
+#: editor/editor_feature_profile.cpp
+msgid "Asset Library"
+msgstr "애셋 라이브러리"
+
+#: editor/editor_feature_profile.cpp
+msgid "Scene Tree Editing"
+msgstr "씬 트리 편집하기"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Dock"
+msgstr "독 가져오기"
+
+#: editor/editor_feature_profile.cpp
+msgid "Node Dock"
+msgstr "노드 독"
+
+#: editor/editor_feature_profile.cpp
+msgid "FileSystem and Import Docks"
+msgstr "파일 시스템과 가져오기 독"
+
+#: editor/editor_feature_profile.cpp
+msgid "Erase profile '%s'? (no undo)"
+msgstr "프로필 '%s'을(를) 지우시겠습니까? (뒤로가기 없음)"
+
+#: editor/editor_feature_profile.cpp
+msgid "Profile must be a valid filename and must not contain '.'"
+msgstr "프로필은 올바른 파일 이름이며, '.'을 포함하지 않아야 합니다"
+
+#: editor/editor_feature_profile.cpp
+msgid "Profile with this name already exists."
+msgstr "이 이름을 가진 프로필이 이미 존재합니다."
+
+#: editor/editor_feature_profile.cpp
+msgid "(Editor Disabled, Properties Disabled)"
+msgstr "(편집기 비활성화됨, 속성 비활성화됨)"
+
+#: editor/editor_feature_profile.cpp
+msgid "(Properties Disabled)"
+msgstr "(속성 비활성화됨)"
+
+#: editor/editor_feature_profile.cpp
+msgid "(Editor Disabled)"
+msgstr "(편집기 비활성화됨)"
+
+#: editor/editor_feature_profile.cpp
+msgid "Class Options:"
+msgstr "클래스 옵션:"
+
+#: editor/editor_feature_profile.cpp
+msgid "Enable Contextual Editor"
+msgstr "컨텍스트 편집기 활성화"
+
+#: editor/editor_feature_profile.cpp
+msgid "Enabled Properties:"
+msgstr "활성화된 속성:"
+
+#: editor/editor_feature_profile.cpp
+msgid "Enabled Features:"
+msgstr "활성화된 기능:"
+
+#: editor/editor_feature_profile.cpp
+msgid "Enabled Classes:"
+msgstr "활성화된 클래스:"
+
+#: editor/editor_feature_profile.cpp
+msgid "File '%s' format is invalid, import aborted."
+msgstr "파일 '%s' 형식이 올바르지 않습니다, 가져오기가 중단되었습니다."
+
+#: editor/editor_feature_profile.cpp
+msgid ""
+"Profile '%s' already exists. Remove it first before importing, import "
+"aborted."
+msgstr ""
+"프로필 '%s'이(가) 이미 존재합니다. 가져오기 전에 앞의 것을 삭제하세요, 가져오"
+"기가 중단되었습니다."
+
+#: editor/editor_feature_profile.cpp
+msgid "Error saving profile to path: '%s'."
+msgstr "프로필을 경로에 저장하는 중 오류: '%s'."
+
+#: editor/editor_feature_profile.cpp
+msgid "Unset"
+msgstr "비설정"
+
+#: editor/editor_feature_profile.cpp
+msgid "Current Profile:"
+msgstr "현재 프로필:"
+
+#: editor/editor_feature_profile.cpp
+msgid "Make Current"
+msgstr "현재 만들기"
+
+#: editor/editor_feature_profile.cpp
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "New"
+msgstr "새 것"
+
+#: editor/editor_feature_profile.cpp editor/editor_node.cpp
+#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
+msgid "Import"
+msgstr "가져오기"
+
+#: editor/editor_feature_profile.cpp editor/editor_node.cpp
+#: editor/project_export.cpp
+msgid "Export"
+msgstr "내보내기"
+
+#: editor/editor_feature_profile.cpp
+msgid "Available Profiles:"
+msgstr "사용 가능한 프로필:"
+
+#: editor/editor_feature_profile.cpp
+msgid "Class Options"
+msgstr "클래스 옵션"
+
+#: editor/editor_feature_profile.cpp
+msgid "New profile name:"
+msgstr "새 프로필 이름:"
+
+#: editor/editor_feature_profile.cpp
+msgid "Erase Profile"
+msgstr "프로필 지우기"
+
+#: editor/editor_feature_profile.cpp
+msgid "Import Profile(s)"
+msgstr "가져온 프로필"
+
+#: editor/editor_feature_profile.cpp
+msgid "Export Profile"
+msgstr "프로필 내보내기"
+
+#: editor/editor_feature_profile.cpp
+msgid "Manage Editor Feature Profiles"
+msgstr "편집기 기능 프로필 관리"
+
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Select Current Folder"
 msgstr "현재 폴더 선택"
@@ -1441,8 +1699,8 @@ msgstr "경로 복사"
 msgid "Open in File Manager"
 msgstr "파일 탐색기에서 열기"
 
-#: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
-#: editor/project_manager.cpp
+#: editor/editor_file_dialog.cpp editor/editor_node.cpp
+#: editor/filesystem_dock.cpp editor/project_manager.cpp
 msgid "Show in File Manager"
 msgstr "파일 탐색기에서 보기"
 
@@ -1450,7 +1708,7 @@ msgstr "파일 탐색기에서 보기"
 msgid "New Folder..."
 msgstr "새 폴더..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "새로고침"
 
@@ -1526,20 +1784,32 @@ msgid "Move Favorite Down"
 msgstr "즐겨찾기 아래로 이동"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "이전 폴더"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "부모 폴더로 이동합니다."
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "다음 폴더"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "부모 폴더로 이동합니다."
 
-#: editor/editor_file_dialog.cpp
-msgid "Go to parent folder"
-msgstr "부모 폴더로 이동"
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+msgid "Go to parent folder."
+msgstr "부모 폴더로 이동합니다."
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "파일 검색"
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "현재 폴더를 즐겨찾기 (안) 합니다."
+
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
+msgstr "숨김 파일 가시성 토글하기."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1555,6 +1825,7 @@ msgstr "디렉토리와 파일:"
 
 #: editor/editor_file_dialog.cpp editor/plugins/sprite_editor_plugin.cpp
 #: editor/plugins/style_box_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Preview:"
 msgstr "미리보기:"
 
@@ -1564,15 +1835,23 @@ msgstr "파일:"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Must use a valid extension."
-msgstr "유효한 확장자를 사용해야 합니다."
+msgstr "올바른 확장자를 사용해야 합니다."
 
 #: editor/editor_file_system.cpp
 msgid "ScanSources"
 msgstr "소스 조사"
 
 #: editor/editor_file_system.cpp
+msgid ""
+"There are multiple importers for different types pointing to file %s, import "
+"aborted"
+msgstr ""
+"파일 %s을(를) 가리키는 다른 유형의 가져오기들이 있슴니다,  가져오기가 중단되"
+"었습니다"
+
+#: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
-msgstr "에셋 (다시) 가져오기"
+msgstr "애셋 (다시) 가져오기"
 
 #: editor/editor_help.cpp editor/plugins/spatial_editor_plugin.cpp
 msgid "Top"
@@ -1636,7 +1915,7 @@ msgstr "이넘  "
 
 #: editor/editor_help.cpp
 msgid "Constants"
-msgstr "상수"
+msgstr "상수(Constant)"
 
 #: editor/editor_help.cpp
 msgid "Constants:"
@@ -1752,6 +2031,10 @@ msgstr "다중 설정:"
 #: editor/editor_log.cpp
 msgid "Output:"
 msgstr "출력:"
+
+#: editor/editor_log.cpp editor/plugins/tile_map_editor_plugin.cpp
+msgid "Copy Selection"
+msgstr "선택 복사"
 
 #: editor/editor_log.cpp editor/editor_profiler.cpp
 #: editor/editor_properties.cpp
@@ -1886,7 +2169,7 @@ msgstr "레이아웃 저장 시도 중 오류!"
 
 #: editor/editor_node.cpp
 msgid "Default editor layout overridden."
-msgstr "에디터 기본 레이아웃이 변경되었습니다."
+msgstr "편집기 기본 레이아웃이 변경되었습니다."
 
 #: editor/editor_node.cpp
 msgid "Layout name not found!"
@@ -1909,10 +2192,10 @@ msgstr ""
 #: editor/editor_node.cpp
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
-"Changes to it will not be kept when saving the current scene."
+"Changes to it won't be kept when saving the current scene."
 msgstr ""
-"이 리소스는 인스턴스 되었거나 상속된 것에 속합니다.\n"
-"이 리소스에 대한 수정은 현재 씬을 저장하는 경우 유지되지 않습니다."
+"이 리소스는 인스턴스되거나 상속된 씬에 속해있슴니다.\n"
+"현재 씬을 저장하는 경우, 변경사항이 유지되지 않습니다."
 
 #: editor/editor_node.cpp
 msgid ""
@@ -1924,56 +2207,28 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"This scene was imported, so changes to it will not be kept.\n"
+"This scene was imported, so changes to it won't be kept.\n"
 "Instancing it or inheriting will allow making changes to it.\n"
 "Please read the documentation relevant to importing scenes to better "
 "understand this workflow."
 msgstr ""
-"이 씬은 가져오기되었으므로 변경사항이 유지되지 않을 것입니다.\n"
+"이 씬은 가져온 것으로 변경사항이 유지되지 않습니다.\n"
 "인스턴스화 혹은 상속을 하면 씬을 수정할 수 있게 됩니다.\n"
-"관련 작업 절차를 더 잘 이해하려면 씬 가져오기(scene importing)와 관련된 문서"
-"를 확인해주십시오."
+"이 워크플로를 더 잘 이해하려면 씬 가져오기와 관련된 문서를 확인해주십시오."
 
 #: editor/editor_node.cpp
 msgid ""
-"This is a remote object so changes to it will not be kept.\n"
+"This is a remote object, so changes to it won't be kept.\n"
 "Please read the documentation relevant to debugging to better understand "
 "this workflow."
 msgstr ""
-"이것은 원격 오브젝트에 대한 변경이며 변경사항이 저장되지 않습니다.\n"
-"이 워크플로에 대해 더 자세히 이해하기 위해서 디버깅 관련 문서를 읽어보시기 바"
-"랍니다."
+"이것은 원격 오브젝트입니다, 변경사항이 유지되지 않습니다.\n"
+"이 워크플로에 대해 더 자세히 이해하려면 디버깅 관련 문서를 읽어보시기 바랍니"
+"다."
 
 #: editor/editor_node.cpp
 msgid "There is no defined scene to run."
 msgstr "실행하기 위해 정의된 씬이 없습니다."
-
-#: editor/editor_node.cpp
-msgid ""
-"No main scene has ever been defined, select one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"메인 씬이 지정되지 않았습니다. 선택하시겠습니까?\n"
-"나중에 \"프로젝트 설정\"의 'application' 항목에서 변경할 수 있습니다."
-
-#: editor/editor_node.cpp
-msgid ""
-"Selected scene '%s' does not exist, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"선택한 '%s' 씬이 존재하지 않습니다. 다시 선택하시겠습니까?\n"
-"나중에 \"프로젝트 설정\"의 'application' 항목에서 변경할 수 있습니다."
-
-#: editor/editor_node.cpp
-msgid ""
-"Selected scene '%s' is not a scene file, select a valid one?\n"
-"You can change it later in \"Project Settings\" under the 'application' "
-"category."
-msgstr ""
-"선택한 '%s' 씬이 씬 파일이 아닙니다. 다시 선택하시겠습니까?\n"
-"나중에 \"프로젝트 설정\"의 'application' 항목에서 변경할 수 있습니다."
 
 #: editor/editor_node.cpp
 msgid "Current scene was never saved, please save it prior to running."
@@ -1983,13 +2238,17 @@ msgstr "현재 씬이 저장되지 않았습니다. 실행전에 저장해주세
 msgid "Could not start subprocess!"
 msgstr "서브 프로세스를 시작할 수 없습니다!"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/filesystem_dock.cpp
 msgid "Open Scene"
 msgstr "씬 열기"
 
 #: editor/editor_node.cpp
 msgid "Open Base Scene"
 msgstr "기본 씬 열기"
+
+#: editor/editor_node.cpp
+msgid "Quick Open..."
+msgstr "빠른 열기..."
 
 #: editor/editor_node.cpp
 msgid "Quick Open Scene..."
@@ -2077,7 +2336,7 @@ msgstr "종료"
 
 #: editor/editor_node.cpp
 msgid "Exit the editor?"
-msgstr "에디터를 종료하시겠습니까?"
+msgstr "편집기를 종료하시겠습니까?"
 
 #: editor/editor_node.cpp
 msgid "Open Project Manager?"
@@ -2165,6 +2424,33 @@ msgid "Clear Recent Scenes"
 msgstr "최근 씬 지우기"
 
 #: editor/editor_node.cpp
+msgid ""
+"No main scene has ever been defined, select one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"메인 씬이 지정되지 않았습니다. 선택하시겠습니까?\n"
+"나중에 \"프로젝트 설정\"의 'application' 항목에서 변경할 수 있습니다."
+
+#: editor/editor_node.cpp
+msgid ""
+"Selected scene '%s' does not exist, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"선택한 '%s' 씬이 존재하지 않습니다. 다시 선택하시겠습니까?\n"
+"나중에 \"프로젝트 설정\"의 'application' 항목에서 변경할 수 있습니다."
+
+#: editor/editor_node.cpp
+msgid ""
+"Selected scene '%s' is not a scene file, select a valid one?\n"
+"You can change it later in \"Project Settings\" under the 'application' "
+"category."
+msgstr ""
+"선택한 '%s' 씬이 씬 파일이 아닙니다. 다시 선택하시겠습니까?\n"
+"나중에 \"프로젝트 설정\"의 'application' 항목에서 변경할 수 있습니다."
+
+#: editor/editor_node.cpp
 msgid "Save Layout"
 msgstr "레이아웃 저장"
 
@@ -2189,6 +2475,18 @@ msgstr "이 씬을 실행"
 #: editor/editor_node.cpp
 msgid "Close Tab"
 msgstr "탭 닫기"
+
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Close Other Tabs"
+msgstr "다른 탭 닫기"
+
+#: editor/editor_node.cpp
+msgid "Close Tabs to the Right"
+msgstr "탭을 오른쪽으로 닫기"
+
+#: editor/editor_node.cpp
+msgid "Close All Tabs"
+msgstr "모든 탭 닫기"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2229,6 +2527,10 @@ msgstr "씬"
 #: editor/editor_node.cpp
 msgid "Go to previously opened scene."
 msgstr "이전에 열었던 씬으로 가기."
+
+#: editor/editor_node.cpp
+msgid "Copy Text"
+msgstr "문자 복사"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -2312,10 +2614,6 @@ msgstr "프로젝트"
 msgid "Project Settings"
 msgstr "프로젝트 설정"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Export"
-msgstr "내보내기"
-
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "도구"
@@ -2323,6 +2621,10 @@ msgstr "도구"
 #: editor/editor_node.cpp
 msgid "Open Project Data Folder"
 msgstr "프로젝트 데이터 폴더 열기"
+
+#: editor/editor_node.cpp
+msgid "Install Android Build Template"
+msgstr "안드로이드 빌드 템플릿 설치하기"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2360,7 +2662,7 @@ msgid ""
 msgstr ""
 "이 옵션이 활성화 되어 있을 경우, 내보내기나 배포는 최소한의 실행 파일을 생성"
 "합니다.\n"
-"파일 시스템은 네트워크를 통해서 에디터 상의 프로젝트가 제공합니다.\n"
+"파일 시스템은 네트워크를 통해서 편집기 상의 프로젝트가 제공합니다.\n"
 "안드로이드의 경우, USB 케이블을 사용하여 배포할 경우 더 빠른 퍼포먼스를 제공"
 "합니다. 이 옵션은 큰 설치 용량을 요구하는 게임의 테스트를 빠르게 할 수 있습니"
 "다."
@@ -2400,7 +2702,7 @@ msgid ""
 "When used remotely on a device, this is more efficient with network "
 "filesystem."
 msgstr ""
-"이 옵션이 활성화 되어 있을 경우, 에디터 상의 씬의 변경사항이 실행 중인 게임"
+"이 옵션이 활성화 되어 있을 경우, 편집기 상의 씬의 변경사항이 실행 중인 게임"
 "에 반영됩니다.\n"
 "기기에 원격으로 사용되는 경우, 네트워크 파일 시스템과 함께하면 더욱 효과적입"
 "니다."
@@ -2423,31 +2725,47 @@ msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Editor"
-msgstr "에디터"
+msgstr "편집기"
 
 #: editor/editor_node.cpp editor/settings_config_dialog.cpp
 msgid "Editor Settings"
-msgstr "에디터 설정"
+msgstr "편집기 설정"
 
 #: editor/editor_node.cpp
 msgid "Editor Layout"
-msgstr "에디터 레이아웃"
+msgstr "편집기 레이아웃"
+
+#: editor/editor_node.cpp
+msgid "Take Screenshot"
+msgstr "스크린샷 찍기"
+
+#: editor/editor_node.cpp
+msgid "Screenshots are stored in the Editor Data/Settings Folder."
+msgstr "스크린샷이 Editor Data/Settings 폴더에 저장되었습니다."
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
 msgstr "전체 화면 토글"
 
 #: editor/editor_node.cpp
+msgid "Toggle System Console"
+msgstr "시스템 콘솔 토글"
+
+#: editor/editor_node.cpp
 msgid "Open Editor Data/Settings Folder"
-msgstr "에디터 데이터/설정 폴더 열기"
+msgstr "편집기 데이터/설정 폴더 열기"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Data Folder"
-msgstr "에디터 데이터 폴더 열기"
+msgstr "편집기 데이터 폴더 열기"
 
 #: editor/editor_node.cpp
 msgid "Open Editor Settings Folder"
-msgstr "에디터 설정 폴더 열기"
+msgstr "편집기 설정 폴더 열기"
+
+#: editor/editor_node.cpp
+msgid "Manage Editor Features"
+msgstr "편집기 기능 관리"
 
 #: editor/editor_node.cpp editor/project_export.cpp
 msgid "Manage Export Templates"
@@ -2461,6 +2779,7 @@ msgstr "도움말"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "검색"
@@ -2527,7 +2846,7 @@ msgstr "커스텀 씬 실행"
 
 #: editor/editor_node.cpp
 msgid "Changing the video driver requires restarting the editor."
-msgstr "비디오 드라이버를 변경하려면 에디터를 다시 시작해야 합니다."
+msgstr "비디오 드라이버를 변경하려면 편집기를 다시 시작해야 합니다."
 
 #: editor/editor_node.cpp editor/project_settings_editor.cpp
 #: editor/settings_config_dialog.cpp
@@ -2536,24 +2855,19 @@ msgstr "저장 & 다시 시작"
 
 #: editor/editor_node.cpp
 msgid "Spins when the editor window redraws."
-msgstr "에디터 윈도우가 다시 그려질 때 회전합니다."
+msgstr "편집기 창이 다시 그려질 때 회전합니다."
 
 #: editor/editor_node.cpp
-msgid "Update Always"
-msgstr "항상 업데이트"
+msgid "Update Continuously"
+msgstr "지속적 업데이트"
 
 #: editor/editor_node.cpp
-msgid "Update Changes"
-msgstr "변경사항만 업데이트"
+msgid "Update When Changed"
+msgstr "변경될 때 업데이트"
 
 #: editor/editor_node.cpp
-msgid "Disable Update Spinner"
-msgstr "업데이트 스피너 비활성화"
-
-#: editor/editor_node.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_manager.cpp
-msgid "Import"
-msgstr "가져오기"
+msgid "Hide Update Spinner"
+msgstr "업데이트 스피너 숨기기"
 
 #: editor/editor_node.cpp
 msgid "FileSystem"
@@ -2578,6 +2892,32 @@ msgstr "출력"
 #: editor/editor_node.cpp
 msgid "Don't Save"
 msgstr "저장하지 않음"
+
+#: editor/editor_node.cpp
+msgid "Android build template is missing, please install relevant templates."
+msgstr ""
+"안드로이드 빌드 템플릿이 존재하지 않습니다, 관련 템플릿을 설치하기 바랍니다."
+
+#: editor/editor_node.cpp
+msgid "Manage Templates"
+msgstr "템플릿 관리"
+
+#: editor/editor_node.cpp
+msgid ""
+"This will install the Android project for custom builds.\n"
+"Note that, in order to use it, it needs to be enabled per export preset."
+msgstr ""
+"이것은 커스텀 빌드를 위해 안드로이드 프로젝트를 설치합니다.\n"
+"사용하려면 각각 내보내기 프리셋을 활성화해야 합니다."
+
+#: editor/editor_node.cpp
+msgid ""
+"Android build template is already installed and it won't be overwritten.\n"
+"Remove the \"build\" directory manually before attempting this operation "
+"again."
+msgstr ""
+"안드로이드 빌드 템플릿이 이미 설치되어 있고 덮어 쓸 수 없습니다.\n"
+"명령을 다시 시도하기 전에 수동으로 \"build\" 디렉토리를 삭제하세요."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -2617,27 +2957,27 @@ msgstr "선택"
 
 #: editor/editor_node.cpp
 msgid "Open 2D Editor"
-msgstr "2D 에디터 열기"
+msgstr "2D 편집기 열기"
 
 #: editor/editor_node.cpp
 msgid "Open 3D Editor"
-msgstr "3D 에디터 열기"
+msgstr "3D 편집기 열기"
 
 #: editor/editor_node.cpp
 msgid "Open Script Editor"
-msgstr "스크립트 에디터 열기"
+msgstr "스크립트 편집기 열기"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "Open Asset Library"
-msgstr "에셋 라이브러리 열기"
+msgstr "애셋 라이브러리 열기"
 
 #: editor/editor_node.cpp
 msgid "Open the next Editor"
-msgstr "다음 에디터 열기"
+msgstr "다음 편집기 열기"
 
 #: editor/editor_node.cpp
 msgid "Open the previous Editor"
-msgstr "이전 에디터 열기"
+msgstr "이전 편집기 열기"
 
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
@@ -2702,10 +3042,6 @@ msgid "Physics Frame %"
 msgstr "물리 프레임 %"
 
 #: editor/editor_profiler.cpp
-msgid "Time:"
-msgstr "시간:"
-
-#: editor/editor_profiler.cpp
 msgid "Inclusive"
 msgstr "포함"
 
@@ -2726,6 +3062,11 @@ msgid "Calls"
 msgstr "호출"
 
 #: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "테마 편집"
+
+#: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "사용"
 
@@ -2747,7 +3088,7 @@ msgstr "지정하기..."
 
 #: editor/editor_properties.cpp
 msgid "Invalid RID"
-msgstr "유효하지 않은 RID"
+msgstr "올바르지 않은 RID"
 
 #: editor/editor_properties.cpp
 msgid ""
@@ -2814,7 +3155,7 @@ msgstr "%s로 변환"
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Open Editor"
-msgstr "에디터 열기"
+msgstr "편집기 열기"
 
 #: editor/editor_properties.cpp editor/property_editor.cpp
 msgid "Selected node is not a Viewport!"
@@ -2829,6 +3170,11 @@ msgid "Page: "
 msgstr "페이지: "
 
 #: editor/editor_properties_array_dict.cpp
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Remove Item"
+msgstr "아이템 삭제"
+
+#: editor/editor_properties_array_dict.cpp
 msgid "New Key:"
 msgstr "새 키:"
 
@@ -2839,15 +3185,6 @@ msgstr "새 값:"
 #: editor/editor_properties_array_dict.cpp
 msgid "Add Key/Value Pair"
 msgstr "키/값 쌍 추가"
-
-#: editor/editor_properties_array_dict.cpp
-#: editor/plugins/theme_editor_plugin.cpp
-msgid "Remove Item"
-msgstr "아이템 삭제"
-
-#: editor/editor_run_native.cpp
-msgid "Select device from the list"
-msgstr "목록에서 기기를 선택하세요"
 
 #: editor/editor_run_native.cpp
 msgid ""
@@ -2884,6 +3221,10 @@ msgstr "'_run' 메서드를 잊으셨습니까?"
 #: editor/editor_sub_scene.cpp
 msgid "Select Node(s) to Import"
 msgstr "가져올 노드들 선택"
+
+#: editor/editor_sub_scene.cpp editor/project_manager.cpp
+msgid "Browse"
+msgstr "찾아보기"
 
 #: editor/editor_sub_scene.cpp
 msgid "Scene Path:"
@@ -2932,7 +3273,7 @@ msgstr "내보내기 템플릿 zip 파일을 열 수 없습니다."
 
 #: editor/export_template_manager.cpp
 msgid "Invalid version.txt format inside templates: %s."
-msgstr "템플릿 안에 version.txt가 유효하지 않은 형식입니다: %s."
+msgstr "템플릿 안 version.txt가 올바르지 않은 형식입니다: %s."
 
 #: editor/export_template_manager.cpp
 msgid "No version.txt found inside templates."
@@ -3051,6 +3392,10 @@ msgid "SSL Handshake Error"
 msgstr "SSL 핸드쉐이크 오류"
 
 #: editor/export_template_manager.cpp
+msgid "Uncompressing Android Build Sources"
+msgstr "안드로이드 빌드 소스 압축 해제"
+
+#: editor/export_template_manager.cpp
 msgid "Current Version:"
 msgstr "현재 버전:"
 
@@ -3067,7 +3412,7 @@ msgid "Remove Template"
 msgstr "템플릿 삭제"
 
 #: editor/export_template_manager.cpp
-msgid "Select template file"
+msgid "Select Template File"
 msgstr "템플릿 파일 선택"
 
 #: editor/export_template_manager.cpp
@@ -3124,12 +3469,12 @@ msgid "No name provided."
 msgstr "이름이 제공되지 않았습니다."
 
 #: editor/filesystem_dock.cpp
-msgid "Provided name contains invalid characters"
-msgstr "이름에 유효하지 않은 문자가 포함됨"
+msgid "Provided name contains invalid characters."
+msgstr "제공된 이름에 올바르지 않은 문자가 있습니다."
 
 #: editor/filesystem_dock.cpp
 msgid "Name contains invalid characters."
-msgstr "이름에 유효하지 않은 문자가 있습니다."
+msgstr "이름에 올바르지 않은 문자가 있습니다."
 
 #: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
@@ -3152,19 +3497,23 @@ msgid "Duplicating folder:"
 msgstr "복제 중인 폴더:"
 
 #: editor/filesystem_dock.cpp
-msgid "Open Scene(s)"
-msgstr "씬(들) 열기"
+msgid "New Inherited Scene"
+msgstr "새 상속 씬"
+
+#: editor/filesystem_dock.cpp
+msgid "Open Scenes"
+msgstr "씬 열기"
 
 #: editor/filesystem_dock.cpp
 msgid "Instance"
 msgstr "인스턴스"
 
 #: editor/filesystem_dock.cpp
-msgid "Add to favorites"
+msgid "Add to Favorites"
 msgstr "즐겨찾기로 추가"
 
 #: editor/filesystem_dock.cpp
-msgid "Remove from favorites"
+msgid "Remove from Favorites"
 msgstr "즐겨찾기에서 삭제"
 
 #: editor/filesystem_dock.cpp
@@ -3195,11 +3544,13 @@ msgstr "새 스크립트..."
 msgid "New Resource..."
 msgstr "새 리소스..."
 
-#: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
+#: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Expand All"
 msgstr "모두 확장"
 
-#: editor/filesystem_dock.cpp editor/script_editor_debugger.cpp
+#: editor/filesystem_dock.cpp editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Collapse All"
 msgstr "모두 접기"
 
@@ -3211,19 +3562,19 @@ msgid "Rename"
 msgstr "이름 변경"
 
 #: editor/filesystem_dock.cpp
-msgid "Previous Directory"
-msgstr "이전 디렉토리"
+msgid "Previous Folder/File"
+msgstr "이전 폴더/파일"
 
 #: editor/filesystem_dock.cpp
-msgid "Next Directory"
-msgstr "다음 디렉토리"
+msgid "Next Folder/File"
+msgstr "다음 폴더/파일"
 
 #: editor/filesystem_dock.cpp
 msgid "Re-Scan Filesystem"
 msgstr "파일 시스템 재검사"
 
 #: editor/filesystem_dock.cpp
-msgid "Toggle split mode"
+msgid "Toggle Split Mode"
 msgstr "분할 모드 토글"
 
 #: editor/filesystem_dock.cpp
@@ -3254,7 +3605,7 @@ msgstr "덮어 쓰기"
 msgid "Create Script"
 msgstr "스크립트 만들기"
 
-#: editor/find_in_files.cpp
+#: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Find in Files"
 msgstr "파일에서 찾기"
 
@@ -3269,6 +3620,14 @@ msgstr "폴더:"
 #: editor/find_in_files.cpp
 msgid "Filters:"
 msgstr "필터:"
+
+#: editor/find_in_files.cpp
+msgid ""
+"Include the files with the following extensions. Add or remove them in "
+"ProjectSettings."
+msgstr ""
+"다음 확장자명을 갖는 파일이 있습니다. 프로젝트 설정에서 추가하거나 제거하세"
+"요."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -3320,6 +3679,7 @@ msgid "Nodes not in Group"
 msgstr "그룹에 있지 않은 노드"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
+#: editor/scene_tree_editor.cpp
 msgid "Filter nodes"
 msgstr "노드 필터"
 
@@ -3407,7 +3767,7 @@ msgstr "가져오기 후 실행할 스크립트를 불러올 수 없습니다:"
 #: editor/import/resource_importer_scene.cpp
 msgid "Invalid/broken script for post-import (check console):"
 msgstr ""
-"가져오기 후 실행할 스크립트가 유효하지 않거나 깨져 있습니다 (콘솔 확인):"
+"가져오기 후 실행할 스크립트가 올바르지 않거나 깨져 있습니다 (콘솔 확인):"
 
 #: editor/import/resource_importer_scene.cpp
 msgid "Error running post-import script:"
@@ -3447,13 +3807,13 @@ msgstr "씬 저장, 다시 가져오기 및 다시 시작"
 
 #: editor/import_dock.cpp
 msgid "Changing the type of an imported file requires editor restart."
-msgstr "가져온 파일의 타입을 변경하려면 에디터를 다시 시작해야 합니다."
+msgstr "가져온 파일의 타입을 변경하려면 편집기를 다시 시작해야 합니다."
 
 #: editor/import_dock.cpp
 msgid ""
 "WARNING: Assets exist that use this resource, they may stop loading properly."
 msgstr ""
-"경고: 이 리소스를 사용하는 에셋이 존재합니다, 에셋을 불러오지 못할 수 있습니"
+"경고: 이 리소스를 사용하는 애셋이 존재합니다, 애셋을 불러오지 못할 수 있습니"
 "다."
 
 #: editor/inspector_dock.cpp
@@ -3707,8 +4067,8 @@ msgid "Open Animation Node"
 msgstr "애니메이션 노드 열기"
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
-msgid "Triangle already exists"
-msgstr "삼각형이 이미 존재함"
+msgid "Triangle already exists."
+msgstr "삼각형이 이미 존재합니다."
 
 #: editor/plugins/animation_blend_space_2d_editor.cpp
 msgid "Add Triangle"
@@ -3782,9 +4142,8 @@ msgid "Node Moved"
 msgstr "노드 이동됨"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Unable to connect, port may be in use or connection may be invalid."
-msgstr "연결할 수 없습니다, 포트가 사용 중이거나 유효하지 않는 연결입니다."
+msgstr "연결할 수 없습니다, 포트가 사용 중이거나 올바르지 않는 연결입니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -3825,7 +4184,7 @@ msgstr "설정한 애니메이션 플레이어가 없습니다, 트랙 이름을
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
 msgstr ""
-"유효하지 않는 플레이어 경로 설정입니다, 트랙 이름을 검색할 수 없습니다."
+"올바르지 않는 플레이어 경로 설정입니다, 트랙 이름을 검색할 수 없습니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/root_motion_editor_plugin.cpp
@@ -3833,7 +4192,7 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
-"애니메이션 플레이어가 유효한 루트 노드 경로를 가지고 있지 않습니다, 트랙 이름"
+"애니메이션 플레이어가 올바른 루트 노드 경로를 가지고 있지 않습니다, 트랙 이름"
 "을 검색할 수 없습니다."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
@@ -3852,7 +4211,7 @@ msgid "Edit Filtered Tracks:"
 msgstr "필터 트랙 편집:"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
-msgid "Enable filtering"
+msgid "Enable Filtering"
 msgstr "필터 활성화"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
@@ -3882,7 +4241,7 @@ msgstr "애니메이션 삭제"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Invalid animation name!"
-msgstr "유효하지 않은 애니메이션 이름!"
+msgstr "올바르지 않은 애니메이션 이름!"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Animation name already exists!"
@@ -3967,10 +4326,6 @@ msgid "Animation"
 msgstr "애니메이션"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "New"
-msgstr "새 파일"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Edit Transitions..."
 msgstr "전환 편집..."
 
@@ -3987,12 +4342,12 @@ msgid "Autoplay on Load"
 msgstr "불러올 시 자동 재생"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
-msgid "Onion Skinning"
-msgstr "어니언 스키닝"
-
-#: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Enable Onion Skinning"
 msgstr "어니언 스키닝 활성화"
+
+#: editor/plugins/animation_player_editor_plugin.cpp
+msgid "Onion Skinning Options"
+msgstr "어니언 스키닝 설정"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Directions"
@@ -4240,11 +4595,11 @@ msgstr "입력 삭제"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is valid."
-msgstr "애니메이션 트리가 유효합니다."
+msgstr "애니메이션 트리가 올바릅니다."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation tree is invalid."
-msgstr "애니메이션 트리가 유효하지 않습니다."
+msgstr "애니메이션 트리가 올바르지 않습니다."
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Animation Node"
@@ -4344,7 +4699,7 @@ msgstr "sha256 해시 확인 실패"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Asset Download Error:"
-msgstr "에셋 다운로드 오류:"
+msgstr "애셋 다운로드 오류:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Downloading (%s / %s)..."
@@ -4367,6 +4722,10 @@ msgid "Idle"
 msgstr "대기"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Install..."
+msgstr "설치하기..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Retry"
 msgstr "다시 시도"
 
@@ -4376,7 +4735,7 @@ msgstr "다운로드 오류"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download for this asset is already in progress!"
-msgstr "이 에셋의 다운로드가 이미 진행중입니다!"
+msgstr "이 애셋의 다운로드가 이미 진행중입니다!"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "First"
@@ -4395,7 +4754,6 @@ msgid "Last"
 msgstr "끝으로"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "모두"
 
@@ -4409,8 +4767,8 @@ msgid "Sort:"
 msgstr "정렬:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Reverse"
-msgstr "뒤집기"
+msgid "Reverse sorting."
+msgstr "역순 정렬."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -4435,7 +4793,7 @@ msgstr "테스팅"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
-msgstr "에셋 ZIP 파일"
+msgstr "애셋 ZIP 파일"
 
 #: editor/plugins/baked_lightmap_editor_plugin.cpp
 msgid ""
@@ -4489,32 +4847,32 @@ msgid "Rotation Step:"
 msgstr "회전 스텝:"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move vertical guide"
-msgstr "세로 가이드 이동"
+msgid "Move Vertical Guide"
+msgstr "수직 가이드 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new vertical guide"
-msgstr "새로운 세로 가이드 만들기"
+msgid "Create Vertical Guide"
+msgstr "수직 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove vertical guide"
-msgstr "세로 가이드 삭제"
+msgid "Remove Vertical Guide"
+msgstr "수직 가이드 삭제"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Move horizontal guide"
-msgstr "가로 가이드 이동"
+msgid "Move Horizontal Guide"
+msgstr "수평 가이드 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal guide"
-msgstr "새로운 가로 가이드 만들기"
+msgid "Create Horizontal Guide"
+msgstr "수평 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Remove horizontal guide"
-msgstr "가로 가이드 삭제"
+msgid "Remove Horizontal Guide"
+msgstr "수평 가이드 삭제"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Create new horizontal and vertical guides"
-msgstr "새 가로 세로 가이드 만들기"
+msgid "Create Horizontal and Vertical Guides"
+msgstr "수평 및 수직 가이드 만들기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Move pivot"
@@ -4541,14 +4899,20 @@ msgid "Move CanvasItem"
 msgstr "CanvasItem 이동"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid ""
+"Children of containers have their anchors and margins values overridden by "
+"their parent."
+msgstr "컨테이너의 자녀는 부모에 의해 그들의 앵커와 여백 값이 재정의됩니다."
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Presets for the anchors and margins values of a Control node."
 msgstr "Control 노드의 앵커와 여백 값의 프리셋."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
-"Children of containers have their anchors and margins values overridden by "
-"their parent."
-msgstr "컨테이너의 자녀는 부모에 의해 그들의 앵커와 여백 값이 재정의됩니다."
+"When active, moving Control nodes changes their anchors instead of their "
+"margins."
+msgstr "활성화하면, 움직이는 Control 노드는 마진이 아닌 앵커를 변경합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Anchors only"
@@ -4563,8 +4927,44 @@ msgid "Change Anchors"
 msgstr "앵커 변경"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Lock Selected"
+msgstr "선택 항목 잠금"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Unlock Selected"
+msgstr "선택 항목 잠금 해제"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Group Selected"
+msgstr "선택 항녹 그룹화"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Ungroup Selected"
+msgstr "선택 항목 그룹 해제"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Paste Pose"
 msgstr "포즈 붙여넣기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Create Custom Bone(s) from Node(s)"
+msgstr "노드에서 커스텀 본 만들기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Clear Bones"
+msgstr "본 지우기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Make IK Chain"
+msgstr "IK 체인 만들기"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Clear IK Chain"
+msgstr "IK 체인 지우기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid ""
@@ -4640,7 +5040,7 @@ msgid "Snapping Options"
 msgstr "스냅 옵션"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to grid"
+msgid "Snap to Grid"
 msgstr "격자에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4661,31 +5061,31 @@ msgid "Use Pixel Snap"
 msgstr "픽셀 스냅 사용"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Smart snapping"
+msgid "Smart Snapping"
 msgstr "스마트 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to parent"
+msgid "Snap to Parent"
 msgstr "부모에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to node anchor"
+msgid "Snap to Node Anchor"
 msgstr "노드 앵커에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to node sides"
-msgstr "노드 옆에 스냅"
+msgid "Snap to Node Sides"
+msgstr "노드 옆면에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to node center"
+msgid "Snap to Node Center"
 msgstr "노드 중심에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to other nodes"
+msgid "Snap to Other Nodes"
 msgstr "다른 노드에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Snap to guides"
+msgid "Snap to Guides"
 msgstr "가이드에 스냅"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4699,10 +5099,12 @@ msgid "Unlock the selected object (can be moved)."
 msgstr "선택된 오브젝트를 잠금 해제합니다 (이동가능)."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Makes sure the object's children are not selectable."
 msgstr "오브젝트의 자식노드가 선택될 수 없도록 설정합니다."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Restores the object's children's ability to be selected."
 msgstr "오브젝트의 자식노드가 선택될 수 있도록 복원합니다."
 
@@ -4713,14 +5115,6 @@ msgstr "스켈레톤 설정"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Show Bones"
 msgstr "뼈대 보기"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Make IK Chain"
-msgstr "IK 체인 만들기"
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Clear IK Chain"
-msgstr "IK 체인 지우기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Make Custom Bone(s) from Node(s)"
@@ -4773,8 +5167,8 @@ msgid "Frame Selection"
 msgstr "선택 항목 화면 꽉차게 표시"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Layout"
-msgstr "레이아웃"
+msgid "Preview Canvas Scale"
+msgstr "캔버스 규모 미리보기"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Translation mask for inserting keys."
@@ -4828,6 +5222,10 @@ msgid "Divide grid step by 2"
 msgstr "격자 단계를 반으로 감소"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+msgid "Pan View"
+msgstr "팬 뷰"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Add %s"
 msgstr "%s 추가"
 
@@ -4850,7 +5248,7 @@ msgid "Error instancing scene from %s"
 msgstr "'%s'에서 씬 인스턴스 중 오류"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-msgid "Change default type"
+msgid "Change Default Type"
 msgstr "기본 타입 변경"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -4893,6 +5291,13 @@ msgid "Load Emission Mask"
 msgstr "에미션 마스크 불러오기"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
+#: editor/plugins/cpu_particles_editor_plugin.cpp
+#: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Restart"
+msgstr "다시 시작"
+
+#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Clear Emission Mask"
 msgstr "에미션 마스크 정리"
@@ -4921,7 +5326,7 @@ msgstr "픽셀로부터 캡쳐"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "에미션 칼라"
+msgstr "방출 색상"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -4938,20 +5343,20 @@ msgid "Create Emission Points From Node"
 msgstr "노드로부터 에미터 포인트 만들기"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Flat0"
-msgstr "플랫0"
+msgid "Flat 0"
+msgstr "플랫 0"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Flat1"
-msgstr "플랫1"
+msgid "Flat 1"
+msgstr "플랫 1"
 
-#: editor/plugins/curve_editor_plugin.cpp
-msgid "Ease in"
-msgstr "완화 in"
+#: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
+msgid "Ease In"
+msgstr "감속"
 
-#: editor/plugins/curve_editor_plugin.cpp
-msgid "Ease out"
-msgstr "완화 out"
+#: editor/plugins/curve_editor_plugin.cpp editor/property_editor.cpp
+msgid "Ease Out"
+msgstr "가속"
 
 #: editor/plugins/curve_editor_plugin.cpp
 msgid "Smoothstep"
@@ -4970,23 +5375,23 @@ msgid "Load Curve Preset"
 msgstr "커브 프리셋 불러오기"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Add point"
+msgid "Add Point"
 msgstr "포인트 추가"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Remove point"
+msgid "Remove Point"
 msgstr "포인트 삭제"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Left linear"
+msgid "Left Linear"
 msgstr "왼쪽 선형"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Right linear"
+msgid "Right Linear"
 msgstr "오른쪽 선형"
 
 #: editor/plugins/curve_editor_plugin.cpp
-msgid "Load preset"
+msgid "Load Preset"
 msgstr "프리셋 불러오기"
 
 #: editor/plugins/curve_editor_plugin.cpp
@@ -5019,7 +5424,7 @@ msgstr "항목"
 
 #: editor/plugins/item_list_editor_plugin.cpp
 msgid "Item List Editor"
-msgstr "항목 목록 에디터"
+msgstr "항목 목록 편집기"
 
 #: editor/plugins/light_occluder_2d_editor_plugin.cpp
 msgid "Create Occluder Polygon"
@@ -5042,12 +5447,16 @@ msgid "This doesn't work on scene root!"
 msgstr "씬 루트에서는 할 수 없습니다!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Trimesh Shape"
-msgstr "Trimesh 모양 만들기"
+msgid "Create Trimesh Static Shape"
+msgstr "Trimesh Static Shape 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Shape"
-msgstr "Convex 모양 만들기"
+msgid "Failed creating shapes!"
+msgstr "Shape 만들기 실패!"
+
+#: editor/plugins/mesh_instance_editor_plugin.cpp
+msgid "Create Convex Shape(s)"
+msgstr "Convex Shape 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Navigation Mesh"
@@ -5099,15 +5508,11 @@ msgid "Create Trimesh Static Body"
 msgstr "Trimesh Static Body 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Static Body"
-msgstr "Convex Static Body 만들기"
-
-#: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Collision Sibling"
 msgstr "Trimesh 충돌 형제 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-msgid "Create Convex Collision Sibling"
+msgid "Create Convex Collision Sibling(s)"
 msgstr "Convex 충돌 형제 만들기"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
@@ -5165,15 +5570,15 @@ msgstr "소스 메시가 지정되지 않았습니다 (그리고 MultiMesh에 �
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (invalid path)."
-msgstr "소스 메시가 유효하지 않습니다 (유효하지 않은 경로)."
+msgstr "소스 메시가 올바르지 않습니다 (올바르지 않은 경로)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (not a MeshInstance)."
-msgstr "소스 메시가 유효하지 않습니다 (MeshInstance가 아닙니다)."
+msgstr "소스 메시가 올바르지 않습니다 (MeshInstance가 아닙니다)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Mesh source is invalid (contains no Mesh resource)."
-msgstr "소스 메시가 유효하지 않습니다 (메시 리소스가 없습니다)."
+msgstr "소스 메시가 올바르지 않습니다 (Mesh 리소스가 없습니다)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "No surface source specified."
@@ -5181,15 +5586,15 @@ msgstr "서피스 소스가 지정되지 않았습니다."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (invalid path)."
-msgstr "서피스 소스가 유효하지 않습니다 (유효하지 않은 경로)."
+msgstr "서피스 소스가 올바르지 않습니다 (올바르지 않은 경로)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no geometry)."
-msgstr "서피스 소스가 유효하지 않습니다 (지오메트리 없음)."
+msgstr "서피스 소스가 올바르지 않습니다 (지오메트리 없음)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Surface source is invalid (no faces)."
-msgstr "서피스 소스가 유효하지 않습니다 (페이스 없음)."
+msgstr "서피스 소스가 올바르지 않습니다 (페이스 없음)."
 
 #: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Parent has no solid faces to populate."
@@ -5261,6 +5666,11 @@ msgid "Create Navigation Polygon"
 msgstr "내비게이션 폴리곤 만들기"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "Convert to CPUParticles"
+msgstr "CPU파티클로 변환"
+
+#: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Generating Visibility Rect"
 msgstr "가시성 직사각형 만들기"
 
@@ -5271,11 +5681,6 @@ msgstr "가시성 직사각형을 만들기"
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Can only set point into a ParticlesMaterial process material"
 msgstr "오직 ParticlesMaterial 프로세스 메테리얼 안의 포인트만 설정 가능"
-
-#: editor/plugins/particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_editor_plugin.cpp
-msgid "Convert to CPUParticles"
-msgstr "CPU파티클로 변환"
 
 #: editor/plugins/particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5416,7 +5821,7 @@ msgstr "커브 닫기"
 
 #: editor/plugins/path_2d_editor_plugin.cpp
 #: editor/plugins/path_editor_plugin.cpp editor/plugins/theme_editor_plugin.cpp
-#: editor/project_export.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_export.cpp
 msgid "Options"
 msgstr "옵션"
 
@@ -5467,7 +5872,7 @@ msgid "Split Segment (in curve)"
 msgstr "선분 분할 (커브)"
 
 #: editor/plugins/physical_bone_plugin.cpp
-msgid "Move joint"
+msgid "Move Joint"
 msgstr "관절 이동"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -5513,7 +5918,7 @@ msgstr "내부 꼭짓점 삭제"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Invalid Polygon (need 3 different vertices)"
-msgstr "유효하지 않은 폴리곤 (3개의 다른 꼭짓점이 필요함)"
+msgstr "올바르지 않은 폴리곤 (3개의 다른 꼭짓점이 필요함)"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Add Custom Polygon"
@@ -5537,11 +5942,11 @@ msgstr "본 무게 페인트"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Open Polygon 2D UV editor."
-msgstr "폴리곤 2D UV 에디터 열기."
+msgstr "폴리곤 2D UV 편집기 열기."
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "Polygon 2D UV Editor"
-msgstr "폴리곤 2D UV 에디터"
+msgstr "폴리곤 2D UV 편집기"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
 msgid "UV"
@@ -5703,10 +6108,9 @@ msgstr "타입:"
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/scene_tree_dock.cpp editor/scene_tree_editor.cpp
 msgid "Open in Editor"
-msgstr "에디터에서 열기"
+msgstr "편집기에서 열기"
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Load Resource"
 msgstr "리소스 불러오기"
 
@@ -5720,7 +6124,7 @@ msgstr "AnimationTree가 AnimationPlayer로 향하는 경로를 가지고 있지
 
 #: editor/plugins/root_motion_editor_plugin.cpp
 msgid "Path to AnimationPlayer is invalid"
-msgstr "AnimationPlayer로 향하는 경로가 유효하지 않습니다"
+msgstr "AnimationPlayer로 향하는 경로가 올바르지 않습니다"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Clear Recent Files"
@@ -5795,8 +6199,21 @@ msgid "%s Class Reference"
 msgstr "%s 클래스 참조"
 
 #: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Next"
+msgstr "다음 찾기"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Filter scripts"
+msgstr "필터 스크립트"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle alphabetical sorting of the method list."
 msgstr "메서드 목록의 사전 식 정렬을 키거나 끕니다."
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Filter methods"
+msgstr "필터 메서드"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Sort"
@@ -5875,10 +6292,6 @@ msgstr "문서 닫기"
 msgid "Close All"
 msgstr "모두 닫기"
 
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Close Other Tabs"
-msgstr "다른 탭 닫기"
-
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
 msgstr "실행"
@@ -5886,11 +6299,6 @@ msgstr "실행"
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Toggle Scripts Panel"
 msgstr "스크립트 패널 토글"
-
-#: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Next"
-msgstr "다음 찾기"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Over"
@@ -5915,19 +6323,19 @@ msgstr "디버거 항상 열어놓기"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Debug with External Editor"
-msgstr "외부 에디터로 디버깅"
+msgstr "외부 편집기로 디버깅"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Open Godot online documentation"
-msgstr "Godot 온라인 문서 열기"
+msgid "Open Godot online documentation."
+msgstr "Godot 온라인 문서 열기."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Request Docs"
 msgstr "문서 요청"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Help improve the Godot documentation by giving feedback"
-msgstr "피드백으로 Godot 문서를 개선하는데 도움을 주세요"
+msgid "Help improve the Godot documentation by giving feedback."
+msgstr "피드백으로 Godot 문서를 개선하는데 도와주세요."
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Search the reference documentation."
@@ -5954,10 +6362,12 @@ msgstr ""
 "어떤 작업을 수행하시겠습니까?:"
 
 #: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
 msgid "Reload"
 msgstr "다시 불러오기"
 
 #: editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
 msgid "Resave"
 msgstr "다시 저장"
 
@@ -5970,6 +6380,29 @@ msgid "Search Results"
 msgstr "검색 결과"
 
 #: editor/plugins/script_text_editor.cpp
+msgid "Connections to method:"
+msgstr "메서드에 연결:"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Source"
+msgstr "소스"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Signal"
+msgstr "시그널"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Target"
+msgstr "대상"
+
+#: editor/plugins/script_text_editor.cpp
+msgid ""
+"Missing connected method '%s' for signal '%s' from node '%s' to node '%s'."
+msgstr ""
+"노드 '%s'에서 노드 '%s'까지의 연결에서 시그널 '%s'에 대한 메서드 '%s'가 존재"
+"하지 않습니더."
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Line"
 msgstr "라인"
 
@@ -5980,10 +6413,6 @@ msgstr "(무시함)"
 #: editor/plugins/script_text_editor.cpp
 msgid "Go to Function"
 msgstr "함수로 이동"
-
-#: editor/plugins/script_text_editor.cpp editor/plugins/text_editor.cpp
-msgid "Standard"
-msgstr "표준"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Only resources from filesystem can be dropped."
@@ -6017,15 +6446,23 @@ msgstr "대문자로 시작"
 msgid "Syntax Highlighter"
 msgstr "구문 강조"
 
+#: editor/plugins/script_text_editor.cpp
+msgid "Go To"
+msgstr "이동"
+
+#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
+msgid "Bookmarks"
+msgstr "북마크"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Breakpoints"
+msgstr "중단점"
+
 #: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
 #: scene/gui/text_edit.cpp
 msgid "Cut"
 msgstr "잘라내기"
-
-#: editor/plugins/script_text_editor.cpp scene/gui/line_edit.cpp
-#: scene/gui/text_edit.cpp
-msgid "Select All"
-msgstr "전체선택"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Delete Line"
@@ -6042,6 +6479,22 @@ msgstr "들여쓰기"
 #: editor/plugins/script_text_editor.cpp
 msgid "Toggle Comment"
 msgstr "주석 토글"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Toggle Bookmark"
+msgstr "북마크 토글"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Go to Next Bookmark"
+msgstr "다음 북마크로 이동"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Go to Previous Bookmark"
+msgstr "이전 북마크로 이동"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Remove All Bookmarks"
+msgstr "모든 북마크 삭제"
 
 #: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
@@ -6115,6 +6568,14 @@ msgstr "라인으로 이동..."
 #: editor/plugins/script_text_editor.cpp
 msgid "Contextual Help"
 msgstr "도움말 보기"
+
+#: editor/plugins/shader_editor_plugin.cpp
+msgid ""
+"This shader has been modified on on disk.\n"
+"What action should be taken?"
+msgstr ""
+"이 셰이더는 디스크에서 수정되었습니다.\n"
+"어떤 작업을 하시겠습니까?"
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid "Shader"
@@ -6286,8 +6747,14 @@ msgid "Rear"
 msgstr "뒷면"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+#, fuzzy
+msgid "Align Transform with View"
 msgstr "뷰와 정렬"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "선택 항목을 뷰에 정렬"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -6382,7 +6849,7 @@ msgid ""
 "Note: The FPS value displayed is the editor's framerate.\n"
 "It cannot be used as a reliable indication of in-game performance."
 msgstr ""
-"참고: FPS 값은 에디터의 프레임 속도입니다.\n"
+"참고: FPS 값은 편집기의 프레임 속도입니다.\n"
 "게임 내 성능을 보증하는 표시로 볼 수 없습니다."
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6460,7 +6927,7 @@ msgid "Right View"
 msgstr "우측 뷰"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Switch Perspective/Orthogonal view"
+msgid "Switch Perspective/Orthogonal View"
 msgstr "원근/직교 뷰 전환"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6474,10 +6941,6 @@ msgstr "원점 포커스"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "선택 포커스"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "선택 항목을 뷰에 정렬"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Tool Select"
@@ -6500,11 +6963,12 @@ msgid "Toggle Freelook"
 msgstr "자유 시점 토글"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform"
 msgstr "변형"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap object to floor"
+msgid "Snap Object to Floor"
 msgstr "물체를 바닥에 스냅"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6645,36 +7109,36 @@ msgid "Invalid geometry, can't replace by mesh."
 msgstr "잘못된 형태, 메시로 대체할 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
-msgid "Invalid geometry, can't create polygon."
-msgstr "잘못된 형태, 폴리곤을 만들 수 없습니다."
-
-#: editor/plugins/sprite_editor_plugin.cpp
-msgid "Invalid geometry, can't create collision polygon."
-msgstr "잘못된 형태, 충돌 폴리곤을 만들 수 없습니다."
-
-#: editor/plugins/sprite_editor_plugin.cpp
-msgid "Invalid geometry, can't create light occluder."
-msgstr "잘못된 형태, 조명 어클루더를 만들 수 없습니다."
-
-#: editor/plugins/sprite_editor_plugin.cpp
-msgid "Sprite"
-msgstr "스프라이트"
-
-#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Mesh2D"
 msgstr "Mesh2D로 전환"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create polygon."
+msgstr "잘못된 형태, 폴리곤을 만들 수 없습니다."
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Convert to Polygon2D"
 msgstr "Polygon2D로 전환"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create collision polygon."
+msgstr "잘못된 형태, 충돌 폴리곤을 만들 수 없습니다."
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create CollisionPolygon2D Sibling"
 msgstr "CollisionPolygon2D 노드 만들기"
 
 #: editor/plugins/sprite_editor_plugin.cpp
+msgid "Invalid geometry, can't create light occluder."
+msgstr "잘못된 형태, 조명 어클루더를 만들 수 없습니다."
+
+#: editor/plugins/sprite_editor_plugin.cpp
 msgid "Create LightOccluder2D Sibling"
 msgstr "LightOccluder2D 노드 만들기"
+
+#: editor/plugins/sprite_editor_plugin.cpp
+msgid "Sprite"
+msgstr "스프라이트"
 
 #: editor/plugins/sprite_editor_plugin.cpp
 msgid "Simplification: "
@@ -6693,12 +7157,20 @@ msgid "Settings:"
 msgstr "설정:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
-msgid "ERROR: Couldn't load frame resource!"
-msgstr "오류: 프레임 리소스를 불러올 수 없습니다!"
+msgid "No Frames Selected"
+msgstr "프레임이 선택되지 않음"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Add %d Frame(s)"
+msgstr "%d 프레임 추가"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Frame"
 msgstr "프레임 추가"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "ERROR: Couldn't load frame resource!"
+msgstr "오류: 프레임 리소스를 불러올 수 없습니다!"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Resource clipboard is empty or not a texture!"
@@ -6741,6 +7213,14 @@ msgid "Animation Frames:"
 msgstr "애니메이션 프레임:"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Add a Texture from File"
+msgstr "파일에서 텍스쳐 추가하기"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Add Frames from a Sprite Sheet"
+msgstr "스프라이트 시트에서 프레임 추가하기"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Insert Empty (Before)"
 msgstr "빈 프레임 삽입 (이전)"
 
@@ -6755,6 +7235,26 @@ msgstr "이동 (이전)"
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Move (After)"
 msgstr "이동 (이후)"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Select Frames"
+msgstr "프레임 선택"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Horizontal:"
+msgstr "수평:"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Vertical:"
+msgstr "수직:"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Select/Clear All Frames"
+msgstr "모든 프레임 선택/지우기"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+msgid "Create Frames from Sprite Sheet"
+msgstr "스프라이트 시트에서 프레임 만들기"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "SpriteFrames"
@@ -6821,13 +7321,13 @@ msgstr "모두 추가"
 msgid "Remove All Items"
 msgstr "모든 항목 삭제"
 
-#: editor/plugins/theme_editor_plugin.cpp
+#: editor/plugins/theme_editor_plugin.cpp editor/project_manager.cpp
 msgid "Remove All"
 msgstr "모두 삭제"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Edit theme..."
-msgstr "테마 편집..."
+msgid "Edit Theme"
+msgstr "테마 편집"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Theme editing menu."
@@ -6847,31 +7347,35 @@ msgstr "빈 템플릿 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create Empty Editor Template"
-msgstr "빈 에디터 템플릿 만들기"
+msgstr "빈 편집기 템플릿 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Create From Current Editor Theme"
-msgstr "현재 에디터 테마로부터 만들기"
+msgstr "현재 편집기 테마로부터 만들기"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "CheckBox Radio1"
-msgstr "체크박스 라디오1"
+msgid "Toggle Button"
+msgstr "토글 버튼"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "CheckBox Radio2"
-msgstr "체크박스 라디오2"
+msgid "Disabled Button"
+msgstr "비활성화 버튼"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Item"
 msgstr "항목"
 
 #: editor/plugins/theme_editor_plugin.cpp
+msgid "Disabled Item"
+msgstr "비활성화된 항목"
+
+#: editor/plugins/theme_editor_plugin.cpp
 msgid "Check Item"
-msgstr "항목 확인"
+msgstr "체크 항목"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Item"
-msgstr "항목 확인됨"
+msgstr "체크된 항목"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Radio Item"
@@ -6879,19 +7383,35 @@ msgstr "라디오 항목"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Checked Radio Item"
-msgstr "라디오 항목 확인됨"
+msgstr "체크된 라디오 항목"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Named Sep."
+msgstr "이름있는 분기."
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Submenu"
+msgstr "하위 메뉴"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Item 1"
+msgstr "항목 1"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Item 2"
+msgstr "항목 2"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has"
-msgstr "가진다"
+msgstr "갖춤"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Many"
 msgstr "많은"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Has,Many,Options"
-msgstr "많은,옵션,갖춤"
+msgid "Disabled LineEdit"
+msgstr "비활성화된 LineEdit"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 1"
@@ -6904,6 +7424,18 @@ msgstr "탭 2"
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Tab 3"
 msgstr "탭 3"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Editable Item"
+msgstr "편집 가능한 항목"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Subtree"
+msgstr "하위 트리"
+
+#: editor/plugins/theme_editor_plugin.cpp
+msgid "Has,Many,Options"
+msgstr "많은,옵션,갖춤"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Data Type:"
@@ -6938,6 +7470,7 @@ msgid "Fix Invalid Tiles"
 msgstr "잘못된 타일 수정"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Cut Selection"
 msgstr "선택 잘라내기"
 
@@ -6970,43 +7503,47 @@ msgid "Transpose"
 msgstr "바꾸기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror X"
-msgstr "X축 뒤집기"
+msgid "Disable Autotile"
+msgstr "오토타일 비활성화"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Mirror Y"
-msgstr "Y축 뒤집기"
+msgid "Enable Priority"
+msgstr "우선 순위 편집"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "타일 칠하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+msgid ""
+"Shift+RMB: Line Draw\n"
+"Shift+Ctrl+RMB: Rectangle Paint"
+msgstr ""
+"Shift+우클릭: 선 그리기\n"
+"Shift+Ctrl+우클릭:사각형 페인트"
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Pick Tile"
 msgstr "타일 선택"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Copy Selection"
-msgstr "선택 복사"
+msgid "Rotate Left"
+msgstr "왼쪽으로 회전하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Rotate left"
-msgstr "왼쪽으로 회전"
+msgid "Rotate Right"
+msgstr "오른쪽으로 회전하기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Rotate right"
-msgstr "오른쪽으로 회전"
+msgid "Flip Horizontally"
+msgstr "수평으로 뒤집기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Flip horizontally"
-msgstr "가로로 뒤집기"
+msgid "Flip Vertically"
+msgstr "수직으로 뒤집기"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Flip vertically"
-msgstr "세로로 뒤집기"
-
-#: editor/plugins/tile_map_editor_plugin.cpp
-msgid "Clear transform"
+msgid "Clear Transform"
 msgstr "변형 지우기"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7040,6 +7577,38 @@ msgstr "이전 좌표"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Select the previous shape, subtile, or Tile."
 msgstr "이전 모양, 하위 타일, 혹은 타일을 선택하세요."
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Region Mode"
+msgstr "지역 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Collision Mode"
+msgstr "충돌 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Occlusion Mode"
+msgstr "어클루전 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Navigation Mode"
+msgstr "내비게이션 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Bitmask Mode"
+msgstr "비트 마스크 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Priority Mode"
+msgstr "우선 순위 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Icon Mode"
+msgstr "아이콘 모드"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid "Z Index Mode"
+msgstr "Z 인덱스 모드"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Copy bitmask."
@@ -7127,10 +7696,12 @@ msgstr "폴리곤 삭제하기."
 msgid ""
 "LMB: Set bit on.\n"
 "RMB: Set bit off.\n"
+"Shift+LMB: Set wildcard bit.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"좌클릭: 비트 켜기를 설정함.\n"
-"우클릭: 비트 끄기를 설정함.\n"
+"좌클릭: 비트를 켬.\n"
+"우클릭: 비트를 끔.\n"
+"Shift+좌클릭: 와일드카드 비트를 설정함.\n"
 "다른 타일을 편집하려면 클릭하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
@@ -7139,9 +7710,9 @@ msgid ""
 "bindings.\n"
 "Click on another Tile to edit it."
 msgstr ""
-"사용할 서브 타일을 아이콘으로 설정하세요, 유효하지 않은 자동 타일 바인딩에도 "
+"아이콘으로 사용할 서브 타일을 설정하세요, 올바르지 않은 자동 타일 바인딩에도 "
 "사용됩니다.\n"
-"다른 타일을 편집하려면 클릭."
+"다른 타일을 편집하려면 클릭하세요."
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid ""
@@ -7244,6 +7815,66 @@ msgid "TileSet"
 msgstr "타일셋"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add input +"
+msgstr "입력 추가 +"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add output +"
+msgstr "출력 추가 +"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Scalar"
+msgstr "스칼라"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Vector"
+msgstr "벡터"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Boolean"
+msgstr "불리언"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add input port"
+msgstr "입력 포트 추가"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Add output port"
+msgstr "출력 포트 추가"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Change input port type"
+msgstr "입렫 포트 타입 변경"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Change output port type"
+msgstr "출력 포트 타입 변경"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Change input port name"
+msgstr "입력 포트 이름 변경"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Change output port name"
+msgstr "출력 포트 이름 변경"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Remove input port"
+msgstr "입력 포트 삭제"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Remove output port"
+msgstr "출력 포트 삭제"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Set expression"
+msgstr "표현식 설정"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Resize VisualShader node"
+msgstr "비주얼 셰이더 노드 크기 조정"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Set Uniform Name"
 msgstr "통일 이름 설정"
 
@@ -7268,6 +7899,10 @@ msgid "Visual Shader Input Type Changed"
 msgstr "비주얼 셰이더 입력 타입 변경됨"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr "(GLES3만 가능)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
 msgstr "버텍스"
 
@@ -7277,7 +7912,716 @@ msgstr "프래그먼트"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
-msgstr "빛"
+msgstr "조명"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Create Shader Node"
+msgstr "셰이더 노드 만들기"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Color function."
+msgstr "색상 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Color operator."
+msgstr "색상 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Grayscale function."
+msgstr "회색조 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Converts HSV vector to RGB equivalent."
+msgstr "HSV 벡터를 RGB로 변환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Converts RGB vector to HSV equivalent."
+msgstr "RGB 벡터를 HSV로 변환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Sepia function."
+msgstr "세피아 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Burn operator."
+msgstr "번 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Darken operator."
+msgstr "어두움 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Difference operator."
+msgstr "차이 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Dodge operator."
+msgstr "닷지 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "HardLight operator"
+msgstr "하드 라이트 연산자"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Lighten operator."
+msgstr "밝음 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Overlay operator."
+msgstr "오버레이 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Screen operator."
+msgstr "화면 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "SoftLight operator."
+msgstr "소프트 라이트 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Color constant."
+msgstr "색상 상수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Color uniform."
+msgstr "색상 유니폼."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the boolean result of the %s comparison between two parameters."
+msgstr "두 매개변수 사이 %s 비교의 불리언 결과 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Equal (==)"
+msgstr "같다 (==)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than (>)"
+msgstr "보다 더 크다 (>)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Greater Than or Equal (>=)"
+msgstr "보다 크거나 같다 (>=)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns an associated vector if the provided scalars are equal, greater or "
+"less."
+msgstr "제공된 스칼라가 같거나, 더 크거나, 더 작으면 관련 벡터를 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between INF and a scalar "
+"parameter."
+msgstr "무한(INF)과 스칼라 매개변수 사이 비교의 불리언 결과 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between NaN and a scalar "
+"parameter."
+msgstr ""
+"숫자 아님(NaN)과 스칼라 매개변수 사이 비교의 불리언 결과 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than (<)"
+msgstr "보다 더 작다 (<)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Less Than or Equal (<=)"
+msgstr "보다 작거나 같다 (<=)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Not Equal (!=)"
+msgstr "같지 않다 (!=)"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns an associated vector if the provided boolean value is true or false."
+msgstr "불리언 값이 참이거나 거짓이면 관련 벡터를 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the boolean result of the comparison between two parameters."
+msgstr "두 매개변수 사이 비교의 불리언 결과 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the boolean result of the comparison between INF (or NaN) and a "
+"scalar parameter."
+msgstr ""
+"무한(INF) (또는 숫자 아님(NaN))과 스칼라 매개변수 사이 비교의 불리언 결과 값"
+"을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Boolean constant."
+msgstr "불리언 상수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Boolean uniform."
+msgstr "불리언 유니폼."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "'%s' input parameter for all shader modes."
+msgstr "모든 셰이더 모드에 대한 '%s' 입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Input parameter."
+msgstr "입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "'%s' input parameter for vertex and fragment shader modes."
+msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 '%s' 입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "'%s' input parameter for fragment and light shader modes."
+msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 '%s' 입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "'%s' input parameter for fragment shader mode."
+msgstr "프래그먼트 셰이더 모드에 대한 '%s' 입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "'%s' input parameter for light shader mode."
+msgstr "조명 셰이더 모드에 대한 '%s' 입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "'%s' input parameter for vertex shader mode."
+msgstr "꼭짓점 셰이더 모드에 대한 '%s' 입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "'%s' input parameter for vertex and fragment shader mode."
+msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 '%s' 입력 매개변수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Scalar function."
+msgstr "Scalar 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Scalar operator."
+msgstr "Scalar 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "E constant (2.718282). Represents the base of the natural logarithm."
+msgstr "E 상수 (2.718282). 자연 로그의 밑을 나타냄."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Epsilon constant (0.00001). Smallest possible scalar number."
+msgstr "Epsilon 상수 (0.00001). 스칼라 수에서 가능한 가장 작은 수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Phi constant (1.618034). Golden ratio."
+msgstr "Phi 상수 (1.618034). 황금 비율."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Pi/4 constant (0.785398) or 45 degrees."
+msgstr "Pi/4 상수 (0.785398) 혹은 45도."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Pi/2 constant (1.570796) or 90 degrees."
+msgstr "Pi/2 상수 (1.570796) 혹은 90도."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Pi constant (3.141593) or 180 degrees."
+msgstr "Pi 상수 (3.141593) 혹은 180도."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Tau constant (6.283185) or 360 degrees."
+msgstr "Tau 상수 (6.283185) 혹은 360도."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Sqrt2 constant (1.414214). Square root of 2."
+msgstr "Sqrt2 상수 (1.414214). 2의 제곱근."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the absolute value of the parameter."
+msgstr "매개변수의 절대값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the arc-cosine of the parameter."
+msgstr "매개변수의 아크코사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the inverse hyperbolic cosine of the parameter."
+msgstr "매개변수의 역쌍곡코사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the arc-sine of the parameter."
+msgstr "매개변수의 아크사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the inverse hyperbolic sine of the parameter."
+msgstr "매개변수의 역쌍곡사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the arc-tangent of the parameter."
+msgstr "매개변수의 아크탄젠트 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the arc-tangent of the parameters."
+msgstr "매개변수들의 아크탄젠트 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the inverse hyperbolic tangent of the parameter."
+msgstr "매개변수의 역쌍곡탄젠트 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Finds the nearest integer that is greater than or equal to the parameter."
+msgstr "매개변수보다 크거나 같은 가장 가까운 정수를 찾습니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Constrains a value to lie between two further values."
+msgstr "두 개의 다른 값 사이에 놓이는 값을 제한합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the cosine of the parameter."
+msgstr "매개변수의 코사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the hyperbolic cosine of the parameter."
+msgstr "매개변수의 쌍곡코사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Converts a quantity in radians to degrees."
+msgstr "각도 단위를 라디안에서 도로 변환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Base-e Exponential."
+msgstr "e가 밑인 지수 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Base-2 Exponential."
+msgstr "2가 밑인 지수 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Finds the nearest integer less than or equal to the parameter."
+msgstr "매개변수보다 적거나 같은 가장 가까운 정수를 찾습니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Computes the fractional part of the argument."
+msgstr "인수의 프랙탈 구조를 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the inverse of the square root of the parameter."
+msgstr "매개변수의 제곱근 역함수 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Natural logarithm."
+msgstr "자연로그."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Base-2 logarithm."
+msgstr "2가 밑인 로그 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the greater of two values."
+msgstr "두 값 중 더 큰 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the lesser of two values."
+msgstr "두 값 중 더 작은 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Linear interpolation between two scalars."
+msgstr "두 스칼라 값 사이 선형 보간."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the opposite value of the parameter."
+msgstr "매개변수의 반대 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "1.0 - scalar"
+msgstr "1.0 - 스칼라"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the value of the first parameter raised to the power of the second."
+msgstr "첫 번째 매개변수를 두 번째 매개변수로 제곱한 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Converts a quantity in degrees to radians."
+msgstr "각도 단위를 도에서 라디안으로 변환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "1.0 / scalar"
+msgstr "1.0 / 스칼라"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Finds the nearest integer to the parameter."
+msgstr "매개변수에서 가장 가까운 정수를 찾습니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Finds the nearest even integer to the parameter."
+msgstr "매개변수에서 가장 가까운 짝수 정수를 찾습니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Clamps the value between 0.0 and 1.0."
+msgstr "값을 0.0에서 1.0 사이로 고정합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Extracts the sign of the parameter."
+msgstr "매개변수의 부호를 추출합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the sine of the parameter."
+msgstr "매개변수의 사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the hyperbolic sine of the parameter."
+msgstr "매개변수의 쌍곡사인 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the square root of the parameter."
+msgstr "매개변수의 제곱근을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if x is larger than "
+"'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
+"using Hermite polynomials."
+msgstr ""
+"SmoothStep 함수( 스칼라(edge0), 스칼라(edge1), 스칼라(x) ).\n"
+"\n"
+"'x'가 'edge0'보다 작고, 'edge1'보다 크면 0.0을 반환합니다. 그렇지 않은 경우, "
+"반환값은 에르미트 다항식을 통해 0.0과 1.0사이로 보간됩니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Step function( scalar(edge), scalar(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+msgstr ""
+"Step 함수( 스칼라(edge), 스칼라(x) ).\n"
+"\n"
+"'x'가 'edge'보다 작으면 0.0을 반환하고 그렇지 않으면 1.0을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the tangent of the parameter."
+msgstr "매개변수의 탄젠트 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the hyperbolic tangent of the parameter."
+msgstr "매개변수의 쌍곡탄젠트 값을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Finds the truncated value of the parameter."
+msgstr "매개변수의 절사된 값을 찾습니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Adds scalar to scalar."
+msgstr "스칼라에 스칼라를 더합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Divides scalar by scalar."
+msgstr "스칼라를 스칼라로 나눕니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Multiplies scalar by scalar."
+msgstr "스칼라를 스칼라로 곱합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the remainder of the two scalars."
+msgstr "두 스칼라의 나머지를 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Subtracts scalar from scalar."
+msgstr "스칼라에서 스칼라를 뺍니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Scalar constant."
+msgstr "스칼라 상수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Scalar uniform."
+msgstr "스칼라 유니폼."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Perform the cubic texture lookup."
+msgstr "세제곱 텍스쳐 룩업을 수행합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Perform the texture lookup."
+msgstr "텍스쳐 룩업을 수행합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Cubic texture uniform lookup."
+msgstr "세제곱 텍스쳐 유니폼 룩업."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "2D texture uniform lookup."
+msgstr "2D 텍스쳐 유니폼 룩업."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "2D texture uniform lookup with triplanar."
+msgstr "Triplanar가 적용된 2D 텍스쳐 유니폼 룩업 ."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Transform function."
+msgstr "변형 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Calculate the outer product of a pair of vectors.\n"
+"\n"
+"OuterProduct treats the first parameter 'c' as a column vector (matrix with "
+"one column) and the second parameter 'r' as a row vector (matrix with one "
+"row) and does a linear algebraic matrix multiply 'c * r', yielding a matrix "
+"whose number of rows is the number of components in 'c' and whose number of "
+"columns is the number of components in 'r'."
+msgstr ""
+"벡터 한 쌍의 외적을 계산합니다.\n"
+"\n"
+"OuterProduct는 첫 매개변수 'c'를 열 벡터로 취급합니다 (1열로 이루어진 행렬) "
+"그리고 두 번째 매개변수 'r'을 행 벡터로 취급합니다 (1행으로 이루어진 행렬) 그"
+"리고 선형 대수 행렬에 'c * r'을 곱합니다, 행렬을 산출하는데, 행의 수는 'c'의 "
+"구성 요소 수이고 열의 수는 'r'의 구성 요소 수입니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Composes transform from four vectors."
+msgstr "4개의 벡터로 변형을 합성합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Decomposes transform to four vectors."
+msgstr "변형을 4개의 벡터로 분해합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Calculates the determinant of a transform."
+msgstr "변형의 행렬식을 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Calculates the inverse of a transform."
+msgstr "변형의 역함수를 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Calculates the transpose of a transform."
+msgstr "변형의 전치를 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Multiplies transform by transform."
+msgstr "변형에 변형을 곱합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Multiplies vector by transform."
+msgstr "변형에 벡터를 곱합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Transform constant."
+msgstr "변형 상수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Transform uniform."
+msgstr "변형 유니폼."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Vector function."
+msgstr "벡터 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Vector operator."
+msgstr "벡터 연산자."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Composes vector from three scalars."
+msgstr "세 개의 스칼라로 벡터를 합성합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Decomposes vector to three scalars."
+msgstr "벡터를 세 개의 스칼라로 분해합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Calculates the cross product of two vectors."
+msgstr "두 벡터의 벡터곱 값을 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the distance between two points."
+msgstr "두 점 사이의 거리를 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Calculates the dot product of two vectors."
+msgstr "두 벡터의 스칼라곱 값을 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the vector that points in the same direction as a reference vector. "
+"The function has three vector parameters : N, the vector to orient, I, the "
+"incident vector, and Nref, the reference vector. If the dot product of I and "
+"Nref is smaller than zero the return value is N. Otherwise -N is returned."
+msgstr ""
+"같은 방향을 가리키는 벡터를 참조 벡터로 반환합니다. 함수에는 세 개의 벡터 매"
+"개변수가 있습니다 : 방향을 지정하는 벡터 N, 인시던트 벡터 I, 그리고 참조 벡"
+"터 Nref. I와 Nref의 내적 값이 0보다 작으면 반환값은 N이 됩니다. 그렇지 않으"
+"면 -N이 반환됩니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Calculates the length of a vector."
+msgstr "벡터의 길이를 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Linear interpolation between two vectors."
+msgstr "두 벡터 간의 선형 보간."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Calculates the normalize product of vector."
+msgstr "벡터의 노멀 값을 계산합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "1.0 - vector"
+msgstr "1.0 - 벡터"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "1.0 / vector"
+msgstr "1.0 / 벡터"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns the vector that points in the direction of reflection ( a : incident "
+"vector, b : normal vector )."
+msgstr ""
+"반사 방향을 가리키는 벡터를 반환합니다 (a : 인시던트 벡터, b : 노멀 벡터)."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the vector that points in the direction of refraction."
+msgstr "반사 방향을 가리키는 벡터를 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
+"using Hermite polynomials."
+msgstr ""
+"SmoothStep 함수( 벡터(edge0), 벡터(edge1), 벡터(x) ).\n"
+"\n"
+"'x'가 'edge0'보다 작으면 0.0을 반환하고 'x'가 'edge1'보다 크면 1.0을 반환합니"
+"다. 그렇지 않으면 반환 값은 에르미트 다항식을 통해 0.0과 1.0 사이로 보간됩니"
+"다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
+"using Hermite polynomials."
+msgstr ""
+"SmoothStep 함수( 스칼라(edge0), 스칼라(edge1), 벡터(x) ).\n"
+"\n"
+"'x'가 'edge0'보다 작으면 0.0을 반환하고 'x'가 'edge1'보다 크면 1.0을 반환합니"
+"다. 그렇지 않으면 반환 값은 에르미트 다항식을 통해 0.0과 1.0 사이로 보간됩니"
+"다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Step function( vector(edge), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+msgstr ""
+"Step 함수( 벡터(edge), 벡터(x) ).\n"
+"\n"
+"'x'가 'edge'보다 작으면 0.0을 반환하고 그렇지 않으면 1.0을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Step function( scalar(edge), vector(x) ).\n"
+"\n"
+"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+msgstr ""
+"Step 함수( 스칼라(edge), 벡터(x) ).\n"
+"\n"
+"'x'가 'edge'보다 작으면 0.0을 반환하고 그렇지 않으면 1.0을 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Adds vector to vector."
+msgstr "벡터에 벡터를 더합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Divides vector by vector."
+msgstr "벡터를 벡터로 나눕니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Multiplies vector by vector."
+msgstr "벡터를 벡터로 곱합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Returns the remainder of the two vectors."
+msgstr "두 벡터의 나머지를 반환합니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Subtracts vector from vector."
+msgstr "벡터에서 벡터를 뺍니다."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Vector constant."
+msgstr "벡터 상수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Vector uniform."
+msgstr "벡터 유니폼."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Custom Godot Shader Language expression, with custom amount of input and "
+"output ports. This is a direct injection of code into the vertex/fragment/"
+"light function, do not use it to write the function declarations inside."
+msgstr ""
+"커스텀 Godot 셰이더 언어 명령문으로, 커스텀 입력 및 출력 포트가 있습니다. 버"
+"텍스/프래그먼트/조명 함수에 직접 코드를 넣는 것이므로, 코드 내에 함수 선언을 "
+"적는 용도로 쓰지 마세요."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns falloff based on the dot product of surface normal and view "
+"direction of camera (pass associated inputs to it)."
+msgstr ""
+"카메라의 화면 방향과 표면 노멀의 스칼라곱을 기반으로 하는 폴오프를 반환합니"
+"다 (폴오프와 관련된 입력을 전달함)."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(Fragment/Light mode only) Scalar derivative function."
+msgstr "(프래그먼트/조명 모드만 가능) 스칼라 미분 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(Fragment/Light mode only) Vector derivative function."
+msgstr "(프래그먼트/조명 모드만 가능) 벡터 미분 함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
+"differencing."
+msgstr "(프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'x'의 (벡터) 도함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
+"differencing."
+msgstr ""
+"(프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'x'의 (스칼라) 도함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
+"differencing."
+msgstr "(프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'y'의 (벡터) 도함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
+"differencing."
+msgstr ""
+"(프래그먼트/조명 모드만 가능) 지역 차분을 이용한 'y'의 (스칼라) 도함수."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
+"'y'."
+msgstr "(프래그먼트/조명 모드만 가능) (벡터) 'x'와 'y'의 절대 미분 값의 합."
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
+"'y'."
+msgstr "(프래그먼트/조명 모드만 가능) (스칼라) 'x'와 'y'의 절대 미분 값의 합."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -7285,7 +8629,7 @@ msgstr "비주얼 셰이더"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Edit Visual Property"
-msgstr "비주얼 속성 편집됨"
+msgstr "비주얼 속성 편집"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Mode Changed"
@@ -7457,7 +8801,8 @@ msgstr "경로가 존재하지 않습니다."
 #: editor/project_manager.cpp
 msgid "Invalid '.zip' project file, does not contain a 'project.godot' file."
 msgstr ""
-"유효하지 않은 '.zip' 프로젝트 파일, 'project.godot' 파일을 포함하지 않음."
+"올바르지 않은 '.zip' 프로젝트 파일, 'project.godot' 파일을 포함하지 않고 있습"
+"니다."
 
 #: editor/project_manager.cpp
 msgid "Please choose an empty folder."
@@ -7470,6 +8815,10 @@ msgstr "'project.godot' 파일 이나 '.zip' 파일을 선택하세요."
 #: editor/project_manager.cpp
 msgid "Directory already contains a Godot project."
 msgstr "디렉토리에 Godot 프로젝트가 이미 있습니다."
+
+#: editor/project_manager.cpp
+msgid "New Game Project"
+msgstr "새 게임 프로젝트"
 
 #: editor/project_manager.cpp
 msgid "Imported Project"
@@ -7493,7 +8842,7 @@ msgstr "프로젝트 이름을 정하는 것을 권합니다."
 
 #: editor/project_manager.cpp
 msgid "Invalid project path (changed anything?)."
-msgstr "유효하지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
+msgstr "올바르지 않은 프로젝트 경로 (뭔가 변경하신 거라도?)."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7518,10 +8867,6 @@ msgstr "다음의 파일들을 패키지로부터 추출하는데 실패했습�
 #: editor/project_manager.cpp
 msgid "Rename Project"
 msgstr "프로젝트 이름 변경"
-
-#: editor/project_manager.cpp
-msgid "New Game Project"
-msgstr "새 게임 프로젝트"
 
 #: editor/project_manager.cpp
 msgid "Import Existing Project"
@@ -7552,20 +8897,12 @@ msgid "Project Name:"
 msgstr "프로젝트 명:"
 
 #: editor/project_manager.cpp
-msgid "Create folder"
-msgstr "폴더 만들기"
-
-#: editor/project_manager.cpp
 msgid "Project Path:"
 msgstr "프로젝트 경로:"
 
 #: editor/project_manager.cpp
 msgid "Project Installation Path:"
 msgstr "프로젝트 설치 경로:"
-
-#: editor/project_manager.cpp
-msgid "Browse"
-msgstr "찾아보기"
 
 #: editor/project_manager.cpp
 msgid "Renderer:"
@@ -7628,15 +8965,15 @@ msgid ""
 "\n"
 "If you proceed with opening it, it will be converted to Godot's current "
 "configuration file format.\n"
-"Warning: You will not be able to open the project with previous versions of "
-"the engine anymore."
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
 msgstr ""
-"다음 프로젝트 설정 파일은 이 버전의 Godot로 생성되지 않았습니다.\n"
+"다음 프로젝트 설정 파일은 현재 버전의 Godot에서 생성한 것이 아닙니다.\n"
 "↵\n"
 "%s↵\n"
 "↵\n"
 "파일을 연다면, 현재 Godot의 구성 파일 형식으로 변환됩니다.\n"
-"경고: 이전 버전의 엔진으로 더 이상 열 수 없게 될 것입니다."
+"경고: 더 이상 이 프로젝트를 이전 버전의 엔진에서 열 수 없게 됩니다."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7646,16 +8983,16 @@ msgid ""
 "%s\n"
 "\n"
 "Do you want to convert it?\n"
-"Warning: You will not be able to open the project with previous versions of "
-"the engine anymore."
+"Warning: You won't be able to open the project with previous versions of the "
+"engine anymore."
 msgstr ""
-"다음의 프로젝트 설정 파일은 이전 버전에서 생성된 것으로, 다음 버전에 맞게 변"
+"다음의 프로젝트 설정 파일은 이전 버전에서 생성된 것으로, 현재 버전에 맞게 변"
 "환해야 합니다:\n"
 "\n"
 "%s\n"
 "\n"
 "변환하시겠습니까?\n"
-"경고: 더 이상 이 프로젝트를 이전 버전에서 열 수 없게 됩니다."
+"경고: 더 이상 이 프로젝트를 이전 버전의 엔진에서 열 수 없게 됩니다."
 
 #: editor/project_manager.cpp
 msgid ""
@@ -7668,43 +9005,64 @@ msgstr ""
 #: editor/project_manager.cpp
 msgid ""
 "Can't run project: no main scene defined.\n"
-"Please edit the project and set the main scene in \"Project Settings\" under "
+"Please edit the project and set the main scene in the Project Settings under "
 "the \"Application\" category."
 msgstr ""
 "프로젝트를 실행할 수 없습니다: 메인 씬이 지정되지 않았습니다.\n"
-"\"프로젝트 설정\"의 \"Application\" 카테고리에서 메인 씬을 설정하고 프로젝트"
-"를 편집하세요."
+"프로젝트를 편집하고 프로젝트 설정의 \"Application\" 카테고리에서 메인 씬을 설"
+"정하세요."
 
 #: editor/project_manager.cpp
 msgid ""
 "Can't run project: Assets need to be imported.\n"
 "Please edit the project to trigger the initial import."
 msgstr ""
-"프로젝트 실행 불가: 에셋들을 가져와야 합니다.\n"
+"프로젝트 실행 불가: 애셋들을 가져와야 합니다.\n"
 "프로젝트를 편집하여 최초 가져오기가 실행되도록 하세요."
 
 #: editor/project_manager.cpp
-msgid "Are you sure to run more than one project?"
-msgstr "두 개 이상의 프로젝트를 실행하려는 것이 확실합니까?"
+msgid "Are you sure to run %d projects at once?"
+msgstr "한 번에 %d개의 프로젝트를 실행하시겠습니까?"
 
 #: editor/project_manager.cpp
-msgid "Remove project from the list? (Folder contents will not be modified)"
+msgid ""
+"Remove %d projects from the list?\n"
+"The project folders' contents won't be modified."
 msgstr ""
-"목록에서 프로젝트를 삭제하시겠습니까? (폴더의 내용물은 사라지지 않습니다)"
+"%d개의 프로젝트를 삭제하시겠습니까?\n"
+"프로젝트 폴더의 내용은 수정되지 않습니다."
+
+#: editor/project_manager.cpp
+msgid ""
+"Remove this project from the list?\n"
+"The project folder's contents won't be modified."
+msgstr ""
+"이 프로젝트를 목록에서 삭제하시겠습니까?\n"
+"프로젝트 폴더의 내용은 수정되지 않습니다."
+
+#: editor/project_manager.cpp
+msgid ""
+"Remove all missing projects from the list? (Folders contents will not be "
+"modified)"
+msgstr ""
+"목록에서 모든 이름없는 프로젝트를 삭제하시겠습니까? (폴더의 내용물은 수정되"
+"지 않습니다)"
 
 #: editor/project_manager.cpp
 msgid ""
 "Language changed.\n"
-"The UI will update next time the editor or project manager starts."
+"The interface will update after restarting the editor or project manager."
 msgstr ""
 "언어가 변경되었습니다.\n"
-"UI는 에디터나 프로젝트 매니저가 다음 번에 실행될 때 업데이트 됩니다."
+"인터페이스는 편집기나 프로젝트 매니저를 재시작할 때 업데이트됩니다."
 
 #: editor/project_manager.cpp
 msgid ""
-"You are about the scan %s folders for existing Godot projects. Do you "
-"confirm?"
-msgstr "%s에서 기존 Godot 프로젝트들을 스캔하려고 합니다. 진행하시겠습니까?"
+"Are you sure to scan %s folders for existing Godot projects?\n"
+"This could take a while."
+msgstr ""
+"Godot 프로젝트가 있는지 %s 폴더를 스캔하시겠습니까?\n"
+"약간 시간이 걸릴 수 있습니다."
 
 #: editor/project_manager.cpp
 msgid "Project Manager"
@@ -7727,6 +9085,10 @@ msgid "New Project"
 msgstr "새 프로젝트"
 
 #: editor/project_manager.cpp
+msgid "Remove Missing"
+msgstr "누락된 부분 삭제"
+
+#: editor/project_manager.cpp
 msgid "Templates"
 msgstr "템플릿"
 
@@ -7744,11 +9106,11 @@ msgstr "프로젝트를 실행할 수 없음"
 
 #: editor/project_manager.cpp
 msgid ""
-"You don't currently have any projects.\n"
-"Would you like to explore the official example projects in the Asset Library?"
+"You currently don't have any projects.\n"
+"Would you like to explore official example projects in the Asset Library?"
 msgstr ""
-"프로젝트가 현재 하나도 없습니다.\n"
-"에셋 라이브러리에서 공식 예제 프로젝트를 찾아보시겠습니까?"
+"현재 프로젝트가 하나도 없습니다.\n"
+"애셋 라이브러리에서 공식 예제 프로젝트를 찾아보시겠습니까?"
 
 #: editor/project_settings_editor.cpp
 msgid "Key "
@@ -7771,12 +9133,12 @@ msgid ""
 "Invalid action name. it cannot be empty nor contain '/', ':', '=', '\\' or "
 "'\"'"
 msgstr ""
-"유효하지 않은 액션 이름. 공백이거나, '/' , ':', '=', '\\', '\"' 를 포함하면 "
+"올바르지 않은 액션 이름. 공백이거나, '/' , ':', '=', '\\', '\"' 를 포함하면 "
 "안 됩니다"
 
 #: editor/project_settings_editor.cpp
-msgid "Action '%s' already exists!"
-msgstr "액션 '%s'이(가) 이미 존재합니다!"
+msgid "An action with the name '%s' already exists."
+msgstr "이름 '%s'을(를) 가진 액션이 이미 존재합니다."
 
 #: editor/project_settings_editor.cpp
 msgid "Rename Input Action Event"
@@ -7931,10 +9293,6 @@ msgstr ""
 "되면 안 됩니다."
 
 #: editor/project_settings_editor.cpp
-msgid "Already existing"
-msgstr "이미 존재함"
-
-#: editor/project_settings_editor.cpp
 msgid "Add Input Action"
 msgstr "입력 액션 추가"
 
@@ -7999,8 +9357,8 @@ msgid "Override For..."
 msgstr "재정의..."
 
 #: editor/project_settings_editor.cpp editor/settings_config_dialog.cpp
-msgid "Editor must be restarted for changes to take effect"
-msgstr "변경 사항을 적용하려면 에디터를 다시 실행해야 합니다"
+msgid "The editor must be restarted for changes to take effect."
+msgstr "변경 사항을 적용하려면 편집기를 다시 실행해야 합니다."
 
 #: editor/project_settings_editor.cpp
 msgid "Input Map"
@@ -8059,12 +9417,12 @@ msgid "Locales Filter"
 msgstr "로케일 필터"
 
 #: editor/project_settings_editor.cpp
-msgid "Show all locales"
+msgid "Show All Locales"
 msgstr "모든 로케일 보기"
 
 #: editor/project_settings_editor.cpp
-msgid "Show only selected locales"
-msgstr "선택한 로케일만 표시"
+msgid "Show Selected Locales Only"
+msgstr "선택한 로케일만 보기"
 
 #: editor/project_settings_editor.cpp
 msgid "Filter mode:"
@@ -8077,14 +9435,6 @@ msgstr "로케일:"
 #: editor/project_settings_editor.cpp
 msgid "AutoLoad"
 msgstr "오토로드"
-
-#: editor/property_editor.cpp
-msgid "Ease In"
-msgstr "감속"
-
-#: editor/property_editor.cpp
-msgid "Ease Out"
-msgstr "가속"
 
 #: editor/property_editor.cpp
 msgid "Zero"
@@ -8159,7 +9509,7 @@ msgid "Suffix"
 msgstr "접미사"
 
 #: editor/rename_dialog.cpp
-msgid "Advanced options"
+msgid "Advanced Options"
 msgstr "고급 옵션"
 
 #: editor/rename_dialog.cpp
@@ -8420,8 +9770,8 @@ msgid "User Interface"
 msgstr "사용자 인터페이스"
 
 #: editor/scene_tree_dock.cpp
-msgid "Custom Node"
-msgstr "커스텀 노드"
+msgid "Other Node"
+msgstr "다른 노드"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can't operate on nodes from a foreign scene!"
@@ -8463,7 +9813,7 @@ msgid "Clear Inheritance"
 msgstr "상속 지우기"
 
 #: editor/scene_tree_dock.cpp
-msgid "Open documentation"
+msgid "Open Documentation"
 msgstr "문서 열기"
 
 #: editor/scene_tree_dock.cpp
@@ -8471,12 +9821,21 @@ msgid "Add Child Node"
 msgstr "자식 노드 추가"
 
 #: editor/scene_tree_dock.cpp
+msgid "Expand/Collapse All"
+msgstr "모두 펼치기/접기"
+
+#: editor/scene_tree_dock.cpp
 msgid "Change Type"
 msgstr "타입 변경"
 
 #: editor/scene_tree_dock.cpp
 msgid "Extend Script"
-msgstr "스크립트 확장"
+msgstr "스크립트 펼치기"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "부모 노드 재지정"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -8490,7 +9849,7 @@ msgstr "다른 씬에서 가져오기"
 msgid "Save Branch as Scene"
 msgstr "선택 노드를 다른 씬으로 저장"
 
-#: editor/scene_tree_dock.cpp
+#: editor/scene_tree_dock.cpp editor/script_editor_debugger.cpp
 msgid "Copy Node Path"
 msgstr "노드 경로 복사"
 
@@ -8499,8 +9858,8 @@ msgid "Delete (No Confirm)"
 msgstr "삭제 (확인 없음)"
 
 #: editor/scene_tree_dock.cpp
-msgid "Add/Create a New Node"
-msgstr "새 노드 추가/만들기"
+msgid "Add/Create a New Node."
+msgstr "새 노드 추가/만들기."
 
 #: editor/scene_tree_dock.cpp
 msgid ""
@@ -8534,8 +9893,20 @@ msgid "Toggle Visible"
 msgstr "보이기 토글"
 
 #: editor/scene_tree_editor.cpp
+msgid "Unlock Node"
+msgstr "노드 잠금 해제"
+
+#: editor/scene_tree_editor.cpp
+msgid "Button Group"
+msgstr "버튼 그룹"
+
+#: editor/scene_tree_editor.cpp
+msgid "(Connecting From)"
+msgstr "(연결 시작 지점)"
+
+#: editor/scene_tree_editor.cpp
 msgid "Node configuration warning:"
-msgstr "노드 배열 경고:"
+msgstr "노드 구성 경고:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -8543,15 +9914,15 @@ msgid ""
 "Click to show signals dock."
 msgstr ""
 "노드가 연결과 그룹을 갖고 있습니다.\n"
-"클릭해서 시그널 독을 여세요."
+"시그널 독을 클릭하여 보세요."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
 "Node has connections.\n"
 "Click to show signals dock."
 msgstr ""
-"노드가 커넥션들을 갖고있습니다\n"
-"클릭해서 시그널 독을 보십시오."
+"노드가 연결을 갖고 있습니다\n"
+"시그널 독을 클릭하여 보세요."
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -8559,11 +9930,11 @@ msgid ""
 "Click to show groups dock."
 msgstr ""
 "노드가 그룹 안에 있습니다.\n"
-"클릭해서 그룹 독을 보십시오."
+"그룹 독을 클릭하여 보세요."
 
-#: editor/scene_tree_editor.cpp editor/script_create_dialog.cpp
-msgid "Open Script"
-msgstr "스크립트 열기"
+#: editor/scene_tree_editor.cpp
+msgid "Open Script:"
+msgstr "스크립트 열기:"
 
 #: editor/scene_tree_editor.cpp
 msgid ""
@@ -8590,12 +9961,12 @@ msgid ""
 "AnimationPlayer is pinned.\n"
 "Click to unpin."
 msgstr ""
-"AnimationPlayer가 고정되었습니다.\n"
-"클릭해서 고정을 풉니다."
+"AnimationPlayer가 고정되어있습니다.\n"
+"클릭하서 고정을 푸세요."
 
 #: editor/scene_tree_editor.cpp
 msgid "Invalid node name, the following characters are not allowed:"
-msgstr "유효하지 않은 노드 이름입니다. 다음의 문자는 허용되지 않습니다:"
+msgstr "올바르지 않은 노드 이름입니다. 다음의 문자는 허용되지 않습니다:"
 
 #: editor/scene_tree_editor.cpp
 msgid "Rename Node"
@@ -8614,6 +9985,34 @@ msgid "Select a Node"
 msgstr "노드 선택"
 
 #: editor/script_create_dialog.cpp
+msgid "Path is empty."
+msgstr "경로가 비었습니다."
+
+#: editor/script_create_dialog.cpp
+msgid "Filename is empty."
+msgstr "파일 이름이 비었습니다."
+
+#: editor/script_create_dialog.cpp
+msgid "Path is not local."
+msgstr "경로가 로컬이 아닙니다."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid base path."
+msgstr "올바르지 않은 기본 경로."
+
+#: editor/script_create_dialog.cpp
+msgid "A directory with the same name exists."
+msgstr "같은 이름의 디렉토리가 존재합니다."
+
+#: editor/script_create_dialog.cpp
+msgid "Invalid extension."
+msgstr "올바르지 않은 확장자."
+
+#: editor/script_create_dialog.cpp
+msgid "Wrong extension chosen."
+msgstr "잘못된 확장자 선택입니다."
+
+#: editor/script_create_dialog.cpp
 msgid "Error loading template '%s'"
 msgstr "'%s' 템플릿 불러오기 오류"
 
@@ -8630,72 +10029,44 @@ msgid "N/A"
 msgstr "해당 없음"
 
 #: editor/script_create_dialog.cpp
-msgid "Open Script/Choose Location"
-msgstr "스크립트 열기/위치 선택"
+msgid "Open Script / Choose Location"
+msgstr "스크립트 열기 / 위치 선택"
 
 #: editor/script_create_dialog.cpp
-msgid "Path is empty"
-msgstr "경로가 비어 있음"
+msgid "Open Script"
+msgstr "스크립트 열기"
 
 #: editor/script_create_dialog.cpp
-msgid "Filename is empty"
-msgstr "파일 이름이 비었습니다"
+msgid "File exists, it will be reused."
+msgstr "파일이 존재합니다, 재사용됩니다."
 
 #: editor/script_create_dialog.cpp
-msgid "Path is not local"
-msgstr "경로가 로컬이 아님"
+msgid "Invalid class name."
+msgstr "올바르지 않은 클래스명."
 
 #: editor/script_create_dialog.cpp
-msgid "Invalid base path"
-msgstr "유효하지 않은 기본 경로"
+msgid "Invalid inherited parent name or path."
+msgstr "올바르지 않은 상속된 부모 이름 또는 경로."
 
 #: editor/script_create_dialog.cpp
-msgid "Directory of the same name exists"
-msgstr "같은 이름의 디렉토리가 존재함"
+msgid "Script is valid."
+msgstr "스크립트가 올바릅니다."
 
 #: editor/script_create_dialog.cpp
-msgid "File exists, will be reused"
-msgstr "파일이 존재하여, 재사용합니다"
+msgid "Allowed: a-z, A-Z, 0-9, _ and ."
+msgstr "허용됨: a-z, A-z, 0-9 그리고 ."
 
 #: editor/script_create_dialog.cpp
-msgid "Invalid extension"
-msgstr "유효하지 않은 확장자"
+msgid "Built-in script (into scene file)."
+msgstr "내장 스크립트 (씬 파일 안)."
 
 #: editor/script_create_dialog.cpp
-msgid "Wrong extension chosen"
-msgstr "잘못된 확장자 선택"
+msgid "Will create a new script file."
+msgstr "새 스크립트 파일을 만듭니다."
 
 #: editor/script_create_dialog.cpp
-msgid "Invalid Path"
-msgstr "유효하지 않은 경로"
-
-#: editor/script_create_dialog.cpp
-msgid "Invalid class name"
-msgstr "유효하지 않은 클래스명"
-
-#: editor/script_create_dialog.cpp
-msgid "Invalid inherited parent name or path"
-msgstr "유효하지 않은 상속된 부모 이름 또는 경로"
-
-#: editor/script_create_dialog.cpp
-msgid "Script valid"
-msgstr "유효한 스크립트"
-
-#: editor/script_create_dialog.cpp
-msgid "Allowed: a-z, A-Z, 0-9 and _"
-msgstr "허용됨:a-z, A-z, 0-9 그리고 _"
-
-#: editor/script_create_dialog.cpp
-msgid "Built-in script (into scene file)"
-msgstr "(씬 파일 안에) 내장된 스크립트"
-
-#: editor/script_create_dialog.cpp
-msgid "Create new script file"
-msgstr "새 스크립트 파일 만들기"
-
-#: editor/script_create_dialog.cpp
-msgid "Load existing script file"
-msgstr "기존 스크립트 파일 불러오기"
+msgid "Will load an existing script file."
+msgstr "기존 스크립트 파일을 불러옵니다."
 
 #: editor/script_create_dialog.cpp
 msgid "Language"
@@ -8737,7 +10108,7 @@ msgstr "스택 추적"
 msgid "Pick one or more items from the list to display the graph."
 msgstr "목록에서 한 개 혹은 여러 개의 항목을 집어 그래프로 보여줍니다."
 
-#: editor/script_editor_debugger.cpp modules/mono/editor/mono_bottom_panel.cpp
+#: editor/script_editor_debugger.cpp
 msgid "Errors"
 msgstr "오류"
 
@@ -8824,6 +10195,10 @@ msgstr "실시간 편집 루트:"
 #: editor/script_editor_debugger.cpp
 msgid "Set From Tree"
 msgstr "트리로부터 설정"
+
+#: editor/script_editor_debugger.cpp
+msgid "Export measures as CSV"
+msgstr "CSV로 측정 값 내보내기"
 
 #: editor/settings_config_dialog.cpp
 msgid "Erase Shortcut"
@@ -8954,6 +10329,14 @@ msgid "GDNativeLibrary"
 msgstr "GD네이티브 라이브러리"
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
+msgid "Enabled GDNative Singleton"
+msgstr "활성화된 GDNative 싱글톤"
+
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
+msgid "Disabled GDNative Singleton"
+msgstr "비활성화된 GDNative 싱글톤"
+
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Library"
 msgstr "라이브러리"
 
@@ -8987,21 +10370,21 @@ msgstr "리소스 파일에 기반하지 않음"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (missing @path)"
-msgstr "유효하지 않은 인스턴스 Dictionary 형식 (@path 없음)"
+msgstr "올바르지 않은 인스턴스 Dictionary 형식 (@path 없음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (can't load script at @path)"
 msgstr ""
-"유효하지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 불러올 수 없음)"
+"올바르지 않은 인스턴스 Dictionary 형식 (@path 에서 스크립트를 불러올 수 없음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary format (invalid script at @path)"
 msgstr ""
-"유효하지 않은 인스턴스 Dictionary 형식 (@path의 스크립트가 유효하지 않음)"
+"올바르지 않은 인스턴스 Dictionary 형식 (@path의 스크립트가 올바르지 않음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Invalid instance dictionary (invalid subclasses)"
-msgstr "유효하지 않은 인스턴스 Dictionary (서브클래스가 유효하지 않음)"
+msgstr "올바르지 않은 인스턴스 Dictionary (하위 클래스가 올바르지 않음)"
 
 #: modules/gdscript/gdscript_functions.cpp
 msgid "Object can't provide a length."
@@ -9040,8 +10423,8 @@ msgid "GridMap Fill Selection"
 msgstr "그리드맵 채우기 선택"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "GridMap Duplicate Selection"
-msgstr "그리드맵 선택 복제"
+msgid "GridMap Paste Selection"
+msgstr "그리드맵 선택 붙여넣기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "GridMap Paint"
@@ -9108,18 +10491,6 @@ msgid "Cursor Clear Rotation"
 msgstr "커서 회전 지우기"
 
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Create Area"
-msgstr "영역 만들기"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Create Exterior Connector"
-msgstr "외부 커넥터 만들기"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Erase Area"
-msgstr "영역 지우기"
-
-#: modules/gridmap/grid_map_editor_plugin.cpp
 msgid "Clear Selection"
 msgstr "선택 지우기"
 
@@ -9138,54 +10509,6 @@ msgstr "거리 선택:"
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr "클래스 이름은 키워드가 될 수 없습니다"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating solution..."
-msgstr "솔루션 생성 중..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Generating C# project..."
-msgstr "C# 프로젝트 생성 중..."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create solution."
-msgstr "솔루션 생성 실패."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to save solution."
-msgstr "솔루션 저장 실패."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Done"
-msgstr "완료"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Failed to create C# project."
-msgstr "C# 프로젝트 생성 실패."
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Mono"
-msgstr "모노"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "About C# support"
-msgstr "C# 지원에 대하여"
-
-#: modules/mono/editor/godotsharp_editor.cpp
-msgid "Create C# solution"
-msgstr "C# 솔루션 만들기"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Builds"
-msgstr "빌드"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "Build Project"
-msgstr "프로젝트 빌드"
-
-#: modules/mono/editor/mono_bottom_panel.cpp
-msgid "View log"
-msgstr "로그 보기"
 
 #: modules/mono/mono_gd/gd_mono_utils.cpp
 msgid "End of inner exception stack trace"
@@ -9277,7 +10600,7 @@ msgstr ""
 
 #: modules/visual_script/visual_script.cpp
 msgid "Node returned an invalid sequence output: "
-msgstr "유효하지 않은 시퀀스 출력을 반환한 노드: "
+msgstr "올바르지 않은 시퀀스 출력을 반환한 노드: "
 
 #: modules/visual_script/visual_script.cpp
 msgid "Found sequence bit but not the node in the stack, report bug!"
@@ -9314,7 +10637,7 @@ msgstr "변수:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
-msgstr "유효한 식별자가 아닌 이름:"
+msgstr "이름이 올바른 식별자가 아닙니다:"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name already in use by another func/var/signal:"
@@ -9481,16 +10804,8 @@ msgid "Available Nodes:"
 msgstr "사용 가능한 노드:"
 
 #: modules/visual_script/visual_script_editor.cpp
-msgid "Select or create a function to edit graph"
-msgstr "그래프를 편집하기 위한 함수를 선택하거나 만들기"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Edit Signal Arguments:"
-msgstr "시그널 인수 편집:"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Edit Variable:"
-msgstr "변수 편집:"
+msgid "Select or create a function to edit its graph."
+msgstr "그래프를 편집하기 위한 함수를 선택하거나 만드세요."
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Delete Selected"
@@ -9530,7 +10845,7 @@ msgstr "반복자가 유효하지 않게 됨: "
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name."
-msgstr "유효하지 않은 인덱스 속성명."
+msgstr "올바르지 않은 인덱스 속성명."
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Base object is not a Node!"
@@ -9542,15 +10857,15 @@ msgstr "노드를 지칭하는 경로가 아닙니다!"
 
 #: modules/visual_script/visual_script_func_nodes.cpp
 msgid "Invalid index property name '%s' in node %s."
-msgstr "노드 %s 안에 인덱스 속성 이름 '%s'은(는) 유효하지 않습니다."
+msgstr "노드 %s 안에 인덱스 속성 이름 '%s'은(는) 올바르지 않습니다."
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid argument of type: "
-msgstr ": 유효하지 않은 인수 타입: "
+msgstr ": 올바르지 않은 인수 타입: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid ": Invalid arguments: "
-msgstr ": 유효하지 않은 인수: "
+msgstr ": 올바르지 않은 인수: "
 
 #: modules/visual_script/visual_script_nodes.cpp
 msgid "VariableGet not found in script: "
@@ -9570,7 +10885,7 @@ msgid ""
 "Invalid return value from _step(), must be integer (seq out), or string "
 "(error)."
 msgstr ""
-"_step()으로부터의 유효하지 않은 반환 값으로, integer (seq out), 혹은 string "
+"_step()으로부터의 올바르지 않은 반환 값으로, integer (seq out), 혹은 string "
 "(error)가 아니면 안됩니다."
 
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -9612,23 +10927,75 @@ msgstr "패키지는 적어도 하나의 '.' 분리 기호를 갖고 있어야 �
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
-msgstr "ADB 실행 파일이 에디터 설정에서 구성되지 않았습니다."
+msgstr "ADB 실행 파일이 편집기 설정에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr "OpenJDK jarsigner가 에디터 설정에서 구성되지 않았습니다."
+msgstr "OpenJDK jarsigner가 편집기 설정에서 구성되지 않았습니다."
 
 #: platform/android/export/export.cpp
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
-msgstr "Debug keystore이 에디터 설정 또는 프리셋에서 구성되지 않았습니다."
+msgstr "Debug keystore이 편집기 설정 또는 프리셋에서 구성되지 않았습니다."
+
+#: platform/android/export/export.cpp
+msgid "Custom build requires a valid Android SDK path in Editor Settings."
+msgstr ""
+"커스텀 빌드에는 편집기 설정에서 올바른 안드로이드 SDK 경로가 필요합니다."
+
+#: platform/android/export/export.cpp
+msgid "Invalid Android SDK path for custom build in Editor Settings."
+msgstr "편집기 설정에서 커스텀 빌드에 올바르지 않은 안드로이드 SDK 경로입니다."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Android project is not installed for compiling. Install from Editor menu."
+msgstr ""
+"컴파일을 하기 위한 안드로이드 프로젝트가 설치되지 않았습니다. 편집기 메뉴에"
+"서 설치하세요."
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr "APK 확장에 유효하지 않은 공용 키입니다."
+msgstr "APK 확장에 올바르지 않은 공용 키입니다."
 
 #: platform/android/export/export.cpp
 msgid "Invalid package name:"
-msgstr "유효하지 않은 패키지 이름:"
+msgstr "올바르지 않은 패키지 이름:"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Trying to build from a custom built template, but no version info for it "
+"exists. Please reinstall from the 'Project' menu."
+msgstr ""
+"커스텀 빌드 템플릿으로 빌드하려 했으나, 버전 정보가 존재하지 않습니다. '프로"
+"젝트' 메뉴에서 다시 설치해주세요."
+
+#: platform/android/export/export.cpp
+msgid ""
+"Android build version mismatch:\n"
+"   Template installed: %s\n"
+"   Godot Version: %s\n"
+"Please reinstall Android build template from 'Project' menu."
+msgstr ""
+"안드로이드 빌드 버전이 맞지 않습니다:\n"
+"   설치된 템플릿: %s\n"
+"   Godot 버전: %s\n"
+"'프로젝트' 메뉴에서 안드로이드 빌드 템플릿을 다시 설치해주세요."
+
+#: platform/android/export/export.cpp
+msgid "Building Android Project (gradle)"
+msgstr "안드로이드 프로젝트 빌드 중 (gradle)"
+
+#: platform/android/export/export.cpp
+msgid ""
+"Building of Android project failed, check output for the error.\n"
+"Alternatively visit docs.godotengine.org for Android build documentation."
+msgstr ""
+"안드로이드 프로젝트의 빌드에 실패했습니다, 출력한 오류를 확인하세요.\n"
+"또는 docs.godotengine.org에서 안드로이드 빌드 문서를 찾을 수 있습니다."
+
+#: platform/android/export/export.cpp
+msgid "No build apk generated at: "
+msgstr "여기에 빌드 apk가 생성되지 않았습니다: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
@@ -9661,7 +11028,7 @@ msgstr "앱스토어 팀 ID가 지정되지 않았습니다 - 프로젝트를 �
 
 #: platform/iphone/export/export.cpp
 msgid "Invalid Identifier:"
-msgstr "유효하지 않은 식별자:"
+msgstr "올바르지 않은 식별자:"
 
 #: platform/iphone/export/export.cpp
 msgid "Required icon is not specified in the preset."
@@ -9685,7 +11052,7 @@ msgstr "내보내기 템플릿을 열 수 없습니다:"
 
 #: platform/javascript/export/export.cpp
 msgid "Invalid export template:"
-msgstr "유효하지 않은 내보내기 템플릿:"
+msgstr "올바르지 않은 내보내기 템플릿:"
 
 #: platform/javascript/export/export.cpp
 msgid "Could not read custom HTML shell:"
@@ -9701,7 +11068,7 @@ msgstr "기본 부트 스플래시 이미지 사용."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid package unique name."
-msgstr "유효하지 않은 패키지 고유 이름."
+msgstr "올바르지 않은 패키지 고유 이름."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid product GUID."
@@ -9717,40 +11084,40 @@ msgstr "유요하지 않은 배경 색상."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid Store Logo image dimensions (should be 50x50)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (50x50 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 44x44 logo image dimensions (should be 44x44)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (44x44 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (44x44 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 71x71 logo image dimensions (should be 71x71)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (71x71 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (71x71 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 150x150 logo image dimensions (should be 150x150)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (150x150 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (150x150 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid square 310x310 logo image dimensions (should be 310x310)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (310x310 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (310x310 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid wide 310x150 logo image dimensions (should be 310x150)."
-msgstr "유효하지 않은 로고 이미지 크기입니다 (310x150 이어야 합니다)."
+msgstr "올바르지 않은 로고 이미지 크기입니다 (310x150 이어야 합니다)."
 
 #: platform/uwp/export/export.cpp
 msgid "Invalid splash screen image dimensions (should be 620x300)."
 msgstr ""
-"유효하지 않은 스플래쉬 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
+"올바르지 않은 스플래시 스크린 이미지 크기입니다 (620x300 이어야 합니다)."
 
 #: scene/2d/animated_sprite.cpp
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite to display frames."
 msgstr ""
-"AnimatedSprite이 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리소"
-"스 만들거나 지정해야 합니다."
+"AnimatedSprite이 프레임을 보여주기 위해서는 \"Frames\" 속성에 SpriteFrames 리"
+"소스를 만들거나 지정해야 합니다."
 
 #: scene/2d/canvas_modulate.cpp
 msgid ""
@@ -9813,9 +11180,9 @@ msgstr ""
 
 #: scene/2d/light_2d.cpp
 msgid ""
-"A texture with the shape of the light must be supplied to the 'texture' "
+"A texture with the shape of the light must be supplied to the \"Texture\" "
 "property."
-msgstr "라이트의 모양을 나타내는 텍스쳐를 'texture' 속성에 지정해야합니다."
+msgstr "조명의 모양을 나타낼 텍스쳐를 \"Texture\" 속성에 지정해야 합니다."
 
 #: scene/2d/light_occluder_2d.cpp
 msgid ""
@@ -9824,8 +11191,8 @@ msgstr ""
 "Occluder가 동작하기 위해서는 Occluder 폴리곤을 지정하거나 그려야 합니다."
 
 #: scene/2d/light_occluder_2d.cpp
-msgid "The occluder polygon for this occluder is empty. Please draw a polygon!"
-msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그리세요!"
+msgid "The occluder polygon for this occluder is empty. Please draw a polygon."
+msgstr "Occluder 폴리곤이 비어있습니다. 폴리곤을 그리세요."
 
 #: scene/2d/navigation_polygon.cpp
 msgid ""
@@ -9891,7 +11258,7 @@ msgstr ""
 
 #: scene/2d/remote_transform_2d.cpp
 msgid "Path property must point to a valid Node2D node to work."
-msgstr "Path 속성은 유효한 Node2D 노드를 가리켜야 합니다."
+msgstr "Path 속성은 올바른 Node2D 노드를 가리켜야 합니다."
 
 #: scene/2d/skeleton_2d.cpp
 msgid "This Bone2D chain should end at a Skeleton2D node."
@@ -9908,41 +11275,52 @@ msgstr ""
 "이 본에 적절한 휴식 자세가 없습니다. Skeleton2D 노드로 가 휴식으로 할 자세를 "
 "설정하세요."
 
+#: scene/2d/tile_map.cpp
+msgid ""
+"TileMap with Use Parent on needs a parent CollisionObject2D to give shapes "
+"to. Please use it as a child of Area2D, StaticBody2D, RigidBody2D, "
+"KinematicBody2D, etc. to give them a shape."
+msgstr ""
+"Use Parent가 켜진 TileMap은 형태를 주기 위해 부모 CollisionObject2D가 필요합"
+"니다. 형태를 주기 위해 Area2D, StaticBody2D, RigidBody2D, KinematicBody2D 등"
+"의 자식 노드로 추가하여 사용합니다."
+
 #: scene/2d/visibility_notifier_2d.cpp
 msgid ""
-"VisibilityEnable2D works best when used with the edited scene root directly "
+"VisibilityEnabler2D works best when used with the edited scene root directly "
 "as parent."
 msgstr ""
-"VisibilityEnable2D는 편집 씬의 루트의 하위 노드로 추가할 때 가장 잘 동작합니"
+"VisibilityEnabler2D는 편집 씬의 루트의 하위 노드로 추가할 때 가장 잘 동작합니"
 "다."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRCamera must have an ARVROrigin node as its parent"
-msgstr "ARVRCamera는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 함"
+msgid "ARVRCamera must have an ARVROrigin node as its parent."
+msgstr "ARVRCamera는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 합니다."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVRController must have an ARVROrigin node as its parent"
-msgstr "ARVRController는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 함"
-
-#: scene/3d/arvr_nodes.cpp
-msgid ""
-"The controller id must not be 0 or this controller will not be bound to an "
-"actual controller"
-msgstr "컨트롤러 id가 0이 되면 컨트롤러가 실제 컨트롤러에 바인딩하지 않게 됨"
-
-#: scene/3d/arvr_nodes.cpp
-msgid "ARVRAnchor must have an ARVROrigin node as its parent"
-msgstr "ARVRAnchor는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 함"
+msgid "ARVRController must have an ARVROrigin node as its parent."
+msgstr "ARVRController는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 합니다."
 
 #: scene/3d/arvr_nodes.cpp
 msgid ""
-"The anchor id must not be 0 or this anchor will not be bound to an actual "
-"anchor"
-msgstr "앵커 id가 0이 되면 앵커가 실제 앵커에 바인딩하지 않게 됨"
+"The controller ID must not be 0 or this controller won't be bound to an "
+"actual controller."
+msgstr ""
+"컨트롤러 ID가 0이 되면 컨트롤러가 실제 컨트롤러에 바인딩하지 않게 됩니다."
 
 #: scene/3d/arvr_nodes.cpp
-msgid "ARVROrigin requires an ARVRCamera child node"
-msgstr "ARVROrigin은 ARVRCamera 자식 노드를 요구 함"
+msgid "ARVRAnchor must have an ARVROrigin node as its parent."
+msgstr "ARVRAnchor는 반드시 ARVROrigin 노드를 부모로 가지고 있어야 합니다."
+
+#: scene/3d/arvr_nodes.cpp
+msgid ""
+"The anchor ID must not be 0 or this anchor won't be bound to an actual "
+"anchor."
+msgstr "앵커 ID가 0이 되면 앵커가 실제 앵커에 바인딩하지 않게 됩니다."
+
+#: scene/3d/arvr_nodes.cpp
+msgid "ARVROrigin requires an ARVRCamera child node."
+msgstr "ARVROrigin은 자식으로 ARVRCamera 노드가 필요합니다."
 
 #: scene/3d/baked_lightmap.cpp
 msgid "%d%%"
@@ -10006,10 +11384,10 @@ msgstr ""
 #: scene/3d/collision_shape.cpp
 msgid ""
 "A shape must be provided for CollisionShape to function. Please create a "
-"shape resource for it!"
+"shape resource for it."
 msgstr ""
-"CollisionShape가 기능을 하기 위해서는 Shape이 제공되어야 합니다. Shape 리소스"
-"를 만드세요!"
+"CollisionShape가 제 기능을 하려면 Shape가 제공되어야 합니다. Shape 리소스를 "
+"만드세요."
 
 #: scene/3d/collision_shape.cpp
 msgid ""
@@ -10025,11 +11403,11 @@ msgstr "지정된 메시가 없으므로 메시를 볼 수 없습니다."
 
 #: scene/3d/cpu_particles.cpp
 msgid ""
-"CPUParticles animation requires the usage of a SpatialMaterial with "
-"\"Billboard Particles\" enabled."
+"CPUParticles animation requires the usage of a SpatialMaterial whose "
+"Billboard Mode is set to \"Particle Billboard\"."
 msgstr ""
-"CPUParticles 애니메이션을 사용하려면 \"Billboard Particles\"이 활성화된 "
-"SpatialMaterial이 필요합니다."
+"CPUParticles 애니메이션을 사용하려면 Billboard Mode가 \"Particle Billboard"
+"\"로 설정된 SpatialMaterial이 필요합니다."
 
 #: scene/3d/gi_probe.cpp
 msgid "Plotting Meshes"
@@ -10042,6 +11420,10 @@ msgid ""
 msgstr ""
 "GIProbe는 GLES2 비디오 드라이버에서 지원하지 않습니다.\n"
 "BakedLightmap을 사용하세요."
+
+#: scene/3d/light.cpp
+msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
+msgstr "SpotLight의 각도를 90도 이상으로 잡게되면 그림자를 투영할 수 없습니다."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -10074,11 +11456,11 @@ msgstr "메시들을 패스를 그리도록 할당하지 않았으므로 보이�
 
 #: scene/3d/particles.cpp
 msgid ""
-"Particles animation requires the usage of a SpatialMaterial with \"Billboard "
-"Particles\" enabled."
+"Particles animation requires the usage of a SpatialMaterial whose Billboard "
+"Mode is set to \"Particle Billboard\"."
 msgstr ""
-"Particles 애니메이션을 사용하려면 \"Billboard Particles\"이 활성화된 "
-"SpatialMaterial이 필요합니다."
+"Particles 애니메이션을 사용하려면 Billboard Mode가 \"Particle Billboard\"로 "
+"설정된 SpatialMaterial이 필요합니다."
 
 #: scene/3d/path.cpp
 msgid "PathFollow only works when set as a child of a Path node."
@@ -10086,11 +11468,11 @@ msgstr "PathFollow는 Path 노드의 자식으로 있을 때만 동작합니다.
 
 #: scene/3d/path.cpp
 msgid ""
-"PathFollow ROTATION_ORIENTED requires \"Up Vector\" enabled in its parent "
-"Path's Curve resource."
+"PathFollow's ROTATION_ORIENTED requires \"Up Vector\" to be enabled in its "
+"parent Path's Curve resource."
 msgstr ""
-"PathFollow ROTATION_ORIENTED는 부모 Path의 Curve 리소스에서 \"Up Vector\"가 "
-"활성화되어 있어야 합니다."
+"PathFollow의 ROTATION_ORIENTED는 부모 Path의 Curve 리소스에서 \"Up Vector"
+"\"가 활성화되어 있어야 합니다."
 
 #: scene/3d/physics_body.cpp
 msgid ""
@@ -10103,12 +11485,16 @@ msgstr ""
 "대신 자식 충돌 형태의 크기를 변경해보세요."
 
 #: scene/3d/remote_transform.cpp
-msgid "Path property must point to a valid Spatial node to work."
-msgstr "Path 속성은 유효한 Spatial 노드를 가리켜야 합니다."
+msgid ""
+"The \"Remote Path\" property must point to a valid Spatial or Spatial-"
+"derived node to work."
+msgstr ""
+"\"Remote Path\" 속성은 올바른 Spatial  노드, 또는 Spatial 파생 노드를 가리켜"
+"야 합니다."
 
 #: scene/3d/soft_body.cpp
-msgid "This body will be ignored until you set a mesh"
-msgstr "이 바디는 메시를 설정할 때 까지 무시됩니다"
+msgid "This body will be ignored until you set a mesh."
+msgstr "이 바디는 메시를 설정할 때까지 무시됩니다."
 
 #: scene/3d/soft_body.cpp
 msgid ""
@@ -10121,11 +11507,11 @@ msgstr ""
 
 #: scene/3d/sprite_3d.cpp
 msgid ""
-"A SpriteFrames resource must be created or set in the 'Frames' property in "
+"A SpriteFrames resource must be created or set in the \"Frames\" property in "
 "order for AnimatedSprite3D to display frames."
 msgstr ""
-"AnimatedSprite3D가 프레임을 보여주기 위해서는 'Frames' 속성에 SpriteFrames 리"
-"소스 만들거나 지정해야 합니다."
+"AnimatedSprite3D가 프레임을 보여주기 위해서는 \"Frames\" 속성에 SpriteFrames "
+"리소스 만들거나 지정해야 합니다."
 
 #: scene/3d/vehicle_body.cpp
 msgid ""
@@ -10136,8 +11522,12 @@ msgstr ""
 "의 자식으로 사용해주세요."
 
 #: scene/3d/world_environment.cpp
-msgid "WorldEnvironment needs an Environment resource."
-msgstr "WorldEnvironment는 Environment 리소스가 필요합니다."
+msgid ""
+"WorldEnvironment requires its \"Environment\" property to contain an "
+"Environment to have a visible effect."
+msgstr ""
+"WorldEnvironment는 시각 효과를 위해 Environment를 갖는 \"Environment\" 속성"
+"이 필요합니다."
 
 #: scene/3d/world_environment.cpp
 msgid ""
@@ -10162,19 +11552,19 @@ msgstr "애니메이션을 찾을 수 없음: '%s'"
 
 #: scene/animation/animation_tree.cpp
 msgid "In node '%s', invalid animation: '%s'."
-msgstr "노드 '%s'에서, 유효하지 않은 애니메이션: '%s'."
+msgstr "노드 '%s'에서, 올바르지 않은 애니메이션: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Invalid animation: '%s'."
-msgstr "유효하지 않은 애니메이션: '%s'."
+msgstr "올바르지 않은 애니메이션: '%s'."
 
 #: scene/animation/animation_tree.cpp
 msgid "Nothing connected to input '%s' of node '%s'."
 msgstr "노드 '%s'의 '%s' 입력에 아무것도 연결되지 않음."
 
 #: scene/animation/animation_tree.cpp
-msgid "A root AnimationNode for the graph is not set."
-msgstr "그래프의 루트 AnimationNode가 설정되지 않았습니다."
+msgid "No root AnimationNode for the graph is set."
+msgstr "그래프를 위한 루트 AnimationNode가 설정되지 않았습니다."
 
 #: scene/animation/animation_tree.cpp
 msgid "Path to an AnimationPlayer node containing animations is not set."
@@ -10188,8 +11578,8 @@ msgstr ""
 "다."
 
 #: scene/animation/animation_tree.cpp
-msgid "AnimationPlayer root is not a valid node."
-msgstr "AnimationPlayer 루트가 유효한 노드가 아닙니다."
+msgid "The AnimationPlayer root node is not a valid node."
+msgstr "AnimationPlayer 루트 노드가 올바른 노드가 아닙니다."
 
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
@@ -10201,8 +11591,12 @@ msgid "Pick a color from the screen."
 msgstr "화면에서 색상을 선택하세요."
 
 #: scene/gui/color_picker.cpp
-msgid "Raw Mode"
-msgstr "Raw 모드"
+msgid "HSV"
+msgstr "HSV"
+
+#: scene/gui/color_picker.cpp
+msgid "Raw"
+msgstr "Raw"
 
 #: scene/gui/color_picker.cpp
 msgid "Switch between hexadecimal and code values."
@@ -10214,13 +11608,21 @@ msgstr "현재 색상을 프리셋으로 추가합니다."
 
 #: scene/gui/container.cpp
 msgid ""
-"Container by itself serves no purpose unless a script configures it's "
+"Container by itself serves no purpose unless a script configures its "
 "children placement behavior.\n"
-"If you dont't intend to add a script, then please use a plain 'Control' node "
-"instead."
+"If you don't intend to add a script, use a plain Control node instead."
 msgstr ""
-"컨테이너 자체는 자식 배치 행동을 구성하지 않는 한 용도가 없습니다.\n"
-"스크립트를 추가하지 않는 경우, 순수한 'Control' 노드를 사용해주세요."
+"Container 자체는 자식 배치 작업을 구성하는 스크립트 외에는 목적이 없습니다.\n"
+"스크립트를 추가하지 않는 경우, 순수한 Control 노드를 사용해주세요."
+
+#: scene/gui/control.cpp
+msgid ""
+"The Hint Tooltip won't be displayed as the control's Mouse Filter is set to "
+"\"Ignore\". To solve this, set the Mouse Filter to \"Stop\" or \"Pass\"."
+msgstr ""
+"Hint Tooltip은 Control의 Mouse Filter가 \"ignore\"로 설정되어 있기 때문에 보"
+"여지지 않습니다. 해결하려면, Mouse Filter를 \"Stop\"이나 \"Pass\"로 설정하세"
+"요."
 
 #: scene/gui/dialogs.cpp
 msgid "Alert!"
@@ -10230,32 +11632,28 @@ msgstr "경고!"
 msgid "Please Confirm..."
 msgstr "확인해주세요..."
 
-#: scene/gui/file_dialog.cpp
-msgid "Go to parent folder."
-msgstr "부모 폴더로 이동합니다."
-
 #: scene/gui/popup.cpp
 msgid ""
 "Popups will hide by default unless you call popup() or any of the popup*() "
-"functions. Making them visible for editing is fine though, but they will "
-"hide upon running."
+"functions. Making them visible for editing is fine, but they will hide upon "
+"running."
 msgstr ""
-"Popup은 popup() 또는 기타 popup*() 함수를 호출하기 전까지는 기본적으로 숨겨집"
-"니다. 편집하는 동안 보여지도록 할 수는 있으나, 실행 시에는 숨겨집니다."
+"Popup은 popup() 또는 기타 popup*() 함수로 호출되기 전까지 기본적으로 숨어있습"
+"니다. 편집하는 동안 보이도록 할 수는 있으나, 실행 시에는 보이지 않습니다."
 
 #: scene/gui/range.cpp
-msgid "If exp_edit is true min_value must be > 0."
-msgstr "exp_edit이 참이라면 min_value는 반드시 > 0 이어야 합니다."
+msgid "If \"Exp Edit\" is enabled, \"Min Value\" must be greater than 0."
+msgstr "\"Exp Edit\"이 활성화되면, \"Min Value\"는 반드시 0보다 커야 합니다."
 
 #: scene/gui/scroll_container.cpp
 msgid ""
 "ScrollContainer is intended to work with a single child control.\n"
-"Use a container as child (VBox,HBox,etc), or a Control and set the custom "
+"Use a container as child (VBox, HBox, etc.), or a Control and set the custom "
 "minimum size manually."
 msgstr ""
-"ScrollContainer는 단일 자식 컨트롤을 작업하기 위한 것입니다.\n"
-"컨테이너를 자식 (VBox,HBox,등)으로 사용하거나, Control을 수동으로 지정한 최"
-"소 수치로 설정해서 사용하세요."
+"ScrollContainer는 단일 자식 Control을 작업하기 위한 것입니다.\n"
+"컨테이너를 자식으로 사용하거나 (VBox, HBox 등), Control을 사용해 손수 최소 수"
+"치를 설정하세요."
 
 #: scene/gui/tree.cpp
 msgid "(Other)"
@@ -10295,15 +11693,23 @@ msgstr "폰트 로딩 오류."
 
 #: scene/resources/dynamic_font.cpp
 msgid "Invalid font size."
-msgstr "유효하지 않은 폰트 크기."
+msgstr "올바르지 않은 폰트 크기."
 
 #: scene/resources/visual_shader.cpp
 msgid "Input"
 msgstr "입력"
 
 #: scene/resources/visual_shader_nodes.cpp
+msgid "Invalid source for preview."
+msgstr "미리보기에 올바르지 않은 소스."
+
+#: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
-msgstr "셰이더에 유효하지 않은 소스."
+msgstr "셰이더에 올바르지 않은 소스."
+
+#: scene/resources/visual_shader_nodes.cpp
+msgid "Invalid comparison function for that type."
+msgstr "해당 타입에 올바르지 않은 비교 함수."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."
@@ -10316,6 +11722,313 @@ msgstr "균일하게 배치함."
 #: servers/visual/shader_language.cpp
 msgid "Varyings can only be assigned in vertex function."
 msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다."
+
+#: servers/visual/shader_language.cpp
+msgid "Constants cannot be modified."
+msgstr "상수는 수정할 수 없습니다."
+
+#~ msgid "Previous Folder"
+#~ msgstr "이전 폴더"
+
+#~ msgid "Next Folder"
+#~ msgstr "다음 폴더"
+
+#~ msgid "Automatically Open Screenshots"
+#~ msgstr "스크린샷 자동 열기"
+
+#~ msgid "Open in an external image editor."
+#~ msgstr "외부 이미지 편집기에서 열기."
+
+#~ msgid "Reverse"
+#~ msgstr "뒤집기"
+
+#~ msgid "Mirror X"
+#~ msgstr "X축 뒤집기"
+
+#~ msgid "Mirror Y"
+#~ msgstr "Y축 뒤집기"
+
+#~ msgid "Generating solution..."
+#~ msgstr "솔루션 생성 중..."
+
+#~ msgid "Generating C# project..."
+#~ msgstr "C# 프로젝트 생성 중..."
+
+#~ msgid "Failed to create solution."
+#~ msgstr "솔루션 생성 실패."
+
+#~ msgid "Failed to save solution."
+#~ msgstr "솔루션 저장 실패."
+
+#~ msgid "Done"
+#~ msgstr "완료"
+
+#~ msgid "Failed to create C# project."
+#~ msgstr "C# 프로젝트 생성 실패."
+
+#~ msgid "Mono"
+#~ msgstr "모노"
+
+#~ msgid "About C# support"
+#~ msgstr "C# 지원에 대하여"
+
+#~ msgid "Create C# solution"
+#~ msgstr "C# 솔루션 만들기"
+
+#~ msgid "Builds"
+#~ msgstr "빌드"
+
+#~ msgid "Build Project"
+#~ msgstr "프로젝트 빌드"
+
+#~ msgid "View log"
+#~ msgstr "로그 보기"
+
+#~ msgid "WorldEnvironment needs an Environment resource."
+#~ msgstr "WorldEnvironment는 Environment 리소스가 필요합니다."
+
+#~ msgid "Enabled Classes"
+#~ msgstr "활성화된 클래스"
+
+#~ msgid "Update Always"
+#~ msgstr "항상 업데이트"
+
+#~ msgid "'camera' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'camera' 입력 매개변수."
+
+#~ msgid "'inv_camera' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'inv_camera' 입력 매개변수."
+
+#~ msgid "'inv_projection' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'inv_projection' 입력 매개변수."
+
+#~ msgid "'normal' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'normal' 입력 매개변수."
+
+#~ msgid "'projection' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'projection' 입력 매개변수."
+
+#~ msgid "'time' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'time' 입력 매개변수."
+
+#~ msgid "'viewport_size' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'viewport_size' 입력 매개변수."
+
+#~ msgid "'world' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'world' 입력 매개변수."
+
+#~ msgid "'alpha' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'alpha' 입력 매개변수."
+
+#~ msgid "'color' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'color' 입력 매개변수."
+
+#~ msgid "'texture_pixel_size' input parameter for all shader modes."
+#~ msgstr "모든 셰이더 모드에 대한 'texture_pixel_size' 입력 매개변수."
+
+#~ msgid "'alpha' input parameter for vertex and fragment shader modes."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'alpha' 입력 매개변수."
+
+#~ msgid "'binormal' input parameter for vertex and fragment shader modes."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'binormal' 입력 매개변수."
+
+#~ msgid "'color' input parameter for vertex and fragment shader modes."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'color' 입력 매개변수."
+
+#~ msgid "'fragcoord' input parameter for fragment and light shader modes."
+#~ msgstr "프래그먼트와 조명 셰이더 모드에 대한 'fragcoord' 입력 매개변수."
+
+#~ msgid "'point_coord' input parameter for fragment shader mode."
+#~ msgstr "프래그먼트 셰이더 모드에 대한 'point_coord' 입력 매개변수."
+
+#~ msgid "'screen_uv' input parameter for fragment shader mode."
+#~ msgstr "프래그먼트 셰이더 모드에 대한 'screen_uv' 입력 매개변수."
+
+#~ msgid "'tangent' input parameter for vertex and fragment shader modes."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'tangent' 입력 매개변수."
+
+#~ msgid "'uv2' input parameter for vertex and fragment shader modes."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'uv2' 입력 매개변수."
+
+#~ msgid "'vertex' input parameter for vertex and fragment shader modes."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'vertex' 입력 매개변수."
+
+#~ msgid "'albedo' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'albedo' 입력 매개변수."
+
+#~ msgid "'attenuation' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'attenuation' 입력 매개변수."
+
+#~ msgid "'light' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'light' 입력 매개변수."
+
+#~ msgid "'light_color' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'light_color' 입력 매개변수."
+
+#~ msgid "'roughness' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'roughness' 입력 매개변수."
+
+#~ msgid "'specular' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'specular' 입력 매개변수."
+
+#~ msgid "'transmission' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'transmission' 입력 매개변수."
+
+#~ msgid "'modelview' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'modelview' 입력 매개변수."
+
+#~ msgid "'point_size' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'point_size' 입력 매개변수."
+
+#~ msgid "'tangent' input parameter for vertex and fragment shader mode."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'tangent' 입력 매개변수."
+
+#~ msgid "'light_pass' input parameter for vertex and fragment shader modes."
+#~ msgstr "꼭짓점과 프래그먼트 셰이더 모드에 대한 'light_pass' 입력 매개변수."
+
+#~ msgid "'point_coord' input parameter for fragment and light shader modes."
+#~ msgstr "프래그먼트와 조명 셰이더 모드에 대한 'point_coord' 입력 매개변수."
+
+#~ msgid "'screen_pixel_size' input parameter for fragment shader mode."
+#~ msgstr "프래그먼트 셰이더 모드에 대한 'screen_pixel_size' 입력 매개변수."
+
+#~ msgid "'screen_uv' input parameter for fragment and light shader modes."
+#~ msgstr "프래그먼트와 조명 셰이더 모드에 대한 'screen_uv' 입력 매개변수."
+
+#~ msgid "'light_alpha' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'light_alpha' 입력 매개변수."
+
+#~ msgid "'light_height' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'light_height' 입력 매개변수."
+
+#~ msgid "'light_uv' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'light_uv' 입력 매개변수."
+
+#~ msgid "'light_vec' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'light_vec' 입력 매개변수."
+
+#~ msgid "'normal' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'normal' 입력 매개변수."
+
+#~ msgid "'shadow_color' input parameter for light shader mode."
+#~ msgstr "조명 셰이더 모드에 대한 'shadow_color' 입력 매개변수."
+
+#~ msgid "'extra' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'extra' 입력 매개변수."
+
+#~ msgid "'projection' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'projection' 입력 매개변수."
+
+#~ msgid "'vertex' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'vertex' 입력 매개변수."
+
+#~ msgid "'world' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'world' 입력 매개변수."
+
+#~ msgid "'active' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'active' 입력 매개변수."
+
+#~ msgid "'alpha' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'alpha' 입력 매개변수."
+
+#~ msgid "'color' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'color' 입력 매개변수."
+
+#~ msgid "'custom_alpha' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'custom_alpha' 입력 매개변수."
+
+#~ msgid "'delta' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'delta' 입력 매개변수."
+
+#~ msgid "'emission_transform' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'emission_transform' 입력 매개변수."
+
+#~ msgid "'index' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'index' 입력 매개변수."
+
+#~ msgid "'lifetime' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'lifetime' 입력 매개변수."
+
+#~ msgid "'restart' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'restart' 입력 매개변수."
+
+#~ msgid "'time' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'time' 입력 매개변수."
+
+#~ msgid "'transform' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'transform' 입력 매개변수."
+
+#~ msgid "'velocity' input parameter for vertex shader mode."
+#~ msgstr "꼭짓점 셰이더 모드에 대한 'velocity' 입력 매개변수."
+
+#~ msgid "Raw Mode"
+#~ msgstr "Raw 모드"
+
+#~ msgid "Path to Node:"
+#~ msgstr "노드 경로:"
+
+#~ msgid "Delete selected files?"
+#~ msgstr "선택된 파일들을 삭제하시겠습니까?"
+
+#~ msgid "There is no 'res://default_bus_layout.tres' file."
+#~ msgstr "'res://default_bus_layout.tres' 파일이 없습니다."
+
+#~ msgid "Go to parent folder"
+#~ msgstr "부모 폴더로 이동"
+
+#~ msgid "Select device from the list"
+#~ msgstr "목록에서 기기를 선택하세요"
+
+#~ msgid "Open Scene(s)"
+#~ msgstr "씬(들) 열기"
+
+#~ msgid "Previous Directory"
+#~ msgstr "이전 디렉토리"
+
+#~ msgid "Next Directory"
+#~ msgstr "다음 디렉토리"
+
+#~ msgid "Ease in"
+#~ msgstr "완화 in"
+
+#~ msgid "Ease out"
+#~ msgstr "완화 out"
+
+#~ msgid "Create Convex Static Body"
+#~ msgstr "Convex Static Body 만들기"
+
+#~ msgid "CheckBox Radio1"
+#~ msgstr "체크박스 라디오1"
+
+#~ msgid "CheckBox Radio2"
+#~ msgstr "체크박스 라디오2"
+
+#~ msgid "Create folder"
+#~ msgstr "폴더 만들기"
+
+#~ msgid "Already existing"
+#~ msgstr "이미 존재함"
+
+#~ msgid "Custom Node"
+#~ msgstr "커스텀 노드"
+
+#~ msgid "Invalid Path"
+#~ msgstr "유효하지 않은 경로"
+
+#~ msgid "GridMap Duplicate Selection"
+#~ msgstr "그리드맵 선택 복제"
+
+#~ msgid "Create Area"
+#~ msgstr "영역 만들기"
+
+#~ msgid "Create Exterior Connector"
+#~ msgstr "외부 커넥터 만들기"
+
+#~ msgid "Edit Signal Arguments:"
+#~ msgstr "시그널 인수 편집:"
+
+#~ msgid "Edit Variable:"
+#~ msgstr "변수 편집:"
 
 #~ msgid "Snap (s): "
 #~ msgstr "스냅: "
@@ -10436,9 +12149,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Class List:"
 #~ msgstr "클래스 목록:"
 
-#~ msgid "Search Classes"
-#~ msgstr "클래스 검색"
-
 #~ msgid "Public Methods"
 #~ msgstr "공개 메서드"
 
@@ -10513,9 +12223,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Error:"
 #~ msgstr "에러:"
 
-#~ msgid "Source:"
-#~ msgstr "소스:"
-
 #~ msgid "Function:"
 #~ msgstr "함수:"
 
@@ -10537,20 +12244,8 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Get"
 #~ msgstr "Get"
 
-#~ msgid "Change Scalar Constant"
-#~ msgstr "Scalar 상수 변경"
-
-#~ msgid "Change Vec Constant"
-#~ msgstr "Vec 상수 변경"
-
 #~ msgid "Change RGB Constant"
 #~ msgstr "RGB 상수 변경"
-
-#~ msgid "Change Scalar Operator"
-#~ msgstr "Scalar 연산자 변경"
-
-#~ msgid "Change Vec Operator"
-#~ msgstr "Vec 연산자 변경"
 
 #~ msgid "Change Vec Scalar Operator"
 #~ msgstr "Vec Scalar 연산자 변경"
@@ -10561,14 +12256,8 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Toggle Rot Only"
 #~ msgstr "오직 회전 토글"
 
-#~ msgid "Change Scalar Function"
-#~ msgstr "Scalar 함수 변경"
-
 #~ msgid "Change Vec Function"
 #~ msgstr "Vec 함수 변경"
-
-#~ msgid "Change Scalar Uniform"
-#~ msgstr "Scalar uniform 변경"
 
 #~ msgid "Change Vec Uniform"
 #~ msgstr "Vec uniform 변경"
@@ -10581,9 +12270,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Change XForm Uniform"
 #~ msgstr "XForm uniform 변경"
-
-#~ msgid "Change Texture Uniform"
-#~ msgstr "텍스쳐 uniform 변경"
 
 #~ msgid "Change Cubemap Uniform"
 #~ msgstr "큐브맵 uniform 변경"
@@ -10602,9 +12288,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Modify Curve Map"
 #~ msgstr "커브맵 수정"
-
-#~ msgid "Change Input Name"
-#~ msgstr "입력 이름 변경"
 
 #~ msgid "Connect Graph Nodes"
 #~ msgstr "그래프 노드 연결"
@@ -10632,9 +12315,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Add Shader Graph Node"
 #~ msgstr "셰이더 그래프 노드 추가"
-
-#~ msgid "Disabled"
-#~ msgstr "비활성화됨"
 
 #~ msgid "Move Anim Track Up"
 #~ msgstr "애니메이션 트랙 위로 이동"
@@ -10819,14 +12499,8 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Item name or ID:"
 #~ msgstr "아이템 이름 또는 아이디:"
 
-#~ msgid "Autotiles"
-#~ msgstr "자동 타일"
-
 #~ msgid "Export templates for this platform are missing/corrupted: "
 #~ msgstr "이 플랫폼에 대한 내보내기 템플릿이 없거나 손상됨: "
-
-#~ msgid "Button 7"
-#~ msgstr "버튼 7"
 
 #~ msgid "Button 8"
 #~ msgstr "버튼 8"
@@ -10845,9 +12519,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 
 #~ msgid "Toggle Spatial Visible"
 #~ msgstr "Spatial 보이기 토글"
-
-#~ msgid "Toggle CanvasItem Visible"
-#~ msgstr "CanvasItem 보이기 토글"
 
 #~ msgid "Condition"
 #~ msgstr "조건"
@@ -11675,9 +13346,6 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Project Export Settings"
 #~ msgstr "프로젝트 내보내기 설정"
 
-#~ msgid "Target"
-#~ msgstr "대상"
-
 #~ msgid "Export to Platform"
 #~ msgstr "플랫폼으로 내보내기"
 
@@ -11732,14 +13400,8 @@ msgstr "Varyings는 오직 버텍스 함수에서만 지정할 수 있습니다.
 #~ msgid "Shrink By:"
 #~ msgstr "이미지 줄이기:"
 
-#~ msgid "Preview Atlas"
-#~ msgstr "아틀라스 미리보기"
-
 #~ msgid "Images:"
 #~ msgstr "이미지:"
-
-#~ msgid "Select None"
-#~ msgstr "모든 선택 해제"
 
 #~ msgid "Group"
 #~ msgstr "그룹"

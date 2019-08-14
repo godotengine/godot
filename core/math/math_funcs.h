@@ -198,6 +198,13 @@ public:
 		value += 0.0;
 		return value;
 	}
+	static _ALWAYS_INLINE_ int posmod(int p_x, int p_y) {
+		int value = p_x % p_y;
+		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+			value += p_y;
+		}
+		return value;
+	}
 
 	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * Math_PI / 180.0; }
 	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * Math_PI / 180.0; }
@@ -207,6 +214,17 @@ public:
 
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
+
+	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
+		double difference = fmod(p_to - p_from, Math_TAU);
+		double distance = fmod(2.0 * difference, Math_TAU) - difference;
+		return p_from + distance * p_weight;
+	}
+	static _ALWAYS_INLINE_ float lerp_angle(float p_from, float p_to, float p_weight) {
+		float difference = fmod(p_to - p_from, (float)Math_TAU);
+		float distance = fmod(2.0f * difference, (float)Math_TAU) - difference;
+		return p_from + distance * p_weight;
+	}
 
 	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
 	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
@@ -237,21 +255,22 @@ public:
 	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 
 	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
-		int64_t rng = max - min;
-		return (rng != 0) ? min + ((((value - min) % rng) + rng) % rng) : min;
+		int64_t range = max - min;
+		return range == 0 ? min : min + ((((value - min) % range) + range) % range);
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
-		double rng = max - min;
-		return (!is_equal_approx(rng, 0.0)) ? value - (rng * Math::floor((value - min) / rng)) : min;
+		double range = max - min;
+		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
-		float rng = max - min;
-		return (!is_equal_approx(rng, 0.0f)) ? value - (rng * Math::floor((value - min) / rng)) : min;
+		float range = max - min;
+		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
+	static int range_step_decimals(double p_step);
 	static double stepify(double p_value, double p_step);
 	static double dectime(double p_value, double p_amount, double p_step);
 

@@ -100,6 +100,11 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 			}
 
 			String entry_lib_path = config->get_value("entry", key);
+			if (!entry_lib_path.begins_with("res://")) {
+				print_line("Skipping export of out-of-project library " + entry_lib_path);
+				continue;
+			}
+
 			add_shared_object(entry_lib_path, tags);
 		}
 	}
@@ -129,6 +134,10 @@ void GDNativeExportPlugin::_export_file(const String &p_path, const String &p_ty
 
 			Vector<String> dependency_paths = config->get_value("dependencies", key);
 			for (int i = 0; i < dependency_paths.size(); i++) {
+				if (!dependency_paths[i].begins_with("res://")) {
+					print_line("Skipping export of out-of-project library " + dependency_paths[i]);
+					continue;
+				}
 				add_shared_object(dependency_paths[i], tags);
 			}
 		}

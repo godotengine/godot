@@ -26,14 +26,14 @@
 #define MBEDTLS_PLATFORM_UTIL_H
 
 #if !defined(MBEDTLS_CONFIG_FILE)
-#include "mbedtls/config.h"
+#include "config.h"
 #else
 #include MBEDTLS_CONFIG_FILE
 #endif
 
 #include <stddef.h>
 #if defined(MBEDTLS_HAVE_TIME_DATE)
-#include "mbedtls/platform_time.h"
+#include "platform_time.h"
 #include <time.h>
 #endif /* MBEDTLS_HAVE_TIME_DATE */
 

@@ -172,8 +172,8 @@ static void _generate_contacts_from_supports(const Vector2 *p_points_A, int p_po
 		points_B = p_points_B;
 	}
 
-	int version_A = (pointcount_A > 3 ? 3 : pointcount_A) - 1;
-	int version_B = (pointcount_B > 3 ? 3 : pointcount_B) - 1;
+	int version_A = (pointcount_A > 2 ? 2 : pointcount_A) - 1;
+	int version_B = (pointcount_B > 2 ? 2 : pointcount_B) - 1;
 
 	GenerateContactsFunc contacts_func = generate_contacts_func_table[version_A][version_B];
 	ERR_FAIL_COND(!contacts_func);
@@ -313,10 +313,12 @@ public:
 		if (best_axis == Vector2(0.0, 0.0))
 			return;
 
-		callback->collided = true;
+		if (callback) {
+			callback->collided = true;
 
-		if (!callback->callback)
-			return; //only collide, no callback
+			if (!callback->callback)
+				return; //only collide, no callback
+		}
 		static const int max_supports = 2;
 
 		Vector2 supports_A[max_supports];
@@ -354,12 +356,13 @@ public:
 				supports_B[i] += best_axis * margin_B;
 			}
 		}
+		if (callback) {
+			callback->normal = best_axis;
+			_generate_contacts_from_supports(supports_A, support_count_A, supports_B, support_count_B, callback);
 
-		callback->normal = best_axis;
-		_generate_contacts_from_supports(supports_A, support_count_A, supports_B, support_count_B, callback);
-
-		if (callback && callback->sep_axis && *callback->sep_axis != Vector2())
-			*callback->sep_axis = Vector2(); //invalidate previous axis (no test)
+			if (callback->sep_axis && *callback->sep_axis != Vector2())
+				*callback->sep_axis = Vector2(); //invalidate previous axis (no test)
+		}
 	}
 
 	_FORCE_INLINE_ SeparatorAxisTest2D(const ShapeA *p_shape_A, const Transform2D &p_transform_a, const ShapeB *p_shape_B, const Transform2D &p_transform_b, _CollectorCallback2D *p_collector, const Vector2 &p_motion_A = Vector2(), const Vector2 &p_motion_B = Vector2(), real_t p_margin_A = 0, real_t p_margin_B = 0) {

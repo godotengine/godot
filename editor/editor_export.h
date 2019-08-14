@@ -44,7 +44,8 @@ struct EditorProgress;
 
 class EditorExportPreset : public Reference {
 
-	GDCLASS(EditorExportPreset, Reference)
+	GDCLASS(EditorExportPreset, Reference);
+
 public:
 	enum ExportFilter {
 		EXPORT_ALL_RESOURCES,
@@ -152,7 +153,7 @@ struct SharedObject {
 
 class EditorExportPlatform : public Reference {
 
-	GDCLASS(EditorExportPlatform, Reference)
+	GDCLASS(EditorExportPlatform, Reference);
 
 public:
 	typedef Error (*EditorExportSaveFunction)(void *p_userdata, const String &p_path, const Vector<uint8_t> &p_data, int p_file, int p_total);
@@ -239,7 +240,7 @@ public:
 
 	Error export_project_files(const Ref<EditorExportPreset> &p_preset, EditorExportSaveFunction p_func, void *p_udata, EditorExportSaveSharedObject p_so_func = NULL);
 
-	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files = NULL);
+	Error save_pack(const Ref<EditorExportPreset> &p_preset, const String &p_path, Vector<SharedObject> *p_so_files = NULL, bool p_embed = false, int64_t *r_embedded_start = NULL, int64_t *r_embedded_size = NULL);
 	Error save_zip(const Ref<EditorExportPreset> &p_preset, const String &p_path);
 
 	virtual bool poll_devices() { return false; }
@@ -272,7 +273,7 @@ public:
 };
 
 class EditorExportPlugin : public Reference {
-	GDCLASS(EditorExportPlugin, Reference)
+	GDCLASS(EditorExportPlugin, Reference);
 
 	friend class EditorExportPlatform;
 
@@ -388,8 +389,12 @@ public:
 
 class EditorExportPlatformPC : public EditorExportPlatform {
 
-	GDCLASS(EditorExportPlatformPC, EditorExportPlatform)
+	GDCLASS(EditorExportPlatformPC, EditorExportPlatform);
 
+public:
+	typedef Error (*FixUpEmbeddedPckFunc)(const String &p_path, int64_t p_embedded_start, int64_t p_embedded_size);
+
+private:
 	Ref<ImageTexture> logo;
 	String name;
 	String os_name;
@@ -403,6 +408,8 @@ class EditorExportPlatformPC : public EditorExportPlatform {
 	Set<String> extra_features;
 
 	int chmod_flags;
+
+	FixUpEmbeddedPckFunc fixup_embedded_pck_func;
 
 public:
 	virtual void get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features);
@@ -435,12 +442,15 @@ public:
 	int get_chmod_flags() const;
 	void set_chmod_flags(int p_flags);
 
+	FixUpEmbeddedPckFunc get_fixup_embedded_pck_func() const;
+	void set_fixup_embedded_pck_func(FixUpEmbeddedPckFunc p_fixup_embedded_pck_func);
+
 	EditorExportPlatformPC();
 };
 
 class EditorExportTextSceneToBinaryPlugin : public EditorExportPlugin {
 
-	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin)
+	GDCLASS(EditorExportTextSceneToBinaryPlugin, EditorExportPlugin);
 
 public:
 	virtual void _export_file(const String &p_path, const String &p_type, const Set<String> &p_features);

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Mesh" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		A [Resource] that contains vertex-array based geometry.
+		A [Resource] that contains vertex array-based geometry.
 	</brief_description>
 	<description>
-		Mesh is a type of [Resource] that contains vertex-array based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
+		Mesh is a type of [Resource] that contains vertex array-based geometry, divided in [i]surfaces[/i]. Each surface contains a completely separate array and a material used to draw it. Design wise, a mesh with multiple surfaces is preferred to a single surface, because objects created in 3D editing software commonly contain multiple materials.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,7 +22,8 @@
 			<argument index="0" name="margin" type="float">
 			</argument>
 			<description>
-				Calculate an outline mesh at a defined offset (margin) from the original mesh. Note: Typically returns the vertices in reverse order (e.g. clockwise to anti-clockwise).
+				Calculate an outline mesh at a defined offset (margin) from the original mesh.
+				[b]Note:[/b] This method typically returns the vertices in reverse order (e.g. clockwise to counterclockwise).
 			</description>
 		</method>
 		<method name="create_trimesh_shape" qualifiers="const">
@@ -88,12 +89,12 @@
 			<argument index="1" name="material" type="Material">
 			</argument>
 			<description>
-				Set a [Material] for a given surface. Surface will be rendered using this material.
+				Sets a [Material] for a given surface. Surface will be rendered using this material.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint">
+		<member name="lightmap_size_hint" type="Vector2" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2( 0, 0 )">
 		</member>
 	</members>
 	<constants>
@@ -194,6 +195,7 @@
 			Array of indices.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+			Represents the size of the [enum ArrayType] enum.
 		</constant>
 	</constants>
 </class>

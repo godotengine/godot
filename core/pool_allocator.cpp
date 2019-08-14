@@ -206,8 +206,8 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 		if (!find_hole(&new_entry_indices_pos, size_to_alloc)) {
 
 			mt_unlock();
-			ERR_PRINT("memory can't be compacted further");
-			return POOL_ALLOCATOR_INVALID_ID;
+			ERR_EXPLAIN("Memory can't be compacted further");
+			ERR_FAIL_V(POOL_ALLOCATOR_INVALID_ID);
 		}
 	}
 
@@ -217,7 +217,8 @@ PoolAllocator::ID PoolAllocator::alloc(int p_size) {
 
 	if (!found_free_entry) {
 		mt_unlock();
-		ERR_FAIL_COND_V(!found_free_entry, POOL_ALLOCATOR_INVALID_ID);
+		ERR_EXPLAIN("No free entry found in PoolAllocator");
+		ERR_FAIL_V(POOL_ALLOCATOR_INVALID_ID);
 	}
 
 	/* move all entry indices up, make room for this one */
@@ -500,9 +501,7 @@ void *PoolAllocator::get(ID p_mem) {
 	if (!needs_locking) {
 
 		Entry *e = get_entry(p_mem);
-		if (!e) {
-			ERR_FAIL_COND_V(!e, NULL);
-		};
+		ERR_FAIL_COND_V(!e, NULL);
 		return &pool[e->pos];
 	}
 
@@ -540,6 +539,10 @@ void PoolAllocator::unlock(ID p_mem) {
 		return;
 	mt_lock();
 	Entry *e = get_entry(p_mem);
+	if (!e) {
+		mt_unlock();
+		ERR_FAIL_COND(!e);
+	}
 	if (e->lock == 0) {
 		mt_unlock();
 		ERR_PRINT("e->lock == 0");
@@ -612,7 +615,7 @@ PoolAllocator::PoolAllocator(void *p_mem, int p_size, int p_align, bool p_needs_
 PoolAllocator::PoolAllocator(int p_align, int p_size, bool p_needs_locking, int p_max_entries) {
 
 	ERR_FAIL_COND(p_align < 1);
-	mem_ptr = Memory::alloc_static(p_size + p_align, "PoolAllocator()");
+	mem_ptr = Memory::alloc_static(p_size + p_align, true);
 	uint8_t *mem8 = (uint8_t *)mem_ptr;
 	uint64_t ofs = (uint64_t)mem8;
 	if (ofs % p_align)

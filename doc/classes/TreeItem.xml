@@ -90,7 +90,7 @@
 			<argument index="0" name="column" type="int">
 			</argument>
 			<description>
-				Returns the column's cell mode. See [code]CELL_MODE_*[/code] constants.
+				Returns the column's cell mode.
 			</description>
 		</method>
 		<method name="get_children">
@@ -337,6 +337,19 @@
 				Sets the given column's button [Texture] at index [code]button_idx[/code] to [code]button[/code].
 			</description>
 		</method>
+		<method name="set_button_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], disables the button at index [code]button_idx[/code] in column [code]column[/code].
+			</description>
+		</method>
 		<method name="set_cell_mode">
 			<return type="void">
 			</return>
@@ -527,7 +540,7 @@
 			<argument index="1" name="text_align" type="int" enum="TreeItem.TextAlign">
 			</argument>
 			<description>
-				Sets the given column's text alignment. See [code]ALIGN_*[/code] constants.
+				Sets the given column's text alignment. See [enum TextAlign] for possible values.
 			</description>
 		</method>
 		<method name="set_tooltip">

@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync">
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
 			If [code]true[/code], sets the [code]optimization[/code] to [code]false[/code] when calling [method AnimationNode.blend_input], forcing the blended animations to update every frame.
 		</member>
 	</members>

@@ -42,18 +42,18 @@
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = NULL;
 
 static const char *_button_names[JOY_BUTTON_MAX] = {
-	"PS Cross, XBox A, Nintendo B",
-	"PS Circle, XBox B, Nintendo A",
-	"PS Square, XBox X, Nintendo Y",
-	"PS Triangle, XBox Y, Nintendo X",
+	"DualShock Cross, Xbox A, Nintendo B",
+	"DualShock Circle, Xbox B, Nintendo A",
+	"DualShock Square, Xbox X, Nintendo Y",
+	"DualShock Triangle, Xbox Y, Nintendo X",
 	"L, L1",
 	"R, R1",
 	"L2",
 	"R2",
 	"L3",
 	"R3",
-	"Select, Nintendo -",
-	"Start, Nintendo +",
+	"Select, DualShock Share, Nintendo -",
+	"Start, DualShock Options, Nintendo +",
 	"D-Pad Up",
 	"D-Pad Down",
 	"D-Pad Left",
@@ -257,7 +257,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
-			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
+			jm->set_axis_value((device_index->get_selected() & 1) ? 1 : -1);
 			jm->set_device(_get_current_device());
 
 			for (int i = 0; i < events.size(); i++) {
@@ -483,7 +483,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
 
 				String desc = _axis_names[i];
-				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + (i & 1 ? "+" : "-") + desc);
+				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + ((i & 1) ? "+" : "-") + desc);
 			}
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 
@@ -808,7 +808,7 @@ void ProjectSettingsEditor::update_plugins() {
 
 void ProjectSettingsEditor::_item_selected(const String &p_path) {
 
-	String selected_path = p_path;
+	const String &selected_path = p_path;
 	if (selected_path == String())
 		return;
 	category->set_text(globals_editor->get_current_section());
@@ -965,8 +965,6 @@ void ProjectSettingsEditor::_action_add() {
 	while (r->get_next())
 		r = r->get_next();
 
-	if (!r)
-		return;
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
 	action_add_error->hide();

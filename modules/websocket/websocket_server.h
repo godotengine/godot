@@ -62,6 +62,8 @@ public:
 	void _on_disconnect(int32_t p_peer_id, bool p_was_clean);
 	void _on_close_request(int32_t p_peer_id, int p_code, String p_reason);
 
+	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
+
 	WebSocketServer();
 	~WebSocketServer();
 };

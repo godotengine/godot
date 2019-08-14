@@ -175,9 +175,13 @@ public:
 	virtual int get_screen_dpi(int p_screen = -1) const;
 	virtual Point2 get_window_position() const;
 	virtual void set_window_position(const Point2 &p_position);
+	virtual Size2 get_max_window_size() const;
+	virtual Size2 get_min_window_size() const;
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
 	virtual Rect2 get_window_safe_area() const;
+	virtual void set_max_window_size(const Size2 &p_size);
+	virtual void set_min_window_size(const Size2 &p_size);
 	virtual void set_window_size(const Size2 &p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -404,6 +408,7 @@ public:
 	int get_uv84_normal_bit(const Vector3 &p_vector);
 
 	bool is_polygon_clockwise(const Vector<Vector2> &p_polygon);
+	bool is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon);
 	Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points);
 	Vector<Point2> convex_hull_2d(const Vector<Point2> &p_points);
@@ -690,7 +695,7 @@ VARIANT_ENUM_CAST(_Thread::Priority);
 
 class _ClassDB : public Object {
 
-	GDCLASS(_ClassDB, Object)
+	GDCLASS(_ClassDB, Object);
 
 protected:
 	static void _bind_methods();
@@ -741,6 +746,7 @@ public:
 
 	void set_physics_jitter_fix(float p_threshold);
 	float get_physics_jitter_fix() const;
+	float get_physics_interpolation_fraction() const;
 
 	void set_target_fps(int p_fps);
 	int get_target_fps() const;
@@ -775,7 +781,7 @@ public:
 class _JSON;
 
 class JSONParseResult : public Reference {
-	GDCLASS(JSONParseResult, Reference)
+	GDCLASS(JSONParseResult, Reference);
 
 	friend class _JSON;
 
@@ -800,10 +806,13 @@ public:
 
 	void set_result(const Variant &p_result);
 	Variant get_result() const;
+
+	JSONParseResult() :
+			error_line(-1) {}
 };
 
 class _JSON : public Object {
-	GDCLASS(_JSON, Object)
+	GDCLASS(_JSON, Object);
 
 protected:
 	static void _bind_methods();

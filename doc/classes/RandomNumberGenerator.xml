@@ -4,7 +4,15 @@
 		A class for generating pseudo-random numbers.
 	</brief_description>
 	<description>
-		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses PCG32. The underlying algorithm is an implementation detail. As a result, it should not be depended upon for reproducible random streams across Godot versions.
+		RandomNumberGenerator is a class for generating pseudo-random numbers. It currently uses [url=http://www.pcg-random.org/]PCG32[/url].
+		[b]Note:[/b] The underlying algorithm is an implementation detail. As a result, it should not be depended upon for reproducible random streams across Godot versions.
+		To generate a random float number (within a given range) based on a time-dependant seed:
+		[codeblock]
+		var rng = RandomNumberGenerator.new()
+		func _ready():
+		    rng.randomize()
+		    var my_random_number = rng.randf_range(-10.0, 10.0)
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +21,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Generates pseudo-random float between '0.0' and '1.0', inclusive.
+				Generates a pseudo-random float between [code]0.0[/code] and [code]1.0[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randf_range">
@@ -24,7 +32,7 @@
 			<argument index="1" name="to" type="float">
 			</argument>
 			<description>
-				Generates pseudo-random float between [code]from[/code] and [code]to[/code], inclusive.
+				Generates a pseudo-random float between [code]from[/code] and [code]to[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randfn">
@@ -35,14 +43,14 @@
 			<argument index="1" name="deviation" type="float" default="1.0">
 			</argument>
 			<description>
-				Generates normally(gaussian) distributed pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code].
+				Generates a [url=https://en.wikipedia.org/wiki/Normal_distribution]normally-distributed[/url] pseudo-random number, using Box-Muller transform with the specified [code]mean[/code] and a standard [code]deviation[/code]. This is also called Gaussian distribution.
 			</description>
 		</method>
 		<method name="randi">
 			<return type="int">
 			</return>
 			<description>
-				Generates pseudo-random 32-bit unsigned integer between '0' and '4294967295', inclusive.
+				Generates a pseudo-random 32-bit unsigned integer between [code]0[/code] and [code]4294967295[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randi_range">
@@ -53,7 +61,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Generates pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code] (inclusive).
+				Generates a pseudo-random 32-bit signed integer between [code]from[/code] and [code]to[/code] (inclusive).
 			</description>
 		</method>
 		<method name="randomize">
@@ -65,7 +73,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="seed" type="int" setter="set_seed" getter="get_seed">
+		<member name="seed" type="int" setter="set_seed" getter="get_seed" default="-6398989897141750821">
 			The seed used by the random number generator. A given seed will give a reproducible sequence of pseudo-random numbers.
 			[b]Note:[/b] The RNG does not have an avalanche effect, and can output similar random streams given similar seeds. Consider using a hash function to improve your seed quality if they're sourced externally.
 		</member>

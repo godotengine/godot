@@ -43,6 +43,7 @@ int main(int argc, char *argv[]) {
 	setlocale(LC_CTYPE, "");
 
 	char *cwd = (char *)malloc(PATH_MAX);
+	ERR_FAIL_COND_V(!cwd, ERR_OUT_OF_MEMORY);
 	char *ret = getcwd(cwd, PATH_MAX);
 
 	Error err = Main::setup(argv[0], argc - 1, &argv[1]);
@@ -55,8 +56,11 @@ int main(int argc, char *argv[]) {
 		os.run(); // it is actually the OS that decides how to run
 	Main::cleanup();
 
-	if (ret)
-		chdir(cwd);
+	if (ret) { // Previous getcwd was successful
+		if (chdir(cwd) != 0) {
+			ERR_PRINT("Couldn't return to previous working directory.");
+		}
+	}
 	free(cwd);
 
 	return os.get_exit_code();

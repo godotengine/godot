@@ -46,7 +46,7 @@ void godot_icall_Array_Dtor(Array *ptr) {
 }
 
 MonoObject *godot_icall_Array_At(Array *ptr, int index) {
-	if (index < 0 || index > ptr->size()) {
+	if (index < 0 || index >= ptr->size()) {
 		GDMonoUtils::set_pending_exception(mono_get_exception_index_out_of_range());
 		return NULL;
 	}
@@ -54,7 +54,7 @@ MonoObject *godot_icall_Array_At(Array *ptr, int index) {
 }
 
 MonoObject *godot_icall_Array_At_Generic(Array *ptr, int index, uint32_t type_encoding, GDMonoClass *type_class) {
-	if (index < 0 || index > ptr->size()) {
+	if (index < 0 || index >= ptr->size()) {
 		GDMonoUtils::set_pending_exception(mono_get_exception_index_out_of_range());
 		return NULL;
 	}
@@ -62,7 +62,7 @@ MonoObject *godot_icall_Array_At_Generic(Array *ptr, int index, uint32_t type_en
 }
 
 void godot_icall_Array_SetAt(Array *ptr, int index, MonoObject *value) {
-	if (index < 0 || index > ptr->size()) {
+	if (index < 0 || index >= ptr->size()) {
 		GDMonoUtils::set_pending_exception(mono_get_exception_index_out_of_range());
 		return;
 	}
@@ -124,7 +124,7 @@ MonoBoolean godot_icall_Array_Remove(Array *ptr, MonoObject *item) {
 }
 
 void godot_icall_Array_RemoveAt(Array *ptr, int index) {
-	if (index < 0 || index > ptr->size()) {
+	if (index < 0 || index >= ptr->size()) {
 		GDMonoUtils::set_pending_exception(mono_get_exception_index_out_of_range());
 		return;
 	}

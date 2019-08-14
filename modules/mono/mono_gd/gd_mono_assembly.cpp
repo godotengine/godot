@@ -67,11 +67,22 @@ void GDMonoAssembly::fill_search_dirs(Vector<String> &r_search_dirs, const Strin
 		r_search_dirs.push_back(GodotSharpDirs::get_res_temp_assemblies_dir());
 	}
 
-	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	if (p_custom_config.empty()) {
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_dir());
+	} else {
+		String api_config = p_custom_config == "Release" ? "Release" : "Debug";
+		r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir().plus_file(api_config));
+	}
+
+	r_search_dirs.push_back(GodotSharpDirs::get_res_assemblies_base_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_resource_dir());
 	r_search_dirs.push_back(OS::get_singleton()->get_executable_path().get_base_dir());
+
 #ifdef TOOLS_ENABLED
 	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_tools_dir());
+
+	// For GodotTools to find the api assemblies
+	r_search_dirs.push_back(GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug"));
 #endif
 }
 
@@ -140,14 +151,14 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, vo
 	}
 
 	{
-		// If we find the assembly here, we load it with `mono_assembly_load_from_full`,
+		// If we find the assembly here, we load it with 'mono_assembly_load_from_full',
 		// which in turn invokes load hooks before returning the MonoAssembly to us.
-		// One of the load hooks is `load_aot_module`. This hook can end up calling preload hooks
-		// again for the same assembly in certain in certain circumstances (the `do_load_image` part).
+		// One of the load hooks is 'load_aot_module'. This hook can end up calling preload hooks
+		// again for the same assembly in certain in certain circumstances (the 'do_load_image' part).
 		// If this is the case and we return NULL due to the no_search condition below,
 		// it will result in an internal crash later on. Therefore we need to return the assembly we didn't
-		// get yet from `mono_assembly_load_from_full`. Luckily we have the image, which already got it.
-		// This must be done here. If done in search hooks, it would cause `mono_assembly_load_from_full`
+		// get yet from 'mono_assembly_load_from_full'. Luckily we have the image, which already got it.
+		// This must be done here. If done in search hooks, it would cause 'mono_assembly_load_from_full'
 		// to think another MonoAssembly for this assembly was already loaded, making it delete its own,
 		// when in fact both pointers were the same... This hooks thing is confusing.
 		if (image_corlib_loading) {
@@ -270,7 +281,18 @@ Error GDMonoAssembly::load(bool p_refonly) {
 	Vector<uint8_t> data = FileAccess::get_file_as_array(path);
 	ERR_FAIL_COND_V(data.empty(), ERR_FILE_CANT_READ);
 
-	String image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	String image_filename;
+
+#ifdef ANDROID_ENABLED
+	if (path.begins_with("res://")) {
+		image_filename = path.substr(6, path.length());
+	} else {
+		image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+	}
+#else
+	// FIXME: globalize_path does not work on exported games
+	image_filename = ProjectSettings::get_singleton()->globalize_path(path);
+#endif
 
 	MonoImageOpenStatus status = MONO_IMAGE_OK;
 

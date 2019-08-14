@@ -49,17 +49,22 @@ class FindBar : public HBoxContainer {
 	LineEdit *search_text;
 	ToolButton *find_prev;
 	ToolButton *find_next;
-	Label *error_label;
+	Label *matches_label;
 	TextureButton *hide_button;
 	String prev_search;
 
 	RichTextLabel *rich_text_label;
+
+	int results_count;
 
 	void _show_search();
 	void _hide_bar();
 
 	void _search_text_changed(const String &p_text);
 	void _search_text_entered(const String &p_text);
+
+	void _update_results_count();
+	void _update_matches_label();
 
 	void _update_size();
 
@@ -72,8 +77,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	void set_error(const String &p_label);
-
 	void set_rich_text_label(RichTextLabel *p_rich_text_label);
 
 	void popup_search();

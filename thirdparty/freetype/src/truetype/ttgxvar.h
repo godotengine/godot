@@ -416,6 +416,7 @@ FT_BEGIN_HEADER
   TT_Vary_Apply_Glyph_Deltas( TT_Face      face,
                               FT_UInt      glyph_index,
                               FT_Outline*  outline,
+                              FT_Vector*   unrounded,
                               FT_UInt      n_points );
 
   FT_LOCAL( FT_Error )

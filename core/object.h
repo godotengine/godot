@@ -58,7 +58,7 @@ enum PropertyHint {
 	PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease) use "attenuation" hint string to revert (flip h), "full" to also include in/out. (ie: "attenuation,inout")
 	PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
-	PROPERTY_HINT_SPRITE_FRAME,
+	PROPERTY_HINT_SPRITE_FRAME, // FIXME: Obsolete: drop whenever we can break compat. Keeping now for GDNative compat.
 	PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	PROPERTY_HINT_LAYERS_2D_RENDER,
@@ -104,7 +104,8 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_INTERNATIONALIZED = 64, //hint for internationalized strings
 	PROPERTY_USAGE_GROUP = 128, //used for grouping props in the editor
 	PROPERTY_USAGE_CATEGORY = 256,
-	//those below are deprecated thanks to ClassDB's now class value cache
+	// FIXME: Drop in 4.0, possibly reorder other flags?
+	// Those below are deprecated thanks to ClassDB's now class value cache
 	//PROPERTY_USAGE_STORE_IF_NONZERO = 512, //only store if nonzero
 	//PROPERTY_USAGE_STORE_IF_NONONE = 1024, //only store if false
 	PROPERTY_USAGE_NO_INSTANCE_STATE = 2048,
@@ -121,6 +122,7 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_HIGH_END_GFX = 1 << 22,
 	PROPERTY_USAGE_NODE_PATH_FROM_SCENE_ROOT = 1 << 23,
 	PROPERTY_USAGE_RESOURCE_NOT_PERSISTENT = 1 << 24,
+	PROPERTY_USAGE_KEYING_INCREMENTS = 1 << 25, // Used in inspector to increment property when keyed in animation player
 
 	PROPERTY_USAGE_DEFAULT = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK,
 	PROPERTY_USAGE_DEFAULT_INTL = PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_NETWORK | PROPERTY_USAGE_INTERNATIONALIZED,
@@ -130,6 +132,7 @@ enum PropertyUsageFlags {
 #define ADD_SIGNAL(m_signal) ClassDB::add_signal(get_class_static(), m_signal)
 #define ADD_PROPERTY(m_property, m_setter, m_getter) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter))
 #define ADD_PROPERTYI(m_property, m_setter, m_getter, m_index) ClassDB::add_property(get_class_static(), m_property, _scs_create(m_setter), _scs_create(m_getter), m_index)
+#define ADD_PROPERTY_DEFAULT(m_property, m_default) ClassDB::set_property_default_value(get_class_static(), m_property, m_default)
 #define ADD_GROUP(m_name, m_prefix) ClassDB::add_property_group(get_class_static(), m_name, m_prefix)
 
 struct PropertyInfo {
@@ -176,6 +179,15 @@ struct PropertyInfo {
 			class_name(p_class_name),
 			hint(PROPERTY_HINT_NONE),
 			usage(PROPERTY_USAGE_DEFAULT) {
+	}
+
+	bool operator==(const PropertyInfo &p_info) const {
+		return ((type == p_info.type) &&
+				(name == p_info.name) &&
+				(class_name == p_info.class_name) &&
+				(hint == p_info.hint) &&
+				(hint_string == p_info.hint_string) &&
+				(usage == p_info.usage));
 	}
 
 	bool operator<(const PropertyInfo &p_info) const {
@@ -782,8 +794,13 @@ public:
 	static int get_object_count();
 
 	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
+		rw_lock->read_lock();
 
-		return instance_checks.has(p_ptr);
+		bool exists = instance_checks.has(p_ptr);
+
+		rw_lock->read_unlock();
+
+		return exists;
 	}
 };
 

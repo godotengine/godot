@@ -53,7 +53,7 @@ FT_BEGIN_HEADER
 
 FT_END_HEADER
 
-#endif /* SFDRIVER_H_ */
+#endif /* SFOBJS_H_ */
 
 
 /* END */

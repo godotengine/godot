@@ -163,6 +163,7 @@ float SpriteBase3D::get_opacity() const {
 
 void SpriteBase3D::set_axis(Vector3::Axis p_axis) {
 
+	ERR_FAIL_INDEX(p_axis, 3);
 	axis = p_axis;
 	_queue_update();
 }
@@ -253,7 +254,7 @@ Ref<TriangleMesh> SpriteBase3D::generate_triangle_mesh() const {
 		facesw[j] = vtx;
 	}
 
-	facesw = PoolVector<Vector3>::Write();
+	facesw.release();
 
 	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
 	triangle_mesh->create(faces);
@@ -557,18 +558,32 @@ Rect2 Sprite3D::get_region_rect() const {
 
 void Sprite3D::set_frame(int p_frame) {
 
-	ERR_FAIL_INDEX(p_frame, vframes * hframes);
+	ERR_FAIL_INDEX(p_frame, int64_t(vframes) * hframes);
 
 	if (frame != p_frame)
 
 		frame = p_frame;
 	_queue_update();
+
+	_change_notify("frame");
+	_change_notify("frame_coords");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
 int Sprite3D::get_frame() const {
 
 	return frame;
+}
+
+void Sprite3D::set_frame_coords(const Vector2 &p_coord) {
+	ERR_FAIL_INDEX(int(p_coord.x), vframes);
+	ERR_FAIL_INDEX(int(p_coord.y), hframes);
+
+	set_frame(int(p_coord.y) * hframes + int(p_coord.x));
+}
+
+Vector2 Sprite3D::get_frame_coords() const {
+	return Vector2(frame % hframes, frame / hframes);
 }
 
 void Sprite3D::set_vframes(int p_amount) {
@@ -627,10 +642,9 @@ Rect2 Sprite3D::get_item_rect() const {
 void Sprite3D::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame") {
-
-		property.hint = PROPERTY_HINT_SPRITE_FRAME;
-
+		property.hint = PROPERTY_HINT_RANGE;
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 
@@ -648,6 +662,9 @@ void Sprite3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &Sprite3D::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &Sprite3D::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_frame_coords", "coords"), &Sprite3D::set_frame_coords);
+	ClassDB::bind_method(D_METHOD("get_frame_coords"), &Sprite3D::get_frame_coords);
+
 	ClassDB::bind_method(D_METHOD("set_vframes", "vframes"), &Sprite3D::set_vframes);
 	ClassDB::bind_method(D_METHOD("get_vframes"), &Sprite3D::get_vframes);
 
@@ -658,7 +675,8 @@ void Sprite3D::_bind_methods() {
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region", "is_region");
 	ADD_PROPERTY(PropertyInfo(Variant::RECT2, "region_rect"), "set_region_rect", "get_region_rect");
@@ -850,14 +868,11 @@ void AnimatedSprite3D::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "frame") {
-
 		property.hint = PROPERTY_HINT_RANGE;
-
-		if (frames->has_animation(animation)) {
+		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
-		} else {
-			property.hint_string = "0,0,0";
 		}
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 
@@ -1060,7 +1075,7 @@ StringName AnimatedSprite3D::get_animation() const {
 String AnimatedSprite3D::get_configuration_warning() const {
 
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the 'Frames' property in order for AnimatedSprite3D to display frames.");
+		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite3D to display frames.");
 	}
 
 	return String();
@@ -1090,7 +1105,7 @@ void AnimatedSprite3D::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 }
 

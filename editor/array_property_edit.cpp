@@ -93,7 +93,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			if (newsize == size)
 				return true;
 
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = EditorNode::get_undo_redo();
 			ur->create_action(TTR("Resize Array"));
 			ur->add_do_method(this, "_set_size", newsize);
 			ur->add_undo_method(this, "_set_size", size);
@@ -141,7 +141,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			if (value.get_type() != type && type >= 0 && type < Variant::VARIANT_MAX) {
 				Variant::CallError ce;
 				Variant new_value = Variant::construct(Variant::Type(type), NULL, 0, ce);
-				UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+				UndoRedo *ur = EditorNode::get_undo_redo();
 
 				ur->create_action(TTR("Change Array Value Type"));
 				ur->add_do_method(this, "_set_value", idx, new_value);
@@ -157,7 +157,7 @@ bool ArrayPropertyEdit::_set(const StringName &p_name, const Variant &p_value) {
 			Variant arr = get_array();
 
 			Variant value = arr.get(idx);
-			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+			UndoRedo *ur = EditorNode::get_undo_redo();
 
 			ur->create_action(TTR("Change Array Value"));
 			ur->add_do_method(this, "_set_value", idx, p_value);

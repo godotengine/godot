@@ -339,7 +339,7 @@ void AudioStreamPlayer::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade = p_pause ? true : false;
+		stream_paused_fade = p_pause;
 	}
 }
 

@@ -735,7 +735,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	error_panel->add_child(error_label);
 	error_label->set_text("hmmm");
 
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
@@ -751,7 +751,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	open_file->connect("file_selected", this, "_file_opened");
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	selected_point = -1;
 	dragging_selected = false;

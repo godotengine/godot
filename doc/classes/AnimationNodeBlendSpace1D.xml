@@ -22,7 +22,7 @@
 			<argument index="2" name="at_index" type="int" default="-1">
 			</argument>
 			<description>
-				Add a new point that represents a [code]node[/code] on the virtual axis at a given position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code] , the point is inserted at the end of the blend points array.
+				Adds a new point that represents a [code]node[/code] on the virtual axis at a given position set by [code]pos[/code]. You can insert it at a specific index using the [code]at_index[/code] argument. If you use the default value for [code]at_index[/code] , the point is inserted at the end of the blend points array.
 			</description>
 		</method>
 		<method name="get_blend_point_count" qualifiers="const">
@@ -83,16 +83,16 @@
 		</method>
 	</methods>
 	<members>
-		<member name="max_space" type="float" setter="set_max_space" getter="get_max_space">
+		<member name="max_space" type="float" setter="set_max_space" getter="get_max_space" default="1.0">
 			The blend space's axis's upper limit for the points' position. See [method add_blend_point].
 		</member>
-		<member name="min_space" type="float" setter="set_min_space" getter="get_min_space">
+		<member name="min_space" type="float" setter="set_min_space" getter="get_min_space" default="-1.0">
 			The blend space's axis's lower limit for the points' position. See [method add_blend_point].
 		</member>
-		<member name="snap" type="float" setter="set_snap" getter="get_snap">
+		<member name="snap" type="float" setter="set_snap" getter="get_snap" default="0.1">
 			Position increment to snap to when moving a point on the axis.
 		</member>
-		<member name="value_label" type="String" setter="set_value_label" getter="get_value_label">
+		<member name="value_label" type="String" setter="set_value_label" getter="get_value_label" default="&quot;value&quot;">
 			Label of the virtual axis of the blend space.
 		</member>
 	</members>

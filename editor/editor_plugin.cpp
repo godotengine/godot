@@ -149,6 +149,10 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 	return textures;
 }
 
+void EditorInterface::set_main_screen_editor(const String &p_name) {
+	EditorNode::get_singleton()->select_editor_by_name(p_name);
+}
+
 Control *EditorInterface::get_editor_viewport() {
 
 	return EditorNode::get_singleton()->get_viewport();
@@ -184,7 +188,7 @@ Node *EditorInterface::get_edited_scene_root() {
 Array EditorInterface::get_open_scenes() const {
 
 	Array ret;
-	Vector<EditorData::EditedScene> scenes = EditorNode::get_singleton()->get_editor_data().get_edited_scenes();
+	Vector<EditorData::EditedScene> scenes = EditorNode::get_editor_data().get_edited_scenes();
 
 	int scns_amount = scenes.size();
 	for (int idx_scn = 0; idx_scn < scns_amount; idx_scn++) {
@@ -200,7 +204,7 @@ ScriptEditor *EditorInterface::get_script_editor() {
 }
 
 void EditorInterface::select_file(const String &p_file) {
-	return EditorNode::get_singleton()->get_filesystem_dock()->select_file(p_file);
+	EditorNode::get_singleton()->get_filesystem_dock()->select_file(p_file);
 }
 
 String EditorInterface::get_selected_path() const {
@@ -220,7 +224,7 @@ EditorSelection *EditorInterface::get_selection() {
 	return EditorNode::get_singleton()->get_editor_selection();
 }
 
-EditorSettings *EditorInterface::get_editor_settings() {
+Ref<EditorSettings> EditorInterface::get_editor_settings() {
 	return EditorSettings::get_singleton();
 }
 
@@ -260,6 +264,10 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
 }
 
+void EditorInterface::set_distraction_free_mode(bool p_enter) {
+	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
+}
+
 EditorInterface *EditorInterface::singleton = NULL;
 
 void EditorInterface::_bind_methods() {
@@ -288,6 +296,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
+	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 }
 
 EditorInterface::EditorInterface() {
@@ -315,7 +326,8 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 
 Ref<ConfigFile> EditorPlugin::get_config() {
 	Ref<ConfigFile> cf = memnew(ConfigFile);
-	cf->load(_dir_cache.plus_file("plugin.cfg"));
+	Error err = cf->load(_dir_cache.plus_file("plugin.cfg"));
+	ERR_FAIL_COND_V(err != OK, cf);
 	return cf;
 }
 

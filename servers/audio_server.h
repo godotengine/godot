@@ -53,14 +53,14 @@ class AudioDriver {
 #endif
 
 protected:
-	Vector<int32_t> input_buffer;
-	unsigned int input_position;
-	unsigned int input_size;
+	PoolVector<int32_t> capture_buffer;
+	unsigned int capture_position;
+	unsigned int capture_size;
 
 	void audio_server_process(int p_frames, int32_t *p_buffer, bool p_update_mix_time = true);
 	void update_mix_time(int p_frames);
-	void input_buffer_init(int driver_buffer_frames);
-	void input_buffer_write(int32_t sample);
+	void capture_buffer_init(int driver_buffer_frames);
+	void capture_buffer_write(int32_t sample);
 
 #ifdef DEBUG_ENABLED
 	_FORCE_INLINE_ void start_counting_ticks() { prof_ticks = OS::get_singleton()->get_ticks_usec(); }
@@ -111,9 +111,9 @@ public:
 	SpeakerMode get_speaker_mode_by_total_channels(int p_channels) const;
 	int get_total_channels_by_speaker_mode(SpeakerMode) const;
 
-	Vector<int32_t> get_input_buffer() { return input_buffer; }
-	unsigned int get_input_position() { return input_position; }
-	unsigned int get_input_size() { return input_size; }
+	PoolVector<int32_t> get_capture_buffer() { return capture_buffer; }
+	unsigned int get_capture_position() { return capture_position; }
+	unsigned int get_capture_size() { return capture_size; }
 
 #ifdef DEBUG_ENABLED
 	uint64_t get_profiling_time() const { return prof_time; }
@@ -147,7 +147,8 @@ class AudioBusLayout;
 
 class AudioServer : public Object {
 
-	GDCLASS(AudioServer, Object)
+	GDCLASS(AudioServer, Object);
+
 public:
 	//re-expose this here, as AudioDriver is not exposed to script
 	enum SpeakerMode {
@@ -179,6 +180,8 @@ private:
 
 	int channel_count;
 	int to_mix;
+
+	float global_rate_scale;
 
 	struct Bus {
 
@@ -338,6 +341,9 @@ public:
 
 	bool is_bus_channel_active(int p_bus, int p_channel) const;
 
+	void set_global_rate_scale(float p_scale);
+	float get_global_rate_scale() const;
+
 	virtual void init();
 	virtual void finish();
 	virtual void update();
@@ -378,9 +384,16 @@ public:
 	String get_device();
 	void set_device(String device);
 
+	Error capture_start();
+	Error capture_stop();
+
 	Array capture_get_device_list();
 	String capture_get_device();
 	void capture_set_device(const String &p_name);
+
+	PoolVector<int32_t> get_capture_buffer();
+	unsigned int get_capture_position();
+	unsigned int get_capture_size();
 
 	AudioServer();
 	virtual ~AudioServer();
@@ -390,7 +403,7 @@ VARIANT_ENUM_CAST(AudioServer::SpeakerMode)
 
 class AudioBusLayout : public Resource {
 
-	GDCLASS(AudioBusLayout, Resource)
+	GDCLASS(AudioBusLayout, Resource);
 
 	friend class AudioServer;
 

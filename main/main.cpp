@@ -599,6 +599,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			auto_build_solutions = true;
 			editor = true;
+		} else if (I->get() == "--export" || I->get() == "--export-debug") { // Export project
+
+			editor = true;
+			main_args.push_back(I->get());
 #endif
 		} else if (I->get() == "--path") { // set path of project to start or edit
 
@@ -779,8 +783,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_chars_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_chars_per_second", PROPERTY_HINT_RANGE, "0, 4096, 1, or_greater"));
 	GLOBAL_DEF("network/limits/debugger_stdout/max_messages_per_frame", 10);
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_messages_per_frame", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_messages_per_frame", PROPERTY_HINT_RANGE, "0, 20, 1, or_greater"));
-	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_frame", 10);
-	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_errors_per_frame", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_errors_per_frame", PROPERTY_HINT_RANGE, "0, 20, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger_stdout/max_errors_per_second", 100);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_errors_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_errors_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
+	GLOBAL_DEF("network/limits/debugger_stdout/max_warnings_per_second", 100);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/debugger_stdout/max_warnings_per_second", PropertyInfo(Variant::INT, "network/limits/debugger_stdout/max_warnings_per_second", PROPERTY_HINT_RANGE, "0, 200, 1, or_greater"));
 
 	if (debug_mode == "remote") {
 
@@ -810,10 +816,7 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 
 			String bp = breakpoints[i];
 			int sp = bp.find_last(":");
-			if (sp == -1) {
-				ERR_EXPLAIN("Invalid breakpoint: '" + bp + "', expected file:line format.");
-				ERR_CONTINUE(sp == -1);
-			}
+			ERR_CONTINUE_MSG(sp == -1, "Invalid breakpoint: '" + bp + "', expected file:line format.");
 
 			script_debugger->insert_breakpoint(bp.substr(sp + 1, bp.length()).to_int(), bp.substr(0, sp));
 		}
@@ -1104,6 +1107,8 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 		return err;
 	}
 
+	print_line(" "); //add a blank line for readability
+
 	if (init_use_custom_pos) {
 		OS::get_singleton()->set_window_position(init_custom_pos);
 	}
@@ -1341,20 +1346,10 @@ bool Main::start() {
 					removal_docs.push_back(args[j]);
 			} else if (args[i] == "--export") {
 				editor = true; //needs editor
-				if (i + 1 < args.size()) {
-					_export_preset = args[i + 1];
-				} else {
-					ERR_PRINT("Export preset name not specified");
-					return false;
-				}
+				_export_preset = args[i + 1];
 			} else if (args[i] == "--export-debug") {
 				editor = true; //needs editor
-				if (i + 1 < args.size()) {
-					_export_preset = args[i + 1];
-				} else {
-					ERR_PRINT("Export preset name not specified");
-					return false;
-				}
+				_export_preset = args[i + 1];
 				export_debug = true;
 #endif
 			} else {
@@ -1373,12 +1368,11 @@ bool Main::start() {
 #ifdef TOOLS_ENABLED
 	if (doc_tool != "") {
 
+		Engine::get_singleton()->set_editor_hint(true); // Needed to instance editor-only classes for their default values
+
 		{
 			DirAccessRef da = DirAccess::open(doc_tool);
-			if (!da) {
-				ERR_EXPLAIN("Argument supplied to --doctool must be a base godot build directory");
-				ERR_FAIL_V(false);
-			}
+			ERR_FAIL_COND_V_MSG(!da, false, "Argument supplied to --doctool must be a base Godot build directory.");
 		}
 		DocData doc;
 		doc.generate(doc_base);
@@ -1394,12 +1388,23 @@ bool Main::start() {
 			doc_data_classes[name] = path;
 			if (!checked_paths.has(path)) {
 				checked_paths.insert(path);
+
+				// Create the module documentation directory if it doesn't exist
+				DirAccess *da = DirAccess::create_for_path(path);
+				da->make_dir_recursive(path);
+				memdelete(da);
+
 				docsrc.load_classes(path);
 				print_line("Loading docs from: " + path);
 			}
 		}
 
 		String index_path = doc_tool.plus_file("doc/classes");
+		// Create the main documentation directory if it doesn't exist
+		DirAccess *da = DirAccess::create_for_path(index_path);
+		da->make_dir_recursive(index_path);
+		memdelete(da);
+
 		docsrc.load_classes(index_path);
 		checked_paths.insert(index_path);
 		print_line("Loading docs from: " + index_path);
@@ -1451,8 +1456,7 @@ bool Main::start() {
 	} else if (script != "") {
 
 		Ref<Script> script_res = ResourceLoader::load(script);
-		ERR_EXPLAIN("Can't load script: " + script);
-		ERR_FAIL_COND_V(script_res.is_null(), false);
+		ERR_FAIL_COND_V_MSG(script_res.is_null(), false, "Can't load script: " + script);
 
 		if (check_only) {
 			return false;
@@ -1466,8 +1470,7 @@ bool Main::start() {
 			if (!script_loop) {
 				if (obj)
 					memdelete(obj);
-				ERR_EXPLAIN("Can't load script '" + script + "', it does not inherit from a MainLoop type");
-				ERR_FAIL_COND_V(!script_loop, false);
+				ERR_FAIL_V_MSG(false, "Can't load script '" + script + "', it does not inherit from a MainLoop type.");
 			}
 
 			script_loop->set_init_script(script_res);
@@ -1491,17 +1494,13 @@ bool Main::start() {
 		} else {
 
 			Object *ml = ClassDB::instance(main_loop_type);
-			if (!ml) {
-				ERR_EXPLAIN("Can't instance MainLoop type");
-				ERR_FAIL_V(false);
-			}
+			ERR_FAIL_COND_V_MSG(!ml, false, "Can't instance MainLoop type.");
 
 			main_loop = Object::cast_to<MainLoop>(ml);
 			if (!main_loop) {
 
 				memdelete(ml);
-				ERR_EXPLAIN("Invalid MainLoop type");
-				ERR_FAIL_V(false);
+				ERR_FAIL_V_MSG(false, "Invalid MainLoop type.");
 			}
 		}
 	}
@@ -1564,8 +1563,7 @@ bool Main::start() {
 					}
 
 					RES res = ResourceLoader::load(path);
-					ERR_EXPLAIN("Can't autoload: " + path);
-					ERR_CONTINUE(res.is_null());
+					ERR_CONTINUE_MSG(res.is_null(), "Can't autoload: " + path);
 					Node *n = NULL;
 					if (res->is_class("PackedScene")) {
 						Ref<PackedScene> ps = res;
@@ -1574,20 +1572,17 @@ bool Main::start() {
 						Ref<Script> script_res = res;
 						StringName ibt = script_res->get_instance_base_type();
 						bool valid_type = ClassDB::is_parent_class(ibt, "Node");
-						ERR_EXPLAIN("Script does not inherit a Node: " + path);
-						ERR_CONTINUE(!valid_type);
+						ERR_CONTINUE_MSG(!valid_type, "Script does not inherit a Node: " + path);
 
 						Object *obj = ClassDB::instance(ibt);
 
-						ERR_EXPLAIN("Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
-						ERR_CONTINUE(obj == NULL);
+						ERR_CONTINUE_MSG(obj == NULL, "Cannot instance script for autoload, expected 'Node' inheritance, got: " + String(ibt));
 
 						n = Object::cast_to<Node>(obj);
 						n->set_script(script_res.get_ref_ptr());
 					}
 
-					ERR_EXPLAIN("Path in autoload not a node or script: " + path);
-					ERR_CONTINUE(!n);
+					ERR_CONTINUE_MSG(!n, "Path in autoload not a node or script: " + path);
 					n->set_name(name);
 
 					//defer so references are all valid on _ready()
@@ -1711,13 +1706,13 @@ bool Main::start() {
 
 						if (sep == -1) {
 							DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-							local_game_path = da->get_current_dir() + "/" + local_game_path;
+							local_game_path = da->get_current_dir().plus_file(local_game_path);
 							memdelete(da);
 						} else {
 
 							DirAccess *da = DirAccess::open(local_game_path.substr(0, sep));
 							if (da) {
-								local_game_path = da->get_current_dir() + "/" + local_game_path.substr(sep + 1, local_game_path.length());
+								local_game_path = da->get_current_dir().plus_file(local_game_path.substr(sep + 1, local_game_path.length()));
 								memdelete(da);
 							}
 						}
@@ -1745,7 +1740,7 @@ bool Main::start() {
 
 		if (!project_manager && !editor) { // game
 
-			// Load SSL Certificates from Project Settings (or builtin)
+			// Load SSL Certificates from Project Settings (or builtin).
 			StreamPeerSSL::load_certs_from_memory(StreamPeerSSL::get_project_cert_array());
 
 			if (game_path != "") {
@@ -1754,8 +1749,7 @@ bool Main::start() {
 				if (scenedata.is_valid())
 					scene = scenedata->instance();
 
-				ERR_EXPLAIN("Failed loading scene: " + local_game_path);
-				ERR_FAIL_COND_V(!scene, false);
+				ERR_FAIL_COND_V_MSG(!scene, false, "Failed loading scene: " + local_game_path);
 				sml->add_current_scene(scene);
 
 #ifdef OSX_ENABLED
@@ -1795,15 +1789,20 @@ bool Main::start() {
 			pmanager->add_child(progress_dialog);
 			sml->get_root()->add_child(pmanager);
 			OS::get_singleton()->set_context(OS::CONTEXT_PROJECTMAN);
+			project_manager = true;
 		}
 
 		if (project_manager || editor) {
-			// Load SSL Certificates from Editor Settings (or builtin)
+			// Load SSL Certificates from Editor Settings (or builtin).
 			String certs = EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String();
 			if (certs != "")
 				StreamPeerSSL::load_certs_from_file(certs);
 			else
 				StreamPeerSSL::load_certs_from_memory(StreamPeerSSL::get_project_cert_array());
+
+			// Hide console window if requested (Windows-only).
+			bool hide_console = EditorSettings::get_singleton()->get_setting("interface/editor/hide_console_window");
+			OS::get_singleton()->set_console_visible(!hide_console);
 		}
 #endif
 	}
@@ -1838,7 +1837,7 @@ bool Main::is_iterating() {
 	return iterating > 0;
 }
 
-// For performance metrics
+// For performance metrics.
 static uint64_t physics_process_max = 0;
 static uint64_t idle_process_max = 0;
 
@@ -1866,6 +1865,7 @@ bool Main::iteration() {
 	double scaled_step = step * time_scale;
 
 	Engine::get_singleton()->_frame_step = step;
+	Engine::get_singleton()->_physics_interpolation_fraction = advance.interpolation_fraction;
 
 	uint64_t physics_process_ticks = 0;
 	uint64_t idle_process_ticks = 0;

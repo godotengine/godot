@@ -53,8 +53,7 @@ public:
 
 		file = FileAccess::open(p_file, FileAccess::READ);
 
-		ERR_EXPLAIN("Failed loading resource: '" + p_file + "';");
-		ERR_FAIL_COND(!file);
+		ERR_FAIL_COND_MSG(!file, "Failed loading resource: '" + p_file + "'.");
 	}
 	~MkvReader() {
 

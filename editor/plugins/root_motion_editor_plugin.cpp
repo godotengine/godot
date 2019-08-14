@@ -131,7 +131,7 @@ void EditorPropertyRootMotion::_node_assign() {
 			Skeleton *skeleton = Object::cast_to<Skeleton>(node);
 			if (skeleton && skeleton->find_bone(concat) != -1) {
 				//path in skeleton
-				String bone = concat;
+				const String &bone = concat;
 				int idx = skeleton->find_bone(bone);
 				List<String> bone_path;
 				while (idx != -1) {

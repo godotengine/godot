@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Physics2DServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Physics 2D Server.
+		Server interface for low-level 2D physics access.
 	</brief_description>
 	<description>
-		Physics 2D Server is the server responsible for all 2D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
+		Physics2DServer is the server responsible for all 2D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -86,7 +86,7 @@
 			<argument index="1" name="param" type="int" enum="Physics2DServer.AreaParameter">
 			</argument>
 			<description>
-				Returns an area parameter value. A list of available parameters is on the AREA_PARAM_* constants.
+				Returns an area parameter value. See [enum AreaParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
@@ -230,7 +230,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets the value for an area parameter. A list of available parameters is on the AREA_PARAM_* constants.
+				Sets the value for an area parameter. See [enum AreaParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="area_set_shape">
@@ -291,7 +291,7 @@
 			<argument index="1" name="mode" type="int" enum="Physics2DServer.AreaSpaceOverrideMode">
 			</argument>
 			<description>
-				Sets the space override mode for the area. The modes are described in the constants AREA_SPACE_OVERRIDE_*.
+				Sets the space override mode for the area. See [enum AreaSpaceOverrideMode] for a list of available modes.
 			</description>
 		</method>
 		<method name="area_set_transform">
@@ -431,7 +431,7 @@
 			<return type="RID">
 			</return>
 			<description>
-				Creates a physics body. The first parameter can be any value from constants BODY_MODE*, for the type of body created. Additionally, the body can be created in sleeping state to save processing time.
+				Creates a physics body.
 			</description>
 		</method>
 		<method name="body_get_canvas_instance_id" qualifiers="const">
@@ -513,7 +513,7 @@
 			<argument index="1" name="param" type="int" enum="Physics2DServer.BodyParameter">
 			</argument>
 			<description>
-				Returns the value of a body parameter. A list of available parameters is on the BODY_PARAM_* constants.
+				Returns the value of a body parameter. See [enum BodyParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
@@ -650,7 +650,7 @@
 			<argument index="1" name="mode" type="int" enum="Physics2DServer.CCDMode">
 			</argument>
 			<description>
-				Sets the continuous collision detection mode from any of the CCD_MODE_* constants.
+				Sets the continuous collision detection mode using one of the [enum CCDMode] constants.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -688,7 +688,7 @@
 			<argument index="1" name="mode" type="int" enum="Physics2DServer.BodyMode">
 			</argument>
 			<description>
-				Sets the body mode, from one of the constants BODY_MODE*.
+				Sets the body mode using one of the [enum BodyMode] constants.
 			</description>
 		</method>
 		<method name="body_set_omit_force_integration">
@@ -712,7 +712,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a body parameter. A list of available parameters is on the BODY_PARAM_* constants.
+				Sets a body parameter. See [enum BodyParameter] for a list of available parameters.
 			</description>
 		</method>
 		<method name="body_set_shape">
@@ -803,7 +803,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets a body state (see BODY_STATE* constants).
+				Sets a body state using one of the [enum BodyState] constants.
 			</description>
 		</method>
 		<method name="body_test_motion">
@@ -885,7 +885,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a damped spring joint parameter. Parameters are explained in the DAMPED_STRING* constants.
+				Sets a damped spring joint parameter. See [enum DampedStringParam] for a list of available parameters.
 			</description>
 		</method>
 		<method name="free_rid">
@@ -903,7 +903,7 @@
 			<argument index="0" name="process_info" type="int" enum="Physics2DServer.ProcessInfo">
 			</argument>
 			<description>
-				Returns information about the current state of the 2D physics engine. The states are listed under the INFO_* constants.
+				Returns information about the current state of the 2D physics engine. See [enum ProcessInfo] for a list of available states.
 			</description>
 		</method>
 		<method name="groove_joint_create">
@@ -920,7 +920,7 @@
 			<argument index="4" name="body_b" type="RID">
 			</argument>
 			<description>
-				Creates a groove joint between two bodies. If not specified, the bodyies are assumed to be the joint itself.
+				Creates a groove joint between two bodies. If not specified, the bodies are assumed to be the joint itself.
 			</description>
 		</method>
 		<method name="joint_get_param" qualifiers="const">
@@ -940,7 +940,7 @@
 			<argument index="0" name="joint" type="RID">
 			</argument>
 			<description>
-				Returns the type of a joint (see JOINT_* constants).
+				Returns a joint's type (see [enum JointType]).
 			</description>
 		</method>
 		<method name="joint_set_param">
@@ -953,7 +953,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a joint parameter. Parameters are explained in the JOINT_PARAM* constants.
+				Sets a joint parameter. See [enum JointParam] for a list of available parameters.
 			</description>
 		</method>
 		<method name="line_shape_create">
@@ -1017,7 +1017,7 @@
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
-				Returns the type of shape (see SHAPE_* constants).
+				Returns a shape's type (see [enum ShapeType]).
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -1088,7 +1088,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets the value for a space parameter. A list of available parameters is on the SPACE_PARAM_* constants.
+				Sets the value for a space parameter. See [enum SpaceParameter] for a list of available parameters.
 			</description>
 		</method>
 	</methods>
@@ -1215,7 +1215,7 @@
 			Constant to set/get a body's angular dampening factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="7" enum="BodyParameter">
-			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
+			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
 			Constant to set/get the current transform matrix of the body.
@@ -1248,13 +1248,13 @@
 		<constant name="JOINT_PARAM_MAX_FORCE" value="2" enum="JointParam">
 		</constant>
 		<constant name="DAMPED_STRING_REST_LENGTH" value="0" enum="DampedStringParam">
-			Set the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
+			Sets the resting length of the spring joint. The joint will always try to go to back this length when pulled apart.
 		</constant>
 		<constant name="DAMPED_STRING_STIFFNESS" value="1" enum="DampedStringParam">
-			Set the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
+			Sets the stiffness of the spring joint. The joint applies a force equal to the stiffness times the distance from its resting length.
 		</constant>
 		<constant name="DAMPED_STRING_DAMPING" value="2" enum="DampedStringParam">
-			Set the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
+			Sets the damping ratio of the spring joint. A value of 0 indicates an undamped spring, while 1 causes the system to reach equilibrium as fast as possible (critical damping).
 		</constant>
 		<constant name="CCD_MODE_DISABLED" value="0" enum="CCDMode">
 			Disables continuous collision detection. This is the fastest way to detect body collisions, but can miss small, fast-moving objects.

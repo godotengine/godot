@@ -807,11 +807,11 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 		}
 	}
 
-	wb = PoolVector<uint8_t>::Write();
+	wb.release();
 
 	data.resize(data_size);
 
-	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, real_format, data));
+	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, real_format, data));
 
 	return Ref<Image>(img);
 #else
@@ -871,7 +871,7 @@ Ref<Image> RasterizerStorageGLES2::texture_get_data(RID p_texture, int p_layer) 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &temp_framebuffer);
 
-	wb = PoolVector<uint8_t>::Write();
+	wb.release();
 
 	data.resize(data_size);
 
@@ -2155,8 +2155,8 @@ static PoolVector<uint8_t> _unpack_half_floats(const PoolVector<uint8_t> &array,
 		dst_offset += dst_size[i];
 	}
 
-	r = PoolVector<uint8_t>::Read();
-	w = PoolVector<uint8_t>::Write();
+	r.release();
+	w.release();
 
 	return ret;
 }
@@ -2427,6 +2427,18 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	}
 	surface->data = array;
 	surface->index_data = p_index_array;
+#else
+	// Even on non-tools builds, a copy of the surface->data is needed in certain circumstances.
+	// Rigged meshes using the USE_SKELETON_SOFTWARE path need to read bone data
+	// from surface->data.
+
+	// if USE_SKELETON_SOFTWARE is active
+	if (!config.float_texture_supported) {
+		// if this geometry is used specifically for skinning
+		if (p_format & (VS::ARRAY_FORMAT_BONES | VS::ARRAY_FORMAT_WEIGHTS))
+			surface->data = array;
+	}
+	// An alternative is to always make a copy of surface->data.
 #endif
 
 	surface->total_data_size += surface->array_byte_size + surface->index_array_byte_size;
@@ -3964,20 +3976,19 @@ AABB RasterizerStorageGLES2::light_get_aabb(RID p_light) const {
 			float len = light->param[VS::LIGHT_PARAM_RANGE];
 			float size = Math::tan(Math::deg2rad(light->param[VS::LIGHT_PARAM_SPOT_ANGLE])) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
-		} break;
+		};
 
 		case VS::LIGHT_OMNI: {
 			float r = light->param[VS::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
-		} break;
+		};
 
 		case VS::LIGHT_DIRECTIONAL: {
 			return AABB();
-		} break;
+		};
 	}
 
 	ERR_FAIL_V(AABB());
-	return AABB();
 }
 
 /* PROBE API */
@@ -4514,9 +4525,7 @@ void RasterizerStorageGLES2::instance_add_dependency(RID p_base, RasterizerScene
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-			if (!inst) {
-				ERR_FAIL();
-			}
+			ERR_FAIL();
 		}
 	}
 
@@ -4561,14 +4570,9 @@ void RasterizerStorageGLES2::instance_remove_dependency(RID p_base, RasterizerSc
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-
-			if (!inst) {
-				ERR_FAIL();
-			}
+			ERR_FAIL();
 		}
 	}
-
-	ERR_FAIL_COND(!inst);
 
 	inst->instance_list.remove(&p_instance->dependency_item);
 }
@@ -5687,21 +5691,49 @@ void RasterizerStorageGLES2::initialize() {
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-		if (status == GL_FRAMEBUFFER_COMPLETE) {
-			config.depth_internalformat = GL_DEPTH_COMPONENT;
-			config.depth_type = GL_UNSIGNED_INT;
-		} else {
-			config.depth_internalformat = GL_DEPTH_COMPONENT16;
-			config.depth_type = GL_UNSIGNED_SHORT;
-		}
-
 		glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 		glDeleteFramebuffers(1, &fbo);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glDeleteTextures(1, &depth);
 
+		if (status == GL_FRAMEBUFFER_COMPLETE) {
+			config.depth_internalformat = GL_DEPTH_COMPONENT;
+			config.depth_type = GL_UNSIGNED_INT;
+		} else {
+			// If it fails, test to see if it supports a framebuffer texture using UNSIGNED_SHORT
+			// This is needed because many OSX devices don't support either UNSIGNED_INT or UNSIGNED_SHORT
+
+			config.depth_internalformat = GL_DEPTH_COMPONENT16;
+			config.depth_type = GL_UNSIGNED_SHORT;
+
+			glGenFramebuffers(1, &fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+			glGenTextures(1, &depth);
+			glBindTexture(GL_TEXTURE_2D, depth);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 32, 32, 0, GL_DEPTH_COMPONENT16, GL_UNSIGNED_SHORT, NULL);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+
+			status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				//if it fails again depth textures aren't supported, use rgba shadows and renderbuffer for depth
+				config.support_depth_texture = false;
+				config.use_rgba_3d_shadows = true;
+			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+			glDeleteFramebuffers(1, &fbo);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDeleteTextures(1, &depth);
+		}
 	} else {
-		// Will use renderbuffer for depth
+		// Will use renderbuffer for depth, on mobile check for 24 bit depth support
 		if (config.extensions.has("GL_OES_depth24")) {
 			config.depth_internalformat = _DEPTH_COMPONENT24_OES;
 			config.depth_type = GL_UNSIGNED_INT;

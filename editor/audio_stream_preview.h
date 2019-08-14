@@ -36,7 +36,7 @@
 #include "servers/audio/audio_stream.h"
 
 class AudioStreamPreview : public Reference {
-	GDCLASS(AudioStreamPreview, Reference)
+	GDCLASS(AudioStreamPreview, Reference);
 	friend class AudioStream;
 	Vector<uint8_t> preview;
 	float length;
@@ -52,7 +52,7 @@ public:
 };
 
 class AudioStreamPreviewGenerator : public Node {
-	GDCLASS(AudioStreamPreviewGenerator, Node)
+	GDCLASS(AudioStreamPreviewGenerator, Node);
 
 	static AudioStreamPreviewGenerator *singleton;
 
@@ -78,7 +78,7 @@ protected:
 public:
 	static AudioStreamPreviewGenerator *get_singleton() { return singleton; }
 
-	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_preview);
+	Ref<AudioStreamPreview> generate_preview(const Ref<AudioStream> &p_stream);
 
 	AudioStreamPreviewGenerator();
 };

@@ -32,7 +32,8 @@
 #include "editor_node.h"
 
 class ImportDockParameters : public Object {
-	GDCLASS(ImportDockParameters, Object)
+	GDCLASS(ImportDockParameters, Object);
+
 public:
 	Map<StringName, Variant> values;
 	List<PropertyInfo> properties;

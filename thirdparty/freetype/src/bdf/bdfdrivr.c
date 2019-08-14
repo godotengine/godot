@@ -106,7 +106,7 @@ THE SOFTWARE.
       FT_ULong  code;
 
 
-      if ( mid > max || mid < min )
+      if ( mid >= max || mid < min )
         mid = ( min + max ) >> 1;
 
       code = encodings[mid].enc;
@@ -152,7 +152,7 @@ THE SOFTWARE.
       FT_ULong  code; /* same as BDF_encoding_el.enc */
 
 
-      if ( mid > max || mid < min )
+      if ( mid >= max || mid < min )
         mid = ( min + max ) >> 1;
 
       code = encodings[mid].enc;
@@ -216,13 +216,13 @@ THE SOFTWARE.
     bdf_font_t*      font   = bdf->bdffont;
     bdf_property_t*  prop;
 
-    char*   strings[4] = { NULL, NULL, NULL, NULL };
-    size_t  nn, len, lengths[4];
+    const char*   strings[4] = { NULL, NULL, NULL, NULL };
+    size_t        lengths[4], nn, len;
 
 
     face->style_flags = 0;
 
-    prop = bdf_get_font_property( font, (char *)"SLANT" );
+    prop = bdf_get_font_property( font, "SLANT" );
     if ( prop && prop->format == BDF_ATOM                             &&
          prop->value.atom                                             &&
          ( *(prop->value.atom) == 'O' || *(prop->value.atom) == 'o' ||
@@ -230,30 +230,30 @@ THE SOFTWARE.
     {
       face->style_flags |= FT_STYLE_FLAG_ITALIC;
       strings[2] = ( *(prop->value.atom) == 'O' || *(prop->value.atom) == 'o' )
-                   ? (char *)"Oblique"
-                   : (char *)"Italic";
+                   ? "Oblique"
+                   : "Italic";
     }
 
-    prop = bdf_get_font_property( font, (char *)"WEIGHT_NAME" );
+    prop = bdf_get_font_property( font, "WEIGHT_NAME" );
     if ( prop && prop->format == BDF_ATOM                             &&
          prop->value.atom                                             &&
          ( *(prop->value.atom) == 'B' || *(prop->value.atom) == 'b' ) )
     {
       face->style_flags |= FT_STYLE_FLAG_BOLD;
-      strings[1] = (char *)"Bold";
+      strings[1] = "Bold";
     }
 
-    prop = bdf_get_font_property( font, (char *)"SETWIDTH_NAME" );
+    prop = bdf_get_font_property( font, "SETWIDTH_NAME" );
     if ( prop && prop->format == BDF_ATOM                              &&
          prop->value.atom && *(prop->value.atom)                       &&
          !( *(prop->value.atom) == 'N' || *(prop->value.atom) == 'n' ) )
-      strings[3] = (char *)(prop->value.atom);
+      strings[3] = (const char *)(prop->value.atom);
 
-    prop = bdf_get_font_property( font, (char *)"ADD_STYLE_NAME" );
+    prop = bdf_get_font_property( font, "ADD_STYLE_NAME" );
     if ( prop && prop->format == BDF_ATOM                              &&
          prop->value.atom && *(prop->value.atom)                       &&
          !( *(prop->value.atom) == 'N' || *(prop->value.atom) == 'n' ) )
-      strings[0] = (char *)(prop->value.atom);
+      strings[0] = (const char *)(prop->value.atom);
 
     for ( len = 0, nn = 0; nn < 4; nn++ )
     {
@@ -267,7 +267,7 @@ THE SOFTWARE.
 
     if ( len == 0 )
     {
-      strings[0] = (char *)"Regular";
+      strings[0] = "Regular";
       lengths[0] = ft_strlen( strings[0] );
       len        = lengths[0] + 1;
     }
@@ -283,7 +283,7 @@ THE SOFTWARE.
 
       for ( nn = 0; nn < 4; nn++ )
       {
-        char*  src = strings[nn];
+        const char*  src = strings[nn];
 
 
         len = lengths[nn];

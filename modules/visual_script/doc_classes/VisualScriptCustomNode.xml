@@ -45,7 +45,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the specified input port's type. See the TYPE_* enum in [@GlobalScope].
+				Return the specified input port's type. See the [code]TYPE_*[/code] enum in [@GlobalScope].
 			</description>
 		</method>
 		<method name="_get_output_sequence_port_count" qualifiers="virtual">
@@ -86,7 +86,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Return the specified output's type. See the TYPE_* enum in [@GlobalScope].
+				Return the specified output's type. See the [code]TYPE_*[/code] enum in [@GlobalScope].
 			</description>
 		</method>
 		<method name="_get_text" qualifiers="virtual">
@@ -125,9 +125,9 @@
 				Execute the custom node's logic, returning the index of the output sequence port to use or a [String] when there is an error.
 				The [code]inputs[/code] array contains the values of the input ports.
 				[code]outputs[/code] is an array whose indices should be set to the respective outputs.
-				The [code]start_mode[/code] is usually [code]START_MODE_BEGIN_SEQUENCE[/code], unless you have used the STEP_* constants.
+				The [code]start_mode[/code] is usually [constant START_MODE_BEGIN_SEQUENCE], unless you have used the [code]STEP_*[/code] constants.
 				[code]working_mem[/code] is an array which can be used to persist information between runs of the custom node.
-				When returning, you can mask the returned value with one of the STEP_* constants.
+				When returning, you can mask the returned value with one of the [code]STEP_*[/code] constants.
 			</description>
 		</method>
 	</methods>

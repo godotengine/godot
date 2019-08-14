@@ -614,7 +614,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						type = Variant::Type(i);
 					}
 				}
-				if (type)
+				if (type != Variant::NIL)
 					property_select->select_method_from_basic_type(type, v);
 				updating = false;
 				return false;
@@ -917,7 +917,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					}
 
 					for (Set<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
-						String t = j->get();
+						const String &t = j->get();
 
 						bool is_custom_resource = false;
 						Ref<Texture> icon;
@@ -971,7 +971,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					menu->add_separator();
 					menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 				}
-			} else {
 			}
 
 			RES cb = EditorSettings::get_singleton()->get_resource_clipboard();

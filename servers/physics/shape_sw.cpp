@@ -543,16 +543,6 @@ void CapsuleShapeSW::project_range(const Vector3 &p_normal, const Transform &p_t
 
 	r_max = p_normal.dot(p_transform.xform(n));
 	r_min = p_normal.dot(p_transform.xform(-n));
-	return;
-
-	n = p_transform.basis.xform(n);
-
-	real_t distance = p_normal.dot(p_transform.origin);
-	real_t length = Math::abs(p_normal.dot(n));
-	r_min = distance - length;
-	r_max = distance + length;
-
-	ERR_FAIL_COND(r_max < r_min);
 }
 
 Vector3 CapsuleShapeSW::get_support(const Vector3 &p_normal) const {
@@ -1524,8 +1514,8 @@ void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 			_aabb.merge_with(bvh_arrayw[i].aabb);
 	}
 
-	w = PoolVector<Face>::Write();
-	vw = PoolVector<Vector3>::Write();
+	w.release();
+	vw.release();
 
 	int count = 0;
 	_VolumeSW_BVH *bvh_tree = _volume_sw_build_bvh(bvh_arrayw, src_face_count, count);

@@ -34,7 +34,8 @@
 #include "scene/3d/visual_instance.h"
 
 class RootMotionView : public VisualInstance {
-	GDCLASS(RootMotionView, VisualInstance)
+	GDCLASS(RootMotionView, VisualInstance);
+
 public:
 	RID immediate;
 	NodePath path;
@@ -55,7 +56,7 @@ public:
 	void set_animation_path(const NodePath &p_path);
 	NodePath get_animation_path() const;
 
-	void set_color(const Color &p_path);
+	void set_color(const Color &p_color);
 	Color get_color() const;
 
 	void set_cell_size(float p_size);

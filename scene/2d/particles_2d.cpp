@@ -41,6 +41,12 @@
 void Particles2D::set_emitting(bool p_emitting) {
 
 	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
+
+	if (p_emitting && one_shot) {
+		set_process_internal(true);
+	} else if (!p_emitting) {
+		set_process_internal(false);
+	}
 }
 
 void Particles2D::set_amount(int p_amount) {
@@ -60,8 +66,16 @@ void Particles2D::set_one_shot(bool p_enable) {
 
 	one_shot = p_enable;
 	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
-	if (!one_shot && is_emitting())
-		VisualServer::get_singleton()->particles_restart(particles);
+
+	if (is_emitting()) {
+
+		set_process_internal(true);
+		if (!one_shot)
+			VisualServer::get_singleton()->particles_restart(particles);
+	}
+
+	if (!one_shot)
+		set_process_internal(false);
 }
 void Particles2D::set_pre_process_time(float p_time) {
 
@@ -278,6 +292,7 @@ void Particles2D::_validate_property(PropertyInfo &property) const {
 
 void Particles2D::restart() {
 	VS::get_singleton()->particles_restart(particles);
+	VS::get_singleton()->particles_set_emitting(particles, true);
 }
 
 void Particles2D::_notification(int p_what) {
@@ -312,6 +327,14 @@ void Particles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 		_update_particle_emission_transform();
+	}
+
+	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
+
+		if (one_shot && !is_emitting()) {
+			_change_notify();
+			set_process_internal(false);
+		}
 	}
 }
 
@@ -387,6 +410,7 @@ Particles2D::Particles2D() {
 
 	particles = VS::get_singleton()->particles_create();
 
+	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
 	set_amount(8);

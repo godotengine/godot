@@ -79,89 +79,89 @@
 
   static const bdf_property_t  _bdf_properties[] =
   {
-    { (char *)"ADD_STYLE_NAME",          BDF_ATOM,     1, { 0 } },
-    { (char *)"AVERAGE_WIDTH",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"AVG_CAPITAL_WIDTH",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"AVG_LOWERCASE_WIDTH",     BDF_INTEGER,  1, { 0 } },
-    { (char *)"CAP_HEIGHT",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"CHARSET_COLLECTIONS",     BDF_ATOM,     1, { 0 } },
-    { (char *)"CHARSET_ENCODING",        BDF_ATOM,     1, { 0 } },
-    { (char *)"CHARSET_REGISTRY",        BDF_ATOM,     1, { 0 } },
-    { (char *)"COMMENT",                 BDF_ATOM,     1, { 0 } },
-    { (char *)"COPYRIGHT",               BDF_ATOM,     1, { 0 } },
-    { (char *)"DEFAULT_CHAR",            BDF_CARDINAL, 1, { 0 } },
-    { (char *)"DESTINATION",             BDF_CARDINAL, 1, { 0 } },
-    { (char *)"DEVICE_FONT_NAME",        BDF_ATOM,     1, { 0 } },
-    { (char *)"END_SPACE",               BDF_INTEGER,  1, { 0 } },
-    { (char *)"FACE_NAME",               BDF_ATOM,     1, { 0 } },
-    { (char *)"FAMILY_NAME",             BDF_ATOM,     1, { 0 } },
-    { (char *)"FIGURE_WIDTH",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"FONT",                    BDF_ATOM,     1, { 0 } },
-    { (char *)"FONTNAME_REGISTRY",       BDF_ATOM,     1, { 0 } },
-    { (char *)"FONT_ASCENT",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"FONT_DESCENT",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"FOUNDRY",                 BDF_ATOM,     1, { 0 } },
-    { (char *)"FULL_NAME",               BDF_ATOM,     1, { 0 } },
-    { (char *)"ITALIC_ANGLE",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"MAX_SPACE",               BDF_INTEGER,  1, { 0 } },
-    { (char *)"MIN_SPACE",               BDF_INTEGER,  1, { 0 } },
-    { (char *)"NORM_SPACE",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"NOTICE",                  BDF_ATOM,     1, { 0 } },
-    { (char *)"PIXEL_SIZE",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"POINT_SIZE",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"QUAD_WIDTH",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_ASCENT",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_AVERAGE_WIDTH",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_AVG_CAPITAL_WIDTH",   BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_AVG_LOWERCASE_WIDTH", BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_CAP_HEIGHT",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_DESCENT",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_END_SPACE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_FIGURE_WIDTH",        BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_MAX_SPACE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_MIN_SPACE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_NORM_SPACE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_PIXEL_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_POINT_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_PIXELSIZE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_POINTSIZE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_QUAD_WIDTH",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SMALL_CAP_SIZE",      BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_STRIKEOUT_ASCENT",    BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_STRIKEOUT_DESCENT",   BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUBSCRIPT_SIZE",      BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUBSCRIPT_X",         BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUBSCRIPT_Y",         BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUPERSCRIPT_SIZE",    BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUPERSCRIPT_X",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUPERSCRIPT_Y",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_UNDERLINE_POSITION",  BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_UNDERLINE_THICKNESS", BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_X_HEIGHT",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"RELATIVE_SETWIDTH",       BDF_CARDINAL, 1, { 0 } },
-    { (char *)"RELATIVE_WEIGHT",         BDF_CARDINAL, 1, { 0 } },
-    { (char *)"RESOLUTION",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"RESOLUTION_X",            BDF_CARDINAL, 1, { 0 } },
-    { (char *)"RESOLUTION_Y",            BDF_CARDINAL, 1, { 0 } },
-    { (char *)"SETWIDTH_NAME",           BDF_ATOM,     1, { 0 } },
-    { (char *)"SLANT",                   BDF_ATOM,     1, { 0 } },
-    { (char *)"SMALL_CAP_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"SPACING",                 BDF_ATOM,     1, { 0 } },
-    { (char *)"STRIKEOUT_ASCENT",        BDF_INTEGER,  1, { 0 } },
-    { (char *)"STRIKEOUT_DESCENT",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUBSCRIPT_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUBSCRIPT_X",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUBSCRIPT_Y",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUPERSCRIPT_SIZE",        BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUPERSCRIPT_X",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUPERSCRIPT_Y",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"UNDERLINE_POSITION",      BDF_INTEGER,  1, { 0 } },
-    { (char *)"UNDERLINE_THICKNESS",     BDF_INTEGER,  1, { 0 } },
-    { (char *)"WEIGHT",                  BDF_CARDINAL, 1, { 0 } },
-    { (char *)"WEIGHT_NAME",             BDF_ATOM,     1, { 0 } },
-    { (char *)"X_HEIGHT",                BDF_INTEGER,  1, { 0 } },
-    { (char *)"_MULE_BASELINE_OFFSET",   BDF_INTEGER,  1, { 0 } },
-    { (char *)"_MULE_RELATIVE_COMPOSE",  BDF_INTEGER,  1, { 0 } },
+    { "ADD_STYLE_NAME",          BDF_ATOM,     1, { 0 } },
+    { "AVERAGE_WIDTH",           BDF_INTEGER,  1, { 0 } },
+    { "AVG_CAPITAL_WIDTH",       BDF_INTEGER,  1, { 0 } },
+    { "AVG_LOWERCASE_WIDTH",     BDF_INTEGER,  1, { 0 } },
+    { "CAP_HEIGHT",              BDF_INTEGER,  1, { 0 } },
+    { "CHARSET_COLLECTIONS",     BDF_ATOM,     1, { 0 } },
+    { "CHARSET_ENCODING",        BDF_ATOM,     1, { 0 } },
+    { "CHARSET_REGISTRY",        BDF_ATOM,     1, { 0 } },
+    { "COMMENT",                 BDF_ATOM,     1, { 0 } },
+    { "COPYRIGHT",               BDF_ATOM,     1, { 0 } },
+    { "DEFAULT_CHAR",            BDF_CARDINAL, 1, { 0 } },
+    { "DESTINATION",             BDF_CARDINAL, 1, { 0 } },
+    { "DEVICE_FONT_NAME",        BDF_ATOM,     1, { 0 } },
+    { "END_SPACE",               BDF_INTEGER,  1, { 0 } },
+    { "FACE_NAME",               BDF_ATOM,     1, { 0 } },
+    { "FAMILY_NAME",             BDF_ATOM,     1, { 0 } },
+    { "FIGURE_WIDTH",            BDF_INTEGER,  1, { 0 } },
+    { "FONT",                    BDF_ATOM,     1, { 0 } },
+    { "FONTNAME_REGISTRY",       BDF_ATOM,     1, { 0 } },
+    { "FONT_ASCENT",             BDF_INTEGER,  1, { 0 } },
+    { "FONT_DESCENT",            BDF_INTEGER,  1, { 0 } },
+    { "FOUNDRY",                 BDF_ATOM,     1, { 0 } },
+    { "FULL_NAME",               BDF_ATOM,     1, { 0 } },
+    { "ITALIC_ANGLE",            BDF_INTEGER,  1, { 0 } },
+    { "MAX_SPACE",               BDF_INTEGER,  1, { 0 } },
+    { "MIN_SPACE",               BDF_INTEGER,  1, { 0 } },
+    { "NORM_SPACE",              BDF_INTEGER,  1, { 0 } },
+    { "NOTICE",                  BDF_ATOM,     1, { 0 } },
+    { "PIXEL_SIZE",              BDF_INTEGER,  1, { 0 } },
+    { "POINT_SIZE",              BDF_INTEGER,  1, { 0 } },
+    { "QUAD_WIDTH",              BDF_INTEGER,  1, { 0 } },
+    { "RAW_ASCENT",              BDF_INTEGER,  1, { 0 } },
+    { "RAW_AVERAGE_WIDTH",       BDF_INTEGER,  1, { 0 } },
+    { "RAW_AVG_CAPITAL_WIDTH",   BDF_INTEGER,  1, { 0 } },
+    { "RAW_AVG_LOWERCASE_WIDTH", BDF_INTEGER,  1, { 0 } },
+    { "RAW_CAP_HEIGHT",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_DESCENT",             BDF_INTEGER,  1, { 0 } },
+    { "RAW_END_SPACE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_FIGURE_WIDTH",        BDF_INTEGER,  1, { 0 } },
+    { "RAW_MAX_SPACE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_MIN_SPACE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_NORM_SPACE",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_PIXEL_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_POINT_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_PIXELSIZE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_POINTSIZE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_QUAD_WIDTH",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_SMALL_CAP_SIZE",      BDF_INTEGER,  1, { 0 } },
+    { "RAW_STRIKEOUT_ASCENT",    BDF_INTEGER,  1, { 0 } },
+    { "RAW_STRIKEOUT_DESCENT",   BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUBSCRIPT_SIZE",      BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUBSCRIPT_X",         BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUBSCRIPT_Y",         BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUPERSCRIPT_SIZE",    BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUPERSCRIPT_X",       BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUPERSCRIPT_Y",       BDF_INTEGER,  1, { 0 } },
+    { "RAW_UNDERLINE_POSITION",  BDF_INTEGER,  1, { 0 } },
+    { "RAW_UNDERLINE_THICKNESS", BDF_INTEGER,  1, { 0 } },
+    { "RAW_X_HEIGHT",            BDF_INTEGER,  1, { 0 } },
+    { "RELATIVE_SETWIDTH",       BDF_CARDINAL, 1, { 0 } },
+    { "RELATIVE_WEIGHT",         BDF_CARDINAL, 1, { 0 } },
+    { "RESOLUTION",              BDF_INTEGER,  1, { 0 } },
+    { "RESOLUTION_X",            BDF_CARDINAL, 1, { 0 } },
+    { "RESOLUTION_Y",            BDF_CARDINAL, 1, { 0 } },
+    { "SETWIDTH_NAME",           BDF_ATOM,     1, { 0 } },
+    { "SLANT",                   BDF_ATOM,     1, { 0 } },
+    { "SMALL_CAP_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "SPACING",                 BDF_ATOM,     1, { 0 } },
+    { "STRIKEOUT_ASCENT",        BDF_INTEGER,  1, { 0 } },
+    { "STRIKEOUT_DESCENT",       BDF_INTEGER,  1, { 0 } },
+    { "SUBSCRIPT_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "SUBSCRIPT_X",             BDF_INTEGER,  1, { 0 } },
+    { "SUBSCRIPT_Y",             BDF_INTEGER,  1, { 0 } },
+    { "SUPERSCRIPT_SIZE",        BDF_INTEGER,  1, { 0 } },
+    { "SUPERSCRIPT_X",           BDF_INTEGER,  1, { 0 } },
+    { "SUPERSCRIPT_Y",           BDF_INTEGER,  1, { 0 } },
+    { "UNDERLINE_POSITION",      BDF_INTEGER,  1, { 0 } },
+    { "UNDERLINE_THICKNESS",     BDF_INTEGER,  1, { 0 } },
+    { "WEIGHT",                  BDF_CARDINAL, 1, { 0 } },
+    { "WEIGHT_NAME",             BDF_ATOM,     1, { 0 } },
+    { "X_HEIGHT",                BDF_INTEGER,  1, { 0 } },
+    { "_MULE_BASELINE_OFFSET",   BDF_INTEGER,  1, { 0 } },
+    { "_MULE_RELATIVE_COMPOSE",  BDF_INTEGER,  1, { 0 } },
   };
 
   static const unsigned long
@@ -364,7 +364,7 @@
 
   /* An empty string for empty fields. */
 
-  static const char  empty[1] = { 0 };      /* XXX eliminate this */
+  static const char  empty[] = "";      /* XXX eliminate this */
 
 
   static char *
@@ -407,13 +407,14 @@
 
   static FT_Error
   _bdf_list_split( _bdf_list_t*   list,
-                   char*          separators,
+                   const char*    separators,
                    char*          line,
                    unsigned long  linelen )
   {
     unsigned long  final_empty;
     int            mult;
-    char           *sp, *ep, *end;
+    const char     *sp, *end;
+    char           *ep;
     char           seps[32];
     FT_Error       error = FT_Err_Ok;
 
@@ -473,7 +474,7 @@
       }
 
       /* Assign the field appropriately. */
-      list->field[list->used++] = ( ep > sp ) ? sp : (char*)empty;
+      list->field[list->used++] = ( ep > sp ) ? (char*)sp : (char*)empty;
 
       sp = ep;
 
@@ -692,7 +693,7 @@
 
   /* Routine to convert a decimal ASCII string to an unsigned long integer. */
   static unsigned long
-  _bdf_atoul( char*  s )
+  _bdf_atoul( const char*  s )
   {
     unsigned long  v;
 
@@ -717,7 +718,7 @@
 
   /* Routine to convert a decimal ASCII string to a signed long integer. */
   static long
-  _bdf_atol( char*  s )
+  _bdf_atol( const char*  s )
   {
     long  v, neg;
 
@@ -750,7 +751,7 @@
 
   /* Routine to convert a decimal ASCII string to an unsigned short integer. */
   static unsigned short
-  _bdf_atous( char*  s )
+  _bdf_atous( const char*  s )
   {
     unsigned short  v;
 
@@ -775,7 +776,7 @@
 
   /* Routine to convert a decimal ASCII string to a signed short integer. */
   static short
-  _bdf_atos( char*  s )
+  _bdf_atos( const char*  s )
   {
     short  v, neg;
 
@@ -828,7 +829,7 @@
 
 
   static FT_Error
-  bdf_create_property( char*        name,
+  bdf_create_property( const char*  name,
                        int          format,
                        bdf_font_t*  font )
   {
@@ -998,7 +999,7 @@
 
     FT_MEM_COPY( name, font->name, len );
 
-    error = _bdf_list_split( &list, (char *)"-", name, (unsigned long)len );
+    error = _bdf_list_split( &list, "-", name, (unsigned long)len );
     if ( error )
       goto Fail;
 
@@ -1097,7 +1098,7 @@
 
   static FT_Error
   _bdf_add_property( bdf_font_t*    font,
-                     char*          name,
+                     const char*    name,
                      char*          value,
                      unsigned long  lineno )
   {
@@ -1336,7 +1337,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
       p->cnt = font->glyphs_size = _bdf_atoul( p->list.field[1] );
@@ -1423,7 +1424,7 @@
       /* encoding can be checked for an unencoded character.      */
       FT_FREE( p->glyph_name );
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1461,7 +1462,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1615,7 +1616,7 @@
     /* Expect the SWIDTH (scalable width) field next. */
     if ( _bdf_strncmp( line, "SWIDTH", 6 ) == 0 )
     {
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1628,7 +1629,7 @@
     /* Expect the DWIDTH (scalable width) field next. */
     if ( _bdf_strncmp( line, "DWIDTH", 6 ) == 0 )
     {
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1653,7 +1654,7 @@
     /* Expect the BBX field next. */
     if ( _bdf_strncmp( line, "BBX", 3 ) == 0 )
     {
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1796,7 +1797,7 @@
       {
         p->font->font_ascent = p->font->bbx.ascent;
         ft_sprintf( nbuf, "%hd", p->font->bbx.ascent );
-        error = _bdf_add_property( p->font, (char *)"FONT_ASCENT",
+        error = _bdf_add_property( p->font, "FONT_ASCENT",
                                    nbuf, lineno );
         if ( error )
           goto Exit;
@@ -1808,7 +1809,7 @@
       {
         p->font->font_descent = p->font->bbx.descent;
         ft_sprintf( nbuf, "%hd", p->font->bbx.descent );
-        error = _bdf_add_property( p->font, (char *)"FONT_DESCENT",
+        error = _bdf_add_property( p->font, "FONT_DESCENT",
                                    nbuf, lineno );
         if ( error )
           goto Exit;
@@ -1846,7 +1847,7 @@
     }
     else
     {
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
       name = p->list.field[0];
@@ -1976,7 +1977,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -2015,7 +2016,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -2038,7 +2039,7 @@
     /* The next thing to check for is the FONT field. */
     if ( _bdf_strncmp( line, "FONT", 4 ) == 0 )
     {
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
       _bdf_list_shift( &p->list, 1 );
@@ -2081,7 +2082,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -2136,7 +2137,7 @@
       /* for compiling fonts.                                   */
       p->font->font_ascent = p->font->bbx.ascent;
       ft_sprintf( nbuf, "%hd", p->font->bbx.ascent );
-      error = _bdf_add_property( p->font, (char *)"FONT_ASCENT",
+      error = _bdf_add_property( p->font, "FONT_ASCENT",
                                  nbuf, lineno );
       if ( error )
         goto Exit;
@@ -2144,7 +2145,7 @@
 
       p->font->font_descent = p->font->bbx.descent;
       ft_sprintf( nbuf, "%hd", p->font->bbx.descent );
-      error = _bdf_add_property( p->font, (char *)"FONT_DESCENT",
+      error = _bdf_add_property( p->font, "FONT_DESCENT",
                                  nbuf, lineno );
       if ( error )
         goto Exit;

@@ -54,7 +54,7 @@ class BulletPhysicsDirectBodyState;
 /// created by BulletPhysicsServer and is held by the "singleton" variable of this class
 /// Each time something require it, the body must be set again.
 class BulletPhysicsDirectBodyState : public PhysicsDirectBodyState {
-	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState)
+	GDCLASS(BulletPhysicsDirectBodyState, PhysicsDirectBodyState);
 
 	static BulletPhysicsDirectBodyState *singleton;
 
@@ -305,7 +305,7 @@ public:
 	void reload_axis_lock();
 
 	/// Doc:
-	/// http://www.bulletphysics.org/mediawiki-1.5.8/index.php?title=Anti_tunneling_by_Motion_Clamping
+	/// https://web.archive.org/web/20180404091446/http://www.bulletphysics.org/mediawiki-1.5.8/index.php/Anti_tunneling_by_Motion_Clamping
 	void set_continuous_collision_detection(bool p_enable);
 	bool is_continuous_collision_detection_enabled() const;
 

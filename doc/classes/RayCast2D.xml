@@ -42,7 +42,8 @@
 			<return type="void">
 			</return>
 			<description>
-				Updates the collision information for the ray. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state. Note: [code]enabled == true[/code] is not required for this to work.
+				Updates the collision information for the ray. Use this method to update the collision information immediately instead of waiting for the next [code]_physics_process[/code] call, for example if the ray or its parent has changed state.
+				[b]Note:[/b] [code]enabled == true[/code] is not required for this to work.
 			</description>
 		</method>
 		<method name="get_collider" qualifiers="const">
@@ -79,7 +80,8 @@
 			<return type="Vector2">
 			</return>
 			<description>
-				Returns the collision point at which the ray intersects the closest object. Note: this point is in the [b]global[/b] coordinate system.
+				Returns the collision point at which the ray intersects the closest object.
+				[b]Note:[/b] this point is in the [b]global[/b] coordinate system.
 			</description>
 		</method>
 		<method name="is_colliding" qualifiers="const">
@@ -115,28 +117,28 @@
 			<argument index="1" name="value" type="bool">
 			</argument>
 			<description>
-				Set/clear individual bits on the collision mask. This makes selecting the areas scanned easier.
+				Sets or clears individual bits on the collision mask. This makes selecting the areas scanned easier.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="cast_to" type="Vector2" setter="set_cast_to" getter="get_cast_to">
+		<member name="cast_to" type="Vector2" setter="set_cast_to" getter="get_cast_to" default="Vector2( 0, 50 )">
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
-		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled">
-			If [code]true[/code], collision with [Area2D]s will be reported. Default value: [code]false[/code].
+		<member name="collide_with_areas" type="bool" setter="set_collide_with_areas" getter="is_collide_with_areas_enabled" default="false">
+			If [code]true[/code], collision with [Area2D]s will be reported.
 		</member>
-		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled">
-			If [code]true[/code], collision with [PhysicsBody2D]s will be reported. Default value: [code]true[/code].
+		<member name="collide_with_bodies" type="bool" setter="set_collide_with_bodies" getter="is_collide_with_bodies_enabled" default="true">
+			If [code]true[/code], collision with [PhysicsBody2D]s will be reported.
 		</member>
-		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask">
+		<member name="collision_mask" type="int" setter="set_collision_mask" getter="get_collision_mask" default="1">
 			The ray's collision mask. Only objects in at least one collision layer enabled in the mask will be detected.
 		</member>
-		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled">
-			If [code]true[/code], collisions will be reported. Default value: [code]false[/code].
+		<member name="enabled" type="bool" setter="set_enabled" getter="is_enabled" default="false">
+			If [code]true[/code], collisions will be reported.
 		</member>
-		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body">
-			If [code]true[/code], the parent node will be excluded from collision detection. Default value: [code]true[/code].
+		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
+			If [code]true[/code], the parent node will be excluded from collision detection.
 		</member>
 	</members>
 	<constants>

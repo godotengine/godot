@@ -267,10 +267,23 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 
 - (void)windowDidEnterFullScreen:(NSNotification *)notification {
 	OS_OSX::singleton->zoomed = true;
+
+	[OS_OSX::singleton->window_object setContentMinSize:NSMakeSize(0, 0)];
+	[OS_OSX::singleton->window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
 }
 
 - (void)windowDidExitFullScreen:(NSNotification *)notification {
 	OS_OSX::singleton->zoomed = false;
+
+	if (OS_OSX::singleton->min_size != Size2()) {
+		Size2 size = OS_OSX::singleton->min_size / OS_OSX::singleton->_display_scale();
+		[OS_OSX::singleton->window_object setContentMinSize:NSMakeSize(size.x, size.y)];
+	}
+	if (OS_OSX::singleton->max_size != Size2()) {
+		Size2 size = OS_OSX::singleton->max_size / OS_OSX::singleton->_display_scale();
+		[OS_OSX::singleton->window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
+	}
+
 	if (!OS_OSX::singleton->resizable)
 		[OS_OSX::singleton->window_object setStyleMask:[OS_OSX::singleton->window_object styleMask] & ~NSWindowStyleMaskResizable];
 }
@@ -1556,6 +1569,9 @@ Error OS_OSX::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 	if (p_desired.layered) {
 		set_window_per_pixel_transparency_enabled(true);
 	}
+
+	update_real_mouse_position();
+
 	return OK;
 }
 
@@ -1583,6 +1599,7 @@ void OS_OSX::finalize() {
 	memdelete(joypad_osx);
 	memdelete(input);
 
+	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);
@@ -1702,10 +1719,7 @@ Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle,
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 	return OK;
 }
 
@@ -1754,7 +1768,20 @@ OS::CursorShape OS_OSX::get_cursor_shape() const {
 }
 
 void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+
 	if (p_cursor.is_valid()) {
+
+		Map<CursorShape, Vector<Variant> >::Element *cursor_c = cursors_cache.find(p_shape);
+
+		if (cursor_c) {
+			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+				set_cursor_shape(p_shape);
+				return;
+			}
+
+			cursors_cache.erase(p_shape);
+		}
+
 		Ref<Texture> texture = p_cursor;
 		Ref<AtlasTexture> atlas_texture = p_cursor;
 		Ref<Image> image;
@@ -1839,6 +1866,11 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		[cursors[p_shape] release];
 		cursors[p_shape] = cursor;
 
+		Vector<Variant> params;
+		params.push_back(p_cursor);
+		params.push_back(p_hotspot);
+		cursors_cache.insert(p_shape, params);
+
 		if (p_shape == cursor_shape) {
 			if (mouse_mode == MOUSE_MODE_VISIBLE || mouse_mode == MOUSE_MODE_CONFINED) {
 				[cursor set];
@@ -1894,6 +1926,12 @@ void OS_OSX::warp_mouse_position(const Point2 &p_to) {
 	}
 }
 
+void OS_OSX::update_real_mouse_position() {
+
+	get_mouse_pos([window_object mouseLocationOutsideOfEventStream], [window_view backingScaleFactor]);
+	input->set_mouse_position(Point2(mouse_x, mouse_y));
+}
+
 Point2 OS_OSX::get_mouse_position() const {
 
 	return Vector2(mouse_x, mouse_y);
@@ -1921,15 +1959,10 @@ void OS_OSX::set_native_icon(const String &p_filename) {
 	memdelete(f);
 
 	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write[0] length:len] autorelease];
-	if (!icon_data) {
-		ERR_EXPLAIN("Error reading icon data");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
+
 	NSImage *icon = [[[NSImage alloc] initWithData:icon_data] autorelease];
-	if (!icon) {
-		ERR_EXPLAIN("Error loading icon");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
 
 	[NSApp setApplicationIconImage:icon];
 }
@@ -2344,6 +2377,8 @@ void OS_OSX::set_window_position(const Point2 &p_position) {
 	// Godot passes a positive value
 	position.y *= -1;
 	set_native_window_position(get_screens_origin() + position);
+
+	update_real_mouse_position();
 };
 
 Size2 OS_OSX::get_window_size() const {
@@ -2355,6 +2390,46 @@ Size2 OS_OSX::get_real_window_size() const {
 
 	NSRect frame = [window_object frame];
 	return Size2(frame.size.width, frame.size.height) * _display_scale();
+}
+
+Size2 OS_OSX::get_max_window_size() const {
+	return max_size;
+}
+
+Size2 OS_OSX::get_min_window_size() const {
+	return min_size;
+}
+
+void OS_OSX::set_min_window_size(const Size2 p_size) {
+
+	if ((p_size != Size2()) && (max_size != Size2()) && ((p_size.x > max_size.x) || (p_size.y > max_size.y))) {
+		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
+		return;
+	}
+	min_size = p_size;
+
+	if ((min_size != Size2()) && !zoomed) {
+		Size2 size = min_size / _display_scale();
+		[window_object setContentMinSize:NSMakeSize(size.x, size.y)];
+	} else {
+		[window_object setContentMinSize:NSMakeSize(0, 0)];
+	}
+}
+
+void OS_OSX::set_max_window_size(const Size2 p_size) {
+
+	if ((p_size != Size2()) && ((p_size.x < min_size.x) || (p_size.y < min_size.y))) {
+		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
+		return;
+	}
+	max_size = p_size;
+
+	if ((max_size != Size2()) && !zoomed) {
+		Size2 size = max_size / _display_scale();
+		[window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
+	} else {
+		[window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+	}
 }
 
 void OS_OSX::set_window_size(const Size2 p_size) {
@@ -2386,6 +2461,19 @@ void OS_OSX::set_window_fullscreen(bool p_enabled) {
 			set_window_per_pixel_transparency_enabled(false);
 		if (!resizable)
 			[window_object setStyleMask:[window_object styleMask] | NSWindowStyleMaskResizable];
+		if (p_enabled) {
+			[window_object setContentMinSize:NSMakeSize(0, 0)];
+			[window_object setContentMaxSize:NSMakeSize(FLT_MAX, FLT_MAX)];
+		} else {
+			if (min_size != Size2()) {
+				Size2 size = min_size / _display_scale();
+				[window_object setContentMinSize:NSMakeSize(size.x, size.y)];
+			}
+			if (max_size != Size2()) {
+				Size2 size = max_size / _display_scale();
+				[window_object setContentMaxSize:NSMakeSize(size.x, size.y)];
+			}
+		}
 		[window_object toggleFullScreen:nil];
 	}
 	zoomed = p_enabled;

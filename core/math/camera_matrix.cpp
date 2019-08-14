@@ -302,8 +302,8 @@ Vector<Plane> CameraMatrix::get_projection_planes(const Transform &p_transform) 
 
 	/** Fast Plane Extraction from combined modelview/projection matrices.
 	 * References:
-	 * http://www.markmorley.com/opengl/frustumculling.html
-	 * http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
+	 * https://web.archive.org/web/20011221205252/http://www.markmorley.com/opengl/frustumculling.html
+	 * https://web.archive.org/web/20061020020112/http://www2.ravensoft.com/users/ggribb/plane%20extraction.pdf
 	 */
 
 	Vector<Plane> planes;
@@ -507,21 +507,21 @@ void CameraMatrix::set_light_bias() {
 
 	real_t *m = &matrix[0][0];
 
-	m[0] = 0.5,
-	m[1] = 0.0,
-	m[2] = 0.0,
-	m[3] = 0.0,
-	m[4] = 0.0,
-	m[5] = 0.5,
-	m[6] = 0.0,
-	m[7] = 0.0,
-	m[8] = 0.0,
-	m[9] = 0.0,
-	m[10] = 0.5,
-	m[11] = 0.0,
-	m[12] = 0.5,
-	m[13] = 0.5,
-	m[14] = 0.5,
+	m[0] = 0.5;
+	m[1] = 0.0;
+	m[2] = 0.0;
+	m[3] = 0.0;
+	m[4] = 0.0;
+	m[5] = 0.5;
+	m[6] = 0.0;
+	m[7] = 0.0;
+	m[8] = 0.0;
+	m[9] = 0.0;
+	m[10] = 0.5;
+	m[11] = 0.0;
+	m[12] = 0.5;
+	m[13] = 0.5;
+	m[14] = 0.5;
 	m[15] = 1.0;
 }
 
@@ -529,21 +529,21 @@ void CameraMatrix::set_light_atlas_rect(const Rect2 &p_rect) {
 
 	real_t *m = &matrix[0][0];
 
-	m[0] = p_rect.size.width,
-	m[1] = 0.0,
-	m[2] = 0.0,
-	m[3] = 0.0,
-	m[4] = 0.0,
-	m[5] = p_rect.size.height,
-	m[6] = 0.0,
-	m[7] = 0.0,
-	m[8] = 0.0,
-	m[9] = 0.0,
-	m[10] = 1.0,
-	m[11] = 0.0,
-	m[12] = p_rect.position.x,
-	m[13] = p_rect.position.y,
-	m[14] = 0.0,
+	m[0] = p_rect.size.width;
+	m[1] = 0.0;
+	m[2] = 0.0;
+	m[3] = 0.0;
+	m[4] = 0.0;
+	m[5] = p_rect.size.height;
+	m[6] = 0.0;
+	m[7] = 0.0;
+	m[8] = 0.0;
+	m[9] = 0.0;
+	m[10] = 1.0;
+	m[11] = 0.0;
+	m[12] = p_rect.position.x;
+	m[13] = p_rect.position.y;
+	m[14] = 0.0;
 	m[15] = 1.0;
 }
 

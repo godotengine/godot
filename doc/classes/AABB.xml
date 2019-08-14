@@ -187,13 +187,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="end" type="Vector3" setter="" getter="">
+		<member name="end" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
 			Ending corner.
 		</member>
-		<member name="position" type="Vector3" setter="" getter="">
+		<member name="position" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
 			Beginning corner.
 		</member>
-		<member name="size" type="Vector3" setter="" getter="">
+		<member name="size" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
 			Size from position to end.
 		</member>
 	</members>

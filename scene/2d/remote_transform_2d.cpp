@@ -110,7 +110,7 @@ void RemoteTransform2D::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			_update_cache();
 
@@ -180,6 +180,10 @@ bool RemoteTransform2D::get_update_scale() const {
 	return update_remote_scale;
 }
 
+void RemoteTransform2D::force_update_cache() {
+	_update_cache();
+}
+
 String RemoteTransform2D::get_configuration_warning() const {
 
 	if (!has_node(remote_node) || !Object::cast_to<Node2D>(get_node(remote_node))) {
@@ -193,6 +197,7 @@ void RemoteTransform2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_remote_node", "path"), &RemoteTransform2D::set_remote_node);
 	ClassDB::bind_method(D_METHOD("get_remote_node"), &RemoteTransform2D::get_remote_node);
+	ClassDB::bind_method(D_METHOD("force_update_cache"), &RemoteTransform2D::force_update_cache);
 
 	ClassDB::bind_method(D_METHOD("set_use_global_coordinates", "use_global_coordinates"), &RemoteTransform2D::set_use_global_coordinates);
 	ClassDB::bind_method(D_METHOD("get_use_global_coordinates"), &RemoteTransform2D::get_use_global_coordinates);

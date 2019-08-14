@@ -482,8 +482,6 @@ Error HTTPClient::poll() {
 					return OK;
 				}
 			}
-			// Wait for response
-			return OK;
 		} break;
 		case STATUS_DISCONNECTED: {
 			return ERR_UNCONFIGURED;
@@ -775,7 +773,7 @@ Dictionary HTTPClient::_get_response_headers_as_dictionary() {
 	get_response_headers(&rh);
 	Dictionary ret;
 	for (const List<String>::Element *E = rh.front(); E; E = E->next()) {
-		String s = E->get();
+		const String &s = E->get();
 		int sp = s.find(":");
 		if (sp == -1)
 			continue;

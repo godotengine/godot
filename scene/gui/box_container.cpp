@@ -91,7 +91,6 @@ void BoxContainer::_resort() {
 	int stretch_diff = stretch_max - stretch_min;
 	if (stretch_diff < 0) {
 		//avoid negative stretch space
-		stretch_max = stretch_min;
 		stretch_diff = 0;
 	}
 

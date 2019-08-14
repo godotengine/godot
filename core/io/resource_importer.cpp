@@ -161,7 +161,8 @@ void ResourceFormatImporter::get_recognized_extensions(List<String> *p_extension
 void ResourceFormatImporter::get_recognized_extensions_for_type(const String &p_type, List<String> *p_extensions) const {
 
 	if (p_type == "") {
-		return get_recognized_extensions(p_extensions);
+		get_recognized_extensions(p_extensions);
+		return;
 	}
 
 	Set<String> found;
@@ -347,7 +348,7 @@ void ResourceFormatImporter::get_dependencies(const String &p_path, List<String>
 		return;
 	}
 
-	return ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
+	ResourceLoader::get_dependencies(pat.path, p_dependencies, p_add_types);
 }
 
 Ref<ResourceImporter> ResourceFormatImporter::get_importer_by_name(const String &p_name) const {

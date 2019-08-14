@@ -177,6 +177,8 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						tex->create_from_image(thumbnail);
 
 						preview_images[i].button->set_icon(tex);
+						// Make it clearer that clicking it will open an external link
+						preview_images[i].button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 					} else {
 						preview_images[i].button->set_icon(p_image);
 					}
@@ -331,18 +333,14 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 	switch (p_status) {
 
-		case HTTPRequest::RESULT_CANT_RESOLVE: {
-			error_text = TTR("Can't resolve hostname:") + " " + host;
-			status->set_text(TTR("Can't resolve."));
-		} break;
-		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
-		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
+		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED: {
 			error_text = TTR("Connection error, please try again.");
 			status->set_text(TTR("Can't connect."));
 		} break;
-		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
-		case HTTPRequest::RESULT_CANT_CONNECT: {
+		case HTTPRequest::RESULT_CANT_CONNECT:
+		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR: {
 			error_text = TTR("Can't connect to host:") + " " + host;
 			status->set_text(TTR("Can't connect."));
 		} break;
@@ -350,13 +348,26 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 			error_text = TTR("No response from host:") + " " + host;
 			status->set_text(TTR("No response."));
 		} break;
+		case HTTPRequest::RESULT_CANT_RESOLVE: {
+			error_text = TTR("Can't resolve hostname:") + " " + host;
+			status->set_text(TTR("Can't resolve."));
+		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
 			error_text = TTR("Request failed, return code:") + " " + itos(p_code);
-			status->set_text(TTR("Request Failed."));
+			status->set_text(TTR("Request failed."));
+		} break;
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN:
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR: {
+			error_text = TTR("Cannot save response to:") + " " + download->get_download_file();
+			status->set_text(TTR("Write error."));
 		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
 			error_text = TTR("Request failed, too many redirects");
-			status->set_text(TTR("Redirect Loop."));
+			status->set_text(TTR("Redirect loop."));
+		} break;
+		case HTTPRequest::RESULT_TIMEOUT: {
+			error_text = TTR("Request failed, timeout");
+			status->set_text(TTR("Timeout."));
 		} break;
 		default: {
 			if (p_code != 200) {
@@ -396,68 +407,73 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 		icon->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
-	asset_installer->connect("confirmed", this, "_close");
-	dismiss->set_normal_texture(get_icon("Close", "EditorIcons"));
 	_make_request();
 }
 
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_PROCESS) {
+	switch (p_what) {
 
-		// Make the progress bar visible again when retrying the download
-		progress->set_modulate(Color(1, 1, 1, 1));
+		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
+		case NOTIFICATION_ENTER_TREE: {
 
-		if (download->get_downloaded_bytes() > 0) {
-			progress->set_max(download->get_body_size());
-			progress->set_value(download->get_downloaded_bytes());
-		}
+			add_style_override("panel", get_stylebox("panel", "TabContainer"));
+			dismiss->set_normal_texture(get_icon("Close", "EditorIcons"));
+		} break;
+		case NOTIFICATION_PROCESS: {
 
-		int cstatus = download->get_http_client_status();
+			// Make the progress bar visible again when retrying the download.
+			progress->set_modulate(Color(1, 1, 1, 1));
 
-		if (cstatus == HTTPClient::STATUS_BODY) {
-			if (download->get_body_size() > 0) {
-				status->set_text(
-						vformat(
-								TTR("Downloading (%s / %s)..."),
-								String::humanize_size(download->get_downloaded_bytes()),
-								String::humanize_size(download->get_body_size())));
-			} else {
-				// Total file size is unknown, so it cannot be displayed
-				status->set_text(TTR("Downloading..."));
+			if (download->get_downloaded_bytes() > 0) {
+				progress->set_max(download->get_body_size());
+				progress->set_value(download->get_downloaded_bytes());
 			}
-		}
 
-		if (cstatus != prev_status) {
-			switch (cstatus) {
+			int cstatus = download->get_http_client_status();
 
-				case HTTPClient::STATUS_RESOLVING: {
-					status->set_text(TTR("Resolving..."));
-					progress->set_max(1);
-					progress->set_value(0);
-				} break;
-				case HTTPClient::STATUS_CONNECTING: {
-					status->set_text(TTR("Connecting..."));
-					progress->set_max(1);
-					progress->set_value(0);
-				} break;
-				case HTTPClient::STATUS_REQUESTING: {
-					status->set_text(TTR("Requesting..."));
-					progress->set_max(1);
-					progress->set_value(0);
-				} break;
-				default: {
+			if (cstatus == HTTPClient::STATUS_BODY) {
+				if (download->get_body_size() > 0) {
+					status->set_text(vformat(
+							TTR("Downloading (%s / %s)..."),
+							String::humanize_size(download->get_downloaded_bytes()),
+							String::humanize_size(download->get_body_size())));
+				} else {
+					// Total file size is unknown, so it cannot be displayed.
+					status->set_text(TTR("Downloading..."));
 				}
 			}
-			prev_status = cstatus;
-		}
+
+			if (cstatus != prev_status) {
+				switch (cstatus) {
+
+					case HTTPClient::STATUS_RESOLVING: {
+						status->set_text(TTR("Resolving..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					case HTTPClient::STATUS_CONNECTING: {
+						status->set_text(TTR("Connecting..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					case HTTPClient::STATUS_REQUESTING: {
+						status->set_text(TTR("Requesting..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					default: {
+					}
+				}
+				prev_status = cstatus;
+			}
+		} break;
 	}
 }
 void EditorAssetLibraryItemDownload::_close() {
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->remove(download->get_download_file()); //clean up removed file
-	memdelete(da);
+	// Clean up downloaded file.
+	DirAccess::remove_file_or_error(download->get_download_file());
 	queue_delete();
 }
 
@@ -531,7 +547,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	hb2->add_spacer();
 
 	install = memnew(Button);
-	install->set_text(TTR("Install"));
+	install->set_text(TTR("Install..."));
 	install->set_disabled(true);
 	install->connect("pressed", this, "_install");
 
@@ -554,6 +570,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	add_child(asset_installer);
+	asset_installer->connect("confirmed", this, "_close");
 
 	prev_status = -1;
 
@@ -564,6 +581,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 
 	switch (p_what) {
+
 		case NOTIFICATION_READY: {
 
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
@@ -573,14 +591,12 @@ void EditorAssetLibrary::_notification(int p_what) {
 
 			error_label->raise();
 		} break;
-
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (is_visible()) {
-				_repository_changed(0); // Update when shown for the first time
+				_repository_changed(0); // Update when shown for the first time.
 			}
 		} break;
-
 		case NOTIFICATION_PROCESS: {
 
 			HTTPClient::Status s = request->get_http_client_status();
@@ -619,6 +635,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
+			downloads_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
 			filter->set_right_icon(get_icon("Search", "EditorIcons"));
@@ -741,7 +758,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
-					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_CUBIC);
+					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_LANCZOS);
 
 					break;
 				case IMAGE_QUEUE_THUMBNAIL: {
@@ -749,7 +766,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
 					}
 				} break;
 				case IMAGE_QUEUE_SCREENSHOT: {
@@ -757,7 +774,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
 					}
 				} break;
 			}
@@ -1238,9 +1255,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->connect("confirmed", this, "_install_asset");
 
 			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
-			/*item->connect("asset_selected",this,"_select_asset");
-			item->connect("author_selected",this,"_select_author");
-			item->connect("category_selected",this,"_category_selected");*/
 
 			if (r.has("icon_url") && r["icon_url"] != "") {
 				_request_image(description->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
@@ -1267,9 +1281,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					if (p.has("thumbnail")) {
 						_request_image(description->get_instance_id(), p["thumbnail"], IMAGE_QUEUE_THUMBNAIL, i);
 					}
-					if (is_video) {
-						//_request_image(description->get_instance_id(),p["link"],IMAGE_QUEUE_SCREENSHOT,i);
-					} else {
+
+					if (!is_video) {
 						_request_image(description->get_instance_id(), p["link"], IMAGE_QUEUE_SCREENSHOT, i);
 					}
 				}
@@ -1390,19 +1403,16 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	reverse = memnew(ToolButton);
 	reverse->set_toggle_mode(true);
 	reverse->connect("toggled", this, "_rerun_search");
-	//reverse->set_text(TTR("Reverse"));
+	reverse->set_tooltip(TTR("Reverse sorting."));
 	search_hb2->add_child(reverse);
 
 	search_hb2->add_child(memnew(VSeparator));
-
-	//search_hb2->add_spacer();
 
 	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
 	categories = memnew(OptionButton);
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
-	//search_hb2->add_spacer();
 	categories->connect("item_selected", this, "_rerun_search");
 
 	search_hb2->add_child(memnew(VSeparator));

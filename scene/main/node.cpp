@@ -71,6 +71,8 @@ void Node::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_ENTER_TREE: {
+			ERR_FAIL_COND(!get_viewport());
+			ERR_FAIL_COND(!get_tree());
 
 			if (data.pause_mode == PAUSE_MODE_INHERIT) {
 
@@ -94,6 +96,8 @@ void Node::_notification(int p_notification) {
 
 		} break;
 		case NOTIFICATION_EXIT_TREE: {
+			ERR_FAIL_COND(!get_viewport());
+			ERR_FAIL_COND(!get_tree());
 
 			get_tree()->node_count--;
 			orphan_node_count++;
@@ -206,7 +210,7 @@ void Node::_propagate_enter_tree() {
 	}
 
 	data.viewport = Object::cast_to<Viewport>(this);
-	if (!data.viewport)
+	if (!data.viewport && data.parent)
 		data.viewport = data.parent->data.viewport;
 
 	data.inside_tree = true;
@@ -323,14 +327,9 @@ void Node::_propagate_exit_tree() {
 void Node::move_child(Node *p_child, int p_pos) {
 
 	ERR_FAIL_NULL(p_child);
-	ERR_EXPLAIN("Invalid new child position: " + itos(p_pos));
-	ERR_FAIL_INDEX(p_pos, data.children.size() + 1);
-	ERR_EXPLAIN("child is not a child of this node.");
-	ERR_FAIL_COND(p_child->data.parent != this);
-	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
-		ERR_FAIL_COND(data.blocked > 0);
-	}
+	ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1, "Invalid new child position: " + itos(p_pos) + ".");
+	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
 
 	// Specifying one place beyond the end
 	// means the same as moving to the last position
@@ -404,7 +403,6 @@ void Node::set_physics_process(bool p_process) {
 	else
 		remove_from_group("physics_process");
 
-	data.physics_process = p_process;
 	_change_notify("physics_process");
 }
 
@@ -425,7 +423,6 @@ void Node::set_physics_process_internal(bool p_process_internal) {
 	else
 		remove_from_group("physics_process_internal");
 
-	data.physics_process_internal = p_process_internal;
 	_change_notify("physics_process_internal");
 }
 
@@ -807,7 +804,6 @@ void Node::set_process(bool p_idle_process) {
 	else
 		remove_from_group("idle_process");
 
-	data.idle_process = p_idle_process;
 	_change_notify("idle_process");
 }
 
@@ -828,7 +824,6 @@ void Node::set_process_internal(bool p_idle_process_internal) {
 	else
 		remove_from_group("idle_process_internal");
 
-	data.idle_process_internal = p_idle_process_internal;
 	_change_notify("idle_process_internal");
 }
 
@@ -839,6 +834,8 @@ bool Node::is_processing_internal() const {
 
 void Node::set_process_priority(int p_priority) {
 	data.process_priority = p_priority;
+
+	ERR_FAIL_COND(!data.tree);
 
 	if (is_processing())
 		data.tree->make_group_changed("idle_process");
@@ -1015,7 +1012,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 		if (!unique) {
 
-			node_hrcr_count.ref();
+			ERR_FAIL_COND(!node_hrcr_count.ref());
 			String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
 			p_child->data.name = name;
 		}
@@ -1163,25 +1160,9 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 	ERR_FAIL_NULL(p_child);
-
-	if (p_child == this) {
-		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to itself.");
-		ERR_FAIL_COND(p_child == this); // adding to itself!
-	}
-
-	/* Fail if node has a parent */
-	if (p_child->data.parent) {
-		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'.");
-		ERR_FAIL_COND(p_child->data.parent);
-	}
-
-	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
-		ERR_FAIL_COND(data.blocked > 0);
-	}
-
-	ERR_EXPLAIN("Can't add child while a notification is happening.");
-	ERR_FAIL_COND(data.blocked > 0);
+	ERR_FAIL_COND_MSG(p_child == this, "Can't add child '" + p_child->get_name() + "' to itself."); // adding to itself!
+	ERR_FAIL_COND_MSG(p_child->data.parent, "Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'."); //Fail if node has a parent
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
 
 	/* Validate name */
 	_validate_child_name(p_child, p_legible_unique_name);
@@ -1237,10 +1218,7 @@ void Node::_propagate_validate_owner() {
 void Node::remove_child(Node *p_child) {
 
 	ERR_FAIL_NULL(p_child);
-	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\",child) instead.");
-		ERR_FAIL_COND(data.blocked > 0);
-	}
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\", child) instead.");
 
 	int child_count = data.children.size();
 	Node **children = data.children.ptrw();
@@ -1263,7 +1241,7 @@ void Node::remove_child(Node *p_child) {
 		}
 	}
 
-	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND_MSG(idx == -1, "Cannot remove child node " + p_child->get_name() + " as it is not a child of this node.");
 	//ERR_FAIL_COND( p_child->data.blocked > 0 );
 
 	//if (data.scene) { does not matter
@@ -1327,10 +1305,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		return NULL;
 	}
 
-	if (!data.inside_tree && p_path.is_absolute()) {
-		ERR_EXPLAIN("Can't use get_node() with absolute paths from outside the active scene tree.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!data.inside_tree && p_path.is_absolute(), NULL, "Can't use get_node() with absolute paths from outside the active scene tree.");
 
 	Node *current = NULL;
 	Node *root = NULL;
@@ -1391,10 +1366,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 
 	Node *node = get_node_or_null(p_path);
-	if (!node) {
-		ERR_EXPLAIN("Node not found: " + p_path);
-		ERR_FAIL_COND_V(!node, NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!node, NULL, "Node not found: " + p_path + ".");
 	return node;
 }
 
@@ -1662,7 +1634,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 
 NodePath Node::get_path() const {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NodePath());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), NodePath(), "Cannot get path of node as it is not in a scene tree.");
 
 	if (data.path_cache)
 		return *data.path_cache;
@@ -1753,7 +1725,7 @@ bool Node::has_persistent_groups() const {
 
 	return false;
 }
-void Node::_print_tree_pretty(const String prefix, const bool last) {
+void Node::_print_tree_pretty(const String &prefix, const bool last) {
 
 	String new_prefix = last ? String::utf8(" ┖╴") : String::utf8(" ┠╴");
 	print_line(prefix + new_prefix + String(get_name()));
@@ -2189,11 +2161,12 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 	} else {
 
 		Object *obj = ClassDB::instance(get_class());
-		ERR_EXPLAIN("Node: Could not duplicate: " + String(get_class()));
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_COND_MSG(!obj, "Node: Could not duplicate: " + String(get_class()) + ".");
 		node = Object::cast_to<Node>(obj);
-		if (!node)
+		if (!node) {
 			memdelete(obj);
+			ERR_FAIL_MSG("Node: Could not duplicate: " + String(get_class()) + ".");
+		}
 	}
 
 	List<PropertyInfo> plist;
@@ -2289,16 +2262,14 @@ Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
 
 	ERR_FAIL_COND_V(get_filename() != "", NULL);
 
-	Node *node = NULL;
-
 	Object *obj = ClassDB::instance(get_class());
-	ERR_EXPLAIN("Node: Could not duplicate: " + String(get_class()));
-	ERR_FAIL_COND_V(!obj, NULL);
-	node = Object::cast_to<Node>(obj);
-	if (!node)
-		memdelete(obj);
-	ERR_FAIL_COND_V(!node, NULL);
+	ERR_FAIL_COND_V_MSG(!obj, NULL, "Node: Could not duplicate: " + String(get_class()) + ".");
 
+	Node *node = Object::cast_to<Node>(obj);
+	if (!node) {
+		memdelete(obj);
+		ERR_FAIL_V_MSG(NULL, "Node: Could not duplicate: " + String(get_class()) + ".");
+	}
 	node->set_name(get_name());
 
 	List<PropertyInfo> plist;
@@ -2434,8 +2405,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 		if (c.flags & CONNECT_PERSIST) {
 			c.source->disconnect(c.signal, this, c.method);
 			bool valid = p_new_target->has_method(c.method) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.method);
-			ERR_EXPLAIN("Attempt to connect signal \'" + c.source->get_class() + "." + c.signal + "\' to nonexistent method \'" + c.target->get_class() + "." + c.method + "\'");
-			ERR_CONTINUE(!valid);
+			ERR_CONTINUE_MSG(!valid, "Attempt to connect signal '" + c.source->get_class() + "." + c.signal + "' to nonexistent method '" + c.target->get_class() + "." + c.method + "'.");
 			c.source->connect(c.signal, p_new_target, c.method, c.binds, c.flags);
 		}
 	}
@@ -2477,21 +2447,18 @@ bool Node::has_node_and_resource(const NodePath &p_path) const {
 
 	if (!has_node(p_path))
 		return false;
-	Node *node = get_node(p_path);
+	RES res;
+	Vector<StringName> leftover_path;
+	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 
-	bool result = false;
-
-	node->get_indexed(p_path.get_subnames(), &result);
-
-	return result;
+	return node;
 }
 
 Array Node::_get_node_and_resource(const NodePath &p_path) {
 
-	Node *node;
 	RES res;
 	Vector<StringName> leftover_path;
-	node = get_node_and_resource(p_path, res, leftover_path);
+	Node *node = get_node_and_resource(p_path, res, leftover_path, false);
 	Array result;
 
 	if (node)
@@ -2521,10 +2488,16 @@ Node *Node::get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<Str
 
 		int j = 0;
 		// If not p_last_is_property, we shouldn't consider the last one as part of the resource
-		for (; j < p_path.get_subname_count() - p_last_is_property; j++) {
-			RES new_res = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
+		for (; j < p_path.get_subname_count() - (int)p_last_is_property; j++) {
+			Variant new_res_v = j == 0 ? node->get(p_path.get_subname(j)) : r_res->get(p_path.get_subname(j));
 
-			if (new_res.is_null()) {
+			if (new_res_v.get_type() == Variant::NIL) { // Found nothing on that path
+				return NULL;
+			}
+
+			RES new_res = new_res_v;
+
+			if (new_res.is_null()) { // No longer a resource, assume property
 				break;
 			}
 

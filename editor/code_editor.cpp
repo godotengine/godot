@@ -152,6 +152,7 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 			text_edit->cursor_set_line(line, false);
 			text_edit->cursor_set_column(col + text.length(), false);
 			text_edit->center_viewport_to_cursor();
+			text_edit->select(line, col, line, col + text.length());
 		}
 
 		text_edit->set_search_text(text);
@@ -161,13 +162,16 @@ bool FindReplaceBar::_search(uint32_t p_flags, int p_from_line, int p_from_col) 
 		result_line = line;
 		result_col = col;
 
-		set_error("");
+		_update_results_count();
 	} else {
 		result_line = -1;
 		result_col = -1;
 		text_edit->set_search_text("");
-		set_error(text.empty() ? "" : TTR("No Matches"));
+		text_edit->set_search_flags(p_flags);
+		text_edit->set_current_search_result(line, col);
 	}
+
+	_update_matches_label();
 
 	return found;
 }
@@ -182,6 +186,8 @@ void FindReplaceBar::_replace() {
 		text_edit->insert_text_at_cursor(get_replace_text());
 
 		text_edit->end_complex_operation();
+
+		results_count = -1;
 	}
 
 	search_current();
@@ -269,6 +275,7 @@ void FindReplaceBar::_replace_all() {
 	set_error(vformat(TTR("Replaced %d occurrence(s)."), rc));
 
 	text_edit->call_deferred("connect", "text_changed", this, "_editor_text_changed");
+	results_count = -1;
 }
 
 void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
@@ -276,22 +283,50 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
 	r_line = text_edit->cursor_get_line();
 	r_col = text_edit->cursor_get_column();
 
-	if (text_edit->is_selection_active() && !replace_all_mode) {
-
-		int selection_line = text_edit->get_selection_from_line();
-
-		if (text_edit->get_selection_text() == get_search_text() && r_line == selection_line) {
-
-			int selection_from_col = text_edit->get_selection_from_column();
-
-			if (r_col >= selection_from_col && r_col <= text_edit->get_selection_to_column()) {
-				r_col = selection_from_col;
-			}
-		}
-	}
-
 	if (r_line == result_line && r_col >= result_col && r_col <= result_col + get_search_text().length()) {
 		r_col = result_col;
+	}
+}
+
+void FindReplaceBar::_update_results_count() {
+	if (results_count != -1)
+		return;
+
+	results_count = 0;
+
+	String searched = get_search_text();
+	if (searched.empty()) return;
+
+	String full_text = text_edit->get_text();
+
+	int from_pos = 0;
+
+	while (true) {
+		int pos = is_case_sensitive() ? full_text.find(searched, from_pos) : full_text.findn(searched, from_pos);
+		if (pos == -1) break;
+
+		if (is_whole_words()) {
+			from_pos++; // Making sure we won't hit the same match next time, if we get out via a continue.
+			if (pos > 0 && !is_symbol(full_text[pos - 1]))
+				continue;
+			if (pos + searched.length() < full_text.length() && !is_symbol(full_text[pos + searched.length()]))
+				continue;
+		}
+
+		results_count++;
+		from_pos = pos + searched.length();
+	}
+}
+
+void FindReplaceBar::_update_matches_label() {
+
+	if (search_text->get_text().empty() || results_count == -1) {
+		matches_label->hide();
+	} else {
+		matches_label->show();
+
+		matches_label->add_color_override("font_color", results_count > 0 ? Color(1, 1, 1) : EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
 	}
 }
 
@@ -312,6 +347,9 @@ bool FindReplaceBar::search_current() {
 
 bool FindReplaceBar::search_prev() {
 
+	if (!is_visible())
+		popup_search(true);
+
 	uint32_t flags = 0;
 	String text = get_search_text();
 
@@ -324,13 +362,17 @@ bool FindReplaceBar::search_prev() {
 
 	int line, col;
 	_get_search_from(line, col);
+	if (text_edit->is_selection_active())
+		col--; //Skip currently selected word.
 
-	col -= text.length();
-	if (col < 0) {
-		line -= 1;
-		if (line < 0)
-			line = text_edit->get_line_count() - 1;
-		col = text_edit->get_line(line).length();
+	if (line == result_line && col == result_col) {
+		col -= text.length();
+		if (col < 0) {
+			line -= 1;
+			if (line < 0)
+				line = text_edit->get_line_count() - 1;
+			col = text_edit->get_line(line).length();
+		}
 	}
 
 	return _search(flags, line, col);
@@ -338,8 +380,15 @@ bool FindReplaceBar::search_prev() {
 
 bool FindReplaceBar::search_next() {
 
+	if (!is_visible())
+		popup_search(true);
+
 	uint32_t flags = 0;
-	String text = get_search_text();
+	String text;
+	if (replace_all_mode)
+		text = get_replace_text();
+	else
+		text = get_search_text();
 
 	if (is_whole_words())
 		flags |= TextEdit::SEARCH_WHOLE_WORDS;
@@ -370,38 +419,54 @@ void FindReplaceBar::_hide_bar() {
 	text_edit->set_search_text("");
 	result_line = -1;
 	result_col = -1;
-	set_error("");
 	hide();
 }
 
-void FindReplaceBar::_show_search() {
+void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 
 	show();
-	search_text->call_deferred("grab_focus");
+	if (p_show_only)
+		return;
+
+	if (p_focus_replace) {
+		search_text->deselect();
+		replace_text->call_deferred("grab_focus");
+	} else {
+		replace_text->deselect();
+		search_text->call_deferred("grab_focus");
+	}
 
 	if (text_edit->is_selection_active() && !selection_only->is_pressed()) {
 		search_text->set_text(text_edit->get_selection_text());
 	}
 
 	if (!get_search_text().empty()) {
-		search_text->select_all();
-		search_text->set_cursor_position(search_text->get_text().length());
-		search_current();
+		if (p_focus_replace) {
+			replace_text->select_all();
+			replace_text->set_cursor_position(replace_text->get_text().length());
+		} else {
+			search_text->select_all();
+			search_text->set_cursor_position(search_text->get_text().length());
+		}
+
+		results_count = -1;
+		_update_results_count();
+		_update_matches_label();
 	}
 }
 
-void FindReplaceBar::popup_search() {
+void FindReplaceBar::popup_search(bool p_show_only) {
 
-	replace_text->hide();
+	if (!is_visible())
+		replace_text->hide();
 	hbc_button_replace->hide();
 	hbc_option_replace->hide();
-	_show_search();
+	_show_search(false, p_show_only);
 }
 
 void FindReplaceBar::popup_replace() {
 
 	if (!replace_text->is_visible_in_tree()) {
-		replace_text->clear();
 		replace_text->show();
 		hbc_button_replace->show();
 		hbc_option_replace->show();
@@ -409,16 +474,18 @@ void FindReplaceBar::popup_replace() {
 
 	selection_only->set_pressed((text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line()));
 
-	_show_search();
+	_show_search(is_visible() || text_edit->is_selection_active());
 }
 
 void FindReplaceBar::_search_options_changed(bool p_pressed) {
 
+	results_count = -1;
 	search_current();
 }
 
 void FindReplaceBar::_editor_text_changed() {
 
+	results_count = -1;
 	if (is_visible_in_tree()) {
 		preserve_cursor = true;
 		search_current();
@@ -428,6 +495,7 @@ void FindReplaceBar::_editor_text_changed() {
 
 void FindReplaceBar::_search_text_changed(const String &p_text) {
 
+	results_count = -1;
 	search_current();
 }
 
@@ -480,6 +548,7 @@ void FindReplaceBar::set_error(const String &p_label) {
 
 void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
+	results_count = -1;
 	text_edit = p_text_edit;
 	text_edit->connect("text_changed", this, "_editor_text_changed");
 }
@@ -506,11 +575,13 @@ void FindReplaceBar::_bind_methods() {
 
 FindReplaceBar::FindReplaceBar() {
 
+	results_count = -1;
 	replace_all_mode = false;
 	preserve_cursor = false;
 
 	vbc_lineedit = memnew(VBoxContainer);
 	add_child(vbc_lineedit);
+	vbc_lineedit->set_alignment(ALIGN_CENTER);
 	vbc_lineedit->set_h_size_flags(SIZE_EXPAND_FILL);
 	VBoxContainer *vbc_button = memnew(VBoxContainer);
 	add_child(vbc_button);
@@ -519,8 +590,10 @@ FindReplaceBar::FindReplaceBar() {
 
 	HBoxContainer *hbc_button_search = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_search);
+	hbc_button_search->set_alignment(ALIGN_END);
 	hbc_button_replace = memnew(HBoxContainer);
 	vbc_button->add_child(hbc_button_replace);
+	hbc_button_replace->set_alignment(ALIGN_END);
 
 	HBoxContainer *hbc_option_search = memnew(HBoxContainer);
 	vbc_option->add_child(hbc_option_search);
@@ -533,6 +606,10 @@ FindReplaceBar::FindReplaceBar() {
 	search_text->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
+
+	matches_label = memnew(Label);
+	hbc_button_search->add_child(matches_label);
+	matches_label->hide();
 
 	find_prev = memnew(ToolButton);
 	hbc_button_search->add_child(find_prev);
@@ -586,6 +663,26 @@ FindReplaceBar::FindReplaceBar() {
 }
 
 /*** CODE EDITOR ****/
+
+// This function should be used to handle shortcuts that could otherwise
+// be handled too late if they weren't handled here.
+void CodeTextEditor::_input(const Ref<InputEvent> &event) {
+
+	const Ref<InputEventKey> key_event = event;
+	if (!key_event.is_valid() || !key_event->is_pressed())
+		return;
+
+	if (ED_IS_SHORTCUT("script_text_editor/move_up", key_event)) {
+		move_lines_up();
+		accept_event();
+		return;
+	}
+	if (ED_IS_SHORTCUT("script_text_editor/move_down", key_event)) {
+		move_lines_down();
+		accept_event();
+		return;
+	}
+}
 
 void CodeTextEditor::_text_editor_gui_input(const Ref<InputEvent> &p_event) {
 
@@ -702,7 +799,7 @@ void CodeTextEditor::_code_complete_timer_timeout() {
 
 void CodeTextEditor::_complete_request() {
 
-	List<String> entries;
+	List<ScriptCodeCompletionOption> entries;
 	String ctext = text_editor->get_text_for_completion();
 	_code_complete_script(ctext, &entries);
 	bool forced = false;
@@ -711,15 +808,55 @@ void CodeTextEditor::_complete_request() {
 	}
 	if (entries.size() == 0)
 		return;
-	Vector<String> strs;
-	strs.resize(entries.size());
-	int i = 0;
-	for (List<String>::Element *E = entries.front(); E; E = E->next()) {
 
-		strs.write[i++] = E->get();
+	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
+		E->get().icon = _get_completion_icon(E->get());
 	}
+	text_editor->code_complete(entries, forced);
+}
 
-	text_editor->code_complete(strs, forced);
+Ref<Texture> CodeTextEditor::_get_completion_icon(const ScriptCodeCompletionOption &p_option) {
+	Ref<Texture> tex;
+	switch (p_option.kind) {
+		case ScriptCodeCompletionOption::KIND_CLASS: {
+			if (has_icon(p_option.display, "EditorIcons")) {
+				tex = get_icon(p_option.display, "EditorIcons");
+			} else {
+				tex = get_icon("Object", "EditorIcons");
+			}
+		} break;
+		case ScriptCodeCompletionOption::KIND_ENUM:
+			tex = get_icon("Enum", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_FILE_PATH:
+			tex = get_icon("File", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_NODE_PATH:
+			tex = get_icon("NodePath", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_VARIABLE:
+			tex = get_icon("Variant", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_CONSTANT:
+			tex = get_icon("MemberConstant", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_MEMBER:
+			tex = get_icon("MemberProperty", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_SIGNAL:
+			tex = get_icon("MemberSignal", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_FUNCTION:
+			tex = get_icon("MemberMethod", "EditorIcons");
+			break;
+		case ScriptCodeCompletionOption::KIND_PLAIN_TEXT:
+			tex = get_icon("CubeMesh", "EditorIcons");
+			break;
+		default:
+			tex = get_icon("String", "EditorIcons");
+			break;
+	}
+	return tex;
 }
 
 void CodeTextEditor::_font_resize_timeout() {
@@ -1197,6 +1334,11 @@ void CodeTextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
 	text_editor->select(p_line, p_begin, p_line, p_end);
 }
 
+void CodeTextEditor::goto_line_centered(int p_line) {
+	goto_line(p_line);
+	text_editor->call_deferred("center_viewport_to_cursor");
+}
+
 void CodeTextEditor::set_executing_line(int p_line) {
 	text_editor->set_executing_line(p_line);
 }
@@ -1316,23 +1458,26 @@ void CodeTextEditor::_on_settings_change() {
 
 	// AUTO BRACE COMPLETION
 	text_editor->set_auto_brace_completion(
-			EDITOR_DEF("text_editor/completion/auto_brace_complete", true));
+			EDITOR_GET("text_editor/completion/auto_brace_complete"));
 
 	code_complete_timer->set_wait_time(
-			EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
+			EDITOR_GET("text_editor/completion/code_complete_delay"));
 
 	// call hint settings
 	text_editor->set_callhint_settings(
-			EDITOR_DEF("text_editor/completion/put_callhint_tooltip_below_current_line", true),
-			EDITOR_DEF("text_editor/completion/callhint_tooltip_offset", Vector2()));
+			EDITOR_GET("text_editor/completion/put_callhint_tooltip_below_current_line"),
+			EDITOR_GET("text_editor/completion/callhint_tooltip_offset"));
 
-	idle->set_wait_time(EDITOR_DEF("text_editor/completion/idle_parse_delay", 2.0));
+	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 }
 
 void CodeTextEditor::_text_changed_idle_timeout() {
-
 	_validate_script();
 	emit_signal("validate_script");
+}
+
+void CodeTextEditor::validate_script() {
+	idle->start();
 }
 
 void CodeTextEditor::_warning_label_gui_input(const Ref<InputEvent> &p_event) {
@@ -1371,6 +1516,9 @@ void CodeTextEditor::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			warning_button->set_icon(get_icon("NodeWarning", "EditorIcons"));
 			add_constant_override("separation", 4 * EDSCALE);
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			set_process_input(is_visible_in_tree());
 		} break;
 		default:
 			break;
@@ -1451,6 +1599,7 @@ void CodeTextEditor::remove_all_bookmarks() {
 
 void CodeTextEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_input"), &CodeTextEditor::_input);
 	ClassDB::bind_method("_text_editor_gui_input", &CodeTextEditor::_text_editor_gui_input);
 	ClassDB::bind_method("_line_col_changed", &CodeTextEditor::_line_col_changed);
 	ClassDB::bind_method("_text_changed", &CodeTextEditor::_text_changed);
@@ -1505,12 +1654,12 @@ CodeTextEditor::CodeTextEditor() {
 	idle = memnew(Timer);
 	add_child(idle);
 	idle->set_one_shot(true);
-	idle->set_wait_time(EDITOR_DEF("text_editor/completion/idle_parse_delay", 2.0));
+	idle->set_wait_time(EDITOR_GET("text_editor/completion/idle_parse_delay"));
 
 	code_complete_timer = memnew(Timer);
 	add_child(code_complete_timer);
 	code_complete_timer->set_one_shot(true);
-	code_complete_timer->set_wait_time(EDITOR_DEF("text_editor/completion/code_complete_delay", .3f));
+	code_complete_timer->set_wait_time(EDITOR_GET("text_editor/completion/code_complete_delay"));
 
 	error_line = 0;
 	error_column = 0;

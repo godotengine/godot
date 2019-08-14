@@ -101,7 +101,6 @@ void JoypadLinux::joy_thread_func(void *p_user) {
 		JoypadLinux *joy = (JoypadLinux *)p_user;
 		joy->run_joypad_thread();
 	}
-	return;
 }
 
 void JoypadLinux::run_joypad_thread() {
@@ -414,7 +413,9 @@ void JoypadLinux::joypad_vibration_start(int p_id, float p_weak_magnitude, float
 	play.type = EV_FF;
 	play.code = effect.id;
 	play.value = 1;
-	write(joy.fd, (const void *)&play, sizeof(play));
+	if (write(joy.fd, (const void *)&play, sizeof(play)) == -1) {
+		print_verbose("Couldn't write to Joypad device.");
+	}
 
 	joy.ff_effect_id = effect.id;
 	joy.ff_effect_timestamp = p_timestamp;
@@ -512,6 +513,8 @@ void JoypadLinux::process_joypads() {
 								break;
 
 							default:
+								if (ev.code >= MAX_ABS)
+									return;
 								if (joy->abs_map[ev.code] != -1 && joy->abs_info[ev.code]) {
 									InputDefault::JoyAxis value = axis_correct(joy->abs_info[ev.code], ev.value);
 									joy->curr_axis[joy->abs_map[ev.code]] = value;

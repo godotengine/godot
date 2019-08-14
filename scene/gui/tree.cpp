@@ -572,13 +572,6 @@ int TreeItem::get_button_by_id(int p_column, int p_id) const {
 	return -1;
 }
 
-bool TreeItem::is_button_disabled(int p_column, int p_idx) const {
-
-	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
-	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), false);
-
-	return cells[p_column].buttons[p_idx].disabled;
-}
 void TreeItem::set_button(int p_column, int p_idx, const Ref<Texture> &p_button) {
 
 	ERR_FAIL_COND(p_button.is_null());
@@ -594,6 +587,23 @@ void TreeItem::set_button_color(int p_column, int p_idx, const Color &p_color) {
 	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
 	cells.write[p_column].buttons.write[p_idx].color = p_color;
 	_changed_notify(p_column);
+}
+
+void TreeItem::set_button_disabled(int p_column, int p_idx, bool p_disabled) {
+
+	ERR_FAIL_INDEX(p_column, cells.size());
+	ERR_FAIL_INDEX(p_idx, cells[p_column].buttons.size());
+
+	cells.write[p_column].buttons.write[p_idx].disabled = p_disabled;
+	_changed_notify(p_column);
+}
+
+bool TreeItem::is_button_disabled(int p_column, int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_column, cells.size(), false);
+	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), false);
+
+	return cells[p_column].buttons[p_idx].disabled;
 }
 
 void TreeItem::set_editable(int p_column, bool p_editable) {
@@ -785,6 +795,7 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);
+	ClassDB::bind_method(D_METHOD("set_button_disabled", "column", "button_idx", "disabled"), &TreeItem::set_button_disabled);
 	ClassDB::bind_method(D_METHOD("is_button_disabled", "column", "button_idx"), &TreeItem::is_button_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_expand_right", "column", "enable"), &TreeItem::set_expand_right);
@@ -1128,6 +1139,8 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 			for (int j = p_item->cells[i].buttons.size() - 1; j >= 0; j--) {
 				Ref<Texture> b = p_item->cells[i].buttons[j].texture;
 				Size2 s = b->get_size() + cache.button_pressed->get_minimum_size();
+				if (s.height < label_h)
+					s.height = label_h;
 
 				Point2i o = Point2i(ofs + w - s.width, p_pos.y) - cache.offset + p_draw_ofs;
 
@@ -1302,7 +1315,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 						Ref<Texture> updown = cache.updown;
 
-						String valtext = String::num(p_item->cells[i].val, Math::step_decimals(p_item->cells[i].step));
+						String valtext = String::num(p_item->cells[i].val, Math::range_step_decimals(p_item->cells[i].step));
 						//String valtext = rtos( p_item->cells[i].val );
 
 						if (p_item->cells[i].suffix != String())
@@ -1913,7 +1926,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 					} else {
 
-						editor_text = String::num(p_item->cells[col].val, Math::step_decimals(p_item->cells[col].step));
+						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
 						if (select_mode == SELECT_MULTI && get_tree()->get_event_count() == focus_in_id)
 							bring_up_editor = false;
 					}
@@ -1928,8 +1941,6 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 				edited_item = p_item;
 				edited_col = col;
 				bool on_arrow = x > col_width - cache.select_arrow->get_width();
-
-				bring_up_editor = false;
 
 				custom_popup_rect = Rect2i(get_global_position() + Point2i(col_ofs, _get_title_button_height() + y_ofs + item_h - cache.offset.y), Size2(get_column_width(col), item_h));
 
@@ -2689,12 +2700,10 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 bool Tree::edit_selected() {
 
 	TreeItem *s = get_selected();
-	ERR_EXPLAIN("No item selected!");
-	ERR_FAIL_COND_V(!s, false);
+	ERR_FAIL_COND_V_MSG(!s, false, "No item selected.");
 	ensure_cursor_is_visible();
 	int col = get_selected_column();
-	ERR_EXPLAIN("No item column selected!");
-	ERR_FAIL_INDEX_V(col, columns.size(), false);
+	ERR_FAIL_INDEX_V_MSG(col, columns.size(), false, "No item column selected.");
 
 	if (!s->cells[col].editable)
 		return false;
@@ -2744,7 +2753,7 @@ bool Tree::edit_selected() {
 		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
-		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::step_decimals(c.step)));
+		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE) {
@@ -2910,8 +2919,6 @@ void Tree::_notification(int p_what) {
 					drag_touching = false;
 					drag_touching_deaccel = false;
 				}
-
-			} else {
 			}
 		}
 
@@ -3163,10 +3170,7 @@ bool Tree::is_anything_selected() {
 
 void Tree::clear() {
 
-	if (blocked > 0) {
-
-		ERR_FAIL_COND(blocked > 0);
-	}
+	ERR_FAIL_COND(blocked > 0);
 
 	if (pressing_for_editor) {
 		if (range_drag_enabled) {

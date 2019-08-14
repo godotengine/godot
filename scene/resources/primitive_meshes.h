@@ -269,7 +269,7 @@ public:
 
 class QuadMesh : public PrimitiveMesh {
 
-	GDCLASS(QuadMesh, PrimitiveMesh)
+	GDCLASS(QuadMesh, PrimitiveMesh);
 
 private:
 	Size2 size;
@@ -320,6 +320,21 @@ public:
 	bool get_is_hemisphere() const;
 
 	SphereMesh();
+};
+
+/**
+	A single point for use in particle systems
+*/
+
+class PointMesh : public PrimitiveMesh {
+
+	GDCLASS(PointMesh, PrimitiveMesh)
+
+protected:
+	virtual void _create_mesh_array(Array &p_arr) const;
+
+public:
+	PointMesh();
 };
 
 #endif

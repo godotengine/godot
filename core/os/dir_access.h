@@ -71,7 +71,6 @@ protected:
 
 public:
 	virtual Error list_dir_begin() = 0; ///< This starts dir listing
-	virtual String get_next(bool *p_is_dir); // compatibility
 	virtual String get_next() = 0;
 	virtual bool current_is_dir() const = 0;
 	virtual bool current_is_hidden() const = 0;
@@ -97,6 +96,18 @@ public:
 	virtual Error copy(String p_from, String p_to, int p_chmod_flags = -1);
 	virtual Error rename(String p_from, String p_to) = 0;
 	virtual Error remove(String p_name) = 0;
+
+	// Meant for editor code when we want to quickly remove a file without custom
+	// handling (e.g. removing a cache file).
+	static void remove_file_or_error(String p_path) {
+		DirAccess *da = create(ACCESS_FILESYSTEM);
+		if (da->file_exists(p_path)) {
+			if (da->remove(p_path) != OK) {
+				ERR_FAIL_MSG("Cannot remove file or directory: " + p_path);
+			}
+		}
+		memdelete(da);
+	}
 
 	virtual String get_filesystem_type() const = 0;
 	static String get_full_path(const String &p_path, AccessType p_access);

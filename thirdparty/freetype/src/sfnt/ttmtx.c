@@ -280,7 +280,7 @@
       else
       {
         table_pos += 4 * ( k - 1 );
-        if ( table_pos + 4 > table_end )
+        if ( table_pos + 2 > table_end )
           goto NoData;
 
         if ( FT_STREAM_SEEK( table_pos ) ||
@@ -292,7 +292,9 @@
           *abearing = 0;
         else
         {
-          if ( !FT_STREAM_SEEK( table_pos ) )
+          if ( FT_STREAM_SEEK( table_pos ) )
+            *abearing = 0;
+          else
             (void)FT_READ_SHORT( *abearing );
         }
       }

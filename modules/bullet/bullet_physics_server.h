@@ -45,7 +45,7 @@
 */
 
 class BulletPhysicsServer : public PhysicsServer {
-	GDCLASS(BulletPhysicsServer, PhysicsServer)
+	GDCLASS(BulletPhysicsServer, PhysicsServer);
 
 	friend class BulletPhysicsDirectSpaceState;
 

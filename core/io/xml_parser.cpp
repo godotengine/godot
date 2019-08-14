@@ -486,9 +486,7 @@ Error XMLParser::open(const String &p_path) {
 	Error err;
 	FileAccess *file = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err) {
-		ERR_FAIL_COND_V(err != OK, err);
-	}
+	ERR_FAIL_COND_V(err != OK, err);
 
 	length = file->get_len();
 	ERR_FAIL_COND_V(length < 1, ERR_FILE_CORRUPT);

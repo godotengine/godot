@@ -301,6 +301,10 @@ public:
 		virtual ~Access() {
 			_unref();
 		}
+
+		void release() {
+			_unref();
+		}
 	};
 
 	class Read : public Access {
@@ -411,8 +415,8 @@ public:
 			p_to = size() + p_to;
 		}
 
-		CRASH_BAD_INDEX(p_from, size());
-		CRASH_BAD_INDEX(p_to, size());
+		ERR_FAIL_INDEX_V(p_from, size(), PoolVector<T>());
+		ERR_FAIL_INDEX_V(p_to, size(), PoolVector<T>());
 
 		PoolVector<T> slice;
 		int span = 1 + p_to - p_from;
@@ -454,7 +458,7 @@ public:
 
 	bool is_locked() const { return alloc && alloc->lock > 0; }
 
-	inline const T operator[](int p_index) const;
+	inline T operator[](int p_index) const;
 
 	Error resize(int p_size);
 
@@ -484,9 +488,7 @@ T PoolVector<T>::get(int p_index) const {
 template <class T>
 void PoolVector<T>::set(int p_index, const T &p_val) {
 
-	if (p_index < 0 || p_index >= size()) {
-		ERR_FAIL_COND(p_index < 0 || p_index >= size());
-	}
+	ERR_FAIL_INDEX(p_index, size());
 
 	Write w = write();
 	w[p_index] = p_val;
@@ -500,7 +502,7 @@ void PoolVector<T>::push_back(const T &p_val) {
 }
 
 template <class T>
-const T PoolVector<T>::operator[](int p_index) const {
+T PoolVector<T>::operator[](int p_index) const {
 
 	CRASH_BAD_INDEX(p_index, size());
 
@@ -510,6 +512,8 @@ const T PoolVector<T>::operator[](int p_index) const {
 
 template <class T>
 Error PoolVector<T>::resize(int p_size) {
+
+	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
 	if (alloc == NULL) {
 

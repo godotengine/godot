@@ -5,6 +5,17 @@
 	</brief_description>
 	<description>
 		Provides UPNP functionality to discover [UPNPDevice]s on the local network and execute commands on them, like managing port mappings (port forwarding) and querying the local and remote network IP address. Note that methods on this class are synchronous and block the calling thread.
+		To forward a specific port:
+		[codeblock]
+		const PORT = 7777
+		var upnp = UPNP.new()
+		upnp.discover(2000, 2, "InternetGatewayDevice")
+		upnp.add_port_mapping(port)
+		[/codeblock]
+		To close a specific port (e.g. after you have finished using it):
+		[codeblock]
+		upnp.delete_port_mapping(port)
+		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
@@ -123,13 +134,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="discover_ipv6" type="bool" setter="set_discover_ipv6" getter="is_discover_ipv6">
+		<member name="discover_ipv6" type="bool" setter="set_discover_ipv6" getter="is_discover_ipv6" default="false">
 			If [code]true[/code], IPv6 is used for [UPNPDevice] discovery.
 		</member>
-		<member name="discover_local_port" type="int" setter="set_discover_local_port" getter="get_discover_local_port">
+		<member name="discover_local_port" type="int" setter="set_discover_local_port" getter="get_discover_local_port" default="0">
 			If [code]0[/code], the local port to use for discovery is chosen automatically by the system. If [code]1[/code], discovery will be done from the source port 1900 (same as destination port). Otherwise, the value will be used as the port.
 		</member>
-		<member name="discover_multicast_if" type="String" setter="set_discover_multicast_if" getter="get_discover_multicast_if">
+		<member name="discover_multicast_if" type="String" setter="set_discover_multicast_if" getter="get_discover_multicast_if" default="&quot;&quot;">
 			Multicast interface to use for discovery. Uses the default multicast interface if empty.
 		</member>
 	</members>
@@ -171,7 +182,7 @@
 			No port maps are available. May also be returned if port mapping functionality is not available.
 		</constant>
 		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MECHANISM" value="12" enum="UPNPResult">
-			Conflict with other mechanism. May be returned instead of [code]UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING[/code] if a port mapping conflicts with an existing one.
+			Conflict with other mechanism. May be returned instead of [constant UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING] if a port mapping conflicts with an existing one.
 		</constant>
 		<constant name="UPNP_RESULT_CONFLICT_WITH_OTHER_MAPPING" value="13" enum="UPNPResult">
 			Conflict with an existing port mapping.

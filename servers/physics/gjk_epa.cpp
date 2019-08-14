@@ -722,7 +722,10 @@ struct	GJK
 					append(m_stock,face);
 					return(0);
 				}
-				m_status=m_stock.root?eStatus::OutOfVertices:eStatus::OutOfFaces;
+				// -- GODOT start --
+				//m_status=m_stock.root?eStatus::OutOfVertices:eStatus::OutOfFaces;
+				m_status=eStatus::OutOfFaces;
+				// -- GODOT end --
 				return(0);
 			}
 			sFace*				findbest()

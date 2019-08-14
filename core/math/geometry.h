@@ -455,16 +455,15 @@ public:
 
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		if (d <= 0.0)
 			return p_segment[0]; // before first point
-		else if (d >= l)
+		else if (d >= 1.0)
 			return p_segment[1]; // after first point
 		else
 			return p_segment[0] + n * d; // inside
@@ -474,12 +473,11 @@ public:
 
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		return p_segment[0] + n * d; // inside
 	}
@@ -488,16 +486,15 @@ public:
 
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		if (d <= 0.0)
 			return p_segment[0]; // before first point
-		else if (d >= l)
+		else if (d >= 1.0)
 			return p_segment[1]; // after first point
 		else
 			return p_segment[0] + n * d; // inside
@@ -521,12 +518,11 @@ public:
 
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		return p_segment[0] + n * d; // inside
 	}

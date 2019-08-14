@@ -174,10 +174,10 @@
    *   reallocation fails.
    */
   FT_LOCAL_DEF( FT_Error )
-  ps_table_add( PS_Table  table,
-                FT_Int    idx,
-                void*     object,
-                FT_UInt   length )
+  ps_table_add( PS_Table     table,
+                FT_Int       idx,
+                const void*  object,
+                FT_UInt      length )
   {
     if ( idx < 0 || idx >= table->max_elems )
     {

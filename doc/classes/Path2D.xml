@@ -4,8 +4,8 @@
 		Contains a [Curve2D] path for [PathFollow2D] nodes to follow.
 	</brief_description>
 	<description>
-		Can have [PathFollow2D] child-nodes moving along the [Curve2D]. See [PathFollow2D] for more information on this usage.
-		Note that the path is considered as relative to the moved nodes (children of [PathFollow2D]) - usually the curve should start with a zero vector (0, 0).
+		Can have [PathFollow2D] child nodes moving along the [Curve2D]. See [PathFollow2D] for more information on usage.
+		[b]Note:[/b] The path is considered as relative to the moved nodes (children of [PathFollow2D]). As such, the curve should usually start with a zero vector ([code](0, 0)[/code]).
 	</description>
 	<tutorials>
 	</tutorials>

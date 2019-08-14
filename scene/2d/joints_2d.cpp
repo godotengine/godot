@@ -61,9 +61,7 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (!body_a || !body_b)
 		return;
 
-	if (!body_a) {
-		SWAP(body_a, body_b);
-	}
+	SWAP(body_a, body_b);
 
 	joint = _configure_joint(body_a, body_b);
 

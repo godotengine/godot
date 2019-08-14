@@ -38,6 +38,7 @@
 #include "editor/editor_plugin.h"
 #include "editor/script_create_dialog.h"
 #include "scene/gui/item_list.h"
+#include "scene/gui/line_edit.h"
 #include "scene/gui/menu_button.h"
 #include "scene/gui/split_container.h"
 #include "scene/gui/tab_container.h"
@@ -49,7 +50,7 @@
 
 class ScriptEditorQuickOpen : public ConfirmationDialog {
 
-	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog)
+	GDCLASS(ScriptEditorQuickOpen, ConfirmationDialog);
 
 	LineEdit *search_box;
 	Tree *search_options;
@@ -76,7 +77,7 @@ class ScriptEditorDebugger;
 
 class ScriptEditorBase : public VBoxContainer {
 
-	GDCLASS(ScriptEditorBase, VBoxContainer)
+	GDCLASS(ScriptEditorBase, VBoxContainer);
 
 protected:
 	static void _bind_methods();
@@ -117,6 +118,8 @@ public:
 	virtual Control *get_edit_menu() = 0;
 	virtual void clear_edit_menu() = 0;
 
+	virtual void validate() = 0;
+
 	ScriptEditorBase() {}
 };
 
@@ -136,6 +139,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_NEW,
 		FILE_NEW_TEXTFILE,
 		FILE_OPEN,
+		FILE_REOPEN_CLOSED,
 		FILE_OPEN_RECENT,
 		FILE_SAVE,
 		FILE_SAVE_AS,
@@ -211,6 +215,9 @@ class ScriptEditor : public PanelContainer {
 	ItemList *script_list;
 	HSplitContainer *script_split;
 	ItemList *members_overview;
+	LineEdit *filter_scripts;
+	LineEdit *filter_methods;
+	VBoxContainer *scripts_vbox;
 	VBoxContainer *overview_vbox;
 	HBoxContainer *buttons_hbox;
 	Label *filename;
@@ -259,7 +266,7 @@ class ScriptEditor : public PanelContainer {
 	Vector<ScriptHistory> history;
 	int history_pos;
 
-	Vector<String> previous_scripts;
+	List<String> previous_scripts;
 
 	void _tab_changed(int p_which);
 	void _menu_option(int p_option);
@@ -339,6 +346,8 @@ class ScriptEditor : public PanelContainer {
 	void _update_members_overview_visibility();
 	void _update_members_overview();
 	void _toggle_members_overview_alpha_sort(bool p_alphabetic_sort);
+	void _filter_scripts_text_changed(const String &p_newtext);
+	void _filter_methods_text_changed(const String &p_newtext);
 	void _update_script_names();
 	void _update_script_connections();
 	bool _sort_list_on_update;

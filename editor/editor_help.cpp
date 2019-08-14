@@ -48,9 +48,9 @@ void EditorHelp::_init_colors() {
 	text_color = get_color("default_color", "RichTextLabel");
 	headline_color = get_color("headline_color", "EditorHelp");
 	base_type_color = title_color.linear_interpolate(text_color, 0.5);
-	comment_color = text_color * Color(1, 1, 1, 0.6);
+	comment_color = text_color * Color(1, 1, 1, 0.4);
 	symbol_color = comment_color;
-	value_color = text_color * Color(1, 1, 1, 0.4);
+	value_color = text_color * Color(1, 1, 1, 0.6);
 	qualifier_color = text_color * Color(1, 1, 1, 0.8);
 	type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
 	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
@@ -258,9 +258,11 @@ void EditorHelp::_add_method(const DocData::MethodDoc &p_method, bool p_overview
 		if (p_method.arguments[j].default_value != "") {
 
 			class_desc->push_color(symbol_color);
-			class_desc->add_text("=");
+			class_desc->add_text(" = ");
 			class_desc->pop();
+			class_desc->push_color(value_color);
 			_add_text(_fix_constant(p_method.arguments[j].default_value));
+			class_desc->pop();
 		}
 
 		class_desc->pop();
@@ -389,7 +391,6 @@ void EditorHelp::_update_doc() {
 				if (prev) {
 
 					class_desc->add_text(" , ");
-					prev = false;
 				}
 
 				_add_type(E->get().name);
@@ -416,6 +417,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 
 		class_desc->add_newline();
+		class_desc->add_newline();
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
 		class_desc->push_indent(1);
@@ -441,6 +443,8 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->add_newline();
+		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
 		class_desc->set_table_column_expand(1, 1);
@@ -470,13 +474,15 @@ void EditorHelp::_update_doc() {
 			if (cd.properties[i].description != "") {
 				describe = true;
 			}
+
 			class_desc->push_cell();
+			class_desc->push_font(doc_code_font);
+			class_desc->push_color(headline_color);
+
 			if (describe) {
 				class_desc->push_meta("@member " + cd.properties[i].name);
 			}
 
-			class_desc->push_font(doc_code_font);
-			class_desc->push_color(headline_color);
 			_add_text(cd.properties[i].name);
 
 			if (describe) {
@@ -484,13 +490,27 @@ void EditorHelp::_update_doc() {
 				property_descr = true;
 			}
 
+			if (cd.properties[i].default_value != "") {
+				class_desc->push_color(symbol_color);
+				class_desc->add_text(" [default: ");
+				class_desc->pop();
+				class_desc->push_color(value_color);
+				_add_text(_fix_constant(cd.properties[i].default_value));
+				class_desc->pop();
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("]");
+				class_desc->pop();
+			}
+
 			class_desc->pop();
 			class_desc->pop();
+
 			class_desc->pop();
 		}
 
 		class_desc->pop(); //table
 		class_desc->pop();
+		class_desc->pop(); // font
 		class_desc->add_newline();
 		class_desc->add_newline();
 	}
@@ -519,6 +539,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->add_newline();
 		class_desc->push_font(doc_code_font);
 		class_desc->push_indent(1);
 		class_desc->push_table(2);
@@ -540,7 +561,6 @@ void EditorHelp::_update_doc() {
 				class_desc->pop(); //cell
 				class_desc->push_cell();
 				class_desc->pop(); //cell
-				any_previous = false;
 			}
 
 			String group_prefix;
@@ -611,6 +631,19 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(headline_color);
 			_add_text(cd.theme_properties[i].name);
 			class_desc->pop();
+
+			if (cd.theme_properties[i].default_value != "") {
+				class_desc->push_color(symbol_color);
+				class_desc->add_text(" [default: ");
+				class_desc->pop();
+				class_desc->push_color(value_color);
+				_add_text(_fix_constant(cd.theme_properties[i].default_value));
+				class_desc->pop();
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("]");
+				class_desc->pop();
+			}
+
 			class_desc->pop();
 
 			if (cd.theme_properties[i].description != "") {
@@ -669,7 +702,7 @@ void EditorHelp::_update_doc() {
 				if (cd.signals[i].arguments[j].default_value != "") {
 
 					class_desc->push_color(symbol_color);
-					class_desc->add_text("=");
+					class_desc->add_text(" = ");
 					class_desc->pop();
 					_add_text(cd.signals[i].arguments[j].default_value);
 				}
@@ -775,7 +808,7 @@ void EditorHelp::_update_doc() {
 					class_desc->add_text(" = ");
 					class_desc->pop();
 					class_desc->push_color(value_color);
-					_add_text(enum_list[i].value);
+					_add_text(_fix_constant(enum_list[i].value));
 					class_desc->pop();
 					class_desc->pop();
 					if (enum_list[i].description != "") {
@@ -841,7 +874,7 @@ void EditorHelp::_update_doc() {
 				class_desc->add_text(" = ");
 				class_desc->pop();
 				class_desc->push_color(value_color);
-				_add_text(constants[i].value);
+				_add_text(_fix_constant(constants[i].value));
 				class_desc->pop();
 
 				class_desc->pop();
@@ -875,6 +908,7 @@ void EditorHelp::_update_doc() {
 		class_desc->pop();
 		class_desc->pop();
 
+		class_desc->add_newline();
 		class_desc->add_newline();
 		class_desc->push_color(text_color);
 		class_desc->push_font(doc_font);
@@ -960,6 +994,21 @@ void EditorHelp::_update_doc() {
 			class_desc->push_color(headline_color);
 			_add_text(cd.properties[i].name);
 			class_desc->pop(); // color
+
+			if (cd.properties[i].default_value != "") {
+				class_desc->push_color(symbol_color);
+				class_desc->add_text(" [default: ");
+				class_desc->pop(); // color
+
+				class_desc->push_color(value_color);
+				_add_text(_fix_constant(cd.properties[i].default_value));
+				class_desc->pop(); // color
+
+				class_desc->push_color(symbol_color);
+				class_desc->add_text("]");
+				class_desc->pop(); // color
+			}
+
 			class_desc->pop(); // font
 			class_desc->pop(); // cell
 
@@ -999,6 +1048,7 @@ void EditorHelp::_update_doc() {
 
 			class_desc->pop(); // table
 
+			class_desc->add_newline();
 			class_desc->add_newline();
 
 			class_desc->push_color(text_color);
@@ -1042,6 +1092,8 @@ void EditorHelp::_update_doc() {
 			class_desc->pop();
 
 			class_desc->add_newline();
+			class_desc->add_newline();
+
 			class_desc->push_color(text_color);
 			class_desc->push_font(doc_font);
 			class_desc->push_indent(1);
@@ -1284,7 +1336,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 				end = bbcode.length();
 			String image = bbcode.substr(brk_end + 1, end - brk_end - 1);
 
-			Ref<Texture> texture = ResourceLoader::load(base_path + "/" + image, "Texture");
+			Ref<Texture> texture = ResourceLoader::load(base_path.plus_file(image), "Texture");
 			if (texture.is_valid())
 				p_rt->add_image(texture);
 
@@ -1298,39 +1350,39 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 			if (col.begins_with("#"))
 				color = Color::html(col);
 			else if (col == "aqua")
-				color = Color::html("#00FFFF");
+				color = Color(0, 1, 1);
 			else if (col == "black")
-				color = Color::html("#000000");
+				color = Color(0, 0, 0);
 			else if (col == "blue")
-				color = Color::html("#0000FF");
+				color = Color(0, 0, 1);
 			else if (col == "fuchsia")
-				color = Color::html("#FF00FF");
+				color = Color(1, 0, 1);
 			else if (col == "gray" || col == "grey")
-				color = Color::html("#808080");
+				color = Color(0.5, 0.5, 0.5);
 			else if (col == "green")
-				color = Color::html("#008000");
+				color = Color(0, 0.5, 0);
 			else if (col == "lime")
-				color = Color::html("#00FF00");
+				color = Color(0, 1, 0);
 			else if (col == "maroon")
-				color = Color::html("#800000");
+				color = Color(0.5, 0, 0);
 			else if (col == "navy")
-				color = Color::html("#000080");
+				color = Color(0, 0, 0.5);
 			else if (col == "olive")
-				color = Color::html("#808000");
+				color = Color(0.5, 0.5, 0);
 			else if (col == "purple")
-				color = Color::html("#800080");
+				color = Color(0.5, 0, 0.5);
 			else if (col == "red")
-				color = Color::html("#FF0000");
+				color = Color(1, 0, 0);
 			else if (col == "silver")
-				color = Color::html("#C0C0C0");
+				color = Color(0.75, 0.75, 0.75);
 			else if (col == "teal")
-				color = Color::html("#008008");
+				color = Color(0, 0.5, 0.5);
 			else if (col == "white")
-				color = Color::html("#FFFFFF");
+				color = Color(1, 1, 1);
 			else if (col == "yellow")
-				color = Color::html("#FFFF00");
+				color = Color(1, 1, 0);
 			else
-				color = Color(0, 0, 0, 1); //base_color;
+				color = Color(0, 0, 0); //base_color;
 
 			p_rt->push_color(color);
 			pos = brk_end + 1;
@@ -1340,7 +1392,7 @@ static void _add_text_to_rt(const String &p_bbcode, RichTextLabel *p_rt) {
 
 			String fnt = tag.substr(5, tag.length());
 
-			Ref<Font> font = ResourceLoader::load(base_path + "/" + fnt, "Font");
+			Ref<Font> font = ResourceLoader::load(base_path.plus_file(fnt), "Font");
 			if (font.is_valid())
 				p_rt->push_font(font);
 			else {
@@ -1375,11 +1427,10 @@ void EditorHelp::generate_doc() {
 void EditorHelp::_notification(int p_what) {
 
 	switch (p_what) {
-
 		case NOTIFICATION_READY:
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-			_update_doc();
 
+			_update_doc();
 		} break;
 		default: break;
 	}
@@ -1521,7 +1572,6 @@ void EditorHelpBit::_notification(int p_what) {
 
 			rich_text->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
 		} break;
-
 		default: break;
 	}
 }
@@ -1551,6 +1601,10 @@ FindBar::FindBar() {
 	search_text->connect("text_changed", this, "_search_text_changed");
 	search_text->connect("text_entered", this, "_search_text_entered");
 
+	matches_label = memnew(Label);
+	add_child(matches_label);
+	matches_label->hide();
+
 	find_prev = memnew(ToolButton);
 	add_child(find_prev);
 	find_prev->set_focus_mode(FOCUS_NONE);
@@ -1561,9 +1615,9 @@ FindBar::FindBar() {
 	find_next->set_focus_mode(FOCUS_NONE);
 	find_next->connect("pressed", this, "_search_next");
 
-	error_label = memnew(Label);
-	add_child(error_label);
-	error_label->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+	Control *space = memnew(Control);
+	add_child(space);
+	space->set_custom_minimum_size(Size2(4, 0) * EDSCALE);
 
 	hide_button = memnew(TextureButton);
 	add_child(hide_button);
@@ -1593,25 +1647,21 @@ void FindBar::popup_search() {
 
 void FindBar::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_READY) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 
-		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
-		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
-		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+			find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
+			find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
+			hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
+			hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
+			hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
+			hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-		set_process_unhandled_input(is_visible_in_tree());
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
-
-		find_prev->set_icon(get_icon("MoveUp", "EditorIcons"));
-		find_next->set_icon(get_icon("MoveDown", "EditorIcons"));
-		hide_button->set_normal_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_hover_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_pressed_texture(get_icon("Close", "EditorIcons"));
-		hide_button->set_custom_minimum_size(hide_button->get_normal_texture()->get_size());
+			set_process_unhandled_input(is_visible_in_tree());
+		} break;
 	}
 }
 
@@ -1656,17 +1706,46 @@ bool FindBar::_search(bool p_search_previous) {
 	prev_search = stext;
 
 	if (ret) {
-		set_error("");
+		_update_results_count();
 	} else {
-		set_error(stext.empty() ? "" : TTR("No Matches"));
+		results_count = 0;
 	}
+	_update_matches_label();
 
 	return ret;
 }
 
-void FindBar::set_error(const String &p_label) {
+void FindBar::_update_results_count() {
 
-	error_label->set_text(p_label);
+	results_count = 0;
+
+	String searched = search_text->get_text();
+	if (searched.empty()) return;
+
+	String full_text = rich_text_label->get_text();
+
+	int from_pos = 0;
+
+	while (true) {
+		int pos = full_text.find(searched, from_pos);
+		if (pos == -1)
+			break;
+
+		results_count++;
+		from_pos = pos + searched.length();
+	}
+}
+
+void FindBar::_update_matches_label() {
+
+	if (search_text->get_text().empty() || results_count == -1) {
+		matches_label->hide();
+	} else {
+		matches_label->show();
+
+		matches_label->add_color_override("font_color", results_count > 0 ? Color(1, 1, 1) : EditorNode::get_singleton()->get_gui_base()->get_color("error_color", "Editor"));
+		matches_label->set_text(vformat(results_count == 1 ? TTR("%d match.") : TTR("%d matches."), results_count));
+	}
 }
 
 void FindBar::_hide_bar() {

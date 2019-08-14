@@ -479,7 +479,7 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 					connecting_color = gn->get_connection_input_color(j);
 					connecting_target = false;
 					connecting_to = pos;
-					just_disconnected = true;
+					just_disconnected = false;
 
 					return;
 				}
@@ -550,11 +550,18 @@ void GraphEdit::_top_layer_input(const Ref<InputEvent> &p_ev) {
 			emit_signal("connection_request", from, from_slot, to, to_slot);
 
 		} else if (!just_disconnected) {
+
 			String from = connecting_from;
 			int from_slot = connecting_index;
 			Vector2 ofs = Vector2(mb->get_position().x, mb->get_position().y);
-			emit_signal("connection_to_empty", from, from_slot, ofs);
+
+			if (!connecting_out) {
+				emit_signal("connection_from_empty", from, from_slot, ofs);
+			} else {
+				emit_signal("connection_to_empty", from, from_slot, ofs);
+			}
 		}
+
 		connecting = false;
 		top_layer->update();
 		update();
@@ -1023,14 +1030,28 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	Ref<InputEventKey> k = p_ev;
-	if (k.is_valid() && k->get_scancode() == KEY_D && k->is_pressed() && k->get_command()) {
-		emit_signal("duplicate_nodes_request");
-		accept_event();
-	}
 
-	if (k.is_valid() && k->get_scancode() == KEY_DELETE && k->is_pressed()) {
-		emit_signal("delete_nodes_request");
-		accept_event();
+	if (k.is_valid()) {
+
+		if (k->get_scancode() == KEY_D && k->is_pressed() && k->get_command()) {
+			emit_signal("duplicate_nodes_request");
+			accept_event();
+		}
+
+		if (k->get_scancode() == KEY_C && k->is_pressed() && k->get_command()) {
+			emit_signal("copy_nodes_request");
+			accept_event();
+		}
+
+		if (k->get_scancode() == KEY_V && k->is_pressed() && k->get_command()) {
+			emit_signal("paste_nodes_request");
+			accept_event();
+		}
+
+		if (k->get_scancode() == KEY_DELETE && k->is_pressed()) {
+			emit_signal("delete_nodes_request");
+			accept_event();
+		}
 	}
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
@@ -1290,8 +1311,11 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "position")));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
+	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
+	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
+	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("delete_nodes_request"));
 	ADD_SIGNAL(MethodInfo("_begin_node_move"));
 	ADD_SIGNAL(MethodInfo("_end_node_move"));

@@ -51,6 +51,7 @@ void Light::set_param(Param p_param, float p_value) {
 
 		if (p_param == PARAM_SPOT_ANGLE) {
 			_change_notify("spot_angle");
+			update_configuration_warning();
 		} else if (p_param == PARAM_RANGE) {
 			_change_notify("omni_range");
 			_change_notify("spot_range");
@@ -68,6 +69,10 @@ void Light::set_shadow(bool p_enable) {
 
 	shadow = p_enable;
 	VS::get_singleton()->light_set_shadow(light, p_enable);
+
+	if (type == VisualServer::LIGHT_SPOT) {
+		update_configuration_warning();
+	}
 }
 bool Light::has_shadow() const {
 
@@ -195,9 +200,6 @@ void Light::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_update_visibility();
 	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-	}
 }
 
 void Light::set_editor_only(bool p_editor_only) {
@@ -249,8 +251,8 @@ void Light::_bind_methods() {
 
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_ENERGY);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disable,Indirect,All"), "set_bake_mode", "get_bake_mode");
@@ -408,7 +410,7 @@ DirectionalLight::DirectionalLight() :
 
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
 	set_param(PARAM_SHADOW_BIAS, 0.1);
-	set_param(PARAM_SHADOW_MAX_DISTANCE, 200);
+	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
@@ -463,6 +465,20 @@ OmniLight::OmniLight() :
 
 	set_shadow_mode(SHADOW_CUBE);
 	set_shadow_detail(SHADOW_DETAIL_HORIZONTAL);
+}
+
+String SpotLight::get_configuration_warning() const {
+	String warning = Light::get_configuration_warning();
+
+	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+
+		warning += TTR("A SpotLight with an angle wider than 90 degrees cannot cast shadows.");
+	}
+
+	return warning;
 }
 
 void SpotLight::_bind_methods() {

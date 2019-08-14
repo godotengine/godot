@@ -506,6 +506,8 @@ bool Spatial::is_set_as_toplevel() const {
 Ref<World> Spatial::get_world() const {
 
 	ERR_FAIL_COND_V(!is_inside_world(), Ref<World>());
+	ERR_FAIL_COND_V(!data.viewport, Ref<World>());
+
 	return data.viewport->find_world();
 }
 
@@ -682,15 +684,8 @@ void Spatial::look_at(const Vector3 &p_target, const Vector3 &p_up) {
 
 void Spatial::look_at_from_position(const Vector3 &p_pos, const Vector3 &p_target, const Vector3 &p_up) {
 
-	if (p_pos == p_target) {
-		ERR_EXPLAIN("Node origin and target are in the same position, look_at() failed");
-		ERR_FAIL();
-	}
-
-	if (p_up.cross(p_target - p_pos) == Vector3()) {
-		ERR_EXPLAIN("Up vector and direction between node origin and target are aligned, look_at() failed");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(p_pos == p_target, "Node origin and target are in the same position, look_at() failed.");
+	ERR_FAIL_COND_MSG(p_up.cross(p_target - p_pos) == Vector3(), "Up vector and direction between node origin and target are aligned, look_at() failed.");
 
 	Transform lookat;
 	lookat.origin = p_pos;

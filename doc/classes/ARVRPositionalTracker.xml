@@ -1,12 +1,12 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="ARVRPositionalTracker" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		A tracked object
+		A tracked object.
 	</brief_description>
 	<description>
-		An instance of this object represents a device that is tracked such as a controller or anchor point. HMDs aren't represented here as they are fully handled internally.
-		As controllers are turned on and the AR/VR interface detects them instances of this object are automatically added to this list of active tracking objects accessible through the ARVRServer
-		The ARVRController and ARVRAnchor both consume objects of this type and should be the objects you use in game. The positional trackers are just the under the hood objects that make this all work and are mostly exposed so GDNative based interfaces can interact with them.
+		An instance of this object represents a device that is tracked, such as a controller or anchor point. HMDs aren't represented here as they are handled internally.
+		As controllers are turned on and the AR/VR interface detects them, instances of this object are automatically added to this list of active tracking objects accessible through the [ARVRServer].
+		The [ARVRController] and [ARVRAnchor] both consume objects of this type and should be used in your project. The positional trackers are just under-the-hood objects that make this all work. These are mostly exposed so that GDNative-based interfaces can interact with them.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -15,14 +15,14 @@
 			<return type="int" enum="ARVRPositionalTracker.TrackerHand">
 			</return>
 			<description>
-				Returns the hand holding this tracker, if known. See TRACKER_* constants.
+				Returns the hand holding this tracker, if known. See [code]TRACKER_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_joy_id" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				If this is a controller that is being tracked the controller will also be represented by a joystick entry with this id.
+				If this is a controller that is being tracked, the controller will also be represented by a joystick entry with this ID.
 			</description>
 		</method>
 		<method name="get_mesh" qualifiers="const">
@@ -85,7 +85,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble">
+		<member name="rumble" type="float" setter="set_rumble" getter="get_rumble" default="0.0">
 			The degree to which the tracker rumbles. Ranges from [code]0.0[/code] to [code]1.0[/code] with precision [code].01[/code].
 		</member>
 	</members>

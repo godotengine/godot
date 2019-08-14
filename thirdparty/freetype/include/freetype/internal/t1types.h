@@ -76,8 +76,8 @@ FT_BEGIN_HEADER
     FT_Int       code_first;
     FT_Int       code_last;
 
-    FT_UShort*   char_index;
-    FT_String**  char_name;
+    FT_UShort*         char_index;
+    const FT_String**  char_name;
 
   } T1_EncodingRec, *T1_Encoding;
 

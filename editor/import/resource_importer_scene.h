@@ -85,12 +85,12 @@ public:
 	String get_source_folder() const;
 	String get_source_file() const;
 	virtual Node *post_import(Node *p_scene);
-	virtual void init(const String &p_scene_folder, const String &p_scene_path);
+	virtual void init(const String &p_source_folder, const String &p_source_file);
 	EditorScenePostImport();
 };
 
 class ResourceImporterScene : public ResourceImporter {
-	GDCLASS(ResourceImporterScene, ResourceImporter)
+	GDCLASS(ResourceImporterScene, ResourceImporter);
 
 	Set<Ref<EditorSceneImporter> > importers;
 

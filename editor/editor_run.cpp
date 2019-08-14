@@ -37,7 +37,7 @@ EditorRun::Status EditorRun::get_status() const {
 
 	return status;
 }
-Error EditorRun::run(const String &p_scene, const String p_custom_args, const List<String> &p_breakpoints) {
+Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints) {
 
 	List<String> args;
 
@@ -50,10 +50,8 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		args.push_back(resource_path.replace(" ", "%20"));
 	}
 
-	if (true) {
-		args.push_back("--remote-debug");
-		args.push_back(remote_host + ":" + String::num(remote_port));
-	}
+	args.push_back("--remote-debug");
+	args.push_back(remote_host + ":" + String::num(remote_port));
 
 	args.push_back("--allow_focus_steal_pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));

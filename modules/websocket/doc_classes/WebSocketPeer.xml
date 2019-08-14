@@ -18,30 +18,32 @@
 			<argument index="1" name="reason" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Close this WebSocket connection. [code]code[/code] is the status code for the closure (see RFC6455 section 7.4 for a list of valid status codes). [code]reason[/code] is the human readable reason for closing the connection (can be any UTF8 string, must be less than 123 bytes).
-				Note: To achieve a clean close, you will need to keep polling until either [signal WebSocketClient.connection_closed] or [signal WebSocketServer.client_disconnected] is received.
-				Note: HTML5 export might not support all status codes. Please refer to browsers-specific documentation for more details.
+				Closes this WebSocket connection. [code]code[/code] is the status code for the closure (see RFC 6455 section 7.4 for a list of valid status codes). [code]reason[/code] is the human readable reason for closing the connection (can be any UTF-8 string that's smaller than 123 bytes).
+				[b]Note:[/b] To achieve a clean close, you will need to keep polling until either [signal WebSocketClient.connection_closed] or [signal WebSocketServer.client_disconnected] is received.
+				[b]Note:[/b] The HTML5 export might not support all status codes. Please refer to browser-specific documentation for more details.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Returns the IP Address of the connected peer. (Not available in HTML5 export)
+				Returns the IP address of the connected peer.
+				[b]Note:[/b] Not available in the HTML5 export.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Returns the remote port of the connected peer. (Not available in HTML5 export)
+				Returns the remote port of the connected peer.
+				[b]Note:[/b] Not available in the HTML5 export.
 			</description>
 		</method>
 		<method name="get_write_mode" qualifiers="const">
 			<return type="int" enum="WebSocketPeer.WriteMode">
 			</return>
 			<description>
-				Get the current selected write mode. See [enum WriteMode].
+				Gets the current selected write mode. See [enum WriteMode].
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">
@@ -70,10 +72,10 @@
 	</methods>
 	<constants>
 		<constant name="WRITE_MODE_TEXT" value="0" enum="WriteMode">
-			Specify that WebSockets messages should be transferred as text payload (only valid UTF-8 is allowed).
+			Specifies that WebSockets messages should be transferred as text payload (only valid UTF-8 is allowed).
 		</constant>
 		<constant name="WRITE_MODE_BINARY" value="1" enum="WriteMode">
-			Specify that WebSockets messages should be transferred as binary payload (any byte combination is allowed).
+			Specifies that WebSockets messages should be transferred as binary payload (any byte combination is allowed).
 		</constant>
 	</constants>
 </class>

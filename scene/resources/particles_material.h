@@ -36,7 +36,7 @@
 
 class ParticlesMaterial : public Material {
 
-	GDCLASS(ParticlesMaterial, Material)
+	GDCLASS(ParticlesMaterial, Material);
 
 public:
 	enum Parameter {
@@ -129,6 +129,7 @@ private:
 	static SelfList<ParticlesMaterial>::List *dirty_materials;
 
 	struct ShaderNames {
+		StringName direction;
 		StringName spread;
 		StringName flatness;
 		StringName initial_linear_velocity;
@@ -184,6 +185,8 @@ private:
 		StringName trail_color_modifier;
 
 		StringName gravity;
+
+		StringName lifetime_randomness;
 	};
 
 	static ShaderNames *shader_names;
@@ -194,6 +197,7 @@ private:
 	_FORCE_INLINE_ void _queue_shader_change();
 	_FORCE_INLINE_ bool _is_shader_dirty() const;
 
+	Vector3 direction;
 	float spread;
 	float flatness;
 
@@ -223,6 +227,8 @@ private:
 
 	Vector3 gravity;
 
+	float lifetime_randomness;
+
 	//do not save emission points here
 
 protected:
@@ -230,6 +236,9 @@ protected:
 	virtual void _validate_property(PropertyInfo &property) const;
 
 public:
+	void set_direction(Vector3 p_direction);
+	Vector3 get_direction() const;
+
 	void set_spread(float p_spread);
 	float get_spread() const;
 
@@ -281,6 +290,9 @@ public:
 
 	void set_gravity(const Vector3 &p_gravity);
 	Vector3 get_gravity() const;
+
+	void set_lifetime_randomness(float p_lifetime);
+	float get_lifetime_randomness() const;
 
 	static void init_shaders();
 	static void finish_shaders();

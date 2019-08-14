@@ -35,13 +35,10 @@
 
 namespace CSharpProject {
 
-String generate_core_api_project(const String &p_dir, const Vector<String> &p_files = Vector<String>());
-String generate_editor_api_project(const String &p_dir, const String &p_core_dll_path, const Vector<String> &p_files = Vector<String>());
-String generate_game_project(const String &p_dir, const String &p_name, const Vector<String> &p_files = Vector<String>());
+bool generate_api_solution(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
+		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items);
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include);
-
-Error generate_scripts_metadata(const String &p_project_path, const String &p_output_path);
 
 } // namespace CSharpProject
 

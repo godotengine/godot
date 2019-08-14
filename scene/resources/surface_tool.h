@@ -136,7 +136,7 @@ public:
 	static Vector<Vertex> create_vertex_array_from_triangle_arrays(const Array &p_arrays);
 	Array commit_to_arrays();
 	void create_from(const Ref<Mesh> &p_existing, int p_surface);
-	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String p_blend_shape_name);
+	void create_from_blend_shape(const Ref<Mesh> &p_existing, int p_surface, const String &p_blend_shape_name);
 	void append_from(const Ref<Mesh> &p_existing, int p_surface, const Transform &p_xform);
 	Ref<ArrayMesh> commit(const Ref<ArrayMesh> &p_existing = Ref<ArrayMesh>(), uint32_t p_flags = Mesh::ARRAY_COMPRESS_DEFAULT);
 

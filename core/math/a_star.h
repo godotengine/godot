@@ -32,7 +32,6 @@
 #define ASTAR_H
 
 #include "core/reference.h"
-#include "core/self_list.h"
 
 /**
 	A* pathfinding algorithm
@@ -42,7 +41,7 @@
 
 class AStar : public Reference {
 
-	GDCLASS(AStar, Reference)
+	GDCLASS(AStar, Reference);
 
 	uint64_t pass;
 
@@ -141,6 +140,45 @@ public:
 
 	AStar();
 	~AStar();
+};
+
+class AStar2D : public Reference {
+	GDCLASS(AStar2D, Reference);
+	AStar astar;
+
+protected:
+	static void _bind_methods();
+
+public:
+	int get_available_point_id() const;
+
+	void add_point(int p_id, const Vector2 &p_pos, real_t p_weight_scale = 1);
+	Vector2 get_point_position(int p_id) const;
+	void set_point_position(int p_id, const Vector2 &p_pos);
+	real_t get_point_weight_scale(int p_id) const;
+	void set_point_weight_scale(int p_id, real_t p_weight_scale);
+	void remove_point(int p_id);
+	bool has_point(int p_id) const;
+	PoolVector<int> get_point_connections(int p_id);
+	Array get_points();
+
+	void set_point_disabled(int p_id, bool p_disabled = true);
+	bool is_point_disabled(int p_id) const;
+
+	void connect_points(int p_id, int p_with_id, bool p_bidirectional = true);
+	void disconnect_points(int p_id, int p_with_id);
+	bool are_points_connected(int p_id, int p_with_id) const;
+
+	void clear();
+
+	int get_closest_point(const Vector2 &p_point) const;
+	Vector2 get_closest_position_in_segment(const Vector2 &p_point) const;
+
+	PoolVector<Vector2> get_point_path(int p_from_id, int p_to_id);
+	PoolVector<int> get_id_path(int p_from_id, int p_to_id);
+
+	AStar2D();
+	~AStar2D();
 };
 
 #endif // ASTAR_H

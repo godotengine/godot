@@ -30,6 +30,8 @@
 
 #include "stream_peer_tcp.h"
 
+#include "core/project_settings.h"
+
 Error StreamPeerTCP::_poll_connection() {
 
 	ERR_FAIL_COND_V(status != STATUS_CONNECTING || !_sock.is_valid() || !_sock->is_open(), FAILED);
@@ -40,6 +42,12 @@ Error StreamPeerTCP::_poll_connection() {
 		status = STATUS_CONNECTED;
 		return OK;
 	} else if (err == ERR_BUSY) {
+		// Check for connect timeout
+		if (OS::get_singleton()->get_ticks_msec() > timeout) {
+			disconnect_from_host();
+			status = STATUS_ERROR;
+			return ERR_CONNECTION_ERROR;
+		}
 		// Still trying to connect
 		return OK;
 	}
@@ -54,6 +62,7 @@ void StreamPeerTCP::accept_socket(Ref<NetSocket> p_sock, IP_Address p_host, uint
 	_sock = p_sock;
 	_sock->set_blocking_enabled(false);
 
+	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
 	status = STATUS_CONNECTING;
 
 	peer_host = p_host;
@@ -74,6 +83,7 @@ Error StreamPeerTCP::connect_to_host(const IP_Address &p_host, uint16_t p_port) 
 
 	_sock->set_blocking_enabled(false);
 
+	timeout = OS::get_singleton()->get_ticks_msec() + (((uint64_t)GLOBAL_GET("network/limits/tcp/connect_timeout_seconds")) * 1000);
 	err = _sock->connect_to_host(p_host, p_port);
 
 	if (err == OK) {
@@ -217,6 +227,11 @@ Error StreamPeerTCP::read(uint8_t *p_buffer, int p_bytes, int &r_received, bool 
 
 			to_read -= read;
 			total_read += read;
+
+			if (!p_block) {
+				r_received = total_read;
+				return OK;
+			}
 		}
 	}
 
@@ -276,6 +291,7 @@ void StreamPeerTCP::disconnect_from_host() {
 	if (_sock.is_valid() && _sock->is_open())
 		_sock->close();
 
+	timeout = 0;
 	status = STATUS_NONE;
 	peer_host = IP_Address();
 	peer_port = 0;
@@ -351,8 +367,8 @@ void StreamPeerTCP::_bind_methods() {
 
 StreamPeerTCP::StreamPeerTCP() :
 		_sock(Ref<NetSocket>(NetSocket::create())),
+		timeout(0),
 		status(STATUS_NONE),
-		peer_host(IP_Address()),
 		peer_port(0) {
 }
 

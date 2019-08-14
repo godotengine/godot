@@ -4,7 +4,7 @@
 		Base resource for [AnimationTree] nodes.
 	</brief_description>
 	<description>
-		Base resource for [AnimationTree] nodes. In general it's not used directly but you can create custom ones with custom blending formulas.
+		Base resource for [AnimationTree] nodes. In general, it's not used directly, but you can create custom ones with custom blending formulas.
 	Inherit this when creating nodes mainly for use in [AnimationNodeBlendTree], otherwise [AnimationRootNode] should be used instead.
 	</description>
 	<tutorials>
@@ -16,7 +16,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Add an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree]
+				Adds an input to the node. This is only useful for nodes created for use in an [AnimationNodeBlendTree]
 			</description>
 		</method>
 		<method name="blend_animation">
@@ -80,7 +80,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Get the text caption for this node (used by some editors)
+				Gets the text caption for this node (used by some editors).
 			</description>
 		</method>
 		<method name="get_child_by_name" qualifiers="virtual">
@@ -89,14 +89,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Get the a child node by index (used by editors inheriting from [AnimationRootNode]).
+				Gets a child node by index (used by editors inheriting from [AnimationRootNode]).
 			</description>
 		</method>
 		<method name="get_child_nodes" qualifiers="virtual">
 			<return type="Dictionary">
 			</return>
 			<description>
-				Get all children nodes, in order as a name:node dictionary. Only useful when inheriting [AnimationRootNode].
+				Gets all children nodes in order as a [code]name: node[/code] dictionary. Only useful when inheriting [AnimationRootNode].
 			</description>
 		</method>
 		<method name="get_input_count" qualifiers="const">
@@ -112,7 +112,7 @@
 			<argument index="0" name="input" type="int">
 			</argument>
 			<description>
-				Get the name of an input by index.
+				Gets the name of an input by index.
 			</description>
 		</method>
 		<method name="get_parameter" qualifiers="const">
@@ -121,7 +121,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Get the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+				Gets the value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
 		<method name="get_parameter_default_value" qualifiers="virtual">
@@ -130,14 +130,14 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Get the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
+				Gets the default value of a parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees.
 			</description>
 		</method>
 		<method name="get_parameter_list" qualifiers="virtual">
 			<return type="Array">
 			</return>
 			<description>
-				Get the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
+				Gets the property information for parameter. Parameters are custom local memory used for your nodes, given a resource can be reused in multiple trees. Format is similar to [method Object.get_property_list].
 			</description>
 		</method>
 		<method name="has_filter" qualifiers="virtual">
@@ -176,7 +176,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Remove an input, call this only when inactive.
+				Removes an input, call this only when inactive.
 			</description>
 		</method>
 		<method name="set_filter_path">
@@ -187,7 +187,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				Add/Remove a path for the filter.
+				Adds or removes a path for the filter.
 			</description>
 		</method>
 		<method name="set_parameter">
@@ -198,7 +198,7 @@
 			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Set a custom parameter. These are used as local storage, because resources can be reused across the tree or scenes.
+				Sets a custom parameter. These are used as local storage, because resources can be reused across the tree or scenes.
 			</description>
 		</method>
 	</methods>

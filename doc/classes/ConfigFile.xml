@@ -16,7 +16,7 @@
 		[codeblock]
 		var config = ConfigFile.new()
 		var err = config.load("user://settings.cfg")
-		if err == OK: # if not, something went wrong with the file loading
+		if err == OK: # If not, something went wrong with the file loading
 		    # Look for the display/width pair, and default to 1024 if missing
 		    var screen_width = config.get_value("display", "width", 1024)
 		    # Store a variable if and only if it hasn't been defined yet
@@ -94,7 +94,27 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [code]OK[/code].
+				Loads the config file specified as a parameter. The file's contents are parsed and loaded in the ConfigFile object which the method was called on. Returns one of the [constant OK], [constant FAILED] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [constant OK].
+			</description>
+		</method>
+		<method name="load_encrypted">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="key" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="load_encrypted_pass">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="pass" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="save">
@@ -103,7 +123,27 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure. Returns one of the [code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [code]OK[/code].
+				Saves the contents of the ConfigFile object to the file specified as a parameter. The output file uses an INI-style structure. Returns one of the [constant OK], [constant FAILED] or [code]ERR_*[/code] constants listed in [@GlobalScope]. If the load was successful, the return value is [constant OK].
+			</description>
+		</method>
+		<method name="save_encrypted">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="key" type="PoolByteArray">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="save_encrypted_pass">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="pass" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_value">

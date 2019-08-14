@@ -219,6 +219,14 @@ void WindowDialog::_notification(int p_what) {
 			close_button->set_begin(Point2(-get_constant("close_h_ofs", "WindowDialog"), -get_constant("close_v_ofs", "WindowDialog")));
 		} break;
 
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			String new_title = tr(title);
+			if (title != new_title) {
+				title = new_title;
+				update();
+			}
+		} break;
+
 		case NOTIFICATION_MOUSE_EXIT: {
 			// Reset the mouse cursor when leaving the resizable window border.
 			if (resizable && !drag_type) {
@@ -226,11 +234,13 @@ void WindowDialog::_notification(int p_what) {
 					set_default_cursor_shape(CURSOR_ARROW);
 			}
 		} break;
+
 #ifdef TOOLS_ENABLED
 		case NOTIFICATION_POST_POPUP: {
 			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
 				EditorNode::get_singleton()->dim_editor(true);
 		} break;
+
 		case NOTIFICATION_POPUP_HIDE: {
 			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
 				EditorNode::get_singleton()->dim_editor(false);
@@ -272,8 +282,11 @@ int WindowDialog::_drag_hit_test(const Point2 &pos) const {
 
 void WindowDialog::set_title(const String &p_title) {
 
-	title = tr(p_title);
-	update();
+	String new_title = tr(p_title);
+	if (title != new_title) {
+		title = new_title;
+		update();
+	}
 }
 String WindowDialog::get_title() const {
 
@@ -296,8 +309,8 @@ Size2 WindowDialog::get_minimum_size() const {
 	const int padding = button_width / 2;
 	const int button_area = button_width + padding;
 
-	// as the title gets centered, title_width + close_button_width is not enough.
-	// we want a width w, such that w / 2 - title_width / 2 >= button_area, i.e.
+	// As the title gets centered, title_width + close_button_width is not enough.
+	// We want a width w, such that w / 2 - title_width / 2 >= button_area, i.e.
 	// w >= 2 * button_area + title_width
 
 	return Size2(2 * button_area + title_width, 1);
@@ -324,7 +337,6 @@ void WindowDialog::_bind_methods() {
 
 WindowDialog::WindowDialog() {
 
-	//title="Hello!";
 	drag_type = DRAG_NONE;
 	resizable = false;
 	close_button = memnew(TextureButton);
@@ -340,7 +352,6 @@ WindowDialog::~WindowDialog() {
 void PopupDialog::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_DRAW) {
-
 		RID ci = get_canvas_item();
 		get_stylebox("panel", "PopupMenu")->draw(ci, Rect2(Point2(), get_size()));
 	}
@@ -362,15 +373,15 @@ void AcceptDialog::_post_popup() {
 
 void AcceptDialog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_MODAL_CLOSE) {
+	switch (p_what) {
+		case NOTIFICATION_MODAL_CLOSE: {
+			cancel_pressed();
+		} break;
 
-		cancel_pressed();
-	} else if (p_what == NOTIFICATION_READY) {
-
-		_update_child_rects();
-	} else if (p_what == NOTIFICATION_RESIZED) {
-
-		_update_child_rects();
+		case NOTIFICATION_READY:
+		case NOTIFICATION_RESIZED: {
+			_update_child_rects();
+		} break;
 	}
 }
 
@@ -406,10 +417,18 @@ void AcceptDialog::set_hide_on_ok(bool p_hide) {
 
 	hide_on_ok = p_hide;
 }
-
 bool AcceptDialog::get_hide_on_ok() const {
 
 	return hide_on_ok;
+}
+
+void AcceptDialog::set_autowrap(bool p_autowrap) {
+
+	label->set_autowrap(p_autowrap);
+}
+bool AcceptDialog::has_autowrap() {
+
+	return label->has_autowrap();
 }
 
 void AcceptDialog::register_text_enter(Node *p_line_edit) {
@@ -530,6 +549,8 @@ void AcceptDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_custom_action"), &AcceptDialog::_custom_action);
 	ClassDB::bind_method(D_METHOD("set_text", "text"), &AcceptDialog::set_text);
 	ClassDB::bind_method(D_METHOD("get_text"), &AcceptDialog::get_text);
+	ClassDB::bind_method(D_METHOD("set_autowrap", "autowrap"), &AcceptDialog::set_autowrap);
+	ClassDB::bind_method(D_METHOD("has_autowrap"), &AcceptDialog::has_autowrap);
 
 	ADD_SIGNAL(MethodInfo("confirmed"));
 	ADD_SIGNAL(MethodInfo("custom_action", PropertyInfo(Variant::STRING, "action")));
@@ -537,6 +558,7 @@ void AcceptDialog::_bind_methods() {
 	ADD_GROUP("Dialog", "dialog");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "dialog_text", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_hide_on_ok"), "set_hide_on_ok", "get_hide_on_ok");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "dialog_autowrap"), "set_autowrap", "has_autowrap");
 }
 
 bool AcceptDialog::swap_ok_cancel = false;
@@ -555,7 +577,6 @@ AcceptDialog::AcceptDialog() {
 	label->set_anchor(MARGIN_BOTTOM, ANCHOR_END);
 	label->set_begin(Point2(margin, margin));
 	label->set_end(Point2(-margin, -button_margin - 10));
-	//label->set_autowrap(true);
 	add_child(label);
 
 	hbc = memnew(HBoxContainer);

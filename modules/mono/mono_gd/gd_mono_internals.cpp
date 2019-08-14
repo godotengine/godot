@@ -48,7 +48,7 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 
 	CRASH_COND(!unmanaged);
 
-	// All mono objects created from the managed world (e.g.: `new Player()`)
+	// All mono objects created from the managed world (e.g.: 'new Player()')
 	// need to have a CSharpScript in order for their methods to be callable from the unmanaged side
 
 	Reference *ref = Object::cast_to<Reference>(unmanaged);
@@ -74,15 +74,14 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 		script_binding.type_name = NATIVE_GDMONOCLASS_NAME(klass);
 		script_binding.wrapper_class = klass;
 		script_binding.gchandle = MonoGCHandle::create_strong(managed);
+		script_binding.owner = unmanaged;
 
-		Reference *kref = Object::cast_to<Reference>(unmanaged);
-		if (kref) {
+		if (ref) {
 			// Unsafe refcount increment. The managed instance also counts as a reference.
 			// This way if the unmanaged world has no references to our owner
 			// but the managed instance is alive, the refcount will be 1 instead of 0.
 			// See: godot_icall_Reference_Dtor(MonoObject *p_obj, Object *p_ptr)
-
-			kref->reference();
+			ref->reference();
 		}
 
 		// The object was just created, no script instance binding should have been attached
@@ -105,15 +104,22 @@ void tie_managed_to_unmanaged(MonoObject *managed, Object *unmanaged) {
 	ScriptInstance *si = CSharpInstance::create_for_managed_type(unmanaged, script.ptr(), gchandle);
 
 	unmanaged->set_script_and_instance(script.get_ref_ptr(), si);
-
-	return;
 }
 
 void unhandled_exception(MonoException *p_exc) {
 	mono_unhandled_exception((MonoObject *)p_exc); // prints the exception as well
-	// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders
-	GDMono::unhandled_exception_hook((MonoObject *)p_exc, NULL);
-	GD_UNREACHABLE();
+
+	if (GDMono::get_singleton()->get_unhandled_exception_policy() == GDMono::POLICY_TERMINATE_APP) {
+		// Too bad 'mono_invoke_unhandled_exception_hook' is not exposed to embedders
+		GDMono::unhandled_exception_hook((MonoObject *)p_exc, NULL);
+		GD_UNREACHABLE();
+	} else {
+#ifdef DEBUG_ENABLED
+		GDMonoUtils::debug_send_unhandled_exception_error((MonoException *)p_exc);
+		if (ScriptDebugger::get_singleton())
+			ScriptDebugger::get_singleton()->idle_poll();
+#endif
+	}
 }
 
 } // namespace GDMonoInternals

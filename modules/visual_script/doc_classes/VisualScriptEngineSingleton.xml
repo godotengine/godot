@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="constant" type="String" setter="set_singleton" getter="get_singleton">
+		<member name="constant" type="String" setter="set_singleton" getter="get_singleton" default="&quot;&quot;">
 			The singleton's name.
 		</member>
 	</members>

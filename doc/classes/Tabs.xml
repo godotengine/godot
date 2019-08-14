@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Tabs" inherits="Control" category="Core" version="3.2">
 	<brief_description>
-		Tabs Control.
+		Tabs control.
 	</brief_description>
 	<description>
 		Simple tabs control, similar to [TabContainer] but is only in charge of drawing tabs, not interact with children.
@@ -26,7 +26,7 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Moves the Scroll view to make the tab visible.
+				Moves the scroll view to make the tab visible.
 			</description>
 		</method>
 		<method name="get_offset_buttons_visible" qualifiers="const">
@@ -64,7 +64,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Returns the [Texture] for the tab at index [code]tab_idx[/code] or null if the tab has no [Texture].
+				Returns the [Texture] for the tab at index [code]tab_idx[/code] or [code]null[/code] if the tab has no [Texture].
 			</description>
 		</method>
 		<method name="get_tab_offset" qualifiers="const">
@@ -95,7 +95,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the [Tabs] rearrange group id.
+				Returns the [Tabs]' rearrange group ID.
 			</description>
 		</method>
 		<method name="move_tab">
@@ -106,7 +106,7 @@
 			<argument index="1" name="to" type="int">
 			</argument>
 			<description>
-				Rearrange tab.
+				Moves a tab from [code]from[/code] to [code]to[/code].
 			</description>
 		</method>
 		<method name="remove_tab">
@@ -115,7 +115,7 @@
 			<argument index="0" name="tab_idx" type="int">
 			</argument>
 			<description>
-				Removes tab at index [code]tab_idx[/code]
+				Removes the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_select_with_rmb">
@@ -124,7 +124,7 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code], enables selecting a tab with right mouse button.
+				If [code]true[/code], enables selecting a tab with the right mouse button.
 			</description>
 		</method>
 		<method name="set_tab_disabled">
@@ -135,7 +135,8 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code]. Note that its title text will remain, unless also removed with [method set_tab_title].
+				If [code]disabled[/code] is [code]false[/code], hides the tab at index [code]tab_idx[/code].
+				[b]Note:[/b] Its title text will remain unless it is also removed with [method set_tab_title].
 			</description>
 		</method>
 		<method name="set_tab_icon">
@@ -146,7 +147,7 @@
 			<argument index="1" name="icon" type="Texture">
 			</argument>
 			<description>
-				Sets an icon for the tab at index [code]tab_idx[/code].
+				Sets an [code]icon[/code] for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tab_title">
@@ -157,7 +158,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Sets a title for the tab at index [code]tab_idx[/code].
+				Sets a [code]title[/code] for the tab at index [code]tab_idx[/code].
 			</description>
 		</method>
 		<method name="set_tabs_rearrange_group">
@@ -166,23 +167,23 @@
 			<argument index="0" name="group_id" type="int">
 			</argument>
 			<description>
-				Defines rearrange group id, choose for each [Tabs] the same value to enable tab drag between [Tabs]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
+				Defines the rearrange group ID. Choose for each [Tabs] the same value to dragging tabs between [Tabs]. Enable drag with [code]set_drag_to_rearrange_enabled(true)[/code].
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab">
+		<member name="current_tab" type="int" setter="set_current_tab" getter="get_current_tab" default="0">
 			Select tab at index [code]tab_idx[/code].
 		</member>
-		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled">
+		<member name="drag_to_rearrange_enabled" type="bool" setter="set_drag_to_rearrange_enabled" getter="get_drag_to_rearrange_enabled" default="false">
 			If [code]true[/code], tabs can be rearranged with mouse drag.
 		</member>
-		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled">
+		<member name="scrolling_enabled" type="bool" setter="set_scrolling_enabled" getter="get_scrolling_enabled" default="true">
 		</member>
-		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign">
+		<member name="tab_align" type="int" setter="set_tab_align" getter="get_tab_align" enum="Tabs.TabAlign" default="1">
 			The alignment of all tabs. See enum [code]TabAlign[/code] constants for details.
 		</member>
-		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy">
+		<member name="tab_close_display_policy" type="int" setter="set_tab_close_display_policy" getter="get_tab_close_display_policy" enum="Tabs.CloseButtonDisplayPolicy" default="0">
 		</member>
 	</members>
 	<signals>
@@ -234,6 +235,7 @@
 			Align the tabs to the right.
 		</constant>
 		<constant name="ALIGN_MAX" value="3" enum="TabAlign">
+			Represents the size of the [enum TabAlign] enum.
 		</constant>
 		<constant name="CLOSE_BUTTON_SHOW_NEVER" value="0" enum="CloseButtonDisplayPolicy">
 		</constant>
@@ -242,6 +244,7 @@
 		<constant name="CLOSE_BUTTON_SHOW_ALWAYS" value="2" enum="CloseButtonDisplayPolicy">
 		</constant>
 		<constant name="CLOSE_BUTTON_MAX" value="3" enum="CloseButtonDisplayPolicy">
+			Represents the size of the [enum CloseButtonDisplayPolicy] enum.
 		</constant>
 	</constants>
 	<theme_items>
@@ -257,21 +260,21 @@
 		</theme_item>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color_bg" type="Color">
+		<theme_item name="font_color_bg" type="Color" default="Color( 0.69, 0.69, 0.69, 1 )">
 		</theme_item>
-		<theme_item name="font_color_disabled" type="Color">
+		<theme_item name="font_color_disabled" type="Color" default="Color( 0.9, 0.9, 0.9, 0.2 )">
 		</theme_item>
-		<theme_item name="font_color_fg" type="Color">
+		<theme_item name="font_color_fg" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
 		</theme_item>
-		<theme_item name="hseparation" type="int">
+		<theme_item name="hseparation" type="int" default="4">
 		</theme_item>
 		<theme_item name="increment" type="Texture">
 		</theme_item>
 		<theme_item name="increment_highlight" type="Texture">
 		</theme_item>
-		<theme_item name="label_valign_bg" type="int">
+		<theme_item name="label_valign_bg" type="int" default="2">
 		</theme_item>
-		<theme_item name="label_valign_fg" type="int">
+		<theme_item name="label_valign_fg" type="int" default="0">
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 		</theme_item>
@@ -281,7 +284,7 @@
 		</theme_item>
 		<theme_item name="tab_fg" type="StyleBox">
 		</theme_item>
-		<theme_item name="top_margin" type="int">
+		<theme_item name="top_margin" type="int" default="24">
 		</theme_item>
 	</theme_items>
 </class>

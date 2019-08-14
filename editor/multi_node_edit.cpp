@@ -50,7 +50,7 @@ bool MultiNodeEdit::_set_impl(const StringName &p_name, const Variant &p_value, 
 		name = "script";
 	}
 
-	UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
+	UndoRedo *ur = EditorNode::get_undo_redo();
 
 	ur->create_action(TTR("MultiNode Set") + " " + String(name), UndoRedo::MERGE_ENDS);
 	for (const List<NodePath>::Element *E = nodes.front(); E; E = E->next()) {
@@ -152,7 +152,9 @@ void MultiNodeEdit::_get_property_list(List<PropertyInfo> *p_list) const {
 				datas.push_back(usage.getptr(F->get().name));
 			}
 
-			usage[F->get().name].uses++;
+			// Make sure only properties with the same exact PropertyInfo data will appear
+			if (usage[F->get().name].info == F->get())
+				usage[F->get().name].uses++;
 		}
 
 		nc++;

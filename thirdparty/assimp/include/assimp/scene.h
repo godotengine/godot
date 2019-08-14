@@ -56,6 +56,7 @@ OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 #include "material.h"
 #include "anim.h"
 #include "metadata.h"
+#include <cstdlib>
 
 #ifdef __cplusplus
 extern "C" {
@@ -389,6 +390,14 @@ struct aiScene
 
     //! Returns an embedded texture
     const aiTexture* GetEmbeddedTexture(const char* filename) const {
+        // lookup using texture ID (if referenced like: "*1", "*2", etc.)
+        if ('*' == *filename) {
+            int index = std::atoi(filename + 1);
+            if (0 > index || mNumTextures <= static_cast<unsigned>(index))
+                return nullptr;
+            return mTextures[index];
+        }
+        // lookup using filename
         const char* shortFilename = GetShortFilename(filename);
         for (unsigned int i = 0; i < mNumTextures; i++) {
             const char* shortTextureFilename = GetShortFilename(mTextures[i]->mFilename.C_Str());

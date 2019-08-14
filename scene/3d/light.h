@@ -221,6 +221,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	virtual String get_configuration_warning() const;
+
 	SpotLight() :
 			Light(VisualServer::LIGHT_SPOT) {}
 };

@@ -105,7 +105,7 @@ void RemoteTransform::_notification(int p_what) {
 
 	switch (p_what) {
 
-		case NOTIFICATION_READY: {
+		case NOTIFICATION_ENTER_TREE: {
 
 			_update_cache();
 
@@ -174,10 +174,14 @@ bool RemoteTransform::get_update_scale() const {
 	return update_remote_scale;
 }
 
+void RemoteTransform::force_update_cache() {
+	_update_cache();
+}
+
 String RemoteTransform::get_configuration_warning() const {
 
 	if (!has_node(remote_node) || !Object::cast_to<Spatial>(get_node(remote_node))) {
-		return TTR("Path property must point to a valid Spatial node to work.");
+		return TTR("The \"Remote Path\" property must point to a valid Spatial or Spatial-derived node to work.");
 	}
 
 	return String();
@@ -187,6 +191,7 @@ void RemoteTransform::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_remote_node", "path"), &RemoteTransform::set_remote_node);
 	ClassDB::bind_method(D_METHOD("get_remote_node"), &RemoteTransform::get_remote_node);
+	ClassDB::bind_method(D_METHOD("force_update_cache"), &RemoteTransform::force_update_cache);
 
 	ClassDB::bind_method(D_METHOD("set_use_global_coordinates", "use_global_coordinates"), &RemoteTransform::set_use_global_coordinates);
 	ClassDB::bind_method(D_METHOD("get_use_global_coordinates"), &RemoteTransform::get_use_global_coordinates);

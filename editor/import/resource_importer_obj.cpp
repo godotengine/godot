@@ -215,7 +215,6 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 
 	bool generate_tangents = p_generate_tangents;
 	Vector3 scale_mesh = p_scale_mesh;
-	bool flip_faces = false;
 	int mesh_flags = p_optimize ? Mesh::ARRAY_COMPRESS_DEFAULT : 0;
 
 	Vector<Vector3> vertices;
@@ -293,7 +292,7 @@ static Error _parse_obj(const String &p_path, List<Ref<Mesh> > &r_meshes, bool p
 
 					int idx = j;
 
-					if (!flip_faces && idx < 2) {
+					if (idx < 2) {
 						idx = 1 ^ idx;
 					}
 

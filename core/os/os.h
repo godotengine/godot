@@ -205,8 +205,12 @@ public:
 	virtual int get_screen_dpi(int p_screen = -1) const { return 72; }
 	virtual Point2 get_window_position() const { return Vector2(); }
 	virtual void set_window_position(const Point2 &p_position) {}
+	virtual Size2 get_max_window_size() const { return Size2(); };
+	virtual Size2 get_min_window_size() const { return Size2(); };
 	virtual Size2 get_window_size() const = 0;
 	virtual Size2 get_real_window_size() const { return get_window_size(); }
+	virtual void set_min_window_size(const Size2 p_size) {}
+	virtual void set_max_window_size(const Size2 p_size) {}
 	virtual void set_window_size(const Size2 p_size) {}
 	virtual void set_window_fullscreen(bool p_enabled) {}
 	virtual bool is_window_fullscreen() const { return true; }
@@ -218,6 +222,8 @@ public:
 	virtual bool is_window_maximized() const { return true; }
 	virtual void set_window_always_on_top(bool p_enabled) {}
 	virtual bool is_window_always_on_top() const { return false; }
+	virtual void set_console_visible(bool p_enabled) {}
+	virtual bool is_console_visible() const { return false; }
 	virtual void request_attention() {}
 	virtual void center_window();
 
@@ -330,6 +336,7 @@ public:
 	virtual Date get_date(bool local = false) const = 0;
 	virtual Time get_time(bool local = false) const = 0;
 	virtual TimeZoneInfo get_time_zone_info() const = 0;
+	virtual String get_iso_date_time(bool local = false) const;
 	virtual uint64_t get_unix_time() const;
 	virtual uint64_t get_system_time_secs() const;
 	virtual uint64_t get_system_time_msecs() const;

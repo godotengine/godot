@@ -1,22 +1,22 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="EditorScenePostImport" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
-		Post process scenes after import
+		Post-processes scenes after import.
 	</brief_description>
 	<description>
-		Imported scenes can be automatically modified right after import by setting their [i]Custom Script[/i] Import property to a [code]tool[/code] script that inherits from this class.
+		Imported scenes can be automatically modified right after import by setting their [b]Custom Script[/b] Import property to a [code]tool[/code] script that inherits from this class.
 		The [method post_import] callback receives the imported scene's root node and returns the modified version of the scene. Usage example:
 		[codeblock]
-		tool # needed so it runs in editor
+		tool # Needed so it runs in editor
 		extends EditorScenePostImport
 
 		# This sample changes all node names
 
 		# Called right after the scene is imported and gets the root node
 		func post_import(scene):
-		    # change all node names to "modified_[oldnodename]"
+		    # Change all node names to "modified_[oldnodename]"
 		    iterate(scene)
-		    return scene # remember to return the imported scene
+		    return scene # Remember to return the imported scene
 
 		func iterate(node):
 		    if node != null:
@@ -49,7 +49,7 @@
 			<argument index="0" name="scene" type="Object">
 			</argument>
 			<description>
-				Gets called after the scene got imported and has to return the modified version of the scene.
+				Called after the scene was imported. This method must return the modified version of the scene.
 			</description>
 		</method>
 	</methods>

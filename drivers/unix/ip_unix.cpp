@@ -72,11 +72,13 @@
 #ifdef __FreeBSD__
 #include <netinet/in.h>
 #endif
+#include <net/if.h> // Order is important on OpenBSD, leave as last
 #endif
 
 static IP_Address _sockaddr2ip(struct sockaddr *p_addr) {
 
 	IP_Address ip;
+
 	if (p_addr->sa_family == AF_INET) {
 		struct sockaddr_in *addr = (struct sockaddr_in *)p_addr;
 		ip.set_ipv4((uint8_t *)&(addr->sin_addr));
@@ -129,24 +131,42 @@ IP_Address IP_Unix::_resolve_hostname(const String &p_hostname, Type p_type) {
 
 #if defined(UWP_ENABLED)
 
-void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
+void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const {
 
 	using namespace Windows::Networking;
 	using namespace Windows::Networking::Connectivity;
 
+	// Returns addresses, not interfaces.
 	auto hostnames = NetworkInformation::GetHostNames();
 
 	for (int i = 0; i < hostnames->Size; i++) {
 
-		if (hostnames->GetAt(i)->Type == HostNameType::Ipv4 || hostnames->GetAt(i)->Type == HostNameType::Ipv6 && hostnames->GetAt(i)->IPInformation != nullptr) {
+		auto hostname = hostnames->GetAt(i);
 
-			r_addresses->push_back(IP_Address(String(hostnames->GetAt(i)->CanonicalName->Data())));
+		if (hostname->Type != HostNameType::Ipv4 && hostname->Type != HostNameType::Ipv6)
+			continue;
+
+		String name = hostname->RawName->Data();
+		Map<String, Interface_Info>::Element *E = r_interfaces->find(name);
+		if (!E) {
+			Interface_Info info;
+			info.name = name;
+			info.name_friendly = hostname->DisplayName->Data();
+			info.index = 0;
+			E = r_interfaces->insert(name, info);
+			ERR_CONTINUE(!E);
 		}
+
+		Interface_Info &info = E->get();
+
+		IP_Address ip = IP_Address(hostname->CanonicalName->Data());
+		info.ip_addresses.push_front(ip);
 	}
-};
+}
+
 #else
 
-void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
+void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const {
 
 	ULONG buf_size = 1024;
 	IP_ADAPTER_ADDRESSES *addrs;
@@ -173,29 +193,23 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 	while (adapter != NULL) {
 
+		Interface_Info info;
+		info.name = adapter->AdapterName;
+		info.name_friendly = adapter->FriendlyName;
+		info.index = String::num_uint64(adapter->IfIndex);
+
 		IP_ADAPTER_UNICAST_ADDRESS *address = adapter->FirstUnicastAddress;
 		while (address != NULL) {
-
-			IP_Address ip;
-
-			if (address->Address.lpSockaddr->sa_family == AF_INET) {
-
-				SOCKADDR_IN *ipv4 = reinterpret_cast<SOCKADDR_IN *>(address->Address.lpSockaddr);
-
-				ip.set_ipv4((uint8_t *)&(ipv4->sin_addr));
-				r_addresses->push_back(ip);
-
-			} else if (address->Address.lpSockaddr->sa_family == AF_INET6) { // ipv6
-
-				SOCKADDR_IN6 *ipv6 = reinterpret_cast<SOCKADDR_IN6 *>(address->Address.lpSockaddr);
-
-				ip.set_ipv6(ipv6->sin6_addr.s6_addr);
-				r_addresses->push_back(ip);
-			};
-
+			int family = address->Address.lpSockaddr->sa_family;
+			if (family != AF_INET && family != AF_INET6)
+				continue;
+			info.ip_addresses.push_front(_sockaddr2ip(address->Address.lpSockaddr));
 			address = address->Next;
-		};
+		}
 		adapter = adapter->Next;
+		// Only add interface if it has at least one IP
+		if (info.ip_addresses.size() > 0)
+			r_interfaces->insert(info.name, info);
 	};
 
 	memfree(addrs);
@@ -205,7 +219,7 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 
 #else // UNIX
 
-void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
+void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) const {
 
 	struct ifaddrs *ifAddrStruct = NULL;
 	struct ifaddrs *ifa = NULL;
@@ -222,8 +236,18 @@ void IP_Unix::get_local_addresses(List<IP_Address> *r_addresses) const {
 		if (family != AF_INET && family != AF_INET6)
 			continue;
 
-		IP_Address ip = _sockaddr2ip(ifa->ifa_addr);
-		r_addresses->push_back(ip);
+		Map<String, Interface_Info>::Element *E = r_interfaces->find(ifa->ifa_name);
+		if (!E) {
+			Interface_Info info;
+			info.name = ifa->ifa_name;
+			info.name_friendly = ifa->ifa_name;
+			info.index = String::num_uint64(if_nametoindex(ifa->ifa_name));
+			E = r_interfaces->insert(ifa->ifa_name, info);
+			ERR_CONTINUE(!E);
+		}
+
+		Interface_Info &info = E->get();
+		info.ip_addresses.push_front(_sockaddr2ip(ifa->ifa_addr));
 	}
 
 	if (ifAddrStruct != NULL) freeifaddrs(ifAddrStruct);

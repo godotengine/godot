@@ -119,6 +119,7 @@ private:
 	float bake_cell_size;
 	float capture_cell_size;
 	Vector3 extents;
+	float bake_default_texels_per_unit;
 	float propagation;
 	float energy;
 	BakeQuality bake_quality;
@@ -177,6 +178,9 @@ public:
 
 	void set_extents(const Vector3 &p_extents);
 	Vector3 get_extents() const;
+
+	void set_bake_default_texels_per_unit(const float &p_bake_texels_per_unit);
+	float get_bake_default_texels_per_unit() const;
 
 	void set_propagation(float p_propagation);
 	float get_propagation() const;

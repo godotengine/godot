@@ -239,7 +239,6 @@ public:
 };
 
 class ResourceFormatLoaderStreamTexture : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderStreamTexture, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
@@ -470,7 +469,7 @@ VARIANT_ENUM_CAST(CubeMap::Storage)
 
 class TextureLayered : public Resource {
 
-	GDCLASS(TextureLayered, Resource)
+	GDCLASS(TextureLayered, Resource);
 
 public:
 	enum Flags {
@@ -522,7 +521,8 @@ VARIANT_ENUM_CAST(TextureLayered::Flags)
 
 class Texture3D : public TextureLayered {
 
-	GDCLASS(Texture3D, TextureLayered)
+	GDCLASS(Texture3D, TextureLayered);
+
 public:
 	Texture3D() :
 			TextureLayered(true) {}
@@ -530,14 +530,14 @@ public:
 
 class TextureArray : public TextureLayered {
 
-	GDCLASS(TextureArray, TextureLayered)
+	GDCLASS(TextureArray, TextureLayered);
+
 public:
 	TextureArray() :
 			TextureLayered(false) {}
 };
 
 class ResourceFormatLoaderTextureLayered : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderTextureLayered, ResourceFormatLoader)
 public:
 	enum Compression {
 		COMPRESSION_LOSSLESS,
@@ -553,7 +553,7 @@ public:
 
 class CurveTexture : public Texture {
 
-	GDCLASS(CurveTexture, Texture)
+	GDCLASS(CurveTexture, Texture);
 	RES_BASE_EXTENSION("curvetex")
 
 private:
@@ -601,7 +601,7 @@ public:
 //VARIANT_ENUM_CAST( Texture::CubeMapSide );
 
 class GradientTexture : public Texture {
-	GDCLASS(GradientTexture, Texture)
+	GDCLASS(GradientTexture, Texture);
 
 public:
 	struct Point {
@@ -646,7 +646,7 @@ public:
 };
 
 class ProxyTexture : public Texture {
-	GDCLASS(ProxyTexture, Texture)
+	GDCLASS(ProxyTexture, Texture);
 
 private:
 	RID proxy;
@@ -673,7 +673,7 @@ public:
 };
 
 class AnimatedTexture : public Texture {
-	GDCLASS(AnimatedTexture, Texture)
+	GDCLASS(AnimatedTexture, Texture);
 
 	//use readers writers lock for this, since its far more times read than written to
 	RWLock *rw_lock;
@@ -742,7 +742,7 @@ public:
 };
 
 class CameraTexture : public Texture {
-	GDCLASS(CameraTexture, Texture)
+	GDCLASS(CameraTexture, Texture);
 
 private:
 	int camera_feed_id;

@@ -274,9 +274,6 @@
 
     if ( !font->isT1 )
     {
-      FT_Service_CFFLoad  cffload = (FT_Service_CFFLoad)font->cffload;
-
-
       /* check for variation vectors */
       vstore        = cf2_getVStore( decoder );
       hasVariations = ( vstore->dataCount != 0 );
@@ -284,6 +281,9 @@
       if ( hasVariations )
       {
 #ifdef TT_CONFIG_OPTION_GX_VAR_SUPPORT
+        FT_Service_CFFLoad  cffload = (FT_Service_CFFLoad)font->cffload;
+
+
         /* check whether Private DICT in this subfont needs to be reparsed */
         font->error = cf2_getNormalizedVector( decoder,
                                                &lenNormalizedV,

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="MultiplayerAPI" inherits="Reference" category="Core" version="3.2">
 	<brief_description>
-		High Level Multiplayer API.
+		High-level multiplayer API.
 	</brief_description>
 	<description>
-		This class implements most of the logic behind the high level multiplayer API.
+		This class implements most of the logic behind the high-level multiplayer API.
 		By default, [SceneTree] has a reference to this class that is used to provide multiplayer capabilities (i.e. RPC/RSET) across the whole scene.
 		It is possible to override the MultiplayerAPI instance used by specific Nodes by setting the [member Node.custom_multiplayer] property, effectively allowing to run both client and server in the same scene.
 	</description>
@@ -37,7 +37,7 @@
 			</return>
 			<description>
 				Returns the sender's peer ID for the RPC currently being executed.
-				NOTE: If not inside an RPC this method will return 0.
+				[b]Note:[/b] If not inside an RPC this method will return 0.
 			</description>
 		</method>
 		<method name="has_network_peer" qualifiers="const">
@@ -58,8 +58,8 @@
 			<return type="void">
 			</return>
 			<description>
-				Method used for polling the MultiplayerAPI. You only need to worry about this if you are using [member Node.custom_multiplayer] override or you set [member SceneTree.multiplayer_poll] to [code]false[/code]. By default [SceneTree] will poll its MultiplayerAPI for you.
-				NOTE: This method results in RPCs and RSETs being called, so they will be executed in the same context of this function (e.g. [code]_process[/code], [code]physics[/code], [Thread]).
+				Method used for polling the MultiplayerAPI. You only need to worry about this if you are using [member Node.custom_multiplayer] override or you set [member SceneTree.multiplayer_poll] to [code]false[/code]. By default, [SceneTree] will poll its MultiplayerAPI for you.
+				[b]Note:[/b] This method results in RPCs and RSETs being called, so they will be executed in the same context of this function (e.g. [code]_process[/code], [code]physics[/code], [Thread]).
 			</description>
 		</method>
 		<method name="send_bytes">
@@ -87,40 +87,40 @@
 		</method>
 	</methods>
 	<members>
-		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed">
-			If [code]true[/code] (or if the [member network_peer] [member PacketPeer.allow_object_decoding] the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
-			[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+		<member name="allow_object_decoding" type="bool" setter="set_allow_object_decoding" getter="is_object_decoding_allowed" default="false">
+			If [code]true[/code] (or if the [member network_peer] has [member PacketPeer.allow_object_decoding] set to [code]true[/code]), the MultiplayerAPI will allow encoding and decoding of object during RPCs/RSETs.
+			[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 		</member>
 		<member name="network_peer" type="NetworkedMultiplayerPeer" setter="set_network_peer" getter="get_network_peer">
-			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see NETWORK_MODE_* constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
+			The peer object to handle the RPC system (effectively enabling networking when set). Depending on the peer itself, the MultiplayerAPI will become a network server (check with [method is_network_server]) and will set root node's network mode to master (see [code]NETWORK_MODE_*[/code] constants in [Node]), or it will become a regular peer with root node set to puppet. All child nodes are set to inherit the network mode by default. Handling of networking-related events (connection, disconnection, new clients) is done by connecting to MultiplayerAPI's signals.
 		</member>
-		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections">
+		<member name="refuse_new_network_connections" type="bool" setter="set_refuse_new_network_connections" getter="is_refusing_new_network_connections" default="false">
 			If [code]true[/code], the MultiplayerAPI's [member network_peer] refuses new incoming connections.
 		</member>
 	</members>
 	<signals>
 		<signal name="connected_to_server">
 			<description>
-				Emitted whenever this MultiplayerAPI's [member network_peer] successfully connected to a server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member network_peer] successfully connected to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="connection_failed">
 			<description>
-				Emitted whenever this MultiplayerAPI's [member network_peer] fails to establish a connection to a server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member network_peer] fails to establish a connection to a server. Only emitted on clients.
 			</description>
 		</signal>
 		<signal name="network_peer_connected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Emitted whenever this MultiplayerAPI's [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
+				Emitted when this MultiplayerAPI's [member network_peer] connects with a new peer. ID is the peer ID of the new peer. Clients get notified when other clients connect to the same server. Upon connecting to a server, a client also receives this signal for the server (with ID being 1).
 			</description>
 		</signal>
 		<signal name="network_peer_disconnected">
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Emitted whenever this MultiplayerAPI's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
+				Emitted when this MultiplayerAPI's [member network_peer] disconnects from a peer. Clients get notified when other clients disconnect from the same server.
 			</description>
 		</signal>
 		<signal name="network_peer_packet">
@@ -129,12 +129,12 @@
 			<argument index="1" name="packet" type="PoolByteArray">
 			</argument>
 			<description>
-				Emitted whenever this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
+				Emitted when this MultiplayerAPI's [member network_peer] receive a [code]packet[/code] with custom data (see [method send_bytes]). ID is the peer ID of the peer that sent the packet.
 			</description>
 		</signal>
 		<signal name="server_disconnected">
 			<description>
-				Emitted whenever this MultiplayerAPI's [member network_peer] disconnects from server. Only emitted on clients.
+				Emitted when this MultiplayerAPI's [member network_peer] disconnects from server. Only emitted on clients.
 			</description>
 		</signal>
 	</signals>
@@ -152,19 +152,19 @@
 			Used with [method Node.rpc_config] or [method Node.rset_config] to set a method to be called or a property to be changed only on puppets for this node. Analogous to the [code]puppet[/code] keyword. Only accepts calls or property changes from the node's network master, see [method Node.set_network_master].
 		</constant>
 		<constant name="RPC_MODE_SLAVE" value="3" enum="RPCMode">
-			Deprecated. Use [code]RPC_MODE_PUPPET[/code] instead. Analogous to the [code]slave[/code] keyword.
+			[i]Deprecated.[/i] Use [constant RPC_MODE_PUPPET] instead. Analogous to the [code]slave[/code] keyword.
 		</constant>
 		<constant name="RPC_MODE_REMOTESYNC" value="4" enum="RPCMode">
-			Behave like [code]RPC_MODE_REMOTE[/code] but also make the call or property change locally. Analogous to the [code]remotesync[/code] keyword.
+			Behave like [constant RPC_MODE_REMOTE] but also make the call or property change locally. Analogous to the [code]remotesync[/code] keyword.
 		</constant>
 		<constant name="RPC_MODE_SYNC" value="4" enum="RPCMode">
-			Deprecated. Use [code]RPC_MODE_REMOTESYNC[/code] instead. Analogous to the [code]sync[/code] keyword.
+			[i]Deprecated.[/i] Use [constant RPC_MODE_REMOTESYNC] instead. Analogous to the [code]sync[/code] keyword.
 		</constant>
 		<constant name="RPC_MODE_MASTERSYNC" value="5" enum="RPCMode">
-			Behave like [code]RPC_MODE_MASTER[/code] but also make the call or property change locally. Analogous to the [code]mastersync[/code] keyword.
+			Behave like [constant RPC_MODE_MASTER] but also make the call or property change locally. Analogous to the [code]mastersync[/code] keyword.
 		</constant>
 		<constant name="RPC_MODE_PUPPETSYNC" value="6" enum="RPCMode">
-			Behave like [code]RPC_MODE_PUPPET[/code] but also make the call or property change locally. Analogous to the [code]puppetsync[/code] keyword.
+			Behave like [constant RPC_MODE_PUPPET] but also make the call or property change locally. Analogous to the [code]puppetsync[/code] keyword.
 		</constant>
 	</constants>
 </class>

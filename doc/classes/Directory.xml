@@ -32,8 +32,8 @@
 			<argument index="0" name="todir" type="String">
 			</argument>
 			<description>
-				Change the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
-				The method returns one of the error code constants defined in [@GlobalScope] (OK or ERR_*).
+				Changes the currently opened directory to the one passed as an argument. The argument can be relative to the current directory (e.g. [code]newdir[/code] or [code]../newdir[/code]), or an absolute path (e.g. [code]/tmp/newdir[/code] or [code]res://somedir/newdir[/code]).
+				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]ERR_*[/code]).
 			</description>
 		</method>
 		<method name="copy">
@@ -44,8 +44,8 @@
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
-				Copy the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				Returns one of the error code constants defined in [@GlobalScope] (OK, FAILED or ERR_*).
+				Copies the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
 			</description>
 		</method>
 		<method name="current_is_dir" qualifiers="const">
@@ -93,14 +93,14 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				On Windows, return the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not existed, the method returns an empty String.
+				On Windows, returns the name of the drive (partition) passed as an argument (e.g. [code]C:[/code]). On other platforms, or if the requested drive does not existed, the method returns an empty String.
 			</description>
 		</method>
 		<method name="get_drive_count">
 			<return type="int">
 			</return>
 			<description>
-				On Windows, return the number of drives (partitions) mounted on the current filesystem. On other platforms, the method returns 0.
+				On Windows, returns the number of drives (partitions) mounted on the current filesystem. On other platforms, the method returns 0.
 			</description>
 		</method>
 		<method name="get_next">
@@ -115,7 +115,7 @@
 			<return type="int">
 			</return>
 			<description>
-				On Unix desktop systems, return the available space on the current directory's disk. On other platforms, this information is not available and the method returns 0 or -1.
+				On UNIX desktop systems, returns the available space on the current directory's disk. On other platforms, this information is not available and the method returns 0 or -1.
 			</description>
 		</method>
 		<method name="list_dir_begin">
@@ -126,7 +126,7 @@
 			<argument index="1" name="skip_hidden" type="bool" default="false">
 			</argument>
 			<description>
-				Initialise the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
+				Initializes the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
 				If you pass [code]skip_navigational[/code], then [code].[/code] and [code]..[/code] would be filtered out.
 				If you pass [code]skip_hidden[/code], then hidden files would be filtered out.
 			</description>
@@ -135,7 +135,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Close the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] or not does not matter).
+				Closes the current stream opened with [method list_dir_begin] (whether it has been fully processed with [method get_next] or not does not matter).
 			</description>
 		</method>
 		<method name="make_dir">
@@ -144,8 +144,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Create a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
-				The method returns one of the error code constants defined in [@GlobalScope] (OK, FAILED or ERR_*).
+				Creates a directory. The argument can be relative to the current directory, or an absolute path. The target directory should be placed in an already existing directory (to create the full path recursively, see [method make_dir_recursive]).
+				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
 			</description>
 		</method>
 		<method name="make_dir_recursive">
@@ -154,8 +154,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Create a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
-				Returns one of the error code constants defined in [@GlobalScope] (OK, FAILED or ERR_*).
+				Creates a target directory and all necessary intermediate directories in its path, by calling [method make_dir] recursively. The argument can be relative to the current directory, or an absolute path.
+				Returns one of the error code constants defined in [@GlobalScope] ([code]0K[/code], [code]FAILED[/code] or [code]ERR_*[/code]).
 			</description>
 		</method>
 		<method name="open">
@@ -164,8 +164,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Open an existing directory of the filesystem. The [i]path[/i] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
-				The method returns one of the error code constants defined in [@GlobalScope] (OK or ERR_*).
+				Opens an existing directory of the filesystem. The [code]path[/code] argument can be within the project tree ([code]res://folder[/code]), the user directory ([code]user://folder[/code]) or an absolute path of the user filesystem (e.g. [code]/tmp/folder[/code] or [code]C:\tmp\folder[/code]).
+				The method returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]ERR_*[/code]).
 			</description>
 		</method>
 		<method name="remove">
@@ -174,8 +174,8 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Delete the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
-				Returns one of the error code constants defined in [@GlobalScope] (OK or FAILED).
+				Deletes the target file or an empty directory. The argument can be relative to the current directory, or an absolute path. If the target directory is not empty, the operation will fail.
+				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]FAILED[/code]).
 			</description>
 		</method>
 		<method name="rename">
@@ -186,8 +186,8 @@
 			<argument index="1" name="to" type="String">
 			</argument>
 			<description>
-				Rename (move) the [i]from[/i] file to the [i]to[/i] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
-				Returns one of the error code constants defined in [@GlobalScope] (OK or FAILED).
+				Renames (move) the [code]from[/code] file to the [code]to[/code] destination. Both arguments should be paths to files, either relative or absolute. If the destination file exists and is not access-protected, it will be overwritten.
+				Returns one of the error code constants defined in [@GlobalScope] ([code]OK[/code] or [code]FAILED[/code]).
 			</description>
 		</method>
 	</methods>

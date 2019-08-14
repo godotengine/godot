@@ -156,9 +156,9 @@ void CurveEditor::on_gui_input(const Ref<InputEvent> &p_event) {
 		Vector2 mpos = mm.get_position();
 
 		if (_dragging && _curve_ref.is_valid()) {
-			Curve &curve = **_curve_ref;
 
 			if (_selected_point != -1) {
+				Curve &curve = **_curve_ref;
 
 				if (!_has_undo_data) {
 					// Save full curve state before dragging points,
@@ -715,7 +715,7 @@ void CurveEditor::_draw() {
 	if (_hover_point != -1) {
 		const Color hover_color = line_color;
 		Vector2 pos = curve.get_point_position(_hover_point);
-		stroke_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(_hover_radius), hover_color);
+		draw_rect(Rect2(get_view_pos(pos), Vector2(1, 1)).grow(_hover_radius), hover_color, false, Math::round(EDSCALE));
 	}
 
 	// Help text
@@ -724,23 +724,6 @@ void CurveEditor::_draw() {
 		text_color.a *= 0.4;
 		draw_string(font, Vector2(50, font_height), TTR("Hold Shift to edit tangents individually"), text_color);
 	}
-}
-
-// TODO That should be part of the drawing API...
-void CurveEditor::stroke_rect(Rect2 rect, Color color) {
-
-	// a---b
-	// |   |
-	// c---d
-	Vector2 a(rect.position);
-	Vector2 b(rect.position.x + rect.size.x, rect.position.y);
-	Vector2 c(rect.position.x, rect.position.y + rect.size.y);
-	Vector2 d(rect.position + rect.size);
-
-	draw_line(a, b, color, Math::round(EDSCALE));
-	draw_line(b, d, color, Math::round(EDSCALE));
-	draw_line(d, c, color, Math::round(EDSCALE));
-	draw_line(c, a, color, Math::round(EDSCALE));
 }
 
 void CurveEditor::_bind_methods() {
@@ -783,7 +766,7 @@ bool CurvePreviewGenerator::handles(const String &p_type) const {
 	return p_type == "Curve";
 }
 
-Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 p_size) const {
+Ref<Texture> CurvePreviewGenerator::generate(const Ref<Resource> &p_from, const Size2 &p_size) const {
 
 	Ref<Curve> curve_ref = p_from;
 	ERR_FAIL_COND_V(curve_ref.is_null(), Ref<Texture>());

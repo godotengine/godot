@@ -111,18 +111,14 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 
 	Map<String, Ref<Texture> > extension_guess;
 	{
-		extension_guess["png"] = get_icon("Texture", "EditorIcons");
-		extension_guess["jpg"] = get_icon("Texture", "EditorIcons");
-		extension_guess["tex"] = get_icon("Texture", "EditorIcons");
-		extension_guess["atlastex"] = get_icon("Texture", "EditorIcons");
-		extension_guess["dds"] = get_icon("Texture", "EditorIcons");
+		extension_guess["png"] = get_icon("ImageTexture", "EditorIcons");
+		extension_guess["jpg"] = get_icon("ImageTexture", "EditorIcons");
+		extension_guess["atlastex"] = get_icon("AtlasTexture", "EditorIcons");
 		extension_guess["scn"] = get_icon("PackedScene", "EditorIcons");
 		extension_guess["tscn"] = get_icon("PackedScene", "EditorIcons");
-		extension_guess["xml"] = get_icon("PackedScene", "EditorIcons");
-		extension_guess["xscn"] = get_icon("PackedScene", "EditorIcons");
-		extension_guess["material"] = get_icon("Material", "EditorIcons");
-		extension_guess["shd"] = get_icon("Shader", "EditorIcons");
+		extension_guess["shader"] = get_icon("Shader", "EditorIcons");
 		extension_guess["gd"] = get_icon("GDScript", "EditorIcons");
+		extension_guess["vs"] = get_icon("VisualScript", "EditorIcons");
 	}
 
 	Ref<Texture> generic_extension = get_icon("Object", "EditorIcons");

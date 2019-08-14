@@ -63,7 +63,7 @@ void AudioDriverJavaScript::mix_to_js() {
 void AudioDriverJavaScript::process_capture(float sample) {
 
 	int32_t sample32 = int32_t(sample * 32768.f) * (1U << 16);
-	input_buffer_write(sample32);
+	capture_buffer_write(sample32);
 }
 
 Error AudioDriverJavaScript::init() {
@@ -198,7 +198,7 @@ void AudioDriverJavaScript::finish() {
 
 Error AudioDriverJavaScript::capture_start() {
 
-	input_buffer_init(buffer_length);
+	capture_buffer_init(buffer_length);
 
 	/* clang-format off */
 	EM_ASM({
@@ -244,8 +244,6 @@ Error AudioDriverJavaScript::capture_stop() {
 
 	});
 	/* clang-format on */
-
-	input_buffer.clear();
 
 	return OK;
 }

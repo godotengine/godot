@@ -70,6 +70,8 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	MenuButton *edit_menu;
 	MenuButton *search_menu;
+	PopupMenu *bookmarks_menu;
+	PopupMenu *breakpoints_menu;
 	PopupMenu *highlighter_menu;
 	PopupMenu *context_menu;
 
@@ -79,7 +81,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	PopupPanel *color_panel;
 	ColorPicker *color_picker;
-	int color_line;
+	Vector2 color_position;
 	String color_args;
 
 	void _update_member_keywords();
@@ -118,6 +120,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,
+		EDIT_EVALUATE,
 		EDIT_TOGGLE_FOLD_LINE,
 		EDIT_FOLD_ALL_LINES,
 		EDIT_UNFOLD_ALL_LINES,
@@ -141,12 +144,17 @@ class ScriptTextEditor : public ScriptEditorBase {
 	};
 
 protected:
-	static void _code_complete_scripts(void *p_ud, const String &p_code, List<String> *r_options, bool &r_force);
+	void _update_breakpoint_list();
+	void _breakpoint_item_pressed(int p_idx);
 	void _breakpoint_toggled(int p_row);
 
-	//no longer virtual
-	void _validate_script();
-	void _code_complete_script(const String &p_code, List<String> *r_options, bool &r_force);
+	void _validate_script(); // No longer virtual.
+	void _update_bookmark_list();
+	void _bookmark_item_pressed(int p_idx);
+
+	static void _code_complete_scripts(void *p_ud, const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force);
+	void _code_complete_script(const String &p_code, List<ScriptCodeCompletionOption> *r_options, bool &r_force);
+
 	void _load_theme_settings();
 	void _set_theme_for_script();
 	void _show_warnings_panel(bool p_show);
@@ -201,6 +209,7 @@ public:
 
 	virtual void goto_line(int p_line, bool p_with_error = false);
 	void goto_line_selection(int p_line, int p_begin, int p_end);
+	void goto_line_centered(int p_line);
 	virtual void set_executing_line(int p_line);
 	virtual void clear_executing_line();
 
@@ -220,7 +229,10 @@ public:
 	virtual void clear_edit_menu();
 	static void register_editor();
 
+	virtual void validate();
+
 	ScriptTextEditor();
+	~ScriptTextEditor();
 };
 
 #endif // SCRIPT_TEXT_EDITOR_H

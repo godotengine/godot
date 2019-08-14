@@ -65,13 +65,11 @@ void ViewportTexture::setup_local_to_scene() {
 	}
 
 	Node *vpn = local_scene->get_node(path);
-	ERR_EXPLAIN("ViewportTexture: Path to node is invalid");
-	ERR_FAIL_COND(!vpn);
+	ERR_FAIL_COND_MSG(!vpn, "ViewportTexture: Path to node is invalid.");
 
 	vp = Object::cast_to<Viewport>(vpn);
 
-	ERR_EXPLAIN("ViewportTexture: Path to node does not point to a viewport");
-	ERR_FAIL_COND(!vp);
+	ERR_FAIL_COND_MSG(!vp, "ViewportTexture: Path to node does not point to a viewport.");
 
 	vp->viewport_textures.insert(this);
 
@@ -172,14 +170,16 @@ ViewportTexture::~ViewportTexture() {
 
 class TooltipPanel : public PanelContainer {
 
-	GDCLASS(TooltipPanel, PanelContainer)
+	GDCLASS(TooltipPanel, PanelContainer);
+
 public:
 	TooltipPanel(){};
 };
 
 class TooltipLabel : public Label {
 
-	GDCLASS(TooltipLabel, Label)
+	GDCLASS(TooltipLabel, Label);
+
 public:
 	TooltipLabel(){};
 };
@@ -530,7 +530,7 @@ void Viewport::_notification(int p_what) {
 											Map<ObjectID, uint64_t>::Element *F = physics_2d_mouseover.find(res[i].collider_id);
 
 											if (!F) {
-												F = physics_2d_mouseover.insert(res[i].collider_id, frame);
+												physics_2d_mouseover.insert(res[i].collider_id, frame);
 												co->_mouse_enter();
 											} else {
 												F->get() = frame;
@@ -579,7 +579,7 @@ void Viewport::_notification(int p_what) {
 					if (physics_object_capture != 0) {
 
 						CollisionObject *co = Object::cast_to<CollisionObject>(ObjectDB::get_instance(physics_object_capture));
-						if (co) {
+						if (co && camera) {
 							_collision_object_input_event(co, camera, ev, Vector3(), Vector3(), 0);
 							captured = true;
 							if (mb.is_valid() && mb->get_button_index() == 1 && !mb->is_pressed()) {
@@ -1429,6 +1429,7 @@ void Viewport::_gui_show_tooltip() {
 
 	Control *which = NULL;
 	String tooltip = _gui_get_tooltip(gui.tooltip, gui.tooltip->get_global_transform().xform_inv(gui.tooltip_pos), &which);
+	tooltip = tooltip.strip_edges();
 	if (tooltip.length() == 0)
 		return; // bye
 
@@ -1442,9 +1443,7 @@ void Viewport::_gui_show_tooltip() {
 		return;
 	}
 
-	Control *rp = which; //->get_root_parent_control();
-	if (!rp)
-		return;
+	Control *rp = which;
 
 	gui.tooltip_popup = which->make_custom_tooltip(tooltip);
 
@@ -1460,7 +1459,7 @@ void Viewport::_gui_show_tooltip() {
 		gui.tooltip_label->set_anchor_and_margin(MARGIN_TOP, Control::ANCHOR_BEGIN, ttp->get_margin(MARGIN_TOP));
 		gui.tooltip_label->set_anchor_and_margin(MARGIN_RIGHT, Control::ANCHOR_END, -ttp->get_margin(MARGIN_RIGHT));
 		gui.tooltip_label->set_anchor_and_margin(MARGIN_BOTTOM, Control::ANCHOR_END, -ttp->get_margin(MARGIN_BOTTOM));
-		gui.tooltip_label->set_text(tooltip.strip_edges());
+		gui.tooltip_label->set_text(tooltip);
 	}
 
 	rp->add_child(gui.tooltip_popup);
@@ -1700,6 +1699,8 @@ bool Viewport::_gui_drop(Control *p_at_control, Point2 p_at_pos, bool p_just_che
 }
 
 void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
+
+	ERR_FAIL_COND(p_event.is_null())
 
 	//?
 	/*
@@ -2390,8 +2391,7 @@ void Viewport::_gui_remove_from_modal_stack(List<Control *>::Element *MI, Object
 
 void Viewport::_gui_force_drag(Control *p_base, const Variant &p_data, Control *p_control) {
 
-	ERR_EXPLAIN("Drag data must be a value");
-	ERR_FAIL_COND(p_data.get_type() == Variant::NIL);
+	ERR_FAIL_COND_MSG(p_data.get_type() == Variant::NIL, "Drag data must be a value.");
 
 	gui.dragging = true;
 	gui.drag_data = p_data;
@@ -2576,7 +2576,7 @@ void Viewport::_drop_physics_mouseover() {
 
 List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 
-	gui.modal_stack.push_back(p_control);
+	List<Control *>::Element *node = gui.modal_stack.push_back(p_control);
 	if (gui.key_focus)
 		p_control->_modal_set_prev_focus_owner(gui.key_focus->get_instance_id());
 	else
@@ -2587,7 +2587,7 @@ List<Control *>::Element *Viewport::_gui_show_modal(Control *p_control) {
 		_drop_mouse_focus();
 	}
 
-	return gui.modal_stack.back();
+	return node;
 }
 
 Control *Viewport::_gui_get_focus_owner() {
@@ -3062,6 +3062,7 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "arvr"), "set_use_arvr", "use_arvr");
 
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "size"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "size_override_stretch"), "set_size_override_stretch", "is_size_override_stretch_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "own_world"), "set_use_own_world", "is_using_own_world");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world", PROPERTY_HINT_RESOURCE_TYPE, "World"), "set_world", "get_world");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "world_2d", PROPERTY_HINT_RESOURCE_TYPE, "World2D", 0), "set_world_2d", "get_world_2d");

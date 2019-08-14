@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="bool" category="Built-In Types" version="3.2">
 	<brief_description>
-		Boolean built-in type
+		Boolean built-in type.
 	</brief_description>
 	<description>
 		Boolean built-in type.
@@ -24,7 +24,7 @@
 			<argument index="0" name="from" type="float">
 			</argument>
 			<description>
-				Cast a [float] value to a boolean value, this method will return [code]true[/code] if called with a floating point value different to 0 and [code]false[/code] in other case.
+				Cast a [float] value to a boolean value, this method will return [code]true[/code] if called with a floating-point value different to 0 and [code]false[/code] in other case.
 			</description>
 		</method>
 		<method name="bool">
@@ -33,7 +33,7 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Cast a [String] value to a boolean value, this method will return [code]true[/code] if called with a non empty string and [code]false[/code] in other case. Examples: [code]bool('False')[/code] returns [code]true[/code], [code]bool('')[/code] returns [code]false[/code].
+				Cast a [String] value to a boolean value, this method will return [code]true[/code] if called with a non-empty string and [code]false[/code] in other case. Examples: [code]bool("False")[/code] returns [code]true[/code], [code]bool("")[/code] returns [code]false[/code].
 			</description>
 		</method>
 	</methods>

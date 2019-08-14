@@ -52,6 +52,7 @@ public:
 
 protected:
 	Ref<NetSocket> _sock;
+	uint64_t timeout;
 	Status status;
 	IP_Address peer_host;
 	uint16_t peer_port;

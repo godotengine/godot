@@ -48,7 +48,7 @@
 
 String Collada::Effect::get_texture_path(const String &p_source, Collada &state) const {
 
-	String image = p_source;
+	const String &image = p_source;
 	ERR_FAIL_COND_V(!state.state.image_map.has(image), "");
 	return state.state.image_map[image].path;
 }
@@ -308,7 +308,7 @@ void Collada::_parse_image(XMLParser &parser) {
 		String path = parser.get_attribute_value("source").strip_edges();
 		if (path.find("://") == -1 && path.is_rel_path()) {
 			// path is relative to file being loaded, so convert to a resource path
-			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir() + "/" + path.percent_decode());
+			image.path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path.percent_decode()));
 		}
 	} else {
 
@@ -325,7 +325,7 @@ void Collada::_parse_image(XMLParser &parser) {
 
 					if (path.find("://") == -1 && path.is_rel_path()) {
 						// path is relative to file being loaded, so convert to a resource path
-						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir() + "/" + path);
+						path = ProjectSettings::get_singleton()->localize_path(state.local_path.get_base_dir().plus_file(path));
 
 					} else if (path.find("file:///") == 0) {
 						path = path.replace_first("file:///", "");
@@ -1101,6 +1101,7 @@ void Collada::_parse_mesh_geometry(XMLParser &parser, String p_id, String p_name
 							Vector<float> values = _read_float_array(parser);
 							if (polygons) {
 
+								ERR_CONTINUE(prim.vertex_size == 0);
 								prim.polygons.push_back(values.size() / prim.vertex_size);
 								int from = prim.indices.size();
 								prim.indices.resize(from + values.size());
@@ -1695,7 +1696,7 @@ Collada::Node *Collada::_parse_visual_scene_node(XMLParser &parser) {
 					}
 				}
 
-			} else if (section == "node") {
+			} else {
 
 				/* Found a child node!! what to do..*/
 
@@ -2522,7 +2523,6 @@ Error Collada::load(const String &p_path, int p_flags) {
 	state.local_path = ProjectSettings::get_singleton()->localize_path(p_path);
 	state.import_flags = p_flags;
 	/* Skip headers */
-	err = OK;
 	while ((err = parser.read()) == OK) {
 
 		if (parser.get_node_type() == XMLParser::NODE_ELEMENT) {

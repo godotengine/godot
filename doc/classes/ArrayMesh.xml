@@ -31,7 +31,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Add name for a blend shape that will be added with [method add_surface_from_arrays]. Must be called before surface is added.
+				Adds name for a blend shape that will be added with [method add_surface_from_arrays]. Must be called before surface is added.
 			</description>
 		</method>
 		<method name="add_surface_from_arrays">
@@ -48,7 +48,7 @@
 			<description>
 				Creates a new surface.
 				Surfaces are created to be rendered using a "primitive", which may be PRIMITIVE_POINTS, PRIMITIVE_LINES, PRIMITIVE_LINE_STRIP, PRIMITIVE_LINE_LOOP, PRIMITIVE_TRIANGLES, PRIMITIVE_TRIANGLE_STRIP, PRIMITIVE_TRIANGLE_FAN. See [Mesh] for details. (As a note, when using indices, it is recommended to only use points, lines or triangles). [method Mesh.get_surface_count] will become the [code]surf_idx[/code] for this new surface.
-				The [code]arrays[/code] argument is an array of arrays. See [enum ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [code]ARRAY_INDEX[/code] if it is used.
+				The [code]arrays[/code] argument is an array of arrays. See [enum ArrayType] for the values used in this array. For example, [code]arrays[0][/code] is the array of vertices. That first vertex sub-array is always required; the others are optional. Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data and the index array defines the vertex order. All sub-arrays must have the same length as the vertex array or be empty, except for [constant ARRAY_INDEX] if it is used.
 				Adding an index array puts this function into "index mode" where the vertex and other arrays become the sources of data, and the index array defines the order of the vertices.
 				Godot uses clockwise winding order for front faces of triangle primitive modes.
 			</description>
@@ -57,7 +57,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Remove all blend shapes from this [ArrayMesh].
+				Removes all blend shapes from this [ArrayMesh].
 			</description>
 		</method>
 		<method name="get_blend_shape_count" qualifiers="const">
@@ -100,7 +100,7 @@
 			<argument index="0" name="name" type="String">
 			</argument>
 			<description>
-				Returns the index of the first surface with this name held within this [ArrayMesh]. If none are found -1 is returned.
+				Returns the index of the first surface with this name held within this [ArrayMesh]. If none are found, -1 is returned.
 			</description>
 		</method>
 		<method name="surface_get_array_index_len" qualifiers="const">
@@ -136,7 +136,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Get the name assigned to this surface.
+				Gets the name assigned to this surface.
 			</description>
 		</method>
 		<method name="surface_get_primitive_type" qualifiers="const">
@@ -154,7 +154,7 @@
 			<argument index="0" name="surf_idx" type="int">
 			</argument>
 			<description>
-				Remove a surface at position surf_idx, shifting greater surfaces one surf_idx slot down.
+				Removes a surface at position [code]surf_idx[/code], shifting greater surfaces one [code]surf_idx[/code] slot down.
 			</description>
 		</method>
 		<method name="surface_set_name">
@@ -165,7 +165,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Set a name for a given surface.
+				Sets a name for a given surface.
 			</description>
 		</method>
 		<method name="surface_update_region">
@@ -178,15 +178,16 @@
 			<argument index="2" name="data" type="PoolByteArray">
 			</argument>
 			<description>
-				Updates a specified region of mesh arrays on GPU. Warning: only use if you know what you are doing. You can easily cause crashes by calling this function with improper arguments.
+				Updates a specified region of mesh arrays on the GPU.
+				[b]Warning:[/b] Only use if you know what you are doing. You can easily cause crashes by calling this function with improper arguments.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode">
+		<member name="blend_shape_mode" type="int" setter="set_blend_shape_mode" getter="get_blend_shape_mode" enum="Mesh.BlendShapeMode" default="1">
 		</member>
-		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb">
-			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unnexpected culling when using a shader to offset vertices.
+		<member name="custom_aabb" type="AABB" setter="set_custom_aabb" getter="get_custom_aabb" default="AABB( 0, 0, 0, 0, 0, 0 )">
+			Overrides the [AABB] with one defined by user for use with frustum culling. Especially useful to avoid unexpected culling when using a shader to offset vertices.
 		</member>
 	</members>
 	<constants>
@@ -225,6 +226,7 @@
 			For triangles, the index array is interpreted as triples, referring to the vertices of each triangle. For lines, the index array is in pairs indicating the start and end of each line.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
+			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 			Array format will include vertices (mandatory).

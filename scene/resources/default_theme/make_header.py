@@ -1,8 +1,13 @@
 #!/usr/bin/env python
 
 import glob
+import os
 
 enc = "utf-8"
+
+# Change to the directory where the script is located,
+# so that the script can be run from any location
+os.chdir(os.path.dirname(os.path.realpath(__file__)))
 
 # Generate include files
 

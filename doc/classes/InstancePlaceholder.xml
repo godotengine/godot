@@ -24,7 +24,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Retrieve the path to the [PackedScene] resource file that is loaded by default when calling [method replace_by_instance].
+				Gets the path to the [PackedScene] resource file that is loaded by default when calling [method replace_by_instance].
 			</description>
 		</method>
 		<method name="get_stored_values">
@@ -41,7 +41,7 @@
 			<argument index="0" name="custom_scene" type="PackedScene" default="null">
 			</argument>
 			<description>
-				Replace this placeholder by the scene handed as an argument, or the original scene if no argument is given. As for all resources, the scene is loaded only if it's not loaded already. By manually loading the scene beforehand, delays caused by this function can be avoided.
+				Replaces this placeholder by the scene handed as an argument, or the original scene if no argument is given. As for all resources, the scene is loaded only if it's not loaded already. By manually loading the scene beforehand, delays caused by this function can be avoided.
 			</description>
 		</method>
 	</methods>

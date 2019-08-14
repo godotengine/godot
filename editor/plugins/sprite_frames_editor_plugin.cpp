@@ -232,7 +232,8 @@ void SpriteFramesEditor::_notification(int p_what) {
 			_delete->set_icon(get_icon("Remove", "EditorIcons"));
 			new_anim->set_icon(get_icon("New", "EditorIcons"));
 			remove_anim->set_icon(get_icon("Remove", "EditorIcons"));
-		} // Fallthrough.
+			FALLTHROUGH;
+		}
 		case NOTIFICATION_THEME_CHANGED: {
 			splite_sheet_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 		} break;

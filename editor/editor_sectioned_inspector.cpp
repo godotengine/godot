@@ -144,8 +144,9 @@ void SectionedInspector::_section_selected() {
 	if (!sections->get_selected())
 		return;
 
-	filter->set_section(sections->get_selected()->get_metadata(0), sections->get_selected()->get_children() == NULL);
-	inspector->set_property_prefix(String(sections->get_selected()->get_metadata(0)) + "/");
+	selected_category = sections->get_selected()->get_metadata(0);
+	filter->set_section(selected_category, sections->get_selected()->get_children() == NULL);
+	inspector->set_property_prefix(selected_category + "/");
 }
 
 void SectionedInspector::set_current_section(const String &p_section) {
@@ -197,8 +198,13 @@ void SectionedInspector::edit(Object *p_object) {
 		filter->set_edited(p_object);
 		inspector->edit(filter);
 
-		if (sections->get_root()->get_children()) {
-			sections->get_root()->get_children()->select(0);
+		TreeItem *first_item = sections->get_root();
+		if (first_item) {
+			while (first_item->get_children())
+				first_item = first_item->get_children();
+
+			first_item->select(0);
+			selected_category = first_item->get_metadata(0);
 		}
 	} else {
 
@@ -208,7 +214,6 @@ void SectionedInspector::edit(Object *p_object) {
 
 void SectionedInspector::update_category_list() {
 
-	String selected_category = get_current_section();
 	sections->clear();
 
 	Object *o = ObjectDB::get_instance(obj);
@@ -224,6 +229,10 @@ void SectionedInspector::update_category_list() {
 	TreeItem *root = sections->create_item();
 	section_map[""] = root;
 
+	String filter;
+	if (search_box)
+		filter = search_box->get_text();
+
 	for (List<PropertyInfo>::Element *E = pinfo.front(); E; E = E->next()) {
 
 		PropertyInfo pi = E->get();
@@ -236,15 +245,15 @@ void SectionedInspector::update_category_list() {
 		if (pi.name.find(":") != -1 || pi.name == "script" || pi.name == "resource_name" || pi.name == "resource_path" || pi.name == "resource_local_to_scene" || pi.name.begins_with("_global_script"))
 			continue;
 
-		if (search_box && search_box->get_text() != String() && pi.name.findn(search_box->get_text()) == -1)
-			continue;
-
 		int sp = pi.name.find("/");
 		if (sp == -1)
 			pi.name = "global/" + pi.name;
 
 		Vector<String> sectionarr = pi.name.split("/");
 		String metasection;
+
+		if (!filter.empty() && !filter.is_subsequence_ofi(sectionarr[sectionarr.size() - 1].capitalize()))
+			continue;
 
 		int sc = MIN(2, sectionarr.size() - 1);
 

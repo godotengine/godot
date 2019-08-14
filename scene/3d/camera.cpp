@@ -279,10 +279,7 @@ Vector3 Camera::project_ray_normal(const Point2 &p_pos) const {
 
 Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
@@ -304,10 +301,7 @@ Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 
 Vector3 Camera::project_ray_origin(const Point2 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
@@ -345,10 +339,7 @@ bool Camera::is_position_behind(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> Camera::get_near_plane_points() const {
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector<Vector3>());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector<Vector3>(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -372,10 +363,7 @@ Vector<Vector3> Camera::get_near_plane_points() const {
 
 Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector2());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -400,10 +388,7 @@ Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 
 Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	if (p_z_depth == 0) {
 		return get_global_transform().origin;

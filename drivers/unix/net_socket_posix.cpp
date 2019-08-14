@@ -55,8 +55,12 @@
 
 #include <netinet/tcp.h>
 
-#if defined(__APPLE__)
-#define MSG_NOSIGNAL SO_NOSIGPIPE
+// BSD calls this flag IPV6_JOIN_GROUP
+#if !defined(IPV6_ADD_MEMBERSHIP) && defined(IPV6_JOIN_GROUP)
+#define IPV6_ADD_MEMBERSHIP IPV6_JOIN_GROUP
+#endif
+#if !defined(IPV6_DROP_MEMBERSHIP) && defined(IPV6_LEAVE_GROUP)
+#define IPV6_DROP_MEMBERSHIP IPV6_LEAVE_GROUP
 #endif
 
 // Some custom defines to minimize ifdefs
@@ -79,10 +83,6 @@
 #define SOCK_IOCTL ioctlsocket
 #define SOCK_CLOSE closesocket
 
-// Windows doesn't have this flag
-#ifndef MSG_NOSIGNAL
-#define MSG_NOSIGNAL 0
-#endif
 // Workaround missing flag in MinGW
 #if defined(__MINGW32__) && !defined(SIO_UDP_NETRESET)
 #define SIO_UDP_NETRESET _WSAIOW(IOC_VENDOR, 15)
@@ -212,7 +212,7 @@ NetSocketPosix::NetError NetSocketPosix::_get_socket_error() {
 #pragma GCC diagnostic pop
 #endif
 
-bool NetSocketPosix::_can_use_ip(const IP_Address p_ip, const bool p_for_bind) const {
+bool NetSocketPosix::_can_use_ip(const IP_Address &p_ip, const bool p_for_bind) const {
 
 	if (p_for_bind && !(p_ip.is_valid() || p_ip.is_wildcard())) {
 		return false;
@@ -221,10 +221,59 @@ bool NetSocketPosix::_can_use_ip(const IP_Address p_ip, const bool p_for_bind) c
 	}
 	// Check if socket support this IP type.
 	IP::Type type = p_ip.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
-	if (_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type) {
-		return false;
+	return !(_ip_type != IP::TYPE_ANY && !p_ip.is_wildcard() && _ip_type != type);
+}
+
+_FORCE_INLINE_ Error NetSocketPosix::_change_multicast_group(IP_Address p_ip, String p_if_name, bool p_add) {
+
+	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V(!_can_use_ip(p_ip, false), ERR_INVALID_PARAMETER);
+
+	// Need to force level and af_family to IP(v4) when using dual stacking and provided multicast group is IPv4
+	IP::Type type = _ip_type == IP::TYPE_ANY && p_ip.is_ipv4() ? IP::TYPE_IPV4 : _ip_type;
+	// This needs to be the proper level for the multicast group, no matter if the socket is dual stacking.
+	int level = type == IP::TYPE_IPV4 ? IPPROTO_IP : IPPROTO_IPV6;
+	int ret = -1;
+
+	IP_Address if_ip;
+	uint32_t if_v6id = 0;
+	Map<String, IP::Interface_Info> if_info;
+	IP::get_singleton()->get_local_interfaces(&if_info);
+	for (Map<String, IP::Interface_Info>::Element *E = if_info.front(); E; E = E->next()) {
+		IP::Interface_Info &c = E->get();
+		if (c.name != p_if_name)
+			continue;
+
+		if_v6id = (uint32_t)c.index.to_int64();
+		if (type == IP::TYPE_IPV6)
+			break; // IPv6 uses index.
+
+		for (List<IP_Address>::Element *F = c.ip_addresses.front(); F; F = F->next()) {
+			if (!F->get().is_ipv4())
+				continue; // Wrong IP type
+			if_ip = F->get();
+			break;
+		}
+		break;
 	}
-	return true;
+
+	if (level == IPPROTO_IP) {
+		ERR_FAIL_COND_V(!if_ip.is_valid(), ERR_INVALID_PARAMETER);
+		struct ip_mreq greq;
+		int sock_opt = p_add ? IP_ADD_MEMBERSHIP : IP_DROP_MEMBERSHIP;
+		copymem(&greq.imr_multiaddr, p_ip.get_ipv4(), 4);
+		copymem(&greq.imr_interface, if_ip.get_ipv4(), 4);
+		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
+	} else {
+		struct ipv6_mreq greq;
+		int sock_opt = p_add ? IPV6_ADD_MEMBERSHIP : IPV6_DROP_MEMBERSHIP;
+		copymem(&greq.ipv6mr_multiaddr, p_ip.get_ipv6(), 16);
+		greq.ipv6mr_interface = if_v6id;
+		ret = setsockopt(_sock, level, sock_opt, (const char *)&greq, sizeof(greq));
+	}
+	ERR_FAIL_COND_V(ret != 0, FAILED);
+
+	return OK;
 }
 
 void NetSocketPosix::_set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream) {
@@ -283,6 +332,13 @@ Error NetSocketPosix::open(Type p_sock_type, IP::Type &ip_type) {
 			// This feature seems not to be supported on wine.
 			print_verbose("Unable to turn off UDP WSAENETRESET behaviour on Windows");
 		}
+	}
+#endif
+#if defined(SO_NOSIGPIPE)
+	// Disable SIGPIPE (should only be relevant to stream sockets, but seems to affect UDP too on iOS)
+	int par = 1;
+	if (setsockopt(_sock, SOL_SOCKET, SO_NOSIGPIPE, SOCK_CBUF(&par), sizeof(int)) != 0) {
+		print_verbose("Unable to turn off SIGPIPE on socket");
 	}
 #endif
 	return OK;
@@ -421,7 +477,7 @@ Error NetSocketPosix::poll(PollType p_type, int p_timeout) const {
 			pfd.events = POLLOUT;
 			break;
 		case POLL_TYPE_IN_OUT:
-			pfd.events = POLLOUT || POLLIN;
+			pfd.events = POLLOUT | POLLIN;
 	}
 
 	int ret = ::poll(&pfd, 1, p_timeout);
@@ -489,8 +545,10 @@ Error NetSocketPosix::send(const uint8_t *p_buffer, int p_len, int &r_sent) {
 	ERR_FAIL_COND_V(!is_open(), ERR_UNCONFIGURED);
 
 	int flags = 0;
+#ifdef MSG_NOSIGNAL
 	if (_is_stream)
 		flags = MSG_NOSIGNAL;
+#endif
 	r_sent = ::send(_sock, SOCK_CBUF(p_buffer), p_len, flags);
 
 	if (r_sent < 0) {
@@ -624,4 +682,12 @@ Ref<NetSocket> NetSocketPosix::accept(IP_Address &r_ip, uint16_t &r_port) {
 	ns->_set_socket(fd, _ip_type, _is_stream);
 	ns->set_blocking_enabled(false);
 	return Ref<NetSocket>(ns);
+}
+
+Error NetSocketPosix::join_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+	return _change_multicast_group(p_multi_address, p_if_name, true);
+}
+
+Error NetSocketPosix::leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
+	return _change_multicast_group(p_multi_address, p_if_name, false);
 }

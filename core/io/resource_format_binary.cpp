@@ -410,7 +410,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			PoolVector<uint8_t>::Write w = array.write();
 			f->get_buffer(w.ptr(), len);
 			_advance_padding(len);
-			w = PoolVector<uint8_t>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -432,7 +432,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			}
 
 #endif
-			w = PoolVector<int>::Write();
+			w.release();
 			r_v = array;
 		} break;
 		case VARIANT_REAL_ARRAY: {
@@ -454,7 +454,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 
 #endif
 
-			w = PoolVector<real_t>::Write();
+			w.release();
 			r_v = array;
 		} break;
 		case VARIANT_STRING_ARRAY: {
@@ -465,7 +465,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 			PoolVector<String>::Write w = array.write();
 			for (uint32_t i = 0; i < len; i++)
 				w[i] = get_unicode_string();
-			w = PoolVector<String>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -493,7 +493,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Vector2 size is NOT 8!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Vector2>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -521,7 +521,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Vector3 size is NOT 12!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Vector3>::Write();
+			w.release();
 			r_v = array;
 
 		} break;
@@ -549,7 +549,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				ERR_EXPLAIN("Color size is NOT 16!");
 				ERR_FAIL_V(ERR_UNAVAILABLE);
 			}
-			w = PoolVector<Color>::Write();
+			w.release();
 			r_v = array;
 		} break;
 #ifndef DISABLE_DEPRECATED
@@ -584,7 +584,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				PoolVector<uint8_t>::Write w = imgdata.write();
 				f->get_buffer(w.ptr(), datalen);
 				_advance_padding(datalen);
-				w = PoolVector<uint8_t>::Write();
+				w.release();
 
 				Ref<Image> image;
 				image.instance();
@@ -597,7 +597,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				data.resize(f->get_32());
 				PoolVector<uint8_t>::Write w = data.write();
 				f->get_buffer(w.ptr(), data.size());
-				w = PoolVector<uint8_t>::Write();
+				w.release();
 
 				Ref<Image> image;
 
@@ -712,15 +712,15 @@ Error ResourceInteractiveLoaderBinary::poll() {
 	if (!obj) {
 		error = ERR_FILE_CORRUPT;
 		ERR_EXPLAIN(local_path + ":Resource of unrecognized type in file: " + t);
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
-	ERR_FAIL_COND_V(!obj, ERR_FILE_CORRUPT);
 
 	Resource *r = Object::cast_to<Resource>(obj);
 	if (!r) {
 		error = ERR_FILE_CORRUPT;
-		memdelete(obj); //bye
 		ERR_EXPLAIN(local_path + ":Resource type in resource field not a resource, type is: " + obj->get_class());
-		ERR_FAIL_COND_V(!r, ERR_FILE_CORRUPT);
+		memdelete(obj); //bye
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
 	RES res = RES(r);
@@ -991,10 +991,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderBinary::load_interactive(cons
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
-	}
+	ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
 
 	Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1129,9 +1126,8 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
-		if (err != OK) {
-			ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
-		}
+
+		ERR_FAIL_COND_V(err != OK, ERR_FILE_CANT_OPEN);
 
 		Ref<ResourceInteractiveLoaderBinary> ria = memnew(ResourceInteractiveLoaderBinary);
 		ria->local_path = ProjectSettings::get_singleton()->localize_path(p_path);
@@ -1698,7 +1694,7 @@ void ResourceFormatSaverBinaryInstance::_find_resources(const Variant &p_variant
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 
-				Variant v = varray.get(i);
+				const Variant &v = varray.get(i);
 				_find_resources(v);
 			}
 

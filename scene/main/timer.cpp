@@ -80,8 +80,7 @@ void Timer::_notification(int p_what) {
 }
 
 void Timer::set_wait_time(float p_time) {
-	ERR_EXPLAIN("time should be greater than zero.");
-	ERR_FAIL_COND(p_time <= 0);
+	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
 	wait_time = p_time;
 }
 float Timer::get_wait_time() const {

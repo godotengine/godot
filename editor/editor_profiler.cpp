@@ -227,8 +227,6 @@ void EditorProfiler::_update_plot() {
 		Map<StringName, int> plot_prev;
 		//Map<StringName,int> plot_max;
 
-		uint64_t time = OS::get_singleton()->get_ticks_usec();
-
 		for (int i = 0; i < w; i++) {
 
 			for (int j = 0; j < h * 4; j++) {
@@ -340,11 +338,9 @@ void EditorProfiler::_update_plot() {
 				wr[widx + 3] = 255;
 			}
 		}
-
-		time = OS::get_singleton()->get_ticks_usec() - time;
 	}
 
-	wr = PoolVector<uint8_t>::Write();
+	wr.release();
 
 	Ref<Image> img;
 	img.instance();

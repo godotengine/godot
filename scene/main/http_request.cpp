@@ -60,14 +60,10 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 		use_ssl = true;
 		port = 443;
 	} else {
-		ERR_EXPLAIN("Malformed URL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Malformed URL.");
 	}
 
-	if (url.length() < 1) {
-		ERR_EXPLAIN("URL too short");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
+	ERR_FAIL_COND_V_MSG(url.length() < 1, ERR_INVALID_PARAMETER, "URL too short.");
 
 	int slash_pos = url.find("/");
 
@@ -91,9 +87,11 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
-	if (requesting) {
-		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
-		ERR_FAIL_V(ERR_BUSY);
+	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
+
+	if (timeout > 0) {
+		timer->stop();
+		timer->start(timeout);
 	}
 
 	method = p_method;
@@ -152,6 +150,8 @@ void HTTPRequest::_thread_func(void *p_userdata) {
 }
 
 void HTTPRequest::cancel_request() {
+
+	timer->stop();
 
 	if (!requesting)
 		return;
@@ -425,7 +425,7 @@ void HTTPRequest::_notification(int p_what) {
 
 void HTTPRequest::set_use_threads(bool p_use) {
 
-	ERR_FAIL_COND(status != HTTPClient::STATUS_DISCONNECTED);
+	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
 	use_threads = p_use;
 }
 
@@ -436,7 +436,7 @@ bool HTTPRequest::is_using_threads() const {
 
 void HTTPRequest::set_body_size_limit(int p_bytes) {
 
-	ERR_FAIL_COND(status != HTTPClient::STATUS_DISCONNECTED);
+	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
 
 	body_size_limit = p_bytes;
 }
@@ -448,7 +448,7 @@ int HTTPRequest::get_body_size_limit() const {
 
 void HTTPRequest::set_download_file(const String &p_file) {
 
-	ERR_FAIL_COND(status != HTTPClient::STATUS_DISCONNECTED);
+	ERR_FAIL_COND(get_http_client_status() != HTTPClient::STATUS_DISCONNECTED);
 
 	download_to_file = p_file;
 }
@@ -479,6 +479,23 @@ int HTTPRequest::get_body_size() const {
 	return body_len;
 }
 
+void HTTPRequest::set_timeout(int p_timeout) {
+
+	ERR_FAIL_COND(p_timeout < 0);
+	timeout = p_timeout;
+}
+
+int HTTPRequest::get_timeout() {
+
+	return timeout;
+}
+
+void HTTPRequest::_timeout() {
+
+	cancel_request();
+	call_deferred("_request_done", RESULT_TIMEOUT, 0, PoolStringArray(), PoolByteArray());
+}
+
 void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PoolStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
@@ -504,10 +521,16 @@ void HTTPRequest::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_redirect_request"), &HTTPRequest::_redirect_request);
 	ClassDB::bind_method(D_METHOD("_request_done"), &HTTPRequest::_request_done);
 
+	ClassDB::bind_method(D_METHOD("set_timeout", "timeout"), &HTTPRequest::set_timeout);
+	ClassDB::bind_method(D_METHOD("get_timeout"), &HTTPRequest::get_timeout);
+
+	ClassDB::bind_method(D_METHOD("_timeout"), &HTTPRequest::_timeout);
+
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "download_file", PROPERTY_HINT_FILE), "set_download_file", "get_download_file");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_threads"), "set_use_threads", "is_using_threads");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "body_size_limit", PROPERTY_HINT_RANGE, "-1,2000000000"), "set_body_size_limit", "get_body_size_limit");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_redirects", PROPERTY_HINT_RANGE, "-1,64"), "set_max_redirects", "get_max_redirects");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "timeout", PROPERTY_HINT_RANGE, "0,86400"), "set_timeout", "get_timeout");
 
 	ADD_SIGNAL(MethodInfo("request_completed", PropertyInfo(Variant::INT, "result"), PropertyInfo(Variant::INT, "response_code"), PropertyInfo(Variant::POOL_STRING_ARRAY, "headers"), PropertyInfo(Variant::POOL_BYTE_ARRAY, "body")));
 
@@ -524,6 +547,7 @@ void HTTPRequest::_bind_methods() {
 	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_CANT_OPEN);
 	BIND_ENUM_CONSTANT(RESULT_DOWNLOAD_FILE_WRITE_ERROR);
 	BIND_ENUM_CONSTANT(RESULT_REDIRECT_LIMIT_REACHED);
+	BIND_ENUM_CONSTANT(RESULT_TIMEOUT);
 }
 
 HTTPRequest::HTTPRequest() {
@@ -546,7 +570,12 @@ HTTPRequest::HTTPRequest() {
 	downloaded = 0;
 	body_size_limit = -1;
 	file = NULL;
-	status = HTTPClient::STATUS_DISCONNECTED;
+
+	timer = memnew(Timer);
+	timer->set_one_shot(true);
+	timer->connect("timeout", this, "_timeout");
+	add_child(timer);
+	timeout = 0;
 }
 
 HTTPRequest::~HTTPRequest() {

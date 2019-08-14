@@ -36,7 +36,7 @@
 
 class VisualScriptExpression : public VisualScriptNode {
 
-	GDCLASS(VisualScriptExpression, VisualScriptNode)
+	GDCLASS(VisualScriptExpression, VisualScriptNode);
 	friend class VisualScriptNodeInstanceExpression;
 
 	struct Input {

@@ -35,10 +35,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="default_length" type="float" setter="set_default_length" getter="get_default_length">
+		<member name="default_length" type="float" setter="set_default_length" getter="get_default_length" default="16.0">
 			Length of the bone's representation drawn in the editor's viewport in pixels.
 		</member>
-		<member name="rest" type="Transform2D" setter="set_rest" getter="get_rest">
+		<member name="rest" type="Transform2D" setter="set_rest" getter="get_rest" default="Transform2D( 0, 0, 0, 0, 0, 0 )">
 			Rest transform of the bone. You can reset the node's transforms to this value using [method apply_rest].
 		</member>
 	</members>

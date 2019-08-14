@@ -8,6 +8,7 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform : IEquatable<Transform>
     {
@@ -33,7 +34,7 @@ namespace Godot
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform();
-            interpolated.basis.SetQuantScale(sourceRotation.Slerp(destinationRotation, c).Normalized(), sourceScale.LinearInterpolate(destinationScale, c));
+            interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, c).Normalized(), sourceScale.LinearInterpolate(destinationScale, c));
             interpolated.origin = sourceLocation.LinearInterpolate(destinationLocation, c);
 
             return interpolated;

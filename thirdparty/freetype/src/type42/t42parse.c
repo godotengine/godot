@@ -226,7 +226,8 @@
     if ( !parser->in_memory )
       FT_FREE( parser->base_dict );
 
-    parser->root.funcs.done( &parser->root );
+    if ( parser->root.funcs.done )
+      parser->root.funcs.done( &parser->root );
   }
 
 
@@ -373,12 +374,7 @@
 
       /* We need to `zero' out encoding_table.elements */
       for ( n = 0; n < count; n++ )
-      {
-        char*  notdef = (char *)".notdef";
-
-
-        (void)T1_Add_Table( char_table, n, notdef, 8 );
-      }
+        (void)T1_Add_Table( char_table, n, ".notdef", 8 );
 
       /* Now we need to read records of the form                */
       /*                                                        */
@@ -1021,8 +1017,7 @@
     }
 
     /* if /.notdef does not occupy index 0, do our magic. */
-    if ( ft_strcmp( (const char*)".notdef",
-                    (const char*)name_table->elements[0] ) )
+    if ( ft_strcmp( ".notdef", (const char*)name_table->elements[0] ) )
     {
       /* Swap glyph in index 0 with /.notdef glyph.  First, add index 0  */
       /* name and code entries to swap_table.  Then place notdef_index   */

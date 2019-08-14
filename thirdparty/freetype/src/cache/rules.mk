@@ -15,7 +15,7 @@
 
 # Cache driver directory
 #
-CACHE_DIR   := $(SRC_DIR)/cache
+CACHE_DIR := $(SRC_DIR)/cache
 
 
 # compilation flags for the driver

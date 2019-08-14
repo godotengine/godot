@@ -47,7 +47,8 @@ public:
 };
 
 class ResourceImporterOBJ : public ResourceImporter {
-	GDCLASS(ResourceImporterOBJ, ResourceImporter)
+	GDCLASS(ResourceImporterOBJ, ResourceImporter);
+
 public:
 	virtual String get_importer_name() const;
 	virtual String get_visible_name() const;

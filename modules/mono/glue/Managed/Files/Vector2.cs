@@ -14,6 +14,7 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector2 : IEquatable<Vector2>
     {
@@ -222,11 +223,13 @@ namespace Godot
             return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
+        [Obsolete("Set is deprecated. Use the Vector2(" + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y)
         {
             this.x = x;
             this.y = y;
         }
+        [Obsolete("Set is deprecated. Use the Vector2(" + nameof(Vector2) + ") constructor instead.", error: true)]
         public void Set(Vector2 v)
         {
             x = v.x;

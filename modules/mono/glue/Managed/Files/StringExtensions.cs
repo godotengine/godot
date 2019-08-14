@@ -98,6 +98,66 @@ namespace Godot
         }
 
         // <summary>
+        // Return the amount of substrings in string.
+        // </summary>
+        public static int Count(this string instance, string what, bool caseSensitive = true, int from = 0, int to = 0)
+        {
+            if (what.Length == 0)
+            {
+                return 0;
+            }
+
+            int len = instance.Length;
+            int slen = what.Length;
+
+            if (len < slen)
+            {
+                return 0;
+            }
+
+            string str;
+
+            if (from >= 0 && to >= 0)
+            {
+                if (to == 0)
+                {
+                    to = len;
+                }
+                else if (from >= to)
+                {
+                    return 0;
+                }
+                if (from == 0 && to == len)
+                {
+                    str = instance;
+                }
+                else
+                {
+                    str = instance.Substring(from, to - from);
+                }
+            }
+            else
+            {
+                return 0;
+            }
+
+            int c = 0;
+            int idx;
+
+            do
+            {
+                idx = str.IndexOf(what, caseSensitive ? StringComparison.Ordinal : StringComparison.OrdinalIgnoreCase);
+                if (idx != -1)
+                {
+                    str = str.Substring(idx + slen);
+                    ++c;
+                }
+            } while (idx != -1);
+
+            return c;
+        }
+
+        // <summary>
         // Return a copy of the string with special characters escaped using the C language standard.
         // </summary>
         public static string CEscape(this string instance)
@@ -299,14 +359,14 @@ namespace Godot
             if (basepos != -1)
             {
                 var end = basepos + 3;
-                rs = instance.Substring(end, instance.Length);
+                rs = instance.Substring(end);
                 @base = instance.Substring(0, end);
             }
             else
             {
                 if (instance.BeginsWith("/"))
                 {
-                    rs = instance.Substring(1, instance.Length);
+                    rs = instance.Substring(1);
                     @base = "/";
                 }
                 else
@@ -333,7 +393,7 @@ namespace Godot
             if (sep == -1)
                 return instance;
 
-            return instance.Substring(sep + 1, instance.Length);
+            return instance.Substring(sep + 1);
         }
 
         // <summary>
@@ -911,7 +971,8 @@ namespace Godot
         // </summary>
         public static string Substr(this string instance, int from, int len)
         {
-            return instance.Substring(from, len);
+            int max = instance.Length - from;
+            return instance.Substring(from, len > max ? max : len);
         }
 
         // <summary>

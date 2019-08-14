@@ -139,8 +139,8 @@ private:
 		bool operator()(const Control *p_a, const Control *p_b) const {
 			if (p_a->get_canvas_layer() == p_b->get_canvas_layer())
 				return p_b->is_greater_than(p_a);
-			else
-				return p_a->get_canvas_layer() < p_b->get_canvas_layer();
+
+			return p_a->get_canvas_layer() < p_b->get_canvas_layer();
 		}
 	};
 
@@ -230,7 +230,6 @@ private:
 	void _update_scroll();
 	void _resize(const Size2 &p_size);
 
-	Rect2 _compute_child_rect(const float p_anchors[4], const float p_margins[4]) const;
 	void _compute_margins(Rect2 p_rect, const float p_anchors[4], float (&r_margins)[4]);
 	void _compute_anchors(Rect2 p_rect, const float p_margins[4], float (&r_anchors)[4]);
 
@@ -487,6 +486,7 @@ public:
 	bool is_visibility_clip_disabled() const;
 
 	virtual void get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const;
+	virtual String get_configuration_warning() const;
 
 	Control();
 	~Control();

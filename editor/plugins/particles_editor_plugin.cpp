@@ -197,7 +197,7 @@ void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 		}
 	}
 
-	w = PoolVector<Face3>::Write();
+	w.release();
 
 	emission_dialog->popup_centered(Size2(300, 130));
 }
@@ -315,10 +315,15 @@ void ParticlesEditor::_menu_option(int p_option) {
 			UndoRedo *ur = EditorNode::get_singleton()->get_undo_redo();
 			ur->create_action(TTR("Convert to CPUParticles"));
 			ur->add_do_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", node, cpu_particles, true, false);
-			ur->add_do_reference(node);
+			ur->add_do_reference(cpu_particles);
 			ur->add_undo_method(EditorNode::get_singleton()->get_scene_tree_dock(), "replace_node", cpu_particles, node, false, false);
-			ur->add_undo_reference(this);
+			ur->add_undo_reference(node);
 			ur->commit_action();
+
+		} break;
+		case MENU_OPTION_RESTART: {
+
+			node->restart();
 
 		} break;
 	}
@@ -471,6 +476,8 @@ ParticlesEditor::ParticlesEditor() {
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
 	options->get_popup()->add_separator();
 	options->get_popup()->add_item(TTR("Convert to CPUParticles"), MENU_OPTION_CONVERT_TO_CPU_PARTICLES);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
 
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 

@@ -31,7 +31,6 @@
 #ifndef TILE_SET_EDITOR_PLUGIN_H
 #define TILE_SET_EDITOR_PLUGIN_H
 
-#include "editor/editor_name_dialog.h"
 #include "editor/editor_node.h"
 #include "scene/2d/sprite.h"
 #include "scene/resources/concave_polygon_shape_2d.h"
@@ -46,7 +45,7 @@ class TileSetEditor : public HSplitContainer {
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
-	GDCLASS(TileSetEditor, HSplitContainer)
+	GDCLASS(TileSetEditor, HSplitContainer);
 
 	enum TextureToolButtons {
 		TOOL_TILESET_ADD_TEXTURE,
@@ -202,7 +201,7 @@ private:
 	void _on_grid_snap_toggled(bool p_val);
 	Vector<Vector2> _get_collision_shape_points(const Ref<Shape2D> &p_shape);
 	Vector<Vector2> _get_edited_shape_points();
-	void _set_edited_shape_points(const Vector<Vector2> points);
+	void _set_edited_shape_points(const Vector<Vector2> &points);
 	void _update_tile_data();
 	void _update_toggle_shape_button();
 	void _select_next_tile();

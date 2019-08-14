@@ -65,6 +65,14 @@ public class GodotInputHandler implements InputDeviceListener {
 		godotView.queueEvent(task);
 	}
 
+	private boolean isKeyEvent_GameDevice(int source) {
+		// Note that keyboards are often (SOURCE_KEYBOARD | SOURCE_DPAD)
+		if (source == (InputDevice.SOURCE_KEYBOARD | InputDevice.SOURCE_DPAD))
+			return false;
+
+		return (source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK || (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD || (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD;
+	}
+
 	public boolean onKeyUp(final int keyCode, KeyEvent event) {
 		if (keyCode == KeyEvent.KEYCODE_BACK) {
 			return true;
@@ -75,7 +83,7 @@ public class GodotInputHandler implements InputDeviceListener {
 		};
 
 		int source = event.getSource();
-		if ((source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK || (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD || (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+		if (isKeyEvent_GameDevice(source)) {
 
 			final int button = getGodotButton(keyCode);
 			final int device_id = findJoystickDevice(event.getDeviceId());
@@ -118,7 +126,7 @@ public class GodotInputHandler implements InputDeviceListener {
 		int source = event.getSource();
 		//Log.e(TAG, String.format("Key down! source %d, device %d, joystick %d, %d, %d", event.getDeviceId(), source, (source & InputDevice.SOURCE_JOYSTICK), (source & InputDevice.SOURCE_DPAD), (source & InputDevice.SOURCE_GAMEPAD)));
 
-		if ((source & InputDevice.SOURCE_JOYSTICK) == InputDevice.SOURCE_JOYSTICK || (source & InputDevice.SOURCE_DPAD) == InputDevice.SOURCE_DPAD || (source & InputDevice.SOURCE_GAMEPAD) == InputDevice.SOURCE_GAMEPAD) {
+		if (isKeyEvent_GameDevice(source)) {
 
 			if (event.getRepeatCount() > 0) // ignore key echo
 				return true;

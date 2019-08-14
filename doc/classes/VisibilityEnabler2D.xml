@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="VisibilityEnabler2D" inherits="VisibilityNotifier2D" category="Core" version="3.2">
 	<brief_description>
-		Enable certain nodes only when visible.
+		Enables certain nodes only when visible.
 	</brief_description>
 	<description>
 		The VisibilityEnabler2D will disable [RigidBody2D], [AnimationPlayer], and other nodes when they are not visible. It will only affect other nodes within the same scene as the VisibilityEnabler2D itself.
@@ -9,24 +9,42 @@
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="is_enabler_enabled" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler2D.Enabler">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_enabler">
+			<return type="void">
+			</return>
+			<argument index="0" name="enabler" type="int" enum="VisibilityEnabler2D.Enabler">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="freeze_bodies" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
 			If [code]true[/code], [RigidBody2D] nodes will be paused.
 		</member>
-		<member name="pause_animated_sprites" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="pause_animated_sprites" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
 			If [code]true[/code], [AnimatedSprite] nodes will be paused.
 		</member>
-		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="pause_animations" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
 			If [code]true[/code], [AnimationPlayer] nodes will be paused.
 		</member>
-		<member name="pause_particles" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="pause_particles" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="true">
 			If [code]true[/code], [Particles2D] nodes will be paused.
 		</member>
-		<member name="physics_process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="physics_process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="false">
 			If [code]true[/code], the parent's [method Node._physics_process] will be stopped.
 		</member>
-		<member name="process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled">
+		<member name="process_parent" type="bool" setter="set_enabler" getter="is_enabler_enabled" default="false">
 			If [code]true[/code], the parent's [method Node._process] will be stopped.
 		</member>
 	</members>
@@ -49,6 +67,7 @@
 		<constant name="ENABLER_PAUSE_ANIMATED_SPRITES" value="5" enum="Enabler">
 		</constant>
 		<constant name="ENABLER_MAX" value="6" enum="Enabler">
+			Represents the size of the [enum Enabler] enum.
 		</constant>
 	</constants>
 </class>

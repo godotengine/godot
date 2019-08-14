@@ -728,12 +728,12 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer::BodyAxis p_axis) const {
 
 void RigidBodyBullet::reload_axis_lock() {
 
-	btBody->setLinearFactor(btVector3(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_X), !is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Y), !is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Z)));
+	btBody->setLinearFactor(btVector3(float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_X)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Y)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Z))));
 	if (PhysicsServer::BODY_MODE_CHARACTER == mode) {
 		/// When character angular is always locked
 		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	} else {
-		btBody->setAngularFactor(btVector3(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_X), !is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Y), !is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Z)));
+		btBody->setAngularFactor(btVector3(float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_X)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Y)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Z))));
 	}
 }
 
@@ -866,7 +866,7 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 
 	if (p_area->is_spOv_gravityPoint()) {
 		++countGravityPointSpaces;
-		assert(0 < countGravityPointSpaces);
+		ERR_FAIL_COND(countGravityPointSpaces <= 0);
 	}
 }
 
@@ -888,7 +888,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 	if (wasTheAreaFound) {
 		if (p_area->is_spOv_gravityPoint()) {
 			--countGravityPointSpaces;
-			assert(0 <= countGravityPointSpaces);
+			ERR_FAIL_COND(countGravityPointSpaces < 0);
 		}
 
 		--areaWhereIamCount;

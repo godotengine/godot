@@ -43,40 +43,42 @@ Size2 OptionButton::get_minimum_size() const {
 
 void OptionButton::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
 
-		if (!has_icon("arrow"))
-			return;
+			if (!has_icon("arrow"))
+				return;
 
-		RID ci = get_canvas_item();
-		Ref<Texture> arrow = Control::get_icon("arrow");
-		Ref<StyleBox> normal = get_stylebox("normal");
-		Color clr = Color(1, 1, 1);
-		if (get_constant("modulate_arrow")) {
-			switch (get_draw_mode()) {
-				case DRAW_PRESSED:
-					clr = get_color("font_color_pressed");
-					break;
-				case DRAW_HOVER:
-					clr = get_color("font_color_hover");
-					break;
-				case DRAW_DISABLED:
-					clr = get_color("font_color_disabled");
-					break;
-				default:
-					clr = get_color("font_color");
+			RID ci = get_canvas_item();
+			Ref<Texture> arrow = Control::get_icon("arrow");
+			Color clr = Color(1, 1, 1);
+			if (get_constant("modulate_arrow")) {
+				switch (get_draw_mode()) {
+					case DRAW_PRESSED:
+						clr = get_color("font_color_pressed");
+						break;
+					case DRAW_HOVER:
+						clr = get_color("font_color_hover");
+						break;
+					case DRAW_DISABLED:
+						clr = get_color("font_color_disabled");
+						break;
+					default:
+						clr = get_color("font_color");
+				}
 			}
-		}
 
-		Size2 size = get_size();
+			Size2 size = get_size();
 
-		Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
-		arrow->draw(ci, ofs, clr);
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+			Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			arrow->draw(ci, ofs, clr);
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-		if (!is_visible_in_tree()) {
-			popup->hide();
-		}
+			if (!is_visible_in_tree()) {
+				popup->hide();
+			}
+		} break;
 	}
 }
 
@@ -86,24 +88,7 @@ void OptionButton::_focused(int p_which) {
 
 void OptionButton::_selected(int p_which) {
 
-	int selid = -1;
-	for (int i = 0; i < popup->get_item_count(); i++) {
-
-		bool is_clicked = popup->get_item_id(i) == p_which;
-		if (is_clicked) {
-			selid = i;
-			break;
-		}
-	}
-
-	if (selid == -1 && p_which >= 0 && p_which < popup->get_item_count()) {
-		_select(p_which, true);
-	} else {
-
-		ERR_FAIL_COND(selid == -1);
-
-		_select(selid, true);
-	}
+	_select(p_which, true);
 }
 
 void OptionButton::pressed() {
@@ -299,7 +284,7 @@ void OptionButton::_set_items(const Array &p_items) {
 
 void OptionButton::get_translatable_strings(List<String> *p_strings) const {
 
-	return popup->get_translatable_strings(p_strings);
+	popup->get_translatable_strings(p_strings);
 }
 
 void OptionButton::_bind_methods() {
@@ -355,7 +340,7 @@ OptionButton::OptionButton() {
 	popup->set_pass_on_modal_close_click(false);
 	popup->set_notify_transform(true);
 	popup->set_allow_search(true);
-	popup->connect("id_pressed", this, "_selected");
+	popup->connect("index_pressed", this, "_selected");
 	popup->connect("id_focused", this, "_focused");
 	popup->connect("popup_hide", this, "set_pressed", varray(false));
 }

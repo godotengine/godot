@@ -110,7 +110,7 @@ VARIANT_ENUM_CAST(DynamicFontData::Hinting);
 
 class DynamicFontAtSize : public Reference {
 
-	GDCLASS(DynamicFontAtSize, Reference)
+	GDCLASS(DynamicFontAtSize, Reference);
 
 	_THREAD_SAFE_CLASS_
 
@@ -303,7 +303,6 @@ VARIANT_ENUM_CAST(DynamicFont::SpacingType);
 /////////////
 
 class ResourceFormatLoaderDynamicFont : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderDynamicFont, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

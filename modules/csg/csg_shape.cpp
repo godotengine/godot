@@ -436,10 +436,10 @@ void CSGShape::_update_shape() {
 		}
 
 		// unset write access
-		surfaces.write[i].verticesw = PoolVector<Vector3>::Write();
-		surfaces.write[i].normalsw = PoolVector<Vector3>::Write();
-		surfaces.write[i].uvsw = PoolVector<Vector2>::Write();
-		surfaces.write[i].tansw = PoolVector<float>::Write();
+		surfaces.write[i].verticesw.release();
+		surfaces.write[i].normalsw.release();
+		surfaces.write[i].uvsw.release();
+		surfaces.write[i].tansw.release();
 
 		if (surfaces[i].last_added == 0)
 			continue;
@@ -557,6 +557,7 @@ void CSGShape::set_operation(Operation p_operation) {
 
 	operation = p_operation;
 	_make_dirty();
+	update_gizmo();
 }
 
 CSGShape::Operation CSGShape::get_operation() const {
@@ -1816,11 +1817,9 @@ CSGBrush *CSGPolygon::_build_brush() {
 
 			path_cache = path;
 
-			if (path_cache) {
-				path_cache->connect("tree_exited", this, "_path_exited");
-				path_cache->connect("curve_changed", this, "_path_changed");
-				path_cache = NULL;
-			}
+			path_cache->connect("tree_exited", this, "_path_exited");
+			path_cache->connect("curve_changed", this, "_path_changed");
+			path_cache = NULL;
 		}
 		curve = path->get_curve();
 		if (curve.is_null())

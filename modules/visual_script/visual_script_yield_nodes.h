@@ -35,7 +35,8 @@
 
 class VisualScriptYield : public VisualScriptNode {
 
-	GDCLASS(VisualScriptYield, VisualScriptNode)
+	GDCLASS(VisualScriptYield, VisualScriptNode);
+
 public:
 	enum YieldMode {
 		YIELD_RETURN,
@@ -84,7 +85,8 @@ VARIANT_ENUM_CAST(VisualScriptYield::YieldMode)
 
 class VisualScriptYieldSignal : public VisualScriptNode {
 
-	GDCLASS(VisualScriptYieldSignal, VisualScriptNode)
+	GDCLASS(VisualScriptYieldSignal, VisualScriptNode);
+
 public:
 	enum CallMode {
 		CALL_MODE_SELF,

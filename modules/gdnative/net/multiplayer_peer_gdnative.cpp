@@ -113,6 +113,8 @@ NetworkedMultiplayerPeer::ConnectionStatus MultiplayerPeerGDNative::get_connecti
 }
 
 void MultiplayerPeerGDNative::_bind_methods() {
+	ADD_PROPERTY_DEFAULT("transfer_mode", TRANSFER_MODE_UNRELIABLE);
+	ADD_PROPERTY_DEFAULT("refuse_new_connections", true);
 }
 
 extern "C" {

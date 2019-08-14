@@ -37,7 +37,6 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
-#include "editor/editor_node.h"
 #include "main/input_default.h"
 #include "node.h"
 #include "scene/resources/dynamic_font.h"
@@ -117,10 +116,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 		E = group_map.insert(p_group, Group());
 	}
 
-	if (E->get().nodes.find(p_node) != -1) {
-		ERR_EXPLAIN("Already in group: " + p_group);
-		ERR_FAIL_V(&E->get());
-	}
+	ERR_FAIL_COND_V_MSG(E->get().nodes.find(p_node) != -1, &E->get(), "Already in group: " + p_group + ".");
 	E->get().nodes.push_back(p_node);
 	//E->get().last_tree_version=0;
 	E->get().changed = true;
@@ -453,9 +449,6 @@ void SceneTree::init() {
 
 	//_quit=false;
 	initialized = true;
-	input_handled = false;
-
-	pause = false;
 
 	root->_set_tree(this);
 	MainLoop::init();
@@ -614,6 +607,7 @@ void SceneTree::finish() {
 		root->_set_tree(NULL);
 		root->_propagate_after_exit_tree();
 		memdelete(root); //delete root
+		root = NULL;
 	}
 }
 
@@ -649,7 +643,8 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_MOUSE_ENTER:
 		case NOTIFICATION_WM_MOUSE_EXIT:
 		case NOTIFICATION_WM_FOCUS_IN:
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT:
+		case NOTIFICATION_WM_ABOUT: {
 
 			if (p_notification == NOTIFICATION_WM_FOCUS_IN) {
 				InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
@@ -671,19 +666,6 @@ void SceneTree::_notification(int p_notification) {
 
 			get_root()->propagate_notification(p_notification);
 
-		} break;
-
-		case NOTIFICATION_WM_ABOUT: {
-
-#ifdef TOOLS_ENABLED
-			if (EditorNode::get_singleton()) {
-				EditorNode::get_singleton()->show_about();
-			} else {
-#endif
-				get_root()->propagate_notification(p_notification);
-#ifdef TOOLS_ENABLED
-			}
-#endif
 		} break;
 
 		case NOTIFICATION_CRASH: {
@@ -1091,7 +1073,7 @@ void SceneTree::get_nodes_in_group(const StringName &p_group, List<Node *> *p_li
 
 static void _fill_array(Node *p_node, Array &array, int p_level) {
 
-	array.push_back(p_level);
+	array.push_back(p_node->get_child_count());
 	array.push_back(p_node->get_name());
 	array.push_back(p_node->get_class());
 	array.push_back(p_node->get_instance_id());
@@ -1251,7 +1233,7 @@ void SceneTree::_update_root_rect() {
 	}
 }
 
-void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 p_minsize, real_t p_shrink) {
+void SceneTree::set_screen_stretch(StretchMode p_mode, StretchAspect p_aspect, const Size2 &p_minsize, real_t p_shrink) {
 
 	stretch_mode = p_mode;
 	stretch_aspect = p_aspect;
@@ -1509,8 +1491,11 @@ void SceneTree::_live_edit_instance_node_func(const NodePath &p_parent, const St
 		Node *n2 = n->get_node(p_parent);
 
 		Node *no = ps->instance();
-		no->set_name(p_name);
+		if (!no) {
+			continue;
+		}
 
+		no->set_name(p_name);
 		n2->add_child(no);
 	}
 }
@@ -1889,6 +1874,7 @@ void SceneTree::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "debug_navigation_hint"), "set_debug_navigation_hint", "is_debugging_navigation_hint");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "paused"), "set_pause", "is_paused");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
+	ADD_PROPERTY_DEFAULT("refuse_new_network_connections", false);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_font_oversampling"), "set_use_font_oversampling", "is_using_font_oversampling");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "edited_scene_root", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_edited_scene_root", "get_edited_scene_root");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "current_scene", PROPERTY_HINT_RESOURCE_TYPE, "Node", 0), "set_current_scene", "get_current_scene");
@@ -1962,7 +1948,7 @@ bool SceneTree::is_using_font_oversampling() const {
 
 SceneTree::SceneTree() {
 
-	singleton = this;
+	if (singleton == NULL) singleton = this;
 	_quit = false;
 	accept_quit = true;
 	quit_on_go_back = true;
@@ -1984,6 +1970,8 @@ SceneTree::SceneTree() {
 	idle_process_time = 1;
 
 	root = NULL;
+	input_handled = false;
+	pause = false;
 	current_frame = 0;
 	current_event = 0;
 	tree_changed_name = "tree_changed";
@@ -2107,4 +2095,11 @@ SceneTree::SceneTree() {
 }
 
 SceneTree::~SceneTree() {
+	if (root) {
+		root->_set_tree(NULL);
+		root->_propagate_after_exit_tree();
+		memdelete(root);
+	}
+
+	if (singleton == this) singleton = NULL;
 }

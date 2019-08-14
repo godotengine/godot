@@ -119,7 +119,7 @@ public:
 
 	void set_spatial_node(Spatial *p_node);
 	Spatial *get_spatial_node() const { return spatial_node; }
-	EditorSpatialGizmoPlugin *get_plugin() const { return gizmo_plugin; }
+	Ref<EditorSpatialGizmoPlugin> get_plugin() const { return gizmo_plugin; }
 	Vector3 get_handle_pos(int p_idx) const;
 	bool intersect_frustum(const Camera *p_camera, const Vector<Plane> &p_frustum);
 	bool intersect_ray(Camera *p_camera, const Point2 &p_point, Vector3 &r_pos, Vector3 &r_normal, int *r_gizmo_handle = NULL, bool p_sec_first = false);
@@ -133,7 +133,7 @@ public:
 	virtual bool is_editable() const;
 
 	void set_hidden(bool p_hidden);
-	void set_plugin(EditorSpatialGizmoPlugin *p_gizmo);
+	void set_plugin(EditorSpatialGizmoPlugin *p_plugin);
 
 	EditorSpatialGizmo();
 	~EditorSpatialGizmo();
@@ -153,7 +153,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_REAR,
 		VIEW_CENTER_TO_ORIGIN,
 		VIEW_CENTER_TO_SELECTION,
-		VIEW_ALIGN_SELECTION_WITH_VIEW,
+		VIEW_ALIGN_TRANSFORM_WITH_VIEW,
+		VIEW_ALIGN_ROTATION_WITH_VIEW,
 		VIEW_PERSPECTIVE,
 		VIEW_ENVIRONMENT,
 		VIEW_ORTHOGONAL,
@@ -176,6 +177,12 @@ public:
 		GIZMO_BASE_LAYER = 27,
 		GIZMO_EDIT_LAYER = 26,
 		GIZMO_GRID_LAYER = 25
+	};
+
+	enum NavigationScheme {
+		NAVIGATION_GODOT,
+		NAVIGATION_MAYA,
+		NAVIGATION_MODO,
 	};
 
 private:
@@ -259,12 +266,6 @@ private:
 	bool clicked_wants_append;
 
 	PopupMenu *selection_menu;
-
-	enum NavigationScheme {
-		NAVIGATION_GODOT,
-		NAVIGATION_MAYA,
-		NAVIGATION_MODO,
-	};
 
 	enum NavigationZoomStyle {
 		NAVIGATION_ZOOM_VERTICAL,
@@ -364,7 +365,7 @@ private:
 	Camera *preview;
 
 	bool previewing_cinema;
-
+	bool _is_node_locked(const Node *p_node);
 	void _preview_exited_scene();
 	void _toggle_camera_preview(bool);
 	void _toggle_cinema_preview(bool);
@@ -376,7 +377,7 @@ private:
 	Point2i _get_warped_mouse_motion(const Ref<InputEventMouseMotion> &p_ev_mouse_motion) const;
 
 	Vector3 _get_instance_position(const Point2 &p_pos) const;
-	static AABB _calculate_spatial_bounds(const Spatial *p_parent, const AABB p_bounds);
+	static AABB _calculate_spatial_bounds(const Spatial *p_parent, const AABB &p_bounds);
 	void _create_preview(const Vector<String> &files) const;
 	void _remove_preview();
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
@@ -431,7 +432,8 @@ public:
 
 class SpatialEditorViewportContainer : public Container {
 
-	GDCLASS(SpatialEditorViewportContainer, Container)
+	GDCLASS(SpatialEditorViewportContainer, Container);
+
 public:
 	enum View {
 		VIEW_USE_1_VIEWPORT,
@@ -526,7 +528,8 @@ private:
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> plane_gizmo_color[3];
-	Ref<SpatialMaterial> gizmo_hl;
+	Ref<SpatialMaterial> gizmo_color_hl[3];
+	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
 
@@ -633,6 +636,7 @@ private:
 	Node *custom_camera;
 
 	Object *_get_editor_data(Object *p_what);
+	Color _get_axis_color(int axis);
 
 	Ref<Environment> viewport_environment;
 

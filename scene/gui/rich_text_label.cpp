@@ -314,6 +314,18 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				align = align_it->align;
 
 			} break;
+			case ITEM_INDENT: {
+
+				if (it != l.from) {
+					ItemIndent *indent_it = static_cast<ItemIndent *>(it);
+
+					int indent = indent_it->level * tab_size * cfont->get_char_size(' ').width;
+					margin += indent;
+					begin += indent;
+					wofs += indent;
+				}
+
+			} break;
 			case ITEM_TEXT: {
 
 				ItemText *text = static_cast<ItemText *>(it);
@@ -447,14 +459,13 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 									if (p_font_color_shadow.a > 0) {
 										float x_ofs_shadow = align_ofs + pofs;
 										float y_ofs_shadow = y + lh - line_descent;
-										float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs, c[i], c[i + 1], p_font_color_shadow);
+										font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + shadow_ofs, c[i], c[i + 1], p_font_color_shadow);
 
 										if (p_shadow_as_outline) {
 											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
 											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
 											font->draw_char(ci, Point2(x_ofs_shadow, y_ofs_shadow) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c[i], c[i + 1], p_font_color_shadow);
 										}
-										x_ofs_shadow += move;
 									}
 
 									if (selected) {
@@ -810,11 +821,7 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
-			if (is_inside_tree() && use_bbcode) {
-				parse_bbcode(bbcode);
-				//first_invalid_line=0; //invalidate ALL
-				//update();
-			}
+			update();
 
 		} break;
 		case NOTIFICATION_DRAW: {
@@ -935,11 +942,67 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 			return;
 
 		if (b->get_button_index() == BUTTON_LEFT) {
+			if (b->is_pressed() && !b->is_doubleclick()) {
+				scroll_updated = false;
+				int line = 0;
+				Item *item = NULL;
 
-			if (true) {
+				bool outside;
+				_find_click(main, b->get_position(), &item, &line, &outside);
 
-				if (b->is_pressed() && !b->is_doubleclick()) {
-					scroll_updated = false;
+				if (item) {
+
+					if (selection.enabled) {
+
+						selection.click = item;
+						selection.click_char = line;
+
+						// Erase previous selection.
+						if (selection.active) {
+							selection.from = NULL;
+							selection.from_char = '\0';
+							selection.to = NULL;
+							selection.to_char = '\0';
+							selection.active = false;
+
+							update();
+						}
+					}
+				}
+			} else if (b->is_pressed() && b->is_doubleclick() && selection.enabled) {
+
+				//doubleclick: select word
+				int line = 0;
+				Item *item = NULL;
+				bool outside;
+
+				_find_click(main, b->get_position(), &item, &line, &outside);
+
+				while (item && item->type != ITEM_TEXT) {
+
+					item = _get_next_item(item, true);
+				}
+
+				if (item && item->type == ITEM_TEXT) {
+
+					String itext = static_cast<ItemText *>(item)->text;
+
+					int beg, end;
+					if (select_word(itext, line, beg, end)) {
+
+						selection.from = item;
+						selection.to = item;
+						selection.from_char = beg;
+						selection.to_char = end - 1;
+						selection.active = true;
+						update();
+					}
+				}
+			} else if (!b->is_pressed()) {
+
+				selection.click = NULL;
+
+				if (!b->is_doubleclick() && !scroll_updated) {
 					int line = 0;
 					Item *item = NULL;
 
@@ -948,71 +1011,11 @@ void RichTextLabel::_gui_input(Ref<InputEvent> p_event) {
 
 					if (item) {
 
-						if (selection.enabled) {
+						Variant meta;
+						if (!outside && _find_meta(item, &meta)) {
+							//meta clicked
 
-							selection.click = item;
-							selection.click_char = line;
-
-							// Erase previous selection.
-							if (selection.active) {
-								selection.from = NULL;
-								selection.from_char = '\0';
-								selection.to = NULL;
-								selection.to_char = '\0';
-								selection.active = false;
-
-								update();
-							}
-						}
-					}
-				} else if (b->is_pressed() && b->is_doubleclick() && selection.enabled) {
-
-					//doubleclick: select word
-					int line = 0;
-					Item *item = NULL;
-					bool outside;
-
-					_find_click(main, b->get_position(), &item, &line, &outside);
-
-					while (item && item->type != ITEM_TEXT) {
-
-						item = _get_next_item(item, true);
-					}
-
-					if (item && item->type == ITEM_TEXT) {
-
-						String itext = static_cast<ItemText *>(item)->text;
-
-						int beg, end;
-						if (select_word(itext, line, beg, end)) {
-
-							selection.from = item;
-							selection.to = item;
-							selection.from_char = beg;
-							selection.to_char = end - 1;
-							selection.active = true;
-							update();
-						}
-					}
-				} else if (!b->is_pressed()) {
-
-					selection.click = NULL;
-
-					if (!b->is_doubleclick() && !scroll_updated) {
-						int line = 0;
-						Item *item = NULL;
-
-						bool outside;
-						_find_click(main, b->get_position(), &item, &line, &outside);
-
-						if (item) {
-
-							Variant meta;
-							if (!outside && _find_meta(item, &meta)) {
-								//meta clicked
-
-								emit_signal("meta_clicked", meta);
-							}
+							emit_signal("meta_clicked", meta);
 						}
 					}
 				}
@@ -1301,6 +1304,23 @@ bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item)
 	return false;
 }
 
+bool RichTextLabel::_find_layout_subitem(Item *from, Item *to) {
+
+	if (from && from != to) {
+		if (from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH)
+			return true;
+
+		for (List<Item *>::Element *E = from->subitems.front(); E; E = E->next()) {
+			bool layout = _find_layout_subitem(E->get(), to);
+
+			if (layout)
+				return true;
+		}
+	}
+
+	return false;
+}
+
 void RichTextLabel::_validate_line_caches(ItemFrame *p_frame) {
 
 	if (p_frame->first_invalid_line == p_frame->lines.size())
@@ -1421,7 +1441,7 @@ void RichTextLabel::_add_item(Item *p_item, bool p_enter, bool p_ensure_newline)
 	if (p_ensure_newline) {
 		Item *from = current_frame->lines[current_frame->lines.size() - 1].from;
 		// only create a new line for Item types that generate content/layout, ignore those that represent formatting/styling
-		if (from && from->type != ITEM_FONT && from->type != ITEM_COLOR && from->type != ITEM_UNDERLINE && from->type != ITEM_STRIKETHROUGH) {
+		if (_find_layout_subitem(from, p_item)) {
 			_invalidate_current_line(current_frame);
 			current_frame->lines.resize(current_frame->lines.size() + 1);
 		}
@@ -1918,37 +1938,37 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 			if (col.begins_with("#"))
 				color = Color::html(col);
 			else if (col == "aqua")
-				color = Color::html("#00FFFF");
+				color = Color(0, 1, 1);
 			else if (col == "black")
-				color = Color::html("#000000");
+				color = Color(0, 0, 0);
 			else if (col == "blue")
-				color = Color::html("#0000FF");
+				color = Color(0, 0, 1);
 			else if (col == "fuchsia")
-				color = Color::html("#FF00FF");
+				color = Color(1, 0, 1);
 			else if (col == "gray" || col == "grey")
-				color = Color::html("#808080");
+				color = Color(0.5, 0.5, 0.5);
 			else if (col == "green")
-				color = Color::html("#008000");
+				color = Color(0, 0.5, 0);
 			else if (col == "lime")
-				color = Color::html("#00FF00");
+				color = Color(0, 1, 0);
 			else if (col == "maroon")
-				color = Color::html("#800000");
+				color = Color(0.5, 0, 0);
 			else if (col == "navy")
-				color = Color::html("#000080");
+				color = Color(0, 0, 0.5);
 			else if (col == "olive")
-				color = Color::html("#808000");
+				color = Color(0.5, 0.5, 0);
 			else if (col == "purple")
-				color = Color::html("#800080");
+				color = Color(0.5, 0, 0.5);
 			else if (col == "red")
-				color = Color::html("#FF0000");
+				color = Color(1, 0, 0);
 			else if (col == "silver")
-				color = Color::html("#C0C0C0");
+				color = Color(0.75, 0.75, 0.75);
 			else if (col == "teal")
-				color = Color::html("#008008");
+				color = Color(0, 0.5, 0.5);
 			else if (col == "white")
-				color = Color::html("#FFFFFF");
+				color = Color(1, 1, 1);
 			else if (col == "yellow")
-				color = Color::html("#FFFF00");
+				color = Color(1, 1, 0);
 			else
 				color = base_color;
 

@@ -4,7 +4,7 @@
 		Helper tool to create geometry.
 	</brief_description>
 	<description>
-		The [SurfaceTool] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from script. All properties except index need to be added before a call to [method add_vertex]. For example adding vertex colors and UVs looks like
+		The [SurfaceTool] is used to construct a [Mesh] by specifying vertex attributes individually. It can be used to construct a [Mesh] from a script. All properties except indices need to be added before calling [method add_vertex]. For example, to add vertex colors and UVs:
 		[codeblock]
 		var st = SurfaceTool.new()
 		st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -12,9 +12,9 @@
 		st.add_uv(Vector2(0, 0))
 		st.add_vertex(Vector3(0, 0, 0))
 		[/codeblock]
-		The [SurfaceTool] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calls to [method add_uv] or [method add_color] then the last values would be used.
-		It is very important that vertex attributes are passed [b]before[/b] the call to [method add_vertex], failure to do this will result in an error when committing the vertex information to a mesh.
-		Additionally, the attributes used before the first vertex is added determine the format of the mesh. For example if you only add UVs to the first vertex, you cannot add color to any of the subsequent vertices.
+		The above [SurfaceTool] now contains one vertex of a triangle which has a UV coordinate and a specified [Color]. If another vertex were added without calling [method add_uv] or [method add_color], then the last values would be used.
+		Vertex attributes must be passed [b]before[/b] calling [method add_vertex]. Failure to do so will result in an error when committing the vertex information to a mesh.
+		Additionally, the attributes used before the first vertex is added determine the format of the mesh. For example, if you only add UVs to the first vertex, you cannot add color to any of the subsequent vertices.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -25,7 +25,7 @@
 			<argument index="0" name="bones" type="PoolIntArray">
 			</argument>
 			<description>
-				Add an array of bones for the next Vertex to use. Array must contain 4 integers.
+				Adds an array of bones for the next vertex to use. [code]bones[/code] must contain 4 integers.
 			</description>
 		</method>
 		<method name="add_color">
@@ -34,7 +34,7 @@
 			<argument index="0" name="color" type="Color">
 			</argument>
 			<description>
-				Specify a [Color] for the next Vertex to use.
+				Specifies a [Color] for the next vertex to use.
 			</description>
 		</method>
 		<method name="add_index">
@@ -43,7 +43,7 @@
 			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
-				Adds an index to index array if you are using indexed Vertices. Does not need to be called before adding Vertex.
+				Adds an index to index array if you are using indexed vertices. Does not need to be called before adding vertices.
 			</description>
 		</method>
 		<method name="add_normal">
@@ -52,7 +52,7 @@
 			<argument index="0" name="normal" type="Vector3">
 			</argument>
 			<description>
-				Specify a normal for the next Vertex to use.
+				Specifies a normal for the next vertex to use.
 			</description>
 		</method>
 		<method name="add_smooth_group">
@@ -61,7 +61,7 @@
 			<argument index="0" name="smooth" type="bool">
 			</argument>
 			<description>
-				Specify whether current Vertex (if using only Vertex arrays) or current index (if also using index arrays) should utilize smooth normals for normal calculation.
+				Specifies whether the current vertex (if using only vertex arrays) or current index (if also using index arrays) should use smooth normals for normal calculation.
 			</description>
 		</method>
 		<method name="add_tangent">
@@ -70,7 +70,7 @@
 			<argument index="0" name="tangent" type="Plane">
 			</argument>
 			<description>
-				Specify a Tangent for the next Vertex to use.
+				Specifies a tangent for the next vertex to use.
 			</description>
 		</method>
 		<method name="add_triangle_fan">
@@ -89,8 +89,8 @@
 			<argument index="5" name="tangents" type="Array" default="[  ]">
 			</argument>
 			<description>
-				Insert a triangle fan made of array data into [Mesh] being constructed.
-				Requires primitive type be set to [code]PRIMITIVE_TRIANGLES[/code].
+				Inserts a triangle fan made of array data into [Mesh] being constructed.
+				Requires the primitive type be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="add_uv">
@@ -99,7 +99,7 @@
 			<argument index="0" name="uv" type="Vector2">
 			</argument>
 			<description>
-				Specify UV Coordinate for next Vertex to use.
+				Specifies a set of UV coordinates to use for the next vertex.
 			</description>
 		</method>
 		<method name="add_uv2">
@@ -108,7 +108,7 @@
 			<argument index="0" name="uv2" type="Vector2">
 			</argument>
 			<description>
-				Specify an optional second set of UV coordinates for next Vertex to use.
+				Specifies an optional second set of UV coordinates to use for the next vertex.
 			</description>
 		</method>
 		<method name="add_vertex">
@@ -117,7 +117,7 @@
 			<argument index="0" name="vertex" type="Vector3">
 			</argument>
 			<description>
-				Specify position of current Vertex. Should be called after specifying other vertex properties (e.g. Color, UV).
+				Specifies the position of current vertex. Should be called after specifying other vertex properties (e.g. Color, UV).
 			</description>
 		</method>
 		<method name="add_weights">
@@ -126,7 +126,7 @@
 			<argument index="0" name="weights" type="PoolRealArray">
 			</argument>
 			<description>
-				Specify weight values for next Vertex to use. Array must contain 4 values.
+				Specifies weight values for next vertex to use. [code]weights[/code] must contain 4 values.
 			</description>
 		</method>
 		<method name="append_from">
@@ -148,7 +148,7 @@
 			<argument index="0" name="primitive" type="int" enum="Mesh.PrimitiveType">
 			</argument>
 			<description>
-				Called before adding any Vertices. Takes the primitive type as an argument (e.g. Mesh.PRIMITIVE_TRIANGLES).
+				Called before adding any vertices. Takes the primitive type as an argument (e.g. [constant Mesh.PRIMITIVE_TRIANGLES]).
 			</description>
 		</method>
 		<method name="clear">
@@ -202,7 +202,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Removes index array by expanding Vertex array.
+				Removes the index array by expanding the vertex array.
 			</description>
 		</method>
 		<method name="generate_normals">
@@ -211,24 +211,22 @@
 			<argument index="0" name="flip" type="bool" default="false">
 			</argument>
 			<description>
-				Generates normals from Vertices so you do not have to do it manually.
-				Setting "flip" [code]true[/code] inverts resulting normals.
-				Requires primitive type to be set to [code]PRIMITIVE_TRIANGLES[/code].
+				Generates normals from vertices so you do not have to do it manually. If [code]flip[/code] is [code]true[/code], the resulting normals will be inverted.
+				Requires the primitive type to be set to [constant Mesh.PRIMITIVE_TRIANGLES].
 			</description>
 		</method>
 		<method name="generate_tangents">
 			<return type="void">
 			</return>
 			<description>
-				Generates a tangent vector for each vertex.
-				Requires that each vertex have UVs and normals set already.
+				Generates a tangent vector for each vertex. Requires that each vertex have UVs and normals set already.
 			</description>
 		</method>
 		<method name="index">
 			<return type="void">
 			</return>
 			<description>
-				Shrinks Vertex array by creating an index array. Avoids reusing Vertices.
+				Shrinks the vertex array by creating an index array (avoids reusing vertices).
 			</description>
 		</method>
 		<method name="set_material">

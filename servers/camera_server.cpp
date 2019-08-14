@@ -3,10 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -47,9 +47,9 @@ void CameraServer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("camera_feed_removed", PropertyInfo(Variant::INT, "id")));
 
 	BIND_ENUM_CONSTANT(FEED_RGBA_IMAGE);
-	BIND_ENUM_CONSTANT(FEED_YCbCr_IMAGE);
+	BIND_ENUM_CONSTANT(FEED_YCBCR_IMAGE);
 	BIND_ENUM_CONSTANT(FEED_Y_IMAGE);
-	BIND_ENUM_CONSTANT(FEED_CbCr_IMAGE);
+	BIND_ENUM_CONSTANT(FEED_CBCR_IMAGE);
 };
 
 CameraServer *CameraServer::singleton = NULL;

@@ -60,11 +60,12 @@ private:
 
 	NetError _get_socket_error();
 	void _set_socket(SOCKET_TYPE p_sock, IP::Type p_ip_type, bool p_is_stream);
+	_FORCE_INLINE_ Error _change_multicast_group(IP_Address p_ip, String p_if_name, bool p_add);
 
 protected:
 	static NetSocket *_create_func();
 
-	bool _can_use_ip(const IP_Address p_ip, const bool p_for_bind) const;
+	bool _can_use_ip(const IP_Address &p_ip, const bool p_for_bind) const;
 
 public:
 	static void make_default();
@@ -76,7 +77,7 @@ public:
 	virtual void close();
 	virtual Error bind(IP_Address p_addr, uint16_t p_port);
 	virtual Error listen(int p_max_pending);
-	virtual Error connect_to_host(IP_Address p_addr, uint16_t p_port);
+	virtual Error connect_to_host(IP_Address p_host, uint16_t p_port);
 	virtual Error poll(PollType p_type, int timeout) const;
 	virtual Error recv(uint8_t *p_buffer, int p_len, int &r_read);
 	virtual Error recvfrom(uint8_t *p_buffer, int p_len, int &r_read, IP_Address &r_ip, uint16_t &r_port);
@@ -93,6 +94,8 @@ public:
 	virtual void set_tcp_no_delay_enabled(bool p_enabled);
 	virtual void set_reuse_address_enabled(bool p_enabled);
 	virtual void set_reuse_port_enabled(bool p_enabled);
+	virtual Error join_multicast_group(const IP_Address &p_multi_address, String p_if_name);
+	virtual Error leave_multicast_group(const IP_Address &p_multi_address, String p_if_name);
 
 	NetSocketPosix();
 	~NetSocketPosix();

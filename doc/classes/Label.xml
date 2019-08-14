@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Label displays plain text on the screen. It gives you control over the horizontal and vertical alignment, and can wrap the text inside the node's bounding rectangle. It doesn't support bold, italics or other formatting. For that, use [RichTextLabel] instead.
-		Note that contrarily to most other [Control]s, Label's [member Control.mouse_filter] defaults to MOUSE_FILTER_IGNORE (i.e. it doesn't react to mouse input events). This implies that a label won't display any configured [member Control.hint_tooltip], unless you change its mouse filter.
+		[b]Note:[/b] Contrarily to most other [Control]s, Label's [member Control.mouse_filter] defaults to [constant Control.MOUSE_FILTER_IGNORE] (i.e. it doesn't react to mouse input events). This implies that a label won't display any configured [member Control.hint_tooltip], unless you change its mouse filter.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -35,39 +35,39 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the number of lines shown. Useful if the [Label] 's height cannot currently display all lines.
+				Returns the number of lines shown. Useful if the [Label]'s height cannot currently display all lines.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="align" type="int" setter="set_align" getter="get_align" enum="Label.Align">
+		<member name="align" type="int" setter="set_align" getter="get_align" enum="Label.Align" default="0">
 			Controls the text's horizontal align. Supports left, center, right, and fill, or justify. Set it to one of the [code]ALIGN_*[/code] constants.
 		</member>
-		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap">
-			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text. Default: [code]false[/code].
+		<member name="autowrap" type="bool" setter="set_autowrap" getter="has_autowrap" default="false">
+			If [code]true[/code], wraps the text inside the node's bounding rectangle. If you resize the node, it will change its height automatically to show all the text.
 		</member>
-		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text">
+		<member name="clip_text" type="bool" setter="set_clip_text" getter="is_clipping_text" default="false">
 			If [code]true[/code], the Label only shows the text that fits inside its bounding rectangle. It also lets you scale the node down freely.
 		</member>
-		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped">
+		<member name="lines_skipped" type="int" setter="set_lines_skipped" getter="get_lines_skipped" default="0">
 			The node ignores the first [code]lines_skipped[/code] lines before it starts to display text.
 		</member>
-		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible">
+		<member name="max_lines_visible" type="int" setter="set_max_lines_visible" getter="get_max_lines_visible" default="-1">
 			Limits the lines of text the node shows on screen.
 		</member>
-		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
+		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
 			Limits the count of visible characters. If you set [code]percent_visible[/code] to 50, only up to half of the text's characters will display on screen. Useful to animate the text in a dialog box.
 		</member>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The text to display on screen.
 		</member>
-		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase">
+		<member name="uppercase" type="bool" setter="set_uppercase" getter="is_uppercase" default="false">
 			If [code]true[/code], all the text displays as UPPERCASE.
 		</member>
-		<member name="valign" type="int" setter="set_valign" getter="get_valign" enum="Label.VAlign">
+		<member name="valign" type="int" setter="set_valign" getter="get_valign" enum="Label.VAlign" default="0">
 			Controls the text's vertical align. Supports top, center, bottom, and fill. Set it to one of the [code]VALIGN_*[/code] constants.
 		</member>
-		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
+		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
 			Restricts the number of characters to display. Set to -1 to disable.
 		</member>
 	</members>
@@ -79,7 +79,7 @@
 			Align rows centered.
 		</constant>
 		<constant name="ALIGN_RIGHT" value="2" enum="Align">
-			Align rows to the right (default).
+			Align rows to the right.
 		</constant>
 		<constant name="ALIGN_FILL" value="3" enum="Align">
 			Expand row whitespaces to fit the width.
@@ -100,21 +100,21 @@
 	<theme_items>
 		<theme_item name="font" type="Font">
 		</theme_item>
-		<theme_item name="font_color" type="Color">
+		<theme_item name="font_color" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="font_color_shadow" type="Color">
+		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 0 )">
 		</theme_item>
-		<theme_item name="font_outline_modulate" type="Color">
+		<theme_item name="font_outline_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
-		<theme_item name="line_spacing" type="int">
+		<theme_item name="line_spacing" type="int" default="3">
 		</theme_item>
 		<theme_item name="normal" type="StyleBox">
 		</theme_item>
-		<theme_item name="shadow_as_outline" type="int">
+		<theme_item name="shadow_as_outline" type="int" default="0">
 		</theme_item>
-		<theme_item name="shadow_offset_x" type="int">
+		<theme_item name="shadow_offset_x" type="int" default="1">
 		</theme_item>
-		<theme_item name="shadow_offset_y" type="int">
+		<theme_item name="shadow_offset_y" type="int" default="1">
 		</theme_item>
 	</theme_items>
 </class>

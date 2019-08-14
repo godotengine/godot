@@ -582,7 +582,7 @@ private:
 #endif // DEBUG_ENABLED
 	bool _recover_from_completion();
 
-	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false);
+	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false, bool p_parsing_constant = false);
 	bool _enter_indent_block(BlockNode *p_block = NULL);
 	bool _parse_newline();
 	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
@@ -599,7 +599,7 @@ private:
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
-	void _determine_inheritance(ClassNode *p_class);
+	void _determine_inheritance(ClassNode *p_class, bool p_recursive = true);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
 	DataType _resolve_type(const DataType &p_source, int p_line);
 	DataType _type_from_variant(const Variant &p_value) const;

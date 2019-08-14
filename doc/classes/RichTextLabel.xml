@@ -5,7 +5,7 @@
 	</brief_description>
 	<description>
 		Rich text can contain custom text, fonts, images and some basic formatting. The label manages these as an internal tag stack. It also adapts itself to given width/heights.
-		Note that assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
+		[b]Note:[/b] Assignments to [member bbcode_text] clear the tag stack and reconstruct it from the property's contents. Any edits made to [member bbcode_text] will erase previous edits made from other manual sources such as [method append_bbcode] and the [code]push_*[/code] / [method pop] methods.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/gui/bbcode_in_richtextlabel.html</link>
@@ -26,7 +26,7 @@
 			<argument index="0" name="text" type="String">
 			</argument>
 			<description>
-				Adds raw non-bbcode-parsed text to the tag stack.
+				Adds raw non-BBCode-parsed text to the tag stack.
 			</description>
 		</method>
 		<method name="append_bbcode">
@@ -35,7 +35,7 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
-				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [code]OK[/code] if successful.
+				Parses [code]bbcode[/code] and adds tags to the tag stack as needed. Returns the result of the parsing, [constant OK] if successful.
 			</description>
 		</method>
 		<method name="clear">
@@ -63,7 +63,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Returns the total number of characters from text tags. Does not include bbcodes.
+				Returns the total number of characters from text tags. Does not include BBCodes.
 			</description>
 		</method>
 		<method name="get_v_scroll">
@@ -93,14 +93,14 @@
 			<argument index="0" name="bbcode" type="String">
 			</argument>
 			<description>
-				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [code]OK[/code] if parses [code]bbcode[/code] successfully.
+				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
 			</description>
 		</method>
 		<method name="pop">
 			<return type="void">
 			</return>
 			<description>
-				Terminates the current tag. Use after [code]push_*[/code] methods to close bbcodes manually. Does not need to follow [code]add_*[/code] methods.
+				Terminates the current tag. Use after [code]push_*[/code] methods to close BBCodes manually. Does not need to follow [code]add_*[/code] methods.
 			</description>
 		</method>
 		<method name="push_align">
@@ -109,7 +109,7 @@
 			<argument index="0" name="align" type="int" enum="RichTextLabel.Align">
 			</argument>
 			<description>
-				Adds an alignment tag based on the given [code]align[/code] value. See [enum Align] for possible values.
+				Adds an [code][align][/code] tag based on the given [code]align[/code] value. See [enum Align] for possible values.
 			</description>
 		</method>
 		<method name="push_cell">
@@ -152,7 +152,7 @@
 			<argument index="0" name="type" type="int" enum="RichTextLabel.ListType">
 			</argument>
 			<description>
-				Adds a list tag to the tag stack. Similar to the bbcodes [code][ol][/code] or [code][ul][/code], but supports more list types. Not fully implemented!
+				Adds a [code][list][/code] tag to the tag stack. Similar to the BBCodes [code][ol][/code] or [code][ul][/code], but supports more list types. Not fully implemented!
 			</description>
 		</method>
 		<method name="push_meta">
@@ -161,7 +161,7 @@
 			<argument index="0" name="data" type="Variant">
 			</argument>
 			<description>
-				Adds a meta tag to the tag stack. Similar to the bbcode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
+				Adds a [code][meta][/code] tag to the tag stack. Similar to the BBCode [code][url=something]{text}[/url][/code], but supports non-[String] metadata types.
 			</description>
 		</method>
 		<method name="push_strikethrough">
@@ -215,46 +215,46 @@
 			<argument index="2" name="ratio" type="int">
 			</argument>
 			<description>
-				Edits the selected columns expansion options. If [code]expand[/code] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
+				Edits the selected column's expansion options. If [code]expand[/code] is [code]true[/code], the column expands in proportion to its expansion ratio versus the other columns' ratios.
 				For example, 2 columns with ratios 3 and 4 plus 70 pixels in available width would expand 30 and 40 pixels, respectively.
-				Columns with a [code]false[/code] expand will not contribute to the total ratio.
+				If [code]expand[/code] is [code]false[/code], the column will not contribute to the total ratio.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode">
-			If [code]true[/code], the label uses BBCode formatting. Default value: [code]false[/code].
+		<member name="bbcode_enabled" type="bool" setter="set_use_bbcode" getter="is_using_bbcode" default="false">
+			If [code]true[/code], the label uses BBCode formatting.
 		</member>
-		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode">
+		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 		</member>
-		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined">
-			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code]. Default value: [code]true[/code].
+		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
+			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
 		</member>
-		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color">
-			If [code]true[/code], the label uses the custom font color. Default value: [code]false[/code].
+		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
+			If [code]true[/code], the label uses the custom font color.
 		</member>
-		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible">
+		<member name="percent_visible" type="float" setter="set_percent_visible" getter="get_percent_visible" default="1.0">
 			The text's visibility, as a [float] between 0.0 and 1.0.
 		</member>
-		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active">
-			If [code]true[/code], the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line]. Default value: [code]true[/code].
+		<member name="scroll_active" type="bool" setter="set_scroll_active" getter="is_scroll_active" default="true">
+			If [code]true[/code], the scrollbar is visible. Does not block scrolling completely. See [method scroll_to_line].
 		</member>
-		<member name="scroll_following" type="bool" setter="set_scroll_follow" getter="is_scroll_following">
-			If [code]true[/code], the window scrolls down to display new content automatically. Default value: [code]false[/code].
+		<member name="scroll_following" type="bool" setter="set_scroll_follow" getter="is_scroll_following" default="false">
+			If [code]true[/code], the window scrolls down to display new content automatically.
 		</member>
-		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled">
+		<member name="selection_enabled" type="bool" setter="set_selection_enabled" getter="is_selection_enabled" default="false">
 			If [code]true[/code], the label allows text selection.
 		</member>
-		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size">
-			The number of spaces associated with a single tab length. Does not affect "\t" in text tags, only indent tags.
+		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size" default="4">
+			The number of spaces associated with a single tab length. Does not affect [code]\t[/code] in text tags, only indent tags.
 		</member>
-		<member name="text" type="String" setter="set_text" getter="get_text">
+		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			The raw text of the label.
-			When set, clears the tag stack and adds a raw text tag to the top of it. Does not parse bbcodes. Does not modify [member bbcode_text].
+			When set, clears the tag stack and adds a raw text tag to the top of it. Does not parse BBCodes. Does not modify [member bbcode_text].
 		</member>
-		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters">
-			The restricted number of characters to display in the label.
+		<member name="visible_characters" type="int" setter="set_visible_characters" getter="get_visible_characters" default="-1">
+			The restricted number of characters to display in the label. If [code]-1[/code], all characters will be displayed.
 		</member>
 	</members>
 	<signals>
@@ -327,17 +327,17 @@
 		</theme_item>
 		<theme_item name="bold_italics_font" type="Font">
 		</theme_item>
-		<theme_item name="default_color" type="Color">
+		<theme_item name="default_color" type="Color" default="Color( 1, 1, 1, 1 )">
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 		</theme_item>
-		<theme_item name="font_color_selected" type="Color">
+		<theme_item name="font_color_selected" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
 		</theme_item>
-		<theme_item name="font_color_shadow" type="Color">
+		<theme_item name="font_color_shadow" type="Color" default="Color( 0, 0, 0, 0 )">
 		</theme_item>
 		<theme_item name="italics_font" type="Font">
 		</theme_item>
-		<theme_item name="line_separation" type="int">
+		<theme_item name="line_separation" type="int" default="1">
 		</theme_item>
 		<theme_item name="mono_font" type="Font">
 		</theme_item>
@@ -345,17 +345,17 @@
 		</theme_item>
 		<theme_item name="normal_font" type="Font">
 		</theme_item>
-		<theme_item name="selection_color" type="Color">
+		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
 		</theme_item>
-		<theme_item name="shadow_as_outline" type="int">
+		<theme_item name="shadow_as_outline" type="int" default="0">
 		</theme_item>
-		<theme_item name="shadow_offset_x" type="int">
+		<theme_item name="shadow_offset_x" type="int" default="1">
 		</theme_item>
-		<theme_item name="shadow_offset_y" type="int">
+		<theme_item name="shadow_offset_y" type="int" default="1">
 		</theme_item>
-		<theme_item name="table_hseparation" type="int">
+		<theme_item name="table_hseparation" type="int" default="3">
 		</theme_item>
-		<theme_item name="table_vseparation" type="int">
+		<theme_item name="table_vseparation" type="int" default="3">
 		</theme_item>
 	</theme_items>
 </class>

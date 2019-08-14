@@ -56,7 +56,7 @@
 			<return type="int" enum="WebRTCDataChannel.ChannelState">
 			</return>
 			<description>
-				Returns the current state of this channel, see [enum WebRTCDataChannel.ChannelState].
+				Returns the current state of this channel, see [enum ChannelState].
 			</description>
 		</method>
 		<method name="is_negotiated" qualifiers="const">
@@ -89,7 +89,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="write_mode" type="int" setter="set_write_mode" getter="get_write_mode" enum="WebRTCDataChannel.WriteMode">
+		<member name="write_mode" type="int" setter="set_write_mode" getter="get_write_mode" enum="WebRTCDataChannel.WriteMode" default="1">
 			The transfer mode to use when sending outgoing packet. Either text or binary.
 		</member>
 	</members>

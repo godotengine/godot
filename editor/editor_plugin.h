@@ -60,7 +60,8 @@ class EditorToolAddons;
 class ScriptEditor;
 
 class EditorInterface : public Node {
-	GDCLASS(EditorInterface, Node)
+	GDCLASS(EditorInterface, Node);
+
 protected:
 	static void _bind_methods();
 	static EditorInterface *singleton;
@@ -86,7 +87,7 @@ public:
 
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
-	EditorSettings *get_editor_settings();
+	Ref<EditorSettings> get_editor_settings();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 
@@ -100,7 +101,10 @@ public:
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_trnasforms, int p_preview_size);
+	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+
+	void set_main_screen_editor(const String &p_name);
+	void set_distraction_free_mode(bool p_enter);
 
 	EditorInterface();
 };

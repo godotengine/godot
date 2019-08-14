@@ -243,6 +243,12 @@
           HINTING_BOTTOM_TO_TOP,
           "\xE0\xB4\xA0 \xE0\xB4\xB1" ) /* ഠ റ */
 
+  SCRIPT( mong, MONG,
+          "Mongolian",
+          HB_SCRIPT_MONGOLIAN,
+          HINTING_TOP_TO_BOTTOM,
+          "\xE1\xA1\x82 \xE1\xA0\xAA" ) /* ᡂ ᠪ */
+
   SCRIPT( mymr, MYMR,
           "Myanmar",
           HB_SCRIPT_MYANMAR,

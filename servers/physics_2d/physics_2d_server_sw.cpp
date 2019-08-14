@@ -36,11 +36,8 @@
 #include "core/project_settings.h"
 #include "core/script_language.h"
 
-#define FLUSH_QUERY_CHECK(m_object)                                                                                                              \
-	if (m_object->get_space() && flushing_queries) {                                                                                             \
-		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead"); \
-		ERR_FAIL();                                                                                                                              \
-	}
+#define FLUSH_QUERY_CHECK(m_object) \
+	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
 RID Physics2DServerSW::_shape_create(ShapeType p_shape) {
 
@@ -316,11 +313,7 @@ Physics2DDirectSpaceState *Physics2DServerSW::space_get_direct_state(RID p_space
 
 	Space2DSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND_V(!space, NULL);
-	if ((using_threads && !doing_sync) || space->is_locked()) {
-
-		ERR_EXPLAIN("Space state is inaccessible right now, wait for iteration or physics process notification.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync) || space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -902,6 +895,8 @@ void Physics2DServerSW::body_apply_torque_impulse(RID p_body, real_t p_torque) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
+	_update_shapes();
+
 	body->apply_torque_impulse(p_torque);
 }
 
@@ -909,6 +904,8 @@ void Physics2DServerSW::body_apply_impulse(RID p_body, const Vector2 &p_pos, con
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
+
+	_update_shapes();
 
 	body->apply_impulse(p_pos, p_impulse);
 	body->wakeup();
@@ -943,6 +940,8 @@ void Physics2DServerSW::body_set_axis_velocity(RID p_body, const Vector2 &p_axis
 
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
+
+	_update_shapes();
 
 	Vector2 v = body->get_linear_velocity();
 	Vector2 axis = p_axis_velocity.normalized();
@@ -1052,6 +1051,8 @@ bool Physics2DServerSW::body_test_motion(RID p_body, const Transform2D &p_from, 
 	ERR_FAIL_COND_V(!body->get_space(), false);
 	ERR_FAIL_COND_V(body->get_space()->is_locked(), false);
 
+	_update_shapes();
+
 	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, p_margin, r_result, p_exclude_raycast_shapes);
 }
 
@@ -1067,10 +1068,7 @@ int Physics2DServerSW::body_test_ray_separation(RID p_body, const Transform2D &p
 
 Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
 
-	if ((using_threads && !doing_sync)) {
-		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG((using_threads && !doing_sync), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	if (!body_owner.owns(p_body))
 		return NULL;
@@ -1078,12 +1076,7 @@ Physics2DDirectBodyState *Physics2DServerSW::body_get_direct_state(RID p_body) {
 	Body2DSW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, NULL);
 	ERR_FAIL_COND_V(!body->get_space(), NULL);
-
-	if (body->get_space()->is_locked()) {
-
-		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1238,6 +1231,8 @@ Physics2DServer::JointType Physics2DServerSW::joint_get_type(RID p_joint) const 
 
 void Physics2DServerSW::free(RID p_rid) {
 
+	_update_shapes(); // just in case
+
 	if (shape_owner.owns(p_rid)) {
 
 		Shape2DSW *shape = shape_owner.get(p_rid);
@@ -1311,8 +1306,7 @@ void Physics2DServerSW::free(RID p_rid) {
 
 	} else {
 
-		ERR_EXPLAIN("Invalid ID");
-		ERR_FAIL();
+		ERR_FAIL_MSG("Invalid ID.");
 	}
 };
 
@@ -1334,6 +1328,8 @@ void Physics2DServerSW::step(real_t p_step) {
 
 	if (!active)
 		return;
+
+	_update_shapes();
 
 	doing_sync = false;
 
@@ -1417,6 +1413,14 @@ void Physics2DServerSW::finish() {
 	memdelete(stepper);
 	memdelete(direct_state);
 };
+
+void Physics2DServerSW::_update_shapes() {
+
+	while (pending_shape_update_list.first()) {
+		pending_shape_update_list.first()->self()->_shape_changed();
+		pending_shape_update_list.remove(pending_shape_update_list.first());
+	}
+}
 
 int Physics2DServerSW::get_process_info(ProcessInfo p_info) {
 

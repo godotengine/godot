@@ -35,16 +35,14 @@
 #include "pluginscript_script.h"
 
 #ifdef DEBUG_ENABLED
-#define __ASSERT_SCRIPT_REASON "Cannot retrieve pluginscript class for this script, is you code correct ?"
-#define ASSERT_SCRIPT_VALID()                \
-	{                                        \
-		ERR_EXPLAIN(__ASSERT_SCRIPT_REASON); \
-		ERR_FAIL_COND(!can_instance());      \
+#define __ASSERT_SCRIPT_REASON "Cannot retrieve PluginScript class for this script, is your code correct?"
+#define ASSERT_SCRIPT_VALID()                                       \
+	{                                                               \
+		ERR_FAIL_COND_MSG(!can_instance(), __ASSERT_SCRIPT_REASON); \
 	}
-#define ASSERT_SCRIPT_VALID_V(ret)             \
-	{                                          \
-		ERR_EXPLAIN(__ASSERT_SCRIPT_REASON);   \
-		ERR_FAIL_COND_V(!can_instance(), ret); \
+#define ASSERT_SCRIPT_VALID_V(ret)                                         \
+	{                                                                      \
+		ERR_FAIL_COND_V_MSG(!can_instance(), ret, __ASSERT_SCRIPT_REASON); \
 	}
 #else
 #define ASSERT_SCRIPT_VALID()
@@ -197,8 +195,7 @@ ScriptInstance *PluginScript::instance_create(Object *p_this) {
 			// if (ScriptDebugger::get_singleton()) {
 			// 	_language->debug_break_parse(get_path(), 0, msg);
 			// }
-			ERR_EXPLAIN(msg);
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, msg);
 		}
 	}
 
@@ -229,6 +226,8 @@ void PluginScript::set_source_code(const String &p_code) {
 }
 
 Error PluginScript::reload(bool p_keep_state) {
+	ERR_FAIL_COND_V(!_language, ERR_UNCONFIGURED);
+
 	_language->lock();
 	ERR_FAIL_COND_V(!p_keep_state && _instances.size(), ERR_ALREADY_IN_USE);
 	_language->unlock();
@@ -270,8 +269,7 @@ Error PluginScript::reload(bool p_keep_state) {
 				_ref_base_parent = res;
 			} else {
 				String name = *(StringName *)&manifest.name;
-				ERR_EXPLAIN(_path + ": Script '" + name + "' has an invalid parent '" + *base_name + "'.");
-				ERR_FAIL_V(ERR_PARSE_ERROR);
+				ERR_FAIL_V_MSG(ERR_PARSE_ERROR, _path + ": Script '" + name + "' has an invalid parent '" + *base_name + "'.");
 			}
 		}
 	}
@@ -284,7 +282,7 @@ Error PluginScript::reload(bool p_keep_state) {
 
 	Dictionary *members = (Dictionary *)&manifest.member_lines;
 	for (const Variant *key = members->next(); key != NULL; key = members->next(key)) {
-		_member_lines[*key] = (*members)[key];
+		_member_lines[*key] = (*members)[*key];
 	}
 	Array *methods = (Array *)&manifest.methods;
 	for (int i = 0; i < methods->size(); ++i) {
@@ -418,8 +416,7 @@ Error PluginScript::load_source_code(const String &p_path) {
 
 	String s;
 	if (s.parse_utf8((const char *)w.ptr())) {
-		ERR_EXPLAIN("Script '" + p_path + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		ERR_FAIL_V(ERR_INVALID_DATA);
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	}
 
 	_source = s;
@@ -473,6 +470,8 @@ MultiplayerAPI::RPCMode PluginScript::get_rset_mode(const StringName &p_variable
 
 PluginScript::PluginScript() :
 		_data(NULL),
+		_desc(NULL),
+		_language(NULL),
 		_tool(false),
 		_valid(false),
 		_script_list(this) {
@@ -490,11 +489,15 @@ void PluginScript::init(PluginScriptLanguage *language) {
 }
 
 PluginScript::~PluginScript() {
-	_desc->finish(_data);
+	if (_desc && _data) {
+		_desc->finish(_data);
+	}
 
 #ifdef DEBUG_ENABLED
-	_language->lock();
-	_language->_script_list.remove(&_script_list);
-	_language->unlock();
+	if (_language) {
+		_language->lock();
+		_language->_script_list.remove(&_script_list);
+		_language->unlock();
+	}
 #endif
 }

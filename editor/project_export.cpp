@@ -166,7 +166,7 @@ void ProjectExportDialog::_update_presets() {
 
 void ProjectExportDialog::_update_export_all() {
 
-	bool can_export = EditorExport::get_singleton()->get_export_preset_count() > 0 ? true : false;
+	bool can_export = EditorExport::get_singleton()->get_export_preset_count() > 0;
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_preset_count(); i++) {
 		Ref<EditorExportPreset> preset = EditorExport::get_singleton()->get_export_preset(i);
@@ -931,8 +931,17 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension_list[i] + " ; " + platform->get_name() + " Export");
 	}
 
-	if (current->get_export_path() != "") {
-		export_project->set_current_path(current->get_export_path());
+	String current_preset_export_path = current->get_export_path();
+
+	if (current_preset_export_path != "") {
+
+		if (!DirAccess::exists(current_preset_export_path.get_base_dir())) {
+
+			DirAccessRef da(DirAccess::create(DirAccess::ACCESS_FILESYSTEM));
+			da->make_dir_recursive(current_preset_export_path.get_base_dir());
+		}
+
+		export_project->set_current_path(current_preset_export_path);
 	} else {
 		if (extension_list.size() >= 1) {
 			export_project->set_current_file(default_filename + "." + extension_list[0]);
@@ -986,7 +995,7 @@ void ProjectExportDialog::_export_all_dialog_action(const String &p_str) {
 
 	export_all_dialog->hide();
 
-	_export_all(p_str == "release" ? false : true);
+	_export_all(p_str != "release");
 }
 
 void ProjectExportDialog::_export_all(bool p_debug) {

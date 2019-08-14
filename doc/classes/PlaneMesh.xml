@@ -11,14 +11,14 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size">
-			Size of the generated plane. Defaults to (2.0, 2.0).
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 2, 2 )">
+			Size of the generated plane.
 		</member>
-		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth">
-			Number of subdivision along the Z axis. Defaults to 0.
+		<member name="subdivide_depth" type="int" setter="set_subdivide_depth" getter="get_subdivide_depth" default="0">
+			Number of subdivision along the Z axis.
 		</member>
-		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width">
-			Number of subdivision along the X axis. Defaults to 0.
+		<member name="subdivide_width" type="int" setter="set_subdivide_width" getter="get_subdivide_width" default="0">
+			Number of subdivision along the X axis.
 		</member>
 	</members>
 	<constants>

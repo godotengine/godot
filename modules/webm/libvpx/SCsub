@@ -323,7 +323,7 @@ if webm_cpu_x86:
     elif cpu_bits == '64':
         env_libvpx["ASCPU"] = 'X86_64'
 
-    env_libvpx.Append(CPPFLAGS=['-DWEBM_X86ASM'])
+    env_libvpx.Append(CPPDEFINES=['WEBM_X86ASM'])
 
     webm_simd_optimizations = True
 
@@ -337,7 +337,7 @@ if webm_cpu_arm:
         env_libvpx["ASFLAGS"] = ''
         env_libvpx["ASCOM"] = '$AS $ASFLAGS -o $TARGET $SOURCES'
 
-    env_libvpx.Append(CPPFLAGS=['-DWEBM_ARMASM'])
+    env_libvpx.Append(CPPDEFINES=['WEBM_ARMASM'])
 
     webm_simd_optimizations = True
 
@@ -384,8 +384,6 @@ elif webm_cpu_arm:
         env_libvpx.add_source_files(env.modules_sources, [libvpx_dir + "third_party/android/cpu-features.c"])
 
     env_libvpx_neon = env_libvpx.Clone()
-    if env["platform"] == 'android' and env["android_arch"] == 'armv6':
-        env_libvpx_neon.Append(CCFLAGS=['-mfpu=neon'])
     env_libvpx_neon.add_source_files(env.modules_sources, libvpx_sources_arm_neon)
 
     if env["platform"] == 'uwp':

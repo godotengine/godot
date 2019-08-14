@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="AudioEffectPitchShift" inherits="AudioEffect" category="Core" version="3.2">
 	<brief_description>
-		Adds a Pitch shift audio effect to an Audio bus.
+		Adds a pitch-shifting audio effect to an Audio bus.
 		Raises or lowers the pitch of original sound.
 	</brief_description>
 	<description>
@@ -12,10 +12,27 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale">
+		<member name="fft_size" type="int" setter="set_fft_size" getter="get_fft_size" enum="AudioEffectPitchShift.FFT_Size" default="3">
+		</member>
+		<member name="oversampling" type="int" setter="set_oversampling" getter="get_oversampling" default="4">
+		</member>
+		<member name="pitch_scale" type="float" setter="set_pitch_scale" getter="get_pitch_scale" default="1.0">
 			Pitch value. Can range from 0 (-1 octave) to 16 (+16 octaves).
 		</member>
 	</members>
 	<constants>
+		<constant name="FFT_SIZE_256" value="0" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_512" value="1" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_1024" value="2" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_2048" value="3" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_4096" value="4" enum="FFT_Size">
+		</constant>
+		<constant name="FFT_SIZE_MAX" value="5" enum="FFT_Size">
+			Represents the size of the [enum FFT_Size] enum.
+		</constant>
 	</constants>
 </class>

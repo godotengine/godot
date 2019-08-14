@@ -52,18 +52,16 @@ void ExportTemplateManager::_update_template_list() {
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = d->change_dir(EditorSettings::get_singleton()->get_templates_dir());
 
-	d->list_dir_begin();
 	Set<String> templates;
-
+	d->list_dir_begin();
 	if (err == OK) {
 
-		bool isdir;
-		String c = d->get_next(&isdir);
+		String c = d->get_next();
 		while (c != String()) {
-			if (isdir && !c.begins_with(".")) {
+			if (d->current_is_dir() && !c.begins_with(".")) {
 				templates.insert(c);
 			}
-			c = d->get_next(&isdir);
+			c = d->get_next();
 		}
 	}
 	d->list_dir_end();
@@ -71,6 +69,9 @@ void ExportTemplateManager::_update_template_list() {
 	memdelete(d);
 
 	String current_version = VERSION_FULL_CONFIG;
+	// Downloadable export templates are only available for stable, alpha, beta and RC versions.
+	// Therefore, don't display download-related features when using a development version
+	const bool downloads_available = String(VERSION_STATUS) != String("dev");
 
 	Label *current = memnew(Label);
 	current->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -78,10 +79,14 @@ void ExportTemplateManager::_update_template_list() {
 
 	if (templates.has(current_version)) {
 		current->add_color_override("font_color", get_color("success_color", "Editor"));
-		Button *redownload = memnew(Button);
-		redownload->set_text(TTR("Re-Download"));
-		current_hb->add_child(redownload);
-		redownload->connect("pressed", this, "_download_template", varray(current_version));
+
+		// Only display a redownload button if it can be downloaded in the first place
+		if (downloads_available) {
+			Button *redownload = memnew(Button);
+			redownload->set_text(TTR("Redownload"));
+			current_hb->add_child(redownload);
+			redownload->connect("pressed", this, "_download_template", varray(current_version));
+		}
 
 		Button *uninstall = memnew(Button);
 		uninstall->set_text(TTR("Uninstall"));
@@ -93,6 +98,12 @@ void ExportTemplateManager::_update_template_list() {
 		current->add_color_override("font_color", get_color("error_color", "Editor"));
 		Button *redownload = memnew(Button);
 		redownload->set_text(TTR("Download"));
+
+		if (!downloads_available) {
+			redownload->set_disabled(true);
+			redownload->set_tooltip(TTR("Official export templates aren't available for development builds."));
+		}
+
 		redownload->connect("pressed", this, "_download_template", varray(current_version));
 		current_hb->add_child(redownload);
 		current->set_text(current_version + " " + TTR("(Missing)"));
@@ -154,18 +165,14 @@ void ExportTemplateManager::_uninstall_template_confirm() {
 	ERR_FAIL_COND(err != OK);
 
 	Vector<String> files;
-
 	d->list_dir_begin();
-
-	bool isdir;
-	String c = d->get_next(&isdir);
+	String c = d->get_next();
 	while (c != String()) {
-		if (!isdir) {
+		if (!d->current_is_dir()) {
 			files.push_back(c);
 		}
-		c = d->get_next(&isdir);
+		c = d->get_next();
 	}
-
 	d->list_dir_end();
 
 	for (int i = 0; i < files.size(); i++) {
@@ -314,7 +321,8 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		if (!f) {
 			ret = unzGoToNextFile(pkg);
 			fc++;
-			ERR_CONTINUE(!f);
+			ERR_EXPLAIN("Can't open file from path: " + String(to_write));
+			ERR_CONTINUE(true);
 		}
 
 		f->store_buffer(data.ptr(), data.size());
@@ -406,9 +414,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 		} break;
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
-		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
-			template_list_state->set_text(TTR("Can't connect."));
-		} break;
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
 		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
 		case HTTPRequest::RESULT_CANT_CONNECT: {
 			template_list_state->set_text(TTR("Can't connect."));
@@ -429,14 +435,16 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 				String path = download_templates->get_download_file();
 				template_list_state->set_text(TTR("Download Complete."));
 				template_downloader->hide();
-				int ret = _install_from_file(path, false);
+				bool ret = _install_from_file(path, false);
 				if (ret) {
-					Error err = OS::get_singleton()->move_to_trash(path);
+					// Clean up downloaded file.
+					DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+					Error err = da->remove(path);
 					if (err != OK) {
-						EditorNode::get_singleton()->add_io_error(TTR("Cannot remove:") + "\n" + path + "\n");
+						EditorNode::get_singleton()->add_io_error(TTR("Cannot remove temporary file:") + "\n" + path + "\n");
 					}
 				} else {
-					WARN_PRINTS(vformat(TTR("Templates installation failed. The problematic templates archives can be found at '%s'."), path));
+					EditorNode::get_singleton()->add_io_error(vformat(TTR("Templates installation failed.\nThe problematic templates archives can be found at '%s'."), path));
 				}
 			}
 		} break;
@@ -465,7 +473,7 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Error requesting url: ") + p_url);
+		EditorNode::get_singleton()->show_warning(TTR("Error requesting URL:") + " " + p_url);
 		return;
 	}
 

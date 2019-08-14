@@ -171,10 +171,12 @@ class SceneTreeDialog : public ConfirmationDialog {
 	SceneTreeEditor *tree;
 	//Button *select;
 	//Button *cancel;
+	LineEdit *filter;
 
 	void update_tree();
 	void _select();
 	void _cancel();
+	void _filter_changed(const String &p_filter);
 
 protected:
 	void _notification(int p_what);

@@ -47,15 +47,11 @@ env_thirdparty.disable_warnings()
 thirdparty_misc_dir = "#thirdparty/misc/"
 thirdparty_misc_sources = [
     # C sources
-    "base64.c",
     "fastlz.c",
-    "sha256.c",
     "smaz.c",
 
     # C++ sources
-    "aes256.cpp",
     "hq2x.cpp",
-    "md5.cpp",
     "pcg.cpp",
     "triangulator.cpp",
     "clipper.cpp",
@@ -130,10 +126,10 @@ if env['builtin_zstd']:
     thirdparty_zstd_sources = [thirdparty_zstd_dir + file for file in thirdparty_zstd_sources]
 
     env_thirdparty.Prepend(CPPPATH=[thirdparty_zstd_dir, thirdparty_zstd_dir + "common"])
-    env_thirdparty.Append(CPPFLAGS="-DZSTD_STATIC_LINKING_ONLY")
+    env_thirdparty.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
     env.Prepend(CPPPATH=thirdparty_zstd_dir)
     # Also needed in main env includes will trigger warnings
-    env.Append(CPPFLAGS="-DZSTD_STATIC_LINKING_ONLY")
+    env.Append(CPPDEFINES=["ZSTD_STATIC_LINKING_ONLY"])
 
     env_thirdparty.add_source_files(env.core_sources, thirdparty_zstd_sources)
 
@@ -146,7 +142,7 @@ env.Depends("#core/io/certs_compressed.gen.h", ["#thirdparty/certs/ca-certificat
 env.CommandNoCache("#core/io/certs_compressed.gen.h", "#thirdparty/certs/ca-certificates.crt", run_in_subprocess(core_builders.make_certs_header))
 
 # Make binders
-env.CommandNoCache(['method_bind.gen.inc', 'method_bind_ext.gen.inc'], 'make_binders.py', run_in_subprocess(make_binders.run))
+env.CommandNoCache(['method_bind.gen.inc', 'method_bind_ext.gen.inc', 'method_bind_free_func.gen.inc'], 'make_binders.py', run_in_subprocess(make_binders.run))
 
 # Authors
 env.Depends('#core/authors.gen.h', "../AUTHORS.md")

@@ -223,8 +223,13 @@
 			</argument>
 			<argument index="2" name="filled" type="bool" default="true">
 			</argument>
+			<argument index="3" name="width" type="float" default="1.0">
+			</argument>
+			<argument index="4" name="antialiased" type="bool" default="false">
+			</argument>
 			<description>
-				Draws a colored rectangle.
+				Draws a rectangle. If [code]filled[/code] is [code]true[/code], the rectangle will be filled with the [code]color[/code] specified. If [code]filled[/code] is [code]false[/code], the rectangle will be drawn as a stroke with the [code]color[/code] and [code]width[/code] specified. If [code]antialiased[/code] is [code]true[/code], the lines will be antialiased.
+				[b]Note:[/b] [code]width[/code] and [code]antialiased[/code] are only effective if [code]filled[/code] is [code]false[/code].
 			</description>
 		</method>
 		<method name="draw_set_transform">
@@ -356,63 +361,63 @@
 			<return type="Transform2D">
 			</return>
 			<description>
-				Get the transform matrix of this item's canvas.
+				Gets the transform matrix of this item's canvas.
 			</description>
 		</method>
 		<method name="get_global_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Get the global position of the mouse.
+				Gets the global position of the mouse.
 			</description>
 		</method>
 		<method name="get_global_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Get the global transform matrix of this item.
+				Gets the global transform matrix of this item.
 			</description>
 		</method>
 		<method name="get_global_transform_with_canvas" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Get the global transform matrix of this item in relation to the canvas.
+				Gets the global transform matrix of this item in relation to the canvas.
 			</description>
 		</method>
 		<method name="get_local_mouse_position" qualifiers="const">
 			<return type="Vector2">
 			</return>
 			<description>
-				Get the mouse position relative to this item's position.
+				Gets the mouse position relative to this item's position.
 			</description>
 		</method>
 		<method name="get_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Get the transform matrix of this item.
+				Gets the transform matrix of this item.
 			</description>
 		</method>
 		<method name="get_viewport_rect" qualifiers="const">
 			<return type="Rect2">
 			</return>
 			<description>
-				Get the viewport's boundaries as a [Rect2].
+				Gets the viewport's boundaries as a [Rect2].
 			</description>
 		</method>
 		<method name="get_viewport_transform" qualifiers="const">
 			<return type="Transform2D">
 			</return>
 			<description>
-				Get this item's transform in relation to the viewport.
+				Gets this item's transform in relation to the viewport.
 			</description>
 		</method>
 		<method name="get_world_2d" qualifiers="const">
 			<return type="World2D">
 			</return>
 			<description>
-				Get the [World2D] where this item is in.
+				Gets the [World2D] where this item is in.
 			</description>
 		</method>
 		<method name="hide">
@@ -511,29 +516,29 @@
 		</method>
 	</methods>
 	<members>
-		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask">
-			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes. Default value: [code]1[/code].
+		<member name="light_mask" type="int" setter="set_light_mask" getter="get_light_mask" default="1">
+			The rendering layers in which this [CanvasItem] responds to [Light2D] nodes.
 		</member>
 		<member name="material" type="Material" setter="set_material" getter="get_material">
-			The material applied to textures on this [CanvasItem]. Default value: [code]null[/code].
+			The material applied to textures on this [CanvasItem].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate">
-			The color applied to textures on this [CanvasItem]. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white").
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+			The color applied to textures on this [CanvasItem].
 		</member>
-		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate">
-			The color applied to textures on this [CanvasItem]. This is not inherited by children [CanvasItem]s. Default value: [code]Color(1, 1, 1, 1)[/code] (opaque "white")..
+		<member name="self_modulate" type="Color" setter="set_self_modulate" getter="get_self_modulate" default="Color( 1, 1, 1, 1 )">
+			The color applied to textures on this [CanvasItem]. This is not inherited by children [CanvasItem]s.
 		</member>
-		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled">
-			If [code]true[/code], the object draws behind its parent. Default value: [code]false[/code].
+		<member name="show_behind_parent" type="bool" setter="set_draw_behind_parent" getter="is_draw_behind_parent_enabled" default="false">
+			If [code]true[/code], the object draws behind its parent.
 		</member>
 		<member name="show_on_top" type="bool" setter="_set_on_top" getter="_is_on_top">
-			If [code]true[/code], the object draws on top of its parent. Default value: [code]true[/code].
+			If [code]true[/code], the object draws on top of its parent.
 		</member>
-		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material">
-			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material. Default value: [code]false[/code].
+		<member name="use_parent_material" type="bool" setter="set_use_parent_material" getter="get_use_parent_material" default="false">
+			If [code]true[/code], the parent [CanvasItem]'s [member material] property is used as this one's material.
 		</member>
-		<member name="visible" type="bool" setter="set_visible" getter="is_visible">
-			If [code]true[/code], this [CanvasItem] is drawn. Default value: [code]true[/code]. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
+		<member name="visible" type="bool" setter="set_visible" getter="is_visible" default="true">
+			If [code]true[/code], this [CanvasItem] is drawn. For controls that inherit [Popup], the correct way to make them visible is to call one of the multiple [code]popup*()[/code] functions instead.
 		</member>
 	</members>
 	<signals>
@@ -575,7 +580,7 @@
 			Mix blending mode. Colors are assumed to be premultiplied by the alpha (opacity) value.
 		</constant>
 		<constant name="BLEND_MODE_DISABLED" value="5" enum="BlendMode">
-			Disable blending mode. Colors including alpha are written as-is. Only applicable for render targets with a transparent background. No lighting will be applied.
+			Disables blending mode. Colors including alpha are written as-is. Only applicable for render targets with a transparent background. No lighting will be applied.
 		</constant>
 		<constant name="NOTIFICATION_TRANSFORM_CHANGED" value="2000">
 			The CanvasItem's transform has changed. This notification is only received if enabled by [method set_notify_transform] or [method set_notify_local_transform].

@@ -37,7 +37,7 @@
 
 class AudioStreamPlayer2D : public Node2D {
 
-	GDCLASS(AudioStreamPlayer2D, Node2D)
+	GDCLASS(AudioStreamPlayer2D, Node2D);
 
 private:
 	enum {

@@ -37,7 +37,7 @@
 class StreamBitMap;
 
 class ResourceImporterBitMap : public ResourceImporter {
-	GDCLASS(ResourceImporterBitMap, ResourceImporter)
+	GDCLASS(ResourceImporterBitMap, ResourceImporter);
 
 public:
 	virtual String get_importer_name() const;

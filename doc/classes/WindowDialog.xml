@@ -18,10 +18,10 @@
 		</method>
 	</methods>
 	<members>
-		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable">
-			If [code]true[/code], the user can resize the window. Default value: [code]false[/code].
+		<member name="resizable" type="bool" setter="set_resizable" getter="get_resizable" default="false">
+			If [code]true[/code], the user can resize the window.
 		</member>
-		<member name="window_title" type="String" setter="set_title" getter="get_title">
+		<member name="window_title" type="String" setter="set_title" getter="get_title" default="&quot;&quot;">
 			The text displayed in the window's title bar.
 		</member>
 	</members>
@@ -30,21 +30,21 @@
 	<theme_items>
 		<theme_item name="close" type="Texture">
 		</theme_item>
-		<theme_item name="close_h_ofs" type="int">
+		<theme_item name="close_h_ofs" type="int" default="18">
 		</theme_item>
 		<theme_item name="close_highlight" type="Texture">
 		</theme_item>
-		<theme_item name="close_v_ofs" type="int">
+		<theme_item name="close_v_ofs" type="int" default="18">
 		</theme_item>
 		<theme_item name="panel" type="StyleBox">
 		</theme_item>
-		<theme_item name="scaleborder_size" type="int">
+		<theme_item name="scaleborder_size" type="int" default="4">
 		</theme_item>
-		<theme_item name="title_color" type="Color">
+		<theme_item name="title_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
 		<theme_item name="title_font" type="Font">
 		</theme_item>
-		<theme_item name="title_height" type="int">
+		<theme_item name="title_height" type="int" default="20">
 		</theme_item>
 	</theme_items>
 </class>

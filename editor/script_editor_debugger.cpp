@@ -305,49 +305,51 @@ void ScriptEditorDebugger::_scene_tree_rmb_selected(const Vector2 &p_position) {
 }
 
 void ScriptEditorDebugger::_file_selected(const String &p_file) {
-	if (file_dialog_mode == SAVE_NODE) {
+	switch (file_dialog_mode) {
+		case SAVE_NODE: {
+			Array msg;
+			msg.push_back("save_node");
+			msg.push_back(inspected_object_id);
+			msg.push_back(p_file);
+			ppeer->put_var(msg);
+		} break;
+		case SAVE_CSV: {
+			Error err;
+			FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
-		Array msg;
-		msg.push_back("save_node");
-		msg.push_back(inspected_object_id);
-		msg.push_back(p_file);
-		ppeer->put_var(msg);
-	} else if (file_dialog_mode == SAVE_CSV) {
+			if (err != OK) {
+				ERR_PRINTS("Failed to open " + p_file);
+				return;
+			}
+			Vector<String> line;
+			line.resize(Performance::MONITOR_MAX);
 
-		Error err;
-		FileAccessRef file = FileAccess::open(p_file, FileAccess::WRITE, &err);
-
-		if (err != OK) {
-			ERR_PRINTS("Failed to open " + p_file);
-			return;
-		}
-		Vector<String> line;
-		line.resize(Performance::MONITOR_MAX);
-
-		// signatures
-		for (int i = 0; i < Performance::MONITOR_MAX; i++) {
-			line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
-		}
-		file->store_csv_line(line);
-
-		// values
-		List<Vector<float> >::Element *E = perf_history.back();
-		while (E) {
-
-			Vector<float> &perf_data = E->get();
-			for (int i = 0; i < perf_data.size(); i++) {
-
-				line.write[i] = String::num_real(perf_data[i]);
+			// signatures
+			for (int i = 0; i < Performance::MONITOR_MAX; i++) {
+				line.write[i] = Performance::get_singleton()->get_monitor_name(Performance::Monitor(i));
 			}
 			file->store_csv_line(line);
-			E = E->prev();
-		}
-		file->store_string("\n");
 
-		Vector<Vector<String> > profiler_data = profiler->get_data_as_csv();
-		for (int i = 0; i < profiler_data.size(); i++) {
-			file->store_csv_line(profiler_data[i]);
-		}
+			// values
+			List<Vector<float> >::Element *E = perf_history.back();
+			while (E) {
+
+				Vector<float> &perf_data = E->get();
+				for (int i = 0; i < perf_data.size(); i++) {
+
+					line.write[i] = String::num_real(perf_data[i]);
+				}
+				file->store_csv_line(line);
+				E = E->prev();
+			}
+			file->store_string("\n");
+
+			Vector<Vector<String> > profiler_data = profiler->get_data_as_csv();
+			for (int i = 0; i < profiler_data.size(); i++) {
+				file->store_csv_line(profiler_data[i]);
+			}
+
+		} break;
 	}
 }
 
@@ -379,6 +381,74 @@ void ScriptEditorDebugger::_scene_tree_request() {
 	Array msg;
 	msg.push_back("request_scene_tree");
 	ppeer->put_var(msg);
+}
+
+/// Populates inspect_scene_tree recursively given data in nodes.
+/// Nodes is an array containing 4 elements for each node, it follows this pattern:
+/// nodes[i] == number of direct children of this node
+/// nodes[i + 1] == node name
+/// nodes[i + 2] == node class
+/// nodes[i + 3] == node instance id
+///
+/// Returns the number of items parsed in nodes from current_index.
+///
+/// Given a nodes array like [R,A,B,C,D,E] the following Tree will be generated, assuming
+/// filter is an empty String, R and A child count are 2, B is 1 and C, D and E are 0.
+///
+/// R
+/// |-A
+/// | |-B
+/// | | |-C
+/// | |
+/// | |-D
+/// |
+/// |-E
+///
+int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &nodes, int current_index) {
+	String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
+	String item_text = nodes[current_index + 1];
+	bool keep = filter.is_subsequence_ofi(item_text);
+
+	TreeItem *item = inspect_scene_tree->create_item(parent);
+	item->set_text(0, item_text);
+	ObjectID id = ObjectID(nodes[current_index + 3]);
+	Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(nodes[current_index + 2], "");
+	if (icon.is_valid()) {
+		item->set_icon(0, icon);
+	}
+	item->set_metadata(0, id);
+
+	// Set current item as collapsed if necessary
+	if (parent) {
+		if (!unfold_cache.has(id)) {
+			item->set_collapsed(true);
+		}
+	}
+
+	int children_count = nodes[current_index];
+	// Tracks the total number of items parsed in nodes, this is used to skips nodes that
+	// are not direct children of the current node since we can't know in advance the total
+	// number of children, direct and not, of a node without traversing the nodes array previously.
+	// Keeping track of this allows us to build our remote scene tree by traversing the node
+	// array just once.
+	int items_count = 1;
+	for (int i = 0; i < children_count; i++) {
+		// Called for each direct child of item.
+		// Direct children of current item might not be adjacent so items_count must
+		// be incremented by the number of items parsed until now, otherwise we would not
+		// be able to access the next child of the current item.
+		// items_count is multiplied by 4 since that's the number of elements in the nodes
+		// array needed to represent a single node.
+		items_count += _update_scene_tree(item, nodes, current_index + items_count * 4);
+	}
+
+	// If item has not children and should not be kept delete it
+	if (!keep && !item->get_children() && parent) {
+		parent->remove_child(item);
+		memdelete(item);
+	}
+
+	return items_count;
 }
 
 void ScriptEditorDebugger::_video_mem_request() {
@@ -453,48 +523,8 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		updating_scene_tree = true;
 
-		for (int i = 0; i < p_data.size(); i += 4) {
+		_update_scene_tree(NULL, p_data, 0);
 
-			TreeItem *p;
-			int level = p_data[i];
-			if (level == 0) {
-				p = NULL;
-			} else {
-				ERR_CONTINUE(!lv.has(level - 1));
-				p = lv[level - 1];
-			}
-
-			TreeItem *it = inspect_scene_tree->create_item(p);
-
-			ObjectID id = ObjectID(p_data[i + 3]);
-
-			it->set_text(0, p_data[i + 1]);
-			Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(p_data[i + 2], "");
-			if (icon.is_valid())
-				it->set_icon(0, icon);
-			it->set_metadata(0, id);
-
-			if (id == inspected_object_id) {
-				TreeItem *cti = it->get_parent(); //ensure selected is always uncollapsed
-				while (cti) {
-					cti->set_collapsed(false);
-					cti = cti->get_parent();
-				}
-				it->select(0);
-			}
-
-			if (p) {
-				if (!unfold_cache.has(id)) {
-					it->set_collapsed(true);
-				}
-			} else {
-				if (unfold_cache.has(id)) { //reverse for root
-					it->set_collapsed(true);
-				}
-			}
-
-			lv[level] = it;
-		}
 		updating_scene_tree = false;
 
 		le_clear->set_disabled(false);
@@ -624,8 +654,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			d["frame"] = i;
 			s->set_metadata(0, d);
 
-			//String line = itos(i)+" - "+String(d["file"])+":"+itos(d["line"])+" - at func: "+d["function"];
-			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]);
+			String line = itos(i) + " - " + String(d["file"]) + ":" + itos(d["line"]) + " - at function: " + d["function"];
 			s->set_text(0, line);
 
 			if (i == 0)
@@ -987,7 +1016,10 @@ void ScriptEditorDebugger::_performance_draw() {
 	Ref<Font> graph_font = get_font("font", "TextEdit");
 
 	if (which.empty()) {
-		perf_draw->draw_string(graph_font, Point2(0, graph_font->get_ascent()), TTR("Pick one or more items from the list to display the graph."), get_color("font_color", "Label"), perf_draw->get_size().x);
+		String text = TTR("Pick one or more items from the list to display the graph.");
+
+		perf_draw->draw_string(graph_font, Point2i(MAX(0, perf_draw->get_size().x - graph_font->get_string_size(text).x), perf_draw->get_size().y + graph_font->get_ascent()) / 2, text, get_color("font_color", "Label"), perf_draw->get_size().x);
+
 		return;
 	}
 
@@ -1121,10 +1153,13 @@ void ScriptEditorDebugger::_notification(int p_what) {
 				last_warning_count = warning_count;
 			}
 
-			if (connection.is_null()) {
-
-				if (server->is_connection_available()) {
-
+			if (server->is_connection_available()) {
+				if (connection.is_valid()) {
+					// We already have a valid connection. Disconnecting any new connecting client to prevent it from hanging.
+					// (If we don't keep a reference to the connection it will be destroyed and disconnect_from_host will be called internally)
+					server->take_connection();
+				} else {
+					// We just got the first connection.
 					connection = server->take_connection();
 					if (connection.is_null())
 						break;
@@ -1158,12 +1193,11 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					if (profiler->is_profiling()) {
 						_profiler_activate(true);
 					}
-
-				} else {
-
-					break;
 				}
-			};
+			}
+
+			if (connection.is_null())
+				break;
 
 			if (!connection->is_connected_to_host()) {
 				stop();

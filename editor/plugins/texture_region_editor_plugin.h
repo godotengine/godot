@@ -145,9 +145,15 @@ public:
 class TextureRegionEditorPlugin : public EditorPlugin {
 	GDCLASS(TextureRegionEditorPlugin, EditorPlugin);
 
+	bool manually_hidden;
 	Button *texture_region_button;
 	TextureRegionEditor *region_editor;
 	EditorNode *editor;
+
+protected:
+	static void _bind_methods();
+
+	void _editor_visiblity_changed();
 
 public:
 	virtual String get_name() const { return "TextureRegion"; }

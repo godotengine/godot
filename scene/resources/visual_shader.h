@@ -39,7 +39,8 @@ class VisualShaderNodeUniform;
 class VisualShaderNode;
 
 class VisualShader : public Shader {
-	GDCLASS(VisualShader, Shader)
+	GDCLASS(VisualShader, Shader);
+
 public:
 	enum Type {
 		TYPE_VERTEX,
@@ -102,7 +103,7 @@ private:
 		}
 	};
 
-	Error _write_node(Type p_type, StringBuilder &global_code, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview) const;
+	Error _write_node(Type p_type, StringBuilder &global_code, StringBuilder &global_code_per_node, Map<Type, StringBuilder> &global_code_per_func, StringBuilder &code, Vector<DefaultTextureParam> &def_tex_params, const VMap<ConnectionKey, const List<Connection>::Element *> &input_connections, const VMap<ConnectionKey, const List<Connection>::Element *> &output_connections, int node, Set<int> &processed, bool for_preview, Set<StringName> &r_classes) const;
 
 	void _input_type_changed(Type p_type, int p_id);
 
@@ -137,6 +138,7 @@ public:
 	Error connect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void disconnect_nodes(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
 	void connect_nodes_forced(Type p_type, int p_from_node, int p_from_port, int p_to_node, int p_to_port);
+	bool is_port_types_compatible(int p_a, int p_b) const;
 
 	void rebuild();
 	void get_node_connections(Type p_type, List<Connection> *r_connections) const;
@@ -163,7 +165,7 @@ VARIANT_ENUM_CAST(VisualShader::Type)
 ///
 
 class VisualShaderNode : public Resource {
-	GDCLASS(VisualShaderNode, Resource)
+	GDCLASS(VisualShaderNode, Resource);
 
 	int port_preview;
 
@@ -206,6 +208,8 @@ public:
 
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const = 0; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
 	virtual String get_warning(Shader::Mode p_mode, VisualShader::Type p_type) const;
@@ -215,7 +219,7 @@ public:
 /////
 
 class VisualShaderNodeInput : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeInput, VisualShaderNode)
+	GDCLASS(VisualShaderNodeInput, VisualShaderNode);
 
 	friend class VisualShader;
 	VisualShader::Type shader_type;
@@ -268,7 +272,8 @@ public:
 ///
 
 class VisualShaderNodeOutput : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeOutput, VisualShaderNode)
+	GDCLASS(VisualShaderNodeOutput, VisualShaderNode);
+
 public:
 	friend class VisualShader;
 	VisualShader::Type shader_type;
@@ -304,7 +309,7 @@ public:
 };
 
 class VisualShaderNodeUniform : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeUniform, VisualShaderNode)
+	GDCLASS(VisualShaderNodeUniform, VisualShaderNode);
 
 	String uniform_name;
 
@@ -319,7 +324,8 @@ public:
 };
 
 class VisualShaderNodeGroupBase : public VisualShaderNode {
-	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNode)
+	GDCLASS(VisualShaderNodeGroupBase, VisualShaderNode);
+
 private:
 	void _apply_port_changes();
 
@@ -351,6 +357,8 @@ public:
 
 	void set_outputs(const String &p_outputs);
 	String get_outputs() const;
+
+	bool is_valid_port_name(const String &p_name) const;
 
 	void add_input_port(int p_id, int p_type, const String &p_name);
 	void remove_input_port(int p_id);
@@ -386,7 +394,7 @@ public:
 };
 
 class VisualShaderNodeExpression : public VisualShaderNodeGroupBase {
-	GDCLASS(VisualShaderNodeExpression, VisualShaderNodeGroupBase)
+	GDCLASS(VisualShaderNodeExpression, VisualShaderNodeGroupBase);
 
 private:
 	String expression;

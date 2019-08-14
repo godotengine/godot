@@ -57,8 +57,7 @@ void image_decompress_squish(Image *p_image) {
 	} else if (p_image->get_format() == Image::FORMAT_RGTC_RG) {
 		squish_flags = squish::kBc5;
 	} else {
-		ERR_EXPLAIN("Squish: Can't decompress unknown format: " + itos(p_image->get_format()));
-		ERR_FAIL_COND(true);
+		ERR_FAIL_MSG("Squish: Can't decompress unknown format: " + itos(p_image->get_format()) + ".");
 		return;
 	}
 
@@ -198,8 +197,8 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 			h = MAX(h / 2, 1);
 		}
 
-		rb = PoolVector<uint8_t>::Read();
-		wb = PoolVector<uint8_t>::Write();
+		rb.release();
+		wb.release();
 
 		p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 	}

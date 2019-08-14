@@ -22,7 +22,7 @@
 			<argument index="3" name="d" type="float">
 			</argument>
 			<description>
-				Creates a plane from the four parameters "a", "b", "c" and "d".
+				Creates a plane from the four parameters [code]a[/code], [code]b[/code], [code]c[/code] and [code]d[/code].
 			</description>
 		</method>
 		<method name="Plane">
@@ -62,7 +62,7 @@
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
-				Returns the shortest distance from the plane to the position "point".
+				Returns the shortest distance from the plane to the position [code]point[/code].
 			</description>
 		</method>
 		<method name="get_any_point">
@@ -80,7 +80,7 @@
 			<argument index="1" name="epsilon" type="float" default="0.00001">
 			</argument>
 			<description>
-				Returns [code]true[/code] if "point" is inside the plane (by a very minimum threshold).
+				Returns [code]true[/code] if [code]point[/code] is inside the plane (by a very minimum [code]epsilon[/code] threshold).
 			</description>
 		</method>
 		<method name="intersect_3">
@@ -91,7 +91,7 @@
 			<argument index="1" name="c" type="Plane">
 			</argument>
 			<description>
-				Returns the intersection point of the three planes "b", "c" and this plane. If no intersection is found null is returned.
+				Returns the intersection point of the three planes [code]b[/code], [code]c[/code] and this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="intersects_ray">
@@ -102,7 +102,7 @@
 			<argument index="1" name="dir" type="Vector3">
 			</argument>
 			<description>
-				Returns the intersection point of a ray consisting of the position "from" and the direction normal "dir" with this plane. If no intersection is found null is returned.
+				Returns the intersection point of a ray consisting of the position [code]from[/code] and the direction normal [code]dir[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="intersects_segment">
@@ -113,7 +113,7 @@
 			<argument index="1" name="end" type="Vector3">
 			</argument>
 			<description>
-				Returns the intersection point of a segment from position "begin" to position "end" with this plane. If no intersection is found null is returned.
+				Returns the intersection point of a segment from position [code]begin[/code] to position [code]end[/code] with this plane. If no intersection is found, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="is_point_over">
@@ -122,7 +122,7 @@
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
-				Returns [code]true[/code] if "point" is located above the plane.
+				Returns [code]true[/code] if [code]point[/code] is located above the plane.
 			</description>
 		</method>
 		<method name="normalized">
@@ -138,20 +138,20 @@
 			<argument index="0" name="point" type="Vector3">
 			</argument>
 			<description>
-				Returns the orthogonal projection of point "p" into a point in the plane.
+				Returns the orthogonal projection of point [code]p[/code] into a point in the plane.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="d" type="float" setter="" getter="">
+		<member name="d" type="float" setter="" getter="" default="0.0">
 		</member>
-		<member name="normal" type="Vector3" setter="" getter="">
+		<member name="normal" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
 		</member>
-		<member name="x" type="float" setter="" getter="">
+		<member name="x" type="float" setter="" getter="" default="0.0">
 		</member>
-		<member name="y" type="float" setter="" getter="">
+		<member name="y" type="float" setter="" getter="" default="0.0">
 		</member>
-		<member name="z" type="float" setter="" getter="">
+		<member name="z" type="float" setter="" getter="" default="0.0">
 		</member>
 	</members>
 	<constants>

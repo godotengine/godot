@@ -33,8 +33,6 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/os/file_access.h"
 
-#include <mbedtls/platform_util.h>
-
 static void my_debug(void *ctx, int level,
 		const char *file, int line,
 		const char *str) {
@@ -121,6 +119,8 @@ Error StreamPeerMbedTLS::_do_handshake() {
 }
 
 Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs, const String &p_for_hostname) {
+
+	ERR_FAIL_COND_V(p_base.is_null(), ERR_INVALID_PARAMETER);
 
 	base = p_base;
 	int ret = 0;

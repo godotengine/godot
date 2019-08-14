@@ -113,7 +113,7 @@ public:
 
 	void set_perspective(float p_fovy_degrees, float p_z_near, float p_z_far);
 	void set_orthogonal(float p_size, float p_z_near, float p_z_far);
-	void set_frustum(float p_size, Vector2 p_offset, float p_near, float p_far);
+	void set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far);
 	void set_projection(Camera::Projection p_mode);
 
 	void make_current();

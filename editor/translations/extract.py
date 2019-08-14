@@ -60,7 +60,7 @@ def process_file(f, fname):
     lc = 1
     while (l):
 
-        patterns = ['RTR(\"', 'TTR(\"','TTRC(\"']
+        patterns = ['RTR(\"', 'TTR(\"', 'TTRC(\"']
         idx = 0
         pos = 0
         while (pos >= 0):
@@ -70,7 +70,7 @@ def process_file(f, fname):
                     idx += 1
                     pos = 0
                 continue
-            pos += 5
+            pos += len(patterns[idx])
 
             msg = ""
             while (pos < len(l) and (l[pos] != '"' or l[pos - 1] == '\\')):
@@ -101,10 +101,10 @@ def process_file(f, fname):
 print("Updating the editor.pot template...")
 
 for fname in matches:
-    with open(fname, "rb") as f:
+    with open(fname, "r") as f:
         process_file(f, fname)
 
-with open("editor.pot", "wb") as f:
+with open("editor.pot", "w") as f:
     f.write(main_po)
 
 if (os.name == "posix"):
@@ -116,7 +116,7 @@ shutil.move("editor.pot", "editor/translations/editor.pot")
 
 # TODO: Make that in a portable way, if we care; if not, kudos to Unix users
 if (os.name == "posix"):
-    added = subprocess.check_output("git diff editor/translations/editor.pot | grep \+msgid | wc -l", shell=True)
-    removed = subprocess.check_output("git diff editor/translations/editor.pot | grep \\\-msgid | wc -l", shell=True)
+    added = subprocess.check_output(r"git diff editor/translations/editor.pot | grep \+msgid | wc -l", shell=True)
+    removed = subprocess.check_output(r"git diff editor/translations/editor.pot | grep \\\-msgid | wc -l", shell=True)
     print("\n# Template changes compared to the staged status:")
     print("#   Additions: %s msgids.\n#   Deletions: %s msgids." % (int(added), int(removed)))

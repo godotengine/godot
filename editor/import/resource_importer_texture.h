@@ -37,7 +37,7 @@
 class StreamTexture;
 
 class ResourceImporterTexture : public ResourceImporter {
-	GDCLASS(ResourceImporterTexture, ResourceImporter)
+	GDCLASS(ResourceImporterTexture, ResourceImporter);
 
 protected:
 	enum {

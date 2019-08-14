@@ -36,7 +36,8 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the file cursor has read past the end of the file. Note that this function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low level file access works in all operating systems. There is always [method get_len] and [method get_position] to implement a custom logic.
+				Returns [code]true[/code] if the file cursor has read past the end of the file.
+				[b]Note:[/b] This function will still return [code]false[/code] while at the end of the file and only activates when reading past it. This can be confusing but it conforms to how low-level file access works in all operating systems. There is always [method get_len] and [method get_position] to implement a custom logic.
 			</description>
 		</method>
 		<method name="file_exists" qualifiers="const">
@@ -46,7 +47,7 @@
 			</argument>
 			<description>
 				Returns [code]true[/code] if the file exists in the given path.
-				Note that many resources types are imported (e.g. textures or sound files), and that their source asset will not be included in the exported game, as only the imported version is used (in the [code]res://.import[/code] folder). To check for the existence of such resources while taking into account the remapping to their imported location, use [method ResourceLoader.exists]. Typically, using [code]File.file_exists[/code] on an imported resource would work while you are developing in the editor (the source asset is present in [code]res://[/code], but fail when exported).
+				[b]Note:[/b] Many resources types are imported (e.g. textures or sound files), and that their source asset will not be included in the exported game, as only the imported version is used (in the [code]res://.import[/code] folder). To check for the existence of such resources while taking into account the remapping to their imported location, use [method ResourceLoader.exists]. Typically, using [code]File.file_exists[/code] on an imported resource would work while you are developing in the editor (the source asset is present in [code]res://[/code], but fail when exported).
 			</description>
 		</method>
 		<method name="get_16" qualifiers="const">
@@ -100,7 +101,7 @@
 			<argument index="0" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
 			<description>
-				Returns the next value of the file in CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
+				Returns the next value of the file in CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text is interpreted as being UTF-8 encoded.
 			</description>
 		</method>
@@ -108,21 +109,21 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the next 64 bits from the file as a floating point number.
+				Returns the next 64 bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_error" qualifiers="const">
 			<return type="int" enum="Error">
 			</return>
 			<description>
-				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [@GlobalScope].
+				Returns the last error that happened when trying to perform operations. Compare with the [code]ERR_FILE_*[/code] constants from [enum Error].
 			</description>
 		</method>
 		<method name="get_float" qualifiers="const">
 			<return type="float">
 			</return>
 			<description>
-				Returns the next 32 bits from the file as a floating point number.
+				Returns the next 32 bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_len" qualifiers="const">
@@ -191,7 +192,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the next bits from the file as a floating point number.
+				Returns the next bits from the file as a floating-point number.
 			</description>
 		</method>
 		<method name="get_sha256" qualifiers="const">
@@ -209,8 +210,8 @@
 			<argument index="0" name="allow_objects" type="bool" default="false">
 			</argument>
 			<description>
-				Returns the next [Variant] value from the file. When [code]allow_objects[/code] is [code]true[/code] decoding objects is allowed.
-				[b]WARNING:[/b] Deserialized object can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats (remote code execution).
+				Returns the next [Variant] value from the file. If [code]allow_objects[/code] is [code]true[/code], decoding objects is allowed.
+				[b]Warning:[/b] Deserialized objects can contain code which gets executed. Do not use this option if the serialized object comes from untrusted sources to avoid potential security threats such as remote code execution.
 			</description>
 		</method>
 		<method name="is_open" qualifiers="const">
@@ -241,7 +242,7 @@
 			<argument index="2" name="compression_mode" type="int" enum="File.CompressionMode" default="0">
 			</argument>
 			<description>
-				Opens a compressed file for reading or writing. Use COMPRESSION_* constants to set [code]compression_mode[/code].
+				Opens a compressed file for reading or writing.
 			</description>
 		</method>
 		<method name="open_encrypted">
@@ -276,7 +277,7 @@
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Change the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
+				Changes the file reading/writing cursor to the specified position (in bytes from the beginning of the file).
 			</description>
 		</method>
 		<method name="seek_end">
@@ -285,7 +286,8 @@
 			<argument index="0" name="position" type="int" default="0">
 			</argument>
 			<description>
-				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file). Note that this is an offset, so you should use negative numbers or the cursor will be at the end of the file.
+				Changes the file reading/writing cursor to the specified position (in bytes from the end of the file).
+				[b]Note:[/b] This is an offset, so you should use negative numbers or the cursor will be at the end of the file.
 			</description>
 		</method>
 		<method name="store_16">
@@ -341,7 +343,7 @@
 			<argument index="1" name="delim" type="String" default="&quot;,&quot;">
 			</argument>
 			<description>
-				Store the given [PoolStringArray] in the file as a line formatted in the CSV (Comma Separated Values) format. You can pass a different delimiter to use other than the default "," (comma), it should be one character long.
+				Store the given [PoolStringArray] in the file as a line formatted in the CSV (Comma-Separated Values) format. You can pass a different delimiter [code]delim[/code] to use other than the default [code]","[/code] (comma). This delimiter must be one-character long.
 				Text will be encoded as UTF-8.
 			</description>
 		</method>
@@ -351,7 +353,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Stores a floating point number as 64 bits in the file.
+				Stores a floating-point number as 64 bits in the file.
 			</description>
 		</method>
 		<method name="store_float">
@@ -360,7 +362,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Stores a floating point number as 32 bits in the file.
+				Stores a floating-point number as 32 bits in the file.
 			</description>
 		</method>
 		<method name="store_line">
@@ -389,7 +391,7 @@
 			<argument index="0" name="value" type="float">
 			</argument>
 			<description>
-				Stores a floating point number in the file.
+				Stores a floating-point number in the file.
 			</description>
 		</method>
 		<method name="store_string">
@@ -410,14 +412,14 @@
 			<argument index="1" name="full_objects" type="bool" default="false">
 			</argument>
 			<description>
-				Stores any Variant value in the file. When [code]full_objects[/code] is [code]true[/code] encoding objects is allowed (and can potentially include code).
+				Stores any Variant value in the file. If [code]full_objects[/code] is [code]true[/code], encoding objects is allowed (and can potentially include code).
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap">
-			If [code]true[/code], the file's endianness is swapped. Use this if you're dealing with files written in big endian machines.
-			Note that this is about the file format, not CPU type. This is always reset to [code]false[/code] whenever you open the file.
+		<member name="endian_swap" type="bool" setter="set_endian_swap" getter="get_endian_swap" default="false">
+			If [code]true[/code], the file's endianness is swapped. Use this if you're dealing with files written on big-endian machines.
+			[b]Note:[/b] This is about the file format, not CPU type. This is always reset to [code]false[/code] whenever you open the file.
 		</member>
 	</members>
 	<constants>
@@ -434,16 +436,16 @@
 			Opens the file for read and write operations. Create it if the file does not exist and truncate if it exists.
 		</constant>
 		<constant name="COMPRESSION_FASTLZ" value="0" enum="CompressionMode">
-			Uses the FastLZ compression method.
+			Uses the [url=http://fastlz.org/]FastLZ[/url] compression method.
 		</constant>
 		<constant name="COMPRESSION_DEFLATE" value="1" enum="CompressionMode">
-			Uses the Deflate compression method.
+			Uses the [url=https://en.wikipedia.org/wiki/DEFLATE]DEFLATE[/url] compression method.
 		</constant>
 		<constant name="COMPRESSION_ZSTD" value="2" enum="CompressionMode">
-			Uses the Zstd compression method.
+			Uses the [url=https://facebook.github.io/zstd/]Zstandard[/url] compression method.
 		</constant>
 		<constant name="COMPRESSION_GZIP" value="3" enum="CompressionMode">
-			Uses the gzip compression method.
+			Uses the [url=https://www.gzip.org/]gzip[/url] compression method.
 		</constant>
 	</constants>
 </class>

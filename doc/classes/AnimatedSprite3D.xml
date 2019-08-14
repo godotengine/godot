@@ -13,7 +13,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if an animation if currently being played.
+				Returns [code]true[/code] if an animation is currently being played.
 			</description>
 		</method>
 		<method name="play">
@@ -22,28 +22,28 @@
 			<argument index="0" name="anim" type="String" default="&quot;&quot;">
 			</argument>
 			<description>
-				Play the animation set in parameter. If no parameter is provided, the current animation is played.
+				Plays the animation named [code]anim[/code]. If no [code]anim[/code] is provided, the current animation is played.
 			</description>
 		</method>
 		<method name="stop">
 			<return type="void">
 			</return>
 			<description>
-				Stop the current animation (does not reset the frame counter).
+				Stops the current animation (does not reset the frame counter).
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="animation" type="String" setter="set_animation" getter="get_animation">
+		<member name="animation" type="String" setter="set_animation" getter="get_animation" default="&quot;default&quot;">
 			The current animation from the [code]frames[/code] resource. If this value changes, the [code]frame[/code] counter is reset.
 		</member>
-		<member name="frame" type="int" setter="set_frame" getter="get_frame">
+		<member name="frame" type="int" setter="set_frame" getter="get_frame" default="0">
 			The displayed animation frame's index.
 		</member>
 		<member name="frames" type="SpriteFrames" setter="set_sprite_frames" getter="get_sprite_frames">
 			The [SpriteFrames] resource containing the animation(s).
 		</member>
-		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing">
+		<member name="playing" type="bool" setter="_set_playing" getter="_is_playing" default="false">
 			If [code]true[/code], the [member animation] is currently playing.
 		</member>
 	</members>

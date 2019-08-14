@@ -816,7 +816,7 @@ public:
 	virtual void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
 	virtual void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
 	virtual void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
-	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
+	virtual void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_custom_data);
 
 	virtual RID multimesh_get_mesh(RID p_multimesh) const;
 

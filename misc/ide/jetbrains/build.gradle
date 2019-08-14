@@ -23,7 +23,7 @@ dependencies {
 
 def pathToRootDir = "../../../"
 // Note: Only keep the abis you support to speed up the gradle 'assemble' task.
-def supportedAbis = ["armv6", "armv7", "arm64v8", "x86", "x86_64"]
+def supportedAbis = ["armv7", "arm64v8", "x86", "x86_64"]
 
 android {
 

@@ -145,6 +145,7 @@ Error ContextGL_X11::initialize() {
 				break;
 			}
 		}
+		XFree(fbc);
 		ERR_FAIL_COND_V(!fbconfig, ERR_UNCONFIGURED);
 
 		swa.background_pixmap = None;
@@ -159,6 +160,7 @@ Error ContextGL_X11::initialize() {
 		vi = glXGetVisualFromFBConfig(x11_display, fbc[0]);
 
 		fbconfig = fbc[0];
+		XFree(fbc);
 	}
 
 	int (*oldHandler)(Display *, XErrorEvent *) = XSetErrorHandler(&ctxErrorHandler);

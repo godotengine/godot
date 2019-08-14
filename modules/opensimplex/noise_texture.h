@@ -40,7 +40,7 @@
 #include "editor/property_editor.h"
 
 class NoiseTexture : public Texture {
-	GDCLASS(NoiseTexture, Texture)
+	GDCLASS(NoiseTexture, Texture);
 
 private:
 	Ref<Image> data;
@@ -77,12 +77,12 @@ public:
 	Ref<OpenSimplexNoise> get_noise();
 
 	void set_width(int p_width);
-	void set_height(int p_hieght);
+	void set_height(int p_height);
 
 	void set_seamless(bool p_seamless);
 	bool get_seamless();
 
-	void set_as_normalmap(bool p_seamless);
+	void set_as_normalmap(bool p_as_normalmap);
 	bool is_normalmap();
 
 	void set_bump_strength(float p_bump_strength);

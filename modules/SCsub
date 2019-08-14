@@ -6,14 +6,14 @@ env_modules = env.Clone()
 
 Export('env_modules')
 
-env.modules_sources = [
-    "register_module_types.gen.cpp",
-]
+env.modules_sources = []
+
+env_modules.add_source_files(env.modules_sources, "register_module_types.gen.cpp")
 
 for x in env.module_list:
     if (x in env.disabled_modules):
         continue
-    env_modules.Append(CPPFLAGS=["-DMODULE_" + x.upper() + "_ENABLED"])
+    env_modules.Append(CPPDEFINES=["MODULE_" + x.upper() + "_ENABLED"])
     SConscript(x + "/SCsub")
 
 if env.split_modules:

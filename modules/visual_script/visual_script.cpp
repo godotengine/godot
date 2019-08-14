@@ -328,8 +328,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 
 	if (Object::cast_to<VisualScriptFunction>(*p_node)) {
 		//the function indeed
-		ERR_EXPLAIN("A function node already has been set here.");
-		ERR_FAIL_COND(func.function_id >= 0);
+		ERR_FAIL_COND_MSG(func.function_id >= 0, "A function node has already been set here.");
 
 		func.function_id = p_id;
 	}
@@ -1487,7 +1486,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 	Variant **output_args = (Variant **)(input_args + max_input_args);
 	int flow_max = f->flow_stack_size;
 	int *flow_stack = flow_max ? (int *)(output_args + max_output_args) : (int *)NULL;
-	int *pass_stack = flow_stack + flow_max;
+	int *pass_stack = flow_stack ? (int *)(flow_stack + flow_max) : (int *)NULL;
 
 	String error_str;
 
@@ -1692,7 +1691,7 @@ Variant VisualScriptInstance::_call_internal(const StringName &p_method, void *p
 
 		if ((ret == output || ret & VisualScriptNodeInstance::STEP_FLAG_PUSH_STACK_BIT) && node->sequence_output_count) {
 			//if no exit bit was set, and has sequence outputs, guess next node
-			if (output < 0 || output >= node->sequence_output_count) {
+			if (output >= node->sequence_output_count) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 				error_str = RTR("Node returned an invalid sequence output: ") + itos(output);
 				error = true;
@@ -1905,7 +1904,7 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 	Variant **output_args = (Variant **)(input_args + max_input_args);
 	int flow_max = f->flow_stack_size;
 	int *flow_stack = flow_max ? (int *)(output_args + max_output_args) : (int *)NULL;
-	int *pass_stack = flow_stack + flow_max;
+	int *pass_stack = flow_stack ? (int *)(flow_stack + flow_max) : (int *)NULL;
 
 	for (int i = 0; i < f->node_count; i++) {
 		sequence_bits[i] = false; //all starts as false
@@ -1917,8 +1916,7 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 	if (!E) {
 		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 
-		ERR_EXPLAIN("No VisualScriptFunction node in function!");
-		ERR_FAIL_V(Variant());
+		ERR_FAIL_V_MSG(Variant(), "No VisualScriptFunction node in function.");
 	}
 
 	VisualScriptNodeInstance *node = E->get();
@@ -1974,8 +1972,7 @@ String VisualScriptInstance::to_string(bool *r_valid) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid)
 					*r_valid = false;
-				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
-				ERR_FAIL_V(String());
+				ERR_FAIL_V_MSG(String(), "Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
 			}
 			if (r_valid)
 				*r_valid = true;
@@ -2262,15 +2259,10 @@ Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int 
 	ERR_FAIL_COND_V(function == StringName(), Variant());
 
 #ifdef DEBUG_ENABLED
-	if (instance_id && !ObjectDB::get_instance(instance_id)) {
-		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
-		ERR_FAIL_V(Variant());
-	}
 
-	if (script_id && !ObjectDB::get_instance(script_id)) {
-		ERR_EXPLAIN("Resumed after yield, but script is gone");
-		ERR_FAIL_V(Variant());
-	}
+	ERR_FAIL_COND_V_MSG(instance_id && !ObjectDB::get_instance(instance_id), Variant(), "Resumed after yield, but class instance is gone.");
+	ERR_FAIL_COND_V_MSG(script_id && !ObjectDB::get_instance(script_id), Variant(), "Resumed after yield, but script is gone.");
+
 #endif
 
 	r_error.error = Variant::CallError::CALL_OK;
@@ -2329,15 +2321,10 @@ Variant VisualScriptFunctionState::resume(Array p_args) {
 
 	ERR_FAIL_COND_V(function == StringName(), Variant());
 #ifdef DEBUG_ENABLED
-	if (instance_id && !ObjectDB::get_instance(instance_id)) {
-		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
-		ERR_FAIL_V(Variant());
-	}
 
-	if (script_id && !ObjectDB::get_instance(script_id)) {
-		ERR_EXPLAIN("Resumed after yield, but script is gone");
-		ERR_FAIL_V(Variant());
-	}
+	ERR_FAIL_COND_V_MSG(instance_id && !ObjectDB::get_instance(instance_id), Variant(), "Resumed after yield, but class instance is gone.");
+	ERR_FAIL_COND_V_MSG(script_id && !ObjectDB::get_instance(script_id), Variant(), "Resumed after yield, but script is gone.");
+
 #endif
 
 	Variant::CallError r_error;
@@ -2629,8 +2616,6 @@ void VisualScriptLanguage::debug_get_globals(List<String> *p_locals, List<Varian
 }
 String VisualScriptLanguage::debug_parse_stack_level_expression(int p_level, const String &p_expression, int p_max_subitems, int p_max_depth) {
 
-	if (_debug_parse_err_node >= 0)
-		return "";
 	return "";
 }
 

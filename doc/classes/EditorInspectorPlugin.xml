@@ -21,7 +21,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Add a custom control, not necessarily a property editor.
+				Adds a custom control, not necessarily a property editor.
 			</description>
 		</method>
 		<method name="add_property_editor">
@@ -32,7 +32,7 @@
 			<argument index="1" name="editor" type="Control">
 			</argument>
 			<description>
-				Add a property editor, this must inherit [EditorProperty].
+				Adds a property editor, this must inherit [EditorProperty].
 			</description>
 		</method>
 		<method name="add_property_editor_for_multiple_properties">
@@ -45,7 +45,7 @@
 			<argument index="2" name="editor" type="Control">
 			</argument>
 			<description>
-				Add am editor that allows modifying multiple properties, this must inherit [EditorProperty].
+				Adds an editor that allows modifying multiple properties, this must inherit [EditorProperty].
 			</description>
 		</method>
 		<method name="can_handle" qualifiers="virtual">

@@ -73,7 +73,7 @@ void SoftBodyVisualServerHandler::open() {
 }
 
 void SoftBodyVisualServerHandler::close() {
-	write_buffer = PoolVector<uint8_t>::Write();
+	write_buffer.release();
 }
 
 void SoftBodyVisualServerHandler::commit_changes() {
@@ -577,20 +577,14 @@ Array SoftBody::get_collision_exceptions() {
 void SoftBody::add_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->soft_body_add_collision_exception(physics_rid, collision_object->get_rid());
 }
 
 void SoftBody::remove_collision_exception_with(Node *p_node) {
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->soft_body_remove_collision_exception(physics_rid, collision_object->get_rid());
 }
 
@@ -699,7 +693,6 @@ bool SoftBody::is_ray_pickable() const {
 }
 
 SoftBody::SoftBody() :
-		MeshInstance(),
 		physics_rid(PhysicsServer::get_singleton()->soft_body_create()),
 		mesh_owner(false),
 		collision_mask(1),
@@ -713,6 +706,7 @@ SoftBody::SoftBody() :
 }
 
 SoftBody::~SoftBody() {
+	PhysicsServer::get_singleton()->free(physics_rid);
 }
 
 void SoftBody::reset_softbody_pin() {

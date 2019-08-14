@@ -194,7 +194,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 	Map<StringName, Action>::Element *E = input_map.find(p_action);
 	if (!E) {
 		ERR_EXPLAIN("Request for nonexistent InputMap action: " + String(p_action));
-		ERR_FAIL_COND_V(!E, false);
+		ERR_FAIL_V(false);
 	}
 
 	Ref<InputEventAction> input_event_action = p_event;
@@ -202,7 +202,7 @@ bool InputMap::event_get_action_status(const Ref<InputEvent> &p_event, const Str
 		if (p_pressed != NULL)
 			*p_pressed = input_event_action->is_pressed();
 		if (p_strength != NULL)
-			*p_strength = (*p_pressed) ? input_event_action->get_strength() : 0.0f;
+			*p_strength = (p_pressed != NULL && *p_pressed) ? input_event_action->get_strength() : 0.0f;
 		return input_event_action->get_action() == p_action;
 	}
 

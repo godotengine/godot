@@ -1225,10 +1225,7 @@ Ref<ResourceInteractiveLoader> ResourceFormatLoaderText::load_interactive(const 
 	Error err;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
-	}
+	ERR_FAIL_COND_V(err != OK, Ref<ResourceInteractiveLoader>());
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
 	String path = p_original_path != "" ? p_original_path : p_path;
@@ -1324,13 +1321,10 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	Error err;
 	FileAccess *f = FileAccess::open(p_src_path, FileAccess::READ, &err);
 
-	if (err != OK) {
-
-		ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V(err != OK, ERR_CANT_OPEN);
 
 	Ref<ResourceInteractiveLoaderText> ria = memnew(ResourceInteractiveLoaderText);
-	String path = p_src_path;
+	const String &path = p_src_path;
 	ria->local_path = ProjectSettings::get_singleton()->localize_path(path);
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( ProjectSettings::get_singleton()->localize_path(p_path) );
@@ -1372,13 +1366,10 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 			String path = relative_paths ? local_path.path_to_file(res->get_path()) : res->get_path();
 			return "Resource( \"" + path + "\" )";
 		} else {
-			ERR_EXPLAIN("Resource was not pre cached for the resource section, bug?");
-			ERR_FAIL_V("null");
+			ERR_FAIL_V_MSG("null", "Resource was not pre cached for the resource section, bug?");
 			//internal resource
 		}
 	}
-
-	return "null";
 }
 
 void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, bool p_main) {
@@ -1447,7 +1438,7 @@ void ResourceFormatSaverTextInstance::_find_resources(const Variant &p_variant, 
 			int len = varray.size();
 			for (int i = 0; i < len; i++) {
 
-				Variant v = varray.get(i);
+				const Variant &v = varray.get(i);
 				_find_resources(v);
 			}
 
@@ -1520,8 +1511,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 		}
 	}
 
-	ERR_FAIL_COND_V(err != OK, err);
-
 	{
 		String title = packed_scene.is_valid() ? "[gd_scene " : "[gd_resource ";
 		if (packed_scene.is_null())
@@ -1541,9 +1530,6 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 
 		f->store_string(title);
 		f->store_line("]\n"); //one empty line
-	}
-
-	{
 	}
 
 #ifdef TOOLS_ENABLED

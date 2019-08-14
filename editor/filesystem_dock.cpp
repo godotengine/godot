@@ -163,7 +163,7 @@ Vector<String> FileSystemDock::_compute_uncollapsed_paths() {
 	return uncollapsed_paths;
 }
 
-void FileSystemDock::_update_tree(const Vector<String> p_uncollapsed_paths, bool p_uncollapse_root, bool p_select_in_favorites) {
+void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, bool p_uncollapse_root, bool p_select_in_favorites) {
 
 	// Recreate the tree
 	tree->clear();
@@ -244,7 +244,7 @@ void FileSystemDock::set_display_mode(DisplayMode p_display_mode) {
 void FileSystemDock::_update_display_mode(bool p_force) {
 	// Compute the new display mode
 	if (p_force || old_display_mode != display_mode) {
-		button_toggle_display_mode->set_pressed(display_mode == DISPLAY_MODE_SPLIT ? true : false);
+		button_toggle_display_mode->set_pressed(display_mode == DISPLAY_MODE_SPLIT);
 		switch (display_mode) {
 			case DISPLAY_MODE_TREE_ONLY:
 				tree->show();
@@ -812,7 +812,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 }
 
-void FileSystemDock::_select_file(const String p_path, bool p_select_in_favorites) {
+void FileSystemDock::_select_file(const String &p_path, bool p_select_in_favorites) {
 	String fpath = p_path;
 	if (fpath.ends_with("/")) {
 		if (fpath != "res://") {
@@ -1298,7 +1298,7 @@ void FileSystemDock::_rename_operation_confirm() {
 	_try_move_item(to_rename, new_path, file_renames, folder_renames);
 
 	int current_tab = editor->get_current_tab();
-
+	_save_scenes_after_move(file_renames); // save scenes before updating
 	_update_dependencies_after_move(file_renames);
 	_update_resource_paths_after_move(file_renames);
 	_update_project_settings_after_move(file_renames);
@@ -1324,13 +1324,13 @@ void FileSystemDock::_duplicate_operation_confirm() {
 		return;
 	}
 
-	String new_path;
 	String base_dir = to_duplicate.path.get_base_dir();
-	if (to_duplicate.is_file) {
-		new_path = base_dir.plus_file(new_name);
-	} else {
-		new_path = base_dir.substr(0, base_dir.find_last("/")) + "/" + new_name;
+	// get_base_dir() returns "some/path" if the original path was "some/path/", so work it around.
+	if (to_duplicate.path.ends_with("/")) {
+		base_dir = base_dir.get_base_dir();
 	}
+
+	String new_path = base_dir.plus_file(new_name);
 
 	//Present a more user friendly warning for name conflict
 	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
@@ -1407,7 +1407,7 @@ void FileSystemDock::_move_operation_confirm(const String &p_to_path, bool overw
 
 	if (is_moved) {
 		int current_tab = editor->get_current_tab();
-
+		_save_scenes_after_move(file_renames); //save scenes before updating
 		_update_dependencies_after_move(file_renames);
 		_update_resource_paths_after_move(file_renames);
 		_update_project_settings_after_move(file_renames);
@@ -1502,7 +1502,7 @@ void FileSystemDock::_file_list_rmb_option(int p_option) {
 	_file_option(p_option, selected);
 }
 
-void FileSystemDock::_file_option(int p_option, const Vector<String> p_selected) {
+void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected) {
 	// The first one should be the active item
 
 	switch (p_option) {
@@ -2063,8 +2063,6 @@ void FileSystemDock::_get_drag_target_folder(String &target, bool &target_favori
 			}
 		}
 	}
-
-	return;
 }
 
 void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<String> p_paths, bool p_display_path_dependent_options) {

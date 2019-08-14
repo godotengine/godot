@@ -592,13 +592,14 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 	Ref<InputEventMouseButton> mb = p_ev;
 	if (mb.is_valid()) {
 
-		ERR_EXPLAIN("GraphNode must be the child of a GraphEdit node.");
-		ERR_FAIL_COND(get_parent_control() == NULL);
+		ERR_FAIL_COND_MSG(get_parent_control() == NULL, "GraphNode must be the child of a GraphEdit node.");
 
 		if (mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {
 
 			Vector2 mpos = Vector2(mb->get_position().x, mb->get_position().y);
 			if (close_rect.size != Size2() && close_rect.has_point(mpos)) {
+				//send focus to parent
+				get_parent_control()->grab_focus();
 				emit_signal("close_request");
 				accept_event();
 				return;
@@ -615,9 +616,7 @@ void GraphNode::_gui_input(const Ref<InputEvent> &p_ev) {
 				return;
 			}
 
-			//send focus to parent
 			emit_signal("raise_request");
-			get_parent_control()->grab_focus();
 		}
 
 		if (!mb->is_pressed() && mb->get_button_index() == BUTTON_LEFT) {

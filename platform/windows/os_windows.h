@@ -126,6 +126,9 @@ class OS_Windows : public OS {
 
 	HCURSOR hCursor;
 
+	Size2 min_size;
+	Size2 max_size;
+
 	Size2 window_rect;
 	VideoMode video_mode;
 	bool preserve_window_size = false;
@@ -152,6 +155,7 @@ class OS_Windows : public OS {
 
 	HCURSOR cursors[CURSOR_MAX] = { NULL };
 	CursorShape cursor_shape;
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
 	JoypadWindows *joypad;
@@ -207,6 +211,7 @@ protected:
 	bool maximized;
 	bool minimized;
 	bool borderless;
+	bool console_visible;
 
 public:
 	LRESULT WndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam);
@@ -238,6 +243,10 @@ public:
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
+	virtual Size2 get_max_window_size() const;
+	virtual Size2 get_min_window_size() const;
+	virtual void set_min_window_size(const Size2 p_size);
+	virtual void set_max_window_size(const Size2 p_size);
 	virtual void set_window_size(const Size2 p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -249,6 +258,8 @@ public:
 	virtual bool is_window_maximized() const;
 	virtual void set_window_always_on_top(bool p_enabled);
 	virtual bool is_window_always_on_top() const;
+	virtual void set_console_visible(bool p_enabled);
+	virtual bool is_console_visible() const;
 	virtual void request_attention();
 
 	virtual void set_borderless_window(bool p_borderless);

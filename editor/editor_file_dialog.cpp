@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_file_dialog.h"
+
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -672,6 +673,23 @@ bool EditorFileDialog::_is_open_should_be_disabled() {
 	return false;
 }
 
+void EditorFileDialog::update_file_name() {
+	int idx = filter->get_selected() - 1;
+	if ((idx == -1 && filter->get_item_count() == 2) || (filter->get_item_count() > 2 && idx >= 0 && idx < filter->get_item_count() - 2)) {
+		if (idx == -1) idx += 1;
+		String filter_str = filters[idx];
+		String file_str = file->get_text();
+		String base_name = file_str.get_basename();
+		Vector<String> filter_substr = filter_str.split(";");
+		if (filter_substr.size() >= 2) {
+			file_str = base_name + "." + filter_substr[1].strip_edges().to_lower();
+		} else {
+			file_str = base_name + "." + filter_str.get_extension().strip_edges().to_lower();
+		}
+		file->set_text(file_str);
+	}
+}
+
 // DO NOT USE THIS FUNCTION UNLESS NEEDED, CALL INVALIDATE() INSTEAD.
 void EditorFileDialog::update_file_list() {
 
@@ -719,19 +737,15 @@ void EditorFileDialog::update_file_list() {
 	List<String> files;
 	List<String> dirs;
 
-	bool is_dir;
-	bool is_hidden;
 	String item;
 
-	while ((item = dir_access->get_next(&is_dir)) != "") {
+	while ((item = dir_access->get_next()) != "") {
 
 		if (item == "." || item == "..")
 			continue;
 
-		is_hidden = dir_access->current_is_hidden();
-
-		if (show_hidden_files || !is_hidden) {
-			if (!is_dir)
+		if (show_hidden_files || !dir_access->current_is_hidden()) {
+			if (!dir_access->current_is_dir())
 				files.push_back(item);
 			else
 				dirs.push_back(item);
@@ -865,7 +879,7 @@ void EditorFileDialog::update_file_list() {
 }
 
 void EditorFileDialog::_filter_selected(int) {
-
+	update_file_name();
 	update_file_list();
 }
 
@@ -1364,6 +1378,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_drive"), &EditorFileDialog::_select_drive);
 	ClassDB::bind_method(D_METHOD("_make_dir"), &EditorFileDialog::_make_dir);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &EditorFileDialog::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_update_file_name"), &EditorFileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_file_list"), &EditorFileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &EditorFileDialog::update_dir);
 	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &EditorFileDialog::_thumbnail_done);
@@ -1494,9 +1509,9 @@ EditorFileDialog::EditorFileDialog() {
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 
 	dir_prev = memnew(ToolButton);
-	dir_prev->set_tooltip(TTR("Previous Folder"));
+	dir_prev->set_tooltip(TTR("Go to previous folder."));
 	dir_next = memnew(ToolButton);
-	dir_next->set_tooltip(TTR("Next Folder"));
+	dir_next->set_tooltip(TTR("Go to next folder."));
 	dir_up = memnew(ToolButton);
 	dir_up->set_tooltip(TTR("Go to parent folder."));
 
@@ -1515,7 +1530,7 @@ EditorFileDialog::EditorFileDialog() {
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	refresh = memnew(ToolButton);
-	refresh->set_tooltip(TTR("Refresh"));
+	refresh->set_tooltip(TTR("Refresh files."));
 	refresh->connect("pressed", this, "_update_file_list");
 	pathhb->add_child(refresh);
 
@@ -1528,7 +1543,7 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden = memnew(ToolButton);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_tooltip(TTR("Toggle visibility of hidden files."));
+	show_hidden->set_tooltip(TTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", this, "set_show_hidden_files");
 	pathhb->add_child(show_hidden);
 

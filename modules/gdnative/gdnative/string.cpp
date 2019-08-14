@@ -186,6 +186,20 @@ godot_bool GDAPI godot_string_ends_with(const godot_string *p_self, const godot_
 	return self->ends_with(*string);
 }
 
+godot_int GDAPI godot_string_count(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to) {
+	const String *self = (const String *)p_self;
+	String *what = (String *)&p_what;
+
+	return self->count(*what, p_from, p_to);
+}
+
+godot_int GDAPI godot_string_countn(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to) {
+	const String *self = (const String *)p_self;
+	String *what = (String *)&p_what;
+
+	return self->countn(*what, p_from, p_to);
+}
+
 godot_int GDAPI godot_string_find(const godot_string *p_self, godot_string p_what) {
 	const String *self = (const String *)p_self;
 	String *what = (String *)&p_what;

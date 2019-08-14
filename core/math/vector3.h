@@ -219,10 +219,6 @@ Vector3 Vector3::linear_interpolate(const Vector3 &p_b, real_t p_t) const {
 }
 
 Vector3 Vector3::slerp(const Vector3 &p_b, real_t p_t) const {
-#ifdef MATH_CHECKS
-	ERR_FAIL_COND_V(!is_normalized(), Vector3());
-#endif
-
 	real_t theta = angle_to(p_b);
 	return rotated(cross(p_b).normalized(), theta * p_t);
 }

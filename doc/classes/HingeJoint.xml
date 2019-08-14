@@ -4,40 +4,76 @@
 		A hinge between two 3D bodies.
 	</brief_description>
 	<description>
-		Normally uses the z-axis of body A as the hinge axis, another axis can be specified when adding it manually though.
+		A HingeJoint normally uses the Z axis of body A as the hinge axis, another axis can be specified when adding it manually though.
 	</description>
 	<tutorials>
 	</tutorials>
 	<methods>
+		<method name="get_flag" qualifiers="const">
+			<return type="bool">
+			</return>
+			<argument index="0" name="flag" type="int" enum="HingeJoint.Flag">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_param" qualifiers="const">
+			<return type="float">
+			</return>
+			<argument index="0" name="param" type="int" enum="HingeJoint.Param">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_flag">
+			<return type="void">
+			</return>
+			<argument index="0" name="flag" type="int" enum="HingeJoint.Flag">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_param">
+			<return type="void">
+			</return>
+			<argument index="0" name="param" type="int" enum="HingeJoint.Param">
+			</argument>
+			<argument index="1" name="value" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
 	</methods>
 	<members>
-		<member name="angular_limit/bias" type="float" setter="set_param" getter="get_param">
+		<member name="angular_limit/bias" type="float" setter="set_param" getter="get_param" default="0.3">
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
 		</member>
-		<member name="angular_limit/enable" type="bool" setter="set_flag" getter="get_flag">
+		<member name="angular_limit/enable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
 		</member>
-		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit">
-			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+		<member name="angular_limit/lower" type="float" setter="_set_lower_limit" getter="_get_lower_limit" default="-90.0">
+			The minimum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
-		<member name="angular_limit/relaxation" type="float" setter="set_param" getter="get_param">
+		<member name="angular_limit/relaxation" type="float" setter="set_param" getter="get_param" default="1.0">
 			The lower this value, the more the rotation gets slowed down.
 		</member>
-		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param">
+		<member name="angular_limit/softness" type="float" setter="set_param" getter="get_param" default="0.9">
 		</member>
-		<member name="angular_limit/upper" type="float" setter="_set_upper_limit" getter="_get_upper_limit">
-			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+		<member name="angular_limit/upper" type="float" setter="_set_upper_limit" getter="_get_upper_limit" default="90.0">
+			The maximum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</member>
-		<member name="motor/enable" type="bool" setter="set_flag" getter="get_flag">
+		<member name="motor/enable" type="bool" setter="set_flag" getter="get_flag" default="false">
 			When activated, a motor turns the hinge.
 		</member>
-		<member name="motor/max_impulse" type="float" setter="set_param" getter="get_param">
+		<member name="motor/max_impulse" type="float" setter="set_param" getter="get_param" default="1.0">
 			Maximum acceleration for the motor.
 		</member>
-		<member name="motor/target_velocity" type="float" setter="set_param" getter="get_param">
+		<member name="motor/target_velocity" type="float" setter="set_param" getter="get_param" default="1.0">
 			Target speed for the motor.
 		</member>
-		<member name="params/bias" type="float" setter="set_param" getter="get_param">
+		<member name="params/bias" type="float" setter="set_param" getter="get_param" default="0.3">
 			The speed with which the two bodies get pulled together when they move in different directions.
 		</member>
 	</members>
@@ -46,10 +82,10 @@
 			The speed with which the two bodies get pulled together when they move in different directions.
 		</constant>
 		<constant name="PARAM_LIMIT_UPPER" value="1" enum="Param">
-			The maximum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+			The maximum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
 		<constant name="PARAM_LIMIT_LOWER" value="2" enum="Param">
-			The minimum rotation. only active if [member angular_limit/enable] is [code]true[/code].
+			The minimum rotation. Only active if [member angular_limit/enable] is [code]true[/code].
 		</constant>
 		<constant name="PARAM_LIMIT_BIAS" value="3" enum="Param">
 			The speed with which the rotation across the axis perpendicular to the hinge gets corrected.
@@ -66,7 +102,7 @@
 			Maximum acceleration for the motor.
 		</constant>
 		<constant name="PARAM_MAX" value="8" enum="Param">
-			End flag of PARAM_* constants, used internally.
+			Represents the size of the [enum Param] enum.
 		</constant>
 		<constant name="FLAG_USE_LIMIT" value="0" enum="Flag">
 			If [code]true[/code], the hinges maximum and minimum rotation, defined by [member angular_limit/lower] and [member angular_limit/upper] has effects.
@@ -75,7 +111,7 @@
 			When activated, a motor turns the hinge.
 		</constant>
 		<constant name="FLAG_MAX" value="2" enum="Flag">
-			End flag of FLAG_* constants, used internally.
+			Represents the size of the [enum Flag] enum.
 		</constant>
 	</constants>
 </class>

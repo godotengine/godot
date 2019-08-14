@@ -68,6 +68,11 @@ public:
 		ANIMATION_PROCESS_MANUAL,
 	};
 
+	enum AnimationMethodCallMode {
+		ANIMATION_METHOD_CALL_DEFERRED,
+		ANIMATION_METHOD_CALL_IMMEDIATE,
+	};
+
 private:
 	enum {
 
@@ -246,6 +251,7 @@ private:
 
 	String autoplay;
 	AnimationProcessMode animation_process_mode;
+	AnimationMethodCallMode method_call_mode;
 	bool processing;
 	bool active;
 
@@ -338,6 +344,9 @@ public:
 	void set_animation_process_mode(AnimationProcessMode p_mode);
 	AnimationProcessMode get_animation_process_mode() const;
 
+	void set_method_call_mode(AnimationMethodCallMode p_mode);
+	AnimationMethodCallMode get_method_call_mode() const;
+
 	void seek(float p_time, bool p_update = false);
 	void seek_delta(float p_time, float p_delta);
 	float get_current_animation_position() const;
@@ -363,5 +372,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(AnimationPlayer::AnimationProcessMode);
+VARIANT_ENUM_CAST(AnimationPlayer::AnimationMethodCallMode);
 
 #endif

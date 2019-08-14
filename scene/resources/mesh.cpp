@@ -98,7 +98,7 @@ Ref<TriangleMesh> Mesh::generate_triangle_mesh() const {
 		}
 	}
 
-	facesw = PoolVector<Vector3>::Write();
+	facesw.release();
 
 	triangle_mesh = Ref<TriangleMesh>(memnew(TriangleMesh));
 	triangle_mesh->create(faces);
@@ -436,7 +436,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 			r[i] = t;
 		}
 
-		r = PoolVector<Vector3>::Write();
+		r.release();
 		arrays[ARRAY_VERTEX] = vertices;
 
 		if (!has_indices) {
@@ -452,7 +452,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 				iw[j + 2] = j + 1;
 			}
 
-			iw = PoolVector<int>::Write();
+			iw.release();
 			arrays[ARRAY_INDEX] = new_indices;
 
 		} else {
@@ -461,7 +461,7 @@ Ref<Mesh> Mesh::create_outline(float p_margin) const {
 
 				SWAP(ir[j + 1], ir[j + 2]);
 			}
-			ir = PoolVector<int>::Write();
+			ir.release();
 			arrays[ARRAY_INDEX] = indices;
 		}
 	}
@@ -883,10 +883,7 @@ int ArrayMesh::get_surface_count() const {
 
 void ArrayMesh::add_blend_shape(const StringName &p_name) {
 
-	if (surfaces.size()) {
-		ERR_EXPLAIN("Can't add a shape key count if surfaces are already created.");
-		ERR_FAIL_COND(surfaces.size());
-	}
+	ERR_FAIL_COND_MSG(surfaces.size(), "Can't add a shape key count if surfaces are already created.");
 
 	StringName name = p_name;
 
@@ -914,10 +911,7 @@ StringName ArrayMesh::get_blend_shape_name(int p_index) const {
 }
 void ArrayMesh::clear_blend_shapes() {
 
-	if (surfaces.size()) {
-		ERR_EXPLAIN("Can't set shape key count if surfaces are already created.");
-		ERR_FAIL_COND(surfaces.size());
-	}
+	ERR_FAIL_COND_MSG(surfaces.size(), "Can't set shape key count if surfaces are already created.");
 
 	blend_shapes.clear();
 }
@@ -1109,8 +1103,7 @@ struct ArrayMeshLightmapSurface {
 Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texel_size) {
 
 	ERR_FAIL_COND_V(!array_mesh_lightmap_unwrap_callback, ERR_UNCONFIGURED);
-	ERR_EXPLAIN("Can't unwrap mesh with blend shapes");
-	ERR_FAIL_COND_V(blend_shapes.size() != 0, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V_MSG(blend_shapes.size() != 0, ERR_UNAVAILABLE, "Can't unwrap mesh with blend shapes.");
 
 	Vector<float> vertices;
 	Vector<float> normals;
@@ -1124,15 +1117,9 @@ Error ArrayMesh::lightmap_unwrap(const Transform &p_base_transform, float p_texe
 		ArrayMeshLightmapSurface s;
 		s.primitive = surface_get_primitive_type(i);
 
-		if (s.primitive != Mesh::PRIMITIVE_TRIANGLES) {
-			ERR_EXPLAIN("Only triangles are supported for lightmap unwrap");
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		ERR_FAIL_COND_V_MSG(s.primitive != Mesh::PRIMITIVE_TRIANGLES, ERR_UNAVAILABLE, "Only triangles are supported for lightmap unwrap.");
 		s.format = surface_get_format(i);
-		if (!(s.format & ARRAY_FORMAT_NORMAL)) {
-			ERR_EXPLAIN("Normals are required for lightmap unwrap");
-			ERR_FAIL_V(ERR_UNAVAILABLE);
-		}
+		ERR_FAIL_COND_V_MSG(!(s.format & ARRAY_FORMAT_NORMAL), ERR_UNAVAILABLE, "Normals are required for lightmap unwrap.");
 
 		Array arrays = surface_get_arrays(i);
 		s.material = surface_get_material(i);

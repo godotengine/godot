@@ -34,7 +34,8 @@
 #include "core/io/resource_importer.h"
 
 class EditorImportPlugin : public ResourceImporter {
-	GDCLASS(EditorImportPlugin, Reference)
+	GDCLASS(EditorImportPlugin, ResourceImporter);
+
 protected:
 	static void _bind_methods();
 

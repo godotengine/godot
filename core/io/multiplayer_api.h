@@ -77,7 +77,7 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	void _send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount);
-	bool _send_confirm_path(NodePath p_path, PathSentCache *psc, int p_from);
+	bool _send_confirm_path(NodePath p_path, PathSentCache *psc, int p_target);
 
 public:
 	enum NetworkCommands {

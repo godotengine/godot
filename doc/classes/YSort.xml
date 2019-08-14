@@ -12,8 +12,8 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="sort_enabled" type="bool" setter="set_sort_enabled" getter="is_sort_enabled">
-			If [code]true[/code], child nodes are sorted, otherwise sorting is disabled. Default: [code]true[/code].
+		<member name="sort_enabled" type="bool" setter="set_sort_enabled" getter="is_sort_enabled" default="true">
+			If [code]true[/code], child nodes are sorted, otherwise sorting is disabled.
 		</member>
 	</members>
 	<constants>

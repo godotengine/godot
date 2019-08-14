@@ -201,6 +201,8 @@ void MeshLibraryEditor::_import_scene_cbk(const String &p_str) {
 	ERR_FAIL_COND(ps.is_null());
 	Node *scene = ps->instance();
 
+	ERR_FAIL_COND(!scene);
+
 	_import_scene(scene, mesh_library, option == MENU_OPTION_UPDATE_FROM_SCENE);
 
 	memdelete(scene);

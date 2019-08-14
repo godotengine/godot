@@ -15,14 +15,14 @@
 			<argument index="0" name="path" type="String">
 			</argument>
 			<description>
-				Get the type of the file, given the full path.
+				Gets the type of the file, given the full path.
 			</description>
 		</method>
 		<method name="get_filesystem">
 			<return type="EditorFileSystemDirectory">
 			</return>
 			<description>
-				Get the root directory object.
+				Gets the root directory object.
 			</description>
 		</method>
 		<method name="get_filesystem_path">

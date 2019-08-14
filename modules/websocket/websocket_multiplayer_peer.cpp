@@ -87,6 +87,7 @@ void WebSocketMultiplayerPeer::_clear() {
 
 void WebSocketMultiplayerPeer::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("set_buffers", "input_buffer_size_kb", "input_max_packets", "output_buffer_size_kb", "output_max_packets"), &WebSocketMultiplayerPeer::set_buffers);
 	ClassDB::bind_method(D_METHOD("get_peer", "peer_id"), &WebSocketMultiplayerPeer::get_peer);
 
 	ADD_SIGNAL(MethodInfo("peer_packet", PropertyInfo(Variant::INT, "peer_source")));
@@ -97,16 +98,14 @@ void WebSocketMultiplayerPeer::_bind_methods() {
 //
 int WebSocketMultiplayerPeer::get_available_packet_count() const {
 
-	ERR_EXPLAIN("Please use get_peer(ID).get_available_packet_count to get available packet count from peers when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).get_available_packet_count to get available packet count from peers when not using the MultiplayerAPI.");
 
 	return _incoming_packets.size();
 }
 
 Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
-	ERR_EXPLAIN("Please use get_peer(ID).get_packet/var to communicate with peers when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).get_packet/var to communicate with peers when not using the MultiplayerAPI.");
 
 	r_buffer_size = 0;
 
@@ -126,8 +125,7 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 
 Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
-	ERR_EXPLAIN("Please use get_peer(ID).put_packet/var to communicate with peers when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).put_packet/var to communicate with peers when not using the MultiplayerAPI.");
 
 	PoolVector<uint8_t> buffer = _make_pkt(SYS_NONE, get_unique_id(), _target_peer, p_buffer, p_buffer_size);
 
@@ -159,8 +157,7 @@ void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {
 
 int WebSocketMultiplayerPeer::get_packet_peer() const {
 
-	ERR_EXPLAIN("This function is not available when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, 1);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, 1, "This function is not available when not using the MultiplayerAPI.");
 	ERR_FAIL_COND_V(_incoming_packets.size() == 0, 1);
 
 	return _incoming_packets.front()->get().source;
@@ -190,7 +187,7 @@ void WebSocketMultiplayerPeer::_send_sys(Ref<WebSocketPeer> p_peer, uint8_t p_ty
 	p_peer->put_packet(&(message.read()[0]), message.size());
 }
 
-PoolVector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint32_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size) {
+PoolVector<uint8_t> WebSocketMultiplayerPeer::_make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size) {
 
 	PoolVector<uint8_t> out;
 	out.resize(PROTO_SIZE + p_data_size);
@@ -353,8 +350,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 				_peer_id = id;
 				break;
 			default:
-				ERR_EXPLAIN("Invalid multiplayer message");
-				ERR_FAIL();
+				ERR_FAIL_MSG("Invalid multiplayer message.");
 				break;
 		}
 	}

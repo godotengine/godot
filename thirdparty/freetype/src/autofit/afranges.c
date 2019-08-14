@@ -664,6 +664,21 @@
   };
 
 
+  const AF_Script_UniRangeRec  af_mong_uniranges[] =
+  {
+    AF_UNIRANGE_REC(  0x1800,  0x18AF ),  /* Mongolian            */
+    AF_UNIRANGE_REC( 0x11660, 0x1167F ),  /* Mongolian Supplement */
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+  const AF_Script_UniRangeRec  af_mong_nonbase_uniranges[] =
+  {
+    AF_UNIRANGE_REC(  0x1885,  0x1886 ),
+    AF_UNIRANGE_REC(  0x18A9,  0x18A9 ),
+    AF_UNIRANGE_REC(       0,       0 )
+  };
+
+
   const AF_Script_UniRangeRec  af_mymr_uniranges[] =
   {
     AF_UNIRANGE_REC(  0x1000,  0x109F ),    /* Myanmar            */

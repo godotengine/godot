@@ -34,7 +34,8 @@
 #include "core/io/resource_importer.h"
 
 class ResourceImporterWAV : public ResourceImporter {
-	GDCLASS(ResourceImporterWAV, ResourceImporter)
+	GDCLASS(ResourceImporterWAV, ResourceImporter);
+
 public:
 	virtual String get_importer_name() const;
 	virtual String get_visible_name() const;

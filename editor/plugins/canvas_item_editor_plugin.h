@@ -371,6 +371,8 @@ private:
 	List<CanvasItem *> drag_selection;
 	int dragged_guide_index;
 	Point2 dragged_guide_pos;
+	bool is_hovering_h_guide;
+	bool is_hovering_v_guide;
 
 	bool updating_value_dialog;
 
@@ -425,7 +427,7 @@ private:
 
 	List<CanvasItem *> _get_edited_canvas_items(bool retreive_locked = false, bool remove_canvas_item_if_parent_in_selection = true);
 	Rect2 _get_encompassing_rect_from_list(List<CanvasItem *> p_list);
-	void _expand_encompassing_rect_using_children(Rect2 &p_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
+	void _expand_encompassing_rect_using_children(Rect2 &r_rect, const Node *p_node, bool &r_first, const Transform2D &p_parent_xform = Transform2D(), const Transform2D &p_canvas_xform = Transform2D(), bool include_locked_nodes = true);
 	Rect2 _get_encompassing_rect(const Node *p_node);
 
 	Object *_get_editor_data(Object *p_what);
@@ -464,7 +466,7 @@ private:
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
 	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
 	bool _gui_input_select(const Ref<InputEvent> &p_event);
-	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event);
+	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted);
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 

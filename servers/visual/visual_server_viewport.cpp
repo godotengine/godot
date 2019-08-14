@@ -63,7 +63,10 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 }
 
 void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
-	Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
+	Ref<ARVRInterface> arvr_interface;
+	if (ARVRServer::get_singleton() != NULL) {
+		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
+	}
 
 	if (p_viewport->use_arvr && arvr_interface.is_valid()) {
 		VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
@@ -82,6 +85,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && VSG::scene->scenario_owner.owns(p_viewport->scenario)) {
 
 		VisualServerScene::Scenario *scenario = VSG::scene->scenario_owner.get(p_viewport->scenario);
+		ERR_FAIL_COND(!scenario);
 		if (VSG::scene_render->is_environment(scenario->environment)) {
 			scenario_draw_canvas_bg = VSG::scene_render->environment_get_background(scenario->environment) == VS::ENV_BG_CANVAS;
 
@@ -253,8 +257,6 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 			} else {
 				_draw_3d(p_viewport, p_eye);
 			}
-
-			scenario_draw_canvas_bg = false;
 		}
 
 		//VSG::canvas_render->canvas_debug_viewport_shadows(lights_with_shadow);
@@ -262,11 +264,16 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 }
 
 void VisualServerViewport::draw_viewports() {
-	// get our arvr interface in case we need it
-	Ref<ARVRInterface> arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
 
-	// process all our active interfaces
-	ARVRServer::get_singleton()->_process();
+	// get our arvr interface in case we need it
+	Ref<ARVRInterface> arvr_interface;
+
+	if (ARVRServer::get_singleton() != NULL) {
+		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
+
+		// process all our active interfaces
+		ARVRServer::get_singleton()->_process();
+	}
 
 	if (Engine::get_singleton()->is_editor_hint()) {
 		clear_color = GLOBAL_GET("rendering/environment/default_clear_color");

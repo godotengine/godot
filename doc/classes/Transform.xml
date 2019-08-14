@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Transform" category="Built-In Types" version="3.2">
 	<brief_description>
-		3D Transformation. 3x4 matrix.
+		3D transformation (3×4 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [Basis] "basis" and an [Vector3] "origin". It is similar to a 3x4 matrix.
+		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [member basis] and an [member origin]. It is similar to a 3×4 matrix.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
@@ -158,21 +158,25 @@
 		</method>
 	</methods>
 	<members>
-		<member name="basis" type="Basis" setter="" getter="">
+		<member name="basis" type="Basis" setter="" getter="" default="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
 			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
-		<member name="origin" type="Vector3" setter="" getter="">
+		<member name="origin" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
 			The translation offset of the transform.
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
 		<constant name="FLIP_X" value="Transform( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the YZ plane.
 		</constant>
 		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XZ plane.
 		</constant>
 		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XY plane.
 		</constant>
 	</constants>
 </class>

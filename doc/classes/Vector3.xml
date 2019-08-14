@@ -246,8 +246,8 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
-				Both vectors need to be normalized.
+				Returns the result of spherical linear interpolation between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+				[b]Note:[/b] Both vectors must be normalized.
 			</description>
 		</method>
 		<method name="slide">
@@ -265,7 +265,7 @@
 			<argument index="0" name="by" type="Vector3">
 			</argument>
 			<description>
-				Returns a copy of the vector, snapped to the lowest neared multiple.
+				Returns a copy of the vector snapped to the lowest neared multiple.
 			</description>
 		</method>
 		<method name="to_diagonal_matrix">
@@ -277,14 +277,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float" setter="" getter="">
-			The vector's x component. Also accessible by using the index position [code][0][/code].
+		<member name="x" type="float" setter="" getter="" default="0.0">
+			The vector's X component. Also accessible by using the index position [code][0][/code].
 		</member>
-		<member name="y" type="float" setter="" getter="">
-			The vector's y component. Also accessible by using the index position [code][1][/code].
+		<member name="y" type="float" setter="" getter="" default="0.0">
+			The vector's Y component. Also accessible by using the index position [code][1][/code].
 		</member>
-		<member name="z" type="float" setter="" getter="">
-			The vector's z component. Also accessible by using the index position [code][2][/code].
+		<member name="z" type="float" setter="" getter="" default="0.0">
+			The vector's Z component. Also accessible by using the index position [code][2][/code].
 		</member>
 	</members>
 	<constants>

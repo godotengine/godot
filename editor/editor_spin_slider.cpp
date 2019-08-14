@@ -38,9 +38,9 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 }
 
 String EditorSpinSlider::get_text_value() const {
-	int zeros = Math::step_decimals(get_step());
-	return String::num(get_value(), zeros);
+	return String::num(get_value(), Math::range_step_decimals(get_step()));
 }
+
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (read_only)
@@ -347,6 +347,11 @@ void EditorSpinSlider::_value_input_closed() {
 
 //focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
+
+	// discontinue because the focus_exit was caused by right-click context menu
+	if (value_input->get_menu()->is_visible())
+		return;
+
 	_evaluate_input_text();
 	// focus is not on the same element after the vlalue_input was exited
 	// -> focus is on next element

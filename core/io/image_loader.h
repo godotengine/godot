@@ -41,19 +41,7 @@
 	@author Juan Linietsky <reduzio@gmail.com>
 */
 
-/**
- * @class ImageScanLineLoader
- * @author Juan Linietsky <reduzio@gmail.com>
- *
-
- */
 class ImageLoader;
-
-/**
- * @class ImageLoader
- * Base Class and singleton for loading images from disk
- * Can load images in one go, or by scanline
- */
 
 class ImageFormatLoader {
 	friend class ImageLoader;
@@ -88,7 +76,6 @@ public:
 };
 
 class ResourceFormatLoaderImage : public ResourceFormatLoader {
-	GDCLASS(ResourceFormatLoaderImage, ResourceFormatLoader)
 public:
 	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;

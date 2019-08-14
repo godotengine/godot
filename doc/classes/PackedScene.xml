@@ -5,26 +5,27 @@
 	</brief_description>
 	<description>
 		A simplified interface to a scene file. Provides access to operations and checks that can be performed on the scene resource itself.
-		Can be used to save a node to a file. When saving, the node as well as all the node it owns get saved (see [code]owner[/code] property on [Node]). Note that the node doesn't need to own itself.
-		Example of saving a node with different owners: The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidBody2D[/code] ([code]rigid[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]rigid[/code] which is a child of [code]node[/code]. Only [code]rigid[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
+		Can be used to save a node to a file. When saving, the node as well as all the node it owns get saved (see [code]owner[/code] property on [Node]).
+		[b]Note:[/b] The node doesn't need to own itself.
+		[b]Example of saving a node with different owners:[/b] The following example creates 3 objects: [code]Node2D[/code] ([code]node[/code]), [code]RigidBody2D[/code] ([code]rigid[/code]) and [code]CollisionObject2D[/code] ([code]collision[/code]). [code]collision[/code] is a child of [code]rigid[/code] which is a child of [code]node[/code]. Only [code]rigid[/code] is owned by [code]node[/code] and [code]pack[/code] will therefore only save those two nodes, but not [code]collision[/code].
 		[codeblock]
-		# create the objects
+		# Create the objects
 		var node = Node2D.new()
 		var rigid = RigidBody2D.new()
 		var collision = CollisionShape2D.new()
 
-		# create the object hierarchy
+		# Create the object hierarchy
 		rigid.add_child(collision)
 		node.add_child(rigid)
 
-		# change owner of rigid, but not of collision
+		# Change owner of rigid, but not of collision
 		rigid.owner = node
 
 		var scene = PackedScene.new()
-		# only node and rigid are now packed
+		# Only node and rigid are now packed
 		var result = scene.pack(node)
 		if result == OK:
-		    ResourceSaver.save("res://path/name.scn", scene) # or user://...
+		    ResourceSaver.save("res://path/name.scn", scene) # Or "user://..."
 		[/codeblock]
 	</description>
 	<tutorials>
@@ -50,7 +51,7 @@
 			<argument index="0" name="edit_state" type="int" enum="PackedScene.GenEditState" default="0">
 			</argument>
 			<description>
-				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers [Node]'s [code]NOTIFICATION_INSTANCED[/code] notification on the root node.
+				Instantiates the scene's node hierarchy. Triggers child scene instantiation(s). Triggers a [constant Node.NOTIFICATION_INSTANCED] notification on the root node.
 			</description>
 		</method>
 		<method name="pack">
@@ -64,7 +65,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene">
+		<member name="_bundled" type="Dictionary" setter="_set_bundled_scene" getter="_get_bundled_scene" default="{&quot;conn_count&quot;: 0,&quot;conns&quot;: PoolIntArray(  ),&quot;editable_instances&quot;: [  ],&quot;names&quot;: PoolStringArray(  ),&quot;node_count&quot;: 0,&quot;node_paths&quot;: [  ],&quot;nodes&quot;: PoolIntArray(  ),&quot;variants&quot;: [  ],&quot;version&quot;: 2}">
 			A dictionary representation of the scene contents.
 			Available keys include "rnames" and "variants" for resources, "node_count", "nodes", "node_paths" for nodes, "editable_instances" for base scene children overrides, "conn_count" and "conns" for signal connections, and "version" for the format style of the PackedScene.
 		</member>
@@ -74,10 +75,12 @@
 			If passed to [method instance], blocks edits to the scene state.
 		</constant>
 		<constant name="GEN_EDIT_STATE_INSTANCE" value="1" enum="GenEditState">
-			If passed to [method instance], provides local scene resources to the local scene. Requires tools compiled.
+			If passed to [method instance], provides local scene resources to the local scene.
+			[b]Note:[/b] Only available in editor builds.
 		</constant>
 		<constant name="GEN_EDIT_STATE_MAIN" value="2" enum="GenEditState">
-			If passed to [method instance], provides local scene resources to the local scene. Only the main scene should receive the main edit state. Requires tools compiled.
+			If passed to [method instance], provides local scene resources to the local scene. Only the main scene should receive the main edit state.
+			[b]Note:[/b] Only available in editor builds.
 		</constant>
 	</constants>
 </class>

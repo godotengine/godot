@@ -22,7 +22,7 @@
 			<return type="int" enum="Shader.Mode">
 			</return>
 			<description>
-				Returns the shader mode for the shader, either [code]MODE_CANVAS_ITEM[/code], [code]MODE_SPATIAL[/code] or [code]MODE_PARTICLES[/code]
+				Returns the shader mode for the shader, either [constant MODE_CANVAS_ITEM], [constant MODE_SPATIAL] or [constant MODE_PARTICLES]
 			</description>
 		</method>
 		<method name="has_param" qualifiers="const">
@@ -45,7 +45,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="code" type="String" setter="set_code" getter="get_code">
+		<member name="code" type="String" setter="set_code" getter="get_code" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

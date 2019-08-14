@@ -23,17 +23,17 @@
 		</method>
 	</methods>
 	<members>
-		<member name="autorestart" type="bool" setter="set_autorestart" getter="has_autorestart">
+		<member name="autorestart" type="bool" setter="set_autorestart" getter="has_autorestart" default="false">
 		</member>
-		<member name="autorestart_delay" type="float" setter="set_autorestart_delay" getter="get_autorestart_delay">
+		<member name="autorestart_delay" type="float" setter="set_autorestart_delay" getter="get_autorestart_delay" default="1.0">
 		</member>
-		<member name="autorestart_random_delay" type="float" setter="set_autorestart_random_delay" getter="get_autorestart_random_delay">
+		<member name="autorestart_random_delay" type="float" setter="set_autorestart_random_delay" getter="get_autorestart_random_delay" default="0.0">
 		</member>
-		<member name="fadein_time" type="float" setter="set_fadein_time" getter="get_fadein_time">
+		<member name="fadein_time" type="float" setter="set_fadein_time" getter="get_fadein_time" default="0.1">
 		</member>
-		<member name="fadeout_time" type="float" setter="set_fadeout_time" getter="get_fadeout_time">
+		<member name="fadeout_time" type="float" setter="set_fadeout_time" getter="get_fadeout_time" default="0.1">
 		</member>
-		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync">
+		<member name="sync" type="bool" setter="set_use_sync" getter="is_using_sync" default="false">
 		</member>
 	</members>
 	<constants>

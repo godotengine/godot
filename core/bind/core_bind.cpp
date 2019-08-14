@@ -34,12 +34,11 @@
 #include "core/io/file_access_encrypted.h"
 #include "core/io/json.h"
 #include "core/io/marshalls.h"
+#include "core/math/crypto_core.h"
 #include "core/math/geometry.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
-
-#include "thirdparty/misc/base64.h"
 
 /**
  *  Time constants borrowed from loc_time.h
@@ -76,7 +75,7 @@ RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool 
 
 	if (err != OK) {
 		ERR_EXPLAIN("Error loading resource: '" + p_path + "'");
-		ERR_FAIL_COND_V(err != OK, ret);
+		ERR_FAIL_V(ret);
 	}
 	return ret;
 }
@@ -149,8 +148,10 @@ _ResourceLoader::_ResourceLoader() {
 }
 
 Error _ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
-
-	ERR_FAIL_COND_V(p_resource.is_null(), ERR_INVALID_PARAMETER);
+	if (p_resource.is_null()) {
+		ERR_EXPLAIN("Can't save empty resource to path: " + String(p_path))
+		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+	}
 	return ResourceSaver::save(p_path, p_resource, p_flags);
 }
 
@@ -246,11 +247,11 @@ PoolStringArray _OS::get_connected_midi_inputs() {
 }
 
 void _OS::open_midi_inputs() {
-	return OS::get_singleton()->open_midi_inputs();
+	OS::get_singleton()->open_midi_inputs();
 }
 
 void _OS::close_midi_inputs() {
-	return OS::get_singleton()->close_midi_inputs();
+	OS::get_singleton()->close_midi_inputs();
 }
 
 void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeable, int p_screen) {
@@ -308,12 +309,28 @@ void _OS::set_window_position(const Point2 &p_position) {
 	OS::get_singleton()->set_window_position(p_position);
 }
 
+Size2 _OS::get_max_window_size() const {
+	return OS::get_singleton()->get_max_window_size();
+}
+
+Size2 _OS::get_min_window_size() const {
+	return OS::get_singleton()->get_min_window_size();
+}
+
 Size2 _OS::get_window_size() const {
 	return OS::get_singleton()->get_window_size();
 }
 
 Size2 _OS::get_real_window_size() const {
 	return OS::get_singleton()->get_real_window_size();
+}
+
+void _OS::set_max_window_size(const Size2 &p_size) {
+	OS::get_singleton()->set_max_window_size(p_size);
+}
+
+void _OS::set_min_window_size(const Size2 &p_size) {
+	OS::get_singleton()->set_min_window_size(p_size);
 }
 
 void _OS::set_window_size(const Size2 &p_size) {
@@ -1139,6 +1156,10 @@ void _OS::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_window_position"), &_OS::get_window_position);
 	ClassDB::bind_method(D_METHOD("set_window_position", "position"), &_OS::set_window_position);
 	ClassDB::bind_method(D_METHOD("get_window_size"), &_OS::get_window_size);
+	ClassDB::bind_method(D_METHOD("get_max_window_size"), &_OS::get_max_window_size);
+	ClassDB::bind_method(D_METHOD("get_min_window_size"), &_OS::get_min_window_size);
+	ClassDB::bind_method(D_METHOD("set_max_window_size", "size"), &_OS::set_max_window_size);
+	ClassDB::bind_method(D_METHOD("set_min_window_size", "size"), &_OS::set_min_window_size);
 	ClassDB::bind_method(D_METHOD("set_window_size", "size"), &_OS::set_window_size);
 	ClassDB::bind_method(D_METHOD("get_window_safe_area"), &_OS::get_window_safe_area);
 	ClassDB::bind_method(D_METHOD("set_window_fullscreen", "enabled"), &_OS::set_window_fullscreen);
@@ -1284,6 +1305,8 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "vsync_enabled"), "set_use_vsync", "is_vsync_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "low_processor_usage_mode"), "set_low_processor_usage_mode", "is_in_low_processor_usage_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_screen_on"), "set_keep_screen_on", "is_keep_screen_on");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "min_window_size"), "set_min_window_size", "get_min_window_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "max_window_size"), "set_max_window_size", "get_max_window_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "screen_orientation", PROPERTY_HINT_ENUM, "Landscape,Portrait,Reverse Landscape,Reverse Portrait,Sensor Landscape,Sensor Portrait,Sensor"), "set_screen_orientation", "get_screen_orientation");
 	ADD_GROUP("Window", "window_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_borderless"), "set_borderless_window", "get_borderless_window");
@@ -1294,6 +1317,26 @@ void _OS::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "window_resizable"), "set_window_resizable", "is_window_resizable");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_position"), "set_window_position", "get_window_position");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "window_size"), "set_window_size", "get_window_size");
+
+	// Those default values need to be specified for the docs generator,
+	// to avoid using values from the documentation writer's own OS instance.
+	ADD_PROPERTY_DEFAULT("clipboard", "");
+	ADD_PROPERTY_DEFAULT("current_screen", 0);
+	ADD_PROPERTY_DEFAULT("exit_code", 0);
+	ADD_PROPERTY_DEFAULT("vsync_enabled", true);
+	ADD_PROPERTY_DEFAULT("low_processor_usage_mode", false);
+	ADD_PROPERTY_DEFAULT("keep_screen_on", true);
+	ADD_PROPERTY_DEFAULT("min_window_size", Vector2());
+	ADD_PROPERTY_DEFAULT("max_window_size", Vector2());
+	ADD_PROPERTY_DEFAULT("screen_orientation", 0);
+	ADD_PROPERTY_DEFAULT("window_borderless", false);
+	ADD_PROPERTY_DEFAULT("window_per_pixel_transparency_enabled", false);
+	ADD_PROPERTY_DEFAULT("window_fullscreen", false);
+	ADD_PROPERTY_DEFAULT("window_maximized", false);
+	ADD_PROPERTY_DEFAULT("window_minimized", false);
+	ADD_PROPERTY_DEFAULT("window_resizable", true);
+	ADD_PROPERTY_DEFAULT("window_position", Vector2());
+	ADD_PROPERTY_DEFAULT("window_size", Vector2());
 
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES2);
 	BIND_ENUM_CONSTANT(VIDEO_DRIVER_GLES3);
@@ -1502,6 +1545,11 @@ bool _Geometry::is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
 	return Geometry::is_polygon_clockwise(p_polygon);
 }
 
+bool _Geometry::is_point_in_polygon(const Point2 &p_point, const Vector<Vector2> &p_polygon) {
+
+	return Geometry::is_point_in_polygon(p_point, p_polygon);
+}
+
 Vector<int> _Geometry::triangulate_polygon(const Vector<Vector2> &p_polygon) {
 
 	return Geometry::triangulate_polygon(p_polygon);
@@ -1684,6 +1732,7 @@ void _Geometry::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("point_is_inside_triangle", "point", "a", "b", "c"), &_Geometry::point_is_inside_triangle);
 
 	ClassDB::bind_method(D_METHOD("is_polygon_clockwise", "polygon"), &_Geometry::is_polygon_clockwise);
+	ClassDB::bind_method(D_METHOD("is_point_in_polygon", "point", "polygon"), &_Geometry::is_point_in_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_polygon", "polygon"), &_Geometry::triangulate_polygon);
 	ClassDB::bind_method(D_METHOD("triangulate_delaunay_2d", "points"), &_Geometry::triangulate_delaunay_2d);
 	ClassDB::bind_method(D_METHOD("convex_hull_2d", "points"), &_Geometry::convex_hull_2d);
@@ -1883,13 +1932,15 @@ PoolVector<uint8_t> _File::get_buffer(int p_length) const {
 	ERR_FAIL_COND_V(p_length < 0, data);
 	if (p_length == 0)
 		return data;
+
 	Error err = data.resize(p_length);
 	ERR_FAIL_COND_V(err != OK, data);
+
 	PoolVector<uint8_t>::Write w = data.write();
 	int len = f->get_buffer(&w[0], p_length);
 	ERR_FAIL_COND_V(len < 0, PoolVector<uint8_t>());
 
-	w = PoolVector<uint8_t>::Write();
+	w.release();
 
 	if (len < p_length)
 		data.resize(p_length);
@@ -2064,11 +2115,11 @@ void _File::store_var(const Variant &p_var, bool p_full_objects) {
 
 	PoolVector<uint8_t> buff;
 	buff.resize(len);
-	PoolVector<uint8_t>::Write w = buff.write();
 
+	PoolVector<uint8_t>::Write w = buff.write();
 	err = encode_variant(p_var, &w[0], len, p_full_objects);
 	ERR_FAIL_COND(err != OK);
-	w = PoolVector<uint8_t>::Write();
+	w.release();
 
 	store_32(len);
 	store_buffer(buff);
@@ -2218,7 +2269,7 @@ bool _Directory::current_is_dir() const {
 void _Directory::list_dir_end() {
 
 	ERR_FAIL_COND(!d);
-	return d->list_dir_end();
+	d->list_dir_end();
 }
 
 int _Directory::get_drive_count() {
@@ -2383,15 +2434,8 @@ String _Marshalls::variant_to_base64(const Variant &p_var, bool p_full_objects) 
 	err = encode_variant(p_var, &w[0], len, p_full_objects);
 	ERR_FAIL_COND_V(err != OK, "");
 
-	int b64len = len / 3 * 4 + 4 + 1;
-	PoolVector<uint8_t> b64buff;
-	b64buff.resize(b64len);
-	PoolVector<uint8_t>::Write w64 = b64buff.write();
-
-	int strlen = base64_encode((char *)(&w64[0]), (char *)(&w[0]), len);
-	//OS::get_singleton()->print("len is %i, vector size is %i\n", b64len, strlen);
-	w64[strlen] = 0;
-	String ret = (char *)&w64[0];
+	String ret = CryptoCore::b64_encode_str(&w[0], len);
+	ERR_FAIL_COND_V(ret == "", ret);
 
 	return ret;
 };
@@ -2405,7 +2449,8 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 	buf.resize(strlen / 4 * 3 + 1);
 	PoolVector<uint8_t>::Write w = buf.write();
 
-	int len = base64_decode((char *)(&w[0]), (char *)cstr.get_data(), strlen);
+	size_t len = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, Variant());
 
 	Variant v;
 	Error err = decode_variant(v, &w[0], len, NULL, p_allow_objects);
@@ -2416,18 +2461,8 @@ Variant _Marshalls::base64_to_variant(const String &p_str, bool p_allow_objects)
 
 String _Marshalls::raw_to_base64(const PoolVector<uint8_t> &p_arr) {
 
-	int len = p_arr.size();
-	PoolVector<uint8_t>::Read r = p_arr.read();
-
-	int b64len = len / 3 * 4 + 4 + 1;
-	PoolVector<uint8_t> b64buff;
-	b64buff.resize(b64len);
-	PoolVector<uint8_t>::Write w64 = b64buff.write();
-
-	int strlen = base64_encode((char *)(&w64[0]), (char *)(&r[0]), len);
-	w64[strlen] = 0;
-	String ret = (char *)&w64[0];
-
+	String ret = CryptoCore::b64_encode_str(p_arr.read().ptr(), p_arr.size());
+	ERR_FAIL_COND_V(ret == "", ret);
 	return ret;
 };
 
@@ -2436,35 +2471,24 @@ PoolVector<uint8_t> _Marshalls::base64_to_raw(const String &p_str) {
 	int strlen = p_str.length();
 	CharString cstr = p_str.ascii();
 
-	int arr_len;
+	size_t arr_len = 0;
 	PoolVector<uint8_t> buf;
 	{
 		buf.resize(strlen / 4 * 3 + 1);
 		PoolVector<uint8_t>::Write w = buf.write();
 
-		arr_len = base64_decode((char *)(&w[0]), (char *)cstr.get_data(), strlen);
-	};
+		ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &arr_len, (unsigned char *)cstr.get_data(), strlen) != OK, PoolVector<uint8_t>());
+	}
 	buf.resize(arr_len);
 
-	// conversion from PoolVector<uint8_t> to raw array?
 	return buf;
 };
 
 String _Marshalls::utf8_to_base64(const String &p_str) {
 
 	CharString cstr = p_str.utf8();
-	int len = cstr.length();
-
-	int b64len = len / 3 * 4 + 4 + 1;
-	PoolVector<uint8_t> b64buff;
-	b64buff.resize(b64len);
-	PoolVector<uint8_t>::Write w64 = b64buff.write();
-
-	int strlen = base64_encode((char *)(&w64[0]), (char *)cstr.get_data(), len);
-
-	w64[strlen] = 0;
-	String ret = (char *)&w64[0];
-
+	String ret = CryptoCore::b64_encode_str((unsigned char *)cstr.get_data(), cstr.length());
+	ERR_FAIL_COND_V(ret == "", ret);
 	return ret;
 };
 
@@ -2477,7 +2501,8 @@ String _Marshalls::base64_to_utf8(const String &p_str) {
 	buf.resize(strlen / 4 * 3 + 1 + 1);
 	PoolVector<uint8_t>::Write w = buf.write();
 
-	int len = base64_decode((char *)(&w[0]), (char *)cstr.get_data(), strlen);
+	size_t len = 0;
+	ERR_FAIL_COND_V(CryptoCore::b64_decode(&w[0], buf.size(), &len, (unsigned char *)cstr.get_data(), strlen) != OK, String());
 
 	w[len] = 0;
 	String ret = String::utf8((char *)&w[0]);
@@ -2652,6 +2677,8 @@ Variant _Thread::wait_to_finish() {
 	target_method = StringName();
 	target_instance = NULL;
 	userdata = Variant();
+	if (thread)
+		memdelete(thread);
 	thread = NULL;
 
 	return r;
@@ -2914,6 +2941,10 @@ float _Engine::get_physics_jitter_fix() const {
 	return Engine::get_singleton()->get_physics_jitter_fix();
 }
 
+float _Engine::get_physics_interpolation_fraction() const {
+	return Engine::get_singleton()->get_physics_interpolation_fraction();
+}
+
 void _Engine::set_target_fps(int p_fps) {
 	Engine::get_singleton()->set_target_fps(p_fps);
 }
@@ -3002,6 +3033,7 @@ void _Engine::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_iterations_per_second"), &_Engine::get_iterations_per_second);
 	ClassDB::bind_method(D_METHOD("set_physics_jitter_fix", "physics_jitter_fix"), &_Engine::set_physics_jitter_fix);
 	ClassDB::bind_method(D_METHOD("get_physics_jitter_fix"), &_Engine::get_physics_jitter_fix);
+	ClassDB::bind_method(D_METHOD("get_physics_interpolation_fraction"), &_Engine::get_physics_interpolation_fraction);
 	ClassDB::bind_method(D_METHOD("set_target_fps", "target_fps"), &_Engine::set_target_fps);
 	ClassDB::bind_method(D_METHOD("get_target_fps"), &_Engine::get_target_fps);
 

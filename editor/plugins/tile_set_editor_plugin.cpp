@@ -263,7 +263,7 @@ void TileSetEditor::_notification(int p_what) {
 TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 	current_tile = -1;
 
 	VBoxContainer *left_container = memnew(VBoxContainer);
@@ -829,8 +829,8 @@ void TileSetEditor::_on_workspace_draw() {
 			case EDITMODE_BITMASK: {
 				Color c(1, 0, 0, 0.5);
 				Color ci(0.3, 0.6, 1, 0.5);
-				for (float x = 0; x < region.size.x / (spacing + size.x); x++) {
-					for (float y = 0; y < region.size.y / (spacing + size.y); y++) {
+				for (int x = 0; x < region.size.x / (spacing + size.x); x++) {
+					for (int y = 0; y < region.size.y / (spacing + size.y); y++) {
 						Vector2 coord(x, y);
 						Point2 anchor(coord.x * (spacing + size.x), coord.y * (spacing + size.y));
 						anchor += WORKSPACE_MARGIN;
@@ -924,8 +924,7 @@ void TileSetEditor::_on_workspace_draw() {
 			case EDITMODE_OCCLUSION:
 			case EDITMODE_NAVIGATION: {
 				if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
-					Vector2 coord = edited_shape_coord;
-					draw_highlight_subtile(coord);
+					draw_highlight_subtile(edited_shape_coord);
 				}
 				draw_polygon_shapes();
 				draw_grid_snap();
@@ -974,6 +973,7 @@ void TileSetEditor::_on_workspace_draw() {
 			workspace->draw_rect(region, c, false);
 		}
 	}
+	delete tiles;
 
 	if (edit_mode == EDITMODE_REGION) {
 		if (workspace_mode != WORKSPACE_EDIT) {
@@ -1068,6 +1068,7 @@ void TileSetEditor::_on_workspace_overlay_draw() {
 			c = Color(0.1, 0.1, 0.1);
 			workspace_overlay->draw_string(font, region.position, tile_id_name, c);
 		}
+		delete tiles;
 	}
 
 	int t_id = get_current_tile();
@@ -1115,10 +1116,12 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 							set_current_tile(t_id);
 							workspace->update();
 							workspace_overlay->update();
+							delete tiles;
 							return;
 						}
 					}
 				}
+				delete tiles;
 			}
 		}
 
@@ -1487,7 +1490,7 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 											w[i] = current_shape[i] - shape_anchor;
 										}
 
-										w = PoolVector<Vector2>::Write();
+										w.release();
 
 										undo_redo->create_action(TTR("Edit Occlusion Polygon"));
 										undo_redo->add_do_method(edited_occlusion_shape.ptr(), "set_polygon", polygon);
@@ -1510,11 +1513,13 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 											indices.push_back(i);
 										}
 
-										w = PoolVector<Vector2>::Write();
+										w.release();
 
 										undo_redo->create_action(TTR("Edit Navigation Polygon"));
 										undo_redo->add_do_method(edited_navigation_shape.ptr(), "set_vertices", polygon);
 										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "set_vertices", edited_navigation_shape->get_vertices());
+										undo_redo->add_do_method(edited_navigation_shape.ptr(), "clear_polygons");
+										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "clear_polygons");
 										undo_redo->add_do_method(edited_navigation_shape.ptr(), "add_polygon", indices);
 										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "add_polygon", edited_navigation_shape->get_polygon(0));
 										undo_redo->add_do_method(this, "_select_edited_shape_coord");
@@ -1829,7 +1834,7 @@ Vector<Vector2> TileSetEditor::_get_edited_shape_points() {
 	return _get_collision_shape_points(edited_collision_shape);
 }
 
-void TileSetEditor::_set_edited_shape_points(const Vector<Vector2> points) {
+void TileSetEditor::_set_edited_shape_points(const Vector<Vector2> &points) {
 	Ref<ConvexPolygonShape2D> convex = edited_collision_shape;
 	Ref<ConcavePolygonShape2D> concave = edited_collision_shape;
 	if (convex.is_valid()) {
@@ -1868,7 +1873,7 @@ void TileSetEditor::_update_tile_data() {
 	} else {
 		int spacing = tileset->autotile_get_spacing(get_current_tile());
 		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 		for (int y = 0; y < cell_count.y; y++) {
 			for (int x = 0; x < cell_count.x; x++) {
 				SubtileData data;
@@ -1970,7 +1975,7 @@ void TileSetEditor::_select_previous_tile() {
 			case EDITMODE_Z_INDEX: {
 				int spacing = tileset->autotile_get_spacing(get_current_tile());
 				Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-				Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+				Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 				cell_count -= Vector2(1, 1);
 				edited_shape_coord = cell_count;
 				_select_edited_shape_coord();
@@ -2009,11 +2014,7 @@ bool TileSetEditor::_sort_tiles(Variant p_a, Variant p_b) {
 		return true;
 
 	} else if (pos_a.y == pos_b.y) {
-		if (pos_a.x < pos_b.x) {
-			return true;
-		} else {
-			return false;
-		}
+		return (pos_a.x < pos_b.x);
 	} else {
 		return false;
 	}
@@ -2031,7 +2032,7 @@ void TileSetEditor::_select_next_subtile() {
 	} else {
 		int spacing = tileset->autotile_get_spacing(get_current_tile());
 		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 		if (edited_shape_coord.x >= cell_count.x - 1 && edited_shape_coord.y >= cell_count.y - 1) {
 			_select_next_tile();
 		} else {
@@ -2057,7 +2058,7 @@ void TileSetEditor::_select_previous_subtile() {
 	} else {
 		int spacing = tileset->autotile_get_spacing(get_current_tile());
 		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 		if (edited_shape_coord.x <= 0 && edited_shape_coord.y <= 0) {
 			_select_previous_tile();
 		} else {
@@ -2077,9 +2078,9 @@ void TileSetEditor::_select_next_shape() {
 	} else if (edit_mode != EDITMODE_COLLISION) {
 		_select_next_subtile();
 	} else {
-		Vector2i edited_coord = Vector2();
+		Vector2i edited_coord = Vector2i();
 		if (tileset->tile_get_tile_mode(get_current_tile()) != TileSet::SINGLE_TILE) {
-			edited_coord = edited_shape_coord;
+			edited_coord = Vector2i(edited_shape_coord);
 		}
 		SubtileData data = current_tile_data[edited_coord];
 		if (data.collisions.size() == 0) {
@@ -2130,9 +2131,9 @@ void TileSetEditor::_select_previous_shape() {
 	} else if (edit_mode != EDITMODE_COLLISION) {
 		_select_previous_subtile();
 	} else {
-		Vector2i edited_coord = Vector2();
+		Vector2i edited_coord = Vector2i();
 		if (tileset->tile_get_tile_mode(get_current_tile()) != TileSet::SINGLE_TILE) {
-			edited_coord = edited_shape_coord;
+			edited_coord = Vector2i(edited_shape_coord);
 		}
 		SubtileData data = current_tile_data[edited_coord];
 		if (data.collisions.size() == 0) {
@@ -2785,7 +2786,7 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 			w[i] = current_shape[i] - shape_anchor;
 		}
 
-		w = PoolVector<Vector2>::Write();
+		w.release();
 		shape->set_polygon(polygon);
 
 		undo_redo->create_action(TTR("Create Occlusion Polygon"));
@@ -2813,7 +2814,7 @@ void TileSetEditor::close_shape(const Vector2 &shape_anchor) {
 			indices.push_back(i);
 		}
 
-		w = PoolVector<Vector2>::Write();
+		w.release();
 		shape->set_vertices(polygon);
 		shape->add_polygon(indices);
 
@@ -3122,6 +3123,7 @@ void TileSetEditor::update_workspace_minsize() {
 				workspace_min_size.y = region.position.y + region.size.y;
 		}
 	}
+	delete tiles;
 
 	workspace->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);
 	workspace_container->set_custom_minimum_size(workspace_min_size + WORKSPACE_MARGIN * 2);

@@ -145,7 +145,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 	int h = p_image->get_height();
 
 	bool is_ldr = (p_image->get_format() <= Image::FORMAT_RGBA8);
-	bool is_hdr = (p_image->get_format() == Image::FORMAT_RGBH);
+	bool is_hdr = (p_image->get_format() >= Image::FORMAT_RH) && (p_image->get_format() <= Image::FORMAT_RGBE9995);
 
 	if (!is_ldr && !is_hdr) {
 		return; // Not a usable source format
@@ -175,6 +175,10 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 
 	bool is_signed = false;
 	if (is_hdr) {
+		if (p_image->get_format() != Image::FORMAT_RGBH) {
+			p_image->convert(Image::FORMAT_RGBH);
+		}
+
 		PoolVector<uint8_t>::Read rb = p_image->get_data().read();
 
 		const uint16_t *source_data = reinterpret_cast<const uint16_t *>(&rb[0]);
@@ -384,8 +388,8 @@ void image_decompress_cvtt(Image *p_image) {
 		h >>= 1;
 	}
 
-	rb = PoolVector<uint8_t>::Read();
-	wb = PoolVector<uint8_t>::Write();
+	rb.release();
+	wb.release();
 
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }

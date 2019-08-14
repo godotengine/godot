@@ -80,7 +80,7 @@ def configure(env):
         env.ParseConfig('pkg-config freetype2 --cflags --libs')
 
     if not env['builtin_libpng']:
-        env.ParseConfig('pkg-config libpng --cflags --libs')
+        env.ParseConfig('pkg-config libpng16 --cflags --libs')
 
     if not env['builtin_bullet']:
         # We need at least version 2.88
@@ -128,8 +128,8 @@ def configure(env):
         if any(platform.machine() in s for s in list_of_x86):
             env["x86_libtheora_opt_gcc"] = True
 
-    if not env['builtin_libwebsockets']:
-        env.ParseConfig('pkg-config libwebsockets --cflags --libs')
+    if not env['builtin_wslay']:
+        env.ParseConfig('pkg-config libwslay --cflags --libs')
 
     if not env['builtin_mbedtls']:
         # mbedTLS does not provide a pkgconfig config yet. See https://github.com/ARMmbed/mbedtls/issues/228
@@ -148,8 +148,7 @@ def configure(env):
     ## Flags
 
     env.Prepend(CPPPATH=['#platform/haiku'])
-    env.Append(CPPFLAGS=['-DUNIX_ENABLED', '-DOPENGL_ENABLED', '-DGLES_ENABLED'])
-    env.Append(CPPFLAGS=['-DMEDIA_KIT_ENABLED'])
-    # env.Append(CPPFLAGS=['-DFREETYPE_ENABLED'])
-    env.Append(CPPFLAGS=['-DPTHREAD_NO_RENAME'])  # TODO: enable when we have pthread_setname_np
+    env.Append(CPPDEFINES=['UNIX_ENABLED', 'OPENGL_ENABLED', 'GLES_ENABLED'])
+    env.Append(CPPDEFINES=['MEDIA_KIT_ENABLED'])
+    env.Append(CPPDEFINES=['PTHREAD_NO_RENAME'])  # TODO: enable when we have pthread_setname_np
     env.Append(LIBS=['be', 'game', 'media', 'network', 'bnetapi', 'z', 'GL'])

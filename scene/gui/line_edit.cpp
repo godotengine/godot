@@ -59,6 +59,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			menu->set_scale(get_global_transform().get_scale());
 			menu->popup();
 			grab_focus();
+			accept_event();
 			return;
 		}
 
@@ -623,10 +624,7 @@ bool LineEdit::_is_over_clear_button(const Point2 &p_pos) const {
 	}
 	Ref<Texture> icon = Control::get_icon("clear");
 	int x_ofs = get_stylebox("normal")->get_offset().x;
-	if (p_pos.x > get_size().width - icon->get_width() - x_ofs) {
-		return true;
-	}
-	return false;
+	return p_pos.x > get_size().width - icon->get_width() - x_ofs;
 }
 
 void LineEdit::_notification(int p_what) {
@@ -649,6 +647,11 @@ void LineEdit::_notification(int p_what) {
 			window_pos = 0;
 			set_cursor_position(get_cursor_position());
 
+		} break;
+		case NOTIFICATION_TRANSLATION_CHANGED: {
+			placeholder_translated = tr(placeholder);
+			update_placeholder_width();
+			update();
 		} break;
 		case MainLoop::NOTIFICATION_WM_FOCUS_IN: {
 			window_has_focus = true;
@@ -675,10 +678,8 @@ void LineEdit::_notification(int p_what) {
 			RID ci = get_canvas_item();
 
 			Ref<StyleBox> style = get_stylebox("normal");
-			float disabled_alpha = 1.0; // used to set the disabled input text color
 			if (!is_editable()) {
 				style = get_stylebox("read_only");
-				disabled_alpha = .5;
 				draw_caret = false;
 			}
 
@@ -724,20 +725,19 @@ void LineEdit::_notification(int p_what) {
 			int font_ascent = font->get_ascent();
 
 			Color selection_color = get_color("selection_color");
-			Color font_color = get_color("font_color");
+			Color font_color = is_editable() ? get_color("font_color") : get_color("font_color_uneditable");
 			Color font_color_selected = get_color("font_color_selected");
 			Color cursor_color = get_color("cursor_color");
 
-			const String &t = using_placeholder ? placeholder : text;
+			const String &t = using_placeholder ? placeholder_translated : text;
 			// draw placeholder color
 			if (using_placeholder)
 				font_color.a *= placeholder_alpha;
-			font_color.a *= disabled_alpha;
 
 			bool display_clear_icon = !using_placeholder && is_editable() && clear_button_enabled;
 			if (right_icon.is_valid() || display_clear_icon) {
 				Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
-				Color color_icon(1, 1, 1, disabled_alpha * .9);
+				Color color_icon(1, 1, 1, !is_editable() ? .5 * .9 : .9);
 				if (display_clear_icon) {
 					if (clear_button_status.press_attempt && clear_button_status.pressing_inside) {
 						color_icon = get_color("clear_button_color_pressed");
@@ -1000,6 +1000,8 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 	Ref<StyleBox> style = get_stylebox("normal");
 	int pixel_ofs = 0;
 	Size2 size = get_size();
+	bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
+	int r_icon_width = Control::get_icon("clear")->get_width();
 
 	switch (align) {
 
@@ -1014,10 +1016,16 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 				pixel_ofs = int(style->get_offset().x);
 			else
 				pixel_ofs = int(size.width - (cached_width)) / 2;
+
+			if (display_clear_icon)
+				pixel_ofs -= int(r_icon_width / 2 + style->get_margin(MARGIN_RIGHT));
 		} break;
 		case ALIGN_RIGHT: {
 
 			pixel_ofs = int(size.width - style->get_margin(MARGIN_RIGHT) - (cached_width));
+
+			if (display_clear_icon)
+				pixel_ofs -= int(r_icon_width + style->get_margin(MARGIN_RIGHT));
 		} break;
 	}
 
@@ -1148,16 +1156,9 @@ String LineEdit::get_text() const {
 
 void LineEdit::set_placeholder(String p_text) {
 
-	placeholder = tr(p_text);
-	if ((max_length <= 0) || (placeholder.length() <= max_length)) {
-		Ref<Font> font = get_font("font");
-		cached_placeholder_width = 0;
-		if (font != NULL) {
-			for (int i = 0; i < placeholder.length(); i++) {
-				cached_placeholder_width += font->get_char_size(placeholder[i]).width;
-			}
-		}
-	}
+	placeholder = p_text;
+	placeholder_translated = tr(placeholder);
+	update_placeholder_width();
 	update();
 }
 
@@ -1199,7 +1200,7 @@ void LineEdit::set_cursor_position(int p_pos) {
 	if (cursor_pos <= window_pos) {
 		/* Adjust window if cursor goes too much to the left */
 		set_window_pos(MAX(0, cursor_pos - 1));
-	} else if (cursor_pos > window_pos) {
+	} else {
 		/* Adjust window if cursor goes too much to the right */
 		int window_width = get_size().width - style->get_minimum_size().width;
 		bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
@@ -1367,18 +1368,28 @@ void LineEdit::set_editable(bool p_editable) {
 
 	// Reorganize context menu.
 	menu->clear();
-	if (editable)
-		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
-	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
-	if (editable)
-		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
-	menu->add_separator();
-	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
 	if (editable) {
-		menu->add_item(RTR("Clear"), MENU_CLEAR);
-		menu->add_separator();
 		menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
 		menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
+	}
+
+	if (editable) {
+		menu->add_separator();
+		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
+	}
+
+	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
+
+	if (editable) {
+		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
+	}
+
+	menu->add_separator();
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
+	if (editable) {
+		menu->add_item(RTR("Clear"), MENU_CLEAR);
 	}
 
 	update();
@@ -1404,8 +1415,7 @@ void LineEdit::set_secret_character(const String &p_string) {
 
 	// An empty string as the secret character would crash the engine
 	// It also wouldn't make sense to use multiple characters as the secret character
-	ERR_EXPLAIN("Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given)");
-	ERR_FAIL_COND(p_string.length() != 1);
+	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
 
 	secret_character = p_string;
 	update();
@@ -1544,6 +1554,18 @@ void LineEdit::_emit_text_change() {
 	emit_signal("text_changed", text);
 	_change_notify("text");
 	text_changed_dirty = false;
+}
+
+void LineEdit::update_placeholder_width() {
+	if ((max_length <= 0) || (placeholder_translated.length() <= max_length)) {
+		Ref<Font> font = get_font("font");
+		cached_placeholder_width = 0;
+		if (font != NULL) {
+			for (int i = 0; i < placeholder_translated.length(); i++) {
+				cached_placeholder_width += font->get_char_size(placeholder_translated[i]).width;
+			}
+		}
+	}
 }
 
 void LineEdit::_clear_redo() {

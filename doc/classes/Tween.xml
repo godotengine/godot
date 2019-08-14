@@ -4,7 +4,7 @@
 		Smoothly animates a node's properties over time.
 	</brief_description>
 	<description>
-		Tweens are useful for animations requiring a numerical property to be interpolated over a range of values. The name *tween* comes from *in-betweening*, an animation technique where you specify *keyframes* and the computer interpolates the frames that appear between them.
+		Tweens are useful for animations requiring a numerical property to be interpolated over a range of values. The name [i]tween[/i] comes from [i]in-betweening[/i], an animation technique where you specify [i]keyframes[/i] and the computer interpolates the frames that appear between them.
 		Here is a brief usage example that causes a 2D node to move smoothly between two positions:
 		[codeblock]
 		var tween = get_node("Tween")
@@ -13,8 +13,8 @@
 		        Tween.TRANS_LINEAR, Tween.EASE_IN_OUT)
 		tween.start()
 		[/codeblock]
-		Many methods require a property name, such as "position" above. You can find the correct property name by hovering over the property in the Inspector. You can also provide the components of a property directly by using "property:component" (eg. [code]position:x[/code]), where it would only apply to that particular component.
-		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [code]http://easings.net/[/code] for some examples). The second accepts an [enum EaseType] constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [code]EASE_IN_OUT[/code], and use the one that looks best.
+		Many methods require a property name, such as [code]"position"[/code] above. You can find the correct property name by hovering over the property in the Inspector. You can also provide the components of a property directly by using [code]"property:component"[/code] (eg. [code]position:x[/code]), where it would only apply to that particular component.
+		Many of the methods accept [code]trans_type[/code] and [code]ease_type[/code]. The first accepts an [enum TransitionType] constant, and refers to the way the timing of the animation is handled (see [code]http://easings.net/[/code] for some examples). The second accepts an [enum EaseType] constant, and controls the where [code]trans_type[/code] is applied to the interpolation (in the beginning, the end, or both). If you don't know which transition and easing to pick, you can try different [enum TransitionType] constants with [constant EASE_IN_OUT], and use the one that looks best.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -42,7 +42,7 @@
 			</argument>
 			<description>
 				Follows [code]method[/code] of [code]object[/code] and applies the returned value on [code]target_method[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] later. Methods are called with consecutive values.
-				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
+				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="follow_property">
@@ -68,7 +68,7 @@
 			</argument>
 			<description>
 				Follows [code]property[/code] of [code]object[/code] and applies it on [code]target_property[/code] of [code]target[/code], beginning from [code]initial_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
-				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
+				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="get_runtime" qualifiers="const">
@@ -145,7 +145,7 @@
 			</argument>
 			<description>
 				Animates [code]method[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are called with consecutive values.
-				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
+				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="interpolate_property">
@@ -169,14 +169,15 @@
 			</argument>
 			<description>
 				Animates [code]property[/code] of [code]object[/code] from [code]initial_val[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Setting the initial value to [code]null[/code] uses the current value of the property.
-				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
+				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="is_active" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if any tweens are currently running. Note that this method doesn't consider tweens that have ended.
+				Returns [code]true[/code] if any tweens are currently running.
+				[b]Note:[/b] This method doesn't consider tweens that have ended.
 			</description>
 		</method>
 		<method name="remove">
@@ -299,7 +300,7 @@
 			</argument>
 			<description>
 				Animates [code]method[/code] of [code]object[/code] from the value returned by [code]initial_method[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later. Methods are animated by calling them with consecutive values.
-				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
+				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="targeting_property">
@@ -325,7 +326,7 @@
 			</argument>
 			<description>
 				Animates [code]property[/code] of [code]object[/code] from the current value of the [code]initial_val[/code] property of [code]initial[/code] to [code]final_val[/code] for [code]duration[/code] seconds, [code]delay[/code] seconds later.
-				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information
+				Use [enum TransitionType] for [code]trans_type[/code] and [enum EaseType] for [code]ease_type[/code] parameters. These values control the timing and direction of the interpolation. See the class description for more information.
 			</description>
 		</method>
 		<method name="tell" qualifiers="const">
@@ -337,13 +338,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="playback_process_mode" type="int" setter="set_tween_process_mode" getter="get_tween_process_mode" enum="Tween.TweenProcessMode">
-			The tween's animation process thread. See [enum TweenProcessMode]. Default value: [constant TWEEN_PROCESS_IDLE].
+		<member name="playback_process_mode" type="int" setter="set_tween_process_mode" getter="get_tween_process_mode" enum="Tween.TweenProcessMode" default="1">
+			The tween's animation process thread. See [enum TweenProcessMode].
 		</member>
-		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale">
+		<member name="playback_speed" type="float" setter="set_speed_scale" getter="get_speed_scale" default="1.0">
 			The tween's speed multiplier. For example, set it to [code]1.0[/code] for normal speed, [code]2.0[/code] for two times normal speed, or [code]0.5[/code] for half of the normal speed. A value of [code]0[/code] pauses the animation, but see also [method set_active] or [method stop_all] for this.
 		</member>
-		<member name="repeat" type="bool" setter="set_repeat" getter="is_repeat">
+		<member name="repeat" type="bool" setter="set_repeat" getter="is_repeat" default="false">
 			If [code]true[/code], the tween loops.
 		</member>
 	</members>

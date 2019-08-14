@@ -43,6 +43,9 @@ class Popup : public Control {
 	bool exclusive;
 	bool popped_up;
 
+private:
+	void _popup(const Rect2 &p_bounds = Rect2(), const bool p_centered = false);
+
 protected:
 	virtual void _post_popup() {}
 

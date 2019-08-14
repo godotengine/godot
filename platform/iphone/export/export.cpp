@@ -95,7 +95,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 	Vector<ExportArchitecture> _get_supported_architectures();
 	Vector<String> _get_preset_architectures(const Ref<EditorExportPreset> &p_preset);
 
-	void _add_assets_to_project(Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets);
+	void _add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<String> &p_assets, bool p_is_framework, Vector<IOSExportAsset> &r_exported_assets);
 	Error _export_additional_assets(const String &p_out_dir, const Vector<SharedObject> &p_libraries, Vector<IOSExportAsset> &r_exported_assets);
 
@@ -125,7 +125,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 				first = true;
 				continue;
 			}
-			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_')) {
+			if (!((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '-')) {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' is not allowed in Identifier."), String::chr(c));
 				}
@@ -137,7 +137,7 @@ class EditorExportPlatformIOS : public EditorExportPlatform {
 				}
 				return false;
 			}
-			if (first && c == '_') {
+			if (first && c == '-') {
 				if (r_error) {
 					*r_error = vformat(TTR("The character '%s' cannot be the first character in a Identifier segment."), String::chr(c));
 				}
@@ -268,8 +268,9 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/in_app_purchases"), false));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "capabilities/push_notifications"), false));
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description"), "Godot would like to use your camera"));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description"), "Godot would like to use your photos"));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/camera_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the camera"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/microphone_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need to use the microphone"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "privacy/photolibrary_usage_description", PROPERTY_HINT_PLACEHOLDER_TEXT, "Provide a message if you need access to the photo library"), ""));
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/portrait"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "orientation/landscape_left"), true));
@@ -398,6 +399,9 @@ void EditorExportPlatformIOS::_fix_config_file(const Ref<EditorExportPreset> &p_
 		} else if (lines[i].find("$camera_usage_description") != -1) {
 			String description = p_preset->get("privacy/camera_usage_description");
 			strnew += lines[i].replace("$camera_usage_description", description) + "\n";
+		} else if (lines[i].find("$microphone_usage_description") != -1) {
+			String description = p_preset->get("privacy/microphone_usage_description");
+			strnew += lines[i].replace("$microphone_usage_description", description) + "\n";
 		} else if (lines[i].find("$photolibrary_usage_description") != -1) {
 			String description = p_preset->get("privacy/photolibrary_usage_description");
 			strnew += lines[i].replace("$photolibrary_usage_description", description) + "\n";
@@ -564,7 +568,7 @@ Error EditorExportPlatformIOS::_walk_dir_recursive(DirAccess *p_da, FileHandler 
 				dirs.push_back(path);
 			}
 		} else {
-			Error err = p_handler(current_dir + "/" + path, p_userdata);
+			Error err = p_handler(current_dir.plus_file(path), p_userdata);
 			if (err) {
 				p_da->list_dir_end();
 				return err;
@@ -656,7 +660,7 @@ struct ExportLibsData {
 	String dest_dir;
 };
 
-void EditorExportPlatformIOS::_add_assets_to_project(Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets) {
+void EditorExportPlatformIOS::_add_assets_to_project(const Ref<EditorExportPreset> &p_preset, Vector<uint8_t> &p_project_data, const Vector<IOSExportAsset> &p_additional_assets) {
 	Vector<Ref<EditorExportPlugin> > export_plugins = EditorExport::get_singleton()->get_export_plugins();
 	Vector<String> frameworks;
 	for (int i = 0; i < export_plugins.size(); ++i) {
@@ -714,7 +718,28 @@ void EditorExportPlatformIOS::_add_assets_to_project(Vector<uint8_t> &p_project_
 
 	// Note, frameworks like gamekit are always included in our project.pbxprof file
 	// even if turned off in capabilities.
-	// Frameworks that are used by modules (like arkit) we may need to optionally add here.
+
+	// We do need our ARKit framework
+	if ((bool)p_preset->get("capabilities/arkit")) {
+		String build_id = (++current_id).str();
+		String ref_id = (++current_id).str();
+
+		if (pbx_frameworks_build.length() > 0) {
+			pbx_frameworks_build += ",\n";
+			pbx_frameworks_refs += ",\n";
+		}
+
+		pbx_frameworks_build += build_id;
+		pbx_frameworks_refs += ref_id;
+
+		Dictionary format_dict;
+		format_dict["build_id"] = build_id;
+		format_dict["ref_id"] = ref_id;
+		format_dict["name"] = "ARKit.framework";
+		format_dict["file_path"] = "System/Library/Frameworks/ARKit.framework";
+		format_dict["file_type"] = "wrapper.framework";
+		pbx_files += file_info_format.format(format_dict, "$_");
+	}
 
 	String str = String::utf8((const char *)p_project_data.ptr(), p_project_data.size());
 	str = str.replace("$additional_pbx_files", pbx_files);
@@ -743,7 +768,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 			DirAccess *da = DirAccess::create_for_path(asset);
 			if (!da) {
 				memdelete(filesystem_da);
-				ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't create directory: " + asset + ".");
 			}
 			bool file_exists = da->file_exists(asset);
 			bool dir_exists = da->dir_exists(asset);
@@ -763,7 +788,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 				}
 			}
 
-			String destination = destination_dir + "/" + asset.get_file();
+			String destination = destination_dir.plus_file(asset.get_file());
 			Error err = dir_exists ? da->copy_dir(asset, destination) : da->copy(asset, destination);
 			memdelete(da);
 			if (err) {
@@ -822,8 +847,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	EditorProgress ep("export", "Exporting for iOS", 5, true);
 
 	String team_id = p_preset->get("application/app_store_team_id");
-	ERR_EXPLAIN("App Store Team ID not specified - cannot configure the project.");
-	ERR_FAIL_COND_V(team_id.length() == 0, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(team_id.length() == 0, ERR_CANT_OPEN, "App Store Team ID not specified - cannot configure the project.");
 
 	if (p_debug)
 		src_pkg_name = p_preset->get("custom_package/debug");
@@ -1045,7 +1069,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	print_line("Exporting additional assets");
 	Vector<IOSExportAsset> assets;
 	_export_additional_assets(dest_dir + binary_name, libraries, assets);
-	_add_assets_to_project(project_file_data, assets);
+	_add_assets_to_project(p_preset, project_file_data, assets);
 	String project_file_name = dest_dir + binary_name + ".xcodeproj/project.pbxproj";
 	FileAccess *f = FileAccess::open(project_file_name, FileAccess::WRITE);
 	if (!f) {

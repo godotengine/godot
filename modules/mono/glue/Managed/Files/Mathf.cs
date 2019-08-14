@@ -185,6 +185,12 @@ namespace Godot
             return from + (to - from) * weight;
         }
 
+        public static real_t LerpAngle(real_t from, real_t to, real_t weight) {
+            real_t difference = (to - from) % Mathf.Tau;
+            real_t distance = ((2 * difference) % Mathf.Tau) - difference;
+            return from + distance * weight;
+        }
+
         public static real_t Log(real_t s)
         {
             return (real_t)Math.Log(s);
@@ -330,14 +336,14 @@ namespace Godot
 
         public static int Wrap(int value, int min, int max)
         {
-            int rng = max - min;
-            return rng != 0 ? min + ((value - min) % rng + rng) % rng : min;
+            int range = max - min;
+            return range == 0 ? min : min + ((value - min) % range + range) % range;
         }
 
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
-            real_t rng = max - min;
-            return !IsEqualApprox(rng, default(real_t)) ? min + ((value - min) % rng + rng) % rng : min;
+            real_t range = max - min;
+            return IsZeroApprox(range) ? min : min + ((value - min) % range + range) % range;
         }
     }
 }

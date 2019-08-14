@@ -3,10 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,10 @@
 #ifndef CAMERAIOS_H
 #define CAMERAIOS_H
 
-///@TODO this is a near duplicate of CameraOSX, we should find a way to combine those to minimise code duplication!!!!
-// If you fix something here, make sure you fix it there as wel!
-
 #include "servers/camera_server.h"
 
 class CameraIOS : public CameraServer {
+private:
 public:
 	CameraIOS();
 	~CameraIOS();

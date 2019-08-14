@@ -302,11 +302,8 @@ bool FileDialog::_is_open_should_be_disabled() {
 	Dictionary d = ti->get_metadata(0);
 
 	// Opening a file, but selected a folder? Forbidden.
-	if (((mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
-			(mode == MODE_OPEN_DIR && !d["dir"]))
-		return true;
-
-	return false;
+	return ((mode == MODE_OPEN_FILE || mode == MODE_OPEN_FILES) && d["dir"]) || // Flipped case, also forbidden.
+		   (mode == MODE_OPEN_DIR && !d["dir"]);
 }
 
 void FileDialog::_go_up() {
@@ -384,6 +381,18 @@ void FileDialog::_tree_item_activated() {
 	}
 }
 
+void FileDialog::update_file_name() {
+	int idx = filter->get_selected() - 1;
+	if ((idx == -1 && filter->get_item_count() == 2) || (filter->get_item_count() > 2 && idx >= 0 && idx < filter->get_item_count() - 2)) {
+		if (idx == -1) idx += 1;
+		String filter_str = filters[idx];
+		String file_str = file->get_text();
+		String base_name = file_str.get_basename();
+		file_str = base_name + "." + filter_str.strip_edges().to_lower();
+		file->set_text(file_str);
+	}
+}
+
 void FileDialog::update_file_list() {
 
 	tree->clear();
@@ -394,11 +403,10 @@ void FileDialog::update_file_list() {
 	List<String> files;
 	List<String> dirs;
 
-	bool is_dir;
 	bool is_hidden;
 	String item;
 
-	while ((item = dir_access->get_next(&is_dir)) != "") {
+	while ((item = dir_access->get_next()) != "") {
 
 		if (item == "." || item == "..")
 			continue;
@@ -406,7 +414,7 @@ void FileDialog::update_file_list() {
 		is_hidden = dir_access->current_is_hidden();
 
 		if (show_hidden_files || !is_hidden) {
-			if (!is_dir)
+			if (!dir_access->current_is_dir())
 				files.push_back(item);
 			else
 				dirs.push_back(item);
@@ -509,6 +517,7 @@ void FileDialog::update_file_list() {
 
 void FileDialog::_filter_selected(int) {
 
+	update_file_name();
 	update_file_list();
 }
 
@@ -800,6 +809,7 @@ void FileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_drive"), &FileDialog::_select_drive);
 	ClassDB::bind_method(D_METHOD("_make_dir"), &FileDialog::_make_dir);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileDialog::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_update_file_name"), &FileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_file_list"), &FileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &FileDialog::update_dir);
 	ClassDB::bind_method(D_METHOD("_go_up"), &FileDialog::_go_up);
@@ -869,14 +879,14 @@ FileDialog::FileDialog() {
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	refresh = memnew(ToolButton);
-	refresh->set_tooltip(RTR("Refresh"));
+	refresh->set_tooltip(RTR("Refresh files."));
 	refresh->connect("pressed", this, "_update_file_list");
 	hbc->add_child(refresh);
 
 	show_hidden = memnew(ToolButton);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_tooltip(RTR("Toggle Hidden Files"));
+	show_hidden->set_tooltip(RTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", this, "set_show_hidden_files");
 	hbc->add_child(show_hidden);
 

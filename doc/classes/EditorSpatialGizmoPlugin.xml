@@ -25,7 +25,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Override this method to define whether the gizmo can be hidden or not. Defaults to [code]true[/code].
+				Override this method to define whether the gizmo can be hidden or not. Returns [code]true[/code] if not overridden.
 			</description>
 		</method>
 		<method name="commit_handle" qualifiers="virtual">
@@ -114,7 +114,7 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
-				Get actual value of a handle from gizmo. Called for this plugin's active gizmos.
+				Gets actual value of a handle from gizmo. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="get_material">
@@ -125,7 +125,7 @@
 			<argument index="1" name="gizmo" type="EditorSpatialGizmo">
 			</argument>
 			<description>
-				Get material from the internal list of materials. If an [EditorSpatialGizmo] is provided it will try to get the corresponding variant (selected and/or editable).
+				Gets material from the internal list of materials. If an [EditorSpatialGizmo] is provided, it will try to get the corresponding variant (selected and/or editable).
 			</description>
 		</method>
 		<method name="get_name" qualifiers="virtual">
@@ -158,7 +158,7 @@
 			<argument index="1" name="index" type="int">
 			</argument>
 			<description>
-				Get whether a handle is highlighted or not. Called for this plugin's active gizmos.
+				Gets whether a handle is highlighted or not. Called for this plugin's active gizmos.
 			</description>
 		</method>
 		<method name="is_selectable_when_hidden" qualifiers="virtual">

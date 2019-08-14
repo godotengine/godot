@@ -43,8 +43,6 @@ String DirAccess::_get_root_path() const {
 		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
 		default: return "";
 	}
-
-	return "";
 }
 String DirAccess::_get_root_string() const {
 
@@ -54,8 +52,6 @@ String DirAccess::_get_root_string() const {
 		case ACCESS_USERDATA: return "user://";
 		default: return "";
 	}
-
-	return "";
 }
 
 int DirAccess::get_current_drive() {
@@ -181,14 +177,6 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	}
 
 	return OK;
-}
-
-String DirAccess::get_next(bool *p_is_dir) {
-
-	String next = get_next();
-	if (p_is_dir)
-		*p_is_dir = current_is_dir();
-	return next;
 }
 
 String DirAccess::fix_path(String p_path) const {
@@ -373,12 +361,12 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 			if (current_is_dir())
 				dirs.push_back(n);
 			else {
-				String rel_path = n;
+				const String &rel_path = n;
 				if (!n.is_rel_path()) {
 					list_dir_end();
 					return ERR_BUG;
 				}
-				Error err = copy(get_current_dir() + "/" + n, p_to + rel_path, p_chmod_flags);
+				Error err = copy(get_current_dir().plus_file(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
 					return err;

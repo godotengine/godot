@@ -289,7 +289,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		PoolVector<int>::Write w = sarr.write();
 		env->GetIntArrayRegion(arr, 0, fCount, w.ptr());
-		w = PoolVector<int>::Write();
+		w.release();
 		return sarr;
 	};
 
@@ -302,7 +302,7 @@ Variant _jobject_to_variant(JNIEnv *env, jobject obj) {
 
 		PoolVector<uint8_t>::Write w = sarr.write();
 		env->GetByteArrayRegion(arr, 0, fCount, reinterpret_cast<signed char *>(w.ptr()));
-		w = PoolVector<uint8_t>::Write();
+		w.release();
 		return sarr;
 	};
 
@@ -514,7 +514,7 @@ public:
 
 				PoolVector<int>::Write w = sarr.write();
 				env->GetIntArrayRegion(arr, 0, fCount, w.ptr());
-				w = PoolVector<int>::Write();
+				w.release();
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
@@ -528,7 +528,7 @@ public:
 
 				PoolVector<float>::Write w = sarr.write();
 				env->GetFloatArrayRegion(arr, 0, fCount, w.ptr());
-				w = PoolVector<float>::Write();
+				w.release();
 				ret = sarr;
 				env->DeleteLocalRef(arr);
 			} break;
@@ -686,20 +686,11 @@ static void _initialize_java_modules() {
 			print_line("Loading Android module: " + m);
 			jstring strClassName = env->NewStringUTF(m.utf8().get_data());
 			jclass singletonClass = (jclass)env->CallObjectMethod(cls, findClass, strClassName);
-
-			if (!singletonClass) {
-
-				ERR_EXPLAIN("Couldn't find singleton for class: " + m);
-				ERR_CONTINUE(!singletonClass);
-			}
+			ERR_CONTINUE_MSG(!singletonClass, "Couldn't find singleton for class: " + m + ".");
 
 			jmethodID initialize = env->GetStaticMethodID(singletonClass, "initialize", "(Landroid/app/Activity;)Lorg/godotengine/godot/Godot$SingletonBase;");
+			ERR_CONTINUE_MSG(!initialize, "Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: " + m + ".");
 
-			if (!initialize) {
-
-				ERR_EXPLAIN("Couldn't find proper initialize function 'public static Godot.SingletonBase Class::initialize(Activity p_activity)' initializer for singleton class: " + m);
-				ERR_CONTINUE(!initialize);
-			}
 			jobject obj = env->CallStaticObjectMethod(singletonClass, initialize, godot_java->get_activity());
 			env->NewGlobalRef(obj);
 		}

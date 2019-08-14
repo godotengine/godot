@@ -4,7 +4,7 @@
 		Mesh-based navigation and pathfinding node.
 	</brief_description>
 	<description>
-		Provides navigation and pathfinding within a collection of [NavigationMesh]es. By default these will be automatically collected from child [NavigationMeshInstance] nodes, but they can also be added on the fly with [method navmesh_add]. In addition to basic pathfinding, this class also assists with aligning navigation agents with the meshes they are navigating on.
+		Provides navigation and pathfinding within a collection of [NavigationMesh]es. By default, these will be automatically collected from child [NavigationMeshInstance] nodes, but they can also be added on the fly with [method navmesh_add]. In addition to basic pathfinding, this class also assists with aligning navigation agents with the meshes they are navigating on.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -97,8 +97,8 @@
 		</method>
 	</methods>
 	<members>
-		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector">
-			Defines which direction is up. By default this is [code](0, 1, 0)[/code], which is the world up direction.
+		<member name="up_vector" type="Vector3" setter="set_up_vector" getter="get_up_vector" default="Vector3( 0, 1, 0 )">
+			Defines which direction is up. By default, this is [code](0, 1, 0)[/code], which is the world's "up" direction.
 		</member>
 	</members>
 	<constants>

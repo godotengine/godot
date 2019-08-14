@@ -36,7 +36,7 @@
 #include "scene/gui/gradient_edit.h"
 
 class GradientEditor : public GradientEdit {
-	GDCLASS(GradientEditor, GradientEdit)
+	GDCLASS(GradientEditor, GradientEdit);
 
 	bool editing;
 	Ref<Gradient> gradient;
@@ -54,7 +54,8 @@ public:
 };
 
 class EditorInspectorPluginGradient : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin)
+	GDCLASS(EditorInspectorPluginGradient, EditorInspectorPlugin);
+
 public:
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);

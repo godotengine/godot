@@ -11,19 +11,19 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased">
+		<member name="antialiased" type="bool" setter="set_antialiased" getter="is_antialiased" default="true">
 			Controls whether the font should be rendered with anti-aliasing.
 		</member>
-		<member name="font_path" type="String" setter="set_font_path" getter="get_font_path">
+		<member name="font_path" type="String" setter="set_font_path" getter="get_font_path" default="&quot;&quot;">
 			The path to the vector font file.
 		</member>
-		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="DynamicFontData.Hinting">
+		<member name="hinting" type="int" setter="set_hinting" getter="get_hinting" enum="DynamicFontData.Hinting" default="2">
 			The font hinting mode used by FreeType.
 		</member>
 	</members>
 	<constants>
 		<constant name="HINTING_NONE" value="0" enum="Hinting">
-			Disable font hinting (smoother but less crisp).
+			Disables font hinting (smoother but less crisp).
 		</constant>
 		<constant name="HINTING_LIGHT" value="1" enum="Hinting">
 			Use the light font hinting mode.

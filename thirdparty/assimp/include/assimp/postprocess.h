@@ -438,7 +438,7 @@ enum aiPostProcessSteps
     aiProcess_FindInstances = 0x100000,
 
     // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to reduce the number of meshes.
+    /** <hr>A post-processing step to reduce the number of meshes.
      *
      *  This will, in fact, reduce the number of draw calls.
      *
@@ -450,7 +450,7 @@ enum aiPostProcessSteps
 
 
     // -------------------------------------------------------------------------
-    /** <hr>A postprocessing step to optimize the scene hierarchy.
+    /** <hr>A post-processing step to optimize the scene hierarchy.
      *
      *  Nodes without animations, bones, lights or cameras assigned are
      *  collapsed and joined.
@@ -514,7 +514,7 @@ enum aiPostProcessSteps
 
     // -------------------------------------------------------------------------
     /** <hr>This step splits meshes with many bones into sub-meshes so that each
-     * su-bmesh has fewer or as many bones as a given limit.
+     * sub-mesh has fewer or as many bones as a given limit.
     */
     aiProcess_SplitByBoneCount  = 0x2000000,
 
@@ -541,7 +541,7 @@ enum aiPostProcessSteps
     *  global scaling from your importer settings like in FBX. Use the flag
     *  AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY from the global property table to configure this.
     *
-    *  Use <tt>#AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY</tt> to setup the global scaing factor.
+    *  Use <tt>#AI_CONFIG_GLOBAL_SCALE_FACTOR_KEY</tt> to setup the global scaling factor.
     */
     aiProcess_GlobalScale = 0x8000000,
 
@@ -574,6 +574,11 @@ enum aiPostProcessSteps
      * This process gives sense back to aiProcess_JoinIdenticalVertices
      */
     aiProcess_DropNormals = 0x40000000,
+
+    // -------------------------------------------------------------------------
+    /**
+     */
+    aiProcess_GenBoundingBoxes = 0x80000000
 };
 
 

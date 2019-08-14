@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="path" type="String" setter="set_resource_path" getter="get_resource_path">
+		<member name="path" type="String" setter="set_resource_path" getter="get_resource_path" default="&quot;&quot;">
 		</member>
 	</members>
 	<constants>

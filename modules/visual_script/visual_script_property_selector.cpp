@@ -130,12 +130,14 @@ void VisualScriptPropertySelector::_update_search() {
 		{
 			String b = String(E->get());
 			category = search_options->create_item(root);
-			category->set_text(0, b.replace_first("*", ""));
-			category->set_selectable(0, false);
-			Ref<Texture> icon;
-			String rep = b.replace("*", "");
-			icon = EditorNode::get_singleton()->get_class_icon(rep);
-			category->set_icon(0, icon);
+			if (category) {
+				category->set_text(0, b.replace_first("*", ""));
+				category->set_selectable(0, false);
+				Ref<Texture> icon;
+				String rep = b.replace("*", "");
+				icon = EditorNode::get_singleton()->get_class_icon(rep);
+				category->set_icon(0, icon);
+			}
 		}
 		if (properties || seq_connect) {
 			if (instance) {
@@ -188,7 +190,6 @@ void VisualScriptPropertySelector::_update_search() {
 				}
 			}
 		}
-		bool script_methods = false;
 		{
 			if (type != Variant::NIL) {
 				Variant v;
@@ -211,7 +212,7 @@ void VisualScriptPropertySelector::_update_search() {
 		for (List<MethodInfo>::Element *M = methods.front(); M; M = M->next()) {
 
 			String name = M->get().name.get_slice(":", 0);
-			if (!script_methods && name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL))
+			if (name.begins_with("_") && !(M->get().flags & METHOD_FLAG_VIRTUAL))
 				continue;
 
 			if (virtuals_only && !(M->get().flags & METHOD_FLAG_VIRTUAL))
@@ -406,7 +407,7 @@ void VisualScriptPropertySelector::_item_selected() {
 	String name = item->get_metadata(0);
 
 	String class_type;
-	if (type) {
+	if (type != Variant::NIL) {
 		class_type = Variant::get_type_name(type);
 
 	} else {

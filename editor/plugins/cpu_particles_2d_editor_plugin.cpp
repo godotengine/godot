@@ -75,6 +75,10 @@ void CPUParticles2DEditorPlugin::_menu_callback(int p_idx) {
 
 			emission_mask->popup_centered_minsize();
 		} break;
+		case MENU_RESTART: {
+
+			particles->restart();
+		}
 	}
 }
 
@@ -265,6 +269,8 @@ CPUParticles2DEditorPlugin::CPUParticles2DEditorPlugin(EditorNode *p_node) {
 
 	menu = memnew(MenuButton);
 	menu->get_popup()->add_item(TTR("Load Emission Mask"), MENU_LOAD_EMISSION_MASK);
+	menu->get_popup()->add_separator();
+	menu->get_popup()->add_item(TTR("Restart"), MENU_RESTART);
 	//	menu->get_popup()->add_item(TTR("Clear Emission Mask"), MENU_CLEAR_EMISSION_MASK);
 	menu->set_text(TTR("Particles"));
 	menu->set_switch_on_hover(true);

@@ -61,7 +61,7 @@ String ARVRCamera::get_configuration_warning() const {
 	// must be child node of ARVROrigin!
 	ARVROrigin *origin = Object::cast_to<ARVROrigin>(get_parent());
 	if (origin == NULL) {
-		return TTR("ARVRCamera must have an ARVROrigin node as its parent");
+		return TTR("ARVRCamera must have an ARVROrigin node as its parent.");
 	};
 
 	return String();
@@ -78,10 +78,7 @@ Vector3 ARVRCamera::project_local_ray_normal(const Point2 &p_pos) const {
 		return Camera::project_local_ray_normal(p_pos);
 	}
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	};
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
@@ -106,10 +103,7 @@ Point2 ARVRCamera::unproject_position(const Vector3 &p_pos) const {
 		return Camera::unproject_position(p_pos);
 	}
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector2());
-	};
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -138,10 +132,7 @@ Vector3 ARVRCamera::project_position(const Point2 &p_point, float p_z_depth) con
 		return Camera::project_position(p_point, p_z_depth);
 	}
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	};
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -264,6 +255,7 @@ void ARVRController::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_rumble"), &ARVRController::get_rumble);
 	ClassDB::bind_method(D_METHOD("set_rumble", "rumble"), &ARVRController::set_rumble);
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "rumble", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_rumble", "get_rumble");
+	ADD_PROPERTY_DEFAULT("rumble", 0.0);
 
 	ClassDB::bind_method(D_METHOD("get_mesh"), &ARVRController::get_mesh);
 

@@ -1252,6 +1252,8 @@ int mbedtls_rsa_copy( mbedtls_rsa_context *dst, const mbedtls_rsa_context *src )
  */
 void mbedtls_rsa_free( mbedtls_rsa_context *ctx );
 
+#if defined(MBEDTLS_SELF_TEST)
+
 /**
  * \brief          The RSA checkup routine.
  *
@@ -1259,6 +1261,8 @@ void mbedtls_rsa_free( mbedtls_rsa_context *ctx );
  * \return         \c 1 on failure.
  */
 int mbedtls_rsa_self_test( int verbose );
+
+#endif /* MBEDTLS_SELF_TEST */
 
 #ifdef __cplusplus
 }

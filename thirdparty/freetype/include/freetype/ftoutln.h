@@ -466,8 +466,6 @@ FT_BEGIN_HEADER
    *
    * @description:
    *   Render an outline within a bitmap using the current scan-convert.
-   *   This function uses an @FT_Raster_Params structure as an argument,
-   *   allowing advanced features like direct composition, translucency, etc.
    *
    * @input:
    *   library ::
@@ -485,8 +483,10 @@ FT_BEGIN_HEADER
    *   FreeType error code.  0~means success.
    *
    * @note:
-   *   You should know what you are doing and how @FT_Raster_Params works to
-   *   use this function.
+   *   This advanced function uses @FT_Raster_Params as an argument,
+   *   allowing FreeType rasterizer to be used for direct composition,
+   *   translucency, etc.  You should know how to set up @FT_Raster_Params
+   *   for this function to work.
    *
    *   The field `params.source` will be set to `outline` before the scan
    *   converter is called, which means that the value you give to it is

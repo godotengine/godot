@@ -260,7 +260,11 @@ bool EditorHelpSearch::Runner::_is_class_disabled_by_feature_profile(const Strin
 	StringName class_name = p_class;
 	while (class_name != StringName()) {
 
-		if (!ClassDB::class_exists(class_name) || profile->is_class_disabled(class_name)) {
+		if (!ClassDB::class_exists(class_name)) {
+			return false;
+		}
+
+		if (profile->is_class_disabled(class_name)) {
 			return true;
 		}
 		class_name = ClassDB::get_parent_class(class_name);
@@ -333,7 +337,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 		if (term.length() > 1) {
 			if (search_flags & SEARCH_METHODS)
 				for (int i = 0; i < class_doc.methods.size(); i++) {
-					String method_name = search_flags & SEARCH_CASE_SENSITIVE ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
+					String method_name = (search_flags & SEARCH_CASE_SENSITIVE) ? class_doc.methods[i].name : class_doc.methods[i].name.to_lower();
 					if (method_name.find(term) > -1 ||
 							(term.begins_with(".") && method_name.begins_with(term.right(1))) ||
 							(term.ends_with("(") && method_name.ends_with(term.left(term.length() - 1).strip_edges())) ||
@@ -401,7 +405,7 @@ bool EditorHelpSearch::Runner::_phase_member_items() {
 
 	ClassMatch &match = iterator_match->value();
 
-	TreeItem *parent = search_flags & SEARCH_SHOW_HIERARCHY ? class_items[match.doc->name] : root_item;
+	TreeItem *parent = (search_flags & SEARCH_SHOW_HIERARCHY) ? class_items[match.doc->name] : root_item;
 	for (int i = 0; i < match.methods.size(); i++)
 		_create_method_item(parent, match.doc, match.methods[i]);
 	for (int i = 0; i < match.signals.size(); i++)

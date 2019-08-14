@@ -41,7 +41,7 @@ class WebSocketMultiplayerPeer : public NetworkedMultiplayerPeer {
 	GDCLASS(WebSocketMultiplayerPeer, NetworkedMultiplayerPeer);
 
 private:
-	PoolVector<uint8_t> _make_pkt(uint32_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
+	PoolVector<uint8_t> _make_pkt(uint8_t p_type, int32_t p_from, int32_t p_to, const uint8_t *p_data, uint32_t p_data_size);
 	void _store_pkt(int32_t p_source, int32_t p_dest, const uint8_t *p_data, uint32_t p_data_size);
 	Error _server_relay(int32_t p_from, int32_t p_to, const uint8_t *p_buffer, uint32_t p_buffer_size);
 
@@ -82,7 +82,7 @@ public:
 	/* NetworkedMultiplayerPeer */
 	void set_transfer_mode(TransferMode p_mode);
 	TransferMode get_transfer_mode() const;
-	void set_target_peer(int p_peer_id);
+	void set_target_peer(int p_target_peer);
 	int get_packet_peer() const;
 	int get_unique_id() const;
 	virtual bool is_server() const = 0;
@@ -97,6 +97,7 @@ public:
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
 	/* WebSocketPeer */
+	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
 	virtual Ref<WebSocketPeer> get_peer(int p_peer_id) const = 0;
 
 	void _process_multiplayer(Ref<WebSocketPeer> p_peer, uint32_t p_peer_id);

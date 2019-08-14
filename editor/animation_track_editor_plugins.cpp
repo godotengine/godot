@@ -1009,7 +1009,7 @@ void AnimationTrackEditTypeAudio::drop_data(const Point2 &p_point, const Variant
 		}
 	}
 
-	return AnimationTrackEdit::drop_data(p_point, p_data);
+	AnimationTrackEdit::drop_data(p_point, p_data);
 }
 
 void AnimationTrackEditTypeAudio::_gui_input(const Ref<InputEvent> &p_event) {

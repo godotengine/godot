@@ -4,9 +4,9 @@
 		Pre-parsed scene tree path.
 	</brief_description>
 	<description>
-		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For instance, [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code] would refer to the size property of the texture resource on the node named "Sprite" which is a child of the other named nodes in the path. Note that if you want to get a resource, you must end the path with a colon, otherwise the last element will be used as a property name.
+		A pre-parsed relative or absolute path in a scene tree, for use with [method Node.get_node] and similar functions. It can reference a node, a resource within a node, or a property of a node or resource. For instance, [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code] would refer to the [code]size[/code] property of the [code]texture[/code] resource on the node named [code]"Sprite"[/code] which is a child of the other named nodes in the path.
 		You will usually just pass a string to [method Node.get_node] and it will be automatically converted, but you may occasionally want to parse a path ahead of time with [NodePath] or the literal syntax [code]@"path"[/code]. Exporting a [NodePath] variable will give you a node selection widget in the properties panel of the editor, which can often be useful.
-		A [NodePath] is made up of a list of node names, a list of "subnode" (resource) names, and the name of a property in the final node or resource.
+		A [NodePath] is composed of a list of slash-separated node names (like a filesystem path) and an optional colon-separated list of "subnames" which can be resources or properties.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -17,19 +17,48 @@
 			<argument index="0" name="from" type="String">
 			</argument>
 			<description>
-				Create a NodePath from a string, e.g. "Path2D/PathFollow2D/Sprite:texture:size". A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
+				Creates a NodePath from a string, e.g. [code]"Path2D/PathFollow2D/Sprite:texture:size"[/code]. A path is absolute if it starts with a slash. Absolute paths are only valid in the global scene tree, not within individual scenes. In a relative path, [code]"."[/code] and [code]".."[/code] indicate the current node and its parent.
+				The "subnames" optionally included after the path to the target node can point to resources or properties, and can also be nested.
+				Examples of valid NodePaths (assuming that those nodes exist and have the referenced resources or properties):
+				[codeblock]
+				# Points to the Sprite node
+				"Path2D/PathFollow2D/Sprite"
+				# Points to the Sprite node and its "texture" resource.
+				# get_node() would retrieve "Sprite", while get_node_and_resource()
+				# would retrieve both the Sprite node and the "texture" resource.
+				"Path2D/PathFollow2D/Sprite:texture"
+				# Points to the Sprite node and its "position" property.
+				"Path2D/PathFollow2D/Sprite:position"
+				# Points to the Sprite node and the "x" component of its "position" property.
+				"Path2D/PathFollow2D/Sprite:position:x"
+				# Absolute path (from "root")
+				"/root/Level/Path2D"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_as_property_path">
 			<return type="NodePath">
 			</return>
 			<description>
+				Returns a node path with a colon character ([code]:[/code]) prepended, transforming it to a pure property path with no node name (defaults to resolving from the current node).
+				[codeblock]
+				# This will be parsed as a node path to the "x" property in the "position" node
+				var node_path = NodePath("position:x")
+				# This will be parsed as a node path to the "x" component of the "position" property in the current node
+				var property_path = node_path.get_as_property_path()
+				print(property_path) # :position:x
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_concatenated_subnames">
 			<return type="String">
 			</return>
 			<description>
+				Returns all subnames concatenated with a colon character ([code]:[/code]) as separator, i.e. the right side of the first colon in a node path.
+				[codeblock]
+				var nodepath = NodePath("Path2D/PathFollow2D/Sprite:texture:load_path")
+				print(nodepath.get_concatenated_subnames()) # texture:load_path
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_name">
@@ -38,14 +67,21 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Get the node name indicated by [code]idx[/code] (0 to [method get_name_count])
+				Gets the node name indicated by [code]idx[/code] (0 to [method get_name_count]).
+				[codeblock]
+				var node_path = NodePath("Path2D/PathFollow2D/Sprite")
+				print(node_path.get_name(0)) # Path2D
+				print(node_path.get_name(1)) # PathFollow2D
+				print(node_path.get_name(2)) # Sprite
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_name_count">
 			<return type="int">
 			</return>
 			<description>
-				Get the number of node names which make up the path.
+				Gets the number of node names which make up the path. Subnames (see [method get_subname_count]) are not included.
+				For example, [code]"Path2D/PathFollow2D/Sprite"[/code] has 3 names.
 			</description>
 		</method>
 		<method name="get_subname">
@@ -54,21 +90,27 @@
 			<argument index="0" name="idx" type="int">
 			</argument>
 			<description>
-				Get the resource name indicated by [code]idx[/code] (0 to [method get_subname_count])
+				Gets the resource or property name indicated by [code]idx[/code] (0 to [method get_subname_count]).
+				[codeblock]
+				var node_path = NodePath("Path2D/PathFollow2D/Sprite:texture:load_path")
+				print(node_path.get_subname(0)) # texture
+				print(node_path.get_subname(1)) # load_path
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_subname_count">
 			<return type="int">
 			</return>
 			<description>
-				Get the number of resource names in the path.
+				Gets the number of resource or property names ("subnames") in the path. Each subname is listed after a colon character ([code]:[/code]) in the node path.
+				For example, [code]"Path2D/PathFollow2D/Sprite:texture:load_path"[/code] has 2 subnames.
 			</description>
 		</method>
 		<method name="is_absolute">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the node path is absolute (not relative).
+				Returns [code]true[/code] if the node path is absolute (as opposed to relative), which means that it starts with a slash character ([code]/[/code]). Absolute node paths can be used to access the root node ([code]"/root"[/code]) or autoloads (e.g. [code]"/global"[/code] if a "global" autoload was registered).
 			</description>
 		</method>
 		<method name="is_empty">

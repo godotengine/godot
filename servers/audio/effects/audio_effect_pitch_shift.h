@@ -72,10 +72,11 @@ public:
 class AudioEffectPitchShift;
 
 class AudioEffectPitchShiftInstance : public AudioEffectInstance {
-	GDCLASS(AudioEffectPitchShiftInstance, AudioEffectInstance)
+	GDCLASS(AudioEffectPitchShiftInstance, AudioEffectInstance);
 	friend class AudioEffectPitchShift;
 	Ref<AudioEffectPitchShift> base;
 
+	int fft_size;
 	SMBPitchShift shift_l;
 	SMBPitchShift shift_r;
 
@@ -84,12 +85,23 @@ public:
 };
 
 class AudioEffectPitchShift : public AudioEffect {
-	GDCLASS(AudioEffectPitchShift, AudioEffect)
+	GDCLASS(AudioEffectPitchShift, AudioEffect);
 
+public:
 	friend class AudioEffectPitchShiftInstance;
 
+	enum FFT_Size {
+		FFT_SIZE_256,
+		FFT_SIZE_512,
+		FFT_SIZE_1024,
+		FFT_SIZE_2048,
+		FFT_SIZE_4096,
+		FFT_SIZE_MAX
+	};
+
 	float pitch_scale;
-	int window_size;
+	int oversampling;
+	FFT_Size fft_size;
 	float wet;
 	float dry;
 	bool filter;
@@ -103,7 +115,15 @@ public:
 	void set_pitch_scale(float p_pitch_scale);
 	float get_pitch_scale() const;
 
+	void set_oversampling(int p_oversampling);
+	int get_oversampling() const;
+
+	void set_fft_size(FFT_Size);
+	FFT_Size get_fft_size() const;
+
 	AudioEffectPitchShift();
 };
+
+VARIANT_ENUM_CAST(AudioEffectPitchShift::FFT_Size);
 
 #endif // AUDIO_EFFECT_PITCH_SHIFT_H

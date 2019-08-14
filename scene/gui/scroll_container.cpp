@@ -140,19 +140,17 @@ void ScrollContainer::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				_cancel_drag();
 			}
 
-			if (true) {
-				drag_speed = Vector2();
-				drag_accum = Vector2();
-				last_drag_accum = Vector2();
-				drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
-				drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
-				drag_touching_deaccel = false;
-				beyond_deadzone = false;
+			drag_speed = Vector2();
+			drag_accum = Vector2();
+			last_drag_accum = Vector2();
+			drag_from = Vector2(h_scroll->get_value(), v_scroll->get_value());
+			drag_touching = OS::get_singleton()->has_touchscreen_ui_hint();
+			drag_touching_deaccel = false;
+			beyond_deadzone = false;
+			time_since_motion = 0;
+			if (drag_touching) {
+				set_physics_process_internal(true);
 				time_since_motion = 0;
-				if (drag_touching) {
-					set_physics_process_internal(true);
-					time_since_motion = 0;
-				}
 			}
 
 		} else {
@@ -488,7 +486,7 @@ String ScrollContainer::get_configuration_warning() const {
 	}
 
 	if (found != 1)
-		return TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox,HBox,etc), or a Control and set the custom minimum size manually.");
+		return TTR("ScrollContainer is intended to work with a single child control.\nUse a container as child (VBox, HBox, etc.), or a Control and set the custom minimum size manually.");
 	else
 		return "";
 }

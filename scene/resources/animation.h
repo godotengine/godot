@@ -314,7 +314,7 @@ public:
 	float track_get_key_time(int p_track, int p_key_idx) const;
 	float track_get_key_transition(int p_track, int p_key_idx) const;
 
-	int transform_track_insert_key(int p_track, float p_time, const Vector3 p_loc, const Quat &p_rot = Quat(), const Vector3 &p_scale = Vector3());
+	int transform_track_insert_key(int p_track, float p_time, const Vector3 &p_loc, const Quat &p_rot = Quat(), const Vector3 &p_scale = Vector3());
 	Error transform_track_get_key(int p_track, int p_key, Vector3 *r_loc, Quat *r_rot, Vector3 *r_scale) const;
 	void track_set_interpolation_type(int p_track, InterpolationType p_interp);
 	InterpolationType track_get_interpolation_type(int p_track) const;

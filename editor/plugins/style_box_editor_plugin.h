@@ -56,7 +56,8 @@ public:
 };
 
 class EditorInspectorPluginStyleBox : public EditorInspectorPlugin {
-	GDCLASS(EditorInspectorPluginStyleBox, EditorInspectorPlugin)
+	GDCLASS(EditorInspectorPluginStyleBox, EditorInspectorPlugin);
+
 public:
 	virtual bool can_handle(Object *p_object);
 	virtual void parse_begin(Object *p_object);

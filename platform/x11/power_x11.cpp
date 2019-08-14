@@ -202,7 +202,10 @@ void PowerX11::check_proc_acpi_battery(const char *node, bool *have_battery, boo
 	 * We pick the battery that claims to have the most minutes left.
 	 *  (failing a report of minutes, we'll take the highest percent.)
 	 */
-	if ((secs < 0) && (this->nsecs_left < 0)) {
+	// -- GODOT start --
+	//if ((secs < 0) && (this->nsecs_left < 0)) {
+	if (this->nsecs_left < 0) {
+		// -- GODOT end --
 		if ((pct < 0) && (this->percent_left < 0)) {
 			choose = true; /* at least we know there's a battery. */
 		}
@@ -265,9 +268,7 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 			check_proc_acpi_battery(node.utf8().get_data(), &have_battery, &charging /*, seconds, percent*/);
 			node = dirp->get_next();
 		}
-		memdelete(dirp);
 	}
-
 	dirp->change_dir(proc_acpi_ac_adapter_path);
 	err = dirp->list_dir_begin();
 	if (err != OK) {
@@ -278,7 +279,6 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 			check_proc_acpi_ac_adapter(node.utf8().get_data(), &have_ac);
 			node = dirp->get_next();
 		}
-		memdelete(dirp);
 	}
 
 	if (!have_battery) {
@@ -291,6 +291,7 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 		this->power_state = OS::POWERSTATE_ON_BATTERY;
 	}
 
+	memdelete(dirp);
 	return true; /* definitive answer. */
 }
 

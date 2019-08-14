@@ -1144,8 +1144,12 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 			shaders.copy.set_conditional(CopyShaderGLES3::USE_TEXTURE2DARRAY, texture->type == VS::TEXTURE_TYPE_2D_ARRAY);
 			shaders.copy.bind();
 
-			// calculate the normalized z coordinate for the layer
-			float layer = (float)p_layer / (float)texture->alloc_depth;
+			float layer;
+			if (texture->type == VS::TEXTURE_TYPE_2D_ARRAY)
+				layer = (float)p_layer;
+			else
+				// calculate the normalized z coordinate for the layer
+				layer = (float)p_layer / (float)texture->alloc_depth;
 
 			shaders.copy.set_uniform(CopyShaderGLES3::LAYER, layer);
 
@@ -1173,7 +1177,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 			glDeleteFramebuffers(1, &tmp_fbo);
 		}
 
-		wb = PoolVector<uint8_t>::Write();
+		wb.release();
 
 		data.resize(data_size);
 
@@ -1248,11 +1252,11 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 		img_format = real_format;
 	}
 
-	wb = PoolVector<uint8_t>::Write();
+	wb.release();
 
 	data.resize(data_size);
 
-	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1 ? true : false, img_format, data));
+	Image *img = memnew(Image(texture->alloc_width, texture->alloc_height, texture->mipmaps > 1, img_format, data));
 
 	return Ref<Image>(img);
 #else
@@ -1316,7 +1320,7 @@ Ref<Image> RasterizerStorageGLES3::texture_get_data(RID p_texture, int p_layer) 
 	glBindFramebuffer(GL_FRAMEBUFFER, 0);
 	glDeleteFramebuffers(1, &temp_framebuffer);
 
-	wb = PoolVector<uint8_t>::Write();
+	wb.release();
 
 	data.resize(data_size);
 
@@ -2518,27 +2522,27 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 
 			int v = value;
 			GLuint *gui = (GLuint *)data;
-			gui[0] = v & 1 ? GL_TRUE : GL_FALSE;
-			gui[1] = v & 2 ? GL_TRUE : GL_FALSE;
+			gui[0] = (v & 1) ? GL_TRUE : GL_FALSE;
+			gui[1] = (v & 2) ? GL_TRUE : GL_FALSE;
 
 		} break;
 		case ShaderLanguage::TYPE_BVEC3: {
 
 			int v = value;
 			GLuint *gui = (GLuint *)data;
-			gui[0] = v & 1 ? GL_TRUE : GL_FALSE;
-			gui[1] = v & 2 ? GL_TRUE : GL_FALSE;
-			gui[2] = v & 4 ? GL_TRUE : GL_FALSE;
+			gui[0] = (v & 1) ? GL_TRUE : GL_FALSE;
+			gui[1] = (v & 2) ? GL_TRUE : GL_FALSE;
+			gui[2] = (v & 4) ? GL_TRUE : GL_FALSE;
 
 		} break;
 		case ShaderLanguage::TYPE_BVEC4: {
 
 			int v = value;
 			GLuint *gui = (GLuint *)data;
-			gui[0] = v & 1 ? GL_TRUE : GL_FALSE;
-			gui[1] = v & 2 ? GL_TRUE : GL_FALSE;
-			gui[2] = v & 4 ? GL_TRUE : GL_FALSE;
-			gui[3] = v & 8 ? GL_TRUE : GL_FALSE;
+			gui[0] = (v & 1) ? GL_TRUE : GL_FALSE;
+			gui[1] = (v & 2) ? GL_TRUE : GL_FALSE;
+			gui[2] = (v & 4) ? GL_TRUE : GL_FALSE;
+			gui[3] = (v & 8) ? GL_TRUE : GL_FALSE;
 
 		} break;
 		case ShaderLanguage::TYPE_INT: {
@@ -3441,7 +3445,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 
 		glGenBuffers(1, &surface->vertex_id);
 		glBindBuffer(GL_ARRAY_BUFFER, surface->vertex_id);
-		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
+		glBufferData(GL_ARRAY_BUFFER, array_size, vr.ptr(), (p_format & VS::ARRAY_FLAG_USE_DYNAMIC_UPDATE) ? GL_DYNAMIC_DRAW : GL_STATIC_DRAW);
 		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
 
 		if (p_format & VS::ARRAY_FORMAT_INDEX) {
@@ -4644,7 +4648,6 @@ Transform2D RasterizerStorageGLES3::multimesh_instance_get_transform_2d(RID p_mu
 }
 
 Color RasterizerStorageGLES3::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
-
 	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
 	ERR_FAIL_COND_V(!multimesh, Color());
 	ERR_FAIL_INDEX_V(p_index, multimesh->size, Color());
@@ -5468,22 +5471,19 @@ AABB RasterizerStorageGLES3::light_get_aabb(RID p_light) const {
 			float len = light->param[VS::LIGHT_PARAM_RANGE];
 			float size = Math::tan(Math::deg2rad(light->param[VS::LIGHT_PARAM_SPOT_ANGLE])) * len;
 			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
-		} break;
+		};
 		case VS::LIGHT_OMNI: {
 
 			float r = light->param[VS::LIGHT_PARAM_RANGE];
 			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
-		} break;
+		};
 		case VS::LIGHT_DIRECTIONAL: {
 
 			return AABB();
-		} break;
-		default: {
-		}
+		};
 	}
 
 	ERR_FAIL_V(AABB());
-	return AABB();
 }
 
 /* PROBE API */
@@ -6074,10 +6074,7 @@ void RasterizerStorageGLES3::particles_set_emitting(RID p_particles, bool p_emit
 
 	Particles *particles = particles_owner.getornull(p_particles);
 	ERR_FAIL_COND(!particles);
-	if (p_emitting != particles->emitting) {
-		// Restart is overridden by set_emitting
-		particles->restart_request = false;
-	}
+
 	particles->emitting = p_emitting;
 }
 
@@ -6341,7 +6338,7 @@ AABB RasterizerStorageGLES3::particles_get_current_aabb(RID p_particles) {
 	}
 
 #if defined(GLES_OVER_GL) || defined(__EMSCRIPTEN__)
-	r = PoolVector<uint8_t>::Read();
+	r.release();
 	vector = PoolVector<uint8_t>();
 #else
 	glUnmapBuffer(GL_ARRAY_BUFFER);
@@ -6475,7 +6472,6 @@ void RasterizerStorageGLES3::update_particles() {
 		Particles *particles = particle_update_list.first()->self();
 
 		if (particles->restart_request) {
-			particles->emitting = true; //restart from zero
 			particles->prev_ticks = 0;
 			particles->phase = 0;
 			particles->prev_phase = 0;
@@ -6713,9 +6709,7 @@ void RasterizerStorageGLES3::instance_add_dependency(RID p_base, RasterizerScene
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-			if (!inst) {
-				ERR_FAIL();
-			}
+			ERR_FAIL();
 		}
 	}
 
@@ -6760,14 +6754,9 @@ void RasterizerStorageGLES3::instance_remove_dependency(RID p_base, RasterizerSc
 			ERR_FAIL_COND(!inst);
 		} break;
 		default: {
-
-			if (!inst) {
-				ERR_FAIL();
-			}
+			ERR_FAIL();
 		}
 	}
-
-	ERR_FAIL_COND(!inst);
 
 	inst->instance_list.remove(&p_instance->dependency_item);
 }
@@ -8104,7 +8093,7 @@ void RasterizerStorageGLES3::initialize() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 
-	config.use_rgba_2d_shadows = config.framebuffer_float_supported;
+	config.use_rgba_2d_shadows = !config.framebuffer_float_supported;
 
 	//generic quadie for copying
 

@@ -99,32 +99,32 @@
 		</method>
 	</methods>
 	<members>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags">
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
 			The texture's flags.
 		</member>
 	</members>
 	<constants>
 		<constant name="FLAGS_DEFAULT" value="7" enum="Flags">
-			Default flags. Generate mipmaps, repeat, and filter are enabled.
+			Default flags. [constant FLAG_MIPMAPS], [constant FLAG_REPEAT] and [constant FLAG_FILTER] are enabled.
 		</constant>
 		<constant name="FLAG_MIPMAPS" value="1" enum="Flags">
-			Generate mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
+			Generates mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
 		</constant>
 		<constant name="FLAG_REPEAT" value="2" enum="Flags">
-			Repeats texture (instead of clamp to edge).
+			Repeats the texture (instead of clamp to edge).
 		</constant>
 		<constant name="FLAG_FILTER" value="4" enum="Flags">
-			Magnifying filter, to enable smooth zooming in of the texture.
+			Uses a magnifying filter, to enable smooth zooming in of the texture.
 		</constant>
 		<constant name="FLAG_ANISOTROPIC_FILTER" value="8" enum="Flags">
-			Anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
-			More effective on planes often shown going to the horrizon as those textures (Walls or Ground for example) get squashed in the viewport to different aspect ratios and regular mipmaps keep the aspect ratio so they don't optimize storage that well in those cases.
+			Uses anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
+			This results in better-looking textures when viewed from oblique angles.
 		</constant>
 		<constant name="FLAG_CONVERT_TO_LINEAR" value="16" enum="Flags">
-			Converts texture to SRGB color space.
+			Converts the texture to the sRGB color space.
 		</constant>
 		<constant name="FLAG_MIRRORED_REPEAT" value="32" enum="Flags">
-			Repeats texture with alternate sections mirrored.
+			Repeats the texture with alternate sections mirrored.
 		</constant>
 		<constant name="FLAG_VIDEO_SURFACE" value="2048" enum="Flags">
 			Texture is a video surface.

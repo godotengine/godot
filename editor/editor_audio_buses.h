@@ -52,7 +52,7 @@ class EditorAudioBuses;
 
 class EditorAudioBus : public PanelContainer {
 
-	GDCLASS(EditorAudioBus, PanelContainer)
+	GDCLASS(EditorAudioBus, PanelContainer);
 
 	Ref<Texture> disabled_vu;
 	LineEdit *track_name;
@@ -155,7 +155,7 @@ public:
 
 class EditorAudioBuses : public VBoxContainer {
 
-	GDCLASS(EditorAudioBuses, VBoxContainer)
+	GDCLASS(EditorAudioBuses, VBoxContainer);
 
 	HBoxContainer *top_hb;
 
@@ -231,6 +231,13 @@ private:
 			relative_position = n.relative_position;
 			db_value = n.db_value;
 			render_db_value = n.render_db_value;
+		}
+
+		_FORCE_INLINE_ AudioNotch operator=(const EditorAudioMeterNotches::AudioNotch &n) {
+			relative_position = n.relative_position;
+			db_value = n.db_value;
+			render_db_value = n.render_db_value;
+			return *this;
 		}
 
 		_FORCE_INLINE_ AudioNotch() {}

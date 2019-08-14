@@ -1,11 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Curve3D" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
-		Describes a Bezier curve in 3D space.
+		Describes a Bézier curve in 3D space.
 	</brief_description>
 	<description>
-		This class describes a Bezier curve in 3D space. It is mainly used to give a shape to a [Path], but can be manually sampled for other purposes.
-		It keeps a cache of precalculated points along the curve, to speed further calculations up.
+		This class describes a Bézier curve in 3D space. It is mainly used to give a shape to a [Path], but can be manually sampled for other purposes.
+		It keeps a cache of precalculated points along the curve, to speed up further calculations.
 	</description>
 	<tutorials>
 	</tutorials>
@@ -22,7 +22,7 @@
 			<argument index="3" name="at_position" type="int" default="-1">
 			</argument>
 			<description>
-				Adds a point to a curve, at [code]position[/code], with control points [code]in[/code] and [code]out[/code].
+				Adds a point to a curve at [code]position[/code], with control points [code]in[/code] and [code]out[/code].
 				If [code]at_position[/code] is given, the point is inserted before the point number [code]at_position[/code], moving that point (and every point after) after the inserted point. If [code]at_position[/code] is not given, or is an illegal value ([code]at_position &lt;0[/code] or [code]at_position &gt;= [method get_point_count][/code]), the point will be appended at the end of the point list.
 			</description>
 		</method>
@@ -242,11 +242,11 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval">
+		<member name="bake_interval" type="float" setter="set_bake_interval" getter="get_bake_interval" default="0.2">
 			The distance in meters between two adjacent cached points. Changing it forces the cache to be recomputed the next time the [method get_baked_points] or [method get_baked_length] function is called. The smaller the distance, the more points in the cache and the more memory it will consume, so use with care.
 		</member>
-		<member name="up_vector_enabled" type="bool" setter="set_up_vector_enabled" getter="is_up_vector_enabled">
-			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when a [member PathFollow.rotation_mode] is set to [code]ROTATION_ORIENTED[/code], see [PathFollow] for details. Changing it forces the cache to be recomputed.
+		<member name="up_vector_enabled" type="bool" setter="set_up_vector_enabled" getter="is_up_vector_enabled" default="true">
+			If [code]true[/code], the curve will bake up vectors used for orientation. This is used when [member PathFollow.rotation_mode] is set to [constant PathFollow.ROTATION_ORIENTED]. Changing it forces the cache to be recomputed.
 		</member>
 	</members>
 	<constants>

@@ -13,13 +13,15 @@
 	<members>
 		<member name="next_pass" type="Material" setter="set_next_pass" getter="get_next_pass">
 		</member>
-		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority">
+		<member name="render_priority" type="int" setter="set_render_priority" getter="get_render_priority" default="0">
 		</member>
 	</members>
 	<constants>
 		<constant name="RENDER_PRIORITY_MAX" value="127">
+			Maximum value for the [member render_priority] parameter.
 		</constant>
 		<constant name="RENDER_PRIORITY_MIN" value="-128">
+			Minimum value for the [member render_priority] parameter.
 		</constant>
 	</constants>
 </class>

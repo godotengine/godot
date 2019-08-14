@@ -1,7 +1,10 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
     public struct Color : IEquatable<Color>
     {
         public float r;
@@ -375,7 +378,7 @@ namespace Godot
             return c;
         }
 
-        public string ToHtml(bool include_alpha = true)
+        public string ToHtml(bool includeAlpha = true)
         {
             var txt = string.Empty;
 
@@ -383,7 +386,7 @@ namespace Godot
             txt += ToHex32(g);
             txt += ToHex32(b);
 
-            if (include_alpha)
+            if (includeAlpha)
                 txt = ToHex32(a) + txt;
 
             return txt;
@@ -465,13 +468,13 @@ namespace Godot
 
             for (int i = 0; i < 2; i++)
             {
-                char[] c = { (char)0, (char)0 };
+                char c;
                 int lv = v & 0xF;
 
                 if (lv < 10)
-                    c[0] = (char)('0' + lv);
+                    c = (char)('0' + lv);
                 else
-                    c[0] = (char)('a' + lv - 10);
+                    c = (char)('a' + lv - 10);
 
                 v >>= 4;
                 ret = c + ret;
@@ -490,12 +493,17 @@ namespace Godot
 
             bool alpha;
 
-            if (color.Length == 8)
-                alpha = true;
-            else if (color.Length == 6)
-                alpha = false;
-            else
-                return false;
+            switch (color.Length)
+            {
+                case 8:
+                    alpha = true;
+                    break;
+                case 6:
+                    alpha = false;
+                    break;
+                default:
+                    return false;
+            }
 
             if (alpha)
             {
