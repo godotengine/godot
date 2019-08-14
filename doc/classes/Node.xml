@@ -124,9 +124,9 @@
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
 				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
 				[codeblock]
-				if childNode.get_parent():
-				    childNode.get_parent().remove_child(childNode)
-				add_child(childNode)
+				if child_node.get_parent():
+				    child_node.get_parent().remove_child(child_node)
+				add_child(child_node)
 				[/codeblock]
 			</description>
 		</method>
