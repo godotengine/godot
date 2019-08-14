@@ -207,6 +207,7 @@ bool Popup::is_exclusive() const {
 
 void Popup::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("set_as_minsize"), &Popup::set_as_minsize);
 	ClassDB::bind_method(D_METHOD("popup_centered", "size"), &Popup::popup_centered, DEFVAL(Size2()));
 	ClassDB::bind_method(D_METHOD("popup_centered_ratio", "ratio"), &Popup::popup_centered_ratio, DEFVAL(0.75));
 	ClassDB::bind_method(D_METHOD("popup_centered_minsize", "minsize"), &Popup::popup_centered_minsize, DEFVAL(Size2()));
