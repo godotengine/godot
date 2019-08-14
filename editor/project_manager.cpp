@@ -1312,7 +1312,7 @@ void ProjectList::set_filter_option(ProjectListFilter::FilterOption p_option) {
 void ProjectList::set_order_option(ProjectListFilter::FilterOption p_option) {
 	if (_order_option != p_option) {
 		_order_option = p_option;
-		EditorSettings::get_singleton()->set("project_manager/sorting_order", (int)_filter_option);
+		EditorSettings::get_singleton()->set("project_manager/sorting_order", (int)_order_option);
 		EditorSettings::get_singleton()->save();
 	}
 }
