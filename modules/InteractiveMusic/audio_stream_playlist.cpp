@@ -12,6 +12,7 @@ AudioStreamPlaylist::AudioStreamPlaylist() {
 	stereo = true;
 	shuffle = false;
 	beat_count = 16;
+	length = 0;
 }
 
 Ref<AudioStreamPlayback> AudioStreamPlaylist::instance_playback() {
@@ -93,6 +94,11 @@ void AudioStreamPlaylist::set_loop(bool p_loop) {
 
 bool AudioStreamPlaylist::get_loop() {
 	return loop;
+}
+
+float AudioStreamPlaylist::get_length() const{
+
+	return length;
 }
 
 void AudioStreamPlaylist::_validate_property(PropertyInfo &property) const {
@@ -236,7 +242,6 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 				fading = true;
 				if ((current+1) < playlist->stream_count){
 					current = (current + 1) % playlist->stream_count;
-					playback[current]->start();
 				} else {
 					if (playlist->loop == true) {
 						current = 0;
@@ -250,6 +255,7 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 						stop();
 					}
 				}
+				playback[current]->start();
 				fading_samples = fading_samples_total;
 				if (playlist->audio_streams[current]->get_bpm() == 0) {
 					beat_size = playlist->sample_rate * 60 / playlist->bpm;

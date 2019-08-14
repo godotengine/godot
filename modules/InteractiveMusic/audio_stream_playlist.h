@@ -16,6 +16,7 @@ private:
 	bool stereo;
 	int stream_count;
 	int bpm;
+	float length;
 	
 	double time;
 
@@ -49,7 +50,7 @@ public:
 	
 	virtual Ref<AudioStreamPlayback> instance_playback();
 	virtual String get_stream_name() const;
-	virtual float get_length() const { return 0; }
+	virtual float get_length() const;
 	AudioStreamPlaylist();
 
 protected:

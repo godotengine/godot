@@ -20,7 +20,7 @@ private:
 
 	enum {
 		MAX_STREAMS = 64,
-		MAX_TRANSITIONS = 10
+		MAX_TRANSITIONS = 48
 	};
 
 	struct Transition {
