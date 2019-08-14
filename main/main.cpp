@@ -909,6 +909,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/width", PropertyInfo(Variant::INT, "display/window/size/width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
 	GLOBAL_DEF("display/window/size/height", 600);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/height", PropertyInfo(Variant::INT, "display/window/size/height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/min_width", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/min_width", PropertyInfo(Variant::INT, "display/window/size/min_width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/min_height", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/min_height", PropertyInfo(Variant::INT, "display/window/size/min_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/max_width", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/max_width", PropertyInfo(Variant::INT, "display/window/size/max_width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/max_height", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/max_height", PropertyInfo(Variant::INT, "display/window/size/max_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
 	GLOBAL_DEF("display/window/size/resizable", true);
 	GLOBAL_DEF("display/window/size/borderless", false);
 	GLOBAL_DEF("display/window/size/fullscreen", false);
@@ -1151,6 +1159,18 @@ Error Main::setup2(Thread::ID p_main_tid_override) {
 	if (init_always_on_top) {
 		OS::get_singleton()->set_window_always_on_top(true);
 	}
+
+	int mw = GLOBAL_GET("display/window/size/min_width");
+	int mh = GLOBAL_GET("display/window/size/min_height");
+	OS::get_singleton()->set_min_window_size(Size2(mw, mh));
+
+	mw = GLOBAL_GET("display/window/size/max_width");
+	if (mw <= 0)
+		mw = 7680;
+	mh = GLOBAL_GET("display/window/size/max_height");
+	if (mh <= 0)
+		mh = 4320;
+	OS::get_singleton()->set_max_window_size(Size2(mw, mh));
 
 	if (allow_focus_steal_pid) {
 		OS::get_singleton()->enable_for_stealing_focus(allow_focus_steal_pid);
