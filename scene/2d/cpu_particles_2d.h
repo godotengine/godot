@@ -35,10 +35,6 @@
 #include "scene/2d/node_2d.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class CPUParticles2D : public Node2D {
 private:
 	GDCLASS(CPUParticles2D, Node2D);

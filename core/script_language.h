@@ -36,10 +36,6 @@
 #include "core/pair.h"
 #include "core/resource.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ScriptLanguage;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);

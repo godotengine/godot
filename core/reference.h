@@ -36,9 +36,6 @@
 #include "core/ref_ptr.h"
 #include "core/safe_refcount.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Reference : public Object {
 
 	GDCLASS(Reference, Object);

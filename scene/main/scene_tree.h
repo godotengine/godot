@@ -39,10 +39,6 @@
 #include "scene/resources/world.h"
 #include "scene/resources/world_2d.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class PackedScene;
 class Node;
 class Viewport;

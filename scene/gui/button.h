@@ -32,9 +32,6 @@
 #define BUTTON_H
 
 #include "scene/gui/base_button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Button : public BaseButton {
 

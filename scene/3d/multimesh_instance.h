@@ -34,10 +34,6 @@
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/multimesh.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class MultiMeshInstance : public GeometryInstance {
 	GDCLASS(MultiMeshInstance, GeometryInstance);
 

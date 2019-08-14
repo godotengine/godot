@@ -35,10 +35,6 @@
 #include "core/object.h"
 #include "core/print_string.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 /**	To bind more then 6 parameters include this:
  *  #include "core/method_bind_ext.gen.inc"
  */

@@ -40,9 +40,6 @@
 #include "scene/gui/graph_edit.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class AnimationNodeBlendTreeEditor : public AnimationTreeNodeEditorPlugin {
 

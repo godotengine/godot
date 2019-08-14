@@ -34,10 +34,6 @@
 #include "core/rid.h"
 #include "scene/3d/spatial.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #ifndef _3D_DISABLED
 typedef int BoneId;
 

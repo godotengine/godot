@@ -77,9 +77,6 @@ typedef struct _xrr_monitor_info {
 } xrr_monitor_info;
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_X11 : public OS_Unix {
 

@@ -38,10 +38,6 @@
 #include "core/safe_refcount.h"
 #include "core/self_list.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #define RES_BASE_EXTENSION(m_ext)                                                                                   \
 public:                                                                                                             \
 	static void register_custom_data_to_otdb() { ClassDB::add_resource_base_extension(m_ext, get_class_static()); } \

@@ -35,10 +35,6 @@
 #include "core/reference.h"
 #include "core/script_language.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class MainLoop : public Object {
 
 	GDCLASS(MainLoop, Object);

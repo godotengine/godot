@@ -34,10 +34,6 @@
 #include "core/math/rect2.h"
 #include "core/math/transform.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 struct CameraMatrix {
 
 	enum Planes {

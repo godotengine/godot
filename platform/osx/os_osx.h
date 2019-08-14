@@ -51,9 +51,6 @@
 #include <CoreVideo/CoreVideo.h>
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_OSX : public OS_Unix {
 public:

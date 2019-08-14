@@ -38,10 +38,6 @@
 #include "core/print_string.h"
 #include "core/variant.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 typedef uint32_t OctreeElementID;
 
 #define OCTREE_ELEMENT_INVALID_ID 0

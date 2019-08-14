@@ -41,10 +41,6 @@
 #include "core/print_string.h"
 #include "core/vector.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Geometry {
 	Geometry();
 

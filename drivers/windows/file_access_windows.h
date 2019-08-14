@@ -38,10 +38,6 @@
 
 #include <stdio.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class FileAccessWindows : public FileAccess {
 
 	FILE *f;

@@ -32,9 +32,7 @@
 #define ANIMATION_H
 
 #include "core/resource.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class Animation : public Resource {
 
 	GDCLASS(Animation, Resource);

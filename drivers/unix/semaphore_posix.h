@@ -36,9 +36,7 @@
 #if defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)
 
 #include <semaphore.h>
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class SemaphorePosix : public Semaphore {
 
 	mutable sem_t sem;

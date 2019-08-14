@@ -35,9 +35,7 @@
 #include "core/rid.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/material.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class VisualInstance : public Spatial {
 
 	GDCLASS(VisualInstance, Spatial);

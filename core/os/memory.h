@@ -35,10 +35,6 @@
 
 #include <stddef.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #ifndef PAD_ALIGN
 #define PAD_ALIGN 16 //must always be greater than this at much
 #endif
