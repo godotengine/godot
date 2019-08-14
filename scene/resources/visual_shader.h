@@ -183,7 +183,7 @@ public:
 		PORT_TYPE_VECTOR,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
-		PORT_TYPE_COLOR // just a hint for node tree icons, do not use it as actual port type !
+		PORT_TYPE_ICON_COLOR // just a hint for node tree icons, do not use it as actual port type !
 	};
 
 	virtual String get_caption() const = 0;
@@ -216,6 +216,44 @@ public:
 
 	VisualShaderNode();
 };
+
+VARIANT_ENUM_CAST(VisualShaderNode::PortType)
+
+class VisualShaderNodeCustom : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeCustom, VisualShaderNode);
+
+	struct Port {
+		String name;
+		int type;
+	};
+
+	List<Port> input_ports;
+	List<Port> output_ports;
+
+	friend class VisualShaderEditor;
+
+protected:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+protected:
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
+	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+
+	static void _bind_methods();
+
+public:
+	VisualShaderNodeCustom();
+	void update_ports();
+};
+
 /////
 
 class VisualShaderNodeInput : public VisualShaderNode {

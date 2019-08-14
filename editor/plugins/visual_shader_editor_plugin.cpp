@@ -79,6 +79,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	} else {
 		if (changed) { // to avoid tree collapse
 			_clear_buffer();
+			_update_custom_nodes();
 			_update_options_menu();
 		}
 		_update_graph();
@@ -95,31 +96,36 @@ void VisualShaderEditor::remove_plugin(const Ref<VisualShaderNodePlugin> &p_plug
 	plugins.erase(p_plugin);
 }
 
-void VisualShaderEditor::add_custom_type(const String &p_name, const String &p_category, const Ref<Script> &p_script) {
+void VisualShaderEditor::clear_custom_types() {
+	for (int i = 0; i < add_options.size(); i++) {
+		if (add_options[i].is_custom) {
+			add_options.remove(i);
+		}
+	}
+}
+
+void VisualShaderEditor::add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_sub_category) {
+
+	ERR_FAIL_COND(!p_name.is_valid_identifier());
+	ERR_FAIL_COND(!p_script.is_valid());
 
 	for (int i = 0; i < add_options.size(); i++) {
-		ERR_FAIL_COND(add_options[i].script == p_script);
+		if (add_options[i].is_custom) {
+			if (add_options[i].script == p_script)
+				return;
+		}
 	}
 
 	AddOption ao;
 	ao.name = p_name;
 	ao.script = p_script;
+	ao.return_type = p_return_icon_type;
+	ao.description = p_description;
 	ao.category = p_category;
+	ao.sub_category = p_sub_category;
+	ao.is_custom = true;
+
 	add_options.push_back(ao);
-
-	_update_options_menu();
-}
-
-void VisualShaderEditor::remove_custom_type(const Ref<Script> &p_script) {
-
-	for (int i = 0; i < add_options.size(); i++) {
-		if (add_options[i].script == p_script) {
-			add_options.remove(i);
-			return;
-		}
-	}
-
-	_update_options_menu();
 }
 
 bool VisualShaderEditor::_is_available(int p_mode) {
@@ -160,6 +166,58 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 	}
 
 	return (p_mode == -1 || (p_mode & current_mode) != 0);
+}
+
+void VisualShaderEditor::_update_custom_nodes() {
+	clear_custom_types();
+	List<StringName> class_list;
+	ScriptServer::get_global_class_list(&class_list);
+	for (int i = 0; i < class_list.size(); i++) {
+		if (ScriptServer::get_global_class_native_base(class_list[i]) == "VisualShaderNodeCustom") {
+
+			String script_path = ScriptServer::get_global_class_path(class_list[i]);
+			Ref<Resource> res = ResourceLoader::load(script_path);
+			ERR_FAIL_COND(res.is_null());
+			ERR_FAIL_COND(!res->is_class("Script"));
+			Ref<Script> script = Ref<Script>(res);
+
+			Ref<VisualShaderNodeCustom> ref;
+			ref.instance();
+			ref->set_script(script.get_ref_ptr());
+
+			String name;
+			if (ref->has_method("_get_name")) {
+				name = (String)ref->call("_get_name");
+			} else {
+				name = "Unnamed";
+			}
+
+			String description = "";
+			if (ref->has_method("_get_description")) {
+				description = (String)ref->call("_get_description");
+			}
+
+			int return_icon_type = -1;
+			if (ref->has_method("_get_return_icon_type")) {
+				return_icon_type = (int)ref->call("_get_return_icon_type");
+			}
+
+			String category = "";
+			if (ref->has_method("_get_category")) {
+				category = (String)ref->call("_get_category");
+			}
+			if (category == "") {
+				category = "Custom";
+			}
+
+			String sub_category = "";
+			if (ref->has_method("_get_subcategory")) {
+				sub_category = (String)ref->call("_get_subcategory");
+			}
+
+			add_custom_type(name, script, description, return_icon_type, category, sub_category);
+		}
+	}
 }
 
 void VisualShaderEditor::_update_options_menu() {
@@ -284,7 +342,7 @@ void VisualShaderEditor::_update_options_menu() {
 					case VisualShaderNode::PORT_TYPE_TRANSFORM:
 						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
 						break;
-					case VisualShaderNode::PORT_TYPE_COLOR:
+					case VisualShaderNode::PORT_TYPE_ICON_COLOR:
 						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Color", "EditorIcons"));
 						break;
 					default:
@@ -942,8 +1000,10 @@ void VisualShaderEditor::_expression_focus_out(Object *text_edit, int p_node) {
 }
 
 void VisualShaderEditor::_rebuild() {
-	EditorNode::get_singleton()->get_log()->clear();
-	visual_shader->rebuild();
+	if (visual_shader != NULL) {
+		EditorNode::get_singleton()->get_log()->clear();
+		visual_shader->rebuild();
+	}
 }
 
 void VisualShaderEditor::_set_node_size(int p_type, int p_node, const Vector2 &p_size) {
@@ -1139,7 +1199,9 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
 	Ref<VisualShaderNode> vsnode;
 
-	if (add_options[p_idx].type != String()) {
+	bool is_custom = add_options[p_idx].is_custom;
+
+	if (!is_custom && add_options[p_idx].type != String()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(add_options[p_idx].type));
 		ERR_FAIL_COND(!vsn);
 
@@ -2164,8 +2226,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Screen", "Color", "Operators", "VisualShaderNodeColorOp", TTR("Screen operator."), VisualShaderNodeColorOp::OP_SCREEN, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("SoftLight", "Color", "Operators", "VisualShaderNodeColorOp", TTR("SoftLight operator."), VisualShaderNodeColorOp::OP_SOFT_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR));
 
-	add_options.push_back(AddOption("ColorConstant", "Color", "Variables", "VisualShaderNodeColorConstant", TTR("Color constant."), -1, VisualShaderNode::PORT_TYPE_COLOR));
-	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), -1, VisualShaderNode::PORT_TYPE_COLOR));
+	add_options.push_back(AddOption("ColorConstant", "Color", "Variables", "VisualShaderNodeColorConstant", TTR("Color constant."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
 
 	// CONDITIONAL
 
@@ -2368,12 +2430,12 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// TEXTURES
 
-	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
-	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
+	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
 
-	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
-	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_COLOR));
-	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, VisualShaderNode::PORT_TYPE_COLOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
 
 	// TRANSFORM
 
