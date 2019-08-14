@@ -283,20 +283,6 @@ void FindReplaceBar::_get_search_from(int &r_line, int &r_col) {
 	r_line = text_edit->cursor_get_line();
 	r_col = text_edit->cursor_get_column();
 
-	if (text_edit->is_selection_active() && !replace_all_mode) {
-
-		int selection_line = text_edit->get_selection_from_line();
-
-		if (text_edit->get_selection_text() == get_search_text() && r_line == selection_line) {
-
-			int selection_from_col = text_edit->get_selection_from_column();
-
-			if (r_col >= selection_from_col && r_col <= text_edit->get_selection_to_column()) {
-				r_col = selection_from_col;
-			}
-		}
-	}
-
 	if (r_line == result_line && r_col >= result_col && r_col <= result_col + get_search_text().length()) {
 		r_col = result_col;
 	}
@@ -361,6 +347,9 @@ bool FindReplaceBar::search_current() {
 
 bool FindReplaceBar::search_prev() {
 
+	if (!is_visible())
+		popup_search(true);
+
 	uint32_t flags = 0;
 	String text = get_search_text();
 
@@ -373,6 +362,8 @@ bool FindReplaceBar::search_prev() {
 
 	int line, col;
 	_get_search_from(line, col);
+	if (text_edit->is_selection_active())
+		col--; //Skip currently selected word.
 
 	if (line == result_line && col == result_col) {
 		col -= text.length();
@@ -388,6 +379,9 @@ bool FindReplaceBar::search_prev() {
 }
 
 bool FindReplaceBar::search_next() {
+
+	if (!is_visible())
+		popup_search(true);
 
 	uint32_t flags = 0;
 	String text;
@@ -428,34 +422,51 @@ void FindReplaceBar::_hide_bar() {
 	hide();
 }
 
-void FindReplaceBar::_show_search() {
+void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 
 	show();
-	search_text->call_deferred("grab_focus");
+	if (p_show_only)
+		return;
+
+	if (p_focus_replace) {
+		search_text->deselect();
+		replace_text->call_deferred("grab_focus");
+	} else {
+		replace_text->deselect();
+		search_text->call_deferred("grab_focus");
+	}
 
 	if (text_edit->is_selection_active() && !selection_only->is_pressed()) {
 		search_text->set_text(text_edit->get_selection_text());
 	}
 
 	if (!get_search_text().empty()) {
-		search_text->select_all();
-		search_text->set_cursor_position(search_text->get_text().length());
-		search_current();
+		if (p_focus_replace) {
+			replace_text->select_all();
+			replace_text->set_cursor_position(replace_text->get_text().length());
+		} else {
+			search_text->select_all();
+			search_text->set_cursor_position(search_text->get_text().length());
+		}
+
+		results_count = -1;
+		_update_results_count();
+		_update_matches_label();
 	}
 }
 
-void FindReplaceBar::popup_search() {
+void FindReplaceBar::popup_search(bool p_show_only) {
 
-	replace_text->hide();
+	if (!is_visible())
+		replace_text->hide();
 	hbc_button_replace->hide();
 	hbc_option_replace->hide();
-	_show_search();
+	_show_search(false, p_show_only);
 }
 
 void FindReplaceBar::popup_replace() {
 
 	if (!replace_text->is_visible_in_tree()) {
-		replace_text->clear();
 		replace_text->show();
 		hbc_button_replace->show();
 		hbc_option_replace->show();
@@ -463,7 +474,7 @@ void FindReplaceBar::popup_replace() {
 
 	selection_only->set_pressed((text_edit->is_selection_active() && text_edit->get_selection_from_line() < text_edit->get_selection_to_line()));
 
-	_show_search();
+	_show_search(is_visible() || text_edit->is_selection_active());
 }
 
 void FindReplaceBar::_search_options_changed(bool p_pressed) {
