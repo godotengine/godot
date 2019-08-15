@@ -37,8 +37,10 @@ void AudioStreamTransitioner::set_position(uint64_t p) {
 	pos = p;
 }
 
-void AudioStreamTransitioner::set_bpm(int beats_per_minute) {
-	bpm = beats_per_minute;
+void AudioStreamTransitioner::set_bpm(int p_bpm) {
+	ERR_FAIL_COND(p_bpm< 40 || p_bpm > 300);
+
+	bpm = p_bpm;
 }
 
 int AudioStreamTransitioner::get_bpm() {
@@ -46,6 +48,8 @@ int AudioStreamTransitioner::get_bpm() {
 }
 
 void AudioStreamTransitioner::set_transition_count(int t_count) {
+	ERR_FAIL_COND(t_count < 0 || t_count > MAX_TRANSITIONS);
+
 	transition_count = t_count;
 }
 
@@ -54,6 +58,8 @@ int AudioStreamTransitioner::get_transition_count() {
 }
 
 void AudioStreamTransitioner::set_clip_count(int p_clip_count) {
+	ERR_FAIL_COND(p_clip_count < 0 || p_clip_count > MAX_STREAMS);
+
 	clip_count = p_clip_count;
 }
 
@@ -84,14 +90,21 @@ Ref<AudioStream> AudioStreamTransitioner::get_transition_clip() {
 }
 
 void AudioStreamTransitioner::set_transition_fade_in(int t_number, int f_in) {
+	ERR_FAIL_COND(t_number < 0 || t_number > MAX_TRANSITIONS);
+	ERR_FAIL_COND(f_in < 0 || f_in > 64)
+
 	transitions[t_number].fade_in_beats = f_in;
 }
 
 int AudioStreamTransitioner::get_transition_fade_in(int t_number) {
+
 	return transitions[t_number].fade_in_beats;
 }
 
 void AudioStreamTransitioner::set_transition_fade_out(int t_number, int f_out) {
+	ERR_FAIL_COND(t_number < 0 || t_number > MAX_TRANSITIONS);
+	ERR_FAIL_COND(f_out < 0 || f_out > 64)
+
 	transitions[t_number].fade_out_beats = f_out;
 }
 
@@ -118,13 +131,14 @@ Ref<AudioStream> AudioStreamTransitioner::get_list_clip(int clip_number) {
 	return clips[clip_number];
 }
 
-void AudioStreamTransitioner::set_active_transition(int transition_number, bool trigger) {
+void AudioStreamTransitioner::set_active_transition(int t_number, bool trigger) {
+	ERR_FAIL_COND(t_number < 0 || t_number > MAX_TRANSITIONS);
 	for (int i = 0; i < transition_count; i++) {
 		transitions[i].t_active = false;
 		_change_notify();
 	}
-	transitions[transition_number].t_active = trigger;
-	active_transition = transitions[transition_number];
+	transitions[t_number].t_active = trigger;
+	active_transition = transitions[t_number];
 	
 }
 
@@ -133,8 +147,9 @@ bool AudioStreamTransitioner::get_transition_state(int transition_number) {
 }
 
 void AudioStreamTransitioner::set_active_clip_number(int clip_number) {
+	ERR_FAIL_COND(clip_number < 0 || clip_number > MAX_STREAMS)
 	fading_clip_number = active_clip_number;
-	active_clip_number = clip_number -1;
+	active_clip_number = clip_number ;
 }
 
 int AudioStreamTransitioner::get_active_clip_number() {
@@ -144,7 +159,6 @@ int AudioStreamTransitioner::get_active_clip_number() {
 void AudioStreamTransitioner::go_to_clip(int clip_number, int transition_number) {
 	active_clip_number = clip_number;
 	set_active_transition(transition_number, true);
-	active_transition.t_active = true;
 }
 
 void AudioStreamTransitioner::_validate_property(PropertyInfo &property) const {
@@ -203,18 +217,18 @@ void AudioStreamTransitioner::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "clip_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_clip_count", "get_clip_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transition_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_TRANSITIONS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_transition_count", "get_transition_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "active_clip", PROPERTY_HINT_RANGE, "1,65"), "set_active_clip_number", "get_active_clip_number");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "active_clip", PROPERTY_HINT_RANGE, "0,64"), "set_active_clip_number", "get_active_clip_number");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transition_clip_active"), "set_transition_clip_active", "get_transition_clip_active");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trans_clip", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "add_transition_clip", "get_transition_clip");
 
 	for (int i = 0; i < MAX_STREAMS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clip_" + itos(i+1), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_clip", "get_list_clip", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clip_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_clip", "get_list_clip", i);
 	}
 
 	for (int i = 0; i < MAX_TRANSITIONS; i++) {
-		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i+1) + "/fade_in_beats", PROPERTY_HINT_RANGE, "0,40", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_in", "get_transition_fade_in", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i+1) + "/fade_out_beats", PROPERTY_HINT_RANGE, "0,40", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_out", "get_transition_fade_out", i);
-		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transition_" + itos(i+1) + "/active"), "set_active_transition", "get_transition_state", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i) + "/fade_in_beats", PROPERTY_HINT_RANGE, "0,64", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_in", "get_transition_fade_in", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i) + "/fade_out_beats", PROPERTY_HINT_RANGE, "0,64", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_out", "get_transition_fade_out", i);
+		ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transition_" + itos(i) + "/active"), "set_active_transition", "get_transition_state", i);
 	}
 
 
