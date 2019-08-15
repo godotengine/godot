@@ -754,15 +754,14 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 
 		for (int32_t buffer_x = 0; buffer_x < dst_width; buffer_x++) {
 
-			float src_real_x = buffer_x * x_scale;
-			int32_t src_x = src_real_x;
-
-			int32_t start_x = MAX(0, src_x - half_kernel + 1);
-			int32_t end_x = MIN(src_width - 1, src_x + half_kernel);
+			// The corresponding point on the source image
+			float src_x = (buffer_x + 0.5f) * x_scale; // Offset by 0.5 so it uses the pixel's center
+			int32_t start_x = MAX(0, int32_t(src_x) - half_kernel + 1);
+			int32_t end_x = MIN(src_width - 1, int32_t(src_x) + half_kernel);
 
 			// Create the kernel used by all the pixels of the column
 			for (int32_t target_x = start_x; target_x <= end_x; target_x++)
-				kernel[target_x - start_x] = _lanczos((src_real_x - target_x) / scale_factor);
+				kernel[target_x - start_x] = _lanczos((target_x + 0.5f - src_x) / scale_factor);
 
 			for (int32_t buffer_y = 0; buffer_y < src_height; buffer_y++) {
 
@@ -805,14 +804,12 @@ static void _scale_lanczos(const uint8_t *__restrict p_src, uint8_t *__restrict 
 
 		for (int32_t dst_y = 0; dst_y < dst_height; dst_y++) {
 
-			float buffer_real_y = dst_y * y_scale;
-			int32_t buffer_y = buffer_real_y;
-
-			int32_t start_y = MAX(0, buffer_y - half_kernel + 1);
-			int32_t end_y = MIN(src_height - 1, buffer_y + half_kernel);
+			float buffer_y = (dst_y + 0.5f) * y_scale;
+			int32_t start_y = MAX(0, int32_t(buffer_y) - half_kernel + 1);
+			int32_t end_y = MIN(src_height - 1, int32_t(buffer_y) + half_kernel);
 
 			for (int32_t target_y = start_y; target_y <= end_y; target_y++)
-				kernel[target_y - start_y] = _lanczos((buffer_real_y - target_y) / scale_factor);
+				kernel[target_y - start_y] = _lanczos((target_y + 0.5f - buffer_y) / scale_factor);
 
 			for (int32_t dst_x = 0; dst_x < dst_width; dst_x++) {
 
