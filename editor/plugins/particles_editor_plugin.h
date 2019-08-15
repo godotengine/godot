@@ -49,8 +49,6 @@ protected:
 	EditorFileDialog *emission_file_dialog;
 	SceneTreeDialog *emission_tree_dialog;
 
-	ConfirmationDialog *err_dialog;
-
 	ConfirmationDialog *emission_dialog;
 	SpinBox *emission_amount;
 	OptionButton *emission_fill;
