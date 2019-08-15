@@ -594,7 +594,7 @@ real_t RigidBody2D::get_mass() const {
 
 void RigidBody2D::set_inertia(real_t p_inertia) {
 
-	ERR_FAIL_COND(p_inertia <= 0);
+	ERR_FAIL_COND(p_inertia < 0);
 	Physics2DServer::get_singleton()->body_set_param(get_rid(), Physics2DServer::BODY_PARAM_INERTIA, p_inertia);
 }
 
