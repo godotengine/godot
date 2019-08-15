@@ -2075,10 +2075,12 @@ void ProjectManager::_rename_project() {
 
 void ProjectManager::_erase_project_confirm() {
 	_project_list->erase_selected_projects();
+	_update_project_buttons();
 }
 
 void ProjectManager::_erase_missing_projects_confirm() {
 	_project_list->erase_missing_projects();
+	_update_project_buttons();
 }
 
 void ProjectManager::_erase_project() {
