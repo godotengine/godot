@@ -270,10 +270,10 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	if (!p_video) {
 		preview.image = get_icon("ThumbnailWait", "EditorIcons");
 	}
-	if (preview_images.size() == 0 && !p_video) {
+	preview_images.push_back(preview);
+	if (preview_images.size() == 1 && !p_video) {
 		_preview_click(p_id);
 	}
-	preview_images.push_back(preview);
 }
 
 EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
