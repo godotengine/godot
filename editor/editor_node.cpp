@@ -1926,10 +1926,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 	switch (p_option) {
 		case FILE_NEW_SCENE: {
 
-			int idx = editor_data.add_edited_scene(-1);
-			_scene_tab_changed(idx);
-			editor_data.clear_editor_states();
-			_update_scene_tabs();
+			new_scene();
 
 		} break;
 		case FILE_NEW_INHERITED_SCENE:
@@ -3160,6 +3157,14 @@ bool EditorNode::is_scene_open(const String &p_path) {
 
 void EditorNode::fix_dependencies(const String &p_for_file) {
 	dependency_fixer->edit(p_for_file);
+}
+
+int EditorNode::new_scene() {
+	int idx = editor_data.add_edited_scene(-1);
+	_scene_tab_changed(idx);
+	editor_data.clear_editor_states();
+	_update_scene_tabs();
+	return idx;
 }
 
 Error EditorNode::load_scene(const String &p_scene, bool p_ignore_broken_deps, bool p_set_inherited, bool p_clear_errors, bool p_force_open_imported) {

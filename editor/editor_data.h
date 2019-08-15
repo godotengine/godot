@@ -117,6 +117,7 @@ public:
 
 	struct EditedScene {
 		Node *root;
+		String path;
 		Dictionary editor_states;
 		List<Node *> selection;
 		Vector<EditorHistory::History> history_stored;
