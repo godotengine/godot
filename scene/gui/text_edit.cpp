@@ -1403,7 +1403,7 @@ void TextEdit::_notification(int p_what) {
 				}
 				int line_from = CLAMP(completion_index - lines / 2, 0, completion_options.size() - lines);
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(completion_rect.position.x, completion_rect.position.y + (completion_index - line_from) * get_row_height()), Size2(completion_rect.size.width, get_row_height())), cache.completion_selected_color);
-				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(nofs, completion_rect.size.height)), cache.completion_existing_color);
+				draw_rect(Rect2(completion_rect.position + Vector2(icon_area_size.x + icon_hsep, 0), Size2(MIN(nofs, completion_rect.size.width - (icon_area_size.x + icon_hsep)), completion_rect.size.height)), cache.completion_existing_color);
 
 				for (int i = 0; i < lines; i++) {
 
@@ -1430,7 +1430,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					title_pos.x = icon_area.position.x + icon_area.size.width + icon_hsep;
-					draw_string(cache.font, title_pos, completion_options[l].display, text_color, completion_rect.size.width);
+					draw_string(cache.font, title_pos, completion_options[l].display, text_color, completion_rect.size.width - (icon_area_size.x + icon_hsep));
 				}
 
 				if (scrollw) {
