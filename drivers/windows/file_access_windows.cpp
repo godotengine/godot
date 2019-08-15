@@ -172,8 +172,6 @@ void FileAccessWindows::close() {
 		}
 
 		save_path = "";
-
-		ERR_FAIL_COND(rename_error);
 	}
 }
 
@@ -334,8 +332,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 
 		return st.st_mtime;
 	} else {
-		ERR_EXPLAIN("Failed to get modified time for: " + file);
-		ERR_FAIL_V(0);
+		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + file + ".");
 	}
 }
 

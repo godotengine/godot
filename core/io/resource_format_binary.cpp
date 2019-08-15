@@ -490,8 +490,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 #endif
 
 			} else {
-				ERR_EXPLAIN("Vector2 size is NOT 8!");
-				ERR_FAIL_V(ERR_UNAVAILABLE);
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector2 size is NOT 8!");
 			}
 			w.release();
 			r_v = array;
@@ -518,8 +517,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 #endif
 
 			} else {
-				ERR_EXPLAIN("Vector3 size is NOT 12!");
-				ERR_FAIL_V(ERR_UNAVAILABLE);
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Vector3 size is NOT 12!");
 			}
 			w.release();
 			r_v = array;
@@ -546,8 +544,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 #endif
 
 			} else {
-				ERR_EXPLAIN("Color size is NOT 16!");
-				ERR_FAIL_V(ERR_UNAVAILABLE);
+				ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "Color size is NOT 16!");
 			}
 			w.release();
 			r_v = array;
@@ -571,7 +568,7 @@ Error ResourceInteractiveLoaderBinary::parse_variant(Variant &r_v) {
 				const uint32_t current_version = 0;
 				if (format_version > current_version) {
 
-					ERR_PRINT("Format version for encoded binary image is too new");
+					ERR_PRINT("Format version for encoded binary image is too new.");
 					return ERR_PARSE_ERROR;
 				}
 
@@ -655,8 +652,7 @@ Error ResourceInteractiveLoaderBinary::poll() {
 			} else {
 
 				error = ERR_FILE_MISSING_DEPENDENCIES;
-				ERR_EXPLAIN("Can't load dependency: " + path);
-				ERR_FAIL_V(error);
+				ERR_FAIL_V_MSG(error, "Can't load dependency: " + path + ".");
 			}
 
 		} else {
@@ -711,16 +707,15 @@ Error ResourceInteractiveLoaderBinary::poll() {
 	Object *obj = ClassDB::instance(t);
 	if (!obj) {
 		error = ERR_FILE_CORRUPT;
-		ERR_EXPLAIN(local_path + ":Resource of unrecognized type in file: " + t);
-		ERR_FAIL_V(ERR_FILE_CORRUPT);
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource of unrecognized type in file: " + t + ".");
 	}
 
 	Resource *r = Object::cast_to<Resource>(obj);
 	if (!r) {
+		String obj_class = obj->get_class();
 		error = ERR_FILE_CORRUPT;
-		ERR_EXPLAIN(local_path + ":Resource type in resource field not a resource, type is: " + obj->get_class());
 		memdelete(obj); //bye
-		ERR_FAIL_V(ERR_FILE_CORRUPT);
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, local_path + ":Resource type in resource field not a resource, type is: " + obj_class + ".");
 	}
 
 	RES res = RES(r);
@@ -850,8 +845,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 		//not normal
 
 		error = ERR_FILE_UNRECOGNIZED;
-		ERR_EXPLAIN("Unrecognized binary resource file: " + local_path);
-		ERR_FAIL();
+		ERR_FAIL_MSG("Unrecognized binary resource file: " + local_path + ".");
 	}
 
 	bool big_endian = f->get_32();
@@ -877,8 +871,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	if (ver_format > FORMAT_VERSION || ver_major > VERSION_MAJOR) {
 
 		f->close();
-		ERR_EXPLAIN("File Format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path);
-		ERR_FAIL();
+		ERR_FAIL_MSG("File format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path + ".");
 	}
 
 	type = get_unicode_string();
@@ -926,8 +919,7 @@ void ResourceInteractiveLoaderBinary::open(FileAccess *p_f) {
 	if (f->eof_reached()) {
 
 		error = ERR_FILE_CORRUPT;
-		ERR_EXPLAIN("Premature End Of File: " + local_path);
-		ERR_FAIL();
+		ERR_FAIL_MSG("Premature end of file (EOF): " + local_path + ".");
 	}
 }
 
@@ -1084,8 +1076,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		//error=ERR_FILE_UNRECOGNIZED;
 		memdelete(f);
-		ERR_EXPLAIN("Unrecognized binary resource file: " + local_path);
-		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unrecognized binary resource file: " + local_path + ".");
 	} else {
 		fw = FileAccess::open(p_path + ".depren", FileAccess::WRITE);
 		if (!fw) {
@@ -1122,7 +1113,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 		memdelete(da);
 		//use the old approach
 
-		WARN_PRINT(("This file is old, so it can't refactor dependencies, opening and resaving: " + p_path).utf8().get_data());
+		WARN_PRINTS("This file is old, so it can't refactor dependencies, opening and resaving: " + p_path + ".");
 
 		Error err;
 		f = FileAccess::open(p_path, FileAccess::READ, &err);
@@ -1153,8 +1144,7 @@ Error ResourceFormatLoaderBinary::rename_dependencies(const String &p_path, cons
 
 		memdelete(f);
 		memdelete(fw);
-		ERR_EXPLAIN("File Format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path);
-		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "File format '" + itos(FORMAT_VERSION) + "." + itos(ver_major) + "." + itos(ver_minor) + "' is too new! Please upgrade to a new engine version: " + local_path + ".");
 	}
 
 	// Since we're not actually converting the file contents, leave the version
@@ -1477,7 +1467,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 		case Variant::_RID: {
 
 			f->store_32(VARIANT_RID);
-			WARN_PRINT("Can't save RIDs");
+			WARN_PRINT("Can't save RIDs.");
 			RID val = p_property;
 			f->store_32(val.get_id());
 		} break;
@@ -1497,8 +1487,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 
 				if (!resource_set.has(res)) {
 					f->store_32(OBJECT_EMPTY);
-					ERR_EXPLAIN("Resource was not pre cached for the resource section, most likely due to circular refedence.");
-					ERR_FAIL();
+					ERR_FAIL_MSG("Resource was not pre cached for the resource section, most likely due to circular reference.");
 				}
 
 				f->store_32(OBJECT_INTERNAL_RESOURCE);
@@ -1629,8 +1618,7 @@ void ResourceFormatSaverBinaryInstance::write_variant(FileAccess *f, const Varia
 		} break;
 		default: {
 
-			ERR_EXPLAIN("Invalid variant");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Invalid variant.");
 		}
 	}
 }

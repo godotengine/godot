@@ -453,8 +453,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 			path = target_path + "/";
 		} else {
 			memdelete(dirAccess);
-			ERR_EXPLAIN(vformat(TTR("Cannot navigate to '%s' as it has not been found in the file system!"), p_path));
-			ERR_FAIL();
+			ERR_FAIL_MSG(vformat("Cannot navigate to '%s' as it has not been found in the file system!", p_path));
 		}
 		memdelete(dirAccess);
 	}

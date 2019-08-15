@@ -986,9 +986,10 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				} else {
 					new_node = Object::cast_to<Node>(ClassDB::instance(selected_favorite_root));
 				}
+
 				if (!new_node) {
-					ERR_EXPLAIN("Creating root from favorite '" + selected_favorite_root + "' failed. Creating 'Node' instead.");
 					new_node = memnew(Node);
+					ERR_PRINTS("Creating root from favorite '" + selected_favorite_root + "' failed. Creating 'Node' instead.");
 				}
 			} else {
 				switch (p_tool) {
@@ -1537,10 +1538,7 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	Node *validate = new_parent;
 	while (validate) {
 
-		if (p_nodes.find(validate) != -1) {
-			ERR_EXPLAIN("Selection changed at some point.. can't reparent");
-			ERR_FAIL();
-		}
+		ERR_FAIL_COND_MSG(p_nodes.find(validate) != -1, "Selection changed at some point.. can't reparent.");
 		validate = validate->get_parent();
 	}
 	//ok all valid
@@ -2253,8 +2251,7 @@ void SceneTreeDock::_normalize_drop(Node *&to_node, int &to_pos, int p_type) {
 		//drop at above selected node
 		if (to_node == EditorNode::get_singleton()->get_edited_scene()) {
 			to_node = NULL;
-			ERR_EXPLAIN("Cannot perform drop above the root node!");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Cannot perform drop above the root node!");
 		}
 
 		to_pos = to_node->get_index();

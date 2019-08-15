@@ -89,7 +89,7 @@ Error ScriptDebuggerRemote::connect_to_host(const String &p_host, uint16_t p_por
 
 	if (tcp_client->get_status() != StreamPeerTCP::STATUS_CONNECTED) {
 
-		ERR_PRINTS("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()));
+		ERR_PRINTS("Remote Debugger: Unable to connect. Status: " + String::num(tcp_client->get_status()) + ".");
 		return FAILED;
 	};
 
@@ -110,7 +110,7 @@ void ScriptDebuggerRemote::_put_variable(const String &p_name, const Variant &p_
 	int len = 0;
 	Error err = encode_variant(var, NULL, len, true);
 	if (err != OK)
-		ERR_PRINT("Failed to encode variant");
+		ERR_PRINT("Failed to encode variant.");
 
 	if (len > packet_peer_stream->get_output_buffer_max_size()) { //limit to max size
 		packet_peer_stream->put_var(Variant());
@@ -134,10 +134,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 	//this function is called when there is a debugger break (bug on script)
 	//or when execution is paused from editor
 
-	if (!tcp_client->is_connected_to_host()) {
-		ERR_EXPLAIN("Script Debugger failed to connect, but being used anyway.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!tcp_client->is_connected_to_host(), "Script Debugger failed to connect, but being used anyway.");
 
 	packet_peer_stream->put_var("debug_enter");
 	packet_peer_stream->put_var(2);

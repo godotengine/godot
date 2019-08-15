@@ -500,8 +500,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 	if (hdr[0] != 'E' || hdr[1] != 'C' || hdr[2] != 'F' || hdr[3] != 'G') {
 
 		memdelete(f);
-		ERR_EXPLAIN("Corrupted header in binary project.binary (not ECFG)");
-		ERR_FAIL_V(ERR_FILE_CORRUPT);
+		ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Corrupted header in binary project.binary (not ECFG).");
 	}
 
 	uint32_t count = f->get_32();
@@ -522,8 +521,7 @@ Error ProjectSettings::_load_settings_binary(const String &p_path) {
 		f->get_buffer(d.ptrw(), vlen);
 		Variant value;
 		err = decode_variant(value, d.ptr(), d.size(), NULL, true);
-		ERR_EXPLAIN("Error decoding property: " + key);
-		ERR_CONTINUE(err != OK);
+		ERR_CONTINUE_MSG(err != OK, "Error decoding property: " + key + ".");
 		set(key, value);
 	}
 
@@ -577,8 +575,7 @@ Error ProjectSettings::_load_settings_text(const String &p_path) {
 				config_version = value;
 				if (config_version > CONFIG_VERSION) {
 					memdelete(f);
-					ERR_EXPLAIN(vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
-					ERR_FAIL_V(ERR_FILE_CANT_OPEN);
+					ERR_FAIL_V_MSG(ERR_FILE_CANT_OPEN, vformat("Can't open project at '%s', its `config_version` (%d) is from a more recent and incompatible version of the engine. Expected config version: %d.", p_path, config_version, CONFIG_VERSION));
 				}
 			} else {
 				if (section == String()) {
@@ -645,11 +642,7 @@ Error ProjectSettings::_save_settings_binary(const String &p_file, const Map<Str
 
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
-	if (err != OK) {
-
-		ERR_EXPLAIN("Couldn't save project.binary at " + p_file);
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.binary at " + p_file + ".");
 
 	uint8_t hdr[4] = { 'E', 'C', 'F', 'G' };
 	file->store_buffer(hdr, 4);
@@ -738,10 +731,7 @@ Error ProjectSettings::_save_settings_text(const String &p_file, const Map<Strin
 	Error err;
 	FileAccess *file = FileAccess::open(p_file, FileAccess::WRITE, &err);
 
-	if (err) {
-		ERR_EXPLAIN("Couldn't save project.godot - " + p_file);
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Couldn't save project.godot - " + p_file + ".");
 
 	file->store_line("; Engine configuration file.");
 	file->store_line("; It's best edited using the editor UI and not directly,");
@@ -872,8 +862,7 @@ Error ProjectSettings::save_custom(const String &p_path, const CustomMap &p_cust
 		return _save_settings_binary(p_path, props, p_custom, custom_features);
 	else {
 
-		ERR_EXPLAIN("Unknown config file format: " + p_path);
-		ERR_FAIL_V(ERR_FILE_UNRECOGNIZED);
+		ERR_FAIL_V_MSG(ERR_FILE_UNRECOGNIZED, "Unknown config file format: " + p_path + ".");
 	}
 }
 

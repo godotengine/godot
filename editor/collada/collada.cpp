@@ -1903,8 +1903,7 @@ void Collada::_parse_animation(XMLParser &parser) {
 
 			Vector<float> &output = float_sources[output_id];
 
-			ERR_EXPLAIN("Wrong number of keys in output");
-			ERR_CONTINUE((output.size() / stride) != key_count);
+			ERR_CONTINUE_MSG((output.size() / stride) != key_count, "Wrong number of keys in output.");
 
 			for (int j = 0; j < key_count; j++) {
 				track.keys.write[j].data.resize(output_len);
@@ -2447,8 +2446,7 @@ void Collada::_find_morph_nodes(VisualScene *p_vscene, Node *p_node) {
 					state.morph_ownership_map[base] = nj->id;
 					break;
 				} else {
-					ERR_EXPLAIN("Invalid scene");
-					ERR_FAIL();
+					ERR_FAIL_MSG("Invalid scene.");
 				}
 			}
 		}

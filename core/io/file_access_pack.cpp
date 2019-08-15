@@ -171,10 +171,8 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 	uint32_t ver_minor = f->get_32();
 	f->get_32(); // ver_rev
 
-	ERR_EXPLAIN("Pack version unsupported: " + itos(version));
-	ERR_FAIL_COND_V(version != PACK_VERSION, false);
-	ERR_EXPLAIN("Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor));
-	ERR_FAIL_COND_V(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false);
+	ERR_FAIL_COND_V_MSG(version != PACK_VERSION, false, "Pack version unsupported: " + itos(version) + ".");
+	ERR_FAIL_COND_V_MSG(ver_major > VERSION_MAJOR || (ver_major == VERSION_MAJOR && ver_minor > VERSION_MINOR), false, "Pack created with a newer version of the engine: " + itos(ver_major) + "." + itos(ver_minor) + ".");
 
 	for (int i = 0; i < 16; i++) {
 		//reserved
@@ -322,10 +320,9 @@ bool FileAccessPack::file_exists(const String &p_name) {
 FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFile &p_file) :
 		pf(p_file),
 		f(FileAccess::open(pf.pack, FileAccess::READ)) {
-	if (!f) {
-		ERR_EXPLAIN("Can't open pack-referenced file: " + String(pf.pack));
-		ERR_FAIL_COND(!f);
-	}
+
+	ERR_FAIL_COND_MSG(!f, "Can't open pack-referenced file: " + String(pf.pack) + ".");
+
 	f->seek(pf.offset);
 	pos = 0;
 	eof = false;

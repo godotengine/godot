@@ -1451,10 +1451,7 @@ void EditorSettings::add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcu
 bool EditorSettings::is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const {
 
 	const Map<String, Ref<ShortCut> >::Element *E = shortcuts.find(p_name);
-	if (!E) {
-		ERR_EXPLAIN("Unknown Shortcut: " + p_name);
-		ERR_FAIL_V(false);
-	}
+	ERR_FAIL_COND_V_MSG(!E, false, "Unknown Shortcut: " + p_name + ".");
 
 	return E->get()->is_shortcut(p_event);
 }
@@ -1483,10 +1480,8 @@ Ref<ShortCut> ED_GET_SHORTCUT(const String &p_path) {
 	}
 
 	Ref<ShortCut> sc = EditorSettings::get_singleton()->get_shortcut(p_path);
-	if (!sc.is_valid()) {
-		ERR_EXPLAIN("Used ED_GET_SHORTCUT with invalid shortcut: " + p_path);
-		ERR_FAIL_COND_V(!sc.is_valid(), sc);
-	}
+
+	ERR_FAIL_COND_V_MSG(!sc.is_valid(), sc, "Used ED_GET_SHORTCUT with invalid shortcut: " + p_path + ".");
 
 	return sc;
 }

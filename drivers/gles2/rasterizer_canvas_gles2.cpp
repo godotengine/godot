@@ -1265,14 +1265,11 @@ void RasterizerCanvasGLES2::_canvas_item_render_commands(Item *p_item, Item *cur
 void RasterizerCanvasGLES2::_copy_screen(const Rect2 &p_rect) {
 
 	if (storage->frame.current_rt->flags[RasterizerStorage::RENDER_TARGET_DIRECT_TO_SCREEN]) {
-		ERR_PRINT_ONCE("Cannot use screen texture copying in render target set to render direct to screen");
+		ERR_PRINT_ONCE("Cannot use screen texture copying in render target set to render direct to screen.");
 		return;
 	}
 
-	if (storage->frame.current_rt->copy_screen_effect.color == 0) {
-		ERR_EXPLAIN("Can't use screen texture copying in a render target configured without copy buffers");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(storage->frame.current_rt->copy_screen_effect.color == 0, "Can't use screen texture copying in a render target configured without copy buffers.");
 
 	glDisable(GL_BLEND);
 

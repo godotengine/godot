@@ -81,8 +81,7 @@ static void _parse_hex(const String &p_string, int p_start, uint8_t *p_dst) {
 		} else if (c == ':') {
 			break;
 		} else {
-			ERR_EXPLAIN("Invalid character in ipv6 address: " + p_string);
-			ERR_FAIL();
+			ERR_FAIL_MSG("Invalid character in IPv6 address: " + p_string + ".");
 		};
 		ret = ret << 4;
 		ret += n;
@@ -126,9 +125,7 @@ void IP_Address::_parse_ipv6(const String &p_string) {
 				++parts_count;
 			};
 		} else {
-
-			ERR_EXPLAIN("Invalid character in IPv6 address: " + p_string);
-			ERR_FAIL();
+			ERR_FAIL_MSG("Invalid character in IPv6 address: " + p_string + ".");
 		};
 	};
 
@@ -166,10 +163,7 @@ void IP_Address::_parse_ipv4(const String &p_string, int p_start, uint8_t *p_ret
 	};
 
 	int slices = ip.get_slice_count(".");
-	if (slices != 4) {
-		ERR_EXPLAIN("Invalid IP Address String: " + ip);
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(slices != 4, "Invalid IP address string: " + ip + ".");
 	for (int i = 0; i < 4; i++) {
 		p_ret[i] = ip.get_slicec('.', i).to_int();
 	}
@@ -229,7 +223,7 @@ IP_Address::IP_Address(const String &p_string) {
 		valid = true;
 
 	} else {
-		ERR_PRINT("Invalid IP address");
+		ERR_PRINT("Invalid IP address.");
 	}
 }
 

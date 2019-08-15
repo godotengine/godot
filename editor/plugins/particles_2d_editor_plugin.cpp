@@ -160,8 +160,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 	Ref<Image> img;
 	img.instance();
 	Error err = ImageLoader::load_image(source_emission_file, img);
-	ERR_EXPLAIN(TTR("Error loading image:") + " " + source_emission_file);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Error loading image: " + source_emission_file + ".");
 
 	if (img->is_compressed()) {
 		img->decompress();
@@ -269,8 +268,7 @@ void Particles2DEditorPlugin::_generate_emission_mask() {
 		valid_normals.resize(vpc);
 	}
 
-	ERR_EXPLAIN(TTR("No pixels with transparency > 128 in image..."));
-	ERR_FAIL_COND(valid_positions.size() == 0);
+	ERR_FAIL_COND_MSG(valid_positions.size() == 0, "No pixels with transparency > 128 in image...");
 
 	PoolVector<uint8_t> texdata;
 

@@ -423,8 +423,7 @@ void Image::convert(Format p_new_format) {
 
 	if (format > FORMAT_RGBE9995 || p_new_format > FORMAT_RGBE9995) {
 
-		ERR_EXPLAIN("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
-		ERR_FAIL();
+		ERR_FAIL_MSG("Cannot convert to <-> from compressed formats. Use compress() and decompress() instead.");
 
 	} else if (format > FORMAT_RGBA8 || p_new_format > FORMAT_RGBA8) {
 
@@ -864,10 +863,7 @@ bool Image::is_size_po2() const {
 
 void Image::resize_to_po2(bool p_square) {
 
-	if (!_can_modify(format)) {
-		ERR_EXPLAIN("Cannot resize in indexed, compressed or custom image formats.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in indexed, compressed or custom image formats.");
 
 	int w = next_power_of_2(width);
 	int h = next_power_of_2(height);
@@ -883,15 +879,9 @@ void Image::resize_to_po2(bool p_square) {
 
 void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
-	if (data.size() == 0) {
-		ERR_EXPLAIN("Cannot resize image before creating it, use create() or create_from_data() first.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use create() or create_from_data() first.");
 
-	if (!_can_modify(format)) {
-		ERR_EXPLAIN("Cannot resize in indexed, compressed or custom image formats.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in indexed, compressed or custom image formats.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
 
@@ -1104,10 +1094,8 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 
-	if (!_can_modify(format)) {
-		ERR_EXPLAIN("Cannot crop in indexed, compressed or custom image formats.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot crop in indexed, compressed or custom image formats.");
+
 	ERR_FAIL_COND(p_x < 0);
 	ERR_FAIL_COND(p_y < 0);
 	ERR_FAIL_COND(p_width <= 0);
@@ -1161,10 +1149,7 @@ void Image::crop(int p_width, int p_height) {
 
 void Image::flip_y() {
 
-	if (!_can_modify(format)) {
-		ERR_EXPLAIN("Cannot flip_y in indexed, compressed or custom image formats.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in indexed, compressed or custom image formats.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1197,10 +1182,7 @@ void Image::flip_y() {
 
 void Image::flip_x() {
 
-	if (!_can_modify(format)) {
-		ERR_EXPLAIN("Cannot flip_x in indexed, compressed or custom image formats.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_x in indexed, compressed or custom image formats.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1459,15 +1441,9 @@ void Image::normalize() {
 
 Error Image::generate_mipmaps(bool p_renormalize) {
 
-	if (!_can_modify(format)) {
-		ERR_EXPLAIN("Cannot generate mipmaps in indexed, compressed or custom image formats.");
-		ERR_FAIL_V(ERR_UNAVAILABLE);
-	}
+	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in indexed, compressed or custom image formats.");
 
-	if (width == 0 || height == 0) {
-		ERR_EXPLAIN("Cannot generate mipmaps with width or height equal to 0.");
-		ERR_FAIL_V(ERR_UNCONFIGURED);
-	}
+	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 
 	int mmcount;
 
@@ -1618,10 +1594,7 @@ void Image::create(int p_width, int p_height, bool p_use_mipmaps, Format p_forma
 	int mm;
 	int size = _get_dst_image_size(p_width, p_height, p_format, mm, p_use_mipmaps ? -1 : 0);
 
-	if (size != p_data.size()) {
-		ERR_EXPLAIN("Expected data size of " + itos(size) + " bytes in Image::create(), got instead " + itos(p_data.size()) + " bytes.");
-		ERR_FAIL_COND(p_data.size() != size);
-	}
+	ERR_FAIL_COND_MSG(p_data.size() != size, "Expected data size of " + itos(size) + " bytes in Image::create(), got instead " + itos(p_data.size()) + " bytes.");
 
 	height = p_height;
 	width = p_width;
@@ -2411,10 +2384,7 @@ Color Image::get_pixel(int p_x, int p_y) const {
 
 	uint8_t *ptr = write_lock.ptr();
 #ifdef DEBUG_ENABLED
-	if (!ptr) {
-		ERR_EXPLAIN("Image must be locked with 'lock()' before using get_pixel()");
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_COND_V_MSG(!ptr, Color(), "Image must be locked with 'lock()' before using get_pixel().");
 
 	ERR_FAIL_INDEX_V(p_x, width, Color());
 	ERR_FAIL_INDEX_V(p_y, height, Color());
@@ -2530,8 +2500,7 @@ Color Image::get_pixel(int p_x, int p_y) const {
 			return Color::from_rgbe9995(((uint32_t *)ptr)[ofs]);
 		}
 		default: {
-			ERR_EXPLAIN("Can't get_pixel() on compressed image, sorry.");
-			ERR_FAIL_V(Color());
+			ERR_FAIL_V_MSG(Color(), "Can't get_pixel() on compressed image, sorry.");
 		}
 	}
 }
@@ -2544,10 +2513,7 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 	uint8_t *ptr = write_lock.ptr();
 #ifdef DEBUG_ENABLED
-	if (!ptr) {
-		ERR_EXPLAIN("Image must be locked with 'lock()' before using set_pixel()");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!ptr, "Image must be locked with 'lock()' before using set_pixel().");
 
 	ERR_FAIL_INDEX(p_x, width);
 	ERR_FAIL_INDEX(p_y, height);
@@ -2659,8 +2625,7 @@ void Image::set_pixel(int p_x, int p_y, const Color &p_color) {
 
 		} break;
 		default: {
-			ERR_EXPLAIN("Can't set_pixel() on compressed image, sorry.");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Can't set_pixel() on compressed image, sorry.");
 		}
 	}
 }

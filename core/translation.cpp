@@ -848,8 +848,7 @@ void Translation::set_locale(const String &p_locale) {
 	if (!TranslationServer::is_locale_valid(univ_locale)) {
 		String trimmed_locale = get_trimmed_locale(univ_locale);
 
-		ERR_EXPLAIN("Invalid locale: " + trimmed_locale);
-		ERR_FAIL_COND(!TranslationServer::is_locale_valid(trimmed_locale));
+		ERR_FAIL_COND_MSG(!TranslationServer::is_locale_valid(trimmed_locale), "Invalid locale: " + trimmed_locale + ".");
 
 		locale = trimmed_locale;
 	} else {

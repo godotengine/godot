@@ -184,9 +184,7 @@ void IP_Unix::get_local_interfaces(Map<String, Interface_Info> *r_interfaces) co
 			continue; // will go back and alloc the right size
 		};
 
-		ERR_EXPLAIN("Call to GetAdaptersAddresses failed with error " + itos(err));
-		ERR_FAIL();
-		return;
+		ERR_FAIL_MSG("Call to GetAdaptersAddresses failed with error " + itos(err) + ".");
 	};
 
 	IP_ADAPTER_ADDRESSES *adapter = addrs;

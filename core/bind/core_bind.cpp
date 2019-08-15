@@ -73,10 +73,7 @@ RES _ResourceLoader::load(const String &p_path, const String &p_type_hint, bool 
 	Error err = OK;
 	RES ret = ResourceLoader::load(p_path, p_type_hint, p_no_cache, &err);
 
-	if (err != OK) {
-		ERR_EXPLAIN("Error loading resource: '" + p_path + "'");
-		ERR_FAIL_V(ret);
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, ret, "Error loading resource: '" + p_path + "'.");
 	return ret;
 }
 
@@ -148,10 +145,7 @@ _ResourceLoader::_ResourceLoader() {
 }
 
 Error _ResourceSaver::save(const String &p_path, const RES &p_resource, SaverFlags p_flags) {
-	if (p_resource.is_null()) {
-		ERR_EXPLAIN("Can't save empty resource to path: " + String(p_path))
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
+	ERR_FAIL_COND_V_MSG(p_resource.is_null(), ERR_INVALID_PARAMETER, "Can't save empty resource to path: " + String(p_path) + ".");
 	return ResourceSaver::save(p_path, p_resource, p_flags);
 }
 
@@ -727,22 +721,16 @@ int64_t _OS::get_unix_time_from_datetime(Dictionary datetime) const {
 		{ 0, 31, 60, 91, 121, 152, 182, 213, 244, 274, 305, 335, 366 }
 	};
 
-	ERR_EXPLAIN("Invalid second value of: " + itos(second));
-	ERR_FAIL_COND_V(second > 59, 0);
+	ERR_FAIL_COND_V_MSG(second > 59, 0, "Invalid second value of: " + itos(second) + ".");
 
-	ERR_EXPLAIN("Invalid minute value of: " + itos(minute));
-	ERR_FAIL_COND_V(minute > 59, 0);
+	ERR_FAIL_COND_V_MSG(minute > 59, 0, "Invalid minute value of: " + itos(minute) + ".");
 
-	ERR_EXPLAIN("Invalid hour value of: " + itos(hour));
-	ERR_FAIL_COND_V(hour > 23, 0);
+	ERR_FAIL_COND_V_MSG(hour > 23, 0, "Invalid hour value of: " + itos(hour) + ".");
 
-	ERR_EXPLAIN("Invalid month value of: " + itos(month));
-	ERR_FAIL_COND_V(month > 12 || month == 0, 0);
+	ERR_FAIL_COND_V_MSG(month > 12 || month == 0, 0, "Invalid month value of: " + itos(month) + ".");
 
 	// Do this check after month is tested as valid
-	ERR_EXPLAIN("Invalid day value of: " + itos(day) + " which is larger than " + itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month - 1]) + " or 0");
-	ERR_FAIL_COND_V(day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month - 1] || day == 0, 0);
-
+	ERR_FAIL_COND_V_MSG(day > MONTH_DAYS_TABLE[LEAPYEAR(year)][month - 1] || day == 0, 0, "Invalid day value of: " + itos(day) + " which is larger than " + itos(MONTH_DAYS_TABLE[LEAPYEAR(year)][month - 1]) + " or 0.");
 	// Calculate all the seconds from months past in this year
 	uint64_t SECONDS_FROM_MONTHS_PAST_THIS_YEAR = DAYS_PAST_THIS_YEAR_TABLE[LEAPYEAR(year)][month - 1] * SECONDS_PER_DAY;
 
@@ -2621,8 +2609,7 @@ void _Thread::_start_func(void *ud) {
 			}
 		}
 
-		ERR_EXPLAIN("Could not call function '" + t->target_method.operator String() + "'' starting thread ID: " + t->get_id() + " Reason: " + reason);
-		ERR_FAIL();
+		ERR_FAIL_MSG("Could not call function '" + t->target_method.operator String() + "'' starting thread ID: " + t->get_id() + " Reason: " + reason + ".");
 	}
 }
 
@@ -2704,10 +2691,7 @@ _Thread::_Thread() {
 
 _Thread::~_Thread() {
 
-	if (active) {
-		ERR_EXPLAIN("Reference to a Thread object object was lost while the thread is still running...");
-	}
-	ERR_FAIL_COND(active);
+	ERR_FAIL_COND_MSG(active, "Reference to a Thread object object was lost while the thread is still running...");
 }
 /////////////////////////////////////
 
