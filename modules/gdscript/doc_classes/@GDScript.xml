@@ -634,14 +634,14 @@
 			</description>
 		</method>
 		<method name="max">
-			<return type="float">
+			<return type="Variant">
 			</return>
-			<argument index="0" name="a" type="float">
+			<argument index="0" name="a" type="Variant">
 			</argument>
-			<argument index="1" name="b" type="float">
+			<argument index="1" name="b" type="Variant">
 			</argument>
 			<description>
-				Returns the maximum of two values.
+				Returns the maximum of two values. Supports [int], [float], [Vector2] and [Vector3] types.
 				[codeblock]
 				max(1, 2) # Returns 2
 				max(-3.99, -4) # Returns -3.99
@@ -649,14 +649,14 @@
 			</description>
 		</method>
 		<method name="min">
-			<return type="float">
+			<return type="Variant">
 			</return>
-			<argument index="0" name="a" type="float">
+			<argument index="0" name="a" type="Variant">
 			</argument>
-			<argument index="1" name="b" type="float">
+			<argument index="1" name="b" type="Variant">
 			</argument>
 			<description>
-				Returns the minimum of two values.
+				Returns the minimum of two values. Supports [int], [float], [Vector2] and [Vector3] types.
 				[codeblock]
 				min(1, 2) # Returns 1
 				min(-3.99, -4) # Returns -4

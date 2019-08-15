@@ -284,13 +284,18 @@ PropertyInfo VisualScriptBuiltinFunc::get_input_value_port_info(int p_idx) const
 				return PropertyInfo(Variant::REAL, "x");
 		} break;
 		case MATH_FMOD:
-		case MATH_FPOSMOD:
-		case LOGIC_MAX:
-		case LOGIC_MIN: {
+		case MATH_FPOSMOD: {
 			if (p_idx == 0)
 				return PropertyInfo(Variant::REAL, "a");
 			else
 				return PropertyInfo(Variant::REAL, "b");
+		} break;
+		case LOGIC_MAX:
+		case LOGIC_MIN: {
+			if (p_idx == 0)
+				return PropertyInfo(Variant::NIL, "a");
+			else
+				return PropertyInfo(Variant::NIL, "b");
 		} break;
 		case MATH_POSMOD: {
 			if (p_idx == 0)
@@ -575,7 +580,6 @@ PropertyInfo VisualScriptBuiltinFunc::get_output_value_port_info(int p_idx) cons
 		case LOGIC_MAX:
 		case LOGIC_MIN:
 		case LOGIC_CLAMP: {
-
 		} break;
 
 		case LOGIC_NEAREST_PO2: {
@@ -983,7 +987,17 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				int64_t a = *p_inputs[0];
 				int64_t b = *p_inputs[1];
 				*r_return = MAX(a, b);
-			} else {
+			} else if (p_inputs[0]->get_type() == Variant::VECTOR2 && p_inputs[1]->get_type() == Variant::VECTOR2) {
+
+				Vector2 a = *p_inputs[0];
+				Vector2 b = *p_inputs[1];
+				*r_return = MAX2(a, b);
+			} else if (p_inputs[0]->get_type() == Variant::VECTOR3 && p_inputs[1]->get_type() == Variant::VECTOR3) {
+
+				Vector3 a = *p_inputs[0];
+				Vector3 b = *p_inputs[1];
+				*r_return = MAX3(a, b);
+			} else { // float
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
@@ -1001,7 +1015,17 @@ void VisualScriptBuiltinFunc::exec_func(BuiltinFunc p_func, const Variant **p_in
 				int64_t a = *p_inputs[0];
 				int64_t b = *p_inputs[1];
 				*r_return = MIN(a, b);
-			} else {
+			} else if (p_inputs[0]->get_type() == Variant::VECTOR2 && p_inputs[1]->get_type() == Variant::VECTOR2) {
+
+				Vector2 a = *p_inputs[0];
+				Vector2 b = *p_inputs[1];
+				*r_return = MIN2(a, b);
+			} else if (p_inputs[0]->get_type() == Variant::VECTOR3 && p_inputs[1]->get_type() == Variant::VECTOR3) {
+
+				Vector3 a = *p_inputs[0];
+				Vector3 b = *p_inputs[1];
+				*r_return = MIN3(a, b);
+			} else { // float
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 

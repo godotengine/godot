@@ -515,7 +515,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t a = *p_args[0];
 				int64_t b = *p_args[1];
 				r_ret = MAX(a, b);
-			} else {
+			} else if (p_args[0]->get_type() == Variant::VECTOR2 && p_args[1]->get_type() == Variant::VECTOR2) {
+
+				Vector2 a = *p_args[0];
+				Vector2 b = *p_args[1];
+				r_ret = MAX2(a, b);
+			} else if (p_args[0]->get_type() == Variant::VECTOR3 && p_args[1]->get_type() == Variant::VECTOR3) {
+
+				Vector3 a = *p_args[0];
+				Vector3 b = *p_args[1];
+				r_ret = MAX3(a, b);
+			} else { // float
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
@@ -533,7 +543,17 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 				int64_t a = *p_args[0];
 				int64_t b = *p_args[1];
 				r_ret = MIN(a, b);
-			} else {
+			} else if (p_args[0]->get_type() == Variant::VECTOR2 && p_args[1]->get_type() == Variant::VECTOR2) {
+
+				Vector2 a = *p_args[0];
+				Vector2 b = *p_args[1];
+				r_ret = MIN2(a, b);
+			} else if (p_args[0]->get_type() == Variant::VECTOR3 && p_args[1]->get_type() == Variant::VECTOR3) {
+
+				Vector3 a = *p_args[0];
+				Vector3 b = *p_args[1];
+				r_ret = MIN3(a, b);
+			} else { // float
 				VALIDATE_ARG_NUM(0);
 				VALIDATE_ARG_NUM(1);
 
@@ -1784,14 +1804,15 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 			return mi;
 		} break;
 		case LOGIC_MAX: {
-			MethodInfo mi("max", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
-			mi.return_val.type = Variant::REAL;
+			MethodInfo mi("max", PropertyInfo(Variant::NIL, "a"), PropertyInfo(Variant::NIL, "b"));
+			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
-
 		} break;
 		case LOGIC_MIN: {
-			MethodInfo mi("min", PropertyInfo(Variant::REAL, "a"), PropertyInfo(Variant::REAL, "b"));
-			mi.return_val.type = Variant::REAL;
+			MethodInfo mi("min", PropertyInfo(Variant::NIL, "a"), PropertyInfo(Variant::NIL, "b"));
+			mi.return_val.type = Variant::NIL;
+			mi.return_val.usage |= PROPERTY_USAGE_NIL_IS_VARIANT;
 			return mi;
 		} break;
 		case LOGIC_CLAMP: {

@@ -149,10 +149,10 @@
 		<constant name="MATH_WRAPF" value="44" enum="BuiltinFunc">
 		</constant>
 		<constant name="LOGIC_MAX" value="45" enum="BuiltinFunc">
-			Return the greater of the two numbers, also known as their maximum.
+			Return the greater of the two values, also known as their maximum. Supports [int], [float], [Vector2] and [Vector3] types.
 		</constant>
 		<constant name="LOGIC_MIN" value="46" enum="BuiltinFunc">
-			Return the lesser of the two numbers, also known as their minimum.
+			Return the lesser of the two values, also known as their minimum. Supports [int], [float], [Vector2] and [Vector3] types.
 		</constant>
 		<constant name="LOGIC_CLAMP" value="47" enum="BuiltinFunc">
 			Return the input clamped inside the given range, ensuring the result is never outside it. Equivalent to [code]min(max(input, range_low), range_high)[/code].

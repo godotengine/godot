@@ -73,6 +73,7 @@ struct Vector2 {
 
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
 
+	Vector2 clamp(const Vector2 &p_min, const Vector2 &p_max) const;
 	Vector2 clamped(real_t p_len) const;
 
 	_FORCE_INLINE_ static Vector2 linear_interpolate(const Vector2 &p_a, const Vector2 &p_b, real_t p_t);
@@ -219,6 +220,10 @@ _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
 _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 
 	return !Math::is_equal_approx(x, p_vec2.x) || !Math::is_equal_approx(y, p_vec2.y);
+}
+
+_FORCE_INLINE_ Vector2 Vector2::clamp(const Vector2 &p_min, const Vector2 &p_max) const {
+	return CLAMP2((*this), p_min, p_max);
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {

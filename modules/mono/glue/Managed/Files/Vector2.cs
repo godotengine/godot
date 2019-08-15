@@ -107,6 +107,11 @@ namespace Godot
             return new Vector2(Mathf.Ceil(x), Mathf.Ceil(y));
         }
 
+        public static Vector2 Clamp(Vector2 min, Vector2 max)
+        {
+            return new Vector2(x < min.x ? min.x : x > max.x ? max.x : x, y < min.y ? min.y : y > max.y ? max.y : y);
+        }
+
         public Vector2 Clamped(real_t length)
         {
             var v = this;
@@ -265,7 +270,7 @@ namespace Godot
 
         private static readonly Vector2 _up = new Vector2(0, -1);
         private static readonly Vector2 _down = new Vector2(0, 1);
-        private static readonly Vector2 _right  = new Vector2(1, 0);
+        private static readonly Vector2 _right = new Vector2(1, 0);
         private static readonly Vector2 _left = new Vector2(-1, 0);
 
         public static Vector2 Zero { get { return _zero; } }

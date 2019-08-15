@@ -206,6 +206,16 @@ namespace Godot
             return a > b ? a : b;
         }
 
+        public static Vector2 Max(Vector2 a, Vector2 b)
+        {
+            return new Vector2(a.x > b.x ? a.x : b.x, a.y > b.y ? a.y : b.y);
+        }
+
+        public static Vector3 Max(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.x > b.x ? a.x : b.x, a.y > b.y ? a.y : b.y, a.z > b.z ? a.z : b.z);
+        }
+
         public static int Min(int a, int b)
         {
             return a < b ? a : b;
@@ -214,6 +224,16 @@ namespace Godot
         public static real_t Min(real_t a, real_t b)
         {
             return a < b ? a : b;
+        }
+
+        public static Vector2 Min(Vector2 a, Vector2 b)
+        {
+            return new Vector2(a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y);
+        }
+
+        public static Vector3 Min(Vector3 a, Vector3 b)
+        {
+            return new Vector3(a.x < b.x ? a.x : b.x, a.y < b.y ? a.y : b.y, a.z < b.z ? a.z : b.z);
         }
 
         public static real_t MoveToward(real_t from, real_t to, real_t delta)

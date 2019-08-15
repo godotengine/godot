@@ -101,6 +101,11 @@ namespace Godot
             return new Vector3(Mathf.Ceil(x), Mathf.Ceil(y), Mathf.Ceil(z));
         }
 
+        public static Vector3 Clamp(Vector3 min, Vector3 max)
+        {
+            return new Vector3(x < min.x ? min.x : x > max.x ? max.x : x, y < min.y ? min.y : y > max.y ? max.y : y, z < min.z ? min.z : z > max.z ? max.z : z);
+        }
+
         public Vector3 Cross(Vector3 b)
         {
             return new Vector3

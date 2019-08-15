@@ -182,6 +182,15 @@ godot_vector3 GDAPI godot_vector3_ceil(const godot_vector3 *p_self) {
 	return dest;
 }
 
+godot_vector3 GDAPI godot_vector3_clamp(const godot_vector3 *p_self, const godot_vector3 *p_min, const godot_vector3 *p_max) {
+	godot_vector3 dest;
+	const Vector3 *self = (const Vector3 *)p_self;
+	const Vector3 *pmin = (const Vector3 *)p_min;
+	const Vector3 *pmax = (const Vector3 *)p_max;
+	*((Vector3 *)&dest) = self->clamp(*pmin, *pmax);
+	return dest;
+}
+
 godot_vector3 GDAPI godot_vector3_direction_to(const godot_vector3 *p_self, const godot_vector3 *p_to) {
 	godot_vector3 dest;
 	const Vector3 *self = (const Vector3 *)p_self;

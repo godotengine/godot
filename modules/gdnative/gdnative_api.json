@@ -80,6 +80,24 @@
               ["const godot_vector2 *", "p_self"],
               ["const godot_vector2 *", "p_to"]
             ]
+          },
+          {
+            "name": "godot_vector3_clamp",
+            "return_type": "godot_vector3",
+            "arguments": [
+              ["const godot_vector3 *", "p_self"],
+              ["const godot_vector3 *", "p_min"],
+              ["const godot_vector3 *", "p_max"]
+            ]
+          },
+          {
+            "name": "godot_vector2_clamp",
+            "return_type": "godot_vector2",
+            "arguments": [
+              ["const godot_vector2 *", "p_self"],
+              ["const godot_vector2 *", "p_min"],
+              ["const godot_vector2 *", "p_max"]
+            ]
           }
         ]
       },

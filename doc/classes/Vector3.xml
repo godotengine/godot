@@ -55,6 +55,17 @@
 				Returns a new vector with all components rounded up.
 			</description>
 		</method>
+        <method name="clamp">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="min" type="Vector3">
+			</argument>
+            <argument index="1" name="max" type="Vector3">
+			</argument>
+			<description>
+				Clamps the vector and returns a vector which components are not less than [code]min[/code] and not more than [code]max[/code].
+			</description>
+		</method>
 		<method name="cross">
 			<return type="Vector3">
 			</return>

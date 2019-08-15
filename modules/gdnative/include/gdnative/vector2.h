@@ -107,6 +107,8 @@ godot_vector2 GDAPI godot_vector2_reflect(const godot_vector2 *p_self, const god
 
 godot_vector2 GDAPI godot_vector2_abs(const godot_vector2 *p_self);
 
+godot_vector2 GDAPI godot_vector2_clamp(const godot_vector2 *p_self, const godot_vector2 *p_min, const godot_vector2 *p_max);
+
 godot_vector2 GDAPI godot_vector2_clamped(const godot_vector2 *p_self, const godot_real p_length);
 
 godot_vector2 GDAPI godot_vector2_operator_add(const godot_vector2 *p_self, const godot_vector2 *p_b);

@@ -96,6 +96,8 @@ struct Vector3 {
 	Vector3 cubic_interpolaten(const Vector3 &p_b, const Vector3 &p_pre_a, const Vector3 &p_post_b, real_t p_t) const;
 	Vector3 move_toward(const Vector3 &p_to, const real_t p_delta) const;
 
+	_FORCE_INLINE_ Vector3 clamp(const Vector3 &p_min, const Vector3 &p_max) const;
+
 	_FORCE_INLINE_ Vector3 cross(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t dot(const Vector3 &p_b) const;
 	_FORCE_INLINE_ Basis outer(const Vector3 &p_b) const;
@@ -203,6 +205,11 @@ Vector3 Vector3::floor() const {
 Vector3 Vector3::ceil() const {
 
 	return Vector3(Math::ceil(x), Math::ceil(y), Math::ceil(z));
+}
+
+Vector3 Vector3::clamp(const Vector3 &p_min, const Vector3 &p_max) const {
+
+	return CLAMP3((*this), p_min, p_max);
 }
 
 Vector3 Vector3::round() const {

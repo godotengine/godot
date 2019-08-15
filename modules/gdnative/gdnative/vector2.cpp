@@ -207,6 +207,15 @@ godot_vector2 GDAPI godot_vector2_abs(const godot_vector2 *p_self) {
 	return dest;
 }
 
+godot_vector2 GDAPI godot_vector2_clamp(const godot_vector2 *p_self, const godot_vector2 *p_min, const godot_vector2 *p_max) {
+	godot_vector2 dest;
+	const Vector2 *self = (const Vector2 *)p_self;
+	const Vector2 *pmin = (const Vector2 *)p_min;
+	const Vector2 *pmax = (const Vector2 *)p_max;
+	*((Vector2 *)&dest) = self->clamp(*pmin, *pmax);
+	return dest;
+}
+
 godot_vector2 GDAPI godot_vector2_clamped(const godot_vector2 *p_self, const godot_real p_length) {
 	godot_vector2 dest;
 	const Vector2 *self = (const Vector2 *)p_self;

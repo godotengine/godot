@@ -126,12 +126,36 @@ T *_nullptr() {
 #define MIN(m_a, m_b) (((m_a) < (m_b)) ? (m_a) : (m_b))
 #endif
 
+#ifndef MIN2
+#define MIN2(m_a, m_b) (Vector2(MIN(m_a.x, m_b.x), MIN(m_a.y, m_b.y)))
+#endif
+
+#ifndef MIN3
+#define MIN3(m_a, m_b) (Vector3(MIN(m_a.x, m_b.x), MIN(m_a.y, m_b.y), MIN(m_a.z, m_b.z)))
+#endif
+
 #ifndef MAX
 #define MAX(m_a, m_b) (((m_a) > (m_b)) ? (m_a) : (m_b))
 #endif
 
+#ifndef MAX2
+#define MAX2(m_a, m_b) (Vector2(MAX(m_a.x, m_b.x), MAX(m_a.y, m_b.y)))
+#endif
+
+#ifndef MAX3
+#define MAX3(m_a, m_b) (Vector3(MAX(m_a.x, m_b.x), MAX(m_a.y, m_b.y), MAX(m_a.z, m_b.z)))
+#endif
+
 #ifndef CLAMP
 #define CLAMP(m_a, m_min, m_max) (((m_a) < (m_min)) ? (m_min) : (((m_a) > (m_max)) ? m_max : m_a))
+#endif
+
+#ifndef CLAMP2
+#define CLAMP2(m_a, m_min, m_max) (Vector2(CLAMP(m_a.x, m_min.x, m_max.x), CLAMP(m_a.y, m_min.y, m_max.y)))
+#endif
+
+#ifndef CLAMP3
+#define CLAMP3(m_a, m_min, m_max) (Vector3(CLAMP(m_a.x, m_min.x, m_max.x), CLAMP(m_a.y, m_min.y, m_max.y), CLAMP(m_a.z, m_min.z, m_max.z)))
 #endif
 
 /** Generic swap template */
