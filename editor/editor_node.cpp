@@ -2925,31 +2925,35 @@ void EditorNode::set_addon_plugin_enabled(const String &p_addon, bool p_enabled,
 		return;
 	}
 
-	String path = cf->get_value("plugin", "script");
-	path = String("res://addons").plus_file(p_addon).plus_file(path);
+	String script_path = cf->get_value("plugin", "script");
+	Ref<Script> script; // We need to save it for creating "ep" below.
 
-	Ref<Script> script = ResourceLoader::load(path);
+	// Only try to load the script if it has a name. Else, the plugin has no init script.
+	if (script_path.length() > 0) {
+		script_path = String("res://addons").plus_file(p_addon).plus_file(script_path);
+		script = ResourceLoader::load(script_path);
 
-	if (script.is_null()) {
-		show_warning(vformat(TTR("Unable to load addon script from path: '%s'."), path));
-		return;
-	}
+		if (script.is_null()) {
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s'."), script_path));
+			return;
+		}
 
-	//errors in the script cause the base_type to be ""
-	if (String(script->get_instance_base_type()) == "") {
-		show_warning(vformat(TTR("Unable to load addon script from path: '%s' There seems to be an error in the code, please check the syntax."), path));
-		return;
-	}
+		// Errors in the script cause the base_type to be an empty string.
+		if (String(script->get_instance_base_type()) == "") {
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s' There seems to be an error in the code, please check the syntax."), script_path));
+			return;
+		}
 
-	//could check inheritance..
-	if (String(script->get_instance_base_type()) != "EditorPlugin") {
-		show_warning(vformat(TTR("Unable to load addon script from path: '%s' Base type is not EditorPlugin."), path));
-		return;
-	}
+		// Plugin init scripts must inherit from EditorPlugin and be tools.
+		if (String(script->get_instance_base_type()) != "EditorPlugin") {
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s' Base type is not EditorPlugin."), script_path));
+			return;
+		}
 
-	if (!script->is_tool()) {
-		show_warning(vformat(TTR("Unable to load addon script from path: '%s' Script is not in tool mode."), path));
-		return;
+		if (!script->is_tool()) {
+			show_warning(vformat(TTR("Unable to load addon script from path: '%s' Script is not in tool mode."), script_path));
+			return;
+		}
 	}
 
 	EditorPlugin *ep = memnew(EditorPlugin);
