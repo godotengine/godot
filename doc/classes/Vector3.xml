@@ -297,32 +297,32 @@
 		<constant name="AXIS_Z" value="2">
 			Enumerated value for the Z axis.
 		</constant>
+		<constant name="RIGHT" value="Vector3( 1, 0, 0 )">
+			Right unit vector.
+		</constant>
+		<constant name="DOWN" value="Vector3( 0, -1, 0 )">
+			Down unit vector.
+		</constant>
 		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
 			Zero vector.
 		</constant>
 		<constant name="ONE" value="Vector3( 1, 1, 1 )">
 			One vector.
 		</constant>
-		<constant name="INF" value="Vector3( inf, inf, inf )">
-			Infinite vector.
-		</constant>
 		<constant name="LEFT" value="Vector3( -1, 0, 0 )">
 			Left unit vector.
 		</constant>
-		<constant name="RIGHT" value="Vector3( 1, 0, 0 )">
-			Right unit vector.
+		<constant name="INF" value="Vector3( inf, inf, inf )">
+			Infinite vector.
 		</constant>
 		<constant name="UP" value="Vector3( 0, 1, 0 )">
 			Up unit vector.
 		</constant>
-		<constant name="DOWN" value="Vector3( 0, -1, 0 )">
-			Down unit vector.
+		<constant name="BACK" value="Vector3( 0, 0, 1 )">
+			Back unit vector.
 		</constant>
 		<constant name="FORWARD" value="Vector3( 0, 0, -1 )">
 			Forward unit vector.
-		</constant>
-		<constant name="BACK" value="Vector3( 0, 0, 1 )">
-			Back unit vector.
 		</constant>
 	</constants>
 </class>

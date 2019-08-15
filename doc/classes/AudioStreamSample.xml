@@ -22,6 +22,10 @@
 		</method>
 	</methods>
 	<members>
+		<member name="BPM" type="int" setter="set_bpm" getter="get_bpm" default="0">
+		</member>
+		<member name="Beats" type="int" setter="set_beat_count" getter="get_beat_count" default="0">
+		</member>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data" default="PoolByteArray(  )">
 			Contains the audio data in bytes.
 		</member>

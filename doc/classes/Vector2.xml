@@ -284,26 +284,26 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="RIGHT" value="Vector2( 1, 0 )">
+			Right unit vector.
+		</constant>
+		<constant name="DOWN" value="Vector2( 0, 1 )">
+			Down unit vector.
+		</constant>
 		<constant name="ZERO" value="Vector2( 0, 0 )">
 			Zero vector.
 		</constant>
 		<constant name="ONE" value="Vector2( 1, 1 )">
 			One vector.
 		</constant>
-		<constant name="INF" value="Vector2( inf, inf )">
-			Infinite vector.
-		</constant>
 		<constant name="LEFT" value="Vector2( -1, 0 )">
 			Left unit vector.
 		</constant>
-		<constant name="RIGHT" value="Vector2( 1, 0 )">
-			Right unit vector.
+		<constant name="INF" value="Vector2( inf, inf )">
+			Infinite vector.
 		</constant>
 		<constant name="UP" value="Vector2( 0, -1 )">
 			Up unit vector.
-		</constant>
-		<constant name="DOWN" value="Vector2( 0, 1 )">
-			Down unit vector.
 		</constant>
 	</constants>
 </class>

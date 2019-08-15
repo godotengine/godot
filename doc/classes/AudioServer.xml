@@ -409,7 +409,7 @@
 		<member name="bus_count" type="int" setter="set_bus_count" getter="get_bus_count" default="1">
 			Number of available audio buses.
 		</member>
-		<member name="capture_device" type="String" setter="capture_set_device" getter="capture_get_device" default="&quot;&quot;">
+		<member name="capture_device" type="String" setter="capture_set_device" getter="capture_get_device" default="&quot;Default&quot;">
 			Name of the current device for audio input (see [method capture_get_device_list]).
 		</member>
 		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">

@@ -8,8 +8,7 @@ def configure(env):
 
 def get_doc_classes():
     return [
-        "AudioStreamPlaylist", 
-	"AudioStreamTransitioner"
+        "AudioStreamPlaylist", "AudioStreamTransitioner",
     ]
 
 def get_doc_path():
