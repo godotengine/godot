@@ -776,10 +776,16 @@ void GraphEdit::_top_layer_draw() {
 		_draw_cos_line(top_layer, pos, topos, col, col);
 	}
 
-	if (box_selecting)
+	if (box_selecting) {
 		top_layer->draw_rect(
 				box_selecting_rect,
-				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.375));
+				get_color("box_selection_fill_color", "Editor"));
+
+		top_layer->draw_rect(
+				box_selecting_rect,
+				get_color("box_selection_stroke_color", "Editor"),
+				false);
+	}
 }
 
 void GraphEdit::set_selected(Node *p_child) {
