@@ -19,8 +19,8 @@ class AnimationNodeMotionMatchEditor : public AnimationTreeNodeEditorPlugin {
 
   Button *edit_match_tracks;
   Button *update_tracks;
-
-  uint32_t samples = 10; // Number of samples for trajectory
+  Button *clear_tree;
+  SpinBox *snap_x;
 
   Skeleton *skeleton;
 
@@ -32,6 +32,7 @@ class AnimationNodeMotionMatchEditor : public AnimationTreeNodeEditorPlugin {
   void _edit_match_tracks();
   void _update_match_tracks();
   void _update_tracks();
+  void _clear_tree();
 
 protected:
   static void _bind_methods();

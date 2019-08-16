@@ -1,6 +1,6 @@
 #include "animation_motion_match_editor.h"
-#include <limits>
 #include <iostream>
+#include <limits>
 
 #ifdef TOOLS_ENABLED
 #include "core/io/resource_loader.h"
@@ -56,6 +56,10 @@ void AnimationNodeMotionMatchEditor::_edit_match_tracks() {
 
   _update_match_tracks();
   match_tracks_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
+}
+
+void AnimationNodeMotionMatchEditor::_clear_tree() {
+  motion_match->clear_keys();
 }
 
 void AnimationNodeMotionMatchEditor::_update_match_tracks() {
@@ -252,93 +256,95 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
   motion_match->set_dim_len(9);
   List<StringName> Animations;
   player->get_animation_list(&Animations);
-
+  const StringName t = "Tracker";
   for (int i = 0; i < Animations.size(); i++) {
-    Ref<Animation> anim = player->get_animation(Animations[i]);
-    int root = anim->find_track(AnimationTreeEditor::get_singleton()
-                                    ->get_tree()
-                                    ->get_root_motion_track());
-    int max_count =
-        fill_tracks(player, anim.ptr(), AnimationTreeEditor::get_singleton()
-                                            ->get_tree()
-                                            ->get_root_motion_track());
+    if (Animations[i] != t) {
+      Ref<Animation> anim = player->get_animation(Animations[i]);
+      int root = anim->find_track(AnimationTreeEditor::get_singleton()
+                                      ->get_tree()
+                                      ->get_root_motion_track());
+      int max_count =
+          fill_tracks(player, anim.ptr(), AnimationTreeEditor::get_singleton()
+                                              ->get_tree()
+                                              ->get_root_motion_track());
 
-    for (int j = 0; j < max_count - samples; j++) {
-      int quad = 0;
-      float x = 0;
-      float z = 0;
-      for (int p = 0; p < 2; p++) {
-        x += Math::pow(-1.0, double(p + 1)) *
-             Vector3(Dictionary(anim->track_get_key_value(root, j + p))
-                         .get("location", Variant()))[0];
-        z += Math::pow(-1.0, double(p + 1)) *
-             Vector3(Dictionary(anim->track_get_key_value(root, j + p))
-                         .get("location", Variant()))[2];
-      }
-
-      if (x > 0 && z > 0) {
-        quad = 1;
-      } else if (x < 0 && z > 0) {
-        quad = 2;
-      } else if (x < 0 && z < 0) {
-        quad = 3;
-      } else {
-        quad = 4;
-      }
-      frame_model *key = new frame_model;
-      for (int y = 0; y < motion_match->get_matching_tracks().size(); y++) {
-        int track = anim->find_track(motion_match->get_matching_tracks()[y]);
-        Vector3 loc = Vector3(Dictionary(anim->track_get_key_value(track, j))
-                                  .get("location", Variant()));
-        PoolRealArray arr = {};
-        for (int l = 0; l < 3; l++) {
-          if (l != 1) {
-            arr.append(loc[l]);
+      for (int j = 0; j < max_count - snap_x->get_value(); j++) {
+        int quad = 0;
+        float x = 0;
+        float z = 0;
+        for (int p = 0; p < 2; p++) {
+          x += Math::pow(-1.0, double(p + 1)) *
+               Vector3(Dictionary(anim->track_get_key_value(root, j + p))
+                           .get("location", Variant()))[0];
+          z += Math::pow(-1.0, double(p + 1)) *
+               Vector3(Dictionary(anim->track_get_key_value(root, j + p))
+                           .get("location", Variant()))[2];
+        }
+        // Shifting all the trajectories to first quadrant
+        if (x > 0 && z > 0) {
+          quad = 1;
+        } else if (x < 0 && z > 0) {
+          quad = 2;
+        } else if (x < 0 && z < 0) {
+          quad = 3;
+        } else {
+          quad = 4;
+        }
+        frame_model *key = new frame_model;
+        for (int y = 0; y < motion_match->get_matching_tracks().size(); y++) {
+          int track = anim->find_track(motion_match->get_matching_tracks()[y]);
+          Vector3 loc = Vector3(Dictionary(anim->track_get_key_value(track, j))
+                                    .get("location", Variant()));
+          PoolRealArray arr = {};
+          for (int l = 0; l < snap_x->get_value(); l++) {
+            if (l != 1) {
+              arr.append(loc[l]);
+            }
+          }
+          key->bone_data->append(arr);
+        }
+        Vector3 r_loc = Vector3(Dictionary(anim->track_get_key_value(root, j))
+                                    .get("location", Variant()));
+        for (int k = 0; k < snap_x->get_value(); k++) {
+          Vector3 loc =
+              Vector3(Dictionary(anim->track_get_key_value(root, j + k))
+                          .get("location", Variant()));
+          for (int l = 0; l < 3; l++) {
+            if (l != 1) {
+              key->traj->append(loc[l] - r_loc[l]);
+            }
           }
         }
-        key->bone_data->append(arr);
-      }
-      Vector3 r_loc = Vector3(Dictionary(anim->track_get_key_value(root, j))
-                                  .get("location", Variant()));
-      for (int k = 0; k < samples; k++) {
-        Vector3 loc = Vector3(Dictionary(anim->track_get_key_value(root, j + k))
-                                  .get("location", Variant()));
-        for (int l = 0; l < 3; l++) {
-          if (l != 1) {
-            key->traj->append(loc[l] - r_loc[l]);
+
+        if (quad == 2) {
+          for (int m = 0; m < key->traj->size(); m += 2) {
+            float t = key->traj->read()[m];
+            key->traj->write()[m] = -key->traj->read()[m + 1];
+            key->traj->write()[m + 1] = t;
+          }
+        } else if (quad == 3) {
+          for (int m = 0; m < key->traj->size(); m += 2) {
+            key->traj->write()[m] = -key->traj->read()[m];
+            key->traj->write()[m + 1] = -key->traj->read()[m + 1];
+          }
+        } else if (quad == 4) {
+          for (int m = 0; m < key->traj->size(); m += 2) {
+            float t = key->traj->read()[m];
+            key->traj->write()[m] = key->traj->read()[m + 1];
+            key->traj->write()[m + 1] = -t;
           }
         }
-      }
 
-      if (quad == 2) {
-        for (int m = 0; m < key->traj->size(); m += 2) {
-          float t = key->traj->read()[m];
-          key->traj->write()[m] = -key->traj->read()[m + 1];
-          key->traj->write()[m + 1] = t;
-        }
-      } else if (quad == 3) {
-        for (int m = 0; m < key->traj->size(); m += 2) {
-          key->traj->write()[m] = -key->traj->read()[m];
-          key->traj->write()[m + 1] = -key->traj->read()[m + 1];
-        }
-      } else if (quad == 4) {
-        for (int m = 0; m < key->traj->size(); m += 2) {
-          float t = key->traj->read()[m];
-          key->traj->write()[m] = key->traj->read()[m + 1];
-          key->traj->write()[m + 1] = -t;
-        }
+        key->time = anim->track_get_key_time(root, j + 1);
+        key->anim_num = i;
+        keys->append(key);
       }
-
-      key->time = anim->track_get_key_time(root, j);
-      key->anim_num = i;
-      keys->append(key);
     }
-
-    motion_match->set_delta_time(anim->track_get_key_time(root, 0));
   }
   motion_match->clear_keys();
   motion_match->set_keys_data(keys);
   motion_match->skeleton = skeleton;
+  motion_match->done = true;
   print_line("DONE");
   /**/
 }
@@ -352,6 +358,8 @@ void AnimationNodeMotionMatchEditor::_bind_methods() {
                        &AnimationNodeMotionMatchEditor::_edit_match_tracks);
   ClassDB::bind_method("_update_tracks",
                        &AnimationNodeMotionMatchEditor::_update_tracks);
+  ClassDB::bind_method("_clear_tree",
+                       &AnimationNodeMotionMatchEditor::_clear_tree);
 }
 AnimationNodeMotionMatchEditor::AnimationNodeMotionMatchEditor() {
 
@@ -368,13 +376,24 @@ AnimationNodeMotionMatchEditor::AnimationNodeMotionMatchEditor() {
   match_tracks->set_hide_root(true);
   match_tracks->connect("item_edited", this, "_match_tracks_edited");
 
-  edit_match_tracks = memnew(Button("Edit Tracks "));
+  edit_match_tracks = memnew(Button("Edit Matching Tracks"));
   add_child(edit_match_tracks);
   edit_match_tracks->connect("pressed", this, "_edit_match_tracks");
 
-  update_tracks = memnew(Button("Update Tree"));
+  update_tracks = memnew(Button("Update DataBase"));
   add_child(update_tracks);
   update_tracks->connect("pressed", this, "_update_tracks");
+
+  clear_tree = memnew(Button("Clear DataBase"));
+  add_child(clear_tree);
+  clear_tree->connect("pressed", this, "_clear_tree");
+
+  snap_x = memnew(SpinBox);
+  add_child(snap_x);
+  snap_x->set_prefix("Samples:");
+  snap_x->set_min(1);
+  snap_x->set_step(1);
+  snap_x->set_max(100);
 
   updating = false;
 }

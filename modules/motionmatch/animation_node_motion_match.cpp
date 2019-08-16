@@ -6,18 +6,24 @@ void AnimationNodeMotionMatch::get_parameter_list(
   r_list->push_back(
       PropertyInfo(Variant::VECTOR3, vel, PROPERTY_HINT_NONE, ""));
   r_list->push_back(PropertyInfo(Variant::INT, min, PROPERTY_HINT_NONE, ""));
+  r_list->push_back(PropertyInfo(Variant::INT, samples, PROPERTY_HINT_RANGE,
+                                 "5,40,1,or_greater"));
+  r_list->push_back(PropertyInfo(Variant::REAL, pvst, PROPERTY_HINT_RANGE,
+                                 "0,1,0.01,or_greater"));
+  r_list->push_back(PropertyInfo(Variant::REAL, f_time, PROPERTY_HINT_RANGE,
+                                 "0,2,0.01,or_greater"));
 }
 
 void AnimationNodeMotionMatch::add_matching_track(
     const NodePath &p_track_path) {
   matching_tracks.push_back(p_track_path);
-}
+} // Adds tracks to matching_tracks
 
 void AnimationNodeMotionMatch::remove_matching_track(
     const NodePath &p_track_path) {
 
   matching_tracks.erase(p_track_path);
-}
+} // removes tracks
 
 bool AnimationNodeMotionMatch::is_matching_track(
     const NodePath &p_track_path) const {
@@ -119,6 +125,9 @@ AnimationNodeMotionMatch::AnimationNodeMotionMatch() {
   this->vel = "velocity";
   this->pos = "position";
   this->min = "min_key";
+  this->pvst = "Pose vs Trajectory";
+  this->f_time = "Check rate";
+  this->samples = "Future Traj Samples";
 }
 
 AnimationNodeMotionMatch::~AnimationNodeMotionMatch() {}
@@ -134,7 +143,7 @@ void AnimationNodeMotionMatch::add_coordinates(PoolRealArray point) {
     }
     root->add_index(root->get_indices().size());
   }
-}
+} // adds point to KD-tree
 
 void AnimationNodeMotionMatch::load_coordinates(PoolRealArray points) {
   if (points.size() % dim_len != 0) {
@@ -150,7 +159,7 @@ void AnimationNodeMotionMatch::load_coordinates(PoolRealArray points) {
       add_coordinates(point);
     }
   }
-}
+} // load multiple points at a go to KD-Tree
 
 PoolRealArray AnimationNodeMotionMatch::get_coordinates() {
   return this->point_coordinates;
@@ -162,13 +171,13 @@ void AnimationNodeMotionMatch::clear_coordinates() {
 
 void AnimationNodeMotionMatch::set_dim_len(uint32_t dim_len) {
   this->dim_len = dim_len;
-}
+} // set dimension length
 
 uint32_t AnimationNodeMotionMatch::get_dim_len() { return this->dim_len; }
 
 AnimationNodeMotionMatch::KDNode *AnimationNodeMotionMatch::get_root() {
   return root.ptr();
-}
+} // returns root of the KDTree
 
 void AnimationNodeMotionMatch::clear_root() {
   root->point_indices = {};
@@ -176,11 +185,11 @@ void AnimationNodeMotionMatch::clear_root() {
   root->split_axis = 0;
   root->left = nullptr;
   root->right = nullptr;
-}
+} // resets KDtree
 
 void AnimationNodeMotionMatch::set_start_index(uint32_t si) {
   this->start_index = si;
-}
+} // set from which point you want to start evaluation
 
 uint32_t AnimationNodeMotionMatch::get_start_index() {
   return this->start_index;
@@ -192,11 +201,11 @@ void AnimationNodeMotionMatch::calc_root_threshold() {
   } else {
     root->calculate_threshold(point_coordinates, dim_len);
   }
-}
+} // Calculating root threshold TODO : Add options for threshold
 
 void AnimationNodeMotionMatch::set_min_leaves(uint32_t min_l) {
   min_leaves = min_l;
-}
+} // min_leaves per node
 
 uint32_t AnimationNodeMotionMatch::get_min_leaves() { return min_leaves; }
 
@@ -214,7 +223,7 @@ void AnimationNodeMotionMatch::build_tree() {
     root->leaf_split(point_coordinates, dim_len, start_index, min_leaves);
     print_line("KD-Tree built SUCCESSFULLY");
   }
-} /*Builds the tree with all the given parameters*/
+} // Builds the tree with all the given parameters
 
 float dist_between(PoolRealArray point_coordinates, PoolRealArray p1,
                    uint32_t index) {
@@ -332,7 +341,7 @@ void AnimationNodeMotionMatch::KDNode::calculate_threshold(
     }
     this->split_th = this->split_th / this->point_indices.size();
   }
-}
+} // threshold calculating function
 
 bool AnimationNodeMotionMatch::KDNode::are_all_points_same(
     PoolRealArray point_coordinates, uint32_t dim_len) {
@@ -404,7 +413,7 @@ void AnimationNodeMotionMatch::KDNode::leaf_split(
       right->leaf_split(point_coordinates, dim_len, dim + 1, min_leaves);
     }
   }
-}
+} // update tree with given point
 
 AnimationNodeMotionMatch::KDNode *AnimationNodeMotionMatch::KDNode::get_left() {
   return left.ptr();
@@ -416,78 +425,143 @@ AnimationNodeMotionMatch::KDNode::get_right() {
 }
 
 float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
-  PoolRealArray future_traj = Predict_traj(get_parameter(vel), 10);
+  PoolRealArray future_traj =
+      Predict_traj(get_parameter(vel), get_parameter(samples));
   float min_cost = std::numeric_limits<float>::max();
   float min_cost_time;
   AnimationPlayer *player = state->player;
-  int anim = 0;
+  int anim = 1;
   int dup;
-  if (first_time == true) {
+  List<StringName> a_nam;
+  player->get_animation_list(&a_nam);
+  // Tracker->Dummy track for modifications
+  if (!player->has_animation("Tracker")) {
+    main = a_nam[0];
+    Animation *a = player->get_animation(a_nam[0]).ptr();
+
+    r_index = player->get_animation(a_nam[0]).ptr()->find_track(
+        state->tree->get_root_motion_track());
+    a->track_set_enabled(r_index, false);
+
+    player->add_animation("Tracker", a);
+    a_nam.clear();
+    player->get_animation_list(&a_nam);
+  }
+
+  if (first_time) {
     dup = -1;
+    player->play("Tracker");
+    first_time = false;
   } else {
     dup = get_parameter(min);
   }
 
-  for (int p = 0; p < keys->size(); p++) {
-    if (p != dup) {
-      float pos_cost = 0.0f;
-      float traj_cost = 0.0f;
-      float tot_cost = 0.0f;
+  if (!timeout && player->has_animation("Tracker")) {
 
-      PoolVector<frame_model *>::Read read = keys->read();
+    for (int p = 0; p < keys->size(); p++) {
+      if (p != dup) {
+        float pos_cost = 0.0f;
+        float traj_cost = 0.0f;
+        float tot_cost = 0.0f;
 
-      for (int i = 0; i < matching_tracks.size(); i++) {
+        PoolVector<frame_model *>::Read read = keys->read();
 
-        Vector<String> s = String(matching_tracks[i]).split(":");
-        Vector3 pos = skeleton->get_bone_global_pose(skeleton->find_bone(s[1]))
-                          .get_origin();
+        for (int i = 0; i < matching_tracks.size(); i++) {
 
-        for (int po = 0; po < 2; po++) {
-          pos_cost += (pos[po] - read[p]->bone_data->read()[i][po]) *
-                      (pos[po] - read[p]->bone_data->read()[i][po]);
-        }
-      }
+          Vector<String> s = String(matching_tracks[i]).split(":");
+          Vector3 pos =
+              skeleton->get_bone_global_pose(skeleton->find_bone(s[1]))
+                  .get_origin();
 
-      for (int t = 0; t < 2; t++) {
-        traj_cost += (read[p]->traj->read()[t] - future_traj[t]) *
-                     (read[p]->traj->read()[t] - future_traj[t]);
-      }
+          for (int po = 0; po < 2; po++) {
+            pos_cost += (pos[po] - read[p]->bone_data->read()[i][po]) *
+                        (pos[po] - read[p]->bone_data->read()[i][po]);
+          }
+        } // calculating pose costs
 
-      tot_cost = pos_cost + traj_cost;
+        for (int t = 0; t < int(get_parameter(samples)) * 2; t++) {
+          traj_cost += (read[p]->traj->read()[t] - future_traj[t]) *
+                       (read[p]->traj->read()[t] - future_traj[t]);
+        } // calculating traj costs
 
-      if (tot_cost < min_cost) {
-        min_cost = tot_cost;
-        min_cost_time = keys->read()[p]->time;
-        anim = keys->read()[p]->anim_num;
-        set_parameter(min, p);
-        print_line(rtos(min_cost));
+        real_t lbd = get_parameter(pvst); // Pose vs Trajectory cost
+        tot_cost = lbd * pos_cost + (1 - lbd) * traj_cost;
+
+        if (tot_cost < min_cost) {
+          min_cost = tot_cost;
+          min_cost_time = keys->read()[p]->time;
+          anim = keys->read()[p]->anim_num;
+          set_parameter(min, p);
+        } // set min
       }
     }
-  }
 
-  if (first_time)
-    first_time = false;
-  List<StringName> a_nam;
-  player->get_animation_list(&a_nam);
-  player->play(a_nam[anim]);
-  player->seek(min_cost_time, true);
+    blend_animation("Tracker", min_cost_time, 0, true, 0.5);
+    player->seek(min_cost_time); // play min for every frame
+
+    timeout = true;
+  }
+  time += p_time;
+  // f_time parameter decides the check rate
+  if (time > real_t(get_parameter(f_time))) {
+    timeout = false;
+    time = 0;
+  }
   return 0.0;
 }
 
 PoolRealArray AnimationNodeMotionMatch::Predict_traj(Vector3 L_Velocity,
                                                      int samples) {
+  // used exponential decay here
+  // TODO : Add multiple options to pick for the user
+  // Can use interpolation functions
+
   PoolRealArray futurepath = {};
   Vector3 c_pos = Vector3();
   float time = 1.0f;
-  for (int i = 0; i < samples; i++) {
-    for (int j = 0; j < 3; j++) {
-      if (j != 1) {
-        c_pos[j] = c_pos[j] + L_Velocity[j] * (1 - Math::exp(-time));
-        futurepath.append(c_pos[j]);
-      }
-    }
+  int quad = 0;
+  if (L_Velocity[0] > 0 && L_Velocity[1] > 0) {
+    quad = 1;
+  } else if (L_Velocity[0] < 0 && L_Velocity[1] > 0) {
+    quad = 2;
+  } else if (L_Velocity[0] < 0 && L_Velocity[1] < 0) {
+    quad = 3;
+  } else {
+    quad = 4;
+  }
+  if (quad == 1) {
+    for (int i = 0; i < samples; i++) {
+      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
+      futurepath.append(c_pos[0]);
+      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
+      futurepath.append(c_pos[2]);
 
-    time += 1.0f;
+      time += 1.0f;
+    }
+  } else if (quad == 2) {
+    for (int i = 0; i < samples; i++) {
+      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
+      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
+      futurepath.append(-c_pos[0]);
+      futurepath.append(c_pos[2]);
+      time += 1.0f;
+    }
+  } else if (quad == 3) {
+    for (int i = 0; i < samples; i++) {
+      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
+      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
+      futurepath.append(-c_pos[0]);
+      futurepath.append(-c_pos[2]);
+      time += 1.0f;
+    }
+  } else if (quad == 4) {
+    for (int i = 0; i < samples; i++) {
+      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
+      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
+      futurepath.append(c_pos[0]);
+      futurepath.append(-c_pos[2]);
+      time += 1.0f;
+    }
   }
 
   return futurepath;

@@ -16,9 +16,17 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
   StringName vel;
   StringName pos;
   StringName min;
+  StringName pvst;
+  StringName samples;
+  StringName f_time;
 
+  StringName main;
+  // variables used during matching
   bool first_time = true;
+  float time = 0;
+  bool timeout = false;
 
+  // KDNode Struct
   struct KDNode : public Reference {
     /*th -> Threshold*/
     // Variables
@@ -50,8 +58,6 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
     KDNode();
   };
 
-  float delta_time = 0.0f;
-
   PoolVector<frame_model *> *keys = new PoolVector<frame_model *>();
 
   PoolRealArray point_coordinates;
@@ -68,7 +74,9 @@ protected:
 
 public:
   Skeleton *skeleton;
-
+  NodePath root_track = NodePath();
+  int r_index;
+  bool done = false;
   virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 
   float process(float p_time, bool p_seek);
@@ -104,12 +112,15 @@ public:
   PoolVector<frame_model *> *get_keys_data() { return keys; }
 
   void set_keys_data(PoolVector<frame_model *> *kys) { keys = kys; }
-  void clear_keys() { keys->resize(0); }
-
-  float get_delta_time() { return delta_time; }
-  void set_delta_time(float p) { delta_time = p; }
+  void clear_keys() {
+    keys->resize(0);
+    print_line(itos(keys->size()));
+  }
 
   PoolRealArray Predict_traj(Vector3 L_Velocity, int samples);
+
+  int get_traj_samples() { return get_parameter(samples); }
+  void set_traj_samples(int sa) { set_parameter(samples, sa); }
 
   AnimationNodeMotionMatch();
   ~AnimationNodeMotionMatch();
