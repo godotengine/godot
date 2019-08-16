@@ -1473,6 +1473,8 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 	int row, col;
 	te->_get_mouse_pos(p_point, row, col);
 
+	bool dropAtCursor = (col <= te->cursor_get_column() + 3 && col >= te->cursor_get_column() - 3 && row == te->cursor_get_line()) ? true : false;
+
 	if (d.has("type") && String(d["type"]) == "resource") {
 
 		Ref<Resource> res = d["resource"];
@@ -1485,8 +1487,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			return;
 		}
 
-		te->cursor_set_line(row);
-		te->cursor_set_column(col);
+		if (!dropAtCursor) {
+			te->cursor_set_line(row);
+			te->cursor_set_column(col);
+		}
 		te->insert_text_at_cursor(res->get_path());
 	}
 
@@ -1502,8 +1506,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			text_to_drop += "\"" + String(files[i]).c_escape() + "\"";
 		}
 
-		te->cursor_set_line(row);
-		te->cursor_set_column(col);
+		if (!dropAtCursor) {
+			te->cursor_set_line(row);
+			te->cursor_set_column(col);
+		}
 		te->insert_text_at_cursor(text_to_drop);
 	}
 
@@ -1533,8 +1539,10 @@ void ScriptTextEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data
 			text_to_drop += "\"" + path.c_escape() + "\"";
 		}
 
-		te->cursor_set_line(row);
-		te->cursor_set_column(col);
+		if (!dropAtCursor) {
+			te->cursor_set_line(row);
+			te->cursor_set_column(col);
+		}
 		te->insert_text_at_cursor(text_to_drop);
 	}
 }
