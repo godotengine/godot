@@ -1716,14 +1716,17 @@ void Node::get_groups(List<GroupInfo> *p_groups) const {
 	}
 }
 
-bool Node::has_persistent_groups() const {
+int Node::get_persistent_group_count() const {
+
+	int count = 0;
 
 	for (const Map<StringName, GroupData>::Element *E = data.grouped.front(); E; E = E->next()) {
-		if (E->get().persistent)
-			return true;
+		if (E->get().persistent) {
+			count += 1;
+		}
 	}
 
-	return false;
+	return count;
 }
 void Node::_print_tree_pretty(const String &prefix, const bool last) {
 

@@ -300,7 +300,7 @@ public:
 	};
 
 	void get_groups(List<GroupInfo> *p_groups) const;
-	bool has_persistent_groups() const;
+	int get_persistent_group_count() const;
 
 	void move_child(Node *p_child, int p_pos);
 	void raise();
