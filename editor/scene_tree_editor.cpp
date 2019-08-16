@@ -995,6 +995,17 @@ bool SceneTreeEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_d
 		return true;
 	}
 
+	if (String(d["type"]) == "script_list_element") {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
+		if (se) {
+			String sp = se->get_edited_resource()->get_path();
+			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+				tree->set_drop_mode_flags(Tree::DROP_MODE_ON_ITEM);
+				return true;
+			}
+		}
+	}
+
 	return String(d["type"]) == "nodes";
 }
 void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
@@ -1030,6 +1041,16 @@ void SceneTreeEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data,
 			emit_signal("script_dropped", files[0], np);
 		} else {
 			emit_signal("files_dropped", files, np, section);
+		}
+	}
+
+	if (String(d["type"]) == "script_list_element") {
+		ScriptEditorBase *se = Object::cast_to<ScriptEditorBase>(d["script_list_element"]);
+		if (se) {
+			String sp = se->get_edited_resource()->get_path();
+			if (_is_script_type(EditorFileSystem::get_singleton()->get_file_type(sp))) {
+				emit_signal("script_dropped", sp, np);
+			}
 		}
 	}
 }
