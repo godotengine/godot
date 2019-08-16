@@ -54,6 +54,7 @@ class CowData {
 
 private:
 	mutable T *_ptr;
+	uint32_t _size;
 
 	// internal helpers
 
@@ -65,12 +66,20 @@ private:
 		return reinterpret_cast<uint32_t *>(_ptr) - 2;
 	}
 
-	_FORCE_INLINE_ uint32_t *_get_size() const {
+	_FORCE_INLINE_ uint32_t *_get_capacity() const {
 
 		if (!_ptr)
 			return NULL;
 
 		return reinterpret_cast<uint32_t *>(_ptr) - 1;
+	}
+
+	_FORCE_INLINE_ uint32_t _get_size() const {
+
+		if (!_ptr)
+			return 0;
+
+		return _size;
 	}
 
 	_FORCE_INLINE_ T *_get_data() const {
@@ -104,6 +113,19 @@ private:
 #endif
 	}
 
+	bool _is_ptr_in_data(uint8_t *p_ptr) {
+
+		if (!_ptr)
+			return false;
+
+		uint8_t *data = (uint8_t *)_ptr;
+		if (p_ptr >= data && p_ptr <= data + _size * sizeof(T)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	void _unref(void *p_data);
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
@@ -122,15 +144,24 @@ public:
 	}
 
 	_FORCE_INLINE_ int size() const {
-		uint32_t *size = (uint32_t *)_get_size();
-		if (size)
-			return *size;
-		else
-			return 0;
+		uint32_t size = _get_size();
+		return size;
 	}
 
-	_FORCE_INLINE_ void clear() { resize(0); }
-	_FORCE_INLINE_ bool empty() const { return _ptr == 0; }
+	_FORCE_INLINE_ int capacity() const {
+		uint32_t *capacity = _get_capacity();
+		if (capacity) {
+			return *capacity;
+		} else {
+			return 0;
+		}
+	}
+
+	_FORCE_INLINE_ void clear() {
+		resize(0);
+	}
+
+	_FORCE_INLINE_ bool empty() const { return _size == 0; }
 
 	_FORCE_INLINE_ void set(int p_index, const T &p_elem) {
 
@@ -171,10 +202,22 @@ public:
 	Error insert(int p_pos, const T &p_val) {
 
 		ERR_FAIL_INDEX_V(p_pos, size() + 1, ERR_INVALID_PARAMETER);
-		resize(size() + 1);
-		for (int i = (size() - 1); i > p_pos; i--)
-			set(i, get(i - 1));
-		set(p_pos, p_val);
+
+		if (unlikely(_is_ptr_in_data((uint8_t *)&p_val))) {
+
+			T val = p_val;
+			resize(size() + 1);
+			for (int i = (size() - 1); i > p_pos; i--)
+				set(i, get(i - 1));
+			set(p_pos, val);
+
+		} else {
+
+			resize(size() + 1);
+			for (int i = (size() - 1); i > p_pos; i--)
+				set(i, get(i - 1));
+			set(p_pos, p_val);
+		}
 
 		return OK;
 	};
@@ -196,13 +239,13 @@ void CowData<T>::_unref(void *p_data) {
 
 	if (atomic_decrement(refc) > 0)
 		return; // still in use
+
 	// clean up
-
 	if (!__has_trivial_destructor(T)) {
-		uint32_t *count = _get_size();
-		T *data = (T *)(count + 1);
+		uint32_t count = _get_size();
+		T *data = _get_data();
 
-		for (uint32_t i = 0; i < *count; ++i) {
+		for (uint32_t i = 0; i < count; ++i) {
 			// call destructors
 			data[i].~T();
 		}
@@ -222,21 +265,20 @@ void CowData<T>::_copy_on_write() {
 
 	if (unlikely(*refc > 1)) {
 		/* in use by more than me */
-		uint32_t current_size = *_get_size();
+		uint32_t current_size = *_get_capacity();
 
-		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
-
-		*(mem_new - 2) = 1; //refcount
-		*(mem_new - 1) = current_size; //size
+		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(current_size * sizeof(T), true);
+		*(mem_new - 1) = current_size; // capacity
+		*(mem_new - 2) = 1; // refcount
 
 		T *_data = (T *)(mem_new);
 
 		// initialize new elements
 		if (__has_trivial_copy(T)) {
-			memcpy(mem_new, _ptr, current_size * sizeof(T));
+			memcpy(mem_new, _ptr, _size * sizeof(T));
 
 		} else {
-			for (uint32_t i = 0; i < current_size; i++) {
+			for (uint32_t i = 0; i < _size; i++) {
 				memnew_placement(&_data[i], T(_get_data()[i]));
 			}
 		}
@@ -251,35 +293,28 @@ Error CowData<T>::resize(int p_size) {
 
 	ERR_FAIL_COND_V(p_size < 0, ERR_INVALID_PARAMETER);
 
-	if (p_size == size())
-		return OK;
-
-	if (p_size == 0) {
-		// wants to clean up
-		_unref(_ptr);
-		_ptr = NULL;
+	if (p_size == size()) {
 		return OK;
 	}
 
 	// possibly changing size, copy on write
 	_copy_on_write();
 
-	size_t alloc_size;
-	ERR_FAIL_COND_V(!_get_alloc_size_checked(p_size, &alloc_size), ERR_OUT_OF_MEMORY);
+	size_t alloc_size = p_size * 1.618; // FIXME: perform check for overflow here?
 
-	if (p_size > size()) {
+	if (p_size > capacity()) {
 
-		if (size() == 0) {
+		if (capacity() == 0) {
 			// alloc from scratch
-			uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
+			uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size * sizeof(T), true);
 			ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
-			*(ptr - 1) = 0; //size, currently none
-			*(ptr - 2) = 1; //refcount
+			*(ptr - 1) = 0; // capacity, currently none
+			*(ptr - 2) = 1; // refcount
 
 			_ptr = (T *)ptr;
 
 		} else {
-			void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
+			void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size * sizeof(T), true);
 			ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
 			_ptr = (T *)(_ptrnew);
 		}
@@ -289,29 +324,37 @@ Error CowData<T>::resize(int p_size) {
 		if (!__has_trivial_constructor(T)) {
 			T *elems = _get_data();
 
-			for (int i = *_get_size(); i < p_size; i++) {
+			for (int i = *_get_capacity(); i < p_size; i++) {
 				memnew_placement(&elems[i], T);
 			}
 		}
 
-		*_get_size() = p_size;
+		*_get_capacity() = (uint32_t)(alloc_size);
+		_size = p_size;
+
+	} else if (p_size > size()) {
+
+		if (!__has_trivial_constructor(T)) {
+			T *elems = _get_data();
+
+			for (int i = _get_size(); i < p_size; i++) {
+				memnew_placement(&elems[i], T);
+			}
+		}
+
+		_size = p_size;
 
 	} else if (p_size < size()) {
 
 		if (!__has_trivial_destructor(T)) {
 			// deinitialize no longer needed elements
-			for (uint32_t i = p_size; i < *_get_size(); i++) {
+			for (uint32_t i = p_size; i < _get_size(); i++) {
 				T *t = &_get_data()[i];
 				t->~T();
 			}
 		}
 
-		void *_ptrnew = (T *)Memory::realloc_static(_ptr, alloc_size, true);
-		ERR_FAIL_COND_V(!_ptrnew, ERR_OUT_OF_MEMORY);
-
-		_ptr = (T *)(_ptrnew);
-
-		*_get_size() = p_size;
+		_size = p_size;
 	}
 
 	return OK;
@@ -353,20 +396,21 @@ void CowData<T>::_ref(const CowData &p_from) {
 		return; //nothing to do
 
 	if (atomic_conditional_increment(p_from._get_refcount()) > 0) { // could reference
+		_size = p_from._size;
 		_ptr = p_from._ptr;
 	}
 }
 
 template <class T>
 CowData<T>::CowData() {
-
+	_size = 0;
 	_ptr = NULL;
 }
 
 template <class T>
 CowData<T>::~CowData() {
-
 	_unref(_ptr);
+	_size = 0;
 }
 
 #endif /* COW_H_ */
