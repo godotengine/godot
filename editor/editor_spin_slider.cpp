@@ -47,42 +47,48 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 		return;
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid()) {
 
-		if (mb->is_pressed()) {
+		if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->is_pressed()) {
 
-			if (updown_offset != -1 && mb->get_position().x > updown_offset) {
-				//there is an updown, so use it.
-				if (mb->get_position().y < get_size().height / 2) {
-					set_value(get_value() + get_step());
+				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
+					//there is an updown, so use it.
+					if (mb->get_position().y < get_size().height / 2) {
+						set_value(get_value() + get_step());
+					} else {
+						set_value(get_value() - get_step());
+					}
+					return;
 				} else {
-					set_value(get_value() - get_step());
+
+					grabbing_spinner_attempt = true;
+					grabbing_spinner_dist_cache = 0;
+					pre_grab_value = get_value();
+					grabbing_spinner = false;
+					grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
 				}
-				return;
 			} else {
 
-				grabbing_spinner_attempt = true;
-				grabbing_spinner_dist_cache = 0;
-				pre_grab_value = get_value();
-				grabbing_spinner = false;
-				grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
-			}
-		} else {
+				if (grabbing_spinner_attempt) {
 
-			if (grabbing_spinner_attempt) {
+					if (grabbing_spinner) {
 
-				if (grabbing_spinner) {
+						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						update();
+					} else {
+						_focus_entered();
+					}
 
-					Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-					Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
-					update();
-				} else {
-					_focus_entered();
+					grabbing_spinner = false;
+					grabbing_spinner_attempt = false;
 				}
-
-				grabbing_spinner = false;
-				grabbing_spinner_attempt = false;
 			}
+		} else if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+
+			if (grabber->is_visible())
+				call_deferred("update");
 		}
 	}
 
