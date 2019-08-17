@@ -157,6 +157,11 @@ int OS::get_process_id() const {
 	return -1;
 };
 
+void OS::vibrate_handheld(int p_duration_ms) {
+
+	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
+}
+
 bool OS::is_stdout_verbose() const {
 
 	return _verbose_stdout;
