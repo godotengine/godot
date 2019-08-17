@@ -1748,7 +1748,11 @@ void AnimationTimelineEdit::_play_position_draw() {
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
 		Color color = get_color("accent_color", "Editor");
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(EDSCALE));
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
+		play_position->draw_texture(
+				get_icon("TimelineIndicator", "EditorIcons"),
+				Point2(px - get_icon("TimelineIndicator", "EditorIcons")->get_width() * 0.5, 0),
+				color);
 	}
 }
 
@@ -2438,7 +2442,7 @@ void AnimationTrackEdit::_play_position_draw() {
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 		Color color = get_color("accent_color", "Editor");
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(EDSCALE));
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
 
@@ -3184,7 +3188,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 		if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 			Color accent = get_color("accent_color", "Editor");
-			draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(EDSCALE));
+			draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 		}
 	}
 }
