@@ -634,7 +634,7 @@ static GDScriptCompletionIdentifier _type_from_gdtype(const GDScriptDataType &p_
 
 	switch (p_gdtype.kind) {
 		case GDScriptDataType::UNINITIALIZED: {
-			ERR_EXPLAIN("Uninitialized completion. Please report a bug.");
+			ERR_PRINT("Uninitialized completion. Please report a bug.");
 		} break;
 		case GDScriptDataType::BUILTIN: {
 			ci.type.kind = GDScriptParser::DataType::BUILTIN;

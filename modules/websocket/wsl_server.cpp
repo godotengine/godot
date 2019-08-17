@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lws_server.cpp                                                       */
+/*  wsl_server.cpp                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -64,18 +64,17 @@ bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 		else
 			headers[name] = value;
 	}
-#define _WLS_CHECK(NAME, VALUE)                                                                      \
-	ERR_EXPLAIN("Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'"); \
-	ERR_FAIL_COND_V(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false);
-#define _WLS_CHECK_EX(NAME)                                \
-	ERR_EXPLAIN("Missing header '" + String(NAME) + "'."); \
-	ERR_FAIL_COND_V(!headers.has(NAME), false);
-	_WLS_CHECK("upgrade", "websocket");
-	_WLS_CHECK("sec-websocket-version", "13");
-	_WLS_CHECK_EX("sec-websocket-key");
-	_WLS_CHECK_EX("connection");
-#undef _WLS_CHECK_EX
-#undef _WLS_CHECK
+#define _WSL_CHECK(NAME, VALUE)                                                         \
+	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
+			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
+#define _WSL_CHECK_EX(NAME) \
+	ERR_FAIL_COND_V_MSG(!headers.has(NAME), false, "Missing header '" + String(NAME) + "'.");
+	_WSL_CHECK("upgrade", "websocket");
+	_WSL_CHECK("sec-websocket-version", "13");
+	_WSL_CHECK_EX("sec-websocket-key");
+	_WSL_CHECK_EX("connection");
+#undef _WSL_CHECK_EX
+#undef _WSL_CHECK
 	key = headers["sec-websocket-key"];
 	if (headers.has("sec-websocket-protocol")) {
 		Vector<String> protos = headers["sec-websocket-protocol"].split(",");

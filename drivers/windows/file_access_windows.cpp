@@ -125,6 +125,7 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		return OK;
 	}
 }
+
 void FileAccessWindows::close() {
 
 	if (!f)
@@ -167,11 +168,11 @@ void FileAccessWindows::close() {
 			if (close_fail_notify) {
 				close_fail_notify(save_path);
 			}
-
-			ERR_EXPLAIN("Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.");
 		}
 
 		save_path = "";
+
+		ERR_FAIL_COND_MSG(rename_error, "Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.");
 	}
 }
 

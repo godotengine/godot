@@ -5761,7 +5761,7 @@ GDScriptParser::DataType GDScriptParser::_type_from_gdtype(const GDScriptDataTyp
 
 	switch (p_gdtype.kind) {
 		case GDScriptDataType::UNINITIALIZED: {
-			ERR_EXPLAIN("Uninitialized datatype. Please report a bug.");
+			ERR_PRINT("Uninitialized datatype. Please report a bug.");
 		} break;
 		case GDScriptDataType::BUILTIN: {
 			result.kind = DataType::BUILTIN;

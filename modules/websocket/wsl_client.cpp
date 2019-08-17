@@ -121,17 +121,17 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 			headers[name] = value;
 	}
 
-#define _WLS_EXPLAIN(NAME, VALUE) \
-	ERR_EXPLAIN("Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'");
-#define _WLS_CHECK(NAME, VALUE) \
-	_WLS_EXPLAIN(NAME, VALUE);  \
-	ERR_FAIL_COND_V(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false);
-#define _WLS_CHECK_NC(NAME, VALUE) \
-	_WLS_EXPLAIN(NAME, VALUE);     \
-	ERR_FAIL_COND_V(!headers.has(NAME) || headers[NAME] != VALUE, false);
-	_WLS_CHECK("connection", "upgrade");
-	_WLS_CHECK("upgrade", "websocket");
-	_WLS_CHECK_NC("sec-websocket-accept", WSLPeer::compute_key_response(_key));
+#define _WSL_CHECK(NAME, VALUE)                                                         \
+	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME].to_lower() != VALUE, false, \
+			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
+#define _WSL_CHECK_NC(NAME, VALUE)                                           \
+	ERR_FAIL_COND_V_MSG(!headers.has(NAME) || headers[NAME] != VALUE, false, \
+			"Missing or invalid header '" + String(NAME) + "'. Expected value '" + VALUE + "'.");
+	_WSL_CHECK("connection", "upgrade");
+	_WSL_CHECK("upgrade", "websocket");
+	_WSL_CHECK_NC("sec-websocket-accept", WSLPeer::compute_key_response(_key));
+#undef _WSL_CHECK_NC
+#undef _WSL_CHECK
 	if (_protocols.size() == 0) {
 		// We didn't request a custom protocol
 		ERR_FAIL_COND_V(headers.has("sec-websocket-protocol"), false);
@@ -148,10 +148,6 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 		if (!valid)
 			return false;
 	}
-#undef _WLS_CHECK_NC
-#undef _WLS_CHECK
-#undef _WLS_EXPLAIN
-
 	return true;
 }
 

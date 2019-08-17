@@ -193,14 +193,6 @@ Error DynamicFontAtSize::_load() {
 
 	ERR_FAIL_COND_V(error, ERR_FILE_CANT_OPEN);
 
-	/*error = FT_Set_Char_Size(face,0,64*size,512,512);
-
-	if ( error ) {
-		FT_Done_FreeType( library );
-		ERR_EXPLAIN(TTR("Invalid font size."));
-		ERR_FAIL_COND_V( error, ERR_INVALID_PARAMETER );
-	}*/
-
 	if (FT_HAS_COLOR(face)) {
 		int best_match = 0;
 		int diff = ABS(id.size - ((int64_t)face->available_sizes[0].width));
