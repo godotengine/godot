@@ -955,6 +955,7 @@ public:
 	struct Item {
 		String project_key;
 		String project_name;
+		String description;
 		String path;
 		String icon;
 		String main_scene;
@@ -970,6 +971,7 @@ public:
 
 		Item(const String &p_project,
 				const String &p_name,
+				const String &p_description,
 				const String &p_path,
 				const String &p_icon,
 				const String &p_main_scene,
@@ -981,6 +983,7 @@ public:
 
 			project_key = p_project;
 			project_name = p_name;
+			description = p_description;
 			path = p_path;
 			icon = p_icon;
 			main_scene = p_main_scene;
@@ -1149,6 +1152,7 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 		grayed = true;
 	}
 
+	String description = cf->get_value("application", "config/description", "");
 	String icon = cf->get_value("application", "config/icon", "");
 	String main_scene = cf->get_value("application", "run/main_scene", "");
 
@@ -1170,7 +1174,7 @@ void ProjectList::load_project_data(const String &p_property_key, Item &p_item, 
 
 	String project_key = p_property_key.get_slice("/", 1);
 
-	p_item = Item(project_key, project_name, path, icon, main_scene, last_modified, p_favorite, grayed, missing, config_version);
+	p_item = Item(project_key, project_name, description, path, icon, main_scene, last_modified, p_favorite, grayed, missing, config_version);
 }
 
 void ProjectList::load_projects() {
@@ -1249,6 +1253,7 @@ void ProjectList::create_project_item_control(int p_index) {
 	hb->connect("draw", this, "_panel_draw", varray(hb));
 	hb->connect("gui_input", this, "_panel_input", varray(hb));
 	hb->add_constant_override("separation", 10 * EDSCALE);
+	hb->set_tooltip(item.description);
 
 	VBoxContainer *favorite_box = memnew(VBoxContainer);
 	favorite_box->set_name("FavoriteBox");
