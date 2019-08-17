@@ -2795,8 +2795,7 @@ void EditorNode::select_editor_by_name(const String &p_name) {
 		}
 	}
 
-	ERR_EXPLAIN("The editor name '" + p_name + "' was not found.");
-	ERR_FAIL();
+	ERR_FAIL_MSG("The editor name '" + p_name + "' was not found.");
 }
 
 void EditorNode::add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed) {
@@ -4797,8 +4796,7 @@ void EditorNode::remove_control_from_dock(Control *p_control) {
 		}
 	}
 
-	ERR_EXPLAIN("Control was not in dock");
-	ERR_FAIL_COND(!dock);
+	ERR_FAIL_COND_MSG(!dock, "Control was not in dock.");
 
 	dock->remove_child(p_control);
 	_update_dock_slots_visibility();

@@ -306,8 +306,7 @@ public:
 		if (type->method_map.has(p_name)) {
 			memdelete(bind);
 			// overloading not supported
-			ERR_EXPLAIN("Method already bound: " + instance_type + "::" + p_name);
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, "Method already bound: " + instance_type + "::" + p_name + ".");
 		}
 		type->method_map[p_name] = bind;
 #ifdef DEBUG_METHODS_ENABLED

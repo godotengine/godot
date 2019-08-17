@@ -836,10 +836,7 @@ void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 #ifdef DEBUG_METHODS_ENABLED
 	ClassInfo *check = type;
 	while (check) {
-		if (check->signal_map.has(sname)) {
-			ERR_EXPLAIN("Type " + String(p_class) + " already has signal: " + String(sname));
-			ERR_FAIL();
-		}
+		ERR_FAIL_COND_MSG(check->signal_map.has(sname), "Type " + String(p_class) + " already has signal: " + String(sname) + ".");
 		check = check->inherits_ptr;
 	}
 #endif
@@ -924,16 +921,11 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	if (p_setter) {
 		mb_set = get_method(p_class, p_setter);
 #ifdef DEBUG_METHODS_ENABLED
-		if (!mb_set) {
-			ERR_EXPLAIN("Invalid Setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name);
-			ERR_FAIL();
-		} else {
-			int exp_args = 1 + (p_index >= 0 ? 1 : 0);
-			if (mb_set->get_argument_count() != exp_args) {
-				ERR_EXPLAIN("Invalid Function for Setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name);
-				ERR_FAIL();
-			}
-		}
+
+		ERR_FAIL_COND_MSG(!mb_set, "Invalid setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name + ".");
+
+		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, "Invalid function for setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name + ".");
 #endif
 	}
 
@@ -943,25 +935,15 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 		mb_get = get_method(p_class, p_getter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		if (!mb_get) {
-			ERR_EXPLAIN("Invalid Getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name);
-			ERR_FAIL();
-		} else {
+		ERR_FAIL_COND_MSG(!mb_get, "Invalid getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name + ".");
 
-			int exp_args = 0 + (p_index >= 0 ? 1 : 0);
-			if (mb_get->get_argument_count() != exp_args) {
-				ERR_EXPLAIN("Invalid Function for Getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name);
-				ERR_FAIL();
-			}
-		}
+		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, "Invalid function for getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name + ".");
 #endif
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
-	if (type->property_setget.has(p_pinfo.name)) {
-		ERR_EXPLAIN("Object " + p_class + " already has property: " + p_pinfo.name);
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(type->property_setget.has(p_pinfo.name), "Object " + p_class + " already has property: " + p_pinfo.name + ".");
 #endif
 
 	OBJTYPE_WLOCK
@@ -1240,32 +1222,26 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 
 #ifdef DEBUG_ENABLED
 
-	if (has_method(instance_type, mdname)) {
-		ERR_EXPLAIN("Class " + String(instance_type) + " already has a method " + String(mdname));
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(has_method(instance_type, mdname), NULL, "Class " + String(instance_type) + " already has a method " + String(mdname) + ".");
 #endif
 
 	ClassInfo *type = classes.getptr(instance_type);
 	if (!type) {
-		ERR_PRINTS("Couldn't bind method '" + mdname + "' for instance: " + instance_type);
 		memdelete(p_bind);
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V_MSG(NULL, "Couldn't bind method '" + mdname + "' for instance: " + instance_type + ".");
 	}
 
 	if (type->method_map.has(mdname)) {
 		memdelete(p_bind);
 		// overloading not supported
-		ERR_EXPLAIN("Method already bound: " + instance_type + "::" + mdname);
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V_MSG(NULL, "Method already bound: " + instance_type + "::" + mdname + ".");
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
 
 	if (method_name.args.size() > p_bind->get_argument_count()) {
 		memdelete(p_bind);
-		ERR_EXPLAIN("Method definition provides more arguments than the method actually has: " + instance_type + "::" + mdname);
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V_MSG(NULL, "Method definition provides more arguments than the method actually has: " + instance_type + "::" + mdname + ".");
 	}
 
 	p_bind->set_argument_names(method_name.args);

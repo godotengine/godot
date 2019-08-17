@@ -214,13 +214,11 @@ bool ResourceSaver::add_custom_resource_format_saver(String script_path) {
 	Ref<Script> s = res;
 	StringName ibt = s->get_instance_base_type();
 	bool valid_type = ClassDB::is_parent_class(ibt, "ResourceFormatSaver");
-	ERR_EXPLAIN("Script does not inherit a CustomResourceSaver: " + script_path);
-	ERR_FAIL_COND_V(!valid_type, false);
+	ERR_FAIL_COND_V_MSG(!valid_type, false, "Script does not inherit a CustomResourceSaver: " + script_path + ".");
 
 	Object *obj = ClassDB::instance(ibt);
 
-	ERR_EXPLAIN("Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt));
-	ERR_FAIL_COND_V(obj == NULL, false);
+	ERR_FAIL_COND_V_MSG(obj == NULL, false, "Cannot instance script as custom resource saver, expected 'ResourceFormatSaver' inheritance, got: " + String(ibt) + ".");
 
 	ResourceFormatSaver *crl = Object::cast_to<ResourceFormatSaver>(obj);
 	crl->set_script(s.get_ref_ptr());

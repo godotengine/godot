@@ -321,8 +321,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		if (!f) {
 			ret = unzGoToNextFile(pkg);
 			fc++;
-			ERR_EXPLAIN("Can't open file from path: " + String(to_write));
-			ERR_CONTINUE(true);
+			ERR_CONTINUE_MSG(true, "Can't open file from path: " + String(to_write) + ".");
 		}
 
 		f->store_buffer(data.ptr(), data.size());
@@ -591,8 +590,7 @@ Error ExportTemplateManager::install_android_template() {
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	unzFile pkg = unzOpen2(source_zip.utf8().get_data(), &io);
-	ERR_EXPLAIN("Android sources not in zip format");
-	ERR_FAIL_COND_V(!pkg, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in zip format.");
 
 	int ret = unzGoToFirstFile(pkg);
 

@@ -646,8 +646,7 @@ void TileSetEditor::_on_textures_added(const PoolStringArray &p_paths) {
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<Texture> t = Ref<Texture>(ResourceLoader::load(p_paths[i]));
 
-		ERR_EXPLAIN("'" + p_paths[i] + "' is not a valid texture.");
-		ERR_CONTINUE(!t.is_valid());
+		ERR_CONTINUE_MSG(!t.is_valid(), "'" + p_paths[i] + "' is not a valid texture.");
 
 		if (texture_map.has(t->get_rid())) {
 			invalid_count++;

@@ -268,8 +268,7 @@ void OS::print_all_resources(String p_to_file) {
 		_OSPRF = FileAccess::open(p_to_file, FileAccess::WRITE, &err);
 		if (err != OK) {
 			_OSPRF = NULL;
-			ERR_EXPLAIN("Can't print all resources to file: " + String(p_to_file));
-			ERR_FAIL();
+			ERR_FAIL_MSG("Can't print all resources to file: " + String(p_to_file) + ".");
 		}
 	}
 
@@ -487,10 +486,7 @@ void OS::_ensure_user_data_dir() {
 
 	da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = da->make_dir_recursive(dd);
-	if (err != OK) {
-		ERR_EXPLAIN("Error attempting to create data dir: " + dd);
-	}
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Error attempting to create data dir: " + dd + ".");
 
 	memdelete(da);
 }

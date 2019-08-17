@@ -280,8 +280,7 @@ Ref<StreamPeer> PacketPeerStream::get_stream_peer() const {
 void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 
 	//warning may lose packets
-	ERR_EXPLAIN("Buffer in use, resizing would cause loss of data");
-	ERR_FAIL_COND(ring_buffer.data_left());
+	ERR_FAIL_COND_MSG(ring_buffer.data_left(), "Buffer in use, resizing would cause loss of data.");
 	ring_buffer.resize(nearest_shift(p_max_size + 4));
 	input_buffer.resize(next_power_of_2(p_max_size + 4));
 }

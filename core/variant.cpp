@@ -1740,10 +1740,7 @@ Variant::operator RID() const {
 	} else if (type == OBJECT && _get_obj().obj) {
 #ifdef DEBUG_ENABLED
 		if (ScriptDebugger::get_singleton()) {
-			if (!ObjectDB::instance_validate(_get_obj().obj)) {
-				ERR_EXPLAIN("Invalid pointer (object was deleted)");
-				ERR_FAIL_V(RID());
-			};
+			ERR_FAIL_COND_V_MSG(!ObjectDB::instance_validate(_get_obj().obj), RID(), "Invalid pointer (object was deleted).");
 		};
 #endif
 		Variant::CallError ce;

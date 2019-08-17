@@ -67,8 +67,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 
 			if (status == STATUS_READING_ID) {
 				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + " Unexpected EOF while reading 'msgid' at file: ");
-				ERR_FAIL_V(RES());
+				ERR_FAIL_V_MSG(RES(), p_path + ":" + itos(line) + " Unexpected EOF while reading 'msgid' at file: ");
 			} else {
 				break;
 			}
@@ -79,8 +78,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 			if (status == STATUS_READING_ID) {
 
 				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + " Unexpected 'msgid', was expecting 'msgstr' while parsing: ");
-				ERR_FAIL_V(RES());
+				ERR_FAIL_V_MSG(RES(), p_path + ":" + itos(line) + " Unexpected 'msgid', was expecting 'msgstr' while parsing: ");
 			}
 
 			if (msg_id != "") {
@@ -102,8 +100,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 			if (status != STATUS_READING_ID) {
 
 				memdelete(f);
-				ERR_EXPLAIN(p_path + ":" + itos(line) + " Unexpected 'msgstr', was expecting 'msgid' while parsing: ");
-				ERR_FAIL_V(RES());
+				ERR_FAIL_V_MSG(RES(), p_path + ":" + itos(line) + " Unexpected 'msgstr', was expecting 'msgid' while parsing: ");
 			}
 
 			l = l.substr(6, l.length()).strip_edges();
@@ -118,11 +115,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 			continue; //nothing to read or comment
 		}
 
-		if (!l.begins_with("\"") || status == STATUS_NONE) {
-			//not a string? failure!
-			ERR_EXPLAIN(p_path + ":" + itos(line) + " Invalid line '" + l + "' while parsing: ");
-			ERR_FAIL_V(RES());
-		}
+		ERR_FAIL_COND_V_MSG(!l.begins_with("\"") || status == STATUS_NONE, RES(), p_path + ":" + itos(line) + " Invalid line '" + l + "' while parsing: ");
 
 		l = l.substr(1, l.length());
 		//find final quote
@@ -135,10 +128,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 			}
 		}
 
-		if (end_pos == -1) {
-			ERR_EXPLAIN(p_path + ":" + itos(line) + " Expected '\"' at end of message while parsing file: ");
-			ERR_FAIL_V(RES());
-		}
+		ERR_FAIL_COND_V_MSG(end_pos == -1, RES(), p_path + ":" + itos(line) + " Expected '\"' at end of message while parsing file: ");
 
 		l = l.substr(0, end_pos);
 		l = l.c_unescape();
@@ -163,10 +153,7 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 			config = msg_str;
 	}
 
-	if (config == "") {
-		ERR_EXPLAIN("No config found in file: " + p_path);
-		ERR_FAIL_V(RES());
-	}
+	ERR_FAIL_COND_V_MSG(config == "", RES(), "No config found in file: " + p_path + ".");
 
 	Vector<String> configs = config.split("\n");
 	for (int i = 0; i < configs.size(); i++) {

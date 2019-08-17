@@ -1204,10 +1204,7 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					}
 				}
 
-				if (ngsource != "") {
-					ERR_EXPLAIN("Controller Instance Source '" + ngsource + "' is neither skin or morph!");
-					ERR_FAIL_V(ERR_INVALID_DATA);
-				}
+				ERR_FAIL_COND_V_MSG(ngsource != "", ERR_INVALID_DATA, "Controller instance source '" + ngsource + "' is neither skin or morph!");
 
 			} else {
 				meshid = ng2->source;
@@ -1608,7 +1605,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				if (xform_idx == -1) {
-					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param);
+					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param + ".");
 					continue;
 				}
 
@@ -1630,8 +1627,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				} else if (data.size() == xf.data.size()) {
 					xf.data = data;
 				} else {
-					ERR_EXPLAIN("Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()));
-					ERR_CONTINUE(data.size() != xf.data.size());
+					ERR_CONTINUE_MSG(data.size() != xf.data.size(), "Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()) + ".");
 				}
 			}
 

@@ -882,8 +882,7 @@ RID RasterizerSceneGLES2::light_instance_create(RID p_light) {
 
 	if (!light_instance->light_ptr) {
 		memdelete(light_instance);
-		ERR_EXPLAIN("Condition ' !light_instance->light_ptr ' is true.");
-		ERR_FAIL_V(RID());
+		ERR_FAIL_V_MSG(RID(), "Condition ' !light_instance->light_ptr ' is true.");
 	}
 
 	light_instance->self = light_instance_owner.make_rid(light_instance);

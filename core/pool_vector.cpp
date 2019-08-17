@@ -66,6 +66,5 @@ void MemoryPool::cleanup() {
 	memdelete_arr(allocs);
 	memdelete(alloc_mutex);
 
-	ERR_EXPLAINC("There are still MemoryPool allocs in use at exit!");
-	ERR_FAIL_COND(allocs_used > 0);
+	ERR_FAIL_COND_MSG(allocs_used > 0, "There are still MemoryPool allocs in use at exit!");
 }

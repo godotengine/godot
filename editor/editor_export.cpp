@@ -1011,7 +1011,7 @@ Error EditorExportPlatform::save_pack(const Ref<EditorExportPreset> &p_preset, c
 	if (!ftmp) {
 		memdelete(f);
 		DirAccess::remove_file_or_error(tmppath);
-		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't open file to read from path: " + String(tmppath));
+		ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't open file to read from path: " + String(tmppath) + ".");
 	}
 
 	const int bufsize = 16384;

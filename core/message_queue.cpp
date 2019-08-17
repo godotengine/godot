@@ -52,8 +52,7 @@ Error MessageQueue::push_call(ObjectID p_id, const StringName &p_method, const V
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed method: " + type + ":" + p_method + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
-		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -103,8 +102,7 @@ Error MessageQueue::push_set(ObjectID p_id, const StringName &p_prop, const Vari
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed set: " + type + ":" + p_prop + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
-		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -136,8 +134,7 @@ Error MessageQueue::push_notification(ObjectID p_id, int p_notification) {
 			type = ObjectDB::get_instance(p_id)->get_class();
 		print_line("Failed notification: " + itos(p_notification) + " target ID: " + itos(p_id));
 		statistics();
-		ERR_EXPLAIN("Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
-		ERR_FAIL_V(ERR_OUT_OF_MEMORY);
+		ERR_FAIL_V_MSG(ERR_OUT_OF_MEMORY, "Message queue out of memory. Try increasing 'message_queue_size_kb' in project settings.");
 	}
 
 	Message *msg = memnew_placement(&buffer[buffer_end], Message);
@@ -256,7 +253,7 @@ void MessageQueue::_call_function(Object *p_target, const StringName &p_func, co
 	p_target->call(p_func, argptrs, p_argcount, ce);
 	if (p_show_error && ce.error != Variant::CallError::CALL_OK) {
 
-		ERR_PRINTS("Error calling deferred method: " + Variant::get_call_error_text(p_target, p_func, argptrs, p_argcount, ce));
+		ERR_PRINTS("Error calling deferred method: " + Variant::get_call_error_text(p_target, p_func, argptrs, p_argcount, ce) + ".");
 	}
 }
 
