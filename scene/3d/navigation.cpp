@@ -235,6 +235,32 @@ void Navigation::navmesh_remove(int p_id) {
 	navmesh_map.erase(p_id);
 }
 
+void Navigation::navmesh_update(int p_id) {
+
+	ERR_FAIL_COND(!navmesh_map.has(p_id));
+	_navmesh_unlink(p_id);
+	_navmesh_link(p_id);
+}
+
+Vector<int> Navigation::get_navmesh_list() {
+
+	Vector<int> ret;
+	ret.resize(navmesh_map.size());
+	int idx = 0;
+	for (Map<int, NavMesh>::Element *E = navmesh_map.front(); E; E = E->next()) {
+
+		ret.write[idx++] = E->key();
+	}
+
+	return ret;
+}
+
+Ref<NavigationMesh> Navigation::get_navmesh(int p_id) {
+
+	ERR_FAIL_COND_V(!navmesh_map.has(p_id), Ref<NavigationMesh>());
+	return navmesh_map[p_id].navmesh;
+}
+
 void Navigation::_clip_path(Vector<Vector3> &path, Polygon *from_poly, const Vector3 &p_to_point, Polygon *p_to_poly) {
 
 	Vector3 from = path[path.size() - 1];
@@ -705,6 +731,9 @@ void Navigation::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("navmesh_add", "mesh", "xform", "owner"), &Navigation::navmesh_add, DEFVAL(Variant()));
 	ClassDB::bind_method(D_METHOD("navmesh_set_transform", "id", "xform"), &Navigation::navmesh_set_transform);
 	ClassDB::bind_method(D_METHOD("navmesh_remove", "id"), &Navigation::navmesh_remove);
+	ClassDB::bind_method(D_METHOD("navmesh_update", "id"), &Navigation::navmesh_update);
+	ClassDB::bind_method(D_METHOD("get_navmesh_list"), &Navigation::get_navmesh_list);
+	ClassDB::bind_method(D_METHOD("get_navmesh", "id"), &Navigation::get_navmesh);
 
 	ClassDB::bind_method(D_METHOD("get_simple_path", "start", "end", "optimize"), &Navigation::get_simple_path, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("get_closest_point_to_segment", "start", "end", "use_collision"), &Navigation::get_closest_point_to_segment, DEFVAL(false));

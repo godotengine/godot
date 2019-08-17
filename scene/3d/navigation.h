@@ -171,6 +171,9 @@ public:
 	int navmesh_add(const Ref<NavigationMesh> &p_mesh, const Transform &p_xform, Object *p_owner = NULL);
 	void navmesh_set_transform(int p_id, const Transform &p_xform);
 	void navmesh_remove(int p_id);
+	void navmesh_update(int p_id);
+	Vector<int> get_navmesh_list();
+	Ref<NavigationMesh> get_navmesh(int p_id);
 
 	Vector<Vector3> get_simple_path(const Vector3 &p_start, const Vector3 &p_end, bool p_optimize = true);
 	Vector3 get_closest_point_to_segment(const Vector3 &p_from, const Vector3 &p_to, const bool &p_use_collision = false);
