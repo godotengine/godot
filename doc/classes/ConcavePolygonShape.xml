@@ -8,24 +8,11 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<methods>
-		<method name="get_faces" qualifiers="const">
-			<return type="PoolVector3Array">
-			</return>
-			<description>
-				Returns the faces (an array of triangles).
-			</description>
-		</method>
-		<method name="set_faces">
-			<return type="void">
-			</return>
-			<argument index="0" name="faces" type="PoolVector3Array">
-			</argument>
-			<description>
-				Sets the faces (an array of triangles).
-			</description>
-		</method>
-	</methods>
+	<members>
+		<member name="faces" type="PoolVector3Array" setter="set_faces" getter="get_faces" default="PoolVector3Array(  )">
+			The array of triangles formed faces.
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>
