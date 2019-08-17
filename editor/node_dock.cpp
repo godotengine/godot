@@ -56,10 +56,7 @@ void NodeDock::_bind_methods() {
 
 void NodeDock::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
-		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
-		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
-	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		connections_button->set_icon(get_icon("Signals", "EditorIcons"));
 		groups_button->set_icon(get_icon("Groups", "EditorIcons"));
 	}
@@ -131,7 +128,7 @@ NodeDock::NodeDock() {
 	groups->hide();
 
 	select_a_node = memnew(Label);
-	select_a_node->set_text(TTR("Select a Node to edit Signals and Groups."));
+	select_a_node->set_text(TTR("Select a single node to edit its signals and groups."));
 	select_a_node->set_v_size_flags(SIZE_EXPAND_FILL);
 	select_a_node->set_valign(Label::VALIGN_CENTER);
 	select_a_node->set_align(Label::ALIGN_CENTER);
