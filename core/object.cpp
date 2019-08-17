@@ -938,11 +938,15 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 	return ret;
 }
 
-void Object::notification(int p_notification, bool p_reversed) {
+void Object::notification(int p_notification, bool p_reversed, bool p_script_first) {
+
+	if (script_instance && p_script_first) {
+		script_instance->notification(p_notification);
+	}
 
 	_notificationv(p_notification, p_reversed);
 
-	if (script_instance) {
+	if (script_instance && !p_script_first) {
 		script_instance->notification(p_notification);
 	}
 }
@@ -1689,7 +1693,7 @@ void Object::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_indexed", "property"), &Object::_get_indexed_bind);
 	ClassDB::bind_method(D_METHOD("get_property_list"), &Object::_get_property_list_bind);
 	ClassDB::bind_method(D_METHOD("get_method_list"), &Object::_get_method_list_bind);
-	ClassDB::bind_method(D_METHOD("notification", "what", "reversed"), &Object::notification, DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("notification", "what", "reversed", "script_first"), &Object::notification, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("to_string"), &Object::to_string);
 	ClassDB::bind_method(D_METHOD("get_instance_id"), &Object::get_instance_id);
 

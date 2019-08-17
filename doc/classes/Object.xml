@@ -352,9 +352,12 @@
 			</argument>
 			<argument index="1" name="reversed" type="bool" default="false">
 			</argument>
+			<argument index="2" name="script_first" type="bool" default="false">
+			</argument>
 			<description>
 				Send a given notification to the object, which will also trigger a call to the [method _notification] method of all classes that the object inherits from.
 				If [code]reversed[/code] is [code]true[/code], [method _notification] is called first on the object's own class, and then up to its successive parent classes. If [code]reversed[/code] is [code]false[/code], [method _notification] is called first on the highest ancestor ([Object] itself), and then down to its successive inheriting classes.
+				If [code]script_first[/code] is [code]true[/code], [method _notification] is called first on the script attached to the object if any, and then the object and its inherited classes. If [code]script_first[/code] is [code]false[/code], [method _notification] is called first on the object and its inherited classes, and then on the script attached to the object if any.
 			</description>
 		</method>
 		<method name="property_list_changed_notify">

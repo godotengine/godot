@@ -88,7 +88,6 @@ void Container::_sort_children() {
 	if (!is_inside_tree())
 		return;
 
-	notification(NOTIFICATION_SORT_CHILDREN);
 	emit_signal(SceneStringNames::get_singleton()->sort_children);
 	pending_sort = false;
 }
@@ -140,7 +139,7 @@ void Container::queue_sort() {
 	if (pending_sort)
 		return;
 
-	MessageQueue::get_singleton()->push_call(this, "_sort_children");
+	MessageQueue::get_singleton()->push_call(this, "notification", NOTIFICATION_SORT_CHILDREN, true, true);
 	pending_sort = true;
 }
 
@@ -166,6 +165,10 @@ void Container::_notification(int p_what) {
 				queue_sort();
 			}
 		} break;
+		case NOTIFICATION_SORT_CHILDREN: {
+
+			_sort_children();
+		} break;
 	}
 }
 
@@ -184,7 +187,6 @@ String Container::get_configuration_warning() const {
 
 void Container::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("_sort_children"), &Container::_sort_children);
 	ClassDB::bind_method(D_METHOD("_child_minsize_changed"), &Container::_child_minsize_changed);
 
 	ClassDB::bind_method(D_METHOD("queue_sort"), &Container::queue_sort);
