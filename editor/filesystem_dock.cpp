@@ -39,6 +39,7 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 #include "scene/main/viewport.h"
+#include "scene/resources/packed_scene.h"
 
 Ref<Texture> FileSystemDock::_get_tree_item_icon(EditorFileSystemDirectory *p_dir, int p_idx) {
 	Ref<Texture> file_icon;
@@ -1250,6 +1251,48 @@ void FileSystemDock::_make_dir_confirm() {
 	}
 }
 
+void FileSystemDock::_make_scene_confirm() {
+	String scene_name = make_scene_dialog_text->get_text().strip_edges();
+
+	if (scene_name.length() == 0) {
+		EditorNode::get_singleton()->show_warning(TTR("No name provided."));
+		return;
+	}
+
+	String directory = path;
+	if (!directory.ends_with("/")) {
+		directory = directory.get_base_dir();
+	}
+
+	String extension = scene_name.get_extension();
+	List<String> extensions;
+	Ref<PackedScene> sd = memnew(PackedScene);
+	ResourceSaver::get_recognized_extensions(sd, &extensions);
+
+	bool extension_correct = false;
+	for (List<String>::Element *E = extensions.front(); E; E = E->next()) {
+		if (E->get() == extension) {
+			extension_correct = true;
+			break;
+		}
+	}
+	if (!extension_correct)
+		scene_name = scene_name.get_basename() + ".tscn";
+
+	scene_name = directory.plus_file(scene_name);
+
+	DirAccess *da = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+	if (da->file_exists(scene_name)) {
+		EditorNode::get_singleton()->show_warning(TTR("A file or folder with this name already exists."));
+		memdelete(da);
+		return;
+	}
+	memdelete(da);
+
+	int idx = editor->new_scene();
+	editor->get_editor_data().set_scene_path(idx, scene_name);
+}
+
 void FileSystemDock::_file_deleted(String p_file) {
 	emit_signal("file_deleted", p_file);
 }
@@ -1696,6 +1739,13 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			make_dir_dialog_text->select_all();
 			make_dir_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
 			make_dir_dialog_text->grab_focus();
+		} break;
+
+		case FILE_NEW_SCENE: {
+			make_scene_dialog_text->set_text("new scene");
+			make_scene_dialog_text->select_all();
+			make_scene_dialog->popup_centered_minsize(Size2(250, 80) * EDSCALE);
+			make_scene_dialog_text->grab_focus();
 		} break;
 
 		case FILE_NEW_SCRIPT: {
@@ -2157,6 +2207,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 		p_popup->add_separator();
 		if (p_display_path_dependent_options) {
 			p_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+			p_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
 			p_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
 			p_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 		}
@@ -2195,6 +2246,7 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	tree_popup->clear();
 	tree_popup->set_size(Size2(1, 1));
 	tree_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+	tree_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
 	tree_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
 	tree_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 	tree_popup->set_position(tree->get_global_position() + p_pos);
@@ -2237,6 +2289,7 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->set_size(Size2(1, 1));
 
 	file_list_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
+	file_list_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
 	file_list_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
 	file_list_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
 	file_list_popup->add_item(TTR("Show in File Manager"), FILE_SHOW_IN_EXPLORER);
@@ -2411,6 +2464,7 @@ void FileSystemDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_fs_changed"), &FileSystemDock::_fs_changed);
 	ClassDB::bind_method(D_METHOD("_tree_multi_selected"), &FileSystemDock::_tree_multi_selected);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &FileSystemDock::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_make_scene_confirm"), &FileSystemDock::_make_scene_confirm);
 	ClassDB::bind_method(D_METHOD("_resource_created"), &FileSystemDock::_resource_created);
 	ClassDB::bind_method(D_METHOD("_move_operation_confirm", "to_path", "overwrite"), &FileSystemDock::_move_operation_confirm, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_move_with_overwrite"), &FileSystemDock::_move_with_overwrite);
@@ -2625,6 +2679,17 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(make_dir_dialog);
 	make_dir_dialog->register_text_enter(make_dir_dialog_text);
 	make_dir_dialog->connect("confirmed", this, "_make_dir_confirm");
+
+	make_scene_dialog = memnew(ConfirmationDialog);
+	make_scene_dialog->set_title(TTR("Create Scene"));
+	VBoxContainer *make_scene_dialog_vb = memnew(VBoxContainer);
+	make_scene_dialog->add_child(make_scene_dialog_vb);
+
+	make_scene_dialog_text = memnew(LineEdit);
+	make_scene_dialog_vb->add_margin_child(TTR("Name:"), make_scene_dialog_text);
+	add_child(make_scene_dialog);
+	make_scene_dialog->register_text_enter(make_scene_dialog_text);
+	make_scene_dialog->connect("confirmed", this, "_make_scene_confirm");
 
 	make_script_dialog_text = memnew(ScriptCreateDialog);
 	make_script_dialog_text->set_title(TTR("Create Script"));
