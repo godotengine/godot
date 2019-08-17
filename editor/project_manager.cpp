@@ -2270,6 +2270,9 @@ ProjectManager::ProjectManager() {
 			} break;
 		}
 
+		// Define a minimum window size to prevent UI elements from overlapping or being cut off
+		OS::get_singleton()->set_min_window_size(Size2(750, 420) * EDSCALE);
+
 #ifndef OSX_ENABLED
 		// The macOS platform implementation uses its own hiDPI window resizing code
 		// TODO: Resize windows on hiDPI displays on Windows and Linux and remove the line below
