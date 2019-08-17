@@ -63,15 +63,10 @@ Error AudioDriverXAudio2::init() {
 
 	HRESULT hr;
 	hr = XAudio2Create(&xaudio, 0, XAUDIO2_DEFAULT_PROCESSOR);
-	if (hr != S_OK) {
-		ERR_EXPLAIN("Error creating XAudio2 engine.");
-		ERR_FAIL_V(ERR_UNAVAILABLE);
-	}
+	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 engine.");
+
 	hr = xaudio->CreateMasteringVoice(&mastering_voice);
-	if (hr != S_OK) {
-		ERR_EXPLAIN("Error creating XAudio2 mastering voice.");
-		ERR_FAIL_V(ERR_UNAVAILABLE);
-	}
+	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 mastering voice.");
 
 	wave_format.nChannels = channels;
 	wave_format.cbSize = 0;
@@ -82,10 +77,7 @@ Error AudioDriverXAudio2::init() {
 	wave_format.nAvgBytesPerSec = mix_rate * wave_format.nBlockAlign;
 
 	hr = xaudio->CreateSourceVoice(&source_voice, &wave_format, 0, XAUDIO2_MAX_FREQ_RATIO, &voice_callback);
-	if (hr != S_OK) {
-		ERR_EXPLAIN("Error creating XAudio2 source voice. " + itos(hr));
-		ERR_FAIL_V(ERR_UNAVAILABLE);
-	}
+	ERR_FAIL_COND_V_MSG(hr != S_OK, ERR_UNAVAILABLE, "Error creating XAudio2 source voice. Error code: " + itos(hr) + ".");
 
 	mutex = Mutex::create();
 	thread = Thread::create(AudioDriverXAudio2::thread_func, this);
@@ -140,10 +132,7 @@ void AudioDriverXAudio2::start() {
 
 	active = true;
 	HRESULT hr = source_voice->Start(0);
-	if (hr != S_OK) {
-		ERR_EXPLAIN("XAudio2 start error " + itos(hr));
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(hr != S_OK, "Error starting XAudio2 driver. Error code: " + itos(hr) + ".");
 }
 
 int AudioDriverXAudio2::get_mix_rate() const {

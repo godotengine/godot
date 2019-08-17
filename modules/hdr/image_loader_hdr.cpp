@@ -37,7 +37,7 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 
 	String header = f->get_token();
 
-	ERR_FAIL_COND_V(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED);
+	ERR_FAIL_COND_V_MSG(header != "#?RADIANCE" && header != "#?RGBE", ERR_FILE_UNRECOGNIZED, "Unsupported header information in HDR: " + header + ".");
 
 	while (true) {
 		String line = f->get_line();
@@ -45,12 +45,9 @@ Error ImageLoaderHDR::load_image(Ref<Image> p_image, FileAccess *f, bool p_force
 		if (line == "") // empty line indicates end of header
 			break;
 		if (line.begins_with("FORMAT=")) { // leave option to implement other commands
-			if (line != "FORMAT=32-bit_rle_rgbe") {
-				ERR_EXPLAIN("Only 32-bit_rle_rgbe is supported for HDR files.");
-				return ERR_FILE_UNRECOGNIZED;
-			}
+			ERR_FAIL_COND_V_MSG(line != "FORMAT=32-bit_rle_rgbe", ERR_FILE_UNRECOGNIZED, "Only 32-bit_rle_rgbe is supported for HDR files.");
 		} else if (!line.begins_with("#")) { // not comment
-			WARN_PRINTS("Ignoring unsupported header information in HDR : " + line);
+			WARN_PRINTS("Ignoring unsupported header information in HDR: " + line + ".");
 		}
 	}
 

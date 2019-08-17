@@ -692,16 +692,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 				pre_weights[w_i] = weights;
 
-				/*
-				for(Set<int>::Element *E=vertex_map[w_i].front();E;E=E->next()) {
-
-					int dst = E->get();
-					ERR_EXPLAIN("invalid vertex index in array");
-					ERR_FAIL_INDEX_V(dst,vertex_array.size(),ERR_INVALID_DATA);
-					vertex_array[dst].weights=weights;
-
-				}*/
-
 				index_ofs += wstride * amount;
 			}
 
@@ -711,7 +701,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 		Set<Collada::Vertex> vertex_set; //vertex set will be the vertices
 		List<int> indices_list; //indices will be the indices
-		//Map<int,Set<int> > vertex_map; //map vertices (for setting skinning/morph)
 
 		/**************************/
 		/* CREATE PRIMITIVE ARRAY */
@@ -834,9 +823,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					vertex_set.insert(vertex);
 				}
 
-				/*	if (!vertex_map.has(vertex_index))
-					vertex_map[vertex_index]=Set<int>();
-				vertex_map[vertex_index].insert(index); //should be outside..*/
 				//build triangles if needed
 				if (j == 0)
 					prev2[0] = index;
