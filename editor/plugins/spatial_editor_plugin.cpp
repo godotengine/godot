@@ -5225,42 +5225,6 @@ void SpatialEditor::_unhandled_key_input(Ref<InputEvent> p_event) {
 		return;
 
 	snap_key_enabled = Input::get_singleton()->is_key_pressed(KEY_CONTROL);
-
-	Ref<InputEventKey> k = p_event;
-
-	if (k.is_valid()) {
-
-		// Note: need to check is_echo because first person movement keys might still be held
-		if (!is_any_freelook_active() && !p_event->is_echo()) {
-
-			if (!k->is_pressed())
-				return;
-
-			if (ED_IS_SHORTCUT("spatial_editor/tool_select", p_event)) {
-				_menu_item_pressed(MENU_TOOL_SELECT);
-			} else if (ED_IS_SHORTCUT("spatial_editor/tool_move", p_event)) {
-				_menu_item_pressed(MENU_TOOL_MOVE);
-			} else if (ED_IS_SHORTCUT("spatial_editor/tool_rotate", p_event)) {
-				_menu_item_pressed(MENU_TOOL_ROTATE);
-			} else if (ED_IS_SHORTCUT("spatial_editor/tool_scale", p_event)) {
-				_menu_item_pressed(MENU_TOOL_SCALE);
-			} else if (ED_IS_SHORTCUT("spatial_editor/snap_to_floor", p_event)) {
-				snap_selected_nodes_to_floor();
-			} else if (ED_IS_SHORTCUT("spatial_editor/local_coords", p_event)) {
-				if (are_local_coords_enabled()) {
-					_menu_item_toggled(false, MENU_TOOL_LOCAL_COORDS);
-				} else {
-					_menu_item_toggled(true, MENU_TOOL_LOCAL_COORDS);
-				}
-			} else if (ED_IS_SHORTCUT("spatial_editor/snap", p_event)) {
-				if (is_snap_enabled()) {
-					_menu_item_toggled(false, MENU_TOOL_USE_SNAP);
-				} else {
-					_menu_item_toggled(true, MENU_TOOL_USE_SNAP);
-				}
-			}
-		}
-	}
 }
 void SpatialEditor::_notification(int p_what) {
 
@@ -5534,7 +5498,8 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SELECT]->set_pressed(true);
 	button_binds.write[0] = MENU_TOOL_SELECT;
 	tool_button[TOOL_MODE_SELECT]->connect("pressed", this, "_menu_item_pressed", button_binds);
-	tool_button[TOOL_MODE_SELECT]->set_tooltip(TTR("Select Mode (Q)") + "\n" + keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate\nAlt+Drag: Move\nAlt+RMB: Depth list selection"));
+	tool_button[TOOL_MODE_SELECT]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_select", TTR("Select Mode"), KEY_Q));
+	tool_button[TOOL_MODE_SELECT]->set_tooltip(keycode_get_string(KEY_MASK_CMD) + TTR("Drag: Rotate\nAlt+Drag: Move\nAlt+RMB: Depth list selection"));
 
 	hbc_menu->add_child(memnew(VSeparator));
 
@@ -5544,7 +5509,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_MOVE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_MOVE;
 	tool_button[TOOL_MODE_MOVE]->connect("pressed", this, "_menu_item_pressed", button_binds);
-	tool_button[TOOL_MODE_MOVE]->set_tooltip(TTR("Move Mode (W)"));
+	tool_button[TOOL_MODE_MOVE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_move", TTR("Move Mode"), KEY_W));
 
 	tool_button[TOOL_MODE_ROTATE] = memnew(ToolButton);
 	hbc_menu->add_child(tool_button[TOOL_MODE_ROTATE]);
@@ -5552,7 +5517,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_ROTATE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_ROTATE;
 	tool_button[TOOL_MODE_ROTATE]->connect("pressed", this, "_menu_item_pressed", button_binds);
-	tool_button[TOOL_MODE_ROTATE]->set_tooltip(TTR("Rotate Mode (E)"));
+	tool_button[TOOL_MODE_ROTATE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Rotate Mode"), KEY_E));
 
 	tool_button[TOOL_MODE_SCALE] = memnew(ToolButton);
 	hbc_menu->add_child(tool_button[TOOL_MODE_SCALE]);
@@ -5560,7 +5525,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_button[TOOL_MODE_SCALE]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_SCALE;
 	tool_button[TOOL_MODE_SCALE]->connect("pressed", this, "_menu_item_pressed", button_binds);
-	tool_button[TOOL_MODE_SCALE]->set_tooltip(TTR("Scale Mode (R)"));
+	tool_button[TOOL_MODE_SCALE]->set_shortcut(ED_SHORTCUT("spatial_editor/tool_scale", TTR("Scale Mode"), KEY_R));
 
 	hbc_menu->add_child(memnew(VSeparator));
 
@@ -5604,9 +5569,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_LOCAL_COORDS;
 	tool_option_button[TOOL_OPT_LOCAL_COORDS]->connect("toggled", this, "_menu_item_toggled", button_binds);
-	ED_SHORTCUT("spatial_editor/local_coords", TTR("Local Coords"), KEY_T);
-	sct = ED_GET_SHORTCUT("spatial_editor/local_coords").ptr()->get_as_text();
-	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_tooltip(vformat(TTR("Local Space Mode (%s)"), sct));
+	tool_option_button[TOOL_OPT_LOCAL_COORDS]->set_shortcut(ED_SHORTCUT("spatial_editor/local_coords", TTR("Use Local Space"), KEY_T));
 
 	tool_option_button[TOOL_OPT_USE_SNAP] = memnew(ToolButton);
 	hbc_menu->add_child(tool_option_button[TOOL_OPT_USE_SNAP]);
@@ -5614,9 +5577,7 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	tool_option_button[TOOL_OPT_USE_SNAP]->set_flat(true);
 	button_binds.write[0] = MENU_TOOL_USE_SNAP;
 	tool_option_button[TOOL_OPT_USE_SNAP]->connect("toggled", this, "_menu_item_toggled", button_binds);
-	ED_SHORTCUT("spatial_editor/snap", TTR("Snap"), KEY_Y);
-	sct = ED_GET_SHORTCUT("spatial_editor/snap").ptr()->get_as_text();
-	tool_option_button[TOOL_OPT_USE_SNAP]->set_tooltip(vformat(TTR("Snap Mode (%s)"), sct));
+	tool_option_button[TOOL_OPT_USE_SNAP]->set_shortcut(ED_SHORTCUT("spatial_editor/snap", TTR("Use Snap"), KEY_Y));
 
 	hbc_menu->add_child(memnew(VSeparator));
 
@@ -5636,12 +5597,6 @@ SpatialEditor::SpatialEditor(EditorNode *p_editor) {
 	ED_SHORTCUT("spatial_editor/focus_selection", TTR("Focus Selection"), KEY_F);
 	ED_SHORTCUT("spatial_editor/align_transform_with_view", TTR("Align Transform with View"), KEY_MASK_ALT + KEY_MASK_CMD + KEY_M);
 	ED_SHORTCUT("spatial_editor/align_rotation_with_view", TTR("Align Rotation with View"), KEY_MASK_ALT + KEY_MASK_CMD + KEY_F);
-
-	ED_SHORTCUT("spatial_editor/tool_select", TTR("Tool Select"), KEY_Q);
-	ED_SHORTCUT("spatial_editor/tool_move", TTR("Tool Move"), KEY_W);
-	ED_SHORTCUT("spatial_editor/tool_rotate", TTR("Tool Rotate"), KEY_E);
-	ED_SHORTCUT("spatial_editor/tool_scale", TTR("Tool Scale"), KEY_R);
-
 	ED_SHORTCUT("spatial_editor/freelook_toggle", TTR("Toggle Freelook"), KEY_MASK_SHIFT + KEY_F);
 
 	PopupMenu *p;
