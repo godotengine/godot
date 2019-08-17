@@ -5050,10 +5050,9 @@ float AnimationTrackEditor::get_moving_selection_offset() const {
 
 void AnimationTrackEditor::_box_selection_draw() {
 
-	Color color = get_color("accent_color", "Editor");
-	color.a = 0.2;
-	Rect2 rect = Rect2(Point2(), box_selection->get_size());
-	box_selection->draw_rect(rect, color);
+	const Rect2 selection_rect = Rect2(Point2(), box_selection->get_size());
+	box_selection->draw_rect(selection_rect, get_color("box_selection_fill_color", "Editor"));
+	box_selection->draw_rect(selection_rect, get_color("box_selection_stroke_color", "Editor"), false, Math::round(EDSCALE));
 }
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {

@@ -2918,10 +2918,15 @@ void CanvasItemEditor::_draw_selection() {
 		Point2 bsfrom = transform.xform(drag_from);
 		Point2 bsto = transform.xform(box_selecting_to);
 
-		VisualServer::get_singleton()->canvas_item_add_rect(
-				ci,
+		viewport->draw_rect(
 				Rect2(bsfrom, bsto - bsfrom),
-				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.375));
+				get_color("box_selection_fill_color", "Editor"));
+
+		viewport->draw_rect(
+				Rect2(bsfrom, bsto - bsfrom),
+				get_color("box_selection_stroke_color", "Editor"),
+				false,
+				Math::round(EDSCALE));
 	}
 
 	if (drag_type == DRAG_ROTATE) {
