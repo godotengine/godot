@@ -5176,7 +5176,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 			// We add a bit of margin to the from position to avoid it from snapping
 			// when the spatial is already on a floor and there's another floor under
 			// it
-			from = from + Vector3(0.0, 0.1, 0.0);
+			from = from + Vector3(0.0, 0.2, 0.0);
 
 			Dictionary d;
 
@@ -5191,31 +5191,56 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 
 	Array keys = snap_data.keys();
 
-	if (keys.size()) {
-		undo_redo->create_action(TTR("Snap Nodes To Floor"));
+	// The maximum height an object can travel to be snapped
+	const float max_snap_height = 20.0;
 
+	// Will be set to `true` if at least one node from the selection was sucessfully snapped
+	bool snapped_to_floor = false;
+
+	if (keys.size()) {
+		// For snapping to be performed, there must be solid geometry under at least one of the selected nodes.
+		// We need to check this before snapping to register the undo/redo action only if needed.
 		for (int i = 0; i < keys.size(); i++) {
 			Node *node = keys[i];
 			Spatial *sp = Object::cast_to<Spatial>(node);
-
 			Dictionary d = snap_data[node];
 			Vector3 from = d["from"];
-			Vector3 position_offset = d["position_offset"];
-
-			Vector3 to = from - Vector3(0.0, 10.0, 0.0);
+			Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
 			Set<RID> excluded = _get_physics_bodies_rid(sp);
 
 			if (ss->intersect_ray(from, to, result, excluded)) {
-				Transform new_transform = sp->get_global_transform();
-				new_transform.origin.y = result.position.y;
-				new_transform.origin = new_transform.origin - position_offset;
-
-				undo_redo->add_do_method(sp, "set_global_transform", new_transform);
-				undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+				snapped_to_floor = true;
 			}
 		}
 
-		undo_redo->commit_action();
+		if (snapped_to_floor) {
+			undo_redo->create_action(TTR("Snap Nodes To Floor"));
+
+			// Perform snapping if at least one node can be snapped
+			for (int i = 0; i < keys.size(); i++) {
+				Node *node = keys[i];
+				Spatial *sp = Object::cast_to<Spatial>(node);
+				Dictionary d = snap_data[node];
+				Vector3 from = d["from"];
+				Vector3 to = from - Vector3(0.0, max_snap_height, 0.0);
+				Set<RID> excluded = _get_physics_bodies_rid(sp);
+
+				if (ss->intersect_ray(from, to, result, excluded)) {
+					Vector3 position_offset = d["position_offset"];
+					Transform new_transform = sp->get_global_transform();
+
+					new_transform.origin.y = result.position.y;
+					new_transform.origin = new_transform.origin - position_offset;
+
+					undo_redo->add_do_method(sp, "set_global_transform", new_transform);
+					undo_redo->add_undo_method(sp, "set_global_transform", sp->get_global_transform());
+				}
+			}
+
+			undo_redo->commit_action();
+		} else {
+			EditorNode::get_singleton()->show_warning(TTR("Couldn't find a solid floor to snap the selection to."));
+		}
 	}
 }
 
