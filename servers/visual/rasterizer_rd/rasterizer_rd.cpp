@@ -79,6 +79,7 @@ void RasterizerRD::begin_frame(double frame_step) {
 	frame++;
 	time += frame_step;
 	canvas->set_time(time);
+	scene->set_time(time);
 }
 
 void RasterizerRD::end_frame(bool p_swap_buffers) {
@@ -176,5 +177,5 @@ RasterizerRD::RasterizerRD() {
 
 	storage = memnew(RasterizerStorageRD);
 	canvas = memnew(RasterizerCanvasRD(storage));
-	scene = memnew(RasterizerSceneForwardRD);
+	scene = memnew(RasterizerSceneForwardRD(storage));
 }

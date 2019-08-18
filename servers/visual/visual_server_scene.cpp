@@ -358,6 +358,11 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			instance->octree_id = 0;
 		}
 
+		if (instance->custom_data) {
+			VSG::scene_render->instance_free_custom_data(instance);
+			instance->custom_data = nullptr;
+		}
+
 		switch (instance->base_type) {
 			case VS::INSTANCE_LIGHT: {
 
@@ -487,6 +492,8 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 
 		//forcefully update the dependency now, so if for some reason it gets removed, we can immediately clear it
 		VSG::storage->base_update_dependency(p_base, instance);
+
+		VSG::scene_render->instance_create_custom_data(instance);
 	}
 
 	_instance_queue_update(instance, true, true);
@@ -701,6 +708,8 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 		lightmap_capture->users.insert(instance);
 		instance->lightmap = p_lightmap;
 	}
+
+	VSG::scene_render->instance_custom_data_update_lightmap(instance);
 }
 
 void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {
@@ -929,6 +938,10 @@ void VisualServerScene::_update_instance(Instance *p_instance) {
 	new_aabb = p_instance->transform.xform(p_instance->aabb);
 
 	p_instance->transformed_aabb = new_aabb;
+
+	if (p_instance->custom_data) {
+		VSG::scene_render->instance_custom_data_update_transform(p_instance);
+	}
 
 	if (!p_instance->scenario) {
 
@@ -1682,7 +1695,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 	return animated_material_found;
 }
 
-void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
+void VisualServerScene::render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
 // render to mono camera
 #ifndef _3D_DISABLED
 
@@ -1729,11 +1742,11 @@ void VisualServerScene::render_camera(RID p_camera, RID p_scenario, Size2 p_view
 	}
 
 	_prepare_scene(camera->transform, camera_matrix, ortho, camera->env, camera->visible_layers, p_scenario, p_shadow_atlas, RID());
-	_render_scene(camera->transform, camera_matrix, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+	_render_scene(p_render_buffers, camera->transform, camera_matrix, ortho, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 #endif
 }
 
-void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
+void VisualServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas) {
 	// render for AR/VR interface
 
 	Camera *camera = camera_owner.getornull(p_camera);
@@ -1814,7 +1827,7 @@ void VisualServerScene::render_camera(Ref<ARVRInterface> &p_interface, ARVRInter
 	}
 
 	// And render our scene...
-	_render_scene(cam_transform, camera_matrix, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
+	_render_scene(p_render_buffers, cam_transform, camera_matrix, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
 void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
@@ -1953,6 +1966,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				}
 
 				geom->lighting_dirty = false;
+
+				if (ins->custom_data) {
+					VSG::scene_render->instance_custom_data_update_lights(ins);
+				}
 			}
 
 			if (geom->reflection_dirty) {
@@ -1968,6 +1985,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				}
 
 				geom->reflection_dirty = false;
+
+				if (ins->custom_data) {
+					VSG::scene_render->instance_custom_data_update_reflection_probes(ins);
+				}
 			}
 
 			if (geom->gi_probes_dirty) {
@@ -1983,6 +2004,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 				}
 
 				geom->gi_probes_dirty = false;
+
+				if (ins->custom_data) {
+					VSG::scene_render->instance_custom_data_update_gi_probes(ins);
+				}
 			}
 
 			ins->depth = near_plane.distance_to(ins->transform.origin);
@@ -2143,7 +2168,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	}
 }
 
-void VisualServerScene::_render_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void VisualServerScene::_render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 
@@ -2159,10 +2184,10 @@ void VisualServerScene::_render_scene(const Transform p_cam_transform, const Cam
 
 	/* PROCESS GEOMETRY AND DRAW SCENE */
 
-	VSG::scene_render->render_scene(p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
+	VSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
-void VisualServerScene::render_empty_scene(RID p_scenario, RID p_shadow_atlas) {
+void VisualServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
 
 #ifndef _3D_DISABLED
 
@@ -2173,7 +2198,7 @@ void VisualServerScene::render_empty_scene(RID p_scenario, RID p_shadow_atlas) {
 		environment = scenario->environment;
 	else
 		environment = scenario->fallback_environment;
-	VSG::scene_render->render_scene(Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
+	VSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
 
@@ -2238,7 +2263,7 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 		}
 
 		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
-		_render_scene(xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
+		_render_scene(RID(), xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
 		//do roughness postprocess step until it believes it's done
@@ -3366,6 +3391,8 @@ void VisualServerScene::_update_dirty_instance(Instance *p_instance) {
 						if (!cast_shadows) {
 							can_cast_shadows = false;
 						}
+
+						VSG::storage->base_update_dependency(mesh, p_instance);
 					}
 				} else if (p_instance->base_type == VS::INSTANCE_IMMEDIATE) {
 

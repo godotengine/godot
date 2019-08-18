@@ -2230,9 +2230,6 @@ void SpatialEditorViewport::_notification(int p_what) {
 		int msaa_mode = ProjectSettings::get_singleton()->get("rendering/quality/filters/msaa");
 		viewport->set_msaa(Viewport::MSAA(msaa_mode));
 
-		bool hdr = ProjectSettings::get_singleton()->get("rendering/quality/depth/hdr");
-		viewport->set_hdr(hdr);
-
 		bool show_info = view_menu->get_popup()->is_item_checked(view_menu->get_popup()->get_item_index(VIEW_INFORMATION));
 		info_label->set_visible(show_info);
 

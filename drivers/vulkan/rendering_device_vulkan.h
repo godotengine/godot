@@ -506,7 +506,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			VkDescriptorSetLayout descriptor_set_layout;
 		};
 
-		Vector<int> vertex_input_locations; //inputs used, this is mostly for validation
+		uint32_t vertex_input_mask; //inputs used, this is mostly for validation
 		int fragment_outputs;
 
 		struct PushConstant {
@@ -894,7 +894,7 @@ public:
 	/****************/
 
 	virtual RID shader_create(const Vector<ShaderStageData> &p_stages);
-	virtual Vector<int> shader_get_vertex_input_locations_used(RID p_shader);
+	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader);
 
 	/*****************/
 	/**** UNIFORM ****/
@@ -908,6 +908,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set);
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false); //works for any buffer
+	virtual PoolVector<uint8_t> buffer_get_data(RID p_buffer);
 
 	/*************************/
 	/**** RENDER PIPELINE ****/
