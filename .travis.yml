@@ -2,7 +2,10 @@ language: cpp
 
 # OS config, depends on actual 'os' in build matrix
 dist: xenial
-sudo: false
+
+stages:
+  - check
+  - build
 
 env:
   global:
@@ -18,6 +21,7 @@ cache:
 matrix:
   include:
     - name: Static checks (clang-format)
+      stage: check
       env: STATIC_CHECKS=yes
       os: linux
       compiler: gcc
@@ -29,6 +33,7 @@ matrix:
             - clang-format-8
 
     - name: Linux editor (debug, GCC 9, with Mono)
+      stage: build
       env: PLATFORM=x11 TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-mono-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="module_mono_enabled=yes mono_glue=no warnings=extra werror=yes"
       os: linux
       compiler: gcc-9
@@ -52,6 +57,7 @@ matrix:
           branch_pattern: coverity_scan
 
     - name: Linux export template (release, Clang)
+      stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
@@ -61,21 +67,25 @@ matrix:
             - *linux_deps
 
     - name: Android export template (release_debug, Clang)
+      stage: build
       env: PLATFORM=android TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-clang EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: clang
 
     - name: macOS editor (debug, Clang)
+      stage: build
       env: PLATFORM=osx TOOLS=yes TARGET=debug CACHE_NAME=${PLATFORM}-tools-clang
       os: osx
       compiler: clang
 
     - name: iOS export template (debug, Clang)
+      stage: build
       env: PLATFORM=iphone TOOLS=no TARGET=debug CACHE_NAME=${PLATFORM}-clang
       os: osx
       compiler: clang
 
     - name: Linux headless editor (release_debug, GCC 9)
+      stage: build
       env: PLATFORM=server TOOLS=yes TARGET=release_debug CACHE_NAME=${PLATFORM}-tools-gcc-9 MATRIX_EVAL="CC=gcc-9 && CXX=g++-9" EXTRA_ARGS="warnings=extra werror=yes"
       os: linux
       compiler: gcc-9
@@ -88,6 +98,7 @@ matrix:
             - *linux_deps
 
     - name: Linux export template (release_debug, GCC 5, without 3D support)
+      stage: build
       env: PLATFORM=x11 TOOLS=no TARGET=release_debug CACHE_NAME=${PLATFORM}-gcc-5 EXTRA_ARGS="disable_3d=yes"
       os: linux
       compiler: gcc
