@@ -265,11 +265,18 @@ void UndoRedo::commit_action() {
 
 void UndoRedo::_process_operation_list(List<Operation>::Element *E) {
 
+	int step = 0;
+
 	for (; E; E = E->next()) {
 
 		Operation &op = E->get();
 
 		Object *obj = ObjectDB::get_instance(op.object);
+
+		if (progress_callback) {
+			progress_callback(progress_callback_ud, obj, op.name, step++);
+		}
+
 		if (!obj) //may have been deleted and this is fine
 			continue;
 
@@ -409,6 +416,12 @@ void UndoRedo::set_property_notify_callback(PropertyNotifyCallback p_property_ca
 	prop_callback_ud = p_ud;
 }
 
+void UndoRedo::set_progress_notify_callback(ProgressNotifyCallback p_progress_callback, void *p_ud) {
+
+	progress_callback = p_progress_callback;
+	progress_callback_ud = p_ud;
+}
+
 UndoRedo::UndoRedo() {
 
 	committing = 0;
@@ -424,6 +437,9 @@ UndoRedo::UndoRedo() {
 	prop_callback_ud = NULL;
 	method_callback = NULL;
 	property_callback = NULL;
+
+	progress_callback_ud = NULL;
+	progress_callback = NULL;
 }
 
 UndoRedo::~UndoRedo() {

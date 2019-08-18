@@ -161,6 +161,8 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
+	static void _progress_callback(void *p_ud, Object *p_object, const StringName &p_name, int p_step);
+
 	enum ReplaceOwnerMode {
 		MODE_BIDI,
 		MODE_DO,

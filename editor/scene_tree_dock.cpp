@@ -2006,7 +2006,19 @@ void SceneTreeDock::_create() {
 			ur->add_undo_reference(n);
 		}
 
+		int step_count = selection.size() * 2;
+		EditorProgress *progress = NULL;
+		if (step_count > 20) {
+			progress = new EditorProgress("process_replace", TTR("Process operations"), step_count);
+			ur->set_progress_notify_callback(_progress_callback, progress);
+		}
+
 		ur->commit_action();
+
+		if (progress) {
+			ur->set_progress_notify_callback(NULL, NULL);
+			delete progress;
+		}
 	} else if (current_option == TOOL_REPARENT_TO_NEW_NODE) {
 		List<Node *> selection = editor_selection->get_selected_node_list();
 		ERR_FAIL_COND(selection.size() <= 0);
@@ -2056,6 +2068,14 @@ void SceneTreeDock::_create() {
 	}
 
 	scene_tree->get_scene_tree()->call_deferred("grab_focus");
+}
+
+void SceneTreeDock::_progress_callback(void *p_ud, Object *p_object, const StringName &p_name, int p_step) {
+	if ((p_step % 20) == 0) {
+
+		EditorProgress *progress = (EditorProgress *)p_ud;
+		progress->step("", p_step, false);
+	}
 }
 
 void SceneTreeDock::replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties, bool p_remove_old) {

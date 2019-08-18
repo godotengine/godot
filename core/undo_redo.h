@@ -53,6 +53,8 @@ public:
 	typedef void (*MethodNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_name, VARIANT_ARG_DECLARE);
 	typedef void (*PropertyNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_property, const Variant &p_value);
 
+	typedef void (*ProgressNotifyCallback)(void *p_ud, Object *p_base, const StringName &p_name, int p_step);
+
 private:
 	struct Operation {
 
@@ -91,9 +93,12 @@ private:
 	void *callback_ud;
 	void *method_callbck_ud;
 	void *prop_callback_ud;
+	void *progress_callback_ud;
 
 	MethodNotifyCallback method_callback;
 	PropertyNotifyCallback property_callback;
+
+	ProgressNotifyCallback progress_callback;
 
 	int committing;
 
@@ -127,6 +132,8 @@ public:
 
 	void set_method_notify_callback(MethodNotifyCallback p_method_callback, void *p_ud);
 	void set_property_notify_callback(PropertyNotifyCallback p_property_callback, void *p_ud);
+
+	void set_progress_notify_callback(ProgressNotifyCallback p_progress_callback, void *p_ud);
 
 	UndoRedo();
 	~UndoRedo();
