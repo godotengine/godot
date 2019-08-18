@@ -429,34 +429,17 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
       Predict_traj(get_parameter(vel), get_parameter(samples));
   float min_cost = std::numeric_limits<float>::max();
   float min_cost_time;
-  AnimationPlayer *player = state->player;
   int anim = 1;
   int dup;
-  List<StringName> a_nam;
-  player->get_animation_list(&a_nam);
-  // Tracker->Dummy track for modifications
-  if (!player->has_animation("Tracker")) {
-    main = a_nam[0];
-    Animation *a = player->get_animation(a_nam[0]).ptr();
-
-    r_index = player->get_animation(a_nam[0]).ptr()->find_track(
-        state->tree->get_root_motion_track());
-    a->track_set_enabled(r_index, false);
-
-    player->add_animation("Tracker", a);
-    a_nam.clear();
-    player->get_animation_list(&a_nam);
-  }
 
   if (first_time) {
     dup = -1;
-    player->play("Tracker");
     first_time = false;
   } else {
     dup = get_parameter(min);
   }
 
-  if (!timeout && player->has_animation("Tracker")) {
+  if (!timeout) {
 
     for (int p = 0; p < keys->size(); p++) {
       if (p != dup) {
@@ -496,8 +479,8 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
       }
     }
 
-    blend_animation("Tracker", min_cost_time, 0, true, 0.5);
-    player->seek(min_cost_time); // play min for every frame
+    blend_animation(main, min_cost_time, 0, true,
+                    1.0); // play min for every frame
 
     timeout = true;
   }

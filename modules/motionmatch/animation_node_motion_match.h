@@ -73,6 +73,8 @@ protected:
   static void _bind_methods();
 
 public:
+  void set_main(StringName n) { main = n; }
+
   Skeleton *skeleton;
   NodePath root_track = NodePath();
   int r_index;
