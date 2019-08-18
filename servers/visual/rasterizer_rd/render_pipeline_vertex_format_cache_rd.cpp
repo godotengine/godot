@@ -79,6 +79,11 @@ void RenderPipelineVertexFormatCacheRD::update_shader(RID p_shader) {
 	setup(p_shader, render_primitive, rasterization_state, multisample_state, depth_stencil_state, blend_state, dynamic_state_flags);
 }
 
+void RenderPipelineVertexFormatCacheRD::clear() {
+	_clear();
+	shader = RID(); //clear shader
+}
+
 RenderPipelineVertexFormatCacheRD::RenderPipelineVertexFormatCacheRD() {
 	version_count = 0;
 	versions = NULL;
