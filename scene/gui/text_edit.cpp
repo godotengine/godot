@@ -6112,10 +6112,30 @@ void TextEdit::query_code_comple() {
 		c--;
 	}
 
-	if (ofs > 0 && (inquote || _is_completable(l[ofs - 1]) || completion_prefixes.has(String::chr(l[ofs - 1]))))
-		emit_signal("request_completion");
-	else if (ofs > 1 && l[ofs - 1] == ' ' && completion_prefixes.has(String::chr(l[ofs - 2]))) // Make it work with a space too, it's good enough.
-		emit_signal("request_completion");
+	bool ignored = completion_active && !completion_options.empty();
+	if (ignored) {
+		ScriptCodeCompletionOption::Kind kind = ScriptCodeCompletionOption::KIND_PLAIN_TEXT;
+		const ScriptCodeCompletionOption *previous_option = NULL;
+		for (int i = 0; i < completion_options.size(); i++) {
+			const ScriptCodeCompletionOption &current_option = completion_options[i];
+			if (!previous_option) {
+				previous_option = &current_option;
+				kind = current_option.kind;
+			}
+			if (previous_option->kind != current_option.kind) {
+				ignored = false;
+				break;
+			}
+		}
+		ignored = ignored && (kind == ScriptCodeCompletionOption::KIND_FILE_PATH || kind == ScriptCodeCompletionOption::KIND_NODE_PATH || kind == ScriptCodeCompletionOption::KIND_SIGNAL);
+	}
+
+	if (!ignored) {
+		if (ofs > 0 && (inquote || _is_completable(l[ofs - 1]) || completion_prefixes.has(String::chr(l[ofs - 1]))))
+			emit_signal("request_completion");
+		else if (ofs > 1 && l[ofs - 1] == ' ' && completion_prefixes.has(String::chr(l[ofs - 2]))) // Make it work with a space too, it's good enough.
+			emit_signal("request_completion");
+	}
 }
 
 void TextEdit::set_code_hint(const String &p_hint) {
