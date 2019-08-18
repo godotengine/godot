@@ -1186,17 +1186,6 @@ Ref<ViewportTexture> Viewport::get_texture() const {
 	return default_texture;
 }
 
-void Viewport::set_vflip(bool p_enable) {
-
-	vflip = p_enable;
-	VisualServer::get_singleton()->viewport_set_vflip(viewport, p_enable);
-}
-
-bool Viewport::get_vflip() const {
-
-	return vflip;
-}
-
 void Viewport::set_clear_mode(ClearMode p_mode) {
 
 	clear_mode = p_mode;
@@ -2794,26 +2783,6 @@ bool Viewport::is_input_disabled() const {
 	return disable_input;
 }
 
-void Viewport::set_disable_3d(bool p_disable) {
-	disable_3d = p_disable;
-	VS::get_singleton()->viewport_set_disable_3d(viewport, p_disable);
-}
-
-bool Viewport::is_3d_disabled() const {
-
-	return disable_3d;
-}
-
-void Viewport::set_keep_3d_linear(bool p_keep_3d_linear) {
-	keep_3d_linear = p_keep_3d_linear;
-	VS::get_singleton()->viewport_set_keep_3d_linear(viewport, keep_3d_linear);
-}
-
-bool Viewport::get_keep_3d_linear() const {
-
-	return keep_3d_linear;
-}
-
 Variant Viewport::gui_get_drag_data() const {
 	return gui.drag_data;
 }
@@ -2852,30 +2821,6 @@ void Viewport::set_msaa(MSAA p_msaa) {
 Viewport::MSAA Viewport::get_msaa() const {
 
 	return msaa;
-}
-
-void Viewport::set_hdr(bool p_hdr) {
-
-	if (hdr == p_hdr)
-		return;
-
-	hdr = p_hdr;
-	VS::get_singleton()->viewport_set_hdr(viewport, p_hdr);
-}
-
-bool Viewport::get_hdr() const {
-
-	return hdr;
-}
-
-void Viewport::set_usage(Usage p_usage) {
-
-	usage = p_usage;
-	VS::get_singleton()->viewport_set_usage(viewport, VS::ViewportUsage(p_usage));
-}
-
-Viewport::Usage Viewport::get_usage() const {
-	return usage;
 }
 
 void Viewport::set_debug_draw(DebugDraw p_debug_draw) {
@@ -2935,10 +2880,6 @@ bool Viewport::is_handling_input_locally() const {
 }
 
 void Viewport::_validate_property(PropertyInfo &property) const {
-
-	if (VisualServer::get_singleton()->is_low_end() && property.name == "hdr") {
-		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
-	}
 }
 
 void Viewport::set_default_canvas_item_texture_filter(DefaultCanvasItemTextureFilter p_filter) {
@@ -3021,9 +2962,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_size_override_stretch", "enabled"), &Viewport::set_size_override_stretch);
 	ClassDB::bind_method(D_METHOD("is_size_override_stretch_enabled"), &Viewport::is_size_override_stretch_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_vflip", "enable"), &Viewport::set_vflip);
-	ClassDB::bind_method(D_METHOD("get_vflip"), &Viewport::get_vflip);
-
 	ClassDB::bind_method(D_METHOD("set_clear_mode", "mode"), &Viewport::set_clear_mode);
 	ClassDB::bind_method(D_METHOD("get_clear_mode"), &Viewport::get_clear_mode);
 
@@ -3032,12 +2970,6 @@ void Viewport::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_msaa", "msaa"), &Viewport::set_msaa);
 	ClassDB::bind_method(D_METHOD("get_msaa"), &Viewport::get_msaa);
-
-	ClassDB::bind_method(D_METHOD("set_hdr", "enable"), &Viewport::set_hdr);
-	ClassDB::bind_method(D_METHOD("get_hdr"), &Viewport::get_hdr);
-
-	ClassDB::bind_method(D_METHOD("set_usage", "usage"), &Viewport::set_usage);
-	ClassDB::bind_method(D_METHOD("get_usage"), &Viewport::get_usage);
 
 	ClassDB::bind_method(D_METHOD("set_debug_draw", "debug_draw"), &Viewport::set_debug_draw);
 	ClassDB::bind_method(D_METHOD("get_debug_draw"), &Viewport::get_debug_draw);
@@ -3081,12 +3013,6 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_input", "disable"), &Viewport::set_disable_input);
 	ClassDB::bind_method(D_METHOD("is_input_disabled"), &Viewport::is_input_disabled);
 
-	ClassDB::bind_method(D_METHOD("set_disable_3d", "disable"), &Viewport::set_disable_3d);
-	ClassDB::bind_method(D_METHOD("is_3d_disabled"), &Viewport::is_3d_disabled);
-
-	ClassDB::bind_method(D_METHOD("set_keep_3d_linear", "keep_3d_linear"), &Viewport::set_keep_3d_linear);
-	ClassDB::bind_method(D_METHOD("get_keep_3d_linear"), &Viewport::get_keep_3d_linear);
-
 	ClassDB::bind_method(D_METHOD("_gui_show_tooltip"), &Viewport::_gui_show_tooltip);
 	ClassDB::bind_method(D_METHOD("_gui_remove_focus"), &Viewport::_gui_remove_focus);
 	ClassDB::bind_method(D_METHOD("_post_gui_grab_click_focus"), &Viewport::_post_gui_grab_click_focus);
@@ -3125,14 +3051,9 @@ void Viewport::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "handle_input_locally"), "set_handle_input_locally", "is_handling_input_locally");
 	ADD_GROUP("Rendering", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x"), "set_msaa", "get_msaa");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hdr"), "set_hdr", "get_hdr");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "disable_3d"), "set_disable_3d", "is_3d_disabled");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "keep_3d_linear"), "set_keep_3d_linear", "get_keep_3d_linear");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "usage", PROPERTY_HINT_ENUM, "2D,2D No-Sampling,3D,3D No-Effects"), "set_usage", "get_usage");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_direct_to_screen"), "set_use_render_direct_to_screen", "is_using_render_direct_to_screen");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "debug_draw", PROPERTY_HINT_ENUM, "Disabled,Unshaded,Overdraw,Wireframe"), "set_debug_draw", "get_debug_draw");
 	ADD_GROUP("Render Target", "render_target_");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "render_target_v_flip"), "set_vflip", "get_vflip");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_clear_mode", PROPERTY_HINT_ENUM, "Always,Never,Next Frame"), "set_clear_mode", "get_clear_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "render_target_update_mode", PROPERTY_HINT_ENUM, "Disabled,Once,When Visible,Always"), "set_update_mode", "get_update_mode");
 	ADD_GROUP("Canvas Items", "canvas_item_");
@@ -3190,11 +3111,6 @@ void Viewport::_bind_methods() {
 	BIND_ENUM_CONSTANT(MSAA_8X);
 	BIND_ENUM_CONSTANT(MSAA_16X);
 
-	BIND_ENUM_CONSTANT(USAGE_2D);
-	BIND_ENUM_CONSTANT(USAGE_2D_NO_SAMPLING);
-	BIND_ENUM_CONSTANT(USAGE_3D);
-	BIND_ENUM_CONSTANT(USAGE_3D_NO_EFFECTS);
-
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ALWAYS);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_NEVER);
 	BIND_ENUM_CONSTANT(CLEAR_MODE_ONLY_NEXT_FRAME);
@@ -3247,8 +3163,6 @@ Viewport::Viewport() {
 	size_override_size = Size2(1, 1);
 	gen_mipmaps = false;
 
-	vflip = false;
-
 	//clear=true;
 	update_mode = UPDATE_WHEN_VISIBLE;
 
@@ -3274,8 +3188,6 @@ Viewport::Viewport() {
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
 
 	disable_input = false;
-	disable_3d = false;
-	keep_3d_linear = false;
 
 	//window tooltip
 	gui.tooltip_timer = -1;
@@ -3294,9 +3206,7 @@ Viewport::Viewport() {
 	gui.last_mouse_focus = NULL;
 
 	msaa = MSAA_DISABLED;
-	hdr = true;
 
-	usage = USAGE_3D;
 	debug_draw = DEBUG_DRAW_DISABLED;
 	clear_mode = CLEAR_MODE_ALWAYS;
 

@@ -463,9 +463,7 @@ void Polygon3DEditor::_polygon_draw() {
 
 	imgeom->end();
 
-	while (m->get_surface_count()) {
-		m->surface_remove(0);
-	}
+	m->clear_surfaces();
 
 	if (poly.size() == 0)
 		return;

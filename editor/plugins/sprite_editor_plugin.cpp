@@ -323,7 +323,7 @@ void SpriteEditor::_convert_to_mesh_2d_node() {
 	a[Mesh::ARRAY_TEX_UV] = computed_uv;
 	a[Mesh::ARRAY_INDEX] = computed_indices;
 
-	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
+	mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, a, Array(), Dictionary(), Mesh::ARRAY_FLAG_USE_2D_VERTICES);
 
 	MeshInstance2D *mesh_instance = memnew(MeshInstance2D);
 	mesh_instance->set_mesh(mesh);

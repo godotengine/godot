@@ -115,13 +115,6 @@ public:
 		MSAA_16X,
 	};
 
-	enum Usage {
-		USAGE_2D,
-		USAGE_2D_NO_SAMPLING,
-		USAGE_3D,
-		USAGE_3D_NO_EFFECTS,
-	};
-
 	enum RenderInfo {
 
 		RENDER_INFO_OBJECTS_IN_FRAME,
@@ -205,7 +198,6 @@ private:
 	Rect2 last_vp_rect;
 
 	bool transparent_bg;
-	bool vflip;
 	ClearMode clear_mode;
 	bool filter;
 	bool gen_mipmaps;
@@ -257,21 +249,15 @@ private:
 	void _update_stretch_transform();
 	void _update_global_transform();
 
-	bool disable_3d;
-	bool keep_3d_linear;
 	UpdateMode update_mode;
 	RID texture_rid;
 
 	DebugDraw debug_draw;
 
-	Usage usage;
-
 	int shadow_atlas_size;
 	ShadowAtlasQuadrantSubdiv shadow_atlas_quadrant_subdiv[4];
 
 	MSAA msaa;
-	bool hdr;
-
 	Ref<ViewportTexture> default_texture;
 	Set<ViewportTexture *> viewport_textures;
 
@@ -453,9 +439,6 @@ public:
 	void set_size_override_stretch(bool p_enable);
 	bool is_size_override_stretch_enabled() const;
 
-	void set_vflip(bool p_enable);
-	bool get_vflip() const;
-
 	void set_clear_mode(ClearMode p_mode);
 	ClearMode get_clear_mode() const;
 
@@ -472,9 +455,6 @@ public:
 	void set_msaa(MSAA p_msaa);
 	MSAA get_msaa() const;
 
-	void set_hdr(bool p_hdr);
-	bool get_hdr() const;
-
 	Vector2 get_camera_coords(const Vector2 &p_viewport_coords) const;
 	Vector2 get_camera_rect_size() const;
 
@@ -486,12 +466,6 @@ public:
 
 	void set_disable_input(bool p_disable);
 	bool is_input_disabled() const;
-
-	void set_disable_3d(bool p_disable);
-	bool is_3d_disabled() const;
-
-	void set_keep_3d_linear(bool p_keep_3d_linear);
-	bool get_keep_3d_linear() const;
 
 	void set_attach_to_screen_rect(const Rect2 &p_rect);
 	Rect2 get_attach_to_screen_rect() const;
@@ -514,9 +488,6 @@ public:
 	int gui_get_canvas_sort_index();
 
 	virtual String get_configuration_warning() const;
-
-	void set_usage(Usage p_usage);
-	Usage get_usage() const;
 
 	void set_debug_draw(DebugDraw p_debug_draw);
 	DebugDraw get_debug_draw() const;
@@ -549,7 +520,6 @@ public:
 VARIANT_ENUM_CAST(Viewport::UpdateMode);
 VARIANT_ENUM_CAST(Viewport::ShadowAtlasQuadrantSubdiv);
 VARIANT_ENUM_CAST(Viewport::MSAA);
-VARIANT_ENUM_CAST(Viewport::Usage);
 VARIANT_ENUM_CAST(Viewport::DebugDraw);
 VARIANT_ENUM_CAST(Viewport::ClearMode);
 VARIANT_ENUM_CAST(Viewport::RenderInfo);

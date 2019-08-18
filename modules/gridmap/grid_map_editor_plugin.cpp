@@ -961,8 +961,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	clip_mode = p_gridmap->has_meta("_editor_clip_") ? ClipMode(p_gridmap->get_meta("_editor_clip_").operator int()) : CLIP_DISABLED;
 
 	for (int i = 0; i < 3; i++) {
-		if (vs->mesh_get_surface_count(grid[i]) > 0)
-			vs->mesh_remove_surface(grid[i], 0);
+		vs->mesh_clear(grid[i]);
 		edit_floor[i] = edited_floor[i];
 	}
 

@@ -57,9 +57,11 @@ void PrimitiveMesh::_update() const {
 		}
 	}
 
+	PoolVector<int> indices = arr[VS::ARRAY_INDEX];
+
 	if (flip_faces) {
 		PoolVector<Vector3> normals = arr[VS::ARRAY_NORMAL];
-		PoolVector<int> indices = arr[VS::ARRAY_INDEX];
+
 		if (normals.size() && indices.size()) {
 
 			{
@@ -82,6 +84,8 @@ void PrimitiveMesh::_update() const {
 		}
 	}
 
+	array_len = pc;
+	index_array_len = indices.size();
 	// in with the new
 	VisualServer::get_singleton()->mesh_clear(mesh);
 	VisualServer::get_singleton()->mesh_add_surface_from_arrays(mesh, (VisualServer::PrimitiveType)primitive_type, arr);
@@ -114,7 +118,7 @@ int PrimitiveMesh::surface_get_array_len(int p_idx) const {
 		_update();
 	}
 
-	return VisualServer::get_singleton()->mesh_surface_get_array_len(mesh, 0);
+	return array_len;
 }
 
 int PrimitiveMesh::surface_get_array_index_len(int p_idx) const {
@@ -123,7 +127,7 @@ int PrimitiveMesh::surface_get_array_index_len(int p_idx) const {
 		_update();
 	}
 
-	return VisualServer::get_singleton()->mesh_surface_get_array_index_len(mesh, 0);
+	return index_array_len;
 }
 
 Array PrimitiveMesh::surface_get_arrays(int p_surface) const {
@@ -135,22 +139,18 @@ Array PrimitiveMesh::surface_get_arrays(int p_surface) const {
 	return VisualServer::get_singleton()->mesh_surface_get_arrays(mesh, 0);
 }
 
+Dictionary PrimitiveMesh::surface_get_lods(int p_surface) const {
+	return Dictionary(); //not really supported
+}
 Array PrimitiveMesh::surface_get_blend_shape_arrays(int p_surface) const {
-	ERR_FAIL_INDEX_V(p_surface, 1, Array());
-	if (pending_request) {
-		_update();
-	}
 
-	return Array();
+	return Array(); //not really supported
 }
 
 uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, 1, 0);
-	if (pending_request) {
-		_update();
-	}
 
-	return VisualServer::get_singleton()->mesh_surface_get_format(mesh, 0);
+	return VS::ARRAY_COMPRESS_DEFAULT;
 }
 
 Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
@@ -261,6 +261,9 @@ PrimitiveMesh::PrimitiveMesh() {
 
 	// make sure we do an update after we've finished constructing our object
 	pending_request = true;
+
+	array_len = 0;
+	index_array_len = 0;
 }
 
 PrimitiveMesh::~PrimitiveMesh() {
