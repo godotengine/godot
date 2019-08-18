@@ -31,85 +31,418 @@
 #ifndef RASTERIZER_SCENE_FORWARD_RD_H
 #define RASTERIZER_SCENE_FORWARD_RD_H
 
-#include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer_rd/rasterizer_scene_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
+#include "servers/visual/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
+#include "servers/visual/rasterizer_rd/shaders/scene_forward.glsl.gen.h"
 
-class RasterizerSceneForwardRD : public RasterizerScene {
+class RasterizerSceneForwardRD : public RasterizerSceneRD {
+
+	/* Shader */
+
+	enum ShaderVersion {
+		SHADER_VERSION_DEPTH_PASS,
+		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL,
+		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
+		SHADER_VERSION_COLOR_PASS,
+		SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
+		SHADER_VERSION_VCT_COLOR_PASS,
+		SHADER_VERSION_VCT_COLOR_PASS_WITH_SEPARATE_SPECULAR,
+		SHADER_VERSION_LIGHTMAP_COLOR_PASS,
+		SHADER_VERSION_LIGHTMAP_COLOR_PASS_WITH_SEPARATE_SPECULAR,
+		SHADER_VERSION_MAX
+	};
+
+	struct {
+		SceneForwardShaderRD scene_shader;
+		ShaderCompilerRD compiler;
+	} shader;
+
+	RasterizerStorageRD *storage;
+
+	/* Material */
+
+	struct ShaderData : public RasterizerStorageRD::ShaderData {
+
+		enum BlendMode { //used internally
+			BLEND_MODE_MIX,
+			BLEND_MODE_ADD,
+			BLEND_MODE_SUB,
+			BLEND_MODE_MUL,
+		};
+
+		enum DepthDraw {
+			DEPTH_DRAW_DISABLED,
+			DEPTH_DRAW_OPAQUE,
+			DEPTH_DRAW_ALWAYS
+		};
+
+		enum DepthTest {
+			DEPTH_TEST_DISABLED,
+			DEPTH_TEST_ENABLED
+		};
+
+		enum Cull {
+			CULL_DISABLED,
+			CULL_FRONT,
+			CULL_BACK
+		};
+
+		enum CullVariant {
+			CULL_VARIANT_NORMAL,
+			CULL_VARIANT_REVERSED,
+			CULL_VARIANT_DOUBLE_SIDED,
+			CULL_VARIANT_MAX
+
+		};
+
+		bool valid;
+		RID version;
+		uint32_t vertex_input_mask;
+		RenderPipelineVertexFormatCacheRD pipelines[CULL_VARIANT_MAX][VS::PRIMITIVE_MAX][SHADER_VERSION_MAX];
+
+		String path;
+
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String code;
+		Map<StringName, RID> default_texture_params;
+
+		DepthDraw depth_draw;
+		DepthTest depth_test;
+
+		bool uses_point_size;
+		bool uses_alpha;
+		bool uses_blend_alpha;
+		bool uses_depth_pre_pass;
+		bool uses_discard;
+		bool uses_roughness;
+		bool uses_normal;
+
+		bool unshaded;
+		bool uses_vertex;
+		bool uses_sss;
+		bool uses_screen_texture;
+		bool uses_depth_texture;
+		bool uses_normal_texture;
+		bool uses_time;
+		bool writes_modelview_or_projection;
+		bool uses_world_coordinates;
+
+		uint64_t last_pass = 0;
+		uint32_t index = 0;
+
+		virtual void set_code(const String &p_Code);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual bool is_param_texture(const StringName &p_param) const;
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		ShaderData();
+		virtual ~ShaderData();
+	};
+
+	RasterizerStorageRD::ShaderData *_create_shader_func();
+	static RasterizerStorageRD::ShaderData *_create_shader_funcs() {
+		return static_cast<RasterizerSceneForwardRD *>(singleton)->_create_shader_func();
+	}
+
+	struct MaterialData : public RasterizerStorageRD::MaterialData {
+		uint64_t last_frame;
+		ShaderData *shader_data;
+		RID uniform_buffer;
+		RID uniform_set;
+		Vector<RID> texture_cache;
+		Vector<uint8_t> ubo_data;
+		uint64_t last_pass = 0;
+		uint32_t index = 0;
+		RID next_pass;
+		uint8_t priority;
+		virtual void set_render_priority(int p_priority);
+		virtual void set_next_pass(RID p_pass);
+		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual ~MaterialData();
+	};
+
+	RasterizerStorageRD::MaterialData *_create_material_func(ShaderData *p_shader);
+	static RasterizerStorageRD::MaterialData *_create_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
+		return static_cast<RasterizerSceneForwardRD *>(singleton)->_create_material_func(static_cast<ShaderData *>(p_shader));
+	}
+
+	/* Instance Custom Data */
+
+	struct InstanceGeometryData : public InstanceCustomData {
+
+		struct UBO {
+			float transform[16];
+			float normal_transform[12];
+			uint32_t flags;
+			uint32_t pad[3];
+		};
+
+		RID ubo;
+		RID uniform_set_base;
+		RID uniform_set_gi;
+
+		bool ubo_dirty = true;
+		bool using_lightmap_gi = false;
+		bool using_vct_gi = false;
+	};
+
+	/* Framebuffer */
+
+	struct RenderBufferDataForward : public RenderBufferData {
+		//for rendering, may be MSAAd
+		RID color;
+		RID depth;
+		RID color_fb;
+		int width, height;
+
+		RID render_target;
+
+		RID uniform_set_opaque;
+		RID uniform_set_alpha;
+
+		void clear();
+		virtual void configure(RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
+
+		~RenderBufferDataForward();
+	};
+
+	virtual RenderBufferData *_create_render_buffer_data();
+
+	RID default_render_buffer_uniform_set;
+	/* Instance Data */
+
+	struct InstanceData {
+		struct UBO {
+		};
+
+		RID state_buffer;
+		RID uniform_set;
+	};
+
+	RID_Owner<InstanceData> instance_data_owner;
+
+	/* Scene State UBO */
+
+	struct SceneState {
+		struct UBO {
+			float projection_matrix[16];
+			float inv_projection_matrix[16];
+
+			float camera_matrix[16];
+			float inv_camera_matrix[16];
+
+			float viewport_size[2];
+			float screen_pixel_size[2];
+
+			float shadow_z_offset;
+			float shadow_z_slope_scale;
+
+			float time;
+			float reflection_multiplier;
+		};
+
+		UBO ubo;
+
+		RID uniform_buffer;
+
+		bool used_screen_texture = false;
+		bool used_normal_texture = false;
+		bool used_depth_texture = false;
+		bool used_sss = false;
+		uint32_t current_shader_index = 0;
+		uint32_t current_material_index = 0;
+	} scene_state;
+
+	/* Render List */
+
+	struct RenderList {
+
+		int max_elements;
+
+		struct Element {
+			RasterizerScene::InstanceBase *instance;
+			MaterialData *material;
+			union {
+				struct {
+					//from least significant to most significant in sort, TODO: should be endian swapped on big endian
+					uint64_t material_index : 20;
+					uint64_t shader_index : 20;
+					uint64_t priority : 16;
+					uint64_t depth_layer : 8;
+				};
+
+				uint64_t sort_key;
+			};
+			uint32_t surface_index;
+		};
+
+		Element *base_elements;
+		Element **elements;
+
+		int element_count;
+		int alpha_element_count;
+
+		void clear() {
+
+			element_count = 0;
+			alpha_element_count = 0;
+		}
+
+		//should eventually be replaced by radix
+
+		struct SortByKey {
+
+			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
+				return A->sort_key < B->sort_key;
+			}
+		};
+
+		void sort_by_key(bool p_alpha) {
+
+			SortArray<Element *, SortByKey> sorter;
+			if (p_alpha) {
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
+			} else {
+				sorter.sort(elements, element_count);
+			}
+		}
+
+		struct SortByDepth {
+
+			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
+				return A->instance->depth < B->instance->depth;
+			}
+		};
+
+		void sort_by_depth(bool p_alpha) { //used for shadows
+
+			SortArray<Element *, SortByDepth> sorter;
+			if (p_alpha) {
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
+			} else {
+				sorter.sort(elements, element_count);
+			}
+		}
+
+		struct SortByReverseDepthAndPriority {
+
+			_FORCE_INLINE_ bool operator()(const Element *A, const Element *B) const {
+				uint32_t layer_A = uint32_t(A->priority);
+				uint32_t layer_B = uint32_t(B->priority);
+				if (layer_A == layer_B) {
+					return A->instance->depth > B->instance->depth;
+				} else {
+					return layer_A < layer_B;
+				}
+			}
+		};
+
+		void sort_by_reverse_depth_and_priority(bool p_alpha) { //used for alpha
+
+			SortArray<Element *, SortByReverseDepthAndPriority> sorter;
+			if (p_alpha) {
+				sorter.sort(&elements[max_elements - alpha_element_count], alpha_element_count);
+			} else {
+				sorter.sort(elements, element_count);
+			}
+		}
+
+		_FORCE_INLINE_ Element *add_element() {
+
+			if (element_count + alpha_element_count >= max_elements)
+				return NULL;
+			elements[element_count] = &base_elements[element_count];
+			return elements[element_count++];
+		}
+
+		_FORCE_INLINE_ Element *add_alpha_element() {
+
+			if (element_count + alpha_element_count >= max_elements)
+				return NULL;
+			int idx = max_elements - alpha_element_count - 1;
+			elements[idx] = &base_elements[idx];
+			alpha_element_count++;
+			return elements[idx];
+		}
+
+		void init() {
+
+			element_count = 0;
+			alpha_element_count = 0;
+			elements = memnew_arr(Element *, max_elements);
+			base_elements = memnew_arr(Element, max_elements);
+			for (int i = 0; i < max_elements; i++)
+				elements[i] = &base_elements[i]; // assign elements
+		}
+
+		RenderList() {
+
+			max_elements = 0;
+		}
+
+		~RenderList() {
+			memdelete_arr(elements);
+			memdelete_arr(base_elements);
+		}
+	};
+
+	RenderList render_list;
+
+	static RasterizerSceneForwardRD *singleton;
+	uint64_t scene_pass;
+	uint64_t render_pass;
+	double time;
+	RID default_shader;
+	RID default_material;
+	RID default_shader_rd;
+
+	enum PassMode {
+		PASS_MODE_COLOR,
+		PASS_MODE_COLOR_SPECULAR,
+		PASS_MODE_COLOR_TRANSPARENT,
+		PASS_MODE_SHADOW,
+		PASS_MODE_DEPTH,
+		PASS_MODE_DEPTH_NORMAL,
+		PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
+	};
+
+	void _setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog);
+
+	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_screen_uniform_set, bool p_no_gi);
+	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode);
+	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, PassMode p_pass_mode);
+
+	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, PassMode p_pass_mode, bool p_no_gi);
+
+protected:
+	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+
 public:
-	/* SHADOW ATLAS API */
+	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {}
 
-	RID shadow_atlas_create() { return RID(); }
-	void shadow_atlas_set_size(RID p_atlas, int p_size) {}
-	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {}
-	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) { return false; }
+	virtual void set_scene_pass(uint64_t p_pass);
+	virtual void set_time(double p_time);
+	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) {}
 
-	int get_directional_light_shadow_size(RID p_light_intance) { return 0; }
-	void set_directional_shadow_count(int p_count) {}
+	virtual void instance_create_custom_data(InstanceBase *p_instance);
+	virtual void instance_free_custom_data(InstanceBase *p_instance);
+	virtual void instance_custom_data_update_lights(InstanceBase *p_instance);
+	virtual void instance_custom_data_update_reflection_probes(InstanceBase *p_instance);
+	virtual void instance_custom_data_update_gi_probes(InstanceBase *p_instance);
+	virtual void instance_custom_data_update_lightmap(InstanceBase *p_instance);
+	virtual void instance_custom_data_update_transform(InstanceBase *p_instance);
 
-	/* ENVIRONMENT API */
+	virtual bool free(RID p_rid);
 
-	RID environment_create() { return RID(); }
-
-	void environment_set_background(RID p_env, VS::EnvironmentBG p_bg) {}
-	void environment_set_sky(RID p_env, RID p_sky) {}
-	void environment_set_sky_custom_fov(RID p_env, float p_scale) {}
-	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {}
-	void environment_set_bg_color(RID p_env, const Color &p_color) {}
-	void environment_set_bg_energy(RID p_env, float p_energy) {}
-	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) {}
-	void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) {}
-
-	void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
-	void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
-	void environment_set_glow(RID p_env, bool p_enable, int p_level_flags, float p_intensity, float p_strength, float p_bloom_threshold, VS::EnvironmentGlowBlendMode p_blend_mode, float p_hdr_bleed_threshold, float p_hdr_bleed_scale, float p_hdr_luminance_cap, bool p_bicubic_upscale) {}
-
-	void environment_set_fog(RID p_env, bool p_enable, float p_begin, float p_end, RID p_gradient_texture) {}
-
-	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
-	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
-
-	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {}
-
-	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
-
-	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
-	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
-	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
-
-	bool is_environment(RID p_env) { return false; }
-	VS::EnvironmentBG environment_get_background(RID p_env) { return VS::ENV_BG_KEEP; }
-	int environment_get_canvas_max_layer(RID p_env) { return 0; }
-
-	RID light_instance_create(RID p_light) { return RID(); }
-	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) {}
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0) {}
-	void light_instance_mark_visible(RID p_light_instance) {}
-
-	RID reflection_atlas_create() { return RID(); }
-	void reflection_atlas_set_size(RID p_ref_atlas, int p_size) {}
-	void reflection_atlas_set_subdivision(RID p_ref_atlas, int p_subdiv) {}
-
-	RID reflection_probe_instance_create(RID p_probe) { return RID(); }
-	void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform) {}
-	void reflection_probe_release_atlas_index(RID p_instance) {}
-	bool reflection_probe_instance_needs_redraw(RID p_instance) { return false; }
-	bool reflection_probe_instance_has_reflection(RID p_instance) { return false; }
-	bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) { return false; }
-	bool reflection_probe_instance_postprocess_step(RID p_instance) { return true; }
-
-	RID gi_probe_instance_create() { return RID(); }
-	void gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data) {}
-	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {}
-	void gi_probe_instance_set_bounds(RID p_probe, const Vector3 &p_bounds) {}
-
-	void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {}
-	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {}
-
-	void set_scene_pass(uint64_t p_pass) {}
-	void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) {}
-
-	bool free(RID p_rid) { return true; }
-
-	RasterizerSceneForwardRD() {}
-	~RasterizerSceneForwardRD() {}
+	RasterizerSceneForwardRD(RasterizerStorageRD *p_storage);
+	~RasterizerSceneForwardRD();
 };
 #endif // RASTERIZER_SCENE_FORWARD_RD_H

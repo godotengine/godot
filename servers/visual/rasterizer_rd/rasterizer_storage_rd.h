@@ -33,7 +33,7 @@
 
 #include "core/rid_owner.h"
 #include "servers/visual/rasterizer.h"
-#include "servers/visual/rasterizer_rd/effects_rd.h"
+#include "servers/visual/rasterizer_rd/rasterizer_effects_rd.h"
 #include "servers/visual/rasterizer_rd/shader_compiler_rd.h"
 #include "servers/visual/rendering_device.h"
 
@@ -78,6 +78,18 @@ public:
 		DEFAULT_RD_TEXTURE_ANISO,
 		DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER,
 		DEFAULT_RD_TEXTURE_MAX
+	};
+
+	enum DefaultRDBuffer {
+		DEFAULT_RD_BUFFER_VERTEX,
+		DEFAULT_RD_BUFFER_NORMAL,
+		DEFAULT_RD_BUFFER_TANGENT,
+		DEFAULT_RD_BUFFER_COLOR,
+		DEFAULT_RD_BUFFER_TEX_UV,
+		DEFAULT_RD_BUFFER_TEX_UV2,
+		DEFAULT_RD_BUFFER_BONES,
+		DEFAULT_RD_BUFFER_WEIGHTS,
+		DEFAULT_RD_BUFFER_MAX,
 	};
 
 private:
@@ -186,6 +198,80 @@ private:
 	Material *material_update_list;
 	void _material_queue_update(Material *material, bool p_uniform, bool p_texture);
 	void _update_queued_materials();
+
+	/* Mesh */
+
+	struct Mesh {
+
+		struct Surface {
+			VS::PrimitiveType primitive;
+			uint32_t format = 0;
+
+			RID vertex_buffer;
+			uint32_t vertex_count = 0;
+
+			// A different pipeline needs to be allocated
+			// depending on the inputs available in the
+			// material.
+			// There are never that many geometry/material
+			// combinations, so a simple array is the most
+			// cache-efficient structure.
+
+			struct Version {
+				uint32_t input_mask;
+				RD::VertexFormatID vertex_format;
+				RID vertex_array;
+			};
+
+			SpinLock version_lock; //needed to access versions
+			Version *versions = nullptr; //allocated on demand
+			uint32_t version_count = 0;
+
+			RID index_buffer;
+			RID index_array;
+			uint32_t index_count = 0;
+
+			struct LOD {
+				float edge_length;
+				RID index_buffer;
+				RID index_array;
+			};
+
+			LOD *lods = nullptr;
+			uint32_t lod_count = 0;
+
+			AABB aabb;
+
+			Vector<AABB> bone_aabbs;
+
+			Vector<RID> blend_shapes;
+			RID blend_shape_base_buffer; //source buffer goes here when using blend shapes, and main one is uncompressed
+
+			RID material;
+		};
+
+		uint32_t blend_shape_count = 0;
+		VS::BlendShapeMode blend_shape_mode = VS::BLEND_SHAPE_MODE_NORMALIZED;
+
+		Surface **surfaces = nullptr;
+		uint32_t surface_count = 0;
+
+		Vector<AABB> bone_aabbs;
+
+		AABB aabb;
+		AABB custom_aabb;
+
+		Vector<RID> material_cache;
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	mutable RID_Owner<Mesh> mesh_owner;
+
+	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface *s, uint32_t p_input_mask);
+
+	RID mesh_default_rd_buffers[DEFAULT_RD_BUFFER_MAX];
+
 	/* RENDER TARGET */
 
 	struct RenderTarget {
@@ -231,7 +317,7 @@ private:
 
 	/* EFFECTS */
 
-	EffectsRD effects;
+	RasterizerEffectsRD effects;
 
 public:
 	/* TEXTURE API */
@@ -309,26 +395,8 @@ public:
 
 	/* SKY API */
 
-	struct RDSurface {
-		uint32_t format;
-		VS::PrimitiveType primitive;
-		PoolVector<uint8_t> array;
-		int vertex_count;
-		PoolVector<uint8_t> index_array;
-		int index_count;
-		AABB aabb;
-		Vector<PoolVector<uint8_t> > blend_shapes;
-		Vector<AABB> bone_aabbs;
-	};
-
-	struct RDMesh {
-		Vector<RDSurface> surfaces;
-		int blend_shape_count;
-		VS::BlendShapeMode blend_shape_mode;
-	};
 	RID sky_create() { return RID(); }
 	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
-	mutable RID_PtrOwner<RDMesh> mesh_owner;
 
 	/* SHADER API */
 
@@ -374,134 +442,87 @@ public:
 
 	/* MESH API */
 
-	RID mesh_create() {
-		RDMesh *mesh = memnew(RDMesh);
-		ERR_FAIL_COND_V(!mesh, RID());
-		mesh->blend_shape_count = 0;
-		mesh->blend_shape_mode = VS::BLEND_SHAPE_MODE_NORMALIZED;
-		return mesh_owner.make_rid(mesh);
+	virtual RID mesh_create();
+
+	/// Return stride
+	virtual void mesh_add_surface(RID p_mesh, const VS::SurfaceData &p_surface);
+
+	virtual int mesh_get_blend_shape_count(RID p_mesh) const;
+
+	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode);
+	virtual VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const;
+
+	virtual void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data);
+
+	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material);
+	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const;
+
+	virtual VS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const;
+
+	virtual int mesh_get_surface_count(RID p_mesh) const;
+
+	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb);
+	virtual AABB mesh_get_custom_aabb(RID p_mesh) const;
+
+	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID());
+
+	virtual void mesh_clear(RID p_mesh);
+
+	_FORCE_INLINE_ const RID *mesh_get_surface_count_and_materials(RID p_mesh, uint32_t &r_surface_count) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!mesh, NULL);
+		r_surface_count = mesh->surface_count;
+		if (r_surface_count == 0) {
+			return NULL;
+		}
+		if (mesh->material_cache.empty()) {
+			mesh->material_cache.resize(mesh->surface_count);
+			for (uint32_t i = 0; i < r_surface_count; i++) {
+				mesh->material_cache.write[i] = mesh->surfaces[i]->material;
+			}
+		}
+
+		return mesh->material_cache.ptr();
 	}
 
-	void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
+	_FORCE_INLINE_ void mesh_get_arrays_primitive_and_format(RID p_mesh, uint32_t p_surface_index, uint32_t p_input_mask, VS::PrimitiveType &r_primitive, RID &r_vertex_array_rd, RID &r_index_array_rd, RD::VertexFormatID &r_vertex_format) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND(!mesh);
+		ERR_FAIL_INDEX(p_surface_index, mesh->surface_count);
 
-		m->surfaces.push_back(RDSurface());
-		RDSurface *s = &m->surfaces.write[m->surfaces.size() - 1];
-		s->format = p_format;
-		s->primitive = p_primitive;
-		s->array = p_array;
-		s->vertex_count = p_vertex_count;
-		s->index_array = p_index_array;
-		s->index_count = p_index_count;
-		s->aabb = p_aabb;
-		s->blend_shapes = p_blend_shapes;
-		s->bone_aabbs = p_bone_aabbs;
+		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+
+		r_index_array_rd = s->index_array;
+
+		s->version_lock.lock();
+
+		//there will never be more than, at much, 3 or 4 versions, so iterating is the fastest way
+
+		for (uint32_t i = 0; i < s->version_count; i++) {
+			if (s->versions[i].input_mask != p_input_mask) {
+				continue;
+			}
+			//we have this version, hooray
+			r_vertex_format = s->versions[i].vertex_format;
+			r_vertex_array_rd = s->versions[i].vertex_array;
+			s->version_lock.unlock();
+			return;
+		}
+
+		uint32_t version = s->version_count; //gets added at the end
+
+		_mesh_surface_generate_version_for_input_mask(s, p_input_mask);
+
+		r_vertex_format = s->versions[version].vertex_format;
+		r_vertex_array_rd = s->versions[version].vertex_array;
+
+		s->version_lock.unlock();
 	}
 
-	void mesh_set_blend_shape_count(RID p_mesh, int p_amount) {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_count = p_amount;
+	_FORCE_INLINE_ RID mesh_get_default_rd_buffer(DefaultRDBuffer p_buffer) {
+		ERR_FAIL_INDEX_V(p_buffer, DEFAULT_RD_BUFFER_MAX, RID());
+		return mesh_default_rd_buffers[p_buffer];
 	}
-	int mesh_get_blend_shape_count(RID p_mesh) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->blend_shape_count;
-	}
-
-	void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		m->blend_shape_mode = p_mode;
-	}
-	VS::BlendShapeMode mesh_get_blend_shape_mode(RID p_mesh) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, VS::BLEND_SHAPE_MODE_NORMALIZED);
-		return m->blend_shape_mode;
-	}
-
-	void mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {}
-
-	void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {}
-	RID mesh_surface_get_material(RID p_mesh, int p_surface) const { return RID(); }
-
-	int mesh_surface_get_array_len(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].vertex_count;
-	}
-	int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].index_count;
-	}
-
-	PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
-
-		return m->surfaces[p_surface].array;
-	}
-	PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, PoolVector<uint8_t>());
-
-		return m->surfaces[p_surface].index_array;
-	}
-
-	uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-
-		return m->surfaces[p_surface].format;
-	}
-	VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, VS::PRIMITIVE_POINTS);
-
-		return m->surfaces[p_surface].primitive;
-	}
-
-	AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, AABB());
-
-		return m->surfaces[p_surface].aabb;
-	}
-	Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<PoolVector<uint8_t> >());
-
-		return m->surfaces[p_surface].blend_shapes;
-	}
-	Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, Vector<AABB>());
-
-		return m->surfaces[p_surface].bone_aabbs;
-	}
-
-	void mesh_remove_surface(RID p_mesh, int p_index) {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND(!m);
-		ERR_FAIL_COND(p_index >= m->surfaces.size());
-
-		m->surfaces.remove(p_index);
-	}
-	int mesh_get_surface_count(RID p_mesh) const {
-		RDMesh *m = mesh_owner.getornull(p_mesh);
-		ERR_FAIL_COND_V(!m, 0);
-		return m->surfaces.size();
-	}
-
-	void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {}
-	AABB mesh_get_custom_aabb(RID p_mesh) const { return AABB(); }
-
-	AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const { return AABB(); }
-	void mesh_clear(RID p_mesh) {}
 
 	/* MULTIMESH API */
 
@@ -623,7 +644,7 @@ public:
 	float reflection_probe_get_origin_max_distance(RID p_probe) const { return 0.0; }
 	bool reflection_probe_renders_shadows(RID p_probe) const { return false; }
 
-	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {}
+	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance);
 	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {}
 
 	/* GI PROBE API */
@@ -752,9 +773,6 @@ public:
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 
 	VS::InstanceType get_base_type(RID p_rid) const {
-		if (mesh_owner.owns(p_rid)) {
-			return VS::INSTANCE_MESH;
-		}
 
 		return VS::INSTANCE_NONE;
 	}
@@ -775,7 +793,7 @@ public:
 
 	static RasterizerStorage *base_singleton;
 
-	EffectsRD *get_effects();
+	RasterizerEffectsRD *get_effects();
 
 	RasterizerStorageRD();
 	~RasterizerStorageRD();

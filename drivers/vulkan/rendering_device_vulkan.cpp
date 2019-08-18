@@ -3110,7 +3110,7 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Poo
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
-	_buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	_buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_VERTEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
@@ -3280,7 +3280,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 #else
 	index_buffer.max_index = 0xFFFFFFFF;
 #endif
-	_buffer_allocate(&index_buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	_buffer_allocate(&index_buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_INDEX_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 	if (p_data.size()) {
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
@@ -3563,8 +3563,9 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 	push_constant.push_constant_size = 0;
 	push_constant.push_constants_vk_stage = 0;
 
-	Vector<int> vertex_input_locations;
-	int fragment_outputs = 0;
+	uint32_t vertex_input_mask = 0;
+
+	uint32_t fragment_outputs = 0;
 
 	uint32_t stages_processed = 0;
 
@@ -3754,6 +3755,33 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 				}
 			}
 
+			if (stage == SHADER_STAGE_VERTEX) {
+
+				uint32_t iv_count = 0;
+				result = spvReflectEnumerateInputVariables(&module, &iv_count, NULL);
+				if (result != SPV_REFLECT_RESULT_SUCCESS) {
+					ERR_EXPLAIN("Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed enumerating input variables.");
+					ERR_FAIL_V(RID());
+				}
+
+				if (iv_count) {
+					Vector<SpvReflectInterfaceVariable *> input_vars;
+					input_vars.resize(iv_count);
+
+					result = spvReflectEnumerateOutputVariables(&module, &iv_count, input_vars.ptrw());
+					if (result != SPV_REFLECT_RESULT_SUCCESS) {
+						ERR_EXPLAIN("Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed obtaining input variables.");
+						ERR_FAIL_V(RID());
+					}
+
+					for (uint32_t j = 0; j < iv_count; j++) {
+						if (input_vars[j]) {
+							vertex_input_mask |= (1 << uint32_t(input_vars[j]->location));
+						}
+					}
+				}
+			}
+
 			if (stage == SHADER_STAGE_FRAGMENT) {
 
 				uint32_t ov_count = 0;
@@ -3833,7 +3861,7 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 
 	Shader shader;
 
-	shader.vertex_input_locations = vertex_input_locations;
+	shader.vertex_input_mask = vertex_input_mask;
 	shader.fragment_outputs = fragment_outputs;
 	shader.push_constant = push_constant;
 
@@ -3981,10 +4009,10 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 	return shader_owner.make_rid(shader);
 }
 
-Vector<int> RenderingDeviceVulkan::shader_get_vertex_input_locations_used(RID p_shader) {
+uint32_t RenderingDeviceVulkan::shader_get_vertex_input_attribute_mask(RID p_shader) {
 	const Shader *shader = shader_owner.getornull(p_shader);
-	ERR_FAIL_COND_V(!shader, Vector<int>());
-	return shader->vertex_input_locations;
+	ERR_FAIL_COND_V(!shader, 0);
+	return shader->vertex_input_mask;
 }
 
 /******************/
@@ -4042,7 +4070,7 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != size_bytes, RID());
 
 	TextureBuffer texture_buffer;
-	Error err = _buffer_allocate(&texture_buffer.buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	Error err = _buffer_allocate(&texture_buffer.buffer, size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_UNIFORM_TEXEL_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 	ERR_FAIL_COND_V(err != OK, RID());
 
 	if (p_data.size()) {
@@ -4669,6 +4697,50 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	return err;
 }
 
+PoolVector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
+
+	Buffer *buffer = NULL;
+	if (vertex_buffer_owner.owns(p_buffer)) {
+		buffer = vertex_buffer_owner.getornull(p_buffer);
+	} else if (index_buffer_owner.owns(p_buffer)) {
+		buffer = index_buffer_owner.getornull(p_buffer);
+	} else if (texture_buffer_owner.owns(p_buffer)) {
+		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
+	} else {
+		ERR_EXPLAIN("Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
+		ERR_FAIL_V(PoolVector<uint8_t>());
+	}
+
+	VkCommandBuffer command_buffer = frames[frame].setup_command_buffer;
+	Buffer tmp_buffer;
+	_buffer_allocate(&tmp_buffer, buffer->size, VK_BUFFER_USAGE_TRANSFER_DST_BIT, VMA_MEMORY_USAGE_CPU_ONLY);
+	VkBufferCopy region;
+	region.srcOffset = 0;
+	region.dstOffset = 0;
+	region.size = buffer->size;
+	vkCmdCopyBuffer(command_buffer, buffer->buffer, tmp_buffer.buffer, 1, &region); //dst buffer is in CPU, but I wonder if src buffer needs a barrier for this..
+	//flush everything so memory can be safely mapped
+	_flush(true, false);
+
+	void *buffer_mem;
+	VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
+	if (vkerr) {
+		ERR_FAIL_V(PoolVector<uint8_t>());
+	}
+
+	PoolVector<uint8_t> buffer_data;
+	{
+
+		buffer_data.resize(buffer->size);
+		PoolVector<uint8_t>::Write w = buffer_data.write();
+		copymem(w.ptr(), buffer_mem, buffer->size);
+	}
+
+	_buffer_free(&tmp_buffer);
+
+	return buffer_data;
+}
+
 /*************************/
 /**** RENDER PIPELINE ****/
 /*************************/
@@ -4706,17 +4778,19 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		pipeline_vertex_input_state_create_info = vd.create_info;
 
 		//validate with inputs
-		for (int i = 0; i < shader->vertex_input_locations.size(); i++) {
-			uint32_t location = shader->vertex_input_locations[i];
+		for (uint32_t i = 0; i < 32; i++) {
+			if (!(shader->vertex_input_mask & (1 << i))) {
+				continue;
+			}
 			bool found = false;
 			for (int j = 0; j < vd.vertex_formats.size(); j++) {
-				if (vd.vertex_formats[j].location == location) {
+				if (vd.vertex_formats[j].location == i) {
 					found = true;
 				}
 			}
 
 			if (!found) {
-				ERR_EXPLAIN("Shader vertex input location (" + itos(location) + ") not provided in vertex input description for pipeline creation.");
+				ERR_EXPLAIN("Shader vertex input location (" + itos(i) + ") not provided in vertex input description for pipeline creation.");
 				ERR_FAIL_V(RID());
 			}
 		}
@@ -4731,8 +4805,8 @@ RID RenderingDeviceVulkan::render_pipeline_create(RID p_shader, FramebufferForma
 		pipeline_vertex_input_state_create_info.vertexAttributeDescriptionCount = 0;
 		pipeline_vertex_input_state_create_info.pVertexAttributeDescriptions = NULL;
 
-		if (shader->vertex_input_locations.size()) {
-			ERR_EXPLAIN("Shader contains vertex inputs (" + itos(shader->vertex_input_locations.size()) + ") but no vertex input description was provided for pipeline creation.");
+		if (shader->vertex_input_mask != 0) {
+			ERR_EXPLAIN("Shader contains vertex inputs, but no vertex input description was provided for pipeline creation.");
 			ERR_FAIL_V(RID());
 		}
 	}

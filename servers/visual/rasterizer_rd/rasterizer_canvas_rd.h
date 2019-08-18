@@ -116,7 +116,9 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 		PIPELINE_VARIANT_PRIMITIVE_LINES,
 		PIPELINE_VARIANT_PRIMITIVE_POINTS,
 		PIPELINE_VARIANT_ATTRIBUTE_TRIANGLES,
+		PIPELINE_VARIANT_ATTRIBUTE_TRIANGLE_STRIP,
 		PIPELINE_VARIANT_ATTRIBUTE_LINES,
+		PIPELINE_VARIANT_ATTRIBUTE_LINES_STRIP,
 		PIPELINE_VARIANT_ATTRIBUTE_POINTS,
 		PIPELINE_VARIANT_MAX
 	};
@@ -290,10 +292,6 @@ class RasterizerCanvasRD : public RasterizerCanvas {
 	struct {
 		HashMap<PolygonID, PolygonBuffers> polygons;
 		PolygonID last_id;
-		RID default_color_buffer;
-		RID default_uv_buffer;
-		RID default_bone_buffer;
-		RID default_weight_buffer;
 	} polygon_buffers;
 
 	/********************/

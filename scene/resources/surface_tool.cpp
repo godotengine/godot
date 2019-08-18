@@ -466,7 +466,7 @@ Ref<ArrayMesh> SurfaceTool::commit(const Ref<ArrayMesh> &p_existing, uint32_t p_
 
 	Array a = commit_to_arrays();
 
-	mesh->add_surface_from_arrays(primitive, a, Array(), p_flags);
+	mesh->add_surface_from_arrays(primitive, a, Array(), Dictionary(), p_flags);
 
 	if (material.is_valid())
 		mesh->surface_set_material(surface, material);

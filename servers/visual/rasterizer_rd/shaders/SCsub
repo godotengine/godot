@@ -6,3 +6,5 @@ if 'RD_GLSL' in env['BUILDERS']:
     env.RD_GLSL('canvas.glsl');
     env.RD_GLSL('canvas_occlusion.glsl');
     env.RD_GLSL('blur.glsl');
+    env.RD_GLSL('scene_forward.glsl');
+    env.RD_GLSL('scene_forward_inc.glsl');

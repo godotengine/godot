@@ -568,7 +568,7 @@ public:
 	};
 
 	virtual RID shader_create(const Vector<ShaderStageData> &p_stages) = 0;
-	virtual Vector<int> shader_get_vertex_input_locations_used(RID p_shader) = 0;
+	virtual uint32_t shader_get_vertex_input_attribute_mask(RID p_shader) = 0;
 
 	/******************/
 	/**** UNIFORMS ****/
@@ -613,6 +613,7 @@ public:
 	virtual bool uniform_set_is_valid(RID p_uniform_set) = 0;
 
 	virtual Error buffer_update(RID p_buffer, uint32_t p_offset, uint32_t p_size, const void *p_data, bool p_sync_with_draw = false) = 0; //this function can be used from any thread and it takes effect at the begining of the frame, unless sync with draw is used, which is used to mix updates with draw calls
+	virtual PoolVector<uint8_t> buffer_get_data(RID p_buffer) = 0; //this causes stall, only use to retrieve large buffers for saving
 
 	/*************************/
 	/**** RENDER PIPELINE ****/

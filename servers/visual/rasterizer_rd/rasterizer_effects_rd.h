@@ -1,10 +1,10 @@
-#ifndef EFFECTS_RD_H
-#define EFFECTS_RD_H
+#ifndef RASTERIZER_EFFECTS_RD_H
+#define RASTERIZER_EFFECTS_RD_H
 
 #include "render_pipeline_vertex_format_cache_rd.h"
 #include "shaders/blur.glsl.gen.h"
 
-class EffectsRD {
+class RasterizerEffectsRD {
 
 	enum BlurMode {
 		BLUR_MODE_GAUSSIAN_BLUR,
@@ -80,8 +80,8 @@ public:
 	void copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
 	void gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region);
 
-	EffectsRD();
-	~EffectsRD();
+	RasterizerEffectsRD();
+	~RasterizerEffectsRD();
 };
 
 #endif // EFFECTS_RD_H
