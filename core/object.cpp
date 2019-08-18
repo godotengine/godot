@@ -1400,8 +1400,9 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 		p_connections->push_back(s->slot_map.getv(i).conn);
 }
 
-bool Object::has_persistent_signal_connections() const {
+int Object::get_persistent_signal_connection_count() const {
 
+	int count = 0;
 	const StringName *S = NULL;
 
 	while ((S = signal_map.next(S))) {
@@ -1409,13 +1410,13 @@ bool Object::has_persistent_signal_connections() const {
 		const Signal *s = &signal_map[*S];
 
 		for (int i = 0; i < s->slot_map.size(); i++) {
-
-			if (s->slot_map.getv(i).conn.flags & CONNECT_PERSIST)
-				return true;
+			if (s->slot_map.getv(i).conn.flags & CONNECT_PERSIST) {
+				count += 1;
+			}
 		}
 	}
 
-	return false;
+	return count;
 }
 
 void Object::get_signals_connected_to_this(List<Connection> *p_connections) const {

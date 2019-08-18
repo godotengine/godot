@@ -270,15 +270,30 @@ bool SceneTreeEditor::_add_nodes(Node *p_node, TreeItem *p_parent) {
 			item->add_button(0, get_icon("NodeWarning", "EditorIcons"), BUTTON_WARNING, false, TTR("Node configuration warning:") + "\n" + p_node->get_configuration_warning());
 		}
 
-		bool has_connections = p_node->has_persistent_signal_connections();
-		bool has_groups = p_node->has_persistent_groups();
+		int num_connections = p_node->get_persistent_signal_connection_count();
+		int num_groups = p_node->get_persistent_group_count();
 
-		if (has_connections && has_groups) {
-			item->add_button(0, get_icon("SignalsAndGroups", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connection(s) and group(s).\nClick to show signals dock."));
-		} else if (has_connections) {
-			item->add_button(0, get_icon("Signals", "EditorIcons"), BUTTON_SIGNALS, false, TTR("Node has connections.\nClick to show signals dock."));
-		} else if (has_groups) {
-			item->add_button(0, get_icon("Groups", "EditorIcons"), BUTTON_GROUPS, false, TTR("Node is in group(s).\nClick to show groups dock."));
+		if (num_connections >= 1 && num_groups >= 1) {
+			item->add_button(
+					0,
+					get_icon("SignalsAndGroups", "EditorIcons"),
+					BUTTON_SIGNALS,
+					false,
+					vformat(TTR("Node has %s connection(s) and %s group(s).\nClick to show signals dock."), num_connections, num_groups));
+		} else if (num_connections >= 1) {
+			item->add_button(
+					0,
+					get_icon("Signals", "EditorIcons"),
+					BUTTON_SIGNALS,
+					false,
+					vformat(TTR("Node has %s connection(s).\nClick to show signals dock."), num_connections));
+		} else if (num_groups >= 1) {
+			item->add_button(
+					0,
+					get_icon("Groups", "EditorIcons"),
+					BUTTON_GROUPS,
+					false,
+					vformat(TTR("Node is in %s group(s).\nClick to show groups dock."), num_groups));
 		}
 	}
 
