@@ -984,7 +984,7 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 				mr.push_back(a);
 			}
 
-			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d, mr, p_use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : 0);
+			p_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, d, mr, Dictionary(), p_use_compression ? Mesh::ARRAY_COMPRESS_DEFAULT : 0);
 
 			if (material.is_valid()) {
 				if (p_use_mesh_material) {

@@ -68,7 +68,6 @@ Vector<Ref<Texture2D> > EditorInterface::make_mesh_previews(const Vector<Ref<Mes
 
 	RID viewport = VS::get_singleton()->viewport_create();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_ALWAYS);
-	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	VS::get_singleton()->viewport_set_size(viewport, size, size);
 	VS::get_singleton()->viewport_set_transparent_background(viewport, true);

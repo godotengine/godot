@@ -2081,12 +2081,6 @@ SceneTree::SceneTree() {
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/filters/msaa", PropertyInfo(Variant::INT, "rendering/quality/filters/msaa", PROPERTY_HINT_ENUM, "Disabled,2x,4x,8x,16x,AndroidVR 2x,AndroidVR 4x"));
 	root->set_msaa(Viewport::MSAA(msaa_mode));
 
-	GLOBAL_DEF("rendering/quality/depth/hdr", true);
-	GLOBAL_DEF("rendering/quality/depth/hdr.mobile", false);
-
-	bool hdr = GLOBAL_GET("rendering/quality/depth/hdr");
-	root->set_hdr(hdr);
-
 	VS::get_singleton()->scenario_set_reflection_atlas_size(root->get_world()->get_scenario(), ref_atlas_size, ref_atlas_subdiv);
 
 	{ //load default fallback environment

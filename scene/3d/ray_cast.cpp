@@ -362,8 +362,7 @@ void RayCast::_update_debug_shape() {
 		return;
 
 	Ref<ArrayMesh> mesh = mi->get_mesh();
-	if (mesh->get_surface_count() > 0)
-		mesh->surface_remove(0);
+	mesh->clear_surfaces();
 
 	Array a;
 	a.resize(Mesh::ARRAY_MAX);
