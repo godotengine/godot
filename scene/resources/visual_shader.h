@@ -73,6 +73,7 @@ private:
 	} graph[TYPE_MAX];
 
 	Shader::Mode shader_mode;
+	mutable String previous_code;
 
 	Array _get_node_connections(Type p_type) const;
 
