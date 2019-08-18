@@ -371,6 +371,7 @@ protected:
 	Vector2 size;
 	String inputs;
 	String outputs;
+	bool editable;
 
 	struct Port {
 		PortType type;
@@ -426,6 +427,9 @@ public:
 	void set_control(Control *p_control, int p_index);
 	Control *get_control(int p_index);
 
+	void set_editable(bool p_enabled);
+	bool is_editable() const;
+
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeGroupBase();
@@ -434,10 +438,9 @@ public:
 class VisualShaderNodeExpression : public VisualShaderNodeGroupBase {
 	GDCLASS(VisualShaderNodeExpression, VisualShaderNodeGroupBase);
 
-private:
+protected:
 	String expression;
 
-protected:
 	static void _bind_methods();
 
 public:
@@ -451,6 +454,17 @@ public:
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const;
 
 	VisualShaderNodeExpression();
+};
+
+class VisualShaderNodeGlobalExpression : public VisualShaderNodeExpression {
+	GDCLASS(VisualShaderNodeGlobalExpression, VisualShaderNodeExpression);
+
+public:
+	virtual String get_caption() const;
+
+	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
+
+	VisualShaderNodeGlobalExpression();
 };
 
 #endif // VISUAL_SHADER_H
