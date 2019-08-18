@@ -63,6 +63,10 @@ public:
 	void update_shader(RID p_shader);
 
 	_FORCE_INLINE_ RID get_render_pipeline(RD::VertexFormatID p_vertex_format_id, RD::FramebufferFormatID p_framebuffer_format_id) {
+#ifdef DEBUG_ENABLED
+		ERR_FAIL_COND_V_MSG(shader.is_null(), RID(),
+				"Attempted to use an unused shader variant (shader is null),");
+#endif
 		for (uint32_t i = 0; i < version_count; i++) {
 			if (versions[i].vertex_id == p_vertex_format_id && versions[i].framebuffer_id == p_framebuffer_format_id) {
 				return versions[i].pipeline;
@@ -71,6 +75,7 @@ public:
 		return _generate_version(p_vertex_format_id, p_framebuffer_format_id);
 	}
 
+	void clear();
 	RenderPipelineVertexFormatCacheRD();
 	~RenderPipelineVertexFormatCacheRD();
 };

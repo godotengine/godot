@@ -1,6 +1,6 @@
-#include "effects_rd.h"
+#include "rasterizer_effects_rd.h"
 
-RID EffectsRD::_get_uniform_set_from_texture(RID p_texture) {
+RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture) {
 
 	if (texture_to_uniform_set_cache.has(p_texture)) {
 		RID uniform_set = texture_to_uniform_set_cache[p_texture];
@@ -24,7 +24,7 @@ RID EffectsRD::_get_uniform_set_from_texture(RID p_texture) {
 	return uniform_set;
 }
 
-void EffectsRD::copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region) {
+void RasterizerEffectsRD::copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region) {
 
 	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
 
@@ -45,7 +45,7 @@ void EffectsRD::copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect
 	RD::get_singleton()->draw_list_end();
 }
 
-void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region) {
+void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region) {
 
 	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
 
@@ -86,7 +86,7 @@ void EffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, R
 	RD::get_singleton()->draw_list_end();
 }
 
-EffectsRD::EffectsRD() {
+RasterizerEffectsRD::RasterizerEffectsRD() {
 
 	// Initialize blur
 	Vector<String> blur_modes;
@@ -138,7 +138,7 @@ EffectsRD::EffectsRD() {
 	}
 }
 
-EffectsRD::~EffectsRD() {
+RasterizerEffectsRD::~RasterizerEffectsRD() {
 	RD::get_singleton()->free(default_sampler);
 	blur.shader.version_free(blur.shader_version);
 	RD::get_singleton()->free(index_buffer); //array gets freed as dependency

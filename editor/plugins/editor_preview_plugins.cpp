@@ -369,7 +369,6 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
 	VS::get_singleton()->viewport_set_active(viewport, true);
-	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);
 
 	camera = VS::get_singleton()->camera_create();
@@ -772,7 +771,6 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 
 	viewport = VS::get_singleton()->viewport_create();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
-	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_scenario(viewport, scenario);
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	VS::get_singleton()->viewport_set_transparent_background(viewport, true);
@@ -903,7 +901,6 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 
 	viewport = VS::get_singleton()->viewport_create();
 	VS::get_singleton()->viewport_set_update_mode(viewport, VS::VIEWPORT_UPDATE_DISABLED);
-	VS::get_singleton()->viewport_set_vflip(viewport, true);
 	VS::get_singleton()->viewport_set_size(viewport, 128, 128);
 	VS::get_singleton()->viewport_set_active(viewport, true);
 	viewport_texture = VS::get_singleton()->viewport_get_texture(viewport);

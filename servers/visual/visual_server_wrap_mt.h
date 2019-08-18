@@ -149,11 +149,14 @@ public:
 
 	/* MESH API */
 
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
+		return visual_server->mesh_create_from_surfaces(p_surfaces);
+	}
+
 	FUNCRID(mesh)
 
-	FUNC10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
+	FUNC2(mesh_add_surface, RID, const SurfaceData &)
 
-	FUNC2(mesh_set_blend_shape_count, RID, int)
 	FUNC1RC(int, mesh_get_blend_shape_count, RID)
 
 	FUNC2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
@@ -164,20 +167,8 @@ public:
 	FUNC3(mesh_surface_set_material, RID, int, RID)
 	FUNC2RC(RID, mesh_surface_get_material, RID, int)
 
-	FUNC2RC(int, mesh_surface_get_array_len, RID, int)
-	FUNC2RC(int, mesh_surface_get_array_index_len, RID, int)
+	FUNC2RC(SurfaceData, mesh_get_surface, RID, int)
 
-	FUNC2RC(PoolVector<uint8_t>, mesh_surface_get_array, RID, int)
-	FUNC2RC(PoolVector<uint8_t>, mesh_surface_get_index_array, RID, int)
-
-	FUNC2RC(uint32_t, mesh_surface_get_format, RID, int)
-	FUNC2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
-
-	FUNC2RC(AABB, mesh_surface_get_aabb, RID, int)
-	FUNC2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
-	FUNC2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
-
-	FUNC2(mesh_remove_surface, RID, int)
 	FUNC1RC(int, mesh_get_surface_count, RID)
 
 	FUNC2(mesh_set_custom_aabb, RID, const AABB &)
@@ -390,15 +381,12 @@ public:
 	FUNC1(viewport_detach, RID)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
-	FUNC2(viewport_set_vflip, RID, bool)
 
 	FUNC1RC(RID, viewport_get_texture, RID)
 
 	FUNC2(viewport_set_hide_scenario, RID, bool)
 	FUNC2(viewport_set_hide_canvas, RID, bool)
 	FUNC2(viewport_set_disable_environment, RID, bool)
-	FUNC2(viewport_set_disable_3d, RID, bool)
-	FUNC2(viewport_set_keep_3d_linear, RID, bool)
 
 	FUNC2(viewport_attach_camera, RID, RID)
 	FUNC2(viewport_set_scenario, RID, RID)
@@ -413,8 +401,6 @@ public:
 	FUNC2(viewport_set_shadow_atlas_size, RID, int)
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
-	FUNC2(viewport_set_hdr, RID, bool)
-	FUNC2(viewport_set_usage, RID, ViewportUsage)
 
 	//this passes directly to avoid stalling, but it's pretty dangerous, so don't call after freeing a viewport
 	virtual int viewport_get_render_info(RID p_viewport, ViewportRenderInfo p_info) {
