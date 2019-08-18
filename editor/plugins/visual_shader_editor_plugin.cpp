@@ -2050,9 +2050,9 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
-void VisualShaderEditor::_show_preview_panel() {
+void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
-	preview_panel->set_visible(preview_showed);
+	preview_text->set_visible(preview_showed);
 }
 
 void VisualShaderEditor::_update_preview() {
@@ -2098,7 +2098,7 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_node_resized", &VisualShaderEditor::_node_resized);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
 	ClassDB::bind_method("_clear_buffer", &VisualShaderEditor::_clear_buffer);
-	ClassDB::bind_method("_show_preview_panel", &VisualShaderEditor::_show_preview_panel);
+	ClassDB::bind_method("_show_preview_text", &VisualShaderEditor::_show_preview_text);
 	ClassDB::bind_method("_update_preview", &VisualShaderEditor::_update_preview);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
@@ -2195,28 +2195,20 @@ VisualShaderEditor::VisualShaderEditor() {
 	preview_shader->set_toggle_mode(true);
 	preview_shader->set_tooltip(TTR("Show resulted shader code."));
 	graph->get_zoom_hbox()->add_child(preview_shader);
-	preview_shader->connect("pressed", this, "_show_preview_panel");
+	preview_shader->connect("pressed", this, "_show_preview_text");
 
 	///////////////////////////////////////
 	// PREVIEW PANEL
 	///////////////////////////////////////
 
-	preview_panel = memnew(PanelContainer);
-	main_box->add_child(preview_panel);
-
-	VBoxContainer *preview_vb = memnew(VBoxContainer);
-	preview_panel->add_child(preview_vb);
-	preview_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	preview_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	preview_text = memnew(TextEdit);
+	main_box->add_child(preview_text);
 	preview_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_text->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_text->set_visible(preview_showed);
+	preview_text->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 	preview_text->set_syntax_coloring(true);
 	preview_text->set_readonly(true);
-	preview_vb->add_child(preview_text);
-
-	preview_panel->set_visible(preview_showed);
-	preview_panel->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
