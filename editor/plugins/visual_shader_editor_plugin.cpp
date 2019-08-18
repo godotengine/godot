@@ -524,21 +524,23 @@ void VisualShaderEditor::_update_graph() {
 			offset->set_custom_minimum_size(Size2(0, 6 * EDSCALE));
 			node->add_child(offset);
 
-			HBoxContainer *hb2 = memnew(HBoxContainer);
+			if (group_node->is_editable()) {
+				HBoxContainer *hb2 = memnew(HBoxContainer);
 
-			Button *add_input_btn = memnew(Button);
-			add_input_btn->set_text(TTR("Add input +"));
-			add_input_btn->connect("pressed", this, "_add_input_port", varray(nodes[n_i], group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
-			hb2->add_child(add_input_btn);
+				Button *add_input_btn = memnew(Button);
+				add_input_btn->set_text(TTR("Add input +"));
+				add_input_btn->connect("pressed", this, "_add_input_port", varray(nodes[n_i], group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
+				hb2->add_child(add_input_btn);
 
-			hb2->add_spacer();
+				hb2->add_spacer();
 
-			Button *add_output_btn = memnew(Button);
-			add_output_btn->set_text(TTR("Add output +"));
-			add_output_btn->connect("pressed", this, "_add_output_port", varray(nodes[n_i], group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
-			hb2->add_child(add_output_btn);
+				Button *add_output_btn = memnew(Button);
+				add_output_btn->set_text(TTR("Add output +"));
+				add_output_btn->connect("pressed", this, "_add_output_port", varray(nodes[n_i], group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
+				hb2->add_child(add_output_btn);
 
-			node->add_child(hb2);
+				node->add_child(hb2);
+			}
 		}
 
 		for (int i = 0; i < MAX(vsnode->get_input_port_count(), vsnode->get_output_port_count()); i++) {
@@ -2528,6 +2530,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_options.push_back(AddOption("Expression", "Special", "", "VisualShaderNodeExpression", TTR("Custom Godot Shader Language expression, with custom amount of input and output ports. This is a direct injection of code into the vertex/fragment/light function, do not use it to write the function declarations inside.")));
 	add_options.push_back(AddOption("Fresnel", "Special", "", "VisualShaderNodeFresnel", TTR("Returns falloff based on the dot product of surface normal and view direction of camera (pass associated inputs to it)."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
+	add_options.push_back(AddOption("GlobalExpression", "Special", "", "VisualShaderNodeGlobalExpression", TTR("Custom Godot Shader Language expression, which placed on top of the resulted shader. You can place various function definitions inside and call it later in the Expressions. You can also declare varyings, uniforms and constants.")));
 
 	add_options.push_back(AddOption("ScalarDerivativeFunc", "Special", "Common", "VisualShaderNodeScalarDerivativeFunc", TTR("(Fragment/Light mode only) Scalar derivative function."), -1, VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
 	add_options.push_back(AddOption("VectorDerivativeFunc", "Special", "Common", "VisualShaderNodeVectorDerivativeFunc", TTR("(Fragment/Light mode only) Vector derivative function."), -1, VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));

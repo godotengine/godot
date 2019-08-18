@@ -1205,6 +1205,22 @@ void VisualShader::_update_shader() const {
 
 	static const char *func_name[TYPE_MAX] = { "vertex", "fragment", "light" };
 
+	String global_expressions;
+	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
+		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
+			Ref<VisualShaderNodeGlobalExpression> global_expression = Object::cast_to<VisualShaderNodeGlobalExpression>(E->get().node.ptr());
+			if (global_expression.is_valid()) {
+
+				String expr = "";
+				expr += "// " + global_expression->get_caption() + ":" + itos(index++) + "\n";
+				expr += global_expression->generate_global(get_mode(), Type(i), -1);
+				expr = expr.replace("\n", "\n\t");
+				expr += "\n";
+				global_expressions += expr;
+			}
+		}
+	}
+
 	for (int i = 0; i < TYPE_MAX; i++) {
 
 		//make it faster to go around through shader
@@ -1239,6 +1255,7 @@ void VisualShader::_update_shader() const {
 	global_code += "\n\n";
 	String final_code = global_code;
 	final_code += global_code_per_node;
+	final_code += global_expressions;
 	String tcode = code;
 	for (int i = 0; i < TYPE_MAX; i++) {
 		tcode = tcode.insert(insertion_pos[i], global_code_per_func[Type(i)]);
@@ -2333,6 +2350,14 @@ void VisualShaderNodeGroupBase::_apply_port_changes() {
 	}
 }
 
+void VisualShaderNodeGroupBase::set_editable(bool p_enabled) {
+	editable = p_enabled;
+}
+
+bool VisualShaderNodeGroupBase::is_editable() const {
+	return editable;
+}
+
 void VisualShaderNodeGroupBase::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_size", "size"), &VisualShaderNodeGroupBase::set_size);
@@ -2368,6 +2393,9 @@ void VisualShaderNodeGroupBase::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_control", "control", "index"), &VisualShaderNodeGroupBase::set_control);
 	ClassDB::bind_method(D_METHOD("get_control", "index"), &VisualShaderNodeGroupBase::get_control);
+
+	ClassDB::bind_method(D_METHOD("set_editable", "enabled"), &VisualShaderNodeGroupBase::set_editable);
+	ClassDB::bind_method(D_METHOD("is_editable"), &VisualShaderNodeGroupBase::is_editable);
 }
 
 String VisualShaderNodeGroupBase::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
@@ -2378,6 +2406,7 @@ VisualShaderNodeGroupBase::VisualShaderNodeGroupBase() {
 	size = Size2(0, 0);
 	inputs = "";
 	outputs = "";
+	editable = false;
 }
 
 ////////////// Expression
@@ -2504,4 +2533,19 @@ void VisualShaderNodeExpression::_bind_methods() {
 
 VisualShaderNodeExpression::VisualShaderNodeExpression() {
 	expression = "";
+	set_editable(true);
+}
+
+////////////// Global Expression
+
+String VisualShaderNodeGlobalExpression::get_caption() const {
+	return "GlobalExpression";
+}
+
+String VisualShaderNodeGlobalExpression::generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const {
+	return expression;
+}
+
+VisualShaderNodeGlobalExpression::VisualShaderNodeGlobalExpression() {
+	set_editable(false);
 }
