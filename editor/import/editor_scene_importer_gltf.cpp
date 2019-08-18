@@ -976,14 +976,15 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				static const Mesh::PrimitiveType primitives2[7] = {
 					Mesh::PRIMITIVE_POINTS,
 					Mesh::PRIMITIVE_LINES,
+					Mesh::PRIMITIVE_LINES, //loop not supported, should ce converted
 					Mesh::PRIMITIVE_LINES,
-					Mesh::PRIMITIVE_LINES,
 					Mesh::PRIMITIVE_TRIANGLES,
-					Mesh::PRIMITIVE_TRIANGLES,
-					Mesh::PRIMITIVE_TRIANGLES,
+					Mesh::PRIMITIVE_TRIANGLE_STRIP,
+					Mesh::PRIMITIVE_TRIANGLES, //fan not supported, should be converted
 #ifndef _MSC_VER
-#warning these will have to be decomposed into proper primitive now that lineloop/strip,etc no longer supported
+#warning line loop and triangle fan are not supported and need to be converted to lines and triangles
 #endif
+
 				};
 
 				primitive = primitives2[mode];

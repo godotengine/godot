@@ -229,41 +229,68 @@ public:
 		ARRAY_FORMAT_INDEX = 1 << ARRAY_INDEX,
 
 		ARRAY_COMPRESS_BASE = (ARRAY_INDEX + 1),
-		ARRAY_COMPRESS_VERTEX = 1 << (ARRAY_VERTEX + ARRAY_COMPRESS_BASE), // mandatory
 		ARRAY_COMPRESS_NORMAL = 1 << (ARRAY_NORMAL + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_TANGENT = 1 << (ARRAY_TANGENT + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_COLOR = 1 << (ARRAY_COLOR + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_TEX_UV = 1 << (ARRAY_TEX_UV + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_TEX_UV2 = 1 << (ARRAY_TEX_UV2 + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_BONES = 1 << (ARRAY_BONES + ARRAY_COMPRESS_BASE),
-		ARRAY_COMPRESS_WEIGHTS = 1 << (ARRAY_WEIGHTS + ARRAY_COMPRESS_BASE),
 		ARRAY_COMPRESS_INDEX = 1 << (ARRAY_INDEX + ARRAY_COMPRESS_BASE),
 
 		ARRAY_FLAG_USE_2D_VERTICES = ARRAY_COMPRESS_INDEX << 1,
-		ARRAY_FLAG_USE_16_BIT_BONES = ARRAY_COMPRESS_INDEX << 2,
 		ARRAY_FLAG_USE_DYNAMIC_UPDATE = ARRAY_COMPRESS_INDEX << 3,
 
-		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2 | ARRAY_COMPRESS_WEIGHTS
+		ARRAY_COMPRESS_DEFAULT = ARRAY_COMPRESS_NORMAL | ARRAY_COMPRESS_TANGENT | ARRAY_COMPRESS_COLOR | ARRAY_COMPRESS_TEX_UV | ARRAY_COMPRESS_TEX_UV2
 
 	};
 
 	enum PrimitiveType {
 		PRIMITIVE_POINTS,
 		PRIMITIVE_LINES,
+		PRIMITIVE_LINE_STRIP,
 		PRIMITIVE_TRIANGLES,
+		PRIMITIVE_TRIANGLE_STRIP,
 		PRIMITIVE_MAX,
 	};
 
+	struct SurfaceData {
+
+		PrimitiveType primitive = PRIMITIVE_MAX;
+
+		uint32_t format = 0;
+		PoolVector<uint8_t> vertex_data;
+		uint32_t vertex_count = 0;
+		PoolVector<uint8_t> index_data;
+		uint32_t index_count = 0;
+
+		AABB aabb;
+		struct LOD {
+			float edge_length;
+			PoolVector<uint8_t> index_data;
+		};
+		Vector<LOD> lods;
+		Vector<AABB> bone_aabbs;
+
+		Vector<PoolVector<uint8_t> > blend_shapes;
+
+		RID material;
+	};
+
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) = 0;
 	virtual RID mesh_create() = 0;
 
 	virtual uint32_t mesh_surface_get_format_offset(uint32_t p_format, int p_vertex_len, int p_index_len, int p_array_index) const;
 	virtual uint32_t mesh_surface_get_format_stride(uint32_t p_format, int p_vertex_len, int p_index_len) const;
 	/// Returns stride
 	virtual uint32_t mesh_surface_make_offsets_from_format(uint32_t p_format, int p_vertex_len, int p_index_len, uint32_t *r_offsets) const;
-	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
-	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
+	virtual Error mesh_create_surface_data_from_arrays(SurfaceData *r_surface_data, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
+	Array mesh_create_arrays_from_surface_data(const SurfaceData &p_data) const;
+	Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
+	Array mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
+	Dictionary mesh_surface_get_lods(RID p_mesh, int p_surface) const;
 
-	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_amount) = 0;
+	virtual void mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_primitive, const Array &p_arrays, const Array &p_blend_shapes = Array(), const Dictionary &p_lods = Dictionary(), uint32_t p_compress_format = ARRAY_COMPRESS_DEFAULT);
+	virtual void mesh_add_surface(RID p_mesh, const SurfaceData &p_surface) = 0;
+
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
 
 	enum BlendShapeMode {
@@ -279,24 +306,8 @@ public:
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
 
-	virtual int mesh_surface_get_array_len(RID p_mesh, int p_surface) const = 0;
-	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const = 0;
+	virtual SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
 
-	virtual PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const = 0;
-	virtual PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const = 0;
-
-	virtual Array mesh_surface_get_arrays(RID p_mesh, int p_surface) const;
-	virtual Array mesh_surface_get_blend_shape_arrays(RID p_mesh, int p_surface) const;
-
-	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const = 0;
-	virtual PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const = 0;
-
-	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const = 0;
-	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const = 0;
-	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const = 0;
-	Array _mesh_surface_get_skeleton_aabb_bind(RID p_mesh, int p_surface) const;
-
-	virtual void mesh_remove_surface(RID p_mesh, int p_index) = 0;
 	virtual int mesh_get_surface_count(RID p_mesh) const = 0;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
@@ -600,7 +611,6 @@ public:
 	};
 
 	virtual void viewport_set_update_mode(RID p_viewport, ViewportUpdateMode p_mode) = 0;
-	virtual void viewport_set_vflip(RID p_viewport, bool p_enable) = 0;
 
 	enum ViewportClearMode {
 
@@ -616,8 +626,6 @@ public:
 	virtual void viewport_set_hide_scenario(RID p_viewport, bool p_hide) = 0;
 	virtual void viewport_set_hide_canvas(RID p_viewport, bool p_hide) = 0;
 	virtual void viewport_set_disable_environment(RID p_viewport, bool p_disable) = 0;
-	virtual void viewport_set_disable_3d(RID p_viewport, bool p_disable) = 0;
-	virtual void viewport_set_keep_3d_linear(RID p_viewport, bool p_disable) = 0;
 
 	virtual void viewport_attach_camera(RID p_viewport, RID p_camera) = 0;
 	virtual void viewport_set_scenario(RID p_viewport, RID p_scenario) = 0;
@@ -641,16 +649,6 @@ public:
 	};
 
 	virtual void viewport_set_msaa(RID p_viewport, ViewportMSAA p_msaa) = 0;
-
-	enum ViewportUsage {
-		VIEWPORT_USAGE_2D,
-		VIEWPORT_USAGE_2D_NO_SAMPLING,
-		VIEWPORT_USAGE_3D,
-		VIEWPORT_USAGE_3D_NO_EFFECTS,
-	};
-
-	virtual void viewport_set_hdr(RID p_viewport, bool p_enabled) = 0;
-	virtual void viewport_set_usage(RID p_viewport, ViewportUsage p_usage) = 0;
 
 	enum ViewportRenderInfo {
 
@@ -1068,7 +1066,6 @@ VARIANT_ENUM_CAST(VisualServer::LightParam);
 VARIANT_ENUM_CAST(VisualServer::ViewportUpdateMode);
 VARIANT_ENUM_CAST(VisualServer::ViewportClearMode);
 VARIANT_ENUM_CAST(VisualServer::ViewportMSAA);
-VARIANT_ENUM_CAST(VisualServer::ViewportUsage);
 VARIANT_ENUM_CAST(VisualServer::ViewportRenderInfo);
 VARIANT_ENUM_CAST(VisualServer::ViewportDebugDraw);
 VARIANT_ENUM_CAST(VisualServer::ScenarioDebugMode);

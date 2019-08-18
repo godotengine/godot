@@ -320,8 +320,6 @@ void EditorNode::_notification(int p_what) {
 			Engine::get_singleton()->set_editor_hint(true);
 
 			OS::get_singleton()->set_low_processor_usage_mode_sleep_usec(int(EDITOR_GET("interface/editor/low_processor_mode_sleep_usec")));
-			get_tree()->get_root()->set_usage(Viewport::USAGE_2D_NO_SAMPLING); //reduce memory usage
-			get_tree()->get_root()->set_disable_3d(true);
 			get_tree()->get_root()->set_as_audio_listener(false);
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->set_auto_accept_quit(false);
@@ -5919,7 +5917,6 @@ EditorNode::EditorNode() {
 
 	scene_root = memnew(Viewport);
 	//scene_root->set_usage(Viewport::USAGE_2D); canvas BG mode prevents usage of this as 2D
-	scene_root->set_disable_3d(true);
 
 	VisualServer::get_singleton()->viewport_set_hide_scenario(scene_root->get_viewport_rid(), true);
 	scene_root->set_disable_input(true);

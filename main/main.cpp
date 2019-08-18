@@ -1677,8 +1677,6 @@ bool Main::start() {
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(1, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q1_subdiv));
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(2, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q2_subdiv));
 			sml->get_root()->set_shadow_atlas_quadrant_subdiv(3, Viewport::ShadowAtlasQuadrantSubdiv(shadow_atlas_q3_subdiv));
-			Viewport::Usage usage = Viewport::Usage(int(GLOBAL_GET("rendering/quality/intended_usage/framebuffer_allocation")));
-			sml->get_root()->set_usage(usage);
 
 			bool snap_controls = GLOBAL_DEF("gui/common/snap_controls_to_pixels", true);
 			sml->get_root()->set_snap_controls_to_pixels(snap_controls);
