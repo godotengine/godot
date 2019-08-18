@@ -1266,6 +1266,10 @@ void VisualShader::_update_shader() const {
 	for (int i = 0; i < default_tex_params.size(); i++) {
 		const_cast<VisualShader *>(this)->set_default_texture_param(default_tex_params[i].name, default_tex_params[i].param);
 	}
+	if (previous_code != final_code) {
+		const_cast<VisualShader *>(this)->emit_signal("changed");
+	}
+	previous_code = final_code;
 }
 
 void VisualShader::_queue_update() {

@@ -69,8 +69,16 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			}
 		}
 		visual_shader = Ref<VisualShader>(p_visual_shader);
+		if (!visual_shader->is_connected("changed", this, "_update_preview")) {
+			visual_shader->connect("changed", this, "_update_preview");
+		}
 		visual_shader->set_graph_offset(graph->get_scroll_ofs() / EDSCALE);
 	} else {
+		if (visual_shader.is_valid()) {
+			if (visual_shader->is_connected("changed", this, "")) {
+				visual_shader->disconnect("changed", this, "_update_preview");
+			}
+		}
 		visual_shader.unref();
 	}
 
@@ -81,6 +89,7 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 			_clear_buffer();
 			_update_custom_nodes();
 			_update_options_menu();
+			_update_preview();
 		}
 		_update_graph();
 	}
@@ -1568,6 +1577,29 @@ void VisualShaderEditor::_notification(int p_what) {
 
 		node_filter->set_right_icon(Control::get_icon("Search", "EditorIcons"));
 
+		preview_shader->set_icon(Control::get_icon("Shader", "EditorIcons"));
+
+		{
+			Color background_color = EDITOR_GET("text_editor/highlighting/background_color");
+			Color text_color = EDITOR_GET("text_editor/highlighting/text_color");
+			Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
+			Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
+			Color symbol_color = EDITOR_GET("text_editor/highlighting/symbol_color");
+
+			preview_text->add_color_override("background_color", background_color);
+
+			for (List<String>::Element *E = keyword_list.front(); E; E = E->next()) {
+
+				preview_text->add_keyword_color(E->get(), keyword_color);
+			}
+
+			preview_text->add_font_override("font", get_font("expression", "EditorFonts"));
+			preview_text->add_color_override("font_color", text_color);
+			preview_text->add_color_override("symbol_color", symbol_color);
+			preview_text->add_color_region("/*", "*/", comment_color, false);
+			preview_text->add_color_region("//", "", comment_color, false);
+		}
+
 		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Tools", "EditorIcons"));
 
 		if (p_what == NOTIFICATION_THEME_CHANGED && is_visible_in_tree())
@@ -2018,6 +2050,15 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 	}
 }
 
+void VisualShaderEditor::_show_preview_panel() {
+	preview_showed = !preview_showed;
+	preview_panel->set_visible(preview_showed);
+}
+
+void VisualShaderEditor::_update_preview() {
+	preview_text->set_text(visual_shader->get_code());
+}
+
 void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_rebuild", &VisualShaderEditor::_rebuild);
 	ClassDB::bind_method("_update_graph", &VisualShaderEditor::_update_graph);
@@ -2057,6 +2098,8 @@ void VisualShaderEditor::_bind_methods() {
 	ClassDB::bind_method("_node_resized", &VisualShaderEditor::_node_resized);
 	ClassDB::bind_method("_set_node_size", &VisualShaderEditor::_set_node_size);
 	ClassDB::bind_method("_clear_buffer", &VisualShaderEditor::_clear_buffer);
+	ClassDB::bind_method("_show_preview_panel", &VisualShaderEditor::_show_preview_panel);
+	ClassDB::bind_method("_update_preview", &VisualShaderEditor::_update_preview);
 
 	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &VisualShaderEditor::get_drag_data_fw);
 	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &VisualShaderEditor::can_drop_data_fw);
@@ -2083,13 +2126,23 @@ VisualShaderEditor::VisualShaderEditor() {
 	saved_node_pos = Point2(0, 0);
 	ShaderLanguage::get_keyword_list(&keyword_list);
 
+	preview_showed = false;
+
 	to_node = -1;
 	to_slot = -1;
 	from_node = -1;
 	from_slot = -1;
 
+	main_box = memnew(HSplitContainer);
+	main_box->set_v_size_flags(SIZE_EXPAND_FILL);
+	main_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	add_child(main_box);
+
 	graph = memnew(GraphEdit);
-	add_child(graph);
+	graph->get_zoom_hbox()->set_h_size_flags(SIZE_EXPAND_FILL);
+	graph->set_v_size_flags(SIZE_EXPAND_FILL);
+	graph->set_h_size_flags(SIZE_EXPAND_FILL);
+	main_box->add_child(graph);
 	graph->set_drag_forwarding(this);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SCALAR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_BOOLEAN);
@@ -2137,6 +2190,33 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_node->set_text(TTR("Add Node..."));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->connect("pressed", this, "_show_members_dialog", varray(false));
+
+	preview_shader = memnew(ToolButton);
+	preview_shader->set_toggle_mode(true);
+	preview_shader->set_tooltip(TTR("Show resulted shader code."));
+	graph->get_zoom_hbox()->add_child(preview_shader);
+	preview_shader->connect("pressed", this, "_show_preview_panel");
+
+	///////////////////////////////////////
+	// PREVIEW PANEL
+	///////////////////////////////////////
+
+	preview_panel = memnew(PanelContainer);
+	main_box->add_child(preview_panel);
+
+	VBoxContainer *preview_vb = memnew(VBoxContainer);
+	preview_panel->add_child(preview_vb);
+	preview_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	preview_vb->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_text = memnew(TextEdit);
+	preview_text->set_h_size_flags(SIZE_EXPAND_FILL);
+	preview_text->set_v_size_flags(SIZE_EXPAND_FILL);
+	preview_text->set_syntax_coloring(true);
+	preview_text->set_readonly(true);
+	preview_vb->add_child(preview_text);
+
+	preview_panel->set_visible(preview_showed);
+	preview_panel->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
