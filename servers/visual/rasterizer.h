@@ -100,13 +100,22 @@ public:
 		Map<InstanceBase *, uint32_t> instances;
 	};
 
+	struct InstanceCustomData {
+
+		virtual ~InstanceCustomData() {}
+	};
+
 	struct InstanceBase {
 
 		VS::InstanceType base_type;
 		RID base;
 
+		InstanceCustomData *custom_data;
+
 		RID skeleton;
 		RID material_override;
+
+		RID instance_data;
 
 		Transform transform;
 
@@ -185,6 +194,7 @@ public:
 		InstanceBase() :
 				dependency_item(this) {
 
+			custom_data = nullptr;
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -198,6 +208,9 @@ public:
 		}
 
 		virtual ~InstanceBase() {
+			if (custom_data) {
+				memdelete(custom_data);
+			}
 			clear_dependencies();
 		}
 	};
@@ -225,11 +238,23 @@ public:
 	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) = 0;
 	virtual void gi_probe_instance_set_bounds(RID p_probe, const Vector3 &p_bounds) = 0;
 
-	virtual void render_scene(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
+	virtual void set_time(double p_time) = 0;
 	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) = 0;
+
+	virtual void instance_create_custom_data(InstanceBase *p_instance) = 0;
+	virtual void instance_free_custom_data(InstanceBase *p_instance) = 0;
+	virtual void instance_custom_data_update_lights(InstanceBase *p_instance) = 0;
+	virtual void instance_custom_data_update_reflection_probes(InstanceBase *p_instance) = 0;
+	virtual void instance_custom_data_update_gi_probes(InstanceBase *p_instance) = 0;
+	virtual void instance_custom_data_update_lightmap(InstanceBase *p_instance) = 0;
+	virtual void instance_custom_data_update_transform(InstanceBase *p_instance) = 0;
+
+	virtual RID render_buffers_create() = 0;
+	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
 
 	virtual bool free(RID p_rid) = 0;
 
@@ -317,9 +342,9 @@ public:
 
 	virtual RID mesh_create() = 0;
 
-	virtual void mesh_add_surface(RID p_mesh, uint32_t p_format, VS::PrimitiveType p_primitive, const PoolVector<uint8_t> &p_array, int p_vertex_count, const PoolVector<uint8_t> &p_index_array, int p_index_count, const AABB &p_aabb, const Vector<PoolVector<uint8_t> > &p_blend_shapes = Vector<PoolVector<uint8_t> >(), const Vector<AABB> &p_bone_aabbs = Vector<AABB>()) = 0;
+	/// Returns stride
+	virtual void mesh_add_surface(RID p_mesh, const VS::SurfaceData &p_surface) = 0;
 
-	virtual void mesh_set_blend_shape_count(RID p_mesh, int p_amount) = 0;
 	virtual int mesh_get_blend_shape_count(RID p_mesh) const = 0;
 
 	virtual void mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) = 0;
@@ -330,26 +355,14 @@ public:
 	virtual void mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) = 0;
 	virtual RID mesh_surface_get_material(RID p_mesh, int p_surface) const = 0;
 
-	virtual int mesh_surface_get_array_len(RID p_mesh, int p_surface) const = 0;
-	virtual int mesh_surface_get_array_index_len(RID p_mesh, int p_surface) const = 0;
+	virtual VS::SurfaceData mesh_get_surface(RID p_mesh, int p_surface) const = 0;
 
-	virtual PoolVector<uint8_t> mesh_surface_get_array(RID p_mesh, int p_surface) const = 0;
-	virtual PoolVector<uint8_t> mesh_surface_get_index_array(RID p_mesh, int p_surface) const = 0;
-
-	virtual uint32_t mesh_surface_get_format(RID p_mesh, int p_surface) const = 0;
-	virtual VS::PrimitiveType mesh_surface_get_primitive_type(RID p_mesh, int p_surface) const = 0;
-
-	virtual AABB mesh_surface_get_aabb(RID p_mesh, int p_surface) const = 0;
-	virtual Vector<PoolVector<uint8_t> > mesh_surface_get_blend_shapes(RID p_mesh, int p_surface) const = 0;
-	virtual Vector<AABB> mesh_surface_get_skeleton_aabb(RID p_mesh, int p_surface) const = 0;
-
-	virtual void mesh_remove_surface(RID p_mesh, int p_index) = 0;
 	virtual int mesh_get_surface_count(RID p_mesh) const = 0;
 
 	virtual void mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) = 0;
 	virtual AABB mesh_get_custom_aabb(RID p_mesh) const = 0;
 
-	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton) const = 0;
+	virtual AABB mesh_get_aabb(RID p_mesh, RID p_skeleton = RID()) = 0;
 
 	virtual void mesh_clear(RID p_mesh) = 0;
 
@@ -590,13 +603,7 @@ public:
 	/* RENDER TARGET */
 
 	enum RenderTargetFlags {
-		RENDER_TARGET_VFLIP,
 		RENDER_TARGET_TRANSPARENT,
-		RENDER_TARGET_NO_3D_EFFECTS,
-		RENDER_TARGET_NO_3D,
-		RENDER_TARGET_NO_SAMPLING,
-		RENDER_TARGET_HDR,
-		RENDER_TARGET_KEEP_3D_LINEAR,
 		RENDER_TARGET_DIRECT_TO_SCREEN,
 		RENDER_TARGET_FLAG_MAX
 	};

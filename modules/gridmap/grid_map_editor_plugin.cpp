@@ -1022,8 +1022,7 @@ void GridMapEditor::_draw_grids(const Vector3 &cell_size) {
 	Vector3 edited_floor = node->has_meta("_editor_floor_") ? node->get_meta("_editor_floor_") : Variant();
 
 	for (int i = 0; i < 3; i++) {
-		if (VS::get_singleton()->mesh_get_surface_count(grid[i]) > 0)
-			VS::get_singleton()->mesh_remove_surface(grid[i], 0);
+		VS::get_singleton()->mesh_clear(grid[i]);
 		edit_floor[i] = edited_floor[i];
 	}
 

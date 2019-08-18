@@ -1322,11 +1322,10 @@ void AnimationPlayerEditor::_allocate_onion_layers() {
 
 		// Each capture is a viewport with a canvas item attached that renders a full-size rect with the contents of the main viewport.
 		onion.captures.write[i] = VS::get_singleton()->viewport_create();
-		VS::get_singleton()->viewport_set_usage(onion.captures[i], VS::VIEWPORT_USAGE_2D);
+
 		VS::get_singleton()->viewport_set_size(onion.captures[i], capture_size.width, capture_size.height);
 		VS::get_singleton()->viewport_set_update_mode(onion.captures[i], VS::VIEWPORT_UPDATE_ALWAYS);
 		VS::get_singleton()->viewport_set_transparent_background(onion.captures[i], !is_present);
-		VS::get_singleton()->viewport_set_vflip(onion.captures[i], true);
 		VS::get_singleton()->viewport_attach_canvas(onion.captures[i], onion.capture.canvas);
 	}
 

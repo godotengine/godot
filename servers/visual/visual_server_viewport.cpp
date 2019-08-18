@@ -69,9 +69,9 @@ void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_
 	}
 
 	if (p_viewport->use_arvr && arvr_interface.is_valid()) {
-		VSG::scene->render_camera(arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+		VSG::scene->render_camera(p_viewport->render_buffers, arvr_interface, p_eye, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 	} else {
-		VSG::scene->render_camera(p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
+		VSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 	}
 }
 
@@ -95,7 +95,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		}
 	}
 
-	bool can_draw_3d = !p_viewport->disable_3d && !p_viewport->disable_3d_by_usage && VSG::scene->camera_owner.owns(p_viewport->camera);
+	bool can_draw_3d = !VSG::scene->camera_owner.owns(p_viewport->camera);
 
 	if (p_viewport->clear_mode != VS::VIEWPORT_CLEAR_NEVER) {
 		if (p_viewport->transparent_bg) {
@@ -104,6 +104,12 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		if (p_viewport->clear_mode == VS::VIEWPORT_CLEAR_ONLY_NEXT_FRAME) {
 			p_viewport->clear_mode = VS::VIEWPORT_CLEAR_NEVER;
 		}
+	}
+
+	if ((scenario_draw_canvas_bg || can_draw_3d) && !p_viewport->render_buffers.is_valid()) {
+		//wants to draw 3D but there is no render buffer, create
+		p_viewport->render_buffers = VSG::scene_render->render_buffers_create();
+		VSG::scene_render->render_buffers_configure(p_viewport->render_buffers, p_viewport->render_target, p_viewport->size.width, p_viewport->size.height, p_viewport->msaa);
 	}
 
 	VSG::storage->render_target_request_clear(p_viewport->render_target, bgcolor);
@@ -218,7 +224,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().get_layer() > scenario_canvas_max_layer) {
 			if (!can_draw_3d) {
-				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
+				VSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 			} else {
 				_draw_3d(p_viewport, p_eye);
 			}
@@ -247,7 +253,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 			if (scenario_draw_canvas_bg && E->key().get_layer() >= scenario_canvas_max_layer) {
 				if (!can_draw_3d) {
-					VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
+					VSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 				} else {
 					_draw_3d(p_viewport, p_eye);
 				}
@@ -258,7 +264,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 		if (scenario_draw_canvas_bg) {
 			if (!can_draw_3d) {
-				VSG::scene->render_empty_scene(p_viewport->scenario, p_viewport->shadow_atlas);
+				VSG::scene->render_empty_scene(p_viewport->render_buffers, p_viewport->scenario, p_viewport->shadow_atlas);
 			} else {
 				_draw_3d(p_viewport, p_eye);
 			}
@@ -427,6 +433,9 @@ void VisualServerViewport::viewport_set_size(RID p_viewport, int p_width, int p_
 
 	viewport->size = Size2(p_width, p_height);
 	VSG::storage->render_target_set_size(viewport->render_target, p_width, p_height);
+	if (viewport->render_buffers.is_valid()) {
+		VSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, viewport->msaa);
+	}
 }
 
 void VisualServerViewport::viewport_set_active(RID p_viewport, bool p_active) {
@@ -523,13 +532,6 @@ void VisualServerViewport::viewport_set_update_mode(RID p_viewport, VS::Viewport
 
 	viewport->update_mode = p_mode;
 }
-void VisualServerViewport::viewport_set_vflip(RID p_viewport, bool p_enable) {
-
-	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_VFLIP, p_enable);
-}
 
 RID VisualServerViewport::viewport_get_texture(RID p_viewport) const {
 
@@ -559,25 +561,6 @@ void VisualServerViewport::viewport_set_disable_environment(RID p_viewport, bool
 	ERR_FAIL_COND(!viewport);
 
 	viewport->disable_environment = p_disable;
-}
-
-void VisualServerViewport::viewport_set_disable_3d(RID p_viewport, bool p_disable) {
-
-	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	viewport->disable_3d = p_disable;
-	//VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, p_disable);
-	//this should be just for disabling rendering of 3D, to actually disable it, set usage
-}
-
-void VisualServerViewport::viewport_set_keep_3d_linear(RID p_viewport, bool p_keep_3d_linear) {
-
-	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	viewport->keep_3d_linear = p_keep_3d_linear;
-	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_KEEP_3D_LINEAR, p_keep_3d_linear);
 }
 
 void VisualServerViewport::viewport_attach_camera(RID p_viewport, RID p_camera) {
@@ -678,55 +661,12 @@ void VisualServerViewport::viewport_set_msaa(RID p_viewport, VS::ViewportMSAA p_
 	Viewport *viewport = viewport_owner.getornull(p_viewport);
 	ERR_FAIL_COND(!viewport);
 
-#ifndef _MSC_VER
-#warning this will no longer go in the render target, but in the 3D view
-#endif
-	//VSG::storage->render_target_set_msaa(viewport->render_target, p_msaa);
-}
-
-void VisualServerViewport::viewport_set_hdr(RID p_viewport, bool p_enabled) {
-
-	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_HDR, p_enabled);
-}
-
-void VisualServerViewport::viewport_set_usage(RID p_viewport, VS::ViewportUsage p_usage) {
-
-	Viewport *viewport = viewport_owner.getornull(p_viewport);
-	ERR_FAIL_COND(!viewport);
-
-	switch (p_usage) {
-		case VS::VIEWPORT_USAGE_2D: {
-
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, true);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
-
-			viewport->disable_3d_by_usage = true;
-		} break;
-		case VS::VIEWPORT_USAGE_2D_NO_SAMPLING: {
-
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, true);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, true);
-			viewport->disable_3d_by_usage = true;
-		} break;
-		case VS::VIEWPORT_USAGE_3D: {
-
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, false);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, false);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
-			viewport->disable_3d_by_usage = false;
-		} break;
-		case VS::VIEWPORT_USAGE_3D_NO_EFFECTS: {
-
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D, false);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_3D_EFFECTS, true);
-			VSG::storage->render_target_set_flag(viewport->render_target, RasterizerStorage::RENDER_TARGET_NO_SAMPLING, false);
-			viewport->disable_3d_by_usage = false;
-		} break;
+	if (viewport->msaa == p_msaa) {
+		return;
+	}
+	viewport->msaa = p_msaa;
+	if (viewport->render_buffers.is_valid()) {
+		VSG::scene_render->render_buffers_configure(viewport->render_buffers, viewport->render_target, viewport->size.width, viewport->size.height, p_msaa);
 	}
 }
 
@@ -757,6 +697,9 @@ bool VisualServerViewport::free(RID p_rid) {
 
 		VSG::storage->free(viewport->render_target);
 		VSG::scene_render->free(viewport->shadow_atlas);
+		if (viewport->render_buffers.is_valid()) {
+			VSG::scene_render->free(viewport->render_buffers);
+		}
 
 		while (viewport->canvas_map.front()) {
 			viewport_remove_canvas(p_rid, viewport->canvas_map.front()->key());

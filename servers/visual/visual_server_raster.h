@@ -218,11 +218,18 @@ public:
 
 	/* MESH API */
 
+	virtual RID mesh_create_from_surfaces(const Vector<SurfaceData> &p_surfaces) {
+		RID mesh = mesh_create();
+		for (int i = 0; i < p_surfaces.size(); i++) {
+			mesh_add_surface(mesh, p_surfaces[i]);
+		}
+		return mesh;
+	}
+
 	BIND0R(RID, mesh_create)
 
-	BIND10(mesh_add_surface, RID, uint32_t, PrimitiveType, const PoolVector<uint8_t> &, int, const PoolVector<uint8_t> &, int, const AABB &, const Vector<PoolVector<uint8_t> > &, const Vector<AABB> &)
+	BIND2(mesh_add_surface, RID, const SurfaceData &)
 
-	BIND2(mesh_set_blend_shape_count, RID, int)
 	BIND1RC(int, mesh_get_blend_shape_count, RID)
 
 	BIND2(mesh_set_blend_shape_mode, RID, BlendShapeMode)
@@ -233,20 +240,8 @@ public:
 	BIND3(mesh_surface_set_material, RID, int, RID)
 	BIND2RC(RID, mesh_surface_get_material, RID, int)
 
-	BIND2RC(int, mesh_surface_get_array_len, RID, int)
-	BIND2RC(int, mesh_surface_get_array_index_len, RID, int)
+	BIND2RC(SurfaceData, mesh_get_surface, RID, int)
 
-	BIND2RC(PoolVector<uint8_t>, mesh_surface_get_array, RID, int)
-	BIND2RC(PoolVector<uint8_t>, mesh_surface_get_index_array, RID, int)
-
-	BIND2RC(uint32_t, mesh_surface_get_format, RID, int)
-	BIND2RC(PrimitiveType, mesh_surface_get_primitive_type, RID, int)
-
-	BIND2RC(AABB, mesh_surface_get_aabb, RID, int)
-	BIND2RC(Vector<PoolVector<uint8_t> >, mesh_surface_get_blend_shapes, RID, int)
-	BIND2RC(Vector<AABB>, mesh_surface_get_skeleton_aabb, RID, int)
-
-	BIND2(mesh_remove_surface, RID, int)
 	BIND1RC(int, mesh_get_surface_count, RID)
 
 	BIND2(mesh_set_custom_aabb, RID, const AABB &)
@@ -475,8 +470,6 @@ public:
 	BIND2(viewport_set_hide_scenario, RID, bool)
 	BIND2(viewport_set_hide_canvas, RID, bool)
 	BIND2(viewport_set_disable_environment, RID, bool)
-	BIND2(viewport_set_disable_3d, RID, bool)
-	BIND2(viewport_set_keep_3d_linear, RID, bool)
 
 	BIND2(viewport_attach_camera, RID, RID)
 	BIND2(viewport_set_scenario, RID, RID)
@@ -491,8 +484,6 @@ public:
 	BIND2(viewport_set_shadow_atlas_size, RID, int)
 	BIND3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	BIND2(viewport_set_msaa, RID, ViewportMSAA)
-	BIND2(viewport_set_hdr, RID, bool)
-	BIND2(viewport_set_usage, RID, ViewportUsage)
 
 	BIND2R(int, viewport_get_render_info, RID, ViewportRenderInfo)
 	BIND2(viewport_set_debug_draw, RID, ViewportDebugDraw)

@@ -1691,6 +1691,402 @@ void RasterizerStorageRD::_update_queued_materials() {
 	}
 	material_update_list = NULL;
 }
+/* MESH API */
+
+RID RasterizerStorageRD::mesh_create() {
+
+	return mesh_owner.make_rid(Mesh());
+}
+
+/// Returns stride
+void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const VS::SurfaceData &p_surface) {
+
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+
+	//ensure blend shape consistency
+	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.blend_shapes.size() != (int)mesh->blend_shape_count);
+	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.bone_aabbs.size() != mesh->bone_aabbs.size());
+
+	Mesh::Surface *s = memnew(Mesh::Surface);
+
+	s->format = p_surface.format;
+	s->primitive = p_surface.primitive;
+
+	s->vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.vertex_data.size(), p_surface.vertex_data);
+	s->vertex_count = p_surface.vertex_count;
+
+	if (p_surface.index_count) {
+		bool is_index_16 = p_surface.vertex_count <= 65536;
+
+		s->index_buffer = RD::get_singleton()->index_buffer_create(p_surface.index_count, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, p_surface.index_data, false);
+		s->index_count = p_surface.index_count;
+		s->index_array = RD::get_singleton()->index_array_create(s->index_buffer, 0, s->index_count);
+		if (p_surface.lods.size()) {
+			s->lods = memnew_arr(Mesh::Surface::LOD, p_surface.lods.size());
+			s->lod_count = p_surface.lods.size();
+
+			for (int i = 0; i < p_surface.lods.size(); i++) {
+
+				uint32_t indices = p_surface.lods[i].index_data.size() / (is_index_16 ? 2 : 4);
+				s->lods[i].index_buffer = RD::get_singleton()->index_buffer_create(indices, is_index_16 ? RD::INDEX_BUFFER_FORMAT_UINT16 : RD::INDEX_BUFFER_FORMAT_UINT32, p_surface.lods[i].index_data);
+				s->lods[i].index_array = RD::get_singleton()->index_array_create(s->lods[i].index_buffer, 0, indices);
+				s->lods[i].edge_length = p_surface.lods[i].edge_length;
+			}
+		}
+	}
+
+	s->aabb = p_surface.aabb;
+	s->bone_aabbs = p_surface.bone_aabbs; //only really useful for returning them.
+
+	for (int i = 0; i < p_surface.blend_shapes.size(); i++) {
+
+		ERR_FAIL_COND(p_surface.blend_shapes[i].size() != p_surface.vertex_data.size());
+
+		RID vertex_buffer = RD::get_singleton()->vertex_buffer_create(p_surface.blend_shapes[i].size(), p_surface.blend_shapes[i]);
+		s->blend_shapes.push_back(vertex_buffer);
+	}
+
+	mesh->blend_shape_count = p_surface.blend_shapes.size();
+
+	if (mesh->surface_count == 0) {
+		mesh->bone_aabbs = p_surface.bone_aabbs;
+		mesh->aabb = p_surface.aabb;
+	} else {
+		for (int i = 0; i < p_surface.bone_aabbs.size(); i++) {
+			mesh->bone_aabbs.write[i].merge_with(p_surface.bone_aabbs[i]);
+		}
+		mesh->aabb.merge_with(p_surface.aabb);
+	}
+
+	s->material = p_mesh;
+
+	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count + 1));
+	mesh->surfaces[mesh->surface_count] = s;
+	mesh->surface_count++;
+
+	mesh->instance_dependency.instance_notify_changed(true, true);
+
+	mesh->material_cache.clear();
+}
+
+int RasterizerStorageRD::mesh_get_blend_shape_count(RID p_mesh) const {
+	const Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, -1);
+	return mesh->blend_shape_count;
+}
+
+void RasterizerStorageRD::mesh_set_blend_shape_mode(RID p_mesh, VS::BlendShapeMode p_mode) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX(p_mode, 2);
+
+	mesh->blend_shape_mode = p_mode;
+}
+VS::BlendShapeMode RasterizerStorageRD::mesh_get_blend_shape_mode(RID p_mesh) const {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, VS::BLEND_SHAPE_MODE_NORMALIZED);
+	return mesh->blend_shape_mode;
+}
+
+void RasterizerStorageRD::mesh_surface_update_region(RID p_mesh, int p_surface, int p_offset, const PoolVector<uint8_t> &p_data) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX((uint32_t)p_surface, mesh->surface_count);
+	ERR_FAIL_COND(p_data.size() == 0);
+	uint64_t data_size = p_data.size();
+	PoolVector<uint8_t>::Read r = p_data.read();
+
+	RD::get_singleton()->buffer_update(mesh->surfaces[p_surface]->vertex_buffer, p_offset, data_size, r.ptr());
+}
+
+void RasterizerStorageRD::mesh_surface_set_material(RID p_mesh, int p_surface, RID p_material) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	ERR_FAIL_INDEX((uint32_t)p_surface, mesh->surface_count);
+	mesh->surfaces[p_surface]->material = p_material;
+
+	mesh->instance_dependency.instance_notify_changed(false, true);
+	mesh->material_cache.clear();
+}
+RID RasterizerStorageRD::mesh_surface_get_material(RID p_mesh, int p_surface) const {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, RID());
+	ERR_FAIL_INDEX_V((uint32_t)p_surface, mesh->surface_count, RID());
+
+	return mesh->surfaces[p_surface]->material;
+}
+
+VS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface) const {
+
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, VS::SurfaceData());
+	ERR_FAIL_INDEX_V((uint32_t)p_surface, mesh->surface_count, VS::SurfaceData());
+
+	Mesh::Surface &s = *mesh->surfaces[p_surface];
+
+	VS::SurfaceData sd;
+	sd.format = s.format;
+	sd.vertex_data = RD::get_singleton()->buffer_get_data(s.vertex_buffer);
+	sd.vertex_count = s.vertex_count;
+	sd.index_count = s.index_count;
+	if (sd.index_count) {
+		sd.index_data = RD::get_singleton()->buffer_get_data(s.index_buffer);
+	}
+	sd.aabb = s.aabb;
+	for (uint32_t i = 0; i < s.lod_count; i++) {
+		VS::SurfaceData::LOD lod;
+		lod.edge_length = s.lods[i].edge_length;
+		lod.index_data = RD::get_singleton()->buffer_get_data(s.lods[i].index_buffer);
+		sd.lods.push_back(lod);
+	}
+
+	sd.bone_aabbs = s.bone_aabbs;
+
+	for (int i = 0; i < s.blend_shapes.size(); i++) {
+		PoolVector<uint8_t> bs = RD::get_singleton()->buffer_get_data(s.blend_shapes[i]);
+		sd.blend_shapes.push_back(bs);
+	}
+
+	return sd;
+}
+
+int RasterizerStorageRD::mesh_get_surface_count(RID p_mesh) const {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, 0);
+	return mesh->surface_count;
+}
+
+void RasterizerStorageRD::mesh_set_custom_aabb(RID p_mesh, const AABB &p_aabb) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	mesh->custom_aabb = p_aabb;
+}
+AABB RasterizerStorageRD::mesh_get_custom_aabb(RID p_mesh) const {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, AABB());
+	return mesh->custom_aabb;
+}
+
+AABB RasterizerStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND_V(!mesh, AABB());
+
+	if (mesh->custom_aabb != AABB()) {
+		return mesh->custom_aabb;
+	}
+
+	if (!p_skeleton.is_valid()) {
+		return mesh->aabb;
+	}
+
+	return mesh->aabb;
+}
+
+void RasterizerStorageRD::mesh_clear(RID p_mesh) {
+
+	Mesh *mesh = mesh_owner.getornull(p_mesh);
+	ERR_FAIL_COND(!mesh);
+	for (uint32_t i = 0; i < mesh->surface_count; i++) {
+		Mesh::Surface &s = *mesh->surfaces[i];
+		RD::get_singleton()->free(s.vertex_buffer); //clears arrays as dependency automatically, including all versions
+		if (s.versions) {
+			memfree(s.versions); //reallocs, so free with memfree.
+		}
+
+		if (s.index_buffer.is_valid()) {
+			RD::get_singleton()->free(s.index_buffer);
+		}
+
+		if (s.lod_count) {
+			for (uint32_t j = 0; j < s.lod_count; j++) {
+				RD::get_singleton()->free(s.lods[j].index_buffer);
+			}
+			memdelete_arr(s.lods);
+		}
+
+		for (int32_t j = 0; j < s.blend_shapes.size(); j++) {
+			RD::get_singleton()->free(s.blend_shapes[j]);
+		}
+
+		if (s.blend_shape_base_buffer.is_valid()) {
+			RD::get_singleton()->free(s.blend_shape_base_buffer);
+		}
+
+		memdelete(mesh->surfaces[i]);
+	}
+	if (mesh->surfaces) {
+		memfree(mesh->surfaces);
+	}
+
+	mesh->surfaces = nullptr;
+	mesh->surface_count = 0;
+	mesh->material_cache.clear();
+	mesh->instance_dependency.instance_notify_changed(true, true);
+}
+
+void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Surface *s, uint32_t p_input_mask) {
+	uint32_t version = s->version_count;
+	s->version_count++;
+	s->versions = (Mesh::Surface::Version *)memrealloc(s->versions, sizeof(Mesh::Surface::Version) * s->version_count);
+
+	Mesh::Surface::Version &v = s->versions[version];
+
+	Vector<RD::VertexDescription> attributes;
+	Vector<RID> buffers;
+
+	uint32_t stride = 0;
+
+	for (int i = 0; i < VS::ARRAY_WEIGHTS; i++) {
+
+		if (!(p_input_mask & (1 << i))) {
+			continue; // Shader does not need this, skip it
+		}
+
+		RD::VertexDescription vd;
+		RID buffer;
+		vd.location = i;
+
+		if (!(s->format & (1 << i))) {
+			// Shader needs this, but it's not provided by this surface
+			// Create a default attribue using the default buffers
+			buffer = mesh_default_rd_buffers[i];
+			switch (i) {
+
+				case VS::ARRAY_VERTEX: {
+
+					vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+
+				} break;
+				case VS::ARRAY_NORMAL: {
+					vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+				} break;
+				case VS::ARRAY_TANGENT: {
+
+					vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+				} break;
+				case VS::ARRAY_COLOR: {
+
+					vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+
+				} break;
+				case VS::ARRAY_TEX_UV: {
+
+					vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+
+				} break;
+				case VS::ARRAY_TEX_UV2: {
+
+					vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+				} break;
+				case VS::ARRAY_BONES: {
+
+					//assumed weights too
+					vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+				} break;
+			}
+		} else {
+			//Shader needs this, and it's also provided
+
+			vd.offset = stride;
+			vd.stride = 1; //mark that it needs a stride set
+			buffer = s->vertex_buffer;
+
+			switch (i) {
+
+				case VS::ARRAY_VERTEX: {
+
+					if (s->format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
+						vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+						stride += sizeof(float) * 2;
+					} else {
+						vd.format = RD::DATA_FORMAT_R32G32B32_SFLOAT;
+						stride += sizeof(float) * 3;
+					}
+
+				} break;
+				case VS::ARRAY_NORMAL: {
+
+					if (s->format & VS::ARRAY_COMPRESS_NORMAL) {
+						vd.format = RD::DATA_FORMAT_R8G8B8A8_SNORM;
+						stride += sizeof(int8_t) * 4;
+					} else {
+						vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+						stride += sizeof(float) * 4;
+					}
+
+				} break;
+				case VS::ARRAY_TANGENT: {
+
+					if (s->format & VS::ARRAY_COMPRESS_TANGENT) {
+						vd.format = RD::DATA_FORMAT_R8G8B8A8_SNORM;
+						stride += sizeof(int8_t) * 4;
+					} else {
+						vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+						stride += sizeof(float) * 4;
+					}
+
+				} break;
+				case VS::ARRAY_COLOR: {
+
+					if (s->format & VS::ARRAY_COMPRESS_COLOR) {
+						vd.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+						stride += sizeof(int8_t) * 4;
+					} else {
+						vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
+						stride += sizeof(float) * 4;
+					}
+
+				} break;
+				case VS::ARRAY_TEX_UV: {
+
+					if (s->format & VS::ARRAY_COMPRESS_TEX_UV) {
+						vd.format = RD::DATA_FORMAT_R16G16_SFLOAT;
+						stride += sizeof(int16_t) * 2;
+					} else {
+						vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+						stride += sizeof(float) * 2;
+					}
+
+				} break;
+				case VS::ARRAY_TEX_UV2: {
+
+					if (s->format & VS::ARRAY_COMPRESS_TEX_UV2) {
+						vd.format = RD::DATA_FORMAT_R16G16_SFLOAT;
+						stride += sizeof(int16_t) * 2;
+					} else {
+						vd.format = RD::DATA_FORMAT_R32G32_SFLOAT;
+						stride += sizeof(float) * 2;
+					}
+
+				} break;
+				case VS::ARRAY_BONES: {
+					//assumed weights too
+
+					//unique format, internally 16 bits, exposed as single array for 32
+
+					vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
+					stride += sizeof(int32_t) * 4;
+
+				} break;
+			}
+		}
+
+		attributes.push_back(vd);
+		buffers.push_back(buffer);
+	}
+
+	//update final stride
+	for (int i = 0; i < attributes.size(); i++) {
+		if (attributes[i].stride == 1) {
+			attributes.write[i].stride = stride;
+		}
+	}
+
+	v.input_mask = p_input_mask;
+	v.vertex_format = RD::get_singleton()->vertex_format_create(attributes);
+	v.vertex_array = RD::get_singleton()->vertex_array_create(s->vertex_count, v.vertex_format, buffers);
+}
 
 /* RENDER TARGET API */
 
@@ -2033,6 +2429,13 @@ RID RasterizerStorageRD::render_target_get_back_buffer_uniform_set(RID p_render_
 	return rt->backbuffer_uniform_set;
 }
 
+void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance) {
+	if (mesh_owner.owns(p_base)) {
+		Mesh *mesh = mesh_owner.getornull(p_base);
+		p_instance->update_dependency(&mesh->instance_dependency);
+	}
+}
+
 void RasterizerStorageRD::update_dirty_resources() {
 	_update_queued_materials();
 }
@@ -2081,6 +2484,11 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		material_set_shader(p_rid, RID()); //clean up shader
 		material->instance_dependency.instance_notify_deleted(p_rid);
 		material_owner.free(p_rid);
+	} else if (mesh_owner.owns(p_rid)) {
+		mesh_clear(p_rid);
+		Mesh *mesh = mesh_owner.getornull(p_rid);
+		mesh->instance_dependency.instance_notify_deleted(p_rid);
+		mesh_owner.free(p_rid);
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 
@@ -2100,7 +2508,7 @@ bool RasterizerStorageRD::free(RID p_rid) {
 	return true;
 }
 
-EffectsRD *RasterizerStorageRD::get_effects() {
+RasterizerEffectsRD *RasterizerStorageRD::get_effects() {
 	return &effects;
 }
 
@@ -2251,6 +2659,115 @@ RasterizerStorageRD::RasterizerStorageRD() {
 			default_rd_samplers[i][j] = RD::get_singleton()->sampler_create(sampler_state);
 		}
 	}
+
+	//default rd buffers
+	{
+
+		{ //vertex
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 3);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				float *fptr = (float *)w.ptr();
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_VERTEX] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+
+		{ //normal
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 3);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				float *fptr = (float *)w.ptr();
+				fptr[0] = 1.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_NORMAL] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+
+		{ //tangent
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 4);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				float *fptr = (float *)w.ptr();
+				fptr[0] = 1.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+				fptr[3] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TANGENT] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+
+		{ //color
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 4);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				float *fptr = (float *)w.ptr();
+				fptr[0] = 1.0;
+				fptr[1] = 1.0;
+				fptr[2] = 1.0;
+				fptr[3] = 1.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_COLOR] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+
+		{ //tex uv 1
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 2);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				float *fptr = (float *)w.ptr();
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+		{ //tex uv 2
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 2);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				float *fptr = (float *)w.ptr();
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+
+		{ //bones
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(uint32_t) * 4);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				uint32_t *fptr = (uint32_t *)w.ptr();
+				fptr[0] = 0;
+				fptr[1] = 0;
+				fptr[2] = 0;
+				fptr[3] = 0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_BONES] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+
+		{ //weights
+			PoolVector<uint8_t> buffer;
+			buffer.resize(sizeof(float) * 4);
+			{
+				PoolVector<uint8_t>::Write w = buffer.write();
+				float *fptr = (float *)w.ptr();
+				fptr[0] = 0.0;
+				fptr[1] = 0.0;
+				fptr[2] = 0.0;
+				fptr[3] = 0.0;
+			}
+			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_WEIGHTS] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+		}
+	}
 }
 
 RasterizerStorageRD::~RasterizerStorageRD() {
@@ -2265,5 +2782,10 @@ RasterizerStorageRD::~RasterizerStorageRD() {
 		for (int j = 1; j < VS::CANVAS_ITEM_TEXTURE_REPEAT_MAX; j++) {
 			RD::get_singleton()->free(default_rd_samplers[i][j]);
 		}
+	}
+
+	//def buffers
+	for (int i = 0; i < DEFAULT_RD_BUFFER_MAX; i++) {
+		RD::get_singleton()->free(mesh_default_rd_buffers[i]);
 	}
 }

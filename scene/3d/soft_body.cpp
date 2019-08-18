@@ -47,7 +47,10 @@ void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 
 	mesh = p_mesh;
 	surface = p_surface;
-
+#ifndef _MSC_VER
+#warning Softbody is not working, needs to be redone considering that these functions no longer exist
+#endif
+#if 0
 	const uint32_t surface_format = VS::get_singleton()->mesh_surface_get_format(mesh, surface);
 	const int surface_vertex_len = VS::get_singleton()->mesh_surface_get_array_len(mesh, p_surface);
 	const int surface_index_len = VS::get_singleton()->mesh_surface_get_array_index_len(mesh, p_surface);
@@ -57,6 +60,7 @@ void SoftBodyVisualServerHandler::prepare(RID p_mesh, int p_surface) {
 	stride = VS::get_singleton()->mesh_surface_make_offsets_from_format(surface_format, surface_vertex_len, surface_index_len, surface_offsets);
 	offset_vertices = surface_offsets[VS::ARRAY_VERTEX];
 	offset_normal = surface_offsets[VS::ARRAY_NORMAL];
+#endif
 }
 
 void SoftBodyVisualServerHandler::clear() {
@@ -485,14 +489,15 @@ void SoftBody::become_mesh_owner() {
 		// Get current mesh array and create new mesh array with necessary flag for softbody
 		Array surface_arrays = mesh->surface_get_arrays(0);
 		Array surface_blend_arrays = mesh->surface_get_blend_shape_arrays(0);
+		Dictionary surface_lods = mesh->surface_get_lods(0);
 		uint32_t surface_format = mesh->surface_get_format(0);
 
-		surface_format &= ~(Mesh::ARRAY_COMPRESS_VERTEX | Mesh::ARRAY_COMPRESS_NORMAL);
+		surface_format &= ~(Mesh::ARRAY_COMPRESS_NORMAL);
 		surface_format |= Mesh::ARRAY_FLAG_USE_DYNAMIC_UPDATE;
 
 		Ref<ArrayMesh> soft_mesh;
 		soft_mesh.instance();
-		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_format);
+		soft_mesh->add_surface_from_arrays(Mesh::PRIMITIVE_TRIANGLES, surface_arrays, surface_blend_arrays, surface_lods, surface_format);
 		soft_mesh->surface_set_material(0, mesh->surface_get_material(0));
 
 		set_mesh(soft_mesh);

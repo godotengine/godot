@@ -342,7 +342,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[1] = vd;
-			buffers.write[1] = polygon_buffers.default_color_buffer;
+			buffers.write[1] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_COLOR);
 		}
 
 		//uvs
@@ -370,7 +370,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[2] = vd;
-			buffers.write[2] = polygon_buffers.default_uv_buffer;
+			buffers.write[2] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_TEX_UV);
 		}
 
 		//bones
@@ -401,7 +401,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[3] = vd;
-			buffers.write[3] = polygon_buffers.default_bone_buffer;
+			buffers.write[3] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_BONES);
 		}
 
 		//bones
@@ -432,7 +432,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			vd.stride = 0;
 
 			descriptions.write[4] = vd;
-			buffers.write[4] = polygon_buffers.default_weight_buffer;
+			buffers.write[4] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_WEIGHTS);
 		}
 
 		//check that everything is as it should be
@@ -2278,7 +2278,9 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 					RD::RENDER_PRIMITIVE_LINES,
 					RD::RENDER_PRIMITIVE_POINTS,
 					RD::RENDER_PRIMITIVE_TRIANGLES,
+					RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS,
 					RD::RENDER_PRIMITIVE_LINES,
+					RD::RENDER_PRIMITIVE_LINESTRIPS,
 					RD::RENDER_PRIMITIVE_POINTS,
 				};
 				ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
@@ -2290,6 +2292,8 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 							SHADER_VARIANT_PRIMITIVE_POINTS,
 							SHADER_VARIANT_ATTRIBUTES,
 							SHADER_VARIANT_ATTRIBUTES,
+							SHADER_VARIANT_ATTRIBUTES,
+							SHADER_VARIANT_ATTRIBUTES,
 							SHADER_VARIANT_ATTRIBUTES_POINTS },
 					{ //lit
 							SHADER_VARIANT_QUAD_LIGHT,
@@ -2297,6 +2301,8 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 							SHADER_VARIANT_PRIMITIVE_LIGHT,
 							SHADER_VARIANT_PRIMITIVE_LIGHT,
 							SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT,
+							SHADER_VARIANT_ATTRIBUTES_LIGHT,
+							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_LIGHT,
 							SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT },
@@ -2435,60 +2441,6 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 	}
 
 	{
-		{
-			PoolVector<uint8_t> colors;
-			colors.resize(sizeof(float) * 4);
-			{
-				PoolVector<uint8_t>::Write w = colors.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 1.0;
-				fptr[1] = 1.0;
-				fptr[2] = 1.0;
-				fptr[3] = 1.0;
-			}
-			polygon_buffers.default_color_buffer = RD::get_singleton()->vertex_buffer_create(colors.size(), colors);
-		}
-
-		{
-			PoolVector<uint8_t> uvs;
-			uvs.resize(sizeof(float) * 2);
-			{
-				PoolVector<uint8_t>::Write w = uvs.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 0.0;
-				fptr[1] = 0.0;
-			}
-			polygon_buffers.default_uv_buffer = RD::get_singleton()->vertex_buffer_create(uvs.size(), uvs);
-		}
-
-		{
-			PoolVector<uint8_t> bones;
-			bones.resize(sizeof(uint32_t) * 4);
-			{
-				PoolVector<uint8_t>::Write w = bones.write();
-				uint32_t *iptr = (uint32_t *)w.ptr();
-				iptr[0] = 0;
-				iptr[1] = 0;
-				iptr[2] = 0;
-				iptr[3] = 0;
-			}
-			polygon_buffers.default_bone_buffer = RD::get_singleton()->vertex_buffer_create(bones.size(), bones);
-		}
-
-		{
-			PoolVector<uint8_t> weights;
-			weights.resize(sizeof(float) * 4);
-			{
-				PoolVector<uint8_t>::Write w = weights.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 0.0;
-				fptr[1] = 0.0;
-				fptr[2] = 0.0;
-				fptr[3] = 0.0;
-			}
-			polygon_buffers.default_weight_buffer = RD::get_singleton()->vertex_buffer_create(weights.size(), weights);
-		}
-
 		//polygon buffers
 		polygon_buffers.last_id = 1;
 	}
@@ -2606,10 +2558,6 @@ RasterizerCanvasRD::~RasterizerCanvasRD() {
 	{
 		RD::get_singleton()->free(shader.quad_index_array);
 		RD::get_singleton()->free(shader.quad_index_buffer);
-		RD::get_singleton()->free(polygon_buffers.default_bone_buffer);
-		RD::get_singleton()->free(polygon_buffers.default_weight_buffer);
-		RD::get_singleton()->free(polygon_buffers.default_color_buffer);
-		RD::get_singleton()->free(polygon_buffers.default_uv_buffer);
 		//primitives are erase by dependency
 	}
 
