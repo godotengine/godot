@@ -3496,6 +3496,8 @@ RID RasterizerStorageGLES2::skeleton_create() {
 
 	Skeleton *skeleton = memnew(Skeleton);
 
+	glGenTextures(1, &skeleton->tex_id);
+
 	return skeleton_owner.make_rid(skeleton);
 }
 
@@ -3513,7 +3515,6 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	skeleton->use_2d = p_2d_skeleton;
 
 	if (config.float_texture_supported) {
-		glGenTextures(1, &skeleton->tex_id);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
