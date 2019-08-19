@@ -380,7 +380,7 @@ Error decode_variant(Variant &r_variant, const uint8_t *p_buffer, int p_len, int
 		/*case Variant::RESOURCE: {
 
 			ERR_EXPLAIN("Can't marshallize resources");
-			ERR_FAIL_V(ERR_INVALID_DATA); //no, i'm sorry, no go
+			ERR_FAIL_V(ERR_INVALID_DATA); //EXPLAIN_THIS_COMMENT: no, i'm sorry, no go
 		} break;*/
 		case Variant::_RID: {
 
@@ -776,7 +776,7 @@ static void _encode_string(const String &p_string, uint8_t *&buf, int &r_len) {
 
 	r_len += 4 + utf8.length();
 	while (r_len % 4) {
-		r_len++; //pad
+		r_len++; //EXPLAIN_THIS_COMMENT: pad
 		if (buf) {
 			*(buf++) = 0;
 		}
@@ -1165,7 +1165,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 				r_len+=4+utf8.length()+1;
 				while (r_len%4)
-					r_len++; //pad
+					r_len++; //EXPLAIN_THIS_COMMENT: pad
 				*/
 				int len;
 				encode_variant(E->get(), buf, len, p_full_objects);
@@ -1287,7 +1287,7 @@ Error encode_variant(const Variant &p_variant, uint8_t *r_buffer, int &r_len, bo
 
 				r_len += 4 + utf8.length() + 1;
 				while (r_len % 4) {
-					r_len++; //pad
+					r_len++; //EXPLAIN_THIS_COMMENT: pad
 					if (buf)
 						*(buf++) = 0;
 				}

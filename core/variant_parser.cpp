@@ -229,7 +229,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							case 'f': res = 12; break;
 							case 'r': res = 13; break;
 							case 'u': {
-								//hexnumbarh - oct is deprecated
+								//EXPLAIN_THIS_COMMENT: hexnumbarh - oct is deprecated
 
 								for (int j = 0; j < 4; j++) {
 									CharType c = p_stream->get_char();
@@ -297,7 +297,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 				}
 
 				if (cchar == '-' || (cchar >= '0' && cchar <= '9')) {
-					//a number
+					//EXPLAIN_THIS_COMMENT: a number
 
 					StringBuffer<> num;
 #define READING_SIGN 0
@@ -323,7 +323,7 @@ Error VariantParser::get_token(Stream *p_stream, Token &r_token, int &line, Stri
 							case READING_INT: {
 
 								if (c >= '0' && c <= '9') {
-									//pass
+									//EXPLAIN_THIS_COMMENT: pass
 								} else if (c == '.') {
 									reading = READING_DEC;
 									is_float = true;
@@ -454,7 +454,7 @@ Error VariantParser::_parse_construct(Stream *p_stream, Vector<T> &r_construct, 
 		if (!first) {
 			get_token(p_stream, token, line, r_err_str);
 			if (token.type == TK_COMMA) {
-				//do none
+				//EXPLAIN_THIS_COMMENT: do none
 			} else if (token.type == TK_PARENTHESIS_CLOSE) {
 				break;
 			} else {
@@ -551,7 +551,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			value = Vector3(args[0], args[1], args[2]);
 			return OK;
-		} else if (id == "Transform2D" || id == "Matrix32") { //compatibility
+		} else if (id == "Transform2D" || id == "Matrix32") { //EXPLAIN_THIS_COMMENT: compatibility
 
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -608,7 +608,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 			value = AABB(Vector3(args[0], args[1], args[2]), Vector3(args[3], args[4], args[5]));
 			return OK;
 
-		} else if (id == "Basis" || id == "Matrix3") { //compatibility
+		} else if (id == "Basis" || id == "Matrix3") { //EXPLAIN_THIS_COMMENT: compatibility
 
 			Vector<float> args;
 			Error err = _parse_construct<float>(p_stream, args, line, r_err_str);
@@ -1130,7 +1130,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				if (!first) {
 					get_token(p_stream, token, line, r_err_str);
 					if (token.type == TK_COMMA) {
-						//do none
+						//EXPLAIN_THIS_COMMENT: do none
 					} else if (token.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					} else {
@@ -1417,10 +1417,10 @@ Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, Strin
 			break;
 
 		if (parsing_tag && token.type == TK_PERIOD) {
-			r_tag.name += "."; //support tags such as [someprop.Android] for specific platforms
+			r_tag.name += "."; //EXPLAIN_THIS_COMMENT: support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else if (parsing_tag && token.type == TK_COLON) {
-			r_tag.name += ":"; //support tags such as [someprop.Android] for specific platforms
+			r_tag.name += ":"; //EXPLAIN_THIS_COMMENT: support tags such as [someprop.Android] for specific platforms
 			get_token(p_stream, token, line, r_err_str);
 		} else {
 			parsing_tag = false;
@@ -1474,7 +1474,7 @@ Error VariantParser::parse_tag(Stream *p_stream, int &line, String &r_err_str, T
 
 Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, String &r_assign, Variant &r_value, ResourceParser *p_res_parser, bool p_simple_tag) {
 
-	//assign..
+	//EXPLAIN_THIS_COMMENT: assign..
 	r_assign = "";
 	String what;
 
@@ -1492,7 +1492,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		if (p_stream->is_eof())
 			return ERR_FILE_EOF;
 
-		if (c == ';') { //comment
+		if (c == ';') { //EXPLAIN_THIS_COMMENT: comment
 			while (true) {
 				CharType ch = p_stream->get_char();
 				if (p_stream->is_eof()) {
@@ -1505,8 +1505,8 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		}
 
 		if (c == '[' && what.length() == 0) {
-			//it's a tag!
-			p_stream->saved = '['; //go back one
+			//EXPLAIN_THIS_COMMENT: it's a tag!
+			p_stream->saved = '['; //EXPLAIN_THIS_COMMENT: go back one
 
 			Error err = parse_tag(p_stream, line, r_err_str, r_tag, p_res_parser, p_simple_tag);
 
@@ -1514,7 +1514,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 		}
 
 		if (c > 32) {
-			if (c == '"') { //quoted
+			if (c == '"') { //EXPLAIN_THIS_COMMENT: quoted
 				p_stream->saved = '"';
 				Token tk;
 				Error err = get_token(p_stream, tk, line, r_err_str);
@@ -1566,7 +1566,7 @@ Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, 
 static String rtosfix(double p_value) {
 
 	if (p_value == 0.0)
-		return "0"; //avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
+		return "0"; //EXPLAIN_THIS_COMMENT: avoid negative zero (-0) being written, which may annoy git, svn, etc. for changes when they don't exist.
 	else
 		return rtoss(p_value);
 }

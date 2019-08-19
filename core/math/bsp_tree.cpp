@@ -90,11 +90,11 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 	real_t dist_min = p.distance_to(min);
 	real_t dist_max = p.distance_to(max);
 
-	if ((dist_min * dist_max) < CMP_EPSILON) { //intersection, test point by point
+	if ((dist_min * dist_max) < CMP_EPSILON) { //EXPLAIN_THIS_COMMENT: intersection, test point by point
 
 		int under_count = 0;
 
-		//sort points, so the are under first, over last
+		//EXPLAIN_THIS_COMMENT: sort points, so the are under first, over last
 		for (int i = 0; i < p_indices_count; i++) {
 
 			int index = p_indices[i];
@@ -126,7 +126,7 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 
 		if (under_count != p_indices_count) {
 			if (node->over == OVER_LEAF) {
-				//total+=0 //if they are over an OVER_LEAF, they are outside the model
+				//total+=0 //EXPLAIN_THIS_COMMENT: if they are over an OVER_LEAF, they are outside the model
 			} else {
 				total += _get_points_inside(node->over, p_points, &p_indices[under_count], p_center, p_half_extents, p_indices_count - under_count);
 			}
@@ -134,7 +134,7 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 
 		return total;
 
-	} else if (dist_min > 0) { //all points over plane
+	} else if (dist_min > 0) { //EXPLAIN_THIS_COMMENT: all points over plane
 
 		if (node->over == OVER_LEAF) {
 
@@ -142,7 +142,7 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 		}
 
 		return _get_points_inside(node->over, p_points, p_indices, p_center, p_half_extents, p_indices_count);
-	} else { //all points behind plane
+	} else { //EXPLAIN_THIS_COMMENT: all points behind plane
 
 		if (node->under == UNDER_LEAF) {
 

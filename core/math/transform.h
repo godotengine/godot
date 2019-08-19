@@ -163,7 +163,7 @@ _FORCE_INLINE_ AABB Transform::xform(const AABB &p_aabb) const {
 	Vector3 y = basis.get_axis(1) * p_aabb.size.y;
 	Vector3 z = basis.get_axis(2) * p_aabb.size.z;
 	Vector3 pos = xform(p_aabb.position);
-	//could be even further optimized
+	//EXPLAIN_THIS_COMMENT: could be even further optimized
 	AABB new_aabb;
 	new_aabb.position = pos;
 	new_aabb.expand_to(pos + x);

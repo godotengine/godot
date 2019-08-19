@@ -552,7 +552,7 @@ void Basis::set_euler_yxz(const Vector3 &p_euler) {
 	s = Math::sin(p_euler.z);
 	Basis zmat(c, -s, 0.0, s, c, 0.0, 0.0, 0.0, 1.0);
 
-	//optimizer will optimize away all this anyway
+	//EXPLAIN_THIS_COMMENT: optimizer will optimize away all this anyway
 	*this = ymat * xmat * zmat;
 }
 
@@ -683,7 +683,7 @@ static const Basis _ortho_bases[24] = {
 
 int Basis::get_orthogonal_index() const {
 
-	//could be sped up if i come up with a way
+	//EXPLAIN_THIS_COMMENT: could be sped up if i come up with a way
 	Basis orth = *this;
 	for (int i = 0; i < 3; i++) {
 		for (int j = 0; j < 3; j++) {
@@ -711,7 +711,7 @@ int Basis::get_orthogonal_index() const {
 
 void Basis::set_orthogonal_index(int p_index) {
 
-	//there only exist 24 orthogonal bases in r3
+	//EXPLAIN_THIS_COMMENT: there only exist 24 orthogonal bases in r3
 	ERR_FAIL_INDEX(p_index, 24);
 
 	*this = _ortho_bases[p_index];
@@ -867,7 +867,7 @@ void Basis::set_diagonal(const Vector3 &p_diag) {
 
 Basis Basis::slerp(const Basis &target, const real_t &t) const {
 
-	//consider scale
+	//EXPLAIN_THIS_COMMENT: consider scale
 	Quat from(*this);
 	Quat to(target);
 

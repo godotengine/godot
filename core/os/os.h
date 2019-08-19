@@ -500,6 +500,7 @@ public:
 
 	virtual void set_context(int p_context);
 
+	//EXPLAIN_THIS_COMMENT(How should the following be formatted?):
 	//amazing hack because OpenGL needs this to be set on a separate thread..
 	//also core can't access servers, so a callback must be used
 	typedef void (*SwitchVSyncCallbackInThread)(bool);
@@ -508,7 +509,7 @@ public:
 	void set_use_vsync(bool p_enable);
 	bool is_vsync_enabled() const;
 
-	//real, actual overridable function to switch vsync, which needs to be called from graphics thread if needed
+	//EXPLAIN_THIS_COMMENT: real, actual overridable function to switch vsync, which needs to be called from graphics thread if needed
 	virtual void _set_use_vsync(bool p_enable) {}
 
 	virtual OS::PowerState get_power_state();

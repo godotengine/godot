@@ -385,7 +385,7 @@ bool Object::_predelete() {
 	_predelete_ok = 1;
 	notification(NOTIFICATION_PREDELETE, true);
 	if (_predelete_ok) {
-		_class_ptr = NULL; //must restore so destructors can access class ptr correctly
+		_class_ptr = NULL; //EXPLAIN_THIS_COMMENT: must restore so destructors can access class ptr correctly
 	}
 	return _predelete_ok;
 }
@@ -417,7 +417,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		}
 	}
 
-	//try built-in setgetter
+	//EXPLAIN_THIS_COMMENT: try built-in setgetter
 	{
 		if (ClassDB::set_property(this, p_name, p_value, r_valid)) {
 			/*
@@ -442,7 +442,7 @@ void Object::set(const StringName &p_name, const Variant &p_value, bool *r_valid
 		return;
 	}
 
-	//something inside the object... :|
+	//EXPLAIN_THIS_COMMENT: something inside the object... :|
 	bool success = _setv(p_name, p_value);
 	if (success) {
 		if (r_valid)
@@ -489,7 +489,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		}
 	}
 
-	//try built-in setgetter
+	//EXPLAIN_THIS_COMMENT: try built-in setgetter
 	{
 		if (ClassDB::get_property(const_cast<Object *>(this), p_name, ret)) {
 			if (r_valid)
@@ -511,7 +511,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 		return ret;
 
 	} else {
-		//something inside the object... :|
+		//EXPLAIN_THIS_COMMENT: something inside the object... :|
 		bool success = _getv(p_name, ret);
 		if (success) {
 			if (r_valid)
@@ -519,7 +519,7 @@ Variant Object::get(const StringName &p_name, bool *r_valid) const {
 			return ret;
 		}
 
-		//if nothing else, use getvar
+		//EXPLAIN_THIS_COMMENT: if nothing else, use getvar
 		{
 			bool valid;
 			ret = getvar(p_name, &valid);
@@ -750,7 +750,7 @@ void Object::call_multilevel(const StringName &p_method, const Variant **p_args,
 		}
 #endif
 
-		//must be here, must be before everything,
+		//EXPLAIN_THIS_COMMENT: must be here, must be before everything,
 		memdelete(this);
 		return;
 	}
@@ -878,7 +878,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 	r_error.error = Variant::CallError::CALL_OK;
 
 	if (p_method == CoreStringNames::get_singleton()->_free) {
-//free must be here, before anything, always ready
+//EXPLAIN_THIS_COMMENT: free must be here, before anything, always ready
 #ifdef DEBUG_ENABLED
 		if (p_argcount != 0) {
 			r_error.argument = 0;
@@ -900,7 +900,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 		}
 
 #endif
-		//must be here, must be before everything,
+		//EXPLAIN_THIS_COMMENT: must be here, must be before everything,
 		memdelete(this);
 		r_error.error = Variant::CallError::CALL_OK;
 		return Variant();
@@ -910,7 +910,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 	OBJ_DEBUG_LOCK
 	if (script_instance) {
 		ret = script_instance->call(p_method, p_args, p_argcount, r_error);
-		//force jumptable
+		//EXPLAIN_THIS_COMMENT: force jumptable
 		switch (r_error.error) {
 
 			case Variant::CallError::CALL_OK:
@@ -1165,24 +1165,25 @@ Variant Object::_emit_signal(const Variant **p_args, int p_argcount, Variant::Ca
 Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int p_argcount) {
 
 	if (_block_signals)
-		return ERR_CANT_ACQUIRE_RESOURCE; //no emit, signals blocked
+		return ERR_CANT_ACQUIRE_RESOURCE; //EXPLAIN_THIS_COMMENT: no emit, signals blocked
 
 	Signal *s = signal_map.getptr(p_name);
 	if (!s) {
 #ifdef DEBUG_ENABLED
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_name);
-		//check in script
+		//EXPLAIN_THIS_COMMENT: check in script
 		if (!signal_is_valid && !script.is_null() && !Ref<Script>(script)->has_script_signal(p_name)) {
 			ERR_EXPLAIN("Can't emit non-existing signal " + String("\"") + p_name + "\".");
 			ERR_FAIL_V(ERR_UNAVAILABLE);
 		}
 #endif
-		//not connected? just return
+		//EXPLAIN_THIS_COMMENT: not connected? just return
 		return ERR_UNAVAILABLE;
 	}
 
 	List<_ObjectSignalDisconnectData> disconnect_data;
 
+	//EXPLAIN_THIS_COMMENT(How should the following be be written? Is awesome good or bad?):
 	//copy on write will ensure that disconnecting the signal or even deleting the object will not affect the signal calling.
 	//this happens automatically and will not change the performance of calling.
 	//awesome, isn't it?
@@ -1212,7 +1213,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		int argc = p_argcount;
 
 		if (c.binds.size()) {
-			//handle binds
+			//EXPLAIN_THIS_COMMENT: handle binds
 			bind_mem.resize(p_argcount + c.binds.size());
 
 			for (int j = 0; j < p_argcount; j++) {
@@ -1238,7 +1239,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 					continue;
 #endif
 				if (ce.error == Variant::CallError::CALL_ERROR_INVALID_METHOD && !ClassDB::class_exists(target->get_class_name())) {
-					//most likely object is not initialized yet, do not throw error.
+					//EXPLAIN_THIS_COMMENT: most likely object is not initialized yet, do not throw error.
 				} else {
 					ERR_PRINTS("Error calling method from signal '" + String(p_name) + "': " + Variant::get_call_error_text(target, c.method, args, argc, ce));
 					err = ERR_METHOD_NOT_FOUND;
@@ -1249,7 +1250,7 @@ Error Object::emit_signal(const StringName &p_name, const Variant **p_args, int 
 		bool disconnect = c.flags & CONNECT_ONESHOT;
 #ifdef TOOLS_ENABLED
 		if (disconnect && (c.flags & CONNECT_PERSIST) && Engine::get_singleton()->is_editor_hint()) {
-			//this signal was connected from the editor, and is being edited. just don't disconnect for now
+			//EXPLAIN_THIS_COMMENT: this signal was connected from the editor, and is being edited. just don't disconnect for now
 			disconnect = false;
 		}
 #endif
@@ -1378,13 +1379,13 @@ void Object::get_signal_list(List<MethodInfo> *p_signals) const {
 	}
 
 	ClassDB::get_signal_list(get_class_name(), p_signals);
-	//find maybe usersignals?
+	//EXPLAIN_THIS_COMMENT: find maybe usersignals?
 	const StringName *S = NULL;
 
 	while ((S = signal_map.next(S))) {
 
 		if (signal_map[*S].user.name != "") {
-			//user signal
+			//EXPLAIN_THIS_COMMENT: user signal
 			p_signals->push_back(signal_map[*S].user);
 		}
 	}
@@ -1409,7 +1410,7 @@ void Object::get_signal_connection_list(const StringName &p_signal, List<Connect
 
 	const Signal *s = signal_map.getptr(p_signal);
 	if (!s)
-		return; //nothing
+		return; //EXPLAIN_THIS_COMMENT: nothing
 
 	for (int i = 0; i < s->slot_map.size(); i++)
 		p_connections->push_back(s->slot_map.getv(i).conn);
@@ -1447,7 +1448,7 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 	Signal *s = signal_map.getptr(p_signal);
 	if (!s) {
 		bool signal_is_valid = ClassDB::has_signal(get_class_name(), p_signal);
-		//check in script
+		//EXPLAIN_THIS_COMMENT: check in script
 		if (!signal_is_valid && !script.is_null()) {
 
 			if (Ref<Script>(script)->has_script_signal(p_signal)) {
@@ -1455,7 +1456,7 @@ Error Object::connect(const StringName &p_signal, Object *p_to_object, const Str
 			}
 #ifdef TOOLS_ENABLED
 			else {
-				//allow connecting signals anyway if script is invalid, see issue #17070
+				//EXPLAIN_THIS_COMMENT: allow connecting signals anyway if script is invalid, see issue #17070
 				if (!Ref<Script>(script)->is_valid()) {
 					signal_is_valid = true;
 				}
@@ -1562,7 +1563,7 @@ void Object::_disconnect(const StringName &p_signal, Object *p_to_object, const 
 	s->slot_map.erase(target);
 
 	if (s->slot_map.empty() && ClassDB::has_signal(get_class_name(), p_signal)) {
-		//not user signal, delete
+		//EXPLAIN_THIS_COMMENT: not user signal, delete
 		signal_map.erase(p_signal);
 	}
 }
@@ -1616,7 +1617,7 @@ void Object::_clear_internal_resource_paths(const Variant &p_var) {
 				return;
 
 			if (!r->get_path().begins_with("res://") || r->get_path().find("::") == -1)
-				return; //not an internal resource
+				return; //EXPLAIN_THIS_COMMENT: not an internal resource
 
 			Object *object = p_var;
 			if (!object)
@@ -1911,10 +1912,11 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	ERR_FAIL_INDEX_V(p_script_language_index, MAX_SCRIPT_INSTANCE_BINDINGS, NULL);
 #endif
 
-	//it's up to the script language to make this thread safe, if the function is called twice due to threads being out of syncro
-	//just return the same pointer.
-	//if you want to put a big lock in the entire function and keep allocated pointers in a map or something, feel free to do it
-	//as it should not really affect performance much (won't be called too often), as in far most caes the condition below will be false afterwards
+	//EXPLAIN_THIS_COMMENT(Second sentence is probably a run on and could be more clear and concise.):
+	// It is up to the script language to make this thread safe; if the function is called twice due to threads being
+	//	out of synchronized just return the same pointer. If you want to put a big lock in the entire function and keep
+	//	allocated pointers in a map or something, feel free to do it as it should not really affect performance much
+	//	(won't be called too often), as in far most cases the condition below will be false afterwards.
 
 	if (!_script_instance_bindings[p_script_language_index]) {
 		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
@@ -1979,7 +1981,7 @@ Object::~Object() {
 			ERR_CONTINUE(s->lock > 0);
 		}
 
-		//brute force disconnect for performance
+		//EXPLAIN_THIS_COMMENT: brute force disconnect for performance
 		int slot_count = s->slot_map.size();
 		const VMap<Signal::Target, Signal::Slot>::Pair *slot_list = s->slot_map.get_array();
 
@@ -1991,7 +1993,7 @@ Object::~Object() {
 		signal_map.erase(*S);
 	}
 
-	//signals from nodes that connect to this node
+	//EXPLAIN_THIS_COMMENT: signals from nodes that connect to this node
 	while (connections.size()) {
 
 		Connection c = connections.front()->get();

@@ -118,14 +118,12 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 	fc /= 3;
 	triangles.resize(fc);
 
-	bvh.resize(fc * 3); //will never be larger than this (todo make better)
+	bvh.resize(fc * 3); //EXPLAIN_THIS_COMMENT: will never be larger than this (todo make better)
 	PoolVector<BVH>::Write bw = bvh.write();
 
 	{
 
-		//create faces and indices and base bvh
-		//except for the Set for repeated triangles, everything
-		//goes in-place.
+		// Create faces and indices and base bvh; except for the Set for repeated triangles, everything goes in-place.
 
 		PoolVector<Vector3>::Read r = p_faces.read();
 		PoolVector<Triangle>::Write w = triangles.write();
@@ -182,8 +180,8 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 	int max_alloc = fc;
 	_create_bvh(bw.ptr(), bwp.ptr(), 0, fc, 1, max_depth, max_alloc);
 
-	bw.release(); //clearup
-	bvh.resize(max_alloc); //resize back
+	bw.release(); //EXPLAIN_THIS_COMMENT: clearup
+	bvh.resize(max_alloc); //EXPLAIN_THIS_COMMENT: resize back
 
 	valid = true;
 }

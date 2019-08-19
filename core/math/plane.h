@@ -39,7 +39,7 @@ public:
 	real_t d;
 
 	void set_normal(const Vector3 &p_normal);
-	_FORCE_INLINE_ Vector3 get_normal() const { return normal; }; ///Point is coplanar, CMP_EPSILON for precision
+	_FORCE_INLINE_ Vector3 get_normal() const { return normal; }; /// Point is coplanar, CMP_EPSILON for precision.
 
 	void normalize();
 	Plane normalized() const;

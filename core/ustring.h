@@ -299,7 +299,7 @@ public:
 
 	CharString ascii(bool p_allow_extended = false) const;
 	CharString utf8() const;
-	bool parse_utf8(const char *p_utf8, int p_len = -1); //return true on error
+	bool parse_utf8(const char *p_utf8, int p_len = -1); //EXPLAIN_THIS_COMMENT: return true on error
 	static String utf8(const char *p_utf8, int p_len = -1);
 
 	static uint32_t hash(const CharType *p_cstr, int p_len); /* hash the string */
@@ -373,7 +373,7 @@ String operator+(CharType p_chr, const String &p_str);
 
 String itos(int64_t p_val);
 String rtos(double p_val);
-String rtoss(double p_val); //scientific version
+String rtoss(double p_val); //EXPLAIN_THIS_COMMENT: scientific version
 
 struct NoCaseComparator {
 
@@ -414,14 +414,14 @@ _FORCE_INLINE_ bool is_str_less(const L *l_ptr, const R *r_ptr) {
 
 /* end of namespace */
 
-//tool translate
+//EXPLAIN_THIS_COMMENT: tool translate
 #ifdef TOOLS_ENABLED
 
-//gets parsed
+//EXPLAIN_THIS_COMMENT: gets parsed
 String TTR(const String &);
-//use for C strings
+//EXPLAIN_THIS_COMMENT: use for C strings
 #define TTRC(m_value) (m_value)
-//use to avoid parsing (for use later with C strings)
+//EXPLAIN_THIS_COMMENT: use to avoid parsing (for use later with C strings)
 #define TTRGET(m_value) TTR(m_value)
 
 #else
@@ -432,7 +432,7 @@ String TTR(const String &);
 
 #endif
 
-//tool or regular translate
+//EXPLAIN_THIS_COMMENT: tool or regular translate
 String RTR(const String &);
 
 bool is_symbol(CharType c);

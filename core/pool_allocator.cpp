@@ -375,7 +375,7 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		ERR_FAIL_COND_V(!index_found, ERR_BUG);
 	}
 
-	//no need to move stuff around, it fits before the next block
+	//EXPLAIN_THIS_COMMENT: no need to move stuff around, it fits before the next block
 	uint32_t next_pos;
 	if (entry_indices_pos + 1 == entry_count) {
 		next_pos = pool_size; // - static_area_size;
@@ -390,12 +390,12 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		mt_unlock();
 		return OK;
 	}
-	//it doesn't fit, compact around BEFORE current index (make room behind)
+	//EXPLAIN_THIS_COMMENT: it doesn't fit, compact around BEFORE current index (make room behind)
 
 	compact(entry_indices_pos + 1);
 
 	if ((next_pos - e->pos) > alloc_size) {
-		//now fits! hooray!
+		//EXPLAIN_THIS_COMMENT: now fits! hooray!
 		free_mem += aligned(e->len);
 		e->len = p_new_size;
 		free_mem -= alloc_size;
@@ -405,12 +405,12 @@ Error PoolAllocator::resize(ID p_mem, int p_new_size) {
 		return OK;
 	}
 
-	//STILL doesn't fit, compact around AFTER current index (make room after)
+	//EXPLAIN_THIS_COMMENT: STILL doesn't fit, compact around AFTER current index (make room after)
 
 	compact_up(entry_indices_pos + 1);
 
 	if ((entry_array[entry_indices[entry_indices_pos + 1]].pos - e->pos) > alloc_size) {
-		//now fits! hooray!
+		//EXPLAIN_THIS_COMMENT: now fits! hooray!
 		free_mem += aligned(e->len);
 		e->len = p_new_size;
 		free_mem -= alloc_size;

@@ -166,7 +166,7 @@ uint64_t atomic_add(volatile uint64_t *pw, volatile uint64_t val);
 uint64_t atomic_exchange_if_greater(volatile uint64_t *pw, volatile uint64_t val);
 
 #else
-//no threads supported?
+//EXPLAIN_THIS_COMMENT: no threads supported?
 #error Must provide atomic functions for this platform or compiler!
 #endif
 
@@ -177,12 +177,12 @@ struct SafeRefCount {
 public:
 	// destroy() is called when weak_count_ drops to zero.
 
-	_ALWAYS_INLINE_ bool ref() { //true on success
+	_ALWAYS_INLINE_ bool ref() { //EXPLAIN_THIS_COMMENT: true on success
 
 		return atomic_conditional_increment(&count) != 0;
 	}
 
-	_ALWAYS_INLINE_ uint32_t refval() { //true on success
+	_ALWAYS_INLINE_ uint32_t refval() { //EXPLAIN_THIS_COMMENT: true on success
 
 		return atomic_conditional_increment(&count);
 	}

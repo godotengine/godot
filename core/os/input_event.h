@@ -324,8 +324,8 @@ class InputEventMouseButton : public InputEventMouse {
 
 	float factor;
 	int button_index;
-	bool pressed; //otherwise released
-	bool doubleclick; //last even less than doubleclick time
+	bool pressed; //EXPLAIN_THIS_COMMENT: otherwise released
+	bool doubleclick; //EXPLAIN_THIS_COMMENT: last even less than doubleclick time
 
 protected:
 	static void _bind_methods();

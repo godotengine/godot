@@ -66,7 +66,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 
 	for (List<StringName>::Element *E = keys.front(); E; E = E->next()) {
 
-		//hash string
+		//EXPLAIN_THIS_COMMENT: hash string
 		CharString cs = E->get().operator String().utf8();
 		uint32_t h = hash(0, cs.get_data());
 		Pair<int, CharString> p;
@@ -74,7 +74,7 @@ void PHashTranslation::generate(const Ref<Translation> &p_from) {
 		p.second = cs;
 		buckets.write[h % size].push_back(p);
 
-		//compress string
+		//EXPLAIN_THIS_COMMENT: compress string
 		CharString src_s = p_from->get_message(E->get()).operator String().utf8();
 		_PHashTranslationCmp ps;
 		ps.orig_len = src_s.size();

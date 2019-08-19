@@ -355,7 +355,7 @@ InputEventKey::InputEventKey() {
 
 	pressed = false;
 	scancode = 0;
-	unicode = 0; ///unicode
+	unicode = 0; ///EXPLAIN_THIS_COMMENT: unicode
 	echo = false;
 }
 

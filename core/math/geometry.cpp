@@ -882,7 +882,7 @@ Geometry::MeshData Geometry::build_convex_mesh(const PoolVector<Plane> &p_planes
 		face.plane = p;
 		mesh.faces.push_back(face);
 
-		//add edge
+		//EXPLAIN_THIS_COMMENT: add edge
 
 		for (int j = 0; j < face.indices.size(); j++) {
 
@@ -1032,13 +1032,12 @@ struct _AtlasWorkRectResult {
 
 void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size) {
 
-	//super simple, almost brute force scanline stacking fitter
-	//it's pretty basic for now, but it tries to make sure that the aspect ratio of the
-	//resulting atlas is somehow square. This is necessary because video cards have limits
-	//on texture size (usually 2048 or 4096), so the more square a texture, the more chances
-	//it will work in every hardware.
-	// for example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a
-	// 256x8192 atlas (won't work anywhere).
+	// Super simple, almost brute force scanline stacking fitter it is pretty basic for now, but it tries to make sure
+	//	that the aspect ratio of the resulting atlas is somehow square. This is necessary because video cards have
+	//	limits on texture size (usually 2048 or 4096), so the more square a texture, the more chances it will work in
+	//	every hardware.
+	//
+	// For example, it will prioritize a 1024x1024 atlas (works everywhere) instead of a 256x8192 atlas (won't work anywhere).
 
 	ERR_FAIL_COND(p_rects.size() == 0);
 
@@ -1066,7 +1065,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 		for (int j = 0; j < w; j++)
 			hmax.write[j] = 0;
 
-		//place them
+		//EXPLAIN_THIS_COMMENT: place them
 		int ofs = 0;
 		int limit_h = 0;
 		for (int j = 0; j < wrects.size(); j++) {
@@ -1101,7 +1100,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 			if (end_w > max_w)
 				max_w = end_w;
 
-			if (ofs == 0 || end_h > limit_h) //while h limit not reached, keep stacking
+			if (ofs == 0 || end_h > limit_h) //EXPLAIN_THIS_COMMENT: while h limit not reached, keep stacking
 				ofs += wrects[j].s.width;
 		}
 
@@ -1112,7 +1111,7 @@ void Geometry::make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_resu
 		results.push_back(result);
 	}
 
-	//find the result with the best aspect ratio
+	//EXPLAIN_THIS_COMMENT: find the result with the best aspect ratio
 
 	int best = -1;
 	real_t best_aspect = 1e20;

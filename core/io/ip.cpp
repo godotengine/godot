@@ -326,7 +326,7 @@ IP::IP() {
 		resolver->thread = Thread::create(_IP_ResolverPrivate::_thread_function, resolver);
 
 		if (!resolver->thread)
-			memdelete(resolver->sem); //wtf
+			memdelete(resolver->sem); //EXPLAIN_THIS_COMMENT: wtf
 	} else {
 		resolver->thread = NULL;
 	}

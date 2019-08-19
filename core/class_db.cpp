@@ -381,6 +381,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 		hash = hash_djb2_one_64(t->name.hash(), hash);
 		hash = hash_djb2_one_64(t->inherits.hash(), hash);
 
+		//EXPLAIN_THIS_COMMENT(How should the following be formatted?):
 		{ //methods
 
 			List<StringName> snames;

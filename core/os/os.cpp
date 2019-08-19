@@ -590,9 +590,9 @@ OS::SwitchVSyncCallbackInThread OS::switch_vsync_function = NULL;
 
 void OS::set_use_vsync(bool p_enable) {
 	_use_vsync = p_enable;
-	if (switch_vsync_function) { //if a function was set, use function
+	if (switch_vsync_function) { //EXPLAIN_THIS_COMMENT: if a function was set, use function
 		switch_vsync_function(p_enable);
-	} else { //otherwise just call here
+	} else { //EXPLAIN_THIS_COMMENT: otherwise just call here
 		_set_use_vsync(p_enable);
 	}
 }

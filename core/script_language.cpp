@@ -107,7 +107,7 @@ void ScriptServer::unregister_language(ScriptLanguage *p_language) {
 
 void ScriptServer::init_languages() {
 
-	{ //load global classes
+	{ //EXPLAIN_THIS_COMMENT: load global classes
 		global_classes_clear();
 		if (ProjectSettings::get_singleton()->has_setting("_global_script_classes")) {
 			Array script_classes = ProjectSettings::get_singleton()->get("_global_script_classes");

@@ -1444,7 +1444,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 		if (skip) {
 			_UNICERROR("no space left");
-			return true; //not enough spac
+			return true; //EXPLAIN_THIS_COMMENT: not enough spac
 		}
 	}
 
@@ -1477,18 +1477,18 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 		else {
 			_UNICERROR("invalid len");
 
-			return true; //invalid UTF8
+			return true; //EXPLAIN_THIS_COMMENT: invalid UTF8
 		}
 
 		if (len > cstr_size) {
 			_UNICERROR("no space left");
-			return true; //not enough space
+			return true; //EXPLAIN_THIS_COMMENT: not enough space
 		}
 
 		if (len == 2 && (*p_utf8 & 0x1E) == 0) {
 			//printf("overlong rejected\n");
 			_UNICERROR("no space left");
-			return true; //reject overlong
+			return true; //EXPLAIN_THIS_COMMENT: reject overlong
 		}
 
 		/* Convert the first character */
@@ -1505,11 +1505,11 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 				if ((p_utf8[i] & 0xC0) != 0x80) {
 					_UNICERROR("invalid utf8");
-					return true; //invalid utf8
+					return true; //EXPLAIN_THIS_COMMENT: invalid utf8
 				}
 				if (unichar == 0 && i == 2 && ((p_utf8[i] & 0x7F) >> (7 - len)) == 0) {
 					_UNICERROR("invalid utf8 overlong");
-					return true; //no overlong
+					return true; //EXPLAIN_THIS_COMMENT: no overlong
 				}
 				unichar = (unichar << 6) | (p_utf8[i] & 0x3F);
 			}
@@ -1517,7 +1517,7 @@ bool String::parse_utf8(const char *p_utf8, int p_len) {
 
 		//printf("char %i, len %i\n",unichar,len);
 		if (sizeof(wchar_t) == 2 && unichar > 0xFFFF) {
-			unichar = ' '; //too long for windows
+			unichar = ' '; //EXPLAIN_THIS_COMMENT: too long for windows
 		}
 
 		*(dst++) = unichar;
@@ -1604,7 +1604,7 @@ CharString String::utf8() const {
 		}
 	}
 #undef APPEND_CHAR
-	*cdst = 0; //trailing zero
+	*cdst = 0; //EXPLAIN_THIS_COMMENT: trailing zero
 
 	return utf8s;
 }
@@ -2892,7 +2892,7 @@ String String::format(const Variant &values, String placeholder) const {
 		for (int i = 0; i < values_arr.size(); i++) {
 			String i_as_str = String::num_int64(i);
 
-			if (values_arr[i].get_type() == Variant::ARRAY) { //Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
+			if (values_arr[i].get_type() == Variant::ARRAY) { //EXPLAIN_THIS_COMMENT: Array in Array structure [["name","RobotGuy"],[0,"godot"],["strength",9000.91]]
 				Array value_arr = values_arr[i];
 
 				if (value_arr.size() == 2) {
@@ -2913,7 +2913,7 @@ String String::format(const Variant &values, String placeholder) const {
 				} else {
 					ERR_PRINT(String("STRING.format Inner Array size != 2 ").ascii().get_data());
 				}
-			} else { //Array structure ["RobotGuy","Logis","rookie"]
+			} else { //EXPLAIN_THIS_COMMENT: Array structure ["RobotGuy","Logis","rookie"]
 				Variant v_val = values_arr[i];
 				String val = v_val;
 
@@ -3318,7 +3318,7 @@ bool String::is_valid_identifier() const {
 	return true;
 }
 
-//kind of poor should be rewritten properly
+//EXPLAIN_THIS_COMMENT: kind of poor should be rewritten properly
 
 String String::word_wrap(int p_chars_per_line) const {
 
@@ -3331,7 +3331,7 @@ String String::word_wrap(int p_chars_per_line) const {
 				ret += substr(from, i - from + 1) + "\n";
 			} else {
 				ret += substr(from, last_space - from) + "\n";
-				i = last_space; //rewind
+				i = last_space; //EXPLAIN_THIS_COMMENT: rewind
 			}
 			from = i + 1;
 			last_space = -1;
@@ -3779,25 +3779,25 @@ String String::path_to(const String &p_path) const {
 
 	} else if (src.begins_with("/") && dst.begins_with("/")) {
 
-		//nothing
+		//EXPLAIN_THIS_COMMENT: nothing
 	} else {
-		//dos style
+		//EXPLAIN_THIS_COMMENT: dos style
 		String src_begin = src.get_slicec('/', 0);
 		String dst_begin = dst.get_slicec('/', 0);
 
 		if (src_begin != dst_begin)
-			return p_path; //impossible to do this
+			return p_path; //EXPLAIN_THIS_COMMENT: impossible to do this
 
 		base = src_begin;
 		src = src.substr(src_begin.length(), src.length());
 		dst = dst.substr(dst_begin.length(), dst.length());
 	}
 
-	//remove leading and trailing slash and split
+	//EXPLAIN_THIS_COMMENT: remove leading and trailing slash and split
 	Vector<String> src_dirs = src.substr(1, src.length() - 2).split("/");
 	Vector<String> dst_dirs = dst.substr(1, dst.length() - 2).split("/");
 
-	//find common parent
+	//EXPLAIN_THIS_COMMENT: find common parent
 	int common_parent = 0;
 
 	while (true) {

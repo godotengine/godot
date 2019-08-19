@@ -39,13 +39,13 @@ class MultiplayerAPI : public Reference {
 	GDCLASS(MultiplayerAPI, Reference);
 
 private:
-	//path sent caches
+	//EXPLAIN_THIS_COMMENT: path sent caches
 	struct PathSentCache {
 		Map<int, bool> confirmed_peers;
 		int id;
 	};
 
-	//path get caches
+	//EXPLAIN_THIS_COMMENT: path get caches
 	struct PathGetCache {
 		struct NodeInfo {
 			NodePath path;

@@ -103,7 +103,7 @@ class ScriptDebuggerRemote : public ScriptDebugger {
 	uint64_t last_msec;
 	uint64_t msec_count;
 
-	bool locking; //hack to avoid a deadloop
+	bool locking; //EXPLAIN_THIS_COMMENT: hack to avoid a deadloop
 	static void _print_handler(void *p_this, const String &p_string, bool p_error);
 
 	PrintHandlerList phl;

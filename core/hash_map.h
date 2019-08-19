@@ -443,11 +443,11 @@ public:
 		return false;
 	}
 
-	inline const TData &operator[](const TKey &p_key) const { //constref
+	inline const TData &operator[](const TKey &p_key) const { //EXPLAIN_THIS_COMMENT: constref
 
 		return get(p_key);
 	}
-	inline TData &operator[](const TKey &p_key) { //assignment
+	inline TData &operator[](const TKey &p_key) { //EXPLAIN_THIS_COMMENT: assignment
 
 		Element *e = NULL;
 		if (!hash_table)

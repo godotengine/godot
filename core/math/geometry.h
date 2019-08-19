@@ -90,7 +90,7 @@ public:
 				// t = Dot((P1 + D1*s) - P2,D2) / Dot(D2,D2) = (b*s + f) / e
 				t = (b * s + f) / e;
 
-				//If t in [0,1] done. Else clamp t, recompute s for the new value
+				//EXPLAIN_THIS_COMMENT: If t in [0,1] done. Else clamp t, recompute s for the new value
 				// of t using s = Dot((P2 + D2*t) - P1,D1) / Dot(D1,D1)= (t*b - c) / a
 				// and clamp s to [0, 1]
 				if (t < 0.0) {
@@ -109,14 +109,14 @@ public:
 
 	static void get_closest_points_between_segments(const Vector3 &p1, const Vector3 &p2, const Vector3 &q1, const Vector3 &q2, Vector3 &c1, Vector3 &c2) {
 
-//do the function 'd' as defined by pb. I think is is dot product of some sort
+//EXPLAIN_THIS_COMMENT: do the function 'd' as defined by pb. I think is is dot product of some sort
 #define d_of(m, n, o, p) ((m.x - n.x) * (o.x - p.x) + (m.y - n.y) * (o.y - p.y) + (m.z - n.z) * (o.z - p.z))
 
-		//calculate the parametric position on the 2 curves, mua and mub
+		//EXPLAIN_THIS_COMMENT: calculate the parametric position on the 2 curves, mua and mub
 		real_t mua = (d_of(p1, q1, q2, q1) * d_of(q2, q1, p2, p1) - d_of(p1, q1, p2, p1) * d_of(q2, q1, q2, q1)) / (d_of(p2, p1, p2, p1) * d_of(q2, q1, q2, q1) - d_of(q2, q1, p2, p1) * d_of(q2, q1, p2, p1));
 		real_t mub = (d_of(p1, q1, q2, q1) + mua * d_of(q2, q1, p2, p1)) / d_of(q2, q1, q2, q1);
 
-		//clip the value between [0..1] constraining the solution to lie on the original curves
+		//EXPLAIN_THIS_COMMENT: clip the value between [0..1] constraining the solution to lie on the original curves
 		if (mua < 0) mua = 0;
 		if (mub < 0) mub = 0;
 		if (mua > 1) mua = 1;
@@ -318,8 +318,8 @@ public:
 		Vector3 z_dir;
 
 		if (crs_l < CMP_EPSILON) {
-			//blahblah parallel
-			z_dir = Vector3(1, 0, 0); //any x/y vector ok
+			//EXPLAIN_THIS_COMMENT: blahblah parallel
+			z_dir = Vector3(1, 0, 0); //EXPLAIN_THIS_COMMENT: any x/y vector ok
 		} else {
 			z_dir = crs / crs_l;
 		}
@@ -332,7 +332,7 @@ public:
 		// convert to 2D
 		real_t w2 = p_radius * p_radius - dist * dist;
 		if (w2 < CMP_EPSILON)
-			return false; //avoid numerical error
+			return false; //EXPLAIN_THIS_COMMENT: avoid numerical error
 		Size2 size(Math::sqrt(w2), p_height * 0.5);
 
 		Vector3 x_dir = z_dir.cross(Vector3(0, 0, 1)).normalized();
@@ -427,12 +427,12 @@ public:
 			real_t dist = -p.distance_to(p_from) / den;
 
 			if (den > 0) {
-				//backwards facing plane
+				//EXPLAIN_THIS_COMMENT: backwards facing plane
 				if (dist < max)
 					max = dist;
 			} else {
 
-				//front facing plane
+				//EXPLAIN_THIS_COMMENT: front facing plane
 				if (dist > min) {
 					min = dist;
 					min_index = i;
@@ -743,7 +743,7 @@ public:
 
 		} else if (inside_count == 0) {
 
-			return Vector<Vector3>(); //empty
+			return Vector<Vector3>(); //EXPLAIN_THIS_COMMENT: empty
 		}
 
 		long previous = polygon.size() - 1;
@@ -871,7 +871,7 @@ public:
 
 		Vector<int> triangles;
 		if (!Triangulate::triangulate(p_polygon, triangles))
-			return Vector<int>(); //fail
+			return Vector<int>(); //EXPLAIN_THIS_COMMENT: fail
 		return triangles;
 	}
 

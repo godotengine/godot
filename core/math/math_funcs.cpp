@@ -109,7 +109,7 @@ double Math::ease(double p_x, double p_c) {
 			return Math::pow(p_x, p_c);
 		}
 	} else if (p_c < 0) {
-		//inout ease
+		//EXPLAIN_THIS_COMMENT: inout ease
 
 		if (p_x < 0.5) {
 			return Math::pow(p_x * 2.0, -p_c) * 0.5;

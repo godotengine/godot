@@ -99,9 +99,9 @@ enum PropertyUsageFlags {
 	PROPERTY_USAGE_EDITOR = 2,
 	PROPERTY_USAGE_NETWORK = 4,
 	PROPERTY_USAGE_EDITOR_HELPER = 8,
-	PROPERTY_USAGE_CHECKABLE = 16, //used for editing global variables
-	PROPERTY_USAGE_CHECKED = 32, //used for editing global variables
-	PROPERTY_USAGE_INTERNATIONALIZED = 64, //hint for internationalized strings
+	PROPERTY_USAGE_CHECKABLE = 16, // Used for editing global variables.
+	PROPERTY_USAGE_CHECKED = 32, // Used for editing global variables.
+	PROPERTY_USAGE_INTERNATIONALIZED = 64, // Hint for internationalized strings.
 	PROPERTY_USAGE_GROUP = 128, //used for grouping props in the editor
 	PROPERTY_USAGE_CATEGORY = 256,
 	// FIXME: Drop in 4.0, possibly reorder other flags?

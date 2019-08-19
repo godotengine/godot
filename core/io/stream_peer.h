@@ -40,7 +40,7 @@ class StreamPeer : public Reference {
 protected:
 	static void _bind_methods();
 
-	//bind helpers
+	//EXPLAIN_THIS_COMMENT: bind helpers
 	Error _put_data(const PoolVector<uint8_t> &p_data);
 	Array _put_partial_data(const PoolVector<uint8_t> &p_data);
 

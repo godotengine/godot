@@ -67,11 +67,11 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 	files[pmd5] = pf;
 
 	if (!exists) {
-		//search for dir
+		//EXPLAIN_THIS_COMMENT: search for dir
 		String p = path.replace_first("res://", "");
 		PackedDir *cd = root;
 
-		if (p.find("/") != -1) { //in a subdir
+		if (p.find("/") != -1) { //EXPLAIN_THIS_COMMENT: in a subdir
 
 			Vector<String> ds = p.get_base_dir().split("/");
 

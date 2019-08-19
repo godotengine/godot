@@ -54,12 +54,12 @@ int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_
 		} else {
 
 			if (p_plane.is_point_over(vertex[i])) {
-				//Point is over
+				//EXPLAIN_THIS_COMMENT: Point is over
 				ERR_FAIL_COND_V(above_count >= 4, 0);
 				above[above_count++] = vertex[i];
 
 			} else {
-				//Point is under
+				//EXPLAIN_THIS_COMMENT: Point is under
 				ERR_FAIL_COND_V(below_count >= 4, 0);
 				below[below_count++] = vertex[i];
 			}
@@ -80,7 +80,7 @@ int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_
 
 	int polygons_created = 0;
 
-	ERR_FAIL_COND_V(above_count >= 4 && below_count >= 4, 0); //bug in the algo
+	ERR_FAIL_COND_V(above_count >= 4 && below_count >= 4, 0); //EXPLAIN_THIS_COMMENT: bug in the algo
 
 	if (above_count >= 3) {
 
@@ -139,7 +139,7 @@ Face3::Side Face3::get_side_of(const Face3 &p_face, ClockDirection p_clock_dir) 
 
 		const Vector3 &v = p_face.vertex[i];
 
-		if (plane.has_point(v)) //coplanar, don't bother
+		if (plane.has_point(v)) //EXPLAIN_THIS_COMMENT: coplanar, don't bother
 			continue;
 
 		if (plane.is_point_over(v))

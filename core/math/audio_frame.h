@@ -49,7 +49,7 @@ static inline float undenormalise(volatile float f) {
 
 struct AudioFrame {
 
-	//The following floats are left and right samples.
+	// The following floats are left and right samples.
 	float l, r;
 
 	_ALWAYS_INLINE_ const float &operator[](int idx) const { return idx == 0 ? l : r; }

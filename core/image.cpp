@@ -41,26 +41,26 @@
 
 #include <stdio.h>
 
-//EXPLAIN_THIS_COMMENT: How should the following be formatted?
+//EXPLAIN_THIS_COMMENT(How should the following be formatted?):?
 const char *Image::format_names[Image::FORMAT_MAX] = {
-	"Lum8", // luminance
-	"LumAlpha8", // luminance-alpha
+	"Lum8", //luminance
+	"LumAlpha8", //luminance-alpha
 	"Red8",
 	"RedGreen",
 	"RGB8",
 	"RGBA8",
 	"RGBA4444",
 	"RGBA5551",
-	"RFloat", // float
+	"RFloat", //float
 	"RGFloat",
 	"RGBFloat",
 	"RGBAFloat",
-	"RHalf", // half float
+	"RHalf", //half float
 	"RGHalf",
 	"RGBHalf",
 	"RGBAHalf",
 	"RGBE9995",
-	"DXT1 RGB8", // s3tc
+	"DXT1 RGB8", //s3tc
 	"DXT3 RGBA8",
 	"DXT5 RGBA8",
 	"RGTC Red8",
@@ -68,13 +68,13 @@ const char *Image::format_names[Image::FORMAT_MAX] = {
 	"BPTC_RGBA",
 	"BPTC_RGBF",
 	"BPTC_RGBFU",
-	"PVRTC2", // pvrtc
+	"PVRTC2", //pvrtc
 	"PVRTC2A",
 	"PVRTC4",
 	"PVRTC4A",
-	"ETC", // etc1
-	"ETC2_R11", // etc2
-	"ETC2_R11S", // signed", NOT srgb.
+	"ETC", //etc1
+	"ETC2_R11", //etc2
+	"ETC2_R11S", //signed", NOT srgb.
 	"ETC2_RG11",
 	"ETC2_RG11S",
 	"ETC2_RGB8",
@@ -106,6 +106,7 @@ void Image::_get_pixelb(int p_x, int p_y, uint32_t p_pixelsize, const uint8_t *p
 
 int Image::get_format_pixel_size(Format p_format) {
 
+	//EXPLAIN_THIS_COMMENT(How should the following be formatted?):?
 	switch (p_format) {
 		case FORMAT_L8:
 			return 1; //luminance
@@ -168,6 +169,7 @@ int Image::get_format_pixel_size(Format p_format) {
 
 void Image::get_format_min_pixel_size(Format p_format, int &r_w, int &r_h) {
 
+	//EXPLAIN_THIS_COMMENT(How should the following be formatted?):?
 	switch (p_format) {
 		case FORMAT_DXT1: //s3tc bc1
 		case FORMAT_DXT3: //bc2
@@ -234,6 +236,7 @@ int Image::get_format_pixel_rshift(Format p_format) {
 
 int Image::get_format_block_size(Format p_format) {
 
+	//EXPLAIN_THIS_COMMENT(How should the following be formatted?):?
 	switch (p_format) {
 		case FORMAT_DXT1: //s3tc bc1
 		case FORMAT_DXT3: //bc2

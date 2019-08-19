@@ -115,17 +115,17 @@ RES TranslationLoaderPO::load_translation(FileAccess *f, Error *r_error, const S
 				skip_next = true;
 			}
 			line++;
-			continue; //nothing to read or comment
+			continue; //EXPLAIN_THIS_COMMENT: nothing to read or comment
 		}
 
 		if (!l.begins_with("\"") || status == STATUS_NONE) {
-			//not a string? failure!
+			//EXPLAIN_THIS_COMMENT: not a string? failure!
 			ERR_EXPLAIN(p_path + ":" + itos(line) + " Invalid line '" + l + "' while parsing: ");
 			ERR_FAIL_V(RES());
 		}
 
 		l = l.substr(1, l.length());
-		//find final quote
+		//EXPLAIN_THIS_COMMENT: find final quote
 		int end_pos = -1;
 		for (int i = 0; i < l.length(); i++) {
 

@@ -358,7 +358,7 @@ public:
 		: "m" (a));*/
 
 #else
-		b = lrintf(a); //assuming everything but msvc 2012 or earlier has lrint
+		b = lrintf(a); //EXPLAIN_THIS_COMMENT: assuming everything but msvc 2012 or earlier has lrint
 #endif
 		return b;
 	}

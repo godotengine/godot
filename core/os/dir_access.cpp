@@ -136,7 +136,7 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	String full_dir;
 
 	if (p_dir.is_rel_path()) {
-		//append current
+		//EXPLAIN_THIS_COMMENT: append current
 		full_dir = get_current_dir().plus_file(p_dir);
 
 	} else {

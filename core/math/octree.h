@@ -288,7 +288,7 @@ private:
 			}
 
 			if (p_A == E->get().B) {
-				//may be reaching inverted
+				//EXPLAIN_THIS_COMMENT: may be reaching inverted
 				SWAP(p_A, p_B);
 			}
 
@@ -428,7 +428,7 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 	real_t element_size = p_element->aabb.get_longest_axis_size() * 1.01; // avoid precision issues
 
 	if (p_octant->aabb.size.x / OCTREE_DIVISOR < element_size) {
-		//if (p_octant->aabb.size.x*0.5 < element_size) {
+		//EXPLAIN_THIS_COMMENT: if (p_octant->aabb.size.x*0.5 < element_size) {
 
 		/* at smallest possible size for the element  */
 		typename Element::OctantOwner owner;
@@ -455,7 +455,7 @@ void Octree<T, use_pairs, AL>::_insert_element(Element *p_element, Octant *p_oct
 
 		if (use_pairs && p_octant->children_count > 0) {
 
-			pass++; //elements below this only get ONE reference added
+			pass++; //EXPLAIN_THIS_COMMENT: elements below this only get ONE reference added
 
 			for (int i = 0; i < 8; i++) {
 
@@ -899,7 +899,7 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 	Octant *common_parent = e.common_parent;
 	ERR_FAIL_COND(!common_parent);
 
-	//src is now the place towards where insertion is going to happen
+	//EXPLAIN_THIS_COMMENT: src is now the place towards where insertion is going to happen
 	pass++;
 
 	while (common_parent && !common_parent->aabb.encloses(p_aabb))
@@ -907,7 +907,7 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 
 	ERR_FAIL_COND(!common_parent);
 
-	//prepare for reinsert
+	//EXPLAIN_THIS_COMMENT: prepare for reinsert
 	e.octant_owners.clear();
 	e.common_parent = NULL;
 	e.aabb = p_aabb;
@@ -940,7 +940,7 @@ void Octree<T, use_pairs, AL>::move(OctreeElementID p_id, const AABB &p_aabb) {
 	}
 
 	if (use_pairs) {
-		//unpair child elements in anything that survived
+		//EXPLAIN_THIS_COMMENT: unpair child elements in anything that survived
 		for (typename List<typename Element::OctantOwner, AL>::Element *F = owners.front(); F; F = F->next()) {
 
 			Octant *o = F->get().octant;
@@ -1009,7 +1009,7 @@ template <class T, bool use_pairs, class AL>
 void Octree<T, use_pairs, AL>::_cull_convex(Octant *p_octant, _CullConvexData *p_cull) {
 
 	if (*p_cull->result_idx == p_cull->result_max)
-		return; //pointless
+		return; //EXPLAIN_THIS_COMMENT: pointless
 
 	if (!p_octant->elements.empty()) {
 
@@ -1076,7 +1076,7 @@ template <class T, bool use_pairs, class AL>
 void Octree<T, use_pairs, AL>::_cull_aabb(Octant *p_octant, const AABB &p_aabb, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
 
 	if (*p_result_idx == p_result_max)
-		return; //pointless
+		return; //EXPLAIN_THIS_COMMENT: pointless
 
 	if (!p_octant->elements.empty()) {
 
@@ -1147,7 +1147,7 @@ template <class T, bool use_pairs, class AL>
 void Octree<T, use_pairs, AL>::_cull_segment(Octant *p_octant, const Vector3 &p_from, const Vector3 &p_to, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
 
 	if (*p_result_idx == p_result_max)
-		return; //pointless
+		return; //EXPLAIN_THIS_COMMENT: pointless
 
 	if (!p_octant->elements.empty()) {
 
@@ -1221,7 +1221,7 @@ template <class T, bool use_pairs, class AL>
 void Octree<T, use_pairs, AL>::_cull_point(Octant *p_octant, const Vector3 &p_point, T **p_result_array, int *p_result_idx, int p_result_max, int *p_subindex_array, uint32_t p_mask) {
 
 	if (*p_result_idx == p_result_max)
-		return; //pointless
+		return; //EXPLAIN_THIS_COMMENT: pointless
 
 	if (!p_octant->elements.empty()) {
 

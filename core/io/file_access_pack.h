@@ -48,7 +48,7 @@ public:
 	struct PackedFile {
 
 		String pack;
-		uint64_t offset; //if offset is ZERO, the file was ERASED
+		uint64_t offset; //EXPLAIN_THIS_COMMENT: if offset is ZERO, the file was ERASED
 		uint64_t size;
 		uint8_t md5[16];
 		PackSource *src;
@@ -180,9 +180,9 @@ FileAccess *PackedData::try_open_path(const String &p_path) {
 	PathMD5 pmd5(p_path.md5_buffer());
 	Map<PathMD5, PackedFile>::Element *E = files.find(pmd5);
 	if (!E)
-		return NULL; //not found
+		return NULL; //EXPLAIN_THIS_COMMENT: not found
 	if (E->get().offset == 0)
-		return NULL; //was erased
+		return NULL; //EXPLAIN_THIS_COMMENT: was erased
 
 	return E->get().src->get_file(p_path, &E->get());
 }

@@ -186,7 +186,7 @@ RES ResourceFormatLoader::load(const String &p_path, const String &p_original_pa
 		}
 	}
 
-	//or this must be implemented
+	//EXPLAIN_THIS_COMMENT: or this must be implemented
 	Ref<ResourceInteractiveLoader> ril = load_interactive(p_path, p_original_path, r_error);
 	if (!ril.is_valid())
 		return RES();
@@ -366,7 +366,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 			ResourceCache::lock->read_lock();
 		}
 
-		//get ptr
+		//EXPLAIN_THIS_COMMENT: get ptr
 		Resource **rptr = ResourceCache::resources.getptr(local_path);
 
 		if (rptr) {
@@ -625,7 +625,7 @@ String ResourceLoader::get_import_group_file(const String &p_path) {
 		return loader[i]->get_import_group_file(p_path);
 	}
 
-	return String(); //not found
+	return String(); //EXPLAIN_THIS_COMMENT: not found
 }
 
 bool ResourceLoader::is_import_valid(const String &p_path) {
@@ -650,7 +650,7 @@ bool ResourceLoader::is_import_valid(const String &p_path) {
 		return loader[i]->is_import_valid(p_path);
 	}
 
-	return false; //not found
+	return false; //EXPLAIN_THIS_COMMENT: not found
 }
 
 bool ResourceLoader::is_imported(const String &p_path) {
@@ -675,7 +675,7 @@ bool ResourceLoader::is_imported(const String &p_path) {
 		return loader[i]->is_imported(p_path);
 	}
 
-	return false; //not found
+	return false; //EXPLAIN_THIS_COMMENT: not found
 }
 
 void ResourceLoader::get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types) {

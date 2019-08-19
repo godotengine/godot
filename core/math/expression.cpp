@@ -990,7 +990,7 @@ Error Expression::_get_token(Token &r_token) {
 					} else if (ch == '"') {
 						break;
 					} else if (ch == '\\') {
-						//escaped characters...
+						//EXPLAIN_THIS_COMMENT: escaped characters...
 
 						CharType next = GET_CHAR();
 						if (next == 0) {
@@ -1008,7 +1008,7 @@ Error Expression::_get_token(Token &r_token) {
 							case 'f': res = 12; break;
 							case 'r': res = 13; break;
 							case 'u': {
-								//hexnumbarh - oct is deprecated
+								//EXPLAIN_THIS_COMMENT: hexnumbarh - oct is deprecated
 
 								for (int j = 0; j < 4; j++) {
 									CharType c = GET_CHAR();
@@ -1161,7 +1161,7 @@ Error Expression::_get_token(Token &r_token) {
 						first = false;
 					}
 
-					str_ofs--; //go back one
+					str_ofs--; //EXPLAIN_THIS_COMMENT: go back one
 
 					if (id == "in") {
 						r_token.type = TK_OP_IN;
@@ -1282,7 +1282,7 @@ Expression::ENode *Expression::_parse_expression() {
 	Vector<ExpressionNode> expression;
 
 	while (true) {
-		//keep appending stuff to expression
+		//EXPLAIN_THIS_COMMENT: keep appending stuff to expression
 		ENode *expr = NULL;
 
 		Token tk;
@@ -1292,7 +1292,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 		switch (tk.type) {
 			case TK_CURLY_BRACKET_OPEN: {
-				//a dictionary
+				//EXPLAIN_THIS_COMMENT: a dictionary
 				DictionaryNode *dn = alloc_node<DictionaryNode>();
 
 				while (true) {
@@ -1302,8 +1302,8 @@ Expression::ENode *Expression::_parse_expression() {
 					if (tk.type == TK_CURLY_BRACKET_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; //EXPLAIN_THIS_COMMENT: revert
+					//EXPLAIN_THIS_COMMENT: parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
 						return NULL;
@@ -1324,7 +1324,7 @@ Expression::ENode *Expression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						//EXPLAIN_THIS_COMMENT: all good
 					} else if (tk.type == TK_CURLY_BRACKET_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -1335,7 +1335,7 @@ Expression::ENode *Expression::_parse_expression() {
 				expr = dn;
 			} break;
 			case TK_BRACKET_OPEN: {
-				//an array
+				//EXPLAIN_THIS_COMMENT: an array
 
 				ArrayNode *an = alloc_node<ArrayNode>();
 
@@ -1346,8 +1346,8 @@ Expression::ENode *Expression::_parse_expression() {
 					if (tk.type == TK_BRACKET_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; //EXPLAIN_THIS_COMMENT: revert
+					//EXPLAIN_THIS_COMMENT: parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
 						return NULL;
@@ -1356,7 +1356,7 @@ Expression::ENode *Expression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						//EXPLAIN_THIS_COMMENT: all good
 					} else if (tk.type == TK_BRACKET_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -1367,7 +1367,7 @@ Expression::ENode *Expression::_parse_expression() {
 				expr = an;
 			} break;
 			case TK_PARENTHESIS_OPEN: {
-				//a suexpression
+				//EXPLAIN_THIS_COMMENT: a suexpression
 				ENode *e = _parse_expression();
 				if (error_set)
 					return NULL;
@@ -1387,7 +1387,7 @@ Expression::ENode *Expression::_parse_expression() {
 				int cofs = str_ofs;
 				_get_token(tk);
 				if (tk.type == TK_PARENTHESIS_OPEN) {
-					//function call
+					//EXPLAIN_THIS_COMMENT: function call
 					CallNode *func_call = alloc_node<CallNode>();
 					func_call->method = identifier;
 					SelfNode *self_node = alloc_node<SelfNode>();
@@ -1400,8 +1400,8 @@ Expression::ENode *Expression::_parse_expression() {
 						if (tk.type == TK_PARENTHESIS_CLOSE) {
 							break;
 						}
-						str_ofs = cofs2; //revert
-						//parse an expression
+						str_ofs = cofs2; //EXPLAIN_THIS_COMMENT: revert
+						//EXPLAIN_THIS_COMMENT: parse an expression
 						ENode *subexpr = _parse_expression();
 						if (!subexpr)
 							return NULL;
@@ -1411,7 +1411,7 @@ Expression::ENode *Expression::_parse_expression() {
 						cofs2 = str_ofs;
 						_get_token(tk);
 						if (tk.type == TK_COMMA) {
-							//all good
+							//EXPLAIN_THIS_COMMENT: all good
 						} else if (tk.type == TK_PARENTHESIS_CLOSE) {
 							str_ofs = cofs2;
 						} else {
@@ -1421,7 +1421,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 					expr = func_call;
 				} else {
-					//named indexing
+					//EXPLAIN_THIS_COMMENT: named indexing
 					str_ofs = cofs;
 
 					int input_index = -1;
@@ -1463,7 +1463,7 @@ Expression::ENode *Expression::_parse_expression() {
 				expr = constant;
 			} break;
 			case TK_BASIC_TYPE: {
-				//constructor..
+				//EXPLAIN_THIS_COMMENT: constructor..
 
 				Variant::Type bt = Variant::Type(int(tk.value));
 				_get_token(tk);
@@ -1482,8 +1482,8 @@ Expression::ENode *Expression::_parse_expression() {
 					if (tk.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; //EXPLAIN_THIS_COMMENT: revert
+					//EXPLAIN_THIS_COMMENT: parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
 						return NULL;
@@ -1493,7 +1493,7 @@ Expression::ENode *Expression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						//EXPLAIN_THIS_COMMENT: all good
 					} else if (tk.type == TK_PARENTHESIS_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -1505,7 +1505,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 			} break;
 			case TK_BUILTIN_FUNC: {
-				//builtin function
+				//EXPLAIN_THIS_COMMENT: builtin function
 
 				_get_token(tk);
 				if (tk.type != TK_PARENTHESIS_OPEN) {
@@ -1523,8 +1523,8 @@ Expression::ENode *Expression::_parse_expression() {
 					if (tk.type == TK_PARENTHESIS_CLOSE) {
 						break;
 					}
-					str_ofs = cofs; //revert
-					//parse an expression
+					str_ofs = cofs; //EXPLAIN_THIS_COMMENT: revert
+					//EXPLAIN_THIS_COMMENT: parse an expression
 					ENode *subexpr = _parse_expression();
 					if (!subexpr)
 						return NULL;
@@ -1534,7 +1534,7 @@ Expression::ENode *Expression::_parse_expression() {
 					cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_COMMA) {
-						//all good
+						//EXPLAIN_THIS_COMMENT: all good
 					} else if (tk.type == TK_PARENTHESIS_CLOSE) {
 						str_ofs = cofs;
 					} else {
@@ -1573,7 +1573,7 @@ Expression::ENode *Expression::_parse_expression() {
 			} break;
 		}
 
-		//before going to operators, must check indexing!
+		//EXPLAIN_THIS_COMMENT: before going to operators, must check indexing!
 
 		while (true) {
 			int cofs2 = str_ofs;
@@ -1585,7 +1585,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 			switch (tk.type) {
 				case TK_BRACKET_OPEN: {
-					//value indexing
+					//EXPLAIN_THIS_COMMENT: value indexing
 
 					IndexNode *index = alloc_node<IndexNode>();
 					index->base = expr;
@@ -1605,7 +1605,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 				} break;
 				case TK_PERIOD: {
-					//named indexing or function call
+					//EXPLAIN_THIS_COMMENT: named indexing or function call
 					_get_token(tk);
 					if (tk.type != TK_IDENTIFIER) {
 						_set_error("Expected identifier after '.'");
@@ -1617,7 +1617,7 @@ Expression::ENode *Expression::_parse_expression() {
 					int cofs = str_ofs;
 					_get_token(tk);
 					if (tk.type == TK_PARENTHESIS_OPEN) {
-						//function call
+						//EXPLAIN_THIS_COMMENT: function call
 						CallNode *func_call = alloc_node<CallNode>();
 						func_call->method = identifier;
 						func_call->base = expr;
@@ -1629,8 +1629,8 @@ Expression::ENode *Expression::_parse_expression() {
 							if (tk.type == TK_PARENTHESIS_CLOSE) {
 								break;
 							}
-							str_ofs = cofs3; //revert
-							//parse an expression
+							str_ofs = cofs3; //EXPLAIN_THIS_COMMENT: revert
+							//EXPLAIN_THIS_COMMENT: parse an expression
 							ENode *subexpr = _parse_expression();
 							if (!subexpr)
 								return NULL;
@@ -1640,7 +1640,7 @@ Expression::ENode *Expression::_parse_expression() {
 							cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_COMMA) {
-								//all good
+								//EXPLAIN_THIS_COMMENT: all good
 							} else if (tk.type == TK_PARENTHESIS_CLOSE) {
 								str_ofs = cofs3;
 							} else {
@@ -1650,7 +1650,7 @@ Expression::ENode *Expression::_parse_expression() {
 
 						expr = func_call;
 					} else {
-						//named indexing
+						//EXPLAIN_THIS_COMMENT: named indexing
 						str_ofs = cofs;
 
 						NamedIndexNode *index = alloc_node<NamedIndexNode>();
@@ -1670,7 +1670,7 @@ Expression::ENode *Expression::_parse_expression() {
 				break;
 		}
 
-		//push expression
+		//EXPLAIN_THIS_COMMENT: push expression
 		{
 			ExpressionNode e;
 			e.is_op = false;
@@ -1678,7 +1678,7 @@ Expression::ENode *Expression::_parse_expression() {
 			expression.push_back(e);
 		}
 
-		//ok finally look for an operator
+		//EXPLAIN_THIS_COMMENT: ok finally look for an operator
 
 		int cofs = str_ofs;
 		_get_token(tk);
@@ -1713,12 +1713,12 @@ Expression::ENode *Expression::_parse_expression() {
 			};
 		}
 
-		if (op == Variant::OP_MAX) { //stop appending stuff
+		if (op == Variant::OP_MAX) { //EXPLAIN_THIS_COMMENT: stop appending stuff
 			str_ofs = cofs;
 			break;
 		}
 
-		//push operator and go on
+		//EXPLAIN_THIS_COMMENT: push operator and go on
 		{
 			ExpressionNode e;
 			e.is_op = true;
@@ -1818,13 +1818,13 @@ Expression::ENode *Expression::_parse_expression() {
 
 				expr_pos++;
 				if (expr_pos == expression.size()) {
-					//can happen..
+					//EXPLAIN_THIS_COMMENT: can happen..
 					_set_error("Unexpected end of expression...");
 					return NULL;
 				}
 			}
 
-			//consecutively do unary opeators
+			//EXPLAIN_THIS_COMMENT: consecutively do unary opeators
 			for (int i = expr_pos - 1; i >= next_op; i--) {
 
 				OperatorNode *op = alloc_node<OperatorNode>();
@@ -1862,10 +1862,10 @@ Expression::ENode *Expression::_parse_expression() {
 				return NULL;
 			}
 
-			op->nodes[0] = expression[next_op - 1].node; //expression goes as left
-			op->nodes[1] = expression[next_op + 1].node; //next expression goes as right
+			op->nodes[0] = expression[next_op - 1].node; //EXPLAIN_THIS_COMMENT: expression goes as left
+			op->nodes[1] = expression[next_op + 1].node; //EXPLAIN_THIS_COMMENT: next expression goes as right
 
-			//replace all 3 nodes by this operator and make it an expression
+			//EXPLAIN_THIS_COMMENT: replace all 3 nodes by this operator and make it an expression
 			expression.write[next_op - 1].node = op;
 			expression.remove(next_op);
 			expression.remove(next_op);

@@ -34,7 +34,7 @@
 #include "core/io/resource_loader.h"
 #include "core/os/file_access.h"
 #include "core/script_language.h"
-#include "scene/main/node.h" //only so casting works
+#include "scene/main/node.h" //EXPLAIN_THIS_COMMENT: only so casting works
 
 #include <stdio.h>
 
@@ -119,7 +119,7 @@ String Resource::get_name() const {
 
 bool Resource::editor_can_reload_from_file() {
 
-	return true; //by default yes
+	return true; //EXPLAIN_THIS_COMMENT: by default yes
 }
 
 void Resource::reload_from_file() {
@@ -141,7 +141,7 @@ void Resource::reload_from_file() {
 		if (!(E->get().usage & PROPERTY_USAGE_STORAGE))
 			continue;
 		if (E->get().name == "resource_path")
-			continue; //do not change path
+			continue; //EXPLAIN_THIS_COMMENT: do not change path
 
 		set(E->get().name, s->get(E->get().name));
 	}
@@ -278,7 +278,7 @@ void Resource::notify_change_to_owners() {
 
 		Object *obj = ObjectDB::get_instance(E->get());
 		ERR_EXPLAIN("Object was deleted, while still owning a resource");
-		ERR_CONTINUE(!obj); //wtf
+		ERR_CONTINUE(!obj); //EXPLAIN_THIS_COMMENT: wtf
 		//TODO store string
 		obj->call("resource_changed", RES(this));
 	}
@@ -364,7 +364,7 @@ bool Resource::is_translation_remapped() const {
 }
 
 #ifdef TOOLS_ENABLED
-//helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
+//EXPLAIN_THIS_COMMENT: helps keep IDs same number when loading/saving scenes. -1 clears ID and it Returns -1 when no id stored
 void Resource::set_id_for_path(const String &p_path, int p_id) {
 	if (p_id == -1) {
 		id_for_path.erase(p_path);

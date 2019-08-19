@@ -116,7 +116,7 @@ protected:
 public:
 	virtual bool can_instance() const = 0;
 
-	virtual Ref<Script> get_base_script() const = 0; //This is for script inheritance.
+	virtual Ref<Script> get_base_script() const = 0; // This is for script inheritance.
 
 	virtual StringName get_instance_base_type() const = 0; //EXPLAIN_THIS_COMMENT: this may not work in all scripts, will return empty if so
 	virtual ScriptInstance *instance_create(Object *p_this) = 0;
@@ -352,6 +352,7 @@ public:
 	virtual int profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 	virtual int profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) = 0;
 
+	//EXPLAIN_THIS_COMMENT(How should the following be formatted?):
 	virtual void *alloc_instance_binding_data(Object *p_object) { return NULL; } //optional, not used by all languages
 	virtual void free_instance_binding_data(void *p_data) {} //optional, not used by all languages
 	virtual void refcount_incremented_instance_binding(Object *p_object) {} //optional, not used by all languages
@@ -399,7 +400,7 @@ public:
 
 	Object *get_owner() { return owner; }
 
-	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //likely changed in editor
+	void update(const List<PropertyInfo> &p_properties, const Map<StringName, Variant> &p_values); //EXPLAIN_THIS_COMMENT: likely changed in editor
 
 	virtual bool is_placeholder() const { return true; }
 

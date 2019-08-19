@@ -209,6 +209,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 	/* BUILD HULL */
 
+	//EXPLAIN_THIS_COMMENT:
 	//poop face (while still remain)
 	//find further away point
 	//find lit faces
@@ -241,10 +242,10 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 		Vector3 v = p_points[f.points_over[next]];
 
-		//find lit faces and lit edges
-		List<List<Face>::Element *> lit_faces; //lit face is a death sentence
+		// Find lit faces and lit edges.
+		List<List<Face>::Element *> lit_faces; //EXPLAIN_THIS_COMMENT: lit face is a death sentence
 
-		Map<Edge, FaceConnect> lit_edges; //create this on the flight, should not be that bad for performance and simplifies code a lot
+		Map<Edge, FaceConnect> lit_edges; //EXPLAIN_THIS_COMMENT: create this on the flight, should not be that bad for performance and simplifies code a lot
 
 		for (List<Face>::Element *E = faces.front(); E; E = E->next()) {
 
@@ -262,7 +263,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 						F = lit_edges.insert(e, FaceConnect());
 					}
 					if (e.vertices[0] == a) {
-						//left
+						//EXPLAIN_THIS_COMMENT: left
 						F->get().left = E;
 					} else {
 
@@ -272,17 +273,17 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			}
 		}
 
-		//create new faces from horizon edges
-		List<List<Face>::Element *> new_faces; //new faces
+		//EXPLAIN_THIS_COMMENT: create new faces from horizon edges
+		List<List<Face>::Element *> new_faces; //EXPLAIN_THIS_COMMENT: new faces
 
 		for (Map<Edge, FaceConnect>::Element *E = lit_edges.front(); E; E = E->next()) {
 
 			FaceConnect &fc = E->get();
 			if (fc.left && fc.right) {
-				continue; //edge is uninteresting, not on horizont
+				continue; //EXPLAIN_THIS_COMMENT: edge is uninteresting, not on horizont
 			}
 
-			//create new face!
+			//EXPLAIN_THIS_COMMENT: create new face!
 
 			Face face;
 			face.vertices[0] = f.points_over[next];
@@ -292,7 +293,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			Plane p(p_points[face.vertices[0]], p_points[face.vertices[1]], p_points[face.vertices[2]]);
 
 			if (p.is_point_over(center)) {
-				//flip face to clockwise if facing inwards
+				//EXPLAIN_THIS_COMMENT: flip face to clockwise if facing inwards
 				SWAP(face.vertices[0], face.vertices[1]);
 				p = -p;
 			}
@@ -301,7 +302,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			new_faces.push_back(faces.push_back(face));
 		}
 
-		//distribute points into new faces
+		//EXPLAIN_THIS_COMMENT: distribute points into new faces
 
 		for (List<List<Face>::Element *>::Element *F = lit_faces.front(); F; F = F->next()) {
 
@@ -309,7 +310,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 			for (int i = 0; i < lf.points_over.size(); i++) {
 
-				if (lf.points_over[i] == f.points_over[next]) //do not add current one
+				if (lf.points_over[i] == f.points_over[next]) //EXPLAIN_THIS_COMMENT: do not add current one
 					continue;
 
 				Vector3 p = p_points[lf.points_over[i]];
@@ -324,7 +325,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			}
 		}
 
-		//erase lit faces
+		//EXPLAIN_THIS_COMMENT: erase lit faces
 
 		while (lit_faces.size()) {
 
@@ -332,7 +333,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			lit_faces.pop_front();
 		}
 
-		//put faces that contain no points on the front
+		//EXPLAIN_THIS_COMMENT: put faces that contain no points on the front
 
 		for (List<List<Face>::Element *>::Element *E = new_faces.front(); E; E = E->next()) {
 
@@ -342,12 +343,12 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			}
 		}
 
-		//whew, done with iteration, go next
+		//EXPLAIN_THIS_COMMENT: whew, done with iteration, go next
 	}
 
 	/* CREATE MESHDATA */
 
-	//make a map of edges again
+	//EXPLAIN_THIS_COMMENT: make a map of edges again
 	Map<Edge, RetFaceConnect> ret_edges;
 	List<Geometry::MeshData::Face> ret_faces;
 
@@ -373,7 +374,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 				G = ret_edges.insert(e, RetFaceConnect());
 			}
 			if (e.vertices[0] == a) {
-				//left
+				//EXPLAIN_THIS_COMMENT: left
 				G->get().left = F;
 			} else {
 
@@ -382,7 +383,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 		}
 	}
 
-	//fill faces
+	//EXPLAIN_THIS_COMMENT: fill faces
 
 	for (List<Geometry::MeshData::Face>::Element *E = ret_faces.front(); E; E = E->next()) {
 
@@ -402,19 +403,19 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 			ERR_CONTINUE(O == NULL);
 
 			if (O->get().plane.is_almost_like(f.plane)) {
-				//merge and delete edge and contiguous face, while repointing edges (uuugh!)
+				//EXPLAIN_THIS_COMMENT: merge and delete edge and contiguous face, while repointing edges (uuugh!)
 				int ois = O->get().indices.size();
 				int merged = 0;
 
 				for (int j = 0; j < ois; j++) {
-					//search a
+					//EXPLAIN_THIS_COMMENT: search a
 					if (O->get().indices[j] == a) {
-						//append the rest
+						//EXPLAIN_THIS_COMMENT: append the rest
 						for (int k = 0; k < ois; k++) {
 
 							int idx = O->get().indices[(k + j) % ois];
 							int idxn = O->get().indices[(k + j + 1) % ois];
-							if (idx == b && idxn == a) { //already have b!
+							if (idx == b && idxn == a) { //EXPLAIN_THIS_COMMENT: already have b!
 								break;
 							}
 							if (idx != a) {
@@ -426,7 +427,7 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 
 							Map<Edge, RetFaceConnect>::Element *F2 = ret_edges.find(e2);
 							ERR_CONTINUE(!F2);
-							//change faceconnect, point to this face instead
+							//EXPLAIN_THIS_COMMENT: change faceconnect, point to this face instead
 							if (F2->get().left == O)
 								F2->get().left = E;
 							else if (F2->get().right == O)
@@ -446,13 +447,13 @@ Error QuickHull::build(const Vector<Vector3> &p_points, Geometry::MeshData &r_me
 						G->get().right = NULL;
 				}
 
-				ret_edges.erase(F); //remove the edge
-				ret_faces.erase(O); //remove the face
+				ret_edges.erase(F); //EXPLAIN_THIS_COMMENT: remove the edge
+				ret_faces.erase(O); //EXPLAIN_THIS_COMMENT: remove the face
 			}
 		}
 	}
 
-	//fill mesh
+	//EXPLAIN_THIS_COMMENT: fill mesh
 	r_mesh.faces.clear();
 	r_mesh.faces.resize(ret_faces.size());
 

@@ -40,7 +40,7 @@
 */
 
 #ifndef PAD_ALIGN
-#define PAD_ALIGN 16 //must always be greater than this at much
+#define PAD_ALIGN 16 //EXPLAIN_THIS_COMMENT: must always be greater than this at much
 #endif
 
 class Memory {
@@ -150,7 +150,7 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 
 	size_t len = sizeof(T) * p_elements;
 	uint64_t *mem = (uint64_t *)Memory::alloc_static(len, true);
-	T *failptr = 0; //get rid of a warning
+	T *failptr = 0; //EXPLAIN_THIS_COMMENT: get rid of a warning
 	ERR_FAIL_COND_V(!mem, failptr);
 	*(mem - 1) = p_elements;
 

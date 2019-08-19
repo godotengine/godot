@@ -40,7 +40,7 @@
 
 struct MemoryPool {
 
-	//avoid accessing these directly, must be public for template access
+	//EXPLAIN_THIS_COMMENT: avoid accessing these directly, must be public for template access
 
 	static PoolAllocator *memory_pool;
 	static uint8_t *pool_memory;
@@ -95,9 +95,9 @@ class PoolVector {
 
 		// Refcount should not be zero, otherwise it's a misuse of COW
 		if (alloc->refcount.get() == 1)
-			return; //nothing to do
+			return; //EXPLAIN_THIS_COMMENT: nothing to do
 
-		//must allocate something
+		//EXPLAIN_THIS_COMMENT: must allocate something
 
 		MemoryPool::alloc_mutex->lock();
 		if (MemoryPool::allocs_used == MemoryPool::alloc_count) {
@@ -108,13 +108,13 @@ class PoolVector {
 
 		MemoryPool::Alloc *old_alloc = alloc;
 
-		//take one from the free list
+		//EXPLAIN_THIS_COMMENT: take one from the free list
 		alloc = MemoryPool::free_list;
 		MemoryPool::free_list = alloc->free_list;
-		//increment the used counter
+		//EXPLAIN_THIS_COMMENT: increment the used counter
 		MemoryPool::allocs_used++;
 
-		//copy the alloc data
+		//EXPLAIN_THIS_COMMENT: copy the alloc data
 		alloc->size = old_alloc->size;
 		alloc->refcount.init();
 		alloc->pool_id = POOL_ALLOCATOR_INVALID_ID;
@@ -150,7 +150,7 @@ class PoolVector {
 		}
 
 		if (old_alloc->refcount.unref()) {
-			//this should never happen but..
+			//EXPLAIN_THIS_COMMENT: this should never happen but..
 
 #ifdef DEBUG_ENABLED
 			MemoryPool::alloc_mutex->lock();
@@ -170,6 +170,7 @@ class PoolVector {
 			}
 
 			if (MemoryPool::memory_pool) {
+				//EXPLAIN_THIS_COMMENT:
 				//resize memory pool
 				//if none, create
 				//if some resize
@@ -357,7 +358,7 @@ public:
 
 		Write w;
 		if (alloc) {
-			_copy_on_write(); //make sure there is only one being acessed
+			_copy_on_write(); // Make sure there is only one being accessed.
 			w._ref(alloc);
 		}
 		return w;
@@ -542,13 +543,13 @@ Error PoolVector<T>::resize(int p_size) {
 
 	} else {
 
-		ERR_FAIL_COND_V(alloc->lock > 0, ERR_LOCKED); //can't resize if locked!
+		ERR_FAIL_COND_V(alloc->lock > 0, ERR_LOCKED); // Cannot resize if locked!
 	}
 
 	size_t new_size = sizeof(T) * p_size;
 
 	if (alloc->size == new_size)
-		return OK; //nothing to do
+		return OK; //EXPLAIN_THIS_COMMENT: nothing to do
 
 	if (p_size == 0) {
 		_unreference();
@@ -572,6 +573,7 @@ Error PoolVector<T>::resize(int p_size) {
 	if (p_size > cur_elements) {
 
 		if (MemoryPool::memory_pool) {
+			//EXPLAIN_THIS_COMMENT(How should the following be formatted?):
 			//resize memory pool
 			//if none, create
 			//if some resize

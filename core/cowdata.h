@@ -94,7 +94,7 @@ private:
 			return false;
 		}
 		*out = next_power_of_2(o);
-		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //no longer allocated here
+		if (_add_overflow(o, static_cast<size_t>(32), &p)) return false; //EXPLAIN_THIS_COMMENT: no longer allocated here
 		return true;
 #else
 		// Speed is more important than correctness here, do the operations unchecked
@@ -226,8 +226,8 @@ void CowData<T>::_copy_on_write() {
 
 		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
 
-		*(mem_new - 2) = 1; //refcount
-		*(mem_new - 1) = current_size; //size
+		*(mem_new - 2) = 1; //EXPLAIN_THIS_COMMENT: refcount
+		*(mem_new - 1) = current_size; //EXPLAIN_THIS_COMMENT: size
 
 		T *_data = (T *)(mem_new);
 
@@ -273,8 +273,8 @@ Error CowData<T>::resize(int p_size) {
 			// alloc from scratch
 			uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
 			ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
-			*(ptr - 1) = 0; //size, currently none
-			*(ptr - 2) = 1; //refcount
+			*(ptr - 1) = 0; //EXPLAIN_THIS_COMMENT: size, currently none
+			*(ptr - 2) = 1; //EXPLAIN_THIS_COMMENT: refcount
 
 			_ptr = (T *)ptr;
 
@@ -350,7 +350,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 	_ptr = NULL;
 
 	if (!p_from._ptr)
-		return; //nothing to do
+		return; //EXPLAIN_THIS_COMMENT: nothing to do
 
 	if (atomic_conditional_increment(p_from._get_refcount()) > 0) { // could reference
 		_ptr = p_from._ptr;

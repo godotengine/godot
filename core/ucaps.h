@@ -31,7 +31,7 @@
 #ifndef UCAPS_H
 #define UCAPS_H
 
-//satan invented unicode?
+//EXPLAIN_THIS_COMMENT: satan invented unicode?
 #define CAPS_LEN 666
 
 static const int caps_table[CAPS_LEN][2] = {
@@ -1382,9 +1382,9 @@ static int _find_upper(int ch) {
 		middle = (low + high) / 2;
 
 		if (ch < caps_table[middle][0]) {
-			high = middle - 1; //search low end of array
+			high = middle - 1; //EXPLAIN_THIS_COMMENT: search low end of array
 		} else if (caps_table[middle][0] < ch) {
-			low = middle + 1; //search high end of array
+			low = middle + 1; //EXPLAIN_THIS_COMMENT: search high end of array
 		} else {
 			return caps_table[middle][1];
 		}
@@ -1403,9 +1403,9 @@ static int _find_lower(int ch) {
 		middle = (low + high) / 2;
 
 		if (ch < reverse_caps_table[middle][0]) {
-			high = middle - 1; //search low end of array
+			high = middle - 1; //EXPLAIN_THIS_COMMENT: search low end of array
 		} else if (reverse_caps_table[middle][0] < ch) {
-			low = middle + 1; //search high end of array
+			low = middle + 1; //EXPLAIN_THIS_COMMENT: search high end of array
 		} else {
 			return reverse_caps_table[middle][1];
 		}

@@ -192,7 +192,7 @@ public:
 		ClassInfo *t = classes.getptr(T::get_class_static());
 		ERR_FAIL_COND(!t);
 		t->exposed = true;
-		//nothing
+		//EXPLAIN_THIS_COMMENT: nothing
 	}
 
 	template <class T>
@@ -231,7 +231,7 @@ public:
 
 		MethodBind *bind = create_method_bind(p_method);
 
-		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, NULL, 0); //use static function, much smaller binary usage
+		return bind_methodfi(METHOD_FLAGS_DEFAULT, bind, p_method_name, NULL, 0); //EXPLAIN_THIS_COMMENT: use static function, much smaller binary usage
 	}
 
 	template <class N, class M>

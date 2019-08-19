@@ -44,7 +44,7 @@
 #define _MKSTR(m_x) _STR(m_x)
 #endif
 
-//should always inline no matter what
+//EXPLAIN_THIS_COMMENT: should always inline no matter what
 #ifndef _ALWAYS_INLINE_
 
 #if defined(__GNUC__) && (__GNUC__ >= 4)
@@ -59,7 +59,7 @@
 
 #endif
 
-//should always inline, except in some cases because it makes debugging harder
+//EXPLAIN_THIS_COMMENT: should always inline, except in some cases because it makes debugging harder
 #ifndef _FORCE_INLINE_
 
 #ifdef DISABLE_FORCED_INLINE
@@ -70,7 +70,7 @@
 
 #endif
 
-//custom, gcc-safe offsetof, because gcc complains a lot.
+//EXPLAIN_THIS_COMMENT: custom, gcc-safe offsetof, because gcc complains a lot.
 template <class T>
 T *_nullptr() {
 	T *t = NULL;
@@ -146,7 +146,7 @@ inline void __swap_tmpl(T &x, T &y) {
 	y = aux;
 }
 
-#endif //swap
+#endif //EXPLAIN_THIS_COMMENT: swap
 
 /* clang-format off */
 #define HEX2CHR(m_hex) \
