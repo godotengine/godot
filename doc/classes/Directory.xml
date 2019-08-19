@@ -127,8 +127,8 @@
 			</argument>
 			<description>
 				Initializes the stream used to list all files and directories using the [method get_next] function, closing the current opened stream if needed. Once the stream has been processed, it should typically be closed with [method list_dir_end].
-				If you pass [code]skip_navigational[/code], then [code].[/code] and [code]..[/code] would be filtered out.
-				If you pass [code]skip_hidden[/code], then hidden files would be filtered out.
+				If [code]skip_navigational[/code] is [code]true[/code], [code].[/code] and [code]..[/code] are filtered out.
+				If [code]skip_hidden[/code] is [code]true[/code], hidden files are filtered out.
 			</description>
 		</method>
 		<method name="list_dir_end">

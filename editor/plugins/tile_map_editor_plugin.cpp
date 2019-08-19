@@ -2006,7 +2006,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	// Tools
 	paint_button = memnew(ToolButton);
 	paint_button->set_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P));
-	paint_button->set_tooltip(TTR("Shift+RMB: Line Draw\nShift+Ctrl+RMB: Rectangle Paint"));
+	paint_button->set_tooltip(TTR("Shift+LMB: Line Draw\nShift+Ctrl+LMB: Rectangle Paint"));
 	paint_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_NONE));
 	paint_button->set_toggle_mode(true);
 	toolbar->add_child(paint_button);
