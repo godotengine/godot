@@ -257,6 +257,7 @@ void EditorFileDialog::_post_popup() {
 
 	if (is_visible_in_tree()) {
 		Ref<Texture> folder = get_icon("folder", "FileDialog");
+		const Color folder_color = get_color("folder", "FileDialog");
 		recent->clear();
 
 		bool res = access == ACCESS_RESOURCES;
@@ -274,6 +275,7 @@ void EditorFileDialog::_post_popup() {
 
 			recent->add_item(name, folder);
 			recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
+			recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
 		}
 
 		local_history.clear();
@@ -734,6 +736,7 @@ void EditorFileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	Ref<Texture> folder = get_icon("folder", "FileDialog");
+	const Color folder_color = get_color("folder", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
@@ -774,6 +777,7 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
 
 		dirs.pop_front();
 	}
@@ -1200,6 +1204,7 @@ void EditorFileDialog::_update_favorites() {
 
 	String current = get_current_dir();
 	Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
+	const Color folder_color = get_color("folder", "FileDialog");
 	favorites->clear();
 
 	favorite->set_pressed(false);
@@ -1230,6 +1235,7 @@ void EditorFileDialog::_update_favorites() {
 		}
 
 		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
+		favorites->set_item_icon_modulate(favorites->get_item_count() - 1, folder_color);
 
 		if (setthis) {
 			favorite->set_pressed(true);

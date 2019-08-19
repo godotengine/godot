@@ -64,6 +64,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_icon(0, get_icon("Folder", "EditorIcons"));
+	subdirectory_item->set_icon_color(0, get_color("folder", "FileDialog"));
 	subdirectory_item->set_selectable(0, true);
 	String lpath = p_dir->get_path();
 	subdirectory_item->set_metadata(0, lpath);
@@ -186,15 +187,19 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			continue;
 
 		Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
+		const Color folder_color = get_color("folder", "FileDialog");
 
 		String text;
 		Ref<Texture> icon;
+		Color color;
 		if (fave == "res://") {
 			text = "/";
 			icon = folder_icon;
+			color = folder_color;
 		} else if (fave.ends_with("/")) {
 			text = fave.substr(0, fave.length() - 1).get_file();
 			icon = folder_icon;
+			color = folder_color;
 		} else {
 			text = fave.get_file();
 			int index;
@@ -204,12 +209,14 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			} else {
 				icon = get_icon("File", "EditorIcons");
 			}
+			color = Color(1, 1, 1);
 		}
 
 		if (searched_string.length() == 0 || text.to_lower().find(searched_string) >= 0) {
 			TreeItem *ti = tree->create_item(favorites);
 			ti->set_text(0, text);
 			ti->set_icon(0, icon);
+			ti->set_icon_color(0, color);
 			ti->set_tooltip(0, fave);
 			ti->set_selectable(0, true);
 			ti->set_metadata(0, fave);
@@ -639,6 +646,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 
 	Ref<Texture> folder_icon = (use_thumbnails) ? folder_thumbnail : get_icon("folder", "FileDialog");
+	const Color folder_color = get_color("folder", "FileDialog");
 
 	// Build the FileInfo list
 	List<FileInfo> filelist;
@@ -716,6 +724,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->set_item_metadata(files->get_item_count() - 1, bd);
 					files->set_item_selectable(files->get_item_count() - 1, false);
+					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
 				}
 
 				for (int i = 0; i < efd->get_subdir_count(); i++) {
@@ -724,6 +733,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 
 					files->add_item(dname, folder_icon, true);
 					files->set_item_metadata(files->get_item_count() - 1, directory.plus_file(dname) + "/");
+					files->set_item_icon_modulate(files->get_item_count() - 1, folder_color);
 
 					if (cselection.has(dname)) {
 						files->select(files->get_item_count() - 1, false);
