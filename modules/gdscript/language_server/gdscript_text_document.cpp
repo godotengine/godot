@@ -272,9 +272,21 @@ Array GDScriptTextDocument::codeLens(const Dictionary &p_params) {
 	return arr;
 }
 
-Variant GDScriptTextDocument::documentLink(const Dictionary &p_params) {
-	Variant ret;
-	return ret;
+Array GDScriptTextDocument::documentLink(const Dictionary &p_params) {
+	lsp::DocumentLinkParams params;
+	params.load(p_params);
+	Array arr;
+
+	List<lsp::DocumentLink> document_links;
+	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_document_link(params, &document_links)) {
+		return arr;
+	}
+
+	for (int i = 0; i < document_links.size(); ++i) {
+		arr.push_back(document_links[i].to_json());
+	}
+
+	return arr;
 }
 
 Array GDScriptTextDocument::colorPresentation(const Dictionary &p_params) {
@@ -384,7 +396,7 @@ Variant GDScriptTextDocument::signatureHelp(const Dictionary &p_params) {
 	String signature_doc;
 	List<String> signature_parameter;
 	int cur_active_parameter = 0;
-	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->signatureHelp(params, &signature_name, &signature_doc, &signature_parameter, &cur_active_parameter) != OK) {
+	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_signature_help(params, &signature_name, &signature_doc, &signature_parameter, &cur_active_parameter) != OK) {
 		return ret;
 	}
 

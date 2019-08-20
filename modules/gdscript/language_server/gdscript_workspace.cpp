@@ -483,7 +483,7 @@ Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 	return api;
 }
 
-Error GDScriptWorkspace::signatureHelp(const lsp::TextDocumentPositionParams &p_params, String *r_signature_name, String *r_signature_doc, List<String> *r_signature_parameter, int *cur_active_parameter) {
+Error GDScriptWorkspace::get_signature_help(const lsp::TextDocumentPositionParams &p_params, String *r_signature_name, String *r_signature_doc, List<String> *r_signature_parameter, int *cur_active_parameter) {
 
 	String path = get_file_path(p_params.textDocument.uri);
 	lsp::Position begining_position = p_params.position;
@@ -508,6 +508,16 @@ Error GDScriptWorkspace::signatureHelp(const lsp::TextDocumentPositionParams &p_
 
 	for (int i = 0; i < parameters.size(); ++i) {
 		r_signature_parameter->push_back(parameters[i]);
+	}
+
+	return OK;
+}
+
+Error GDScriptWorkspace::get_document_link(const lsp::DocumentLinkParams &p_params, List<lsp::DocumentLink> *r_links_parameter) {
+
+	String path = get_file_path(p_params.textDocument.uri);
+	if (Map<String, ExtendGDScriptParser *>::Element *E = parse_results.find(path)) {
+		E->get()->get_document_link(r_links_parameter);
 	}
 
 	return OK;
