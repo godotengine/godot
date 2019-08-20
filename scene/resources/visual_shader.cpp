@@ -612,6 +612,25 @@ String VisualShader::generate_preview_shader(Type p_type, int p_node, int p_port
 
 	global_code += String() + "shader_type canvas_item;\n";
 
+	String global_expressions;
+	for (int i = 0, index = 0; i < TYPE_MAX; i++) {
+		for (Map<int, Node>::Element *E = graph[i].nodes.front(); E; E = E->next()) {
+			Ref<VisualShaderNodeGlobalExpression> global_expression = Object::cast_to<VisualShaderNodeGlobalExpression>(E->get().node.ptr());
+			if (global_expression.is_valid()) {
+
+				String expr = "";
+				expr += "// " + global_expression->get_caption() + ":" + itos(index++) + "\n";
+				expr += global_expression->generate_global(get_mode(), Type(i), -1);
+				expr = expr.replace("\n", "\n\t");
+				expr += "\n";
+				global_expressions += expr;
+			}
+		}
+	}
+
+	global_code += "\n";
+	global_code += global_expressions;
+
 	//make it faster to go around through shader
 	VMap<ConnectionKey, const List<Connection>::Element *> input_connections;
 	VMap<ConnectionKey, const List<Connection>::Element *> output_connections;
