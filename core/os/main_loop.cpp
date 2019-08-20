@@ -61,6 +61,8 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
 	BIND_CONSTANT(NOTIFICATION_CRASH);
 	BIND_CONSTANT(NOTIFICATION_OS_IME_UPDATE);
+
+	ADD_SIGNAL(MethodInfo("_permission_results", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
 };
 
 void MainLoop::set_init_script(const Ref<Script> &p_init_script) {
