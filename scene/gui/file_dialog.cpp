@@ -400,6 +400,7 @@ void FileDialog::update_file_list() {
 
 	TreeItem *root = tree->create_item();
 	Ref<Texture> folder = get_icon("folder");
+	const Color folder_color = get_color("folder");
 	List<String> files;
 	List<String> dirs;
 
@@ -429,6 +430,7 @@ void FileDialog::update_file_list() {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
 		ti->set_icon(0, folder);
+		ti->set_icon_color(0, folder_color);
 
 		Dictionary d;
 		d["name"] = dir_name;
