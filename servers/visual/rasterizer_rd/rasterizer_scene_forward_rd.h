@@ -194,6 +194,19 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		bool using_vct_gi = false;
 	};
 
+	/* Push Constant */
+
+	struct PushConstant {
+		uint32_t reflection_probe_count;
+		uint32_t omni_light_count;
+		uint32_t spot_light_count;
+		uint32_t decal_count;
+		float reflection_probe_indices[4];
+		float omni_light_indices[4];
+		float spot_light_indices[4];
+		float decal_indices[4];
+	};
+
 	/* Framebuffer */
 
 	struct RenderBufferDataForward : public RenderBufferData {
