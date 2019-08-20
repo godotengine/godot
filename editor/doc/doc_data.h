@@ -106,6 +106,7 @@ public:
 	Error load_classes(const String &p_dir);
 	static Error erase_classes(const String &p_dir);
 	Error save_classes(const String &p_default_path, const Map<String, String> &p_class_path);
+	Error save_classes_markdown(const String &p_default_path, const Map<String, String> &p_class_path);
 
 	Error load_compressed(const uint8_t *p_data, int p_compressed_size, int p_uncompressed_size);
 };

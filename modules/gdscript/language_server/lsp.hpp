@@ -32,6 +32,7 @@
 #define GODOT_LSP_H
 
 #include "core/variant.h"
+#include "editor/editor_settings.h"
 
 namespace lsp {
 
@@ -1604,6 +1605,7 @@ struct ServerCapabilities {
 		dict["documentFormattingProvider"] = documentFormattingProvider;
 		dict["documentRangeFormattingProvider"] = documentRangeFormattingProvider;
 		dict["declarationProvider"] = declarationProvider;
+		dict["dataDirectory"] = EditorSettings::get_singleton()->get_data_dir();
 		return dict;
 	}
 };
