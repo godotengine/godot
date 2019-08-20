@@ -1939,17 +1939,12 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 
 	for (int i = 0; i < VS::ARRAY_WEIGHTS; i++) {
 
-		if (!(p_input_mask & (1 << i))) {
-			continue; // Shader does not need this, skip it
-		}
-
 		RD::VertexDescription vd;
 		RID buffer;
 		vd.location = i;
 
 		if (!(s->format & (1 << i))) {
-			// Shader needs this, but it's not provided by this surface
-			// Create a default attribue using the default buffers
+			// Not supplied by surface, use default value
 			buffer = mesh_default_rd_buffers[i];
 			switch (i) {
 
@@ -1986,7 +1981,7 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 				} break;
 			}
 		} else {
-			//Shader needs this, and it's also provided
+			//Supplied, use it
 
 			vd.offset = stride;
 			vd.stride = 1; //mark that it needs a stride set
@@ -2070,6 +2065,10 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 
 				} break;
 			}
+		}
+
+		if (!(p_input_mask & (1 << i))) {
+			continue; // Shader does not need this, skip it
 		}
 
 		attributes.push_back(vd);
@@ -2436,6 +2435,13 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	}
 }
 
+VS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
+
+	if (mesh_owner.owns(p_rid)) {
+		return VS::INSTANCE_MESH;
+	}
+	return VS::INSTANCE_NONE;
+}
 void RasterizerStorageRD::update_dirty_resources() {
 	_update_queued_materials();
 }
