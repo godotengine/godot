@@ -1172,17 +1172,14 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 	}
 	_write_string(_f, 0, "{");
 	_write_string(_f, 1, "\"contents\" : [");
+
 	int size = 0;
+	int builtin_functions_size = 0;
+	String builtin_functions = "";
 	for (Map<String, ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
 
 		ClassDoc &c = E->get();
-
-		String save_path;
-		if (p_class_path.has(c.name)) {
-			save_path = p_class_path[c.name];
-		} else {
-			save_path = p_default_path;
-		}
+		String save_path = p_default_path;
 
 		Error err;
 		String save_file = save_path.plus_file(c.name + ".md");
@@ -1194,15 +1191,6 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 
 		size++;
 
-		_write_string(_f, 2, "{");
-		_write_string(_f, 3, "\"label\": \"" + c.name + "\",");
-		_write_string(_f, 3, "\"detail\": \"" + c.brief_description.strip_edges().xml_escape() + "\"");
-		if (E->next()) {
-			_write_string(_f, 2, "},");
-		} else {
-			_write_string(_f, 2, "}");
-		}
-
 		_write_string(f, 0, "# " + c.name);
 		if (c.inherits != "")
 			_write_string(f, 0, "**Inherits:** " + c.inherits);
@@ -1212,15 +1200,22 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 			category = "Core";
 		_write_string(f, 0, "**category:** " + category);
 
-		_write_string(f, 0, "## Brief Description");
-		_write_string(f, 0, c.brief_description.strip_edges().xml_escape());
-		_write_string(f, 0, "## Description");
-		_write_string(f, 0, c.description.strip_edges().xml_escape());
+		_write_string(f, 0, "## Brief Description:");
+		_write_string(f, 0, c.brief_description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_"));
+		_write_string(f, 0, "## Description:");
+		_write_string(f, 0, c.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_"));
+
+		if (c.tutorials.size() > 0) {
+			_write_string(f, 0, "## Tutorials:");
+			for (int i = 0; i < c.tutorials.size(); i++) {
+				_write_string(f, 0, "<" + c.tutorials.get(i).xml_escape() + ">");
+			}
+		}
 
 		if (c.methods.size() > 0) {
-			_write_string(f, 0, "## Methods");
-			_write_string(f, 0, "| | | |");
-			_write_string(f, 0, "|-|-|-|");
+			_write_string(f, 0, "## Methods:");
+			_write_string(f, 0, "| | |");
+			_write_string(f, 0, "|-|-|");
 
 			c.methods.sort();
 
@@ -1228,11 +1223,16 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 
 				const MethodDoc &m = c.methods[i];
 
+				if (c.name == "@GDScript") {
+					builtin_functions += "\"" + m.name + "\",";
+					builtin_functions_size++;
+				}
+
 				String qualifiers;
 				if (m.qualifiers != "")
 					qualifiers += " qualifiers=\"" + m.qualifiers.xml_escape() + "\"";
 
-				String item = m.name + "( ";
+				String item = "[" + m.name + "](#" + m.name + ") ( ";
 				for (int j = 0; j < m.arguments.size(); j++) {
 					const ArgumentDoc &a = m.arguments[j];
 
@@ -1248,9 +1248,13 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 				item += " )";
 
 				if (m.return_enum != String()) {
-					_write_string(f, 0, "|" + m.return_enum + "|" + item + "|" + m.description.strip_edges().xml_escape() + "|");
+					_write_string(f, 0, "|" + m.return_enum + "|" + item + "|");
 				} else {
-					_write_string(f, 0, "|" + m.return_type + "|" + item + "|" + m.description.strip_edges().xml_escape() + "|");
+					if (class_list.has(m.return_type)) {
+						_write_string(f, 0, "|[" + m.return_type + "](" + m.return_type + ".md)|" + item + "|");
+					} else {
+						_write_string(f, 0, "|" + m.return_type + "|" + item + "|");
+					}
 				}
 			}
 		}
@@ -1279,11 +1283,13 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 				}
 
 				_write_string(f, 0, "\n");
-				_write_string(f, 0, "| | |");
-				_write_string(f, 0, "|-|-|");
-				_write_string(f, 0, "|Setter|" + p.setter + "|");
-				_write_string(f, 0, "|Getter|" + p.getter + "|");
-				_write_string(f, 0, p.description.strip_edges().xml_escape());
+				if (p.setter != "" || p.getter != "") {
+					_write_string(f, 0, "| | |");
+					_write_string(f, 0, "|-|-|");
+					_write_string(f, 0, "|Setter|" + p.setter + "|");
+					_write_string(f, 0, "|Getter|" + p.getter + "|");
+				}
+				_write_string(f, 0, p.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_"));
 			}
 		}
 
@@ -1318,23 +1324,63 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 				item += " )";
 
 				if (m.return_enum != String()) {
-					_write_string(f, 0, "|" + m.return_enum + "|" + item + "|" + m.description.strip_edges().xml_escape() + "|");
+					_write_string(f, 0, "|" + m.return_enum + "|" + item + "|" + m.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_") + "|");
 				} else {
-					_write_string(f, 0, "|" + m.return_type + "|" + item + "|" + m.description.strip_edges().xml_escape() + "|");
+					_write_string(f, 0, "|" + m.return_type + "|" + item + "|" + m.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_") + "|");
 				}
 			}
 		}
 
-		if (c.tutorials.size() > 0) {
-			_write_string(f, 0, "## Tutorials");
-			for (int i = 0; i < c.tutorials.size(); i++) {
-				_write_string(f, 0, "<" + c.tutorials.get(i).xml_escape() + ">");
+		if (c.methods.size() > 0) {
+			_write_string(f, 0, "## Method Descriptions:");
+
+			for (int i = 0; i < c.methods.size(); i++) {
+
+				const MethodDoc &m = c.methods[i];
+				String item = m.name + " ( ";
+				for (int j = 0; j < m.arguments.size(); j++) {
+					const ArgumentDoc &a = m.arguments[j];
+
+					if (a.enumeration != String()) {
+						item += a.enumeration + " " + a.name.xml_escape();
+					} else {
+						item += a.type.xml_escape() + " " + a.name.xml_escape();
+					}
+					if (j != m.arguments.size() - 1) {
+						item += ", ";
+					}
+				}
+				item += " )";
+
+				_write_string(f, 0, "### " + m.name);
+				_write_string(f, 0, item);
+				_write_string(f, 0, "```");
+				_write_string(f, 0, m.description.strip_edges().xml_escape().replace("[codeblock]", "").replace("[/codeblock]", "").replace("[code]", "").replace("[/code]", ""));
+				_write_string(f, 0, "```");
 			}
+		}
+
+		_write_string(_f, 2, "{");
+		_write_string(_f, 3, "\"label\": \"" + c.name + "\",");
+
+		String short_detail = c.brief_description.strip_edges().xml_escape();
+		int short_detail_newline_pos = short_detail.find(".");
+		if (short_detail_newline_pos != -1) {
+			short_detail = short_detail.substr(0, short_detail_newline_pos);
+		}
+
+		_write_string(_f, 3, "\"detail\": \"" + short_detail + "\"");
+		if (E->next()) {
+			_write_string(_f, 2, "},");
+		} else {
+			_write_string(_f, 2, "}");
 		}
 	}
 
 	_write_string(_f, 1, "],");
-	_write_string(_f, 1, "\"size\" : " + String::num(size));
+	_write_string(_f, 1, "\"size\" : " + String::num(size) + ",");
+	_write_string(_f, 1, "\"builtin\" : [" + builtin_functions.substr(0, builtin_functions.length() - 1) + "],");
+	_write_string(_f, 1, "\"builtinSize\" : " + String::num(builtin_functions_size));
 	_write_string(_f, 0, "}");
 
 	return OK;

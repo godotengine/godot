@@ -32,6 +32,7 @@
 
 #include "core/os/keyboard.h"
 #include "doc_data_compressed.gen.h"
+#include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
 #include "editor_node.h"
 #include "editor_settings.h"
@@ -1422,6 +1423,23 @@ void EditorHelp::generate_doc() {
 	DocData compdoc;
 	compdoc.load_compressed(_doc_data_compressed, _doc_data_compressed_size, _doc_data_uncompressed_size);
 	doc->merge_from(compdoc); //ensure all is up to date
+
+	String doc_tool = OS::get_singleton()->get_data_path() + "/godot";
+	String index_path = doc_tool.plus_file("doc");
+	if (!DirAccess::exists(index_path)) {
+		print_line("Preparing Markdown Docs...");
+		Map<String, String> doc_data_classes;
+		for (int i = 0; i < _doc_data_class_path_count; i++) {
+			String path = doc_tool.plus_file(_doc_data_class_paths[i].path);
+			String name = _doc_data_class_paths[i].name;
+			doc_data_classes[name] = path;
+		}
+		DirAccess *da = DirAccess::create_for_path(index_path);
+		da->make_dir_recursive(index_path);
+		memdelete(da);
+
+		doc->save_classes_markdown(index_path, doc_data_classes);
+	}
 }
 
 void EditorHelp::_notification(int p_what) {
