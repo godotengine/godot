@@ -31,7 +31,7 @@
 #include "editor_help.h"
 
 #include "core/os/keyboard.h"
-#include "core/version_generated.gen.h"
+#include "core/version_hash.gen.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -1433,16 +1433,15 @@ void EditorHelp::generate_doc() {
 		String version_file = index_path.plus_file("version.txt");
 		FileAccessRef f = FileAccess::open(version_file, FileAccess::READ);
 
-		int decimal_places = 0;
-		int version_minor = VERSION_MINOR;
-		while (version_minor) {
-			decimal_places++;
-			version_minor /= 10;
+		String current_hash = VERSION_HASH;
+		String previous_hash = "";
+		if (f) {
+			previous_hash = String(f->get_as_utf8_string());
 		}
-		float current_version = (VERSION_MINOR > 0) ? VERSION_MAJOR + (VERSION_MINOR / (float)(10 * decimal_places)) : VERSION_MAJOR;
-		float previous_version = String(f->get_as_utf8_string()).to_float();
-		if (previous_version < current_version) {
-			is_updating = true;
+		if (current_hash != previous_hash) {
+			if (previous_hash == "") {
+				is_updating = true;
+			}
 			print_line("Removing Old Markdown Docs...");
 			DirAccess *dir = DirAccess::open(index_path);
 			dir->erase_contents_recursive();
@@ -1468,7 +1467,7 @@ void EditorHelp::generate_doc() {
 
 		String version_file = index_path.plus_file("version.txt");
 		FileAccessRef f = FileAccess::open(version_file, FileAccess::WRITE);
-		f->store_string(String::num(VERSION_MAJOR) + "." + String::num(VERSION_MINOR));
+		f->store_string(VERSION_HASH);
 	}
 }
 
