@@ -405,8 +405,11 @@ void TileMapEditor::_update_palette() {
 	manual_palette->hide();
 
 	Ref<TileSet> tileset = node->get_tileset();
-	if (tileset.is_null())
+	if (tileset.is_null()) {
+		palette->set_fixed_column_width(get_minimum_size().x);
+		palette->add_item(String("No TileSet selected"));
 		return;
+	}
 
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
