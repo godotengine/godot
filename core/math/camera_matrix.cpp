@@ -485,6 +485,12 @@ void CameraMatrix::invert() {
 	}
 }
 
+void CameraMatrix::flip_y() {
+	for (int i = 0; i < 4; i++) {
+		matrix[1][i] = -matrix[1][i];
+	}
+}
+
 CameraMatrix::CameraMatrix() {
 
 	set_identity();

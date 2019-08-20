@@ -90,6 +90,8 @@ struct CameraMatrix {
 	int get_pixels_per_meter(int p_for_pixel_width) const;
 	operator Transform() const;
 
+	void flip_y();
+
 	CameraMatrix();
 	CameraMatrix(const Transform &p_transform);
 	~CameraMatrix();

@@ -485,7 +485,15 @@ public:
 		return mesh->material_cache.ptr();
 	}
 
-	_FORCE_INLINE_ void mesh_get_arrays_primitive_and_format(RID p_mesh, uint32_t p_surface_index, uint32_t p_input_mask, VS::PrimitiveType &r_primitive, RID &r_vertex_array_rd, RID &r_index_array_rd, RD::VertexFormatID &r_vertex_format) {
+	_FORCE_INLINE_ VS::PrimitiveType mesh_surface_get_primitive(RID p_mesh, uint32_t p_surface_index) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		ERR_FAIL_COND_V(!mesh, VS::PRIMITIVE_MAX);
+		ERR_FAIL_INDEX_V(p_surface_index, mesh->surface_count, VS::PRIMITIVE_MAX);
+
+		return mesh->surfaces[p_surface_index]->primitive;
+	}
+
+	_FORCE_INLINE_ void mesh_surface_get_arrays_and_format(RID p_mesh, uint32_t p_surface_index, uint32_t p_input_mask, RID &r_vertex_array_rd, RID &r_index_array_rd, RD::VertexFormatID &r_vertex_format) {
 		Mesh *mesh = mesh_owner.getornull(p_mesh);
 		ERR_FAIL_COND(!mesh);
 		ERR_FAIL_INDEX(p_surface_index, mesh->surface_count);
@@ -772,10 +780,7 @@ public:
 	Size2 render_target_get_size(RID p_render_target);
 	RID render_target_get_rd_framebuffer(RID p_render_target);
 
-	VS::InstanceType get_base_type(RID p_rid) const {
-
-		return VS::INSTANCE_NONE;
-	}
+	VS::InstanceType get_base_type(RID p_rid) const;
 
 	bool free(RID p_rid);
 

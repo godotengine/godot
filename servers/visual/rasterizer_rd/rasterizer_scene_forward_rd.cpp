@@ -92,7 +92,7 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 	ShaderCompilerRD::GeneratedCode gen_code;
 
 	int blend_mode = BLEND_MODE_MIX;
-	int depth_test = DEPTH_TEST_ENABLED;
+	int depth_testi = DEPTH_TEST_ENABLED;
 	int cull = CULL_BACK;
 
 	uses_point_size = false;
@@ -127,7 +127,7 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 	actions.render_mode_values["depth_draw_opaque"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_OPAQUE);
 	actions.render_mode_values["depth_draw_always"] = Pair<int *, int>(&depth_drawi, DEPTH_DRAW_ALWAYS);
 
-	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_test, DEPTH_TEST_DISABLED);
+	actions.render_mode_values["depth_test_disabled"] = Pair<int *, int>(&depth_testi, DEPTH_TEST_DISABLED);
 
 	actions.render_mode_values["cull_disabled"] = Pair<int *, int>(&cull, CULL_DISABLED);
 	actions.render_mode_values["cull_front"] = Pair<int *, int>(&cull, CULL_FRONT);
@@ -161,7 +161,7 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 
 	RasterizerSceneForwardRD *scene_singleton = (RasterizerSceneForwardRD *)RasterizerSceneForwardRD::singleton;
 
-	Error err = scene_singleton->shader.compiler.compile(VS::SHADER_CANVAS_ITEM, code, &actions, path, gen_code);
+	Error err = scene_singleton->shader.compiler.compile(VS::SHADER_SPATIAL, code, &actions, path, gen_code);
 
 	ERR_FAIL_COND(err != OK);
 
@@ -170,6 +170,7 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 	}
 
 	depth_draw = DepthDraw(depth_drawi);
+	depth_test = DepthTest(depth_testi);
 
 #if 0
 	print_line("**compiling shader:");
@@ -257,8 +258,6 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 	}
 
-	bool first = true;
-
 	for (int i = 0; i < CULL_VARIANT_MAX; i++) {
 
 		RD::PolygonCullMode cull_mode_rd_table[3][CULL_VARIANT_MAX] = {
@@ -321,11 +320,6 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 				}
 
 				RID shader_variant = scene_singleton->shader.scene_shader.version_get_shader(version, k);
-
-				if (first) {
-					//should be the same for all, so..
-					vertex_input_mask = RD::get_singleton()->shader_get_vertex_input_attribute_mask(shader_variant);
-				}
 				pipelines[i][j][k].setup(shader_variant, primitive_rd, raster_state, RD::PipelineMultisampleState(), depth_stencil, blend_state, 0);
 			}
 		}
@@ -586,6 +580,7 @@ bool RasterizerSceneForwardRD::free(RID p_rid) {
 void RasterizerSceneForwardRD::instance_create_custom_data(InstanceBase *p_instance) {
 	InstanceGeometryData *geom_data = memnew(InstanceGeometryData);
 	geom_data->ubo = RD::get_singleton()->uniform_buffer_create(sizeof(InstanceGeometryData::UBO));
+	p_instance->custom_data = geom_data;
 }
 
 void RasterizerSceneForwardRD::instance_free_custom_data(InstanceBase *p_instance) {
@@ -650,6 +645,10 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 	RID prev_vertex_array_rd;
 	RID prev_index_array_rd;
+	RID prev_pipeline_rd;
+
+	PushConstant push_constant;
+	zeromem(&push_constant, sizeof(PushConstant));
 
 	for (int i = 0; i < p_element_count; i++) {
 
@@ -673,38 +672,23 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 		//find primitive and vertex format
 		VS::PrimitiveType primitive;
-		RD::VertexFormatID vertex_format;
-		RID vertex_array_rd;
-		RID index_array_rd;
-		RID prev_pipeline_rd;
 
 		switch (e->instance->base_type) {
 			case VS::INSTANCE_MESH: {
-				storage->mesh_get_arrays_primitive_and_format(e->instance->base, e->surface_index, shader->vertex_input_mask, primitive, vertex_array_rd, index_array_rd, vertex_format);
+				primitive = storage->mesh_surface_get_primitive(e->instance->base, e->surface_index);
 			} break;
 			case VS::INSTANCE_MULTIMESH: {
-
+				ERR_CONTINUE(true); //should be a bug
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
-
+				ERR_CONTINUE(true); //should be a bug
 			} break;
 			case VS::INSTANCE_PARTICLES: {
-
+				ERR_CONTINUE(true); //should be a bug
 			} break;
 			default: {
 				ERR_CONTINUE(true); //should be a bug
 			}
-		}
-
-		if (prev_vertex_array_rd != vertex_array_rd) {
-			RD::get_singleton()->draw_list_bind_vertex_array(draw_list, vertex_array_rd);
-			prev_vertex_array_rd = vertex_array_rd;
-		}
-		if (prev_index_array_rd != index_array_rd) {
-			if (index_array_rd.is_valid()) {
-				RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array_rd);
-			}
-			prev_index_array_rd = index_array_rd;
 		}
 
 		InstanceGeometryData *geom_data = (InstanceGeometryData *)e->instance->custom_data;
@@ -726,7 +710,7 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 					instance_uniform_set = geom_data->uniform_set_gi;
 					shader_version = SHADER_VERSION_VCT_COLOR_PASS;
 				} else {
-					instance_uniform_set = geom_data->uniform_set_base;
+					instance_uniform_set = geom_data->uniform_set_gi;
 					shader_version = SHADER_VERSION_COLOR_PASS;
 				}
 			} break;
@@ -741,7 +725,7 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 					instance_uniform_set = geom_data->uniform_set_gi;
 					shader_version = SHADER_VERSION_VCT_COLOR_PASS_WITH_SEPARATE_SPECULAR;
 				} else {
-					instance_uniform_set = geom_data->uniform_set_base;
+					instance_uniform_set = geom_data->uniform_set_gi;
 					shader_version = SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR;
 				}
 			} break;
@@ -767,6 +751,40 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 		pipeline = &shader->pipelines[cull_variant][primitive][shader_version];
 
+		RD::VertexFormatID vertex_format;
+		RID vertex_array_rd;
+		RID index_array_rd;
+
+		switch (e->instance->base_type) {
+			case VS::INSTANCE_MESH: {
+				storage->mesh_surface_get_arrays_and_format(e->instance->base, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
+			} break;
+			case VS::INSTANCE_MULTIMESH: {
+				ERR_CONTINUE(true); //should be a bug
+			} break;
+			case VS::INSTANCE_IMMEDIATE: {
+				ERR_CONTINUE(true); //should be a bug
+			} break;
+			case VS::INSTANCE_PARTICLES: {
+				ERR_CONTINUE(true); //should be a bug
+			} break;
+			default: {
+				ERR_CONTINUE(true); //should be a bug
+			}
+		}
+
+		if (prev_vertex_array_rd != vertex_array_rd) {
+			RD::get_singleton()->draw_list_bind_vertex_array(draw_list, vertex_array_rd);
+			prev_vertex_array_rd = vertex_array_rd;
+		}
+
+		if (prev_index_array_rd != index_array_rd) {
+			if (index_array_rd.is_valid()) {
+				RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array_rd);
+			}
+			prev_index_array_rd = index_array_rd;
+		}
+
 		RID pipeline_rd = pipeline->get_render_pipeline(vertex_format, framebuffer_format);
 
 		if (pipeline_rd != prev_pipeline_rd) {
@@ -786,6 +804,8 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 		}
 
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, instance_uniform_set, 3);
+
+		RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(PushConstant));
 
 		switch (e->instance->base_type) {
 			case VS::INSTANCE_MESH: {
@@ -810,9 +830,12 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 void RasterizerSceneForwardRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog) {
 	Transform sky_orientation;
 
+	CameraMatrix projection = p_cam_projection;
+	projection.flip_y();
+
 	//store camera into ubo
-	store_camera(p_cam_projection, scene_state.ubo.projection_matrix);
-	store_camera(p_cam_projection.inverse(), scene_state.ubo.inv_projection_matrix);
+	store_camera(projection, scene_state.ubo.projection_matrix);
+	store_camera(projection.inverse(), scene_state.ubo.inv_projection_matrix);
 	store_transform(p_cam_transform, scene_state.ubo.camera_matrix);
 	store_transform(p_cam_transform.affine_inverse(), scene_state.ubo.inv_camera_matrix);
 
@@ -1063,9 +1086,9 @@ void RasterizerSceneForwardRD::_fill_render_list(InstanceBase **p_cull_result, i
 			store_transform(inst->transform, ubo.transform);
 			store_transform_3x3(inst->transform.basis.inverse().transposed(), ubo.normal_transform);
 			ubo.flags = 0;
-			ubo.pad[0];
-			ubo.pad[1];
-			ubo.pad[2];
+			ubo.pad[0] = 0;
+			ubo.pad[1] = 0;
+			ubo.pad[2] = 0;
 			RD::get_singleton()->buffer_update(geom_data->ubo, 0, sizeof(InstanceGeometryData::UBO), &ubo, true);
 		}
 
@@ -1723,6 +1746,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	RasterizerEffectsRD *effects = storage->get_effects();
 	effects->copy(render_buffer->color, storage->render_target_get_rd_framebuffer(render_buffer->render_target), Rect2());
+	storage->render_target_disable_clear_request(render_buffer->render_target);
 
 #if 0
 	_post_process(env, p_cam_projection);
@@ -1793,6 +1817,7 @@ void RasterizerSceneForwardRD::set_time(double p_time) {
 }
 
 RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storage) {
+	singleton = this;
 	storage = p_storage;
 
 	/* SHADER */
