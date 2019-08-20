@@ -103,6 +103,7 @@ public:
 	void merge_from(const DocData &p_data);
 	void remove_from(const DocData &p_data);
 	void generate(bool p_basic_types = false);
+	String parse_description(String p_description);
 	Error load_classes(const String &p_dir);
 	static Error erase_classes(const String &p_dir);
 	Error save_classes(const String &p_default_path, const Map<String, String> &p_class_path);

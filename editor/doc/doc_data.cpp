@@ -1161,6 +1161,36 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 	return OK;
 }
 
+String DocData::parse_description(String p_description) {
+	String description = p_description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_").replace("[code]", "").replace("[/code]", "").replace("[codeblock]", "").replace("[/codeblock]", "");
+	int index_pointer = description.find("[", 0);
+	while (index_pointer != -1) {
+		String link_doc_name = description.substr(index_pointer + 1, description.find("]", index_pointer + 1) - index_pointer - 1);
+		if (link_doc_name.find("member ") != -1) {
+			int seperator_pos = link_doc_name.find(" ");
+			String link_doc_member = link_doc_name.substr(seperator_pos + 1, link_doc_name.size() - seperator_pos);
+			description = description.substr(0, index_pointer) + "[" + link_doc_member + "](#" + link_doc_member + ")" + description.substr(index_pointer + link_doc_name.size() + 1, description.size() - index_pointer - link_doc_name.size() - 2);
+		} else if (link_doc_name.find("signal ") != -1) {
+			description = description.substr(0, index_pointer) + "[" + link_doc_name + "](#Signals)" + description.substr(index_pointer + link_doc_name.size() + 1, description.size() - index_pointer - link_doc_name.size() - 2);
+		} else if (link_doc_name.find("method ") != -1) {
+			int seperator_pos = link_doc_name.find(" ");
+			String link_doc_method = link_doc_name.substr(seperator_pos + 1, link_doc_name.size() - seperator_pos);
+			int class_seperator = link_doc_method.find(".");
+			if (class_seperator == -1) {
+				description = description.substr(0, index_pointer) + "[" + link_doc_method + "](#" + link_doc_method + ")" + description.substr(index_pointer + link_doc_name.size() + 1, description.size() - index_pointer - link_doc_name.size() - 2);
+			} else {
+				String link_doc_class = link_doc_method.substr(0, class_seperator);
+				String link_doc_method_name = link_doc_method.substr(class_seperator + 1, link_doc_method.size() - class_seperator);
+				description = description.substr(0, index_pointer) + "[" + link_doc_method_name + "](" + link_doc_class + ".md#" + link_doc_method_name + ")" + description.substr(index_pointer + link_doc_name.size() + 1, description.size() - index_pointer - link_doc_name.size() - 2);
+			}
+		} else if (class_list.find(link_doc_name)) {
+			description = description.substr(0, index_pointer) + "[" + link_doc_name + "](" + link_doc_name + ".md)" + description.substr(index_pointer + link_doc_name.size() + 1, description.size() - index_pointer - link_doc_name.size() - 2);
+		}
+		index_pointer = description.find("[", index_pointer + 1);
+	}
+	return description;
+}
+
 Error DocData::save_classes_markdown(const String &p_default_path, const Map<String, String> &p_class_path) {
 
 	String index_path = p_default_path.plus_file("index.json");
@@ -1179,6 +1209,7 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 	for (Map<String, ClassDoc>::Element *E = class_list.front(); E; E = E->next()) {
 
 		ClassDoc &c = E->get();
+
 		String save_path = p_default_path;
 
 		Error err;
@@ -1201,14 +1232,15 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 		_write_string(f, 0, "**category:** " + category);
 
 		_write_string(f, 0, "## Brief Description:");
-		_write_string(f, 0, c.brief_description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_"));
+		_write_string(f, 0, parse_description(c.brief_description));
+
 		_write_string(f, 0, "## Description:");
-		_write_string(f, 0, c.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_"));
+		_write_string(f, 0, parse_description(c.description));
 
 		if (c.tutorials.size() > 0) {
 			_write_string(f, 0, "## Tutorials:");
 			for (int i = 0; i < c.tutorials.size(); i++) {
-				_write_string(f, 0, "<" + c.tutorials.get(i).xml_escape() + ">");
+				_write_string(f, 0, "- " + c.tutorials.get(i).xml_escape());
 			}
 		}
 
@@ -1276,10 +1308,11 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 			for (int i = 0; i < c.properties.size(); i++) {
 
 				const PropertyDoc &p = c.properties[i];
+				_write_string(f, 0, "### " + p.name);
 				if (c.properties[i].enumeration != String()) {
-					_write_string(f, 0, "- " + c.properties[i].enumeration + " " + p.name);
+					_write_string(f, 0, "> " + c.properties[i].enumeration + " " + p.name);
 				} else {
-					_write_string(f, 0, "- " + p.type + " " + p.name);
+					_write_string(f, 0, "> " + p.type + " " + p.name);
 				}
 
 				_write_string(f, 0, "\n");
@@ -1289,7 +1322,7 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 					_write_string(f, 0, "|Setter|" + p.setter + "|");
 					_write_string(f, 0, "|Getter|" + p.getter + "|");
 				}
-				_write_string(f, 0, p.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_"));
+				_write_string(f, 0, parse_description(p.description));
 			}
 		}
 
@@ -1324,9 +1357,9 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 				item += " )";
 
 				if (m.return_enum != String()) {
-					_write_string(f, 0, "|" + m.return_enum + "|" + item + "|" + m.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_") + "|");
+					_write_string(f, 0, "|" + m.return_enum + "|" + item + "|" + m.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_").replace("[code]", "").replace("[/code]", "").replace("[codeblock]", "").replace("[/codeblock]", ""));
 				} else {
-					_write_string(f, 0, "|" + m.return_type + "|" + item + "|" + m.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_") + "|");
+					_write_string(f, 0, "|" + m.return_type + "|" + item + "|" + m.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_").replace("[code]", "").replace("[/code]", "").replace("[codeblock]", "").replace("[/codeblock]", ""));
 				}
 			}
 		}
@@ -1352,18 +1385,21 @@ Error DocData::save_classes_markdown(const String &p_default_path, const Map<Str
 				}
 				item += " )";
 
+				String method_description = m.description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_").replace("[code]", "").replace("[/code]", "").replace("[codeblock]", "").replace("[/codeblock]", "");
 				_write_string(f, 0, "### " + m.name);
 				_write_string(f, 0, item);
-				_write_string(f, 0, "```");
-				_write_string(f, 0, m.description.strip_edges().xml_escape().replace("[codeblock]", "").replace("[/codeblock]", "").replace("[code]", "").replace("[/code]", ""));
-				_write_string(f, 0, "```");
+				if (method_description.replace(" ", "").size() > 0) {
+					_write_string(f, 0, "```");
+					_write_string(f, 0, method_description);
+					_write_string(f, 0, "```");
+				}
 			}
 		}
 
 		_write_string(_f, 2, "{");
 		_write_string(_f, 3, "\"label\": \"" + c.name + "\",");
 
-		String short_detail = c.brief_description.strip_edges().xml_escape();
+		String short_detail = c.brief_description.strip_edges().xml_escape().replace("[b]", "**").replace("[/b]", "**").replace("[i]", "_").replace("[/i]", "_").replace("[code]", "").replace("[/code]", "").replace("[codeblock]", "").replace("[/codeblock]", "");
 		int short_detail_newline_pos = short_detail.find(".");
 		if (short_detail_newline_pos != -1) {
 			short_detail = short_detail.substr(0, short_detail_newline_pos);
