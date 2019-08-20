@@ -1200,7 +1200,9 @@ void AnimationPlayer::play(const StringName &p_name, float p_custom_blend, float
 		}
 	}
 
-	_stop_playing_caches();
+	if (get_current_animation() != p_name) {
+		_stop_playing_caches();
+	}
 
 	c.current.from = &animation_set[name];
 
