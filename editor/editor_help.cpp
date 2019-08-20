@@ -31,6 +31,7 @@
 #include "editor_help.h"
 
 #include "core/os/keyboard.h"
+#include "core/version_generated.gen.h"
 #include "doc_data_compressed.gen.h"
 #include "editor/doc/doc_data_class_path.gen.h"
 #include "editor/plugins/script_editor_plugin.h"
@@ -1426,7 +1427,30 @@ void EditorHelp::generate_doc() {
 
 	String doc_tool = OS::get_singleton()->get_data_path() + "/godot";
 	String index_path = doc_tool.plus_file("doc");
-	if (!DirAccess::exists(index_path)) {
+
+	bool is_updating = false;
+	if (DirAccess::exists(index_path)) {
+		String version_file = index_path.plus_file("version.txt");
+		FileAccessRef f = FileAccess::open(version_file, FileAccess::READ);
+
+		int decimal_places = 0;
+		int version_minor = VERSION_MINOR;
+		while (version_minor) {
+			decimal_places++;
+			version_minor /= 10;
+		}
+		float current_version = (VERSION_MINOR > 0) ? VERSION_MAJOR + (VERSION_MINOR / (float)(10 * decimal_places)) : VERSION_MAJOR;
+		float previous_version = String(f->get_as_utf8_string()).to_float();
+		if (previous_version < current_version) {
+			is_updating = true;
+			print_line("Removing Old Markdown Docs...");
+			DirAccess *dir = DirAccess::open(index_path);
+			dir->erase_contents_recursive();
+			memdelete(dir);
+		}
+	}
+
+	if (!DirAccess::exists(index_path) || is_updating) {
 		print_line("Preparing Markdown Docs...");
 		Map<String, String> doc_data_classes;
 		for (int i = 0; i < _doc_data_class_path_count; i++) {
@@ -1434,11 +1458,17 @@ void EditorHelp::generate_doc() {
 			String name = _doc_data_class_paths[i].name;
 			doc_data_classes[name] = path;
 		}
-		DirAccess *da = DirAccess::create_for_path(index_path);
-		da->make_dir_recursive(index_path);
-		memdelete(da);
+		if (!is_updating) {
+			DirAccess *da = DirAccess::create_for_path(index_path);
+			da->make_dir_recursive(index_path);
+			memdelete(da);
+		}
 
 		doc->save_classes_markdown(index_path, doc_data_classes);
+
+		String version_file = index_path.plus_file("version.txt");
+		FileAccessRef f = FileAccess::open(version_file, FileAccess::WRITE);
+		f->store_string(String::num(VERSION_MAJOR) + "." + String::num(VERSION_MINOR));
 	}
 }
 
