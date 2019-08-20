@@ -488,6 +488,37 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 	return longthing;
 }
 
+int ExtendGDScriptParser::get_parameter_count(const lsp::Position &p_cursor, lsp::Position *begining_position) {
+
+	int count = 0;
+	int len = lines.size();
+	begining_position->line = p_cursor.line;
+	for (int i = 0; i < len; i++) {
+
+		if (i == p_cursor.line) {
+			int closest_bracket_opening_pos = lines[i].substr(0, p_cursor.character).find_last("(");
+			int closest_bracket_closing_pos = lines[i].substr(0, p_cursor.character).find_last(")");
+			if (closest_bracket_closing_pos > closest_bracket_opening_pos || closest_bracket_opening_pos == -1) {
+				return 0;
+			}
+			for (int j = closest_bracket_opening_pos; j < p_cursor.character; j++) {
+				if (lines[i][j] == ',') {
+					count++;
+				}
+			}
+			begining_position->character = closest_bracket_opening_pos;
+			while (lines[i][begining_position->character] != ' ' && lines[i][begining_position->character] != ',') {
+				begining_position->character--;
+			}
+			begining_position->character++;
+		} else if (i > p_cursor.line) {
+			break;
+		}
+	}
+
+	return count;
+}
+
 String ExtendGDScriptParser::get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const {
 
 	ERR_FAIL_INDEX_V(p_position.line, lines.size(), "");

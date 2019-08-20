@@ -483,6 +483,36 @@ Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 	return api;
 }
 
+Error GDScriptWorkspace::signatureHelp(const lsp::TextDocumentPositionParams &p_params, String *r_signature_name, String *r_signature_doc, List<String> *r_signature_parameter, int *cur_active_parameter) {
+
+	String path = get_file_path(p_params.textDocument.uri);
+	lsp::Position begining_position = p_params.position;
+	if (Map<String, ExtendGDScriptParser *>::Element *E = parse_results.find(path)) {
+		*cur_active_parameter = E->get()->get_parameter_count(p_params.position, &begining_position);
+	}
+
+	lsp::TextDocumentPositionParams modified_param;
+	modified_param.textDocument = p_params.textDocument;
+	modified_param.position = begining_position;
+	const lsp::DocumentSymbol *symbol = resolve_symbol(modified_param);
+	if (!symbol || (symbol->kind != lsp::SymbolKind::Function && symbol->kind != lsp::SymbolKind::Method)) {
+		return ERR_DOES_NOT_EXIST;
+	}
+
+	*r_signature_name = symbol->detail;
+	*r_signature_doc = symbol->documentation;
+	int bracket_start_pos = symbol->detail.find("(");
+	int bracket_end_pos = symbol->detail.find(")");
+	String inner_parameter = symbol->detail.substr(bracket_start_pos + 1, bracket_end_pos - bracket_start_pos - 1);
+	Vector<String> parameters = inner_parameter.split(",", false);
+
+	for (int i = 0; i < parameters.size(); ++i) {
+		r_signature_parameter->push_back(parameters[i]);
+	}
+
+	return OK;
+}
+
 GDScriptWorkspace::GDScriptWorkspace() {
 	ProjectSettings::get_singleton()->get_resource_path();
 }

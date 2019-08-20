@@ -309,6 +309,11 @@ struct SignatureHelpOptions {
 	 */
 	Vector<String> triggerCharacters;
 
+	SignatureHelpOptions() {
+		triggerCharacters.push_back("(");
+		triggerCharacters.push_back(",");
+	}
+
 	Dictionary to_json() {
 		Dictionary dict;
 		dict["triggerCharacters"] = triggerCharacters;
@@ -1330,6 +1335,121 @@ struct Hover {
 		Dictionary dict;
 		dict["range"] = range.to_json();
 		dict["contents"] = contents.to_json();
+		return dict;
+	}
+};
+
+/**
+ * Represents a parameter of a callable-signature. A parameter can
+ * have a label and a doc-comment.
+ */
+struct ParameterInformation {
+	/**
+	 * The label of this parameter information.
+	 *
+	 * Either a string or an inclusive start and exclusive end offsets within its containing
+	 * signature label. (see SignatureInformation.label). The offsets are based on a UTF-16
+	 * string representation as `Position` and `Range` does.
+	 *
+	 * *Note*: a label of type string should be a substring of its containing signature label.
+	 * Its intended use case is to highlight the parameter label part in the `SignatureInformation.label`.
+	 */
+	String label;
+
+	/**
+	 * The human-readable doc-comment of this parameter. Will be shown
+	 * in the UI but can be omitted.
+	 */
+	MarkupContent documentation;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["label"] = label;
+		dict["documentation"] = documentation.to_json();
+		return dict;
+	}
+};
+
+/**
+ * Represents the signature of something callable. A signature
+ * can have a label, like a function-name, a doc-comment, and
+ * a set of parameters.
+ */
+struct SignatureInformation {
+	/**
+	 * The label of this signature. Will be shown in
+	 * the UI.
+	 */
+	String label;
+
+	/**
+	 * The human-readable doc-comment of this signature. Will be shown
+	 * in the UI but can be omitted.
+	 */
+	MarkupContent documentation;
+
+	/**
+	 * The parameters of this signature.
+	 */
+	Vector<ParameterInformation> parameters;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["label"] = label;
+		dict["documentation"] = documentation.to_json();
+		Array arr;
+		arr.resize(parameters.size());
+		for (int i = 0; i < parameters.size(); i++) {
+			arr[i] = parameters[i].to_json();
+		}
+		dict["parameters"] = arr;
+		return dict;
+	}
+};
+
+/**
+ * Signature help represents the signature of something
+ * callable. There can be multiple signature but only one
+ * active and only one active parameter.
+ */
+struct SignatureHelp {
+	/**
+	 * One or more signatures.
+	 */
+	Vector<SignatureInformation> signatures;
+
+	/**
+	 * The active signature. If omitted or the value lies outside the
+	 * range of `signatures` the value defaults to zero or is ignored if
+	 * `signatures.length === 0`. Whenever possible implementors should
+	 * make an active decision about the active signature and shouldn't
+	 * rely on a default value.
+	 * In future version of the protocol this property might become
+	 * mandatory to better express this.
+	 */
+	int activeSignature;
+
+	/**
+	 * The active parameter of the active signature. If omitted or the value
+	 * lies outside the range of `signatures[activeSignature].parameters`
+	 * defaults to 0 if the active signature has parameters. If
+	 * the active signature has no parameters it is ignored.
+	 * In future version of the protocol this property might become
+	 * mandatory to better express the active parameter if the
+	 * active signature does have any.
+	 */
+	int activeParameter;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		Array arr;
+		arr.resize(signatures.size());
+		for (int i = 0; i < signatures.size(); i++) {
+			arr[i] = signatures[i].to_json();
+		}
+		dict["signatures"] = arr;
+		dict["activeSignature"] = activeSignature;
+		dict["activeParameter"] = activeParameter;
 		return dict;
 	}
 };

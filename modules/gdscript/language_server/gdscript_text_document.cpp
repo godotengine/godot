@@ -48,6 +48,7 @@ void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("colorPresentation"), &GDScriptTextDocument::colorPresentation);
 	ClassDB::bind_method(D_METHOD("hover"), &GDScriptTextDocument::hover);
 	ClassDB::bind_method(D_METHOD("definition"), &GDScriptTextDocument::definition);
+	ClassDB::bind_method(D_METHOD("signatureHelp"), &GDScriptTextDocument::signatureHelp);
 	ClassDB::bind_method(D_METHOD("show_native_symbol_in_editor"), &GDScriptTextDocument::show_native_symbol_in_editor);
 }
 
@@ -370,6 +371,40 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 	}
 
 	return arr;
+}
+
+Variant GDScriptTextDocument::signatureHelp(const Dictionary &p_params) {
+	Variant ret;
+
+	lsp::TextDocumentPositionParams params;
+	params.load(p_params);
+	Dictionary request_data = params.to_json();
+
+	String signature_name;
+	String signature_doc;
+	List<String> signature_parameter;
+	int cur_active_parameter = 0;
+	if (GDScriptLanguageProtocol::get_singleton()->get_workspace()->signatureHelp(params, &signature_name, &signature_doc, &signature_parameter, &cur_active_parameter) != OK) {
+		return ret;
+	}
+
+	lsp::SignatureHelp result;
+	lsp::SignatureInformation cur_signature;
+	cur_signature.label = signature_name;
+	cur_signature.documentation = signature_doc;
+	for (int i = 0; i < signature_parameter.size(); ++i) {
+		lsp::ParameterInformation val;
+		val.label = signature_parameter[i];
+		cur_signature.parameters.push_back(val);
+	}
+
+	result.signatures.push_back(cur_signature);
+
+	result.activeSignature = 0;
+	result.activeParameter = cur_active_parameter;
+
+	ret = result.to_json();
+	return ret;
 }
 
 GDScriptTextDocument::GDScriptTextDocument() {

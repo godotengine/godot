@@ -63,6 +63,7 @@ public:
 	Array colorPresentation(const Dictionary &p_params);
 	Variant hover(const Dictionary &p_params);
 	Array definition(const Dictionary &p_params);
+	Variant signatureHelp(const Dictionary &p_params);
 
 	void initialize();
 
