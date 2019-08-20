@@ -8,6 +8,9 @@
 VERSION_DEFINES
 /* clang-format on */
 
+#include "scene_forward_inc.glsl"
+
+
 /* INPUT ATTRIBS */
 
 layout(location = 0) in vec3 vertex_attrib;
@@ -33,25 +36,24 @@ layout(location = 6) in uvec4 bone_attrib; // always bound, even if unused
 
 /* Varyings */
 
-out vec3 vertex_interp;
-out vec3 normal_interp;
+layout(location = 0) out vec3 vertex_interp;
+layout(location = 1) out vec3 normal_interp;
 
 #if defined(COLOR_USED)
-out vec4 color_interp;
+layout(location = 2) out vec4 color_interp;
+#endif
+
+#if defined(UV_USED)
+layout(location = 3) out vec4 uv_interp;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
-out vec2 uv_interp;
-#endif
-
-//uv2 may be used for lightmapping, so always pass.
-#if !defined(MODE_RENDER_DEPTH)
-out vec2 uv2_interp;
+layout(location = 4) out vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-out vec3 tangent_interp;
-out vec3 binormal_interp;
+layout(location = 5) out vec3 tangent_interp;
+layout(location = 6) out vec3 binormal_interp;
 #endif
 
 #ifdef USE_MATERIAL_UNIFORMS
@@ -152,7 +154,7 @@ VERTEX_SHADER_CODE
 	binormal = modelview_normal * binormal;
 	tangent = modelview_normal * tangent;
 #endif
-#endif
+
 
 //using world coordinates
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
@@ -184,7 +186,7 @@ VERTEX_SHADER_CODE
 #endif //MODE_RENDER_DEPTH
 
 #ifdef USE_OVERRIDE_POSITION
-	gl_Position = position;
+	gl_Position = position;;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
 #endif
@@ -201,28 +203,29 @@ VERTEX_SHADER_CODE
 VERSION_DEFINES
 /* clang-format on */
 
+#include "scene_forward_inc.glsl"
 
 /* Varyings */
 
+layout(location = 0) in vec3 vertex_interp;
+layout(location = 1) in vec3 normal_interp;
+
 #if defined(COLOR_USED)
-in vec4 color_interp;
+layout(location = 2) in vec4 color_interp;
 #endif
 
 #if defined(UV_USED)
-in vec2 uv_interp;
+layout(location = 3) in vec4 uv_interp;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
-in vec2 uv2_interp;
+layout(location = 4) in vec2 uv2_interp;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
-in vec3 tangent_interp;
-in vec3 binormal_interp;
+layout(location = 5) in vec3 tangent_interp;
+layout(location = 6) in vec3 binormal_interp;
 #endif
-
-in highp vec3 vertex_interp;
-in vec3 normal_interp;
 
 //defines to keep compatibility with vertex
 
@@ -583,11 +586,9 @@ void main() {
 	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
 #endif
 
-#if defined(SSS_USED)
 	float sss_strength = 0.0;
-#endif
 
-#define
+
 	{
 		/* clang-format off */
 
@@ -680,7 +681,7 @@ FRAGMENT_SHADER_CODE
 		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
 		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
 		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, eye_vec), 0.0, 1.0);
+		float ndotv = clamp(dot(normal, view), 0.0, 1.0);
 		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
 		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
 
@@ -718,7 +719,7 @@ FRAGMENT_SHADER_CODE
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else
 
-	specular_light *= reflection_multiplier;
+	specular_light *= scene_data.reflection_multiplier;
 	ambient_light *= albedo; //ambient must be multiplied by albedo at the end
 
 #if defined(ENABLE_AO)
@@ -742,7 +743,7 @@ FRAGMENT_SHADER_CODE
 
 #else
 
-	diffuse_buffer = vec4(emission + diffuse_light + ambient_light, sss_strenght);
+	diffuse_buffer = vec4(emission + diffuse_light + ambient_light, sss_strength);
 	specular_buffer = vec4(specular_light, metallic);
 
 #endif
@@ -752,7 +753,8 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_NO_SHADING
 	frag_color = vec4(albedo, alpha);
 #else
-	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
+	//frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
+	frag_color = vec4(1.0);
 
 #endif //USE_NO_SHADING
 

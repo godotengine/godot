@@ -80,6 +80,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	static uint32_t get_compressed_image_format_pixel_rshift(DataFormat p_format);
 	static uint32_t get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw = NULL, uint32_t *r_blockh = NULL, uint32_t *r_depth = NULL);
 	static uint32_t get_image_required_mipmaps(uint32_t p_width, uint32_t p_height, uint32_t p_depth);
+	static bool format_has_stencil(DataFormat p_format);
 
 	/***************************/
 	/**** ID INFRASTRUCTURE ****/
@@ -139,7 +140,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		VkImageLayout bound_layout; //layout used when bound to framebuffer being drawn
 		VkImageLayout unbound_layout; //layout used otherwise
-		uint32_t aspect_mask;
+		uint32_t read_aspect_mask;
+		uint32_t barrier_aspect_mask;
 		bool bound; //bound to framebffer
 		RID owner;
 	};

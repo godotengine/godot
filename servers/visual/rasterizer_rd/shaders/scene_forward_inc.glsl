@@ -4,9 +4,9 @@
 
 /* Set 0 Scene data, screen and sources (changes the least) */
 
-layout(set=0,location=1) uniform texture2D depth_buffer;
-layout(set=0,location=2) uniform texture2D color_buffer;
-layout(set=0,location=3) uniform texture2D normal_buffer;
+layout(set=0,binding=1) uniform texture2D depth_buffer;
+layout(set=0,binding=2) uniform texture2D color_buffer;
+layout(set=0,binding=3) uniform texture2D normal_buffer;
 
 layout(set=0,binding=4,std140) uniform SceneData {
 
@@ -105,19 +105,23 @@ layout(set = 1, binding = 1) uniform textureBuffer skeleton_bones;
 
 layout(push_constant, binding = 0, std430) uniform DrawData {
 	//used in forward rendering, 16 bits indices, max 8
+	uint reflection_probe_count;
+	uint omni_light_count;
+	uint spot_light_count;
+	uint decal_count;
 	uvec4 reflection_probe_indices;
 	uvec4 omni_light_indices;
 	uvec4 spot_light_indices;
 	uvec4 decal_indices;
 } draw_data;
 
-layout(set = 3 binding = 0, std140) uniform InstanceData {
+layout(set = 3, binding = 0, std140) uniform InstanceData {
 	mat4 transform;
 	mat3 normal_transform;
 	uint flags;
 	uint pad0;
-	uint pad0;
-	uint pad0;
+	uint pad1;
+	uint pad2;
 } instance_data;
 
 layout(set = 3, binding = 1) uniform textureBuffer multimesh_transforms;
