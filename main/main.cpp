@@ -1208,6 +1208,7 @@ error:
 Error Main::setup2(Thread::ID p_main_tid_override) {
 
 	preregister_module_types();
+	preregister_server_types();
 
 	// Print engine name and version
 	print_line(String(VERSION_NAME) + " v" + get_full_version_string() + " - " + String(VERSION_WEBSITE));

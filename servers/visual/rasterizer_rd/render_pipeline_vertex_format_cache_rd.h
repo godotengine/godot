@@ -36,6 +36,7 @@
 class RenderPipelineVertexFormatCacheRD {
 
 	RID shader;
+	uint32_t input_mask;
 
 	RD::FramebufferFormatID framebuffer_format;
 	RD::RenderPrimitive render_primitive;
@@ -75,6 +76,9 @@ public:
 		return _generate_version(p_vertex_format_id, p_framebuffer_format_id);
 	}
 
+	_FORCE_INLINE_ uint32_t get_vertex_input_mask() const {
+		return input_mask;
+	}
 	void clear();
 	RenderPipelineVertexFormatCacheRD();
 	~RenderPipelineVertexFormatCacheRD();

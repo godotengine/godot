@@ -109,6 +109,10 @@ static bool has_server_feature_callback(const String &p_feature) {
 	return false;
 }
 
+void preregister_server_types() {
+	shader_types = memnew(ShaderTypes);
+}
+
 void register_server_types() {
 
 	OS::get_singleton()->set_has_server_feature_callback(has_server_feature_callback);
@@ -119,8 +123,6 @@ void register_server_types() {
 	ClassDB::register_virtual_class<Physics2DServer>();
 	ClassDB::register_class<ARVRServer>();
 	ClassDB::register_class<CameraServer>();
-
-	shader_types = memnew(ShaderTypes);
 
 	ClassDB::register_virtual_class<ARVRInterface>();
 	ClassDB::register_class<ARVRPositionalTracker>();
@@ -210,6 +212,7 @@ void unregister_server_types() {
 }
 
 void register_server_singletons() {
+
 	Engine::get_singleton()->add_singleton(Engine::Singleton("VisualServer", VisualServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("AudioServer", AudioServer::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PhysicsServer", PhysicsServer::get_singleton()));

@@ -935,11 +935,6 @@ Error VisualServer::mesh_create_surface_data_from_arrays(SurfaceData *r_surface_
 					elem_size *= sizeof(float);
 				}
 
-				if (elem_size == 6) {
-					//had to pad
-					elem_size = 8;
-				}
-
 			} break;
 			case VS::ARRAY_NORMAL: {
 

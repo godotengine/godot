@@ -65,6 +65,7 @@ void RenderPipelineVertexFormatCacheRD::setup(RID p_shader, RD::RenderPrimitive 
 	ERR_FAIL_COND(p_shader.is_null());
 	_clear();
 	shader = p_shader;
+	input_mask = RD::get_singleton()->shader_get_vertex_input_attribute_mask(p_shader);
 	render_primitive = p_primitive;
 	rasterization_state = p_rasterization_state;
 	multisample_state = p_multisample;
@@ -82,11 +83,13 @@ void RenderPipelineVertexFormatCacheRD::update_shader(RID p_shader) {
 void RenderPipelineVertexFormatCacheRD::clear() {
 	_clear();
 	shader = RID(); //clear shader
+	input_mask = 0;
 }
 
 RenderPipelineVertexFormatCacheRD::RenderPipelineVertexFormatCacheRD() {
 	version_count = 0;
 	versions = NULL;
+	input_mask = 0;
 }
 
 RenderPipelineVertexFormatCacheRD::~RenderPipelineVertexFormatCacheRD() {

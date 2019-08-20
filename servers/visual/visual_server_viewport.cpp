@@ -63,6 +63,7 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 }
 
 void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
+
 	Ref<ARVRInterface> arvr_interface;
 	if (ARVRServer::get_singleton() != NULL) {
 		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
@@ -95,7 +96,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 		}
 	}
 
-	bool can_draw_3d = !VSG::scene->camera_owner.owns(p_viewport->camera);
+	bool can_draw_3d = VSG::scene->camera_owner.owns(p_viewport->camera);
 
 	if (p_viewport->clear_mode != VS::VIEWPORT_CLEAR_NEVER) {
 		if (p_viewport->transparent_bg) {
