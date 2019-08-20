@@ -1439,9 +1439,7 @@ void EditorHelp::generate_doc() {
 			previous_hash = String(f->get_as_utf8_string());
 		}
 		if (current_hash != previous_hash) {
-			if (previous_hash == "") {
-				is_updating = true;
-			}
+			is_updating = true;
 			print_line("Removing Old Markdown Docs...");
 			DirAccess *dir = DirAccess::open(index_path);
 			dir->erase_contents_recursive();
