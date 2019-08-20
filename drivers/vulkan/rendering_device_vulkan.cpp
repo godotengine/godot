@@ -1036,6 +1036,18 @@ uint32_t RenderingDeviceVulkan::get_compressed_image_format_pixel_rshift(DataFor
 	return 0;
 }
 
+bool RenderingDeviceVulkan::format_has_stencil(DataFormat p_format) {
+	switch (p_format) {
+		case DATA_FORMAT_S8_UINT:
+		case DATA_FORMAT_D16_UNORM_S8_UINT:
+		case DATA_FORMAT_D24_UNORM_S8_UINT:
+		case DATA_FORMAT_D32_SFLOAT_S8_UINT: {
+			return true;
+		}
+	}
+	return false;
+}
+
 uint32_t RenderingDeviceVulkan::get_image_format_required_size(DataFormat p_format, uint32_t p_width, uint32_t p_height, uint32_t p_depth, uint32_t p_mipmaps, uint32_t *r_blockw, uint32_t *r_blockh, uint32_t *r_depth) {
 
 	ERR_FAIL_COND_V(p_mipmaps == 0, 0);
@@ -1730,7 +1742,12 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	//set bound and unbound layouts
 	if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-		texture.aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+
+		texture.read_aspect_mask = VK_IMAGE_ASPECT_DEPTH_BIT;
+		texture.barrier_aspect_mask = texture.read_aspect_mask;
+		if (format_has_stencil(p_format.format)) {
+			texture.barrier_aspect_mask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT) {
 			texture.unbound_layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
@@ -1741,7 +1758,9 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	} else if (p_format.usage_bits & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 
-		texture.aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+		texture.read_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+		texture.barrier_aspect_mask = texture.read_aspect_mask;
+
 		if (p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT) {
 			texture.unbound_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		} else {
@@ -1749,7 +1768,9 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		}
 		texture.bound_layout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 	} else {
-		texture.aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+		texture.read_aspect_mask = VK_IMAGE_ASPECT_COLOR_BIT;
+		texture.barrier_aspect_mask = texture.read_aspect_mask;
+
 		texture.unbound_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		texture.bound_layout = VK_IMAGE_LAYOUT_UNDEFINED; //will never be bound
 	}
@@ -1825,7 +1846,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture.image;
-		image_memory_barrier.subresourceRange.aspectMask = texture.aspect_mask;
+		image_memory_barrier.subresourceRange.aspectMask = texture.barrier_aspect_mask;
 		image_memory_barrier.subresourceRange.baseMipLevel = 0;
 		image_memory_barrier.subresourceRange.levelCount = image_create_info.mipLevels;
 		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
@@ -2096,7 +2117,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture->image;
-		image_memory_barrier.subresourceRange.aspectMask = texture->aspect_mask;
+		image_memory_barrier.subresourceRange.aspectMask = texture->barrier_aspect_mask;
 		image_memory_barrier.subresourceRange.baseMipLevel = 0;
 		image_memory_barrier.subresourceRange.levelCount = texture->mipmaps;
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
@@ -2199,7 +2220,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 					buffer_image_copy.bufferRowLength = 0; //tigthly packed
 					buffer_image_copy.bufferImageHeight = 0; //tigthly packed
 
-					buffer_image_copy.imageSubresource.aspectMask = texture->aspect_mask;
+					buffer_image_copy.imageSubresource.aspectMask = texture->read_aspect_mask;
 					buffer_image_copy.imageSubresource.mipLevel = mm_i;
 					buffer_image_copy.imageSubresource.baseArrayLayer = p_layer;
 					buffer_image_copy.imageSubresource.layerCount = 1;
@@ -2234,7 +2255,7 @@ Error RenderingDeviceVulkan::texture_update(RID p_texture, uint32_t p_layer, con
 		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 		image_memory_barrier.image = texture->image;
-		image_memory_barrier.subresourceRange.aspectMask = texture->aspect_mask;
+		image_memory_barrier.subresourceRange.aspectMask = texture->barrier_aspect_mask;
 		image_memory_barrier.subresourceRange.baseMipLevel = 0;
 		image_memory_barrier.subresourceRange.levelCount = texture->mipmaps;
 		image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
@@ -2387,7 +2408,7 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = tex->aspect_mask;
+			image_memory_barrier.subresourceRange.aspectMask = tex->barrier_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = 0;
 			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
@@ -2426,7 +2447,7 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 				get_image_format_required_size(tex->format, tex->width, tex->height, tex->depth, i + 1, &mm_width, &mm_height, &mm_depth);
 
 				VkImageCopy image_copy_region;
-				image_copy_region.srcSubresource.aspectMask = tex->aspect_mask;
+				image_copy_region.srcSubresource.aspectMask = tex->read_aspect_mask;
 				image_copy_region.srcSubresource.baseArrayLayer = p_layer;
 				image_copy_region.srcSubresource.layerCount = 1;
 				image_copy_region.srcSubresource.mipLevel = i;
@@ -2463,7 +2484,7 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = tex->aspect_mask;
+			image_memory_barrier.subresourceRange.aspectMask = tex->barrier_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = 0;
 			image_memory_barrier.subresourceRange.levelCount = tex->mipmaps;
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_layer;
@@ -2583,7 +2604,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = src_tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = src_tex->aspect_mask;
+			image_memory_barrier.subresourceRange.aspectMask = src_tex->barrier_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = p_src_mipmap;
 			image_memory_barrier.subresourceRange.levelCount = 1;
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
@@ -2603,7 +2624,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = dst_tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = dst_tex->aspect_mask;
+			image_memory_barrier.subresourceRange.aspectMask = dst_tex->read_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = p_dst_mipmap;
 			image_memory_barrier.subresourceRange.levelCount = 1;
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_dst_layer;
@@ -2617,7 +2638,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 		{
 
 			VkImageCopy image_copy_region;
-			image_copy_region.srcSubresource.aspectMask = src_tex->aspect_mask;
+			image_copy_region.srcSubresource.aspectMask = src_tex->read_aspect_mask;
 			image_copy_region.srcSubresource.baseArrayLayer = p_src_layer;
 			image_copy_region.srcSubresource.layerCount = 1;
 			image_copy_region.srcSubresource.mipLevel = p_src_mipmap;
@@ -2625,7 +2646,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_copy_region.srcOffset.y = p_from.y;
 			image_copy_region.srcOffset.z = p_from.z;
 
-			image_copy_region.dstSubresource.aspectMask = src_tex->aspect_mask;
+			image_copy_region.dstSubresource.aspectMask = src_tex->barrier_aspect_mask;
 			image_copy_region.dstSubresource.baseArrayLayer = p_dst_layer;
 			image_copy_region.dstSubresource.layerCount = 1;
 			image_copy_region.dstSubresource.mipLevel = p_dst_mipmap;
@@ -2653,7 +2674,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = src_tex->image;
-			image_memory_barrier.subresourceRange.aspectMask = src_tex->aspect_mask;
+			image_memory_barrier.subresourceRange.aspectMask = src_tex->barrier_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = p_src_mipmap;
 			image_memory_barrier.subresourceRange.levelCount = src_tex->mipmaps;
 			image_memory_barrier.subresourceRange.baseArrayLayer = p_src_layer;
@@ -3763,19 +3784,18 @@ RID RenderingDeviceVulkan::shader_create(const Vector<ShaderStageData> &p_stages
 					ERR_EXPLAIN("Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed enumerating input variables.");
 					ERR_FAIL_V(RID());
 				}
-
 				if (iv_count) {
 					Vector<SpvReflectInterfaceVariable *> input_vars;
 					input_vars.resize(iv_count);
 
-					result = spvReflectEnumerateOutputVariables(&module, &iv_count, input_vars.ptrw());
+					result = spvReflectEnumerateInputVariables(&module, &iv_count, input_vars.ptrw());
 					if (result != SPV_REFLECT_RESULT_SUCCESS) {
 						ERR_EXPLAIN("Reflection of SPIR-V shader stage '" + String(shader_stage_names[p_stages[i].shader_stage]) + "' failed obtaining input variables.");
 						ERR_FAIL_V(RID());
 					}
 
 					for (uint32_t j = 0; j < iv_count; j++) {
-						if (input_vars[j]) {
+						if (input_vars[j] && input_vars[j]->decoration_flags == 0) { //regular input
 							vertex_input_mask |= (1 << uint32_t(input_vars[j]->location));
 						}
 					}
