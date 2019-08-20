@@ -38,6 +38,8 @@
 #include <sys/stat.h>
 #include <sys/types.h>
 
+#include <errno.h>
+
 #if defined(UNIX_ENABLED)
 #include <unistd.h>
 #endif
@@ -112,8 +114,15 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	f = fopen(path.utf8().get_data(), mode_string);
 
 	if (f == NULL) {
-		last_error = ERR_FILE_CANT_OPEN;
-		return ERR_FILE_CANT_OPEN;
+		switch (errno) {
+			case ENOENT: {
+				last_error = ERR_FILE_NOT_FOUND;
+			} break;
+			default: {
+				last_error = ERR_FILE_CANT_OPEN;
+			} break;
+		}
+		return last_error;
 	} else {
 		last_error = OK;
 		flags = p_mode_flags;

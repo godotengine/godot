@@ -324,13 +324,6 @@ void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
 }
 
-Ref<ConfigFile> EditorPlugin::get_config() {
-	Ref<ConfigFile> cf = memnew(ConfigFile);
-	Error err = cf->load(_dir_cache.plus_file("plugin.cfg"));
-	ERR_FAIL_COND_V(err != OK, cf);
-	return cf;
-}
-
 ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {
 	ERR_FAIL_NULL_V(p_control, NULL);
 	return EditorNode::get_singleton()->add_bottom_panel_item(p_title, p_control);
