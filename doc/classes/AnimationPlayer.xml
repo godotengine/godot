@@ -165,6 +165,7 @@
 			</argument>
 			<description>
 				Queues an animation for playback once the current one is done.
+				[b]Note:[/b] If a looped animation is currently playing, the queued animation will never play unless the looped animation is stopped somehow.
 			</description>
 		</method>
 		<method name="remove_animation">
