@@ -6216,9 +6216,21 @@ void TextEdit::set_line(int line, String new_text) {
 }
 
 void TextEdit::insert_at(const String &p_text, int at) {
-	cursor_set_column(0);
-	cursor_set_line(at, false, true);
 	_insert_text(at, 0, p_text + "\n");
+	if (cursor.line >= at) {
+		// offset cursor when located after inserted line
+		++cursor.line;
+	}
+	if (is_selection_active()) {
+		if (selection.from_line >= at) {
+			// offset selection when located after inserted line
+			++selection.from_line;
+			++selection.to_line;
+		} else if (selection.to_line >= at) {
+			// extend selection that includes inserted line
+			++selection.to_line;
+		}
+	}
 }
 
 void TextEdit::set_show_line_numbers(bool p_show) {
