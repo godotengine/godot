@@ -1033,8 +1033,16 @@ void TileSetEditor::_on_workspace_process() {
 
 void TileSetEditor::_on_workspace_overlay_draw() {
 
-	if (!tileset.is_valid() || !get_current_texture().is_valid())
+	if (!tileset.is_valid())
 		return;
+
+	if (!get_current_texture().is_valid()) {
+		Ref<Font> font = get_font("font", "Label");
+		Color color = get_color("font_color", "Editor");
+		Point2i offset(workspace_overlay->get_margin(Margin::MARGIN_LEFT), WORKSPACE_MARGIN.y);
+		workspace_overlay->draw_string(font, offset, String("Select texture to edit from the left"), color);
+		return;
+	}
 
 	const Color COLOR_AUTOTILE = Color(0.266373, 0.565288, 0.988281);
 	const Color COLOR_SINGLE = Color(0.988281, 0.909323, 0.266373);
