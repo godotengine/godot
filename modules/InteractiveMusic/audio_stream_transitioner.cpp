@@ -281,11 +281,15 @@ void AudioStreamPlaybackTransitioner::seek(float p_time) {
 }
 
 void AudioStreamPlaybackTransitioner::add_stream_to_buffer(Ref<AudioStreamPlayback> playback, int samples, float p_rate_scale, float initial_volume, float final_volume) {
-	playback->mix(aux_buffer, p_rate_scale, samples);
-	for (int i = 0; i < samples; i++) {
-		float c = float(i) / samples;
-		float volume = initial_volume * (1.0 - c) + final_volume * c;
-		pcm_buffer[i] += aux_buffer[i] * volume;
+	if (playback.is_valid()) {
+		playback->mix(aux_buffer, p_rate_scale, samples);
+		for (int i = 0; i < samples; i++) {
+			float c = float(i) / samples;
+			float volume = initial_volume * (1.0 - c) + final_volume * c;
+			pcm_buffer[i] += aux_buffer[i] * volume;
+		}
+	} else {
+		return;
 	}
 }
 
@@ -304,140 +308,149 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 		return;
 
 	} else {
-		int dst_offset = 0;
-		
-		while (p_frames > 0) {
-			if (transitioner->active_transition.t_active) {
-				
-				current = transitioner->active_clip_number;
-				previous = transitioner->fading_clip_number;
-				fading = true;
-				clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate; 
-				if (transitioner->clips[current]->get_bpm() == 0) {
-					beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
-				} else {
-					beat_size = transitioner->sample_rate * 60 / transitioner->clips[current]->get_bpm();
-				}
-				if (transitioner->clips[previous]->get_bpm() == 0) {
-					fading_beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
-				} else {
-					fading_beat_size = transitioner->sample_rate * 60 / transitioner->clips[previous]->get_bpm();
-				}
-				fade_out_samples_total = transitioner->active_transition.fade_out_beats * fading_beat_size;
-				fade_in_samples_total = transitioner->active_transition.fade_in_beats * beat_size;
-				if (transitioner->t_clip_active) {
- 					if (transitioner->t_clip->get_bpm() == 0) {
-						t_clip_beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
-					} else {
-						t_clip_beat_size = transitioner->sample_rate * 60 / transitioner->t_clip->get_bpm();
-					}
-					fade_in_t_clip_samples_total = transitioner->active_transition.fade_in_beats * t_clip_beat_size;
-					fade_out_t_clip_samples_total = transitioner->active_transition.fade_out_beats * t_clip_beat_size;
-					if (transitioner->t_clip->get_beat_count() == 0) {
-						t_clip_samples_total = transitioner->t_clip->get_length() * transitioner->sample_rate;
-					} else {
-						t_clip_samples_total = transitioner->t_clip->get_beat_count() * t_clip_beat_size;
-					}
-					transition_samples_total = MAX(fade_in_samples_total, fade_in_t_clip_samples_total) + MAX(fade_out_samples_total, fade_out_t_clip_samples_total) + MAX(t_clip_samples_total - (MAX(fade_in_samples_total, fade_in_t_clip_samples_total) + MAX(fade_out_samples_total, fade_out_t_clip_samples_total)), 0);
-					fade_in_t_clip_samples = fade_in_t_clip_samples_total;
-					fade_out_t_clip_samples = fade_out_t_clip_samples_total;
-					t_clip_samples = t_clip_samples_total;
-					t_playback->start();
-				} else {
-					transition_samples_total = MAX(fade_in_samples_total, fade_out_samples_total);
-					playbacks[current]->start();
-				}
-				transition_samples = transition_samples_total;
-				fade_in_samples = fade_in_samples_total;
-				fade_out_samples = fade_out_samples_total;
-				transitioner->active_transition.t_active = false;
-			}
-			 
-			int to_mix = MIN(MIX_BUFFER_SIZE, p_frames);
-			clear_buffer(to_mix);
+		if (transitioner->clips[current].is_valid()){
 
-			if (clip_samples_total <= 0) {
-				playbacks[current]->seek(0.0);
-				clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate; 
-			}
+			int dst_offset = 0;
 
-			if (fading) {
-				if (transition_samples < 0) {
-					fading = false;
-				} else {
-					int to_fade_out = MIN(to_mix, fade_out_samples);
-					int to_fade_in = MIN(to_mix, fade_in_samples);
-					float fade_out_start_volume = 1.0 - float(fade_out_samples_total - fade_out_samples) / fade_out_samples_total;
-					float fade_out_end_volume = 1.0 - float(fade_out_samples_total - (fade_out_samples - to_fade_out)) / fade_out_samples_total;
-					float fade_in_start_volume = 1.0 - float(fade_in_samples) / fade_in_samples_total;
-					float fade_in_end_volume = 1.0 - float(fade_in_samples - to_fade_in) / fade_in_samples_total;
-					if (transitioner->t_clip_active) {
-						int to_fade_out_t_clip = MIN(to_mix, fade_out_t_clip_samples);
-						int to_fade_in_t_clip = MIN(to_mix, fade_in_t_clip_samples);
-						float fade_out_start_volume_t_samples = 1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples) / fade_out_t_clip_samples_total;
-						float fade_out_end_volume_t_samples = 1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples - to_fade_out_t_clip) / fade_out_t_clip_samples_total;
-						float fade_in_start_volume_t_samples = 1.0 - float(fade_in_t_clip_samples) / fade_in_t_clip_samples_total;
-						float fade_in_end_volume_t_samples = 1.0 - float(fade_in_t_clip_samples - to_fade_out_t_clip) / fade_in_t_clip_samples_total;
-						if (fade_out_samples > 0) {
-							add_stream_to_buffer(playbacks[previous], to_fade_out, p_rate_scale, fade_out_start_volume, fade_out_end_volume);
-							fade_out_samples -= to_fade_out;
+			while (p_frames > 0) {
+				if (transitioner->active_transition.t_active) {
+					current = transitioner->active_clip_number;
+					previous = transitioner->fading_clip_number;
+
+						fading = true;
+						clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate;
+						if (transitioner->clips[current]->get_bpm() == 0) {
+							beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
 						} else {
-							playbacks[previous]->stop();
+							beat_size = transitioner->sample_rate * 60 / transitioner->clips[current]->get_bpm();
 						}
-						if (fade_in_t_clip_samples > 0) {
-							add_stream_to_buffer(t_playback, to_fade_in_t_clip, p_rate_scale, fade_in_start_volume_t_samples, fade_in_end_volume_t_samples);
-							fade_in_t_clip_samples -= to_fade_in_t_clip;
-							t_clip_samples -= to_fade_in_t_clip;
-						} else {
-							if (t_clip_samples > fade_out_t_clip_samples_total) {
-								add_stream_to_buffer(t_playback, to_mix, p_rate_scale, 1.0, 1.0);
-								t_clip_samples -= to_mix;
+						if (transitioner->clips[previous].is_valid()) {
+							if (transitioner->clips[previous]->get_bpm() == 0) {
+								fading_beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
 							} else {
-								if (fade_in_samples == fade_in_samples_total) {
-									playbacks[current]->start();
+								fading_beat_size = transitioner->sample_rate * 60 / transitioner->clips[previous]->get_bpm();
+							}
+						}
+						fade_out_samples_total = transitioner->active_transition.fade_out_beats * fading_beat_size;
+						fade_in_samples_total = transitioner->active_transition.fade_in_beats * beat_size;
+						if (transitioner->t_clip_active) {
+							if (transitioner->t_clip->get_bpm() == 0) {
+								t_clip_beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
+							} else {
+								t_clip_beat_size = transitioner->sample_rate * 60 / transitioner->t_clip->get_bpm();
+							}
+							fade_in_t_clip_samples_total = transitioner->active_transition.fade_in_beats * t_clip_beat_size;
+							fade_out_t_clip_samples_total = transitioner->active_transition.fade_out_beats * t_clip_beat_size;
+							if (transitioner->t_clip->get_beat_count() == 0) {
+								t_clip_samples_total = transitioner->t_clip->get_length() * transitioner->sample_rate;
+							} else {
+								t_clip_samples_total = transitioner->t_clip->get_beat_count() * t_clip_beat_size;
+							}
+							transition_samples_total = MAX(fade_in_samples_total, fade_in_t_clip_samples_total) + MAX(fade_out_samples_total, fade_out_t_clip_samples_total) + MAX(t_clip_samples_total - (MAX(fade_in_samples_total, fade_in_t_clip_samples_total) + MAX(fade_out_samples_total, fade_out_t_clip_samples_total)), 0);
+							fade_in_t_clip_samples = fade_in_t_clip_samples_total;
+							fade_out_t_clip_samples = fade_out_t_clip_samples_total;
+							t_clip_samples = t_clip_samples_total;
+							t_playback->start();
+						} else {
+							transition_samples_total = MAX(fade_in_samples_total, fade_out_samples_total);
+							playbacks[current]->start();
+						}
+						transition_samples = transition_samples_total;
+						fade_in_samples = fade_in_samples_total;
+						fade_out_samples = fade_out_samples_total;
+						transitioner->active_transition.t_active = false;
+					}
+				
+
+				int to_mix = MIN(MIX_BUFFER_SIZE, p_frames);
+				clear_buffer(to_mix);
+
+				if (clip_samples_total <= 0) {
+					playbacks[current]->seek(0.0);
+					clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate;
+				}
+
+				if (fading) {
+					if (transition_samples <= 0) {
+						fading = false;
+					} else {
+						if (playbacks[current].is_valid() && playbacks[previous].is_valid()) {
+							int to_fade_out = MIN(to_mix, fade_out_samples);
+							int to_fade_in = MIN(to_mix, fade_in_samples);
+							float fade_out_start_volume = (1.0 - float(fade_out_samples_total - fade_out_samples) / fade_out_samples_total)*1.0;
+							float fade_out_end_volume = (1.0 - float(fade_out_samples_total - (fade_out_samples - to_fade_out)) / fade_out_samples_total)*1.0;						
+							float fade_in_start_volume = (1.0 - float(fade_in_samples) / fade_in_samples_total)*1.0;
+							float fade_in_end_volume = (1.0 - float(fade_in_samples - to_fade_in) / fade_in_samples_total) * 1.0;							
+							if (transitioner->t_clip_active) {
+								int to_fade_out_t_clip = MIN(to_mix, fade_out_t_clip_samples);
+								int to_fade_in_t_clip = MIN(to_mix, fade_in_t_clip_samples);
+								float fade_out_start_volume_t_samples = (1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples) / fade_out_t_clip_samples_total)*1.0;
+								float fade_out_end_volume_t_samples = (1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples - to_fade_out_t_clip) / fade_out_t_clip_samples_total)*1.0;
+								float fade_in_start_volume_t_samples = (1.0 - float(fade_in_t_clip_samples) / fade_in_t_clip_samples_total)*1.0;
+								float fade_in_end_volume_t_samples = (1.0 - float(fade_in_t_clip_samples - to_fade_out_t_clip) / fade_in_t_clip_samples_total)*1.0;
+								if (fade_out_samples > 0) {
+									add_stream_to_buffer(playbacks[previous], to_fade_out, p_rate_scale, fade_out_start_volume, fade_out_end_volume);
+									fade_out_samples -= to_fade_out;
+								} else {
+									playbacks[previous]->stop();
+								}
+								if (fade_in_t_clip_samples > 0) {
+									add_stream_to_buffer(t_playback, to_fade_in_t_clip, p_rate_scale, fade_in_start_volume_t_samples, fade_in_end_volume_t_samples);
+									fade_in_t_clip_samples -= to_fade_in_t_clip;
+									t_clip_samples -= to_fade_in_t_clip;
+								} else {
+									if (t_clip_samples > fade_out_t_clip_samples_total) {
+										add_stream_to_buffer(t_playback, to_mix, p_rate_scale, 1.0, 1.0);
+										t_clip_samples -= to_mix;
+									} else {
+										if (fade_in_samples == fade_in_samples_total) {
+											playbacks[current]->start();
+										}
+										if (fade_in_samples > 0) {
+											add_stream_to_buffer(playbacks[current], to_fade_in, p_rate_scale, fade_in_start_volume, fade_in_end_volume);
+											fade_in_samples -= to_fade_in;
+										} else {
+											add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
+										}
+										if (fade_out_t_clip_samples > 0) {
+											add_stream_to_buffer(t_playback, to_fade_out_t_clip, p_rate_scale, fade_out_start_volume_t_samples, fade_out_end_volume_t_samples);
+											fade_out_t_clip_samples -= to_fade_out_t_clip;
+											t_clip_samples -= to_fade_out_t_clip;
+										} else {
+											t_playback->stop();
+										}
+									}
+								}
+								transition_samples -= to_mix;
+							} else {
+								if (fade_out_samples > 0) {
+									add_stream_to_buffer(playbacks[previous], to_fade_out, p_rate_scale, fade_out_start_volume, fade_out_end_volume);
+								} else {
+									playbacks[previous]->stop();
 								}
 								if (fade_in_samples > 0) {
 									add_stream_to_buffer(playbacks[current], to_fade_in, p_rate_scale, fade_in_start_volume, fade_in_end_volume);
-									fade_in_samples -= to_fade_in;
 								} else {
 									add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
 								}
-								if (fade_out_t_clip_samples > 0) {
-									add_stream_to_buffer(t_playback, to_fade_out_t_clip, p_rate_scale, fade_out_start_volume_t_samples, fade_out_end_volume_t_samples);
-									fade_out_t_clip_samples -= to_fade_out_t_clip;
-									t_clip_samples -= to_fade_out_t_clip;
-								} else {
-									t_playback->stop();
-								}
+								transition_samples -= to_mix;
+								if (transition_samples <= 0) fading = false;
+								fade_out_samples -= to_fade_out;
+								fade_in_samples -= to_fade_in;
 							}
 						}
-						transition_samples -= to_mix;
-					} else {
-						if (fade_out_samples > 0) {
-							add_stream_to_buffer(playbacks[previous], to_fade_out, p_rate_scale, fade_out_start_volume, fade_out_end_volume);
-						} else {
-							playbacks[previous]->stop();
-						}
-						if (fade_in_samples > 0) {
-							add_stream_to_buffer(playbacks[current], to_fade_in, p_rate_scale, fade_in_start_volume, fade_in_end_volume);
-						} else {
-							add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
-						}
-						transition_samples -= to_mix;
-						fade_out_samples -= to_fade_out;
-						fade_in_samples -= to_fade_in;
 					}
+				} else {
+					add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
 				}
-			} else {
-				add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
-			}
 
-			for (int i = 0; i < to_mix; i++) {
-				p_buffer[i + dst_offset] = pcm_buffer[i];
+				for (int i = 0; i < to_mix; i++) {
+					p_buffer[i + dst_offset] = pcm_buffer[i];
+				}
+				dst_offset += to_mix;
+				p_frames -= to_mix;
+				clip_samples_total -= to_mix;
 			}
-			dst_offset += to_mix;
-			p_frames -= to_mix;
-			clip_samples_total -= to_mix;
 		}
 	}
 }
