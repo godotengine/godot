@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.h                                                    */
+/*  crypto_core.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,77 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_SSL_H
-#define STREAM_PEER_SSL_H
+#ifndef CRYPTO_CORE_H
+#define CRYPTO_CORE_H
 
-#include "core/crypto/crypto.h"
-#include "core/io/stream_peer.h"
+#include "core/reference.h"
 
-class StreamPeerSSL : public StreamPeer {
-	GDCLASS(StreamPeerSSL, StreamPeer);
-
-protected:
-	static StreamPeerSSL *(*_create)();
-	static void _bind_methods();
-
-	static bool available;
-
-	bool blocking_handshake;
+class CryptoCore {
 
 public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
+	class MD5Context {
+
+	private:
+		void *ctx; // To include, or not to include...
+
+	public:
+		MD5Context();
+		~MD5Context();
+
+		Error start();
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[16]);
 	};
 
-	void set_blocking_handshake_enabled(bool p_enabled);
-	bool is_blocking_handshake_enabled() const;
+	class SHA1Context {
 
-	virtual void poll() = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) = 0;
-	virtual Status get_status() const = 0;
+	private:
+		void *ctx; // To include, or not to include...
 
-	virtual void disconnect_from_stream() = 0;
+	public:
+		SHA1Context();
+		~SHA1Context();
 
-	static StreamPeerSSL *create();
+		Error start();
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[20]);
+	};
 
-	static bool is_available();
+	class SHA256Context {
 
-	StreamPeerSSL();
+	private:
+		void *ctx; // To include, or not to include...
+
+	public:
+		SHA256Context();
+		~SHA256Context();
+
+		Error start();
+		Error update(const uint8_t *p_src, size_t p_len);
+		Error finish(unsigned char r_hash[32]);
+	};
+
+	class AESContext {
+
+	private:
+		void *ctx; // To include, or not to include...
+
+	public:
+		AESContext();
+		~AESContext();
+
+		Error set_encode_key(const uint8_t *p_key, size_t p_bits);
+		Error set_decode_key(const uint8_t *p_key, size_t p_bits);
+		Error encrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
+		Error decrypt_ecb(const uint8_t p_src[16], uint8_t r_dst[16]);
+	};
+
+	static String b64_encode_str(const uint8_t *p_src, int p_src_len);
+	static Error b64_encode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len);
+	static Error b64_decode(uint8_t *r_dst, int p_dst_len, size_t *r_len, const uint8_t *p_src, int p_src_len);
+
+	static Error md5(const uint8_t *p_src, int p_src_len, unsigned char r_hash[16]);
+	static Error sha1(const uint8_t *p_src, int p_src_len, unsigned char r_hash[20]);
+	static Error sha256(const uint8_t *p_src, int p_src_len, unsigned char r_hash[32]);
 };
-
-VARIANT_ENUM_CAST(StreamPeerSSL::Status);
-
-#endif // STREAM_PEER_SSL_H
+#endif // CRYPTO_CORE_H

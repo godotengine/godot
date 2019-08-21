@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_mbed_tls.h                                               */
+/*  crypto_mbedtls.h                                                     */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,67 +28,97 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_OPEN_SSL_H
-#define STREAM_PEER_OPEN_SSL_H
+#ifndef CRYPTO_MBEDTLS_H
+#define CRYPTO_MBEDTLS_H
 
-#include "core/io/stream_peer_ssl.h"
+#include "core/crypto/crypto.h"
+#include "core/resource.h"
 
-#include <mbedtls/config.h>
 #include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
 #include <mbedtls/entropy.h>
 #include <mbedtls/ssl.h>
 
-#include <stdio.h>
-#include <stdlib.h>
+class CryptoMbedTLS;
+class SSLContextMbedTLS;
+class CryptoKeyMbedTLS : public CryptoKey {
 
-class StreamPeerMbedTLS : public StreamPeerSSL {
 private:
-	Status status;
-	String hostname;
-
-	Ref<StreamPeer> base;
-
-	static StreamPeerSSL *_create_func();
-	static void _load_certs(const PoolByteArray &p_array);
-
-	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
-	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
-	void _cleanup();
-
-protected:
-	static mbedtls_x509_crt cacert;
-
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	static void _bind_methods();
-
-	Error _do_handshake();
+	mbedtls_pk_context pkey;
+	int locks;
 
 public:
-	virtual void poll();
-	virtual Error accept_stream(Ref<StreamPeer> p_base);
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String());
-	virtual Status get_status() const;
+	static CryptoKey *create();
+	static void make_default() { CryptoKey::_create = create; }
+	static void finalize() { CryptoKey::_create = NULL; }
 
-	virtual void disconnect_from_stream();
+	virtual Error load(String p_path);
+	virtual Error save(String p_path);
 
-	virtual Error put_data(const uint8_t *p_data, int p_bytes);
-	virtual Error put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent);
+	CryptoKeyMbedTLS() {
+		mbedtls_pk_init(&pkey);
+		locks = 0;
+	}
+	~CryptoKeyMbedTLS() {
+		mbedtls_pk_free(&pkey);
+	}
 
-	virtual Error get_data(uint8_t *p_buffer, int p_bytes);
-	virtual Error get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received);
+	_FORCE_INLINE_ void lock() { locks++; }
+	_FORCE_INLINE_ void unlock() { locks--; }
 
-	virtual int get_available_bytes() const;
-
-	static void initialize_ssl();
-	static void finalize_ssl();
-
-	StreamPeerMbedTLS();
-	~StreamPeerMbedTLS();
+	friend class CryptoMbedTLS;
+	friend class SSLContextMbedTLS;
 };
 
-#endif // STREAM_PEER_SSL_H
+class X509CertificateMbedTLS : public X509Certificate {
+
+private:
+	mbedtls_x509_crt cert;
+	int locks;
+
+public:
+	static X509Certificate *create();
+	static void make_default() { X509Certificate::_create = create; }
+	static void finalize() { X509Certificate::_create = NULL; }
+
+	virtual Error load(String p_path);
+	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len);
+	virtual Error save(String p_path);
+
+	X509CertificateMbedTLS() {
+		mbedtls_x509_crt_init(&cert);
+		locks = 0;
+	}
+	~X509CertificateMbedTLS() {
+		mbedtls_x509_crt_free(&cert);
+	}
+
+	_FORCE_INLINE_ void lock() { locks++; }
+	_FORCE_INLINE_ void unlock() { locks--; }
+
+	friend class CryptoMbedTLS;
+	friend class SSLContextMbedTLS;
+};
+
+class CryptoMbedTLS : public Crypto {
+
+private:
+	mbedtls_entropy_context entropy;
+	mbedtls_ctr_drbg_context ctr_drbg;
+	static X509CertificateMbedTLS *default_certs;
+
+public:
+	static Crypto *create();
+	static void initialize_crypto();
+	static void finalize_crypto();
+	static X509CertificateMbedTLS *get_default_certificates();
+	static void load_default_certificates(String p_path);
+
+	virtual PoolByteArray generate_random_bytes(int p_bytes);
+	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
+	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after);
+
+	CryptoMbedTLS();
+	~CryptoMbedTLS();
+};
+
+#endif // CRYPTO_MBEDTLS_H

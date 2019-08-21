@@ -34,6 +34,8 @@
 #include "core/class_db.h"
 #include "core/compressed_translation.h"
 #include "core/core_string_names.h"
+#include "core/crypto/crypto.h"
+#include "core/crypto/hashing_context.h"
 #include "core/engine.h"
 #include "core/func_ref.h"
 #include "core/input_map.h"
@@ -70,6 +72,8 @@ static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
 static Ref<ResourceFormatImporter> resource_format_importer;
 static Ref<ResourceFormatLoaderImage> resource_format_image;
 static Ref<TranslationLoaderPO> resource_format_po;
+static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
+static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
 
 static _ResourceLoader *_resource_loader = NULL;
 static _ResourceSaver *_resource_saver = NULL;
@@ -151,7 +155,19 @@ void register_core_types() {
 	ClassDB::register_class<StreamPeerTCP>();
 	ClassDB::register_class<TCP_Server>();
 	ClassDB::register_class<PacketPeerUDP>();
+
+	// Crypto
+	ClassDB::register_class<HashingContext>();
+	ClassDB::register_custom_instance_class<X509Certificate>();
+	ClassDB::register_custom_instance_class<CryptoKey>();
+	ClassDB::register_custom_instance_class<Crypto>();
 	ClassDB::register_custom_instance_class<StreamPeerSSL>();
+
+	resource_format_saver_crypto.instance();
+	ResourceSaver::add_resource_format_saver(resource_format_saver_crypto);
+	resource_format_loader_crypto.instance();
+	ResourceLoader::add_resource_format_loader(resource_format_loader_crypto);
+
 	ClassDB::register_virtual_class<IP>();
 	ClassDB::register_virtual_class<PacketPeer>();
 	ClassDB::register_class<PacketPeerStream>();
@@ -211,6 +227,9 @@ void register_core_settings() {
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/tcp/connect_timeout_seconds", PropertyInfo(Variant::INT, "network/limits/tcp/connect_timeout_seconds", PROPERTY_HINT_RANGE, "1,1800,1"));
 	GLOBAL_DEF_RST("network/limits/packet_peer_stream/max_buffer_po2", (16));
 	ProjectSettings::get_singleton()->set_custom_property_info("network/limits/packet_peer_stream/max_buffer_po2", PropertyInfo(Variant::INT, "network/limits/packet_peer_stream/max_buffer_po2", PROPERTY_HINT_RANGE, "0,64,1,or_greater"));
+
+	GLOBAL_DEF("network/ssl/certificates", "");
+	ProjectSettings::get_singleton()->set_custom_property_info("network/ssl/certificates", PropertyInfo(Variant::STRING, "network/ssl/certificates", PROPERTY_HINT_FILE, "*.crt"));
 }
 
 void register_core_singletons() {
@@ -271,6 +290,11 @@ void unregister_core_types() {
 
 	ResourceLoader::remove_resource_format_loader(resource_format_po);
 	resource_format_po.unref();
+
+	ResourceSaver::remove_resource_format_saver(resource_format_saver_crypto);
+	resource_format_saver_crypto.unref();
+	ResourceLoader::remove_resource_format_loader(resource_format_loader_crypto);
+	resource_format_loader_crypto.unref();
 
 	if (ip)
 		memdelete(ip);

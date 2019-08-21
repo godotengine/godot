@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.h                                                    */
+/*  hashing_context.h                                                    */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,39 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_SSL_H
-#define STREAM_PEER_SSL_H
+#ifndef HASHING_CONTEXT_H
+#define HASHING_CONTEXT_H
 
-#include "core/crypto/crypto.h"
-#include "core/io/stream_peer.h"
+#include "core/reference.h"
 
-class StreamPeerSSL : public StreamPeer {
-	GDCLASS(StreamPeerSSL, StreamPeer);
-
-protected:
-	static StreamPeerSSL *(*_create)();
-	static void _bind_methods();
-
-	static bool available;
-
-	bool blocking_handshake;
+class HashingContext : public Reference {
+	GDCLASS(HashingContext, Reference);
 
 public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
+	enum HashType {
+		HASH_MD5,
+		HASH_SHA1,
+		HASH_SHA256
 	};
 
-	void set_blocking_handshake_enabled(bool p_enabled);
-	bool is_blocking_handshake_enabled() const;
+private:
+	void *ctx;
+	HashType type;
 
-	virtual void poll() = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) = 0;
-	virtual Status get_status() const = 0;
+protected:
+	static void _bind_methods();
+	void _create_ctx(HashType p_type);
+	void _delete_ctx();
 
-	virtual void disconnect_from_stream() = 0;
+public:
+	Error start(HashType p_type);
+	Error update(PoolByteArray p_chunk);
+	PoolByteArray finish();
 
-	static StreamPeerSSL *create();
-
-	static bool is_available();
-
-	StreamPeerSSL();
+	HashingContext();
+	~HashingContext();
 };
 
-VARIANT_ENUM_CAST(StreamPeerSSL::Status);
+VARIANT_ENUM_CAST(HashingContext::HashType);
 
-#endif // STREAM_PEER_SSL_H
+#endif // HASHING_CONTEXT_H

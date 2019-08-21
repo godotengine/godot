@@ -30,6 +30,7 @@
 
 #include "main.h"
 
+#include "core/crypto/crypto.h"
 #include "core/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
@@ -37,8 +38,6 @@
 #include "core/io/image_loader.h"
 #include "core/io/ip.h"
 #include "core/io/resource_loader.h"
-#include "core/io/stream_peer_ssl.h"
-#include "core/io/stream_peer_tcp.h"
 #include "core/message_queue.h"
 #include "core/os/dir_access.h"
 #include "core/os/os.h"
@@ -1741,7 +1740,7 @@ bool Main::start() {
 		if (!project_manager && !editor) { // game
 
 			// Load SSL Certificates from Project Settings (or builtin).
-			StreamPeerSSL::load_certs_from_memory(StreamPeerSSL::get_project_cert_array());
+			Crypto::load_default_certificates(GLOBAL_DEF("network/ssl/certificates", ""));
 
 			if (game_path != "") {
 				Node *scene = NULL;
@@ -1793,16 +1792,14 @@ bool Main::start() {
 		}
 
 		if (project_manager || editor) {
-			// Load SSL Certificates from Editor Settings (or builtin).
-			String certs = EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String();
-			if (certs != "")
-				StreamPeerSSL::load_certs_from_file(certs);
-			else
-				StreamPeerSSL::load_certs_from_memory(StreamPeerSSL::get_project_cert_array());
-
 			// Hide console window if requested (Windows-only).
 			bool hide_console = EditorSettings::get_singleton()->get_setting("interface/editor/hide_console_window");
 			OS::get_singleton()->set_console_visible(!hide_console);
+		}
+
+		if (project_manager || editor) {
+			// Load SSL Certificates from Editor Settings (or builtin)
+			Crypto::load_default_certificates(EditorSettings::get_singleton()->get_setting("network/ssl/editor_ssl_certificates").operator String());
 		}
 #endif
 	}

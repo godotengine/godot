@@ -30,7 +30,7 @@
 
 #include "file_access_encrypted.h"
 
-#include "core/math/crypto_core.h"
+#include "core/crypto/crypto_core.h"
 #include "core/os/copymem.h"
 #include "core/print_string.h"
 #include "core/variant.h"

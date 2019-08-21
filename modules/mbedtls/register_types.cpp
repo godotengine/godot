@@ -30,15 +30,17 @@
 
 #include "register_types.h"
 
-#include "stream_peer_mbed_tls.h"
+#include "crypto_mbedtls.h"
+#include "stream_peer_mbedtls.h"
 
 void register_mbedtls_types() {
 
-	ClassDB::register_class<StreamPeerMbedTLS>();
+	CryptoMbedTLS::initialize_crypto();
 	StreamPeerMbedTLS::initialize_ssl();
 }
 
 void unregister_mbedtls_types() {
 
 	StreamPeerMbedTLS::finalize_ssl();
+	CryptoMbedTLS::finalize_crypto();
 }

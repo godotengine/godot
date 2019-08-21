@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  stream_peer_ssl.h                                                    */
+/*  crypto.h                                                             */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,49 +28,78 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef STREAM_PEER_SSL_H
-#define STREAM_PEER_SSL_H
+#ifndef CRYPTO_H
+#define CRYPTO_H
 
-#include "core/crypto/crypto.h"
-#include "core/io/stream_peer.h"
+#include "core/reference.h"
+#include "core/resource.h"
 
-class StreamPeerSSL : public StreamPeer {
-	GDCLASS(StreamPeerSSL, StreamPeer);
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+
+class CryptoKey : public Resource {
+	GDCLASS(CryptoKey, Resource);
 
 protected:
-	static StreamPeerSSL *(*_create)();
 	static void _bind_methods();
-
-	static bool available;
-
-	bool blocking_handshake;
+	static CryptoKey *(*_create)();
 
 public:
-	enum Status {
-		STATUS_DISCONNECTED,
-		STATUS_HANDSHAKING,
-		STATUS_CONNECTED,
-		STATUS_ERROR,
-		STATUS_ERROR_HOSTNAME_MISMATCH
-	};
-
-	void set_blocking_handshake_enabled(bool p_enabled);
-	bool is_blocking_handshake_enabled() const;
-
-	virtual void poll() = 0;
-	virtual Error accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
-	virtual Error connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_valid_cert = Ref<X509Certificate>()) = 0;
-	virtual Status get_status() const = 0;
-
-	virtual void disconnect_from_stream() = 0;
-
-	static StreamPeerSSL *create();
-
-	static bool is_available();
-
-	StreamPeerSSL();
+	static CryptoKey *create();
+	virtual Error load(String p_path) = 0;
+	virtual Error save(String p_path) = 0;
 };
 
-VARIANT_ENUM_CAST(StreamPeerSSL::Status);
+class X509Certificate : public Resource {
+	GDCLASS(X509Certificate, Resource);
 
-#endif // STREAM_PEER_SSL_H
+protected:
+	static void _bind_methods();
+	static X509Certificate *(*_create)();
+
+public:
+	static X509Certificate *create();
+	virtual Error load(String p_path) = 0;
+	virtual Error load_from_memory(const uint8_t *p_buffer, int p_len) = 0;
+	virtual Error save(String p_path) = 0;
+};
+
+class Crypto : public Reference {
+	GDCLASS(Crypto, Reference);
+
+protected:
+	static void _bind_methods();
+	static Crypto *(*_create)();
+	static void (*_load_default_certificates)(String p_path);
+
+public:
+	static Crypto *create();
+	static void load_default_certificates(String p_path);
+
+	virtual PoolByteArray generate_random_bytes(int p_bytes);
+	virtual Ref<CryptoKey> generate_rsa(int p_bytes);
+	virtual Ref<X509Certificate> generate_self_signed_certificate(Ref<CryptoKey> p_key, String p_issuer_name, String p_not_before, String p_not_after);
+
+	Crypto();
+};
+
+class ResourceFormatLoaderCrypto : public ResourceFormatLoader {
+	GDCLASS(ResourceFormatLoaderCrypto, ResourceFormatLoader);
+
+public:
+	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
+	virtual void get_recognized_extensions(List<String> *p_extensions) const;
+	virtual bool handles_type(const String &p_type) const;
+	virtual String get_resource_type(const String &p_path) const;
+};
+
+class ResourceFormatSaverCrypto : public ResourceFormatSaver {
+	GDCLASS(ResourceFormatSaverCrypto, ResourceFormatSaver);
+
+public:
+	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);
+	virtual void get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const;
+	virtual bool recognize(const RES &p_resource) const;
+};
+
+#endif // CRYPTO_H

@@ -30,11 +30,11 @@
 
 #include "editor_export.h"
 
+#include "core/crypto/crypto_core.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
 #include "core/io/zip_io.h"
-#include "core/math/crypto_core.h"
 #include "core/os/dir_access.h"
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
