@@ -37,6 +37,7 @@
 #include "os_iphone.h"
 
 #import "GameController/GameController.h"
+#import <AudioToolbox/AudioServices.h>
 
 #define kFilteringFactor 0.1
 #define kRenderingFrequency 60
@@ -59,6 +60,10 @@ Error _shell_open(String p_uri) {
 
 void _set_keep_screen_on(bool p_enabled) {
 	[[UIApplication sharedApplication] setIdleTimerDisabled:(BOOL)p_enabled];
+};
+
+void _vibrate() {
+	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 };
 
 @implementation AppDelegate
