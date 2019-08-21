@@ -141,6 +141,7 @@ namespace Godot
             {"teal", new Color(0.00f, 0.50f, 0.50f)},
             {"thistle", new Color(0.85f, 0.75f, 0.85f)},
             {"tomato", new Color(1.00f, 0.39f, 0.28f)},
+            {"transparent", new Color(1.00f, 1.00f, 1.00f, 0.00f)},
             {"turquoise", new Color(0.25f, 0.88f, 0.82f)},
             {"violet", new Color(0.93f, 0.51f, 0.93f)},
             {"webgreen", new Color(0.00f, 0.50f, 0.00f)},
@@ -187,7 +188,7 @@ namespace Godot
         public static Color DarkOrchid { get { return namedColors["darkorchid"]; } }
         public static Color DarkRed { get { return namedColors["darkred"]; } }
         public static Color DarkSalmon { get { return namedColors["darksalmon"]; } }
-        public static Color DarkSeagreen { get { return namedColors["darkseagreen"]; } }
+        public static Color DarkSeaGreen { get { return namedColors["darkseagreen"]; } }
         public static Color DarkSlateBlue { get { return namedColors["darkslateblue"]; } }
         public static Color DarkSlateGray { get { return namedColors["darkslategray"]; } }
         public static Color DarkTurquoise { get { return namedColors["darkturquoise"]; } }
@@ -288,6 +289,7 @@ namespace Godot
         public static Color Teal { get { return namedColors["teal"]; } }
         public static Color Thistle { get { return namedColors["thistle"]; } }
         public static Color Tomato { get { return namedColors["tomato"]; } }
+        public static Color Transparent { get { return namedColors["transparent"]; } }
         public static Color Turquoise { get { return namedColors["turquoise"]; } }
         public static Color Violet { get { return namedColors["violet"]; } }
         public static Color WebGreen { get { return namedColors["webgreen"]; } }
