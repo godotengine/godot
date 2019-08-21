@@ -3827,9 +3827,13 @@ void EditorNode::show_accept(const String &p_text, const String &p_title) {
 
 void EditorNode::show_warning(const String &p_text, const String &p_title) {
 
-	warning->set_text(p_text);
-	warning->set_title(p_title);
-	warning->popup_centered_minsize();
+	if (warning->is_inside_tree()) {
+		warning->set_text(p_text);
+		warning->set_title(p_title);
+		warning->popup_centered_minsize();
+	} else {
+		WARN_PRINTS(p_title + " " + p_text);
+	}
 }
 
 void EditorNode::_copy_warning(const String &p_str) {
