@@ -608,6 +608,18 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("run/output/always_open_output_on_play", true);
 	_initial_set("run/output/always_close_output_on_stop", false);
 
+	/* Network */
+
+	// Debug
+	_initial_set("network/debug/remote_host", "127.0.0.1"); // Hints provided in setup_network
+
+	_initial_set("network/debug/remote_port", 6007);
+	hints["network/debug/remote_port"] = PropertyInfo(Variant::INT, "network/debug/remote_port", PROPERTY_HINT_RANGE, "1,65535,1");
+
+	// SSL
+	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
+	hints["network/ssl/editor_ssl_certificates"] = PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem");
+
 	/* Extra config */
 
 	_initial_set("project_manager/sorting_order", 0);
@@ -993,11 +1005,11 @@ void EditorSettings::setup_network() {
 
 	List<IP_Address> local_ip;
 	IP::get_singleton()->get_local_addresses(&local_ip);
-	String lip = "127.0.0.1";
 	String hint;
 	String current = has_setting("network/debug/remote_host") ? get("network/debug/remote_host") : "";
-	int port = has_setting("network/debug/remote_port") ? (int)get("network/debug/remote_port") : 6007;
+	String selected = "127.0.0.1";
 
+	// Check that current remote_host is a valid interface address and populate hints.
 	for (List<IP_Address>::Element *E = local_ip.front(); E; E = E->next()) {
 
 		String ip = E->get();
@@ -1008,23 +1020,18 @@ void EditorSettings::setup_network() {
 		// Same goes for IPv4 link-local (APIPA) addresses.
 		if (ip.begins_with("169.254.")) // 169.254.0.0/16
 			continue;
+		// Select current IP (found)
 		if (ip == current)
-			lip = current; //so it saves
+			selected = ip;
 		if (hint != "")
 			hint += ",";
 		hint += ip;
 	}
 
-	_initial_set("network/debug/remote_host", lip);
+	// Add hints with valid IP addresses to remote_host property.
 	add_property_hint(PropertyInfo(Variant::STRING, "network/debug/remote_host", PROPERTY_HINT_ENUM, hint));
-
-	_initial_set("network/debug/remote_port", port);
-	add_property_hint(PropertyInfo(Variant::INT, "network/debug/remote_port", PROPERTY_HINT_RANGE, "1,65535,1"));
-
-	// Editor SSL certificates override
-	String certs = has_setting("network/ssl/editor_ssl_certificates") ? get("network/ssl/editor_ssl_certificates") : _SYSTEM_CERTS_PATH;
-	_initial_set("network/ssl/editor_ssl_certificates", certs);
-	add_property_hint(PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem"));
+	// Fix potentially invalid remote_host due to network change.
+	set("network/debug/remote_host", selected);
 }
 
 void EditorSettings::save() {
