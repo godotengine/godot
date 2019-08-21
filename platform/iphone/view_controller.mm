@@ -83,6 +83,18 @@ int add_cmdline(int p_argc, char **p_args) {
 	printf("*********** did receive memory warning!\n");
 };
 
+- (void)viewDidLoad {
+	[super viewDidLoad];
+
+	if (@available(iOS 11.0, *)) {
+		[self setNeedsUpdateOfScreenEdgesDeferringSystemGestures];
+	}
+}
+
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures {
+	return UIRectEdgeAll;
+}
+
 - (BOOL)shouldAutorotate {
 	switch (OS::get_singleton()->get_screen_orientation()) {
 		case OS::SCREEN_SENSOR:
