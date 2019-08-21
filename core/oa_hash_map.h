@@ -62,7 +62,7 @@ private:
 	static const uint32_t EMPTY_HASH = 0;
 	static const uint32_t DELETED_HASH_BIT = 1 << 31;
 
-	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
+	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
 
 		if (hash == EMPTY_HASH) {
@@ -74,7 +74,7 @@ private:
 		return hash;
 	}
 
-	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) {
+	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) const {
 		p_hash = p_hash & ~DELETED_HASH_BIT; // we don't care if it was deleted or not
 
 		uint32_t original_pos = p_hash % capacity;
@@ -90,7 +90,7 @@ private:
 		num_elements++;
 	}
 
-	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) {
+	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
 		uint32_t hash = _hash(p_key);
 		uint32_t pos = hash % capacity;
 		uint32_t distance = 0;
@@ -151,6 +151,7 @@ private:
 			distance++;
 		}
 	}
+
 	void _resize_and_rehash() {
 
 		TKey *old_keys = keys;
@@ -190,6 +191,26 @@ public:
 	_FORCE_INLINE_ uint32_t get_capacity() const { return capacity; }
 	_FORCE_INLINE_ uint32_t get_num_elements() const { return num_elements; }
 
+	bool empty() const {
+		return num_elements == 0;
+	}
+
+	void clear() {
+
+		for (uint32_t i = 0; i < capacity; i++) {
+
+			if (hashes[i] & DELETED_HASH_BIT) {
+				continue;
+			}
+
+			hashes[i] |= DELETED_HASH_BIT;
+			values[i].~TValue();
+			keys[i].~TKey();
+		}
+
+		num_elements = 0;
+	}
+
 	void insert(const TKey &p_key, const TValue &p_value) {
 
 		if ((float)num_elements / (float)capacity > 0.9) {
@@ -219,7 +240,7 @@ public:
 	 * if r_data is not NULL then the value will be written to the object
 	 * it points to.
 	 */
-	bool lookup(const TKey &p_key, TValue &r_data) {
+	bool lookup(const TKey &p_key, TValue &r_data) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -232,7 +253,7 @@ public:
 		return false;
 	}
 
-	_FORCE_INLINE_ bool has(const TKey &p_key) {
+	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		uint32_t _pos = 0;
 		return _lookup_pos(p_key, _pos);
 	}
@@ -301,6 +322,9 @@ public:
 
 		return it;
 	}
+
+	OAHashMap(const OAHashMap &) = delete; // Delete the copy constructor so we don't get unexpected copies and dangling pointers.
+	OAHashMap &operator=(const OAHashMap &) = delete; // Same for assignment operator.
 
 	OAHashMap(uint32_t p_initial_capacity = 64) {
 
