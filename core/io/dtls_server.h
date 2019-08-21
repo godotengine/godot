@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  dtls_server.h                                                        */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,30 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
+#ifndef DTLS_SERVER_H
+#define DTLS_SERVER_H
 
-#include "crypto_mbedtls.h"
+#include "core/io/net_socket.h"
+#include "core/io/packet_peer_dtls.h"
 
-#include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
-
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
-
-class SSLContextMbedTLS;
-
-class CookieContextMbedTLS : public Reference {
-
-	friend class SSLContextMbedTLS;
+class DTLSServer : public Reference {
+	GDCLASS(DTLSServer, Reference);
 
 protected:
-	bool inited;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+	static DTLSServer *(*_create)();
+	static void _bind_methods();
+
+	static bool available;
 
 public:
-	Error setup();
-	void clear();
+	static bool is_available();
+	static DTLSServer *create();
 
-	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
+	virtual Error setup(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>()) = 0;
+	virtual void stop() = 0;
+	virtual Ref<PacketPeerDTLS> take_connection(Ref<PacketPeerUDP> p_peer) = 0;
+
+	DTLSServer();
 };
 
-class SSLContextMbedTLS : public Reference {
-
-protected:
-	bool inited;
-
-	static PoolByteArray _read_file(String p_path);
-
-public:
-	static void print_mbedtls_error(int p_ret);
-
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	Ref<CookieContextMbedTLS> cookies;
-	Ref<CryptoKeyMbedTLS> pkey;
-
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
-
-	mbedtls_ssl_context *get_context();
-
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
-};
-
-#endif // SSL_CONTEXT_MBED_TLS_H
+#endif // DTLS_SERVER_H

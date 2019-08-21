@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  packet_peer_dtls.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,70 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
-
-#include "crypto_mbedtls.h"
-
+#include "packet_peer_dtls.h"
 #include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
+#include "core/project_settings.h"
 
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
+PacketPeerDTLS *(*PacketPeerDTLS::_create)() = NULL;
+bool PacketPeerDTLS::available = false;
 
-class SSLContextMbedTLS;
+PacketPeerDTLS *PacketPeerDTLS::create() {
 
-class CookieContextMbedTLS : public Reference {
+	return _create();
+}
 
-	friend class SSLContextMbedTLS;
+bool PacketPeerDTLS::is_available() {
+	return available;
+}
 
-protected:
-	bool inited;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+void PacketPeerDTLS::_bind_methods() {
 
-public:
-	Error setup();
-	void clear();
+	ClassDB::bind_method(D_METHOD("poll"), &PacketPeerDTLS::poll);
+	ClassDB::bind_method(D_METHOD("connect_to_peer", "packet_peer", "validate_certs", "for_hostname", "valid_certificate"), &PacketPeerDTLS::connect_to_peer, DEFVAL(true), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("get_status"), &PacketPeerDTLS::get_status);
+	ClassDB::bind_method(D_METHOD("disconnect_from_peer"), &PacketPeerDTLS::disconnect_from_peer);
 
-	CookieContextMbedTLS();
-	~CookieContextMbedTLS();
-};
+	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
+	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_ERROR);
+	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
+}
 
-class SSLContextMbedTLS : public Reference {
-
-protected:
-	bool inited;
-
-	static PoolByteArray _read_file(String p_path);
-
-public:
-	static void print_mbedtls_error(int p_ret);
-
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-
-	Ref<CookieContextMbedTLS> cookies;
-	Ref<CryptoKeyMbedTLS> pkey;
-
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
-
-	mbedtls_ssl_context *get_context();
-
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
-};
-
-#endif // SSL_CONTEXT_MBED_TLS_H
+PacketPeerDTLS::PacketPeerDTLS() {
+}
