@@ -1068,7 +1068,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("folder", "FileDialog", theme->get_icon("Folder", "EditorIcons"));
 	// Use a different color for folder icons to make them easier to distinguish from files.
 	// On a light theme, the icon will be dark, so we need to lighten it before blending it with the accent color.
-	theme->set_color("folder", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(5, 5, 5)).linear_interpolate(accent_color, 0.7));
+	theme->set_color("folder_icon_modulate", "FileDialog", (dark_theme ? Color(1, 1, 1) : Color(5, 5, 5)).linear_interpolate(accent_color, 0.7));
 	theme->set_color("files_disabled", "FileDialog", font_color_disabled);
 
 	// color picker

@@ -257,7 +257,7 @@ void EditorFileDialog::_post_popup() {
 
 	if (is_visible_in_tree()) {
 		Ref<Texture> folder = get_icon("folder", "FileDialog");
-		const Color folder_color = get_color("folder", "FileDialog");
+		const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 		recent->clear();
 
 		bool res = access == ACCESS_RESOURCES;
@@ -736,7 +736,7 @@ void EditorFileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	Ref<Texture> folder = get_icon("folder", "FileDialog");
-	const Color folder_color = get_color("folder", "FileDialog");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
@@ -1204,7 +1204,7 @@ void EditorFileDialog::_update_favorites() {
 
 	String current = get_current_dir();
 	Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
-	const Color folder_color = get_color("folder", "FileDialog");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	favorites->clear();
 
 	favorite->set_pressed(false);
