@@ -590,7 +590,7 @@ Error ExportTemplateManager::install_android_template() {
 	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
 
 	unzFile pkg = unzOpen2(source_zip.utf8().get_data(), &io);
-	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in zip format.");
+	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
 
 	int ret = unzGoToFirstFile(pkg);
 
