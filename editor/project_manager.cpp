@@ -195,7 +195,7 @@ private:
 					unzFile pkg = unzOpen2(valid_path.utf8().get_data(), &io);
 					if (!pkg) {
 
-						set_message(TTR("Error opening package file, not in zip format."), MESSAGE_ERROR);
+						set_message(TTR("Error opening package file, not in ZIP format."), MESSAGE_ERROR);
 						memdelete(d);
 						get_ok()->set_disabled(true);
 						unzClose(pkg);
@@ -519,7 +519,7 @@ private:
 					unzFile pkg = unzOpen2(zip_path.utf8().get_data(), &io);
 					if (!pkg) {
 
-						dialog_error->set_text(TTR("Error opening package file, not in zip format."));
+						dialog_error->set_text(TTR("Error opening package file, not in ZIP format."));
 						dialog_error->popup_centered_minsize();
 						return;
 					}
@@ -2110,7 +2110,7 @@ void ProjectManager::_erase_project() {
 
 void ProjectManager::_erase_missing_projects() {
 
-	erase_missing_ask->set_text(TTR("Remove all missing projects from the list? (Folders contents will not be modified)"));
+	erase_missing_ask->set_text(TTR("Remove all missing projects from the list? The project folders' contents won't be modified."));
 	erase_missing_ask->popup_centered_minsize();
 }
 

@@ -181,14 +181,14 @@ EditorAbout::EditorAbout() {
 	// Thirdparty License
 
 	VBoxContainer *license_thirdparty = memnew(VBoxContainer);
-	license_thirdparty->set_name(TTR("Thirdparty License"));
+	license_thirdparty->set_name(TTR("Third-party Licenses"));
 	license_thirdparty->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tc->add_child(license_thirdparty);
 
 	Label *tpl_label = memnew(Label);
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap(true);
-	tpl_label->set_text(TTR("Godot Engine relies on a number of thirdparty free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such thirdparty components with their respective copyright statements and license terms."));
+	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
 	tpl_label->set_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
 
