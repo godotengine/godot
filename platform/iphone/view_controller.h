@@ -39,6 +39,10 @@
 
 - (void)didReceiveMemoryWarning;
 
+- (void)viewDidLoad;
+
+- (UIRectEdge)preferredScreenEdgesDeferringSystemGestures;
+
 - (BOOL)prefersStatusBarHidden;
 
 @end
