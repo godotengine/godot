@@ -488,11 +488,11 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 	return longthing;
 }
 
-int ExtendGDScriptParser::get_parameter_count(const lsp::Position &p_cursor, lsp::Position *begining_position) {
+int ExtendGDScriptParser::get_parameter_count(const lsp::Position &p_cursor, lsp::Position *p_begining_position) {
 
 	int count = 0;
 	int len = lines.size();
-	begining_position->line = p_cursor.line;
+	p_begining_position->line = p_cursor.line;
 	for (int i = 0; i < len; i++) {
 
 		if (i == p_cursor.line) {
@@ -506,11 +506,11 @@ int ExtendGDScriptParser::get_parameter_count(const lsp::Position &p_cursor, lsp
 					count++;
 				}
 			}
-			begining_position->character = closest_bracket_opening_pos;
-			while (begining_position->character > 0 && lines[i][begining_position->character] != ' ' && lines[i][begining_position->character] != ',') {
-				begining_position->character--;
+			p_begining_position->character = closest_bracket_opening_pos;
+			while (p_begining_position->character > 0 && lines[i][p_begining_position->character] != ' ' && lines[i][p_begining_position->character] != ',') {
+				p_begining_position->character--;
 			}
-			begining_position->character++;
+			p_begining_position->character++;
 		} else if (i > p_cursor.line) {
 			break;
 		}

@@ -79,7 +79,7 @@ public:
 
 	void publish_diagnostics(const String &p_path);
 	void completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options);
-	Error get_signature_help(const lsp::TextDocumentPositionParams &p_params, String *r_signature_name, String *r_signature_doc, List<String> *r_signature_parameter, int *cur_active_parameter);
+	Error get_signature_help(const lsp::TextDocumentPositionParams &p_params, String *r_signature_name, String *r_signature_doc, List<String> *r_signature_parameter, int *r_cur_active_parameter);
 	Error get_document_link(const lsp::DocumentLinkParams &p_params, List<lsp::DocumentLink> *r_links_parameter);
 
 	const lsp::DocumentSymbol *resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_requred = false);

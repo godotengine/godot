@@ -503,12 +503,12 @@ Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 	return api;
 }
 
-Error GDScriptWorkspace::get_signature_help(const lsp::TextDocumentPositionParams &p_params, String *r_signature_name, String *r_signature_doc, List<String> *r_signature_parameter, int *cur_active_parameter) {
+Error GDScriptWorkspace::get_signature_help(const lsp::TextDocumentPositionParams &p_params, String *r_signature_name, String *r_signature_doc, List<String> *r_signature_parameter, int *r_cur_active_parameter) {
 
 	String path = get_file_path(p_params.textDocument.uri);
 	lsp::Position begining_position = p_params.position;
 	if (Map<String, ExtendGDScriptParser *>::Element *E = parse_results.find(path)) {
-		*cur_active_parameter = E->get()->get_parameter_count(p_params.position, &begining_position);
+		*r_cur_active_parameter = E->get()->get_parameter_count(p_params.position, &begining_position);
 	}
 
 	lsp::TextDocumentPositionParams modified_param;

@@ -87,7 +87,7 @@ public:
 	_FORCE_INLINE_ const HashMap<String, ClassMembers> &get_inner_classes() const { return inner_classes; }
 
 	String get_text_for_completion(const lsp::Position &p_cursor) const;
-	int get_parameter_count(const lsp::Position &p_cursor, lsp::Position *begining_position);
+	int get_parameter_count(const lsp::Position &p_cursor, lsp::Position *p_begining_position);
 	void get_document_link(List<lsp::DocumentLink> *r_links_parameter);
 	String get_text_for_lookup_symbol(const lsp::Position &p_cursor, const String &p_symbol = "", bool p_func_requred = false) const;
 	String get_identifier_under_position(const lsp::Position &p_position, Vector2i &p_offset) const;

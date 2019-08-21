@@ -1305,7 +1305,7 @@ bool Main::start() {
 	List<String> removal_docs;
 #ifdef TOOLS_ENABLED
 	bool doc_base = true;
-	bool prepareDocMarkdown = false;
+	bool prepare_markdown_doc = false;
 #endif
 	String game_path;
 	String script;
@@ -1341,7 +1341,7 @@ bool Main::start() {
 				test = args[i + 1];
 #ifdef TOOLS_ENABLED
 			} else if (args[i] == "--doctool") {
-				prepareDocMarkdown = args[i + 1] == "1";
+				prepare_markdown_doc = args[i + 1] == "1";
 				doc_tool = (args.size() > i + 2) ? args[i + 2] : "";
 				for (int j = i + 2; j < args.size(); j++)
 					removal_docs.push_back(args[j]);
@@ -1367,7 +1367,7 @@ bool Main::start() {
 
 	String main_loop_type;
 #ifdef TOOLS_ENABLED
-	if (doc_tool == "" && prepareDocMarkdown) {
+	if (doc_tool == "" && prepare_markdown_doc) {
 		doc_tool = OS::get_singleton()->get_data_path() + "/godot";
 	}
 
@@ -1395,7 +1395,7 @@ bool Main::start() {
 				checked_paths.insert(path);
 
 				// Don't create seperate directory if markdown because everything is dumped under doc
-				if (!prepareDocMarkdown) {
+				if (!prepare_markdown_doc) {
 					// Create the module documentation directory if it doesn't exist
 					DirAccess *da = DirAccess::create_for_path(path);
 					da->make_dir_recursive(path);
@@ -1407,7 +1407,7 @@ bool Main::start() {
 			}
 		}
 
-		String index_path = (prepareDocMarkdown) ? doc_tool.plus_file("doc") : doc_tool.plus_file("doc/classes");
+		String index_path = (prepare_markdown_doc) ? doc_tool.plus_file("doc") : doc_tool.plus_file("doc/classes");
 		// Create the main documentation directory if it doesn't exist
 		DirAccess *da = DirAccess::create_for_path(index_path);
 		da->make_dir_recursive(index_path);
@@ -1425,7 +1425,7 @@ bool Main::start() {
 		}
 
 		print_line("Generating new docs...");
-		if (prepareDocMarkdown) {
+		if (prepare_markdown_doc) {
 			print_line("Preparing Markdown...");
 			doc.save_classes_markdown(index_path, doc_data_classes);
 		} else {
