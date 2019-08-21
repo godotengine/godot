@@ -372,6 +372,16 @@
 				Stops the vibration of the joypad.
 			</description>
 		</method>
+		<method name="vibrate_handheld">
+			<return type="void">
+			</return>
+			<argument index="0" name="duration_ms" type="int" default="500">
+			</argument>
+			<description>
+				Vibrate Android and iOS devices.
+				[b]Note:[/b] It needs VIBRATE permission for Android at export settings. iOS does not support duration.
+			</description>
+		</method>
 		<method name="warp_mouse_position">
 			<return type="void">
 			</return>

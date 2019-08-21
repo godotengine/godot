@@ -56,6 +56,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Messenger;
+import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.support.v4.content.ContextCompat;
 import android.view.Display;
@@ -98,6 +99,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	static final int MAX_SINGLETONS = 64;
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
+	static final int REQUEST_VIBRATE_PERMISSION = 3;
 	private IStub mDownloaderClientStub;
 	private IDownloaderService mRemoteService;
 	private TextView mStatusText;
@@ -322,6 +324,15 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 				}
 			}
 		});
+	}
+
+	public void vibrate(int p_duration_ms) {
+		if (requestPermission("VIBRATE")) {
+			Vibrator v = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
+			if (v != null) {
+				v.vibrate(p_duration_ms);
+			}
+		}
 	}
 
 	public void restart() {
@@ -986,6 +997,13 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		if (p_name.equals("CAMERA")) {
 			if (ContextCompat.checkSelfPermission(this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 				requestPermissions(new String[] { Manifest.permission.CAMERA }, REQUEST_CAMERA_PERMISSION);
+				return false;
+			}
+		}
+
+		if (p_name.equals("VIBRATE")) {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
 				return false;
 			}
 		}
