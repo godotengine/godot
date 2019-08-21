@@ -1216,7 +1216,7 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err;
 	err = cf->load(path);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND(err != OK && err != ERR_FILE_NOT_FOUND);
 	cf->set_value(p_section, p_key, p_data);
 	err = cf->save(path);
 	ERR_FAIL_COND(err != OK);

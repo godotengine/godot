@@ -201,7 +201,7 @@ Error ConfigFile::load(const String &p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (!f)
-		return ERR_CANT_OPEN;
+		return err;
 
 	return _internal_load(p_path, f);
 }
