@@ -522,21 +522,45 @@ int ExtendGDScriptParser::get_parameter_count(const lsp::Position &p_cursor, lsp
 void ExtendGDScriptParser::get_document_link(List<lsp::DocumentLink> *r_links_parameter) {
 
 	int len = lines.size();
-	for (int i = 0; i < len; i++) {
-		int start_pos = lines[i].find("\"");
-		if (start_pos != -1) {
-			int end_pos = lines[i].find("\"", start_pos + 1);
+	String root_uri = GDScriptLanguageProtocol::get_singleton()->get_workspace()->root_uri;
+	for (int i = 0; i < len; ++i) {
+		int pos = 0;
+
+		while (pos < lines[i].size()) {
+
+			int start_pos_1 = lines[i].find("\"", pos);
+			int start_pos_2 = lines[i].find("'", pos);
+			int start_pos;
+			if (start_pos_1 == -1 && start_pos_2 == -1) {
+				break;
+			} else if (start_pos_1 == -1) {
+				start_pos = start_pos_2;
+			} else if (start_pos_2 == -1) {
+				start_pos = start_pos_1;
+			} else {
+				start_pos = MIN(start_pos_1, start_pos_2);
+			}
+
+			int end_pos = lines[i].find(lines[i].substr(start_pos, 1), start_pos + 1);
 			String value = lines[i].substr(start_pos + 1, end_pos - start_pos - 1);
 
-			if (value.begins_with("res://") && ResourceLoader::exists(value)) {
+			if (!value.begins_with("res://")) {
+				value = "res://" + value;
+			}
+
+			value = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_uri(value);
+			// File is not outside project scope && exists
+			if (value.find(root_uri) != -1 && FileAccess::exists(value.replace(root_uri + "/", "res://"))) {
 				lsp::DocumentLink link;
 				link.range.start.line = i;
 				link.range.start.character = start_pos + 1;
 				link.range.end.line = i;
 				link.range.end.character = end_pos;
-				link.target = value.replace("res://", GDScriptLanguageProtocol::get_singleton()->get_workspace()->root_uri + "/");
+				link.target = value;
 				r_links_parameter->push_back(link);
 			}
+
+			pos = end_pos + 1;
 		}
 	}
 }

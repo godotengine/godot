@@ -75,6 +75,7 @@ public:
 
 	String get_file_path(const String &p_uri) const;
 	String get_file_uri(const String &p_path) const;
+	String simplify_file_uri(const String &p_path) const;
 
 	void publish_diagnostics(const String &p_path);
 	void completion(const lsp::CompletionParams &p_params, List<ScriptCodeCompletionOption> *r_options);

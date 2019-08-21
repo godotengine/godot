@@ -342,8 +342,28 @@ String GDScriptWorkspace::get_file_path(const String &p_uri) const {
 
 String GDScriptWorkspace::get_file_uri(const String &p_path) const {
 	String uri = p_path;
-	uri = uri.replace("res://", root_uri + "/");
+	uri = simplify_file_uri(uri.replace("res://", root_uri + "/"));
 	return uri;
+}
+
+String GDScriptWorkspace::simplify_file_uri(const String &p_path) const {
+	const String prefix = "file://";
+	Vector<String> temp = p_path.substr(prefix.size() - 1, p_path.size() - prefix.size()).split("/");
+	int skip = 0;
+	String ans = "";
+
+	for (int i = temp.size() - 1; i >= 0; --i) {
+		if (temp[i] == "." || temp[i] == "") {
+			continue;
+		} else if (temp[i] == "..") {
+			skip++;
+		} else if (skip > 0) {
+			skip--;
+		} else {
+			ans = "/" + temp[i] + ans;
+		}
+	}
+	return prefix + ans;
 }
 
 void GDScriptWorkspace::publish_diagnostics(const String &p_path) {
