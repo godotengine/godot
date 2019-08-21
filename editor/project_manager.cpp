@@ -1255,19 +1255,22 @@ void ProjectList::create_project_item_control(int p_index) {
 
 	TextureRect *tf = memnew(TextureRect);
 	tf->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
+	if (item.missing) {
+		tf->set_modulate(Color(1, 1, 1, 0.5));
+	}
 	hb->add_child(tf);
 	hb->icon = tf;
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	if (item.grayed)
-		vb->set_modulate(Color(0.5, 0.5, 0.5));
+		vb->set_modulate(Color(1, 1, 1, 0.5));
 	vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(vb);
 	Control *ec = memnew(Control);
 	ec->set_custom_minimum_size(Size2(0, 1));
 	ec->set_mouse_filter(MOUSE_FILTER_PASS);
 	vb->add_child(ec);
-	Label *title = memnew(Label(item.project_name));
+	Label *title = memnew(Label(!item.missing ? item.project_name : TTR("Missing Project")));
 	title->add_font_override("font", get_font("title", "EditorFonts"));
 	title->add_color_override("font_color", font_color);
 	title->set_clip_text(true);
@@ -1278,12 +1281,21 @@ void ProjectList::create_project_item_control(int p_index) {
 	vb->add_child(path_hb);
 
 	Button *show = memnew(Button);
-	show->set_icon(get_icon("Load", "EditorIcons")); // Folder icon
+	// Display a folder icon if the project directory can be opened, or a "broken file" icon if it can't
+	show->set_icon(get_icon(!item.missing ? "Load" : "FileBroken", "EditorIcons"));
 	show->set_flat(true);
-	show->set_modulate(Color(1, 1, 1, 0.5));
+	if (!item.grayed) {
+		// Don't make the icon less prominent if the parent is already grayed out
+		show->set_modulate(Color(1, 1, 1, 0.5));
+	}
 	path_hb->add_child(show);
-	show->connect("pressed", this, "_show_project", varray(item.path));
-	show->set_tooltip(TTR("Show in File Manager"));
+
+	if (!item.missing) {
+		show->connect("pressed", this, "_show_project", varray(item.path));
+		show->set_tooltip(TTR("Show in File Manager"));
+	} else {
+		show->set_tooltip(TTR("Error: Project is missing on the filesystem."));
+	}
 
 	Label *fpath = memnew(Label(item.path));
 	path_hb->add_child(fpath);
@@ -1737,10 +1749,18 @@ void ProjectManager::_update_project_buttons() {
 	Vector<ProjectList::Item> selected_projects = _project_list->get_selected_projects();
 	bool empty_selection = selected_projects.empty();
 
+	bool is_missing_project_selected = false;
+	for (int i = 0; i < selected_projects.size(); ++i) {
+		if (selected_projects[i].missing) {
+			is_missing_project_selected = true;
+			break;
+		}
+	}
+
 	erase_btn->set_disabled(empty_selection);
-	open_btn->set_disabled(empty_selection);
-	rename_btn->set_disabled(empty_selection);
-	run_btn->set_disabled(empty_selection);
+	open_btn->set_disabled(empty_selection || is_missing_project_selected);
+	rename_btn->set_disabled(empty_selection || is_missing_project_selected);
+	run_btn->set_disabled(empty_selection || is_missing_project_selected);
 
 	erase_missing_btn->set_visible(_project_list->is_any_project_missing());
 }
@@ -1928,6 +1948,9 @@ void ProjectManager::_open_selected_projects_ask() {
 	}
 
 	ProjectList::Item project = _project_list->get_selected_projects()[0];
+	if (project.missing) {
+		return;
+	}
 
 	// Update the project settings or don't open
 	String conf = project.path.plus_file("project.godot");
@@ -2110,7 +2133,7 @@ void ProjectManager::_erase_project() {
 
 void ProjectManager::_erase_missing_projects() {
 
-	erase_missing_ask->set_text(TTR("Remove all missing projects from the list? The project folders' contents won't be modified."));
+	erase_missing_ask->set_text(TTR("Remove all missing projects from the list?\nThe project folders' contents won't be modified."));
 	erase_missing_ask->popup_centered_minsize();
 }
 
