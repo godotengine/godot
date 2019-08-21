@@ -400,7 +400,7 @@ void FileDialog::update_file_list() {
 
 	TreeItem *root = tree->create_item();
 	Ref<Texture> folder = get_icon("folder");
-	const Color folder_color = get_color("folder");
+	const Color folder_color = get_color("folder_icon_modulate");
 	List<String> files;
 	List<String> dirs;
 

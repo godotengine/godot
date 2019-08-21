@@ -64,7 +64,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_icon(0, get_icon("Folder", "EditorIcons"));
-	subdirectory_item->set_icon_color(0, get_color("folder", "FileDialog"));
+	subdirectory_item->set_icon_color(0, get_color("folder_icon_modulate", "FileDialog"));
 	subdirectory_item->set_selectable(0, true);
 	String lpath = p_dir->get_path();
 	subdirectory_item->set_metadata(0, lpath);
@@ -187,7 +187,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			continue;
 
 		Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
-		const Color folder_color = get_color("folder", "FileDialog");
+		const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 
 		String text;
 		Ref<Texture> icon;
@@ -646,7 +646,7 @@ void FileSystemDock::_update_file_list(bool p_keep_selection) {
 	}
 
 	Ref<Texture> folder_icon = (use_thumbnails) ? folder_thumbnail : get_icon("folder", "FileDialog");
-	const Color folder_color = get_color("folder", "FileDialog");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 
 	// Build the FileInfo list
 	List<FileInfo> filelist;
