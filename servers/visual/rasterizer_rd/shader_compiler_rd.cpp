@@ -606,6 +606,88 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			}
 
 		} break;
+		case SL::Node::TYPE_ARRAY_DECLARATION: {
+
+			SL::ArrayDeclarationNode *adnode = (SL::ArrayDeclarationNode *)p_node;
+
+			String declaration = _prestr(adnode->precision) + _typestr(adnode->datatype);
+			for (int i = 0; i < adnode->declarations.size(); i++) {
+				if (i > 0) {
+					declaration += ",";
+				} else {
+					declaration += " ";
+				}
+				declaration += _mkid(adnode->declarations[i].name);
+				declaration += "[";
+				declaration += itos(adnode->declarations[i].size);
+				declaration += "]";
+				int sz = adnode->declarations[i].initializer.size();
+				if (sz > 0) {
+					declaration += "=";
+					declaration += _typestr(adnode->datatype);
+					declaration += "[";
+					declaration += itos(sz);
+					declaration += "]";
+					declaration += "(";
+					for (int j = 0; j < sz; j++) {
+						declaration += _dump_node_code(adnode->declarations[i].initializer[j], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+						if (j != sz - 1) {
+							declaration += ", ";
+						}
+					}
+					declaration += ")";
+				}
+			}
+
+			code += declaration;
+		} break;
+		case SL::Node::TYPE_ARRAY: {
+			SL::ArrayNode *anode = (SL::ArrayNode *)p_node;
+
+			if (p_assigning && p_actions.write_flag_pointers.has(anode->name)) {
+				*p_actions.write_flag_pointers[anode->name] = true;
+			}
+
+			if (p_default_actions.usage_defines.has(anode->name) && !used_name_defines.has(anode->name)) {
+				String define = p_default_actions.usage_defines[anode->name];
+				if (define.begins_with("@")) {
+					define = p_default_actions.usage_defines[define.substr(1, define.length())];
+				}
+				r_gen_code.defines.push_back(define);
+				used_name_defines.insert(anode->name);
+			}
+
+			if (p_actions.usage_flag_pointers.has(anode->name) && !used_flag_pointers.has(anode->name)) {
+				*p_actions.usage_flag_pointers[anode->name] = true;
+				used_flag_pointers.insert(anode->name);
+			}
+
+			if (p_default_actions.renames.has(anode->name))
+				code = p_default_actions.renames[anode->name];
+			else
+				code = _mkid(anode->name);
+
+			if (anode->call_expression != NULL) {
+				code += ".";
+				code += _dump_node_code(anode->call_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+			}
+
+			if (anode->index_expression != NULL) {
+				code += "[";
+				code += _dump_node_code(anode->index_expression, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				code += "]";
+			}
+
+			if (anode->name == time_name) {
+				if (current_func_name == vertex_name) {
+					r_gen_code.uses_vertex_time = true;
+				}
+				if (current_func_name == fragment_name || current_func_name == light_name) {
+					r_gen_code.uses_fragment_time = true;
+				}
+			}
+
+		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
 			return get_constant_text(cnode->datatype, cnode->values);
