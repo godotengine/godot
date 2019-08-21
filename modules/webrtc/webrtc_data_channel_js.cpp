@@ -56,7 +56,7 @@ EMSCRIPTEN_KEEPALIVE void _emrtc_on_ch_message(void *obj, uint8_t *p_data, uint3
 }
 
 void WebRTCDataChannelJS::_on_open() {
-	in_buffer.resize(16);
+	in_buffer.resize(_in_buffer_shift);
 }
 
 void WebRTCDataChannelJS::_on_close() {
