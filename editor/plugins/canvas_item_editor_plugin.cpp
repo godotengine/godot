@@ -3321,6 +3321,10 @@ void CanvasItemEditor::update_viewport() {
 	viewport->update();
 }
 
+void CanvasItemEditor::set_current_tool(Tool p_tool) {
+	_button_tool_select(p_tool);
+}
+
 void CanvasItemEditor::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_PHYSICS_PROCESS) {
