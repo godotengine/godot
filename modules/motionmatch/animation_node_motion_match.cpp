@@ -3,8 +3,6 @@
 
 void AnimationNodeMotionMatch::get_parameter_list(
     List<PropertyInfo> *r_list) const {
-  r_list->push_back(
-      PropertyInfo(Variant::VECTOR3, vel, PROPERTY_HINT_NONE, ""));
   r_list->push_back(PropertyInfo(Variant::INT, min, PROPERTY_HINT_NONE, ""));
   r_list->push_back(PropertyInfo(Variant::INT, samples, PROPERTY_HINT_RANGE,
                                  "5,40,1,or_greater"));
@@ -12,6 +10,21 @@ void AnimationNodeMotionMatch::get_parameter_list(
                                  "0,1,0.01,or_greater"));
   r_list->push_back(PropertyInfo(Variant::REAL, f_time, PROPERTY_HINT_RANGE,
                                  "0,2,0.01,or_greater"));
+}
+
+Variant AnimationNodeMotionMatch::get_parameter_default_value(
+    const StringName &p_parameter) {
+  if (p_parameter == min) {
+    return 0;
+  } else if (p_parameter == samples) {
+    return 10;
+  } else if (p_parameter == pvst) {
+    return 0.5;
+  } else if (p_parameter == f_time) {
+    return 0.25;
+  } else {
+    return Variant();
+  }
 }
 
 void AnimationNodeMotionMatch::add_matching_track(
@@ -113,6 +126,26 @@ void AnimationNodeMotionMatch::_bind_methods() {
 
   ClassDB::bind_method(D_METHOD("Predict_traj", "vel", "samples"),
                        &AnimationNodeMotionMatch::Predict_traj);
+
+  ClassDB::bind_method(D_METHOD("set_velocity", "vel"),
+                       &AnimationNodeMotionMatch::set_velocity);
+  ClassDB::bind_method(D_METHOD("get_velocity"),
+                       &AnimationNodeMotionMatch::get_velocity);
+
+  // for trajectory drawing
+
+  ClassDB::bind_method(D_METHOD("get_keys_size"),
+                       &AnimationNodeMotionMatch::get_key_size);
+
+  ClassDB::bind_method(D_METHOD("get_key_traj", "key number"),
+                       &AnimationNodeMotionMatch::get_key_traj);
+
+  ClassDB::bind_method(D_METHOD("get_future_traj"),
+                       &AnimationNodeMotionMatch::get_future_traj);
+
+  ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE,
+                            "", PROPERTY_USAGE_NOEDITOR),
+               "set_velocity", "get_velocity");
 }
 
 AnimationNodeMotionMatch::AnimationNodeMotionMatch() {
@@ -122,7 +155,6 @@ AnimationNodeMotionMatch::AnimationNodeMotionMatch() {
   point_coordinates = {};
   min_leaves = 1;
 
-  this->vel = "velocity";
   this->pos = "position";
   this->min = "min_key";
   this->pvst = "Pose vs Trajectory";
@@ -425,12 +457,17 @@ AnimationNodeMotionMatch::KDNode::get_right() {
 }
 
 float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
-  PoolRealArray future_traj =
-      Predict_traj(get_parameter(vel), get_parameter(samples));
+
+  Vector3 l_v = Vector3();
+  l_v = velocity;
+  future_traj = Predict_traj(l_v, get_parameter(samples));
   float min_cost = std::numeric_limits<float>::max();
   float min_cost_time;
+  AnimationPlayer *player = state->player;
   int anim = 1;
   int dup;
+  List<StringName> a_nam;
+  player->get_animation_list(&a_nam);
 
   if (first_time) {
     dup = -1;
@@ -439,9 +476,11 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
     dup = get_parameter(min);
   }
 
-  if (!timeout) {
+  if (!timeout && keys->size() != 0) {
 
-    for (int p = 0; p < keys->size(); p++) {
+    print_line(l_v);
+    int p = 0;
+    for (p = 0; p < keys->size(); p++) {
       if (p != dup) {
         float pos_cost = 0.0f;
         float traj_cost = 0.0f;
@@ -478,17 +517,17 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
         } // set min
       }
     }
-
-    blend_animation(main, min_cost_time, 0, true,
-                    1.0); // play min for every frame
+    print_line("Min time for this velocity is " + rtos(min_cost_time));
+    blend_animation(a_nam[0], min_cost_time, p_time, true,
+                    1); // play min for every frame
 
     timeout = true;
   }
-  time += p_time;
+  c_time += p_time;
   // f_time parameter decides the check rate
-  if (time > real_t(get_parameter(f_time))) {
+  if (c_time > real_t(get_parameter(f_time))) {
     timeout = false;
-    time = 0;
+    c_time = 0;
   }
   return 0.0;
 }
@@ -498,54 +537,27 @@ PoolRealArray AnimationNodeMotionMatch::Predict_traj(Vector3 L_Velocity,
   // used exponential decay here
   // TODO : Add multiple options to pick for the user
   // Can use interpolation functions
-
   PoolRealArray futurepath = {};
   Vector3 c_pos = Vector3();
-  float time = 1.0f;
+
+  float time = 0;
   int quad = 0;
-  if (L_Velocity[0] > 0 && L_Velocity[1] > 0) {
-    quad = 1;
-  } else if (L_Velocity[0] < 0 && L_Velocity[1] > 0) {
-    quad = 2;
-  } else if (L_Velocity[0] < 0 && L_Velocity[1] < 0) {
-    quad = 3;
-  } else {
-    quad = 4;
-  }
-  if (quad == 1) {
-    for (int i = 0; i < samples; i++) {
-      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
-      futurepath.append(c_pos[0]);
-      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
-      futurepath.append(c_pos[2]);
 
-      time += 1.0f;
-    }
-  } else if (quad == 2) {
-    for (int i = 0; i < samples; i++) {
-      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
-      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
-      futurepath.append(-c_pos[0]);
-      futurepath.append(c_pos[2]);
-      time += 1.0f;
-    }
-  } else if (quad == 3) {
-    for (int i = 0; i < samples; i++) {
-      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
-      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
-      futurepath.append(-c_pos[0]);
-      futurepath.append(-c_pos[2]);
-      time += 1.0f;
-    }
-  } else if (quad == 4) {
-    for (int i = 0; i < samples; i++) {
-      c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
-      c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
-      futurepath.append(c_pos[0]);
-      futurepath.append(-c_pos[2]);
-      time += 1.0f;
-    }
-  }
+  for (int i = 0; i < samples; i++) {
+    c_pos[0] = c_pos[0] + L_Velocity[0] * (1 - Math::exp(-time));
+    futurepath.append(c_pos[0]);
+    c_pos[2] = c_pos[2] + L_Velocity[2] * (1 - Math::exp(-time));
+    futurepath.append(c_pos[2]);
 
+    time += delta_time;
+  }
   return futurepath;
+}
+
+void AnimationNodeMotionMatch::print_array(PoolRealArray ar) {
+  String s = "";
+  for (int k = 0; k < ar.size(); k++) {
+    s += itos(ar.read()[k]) + ",";
+  }
+  print_line(s);
 }

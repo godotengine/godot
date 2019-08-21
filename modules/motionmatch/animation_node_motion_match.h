@@ -2,11 +2,11 @@
 #define ANIMATION_NODE_MOTION_MATCH_H
 
 #include "core/reference.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "frame_model.h"
 #include "scene/3d/physics_body.h"
 #include "scene/animation/animation_tree.h"
 #include <limits>
-#include "editor/plugins/animation_tree_editor_plugin.h"
 
 class AnimationNodeMotionMatch : public AnimationRootNode {
   GDCLASS(AnimationNodeMotionMatch, AnimationRootNode)
@@ -23,9 +23,9 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
   StringName main;
   // variables used during matching
   bool first_time = true;
-  float time = 0;
+  float c_time = 0;
   bool timeout = false;
-
+  Vector3 v = Vector3();
   // KDNode Struct
   struct KDNode : public Reference {
     /*th -> Threshold*/
@@ -59,7 +59,7 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
   };
 
   PoolVector<frame_model *> *keys = new PoolVector<frame_model *>();
-
+  PoolRealArray future_traj;
   PoolRealArray point_coordinates;
   Ref<KDNode> root;
   int dim_len;          /*no of dimensions*/
@@ -69,16 +69,20 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
 
   enum errortype { LOAD_POINT_ERROR, QUERY_POINT_ERROR, K_ERROR };
 
+  Vector3 velocity = Vector3();
+
 protected:
   static void _bind_methods();
+  Variant AnimationNodeMotionMatch::get_parameter_default_value(
+      const StringName &p_parameter);
 
 public:
-  void set_main(StringName n) { main = n; }
-
   Skeleton *skeleton;
   NodePath root_track = NodePath();
   int r_index;
   bool done = false;
+
+  float delta_time;
   virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 
   float process(float p_time, bool p_seek);
@@ -115,8 +119,12 @@ public:
 
   void set_keys_data(PoolVector<frame_model *> *kys) { keys = kys; }
   void clear_keys() {
-    keys->resize(0);
-    print_line(itos(keys->size()));
+
+    while (keys->size() != 0) {
+      keys->remove(0);
+    }
+    c_time = 0;
+    timeout = false;
   }
 
   PoolRealArray Predict_traj(Vector3 L_Velocity, int samples);
@@ -124,6 +132,17 @@ public:
   int get_traj_samples() { return get_parameter(samples); }
   void set_traj_samples(int sa) { set_parameter(samples, sa); }
 
+  Vector3 get_velocity() { return velocity; }
+
+  void set_velocity(Vector3 v) { velocity = v; }
+
+  // for trajectory drawing
+
+  int get_key_size() { return keys->size(); }
+  PoolRealArray *get_key_traj(int k_n) { return keys->read()[k_n]->traj; }
+  PoolRealArray get_future_traj() { return future_traj; }
+
+  void print_array(PoolRealArray ar);
   AnimationNodeMotionMatch();
   ~AnimationNodeMotionMatch();
 };
