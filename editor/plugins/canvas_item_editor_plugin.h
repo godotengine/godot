@@ -581,6 +581,7 @@ public:
 	void update_viewport();
 
 	Tool get_current_tool() { return tool; }
+	void set_current_tool(Tool p_tool);
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);
