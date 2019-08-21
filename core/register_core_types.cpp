@@ -46,6 +46,7 @@
 #include "core/io/multiplayer_api.h"
 #include "core/io/networked_multiplayer_peer.h"
 #include "core/io/packet_peer.h"
+#include "core/io/packet_peer_dtls.h"
 #include "core/io/packet_peer_udp.h"
 #include "core/io/pck_packer.h"
 #include "core/io/resource_format_binary.h"
@@ -157,6 +158,7 @@ void register_core_types() {
 	ClassDB::register_class<TCP_Server>();
 	ClassDB::register_class<PacketPeerUDP>();
 	ClassDB::register_class<UDPServer>();
+	ClassDB::register_custom_instance_class<PacketPeerDTLS>();
 
 	// Crypto
 	ClassDB::register_class<HashingContext>();

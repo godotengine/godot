@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  packet_peer_dtls.cpp                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,49 +28,49 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
-
-#include "crypto_mbedtls.h"
-
+#include "packet_peer_dtls.h"
 #include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
+#include "core/project_settings.h"
 
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
+PacketPeerDTLS *(*PacketPeerDTLS::_create)() = NULL;
+bool PacketPeerDTLS::available = false;
 
-class SSLContextMbedTLS : public Reference {
+PacketPeerDTLS *PacketPeerDTLS::create() {
 
-protected:
-	bool inited;
+	return _create();
+}
 
-	static PoolByteArray _read_file(String p_path);
+bool PacketPeerDTLS::is_available() {
+	return available;
+}
 
-public:
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+void PacketPeerDTLS::set_blocking_handshake_enabled(bool p_enabled) {
+	blocking_handshake = p_enabled;
+}
 
-	Ref<CryptoKeyMbedTLS> pkey;
+bool PacketPeerDTLS::is_blocking_handshake_enabled() const {
+	return blocking_handshake;
+}
 
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert);
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
+void PacketPeerDTLS::_bind_methods() {
 
-	mbedtls_ssl_context *get_context();
-	mbedtls_ssl_cookie_ctx *get_cookie_context();
+	ClassDB::bind_method(D_METHOD("poll"), &PacketPeerDTLS::poll);
+	ClassDB::bind_method(D_METHOD("accept_peer", "packet_peer", "cert", "key", "ca_chain"), &PacketPeerDTLS::accept_peer, DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("connect_to_peer", "packet_peer", "validate_certs", "for_hostname", "valid_certificate"), &PacketPeerDTLS::connect_to_peer, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
+	ClassDB::bind_method(D_METHOD("get_status"), &PacketPeerDTLS::get_status);
+	ClassDB::bind_method(D_METHOD("disconnect_from_peer"), &PacketPeerDTLS::disconnect_from_peer);
+	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &PacketPeerDTLS::set_blocking_handshake_enabled);
+	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &PacketPeerDTLS::is_blocking_handshake_enabled);
 
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
-};
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
 
-#endif // SSL_CONTEXT_MBED_TLS_H
+	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
+	BIND_ENUM_CONSTANT(STATUS_CONNECTED);
+	BIND_ENUM_CONSTANT(STATUS_ERROR);
+	BIND_ENUM_CONSTANT(STATUS_ERROR_HOSTNAME_MISMATCH);
+}
+
+PacketPeerDTLS::PacketPeerDTLS() {
+	blocking_handshake = true;
+}

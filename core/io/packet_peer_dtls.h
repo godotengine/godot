@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  packet_peer_dtls.h                                                   */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,49 +28,47 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
+#ifndef PACKET_PEER_DTLS_H
+#define PACKET_PEER_DTLS_H
 
-#include "crypto_mbedtls.h"
+#include "core/crypto/crypto.h"
+#include "core/io/packet_peer_udp.h"
 
-#include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
-
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
-
-class SSLContextMbedTLS : public Reference {
+class PacketPeerDTLS : public PacketPeer {
+	GDCLASS(PacketPeerDTLS, PacketPeer);
 
 protected:
-	bool inited;
+	static PacketPeerDTLS *(*_create)();
+	static void _bind_methods();
 
-	static PoolByteArray _read_file(String p_path);
+	static bool available;
+
+	bool blocking_handshake;
 
 public:
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+	enum Status {
+		STATUS_DISCONNECTED,
+		STATUS_HANDSHAKING,
+		STATUS_CONNECTED,
+		STATUS_ERROR,
+		STATUS_ERROR_HOSTNAME_MISMATCH
+	};
 
-	Ref<CryptoKeyMbedTLS> pkey;
+	void set_blocking_handshake_enabled(bool p_enabled);
+	bool is_blocking_handshake_enabled() const;
 
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert);
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
+	virtual void poll() = 0;
+	virtual Error accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) = 0;
+	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>()) = 0;
+	virtual void disconnect_from_peer() = 0;
+	virtual Status get_status() const = 0;
 
-	mbedtls_ssl_context *get_context();
-	mbedtls_ssl_cookie_ctx *get_cookie_context();
+	static PacketPeerDTLS *create();
+	static bool is_available();
 
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
+	PacketPeerDTLS();
 };
 
-#endif // SSL_CONTEXT_MBED_TLS_H
+VARIANT_ENUM_CAST(PacketPeerDTLS::Status);
+
+#endif // PACKET_PEER_DTLS_H

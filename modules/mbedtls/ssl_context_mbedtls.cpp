@@ -45,12 +45,19 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	mbedtls_ssl_config_init(&conf);
 	mbedtls_ctr_drbg_init(&ctr_drbg);
 	mbedtls_entropy_init(&entropy);
+	mbedtls_ssl_cookie_init(&cookie_ctx);
 	inited = true;
 
 	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
 	if (ret != 0) {
 		clear(); // Never leave unusable resources around.
-		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error" + itos(ret));
+		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
+	}
+
+	ret = mbedtls_ssl_cookie_setup(&cookie_ctx, mbedtls_ctr_drbg_random, &ctr_drbg);
+	if (ret != 0) {
+		clear();
+		ERR_FAIL_V_MSG(FAILED, "mbedtls_ssl_cookie_setup returned an error " + itos(ret));
 	}
 
 	ret = mbedtls_ssl_config_defaults(&conf, p_endpoint, p_transport, MBEDTLS_SSL_PRESET_DEFAULT);
@@ -61,6 +68,9 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	mbedtls_ssl_conf_authmode(&conf, p_authmode);
 	mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
 	mbedtls_ssl_conf_dbg(&conf, my_debug, stdout);
+	if (p_transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
+		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &cookie_ctx);
+	}
 	return OK;
 }
 
@@ -126,6 +136,7 @@ void SSLContextMbedTLS::clear() {
 	mbedtls_ssl_config_free(&conf);
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
+	mbedtls_ssl_cookie_free(&cookie_ctx);
 
 	// Unlock and key and certificates
 	if (certs.is_valid())

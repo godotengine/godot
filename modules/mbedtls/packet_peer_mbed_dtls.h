@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  ssl_context_mbedtls.h                                                */
+/*  packet_peer_mbed_dtls.h                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,49 +28,61 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef SSL_CONTEXT_MBED_TLS_H
-#define SSL_CONTEXT_MBED_TLS_H
+#ifndef PACKET_PEER_MBED_DTLS_H
+#define PACKET_PEER_MBED_DTLS_H
 
-#include "crypto_mbedtls.h"
+#include "core/io/packet_peer_dtls.h"
+#include "ssl_context_mbedtls.h"
 
-#include "core/os/file_access.h"
-#include "core/pool_vector.h"
-#include "core/reference.h"
+#include <mbedtls/timing.h>
 
-#include <mbedtls/config.h>
-#include <mbedtls/ctr_drbg.h>
-#include <mbedtls/debug.h>
-#include <mbedtls/entropy.h>
-#include <mbedtls/ssl.h>
-#include <mbedtls/ssl_cookie.h>
+class PacketPeerMbedDTLS : public PacketPeerDTLS {
+private:
+	enum {
+		PACKET_BUFFER_SIZE = 65536
+	};
 
-class SSLContextMbedTLS : public Reference {
+	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+
+	Status status;
+	String hostname;
+
+	Ref<PacketPeerUDP> base;
+
+	static PacketPeerDTLS *_create_func();
+
+	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
+	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
+	void _cleanup();
 
 protected:
-	bool inited;
+	Ref<SSLContextMbedTLS> ssl_ctx;
+	mbedtls_timing_delay_context timer;
 
-	static PoolByteArray _read_file(String p_path);
+	static void _bind_methods();
+
+	Error _do_handshake();
+	int _set_cookie();
 
 public:
-	Ref<X509CertificateMbedTLS> certs;
-	mbedtls_entropy_context entropy;
-	mbedtls_ctr_drbg_context ctr_drbg;
-	mbedtls_ssl_context ssl;
-	mbedtls_ssl_config conf;
-	mbedtls_ssl_cookie_ctx cookie_ctx;
+	virtual void poll();
+	virtual Error accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert = Ref<X509Certificate>(), Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>());
+	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>());
+	virtual Status get_status() const;
 
-	Ref<CryptoKeyMbedTLS> pkey;
+	virtual void disconnect_from_peer();
 
-	Error _setup(int p_endpoint, int p_transport, int p_authmode);
-	Error init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert);
-	Error init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas);
-	void clear();
+	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
+	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
 
-	mbedtls_ssl_context *get_context();
-	mbedtls_ssl_cookie_ctx *get_cookie_context();
+	virtual int get_available_packet_count() const;
+	virtual int get_max_packet_size() const;
 
-	SSLContextMbedTLS();
-	~SSLContextMbedTLS();
+	static void initialize_dtls();
+	static void finalize_dtls();
+
+	PacketPeerMbedDTLS();
+	~PacketPeerMbedDTLS();
 };
 
-#endif // SSL_CONTEXT_MBED_TLS_H
+#endif // PACKET_PEER_MBED_DTLS_H
