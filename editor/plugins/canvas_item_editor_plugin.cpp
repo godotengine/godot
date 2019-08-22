@@ -174,15 +174,6 @@ public:
 	}
 };
 
-void CanvasItemEditor::_snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius) {
-	float radius = p_radius / zoom;
-	float dist = Math::abs(p_value - p_target_snap);
-	if ((p_radius < 0 || dist < radius) && (!r_snapped || dist < Math::abs(r_current_snap - p_value))) {
-		r_current_snap = p_target_snap;
-		r_snapped = true;
-	}
-}
-
 bool CanvasItemEditor::_is_node_locked(const Node *p_node) {
 	return p_node->has_meta("_edit_lock_") && p_node->get_meta("_edit_lock_");
 }
@@ -200,108 +191,174 @@ bool CanvasItemEditor::_is_node_movable(const Node *p_node, bool p_popup_warning
 	return true;
 }
 
-void CanvasItemEditor::_snap_if_closer_point(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation, float p_radius) {
+void CanvasItemEditor::_snap_if_closer_float(
+		float p_value,
+		float &r_current_snap, SnapTarget &r_current_snap_target,
+		float p_target_value, SnapTarget p_snap_target,
+		float p_radius) {
+
+	float radius = p_radius / zoom;
+	float dist = Math::abs(p_value - p_target_value);
+	if ((p_radius < 0 || dist < radius) && (r_current_snap_target == SNAP_TARGET_NONE || dist < Math::abs(r_current_snap - p_value))) {
+		r_current_snap = p_target_value;
+		r_current_snap_target = p_snap_target;
+	}
+}
+
+void CanvasItemEditor::_snap_if_closer_point(
+		Point2 p_value,
+		Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
+		Point2 p_target_value, SnapTarget p_snap_target,
+		real_t rotation,
+		float p_radius) {
+
 	Transform2D rot_trans = Transform2D(rotation, Point2());
 	p_value = rot_trans.inverse().xform(p_value);
-	p_target_snap = rot_trans.inverse().xform(p_target_snap);
+	p_target_value = rot_trans.inverse().xform(p_target_value);
 	r_current_snap = rot_trans.inverse().xform(r_current_snap);
 
-	_snap_if_closer_float(p_value.x, p_target_snap.x, r_current_snap.x, r_snapped[0], p_radius);
-	_snap_if_closer_float(p_value.y, p_target_snap.y, r_current_snap.y, r_snapped[1], p_radius);
+	_snap_if_closer_float(
+			p_value.x,
+			r_current_snap.x,
+			r_current_snap_target[0],
+			p_target_value.x,
+			p_snap_target,
+			p_radius);
+
+	_snap_if_closer_float(
+			p_value.y,
+			r_current_snap.y,
+			r_current_snap_target[1],
+			p_target_value.y,
+			p_snap_target,
+			p_radius);
 
 	r_current_snap = rot_trans.xform(r_current_snap);
 }
 
-void CanvasItemEditor::_snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap) {
+void CanvasItemEditor::_snap_other_nodes(
+		const Point2 p_value,
+		const Transform2D p_transform_to_snap,
+		Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
+		const SnapTarget p_snap_target, List<const CanvasItem *> p_exceptions,
+		const Node *p_current) {
 	const CanvasItem *canvas_item = Object::cast_to<CanvasItem>(p_current);
-	if (canvas_item && (!p_to_snap || p_current != p_to_snap)) {
+
+	// Check if the element is in the exception
+	bool exception = false;
+	for (List<const CanvasItem *>::Element *E = p_exceptions.front(); E; E = E->next()) {
+		if (E->get() == p_current) {
+			exception = true;
+			break;
+		}
+	};
+
+	if (canvas_item && !exception) {
 		Transform2D ci_transform = canvas_item->get_global_transform_with_canvas();
-		Transform2D to_snap_transform = p_to_snap ? p_to_snap->get_global_transform_with_canvas() : Transform2D();
-		if (fmod(ci_transform.get_rotation() - to_snap_transform.get_rotation(), (real_t)360.0) == 0.0) {
+		if (fmod(ci_transform.get_rotation() - p_transform_to_snap.get_rotation(), (real_t)360.0) == 0.0) {
 			if (canvas_item->_edit_use_rect()) {
 				Point2 begin = ci_transform.xform(canvas_item->_edit_get_rect().get_position());
 				Point2 end = ci_transform.xform(canvas_item->_edit_get_rect().get_position() + canvas_item->_edit_get_rect().get_size());
-				_snap_if_closer_point(p_value, begin, r_current_snap, r_snapped, ci_transform.get_rotation());
-				_snap_if_closer_point(p_value, end, r_current_snap, r_snapped, ci_transform.get_rotation());
+
+				_snap_if_closer_point(p_value, r_current_snap, r_current_snap_target, begin, p_snap_target, ci_transform.get_rotation());
+				_snap_if_closer_point(p_value, r_current_snap, r_current_snap_target, end, p_snap_target, ci_transform.get_rotation());
 			} else {
 				Point2 position = ci_transform.xform(Point2());
-				_snap_if_closer_point(p_value, position, r_current_snap, r_snapped, ci_transform.get_rotation());
+				_snap_if_closer_point(p_value, r_current_snap, r_current_snap_target, position, p_snap_target, ci_transform.get_rotation());
 			}
 		}
 	}
 	for (int i = 0; i < p_current->get_child_count(); i++) {
-		_snap_other_nodes(p_value, r_current_snap, r_snapped, p_current->get_child(i), p_to_snap);
+		_snap_other_nodes(p_value, p_transform_to_snap, r_current_snap, r_current_snap_target, p_snap_target, p_exceptions, p_current->get_child(i));
 	}
 }
 
-Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const CanvasItem *p_canvas_item, unsigned int p_forced_modes) {
-	bool snapped[2] = { false, false };
+Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, unsigned int p_forced_modes, const CanvasItem *p_self_canvas_item, List<CanvasItem *> p_other_nodes_exceptions) {
+
+	snap_target[0] = SNAP_TARGET_NONE;
+	snap_target[1] = SNAP_TARGET_NONE;
+
 	bool is_snap_active = snap_active ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 
 	// Smart snap using the canvas position
 	Vector2 output = p_target;
 	real_t rotation = 0.0;
 
-	if (p_canvas_item) {
-		rotation = p_canvas_item->get_global_transform_with_canvas().get_rotation();
+	if (p_self_canvas_item) {
+		rotation = p_self_canvas_item->get_global_transform_with_canvas().get_rotation();
 
 		// Parent sides and center
 		if ((is_snap_active && snap_node_parent && (p_modes & SNAP_NODE_PARENT)) || (p_forced_modes & SNAP_NODE_PARENT)) {
-			if (const Control *c = Object::cast_to<Control>(p_canvas_item)) {
-				Point2 begin = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(0, 0)));
-				Point2 end = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(1, 1)));
-				_snap_if_closer_point(p_target, begin, output, snapped, rotation);
-				_snap_if_closer_point(p_target, (begin + end) / 2.0, output, snapped, rotation);
-				_snap_if_closer_point(p_target, end, output, snapped, rotation);
-			} else if (const CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_canvas_item->get_parent())) {
+			if (const Control *c = Object::cast_to<Control>(p_self_canvas_item)) {
+				Point2 begin = p_self_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(0, 0)));
+				Point2 end = p_self_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(1, 1)));
+				_snap_if_closer_point(p_target, output, snap_target, begin, SNAP_TARGET_PARENT, rotation);
+				_snap_if_closer_point(p_target, output, snap_target, (begin + end) / 2.0, SNAP_TARGET_PARENT, rotation);
+				_snap_if_closer_point(p_target, output, snap_target, end, SNAP_TARGET_PARENT, rotation);
+			} else if (const CanvasItem *parent_ci = Object::cast_to<CanvasItem>(p_self_canvas_item->get_parent())) {
 				if (parent_ci->_edit_use_rect()) {
-					Point2 begin = p_canvas_item->get_transform().affine_inverse().xform(parent_ci->_edit_get_rect().get_position());
-					Point2 end = p_canvas_item->get_transform().affine_inverse().xform(parent_ci->_edit_get_rect().get_position() + parent_ci->_edit_get_rect().get_size());
-					_snap_if_closer_point(p_target, begin, output, snapped, rotation);
-					_snap_if_closer_point(p_target, (begin + end) / 2.0, output, snapped, rotation);
-					_snap_if_closer_point(p_target, end, output, snapped, rotation);
+					Point2 begin = p_self_canvas_item->get_transform().affine_inverse().xform(parent_ci->_edit_get_rect().get_position());
+					Point2 end = p_self_canvas_item->get_transform().affine_inverse().xform(parent_ci->_edit_get_rect().get_position() + parent_ci->_edit_get_rect().get_size());
+					_snap_if_closer_point(p_target, output, snap_target, begin, SNAP_TARGET_PARENT, rotation);
+					_snap_if_closer_point(p_target, output, snap_target, (begin + end) / 2.0, SNAP_TARGET_PARENT, rotation);
+					_snap_if_closer_point(p_target, output, snap_target, end, SNAP_TARGET_PARENT, rotation);
 				} else {
-					Point2 position = p_canvas_item->get_transform().affine_inverse().xform(Point2());
-					_snap_if_closer_point(p_target, position, output, snapped, rotation);
+					Point2 position = p_self_canvas_item->get_transform().affine_inverse().xform(Point2());
+					_snap_if_closer_point(p_target, output, snap_target, position, SNAP_TARGET_PARENT, rotation);
 				}
 			}
 		}
 
 		// Self anchors
 		if ((is_snap_active && snap_node_anchors && (p_modes & SNAP_NODE_ANCHORS)) || (p_forced_modes & SNAP_NODE_ANCHORS)) {
-			if (const Control *c = Object::cast_to<Control>(p_canvas_item)) {
-				Point2 begin = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_LEFT), c->get_anchor(MARGIN_TOP))));
-				Point2 end = p_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_RIGHT), c->get_anchor(MARGIN_BOTTOM))));
-				_snap_if_closer_point(p_target, begin, output, snapped, rotation);
-				_snap_if_closer_point(p_target, end, output, snapped, rotation);
+			if (const Control *c = Object::cast_to<Control>(p_self_canvas_item)) {
+				Point2 begin = p_self_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_LEFT), c->get_anchor(MARGIN_TOP))));
+				Point2 end = p_self_canvas_item->get_global_transform_with_canvas().xform(_anchor_to_position(c, Point2(c->get_anchor(MARGIN_RIGHT), c->get_anchor(MARGIN_BOTTOM))));
+				_snap_if_closer_point(p_target, output, snap_target, begin, SNAP_TARGET_SELF_ANCHORS, rotation);
+				_snap_if_closer_point(p_target, output, snap_target, end, SNAP_TARGET_SELF_ANCHORS, rotation);
 			}
 		}
 
 		// Self sides
 		if ((is_snap_active && snap_node_sides && (p_modes & SNAP_NODE_SIDES)) || (p_forced_modes & SNAP_NODE_SIDES)) {
-			if (p_canvas_item->_edit_use_rect()) {
-				Point2 begin = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->_edit_get_rect().get_position());
-				Point2 end = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->_edit_get_rect().get_position() + p_canvas_item->_edit_get_rect().get_size());
-				_snap_if_closer_point(p_target, begin, output, snapped, rotation);
-				_snap_if_closer_point(p_target, end, output, snapped, rotation);
+			if (p_self_canvas_item->_edit_use_rect()) {
+				Point2 begin = p_self_canvas_item->get_global_transform_with_canvas().xform(p_self_canvas_item->_edit_get_rect().get_position());
+				Point2 end = p_self_canvas_item->get_global_transform_with_canvas().xform(p_self_canvas_item->_edit_get_rect().get_position() + p_self_canvas_item->_edit_get_rect().get_size());
+				_snap_if_closer_point(p_target, output, snap_target, begin, SNAP_TARGET_SELF, rotation);
+				_snap_if_closer_point(p_target, output, snap_target, end, SNAP_TARGET_SELF, rotation);
 			}
 		}
 
 		// Self center
 		if ((is_snap_active && snap_node_center && (p_modes & SNAP_NODE_CENTER)) || (p_forced_modes & SNAP_NODE_CENTER)) {
-			if (p_canvas_item->_edit_use_rect()) {
-				Point2 center = p_canvas_item->get_global_transform_with_canvas().xform(p_canvas_item->_edit_get_rect().get_position() + p_canvas_item->_edit_get_rect().get_size() / 2.0);
-				_snap_if_closer_point(p_target, center, output, snapped, rotation);
+			if (p_self_canvas_item->_edit_use_rect()) {
+				Point2 center = p_self_canvas_item->get_global_transform_with_canvas().xform(p_self_canvas_item->_edit_get_rect().get_position() + p_self_canvas_item->_edit_get_rect().get_size() / 2.0);
+				_snap_if_closer_point(p_target, output, snap_target, center, SNAP_TARGET_SELF, rotation);
 			} else {
-				Point2 position = p_canvas_item->get_global_transform_with_canvas().xform(Point2());
-				_snap_if_closer_point(p_target, position, output, snapped, rotation);
+				Point2 position = p_self_canvas_item->get_global_transform_with_canvas().xform(Point2());
+				_snap_if_closer_point(p_target, output, snap_target, position, SNAP_TARGET_SELF, rotation);
 			}
 		}
 	}
 
 	// Other nodes sides
 	if ((is_snap_active && snap_other_nodes && (p_modes & SNAP_OTHER_NODES)) || (p_forced_modes & SNAP_OTHER_NODES)) {
-		_snap_other_nodes(p_target, output, snapped, get_tree()->get_edited_scene_root(), p_canvas_item);
+		Transform2D to_snap_transform = Transform2D();
+		List<const CanvasItem *> exceptions = List<const CanvasItem *>();
+		for (List<CanvasItem *>::Element *E = p_other_nodes_exceptions.front(); E; E = E->next()) {
+			exceptions.push_back(E->get());
+		}
+		if (p_self_canvas_item) {
+			exceptions.push_back(p_self_canvas_item);
+			to_snap_transform = p_self_canvas_item->get_global_transform_with_canvas();
+		}
+
+		_snap_other_nodes(
+				p_target, to_snap_transform,
+				output, snap_target,
+				SNAP_TARGET_OTHER_NODE,
+				exceptions,
+				get_tree()->get_edited_scene_root());
 	}
 
 	if (((is_snap_active && snap_guides && (p_modes & SNAP_GUIDES)) || (p_forced_modes & SNAP_GUIDES)) && fmod(rotation, (real_t)360.0) == 0.0) {
@@ -309,14 +366,14 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_vertical_guides_")) {
 			Array vguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_vertical_guides_");
 			for (int i = 0; i < vguides.size(); i++) {
-				_snap_if_closer_float(p_target.x, vguides[i], output.x, snapped[0]);
+				_snap_if_closer_float(p_target.x, output.x, snap_target[0], vguides[i], SNAP_TARGET_GUIDE);
 			}
 		}
 
 		if (EditorNode::get_singleton()->get_edited_scene() && EditorNode::get_singleton()->get_edited_scene()->has_meta("_edit_horizontal_guides_")) {
 			Array hguides = EditorNode::get_singleton()->get_edited_scene()->get_meta("_edit_horizontal_guides_");
 			for (int i = 0; i < hguides.size(); i++) {
-				_snap_if_closer_float(p_target.y, hguides[i], output.y, snapped[1]);
+				_snap_if_closer_float(p_target.y, output.y, snap_target[1], hguides[i], SNAP_TARGET_GUIDE);
 			}
 		}
 	}
@@ -335,13 +392,15 @@ Point2 CanvasItemEditor::snap_point(Point2 p_target, unsigned int p_modes, const
 		Point2 grid_output;
 		grid_output.x = Math::stepify(p_target.x - offset.x, grid_step.x * Math::pow(2.0, grid_step_multiplier)) + offset.x;
 		grid_output.y = Math::stepify(p_target.y - offset.y, grid_step.y * Math::pow(2.0, grid_step_multiplier)) + offset.y;
-		_snap_if_closer_point(p_target, grid_output, output, snapped, 0.0, -1.0);
+		_snap_if_closer_point(p_target, output, snap_target, grid_output, SNAP_TARGET_GRID, 0.0, -1.0);
 	}
 
 	if (((snap_pixel && (p_modes & SNAP_PIXEL)) || (p_forced_modes & SNAP_PIXEL)) && rotation == 0.0) {
 		// Pixel
 		output = output.snapped(Size2(1, 1));
 	}
+
+	snap_transform = Transform2D(rotation, output);
 
 	return output;
 }
@@ -1205,10 +1264,11 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 			if (drag_selection.size() > 0) {
 				drag_from = transform.affine_inverse().xform((b.is_valid()) ? b->get_position() : viewport->get_local_mouse_position());
 				Vector2 new_pos;
-				if (drag_selection.size() == 1)
-					new_pos = snap_point(drag_from, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, drag_selection[0]);
-				else
-					new_pos = snap_point(drag_from, SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL);
+				if (drag_selection.size() == 1) {
+					new_pos = snap_point(drag_from, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, drag_selection[0]);
+				} else {
+					new_pos = snap_point(drag_from, SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, NULL, drag_selection);
+				}
 				for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
 					CanvasItem *canvas_item = E->get();
 					canvas_item->_edit_set_pivot(canvas_item->get_global_transform_with_canvas().affine_inverse().xform(new_pos));
@@ -1228,7 +1288,7 @@ bool CanvasItemEditor::_gui_input_pivot(const Ref<InputEvent> &p_event) {
 			_restore_canvas_item_state(drag_selection);
 			Vector2 new_pos;
 			if (drag_selection.size() == 1)
-				new_pos = snap_point(drag_to, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, drag_selection[0]);
+				new_pos = snap_point(drag_to, SNAP_NODE_SIDES | SNAP_NODE_CENTER | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, drag_selection[0]);
 			else
 				new_pos = snap_point(drag_to, SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL);
 			for (List<CanvasItem *>::Element *E = drag_selection.front(); E; E = E->next()) {
@@ -1478,7 +1538,7 @@ bool CanvasItemEditor::_gui_input_anchors(const Ref<InputEvent> &p_event) {
 			previous_anchor.y = (drag_type == DRAG_ANCHOR_TOP_LEFT || drag_type == DRAG_ANCHOR_TOP_RIGHT) ? control->get_anchor(MARGIN_TOP) : control->get_anchor(MARGIN_BOTTOM);
 			previous_anchor = xform.affine_inverse().xform(_anchor_to_position(control, previous_anchor));
 
-			Vector2 new_anchor = xform.xform(snap_point(previous_anchor + (drag_to - drag_from), SNAP_GRID | SNAP_OTHER_NODES, control, SNAP_NODE_PARENT | SNAP_NODE_SIDES | SNAP_NODE_CENTER));
+			Vector2 new_anchor = xform.xform(snap_point(previous_anchor + (drag_to - drag_from), SNAP_GRID | SNAP_OTHER_NODES, SNAP_NODE_PARENT | SNAP_NODE_SIDES | SNAP_NODE_CENTER, control));
 			new_anchor = _position_to_anchor(control, new_anchor).snapped(Vector2(0.001, 0.001));
 
 			bool use_single_axis = m->get_shift();
@@ -1624,8 +1684,8 @@ bool CanvasItemEditor::_gui_input_resize(const Ref<InputEvent> &p_event) {
 
 			Transform2D xform = canvas_item->get_global_transform_with_canvas().affine_inverse();
 
-			Point2 drag_to_snapped_begin = snap_point(xform.affine_inverse().xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, canvas_item);
-			Point2 drag_to_snapped_end = snap_point(xform.affine_inverse().xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, canvas_item);
+			Point2 drag_to_snapped_begin = snap_point(xform.affine_inverse().xform(current_begin) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, canvas_item);
+			Point2 drag_to_snapped_end = snap_point(xform.affine_inverse().xform(current_end) + (drag_to - drag_from), SNAP_NODE_ANCHORS | SNAP_NODE_PARENT | SNAP_OTHER_NODES | SNAP_GRID | SNAP_PIXEL, 0, canvas_item);
 			Point2 drag_begin = xform.xform(drag_to_snapped_begin);
 			Point2 drag_end = xform.xform(drag_to_snapped_end);
 
@@ -1866,7 +1926,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			} else {
 				previous_pos = _get_encompassing_rect_from_list(drag_selection).position;
 			}
-			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES);
+			Point2 new_pos = snap_point(previous_pos + (drag_to - drag_from), SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL | SNAP_NODE_PARENT | SNAP_NODE_ANCHORS | SNAP_OTHER_NODES, 0, NULL, drag_selection);
 			bool single_axis = m->get_shift();
 			if (single_axis) {
 				if (ABS(new_pos.x - previous_pos.x) > ABS(new_pos.y - previous_pos.y)) {
@@ -2421,6 +2481,20 @@ void CanvasItemEditor::_draw_guides() {
 	}
 }
 
+void CanvasItemEditor::_draw_smart_snapping() {
+	Color line_color = EditorSettings::get_singleton()->get("editors/2d/smart_snapping_line_color");
+	if (snap_target[0] != SNAP_TARGET_NONE && snap_target[0] != SNAP_TARGET_GRID) {
+		viewport->draw_set_transform_matrix(viewport->get_transform() * transform * snap_transform);
+		viewport->draw_line(Point2(0, -1.0e+10F), Point2(0, 1.0e+10F), line_color);
+		viewport->draw_set_transform_matrix(viewport->get_transform());
+	}
+	if (snap_target[1] != SNAP_TARGET_NONE && snap_target[1] != SNAP_TARGET_GRID) {
+		viewport->draw_set_transform_matrix(viewport->get_transform() * transform * snap_transform);
+		viewport->draw_line(Point2(-1.0e+10F, 0), Point2(1.0e+10F, 0), line_color);
+		viewport->draw_set_transform_matrix(viewport->get_transform());
+	}
+}
+
 void CanvasItemEditor::_draw_rulers() {
 	Color bg_color = get_color("dark_color_2", "Editor");
 	Color graduation_color = get_color("font_color", "Editor").linear_interpolate(bg_color, 0.5);
@@ -2505,6 +2579,8 @@ void CanvasItemEditor::_draw_rulers() {
 			}
 		}
 	}
+
+	// Draw the top left corner
 	viewport->draw_rect(Rect2(Point2(), Size2(RULER_WIDTH, RULER_WIDTH)), graduation_color);
 }
 
@@ -2623,7 +2699,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 
 		if (dragged_anchor >= 0) {
 			// Draw the 4 lines when dragged
-			bool snapped;
+			bool anchor_snapped;
 			Color color_snapped = Color(0.64, 0.93, 0.67, 0.5);
 
 			Vector2 corners_pos[4];
@@ -2637,14 +2713,8 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 				float anchor_val = (i >= 2) ? ANCHOR_END - anchors_values[i] : anchors_values[i];
 				line_starts[i] = Vector2::linear_interpolate(corners_pos[i], corners_pos[(i + 1) % 4], anchor_val);
 				line_ends[i] = Vector2::linear_interpolate(corners_pos[(i + 3) % 4], corners_pos[(i + 2) % 4], anchor_val);
-				snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
-				int line_width;
-				if (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) {
-					line_width = 2;
-				} else {
-					line_width = 1;
-				}
-				viewport->draw_line(line_starts[i], line_ends[i], snapped ? color_snapped : color_base, Math::round(line_width * EDSCALE));
+				anchor_snapped = anchors_values[i] == 0.0 || anchors_values[i] == 0.5 || anchors_values[i] == 1.0;
+				viewport->draw_line(line_starts[i], line_ends[i], anchor_snapped ? color_snapped : color_base, (i == dragged_anchor || (i + 3) % 4 == dragged_anchor) ? 2 : 1);
 			}
 
 			// Display the percentages next to the lines
@@ -3312,6 +3382,7 @@ void CanvasItemEditor::_draw_viewport() {
 		_draw_rulers();
 	if (show_guides)
 		_draw_guides();
+	_draw_smart_snapping();
 	_draw_focus();
 	_draw_hover();
 }
