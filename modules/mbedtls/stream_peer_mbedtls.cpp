@@ -108,6 +108,8 @@ Error StreamPeerMbedTLS::_do_handshake() {
 
 Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_validate_certs, const String &p_for_hostname, Ref<X509Certificate> p_ca_certs) {
 
+	ERR_FAIL_COND_V(p_base.is_null(), ERR_INVALID_PARAMETER);
+
 	base = p_base;
 	int ret = 0;
 	int authmode = p_validate_certs ? MBEDTLS_SSL_VERIFY_REQUIRED : MBEDTLS_SSL_VERIFY_NONE;
@@ -129,6 +131,8 @@ Error StreamPeerMbedTLS::connect_to_stream(Ref<StreamPeer> p_base, bool p_valida
 }
 
 Error StreamPeerMbedTLS::accept_stream(Ref<StreamPeer> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
+
+	ERR_FAIL_COND_V(p_base.is_null(), ERR_INVALID_PARAMETER);
 
 	Error err = ssl_ctx->init_server(MBEDTLS_SSL_TRANSPORT_STREAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert);
 	ERR_FAIL_COND_V(err != OK, err);
