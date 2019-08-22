@@ -192,6 +192,7 @@ class VisualScriptEditorVariableEdit : public Object {
 
 	// function list to be updated on each call of the get_property_list
 	List<StringName> funcs;
+
 public:
 	UndoRedo *undo_redo;
 	Ref<VisualScript> script;
@@ -390,12 +391,11 @@ protected:
 		String enum_lst = "";
 		enum_lst += "None";
 		for (const List<StringName>::Element *E = funcs.front(); E; E = E->next()) {
-			enum_lst += ","+E->get();
+			enum_lst += "," + E->get();
 		}
 		p_list->push_back(PropertyInfo(Variant::INT, "getter", PROPERTY_HINT_ENUM, enum_lst));
 		p_list->push_back(PropertyInfo(Variant::INT, "setter", PROPERTY_HINT_ENUM, enum_lst));
 	}
-
 
 public:
 	void edit(const StringName &p_var) {
