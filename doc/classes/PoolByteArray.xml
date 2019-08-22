@@ -113,13 +113,6 @@
 				Changes the byte at the given index.
 			</description>
 		</method>
-		<method name="sha256_string">
-			<return type="String">
-			</return>
-			<description>
-				Returns SHA-256 string of the PoolByteArray.
-			</description>
-		</method>
 		<method name="size">
 			<return type="int">
 			</return>
