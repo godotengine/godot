@@ -9,6 +9,7 @@ using System.Threading.Tasks;
 using GodotTools.IdeConnection;
 using GodotTools.Internals;
 using GodotTools.Utils;
+using Directory = System.IO.Directory;
 using File = System.IO.File;
 using Thread = System.Threading.Thread;
 
@@ -32,6 +33,9 @@ namespace GodotTools.Ides
             messageHandlers = InitializeMessageHandlers();
 
             this.launchIdeAction = launchIdeAction;
+
+            // Make sure the directory exists
+            Directory.CreateDirectory(projectMetadataDir);
 
             // The Godot editor's file system thread can keep the file open for writing, so we are forced to allow write sharing...
             const FileShare metaFileShare = FileShare.ReadWrite;
