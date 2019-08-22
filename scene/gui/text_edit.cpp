@@ -2083,7 +2083,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 	int num_lines_before = round((viewport_offset_y) / minimap_line_height);
 	int wi;
 	int minimap_line = (v_scroll->get_max() <= minimap_visible_lines) ? -1 : first_visible_line;
-	if (first_visible_line >= 0 && minimap_line >= 0) {
+	if (first_visible_line > 0 && minimap_line >= 0) {
 		minimap_line -= num_lines_from_rows(first_visible_line, 0, -num_lines_before, wi);
 		minimap_line -= (smooth_scroll_enabled ? 1 : 0);
 	} else {
