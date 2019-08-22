@@ -96,7 +96,7 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas) {
 	X509CertificateMbedTLS *cas = NULL;
 
-	if (certs.is_valid()) {
+	if (p_valid_cas.is_valid()) {
 		// Locking CA certificates
 		certs = p_valid_cas;
 		certs->lock();
