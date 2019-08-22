@@ -664,6 +664,8 @@
 		</member>
 		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
 		</member>
+		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
+		</member>
 		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="network/limits/websocket_client/max_in_packets" type="int" setter="" getter="" default="1024">
@@ -685,6 +687,8 @@
 		</member>
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
+		</member>
+		<member name="network/ssl/certificates" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
 		<member name="node/name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.

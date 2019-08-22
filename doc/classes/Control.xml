@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Control" inherits="CanvasItem" category="Core" version="3.2">
 	<brief_description>
-		All User Interface nodes inherit from Control. A control's anchors and margins adapt its position and size relative to its parent.
+		All user interface nodes inherit from Control. A control's anchors and margins adapt its position and size relative to its parent.
 	</brief_description>
 	<description>
 		Base class for all UI-related nodes. [Control] features a bounding rectangle that defines its extents, an anchor position relative to its parent control or the current viewport, and margins that represent an offset to the anchor. The margins update automatically when the node, any of its parents, or the screen size change.
@@ -49,10 +49,10 @@
 				[/codeblock]
 				The event won't trigger if:
 				* clicking outside the control (see [method has_point]);
-				* control has [member mouse_filter] set to [member MOUSE_FILTER_IGNORE];
-				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [member MOUSE_FILTER_IGNORE];
-				* control's parent has [member mouse_filter] set to [member MOUSE_FILTER_STOP] or has accepted the event;
-				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] or [member _clips_input] enabled.
+				* control has [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
+				* control is obstructed by another [Control] on top of it, which doesn't have [member mouse_filter] set to [constant MOUSE_FILTER_IGNORE];
+				* control's parent has [member mouse_filter] set to [constant MOUSE_FILTER_STOP] or has accepted the event;
+				* it happens outside parent's rectangle and the parent has either [member rect_clip_content] or [method _clips_input] enabled.
 			</description>
 		</method>
 		<method name="_make_custom_tooltip" qualifiers="virtual">
@@ -63,7 +63,7 @@
 			<description>
 				Virtual method to be implemented by the user. Returns a [Control] node that should be used as a tooltip instead of the default one. Use [code]for_text[/code] parameter to determine what text the tooltip should contain (likely the contents of [member hint_tooltip]).
 				The returned node must be of type [Control] or Control-derieved. It can have child nodes of any type. It is freed when the tooltip disappears, so make sure you always provide a new instance, not e.g. a node from scene. When null or non-Control node is returned, the default tooltip will be used instead.
-				[b]Note:[/b] The tooltip is shrunk to miminal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
+				[b]Note:[/b] The tooltip is shrunk to minimal size. If you want to ensure it's fully visible, you might want to set its [member rect_min_size] to some non-zero value.
 				Example of usage with custom-constructed node:
 				[codeblock]
 				func _make_custom_tooltip(for_text):
@@ -388,7 +388,7 @@
 			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )">
 			</argument>
 			<description>
-				Returns the tooltip, which will appear when the cursor is resting over this control. See [member]hint_tooltip[/member].
+				Returns the tooltip, which will appear when the cursor is resting over this control. See [member hint_tooltip].
 			</description>
 		</method>
 		<method name="grab_click_focus">

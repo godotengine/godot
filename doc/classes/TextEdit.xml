@@ -418,6 +418,10 @@
 		<member name="highlight_current_line" type="bool" setter="set_highlight_current_line" getter="is_highlight_current_line_enabled" default="false">
 			If [code]true[/code], the line containing the cursor is highlighted.
 		</member>
+		<member name="minimap_draw" type="bool" setter="draw_minimap" getter="is_drawing_minimap" default="false">
+		</member>
+		<member name="minimap_width" type="int" setter="set_minimap_width" getter="get_minimap_width" default="80">
+		</member>
 		<member name="override_selected_font_color" type="bool" setter="set_override_selected_font_color" getter="is_overriding_selected_font_color" default="false">
 		</member>
 		<member name="readonly" type="bool" setter="set_readonly" getter="is_readonly" default="false">

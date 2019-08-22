@@ -22,14 +22,6 @@
 				Override this method to define the category of the associated custom node in the Visual Shader Editor's members dialog.
 				Defining this method is [b]optional[/b]. If not overridden, the node will be filed under the "Custom" category.
 			</description>
-			</method>
-		<method name="_get_description" qualifiers="virtual">
-			<return type="String">
-			</return>
-			<description>
-				Override this method to define the description of the associated custom node in the Visual Shader Editor's members dialog.
-				Defining this method is [b]optional[/b].
-			</description>
 		</method>
 		<method name="_get_code" qualifiers="virtual">
 			<return type="String">
@@ -38,9 +30,9 @@
 			</argument>
 			<argument index="1" name="output_vars" type="Array">
 			</argument>
-			<argument index="2" name="mode" type="int" enum="Shader.Mode">
-			</argument>	
-			<argument index="3" name="type" type="int" enum="VisualShader.Type">
+			<argument index="2" name="mode" type="int">
+			</argument>
+			<argument index="3" name="type" type="int">
 			</argument>
 			<description>
 				Override this method to define the actual shader code of the associated custom node. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
@@ -50,10 +42,18 @@
 				Defining this method is [b]required[/b].
 			</description>
 		</method>
+		<method name="_get_description" qualifiers="virtual">
+			<return type="String">
+			</return>
+			<description>
+				Override this method to define the description of the associated custom node in the Visual Shader Editor's members dialog.
+				Defining this method is [b]optional[/b].
+			</description>
+		</method>
 		<method name="_get_global_code" qualifiers="virtual">
 			<return type="String">
 			</return>
-			<argument index="0" name="mode" type="int" enum="Shader.Mode">
+			<argument index="0" name="mode" type="int">
 			</argument>
 			<description>
 				Override this method to add shader code on top of the global shader, to define your own standard library of reusable methods, varyings, constants, uniforms, etc. The shader code should be returned as a string, which can have multiple lines (the [code]"""[/code] multiline string construct can be used for convenience).
@@ -81,7 +81,7 @@
 			</description>
 		</method>
 		<method name="_get_input_port_type" qualifiers="virtual">
-			<return type="int" enum="VisualShaderNode.PortType">
+			<return type="int">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
@@ -117,7 +117,7 @@
 			</description>
 		</method>
 		<method name="_get_output_port_type" qualifiers="virtual">
-			<return type="int" enum="VisualShaderNode.PortType">
+			<return type="int">
 			</return>
 			<argument index="0" name="port" type="int">
 			</argument>
@@ -127,7 +127,7 @@
 			</description>
 		</method>
 		<method name="_get_return_icon_type" qualifiers="virtual">
-			<return type="int" enum="VisualShaderNode.PortType">
+			<return type="int">
 			</return>
 			<description>
 				Override this method to define the return icon of the associated custom node in the Visual Shader Editor's members dialog.
