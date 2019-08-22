@@ -171,7 +171,7 @@ private:
 
 	bool updating_tree;
 	int tree_update_id;
-	Tree *tree; //directories
+	Tree *tree;
 	ItemList *files;
 	bool import_dock_needs_update;
 
@@ -250,7 +250,6 @@ private:
 		String name;
 		String path;
 		StringName type;
-		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
 		Vector<String> sources;
 		bool import_broken;
 
