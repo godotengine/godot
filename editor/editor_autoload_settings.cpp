@@ -439,11 +439,11 @@ void EditorAutoloadSettings::update_autoload() {
 		}
 		if (info.in_editor) {
 			ERR_CONTINUE(!info.node);
-			get_tree()->get_root()->remove_child(info.node);
+			get_tree()->get_root()->call_deferred("remove_child", info.node);
 		}
 
 		if (info.node) {
-			memdelete(info.node);
+			info.node->queue_delete();
 			info.node = NULL;
 		}
 	}
