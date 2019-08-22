@@ -908,6 +908,8 @@ void CodeTextEditor::update_editor_settings() {
 	text_editor->set_hiding_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
 	text_editor->set_draw_fold_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/code_folding"));
 	text_editor->set_wrap_enabled(EditorSettings::get_singleton()->get("text_editor/line_numbers/word_wrap"));
+	text_editor->set_draw_minimap(EditorSettings::get_singleton()->get("text_editor/line_numbers/draw_minimap"));
+	text_editor->set_minimap_width(EditorSettings::get_singleton()->get("text_editor/line_numbers/minimap_width"));
 	text_editor->set_draw_info_gutter(EditorSettings::get_singleton()->get("text_editor/line_numbers/show_info_gutter"));
 	text_editor->cursor_set_block_mode(EditorSettings::get_singleton()->get("text_editor/cursor/block_caret"));
 	text_editor->set_smooth_scroll_enabled(EditorSettings::get_singleton()->get("text_editor/open_scripts/smooth_scrolling"));
