@@ -53,6 +53,7 @@
 #include "core/io/stream_peer_ssl.h"
 #include "core/io/tcp_server.h"
 #include "core/io/translation_loader_po.h"
+#include "core/io/udp_server.h"
 #include "core/io/xml_parser.h"
 #include "core/math/a_star.h"
 #include "core/math/expression.h"
@@ -155,6 +156,7 @@ void register_core_types() {
 	ClassDB::register_class<StreamPeerTCP>();
 	ClassDB::register_class<TCP_Server>();
 	ClassDB::register_class<PacketPeerUDP>();
+	ClassDB::register_class<UDPServer>();
 
 	// Crypto
 	ClassDB::register_class<HashingContext>();
