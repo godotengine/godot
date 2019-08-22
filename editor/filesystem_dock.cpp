@@ -1494,8 +1494,15 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) {
 		selected = tree->get_next_selected(selected);
 	}
 
+	if (remove_self_inclusion) {
+		selected_strings = _remove_self_included_paths(selected_strings);
+	}
+	return selected_strings;
+}
+
+Vector<String> FileSystemDock::_remove_self_included_paths(Vector<String> selected_strings) {
 	// Remove paths or files that are included into another
-	if (remove_self_inclusion && selected_strings.size() > 1) {
+	if (selected_strings.size() > 1) {
 		selected_strings.sort_custom<NaturalNoCaseComparator>();
 		String last_path = "";
 		for (int i = 0; i < selected_strings.size(); i++) {
@@ -1513,7 +1520,7 @@ Vector<String> FileSystemDock::_tree_get_selected(bool remove_self_inclusion) {
 
 void FileSystemDock::_tree_rmb_option(int p_option) {
 
-	Vector<String> selected_strings = _tree_get_selected();
+	Vector<String> selected_strings = _tree_get_selected(false);
 
 	// Execute the current option
 	switch (p_option) {
@@ -1652,8 +1659,9 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 		case FILE_MOVE: {
 			// Move the files to a given location
 			to_move.clear();
-			for (int i = 0; i < p_selected.size(); i++) {
-				String fpath = p_selected[i];
+			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
+			for (int i = collapsed_paths.size() - 1; i >= 0; i--) {
+				String fpath = collapsed_paths[i];
 				if (fpath != "res://") {
 					to_move.push_back(FileOrFolder(fpath, !fpath.ends_with("/")));
 				}
@@ -1690,9 +1698,10 @@ void FileSystemDock::_file_option(int p_option, const Vector<String> &p_selected
 			// Remove the selected files
 			Vector<String> remove_files;
 			Vector<String> remove_folders;
+			Vector<String> collapsed_paths = _remove_self_included_paths(p_selected);
 
-			for (int i = 0; i < p_selected.size(); i++) {
-				String fpath = p_selected[i];
+			for (int i = 0; i < collapsed_paths.size(); i++) {
+				String fpath = collapsed_paths[i];
 				if (fpath != "res://") {
 					if (fpath.ends_with("/")) {
 						remove_folders.push_back(fpath);
@@ -2205,12 +2214,16 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (p_paths.size() == 1) {
 		p_popup->add_item(TTR("Copy Path"), FILE_COPY_PATH);
-		p_popup->add_item(TTR("Rename..."), FILE_RENAME);
-		p_popup->add_item(TTR("Duplicate..."), FILE_DUPLICATE);
+		if (p_paths[0] != "res://") {
+			p_popup->add_item(TTR("Rename..."), FILE_RENAME);
+			p_popup->add_item(TTR("Duplicate..."), FILE_DUPLICATE);
+		}
 	}
 
-	p_popup->add_item(TTR("Move To..."), FILE_MOVE);
-	p_popup->add_item(TTR("Delete"), FILE_REMOVE);
+	if (p_paths.size() > 1 || p_paths[0] != "res://") {
+		p_popup->add_item(TTR("Move To..."), FILE_MOVE);
+		p_popup->add_item(TTR("Delete"), FILE_REMOVE);
+	}
 
 	if (p_paths.size() == 1) {
 		p_popup->add_separator();
@@ -2229,7 +2242,7 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 void FileSystemDock::_tree_rmb_select(const Vector2 &p_pos) {
 	// Right click is pressed in the tree
-	Vector<String> paths = _tree_get_selected();
+	Vector<String> paths = _tree_get_selected(false);
 
 	if (paths.size() == 1) {
 		if (paths[0].ends_with("/")) {
