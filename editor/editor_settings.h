@@ -166,6 +166,7 @@ public:
 	String get_project_settings_dir() const;
 	String get_text_editor_themes_dir() const;
 	String get_script_templates_dir() const;
+	String get_project_script_templates_dir() const;
 	String get_cache_dir() const;
 	String get_feature_profiles_dir() const;
 
@@ -187,7 +188,7 @@ public:
 	bool save_text_editor_theme_as(String p_file);
 	bool is_default_text_editor_theme();
 
-	Vector<String> get_script_templates(const String &p_extension);
+	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
 
 	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);

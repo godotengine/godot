@@ -1019,6 +1019,9 @@ ProjectSettings::ProjectSettings() {
 	GLOBAL_DEF("editor/search_in_file_extensions", extensions);
 	custom_prop_info["editor/search_in_file_extensions"] = PropertyInfo(Variant::POOL_STRING_ARRAY, "editor/search_in_file_extensions");
 
+	GLOBAL_DEF("editor/script_templates_search_path", "res://script_templates");
+	custom_prop_info["editor/script_templates_search_path"] = PropertyInfo(Variant::STRING, "editor/script_templates_search_path", PROPERTY_HINT_DIR);
+
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
