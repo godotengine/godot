@@ -40,6 +40,7 @@
 #include "core/variant.h"
 
 #include <wchar.h>
+#include <cstdint>
 
 #ifndef NO_USE_STDLIB
 #include <stdio.h>
@@ -1668,6 +1669,7 @@ int String::hex_to_int(bool p_with_prefix) const {
 			return 0;
 		}
 
+		ERR_FAIL_COND_V_MSG(hex > INT32_MAX / 16, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
@@ -1709,6 +1711,7 @@ int64_t String::hex_to_int64(bool p_with_prefix) const {
 			return 0;
 		}
 
+		ERR_FAIL_COND_V_MSG(hex > INT64_MAX / 16, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		hex *= 16;
 		hex += n;
 		s++;
@@ -1748,6 +1751,7 @@ int64_t String::bin_to_int64(bool p_with_prefix) const {
 			return 0;
 		}
 
+		ERR_FAIL_COND_V_MSG(binary > INT64_MAX / 2, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 		binary *= 2;
 		binary += n;
 		s++;
@@ -1771,6 +1775,7 @@ int String::to_int() const {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
 
+			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + *this + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1798,6 +1803,7 @@ int64_t String::to_int64() const {
 		CharType c = operator[](i);
 		if (c >= '0' && c <= '9') {
 
+			ERR_FAIL_COND_V_MSG(integer > INT64_MAX / 10, sign == 1 ? INT64_MAX : INT64_MIN, "Cannot represent " + *this + " as 64-bit integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -1828,6 +1834,7 @@ int String::to_int(const char *p_str, int p_len) {
 		char c = p_str[i];
 		if (c >= '0' && c <= '9') {
 
+			ERR_FAIL_COND_V_MSG(integer > INT32_MAX / 10, sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + String(p_str).substr(0, to) + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
 			integer *= 10;
 			integer += c - '0';
 
@@ -2140,6 +2147,14 @@ int64_t String::to_int(const CharType *p_str, int p_len) {
 
 				if (c >= '0' && c <= '9') {
 
+					if (integer > INT32_MAX / 10) {
+						String number("");
+						str = p_str;
+						while (str != limit) {
+							number += *(str++);
+						}
+						ERR_FAIL_V_MSG(sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + number + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
+					}
 					integer *= 10;
 					integer += c - '0';
 				} else {
