@@ -94,6 +94,9 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 }
 
 Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509CertificateMbedTLS> p_valid_cas) {
+	Error err = _setup(MBEDTLS_SSL_IS_CLIENT, p_transport, p_authmode);
+	ERR_FAIL_COND_V(err != OK, err);
+
 	X509CertificateMbedTLS *cas = NULL;
 
 	if (p_valid_cas.is_valid()) {
@@ -104,11 +107,11 @@ Error SSLContextMbedTLS::init_client(int p_transport, int p_authmode, Ref<X509Ce
 	} else {
 		// Fall back to default certificates (no need to lock those).
 		cas = CryptoMbedTLS::get_default_certificates();
-		ERR_FAIL_COND_V(cas == NULL, ERR_UNCONFIGURED);
+		if (cas == NULL) {
+			clear();
+			ERR_FAIL_V_MSG(ERR_UNCONFIGURED, "SSL module failed to initialize!");
+		}
 	}
-
-	Error err = _setup(MBEDTLS_SSL_IS_CLIENT, p_transport, p_authmode);
-	ERR_FAIL_COND_V(err != OK, err);
 
 	// Set valid CAs
 	mbedtls_ssl_conf_ca_chain(&conf, &(cas->cert), NULL);
