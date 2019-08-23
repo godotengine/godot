@@ -562,7 +562,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	download = memnew(HTTPRequest);
 	add_child(download);
 	download->connect("request_completed", this, "_http_download_completed");
-	download->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	download->set_use_threads(EDITOR_GET("asset_library/use_threads"));
 
 	download_error = memnew(AcceptDialog);
 	add_child(download_error);
@@ -594,7 +594,12 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (is_visible()) {
-				_repository_changed(0); // Update when shown for the first time.
+				// Update the list of assets when shown for the first time.
+				if (templates_only) {
+					_api_request("configure", REQUESTING_CONFIG, "?type=project");
+				} else {
+					_api_request("configure", REQUESTING_CONFIG);
+				}
 			}
 		} break;
 		case NOTIFICATION_PROCESS: {
@@ -890,7 +895,7 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	iq.image_index = p_image_index;
 	iq.image_type = p_type;
 	iq.request = memnew(HTTPRequest);
-	iq.request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	iq.request->set_use_threads(EDITOR_GET("asset_library/use_threads"));
 
 	iq.target = p_for;
 	iq.queue_id = ++last_queue_id;
@@ -906,21 +911,12 @@ void EditorAssetLibrary::_request_image(ObjectID p_for, String p_image_url, Imag
 	_update_image_queue();
 }
 
-void EditorAssetLibrary::_repository_changed(int p_repository_id) {
-	host = repository->get_item_metadata(p_repository_id);
-	if (templates_only) {
-		_api_request("configure", REQUESTING_CONFIG, "?type=project");
-	} else {
-		_api_request("configure", REQUESTING_CONFIG);
-	}
-}
-
 void EditorAssetLibrary::_support_toggled(int p_support) {
 	support->get_popup()->set_item_checked(p_support, !support->get_popup()->is_item_checked(p_support));
 	_search();
 }
 
-void EditorAssetLibrary::_rerun_search(int p_ignore) {
+void EditorAssetLibrary::_rerun_search() {
 	_search();
 }
 
@@ -1337,7 +1333,6 @@ void EditorAssetLibrary::_bind_methods() {
 	ClassDB::bind_method("_manage_plugins", &EditorAssetLibrary::_manage_plugins);
 	ClassDB::bind_method("_asset_open", &EditorAssetLibrary::_asset_open);
 	ClassDB::bind_method("_asset_file_selected", &EditorAssetLibrary::_asset_file_selected);
-	ClassDB::bind_method("_repository_changed", &EditorAssetLibrary::_repository_changed);
 	ClassDB::bind_method("_support_toggled", &EditorAssetLibrary::_support_toggled);
 	ClassDB::bind_method("_rerun_search", &EditorAssetLibrary::_rerun_search);
 	ClassDB::bind_method("_install_external_asset", &EditorAssetLibrary::_install_external_asset);
@@ -1349,6 +1344,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
+	host = EDITOR_GET("asset_library/api_url");
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
 
@@ -1417,21 +1413,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	search_hb2->add_child(memnew(VSeparator));
 
-	search_hb2->add_child(memnew(Label(TTR("Site:") + " ")));
-	repository = memnew(OptionButton);
-
-	repository->add_item("godotengine.org");
-	repository->set_item_metadata(0, "https://godotengine.org/asset-library/api");
-	repository->add_item("localhost");
-	repository->set_item_metadata(1, "http://127.0.0.1/asset-library/api");
-
-	repository->connect("item_selected", this, "_repository_changed");
-
-	search_hb2->add_child(repository);
-	repository->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	search_hb2->add_child(memnew(VSeparator));
-
 	support = memnew(MenuButton);
 	search_hb2->add_child(support);
 	support->set_text(TTR("Support..."));
@@ -1487,7 +1468,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	request = memnew(HTTPRequest);
 	add_child(request);
-	request->set_use_threads(EDITOR_DEF("asset_library/use_threads", true));
+	request->set_use_threads(EDITOR_GET("asset_library/use_threads"));
 	request->connect("request_completed", this, "_http_request_completed");
 
 	last_queue_id = 0;

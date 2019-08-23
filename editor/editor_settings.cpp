@@ -624,6 +624,11 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("network/ssl/editor_ssl_certificates", _SYSTEM_CERTS_PATH);
 	hints["network/ssl/editor_ssl_certificates"] = PropertyInfo(Variant::STRING, "network/ssl/editor_ssl_certificates", PROPERTY_HINT_GLOBAL_FILE, "*.crt,*.pem");
 
+	// Asset library
+	_initial_set("asset_library/use_threads", true);
+	_initial_set("asset_library/api_url", "https://godotengine.org/asset-library/api");
+	hints["asset_library/api_url"] = PropertyInfo(Variant::STRING, "asset_library/api_url", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_RESTART_IF_CHANGED);
+
 	/* Extra config */
 
 	_initial_set("project_manager/sorting_order", 0);

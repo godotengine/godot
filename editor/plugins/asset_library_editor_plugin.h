@@ -188,7 +188,6 @@ class EditorAssetLibrary : public PanelContainer {
 	VBoxContainer *library_vb;
 	LineEdit *filter;
 	OptionButton *categories;
-	OptionButton *repository;
 	OptionButton *sort;
 	ToolButton *reverse;
 	Button *search;
@@ -283,7 +282,7 @@ class EditorAssetLibrary : public PanelContainer {
 	void _manage_plugins();
 
 	void _search(int p_page = 0);
-	void _rerun_search(int p_ignore);
+	void _rerun_search();
 	void _search_text_entered(const String &p_text = "");
 	void _api_request(const String &p_request, RequestType p_request_type, const String &p_arguments = "");
 	void _http_request_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
