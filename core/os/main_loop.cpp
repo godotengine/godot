@@ -41,6 +41,7 @@ void MainLoop::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("idle", "delta"), &MainLoop::idle);
 	ClassDB::bind_method(D_METHOD("finish"), &MainLoop::finish);
 
+
 	BIND_VMETHOD(MethodInfo("_input_event", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_input_text", PropertyInfo(Variant::STRING, "text")));
 	BIND_VMETHOD(MethodInfo("_initialize"));
@@ -61,6 +62,9 @@ void MainLoop::_bind_methods() {
 	BIND_CONSTANT(NOTIFICATION_WM_ABOUT);
 	BIND_CONSTANT(NOTIFICATION_CRASH);
 	BIND_CONSTANT(NOTIFICATION_OS_IME_UPDATE);
+
+	ADD_SIGNAL(MethodInfo("_permission_results", PropertyInfo(Variant::STRING, "permission"), PropertyInfo(Variant::BOOL, "granted")));
+
 };
 
 void MainLoop::set_init_script(const Ref<Script> &p_init_script) {

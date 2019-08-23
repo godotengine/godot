@@ -1386,4 +1386,5 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 	if (permission == "android.permission.RECORD_AUDIO" && p_result) {
 		AudioDriver::get_singleton()->capture_start();
 	}
+	os_android->permission_results(permission, p_result == JNI_TRUE);
 }

@@ -704,6 +704,10 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 	godot_java->vibrate(p_duration_ms);
 }
 
+void OS_Android::permission_results(String permission, bool granted) {
+	main_loop->emit_signal("_permission_results", permission, granted);
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		//TODO support etc2 only if GLES3 driver is selected
