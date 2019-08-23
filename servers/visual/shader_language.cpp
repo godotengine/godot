@@ -5141,6 +5141,14 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				if (err)
 					return err;
 
+				if (func_node->return_type != DataType::TYPE_VOID) {
+
+					BlockNode *block = func_node->body;
+					if (_find_last_flow_op_in_block(block, FlowOperation::FLOW_OP_RETURN) != OK) {
+						_set_error("Expected at least one return statement in a non-void function.");
+						return ERR_PARSE_ERROR;
+					}
+				}
 				current_function = StringName();
 			}
 		}
@@ -5149,6 +5157,57 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 	}
 
 	return OK;
+}
+
+Error ShaderLanguage::_find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op) {
+
+	bool found = false;
+
+	for (int i = p_flow->blocks.size() - 1; i >= 0; i--) {
+		if (p_flow->blocks[i]->type == Node::TYPE_BLOCK) {
+			BlockNode *last_block = (BlockNode *)p_flow->blocks[i];
+			if (_find_last_flow_op_in_block(last_block, p_op) == OK) {
+				found = true;
+				break;
+			}
+		}
+	}
+	if (found) {
+		return OK;
+	}
+	return FAILED;
+}
+
+Error ShaderLanguage::_find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op) {
+
+	bool found = false;
+
+	for (int i = p_block->statements.size() - 1; i >= 0; i--) {
+
+		if (p_block->statements[i]->type == Node::TYPE_CONTROL_FLOW) {
+			ControlFlowNode *flow = (ControlFlowNode *)p_block->statements[i];
+			if (flow->flow_op == p_op) {
+				found = true;
+				break;
+			} else {
+				if (_find_last_flow_op_in_op(flow, p_op) == OK) {
+					found = true;
+					break;
+				}
+			}
+		} else if (p_block->statements[i]->type == Node::TYPE_BLOCK) {
+			BlockNode *block = (BlockNode *)p_block->statements[i];
+			if (_find_last_flow_op_in_block(block, p_op) == OK) {
+				found = true;
+				break;
+			}
+		}
+	}
+
+	if (found) {
+		return OK;
+	}
+	return FAILED;
 }
 
 // skips over whitespace and /* */ and // comments
