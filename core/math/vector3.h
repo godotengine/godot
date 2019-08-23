@@ -31,9 +31,7 @@
 #ifndef VECTOR3_H
 #define VECTOR3_H
 
-#include "core/math/math_defs.h"
 #include "core/math/math_funcs.h"
-#include "core/typedefs.h"
 #include "core/ustring.h"
 
 class Basis;
@@ -110,6 +108,8 @@ struct Vector3 {
 	_FORCE_INLINE_ real_t distance_to(const Vector3 &p_b) const;
 	_FORCE_INLINE_ real_t distance_squared_to(const Vector3 &p_b) const;
 
+	_FORCE_INLINE_ Vector3 posmod(const real_t p_mod) const;
+	_FORCE_INLINE_ Vector3 posmodv(const Vector3 &p_modv) const;
 	_FORCE_INLINE_ Vector3 project(const Vector3 &p_b) const;
 
 	_FORCE_INLINE_ real_t angle_to(const Vector3 &p_b) const;
@@ -141,15 +141,17 @@ struct Vector3 {
 	_FORCE_INLINE_ bool operator!=(const Vector3 &p_v) const;
 	_FORCE_INLINE_ bool operator<(const Vector3 &p_v) const;
 	_FORCE_INLINE_ bool operator<=(const Vector3 &p_v) const;
+	_FORCE_INLINE_ bool operator>(const Vector3 &p_v) const;
+	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 
 	operator String() const;
 
-	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
 	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
 		x = p_x;
 		y = p_y;
 		z = p_z;
 	}
+	_FORCE_INLINE_ Vector3() { x = y = z = 0; }
 };
 
 // Should be included after class definition, otherwise we get circular refs
@@ -231,6 +233,14 @@ real_t Vector3::distance_to(const Vector3 &p_b) const {
 real_t Vector3::distance_squared_to(const Vector3 &p_b) const {
 
 	return (p_b - *this).length_squared();
+}
+
+Vector3 Vector3::posmod(const real_t p_mod) const {
+	return Vector3(Math::fposmod(x, p_mod), Math::fposmod(y, p_mod), Math::fposmod(z, p_mod));
+}
+
+Vector3 Vector3::posmodv(const Vector3 &p_modv) const {
+	return Vector3(Math::fposmod(x, p_modv.x), Math::fposmod(y, p_modv.y), Math::fposmod(z, p_modv.z));
 }
 
 Vector3 Vector3::project(const Vector3 &p_b) const {
@@ -357,6 +367,18 @@ bool Vector3::operator<(const Vector3 &p_v) const {
 	}
 }
 
+bool Vector3::operator>(const Vector3 &p_v) const {
+
+	if (x == p_v.x) {
+		if (y == p_v.y)
+			return z > p_v.z;
+		else
+			return y > p_v.y;
+	} else {
+		return x > p_v.x;
+	}
+}
+
 bool Vector3::operator<=(const Vector3 &p_v) const {
 
 	if (Math::is_equal_approx(x, p_v.x)) {
@@ -366,6 +388,18 @@ bool Vector3::operator<=(const Vector3 &p_v) const {
 			return y < p_v.y;
 	} else {
 		return x < p_v.x;
+	}
+}
+
+bool Vector3::operator>=(const Vector3 &p_v) const {
+
+	if (x == p_v.x) {
+		if (y == p_v.y)
+			return z >= p_v.z;
+		else
+			return y > p_v.y;
+	} else {
+		return x > p_v.x;
 	}
 }
 
