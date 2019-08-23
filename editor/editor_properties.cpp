@@ -209,13 +209,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
 
-	String final_path = p_path;
-	if (final_path.is_abs_path()) {
-		String res_path = OS::get_singleton()->get_resource_dir() + "/";
-		final_path = res_path.path_to_file(final_path);
-	}
-
-	emit_changed(get_edited_property(), final_path);
+	emit_changed(get_edited_property(), p_path);
 	update_property();
 }
 void EditorPropertyPath::_path_pressed() {
@@ -228,13 +222,6 @@ void EditorPropertyPath::_path_pressed() {
 	}
 
 	String full_path = get_edited_object()->get(get_edited_property());
-	if (full_path.is_rel_path()) {
-
-		if (!DirAccess::exists(full_path.get_base_dir())) {
-			DirAccessRef da(DirAccess::create(DirAccess::ACCESS_FILESYSTEM));
-			da->make_dir_recursive(full_path.get_base_dir());
-		}
-	}
 
 	dialog->clear_filters();
 

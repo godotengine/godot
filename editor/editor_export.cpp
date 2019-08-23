@@ -148,6 +148,12 @@ String EditorExportPreset::get_include_filter() const {
 void EditorExportPreset::set_export_path(const String &p_path) {
 
 	export_path = p_path;
+	/* NOTE(SonerSound): if there is a need to implement a PropertyHint that specifically indicates a relative path,
+	 * this should be removed. */
+	if (export_path.is_abs_path()) {
+		String res_path = OS::get_singleton()->get_resource_dir();
+		export_path = res_path.path_to_file(export_path);
+	}
 	EditorExport::singleton->save_presets();
 }
 
