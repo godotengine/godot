@@ -893,8 +893,9 @@ void make_default_theme(bool p_hidpi, Ref<Font> p_font) {
 
 void clear_default_theme() {
 
-	Theme::set_default(Ref<Theme>());
-	Theme::set_default_icon(Ref<Texture>());
-	Theme::set_default_style(Ref<StyleBox>());
-	Theme::set_default_font(Ref<Font>());
+	Theme::set_project_default(NULL);
+	Theme::set_default(NULL);
+	Theme::set_default_icon(NULL);
+	Theme::set_default_style(NULL);
+	Theme::set_default_font(NULL);
 }
