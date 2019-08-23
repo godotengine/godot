@@ -30,7 +30,6 @@ doc_classes/*        @godotengine/documentation
 /modules/bullet/     @AndreaCatania
 /modules/csg/        @BastiaanOlij
 /modules/enet/       @godotengine/network
-/modules/gdnative/   @karroffel
 /modules/gdnative/*arvr/ @BastiaanOlij
 /modules/gdscript/   @vnen @bojidar-bg
 /modules/mbedtls/    @godotengine/network
@@ -45,6 +44,6 @@ doc_classes/*        @godotengine/documentation
 /platform/uwp/       @vnen
 
 /server/physics*/    @reduz @AndreaCatania
-/server/visual*/     @reduz @karroffel
+/server/visual*/     @reduz
 
 /thirdparty/         @akien-mga
