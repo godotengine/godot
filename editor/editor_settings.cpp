@@ -448,7 +448,7 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	_initial_set("text_editor/line_numbers/show_info_gutter", true);
 	_initial_set("text_editor/line_numbers/code_folding", true);
 	_initial_set("text_editor/line_numbers/word_wrap", false);
-	_initial_set("text_editor/line_numbers/draw_minimap", false);
+	_initial_set("text_editor/line_numbers/draw_minimap", true);
 	_initial_set("text_editor/line_numbers/minimap_width", 80);
 	hints["text_editor/line_numbers/minimap_width"] = PropertyInfo(Variant::INT, "text_editor/line_numbers/minimap_width", PROPERTY_HINT_RANGE, "50,250,1");
 	_initial_set("text_editor/line_numbers/show_line_length_guideline", false);
