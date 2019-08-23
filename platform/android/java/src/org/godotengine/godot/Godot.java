@@ -103,6 +103,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
 	static final int REQUEST_VIBRATE_PERMISSION = 3;
+	static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 3;
+	static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 4;
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
@@ -1006,6 +1008,20 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		if (p_name.equals("VIBRATE")) {
 			if (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
 				requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
+				return false;
+			}
+		}
+
+		if ("READ_EXTERNAL".equals(p_name)) {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[] { Manifest.permission.READ_EXTERNAL_STORAGE }, REQUEST_READ_EXTERNAL_STORAGE_PERMISSION);
+				return false;
+			}
+		}
+
+		if ("WRITE_EXTERNAL".equals(p_name)) {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[] { Manifest.permission.WRITE_EXTERNAL_STORAGE }, REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION);
 				return false;
 			}
 		}
