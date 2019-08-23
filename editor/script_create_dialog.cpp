@@ -34,6 +34,7 @@
 #include "core/os/file_access.h"
 #include "core/project_settings.h"
 #include "core/script_language.h"
+#include "core/string_builder.h"
 #include "editor/create_dialog.h"
 #include "editor/editor_node.h"
 #include "editor/editor_scale.h"
@@ -238,16 +239,22 @@ void ScriptCreateDialog::_parent_name_changed(const String &p_parent) {
 
 void ScriptCreateDialog::_template_changed(int p_template) {
 
-	String selected_template = p_template == 0 ? "" : template_menu->get_item_text(template_menu->get_selected());
+	String selected_template = p_template == 0 ? "" : template_menu->get_item_text(p_template);
 	EditorSettings::get_singleton()->set_project_metadata("script_setup", "last_selected_template", selected_template);
 	if (p_template == 0) {
 		//default
 		script_template = "";
 		return;
 	}
-	String ext = ScriptServer::get_language(language_menu->get_selected())->get_extension();
-	String name = template_list[p_template - 1] + "." + ext;
-	script_template = EditorSettings::get_singleton()->get_script_templates_dir().plus_file(name);
+	int selected_id = template_menu->get_selected_id();
+
+	for (int i = 0; i < template_list.size(); i++) {
+		const ScriptTemplateInfo &sinfo = template_list[i];
+		if (sinfo.id == selected_id) {
+			script_template = sinfo.dir.plus_file(sinfo.name + "." + sinfo.extension);
+			break;
+		}
+	}
 }
 
 void ScriptCreateDialog::ok_pressed() {
@@ -368,23 +375,77 @@ void ScriptCreateDialog::_lang_changed(int l) {
 	bool use_templates = language->is_using_templates();
 	template_menu->set_disabled(!use_templates);
 	template_menu->clear();
-	if (use_templates) {
 
-		template_list = EditorSettings::get_singleton()->get_script_templates(language->get_extension());
+	if (use_templates) {
+		_update_script_templates(language->get_extension());
 
 		String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
 		String last_template = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_template", "");
 
 		template_menu->add_item(TTR("Default"));
+
+		ScriptTemplateInfo *templates = template_list.ptrw();
+
+		Vector<String> origin_names;
+		origin_names.push_back(TTR("Project"));
+		origin_names.push_back(TTR("Editor"));
+		int cur_origin = -1;
+
+		// Populate script template items previously sorted and now grouped by origin
 		for (int i = 0; i < template_list.size(); i++) {
-			String s = template_list[i].capitalize();
-			template_menu->add_item(s);
-			if (language_menu->get_item_text(language_menu->get_selected()) == last_lang && last_template == s) {
-				template_menu->select(i + 1);
+
+			if (int(templates[i].origin) != cur_origin) {
+				template_menu->add_separator();
+
+				String origin_name = origin_names[templates[i].origin];
+
+				int last_index = template_menu->get_item_count() - 1;
+				template_menu->set_item_text(last_index, origin_name);
+
+				cur_origin = templates[i].origin;
+			}
+			String item_name = templates[i].name.capitalize();
+			template_menu->add_item(item_name);
+
+			int new_id = template_menu->get_item_count() - 1;
+			templates[i].id = new_id;
+		}
+		// Disable overridden
+		for (Map<String, Vector<int> >::Element *E = template_overrides.front(); E; E = E->next()) {
+			const Vector<int> &overrides = E->get();
+
+			if (overrides.size() == 1) {
+				continue; // doesn't override anything
+			}
+			const ScriptTemplateInfo &extended = template_list[overrides[0]];
+
+			StringBuilder override_info;
+			override_info += TTR("Overrides");
+			override_info += ": ";
+
+			for (int i = 1; i < overrides.size(); i++) {
+				const ScriptTemplateInfo &overridden = template_list[overrides[i]];
+
+				int disable_index = template_menu->get_item_index(overridden.id);
+				template_menu->set_item_disabled(disable_index, true);
+
+				override_info += origin_names[overridden.origin];
+				if (i < overrides.size() - 1) {
+					override_info += ", ";
+				}
+			}
+			template_menu->set_item_icon(extended.id, get_icon("Override", "EditorIcons"));
+			template_menu->get_popup()->set_item_tooltip(extended.id, override_info.as_string());
+		}
+		// Reselect last selected template
+		for (int i = 0; i < template_menu->get_item_count(); i++) {
+			const String &ti = template_menu->get_item_text(i);
+			if (language_menu->get_item_text(language_menu->get_selected()) == last_lang && last_template == ti) {
+				template_menu->select(i);
+				break;
 			}
 		}
 	} else {
-
 		template_menu->add_item(TTR("N/A"));
 		script_template = "";
 	}
@@ -394,6 +455,41 @@ void ScriptCreateDialog::_lang_changed(int l) {
 
 	_parent_name_changed(parent_name->get_text());
 	_update_dialog();
+}
+
+void ScriptCreateDialog::_update_script_templates(const String &p_extension) {
+
+	template_list.clear();
+	template_overrides.clear();
+
+	Vector<String> dirs;
+
+	// Ordered from local to global for correct override mechanism
+	dirs.push_back(EditorSettings::get_singleton()->get_project_script_templates_dir());
+	dirs.push_back(EditorSettings::get_singleton()->get_script_templates_dir());
+
+	for (int i = 0; i < dirs.size(); i++) {
+
+		Vector<String> list = EditorSettings::get_singleton()->get_script_templates(p_extension, dirs[i]);
+
+		for (int j = 0; j < list.size(); j++) {
+			ScriptTemplateInfo sinfo;
+			sinfo.origin = ScriptOrigin(i);
+			sinfo.dir = dirs[i];
+			sinfo.name = list[j];
+			sinfo.extension = p_extension;
+			template_list.push_back(sinfo);
+
+			if (!template_overrides.has(sinfo.name)) {
+				Vector<int> overrides;
+				overrides.push_back(template_list.size() - 1); // first one
+				template_overrides.insert(sinfo.name, overrides);
+			} else {
+				Vector<int> &overrides = template_overrides[sinfo.name];
+				overrides.push_back(template_list.size() - 1);
+			}
+		}
+	}
 }
 
 void ScriptCreateDialog::_built_in_pressed() {

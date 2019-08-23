@@ -78,8 +78,25 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	int current_language;
 	int default_language;
 	bool re_check_path;
+
+	enum ScriptOrigin {
+		SCRIPT_ORIGIN_PROJECT,
+		SCRIPT_ORIGIN_EDITOR,
+	};
+	struct ScriptTemplateInfo {
+		int id;
+		ScriptOrigin origin;
+		String dir;
+		String name;
+		String extension;
+	};
+
 	String script_template;
-	Vector<String> template_list;
+	Vector<ScriptTemplateInfo> template_list;
+	Map<String, Vector<int> > template_overrides; // name : indices
+
+	void _update_script_templates(const String &p_extension);
+
 	String base_type;
 
 	void _path_hbox_sorted();
