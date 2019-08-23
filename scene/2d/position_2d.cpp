@@ -38,8 +38,9 @@ const float DEFAULT_GIZMO_EXTENTS = 10.0;
 void Position2D::_draw_cross() {
 
 	float extents = get_gizmo_extents();
-	draw_line(Point2(-extents, 0), Point2(+extents, 0), Color(1, 0.5, 0.5));
-	draw_line(Point2(0, -extents), Point2(0, +extents), Color(0.5, 1, 0.5));
+	// Colors taken from `axis_x_color` and `axis_y_color` (defined in `editor/editor_themes.cpp`)
+	draw_line(Point2(-extents, 0), Point2(+extents, 0), Color(0.96, 0.20, 0.32));
+	draw_line(Point2(0, -extents), Point2(0, +extents), Color(0.53, 0.84, 0.01));
 }
 
 Rect2 Position2D::_edit_get_rect() const {

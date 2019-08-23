@@ -4080,23 +4080,6 @@ Object *SpatialEditor::_get_editor_data(Object *p_what) {
 	return si;
 }
 
-Color SpatialEditor::_get_axis_color(int axis) {
-
-	switch (axis) {
-		case 0:
-			// X axis
-			return Color(0.96, 0.20, 0.32);
-		case 1:
-			// Y axis
-			return Color(0.53, 0.84, 0.01);
-		case 2:
-			// Z axis
-			return Color(0.16, 0.55, 0.96);
-		default:
-			return Color(0, 0, 0);
-	}
-}
-
 void SpatialEditor::_generate_selection_box() {
 
 	AABB aabb(Vector3(), Vector3(1, 1, 1));
@@ -4648,7 +4631,21 @@ void SpatialEditor::_init_indicators() {
 		for (int i = 0; i < 3; i++) {
 			Vector3 axis;
 			axis[i] = 1;
-			Color origin_color = _get_axis_color(i);
+			Color origin_color;
+			switch (i) {
+				case 0:
+					origin_color = get_color("axis_x_color", "Editor");
+					break;
+				case 1:
+					origin_color = get_color("axis_y_color", "Editor");
+					break;
+				case 2:
+					origin_color = get_color("axis_z_color", "Editor");
+					break;
+				default:
+					origin_color = Color();
+					break;
+			}
 
 			grid_enable[i] = false;
 			grid_visible[i] = false;
@@ -4685,7 +4682,22 @@ void SpatialEditor::_init_indicators() {
 
 		for (int i = 0; i < 3; i++) {
 
-			Color col = _get_axis_color(i);
+			Color col;
+			switch (i) {
+				case 0:
+					col = get_color("axis_x_color", "Editor");
+					break;
+				case 1:
+					col = get_color("axis_y_color", "Editor");
+					break;
+				case 2:
+					col = get_color("axis_z_color", "Editor");
+					break;
+				default:
+					col = Color();
+					break;
+			}
+
 			col.a = EditorSettings::get_singleton()->get("editors/3d/manipulator_gizmo_opacity");
 
 			move_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
