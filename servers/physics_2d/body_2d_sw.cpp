@@ -671,6 +671,7 @@ Body2DSW::Body2DSW() :
 	angular_velocity = 0;
 	biased_angular_velocity = 0;
 	mass = 1;
+	inertia = 0;
 	user_inertia = false;
 	_inv_inertia = 0;
 	_inv_mass = 1;
