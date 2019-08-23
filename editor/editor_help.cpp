@@ -164,6 +164,17 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
 }
 
+void EditorHelp::_class_desc_resized() {
+	// Add extra horizontal margins for better readability.
+	// The margins increase as the width of the editor help container increases.
+	const int display_margin = MAX(30 * EDSCALE, get_parent_anchorable_rect().size.width - 900 * EDSCALE) * 0.5;
+
+	Ref<StyleBox> class_desc_stylebox = EditorNode::get_singleton()->get_theme_base()->get_stylebox("normal", "RichTextLabel")->duplicate();
+	class_desc_stylebox->set_default_margin(MARGIN_LEFT, display_margin);
+	class_desc_stylebox->set_default_margin(MARGIN_RIGHT, display_margin);
+	class_desc->add_style_override("normal", class_desc_stylebox);
+}
+
 void EditorHelp::_add_type(const String &p_type, const String &p_enum) {
 
 	String t = p_type;
@@ -1488,6 +1499,7 @@ void EditorHelp::_bind_methods() {
 	ClassDB::bind_method("_class_list_select", &EditorHelp::_class_list_select);
 	ClassDB::bind_method("_class_desc_select", &EditorHelp::_class_desc_select);
 	ClassDB::bind_method("_class_desc_input", &EditorHelp::_class_desc_input);
+	ClassDB::bind_method("_class_desc_resized", &EditorHelp::_class_desc_resized);
 	ClassDB::bind_method("_request_help", &EditorHelp::_request_help);
 	ClassDB::bind_method("_unhandled_key_input", &EditorHelp::_unhandled_key_input);
 	ClassDB::bind_method("_search", &EditorHelp::_search);
@@ -1506,8 +1518,11 @@ EditorHelp::EditorHelp() {
 	add_child(class_desc);
 	class_desc->set_v_size_flags(SIZE_EXPAND_FILL);
 	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+
 	class_desc->connect("meta_clicked", this, "_class_desc_select");
 	class_desc->connect("gui_input", this, "_class_desc_input");
+	class_desc->connect("resized", this, "_class_desc_resized");
+	_class_desc_resized();
 
 	// Added second so it opens at the bottom so it won't offset the entire widget.
 	find_bar = memnew(FindBar);
