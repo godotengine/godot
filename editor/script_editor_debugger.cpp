@@ -1376,7 +1376,7 @@ void ScriptEditorDebugger::stop() {
 	profiler->set_enabled(true);
 
 	inspect_scene_tree->clear();
-	inspector->edit(NULL);
+	EditorNode::get_singleton()->edit_current();
 	EditorNode::get_singleton()->get_pause_button()->set_pressed(false);
 	EditorNode::get_singleton()->get_pause_button()->set_disabled(true);
 	EditorNode::get_singleton()->get_scene_tree_dock()->hide_remote_tree();
