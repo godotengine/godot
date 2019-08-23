@@ -458,9 +458,10 @@ void LineBuilder::strip_begin(Vector2 up, Vector2 down, Color color, float uvx) 
 
 void LineBuilder::strip_new_quad(Vector2 up, Vector2 down, Color color, float uvx) {
 	int vi = vertices.size();
-
-	vertices.push_back(vertices[_last_index[UP]]);
-	vertices.push_back(vertices[_last_index[DOWN]]);
+	Vector2 temp_vector2 = vertices[_last_index[UP]];
+	vertices.push_back(temp_vector2);
+	temp_vector2 = vertices[_last_index[DOWN]];
+	vertices.push_back(temp_vector2);
 	vertices.push_back(up);
 	vertices.push_back(down);
 
@@ -472,8 +473,10 @@ void LineBuilder::strip_new_quad(Vector2 up, Vector2 down, Color color, float uv
 	}
 
 	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
-		uvs.push_back(uvs[_last_index[UP]]);
-		uvs.push_back(uvs[_last_index[DOWN]]);
+		temp_vector2 = uvs[_last_index[UP]];
+		uvs.push_back(temp_vector2);
+		temp_vector2 = uvs[_last_index[DOWN]];
+		uvs.push_back(temp_vector2);
 		uvs.push_back(Vector2(uvx, UP));
 		uvs.push_back(Vector2(uvx, DOWN));
 	}
@@ -522,7 +525,8 @@ void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
 	vertices.push_back(up);
 
 	if (_interpolate_color) {
-		colors.push_back(colors[colors.size() - 1]);
+		Color temp_color = colors[colors.size() - 1];
+		colors.push_back(temp_color);
 	}
 
 	Orientation opposite_orientation = orientation == UP ? DOWN : UP;
@@ -530,7 +534,8 @@ void LineBuilder::strip_add_tri(Vector2 up, Orientation orientation) {
 	if (texture_mode != Line2D::LINE_TEXTURE_NONE) {
 		// UVs are just one slice of the texture all along
 		// (otherwise we can't share the bottom vertice)
-		uvs.push_back(uvs[_last_index[opposite_orientation]]);
+		Vector2 temp_vector2 = uvs[_last_index[opposite_orientation]];
+		uvs.push_back(temp_vector2);
 	}
 
 	indices.push_back(_last_index[opposite_orientation]);
