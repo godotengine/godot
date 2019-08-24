@@ -3991,7 +3991,7 @@ void TextEdit::_line_edited_from(int p_line) {
 
 	if (syntax_highlighting_cache.size() > 0) {
 		cache_size = syntax_highlighting_cache.back()->key();
-		for (int i = p_line - 1; i < cache_size; i++) {
+		for (int i = p_line - 1; i <= cache_size; i++) {
 			if (syntax_highlighting_cache.has(i)) {
 				syntax_highlighting_cache.erase(i);
 			}
