@@ -132,7 +132,7 @@ void AudioStreamPlaylist::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "stream_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_STREAMS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_stream_count", "get_stream_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,400"), "set_stream_beats", "get_stream_beats");
+	//ADD_PROPERTY(PropertyInfo(Variant::INT, "beat_count", PROPERTY_HINT_RANGE, "0,400"), "set_stream_beats", "get_stream_beats");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shuffle"), "set_shuffle", "get_shuffle");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "get_loop");
 
@@ -182,7 +182,7 @@ void AudioStreamPlaybackPlaylist::start(float p_from_pos) {
 	current = 0;
 	
 	if (playlist->audio_streams[current].is_valid()) {
-		fading_samples_total = (fading_time * playlist->sample_rate)/100;
+		fading_samples_total = (fading_time * playlist->sample_rate)/1000;
 		if (playlist->audio_streams[current]->get_bpm() == 0) {
 			beat_size = playlist->sample_rate * 60 / playlist->bpm;
 		}else{
@@ -238,7 +238,7 @@ void AudioStreamPlaybackPlaylist::mix(AudioFrame *p_buffer, float p_rate_scale, 
 
 		while (p_frames > 0) {
 
-			if (beat_amount_remaining == 0) {// maybe need to include some kind of functionality for looping 
+			if (beat_amount_remaining == 0) {
 				fading = true;
 				if ((current+1) < playlist->stream_count){
 					current = (current + 1) % playlist->stream_count;

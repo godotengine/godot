@@ -55,8 +55,8 @@ public:
 	void set_clip_count(int p_clip_count);
 	int get_clip_count();
 
-	void set_transition_clip_active(bool active);
-	bool get_transition_clip_active();
+	void set_t_clip_active(bool active);
+	bool get_t_clip_active();
 
 	void add_transition_clip(Ref<AudioStream> transition_clip);
 	Ref<AudioStream> get_transition_clip();
@@ -91,7 +91,7 @@ class AudioStreamPlaybackTransitioner : public AudioStreamPlayback {
 
 private:
 	enum {
-		MIX_BUFFER_SIZE = 128
+		MIX_BUFFER_SIZE = 256
 	};
 	enum {
 		MIX_FRAC_BITS = 13,

@@ -67,11 +67,11 @@ int AudioStreamTransitioner::get_clip_count() {
 	return clip_count;
 }
 
-void AudioStreamTransitioner::set_transition_clip_active(bool active) {
+void AudioStreamTransitioner::set_t_clip_active(bool active) {
 	t_clip_active = active;
 }
 
-bool AudioStreamTransitioner::get_transition_clip_active() {
+bool AudioStreamTransitioner::get_t_clip_active() {
 	return t_clip_active;
 }
 
@@ -115,7 +115,7 @@ int AudioStreamTransitioner::get_transition_fade_out(int t_number) {
 void AudioStreamTransitioner::set_list_clip(int clip_number, Ref<AudioStream> p_clip) {
 	ERR_FAIL_COND(p_clip == this);
 	ERR_FAIL_INDEX(clip_number, MAX_STREAMS);
-
+	
 	AudioServer::get_singleton()->lock();
 	clips[clip_number] = p_clip;
 	for (Set<AudioStreamPlaybackTransitioner *>::Element *E = playbacks.front(); E; E = E->next()) {
@@ -175,12 +175,6 @@ void AudioStreamTransitioner::_validate_property(PropertyInfo &property) const {
 			property.usage = 0;
 		}
 	}
-	//if (prop.begins_with("trans_clip")) {
-		//int trans_clip = 0;
-		//if (t_clip_active == false) {
-		//	property.usage = 0;
-		//}
-	//}
 }
 
 void AudioStreamTransitioner::_bind_methods() {
@@ -208,8 +202,8 @@ void AudioStreamTransitioner::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_list_clip", "clip_number", "clip"), &AudioStreamTransitioner::set_list_clip);
 	ClassDB::bind_method(D_METHOD("get_list_clip", "clip_number"), &AudioStreamTransitioner::get_list_clip);
 
-	ClassDB::bind_method(D_METHOD("set_transition_clip_active", "transition_active"), &AudioStreamTransitioner::set_transition_clip_active);
-	ClassDB::bind_method(D_METHOD("get_transition_clip_active"), &AudioStreamTransitioner::get_transition_clip_active);
+	ClassDB::bind_method(D_METHOD("set_t_clip_active", "transition_active"), &AudioStreamTransitioner::set_t_clip_active);
+	ClassDB::bind_method(D_METHOD("get_t_clip_active"), &AudioStreamTransitioner::get_t_clip_active);
 
 	ClassDB::bind_method(D_METHOD("add_transition_clip", "transition_clip"), &AudioStreamTransitioner::add_transition_clip);
 	ClassDB::bind_method(D_METHOD("get_transition_clip"), &AudioStreamTransitioner::get_transition_clip);
@@ -218,13 +212,16 @@ void AudioStreamTransitioner::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "transition_count", PROPERTY_HINT_RANGE, "1," + itos(MAX_TRANSITIONS), PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), "set_transition_count", "get_transition_count");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm", PROPERTY_HINT_RANGE, "0,400"), "set_bpm", "get_bpm");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "active_clip", PROPERTY_HINT_RANGE, "0,64"), "set_active_clip_number", "get_active_clip_number");
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "transition_clip_active"), "set_transition_clip_active", "get_transition_clip_active");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trans_clip", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "add_transition_clip", "get_transition_clip");
 
+	ADD_GROUP("Transition Clip", "t_");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "t_clip_active"), "set_t_clip_active", "get_t_clip_active");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "t_clip", PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "add_transition_clip", "get_transition_clip");
+
+	ADD_GROUP("Clips", "clip_");
 	for (int i = 0; i < MAX_STREAMS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "clip_" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "AudioStream", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_list_clip", "get_list_clip", i);
 	}
-
+	ADD_GROUP("Transitions", "transition_");
 	for (int i = 0; i < MAX_TRANSITIONS; i++) {
 		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i) + "/fade_in_beats", PROPERTY_HINT_RANGE, "0,64", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_in", "get_transition_fade_in", i);
 		ADD_PROPERTYI(PropertyInfo(Variant::INT, "transition_" + itos(i) + "/fade_out_beats", PROPERTY_HINT_RANGE, "0,64", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_INTERNAL), "set_transition_fade_out", "get_transition_fade_out", i);
@@ -311,6 +308,11 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 		if (transitioner->clips[current].is_valid()){
 
 			int dst_offset = 0;
+			if (clip_samples_total <= 0) {
+				playbacks[current]->stop();
+				playbacks[current]->start();
+				clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate;
+			}
 
 			while (p_frames > 0) {
 				if (transitioner->active_transition.t_active) {
@@ -333,7 +335,7 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 						}
 						fade_out_samples_total = transitioner->active_transition.fade_out_beats * fading_beat_size;
 						fade_in_samples_total = transitioner->active_transition.fade_in_beats * beat_size;
-						if (transitioner->t_clip_active) {
+						if (transitioner->t_clip_active && transitioner->t_clip.is_valid()) {
 							if (transitioner->t_clip->get_bpm() == 0) {
 								t_clip_beat_size = transitioner->sample_rate * 60 / transitioner->bpm;
 							} else {
@@ -346,7 +348,8 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 							} else {
 								t_clip_samples_total = transitioner->t_clip->get_beat_count() * t_clip_beat_size;
 							}
-							transition_samples_total = MAX(fade_in_samples_total, fade_in_t_clip_samples_total) + MAX(fade_out_samples_total, fade_out_t_clip_samples_total) + MAX(t_clip_samples_total - (MAX(fade_in_samples_total, fade_in_t_clip_samples_total) + MAX(fade_out_samples_total, fade_out_t_clip_samples_total)), 0);
+							int fading_total = MAX(fade_out_samples_total, fade_in_t_clip_samples_total) + MAX(fade_in_samples_total, fade_out_t_clip_samples_total);
+							transition_samples_total = fading_total + MAX(t_clip_samples_total - fading_total, 0);
 							fade_in_t_clip_samples = fade_in_t_clip_samples_total;
 							fade_out_t_clip_samples = fade_out_t_clip_samples_total;
 							t_clip_samples = t_clip_samples_total;
@@ -365,10 +368,6 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 				int to_mix = MIN(MIX_BUFFER_SIZE, p_frames);
 				clear_buffer(to_mix);
 
-				if (clip_samples_total <= 0) {
-					playbacks[current]->seek(0.0);
-					clip_samples_total = transitioner->clips[current]->get_length() * transitioner->sample_rate;
-				}
 
 				if (fading) {
 					if (transition_samples <= 0) {
@@ -377,29 +376,29 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 						if (playbacks[current].is_valid() && playbacks[previous].is_valid()) {
 							int to_fade_out = MIN(to_mix, fade_out_samples);
 							int to_fade_in = MIN(to_mix, fade_in_samples);
-							float fade_out_start_volume = (1.0 - float(fade_out_samples_total - fade_out_samples) / fade_out_samples_total)*1.0;
-							float fade_out_end_volume = (1.0 - float(fade_out_samples_total - (fade_out_samples - to_fade_out)) / fade_out_samples_total)*1.0;						
-							float fade_in_start_volume = (1.0 - float(fade_in_samples) / fade_in_samples_total)*1.0;
-							float fade_in_end_volume = (1.0 - float(fade_in_samples - to_fade_in) / fade_in_samples_total) * 1.0;							
+							float fade_out_start_volume = 1.0 - float(fade_out_samples_total - fade_out_samples) / fade_out_samples_total;
+							float fade_out_end_volume = 1.0 - float(fade_out_samples_total - (fade_out_samples - to_fade_out)) / fade_out_samples_total;						
+							float fade_in_start_volume = 1.0 - float(fade_in_samples) / fade_in_samples_total;
+							float fade_in_end_volume = 1.0 - float(fade_in_samples - to_fade_in) / fade_in_samples_total;							
 							if (transitioner->t_clip_active) {
 								int to_fade_out_t_clip = MIN(to_mix, fade_out_t_clip_samples);
 								int to_fade_in_t_clip = MIN(to_mix, fade_in_t_clip_samples);
-								float fade_out_start_volume_t_samples = (1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples) / fade_out_t_clip_samples_total)*1.0;
-								float fade_out_end_volume_t_samples = (1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples - to_fade_out_t_clip) / fade_out_t_clip_samples_total)*1.0;
-								float fade_in_start_volume_t_samples = (1.0 - float(fade_in_t_clip_samples) / fade_in_t_clip_samples_total)*1.0;
-								float fade_in_end_volume_t_samples = (1.0 - float(fade_in_t_clip_samples - to_fade_out_t_clip) / fade_in_t_clip_samples_total)*1.0;
+								float fade_out_start_volume_t_samples = 1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples) / fade_out_t_clip_samples_total;
+								float fade_out_end_volume_t_samples = 1.0 - float(fade_out_t_clip_samples_total - (fade_out_t_clip_samples - to_fade_out_t_clip)) / fade_out_t_clip_samples_total;
+								float fade_in_start_volume_t_samples = 1.0 - float(fade_in_t_clip_samples) / fade_in_t_clip_samples_total;
+								float fade_in_end_volume_t_samples = 1.0 - float(fade_in_t_clip_samples - to_fade_out_t_clip) / fade_in_t_clip_samples_total;
 								if (fade_out_samples > 0) {
 									add_stream_to_buffer(playbacks[previous], to_fade_out, p_rate_scale, fade_out_start_volume, fade_out_end_volume);
 									fade_out_samples -= to_fade_out;
 								} else {
 									playbacks[previous]->stop();
 								}
-								if (fade_in_t_clip_samples > 0) {
+								if (fade_in_t_clip_samples > 0 && transitioner->t_clip.is_valid()) {
 									add_stream_to_buffer(t_playback, to_fade_in_t_clip, p_rate_scale, fade_in_start_volume_t_samples, fade_in_end_volume_t_samples);
 									fade_in_t_clip_samples -= to_fade_in_t_clip;
 									t_clip_samples -= to_fade_in_t_clip;
 								} else {
-									if (t_clip_samples > fade_out_t_clip_samples_total) {
+									if (t_clip_samples >= fade_out_t_clip_samples_total) {
 										add_stream_to_buffer(t_playback, to_mix, p_rate_scale, 1.0, 1.0);
 										t_clip_samples -= to_mix;
 									} else {
@@ -421,7 +420,7 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 										}
 									}
 								}
-								transition_samples -= to_mix;
+								
 							} else {
 								if (fade_out_samples > 0) {
 									add_stream_to_buffer(playbacks[previous], to_fade_out, p_rate_scale, fade_out_start_volume, fade_out_end_volume);
@@ -433,23 +432,38 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 								} else {
 									add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
 								}
-								transition_samples -= to_mix;
-								if (transition_samples <= 0) fading = false;
+								
 								fade_out_samples -= to_fade_out;
 								fade_in_samples -= to_fade_in;
 							}
+							transition_samples -= to_mix;
+							if (transition_samples <= 0) fading = false;
 						}
+
 					}
 				} else {
 					add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
 				}
-
-				for (int i = 0; i < to_mix; i++) {
-					p_buffer[i + dst_offset] = pcm_buffer[i];
-				}
-				dst_offset += to_mix;
-				p_frames -= to_mix;
-				clip_samples_total -= to_mix;
+				if (transition_samples<0) {
+					if (fade_in_samples > 0) {
+						transition_samples += to_mix;
+					} else {
+						for (int i = 0; i < transition_samples + to_mix; i++) {
+							p_buffer[i + dst_offset] = pcm_buffer[i];
+						}
+						dst_offset += transition_samples + to_mix;
+						p_frames -= transition_samples + to_mix;
+						clip_samples_total -= transition_samples + to_mix;
+						transition_samples = 0;
+					}
+				} else {
+					for (int i = 0; i < to_mix; i++) {
+						p_buffer[i + dst_offset] = pcm_buffer[i];
+					}
+					dst_offset += to_mix;
+					p_frames -= to_mix;
+					clip_samples_total -= to_mix;
+				}	
 			}
 		}
 	}
