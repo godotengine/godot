@@ -918,8 +918,7 @@ void TextEdit::_notification(int p_what) {
 				int minimap_draw_amount = minimap_visible_lines + times_line_wraps(minimap_line + 1);
 
 				// draw the minimap
-				Color viewport_color = cache.current_line_color;
-				viewport_color.a /= 2;
+				Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, cache.minimap_width, viewport_height), viewport_color);
 				for (int i = 0; i < minimap_draw_amount; i++) {
 
