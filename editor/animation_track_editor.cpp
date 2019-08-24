@@ -1888,6 +1888,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 	length->set_allow_greater(true);
 	length->set_custom_minimum_size(Vector2(70 * EDSCALE, 0));
 	length->set_hide_slider(true);
+	length->set_default_cursor_shape(Control::CURSOR_IBEAM);
 	length->set_tooltip(TTR("Animation length (seconds)"));
 	length->connect("value_changed", this, "_anim_length_changed");
 	len_hb->add_child(length);
@@ -5867,6 +5868,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step->set_max(1000000);
 	step->set_step(0.001);
 	step->set_hide_slider(true);
+	step->set_default_cursor_shape(Control::CURSOR_IBEAM);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip(TTR("Animation step value."));
 	bottom_hb->add_child(step);
