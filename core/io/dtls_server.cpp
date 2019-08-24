@@ -46,7 +46,7 @@ bool DTLSServer::is_available() {
 
 void DTLSServer::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("setup", "key", "certificate", "ca_chain"), &DTLSServer::listen);
+	ClassDB::bind_method(D_METHOD("setup", "key", "certificate", "ca_chain"), &DTLSServer::setup);
 	ClassDB::bind_method(D_METHOD("take_connection", "udp_peer"), &DTLSServer::take_connection);
 }
 

@@ -44,25 +44,12 @@ bool PacketPeerDTLS::is_available() {
 	return available;
 }
 
-void PacketPeerDTLS::set_blocking_handshake_enabled(bool p_enabled) {
-	blocking_handshake = p_enabled;
-}
-
-bool PacketPeerDTLS::is_blocking_handshake_enabled() const {
-	return blocking_handshake;
-}
-
 void PacketPeerDTLS::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("poll"), &PacketPeerDTLS::poll);
-	ClassDB::bind_method(D_METHOD("accept_peer", "packet_peer", "cert", "key", "ca_chain"), &PacketPeerDTLS::accept_peer, DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("connect_to_peer", "packet_peer", "validate_certs", "for_hostname", "valid_certificate"), &PacketPeerDTLS::connect_to_peer, DEFVAL(false), DEFVAL(String()), DEFVAL(Ref<X509Certificate>()));
 	ClassDB::bind_method(D_METHOD("get_status"), &PacketPeerDTLS::get_status);
 	ClassDB::bind_method(D_METHOD("disconnect_from_peer"), &PacketPeerDTLS::disconnect_from_peer);
-	ClassDB::bind_method(D_METHOD("set_blocking_handshake_enabled", "enabled"), &PacketPeerDTLS::set_blocking_handshake_enabled);
-	ClassDB::bind_method(D_METHOD("is_blocking_handshake_enabled"), &PacketPeerDTLS::is_blocking_handshake_enabled);
-
-	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "blocking_handshake"), "set_blocking_handshake_enabled", "is_blocking_handshake_enabled");
 
 	BIND_ENUM_CONSTANT(STATUS_DISCONNECTED);
 	BIND_ENUM_CONSTANT(STATUS_HANDSHAKING);
@@ -72,5 +59,4 @@ void PacketPeerDTLS::_bind_methods() {
 }
 
 PacketPeerDTLS::PacketPeerDTLS() {
-	blocking_handshake = true;
 }

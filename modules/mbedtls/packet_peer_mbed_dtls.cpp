@@ -109,10 +109,9 @@ Error PacketPeerMbedDTLS::_do_handshake() {
 			_cleanup();
 			status = STATUS_ERROR;
 			return FAILED;
-		} else if (!blocking_handshake) {
-			// Will retry via poll later
-			return OK;
 		}
+		// Will retry via poll later
+		return OK;
 	}
 
 	status = STATUS_CONNECTED;
@@ -144,38 +143,9 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_vali
 	return OK;
 }
 
-Error PacketPeerMbedDTLS::_accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain, Ref<CookieContextMbedTLS> p_cookies) {
+Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain, Ref<CookieContextMbedTLS> p_cookies) {
 
 	Error err = ssl_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert, p_cookies);
-	ERR_FAIL_COND_V(err != OK, err);
-
-	base = p_base;
-	base->set_blocking_mode(false);
-
-	mbedtls_ssl_session_reset(ssl_ctx->get_context());
-
-	int ret = _set_cookie();
-	if (ret != 0) {
-		_cleanup();
-		ERR_FAIL_V_MSG(FAILED, "Error setting DTLS client cookie");
-	}
-
-	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
-	mbedtls_ssl_set_timer_cb(ssl_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
-
-	status = STATUS_HANDSHAKING;
-
-	if ((ret = _do_handshake()) != OK) {
-		status = STATUS_ERROR;
-		return FAILED;
-	}
-
-	return OK;
-}
-
-Error PacketPeerMbedDTLS::accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
-
-	Error err = ssl_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert);
 	ERR_FAIL_COND_V(err != OK, err);
 
 	base = p_base;

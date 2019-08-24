@@ -31,7 +31,7 @@
 #include "dtls_server_mbedtls.h"
 #include "packet_peer_mbed_dtls.h"
 
-Error DTLSServerMbedTLS::listen(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
+Error DTLSServerMbedTLS::setup(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
 	ERR_FAIL_COND_V(_cookies->setup() != OK, ERR_ALREADY_IN_USE);
 	_key = p_key;
 	_cert = p_cert;
@@ -45,8 +45,7 @@ Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_
 
 	ERR_FAIL_COND_V(!out.is_valid(), out);
 	ERR_FAIL_COND_V(!p_udp_peer.is_valid(), out);
-	out->set_blocking_handshake_enabled(false);
-	out->_accept_peer(p_udp_peer, _key, _cert, _ca_chain, _cookies);
+	out->accept_peer(p_udp_peer, _key, _cert, _ca_chain, _cookies);
 	return out;
 }
 
