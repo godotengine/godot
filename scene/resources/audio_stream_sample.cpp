@@ -453,6 +453,22 @@ bool AudioStreamSample::is_stereo() const {
 	return stereo;
 }
 
+void AudioStreamSample::set_bpm(int p_bpm) {
+	bpm = p_bpm;
+}
+
+int AudioStreamSample::get_bpm() const {
+	return bpm;
+}
+
+void AudioStreamSample::set_beat_count(int p_beats) {
+	beats = p_beats;
+}
+
+int AudioStreamSample::get_beat_count() const {
+	return beats;
+}
+
 float AudioStreamSample::get_length() const {
 	int len = data_bytes;
 	switch (format) {
@@ -623,6 +639,12 @@ void AudioStreamSample::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_stereo", "stereo"), &AudioStreamSample::set_stereo);
 	ClassDB::bind_method(D_METHOD("is_stereo"), &AudioStreamSample::is_stereo);
 
+	ClassDB::bind_method(D_METHOD("set_bpm", "bpm"), &AudioStreamSample::set_bpm);
+	ClassDB::bind_method(D_METHOD("get_bpm"), &AudioStreamSample::get_bpm);
+
+	ClassDB::bind_method(D_METHOD("set_beat_count", "beats"), &AudioStreamSample::set_beat_count);
+	ClassDB::bind_method(D_METHOD("get_beat_count"), &AudioStreamSample::get_beat_count);
+
 	ClassDB::bind_method(D_METHOD("save_to_wav", "path"), &AudioStreamSample::save_to_wav);
 
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
@@ -632,6 +654,8 @@ void AudioStreamSample::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "loop_end"), "set_loop_end", "get_loop_end");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "mix_rate"), "set_mix_rate", "get_mix_rate");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "stereo"), "set_stereo", "is_stereo");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm"), "set_bpm", "get_bpm");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "beats"), "set_beat_count", "get_beat_count");
 
 	BIND_ENUM_CONSTANT(FORMAT_8_BITS);
 	BIND_ENUM_CONSTANT(FORMAT_16_BITS);
@@ -652,6 +676,8 @@ AudioStreamSample::AudioStreamSample() {
 	mix_rate = 44100;
 	data = nullptr;
 	data_bytes = 0;
+	bpm = 0;
+	beats = 0;
 }
 
 AudioStreamSample::~AudioStreamSample() {

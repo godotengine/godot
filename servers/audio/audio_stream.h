@@ -89,6 +89,9 @@ public:
 	virtual String get_stream_name() const = 0;
 
 	virtual float get_length() const = 0; //if supported, otherwise return 0
+
+	virtual int get_bpm() const;
+	virtual int get_beat_count() const;
 };
 
 // Microphone

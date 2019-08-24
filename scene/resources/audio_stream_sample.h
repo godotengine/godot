@@ -112,6 +112,8 @@ private:
 	int mix_rate;
 	void *data;
 	uint32_t data_bytes;
+	int bpm;
+	int beats;
 
 protected:
 	static void _bind_methods();
@@ -134,6 +136,12 @@ public:
 
 	void set_stereo(bool p_enable);
 	bool is_stereo() const;
+
+	void set_bpm(int p_bpm);
+	virtual int get_bpm() const;
+
+	void set_beat_count(int p_beats);
+	virtual int get_beat_count() const;
 
 	virtual float get_length() const; //if supported, otherwise return 0
 

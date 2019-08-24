@@ -246,6 +246,22 @@ float AudioStreamOGGVorbis::get_length() const {
 	return length;
 }
 
+void AudioStreamOGGVorbis::set_bpm(int p_bpm) {
+	bpm = p_bpm;
+}
+
+int AudioStreamOGGVorbis::get_bpm() const {
+	return bpm;
+}
+
+void AudioStreamOGGVorbis::set_beat_count(int p_beats) {
+	beats = p_beats;
+}
+
+int AudioStreamOGGVorbis::get_beat_count() const {
+	return beats;
+}
+
 void AudioStreamOGGVorbis::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_data", "data"), &AudioStreamOGGVorbis::set_data);
 	ClassDB::bind_method(D_METHOD("get_data"), &AudioStreamOGGVorbis::get_data);
@@ -256,9 +272,17 @@ void AudioStreamOGGVorbis::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_loop_offset", "seconds"), &AudioStreamOGGVorbis::set_loop_offset);
 	ClassDB::bind_method(D_METHOD("get_loop_offset"), &AudioStreamOGGVorbis::get_loop_offset);
 
+	ClassDB::bind_method(D_METHOD("set_bpm", "bpm"), &AudioStreamOGGVorbis::set_bpm);
+	ClassDB::bind_method(D_METHOD("get_bpm"), &AudioStreamOGGVorbis::get_bpm);
+
+	ClassDB::bind_method(D_METHOD("set_beat_count", "beats"), &AudioStreamOGGVorbis::set_beat_count);
+	ClassDB::bind_method(D_METHOD("get_beat_count"), &AudioStreamOGGVorbis::get_beat_count);
+
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_data", "get_data");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "loop"), "set_loop", "has_loop");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "loop_offset"), "set_loop_offset", "get_loop_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "bpm"), "set_bpm", "get_bpm");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "beats"), "set_beat_count", "get_beat_count");
 }
 
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
@@ -270,6 +294,8 @@ AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 	loop_offset = 0;
 	decode_mem_size = 0;
 	loop = false;
+	bpm = 0;
+	beats = 0;
 }
 
 AudioStreamOGGVorbis::~AudioStreamOGGVorbis() {

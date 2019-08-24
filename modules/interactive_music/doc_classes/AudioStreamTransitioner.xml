@@ -1,0 +1,207 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AudioStreamTransitioner" inherits="AudioStream" version="3.5" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:noNamespaceSchemaLocation="../../../doc/class.xsd">
+	<brief_description>
+		Class for playing audio clips based on events which activate transitions.
+	</brief_description>
+	<description>
+		Class for playing audio clips based on events which activate transitions. When a transition is activated it starts a crossfade between the previous and next clip, based on the fade in and fade out times in beats for the activated transition. The fades are both calculated based on each clip's BPM info.
+		An option for having a transition clip is also available, which allows for a clip to be played in between the previous and next clip.
+		The class can be used by musicians simply by using the inspector and by programmers in implementation through script.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_transition_clip">
+			<return type="void" />
+			<argument index="0" name="transition_clip" type="AudioStream" />
+			<description>
+				Adds a transition clip
+			</description>
+		</method>
+		<method name="get_list_clip">
+			<return type="AudioStream" />
+			<argument index="0" name="clip_number" type="int" />
+			<description>
+				Returns a clip based on its number
+			</description>
+		</method>
+		<method name="get_transition_clip">
+			<return type="AudioStream" />
+			<description>
+				Returns the transition clip
+			</description>
+		</method>
+		<method name="get_transition_fade_in">
+			<return type="int" />
+			<argument index="0" name="transition_number" type="int" />
+			<description>
+				Returns a transition's fade in beats.
+			</description>
+		</method>
+		<method name="get_transition_fade_out">
+			<return type="int" />
+			<argument index="0" name="transition_number" type="int" />
+			<description>
+				Returns a transition's fade out beats.
+			</description>
+		</method>
+		<method name="get_transition_state">
+			<return type="bool" />
+			<argument index="0" name="transition_number" type="int" />
+			<description>
+				Returns a transition's active member.
+			</description>
+		</method>
+		<method name="set_active_transition">
+			<return type="void" />
+			<argument index="0" name="transition_number" type="int" />
+			<argument index="1" name="trigger" type="bool" />
+			<description>
+				Sets a transition based on its number to active.
+			</description>
+		</method>
+		<method name="set_list_clip">
+			<return type="void" />
+			<argument index="0" name="clip_number" type="int" />
+			<argument index="1" name="clip" type="AudioStream" />
+			<description>
+				Adds a clip to transitioner based on its number.
+			</description>
+		</method>
+		<method name="set_transition_fade_in">
+			<return type="void" />
+			<argument index="0" name="transition_number" type="int" />
+			<argument index="1" name="fade_in_beats" type="int" />
+			<description>
+				Sets a transition's fade in beats
+			</description>
+		</method>
+		<method name="set_transition_fade_out">
+			<return type="void" />
+			<argument index="0" name="transition_number" type="int" />
+			<argument index="1" name="fade_out_beats" type="int" />
+			<description>
+				Sets a transition's fade out beats
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="active_clip" type="int" setter="set_active_clip_number" getter="get_active_clip_number" default="0">
+			Sets the next clip that will be faded in once a transition is activated
+		</member>
+		<member name="bpm" type="int" setter="set_bpm" getter="get_bpm" default="120">
+			Sets default BPM for the class
+		</member>
+		<member name="clip_count" type="int" setter="set_clip_count" getter="get_clip_count" default="1">
+			Sets the number of clips transitioner will take, with a maximum of 64.
+		</member>
+		<member name="t_clip_active" type="bool" setter="set_t_clip_active" getter="get_t_clip_active" default="false">
+		</member>
+		<member name="transition_0/active" type="bool" setter="set_active_transition" getter="get_transition_state" default="false">
+			Activates a transition
+		</member>
+		<member name="transition_1/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_10/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_11/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_12/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_13/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_14/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_15/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_16/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_17/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_18/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_19/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_2/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_20/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_21/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_22/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_23/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_24/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_25/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_26/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_27/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_28/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_29/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_3/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_30/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_31/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_32/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_33/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_34/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_35/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_36/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_37/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_38/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_39/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_4/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_40/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_41/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_42/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_43/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_44/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_45/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_46/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_47/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_5/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_6/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_7/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_8/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_9/active" type="bool" setter="set_active_transition" getter="get_transition_state">
+		</member>
+		<member name="transition_count" type="int" setter="set_transition_count" getter="get_transition_count" default="1">
+			Sets how many transitions the class will have, with a maximum of 48.
+		</member>
+	</members>
+	<constants>
+		<constant name="MAX_STREAMS" value="64">
+		</constant>
+		<constant name="MAX_TRANSITIONS" value="48">
+		</constant>
+	</constants>
+</class>
