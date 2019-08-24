@@ -38,11 +38,11 @@ static void my_debug(void *ctx, int level,
 	fflush(stdout);
 }
 
-Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode) {
-	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This SSL context is already active");
+/// CookieContextMbedTLS
 
-	mbedtls_ssl_init(&ssl);
-	mbedtls_ssl_config_init(&conf);
+Error CookieContextMbedTLS::setup() {
+	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This cookie context is already in use");
+
 	mbedtls_ctr_drbg_init(&ctr_drbg);
 	mbedtls_entropy_init(&entropy);
 	mbedtls_ssl_cookie_init(&cookie_ctx);
@@ -59,6 +59,41 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 		clear();
 		ERR_FAIL_V_MSG(FAILED, "mbedtls_ssl_cookie_setup returned an error " + itos(ret));
 	}
+	return OK;
+}
+
+void CookieContextMbedTLS::clear() {
+	if (!inited)
+		return;
+	mbedtls_ctr_drbg_free(&ctr_drbg);
+	mbedtls_entropy_free(&entropy);
+	mbedtls_ssl_cookie_free(&cookie_ctx);
+}
+
+CookieContextMbedTLS::CookieContextMbedTLS() {
+	inited = false;
+}
+
+CookieContextMbedTLS::~CookieContextMbedTLS() {
+	clear();
+}
+
+/// SSLContextMbedTLS
+
+Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode) {
+	ERR_FAIL_COND_V_MSG(inited, ERR_ALREADY_IN_USE, "This SSL context is already active");
+
+	mbedtls_ssl_init(&ssl);
+	mbedtls_ssl_config_init(&conf);
+	mbedtls_ctr_drbg_init(&ctr_drbg);
+	mbedtls_entropy_init(&entropy);
+	inited = true;
+
+	int ret = mbedtls_ctr_drbg_seed(&ctr_drbg, mbedtls_entropy_func, &entropy, NULL, 0);
+	if (ret != 0) {
+		clear(); // Never leave unusable resources around.
+		ERR_FAIL_V_MSG(FAILED, "mbedtls_ctr_drbg_seed returned an error " + itos(ret));
+	}
 
 	ret = mbedtls_ssl_config_defaults(&conf, p_endpoint, p_transport, MBEDTLS_SSL_PRESET_DEFAULT);
 	if (ret != 0) {
@@ -68,13 +103,10 @@ Error SSLContextMbedTLS::_setup(int p_endpoint, int p_transport, int p_authmode)
 	mbedtls_ssl_conf_authmode(&conf, p_authmode);
 	mbedtls_ssl_conf_rng(&conf, mbedtls_ctr_drbg_random, &ctr_drbg);
 	mbedtls_ssl_conf_dbg(&conf, my_debug, stdout);
-	if (p_transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
-		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &cookie_ctx);
-	}
 	return OK;
 }
 
-Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert) {
+Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<CryptoKeyMbedTLS> p_pkey, Ref<X509CertificateMbedTLS> p_cert, Ref<CookieContextMbedTLS> p_cookies) {
 	ERR_FAIL_COND_V(!p_pkey.is_valid(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(!p_cert.is_valid(), ERR_INVALID_PARAMETER);
 
@@ -98,6 +130,15 @@ Error SSLContextMbedTLS::init_server(int p_transport, int p_authmode, Ref<Crypto
 	// Adding CA chain if available.
 	if (certs->cert.next) {
 		mbedtls_ssl_conf_ca_chain(&conf, certs->cert.next, NULL);
+	}
+	// DTLS Cookies
+	if (p_transport == MBEDTLS_SSL_TRANSPORT_DATAGRAM) {
+		if (p_cookies.is_null() || !p_cookies->inited) {
+			clear();
+			ERR_FAIL_V(ERR_BUG);
+		}
+		cookies = p_cookies;
+		mbedtls_ssl_conf_dtls_cookies(&conf, mbedtls_ssl_cookie_write, mbedtls_ssl_cookie_check, &(cookies->cookie_ctx));
 	}
 	mbedtls_ssl_setup(&ssl, &conf);
 	return OK;
@@ -136,7 +177,6 @@ void SSLContextMbedTLS::clear() {
 	mbedtls_ssl_config_free(&conf);
 	mbedtls_ctr_drbg_free(&ctr_drbg);
 	mbedtls_entropy_free(&entropy);
-	mbedtls_ssl_cookie_free(&cookie_ctx);
 
 	// Unlock and key and certificates
 	if (certs.is_valid())
@@ -145,6 +185,7 @@ void SSLContextMbedTLS::clear() {
 	if (pkey.is_valid())
 		pkey->unlock();
 	pkey = Ref<CryptoKeyMbedTLS>();
+	cookies = Ref<CookieContextMbedTLS>();
 	inited = false;
 }
 

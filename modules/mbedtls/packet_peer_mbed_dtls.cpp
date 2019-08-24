@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,16 +102,10 @@ Error PacketPeerMbedDTLS::_do_handshake() {
 	int ret = 0;
 	while ((ret = mbedtls_ssl_handshake(ssl_ctx->get_context())) != 0) {
 		if (ret != MBEDTLS_ERR_SSL_WANT_READ && ret != MBEDTLS_ERR_SSL_WANT_WRITE) {
-			if (ret == MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED) {
-
-				mbedtls_ssl_session_reset(ssl_ctx->get_context());
-				_set_cookie();
-
-				// Keep waiting for handshake
-				return OK;
+			if (ret != MBEDTLS_ERR_SSL_HELLO_VERIFY_REQUIRED) {
+				ERR_PRINTS("TLS handshake error: " + itos(ret));
+				_dtls_print_error(ret);
 			}
-			ERR_PRINTS("TLS handshake error: " + itos(ret));
-			_dtls_print_error(ret);
 			_cleanup();
 			status = STATUS_ERROR;
 			return FAILED;
@@ -144,6 +138,35 @@ Error PacketPeerMbedDTLS::connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_vali
 
 	if ((ret = _do_handshake()) != OK) {
 		status = STATUS_ERROR_HOSTNAME_MISMATCH;
+		return FAILED;
+	}
+
+	return OK;
+}
+
+Error PacketPeerMbedDTLS::_accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain, Ref<CookieContextMbedTLS> p_cookies) {
+
+	Error err = ssl_ctx->init_server(MBEDTLS_SSL_TRANSPORT_DATAGRAM, MBEDTLS_SSL_VERIFY_NONE, p_key, p_cert, p_cookies);
+	ERR_FAIL_COND_V(err != OK, err);
+
+	base = p_base;
+	base->set_blocking_mode(false);
+
+	mbedtls_ssl_session_reset(ssl_ctx->get_context());
+
+	int ret = _set_cookie();
+	if (ret != 0) {
+		_cleanup();
+		ERR_FAIL_V_MSG(FAILED, "Error setting DTLS client cookie");
+	}
+
+	mbedtls_ssl_set_bio(ssl_ctx->get_context(), this, bio_send, bio_recv, NULL);
+	mbedtls_ssl_set_timer_cb(ssl_ctx->get_context(), &timer, mbedtls_timing_set_delay, mbedtls_timing_get_delay);
+
+	status = STATUS_HANDSHAKING;
+
+	if ((ret = _do_handshake()) != OK) {
+		status = STATUS_ERROR;
 		return FAILED;
 	}
 

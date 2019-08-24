@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  packet_peer_mbed_dtls.h                                              */
+/*  dtls_server_mbedtls.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,62 +28,44 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef PACKET_PEER_MBED_DTLS_H
-#define PACKET_PEER_MBED_DTLS_H
+#include "dtls_server_mbedtls.h"
+#include "packet_peer_mbed_dtls.h"
 
-#include "core/io/packet_peer_dtls.h"
-#include "ssl_context_mbedtls.h"
+Error DTLSServerMbedTLS::listen(Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert, Ref<X509Certificate> p_ca_chain) {
+	ERR_FAIL_COND_V(_cookies->setup() != OK, ERR_ALREADY_IN_USE);
+	_key = p_key;
+	_cert = p_cert;
+	_ca_chain = p_ca_chain;
+	return OK;
+}
 
-#include <mbedtls/timing.h>
+Ref<PacketPeerDTLS> DTLSServerMbedTLS::take_connection(Ref<PacketPeerUDP> p_udp_peer) {
+	Ref<PacketPeerMbedDTLS> out;
+	out.instance();
 
-class PacketPeerMbedDTLS : public PacketPeerDTLS {
-private:
-	enum {
-		PACKET_BUFFER_SIZE = 65536
-	};
+	ERR_FAIL_COND_V(!out.is_valid(), out);
+	ERR_FAIL_COND_V(!p_udp_peer.is_valid(), out);
+	out->set_blocking_handshake_enabled(false);
+	out->_accept_peer(p_udp_peer, _key, _cert, _ca_chain, _cookies);
+	return out;
+}
 
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
+DTLSServer *DTLSServerMbedTLS::_create_func() {
 
-	Status status;
-	String hostname;
+	return memnew(DTLSServerMbedTLS);
+}
 
-	Ref<PacketPeerUDP> base;
+void DTLSServerMbedTLS::initialize() {
 
-	static PacketPeerDTLS *_create_func();
+	_create = _create_func;
+	available = true;
+}
 
-	static int bio_recv(void *ctx, unsigned char *buf, size_t len);
-	static int bio_send(void *ctx, const unsigned char *buf, size_t len);
-	void _cleanup();
+void DTLSServerMbedTLS::finalize() {
+	_create = NULL;
+	available = false;
+}
 
-protected:
-	Ref<SSLContextMbedTLS> ssl_ctx;
-	mbedtls_timing_delay_context timer;
-
-	static void _bind_methods();
-
-	Error _do_handshake();
-	int _set_cookie();
-
-public:
-	virtual void poll();
-	virtual Error _accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert = Ref<X509Certificate>(), Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>(), Ref<CookieContextMbedTLS> p_cookies = Ref<CookieContextMbedTLS>());
-	virtual Error accept_peer(Ref<PacketPeerUDP> p_base, Ref<CryptoKey> p_key, Ref<X509Certificate> p_cert = Ref<X509Certificate>(), Ref<X509Certificate> p_ca_chain = Ref<X509Certificate>());
-	virtual Error connect_to_peer(Ref<PacketPeerUDP> p_base, bool p_validate_certs = false, const String &p_for_hostname = String(), Ref<X509Certificate> p_ca_certs = Ref<X509Certificate>());
-	virtual Status get_status() const;
-
-	virtual void disconnect_from_peer();
-
-	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
-	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-
-	virtual int get_available_packet_count() const;
-	virtual int get_max_packet_size() const;
-
-	static void initialize_dtls();
-	static void finalize_dtls();
-
-	PacketPeerMbedDTLS();
-	~PacketPeerMbedDTLS();
-};
-
-#endif // PACKET_PEER_MBED_DTLS_H
+DTLSServerMbedTLS::DTLSServerMbedTLS() {
+	_cookies.instance();
+}
