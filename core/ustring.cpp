@@ -2150,7 +2150,7 @@ int64_t String::to_int(const CharType *p_str, int p_len) {
 					if (integer > INT32_MAX / 10) {
 						String number("");
 						str = p_str;
-						while (str != limit) {
+						while (*str && str != limit) {
 							number += *(str++);
 						}
 						ERR_FAIL_V_MSG(sign == 1 ? INT32_MAX : INT32_MIN, "Cannot represent " + number + " as integer, provided value is " + (sign == 1 ? "too big." : "too small."));
