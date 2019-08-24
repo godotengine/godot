@@ -11,8 +11,11 @@ AudioStreamTransitioner::AudioStreamTransitioner() {
 	stereo = true;
 	active_transition.t_active = false;
 	active_clip_number = 0;
+	t_clip_active = false;
 	for (int i = 0; i < transition_count; i++) {
 		transitions[i].t_active = false;
+		transitions[i].fade_in_beats = 0;
+		transitions[i].fade_out_beats = 0;
 	}
 }
 
@@ -380,7 +383,7 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 							float fade_out_end_volume = 1.0 - float(fade_out_samples_total - (fade_out_samples - to_fade_out)) / fade_out_samples_total;						
 							float fade_in_start_volume = 1.0 - float(fade_in_samples) / fade_in_samples_total;
 							float fade_in_end_volume = 1.0 - float(fade_in_samples - to_fade_in) / fade_in_samples_total;							
-							if (transitioner->t_clip_active) {
+							if (transitioner->t_clip_active && transitioner->t_clip.is_valid()) {
 								int to_fade_out_t_clip = MIN(to_mix, fade_out_t_clip_samples);
 								int to_fade_in_t_clip = MIN(to_mix, fade_in_t_clip_samples);
 								float fade_out_start_volume_t_samples = 1.0 - float(fade_out_t_clip_samples_total - fade_out_t_clip_samples) / fade_out_t_clip_samples_total;
@@ -445,17 +448,14 @@ void AudioStreamPlaybackTransitioner::mix(AudioFrame *p_buffer, float p_rate_sca
 					add_stream_to_buffer(playbacks[current], to_mix, p_rate_scale, 1.0, 1.0);
 				}
 				if (transition_samples<0) {
-					if (fade_in_samples > 0) {
-						transition_samples += to_mix;
-					} else {
-						for (int i = 0; i < transition_samples + to_mix; i++) {
-							p_buffer[i + dst_offset] = pcm_buffer[i];
-						}
-						dst_offset += transition_samples + to_mix;
-						p_frames -= transition_samples + to_mix;
-						clip_samples_total -= transition_samples + to_mix;
-						transition_samples = 0;
+					for (int i = 0; i < transition_samples + to_mix; i++) {
+						p_buffer[i + dst_offset] = pcm_buffer[i];
 					}
+					dst_offset += transition_samples + to_mix;
+					p_frames -= transition_samples + to_mix;
+					clip_samples_total -= transition_samples + to_mix;
+					transition_samples = 0;
+					
 				} else {
 					for (int i = 0; i < to_mix; i++) {
 						p_buffer[i + dst_offset] = pcm_buffer[i];
