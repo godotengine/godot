@@ -283,6 +283,7 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_CF_DO, "do" },
 	{ TK_CF_SWITCH, "switch" },
 	{ TK_CF_CASE, "case" },
+	{ TK_CF_DEFAULT, "default" },
 	{ TK_CF_BREAK, "break" },
 	{ TK_CF_CONTINUE, "continue" },
 	{ TK_CF_RETURN, "return" },
@@ -3778,6 +3779,14 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 		TkPos pos = _get_tkpos();
 
 		Token tk = _get_token();
+
+		if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_SWITCH) {
+			if (tk.type != TK_CF_CASE && tk.type != TK_CF_DEFAULT && tk.type != TK_CURLY_BRACKET_CLOSE) {
+				_set_error("Switch may contains only case and default blocks");
+				return ERR_PARSE_ERROR;
+			}
+		}
+
 		if (tk.type == TK_CURLY_BRACKET_CLOSE) { //end of block
 			if (p_just_one) {
 				_set_error("Unexpected '}'");
@@ -4132,6 +4141,183 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			} else {
 				_set_tkpos(pos); //rollback
 			}
+		} else if (tk.type == TK_CF_SWITCH) {
+			// switch() {}
+			tk = _get_token();
+			if (tk.type != TK_PARENTHESIS_OPEN) {
+				_set_error("Expected '(' after switch");
+				return ERR_PARSE_ERROR;
+			}
+			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
+			cf->flow_op = FLOW_OP_SWITCH;
+			Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
+			if (!n)
+				return ERR_PARSE_ERROR;
+			if (n->get_datatype() != TYPE_INT) {
+				_set_error("Expected integer expression");
+				return ERR_PARSE_ERROR;
+			}
+			tk = _get_token();
+			if (tk.type != TK_PARENTHESIS_CLOSE) {
+				_set_error("Expected ')' after expression");
+				return ERR_PARSE_ERROR;
+			}
+			tk = _get_token();
+			if (tk.type != TK_CURLY_BRACKET_OPEN) {
+				_set_error("Expected '{' after switch statement");
+				return ERR_PARSE_ERROR;
+			}
+			BlockNode *switch_block = alloc_node<BlockNode>();
+			switch_block->block_type = BlockNode::BLOCK_TYPE_SWITCH;
+			switch_block->parent_block = p_block;
+			cf->expressions.push_back(n);
+			cf->blocks.push_back(switch_block);
+			p_block->statements.push_back(cf);
+
+			int prev_type = TK_CF_CASE;
+			while (true) { // Go-through multiple cases.
+
+				if (_parse_block(switch_block, p_builtin_types, true, true, false) != OK) {
+					return ERR_PARSE_ERROR;
+				}
+				pos = _get_tkpos();
+				tk = _get_token();
+				if (tk.type == TK_CF_CASE || tk.type == TK_CF_DEFAULT) {
+					if (prev_type == TK_CF_DEFAULT) {
+						if (tk.type == TK_CF_CASE) {
+							_set_error("Cases must be defined before default case.");
+							return ERR_PARSE_ERROR;
+						} else if (prev_type == TK_CF_DEFAULT) {
+							_set_error("Default case must be defined only once.");
+							return ERR_PARSE_ERROR;
+						}
+					}
+					prev_type = tk.type;
+					_set_tkpos(pos);
+					continue;
+				} else {
+					Set<int> constants;
+					for (int i = 0; i < switch_block->statements.size(); i++) { // Checks for duplicates.
+						ControlFlowNode *flow = (ControlFlowNode *)switch_block->statements[i];
+						if (flow) {
+							if (flow->flow_op == FLOW_OP_CASE) {
+								ConstantNode *n2 = static_cast<ConstantNode *>(flow->expressions[0]);
+								if (!n2) {
+									return ERR_PARSE_ERROR;
+								}
+								if (n2->values.empty()) {
+									return ERR_PARSE_ERROR;
+								}
+								if (constants.has(n2->values[0].sint)) {
+									_set_error("Duplicated case label: '" + itos(n2->values[0].sint) + "'");
+									return ERR_PARSE_ERROR;
+								}
+								constants.insert(n2->values[0].sint);
+							} else if (flow->flow_op == FLOW_OP_DEFAULT) {
+								continue;
+							} else {
+								return ERR_PARSE_ERROR;
+							}
+						} else {
+							return ERR_PARSE_ERROR;
+						}
+					}
+					break;
+				}
+			}
+
+		} else if (tk.type == TK_CF_CASE) {
+			// case x : break; | return;
+
+			if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_CASE) {
+				_set_tkpos(pos);
+				return OK;
+			}
+
+			if (!p_block || (p_block->block_type != BlockNode::BLOCK_TYPE_SWITCH)) {
+				_set_error("case must be placed within switch block");
+				return ERR_PARSE_ERROR;
+			}
+
+			tk = _get_token();
+
+			int sign = 1;
+
+			if (tk.type == TK_OP_SUB) {
+				sign = -1;
+				tk = _get_token();
+			}
+
+			if (tk.type != TK_INT_CONSTANT) {
+				_set_error("Expected integer constant");
+				return ERR_PARSE_ERROR;
+			}
+
+			int constant = (int)tk.constant * sign;
+
+			tk = _get_token();
+
+			if (tk.type != TK_COLON) {
+				_set_error("Expected ':'");
+				return ERR_PARSE_ERROR;
+			}
+
+			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
+			cf->flow_op = FLOW_OP_CASE;
+
+			ConstantNode *n = alloc_node<ConstantNode>();
+			ConstantNode::Value v;
+			v.sint = constant;
+			n->values.push_back(v);
+			n->datatype = TYPE_INT;
+
+			BlockNode *case_block = alloc_node<BlockNode>();
+			case_block->block_type = BlockNode::BLOCK_TYPE_CASE;
+			case_block->parent_block = p_block;
+			cf->expressions.push_back(n);
+			cf->blocks.push_back(case_block);
+			p_block->statements.push_back(cf);
+
+			Error err = _parse_block(case_block, p_builtin_types, false, true, false);
+			if (err)
+				return err;
+
+			return OK;
+
+		} else if (tk.type == TK_CF_DEFAULT) {
+
+			if (p_block && p_block->block_type == BlockNode::BLOCK_TYPE_CASE) {
+				_set_tkpos(pos);
+				return OK;
+			}
+
+			if (!p_block || (p_block->block_type != BlockNode::BLOCK_TYPE_SWITCH)) {
+				_set_error("default must be placed within switch block");
+				return ERR_PARSE_ERROR;
+			}
+
+			tk = _get_token();
+
+			if (tk.type != TK_COLON) {
+				_set_error("Expected ':'");
+				return ERR_PARSE_ERROR;
+			}
+
+			ControlFlowNode *cf = alloc_node<ControlFlowNode>();
+			cf->flow_op = FLOW_OP_DEFAULT;
+
+			BlockNode *default_block = alloc_node<BlockNode>();
+			default_block->block_type = BlockNode::BLOCK_TYPE_DEFAULT;
+			default_block->parent_block = p_block;
+			cf->blocks.push_back(default_block);
+			p_block->statements.push_back(cf);
+
+			Error err = _parse_block(default_block, p_builtin_types, false, true, false);
+			if (err)
+				return err;
+
+			return OK;
+
 		} else if (tk.type == TK_CF_DO || tk.type == TK_CF_WHILE) {
 			// do {} while()
 			// while() {}
@@ -4299,6 +4485,9 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 
 			p_block->statements.push_back(flow);
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_CASE || p_block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
+				return OK;
+			}
 		} else if (tk.type == TK_CF_DISCARD) {
 
 			//check return type
@@ -4345,9 +4534,13 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 			}
 
 			p_block->statements.push_back(flow);
+			if (p_block->block_type == BlockNode::BLOCK_TYPE_CASE || p_block->block_type == BlockNode::BLOCK_TYPE_DEFAULT) {
+				return OK;
+			}
+
 		} else if (tk.type == TK_CF_CONTINUE) {
 
-			if (!p_can_break) {
+			if (!p_can_continue) {
 				//all is good
 				_set_error("Continuing is not allowed here");
 			}
