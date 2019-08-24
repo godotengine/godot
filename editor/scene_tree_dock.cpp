@@ -91,6 +91,12 @@ void SceneTreeDock::_unhandled_key_input(Ref<InputEvent> p_event) {
 		_tool_selected(TOOL_INSTANCE);
 	} else if (ED_IS_SHORTCUT("scene_tree/expand_collapse_all", p_event)) {
 		_tool_selected(TOOL_EXPAND_COLLAPSE);
+	} else if (ED_IS_SHORTCUT("scene_tree/cut_node", p_event)) {
+		_tool_selected(TOOL_CUT);
+	} else if (ED_IS_SHORTCUT("scene_tree/copy_node", p_event)) {
+		_tool_selected(TOOL_COPY);
+	} else if (ED_IS_SHORTCUT("scene_tree/paste_node", p_event)) {
+		_tool_selected(TOOL_PASTE);
 	} else if (ED_IS_SHORTCUT("scene_tree/change_node_type", p_event)) {
 		_tool_selected(TOOL_REPLACE);
 	} else if (ED_IS_SHORTCUT("scene_tree/duplicate", p_event)) {
@@ -390,6 +396,105 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			_set_collapsed_recursive(selected_item, !collapsed);
 
 			tree->ensure_cursor_is_visible();
+
+		} break;
+		case TOOL_CUT:
+		case TOOL_COPY: {
+
+			const String copy_temp_file = EditorSettings::get_singleton()->get_cache_dir().plus_file("__node_copy.tscn");
+
+			if (current_option == TOOL_CUT && !profile_allow_editing)
+				break;
+
+			List<Node *> selection = editor_selection->get_selected_node_list();
+
+			if (selection.size() > 1) {
+				if (current_option == TOOL_CUT) {
+					EditorNode::get_singleton()->show_warning(TTR("Can't cut more than one node."));
+				} else {
+					EditorNode::get_singleton()->show_warning(TTR("Can't copy more than one node."));
+				}
+				break;
+			}
+
+			Node *selected = scene_tree->get_selected();
+			if (!selected)
+				selected = selection.front()->get();
+
+			if (!selected)
+				break;
+
+			String temp_path = selected->get_filename();
+			selected->set_filename(""); //Makes duplicating work reliably.
+			Map<const Node *, Node *> duplimap;
+			Node *copy = selected->duplicate_from_editor(duplimap);
+			selected->set_filename(temp_path);
+			_setup_for_copy(copy, copy);
+
+			Ref<PackedScene> sdata = memnew(PackedScene);
+			Error err = sdata->pack(copy);
+			if (err != OK) {
+				if (current_option == TOOL_CUT) {
+					EditorNode::get_singleton()->show_warning(TTR("Cut Node failed."));
+				} else {
+					EditorNode::get_singleton()->show_warning(TTR("Copy Node failed."));
+				}
+				break;
+			}
+			err = ResourceSaver::save(copy_temp_file, sdata);
+			if (err != OK) {
+				if (current_option == TOOL_CUT) {
+					EditorNode::get_singleton()->show_warning(TTR("Cut Node failed."));
+				} else {
+					EditorNode::get_singleton()->show_warning(TTR("Copy Node failed."));
+				}
+				break;
+			}
+
+			String scene_text = FileAccess::get_file_as_string(copy_temp_file);
+			OS::get_singleton()->set_clipboard(scene_text);
+
+			if (current_option == TOOL_CUT)
+				_delete_confirm(true);
+		} break;
+		case TOOL_PASTE: {
+
+			const String paste_temp_file = EditorSettings::get_singleton()->get_cache_dir().plus_file("__node_paste.tscn");
+
+			if (!profile_allow_editing)
+				break;
+
+			FileAccess *fa = FileAccess::open(paste_temp_file, FileAccess::WRITE);
+			fa->store_string(OS::get_singleton()->get_clipboard());
+			fa->close();
+			memdelete(fa);
+
+			Ref<PackedScene> ps = ResourceLoader::load(paste_temp_file, "PackedScene");
+			if (!ps.is_valid()) {
+				EditorNode::get_singleton()->show_warning(TTR("Paste Node failed. Incorrect scene data in the clipboard."));
+				break;
+			}
+			Node *child = ps->instance();
+			child->set_filename("");
+
+			Node *parent = scene_tree->get_selected();
+			if (!parent)
+				parent = edited_scene;
+
+			editor_data->get_undo_redo().create_action(TTR("Paste Node"));
+			editor_data->get_undo_redo().add_do_reference(child);
+
+			if (parent) {
+				editor_data->get_undo_redo().add_do_method(parent, "add_child", child);
+				_node_replace_owner(child->get_owner(), child, edited_scene, FORCE_DO);
+				editor_data->get_undo_redo().add_do_method(scene_tree, "update");
+				editor_data->get_undo_redo().add_undo_method(parent, "remove_child", child);
+			} else {
+				editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", child);
+				editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
+			}
+
+			editor_data->get_undo_redo().commit_action();
 
 		} break;
 		case TOOL_REPLACE: {
@@ -1173,7 +1278,7 @@ void SceneTreeDock::_notification(int p_what) {
 
 void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode) {
 
-	if (p_node->get_owner() == p_base && p_node != p_root) {
+	if ((p_node->get_owner() == p_base || p_mode == FORCE_DO) && p_node != p_root) {
 		UndoRedo *undo_redo = &editor_data->get_undo_redo();
 		switch (p_mode) {
 			case MODE_BIDI: {
@@ -1181,7 +1286,8 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 				undo_redo->add_undo_method(p_node, "set_owner", p_base);
 
 			} break;
-			case MODE_DO: {
+			case MODE_DO:
+			case FORCE_DO: {
 				undo_redo->add_do_method(p_node, "set_owner", p_root);
 
 			} break;
@@ -1194,6 +1300,16 @@ void SceneTreeDock::_node_replace_owner(Node *p_base, Node *p_node, Node *p_root
 
 	for (int i = 0; i < p_node->get_child_count(); i++) {
 		_node_replace_owner(p_base, p_node->get_child(i), p_root, p_mode);
+	}
+}
+
+void SceneTreeDock::_setup_for_copy(Node *p_node, Node *p_owner) {
+
+	p_node->set_owner(p_owner);
+	p_node->set_filename("");
+
+	for (int i = 0; i < p_node->get_child_count(); i++) {
+		_setup_for_copy(p_node->get_child(i), p_owner);
 	}
 }
 
@@ -1766,7 +1882,7 @@ void SceneTreeDock::_toggle_editable_children(Node *p_node) {
 	}
 }
 
-void SceneTreeDock::_delete_confirm() {
+void SceneTreeDock::_delete_confirm(bool p_cut) {
 
 	List<Node *> remove_list = editor_selection->get_selected_node_list();
 
@@ -1775,7 +1891,11 @@ void SceneTreeDock::_delete_confirm() {
 
 	editor->get_editor_plugins_over()->make_visible(false);
 
-	editor_data->get_undo_redo().create_action(TTR("Remove Node(s)"));
+	if (p_cut) {
+		editor_data->get_undo_redo().create_action(TTR("Cut Node"));
+	} else {
+		editor_data->get_undo_redo().create_action(TTR("Remove Node(s)"));
+	}
 
 	bool entire_scene = false;
 
@@ -2410,6 +2530,15 @@ void SceneTreeDock::_tree_rmb(const Vector2 &p_menu_pos) {
 		menu->add_icon_shortcut(get_icon("Collapse", "EditorIcons"), ED_GET_SHORTCUT("scene_tree/expand_collapse_all"), TOOL_EXPAND_COLLAPSE);
 		menu->add_separator();
 
+		if (profile_allow_editing) {
+			menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/cut_node"), TOOL_CUT);
+		}
+		menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/copy_node"), TOOL_COPY);
+		if (profile_allow_editing) {
+			menu->add_shortcut(ED_GET_SHORTCUT("scene_tree/paste_node"), TOOL_PASTE);
+		}
+		menu->add_separator();
+
 		existing_script = selected->get_script();
 
 		if (EditorNode::get_singleton()->get_object_custom_type_base(selected) == existing_script) {
@@ -2687,7 +2816,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &SceneTreeDock::_unhandled_key_input);
 	ClassDB::bind_method(D_METHOD("_input"), &SceneTreeDock::_input);
 	ClassDB::bind_method(D_METHOD("_nodes_drag_begin"), &SceneTreeDock::_nodes_drag_begin);
-	ClassDB::bind_method(D_METHOD("_delete_confirm"), &SceneTreeDock::_delete_confirm);
+	ClassDB::bind_method(D_METHOD("_delete_confirm"), &SceneTreeDock::_delete_confirm, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("_toggle_editable_children_from_selection"), &SceneTreeDock::_toggle_editable_children_from_selection);
 	ClassDB::bind_method(D_METHOD("_node_prerenamed"), &SceneTreeDock::_node_prerenamed);
 	ClassDB::bind_method(D_METHOD("_import_subscene"), &SceneTreeDock::_import_subscene);
@@ -2734,6 +2863,9 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/add_child_node", TTR("Add Child Node"), KEY_MASK_CMD | KEY_A);
 	ED_SHORTCUT("scene_tree/instance_scene", TTR("Instance Child Scene"));
 	ED_SHORTCUT("scene_tree/expand_collapse_all", TTR("Expand/Collapse All"));
+	ED_SHORTCUT("scene_tree/cut_node", TTR("Cut Node"), KEY_MASK_CMD | KEY_X);
+	ED_SHORTCUT("scene_tree/copy_node", TTR("Copy Node"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("scene_tree/paste_node", TTR("Paste Node"), KEY_MASK_CMD | KEY_V);
 	ED_SHORTCUT("scene_tree/change_node_type", TTR("Change Type"));
 	ED_SHORTCUT("scene_tree/attach_script", TTR("Attach Script"));
 	ED_SHORTCUT("scene_tree/extend_script", TTR("Extend Script"));
@@ -2746,7 +2878,7 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	ED_SHORTCUT("scene_tree/make_root", TTR("Make Scene Root"));
 	ED_SHORTCUT("scene_tree/merge_from_scene", TTR("Merge From Scene"));
 	ED_SHORTCUT("scene_tree/save_branch_as_scene", TTR("Save Branch as Scene"));
-	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_C);
+	ED_SHORTCUT("scene_tree/copy_node_path", TTR("Copy Node Path"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_C);
 	ED_SHORTCUT("scene_tree/delete_no_confirm", TTR("Delete (No Confirm)"), KEY_MASK_SHIFT | KEY_DELETE);
 	ED_SHORTCUT("scene_tree/delete", TTR("Delete"), KEY_DELETE);
 

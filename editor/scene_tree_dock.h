@@ -61,6 +61,9 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_NEW,
 		TOOL_INSTANCE,
 		TOOL_EXPAND_COLLAPSE,
+		TOOL_CUT,
+		TOOL_COPY,
+		TOOL_PASTE,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
@@ -164,10 +167,12 @@ class SceneTreeDock : public VBoxContainer {
 	enum ReplaceOwnerMode {
 		MODE_BIDI,
 		MODE_DO,
+		FORCE_DO,
 		MODE_UNDO
 	};
 
 	void _node_replace_owner(Node *p_base, Node *p_node, Node *p_root, ReplaceOwnerMode p_mode = MODE_BIDI);
+	void _setup_for_copy(Node *p_node, Node *p_owner);
 	void _load_request(const String &p_path);
 	void _script_open_request(const Ref<Script> &p_script);
 
@@ -179,7 +184,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_created(Ref<Script> p_script);
 	void _script_creation_closed();
 
-	void _delete_confirm();
+	void _delete_confirm(bool p_cut = false);
 
 	void _toggle_editable_children_from_selection();
 	void _toggle_editable_children(Node *p_node);
