@@ -190,7 +190,6 @@ class EditorAssetLibrary : public PanelContainer {
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
-	ToolButton *reverse;
 	Button *search;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
@@ -216,10 +215,12 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	enum SortOrder {
-		SORT_DOWNLOADS,
-		SORT_NAME,
-		SORT_COST,
 		SORT_UPDATED,
+		SORT_UPDATED_REVERSE,
+		SORT_NAME,
+		SORT_NAME_REVERSE,
+		SORT_COST,
+		SORT_COST_REVERSE,
 		SORT_MAX
 	};
 
