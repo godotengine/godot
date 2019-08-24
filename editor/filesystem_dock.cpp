@@ -63,7 +63,7 @@ bool FileSystemDock::_create_tree(TreeItem *p_parent, EditorFileSystemDirectory 
 
 	subdirectory_item->set_text(0, dname);
 	subdirectory_item->set_icon(0, get_icon("Folder", "EditorIcons"));
-	subdirectory_item->set_icon_color(0, get_color("folder_icon_modulate", "FileDialog"));
+	subdirectory_item->set_icon_modulate(0, get_color("folder_icon_modulate", "FileDialog"));
 	subdirectory_item->set_selectable(0, true);
 	String lpath = p_dir->get_path();
 	subdirectory_item->set_metadata(0, lpath);
@@ -214,7 +214,7 @@ void FileSystemDock::_update_tree(const Vector<String> &p_uncollapsed_paths, boo
 			TreeItem *ti = tree->create_item(favorites);
 			ti->set_text(0, text);
 			ti->set_icon(0, icon);
-			ti->set_icon_color(0, color);
+			ti->set_icon_modulate(0, color);
 			ti->set_tooltip(0, fave);
 			ti->set_selectable(0, true);
 			ti->set_metadata(0, fave);

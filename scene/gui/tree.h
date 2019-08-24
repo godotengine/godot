@@ -193,8 +193,8 @@ public:
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
 
-	void set_icon_color(int p_column, const Color &p_icon_color);
-	Color get_icon_color(int p_column) const;
+	void set_icon_modulate(int p_column, const Color &p_modulate);
+	Color get_icon_modulate(int p_column) const;
 
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
