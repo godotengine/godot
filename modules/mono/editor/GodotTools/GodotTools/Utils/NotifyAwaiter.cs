@@ -51,7 +51,7 @@ namespace GodotTools.Utils
         {
             continuation = null;
             exception = null;
-            result = default;
+            result = default(T);
             IsCompleted = false;
             return this;
         }
