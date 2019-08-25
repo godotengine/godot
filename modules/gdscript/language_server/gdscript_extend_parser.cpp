@@ -491,30 +491,23 @@ String ExtendGDScriptParser::get_text_for_lookup_symbol(const lsp::Position &p_c
 int ExtendGDScriptParser::get_parameter_count(const lsp::Position &p_cursor, lsp::Position *p_begining_position) {
 
 	int count = 0;
-	int len = lines.size();
 	p_begining_position->line = p_cursor.line;
-	for (int i = 0; i < len; i++) {
 
-		if (i == p_cursor.line) {
-			int closest_bracket_opening_pos = lines[i].substr(0, p_cursor.character).find_last("(");
-			int closest_bracket_closing_pos = lines[i].substr(0, p_cursor.character).find_last(")");
-			if (closest_bracket_closing_pos > closest_bracket_opening_pos || closest_bracket_opening_pos == -1) {
-				return 0;
-			}
-			for (int j = closest_bracket_opening_pos; j < p_cursor.character; j++) {
-				if (lines[i][j] == ',') {
-					count++;
-				}
-			}
-			p_begining_position->character = closest_bracket_opening_pos;
-			while (p_begining_position->character > 0 && lines[i][p_begining_position->character] != ' ' && lines[i][p_begining_position->character] != ',') {
-				p_begining_position->character--;
-			}
-			p_begining_position->character++;
-		} else if (i > p_cursor.line) {
-			break;
+	int closest_bracket_opening_pos = lines[p_cursor.line].substr(0, p_cursor.character).find_last("(");
+	int closest_bracket_closing_pos = lines[p_cursor.line].substr(0, p_cursor.character).find_last(")");
+	if (closest_bracket_closing_pos > closest_bracket_opening_pos || closest_bracket_opening_pos == -1) {
+		return 0;
+	}
+	for (int j = closest_bracket_opening_pos; j < p_cursor.character; j++) {
+		if (lines[p_cursor.line][j] == ',') {
+			count++;
 		}
 	}
+	p_begining_position->character = closest_bracket_opening_pos;
+	while (p_begining_position->character > 0 && lines[p_cursor.line][p_begining_position->character] != ' ' && lines[p_cursor.line][p_begining_position->character] != ',') {
+		p_begining_position->character--;
+	}
+	p_begining_position->character++;
 
 	return count;
 }
