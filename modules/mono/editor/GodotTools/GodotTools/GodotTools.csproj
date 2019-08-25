@@ -10,6 +10,7 @@
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <GodotSourceRootPath>$(SolutionDir)/../../../../</GodotSourceRootPath>
     <GodotApiConfiguration>Debug</GodotApiConfiguration>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
