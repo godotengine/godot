@@ -230,6 +230,14 @@ void VisualShaderEditor::_update_custom_nodes() {
 	}
 }
 
+String VisualShaderEditor::_get_description(int i) {
+	if (add_options[i].highend) {
+		return TTR("(GLES3 only)") + " " + add_options[i].description; // TODO: change it to (Vulkan Only) when its ready
+	} else {
+		return add_options[i].description;
+	}
+}
+
 void VisualShaderEditor::_update_options_menu() {
 
 	node_desc->set_text("");
@@ -333,11 +341,10 @@ void VisualShaderEditor::_update_options_menu() {
 				else if (add_options[i].highend)
 					item->set_custom_color(0, supported_color);
 				item->set_text(0, add_options[i].name);
-				if (p_category == sub_category) {
-					if (is_first_item) {
-						item->select(0);
-						is_first_item = false;
-					}
+				if (is_first_item && use_filter) {
+					item->select(0);
+					node_desc->set_text(_get_description(i));
+					is_first_item = false;
 				}
 				switch (add_options[i].return_type) {
 					case VisualShaderNode::PORT_TYPE_SCALAR:
@@ -1930,11 +1937,7 @@ void VisualShaderEditor::_member_selected() {
 
 	if (item != NULL && item->has_meta("id")) {
 		members_dialog->get_ok()->set_disabled(false);
-		if (add_options[item->get_meta("id")].highend) {
-			node_desc->set_text(TTR("(GLES3 only)") + " " + add_options[item->get_meta("id")].description); // TODO: change it to (Vulkan Only) when its ready
-		} else {
-			node_desc->set_text(add_options[item->get_meta("id")].description);
-		}
+		node_desc->set_text(_get_description(item->get_meta("id")));
 	} else {
 		members_dialog->get_ok()->set_disabled(true);
 		node_desc->set_text("");
