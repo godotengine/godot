@@ -1594,10 +1594,10 @@ void ScriptEditor::ensure_select_current() {
 			if (!grab_focus_block && is_visible_in_tree())
 				se->ensure_focus();
 
-			if (Object::cast_to<ScriptTextEditor>(se)) { //sadly this is necessary, because code_editor is not a property of ScriptEditorBase
-				Object::cast_to<ScriptTextEditor>(se)->get_code_editor()->set_find_replace_bar(shared_find_replace_bar);
+			if (Object::cast_to<ScriptTextEditor>(se)) { //Sadly this is necessary, because code_editor is not a property of ScriptEditorBase.
+				Object::cast_to<ScriptTextEditor>(se)->set_find_replace_bar(shared_find_replace_bar);
 			} else if (Object::cast_to<TextEditor>(se)) {
-				Object::cast_to<TextEditor>(se)->get_code_editor()->set_find_replace_bar(shared_find_replace_bar);
+				Object::cast_to<TextEditor>(se)->set_find_replace_bar(shared_find_replace_bar);
 			}
 		}
 	}

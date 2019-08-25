@@ -116,7 +116,7 @@ protected:
 	void _bookmark_item_pressed(int p_idx);
 
 public:
-	CodeTextEditor *get_code_editor() const;
+	void set_find_replace_bar(FindReplaceBar *p_bar);
 
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);

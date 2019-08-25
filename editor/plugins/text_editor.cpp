@@ -145,8 +145,8 @@ void TextEditor::_load_theme_settings() {
 	colors_cache.string_color = string_color;
 }
 
-CodeTextEditor *TextEditor::get_code_editor() const {
-	return code_editor;
+void TextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	code_editor->set_find_replace_bar(p_bar);
 }
 
 String TextEditor::get_name() {

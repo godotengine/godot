@@ -186,7 +186,7 @@ protected:
 
 public:
 	void _update_connected_methods();
-	CodeTextEditor *get_code_editor() const;
+	void set_find_replace_bar(FindReplaceBar *p_bar);
 
 	virtual void add_syntax_highlighter(SyntaxHighlighter *p_highlighter);
 	virtual void set_syntax_highlighter(SyntaxHighlighter *p_highlighter);

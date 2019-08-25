@@ -527,12 +527,6 @@ String FindReplaceBar::get_replace_text() const {
 	return replace_text->get_text();
 }
 
-void FindReplaceBar::copy_texts_from(FindReplaceBar *p_from) {
-
-	search_text->set_text(p_from->search_text->get_text());
-	replace_text->set_text(p_from->replace_text->get_text());
-}
-
 bool FindReplaceBar::is_case_sensitive() const {
 
 	return case_sensitive->is_pressed();
@@ -566,6 +560,8 @@ void FindReplaceBar::set_text_edit(TextEdit *p_text_edit) {
 
 	if (is_visible()) {
 		text_edit->set_search_text(get_search_text());
+		_update_results_count();
+		_update_matches_label();
 	}
 }
 
@@ -1454,16 +1450,25 @@ void CodeTextEditor::goto_error() {
 
 void CodeTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
 	if (find_replace_bar && find_replace_bar != p_bar) {
-		//this method is intended to be used for shared find/replace bars, so the original one is removed
+		//This method is intended to be used for shared find/replace bars, so the original one is removed.
+		find_replace_bar->disconnect("error", error, "set_text");
 		remove_child(find_replace_bar);
 		find_replace_bar->queue_delete();
 	}
 
+	Node *prev_parent = p_bar->get_parent();
+	if (prev_parent) {
+		CodeTextEditor *prev_code_editor = Object::cast_to<CodeTextEditor>(prev_parent);
+		if (prev_code_editor)
+			p_bar->disconnect("error", prev_code_editor->error, "set_text");
+
+		prev_parent->remove_child(p_bar);
+	}
+
 	find_replace_bar = p_bar;
-	if (p_bar->get_parent())
-		p_bar->get_parent()->remove_child(p_bar);
-	add_child_below_node(text_editor, p_bar);
+	p_bar->connect("error", error, "set_text");
 	p_bar->set_text_edit(text_editor);
+	add_child_below_node(text_editor, p_bar);
 }
 
 void CodeTextEditor::_update_font() {

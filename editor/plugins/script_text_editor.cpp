@@ -1333,8 +1333,8 @@ void ScriptTextEditor::_edit_option_toggle_inline_comment() {
 	code_editor->toggle_inline_comment(delimiter);
 }
 
-CodeTextEditor *ScriptTextEditor::get_code_editor() const {
-	return code_editor;
+void ScriptTextEditor::set_find_replace_bar(FindReplaceBar *p_bar) {
+	code_editor->set_find_replace_bar(p_bar);
 }
 
 void ScriptTextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
