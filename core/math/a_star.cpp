@@ -243,6 +243,20 @@ void AStar::clear() {
 	points.clear();
 }
 
+int AStar::get_point_count() const {
+	return points.get_num_elements();
+}
+
+int AStar::get_point_capacity() const {
+	return points.get_capacity();
+}
+
+void AStar::reserve_space(int p_num_nodes) {
+	ERR_FAIL_COND_MSG(p_num_nodes <= 0, "New capacity must be greater than 0, was: " + itos(p_num_nodes) + ".");
+	ERR_FAIL_COND_MSG((uint32_t)p_num_nodes < points.get_capacity(), "New capacity must be greater than current capacity: " + itos(points.get_capacity()) + ", new was: " + itos(p_num_nodes) + ".");
+	points.reserve(p_num_nodes);
+}
+
 int AStar::get_closest_point(const Vector3 &p_point) const {
 
 	int closest_id = -1;
@@ -521,6 +535,9 @@ void AStar::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar::disconnect_points);
 	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id"), &AStar::are_points_connected);
 
+	ClassDB::bind_method(D_METHOD("get_point_count"), &AStar::get_point_count);
+	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar::get_point_capacity);
+	ClassDB::bind_method(D_METHOD("reserve_space", "num_nodes"), &AStar::reserve_space);
 	ClassDB::bind_method(D_METHOD("clear"), &AStar::clear);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position"), &AStar::get_closest_point);
@@ -605,8 +622,20 @@ bool AStar2D::are_points_connected(int p_id, int p_with_id) const {
 	return astar.are_points_connected(p_id, p_with_id);
 }
 
+int AStar2D::get_point_count() const {
+	return astar.get_point_count();
+}
+
+int AStar2D::get_point_capacity() const {
+	return astar.get_point_capacity();
+}
+
 void AStar2D::clear() {
 	astar.clear();
+}
+
+void AStar2D::reserve_space(int p_num_nodes) {
+	astar.reserve_space(p_num_nodes);
 }
 
 int AStar2D::get_closest_point(const Vector2 &p_point) const {
@@ -659,6 +688,9 @@ void AStar2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("disconnect_points", "id", "to_id"), &AStar2D::disconnect_points);
 	ClassDB::bind_method(D_METHOD("are_points_connected", "id", "to_id"), &AStar2D::are_points_connected);
 
+	ClassDB::bind_method(D_METHOD("get_point_count"), &AStar2D::get_point_count);
+	ClassDB::bind_method(D_METHOD("get_point_capacity"), &AStar2D::get_point_capacity);
+	ClassDB::bind_method(D_METHOD("reserve_space", "num_nodes"), &AStar2D::reserve_space);
 	ClassDB::bind_method(D_METHOD("clear"), &AStar2D::clear);
 
 	ClassDB::bind_method(D_METHOD("get_closest_point", "to_position"), &AStar2D::get_closest_point);
