@@ -230,11 +230,11 @@ void VisualShaderEditor::_update_custom_nodes() {
 	}
 }
 
-String VisualShaderEditor::_get_description(int i) {
-	if (add_options[i].highend) {
-		return TTR("(GLES3 only)") + " " + add_options[i].description; // TODO: change it to (Vulkan Only) when its ready
+String VisualShaderEditor::_get_description(int p_idx) {
+	if (add_options[p_idx].highend) {
+		return TTR("(GLES3 only)") + " " + add_options[p_idx].description; // TODO: change it to (Vulkan Only) when its ready
 	} else {
-		return add_options[i].description;
+		return add_options[p_idx].description;
 	}
 }
 

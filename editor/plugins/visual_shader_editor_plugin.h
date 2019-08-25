@@ -158,7 +158,7 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _show_preview_text();
 	void _update_preview();
-	String _get_description(int i);
+	String _get_description(int p_idx);
 
 	static VisualShaderEditor *singleton;
 
