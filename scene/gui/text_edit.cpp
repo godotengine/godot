@@ -559,7 +559,7 @@ void TextEdit::_update_selection_mode_line() {
 	click_select_held->start();
 }
 
-void TextEdit::_update_minimap_scroll() {
+void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_position();
 
 	int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
@@ -573,6 +573,13 @@ void TextEdit::_update_minimap_scroll() {
 	int row;
 	_get_minimap_mouse_row(Point2i(mp.x, mp.y), row);
 
+	if (row >= get_first_visible_line() && (row < get_last_visible_line() || row >= (text.size() - 1))) {
+		minimap_scroll_ratio = v_scroll->get_as_ratio();
+		minimap_scroll_click_pos = mp.y;
+		can_drag_minimap = true;
+		return;
+	}
+
 	int wi;
 	int first_line = row - num_lines_from_rows(row, 0, -get_visible_rows() / 2, wi) + 1;
 	double delta = get_scroll_pos_for_line(first_line, wi) - get_v_scroll();
@@ -581,6 +588,23 @@ void TextEdit::_update_minimap_scroll() {
 	} else {
 		_scroll_down(delta);
 	}
+}
+
+void TextEdit::_update_minimap_drag() {
+
+	if (!can_drag_minimap) {
+		return;
+	}
+
+	int control_height = get_size().height;
+	control_height -= cache.style_normal->get_minimum_size().height;
+	if (h_scroll->is_visible_in_tree()) {
+		control_height -= h_scroll->get_size().height;
+	}
+
+	Point2 mp = get_local_mouse_position();
+	double diff = (mp.y - minimap_scroll_click_pos) / control_height;
+	v_scroll->set_as_ratio(minimap_scroll_ratio + diff);
 }
 
 void TextEdit::_notification(int p_what) {
@@ -2239,7 +2263,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				// minimap
 				if (draw_minimap) {
-					_update_minimap_scroll();
+					_update_minimap_click();
 					if (dragging_minimap) {
 						return;
 					}
@@ -2362,6 +2386,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == BUTTON_LEFT) {
 				dragging_minimap = false;
 				dragging_selection = false;
+				can_drag_minimap = false;
 				click_select_held->stop();
 			}
 
@@ -2410,7 +2435,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			_reset_caret_blink_timer();
 
 			if (draw_minimap && !dragging_selection) {
-				_update_minimap_scroll();
+				_update_minimap_drag();
 			}
 
 			if (!dragging_minimap) {
@@ -7018,6 +7043,9 @@ TextEdit::TextEdit() {
 	scrolling = false;
 	minimap_clicked = false;
 	dragging_minimap = false;
+	can_drag_minimap = false;
+	minimap_scroll_ratio = 0;
+	minimap_scroll_click_pos = 0;
 	dragging_selection = false;
 	target_v_scroll = 0;
 	v_scroll_speed = 80;
