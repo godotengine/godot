@@ -610,12 +610,32 @@ public:
 		}
 	};
 
+	enum GradientTextureFillMethod {
+		FILL_LINEAR,
+		FILL_RADIAL
+	};
+
+	enum GradientTextureRepeatMethod {
+		NO_REPEAT,
+		REPEAT,
+		REPEAT_MIRROR
+	};
+
 private:
 	Ref<Gradient> gradient;
 	bool update_pending;
 	RID texture;
-	int width;
 
+	int width;
+	int height;
+
+	Vector2 fill_from;
+	Vector2 fill_to;
+
+	GradientTextureFillMethod fill_method;
+	GradientTextureRepeatMethod repeat_method;
+
+	float get_gradient_offset_at(int x, int y) const;
 	void _queue_update();
 	void _update();
 
@@ -628,9 +648,21 @@ public:
 
 	void set_width(int p_width);
 	int get_width() const;
+	void set_height(int p_height);
+	int get_height() const;
+
+	void set_fill_from(Vector2 p_fill_from);
+	Vector2 get_fill_from() const;
+	void set_fill_to(Vector2 p_fill_to);
+	Vector2 get_fill_to() const;
+
+	void set_fill_method(GradientTextureFillMethod p_fill_method);
+	GradientTextureFillMethod get_fill_method() const;
+
+	void set_repeat_method(GradientTextureRepeatMethod p_repeat_method);
+	GradientTextureRepeatMethod get_repeat_method() const;
 
 	virtual RID get_rid() const { return texture; }
-	virtual int get_height() const { return 1; }
 	virtual bool has_alpha() const { return true; }
 
 	virtual void set_flags(uint32_t p_flags) {}
@@ -641,6 +673,9 @@ public:
 	GradientTexture();
 	virtual ~GradientTexture();
 };
+
+VARIANT_ENUM_CAST(GradientTexture::GradientTextureFillMethod);
+VARIANT_ENUM_CAST(GradientTexture::GradientTextureRepeatMethod);
 
 class ProxyTexture : public Texture {
 	GDCLASS(ProxyTexture, Texture);

@@ -1795,6 +1795,13 @@ CurveTexture::~CurveTexture() {
 GradientTexture::GradientTexture() {
 	update_pending = false;
 	width = 2048;
+	height = 1;
+
+	fill_from = Vector2();
+	fill_to = Vector2(1, 0);
+
+	fill_method = GradientTextureFillMethod::FILL_LINEAR;
+	repeat_method = GradientTextureRepeatMethod::NO_REPEAT;
 
 	texture = VS::get_singleton()->texture_create();
 	_queue_update();
@@ -1810,11 +1817,35 @@ void GradientTexture::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gradient"), &GradientTexture::get_gradient);
 
 	ClassDB::bind_method(D_METHOD("set_width", "width"), &GradientTexture::set_width);
+	ClassDB::bind_method(D_METHOD("set_height", "height"), &GradientTexture::set_height);
+
+	ClassDB::bind_method(D_METHOD("set_fill_from", "fill_from"), &GradientTexture::set_fill_from);
+	ClassDB::bind_method(D_METHOD("get_fill_from"), &GradientTexture::get_fill_from);
+	ClassDB::bind_method(D_METHOD("set_fill_to", "fill_to"), &GradientTexture::set_fill_to);
+	ClassDB::bind_method(D_METHOD("get_fill_to"), &GradientTexture::get_fill_to);
+
+	ClassDB::bind_method(D_METHOD("set_fill_method", "fill_method"), &GradientTexture::set_fill_method);
+	ClassDB::bind_method(D_METHOD("get_fill_method"), &GradientTexture::get_fill_method);
+
+	ClassDB::bind_method(D_METHOD("set_repeat_method", "repeat_method"), &GradientTexture::set_repeat_method);
+	ClassDB::bind_method(D_METHOD("get_repeat_method"), &GradientTexture::get_repeat_method);
 
 	ClassDB::bind_method(D_METHOD("_update"), &GradientTexture::_update);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "gradient", PROPERTY_HINT_RESOURCE_TYPE, "Gradient"), "set_gradient", "get_gradient");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "width", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_width", "get_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "height", PROPERTY_HINT_RANGE, "1,2048,1,or_greater"), "set_height", "get_height");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_from"), "set_fill_from", "get_fill_from");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fill_to"), "set_fill_to", "get_fill_to");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fill_method", PROPERTY_HINT_ENUM, "Fill Linear,Fill Radial"), "set_fill_method", "get_fill_method");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "repeat_method", PROPERTY_HINT_ENUM, "No Repeat,Repeat,Repeat Mirror"), "set_repeat_method", "get_repeat_method");
+
+	BIND_ENUM_CONSTANT(FILL_LINEAR);
+	BIND_ENUM_CONSTANT(FILL_RADIAL);
+
+	BIND_ENUM_CONSTANT(NO_REPEAT);
+	BIND_ENUM_CONSTANT(REPEAT);
+	BIND_ENUM_CONSTANT(REPEAT_MIRROR);
 }
 
 void GradientTexture::set_gradient(Ref<Gradient> p_gradient) {
@@ -1845,36 +1876,74 @@ void GradientTexture::_queue_update() {
 }
 
 void GradientTexture::_update() {
-
 	update_pending = false;
 
 	if (gradient.is_null())
 		return;
 
 	PoolVector<uint8_t> data;
-	data.resize(width * 4);
+	data.resize(width * height * 4);
 	{
 		PoolVector<uint8_t>::Write wd8 = data.write();
 		Gradient &g = **gradient;
 
-		for (int i = 0; i < width; i++) {
+		for (int y = 0; y < height; y++) {
+			for (int x = 0; x < width; x++) {
+				float ofs = get_gradient_offset_at(x, y);
+				Color color = g.get_color_at_offset(ofs);
 
-			float ofs = float(i) / (width - 1);
-			Color color = g.get_color_at_offset(ofs);
-
-			wd8[i * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
-			wd8[i * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
-			wd8[i * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
-			wd8[i * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+				wd8[(x + (y * width)) * 4 + 0] = uint8_t(CLAMP(color.r * 255.0, 0, 255));
+				wd8[(x + (y * width)) * 4 + 1] = uint8_t(CLAMP(color.g * 255.0, 0, 255));
+				wd8[(x + (y * width)) * 4 + 2] = uint8_t(CLAMP(color.b * 255.0, 0, 255));
+				wd8[(x + (y * width)) * 4 + 3] = uint8_t(CLAMP(color.a * 255.0, 0, 255));
+			}
 		}
 	}
 
-	Ref<Image> image = memnew(Image(width, 1, false, Image::FORMAT_RGBA8, data));
+	Ref<Image> image = memnew(Image(width, height, false, Image::FORMAT_RGBA8, data));
 
 	VS::get_singleton()->texture_allocate(texture, width, 1, 0, Image::FORMAT_RGBA8, VS::TEXTURE_TYPE_2D, VS::TEXTURE_FLAG_FILTER);
 	VS::get_singleton()->texture_set_data(texture, image);
 
 	emit_changed();
+}
+
+float GradientTexture::get_gradient_offset_at(int x, int y) const {
+	if (fill_to == fill_from)
+		return 0;
+	float off = 0;
+	Vector2 pos;
+	if (width > 1)
+		pos.x = (float)x / (float)(width - 1);
+	if (height > 1)
+		pos.y = (float)y / (float)(height - 1);
+	if (fill_method == GradientTextureFillMethod::FILL_LINEAR) {
+		Vector2 segment[2];
+		segment[0] = fill_from;
+		segment[1] = fill_to;
+		Vector2 closest = Geometry::get_closest_point_to_segment_uncapped_2d(pos, &segment[0]);
+		off = (closest - fill_from).length() / (fill_to - fill_from).length();
+		if ((closest - fill_from).dot(fill_to - fill_from) < 0)
+			off *= -1;
+	} else if (fill_method == GradientTextureFillMethod::FILL_RADIAL) {
+		off = (pos - fill_from).length() / (fill_to - fill_from).length();
+	}
+
+	if (repeat_method == GradientTextureRepeatMethod::NO_REPEAT) {
+		off = CLAMP(off, 0.0, 1.0);
+	} else if (repeat_method == GradientTextureRepeatMethod::REPEAT) {
+		off = Math::fmod(off, (float)1.0);
+		if (off < 0)
+			off = 1 + off;
+	} else if (repeat_method == GradientTextureRepeatMethod::REPEAT_MIRROR) {
+		off = Math::abs(off);
+		off = Math::fmod(off, (float)2.0);
+		if (off > 1.0) {
+			off = 2.0 - off;
+		}
+	}
+
+	return off;
 }
 
 void GradientTexture::set_width(int p_width) {
@@ -1885,6 +1954,50 @@ void GradientTexture::set_width(int p_width) {
 int GradientTexture::get_width() const {
 
 	return width;
+}
+
+void GradientTexture::set_height(int p_height) {
+	height = p_height;
+	_queue_update();
+}
+int GradientTexture::get_height() const {
+	return height;
+}
+
+void GradientTexture::set_fill_from(Vector2 p_fill_from) {
+	fill_from = p_fill_from;
+	_queue_update();
+}
+
+Vector2 GradientTexture::get_fill_from() const {
+	return fill_from;
+}
+
+void GradientTexture::set_fill_to(Vector2 p_fill_to) {
+	fill_to = p_fill_to;
+	_queue_update();
+}
+
+Vector2 GradientTexture::get_fill_to() const {
+	return fill_to;
+}
+
+void GradientTexture::set_fill_method(GradientTextureFillMethod p_fill_method) {
+	fill_method = p_fill_method;
+	_queue_update();
+}
+
+GradientTexture::GradientTextureFillMethod GradientTexture::get_fill_method() const {
+	return fill_method;
+}
+
+void GradientTexture::set_repeat_method(GradientTextureRepeatMethod p_repeat_method) {
+	repeat_method = p_repeat_method;
+	_queue_update();
+}
+
+GradientTexture::GradientTextureRepeatMethod GradientTexture::get_repeat_method() const {
+	return repeat_method;
 }
 
 Ref<Image> GradientTexture::get_data() const {
