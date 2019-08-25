@@ -596,14 +596,8 @@ void TextEdit::_update_minimap_drag() {
 		return;
 	}
 
-	int control_height = get_size().height;
-	control_height -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree()) {
-		control_height -= h_scroll->get_size().height;
-	}
-
 	Point2 mp = get_local_mouse_position();
-	double diff = (mp.y - minimap_scroll_click_pos) / control_height;
+	double diff = (mp.y - minimap_scroll_click_pos) / _get_control_height();
 	v_scroll->set_as_ratio(minimap_scroll_ratio + diff);
 }
 
@@ -923,12 +917,7 @@ void TextEdit::_notification(int p_what) {
 
 				// calculate viewport size and y offset
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
-				int control_height = size.height;
-				control_height -= cache.style_normal->get_minimum_size().height;
-				if (h_scroll->is_visible_in_tree()) {
-					control_height -= h_scroll->get_size().height;
-				}
-				control_height -= viewport_height;
+				int control_height = _get_control_height() - viewport_height;
 				int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 				// calculate the first line.
@@ -2094,12 +2083,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 
 	// calculate viewport size and y offset
 	int viewport_height = (draw_amount - 1) * minimap_line_height;
-	int control_height = get_size().height;
-	control_height -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree()) {
-		control_height -= h_scroll->get_size().height;
-	}
-	control_height -= viewport_height;
+	int control_height = _get_control_height() - viewport_height;
 	int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 	// calculate the first line.
@@ -4043,23 +4027,21 @@ Size2 TextEdit::get_minimum_size() const {
 	return cache.style_normal->get_minimum_size();
 }
 
-int TextEdit::get_visible_rows() const {
+int TextEdit::_get_control_height() const {
+	int control_height = get_size().height;
+	control_height -= cache.style_normal->get_minimum_size().height;
+	if (h_scroll->is_visible_in_tree()) {
+		control_height -= h_scroll->get_size().height;
+	}
+	return control_height;
+}
 
-	int total = get_size().height;
-	total -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree())
-		total -= h_scroll->get_size().height;
-	total /= get_row_height();
-	return total;
+int TextEdit::get_visible_rows() const {
+	return _get_control_height() / get_row_height();
 }
 
 int TextEdit::_get_minimap_visible_rows() const {
-	int total = get_size().height;
-	total -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree())
-		total -= h_scroll->get_size().height;
-	total /= (minimap_char_size.y + minimap_line_spacing);
-	return total;
+	return _get_control_height() / (minimap_char_size.y + minimap_line_spacing);
 }
 
 int TextEdit::get_total_visible_rows() const {
@@ -6150,10 +6132,7 @@ int TextEdit::get_last_visible_line_wrap_index() const {
 
 double TextEdit::get_visible_rows_offset() const {
 
-	double total = get_size().height;
-	total -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree())
-		total -= h_scroll->get_size().height;
+	double total = _get_control_height();
 	total /= (double)get_row_height();
 	total = total - floor(total);
 	total = -CLAMP(total, 0.001, 1) + 1;
