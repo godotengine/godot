@@ -70,7 +70,10 @@ class VisualShaderEditor : public VBoxContainer {
 	PanelContainer *error_panel;
 	Label *error_label;
 
+	bool shader_error;
+	VBoxContainer *preview_vbox;
 	TextEdit *preview_text;
+	Label *error_text;
 
 	UndoRedo *undo_redo;
 	Point2 saved_node_pos;
