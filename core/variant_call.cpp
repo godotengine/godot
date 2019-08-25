@@ -944,6 +944,16 @@ struct _VariantCall {
 		r_ret = Color::hex(*p_args[0]);
 	}
 
+	static void Color_init5(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Color(((Color)(*p_args[0])));
+	}
+
+	static void Color_init6(Variant &r_ret, const Variant **p_args) {
+
+		r_ret = Color(((Color)(*p_args[0])), *p_args[1]);
+	}
+
 	static void AABB_init1(Variant &r_ret, const Variant **p_args) {
 
 		r_ret = ::AABB(*p_args[0], *p_args[1]);
@@ -1925,6 +1935,10 @@ void register_variant_methods() {
 
 	_VariantCall::add_constructor(_VariantCall::Color_init1, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL, "a", Variant::REAL);
 	_VariantCall::add_constructor(_VariantCall::Color_init2, Variant::COLOR, "r", Variant::REAL, "g", Variant::REAL, "b", Variant::REAL);
+	//_VariantCall::add_constructor(_VariantCall::Color_init3, Variant::COLOR, "html", Variant::STRING); // TODO: These already have "from" constructors and I'm not sure where that code is. It doesn't show up in a grep for color and from.
+	//_VariantCall::add_constructor(_VariantCall::Color_init4, Variant::COLOR, "hex", Variant::INT); // It would be better to switch the argument names to html and hex like here, but we must get rid of the "from" constructors first.
+	_VariantCall::add_constructor(_VariantCall::Color_init5, Variant::COLOR, "c", Variant::COLOR);
+	_VariantCall::add_constructor(_VariantCall::Color_init6, Variant::COLOR, "c", Variant::COLOR, "a", Variant::REAL);
 
 	_VariantCall::add_constructor(_VariantCall::AABB_init1, Variant::AABB, "position", Variant::VECTOR3, "size", Variant::VECTOR3);
 
