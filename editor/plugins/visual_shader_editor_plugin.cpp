@@ -2058,15 +2058,19 @@ void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
 	preview_vbox->set_visible(preview_showed);
 	if (preview_showed) {
-		if (shader_error) {
-			error_text->set_visible(true);
-		} else {
-			error_text->set_visible(false);
+		if (pending_update_preview) {
+			_update_preview();
+			pending_update_preview = false;
 		}
 	}
 }
 
 void VisualShaderEditor::_update_preview() {
+
+	if (!preview_showed) {
+		pending_update_preview = true;
+		return;
+	}
 
 	String code = visual_shader->get_code();
 
@@ -2081,16 +2085,13 @@ void VisualShaderEditor::_update_preview() {
 	}
 	if (err != OK) {
 		preview_text->set_line_as_marked(sl.get_error_line() - 1, true);
-		if (preview_showed) {
-			error_text->set_visible(true);
-		}
+		error_text->set_visible(true);
+
 		String text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
 		error_text->set_text(text);
 		shader_error = true;
 	} else {
-		if (preview_showed) {
-			error_text->set_visible(false);
-		}
+		error_text->set_visible(false);
 		shader_error = false;
 	}
 }
@@ -2163,6 +2164,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	ShaderLanguage::get_keyword_list(&keyword_list);
 
 	preview_showed = false;
+	pending_update_preview = false;
 	shader_error = false;
 
 	to_node = -1;

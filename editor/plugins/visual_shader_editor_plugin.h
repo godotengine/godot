@@ -70,6 +70,7 @@ class VisualShaderEditor : public VBoxContainer {
 	PanelContainer *error_panel;
 	Label *error_label;
 
+	bool pending_update_preview;
 	bool shader_error;
 	VBoxContainer *preview_vbox;
 	TextEdit *preview_text;
