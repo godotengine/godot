@@ -41,6 +41,7 @@
 #include "scene/gui/panel.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/visual_shader_nodes.h"
+#include "servers/visual/shader_types.h"
 
 Control *VisualShaderNodePlugin::create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node) {
 
@@ -1598,6 +1599,9 @@ void VisualShaderEditor::_notification(int p_what) {
 			preview_text->add_color_override("symbol_color", symbol_color);
 			preview_text->add_color_region("/*", "*/", comment_color, false);
 			preview_text->add_color_region("//", "", comment_color, false);
+
+			error_text->add_font_override("font", get_font("status_source", "EditorFonts"));
+			error_text->add_color_override("font_color", get_color("error_color", "Editor"));
 		}
 
 		tools->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("Tools", "EditorIcons"));
@@ -2052,11 +2056,43 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 void VisualShaderEditor::_show_preview_text() {
 	preview_showed = !preview_showed;
-	preview_text->set_visible(preview_showed);
+	preview_vbox->set_visible(preview_showed);
+	if (preview_showed) {
+		if (shader_error) {
+			error_text->set_visible(true);
+		} else {
+			error_text->set_visible(false);
+		}
+	}
 }
 
 void VisualShaderEditor::_update_preview() {
-	preview_text->set_text(visual_shader->get_code());
+
+	String code = visual_shader->get_code();
+
+	preview_text->set_text(code);
+
+	ShaderLanguage sl;
+
+	Error err = sl.compile(code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(visual_shader->get_mode())), ShaderTypes::get_singleton()->get_types());
+
+	for (int i = 0; i < preview_text->get_line_count(); i++) {
+		preview_text->set_line_as_marked(i, false);
+	}
+	if (err != OK) {
+		preview_text->set_line_as_marked(sl.get_error_line() - 1, true);
+		if (preview_showed) {
+			error_text->set_visible(true);
+		}
+		String text = "error(" + itos(sl.get_error_line()) + "): " + sl.get_error_text();
+		error_text->set_text(text);
+		shader_error = true;
+	} else {
+		if (preview_showed) {
+			error_text->set_visible(false);
+		}
+		shader_error = false;
+	}
 }
 
 void VisualShaderEditor::_bind_methods() {
@@ -2127,6 +2163,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	ShaderLanguage::get_keyword_list(&keyword_list);
 
 	preview_showed = false;
+	shader_error = false;
 
 	to_node = -1;
 	to_slot = -1;
@@ -2201,14 +2238,21 @@ VisualShaderEditor::VisualShaderEditor() {
 	// PREVIEW PANEL
 	///////////////////////////////////////
 
+	preview_vbox = memnew(VBoxContainer);
+	preview_vbox->set_visible(preview_showed);
+	main_box->add_child(preview_vbox);
 	preview_text = memnew(TextEdit);
-	main_box->add_child(preview_text);
+	preview_vbox->add_child(preview_text);
 	preview_text->set_h_size_flags(SIZE_EXPAND_FILL);
 	preview_text->set_v_size_flags(SIZE_EXPAND_FILL);
-	preview_text->set_visible(preview_showed);
 	preview_text->set_custom_minimum_size(Size2(400 * EDSCALE, 0));
 	preview_text->set_syntax_coloring(true);
+	preview_text->set_show_line_numbers(true);
 	preview_text->set_readonly(true);
+
+	error_text = memnew(Label);
+	preview_vbox->add_child(error_text);
+	error_text->set_visible(false);
 
 	///////////////////////////////////////
 	// SHADER NODES TREE
