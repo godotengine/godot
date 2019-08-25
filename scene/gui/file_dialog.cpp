@@ -430,7 +430,7 @@ void FileDialog::update_file_list() {
 		TreeItem *ti = tree->create_item(root);
 		ti->set_text(0, dir_name);
 		ti->set_icon(0, folder);
-		ti->set_icon_color(0, folder_color);
+		ti->set_icon_modulate(0, folder_color);
 
 		Dictionary d;
 		d["name"] = dir_name;
