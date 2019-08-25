@@ -559,7 +559,7 @@ void TextEdit::_update_selection_mode_line() {
 	click_select_held->start();
 }
 
-void TextEdit::_update_minimap_scroll() {
+void TextEdit::_update_minimap_click() {
 	Point2 mp = get_local_mouse_position();
 
 	int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
@@ -573,6 +573,13 @@ void TextEdit::_update_minimap_scroll() {
 	int row;
 	_get_minimap_mouse_row(Point2i(mp.x, mp.y), row);
 
+	if (row >= get_first_visible_line() && (row < get_last_visible_line() || row >= (text.size() - 1))) {
+		minimap_scroll_ratio = v_scroll->get_as_ratio();
+		minimap_scroll_click_pos = mp.y;
+		can_drag_minimap = true;
+		return;
+	}
+
 	int wi;
 	int first_line = row - num_lines_from_rows(row, 0, -get_visible_rows() / 2, wi) + 1;
 	double delta = get_scroll_pos_for_line(first_line, wi) - get_v_scroll();
@@ -581,6 +588,17 @@ void TextEdit::_update_minimap_scroll() {
 	} else {
 		_scroll_down(delta);
 	}
+}
+
+void TextEdit::_update_minimap_drag() {
+
+	if (!can_drag_minimap) {
+		return;
+	}
+
+	Point2 mp = get_local_mouse_position();
+	double diff = (mp.y - minimap_scroll_click_pos) / _get_control_height();
+	v_scroll->set_as_ratio(minimap_scroll_ratio + diff);
 }
 
 void TextEdit::_notification(int p_what) {
@@ -899,12 +917,7 @@ void TextEdit::_notification(int p_what) {
 
 				// calculate viewport size and y offset
 				int viewport_height = (draw_amount - 1) * minimap_line_height;
-				int control_height = size.height;
-				control_height -= cache.style_normal->get_minimum_size().height;
-				if (h_scroll->is_visible_in_tree()) {
-					control_height -= h_scroll->get_size().height;
-				}
-				control_height -= viewport_height;
+				int control_height = _get_control_height() - viewport_height;
 				int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 				// calculate the first line.
@@ -918,8 +931,7 @@ void TextEdit::_notification(int p_what) {
 				int minimap_draw_amount = minimap_visible_lines + times_line_wraps(minimap_line + 1);
 
 				// draw the minimap
-				Color viewport_color = cache.current_line_color;
-				viewport_color.a /= 2;
+				Color viewport_color = (cache.background_color.get_v() < 0.5) ? Color(1, 1, 1, 0.1) : Color(0, 0, 0, 0.1);
 				VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2((xmargin_end + 2), viewport_offset_y, cache.minimap_width, viewport_height), viewport_color);
 				for (int i = 0; i < minimap_draw_amount; i++) {
 
@@ -2071,12 +2083,7 @@ void TextEdit::_get_minimap_mouse_row(const Point2i &p_mouse, int &r_row) const 
 
 	// calculate viewport size and y offset
 	int viewport_height = (draw_amount - 1) * minimap_line_height;
-	int control_height = get_size().height;
-	control_height -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree()) {
-		control_height -= h_scroll->get_size().height;
-	}
-	control_height -= viewport_height;
+	int control_height = _get_control_height() - viewport_height;
 	int viewport_offset_y = round(get_scroll_pos_for_line(first_visible_line) * control_height) / ((v_scroll->get_max() <= minimap_visible_lines) ? (minimap_visible_lines - draw_amount) : (v_scroll->get_max() - draw_amount));
 
 	// calculate the first line.
@@ -2240,7 +2247,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 
 				// minimap
 				if (draw_minimap) {
-					_update_minimap_scroll();
+					_update_minimap_click();
 					if (dragging_minimap) {
 						return;
 					}
@@ -2363,6 +2370,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (mb->get_button_index() == BUTTON_LEFT) {
 				dragging_minimap = false;
 				dragging_selection = false;
+				can_drag_minimap = false;
 				click_select_held->stop();
 			}
 
@@ -2411,7 +2419,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			_reset_caret_blink_timer();
 
 			if (draw_minimap && !dragging_selection) {
-				_update_minimap_scroll();
+				_update_minimap_drag();
 			}
 
 			if (!dragging_minimap) {
@@ -4000,7 +4008,7 @@ void TextEdit::_line_edited_from(int p_line) {
 
 	if (syntax_highlighting_cache.size() > 0) {
 		cache_size = syntax_highlighting_cache.back()->key();
-		for (int i = p_line - 1; i < cache_size; i++) {
+		for (int i = p_line - 1; i <= cache_size; i++) {
 			if (syntax_highlighting_cache.has(i)) {
 				syntax_highlighting_cache.erase(i);
 			}
@@ -4027,23 +4035,21 @@ Size2 TextEdit::get_minimum_size() const {
 	return cache.style_normal->get_minimum_size();
 }
 
-int TextEdit::get_visible_rows() const {
+int TextEdit::_get_control_height() const {
+	int control_height = get_size().height;
+	control_height -= cache.style_normal->get_minimum_size().height;
+	if (h_scroll->is_visible_in_tree()) {
+		control_height -= h_scroll->get_size().height;
+	}
+	return control_height;
+}
 
-	int total = get_size().height;
-	total -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree())
-		total -= h_scroll->get_size().height;
-	total /= get_row_height();
-	return total;
+int TextEdit::get_visible_rows() const {
+	return _get_control_height() / get_row_height();
 }
 
 int TextEdit::_get_minimap_visible_rows() const {
-	int total = get_size().height;
-	total -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree())
-		total -= h_scroll->get_size().height;
-	total /= (minimap_char_size.y + minimap_line_spacing);
-	return total;
+	return _get_control_height() / (minimap_char_size.y + minimap_line_spacing);
 }
 
 int TextEdit::get_total_visible_rows() const {
@@ -6134,10 +6140,7 @@ int TextEdit::get_last_visible_line_wrap_index() const {
 
 double TextEdit::get_visible_rows_offset() const {
 
-	double total = get_size().height;
-	total -= cache.style_normal->get_minimum_size().height;
-	if (h_scroll->is_visible_in_tree())
-		total -= h_scroll->get_size().height;
+	double total = _get_control_height();
 	total /= (double)get_row_height();
 	total = total - floor(total);
 	total = -CLAMP(total, 0.001, 1) + 1;
@@ -7027,6 +7030,9 @@ TextEdit::TextEdit() {
 	scrolling = false;
 	minimap_clicked = false;
 	dragging_minimap = false;
+	can_drag_minimap = false;
+	minimap_scroll_ratio = 0;
+	minimap_scroll_click_pos = 0;
 	dragging_selection = false;
 	target_v_scroll = 0;
 	v_scroll_speed = 80;

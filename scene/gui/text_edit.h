@@ -334,7 +334,10 @@ private:
 	bool scrolling;
 	bool dragging_selection;
 	bool dragging_minimap;
+	bool can_drag_minimap;
 	bool minimap_clicked;
+	double minimap_scroll_ratio;
+	double minimap_scroll_click_pos;
 	float target_v_scroll;
 	float v_scroll_speed;
 
@@ -406,7 +409,8 @@ private:
 	void _update_selection_mode_word();
 	void _update_selection_mode_line();
 
-	void _update_minimap_scroll();
+	void _update_minimap_click();
+	void _update_minimap_drag();
 	void _scroll_up(real_t p_delta);
 	void _scroll_down(real_t p_delta);
 
@@ -418,6 +422,7 @@ private:
 
 	//void mouse_motion(const Point& p_pos, const Point& p_rel, int p_button_mask);
 	Size2 get_minimum_size() const;
+	int _get_control_height() const;
 
 	int get_row_height() const;
 
