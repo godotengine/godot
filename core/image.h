@@ -220,9 +220,7 @@ public:
 
 	/**
 	 * Resize the image, using the preferred interpolation method.
-	 * Indexed-Color images always use INTERPOLATE_NEAREST.
 	 */
-
 	void resize_to_po2(bool p_square = false);
 	void resize(int p_width, int p_height, Interpolation p_interpolation = INTERPOLATE_BILINEAR);
 	void shrink_x2();
