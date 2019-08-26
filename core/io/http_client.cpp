@@ -30,8 +30,233 @@
 
 #include "http_client.h"
 
+#include "core/bind/core_bind.h"
 #include "core/io/stream_peer_ssl.h"
 #include "core/version.h"
+
+bool MultipartFormDataBuffer::initialized = false;
+String MultipartFormDataBuffer::default_boundary = "----GodotFormBoundary7MA4YWxkTrZu0gW";
+Map<String, String> MultipartFormDataBuffer::known_mime_types;
+
+void MultipartFormDataBuffer::append_string_field(const String &field_name, const String &field_content) {
+	form_data[field_name] = str_to_raw(field_content);
+}
+
+Error MultipartFormDataBuffer::append_file_field(const String &field_name, const String &file_path, const String &p_custom_mime_type) {
+	Error err;
+	_File *f = memnew(_File);
+
+	if (!f->file_exists(file_path))
+		return ERR_FILE_NOT_FOUND;
+
+	err = f->open(file_path, _File::READ);
+
+	if (!f)
+		return ERR_CANT_OPEN;
+
+	if (err)
+		return err;
+
+	String extension = file_path.get_extension();
+	String filename = file_path.get_file();
+
+	String mime_type = p_custom_mime_type;
+	if (mime_type.empty()) {
+		if (known_mime_types.has(extension)) {
+			mime_type = known_mime_types[extension];
+		} else {
+			mime_type = "application/octet-stream";
+			// is the default value for all other cases. An unknown file type should use this type.
+			// Browsers pay a particular care when manipulating these files, attempting to safeguard
+			// the user to prevent dangerous behaviors.
+		}
+	}
+
+	PoolVector<uint8_t> content = f->get_buffer(f->get_len());
+	f->close();
+
+	file_names[field_name] = filename;
+	form_data[field_name] = content;
+	mime_types[field_name] = mime_type;
+	return OK;
+}
+
+void MultipartFormDataBuffer::append_raw_content_field(const String &field_name, const PoolVector<uint8_t> &content) {
+	form_data[field_name] = content;
+}
+
+void MultipartFormDataBuffer::remove_field(const String &field_name) {
+	if (file_names.has(field_name))
+		file_names.erase(field_name);
+	if (form_data.has(field_name))
+		form_data.erase(field_name);
+	if (mime_types.has(field_name))
+		mime_types.erase(field_name);
+}
+
+void MultipartFormDataBuffer::clear() {
+	file_names.clear();
+	form_data.clear();
+	mime_types.clear();
+}
+
+void MultipartFormDataBuffer::set_custom_boundary(const String &p_boundary) {
+	custom_boundary = p_boundary;
+}
+
+String MultipartFormDataBuffer::get_content_type_header() const {
+
+	String boundary = custom_boundary;
+	if (boundary.empty())
+		boundary = default_boundary;
+
+	String header = "Content-Type: multipart/form-data; boundary=" + boundary;
+
+	return header;
+}
+
+PoolVector<uint8_t> MultipartFormDataBuffer::dump_form() const {
+
+	String boundary = custom_boundary;
+	if (boundary.empty())
+		boundary = default_boundary;
+
+	PoolVector<uint8_t> dump;
+
+	for (Map<String, PoolVector<uint8_t> >::Element *E = form_data.front(); E; E = E->next()) {
+		String content_header = "--" + boundary + "\r\n";
+		content_header += "Content-Disposition: form-data; name=\"" + E->key() + "\"";
+		if (file_names.has(E->key())) {
+			content_header += "; filename=\"" + file_names[E->key()] + "\"";
+		}
+		content_header += "\r\n";
+
+		if (mime_types.has(E->key())) {
+			content_header += "Content-Type: " + mime_types[E->key()] + "\r\n";
+		}
+		content_header += "\r\n";
+		String content_footer = "\r\n";
+
+		dump.append_array(str_to_raw(content_header));
+		dump.append_array(E->get());
+		dump.append_array(str_to_raw(content_footer));
+	}
+	String footer = "--" + boundary + "--";
+	dump.append_array(str_to_raw(footer));
+
+	return dump;
+}
+
+void MultipartFormDataBuffer::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("append_string_field", "field_name", "field_content"), &MultipartFormDataBuffer::append_string_field);
+	ClassDB::bind_method(D_METHOD("append_file_field", "field_name", "file_path", "p_custom_mime_type"), &MultipartFormDataBuffer::append_file_field, DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("append_raw_content_field", "field_name", "content"), &MultipartFormDataBuffer::append_raw_content_field);
+
+	ClassDB::bind_method(D_METHOD("remove_field", "field_name"), &MultipartFormDataBuffer::remove_field);
+	ClassDB::bind_method(D_METHOD("clear"), &MultipartFormDataBuffer::clear);
+
+	ClassDB::bind_method(D_METHOD("set_custom_boundary", "p_boundary"), &MultipartFormDataBuffer::set_custom_boundary);
+
+	ClassDB::bind_method(D_METHOD("get_content_type_header"), &MultipartFormDataBuffer::get_content_type_header);
+	ClassDB::bind_method(D_METHOD("dump_form"), &MultipartFormDataBuffer::dump_form);
+}
+
+PoolVector<uint8_t> MultipartFormDataBuffer::str_to_raw(const String &p_str) const {
+
+	CharString charstr = p_str.utf8();
+
+	PoolByteArray retval;
+	size_t len = charstr.length();
+	retval.resize(len);
+	PoolByteArray::Write w = retval.write();
+	copymem(w.ptr(), charstr.ptr(), len);
+	w = PoolVector<uint8_t>::Write();
+
+	return retval;
+}
+
+void MultipartFormDataBuffer::initialize() {
+	initialized = true;
+	known_mime_types["aac"] = "audio/aac";
+	known_mime_types["abw"] = "application/x-abiword";
+	known_mime_types["arc"] = "application/x-freearc";
+	known_mime_types["avi"] = "video/x-msvideo";
+	known_mime_types["azw"] = "application/vnd.amazon.ebook";
+	known_mime_types["bin"] = "application/octet-stream";
+	known_mime_types["bmp"] = "image/bmp";
+	known_mime_types["bz"] = "application/x-bzip";
+	known_mime_types["bz2"] = "application/x-bzip2";
+	known_mime_types["csh"] = "application/x-csh";
+	known_mime_types["css"] = "text/css";
+	known_mime_types["csv"] = "text/csv";
+	known_mime_types["doc"] = "application/msword";
+	known_mime_types["docx"] = "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+	known_mime_types["eot"] = "application/vndms-fontobject";
+	known_mime_types["epub"] = "application/epub+zip";
+	known_mime_types["gif"] = "image/gif";
+	known_mime_types["htm"] = "text/html";
+	known_mime_types["html"] = "text/html";
+	known_mime_types["ico"] = "image/vnd.microsoft.icon";
+	known_mime_types["ics"] = "text/calendar";
+	known_mime_types["jar"] = "application/java-archive";
+	known_mime_types["jpeg"] = "image/jpeg";
+	known_mime_types["jpg"] = "image/jpeg";
+	known_mime_types["js"] = "text/javascript";
+	known_mime_types["json"] = "application/json";
+	known_mime_types["jsonld"] = "application/ld+json";
+	known_mime_types["log"] = "text/plain";
+	known_mime_types["mid"] = "audio/midi";
+	known_mime_types["midi"] = "audio/midi";
+	known_mime_types["mjs"] = "text/javascript";
+	known_mime_types["mp3"] = "audio/mpeg";
+	known_mime_types["mpeg"] = "video/mpeg";
+	known_mime_types["mpkg"] = "application/vnd.apple.installer+xml";
+	known_mime_types["odp"] = "application/vnd.oasis.opendocument.presentation";
+	known_mime_types["ods"] = "application/vnd.oasis.opendocument.spreadsheet";
+	known_mime_types["odt"] = "application/vnd.oasis.opendocument.text";
+	known_mime_types["oga"] = "audio/ogg";
+	known_mime_types["ogv"] = "video/ogg";
+	known_mime_types["ogx"] = "application/ogg";
+	known_mime_types["otf"] = "font/otf";
+	known_mime_types["png"] = "image/png";
+	known_mime_types["pdf"] = "application/pdf";
+	known_mime_types["ppt"] = "application/vnd.ms-powerpoint";
+	known_mime_types["pptx"] = "application/vnd.openxmlformats-officedocument.presentationml.presentation";
+	known_mime_types["rar"] = "application/x-rar-compressed";
+	known_mime_types["rtf"] = "application/rtf";
+	known_mime_types["sh"] = "application/x-sh";
+	known_mime_types["svg"] = "image/svg+xml";
+	known_mime_types["swf"] = "application/x-shockwave-flash";
+	known_mime_types["tar"] = "application/x-tar";
+	known_mime_types["tif"] = "image/tiff";
+	known_mime_types["tiff"] = "image/tiff";
+	known_mime_types["ts"] = "video/mp2t";
+	known_mime_types["ttf"] = "font/ttf";
+	known_mime_types["txt"] = "text/plain";
+	known_mime_types["vsd"] = "application/vnd.visio";
+	known_mime_types["wav"] = "audio/wav";
+	known_mime_types["weba"] = "audio/webm";
+	known_mime_types["webm"] = "video/webm";
+	known_mime_types["webp"] = "image/webp";
+	known_mime_types["woff"] = "font/woff";
+	known_mime_types["woff2"] = "font/woff2";
+	known_mime_types["xhtml"] = "application/xhtml+xml";
+	known_mime_types["xls"] = "application/vnd.ms-excel";
+	known_mime_types["xlsx"] = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet";
+	known_mime_types["xml"] = "application/xml";
+	known_mime_types["xul"] = "application/vnd.mozilla.xul+xml";
+	known_mime_types["zip"] = "application/zip";
+	known_mime_types["7z"] = "application/x-7z-compressed";
+}
+
+MultipartFormDataBuffer::MultipartFormDataBuffer() {
+	if (!initialized)
+		initialize();
+}
+
+MultipartFormDataBuffer::~MultipartFormDataBuffer() {
+}
 
 const char *HTTPClient::_methods[METHOD_MAX] = {
 	"GET",

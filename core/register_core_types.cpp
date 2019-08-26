@@ -177,6 +177,7 @@ void register_core_types() {
 	ClassDB::register_class<Translation>();
 	ClassDB::register_class<PHashTranslation>();
 	ClassDB::register_class<UndoRedo>();
+	ClassDB::register_class<MultipartFormDataBuffer>();
 	ClassDB::register_class<HTTPClient>();
 	ClassDB::register_class<TriangleMesh>();
 

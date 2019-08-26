@@ -36,6 +36,42 @@
 #include "core/io/stream_peer_tcp.h"
 #include "core/reference.h"
 
+class MultipartFormDataBuffer : public Reference {
+
+	GDCLASS(MultipartFormDataBuffer, Reference);
+
+public:
+	void append_string_field(const String &field_name, const String &field_content);
+	Error append_file_field(const String &field_name, const String &file_path, const String &p_custom_mime_type = "");
+	void append_raw_content_field(const String &field_name, const PoolVector<uint8_t> &content);
+
+	void remove_field(const String &field_name);
+	void clear();
+
+	void set_custom_boundary(const String &p_boundary);
+
+	String get_content_type_header() const;
+	PoolVector<uint8_t> dump_form() const;
+
+	MultipartFormDataBuffer();
+	~MultipartFormDataBuffer();
+
+private:
+	static void _bind_methods();
+
+	static String default_boundary;
+	static Map<String, String> known_mime_types;
+	static bool initialized;
+	static void initialize();
+
+	PoolVector<uint8_t> str_to_raw(const String &p_str) const;
+
+	Map<String, PoolVector<uint8_t> > form_data;
+	Map<String, String> file_names;
+	Map<String, String> mime_types;
+	String custom_boundary;
+};
+
 class HTTPClient : public Reference {
 
 	GDCLASS(HTTPClient, Reference);
