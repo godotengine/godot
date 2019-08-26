@@ -453,7 +453,7 @@ void SpatialMaterial::_update_shader() {
 		code += ",unshaded";
 	}
 	if (flags[FLAG_DISABLE_DEPTH_TEST]) {
-		code += ",depth_test_disable";
+		code += ",depth_test_disabled";
 	}
 	if (flags[FLAG_USE_VERTEX_LIGHTING]) {
 		code += ",vertex_lighting";

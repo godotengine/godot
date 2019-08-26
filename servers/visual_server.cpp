@@ -1602,7 +1602,7 @@ void VisualServer::_bind_methods() {
 
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("sky_create"), &VisualServer::sky_create);
-	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "cube_map", "radiance_size"), &VisualServer::sky_set_texture);
+	ClassDB::bind_method(D_METHOD("sky_set_texture", "sky", "panorama"), &VisualServer::sky_set_texture);
 #endif
 	ClassDB::bind_method(D_METHOD("shader_create"), &VisualServer::shader_create);
 	ClassDB::bind_method(D_METHOD("shader_set_code", "shader", "code"), &VisualServer::shader_set_code);
@@ -2169,10 +2169,18 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(ENV_BG_CLEAR_COLOR);
 	BIND_ENUM_CONSTANT(ENV_BG_COLOR);
 	BIND_ENUM_CONSTANT(ENV_BG_SKY);
-	BIND_ENUM_CONSTANT(ENV_BG_COLOR_SKY);
 	BIND_ENUM_CONSTANT(ENV_BG_CANVAS);
 	BIND_ENUM_CONSTANT(ENV_BG_KEEP);
 	BIND_ENUM_CONSTANT(ENV_BG_MAX);
+
+	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_BG);
+	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_DISABLED);
+	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_COLOR);
+	BIND_ENUM_CONSTANT(ENV_AMBIENT_SOURCE_SKY);
+
+	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_BG);
+	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_DISABLED);
+	BIND_ENUM_CONSTANT(ENV_REFLECTION_SOURCE_SKY);
 
 	BIND_ENUM_CONSTANT(ENV_DOF_BLUR_QUALITY_LOW);
 	BIND_ENUM_CONSTANT(ENV_DOF_BLUR_QUALITY_MEDIUM);
@@ -2288,10 +2296,13 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/shadows/filter_mode.mobile", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/shadows/filter_mode", PropertyInfo(Variant::INT, "rendering/quality/shadows/filter_mode", PROPERTY_HINT_ENUM, "Disabled,PCF5,PCF13"));
 
+	GLOBAL_DEF("rendering/quality/reflections/roughness_layers", 6);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections", true);
 	GLOBAL_DEF("rendering/quality/reflections/texture_array_reflections.mobile", false);
-	GLOBAL_DEF("rendering/quality/reflections/high_quality_ggx", true);
-	GLOBAL_DEF("rendering/quality/reflections/high_quality_ggx.mobile", false);
+	GLOBAL_DEF("rendering/quality/reflections/ggx_samples", 1024);
+	GLOBAL_DEF("rendering/quality/reflections/ggx_samples.mobile", 128);
+	GLOBAL_DEF("rendering/quality/reflections/ggx_samples_realtime", 64);
+	GLOBAL_DEF("rendering/quality/reflections/ggx_samples_realtime.mobile", 16);
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);

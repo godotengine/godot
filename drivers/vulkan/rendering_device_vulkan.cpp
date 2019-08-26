@@ -1044,6 +1044,8 @@ bool RenderingDeviceVulkan::format_has_stencil(DataFormat p_format) {
 		case DATA_FORMAT_D32_SFLOAT_S8_UINT: {
 			return true;
 		}
+		default: {
+		}
 	}
 	return false;
 }
@@ -1219,7 +1221,7 @@ const VkImageType RenderingDeviceVulkan::vulkan_image_type[RenderingDevice::TEXT
 	VK_IMAGE_TYPE_2D,
 	VK_IMAGE_TYPE_1D,
 	VK_IMAGE_TYPE_2D,
-	VK_IMAGE_TYPE_3D
+	VK_IMAGE_TYPE_2D
 };
 
 /***************************/
@@ -1364,7 +1366,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 						} else {
 
 							//flush EVERYTHING including setup commands. IF not immediate, also need to flush the draw commands
-							_flush(true, p_on_draw_command_buffer);
+							_flush(true);
 
 							//clear the whole staging buffer
 							for (int i = 0; i < staging_buffer_blocks.size(); i++) {
@@ -1408,7 +1410,7 @@ Error RenderingDeviceVulkan::_staging_buffer_allocate(uint32_t p_amount, uint32_
 					continue; //and try again
 				} else {
 
-					_flush(false, false);
+					_flush(false);
 
 					for (int i = 0; i < staging_buffer_blocks.size(); i++) {
 						//clear all blocks but the ones from this frame
@@ -1562,10 +1564,6 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 
 	image_create_info.mipLevels = p_format.mipmaps;
 
-	uint32_t array_layer_multiplier = 1;
-	if (p_format.type == TEXTURE_TYPE_CUBE_ARRAY || p_format.type == TEXTURE_TYPE_CUBE) {
-		array_layer_multiplier = 6;
-	}
 	if (p_format.type == TEXTURE_TYPE_1D_ARRAY || p_format.type == TEXTURE_TYPE_2D_ARRAY || p_format.type == TEXTURE_TYPE_CUBE_ARRAY || p_format.type == TEXTURE_TYPE_CUBE) {
 		ERR_FAIL_COND_V_MSG(p_format.array_layers < 1, RID(),
 				"Amount of layers must be equal or greater than 1 for arrays and cubemaps.");
@@ -1575,8 +1573,6 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	} else {
 		image_create_info.arrayLayers = 1;
 	}
-
-	image_create_info.arrayLayers = p_format.array_layers;
 
 	ERR_FAIL_INDEX_V(p_format.samples, TEXTURE_SAMPLES_MAX, RID());
 
@@ -1624,11 +1620,11 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		ERR_FAIL_COND_V_MSG(!(p_format.usage_bits & TEXTURE_USAGE_CAN_UPDATE_BIT), RID(),
 				"Texture needs the TEXTURE_USAGE_CAN_UPDATE_BIT usage flag in order to be updated at initialization or later");
 
-		int expected_images = image_create_info.arrayLayers * array_layer_multiplier;
+		int expected_images = image_create_info.arrayLayers;
 		ERR_FAIL_COND_V_MSG(p_data.size() != expected_images, RID(),
 				"Default supplied data for image format is of invalid length (" + itos(p_data.size()) + "), should be (" + itos(expected_images) + ").");
 
-		for (uint32_t i = 0; i < image_create_info.arrayLayers * array_layer_multiplier; i++) {
+		for (uint32_t i = 0; i < image_create_info.arrayLayers; i++) {
 			uint32_t required_size = get_image_format_required_size(p_format.format, image_create_info.extent.width, image_create_info.extent.height, image_create_info.extent.depth, image_create_info.mipLevels);
 			ERR_FAIL_COND_V_MSG((uint32_t)p_data[i].size() != required_size, RID(),
 					"Data for slice index " + itos(i) + " (mapped to layer " + itos(i) + ") differs in size (supplied: " + itos(p_data[i].size()) + ") than what is required by the format (" + itos(required_size) + ").");
@@ -1789,7 +1785,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 	image_view_create_info.subresourceRange.baseMipLevel = 0;
 	image_view_create_info.subresourceRange.levelCount = image_create_info.mipLevels;
 	image_view_create_info.subresourceRange.baseArrayLayer = 0;
-	image_view_create_info.subresourceRange.layerCount = array_layer_multiplier * image_create_info.arrayLayers;
+	image_view_create_info.subresourceRange.layerCount = image_create_info.arrayLayers;
 	if (p_format.usage_bits & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 		image_view_create_info.subresourceRange.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 	} else {
@@ -1819,7 +1815,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		image_memory_barrier.subresourceRange.baseMipLevel = 0;
 		image_memory_barrier.subresourceRange.levelCount = image_create_info.mipLevels;
 		image_memory_barrier.subresourceRange.baseArrayLayer = 0;
-		image_memory_barrier.subresourceRange.layerCount = image_create_info.arrayLayers * array_layer_multiplier;
+		image_memory_barrier.subresourceRange.layerCount = image_create_info.arrayLayers;
 
 		vkCmdPipelineBarrier(frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
 	}
@@ -1849,11 +1845,6 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	//create view
 
 	Texture texture = *src_texture;
-
-	uint32_t array_layer_multiplier = 1;
-	if (texture.type == TEXTURE_TYPE_CUBE_ARRAY || texture.type == TEXTURE_TYPE_CUBE) {
-		array_layer_multiplier = 6;
-	}
 
 	VkImageViewCreateInfo image_view_create_info;
 	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1899,7 +1890,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 
 	image_view_create_info.subresourceRange.baseMipLevel = 0;
 	image_view_create_info.subresourceRange.levelCount = texture.mipmaps;
-	image_view_create_info.subresourceRange.layerCount = array_layer_multiplier * texture.layers;
+	image_view_create_info.subresourceRange.layerCount = texture.layers;
 	image_view_create_info.subresourceRange.baseArrayLayer = 0;
 
 	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
@@ -1921,7 +1912,7 @@ RID RenderingDeviceVulkan::texture_create_shared(const TextureView &p_view, RID 
 	return id;
 }
 
-RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap) {
+RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type) {
 
 	Texture *src_texture = texture_owner.getornull(p_with_texture);
 	ERR_FAIL_COND_V(!src_texture, RID());
@@ -1932,20 +1923,18 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		ERR_FAIL_COND_V(!src_texture, RID()); //this is a bug
 	}
 
+	ERR_FAIL_COND_V_MSG(p_slice_type == TEXTURE_SLICE_CUBEMAP && (src_texture->type != TEXTURE_TYPE_CUBE && src_texture->type != TEXTURE_TYPE_CUBE_ARRAY), RID(),
+			"Can only create a cubemap slice from a cubemap or cubemap array mipmap");
+
 	//create view
 
 	ERR_FAIL_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
-
-	uint32_t array_layer_multiplier = 1;
-	if (src_texture->type == TEXTURE_TYPE_CUBE_ARRAY || src_texture->type == TEXTURE_TYPE_CUBE) {
-		array_layer_multiplier = 6;
-	}
-	ERR_FAIL_INDEX_V(p_layer, src_texture->layers * array_layer_multiplier, RID());
+	ERR_FAIL_INDEX_V(p_layer, src_texture->layers, RID());
 
 	Texture texture = *src_texture;
 	get_image_format_required_size(texture.format, texture.width, texture.height, texture.depth, p_mipmap + 1, &texture.width, &texture.height);
 	texture.mipmaps = 1;
-	texture.layers = 1;
+	texture.layers = p_slice_type == TEXTURE_SLICE_CUBEMAP ? 6 : 1;
 
 	VkImageViewCreateInfo image_view_create_info;
 	image_view_create_info.sType = VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO;
@@ -1963,7 +1952,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		VK_IMAGE_VIEW_TYPE_2D,
 	};
 
-	image_view_create_info.viewType = view_types[texture.type];
+	image_view_create_info.viewType = p_slice_type == TEXTURE_SLICE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : view_types[texture.type];
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {
@@ -1989,9 +1978,15 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 	image_view_create_info.components.b = component_swizzles[p_view.swizzle_b];
 	image_view_create_info.components.a = component_swizzles[p_view.swizzle_a];
 
+	if (p_slice_type == TEXTURE_SLICE_CUBEMAP) {
+		ERR_FAIL_COND_V_MSG(p_layer >= src_texture->layers, RID(),
+				"Specified layer is invalid for cubemap");
+		ERR_FAIL_COND_V_MSG((p_layer % 6) != 0, RID(),
+				"Specified layer must be a multiple of 6.");
+	}
 	image_view_create_info.subresourceRange.baseMipLevel = p_mipmap;
 	image_view_create_info.subresourceRange.levelCount = 1;
-	image_view_create_info.subresourceRange.layerCount = 1;
+	image_view_create_info.subresourceRange.layerCount = p_slice_type == TEXTURE_SLICE_CUBEMAP ? 6 : 1;
 	image_view_create_info.subresourceRange.baseArrayLayer = p_layer;
 
 	if (texture.usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
@@ -2469,7 +2464,7 @@ PoolVector<uint8_t> RenderingDeviceVulkan::texture_get_data(RID p_texture, uint3
 		}
 
 		//flush everything so memory can be safely mapped
-		_flush(true, false);
+		_flush(true);
 
 		PoolVector<uint8_t> ret = _texture_get_data_from_image(tex, image, allocation, p_layer);
 		vmaDestroyImage(allocator, image, allocation);
@@ -4555,7 +4550,7 @@ PoolVector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 	region.size = buffer->size;
 	vkCmdCopyBuffer(command_buffer, buffer->buffer, tmp_buffer.buffer, 1, &region); //dst buffer is in CPU, but I wonder if src buffer needs a barrier for this..
 	//flush everything so memory can be safely mapped
-	_flush(true, false);
+	_flush(true);
 
 	void *buffer_mem;
 	VkResult vkerr = vmaMapMemory(allocator, tmp_buffer.allocation, &buffer_mem);
@@ -4570,6 +4565,8 @@ PoolVector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 		PoolVector<uint8_t>::Write w = buffer_data.write();
 		copymem(w.ptr(), buffer_mem, buffer->size);
 	}
+
+	vmaUnmapMemory(allocator, tmp_buffer.allocation);
 
 	_buffer_free(&tmp_buffer);
 
@@ -6041,18 +6038,16 @@ void RenderingDeviceVulkan::advance_frame() {
 	}
 }
 
-void RenderingDeviceVulkan::_flush(bool p_setup, bool p_draw) {
+void RenderingDeviceVulkan::_flush(bool p_current_frame) {
 
 	//not doing this crashes RADV (undefined behavior)
-	if (p_setup) {
+	if (p_current_frame) {
 		vkEndCommandBuffer(frames[frame].setup_command_buffer);
-	}
-	if (p_draw) {
 		vkEndCommandBuffer(frames[frame].draw_command_buffer);
 	}
-	context->flush(p_setup, p_draw);
+	context->flush(p_current_frame, p_current_frame);
 	//re-create the setup command
-	if (p_setup) {
+	if (p_current_frame) {
 		VkCommandBufferBeginInfo cmdbuf_begin;
 		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdbuf_begin.pNext = NULL;
@@ -6064,7 +6059,7 @@ void RenderingDeviceVulkan::_flush(bool p_setup, bool p_draw) {
 		context->set_setup_buffer(frames[frame].setup_command_buffer); //append now so it's added before everything else
 	}
 
-	if (p_draw) {
+	if (p_current_frame) {
 		VkCommandBufferBeginInfo cmdbuf_begin;
 		cmdbuf_begin.sType = VK_STRUCTURE_TYPE_COMMAND_BUFFER_BEGIN_INFO;
 		cmdbuf_begin.pNext = NULL;
@@ -6232,7 +6227,7 @@ void RenderingDeviceVulkan::finalize() {
 
 	//free all resources
 
-	_flush(false, false);
+	_flush(false);
 
 	_free_rids(pipeline_owner, "Pipeline");
 	_free_rids(uniform_set_owner, "UniformSet");
