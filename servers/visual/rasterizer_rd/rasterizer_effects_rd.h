@@ -1,8 +1,11 @@
 #ifndef RASTERIZER_EFFECTS_RD_H
 #define RASTERIZER_EFFECTS_RD_H
 
+#include "core/math/camera_matrix.h"
 #include "render_pipeline_vertex_format_cache_rd.h"
-#include "shaders/blur.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/blur.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 
 class RasterizerEffectsRD {
 
@@ -21,6 +24,7 @@ class RasterizerEffectsRD {
 		BLUR_MODE_DOF_FAR_HIGH,
 		BLUR_MODE_SSAO_MERGE,
 		BLUR_MODE_SIMPLY_COPY,
+		BLUR_MODE_MIPMAP,
 		BLUR_MODE_MAX,
 
 	};
@@ -68,6 +72,44 @@ class RasterizerEffectsRD {
 
 	} blur;
 
+	enum CubemapRoughnessSource {
+		CUBEMAP_ROUGHNESS_SOURCE_PANORAMA,
+		CUBEMAP_ROUGHNESS_SOURCE_CUBEMAP,
+		CUBEMAP_ROUGHNESS_SOURCE_MAX
+	};
+
+	struct CubemapRoughnessPushConstant {
+		uint32_t face_id;
+		uint32_t sample_count;
+		float roughness;
+		uint32_t use_direct_write;
+	};
+
+	struct CubemapRoughness {
+
+		CubemapRoughnessPushConstant push_constant;
+		CubemapRoughnessShaderRD shader;
+		RID shader_version;
+		RenderPipelineVertexFormatCacheRD pipelines[CUBEMAP_ROUGHNESS_SOURCE_MAX];
+	} roughness;
+
+	struct SkyPushConstant {
+		float orientation[12];
+		float proj[4];
+		float multiplier;
+		float alpha;
+		float depth;
+		float pad;
+	};
+
+	struct Sky {
+
+		SkyPushConstant push_constant;
+		SkyShaderRD shader;
+		RID shader_version;
+		RenderPipelineVertexFormatCacheRD pipeline;
+	} sky;
+
 	RID default_sampler;
 	RID index_buffer;
 	RID index_array;
@@ -79,6 +121,9 @@ class RasterizerEffectsRD {
 public:
 	void copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
 	void gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region);
+	void cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness);
+	void render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler);
+	void make_mipmap(RID p_source_rd_texture, RID p_framebuffer_half, const Vector2 &p_pixel_size);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();

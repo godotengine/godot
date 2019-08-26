@@ -61,25 +61,6 @@ void Environment::set_sky_custom_fov(float p_scale) {
 	bg_sky_custom_fov = p_scale;
 	VS::get_singleton()->environment_set_sky_custom_fov(environment, p_scale);
 }
-void Environment::set_sky_orientation(const Basis &p_orientation) {
-
-	bg_sky_orientation = p_orientation;
-	_change_notify("background_sky_rotation");
-	_change_notify("background_sky_rotation_degrees");
-	VS::get_singleton()->environment_set_sky_orientation(environment, bg_sky_orientation);
-}
-void Environment::set_sky_rotation(const Vector3 &p_euler_rad) {
-
-	bg_sky_orientation.set_euler(p_euler_rad);
-	_change_notify("background_sky_orientation");
-	_change_notify("background_sky_rotation_degrees");
-	VS::get_singleton()->environment_set_sky_orientation(environment, bg_sky_orientation);
-}
-void Environment::set_sky_rotation_degrees(const Vector3 &p_euler_deg) {
-
-	set_sky_rotation(p_euler_deg * Math_PI / 180.0);
-	_change_notify("background_sky_rotation");
-}
 void Environment::set_bg_color(const Color &p_color) {
 
 	bg_color = p_color;
@@ -98,17 +79,17 @@ void Environment::set_canvas_max_layer(int p_max_layer) {
 void Environment::set_ambient_light_color(const Color &p_color) {
 
 	ambient_color = p_color;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, VS::EnvironmentAmbientSource(ambient_source), ambient_energy, ambient_sky_contribution, VS::EnvironmentReflectionSource(reflection_source));
 }
 void Environment::set_ambient_light_energy(float p_energy) {
 
 	ambient_energy = p_energy;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, VS::EnvironmentAmbientSource(ambient_source), ambient_energy, ambient_sky_contribution, VS::EnvironmentReflectionSource(reflection_source));
 }
 void Environment::set_ambient_light_sky_contribution(float p_energy) {
 
 	ambient_sky_contribution = p_energy;
-	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, ambient_energy, ambient_sky_contribution);
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, VS::EnvironmentAmbientSource(ambient_source), ambient_energy, ambient_sky_contribution, VS::EnvironmentReflectionSource(reflection_source));
 }
 
 void Environment::set_camera_feed_id(int p_camera_feed_id) {
@@ -118,6 +99,22 @@ void Environment::set_camera_feed_id(int p_camera_feed_id) {
 	VS::get_singleton()->environment_set_camera_feed_id(environment, camera_feed_id);
 #endif
 };
+
+void Environment::set_ambient_source(AmbientSource p_source) {
+	ambient_source = p_source;
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, VS::EnvironmentAmbientSource(ambient_source), ambient_energy, ambient_sky_contribution, VS::EnvironmentReflectionSource(reflection_source));
+}
+
+Environment::AmbientSource Environment::get_ambient_source() const {
+	return ambient_source;
+}
+void Environment::set_reflection_source(ReflectionSource p_source) {
+	reflection_source = p_source;
+	VS::get_singleton()->environment_set_ambient_light(environment, ambient_color, VS::EnvironmentAmbientSource(ambient_source), ambient_energy, ambient_sky_contribution, VS::EnvironmentReflectionSource(reflection_source));
+}
+Environment::ReflectionSource Environment::get_reflection_source() const {
+	return reflection_source;
+}
 
 Environment::BGMode Environment::get_background() const {
 
@@ -133,20 +130,14 @@ float Environment::get_sky_custom_fov() const {
 	return bg_sky_custom_fov;
 }
 
-Basis Environment::get_sky_orientation() const {
-
-	return bg_sky_orientation;
+void Environment::set_sky_rotation(const Vector3 &p_rotation) {
+	sky_rotation = p_rotation;
+	VS::get_singleton()->environment_set_sky_orientation(environment, Basis(p_rotation));
 }
 
 Vector3 Environment::get_sky_rotation() const {
 
-	// should we cache this? maybe overkill
-	return bg_sky_orientation.get_euler();
-}
-
-Vector3 Environment::get_sky_rotation_degrees() const {
-
-	return get_sky_rotation() * 180.0 / Math_PI;
+	return sky_rotation;
 }
 
 Color Environment::get_bg_color() const {
@@ -315,14 +306,14 @@ Ref<Texture2D> Environment::get_adjustment_color_correction() const {
 
 void Environment::_validate_property(PropertyInfo &property) const {
 
-	if (property.name == "background_sky" || property.name == "background_sky_custom_fov" || property.name == "background_sky_orientation" || property.name == "background_sky_rotation" || property.name == "background_sky_rotation_degrees" || property.name == "ambient_light/sky_contribution") {
-		if (bg_mode != BG_SKY && bg_mode != BG_COLOR_SKY) {
+	if (property.name == "sky" || property.name == "sky_custom_fov" || property.name == "sky_rotation" || property.name == "ambient_light/sky_contribution") {
+		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
 	if (property.name == "background_color") {
-		if (bg_mode != BG_COLOR && bg_mode != BG_COLOR_SKY) {
+		if (bg_mode != BG_COLOR && ambient_source != AMBIENT_SOURCE_COLOR) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
@@ -951,9 +942,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_background", "mode"), &Environment::set_background);
 	ClassDB::bind_method(D_METHOD("set_sky", "sky"), &Environment::set_sky);
 	ClassDB::bind_method(D_METHOD("set_sky_custom_fov", "scale"), &Environment::set_sky_custom_fov);
-	ClassDB::bind_method(D_METHOD("set_sky_orientation", "orientation"), &Environment::set_sky_orientation);
 	ClassDB::bind_method(D_METHOD("set_sky_rotation", "euler_radians"), &Environment::set_sky_rotation);
-	ClassDB::bind_method(D_METHOD("set_sky_rotation_degrees", "euler_degrees"), &Environment::set_sky_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &Environment::set_bg_color);
 	ClassDB::bind_method(D_METHOD("set_bg_energy", "energy"), &Environment::set_bg_energy);
 	ClassDB::bind_method(D_METHOD("set_canvas_max_layer", "layer"), &Environment::set_canvas_max_layer);
@@ -961,13 +950,13 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_ambient_light_energy", "energy"), &Environment::set_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("set_ambient_light_sky_contribution", "energy"), &Environment::set_ambient_light_sky_contribution);
 	ClassDB::bind_method(D_METHOD("set_camera_feed_id", "camera_feed_id"), &Environment::set_camera_feed_id);
+	ClassDB::bind_method(D_METHOD("set_ambient_source", "source"), &Environment::set_ambient_source);
+	ClassDB::bind_method(D_METHOD("set_reflection_source", "source"), &Environment::set_reflection_source);
 
 	ClassDB::bind_method(D_METHOD("get_background"), &Environment::get_background);
 	ClassDB::bind_method(D_METHOD("get_sky"), &Environment::get_sky);
 	ClassDB::bind_method(D_METHOD("get_sky_custom_fov"), &Environment::get_sky_custom_fov);
-	ClassDB::bind_method(D_METHOD("get_sky_orientation"), &Environment::get_sky_orientation);
 	ClassDB::bind_method(D_METHOD("get_sky_rotation"), &Environment::get_sky_rotation);
-	ClassDB::bind_method(D_METHOD("get_sky_rotation_degrees"), &Environment::get_sky_rotation_degrees);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &Environment::get_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_energy"), &Environment::get_bg_energy);
 	ClassDB::bind_method(D_METHOD("get_canvas_max_layer"), &Environment::get_canvas_max_layer);
@@ -975,22 +964,26 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_ambient_light_energy"), &Environment::get_ambient_light_energy);
 	ClassDB::bind_method(D_METHOD("get_ambient_light_sky_contribution"), &Environment::get_ambient_light_sky_contribution);
 	ClassDB::bind_method(D_METHOD("get_camera_feed_id"), &Environment::get_camera_feed_id);
+	ClassDB::bind_method(D_METHOD("get_ambient_source"), &Environment::get_ambient_source);
+	ClassDB::bind_method(D_METHOD("get_reflection_source"), &Environment::get_reflection_source);
 
 	ADD_GROUP("Background", "background_");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Color+Sky,Canvas,Keep,Camera Feed"), "set_background", "get_background");
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1"), "set_sky_custom_fov", "get_sky_custom_fov");
-	ADD_PROPERTY(PropertyInfo(Variant::BASIS, "background_sky_orientation"), "set_sky_orientation", "get_sky_orientation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation", "get_sky_rotation");
-	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "background_sky_rotation_degrees", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_sky_rotation_degrees", "get_sky_rotation_degrees");
-	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_mode", PROPERTY_HINT_ENUM, "Clear Color,Custom Color,Sky,Canvas,Keep,Camera Feed"), "set_background", "get_background");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_canvas_max_layer", PROPERTY_HINT_RANGE, "-1000,1000,1"), "set_canvas_max_layer", "get_canvas_max_layer");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_camera_feed_id", PROPERTY_HINT_RANGE, "1,10,1"), "set_camera_feed_id", "get_camera_feed_id");
+	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
+	ADD_GROUP("Sky", "sky_");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1"), "set_sky_custom_fov", "get_sky_custom_fov");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation"), "set_sky_rotation", "get_sky_rotation");
 	ADD_GROUP("Ambient Light", "ambient_light_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_light_source", PROPERTY_HINT_ENUM, "Background,Disabled,Color,Sky"), "set_ambient_source", "get_ambient_source");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_color"), "set_ambient_light_color", "get_ambient_light_color");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_light_energy", "get_ambient_light_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_sky_contribution", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_ambient_light_sky_contribution", "get_ambient_light_sky_contribution");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "ambient_light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_ambient_light_energy", "get_ambient_light_energy");
+	ADD_GROUP("Reflected Light", "reflected_light_");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "reflected_light_source", PROPERTY_HINT_ENUM, "Background,Disabled,Sky"), "set_reflection_source", "get_reflection_source");
 
 	ClassDB::bind_method(D_METHOD("set_fog_enabled", "enabled"), &Environment::set_fog_enabled);
 	ClassDB::bind_method(D_METHOD("is_fog_enabled"), &Environment::is_fog_enabled);
@@ -1280,10 +1273,18 @@ void Environment::_bind_methods() {
 	BIND_ENUM_CONSTANT(BG_CLEAR_COLOR);
 	BIND_ENUM_CONSTANT(BG_COLOR);
 	BIND_ENUM_CONSTANT(BG_SKY);
-	BIND_ENUM_CONSTANT(BG_COLOR_SKY);
 	BIND_ENUM_CONSTANT(BG_CANVAS);
 	BIND_ENUM_CONSTANT(BG_CAMERA_FEED);
 	BIND_ENUM_CONSTANT(BG_MAX);
+
+	BIND_ENUM_CONSTANT(AMBIENT_SOURCE_BG);
+	BIND_ENUM_CONSTANT(AMBIENT_SOURCE_DISABLED);
+	BIND_ENUM_CONSTANT(AMBIENT_SOURCE_COLOR);
+	BIND_ENUM_CONSTANT(AMBIENT_SOURCE_SKY);
+
+	BIND_ENUM_CONSTANT(REFLECTION_SOURCE_BG);
+	BIND_ENUM_CONSTANT(REFLECTION_SOURCE_DISABLED);
+	BIND_ENUM_CONSTANT(REFLECTION_SOURCE_SKY);
 
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_ADDITIVE);
 	BIND_ENUM_CONSTANT(GLOW_BLEND_MODE_SCREEN);
@@ -1322,11 +1323,12 @@ Environment::Environment() :
 
 	bg_mode = BG_CLEAR_COLOR;
 	bg_sky_custom_fov = 0;
-	bg_sky_orientation = Basis();
 	bg_energy = 1.0;
 	bg_canvas_max_layer = 0;
 	ambient_energy = 1.0;
 	//ambient_sky_contribution = 1.0;
+	ambient_source = AMBIENT_SOURCE_BG;
+	reflection_source = REFLECTION_SOURCE_BG;
 	set_ambient_light_sky_contribution(1.0);
 	set_camera_feed_id(1);
 
