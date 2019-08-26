@@ -143,9 +143,8 @@ void AnimationNodeMotionMatch::_bind_methods() {
   ClassDB::bind_method(D_METHOD("get_future_traj"),
                        &AnimationNodeMotionMatch::get_future_traj);
 
-  ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity", PROPERTY_HINT_NONE,
-                            "", PROPERTY_USAGE_NOEDITOR),
-               "set_velocity", "get_velocity");
+  ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "velocity"), "set_velocity",
+               "get_velocity");
 }
 
 AnimationNodeMotionMatch::AnimationNodeMotionMatch() {
@@ -458,28 +457,43 @@ AnimationNodeMotionMatch::KDNode::get_right() {
 
 float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
 
-  Vector3 l_v = Vector3();
-  l_v = velocity;
-  future_traj = Predict_traj(l_v, get_parameter(samples));
-  float min_cost = std::numeric_limits<float>::max();
-  float min_cost_time;
   AnimationPlayer *player = state->player;
-  int anim = 1;
-  int dup;
+
   List<StringName> a_nam;
   player->get_animation_list(&a_nam);
+  // Tracker->Dummy track for modifications
+  if (!player->has_animation("Tracker")) {
+    main = a_nam[0];
+    Animation *a = player->get_animation(a_nam[0]).ptr();
 
-  if (first_time) {
-    dup = -1;
-    first_time = false;
-  } else {
-    dup = get_parameter(min);
+    r_index = player->get_animation(a_nam[0]).ptr()->find_track(
+        state->tree->get_root_motion_track());
+    a->track_set_enabled(r_index, false);
+
+    player->add_animation("Tracker", a);
+    a_nam.clear();
+    player->get_animation_list(&a_nam);
   }
 
-  if (!timeout && keys->size() != 0) {
+  if (!timeout && keys->size() != 0 && !editing) {
+    Vector3 l_v = Vector3();
+    l_v = get("velocity");
+    future_traj = Predict_traj(l_v, get_parameter(samples));
+    float min_cost = std::numeric_limits<float>::max();
+    float min_cost_time;
+    int anim = 1;
+    int dup;
 
-    print_line(l_v);
+    if (first_time) {
+      dup = -1;
+      first_time = false;
+      player->play("Tracker");
+    } else {
+      dup = get_parameter(min);
+    }
+
     int p = 0;
+    print_line(itos(get_instance_id()));
     for (p = 0; p < keys->size(); p++) {
       if (p != dup) {
         float pos_cost = 0.0f;
@@ -517,10 +531,7 @@ float AnimationNodeMotionMatch::process(float p_time, bool p_seek) {
         } // set min
       }
     }
-    print_line("Min time for this velocity is " + rtos(min_cost_time));
-    blend_animation(a_nam[0], min_cost_time, p_time, true,
-                    1); // play min for every frame
-
+    player->seek(min_cost_time); // play min for every frame
     timeout = true;
   }
   c_time += p_time;

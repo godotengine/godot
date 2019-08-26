@@ -20,12 +20,8 @@ class AnimationNodeMotionMatchEditor : public AnimationTreeNodeEditorPlugin {
   Button *edit_match_tracks;
   Button *update_tracks;
   Button *clear_tree;
-  Button *update_vel;
 
   SpinBox *snap_x;
-  SpinBox *v_x;
-  SpinBox *v_y;
-  SpinBox *v_z;
 
   Skeleton *skeleton;
 

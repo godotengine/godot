@@ -69,7 +69,7 @@ class AnimationNodeMotionMatch : public AnimationRootNode {
 
   enum errortype { LOAD_POINT_ERROR, QUERY_POINT_ERROR, K_ERROR };
 
-  Vector3 velocity = Vector3();
+  Vector3 velocity;
 
 protected:
   static void _bind_methods();
@@ -81,7 +81,7 @@ public:
   NodePath root_track = NodePath();
   int r_index;
   bool done = false;
-
+  bool editing = false;
   float delta_time;
   virtual void get_parameter_list(List<PropertyInfo> *r_list) const;
 

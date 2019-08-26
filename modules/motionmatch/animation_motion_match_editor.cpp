@@ -55,6 +55,7 @@ void AnimationNodeMotionMatchEditor::_match_tracks_edited() {
 void AnimationNodeMotionMatchEditor::_edit_match_tracks() {
 
   _update_match_tracks();
+  motion_match->editing = true;
   match_tracks_dialog->popup_centered_minsize(Size2(500, 500) * EDSCALE);
 }
 
@@ -224,7 +225,11 @@ void AnimationNodeMotionMatchEditor::_update_match_tracks() {
 }
 
 void AnimationNodeMotionMatchEditor::_update_tracks() {
-
+  print_line(itos(motion_match->get_matching_tracks().size()));
+  if (motion_match->get_matching_tracks().size() == 0) {
+    EditorNode::get_singleton()->show_warning(
+        TTR("Please select tracks to match!"));
+  }
   NodePath player_path =
       AnimationTreeEditor::get_singleton()->get_tree()->get_animation_player();
   /*Checking for errors*/
@@ -253,6 +258,8 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
 
   /**/
   /*UPDATING DATABASE*/
+
+  motion_match->clear_keys();
   motion_match->set_dim_len(9);
   List<StringName> Animations;
   player->get_animation_list(&Animations);
@@ -316,17 +323,15 @@ void AnimationNodeMotionMatchEditor::_update_tracks() {
       }
     }
   }
-  motion_match->clear_keys();
+  motion_match->editing = false;
   motion_match->set_keys_data(keys);
   motion_match->skeleton = skeleton;
-  motion_match->done = true;
+  if (motion_match->get_matching_tracks().size() != 0) {
+
+    motion_match->done = true;
+  }
   print_line("DONE");
   /**/
-}
-
-void AnimationNodeMotionMatchEditor::_update_vel() {
-  motion_match->set_velocity(
-      Vector3(v_x->get_value(), v_y->get_value(), v_z->get_value()));
 }
 
 void AnimationNodeMotionMatchEditor::_bind_methods() {
@@ -340,9 +345,6 @@ void AnimationNodeMotionMatchEditor::_bind_methods() {
                        &AnimationNodeMotionMatchEditor::_update_tracks);
   ClassDB::bind_method("_clear_tree",
                        &AnimationNodeMotionMatchEditor::_clear_tree);
-
-  ClassDB::bind_method("_update_vel",
-                       &AnimationNodeMotionMatchEditor::_update_vel);
 }
 AnimationNodeMotionMatchEditor::AnimationNodeMotionMatchEditor() {
 
@@ -379,26 +381,6 @@ AnimationNodeMotionMatchEditor::AnimationNodeMotionMatchEditor() {
 
   l->set_text("Velocity");
   velocity_vbox->add_child(l);
-
-  v_x = memnew(SpinBox);
-  velocity_vbox->add_child(v_x);
-  v_x->set_step(0.01);
-  v_x->set_prefix("x:");
-
-  v_y = memnew(SpinBox);
-  v_y->set_step(0.01);
-  velocity_vbox->add_child(v_y);
-  v_y->set_prefix("y:");
-
-  v_z = memnew(SpinBox);
-  v_z->set_step(0.01);
-  velocity_vbox->add_child(v_z);
-  v_z->set_prefix("z:");
-
-  update_vel = memnew(Button("Update Velocity"));
-  velocity_vbox->add_child(update_vel);
-  update_vel->connect("pressed", this, "_update_vel");
-  add_child(velocity_vbox);
 
   updating = false;
 }
