@@ -254,6 +254,7 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 	RD::PipelineDepthStencilState depth_stencil_state;
 
 	if (depth_test != DEPTH_TEST_DISABLED) {
+		depth_stencil_state.enable_depth_test = true;
 		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
 		depth_stencil_state.enable_depth_write = depth_draw != DEPTH_DRAW_DISABLED ? true : false;
 	}
@@ -487,7 +488,7 @@ void RasterizerSceneForwardRD::MaterialData::update_parameters(const Map<StringN
 		}
 	}
 
-	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_singleton->shader.scene_shader.version_get_shader(shader_data->version, 0), 3);
+	uniform_set = RD::get_singleton()->uniform_set_create(uniforms, scene_singleton->shader.scene_shader.version_get_shader(shader_data->version, 0), 2);
 }
 RasterizerSceneForwardRD::MaterialData::~MaterialData() {
 	if (uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(uniform_set)) {
@@ -563,6 +564,13 @@ void RasterizerSceneForwardRD::RenderBufferDataForward::configure(RID p_render_t
 
 		color_fb = RD::get_singleton()->framebuffer_create(fb);
 	}
+
+	{
+		Vector<RID> fb;
+		fb.push_back(color);
+
+		color_only_fb = RD::get_singleton()->framebuffer_create(fb);
+	}
 }
 
 RasterizerSceneRD::RenderBufferData *RasterizerSceneForwardRD::_create_render_buffer_data() {
@@ -580,6 +588,7 @@ bool RasterizerSceneForwardRD::free(RID p_rid) {
 void RasterizerSceneForwardRD::instance_create_custom_data(InstanceBase *p_instance) {
 	InstanceGeometryData *geom_data = memnew(InstanceGeometryData);
 	geom_data->ubo = RD::get_singleton()->uniform_buffer_create(sizeof(InstanceGeometryData::UBO));
+	geom_data->using_lightmap_gi = p_instance->lightmap.is_valid();
 	p_instance->custom_data = geom_data;
 }
 
@@ -632,13 +641,13 @@ void RasterizerSceneForwardRD::instance_custom_data_update_transform(InstanceBas
 
 /// RENDERING ///
 
-void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_screen_uniform_set, bool p_no_gi) {
+void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi) {
 
 	RD::DrawListID draw_list = p_draw_list;
 	RD::FramebufferFormatID framebuffer_format = p_framebuffer_Format;
 
 	//global scope bindings
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_screen_uniform_set, 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_base_uniform_set, 0);
 
 	MaterialData *prev_material = nullptr;
 	//	ShaderData *prev_shader = nullptr;
@@ -827,11 +836,10 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	}
 }
 
-void RasterizerSceneForwardRD::_setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog) {
-	Transform sky_orientation;
+void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog) {
 
 	CameraMatrix projection = p_cam_projection;
-	projection.flip_y();
+	projection.flip_y(); // Vulkan and modern APIs use Y-Down
 
 	//store camera into ubo
 	store_camera(projection, scene_state.ubo.projection_matrix);
@@ -842,8 +850,68 @@ void RasterizerSceneForwardRD::_setup_environment(RID p_environment, const Camer
 	//time global variables
 	scene_state.ubo.time = time;
 
-	RD::get_singleton()->buffer_update(scene_state.uniform_buffer, 0, sizeof(SceneState::UBO), &scene_state.ubo, true);
+	if (is_environment(p_environment)) {
 
+		VS::EnvironmentBG env_bg = environment_get_background(p_environment);
+		VS::EnvironmentAmbientSource ambient_src = environment_get_ambient_light_ambient_source(p_environment);
+
+		float bg_energy = environment_get_bg_energy(p_environment);
+		scene_state.ubo.ambient_light_color_energy[3] = bg_energy;
+
+		scene_state.ubo.ambient_color_sky_mix = environment_get_ambient_sky_contribution(p_environment);
+
+		//ambient
+		if (ambient_src == VS::ENV_AMBIENT_SOURCE_BG && (env_bg == VS::ENV_BG_CLEAR_COLOR || env_bg == VS::ENV_BG_COLOR)) {
+
+			Color color = (p_render_target.is_valid() && env_bg == VS::ENV_BG_CLEAR_COLOR) ? storage->render_target_get_clear_request_color(p_render_target) : environment_get_bg_color(p_environment);
+			color = color.to_linear();
+
+			scene_state.ubo.ambient_light_color_energy[0] = color.r * bg_energy;
+			scene_state.ubo.ambient_light_color_energy[1] = color.g * bg_energy;
+			scene_state.ubo.ambient_light_color_energy[2] = color.b * bg_energy;
+			scene_state.ubo.use_ambient_light = true;
+			scene_state.ubo.use_ambient_cubemap = false;
+		} else {
+
+			float energy = environment_get_ambient_light_ambient_energy(p_environment);
+			Color color = environment_get_ambient_light_color(p_environment);
+			color = color.to_linear();
+			scene_state.ubo.ambient_light_color_energy[0] = color.r * energy;
+			scene_state.ubo.ambient_light_color_energy[1] = color.g * energy;
+			scene_state.ubo.ambient_light_color_energy[2] = color.b * energy;
+
+			Basis sky_transform = environment_get_sky_orientation(p_environment);
+			sky_transform = sky_transform.inverse() * p_cam_transform.basis;
+			store_transform_3x3(sky_transform, scene_state.ubo.radiance_inverse_xform);
+
+			scene_state.ubo.use_ambient_cubemap = (ambient_src == VS::ENV_AMBIENT_SOURCE_BG && env_bg == VS::ENV_BG_SKY) || ambient_src == VS::ENV_AMBIENT_SOURCE_SKY;
+			scene_state.ubo.use_ambient_light = scene_state.ubo.use_ambient_cubemap || ambient_src == VS::ENV_AMBIENT_SOURCE_COLOR;
+		}
+
+		//specular
+		VS::EnvironmentReflectionSource ref_src = environment_get_reflection_source(p_environment);
+		if ((ref_src == VS::ENV_REFLECTION_SOURCE_BG && env_bg == VS::ENV_BG_SKY) || ref_src == VS::ENV_REFLECTION_SOURCE_SKY) {
+			scene_state.ubo.use_reflection_cubemap = true;
+		} else {
+			scene_state.ubo.use_reflection_cubemap = false;
+		}
+
+	} else {
+		if (p_render_target.is_valid()) {
+			scene_state.ubo.use_ambient_light = true;
+			Color clear_color = storage->render_target_get_clear_request_color(p_render_target);
+			clear_color = clear_color.to_linear();
+			scene_state.ubo.ambient_light_color_energy[0] = clear_color.r;
+			scene_state.ubo.ambient_light_color_energy[1] = clear_color.g;
+			scene_state.ubo.ambient_light_color_energy[2] = clear_color.b;
+			scene_state.ubo.ambient_light_color_energy[3] = 1.0;
+		} else {
+			scene_state.ubo.use_ambient_light = false;
+		}
+
+		scene_state.ubo.use_ambient_cubemap = false;
+		scene_state.ubo.use_reflection_cubemap = false;
+	}
 #if 0
 	//bg and ambient
 	if (p_environment.is_valid()) {
@@ -952,6 +1020,8 @@ void RasterizerSceneForwardRD::_setup_environment(RID p_environment, const Camer
 	glBufferSubData(GL_UNIFORM_BUFFER, 0, sizeof(State::EnvironmentRadianceUBO), &state.env_radiance_data);
 	glBindBuffer(GL_UNIFORM_BUFFER, 0);
 #endif
+
+	RD::get_singleton()->buffer_update(scene_state.uniform_buffer, 0, sizeof(SceneState::UBO), &scene_state.ubo, true);
 }
 
 void RasterizerSceneForwardRD::_add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode) {
@@ -1239,6 +1309,38 @@ void RasterizerSceneForwardRD::_fill_render_list(InstanceBase **p_cull_result, i
 	}
 }
 
+void RasterizerSceneForwardRD::_draw_sky(RD::DrawListID p_draw_list, RD::FramebufferFormatID p_fb_format, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, float p_alpha) {
+
+	ERR_FAIL_COND(!is_environment(p_environment));
+
+	RID sky = environment_get_sky(p_environment);
+	ERR_FAIL_COND(!sky.is_valid());
+	RID panorama = sky_get_panorama_texture_rd(sky);
+	ERR_FAIL_COND(!panorama.is_valid());
+	Basis sky_transform = environment_get_sky_orientation(p_environment);
+	sky_transform.invert();
+
+	float multiplier = environment_get_bg_energy(p_environment);
+	float custom_fov = environment_get_sky_custom_fov(p_environment);
+	// Camera
+	CameraMatrix camera;
+
+	if (custom_fov) {
+
+		float near_plane = p_projection.get_z_near();
+		float far_plane = p_projection.get_z_far();
+		float aspect = p_projection.get_aspect();
+
+		camera.set_perspective(custom_fov, aspect, near_plane, far_plane);
+
+	} else {
+		camera = p_projection;
+	}
+
+	sky_transform = p_transform.basis * sky_transform;
+	storage->get_effects()->render_panorama(p_draw_list, p_fb_format, panorama, camera, sky_transform, 1.0, multiplier);
+}
+
 void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	RenderBufferDataForward *render_buffer = (RenderBufferDataForward *)p_buffer_data;
@@ -1285,12 +1387,15 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	scene_state.ubo.viewport_size[0] = vp_he.x;
 	scene_state.ubo.viewport_size[1] = vp_he.y;
 
+	RID render_target;
+
 	if (render_buffer) {
 		scene_state.ubo.screen_pixel_size[0] = 1.0 / render_buffer->width;
 		scene_state.ubo.screen_pixel_size[1] = 1.0 / render_buffer->height;
+		render_target = render_buffer->render_target;
 	}
 
-	_setup_environment(p_environment, p_cam_projection, p_cam_transform, p_reflection_probe.is_valid());
+	_setup_environment(render_target, p_environment, p_cam_projection, p_cam_transform, p_reflection_probe.is_valid());
 #if 0
 	for (int i = 0; i < p_light_cull_count; i++) {
 
@@ -1356,6 +1461,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	bool use_mrt = false;
 #endif
+
 	render_list.clear();
 	_fill_render_list(p_cull_result, p_cull_count, PASS_MODE_COLOR, render_buffer == nullptr);
 #if 0
@@ -1620,16 +1726,77 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	}
 #endif
 
+	RID radiance_cubemap;
+	bool draw_sky = false;
+
+	Color clear_color;
+	bool keep_color = false;
+
+	if (is_environment(p_environment)) {
+		VS::EnvironmentBG bg_mode = environment_get_background(p_environment);
+		float bg_energy = environment_get_bg_energy(p_environment);
+		switch (bg_mode) {
+			case VS::ENV_BG_CLEAR_COLOR: {
+				clear_color = render_target.is_valid() ? storage->render_target_get_clear_request_color(render_target) : environment_get_bg_color(p_environment);
+				clear_color.r *= bg_energy;
+				clear_color.g *= bg_energy;
+				clear_color.b *= bg_energy;
+			} break;
+			case VS::ENV_BG_COLOR: {
+				clear_color = environment_get_bg_color(p_environment);
+				clear_color.r *= bg_energy;
+				clear_color.g *= bg_energy;
+				clear_color.b *= bg_energy;
+			} break;
+			case VS::ENV_BG_SKY: {
+				RID sky = environment_get_sky(p_environment);
+				if (sky.is_valid()) {
+					radiance_cubemap = sky_get_radiance_texture_rd(sky);
+					draw_sky = true;
+				}
+			} break;
+			case VS::ENV_BG_CANVAS: {
+				keep_color = true;
+			} break;
+			case VS::ENV_BG_KEEP: {
+				keep_color = true;
+			} break;
+			case VS::ENV_BG_CAMERA_FEED: {
+
+			} break;
+		}
+	} else {
+		if (render_target.is_valid()) {
+			clear_color = storage->render_target_get_clear_request_color(render_target);
+		}
+	}
+
+	_setup_render_base_uniform_set(RID(), RID(), RID(), RID(), radiance_cubemap);
+
 	render_list.sort_by_key(false);
+
+	bool can_continue = true; //unless the middle buffers are needed
+	bool using_separate_specular = false;
 
 	{
 		//regular forward for now
 		Vector<Color> c;
-		c.push_back(Color(0, 0, 0, 1));
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(render_buffer->color_fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_CONTINUE, c);
-
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(render_buffer->color_fb), render_list.elements, render_list.element_count, false, PASS_MODE_COLOR, default_render_buffer_uniform_set, render_buffer == nullptr);
+		c.push_back(clear_color.to_linear());
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(render_buffer->color_fb, keep_color ? RD::INITIAL_ACTION_KEEP_COLOR : RD::INITIAL_ACTION_CLEAR, (can_continue || draw_sky) ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ_COLOR_AND_DEPTH, c);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(render_buffer->color_fb), render_list.elements, render_list.element_count, false, PASS_MODE_COLOR, render_buffer == nullptr);
 		RD::get_singleton()->draw_list_end();
+	}
+
+	if (draw_sky) {
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(render_buffer->color_fb, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ_COLOR_AND_DEPTH);
+		_draw_sky(draw_list, RD::get_singleton()->framebuffer_get_format(render_buffer->color_fb), p_environment, p_cam_projection, p_cam_transform, 1.0);
+		RD::get_singleton()->draw_list_end();
+
+		if (using_separate_specular && !can_continue) {
+			//can't continue, so close the buffers
+			//RD::get_singleton()->draw_list_begin(render_buffer->color_specular_fb, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ_COLOR_AND_DEPTH, c);
+			//RD::get_singleton()->draw_list_end();
+		}
 	}
 
 	//_render_list
@@ -1721,8 +1888,8 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	render_list.sort_by_reverse_depth_and_priority(true);
 
 	{
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(render_buffer->color_fb, RD::INITIAL_ACTION_CONTINUE, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH);
-		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(render_buffer->color_fb), render_list.elements, render_list.element_count, false, PASS_MODE_COLOR, default_render_buffer_uniform_set, render_buffer == nullptr);
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(render_buffer->color_fb, can_continue ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP_COLOR_AND_DEPTH, RD::FINAL_ACTION_READ_COLOR_AND_DEPTH);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(render_buffer->color_fb), &render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false, PASS_MODE_COLOR, render_buffer == nullptr);
 		RD::get_singleton()->draw_list_end();
 	}
 
@@ -1806,6 +1973,90 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 #endif
 }
 
+void RasterizerSceneForwardRD::_setup_render_base_uniform_set(RID p_depth_buffer, RID p_color_buffer, RID p_normal_buffer, RID p_roughness_limit_buffer, RID p_radiance_cubemap) {
+
+	if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
+		RD::get_singleton()->free(render_base_uniform_set);
+	}
+
+	//default render buffer and scene state uniform set
+
+	Vector<RD::Uniform> uniforms;
+	{
+		RD::Uniform u;
+		u.binding = 1;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		RID texture = p_depth_buffer.is_valid() ? p_depth_buffer : storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+		u.ids.push_back(texture);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 2;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		RID texture = p_color_buffer.is_valid() ? p_color_buffer : storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+		u.ids.push_back(texture);
+		uniforms.push_back(u);
+	}
+	{
+		RD::Uniform u;
+		u.binding = 3;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		RID texture = p_normal_buffer.is_valid() ? p_normal_buffer : storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_NORMAL);
+		u.ids.push_back(texture);
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.binding = 4;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		RID texture = p_roughness_limit_buffer.is_valid() ? p_roughness_limit_buffer : storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+		u.ids.push_back(texture);
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.binding = 5;
+		u.type = RD::UNIFORM_TYPE_TEXTURE;
+		RID texture = p_radiance_cubemap.is_valid() ? p_radiance_cubemap : storage->texture_rd_get_default(is_using_radiance_cubemap_array() ? RasterizerStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK : RasterizerStorageRD::DEFAULT_RD_TEXTURE_CUBEMAP_BLACK);
+		u.ids.push_back(texture);
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_SAMPLER;
+		u.binding = 6;
+		u.ids.resize(12);
+		RID *ids_ptr = u.ids.ptrw();
+		ids_ptr[0] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+		ids_ptr[1] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+		ids_ptr[2] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+		ids_ptr[3] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+		ids_ptr[4] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+		ids_ptr[5] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
+		ids_ptr[6] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+		ids_ptr[7] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+		ids_ptr[8] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+		ids_ptr[9] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+		ids_ptr[10] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+		ids_ptr[11] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
+		uniforms.push_back(u);
+	}
+
+	{
+		RD::Uniform u;
+		u.binding = 7;
+		u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+		u.ids.push_back(scene_state.uniform_buffer);
+		uniforms.push_back(u);
+	}
+
+	render_base_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, 0);
+}
+
 RasterizerSceneForwardRD *RasterizerSceneForwardRD::singleton = NULL;
 
 void RasterizerSceneForwardRD::set_scene_pass(uint64_t p_pass) {
@@ -1816,7 +2067,8 @@ void RasterizerSceneForwardRD::set_time(double p_time) {
 	time = p_time;
 }
 
-RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storage) {
+RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storage) :
+		RasterizerSceneRD(p_storage) {
 	singleton = this;
 	storage = p_storage;
 
@@ -1824,6 +2076,10 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 
 	{
 		String defines;
+		defines += "\n#define MAX_ROUGHNESS_LOD " + itos(get_roughness_layers() - 1) + ".0\n";
+		if (is_using_radiance_cubemap_array()) {
+			defines += "\n#define USE_RADIANCE_CUBEMAP_ARRAY \n";
+		}
 
 		Vector<String> shader_versions;
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n");
@@ -1847,7 +2103,7 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 
 		actions.renames["WORLD_MATRIX"] = "world_matrix";
 		actions.renames["WORLD_NORMAL_MATRIX"] = "world_normal_matrix";
-		actions.renames["INV_CAMERA_MATRIX"] = "scene_data.camera_inverse_matrix";
+		actions.renames["INV_CAMERA_MATRIX"] = "scene_data.inv_camera_matrix";
 		actions.renames["CAMERA_MATRIX"] = "scene_data.camera_matrix";
 		actions.renames["PROJECTION_MATRIX"] = "projection_matrix";
 		actions.renames["INV_PROJECTION_MATRIX"] = "scene_data.inv_projection_matrix";
@@ -1907,21 +2163,21 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 		actions.renames["DIFFUSE_LIGHT"] = "diffuse_light";
 		actions.renames["SPECULAR_LIGHT"] = "specular_light";
 
-		actions.usage_defines["TANGENT"] = "#define ENABLE_TANGENT_INTERP\n";
+		actions.usage_defines["TANGENT"] = "#define TANGENT_USED\n";
 		actions.usage_defines["BINORMAL"] = "@TANGENT";
-		actions.usage_defines["RIM"] = "#define LIGHT_USE_RIM\n";
+		actions.usage_defines["RIM"] = "#define LIGHT_RIM_USED\n";
 		actions.usage_defines["RIM_TINT"] = "@RIM";
-		actions.usage_defines["CLEARCOAT"] = "#define LIGHT_USE_CLEARCOAT\n";
+		actions.usage_defines["CLEARCOAT"] = "#define LIGHT_CLEARCOAT_USED\n";
 		actions.usage_defines["CLEARCOAT_GLOSS"] = "@CLEARCOAT";
-		actions.usage_defines["ANISOTROPY"] = "#define LIGHT_USE_ANISOTROPY\n";
+		actions.usage_defines["ANISOTROPY"] = "#define LIGHT_ANISOTROPY_USED\n";
 		actions.usage_defines["ANISOTROPY_FLOW"] = "@ANISOTROPY";
-		actions.usage_defines["AO"] = "#define ENABLE_AO\n";
-		actions.usage_defines["AO_LIGHT_AFFECT"] = "#define ENABLE_AO\n";
-		actions.usage_defines["UV"] = "#define ENABLE_UV_INTERP\n";
-		actions.usage_defines["UV2"] = "#define ENABLE_UV2_INTERP\n";
-		actions.usage_defines["NORMALMAP"] = "#define ENABLE_NORMALMAP\n";
+		actions.usage_defines["AO"] = "#define AO_USED\n";
+		actions.usage_defines["AO_LIGHT_AFFECT"] = "#define AO_USED\n";
+		actions.usage_defines["UV"] = "#define UV_USED\n";
+		actions.usage_defines["UV2"] = "#define UV2_USED\n";
+		actions.usage_defines["NORMALMAP"] = "#define NORMALMAP_USED\n";
 		actions.usage_defines["NORMALMAP_DEPTH"] = "@NORMALMAP";
-		actions.usage_defines["COLOR"] = "#define ENABLE_COLOR_INTERP\n";
+		actions.usage_defines["COLOR"] = "#define COLOR_USED\n";
 		actions.usage_defines["INSTANCE_CUSTOM"] = "#define ENABLE_INSTANCE_CUSTOM\n";
 		actions.usage_defines["POSITION"] = "#define OVERRIDE_POSITION\n";
 
@@ -1982,77 +2238,23 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 	scene_pass = 0;
 	render_pass = 0;
 
+	scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO));
+
 	{
 		//default material and shader
 		default_shader = storage->shader_create();
-		storage->shader_set_code(default_shader, "shader_type spatial;\n");
+		storage->shader_set_code(default_shader, "shader_type spatial; void vertex() { ROUGHNESS = 0.8; } void fragment() { ALBEDO=vec3(0.6); ROUGHNESS=0.8; METALLIC=0.2; } \n");
 		default_material = storage->material_create();
 		storage->material_set_shader(default_material, default_shader);
 
 		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RasterizerStorageRD::SHADER_TYPE_3D);
 		default_shader_rd = shader.scene_shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
 	}
-
-	//default render buffer and scene state uniform set
-
-	{
-		Vector<RD::Uniform> uniforms;
-		{
-			RD::Uniform u;
-			u.binding = 1;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 2;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.binding = 3;
-			u.type = RD::UNIFORM_TYPE_TEXTURE;
-			u.ids.push_back(storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE));
-			uniforms.push_back(u);
-		}
-
-		scene_state.uniform_buffer = RD::get_singleton()->uniform_buffer_create(sizeof(SceneState::UBO));
-
-		{
-
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
-			u.binding = 4;
-			u.ids.push_back(scene_state.uniform_buffer);
-			uniforms.push_back(u);
-		}
-		{
-			RD::Uniform u;
-			u.type = RD::UNIFORM_TYPE_SAMPLER;
-			u.binding = 5;
-			u.ids.resize(12);
-			RID *ids_ptr = u.ids.ptrw();
-			ids_ptr[0] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[1] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[2] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[3] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[4] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[5] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED);
-			ids_ptr[6] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[7] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[8] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[9] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[10] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			ids_ptr[11] = storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS_ANISOTROPIC, VS::CANVAS_ITEM_TEXTURE_REPEAT_ENABLED);
-			uniforms.push_back(u);
-		}
-
-		default_render_buffer_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, 0);
-	}
 }
 
 RasterizerSceneForwardRD::~RasterizerSceneForwardRD() {
+	//clear base uniform set if still valid
+	if (render_base_uniform_set.is_valid() && RD::get_singleton()->uniform_set_is_valid(render_base_uniform_set)) {
+		RD::get_singleton()->free(render_base_uniform_set);
+	}
 }

@@ -117,11 +117,6 @@ public:
 
 	FUNC2(texture_set_force_redraw_if_visible, RID, bool)
 
-	/* SKY API */
-
-	FUNCRID(sky)
-	FUNC3(sky_set_texture, RID, RID, int)
-
 	/* SHADER API */
 
 	FUNCRID(shader)
@@ -409,6 +404,13 @@ public:
 
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
+	/* SKY API */
+
+	FUNCRID(sky)
+	FUNC2(sky_set_radiance_size, RID, int)
+	FUNC2(sky_set_mode, RID, SkyMode)
+	FUNC2(sky_set_texture, RID, RID)
+
 	/* ENVIRONMENT API */
 
 	FUNCRID(environment)
@@ -420,7 +422,8 @@ public:
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
-	FUNC4(environment_set_ambient_light, RID, const Color &, float, float)
+	FUNC6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
+
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	FUNC2(environment_set_camera_feed_id, RID, int)

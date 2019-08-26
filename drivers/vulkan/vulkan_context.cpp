@@ -923,13 +923,11 @@ Error VulkanContext::_update_swap_chain(Window *window) {
 					/*b*/ VK_COMPONENT_SWIZZLE_B,
 					/*a*/ VK_COMPONENT_SWIZZLE_A,
 			},
-			/*subresourceRange*/ {
-				/*aspectMask*/ VK_IMAGE_ASPECT_COLOR_BIT,
-				/*baseMipLevel*/ 0,
-				/*levelCount*/ 1,
-				/*baseArrayLayer*/ 0,
-				/*layerCount*/ 1
-			},
+			/*subresourceRange*/ { /*aspectMask*/ VK_IMAGE_ASPECT_COLOR_BIT,
+					/*baseMipLevel*/ 0,
+					/*levelCount*/ 1,
+					/*baseArrayLayer*/ 0,
+					/*layerCount*/ 1 },
 		};
 
 		window->swapchain_image_resources[i].image = swapchainImages[i];
