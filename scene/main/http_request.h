@@ -68,7 +68,9 @@ private:
 	Vector<String> headers;
 	bool validate_ssl;
 	bool use_ssl;
+	bool request_is_raw;
 	HTTPClient::Method method;
+	PoolVector<uint8_t> raw_request_data;
 	String request_data;
 
 	bool request_sent;
@@ -116,7 +118,8 @@ protected:
 	static void _bind_methods();
 
 public:
-	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = ""); //connects to a full url and perform request
+	Error request(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const String &p_request_data = "");
+	Error request_raw(const String &p_url, const Vector<String> &p_custom_headers = Vector<String>(), bool p_ssl_validate_domain = true, HTTPClient::Method p_method = HTTPClient::METHOD_GET, const PoolVector<uint8_t> &p_body = PoolByteArray()); //connects to a full url and perform request
 	void cancel_request();
 	HTTPClient::Status get_http_client_status() const;
 

@@ -104,7 +104,51 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 
 	headers = p_custom_headers;
 
+	request_is_raw = false;
 	request_data = p_request_data;
+
+	requesting = true;
+
+	if (use_threads) {
+
+		thread_done = false;
+		thread_request_quit = false;
+		client->set_blocking_mode(true);
+		thread = Thread::create(_thread_func, this);
+	} else {
+		client->set_blocking_mode(false);
+		err = _request();
+		if (err != OK) {
+			call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PoolStringArray(), PoolByteArray());
+			return ERR_CANT_CONNECT;
+		}
+
+		set_process_internal(true);
+	}
+
+	return OK;
+}
+
+Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const PoolVector<uint8_t> &p_body) {
+
+	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
+	if (requesting) {
+		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
+		ERR_FAIL_V(ERR_BUSY);
+	}
+
+	method = p_method;
+
+	Error err = _parse_url(p_url);
+	if (err)
+		return err;
+
+	validate_ssl = p_ssl_validate_domain;
+
+	headers = p_custom_headers;
+
+	request_is_raw = true;
+	raw_request_data = p_body;
 
 	requesting = true;
 
@@ -298,7 +342,12 @@ bool HTTPRequest::_update_connection() {
 			} else {
 				// Did not request yet, do request
 
-				Error err = client->request(method, request_string, headers, request_data);
+				Error err;
+				if (request_is_raw) {
+					err = client->request_raw(method, request_string, headers, raw_request_data);
+				} else {
+					err = client->request(method, request_string, headers, request_data);
+				}
 				if (err != OK) {
 					call_deferred("_request_done", RESULT_CONNECTION_ERROR, 0, PoolStringArray(), PoolByteArray());
 					return true;
@@ -499,6 +548,7 @@ void HTTPRequest::_timeout() {
 void HTTPRequest::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request", "url", "custom_headers", "ssl_validate_domain", "method", "request_data"), &HTTPRequest::request, DEFVAL(PoolStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(String()));
+	ClassDB::bind_method(D_METHOD("request_raw", "url", "custom_headers", "ssl_validate_domain", "method", "raw_request_data"), &HTTPRequest::request_raw, DEFVAL(PoolStringArray()), DEFVAL(true), DEFVAL(HTTPClient::METHOD_GET), DEFVAL(PoolByteArray()));
 	ClassDB::bind_method(D_METHOD("cancel_request"), &HTTPRequest::cancel_request);
 
 	ClassDB::bind_method(D_METHOD("get_http_client_status"), &HTTPRequest::get_http_client_status);
