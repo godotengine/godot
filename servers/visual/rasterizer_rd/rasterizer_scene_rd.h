@@ -3,6 +3,9 @@
 
 #include "core/rid_owner.h"
 #include "servers/visual/rasterizer.h"
+#include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
+#include "servers/visual/rendering_device.h"
+
 class RasterizerSceneRD : public RasterizerScene {
 protected:
 	struct RenderBufferData {
@@ -15,6 +18,58 @@ protected:
 	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 
 private:
+	int roughness_layers;
+
+	RasterizerStorageRD *storage;
+
+	struct Sky {
+		int radiance_size = 256;
+		VS::SkyMode mode = VS::SKY_MODE_QUALITY;
+		RID panorama;
+		RID radiance;
+		bool dirty = false;
+		Sky *dirty_list = nullptr;
+		struct Layer {
+			struct Mipmap {
+				RID framebuffers[6];
+				RID views[6];
+				Size2i size;
+			};
+			Vector<Mipmap> mipmaps;
+		};
+		RID radiance_base_cubemap; //cubemap for first layer, first cubemap
+		Vector<Layer> layers;
+	};
+
+	Sky *dirty_sky_list = nullptr;
+
+	void _sky_invalidate(Sky *p_sky);
+	void _update_dirty_skys();
+
+	uint32_t sky_ggx_samples_quality;
+	uint32_t sky_ggx_samples_realtime;
+	bool sky_use_cubemap_array;
+
+	mutable RID_Owner<Sky> sky_owner;
+
+	struct Environent {
+
+		VS::EnvironmentBG background = VS::ENV_BG_CLEAR_COLOR;
+		RID sky;
+		float sky_custom_fov = 0.0;
+		Basis sky_orientation;
+		Color bg_color;
+		float bg_energy = 1.0;
+		int canvas_max_layer = 0;
+		VS::EnvironmentAmbientSource ambient_source = VS::ENV_AMBIENT_SOURCE_BG;
+		Color ambient_light;
+		float ambient_light_energy = 1.0;
+		float ambient_sky_contribution = 1.0;
+		VS::EnvironmentReflectionSource reflection_source = VS::ENV_REFLECTION_SOURCE_BG;
+	};
+
+	mutable RID_Owner<Environent> environment_owner;
+
 	struct RenderBuffers {
 
 		RenderBufferData *data = nullptr;
@@ -23,7 +78,7 @@ private:
 		RID render_target;
 	};
 
-	RID_Owner<RenderBuffers> render_buffers_owner;
+	mutable RID_Owner<RenderBuffers> render_buffers_owner;
 
 public:
 	/* SHADOW ATLAS API */
@@ -36,18 +91,43 @@ public:
 	int get_directional_light_shadow_size(RID p_light_intance) { return 0; }
 	void set_directional_shadow_count(int p_count) {}
 
+	/* SKY API */
+
+	RID sky_create();
+	void sky_set_radiance_size(RID p_sky, int p_radiance_size);
+	void sky_set_mode(RID p_sky, VS::SkyMode p_mode);
+	void sky_set_texture(RID p_sky, RID p_panorama);
+
+	RID sky_get_panorama_texture_rd(RID p_sky) const;
+	RID sky_get_radiance_texture_rd(RID p_sky) const;
+
 	/* ENVIRONMENT API */
 
-	RID environment_create() { return RID(); }
+	RID environment_create();
 
-	void environment_set_background(RID p_env, VS::EnvironmentBG p_bg) {}
-	void environment_set_sky(RID p_env, RID p_sky) {}
-	void environment_set_sky_custom_fov(RID p_env, float p_scale) {}
-	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation) {}
-	void environment_set_bg_color(RID p_env, const Color &p_color) {}
-	void environment_set_bg_energy(RID p_env, float p_energy) {}
-	void environment_set_canvas_max_layer(RID p_env, int p_max_layer) {}
-	void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) {}
+	void environment_set_background(RID p_env, VS::EnvironmentBG p_bg);
+	void environment_set_sky(RID p_env, RID p_sky);
+	void environment_set_sky_custom_fov(RID p_env, float p_scale);
+	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
+	void environment_set_bg_color(RID p_env, const Color &p_color);
+	void environment_set_bg_energy(RID p_env, float p_energy);
+	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
+	void environment_set_ambient_light(RID p_env, const Color &p_color, VS::EnvironmentAmbientSource p_ambient = VS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, VS::EnvironmentReflectionSource p_reflection_source = VS::ENV_REFLECTION_SOURCE_BG);
+
+	VS::EnvironmentBG environment_get_background(RID p_env) const;
+	RID environment_get_sky(RID p_env) const;
+	float environment_get_sky_custom_fov(RID p_env) const;
+	Basis environment_get_sky_orientation(RID p_env) const;
+	Color environment_get_bg_color(RID p_env) const;
+	float environment_get_bg_energy(RID p_env) const;
+	int environment_get_canvas_max_layer(RID p_env) const;
+	Color environment_get_ambient_light_color(RID p_env) const;
+	VS::EnvironmentAmbientSource environment_get_ambient_light_ambient_source(RID p_env) const;
+	float environment_get_ambient_light_ambient_energy(RID p_env) const;
+	float environment_get_ambient_sky_contribution(RID p_env) const;
+	VS::EnvironmentReflectionSource environment_get_reflection_source(RID p_env) const;
+
+	bool is_environment(RID p_env) const;
 
 	void environment_set_dof_blur_near(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
 	void environment_set_dof_blur_far(RID p_env, bool p_enable, float p_distance, float p_transition, float p_far_amount, VS::EnvironmentDOFBlurQuality p_quality) {}
@@ -65,10 +145,6 @@ public:
 	void environment_set_fog(RID p_env, bool p_enable, const Color &p_color, const Color &p_sun_color, float p_sun_amount) {}
 	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
 	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
-
-	bool is_environment(RID p_env) { return false; }
-	VS::EnvironmentBG environment_get_background(RID p_env) { return VS::ENV_BG_KEEP; }
-	int environment_get_canvas_max_layer(RID p_env) { return 0; }
 
 	RID light_instance_create(RID p_light) { return RID(); }
 	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) {}
@@ -97,9 +173,14 @@ public:
 
 	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 
+	int get_roughness_layers() const;
+	bool is_using_radiance_cubemap_array() const;
+
 	virtual bool free(RID p_rid);
 
-	RasterizerSceneRD();
+	virtual void update();
+
+	RasterizerSceneRD(RasterizerStorageRD *p_storage);
 };
 
 #endif // RASTERIZER_SCENE_RD_H

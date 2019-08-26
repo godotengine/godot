@@ -1760,8 +1760,9 @@ void RasterizerStorageGLES3::sky_set_texture(RID p_sky, RID p_panorama, int p_ra
 	}
 
 	sky->panorama = p_panorama;
-	if (!sky->panorama.is_valid())
+	if (!sky->panorama.is_valid()) {
 		return; //cleared
+	}
 
 	Texture *texture = texture_owner.getornull(sky->panorama);
 	if (!texture) {
