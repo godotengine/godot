@@ -186,13 +186,13 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
+	Label *library_loading;
 	LineEdit *filter;
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
 	ToolButton *reverse;
 	Button *search;
-	ProgressBar *load_status;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
 	Label *error_label;

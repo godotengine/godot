@@ -600,33 +600,15 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_PROCESS: {
 
 			HTTPClient::Status s = request->get_http_client_status();
-			bool visible = s != HTTPClient::STATUS_DISCONNECTED;
+			const bool loading = s != HTTPClient::STATUS_DISCONNECTED;
 
-			if (visible != load_status->is_visible()) {
-				load_status->set_visible(visible);
+			if (loading) {
+				library_scroll->set_modulate(Color(1, 1, 1, 0.5));
+			} else {
+				library_scroll->set_modulate(Color(1, 1, 1, 1));
 			}
 
-			if (visible) {
-				switch (s) {
-
-					case HTTPClient::STATUS_RESOLVING: {
-						load_status->set_value(0.1);
-					} break;
-					case HTTPClient::STATUS_CONNECTING: {
-						load_status->set_value(0.2);
-					} break;
-					case HTTPClient::STATUS_REQUESTING: {
-						load_status->set_value(0.3);
-					} break;
-					case HTTPClient::STATUS_BODY: {
-						load_status->set_value(0.4);
-					} break;
-					default: {
-					}
-				}
-			}
-
-			bool no_downloads = downloads_hb->get_child_count() == 0;
+			const bool no_downloads = downloads_hb->get_child_count() == 0;
 			if (no_downloads == downloads_scroll->is_visible()) {
 				downloads_scroll->set_visible(!no_downloads);
 			}
@@ -1157,6 +1139,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			_search();
 		} break;
 		case REQUESTING_SEARCH: {
+
+			// The loading text only needs to be displayed before the first page is loaded
+			library_loading->hide();
+
 			if (asset_items) {
 				memdelete(asset_items);
 			}
@@ -1472,6 +1458,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb_border->add_child(library_vb);
 
+	library_loading = memnew(Label(TTR("Loading...")));
+	library_loading->set_align(Label::ALIGN_CENTER);
+	library_vb->add_child(library_loading);
+
 	asset_top_page = memnew(HBoxContainer);
 	library_vb->add_child(asset_top_page);
 
@@ -1493,12 +1483,6 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	last_queue_id = 0;
 
 	library_vb->add_constant_override("separation", 20 * EDSCALE);
-
-	load_status = memnew(ProgressBar);
-	load_status->set_min(0);
-	load_status->set_max(1);
-	load_status->set_step(0.001);
-	library_main->add_child(load_status);
 
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);
