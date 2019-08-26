@@ -44,7 +44,7 @@ layout(location = 2) out vec4 color_interp;
 #endif
 
 #if defined(UV_USED)
-layout(location = 3) out vec4 uv_interp;
+layout(location = 3) out vec2 uv_interp;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -186,7 +186,7 @@ VERTEX_SHADER_CODE
 #endif //MODE_RENDER_DEPTH
 
 #ifdef USE_OVERRIDE_POSITION
-	gl_Position = position;;
+	gl_Position = position;
 #else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
 #endif
@@ -215,7 +215,7 @@ layout(location = 2) in vec4 color_interp;
 #endif
 
 #if defined(UV_USED)
-layout(location = 3) in vec4 uv_interp;
+layout(location = 3) in vec2 uv_interp;
 #endif
 
 #if defined(UV2_USED) || defined(USE_LIGHTMAP)
@@ -351,15 +351,15 @@ LIGHT_SHADER_CODE
 	float NdotV = dot(N, V);
 	float cNdotV = max(NdotV, 0.0);
 
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	vec3 H = normalize(V + L);
 #endif
 
-#if defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+#if defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	float cNdotH = max(dot(N, H), 0.0);
 #endif
 
-#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_CLEARCOAT_USED)
 	float cLdotH = max(dot(L, H), 0.0);
 #endif
 
@@ -423,7 +423,7 @@ LIGHT_SHADER_CODE
 		diffuse_light += light_color * diffuse_color * (vec3(1.0 / M_PI) - diffuse_brdf_NL) * transmission * attenuation;
 #endif
 
-#if defined(LIGHT_USE_RIM)
+#if defined(RIM_LIGHT_USED)
 		float rim_light = pow(max(0.0, 1.0 - cNdotV), max(0.0, (1.0 - roughness) * 16.0));
 		diffuse_light += rim_light * rim * mix(vec3(1.0), diffuse_color, rim_tint) * light_color;
 #endif
@@ -495,7 +495,7 @@ LIGHT_SHADER_CODE
 		specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 #endif
 
-#if defined(LIGHT_USE_CLEARCOAT)
+#if defined(LIGHT_CLEARCOAT_USED)
 
 #if !defined(SPECULAR_SCHLICK_GGX)
 		float cLdotH5 = SchlickFresnel(cLdotH);
@@ -537,7 +537,7 @@ void main() {
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 
-#if defined(ENABLE_AO)
+#if defined(AO_USED)
 	float ao = 1.0;
 	float ao_light_affect = 0.0;
 #endif
@@ -651,6 +651,48 @@ FRAGMENT_SHADER_CODE
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3( 0.0, 0.0, 0.0);
 
+#ifndef MODE_RENDER_DEPTH
+	if (scene_data.use_reflection_cubemap){
+
+		vec3 ref_vec = reflect(-view, normal);
+		ref_vec = scene_data.radiance_inverse_xform * ref_vec;
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+
+		float lod,blend;
+		blend = modf(roughness * MAX_ROUGHNESS_LOD, lod);
+		specular_light = texture(samplerCubeArray(radiance_cubemap,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod)).rgb;
+		specular_light = mix(specular_light,texture(samplerCubeArray(radiance_cubemap,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ref_vec, lod+1)).rgb,blend);
+
+#else
+		specular_light = textureLod(samplerCube(radiance_cubemap,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
+
+#endif //USE_RADIANCE_CUBEMAP_ARRAY
+		specular_light *= scene_data.ambient_light_color_energy.a;
+	}
+
+#ifndef USE_LIGHTMAP
+	//lightmap overrides everything
+	if (scene_data.use_ambient_light){
+
+		ambient_light = scene_data.ambient_light_color_energy.rgb;
+
+		if (scene_data.use_ambient_cubemap) {
+			vec3 ambient_dir = scene_data.radiance_inverse_xform * normal;
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+			vec3 cubemap_ambient = texture(samplerCubeArray(radiance_cubemap,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(ambient_dir, MAX_ROUGHNESS_LOD)).rgb;
+#else
+			vec3 cubemap_ambient = textureLod(samplerCube(radiance_cubemap,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), ambient_dir, MAX_ROUGHNESS_LOD).rgb;
+#endif //USE_RADIANCE_CUBEMAP_ARRAY
+
+			ambient_light = mix( ambient_light, cubemap_ambient * scene_data.ambient_light_color_energy.a, scene_data.ambient_color_sky_mix );
+		}
+
+
+	}
+#endif // USE_LIGHTMAP
+
+#endif // MODE_RENDER_DEPTH
+
 	//radiance
 
 	float specular_blob_intensity = 1.0;
@@ -722,7 +764,7 @@ FRAGMENT_SHADER_CODE
 	specular_light *= scene_data.reflection_multiplier;
 	ambient_light *= albedo; //ambient must be multiplied by albedo at the end
 
-#if defined(ENABLE_AO)
+#if defined(AO_USED)
 	ambient_light *= ao;
 	ao_light_affect = mix(1.0, ao, ao_light_affect);
 	specular_light *= ao_light_affect;
@@ -753,8 +795,8 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_NO_SHADING
 	frag_color = vec4(albedo, alpha);
 #else
-	//frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
-	frag_color = vec4(1.0);
+	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
+	//frag_color = vec4(1.0);
 
 #endif //USE_NO_SHADING
 

@@ -85,6 +85,17 @@ const float dof_kernel[21] = float[](0.028174, 0.032676, 0.037311, 0.041944, 0.0
 
 void main() {
 
+#ifdef MODE_MIPMAP
+
+	vec2 pix_size = blur.pixel_size;
+	vec4 color = texture(source_color, uv_interp + vec2(-0.5,-0.5) * pix_size);
+	color += texture(source_color, uv_interp + vec2(0.5,-0.5) * pix_size);
+	color += texture(source_color, uv_interp + vec2(0.5,0.5) * pix_size);
+	color += texture(source_color, uv_interp + vec2(-0.5,0.5) * pix_size);
+	frag_color = color / 4.0;
+
+#endif
+
 #ifdef MODE_GAUSSIAN_BLUR
 
 	//Simpler blur uses SIGMA2 for the gaussian kernel for a stronger effect
