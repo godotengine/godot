@@ -156,11 +156,6 @@ public:
 
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
-	/* SKY API */
-
-	virtual RID sky_create() = 0;
-	virtual void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) = 0;
-
 	/* SHADER API */
 
 	enum ShaderMode {
@@ -672,6 +667,18 @@ public:
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
 
+	/* SKY API */
+
+	enum SkyMode {
+		SKY_MODE_QUALITY,
+		SKY_MODE_REALTIME
+	};
+
+	virtual RID sky_create() = 0;
+	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
+	virtual void sky_set_mode(RID p_sky, SkyMode p_mode) = 0;
+	virtual void sky_set_texture(RID p_sky, RID p_panorama) = 0;
+
 	/* ENVIRONMENT API */
 
 	virtual RID environment_create() = 0;
@@ -681,11 +688,23 @@ public:
 		ENV_BG_CLEAR_COLOR,
 		ENV_BG_COLOR,
 		ENV_BG_SKY,
-		ENV_BG_COLOR_SKY,
 		ENV_BG_CANVAS,
 		ENV_BG_KEEP,
 		ENV_BG_CAMERA_FEED,
 		ENV_BG_MAX
+	};
+
+	enum EnvironmentAmbientSource {
+		ENV_AMBIENT_SOURCE_BG,
+		ENV_AMBIENT_SOURCE_DISABLED,
+		ENV_AMBIENT_SOURCE_COLOR,
+		ENV_AMBIENT_SOURCE_SKY,
+	};
+
+	enum EnvironmentReflectionSource {
+		ENV_REFLECTION_SOURCE_BG,
+		ENV_REFLECTION_SOURCE_DISABLED,
+		ENV_REFLECTION_SOURCE_SKY,
 	};
 
 	virtual void environment_set_background(RID p_env, EnvironmentBG p_bg) = 0;
@@ -695,7 +714,7 @@ public:
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) = 0;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, EnvironmentAmbientSource p_ambient = ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, EnvironmentReflectionSource p_reflection_source = ENV_REFLECTION_SOURCE_BG) = 0;
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
@@ -1086,6 +1105,8 @@ VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowDepthRangeMode);
 VARIANT_ENUM_CAST(VisualServer::ReflectionProbeUpdateMode);
 VARIANT_ENUM_CAST(VisualServer::ParticlesDrawOrder);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentBG);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentAmbientSource);
+VARIANT_ENUM_CAST(VisualServer::EnvironmentReflectionSource);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentDOFBlurQuality);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentGlowBlendMode);
 VARIANT_ENUM_CAST(VisualServer::EnvironmentToneMapper);
