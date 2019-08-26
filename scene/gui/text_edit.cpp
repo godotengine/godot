@@ -616,7 +616,7 @@ void TextEdit::_notification(int p_what) {
 		case NOTIFICATION_RESIZED: {
 
 			_update_scrollbars();
-			call_deferred("_update_wrap_at");
+			_update_wrap_at();
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
