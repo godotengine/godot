@@ -143,6 +143,11 @@ public:
 		MONTH_DECEMBER
 	};
 
+	void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
+	void global_menu_add_separator(const String &p_menu);
+	void global_menu_remove_item(const String &p_menu, int p_idx);
+	void global_menu_clear(const String &p_menu);
+
 	Point2 get_mouse_position() const;
 	void set_window_title(const String &p_title);
 	int get_mouse_button_state() const;

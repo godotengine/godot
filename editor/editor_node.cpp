@@ -135,6 +135,8 @@ void EditorNode::_update_scene_tabs() {
 
 	bool show_rb = EditorSettings::get_singleton()->get("interface/scene_tabs/show_script_button");
 
+	OS::get_singleton()->global_menu_clear("_dock");
+
 	scene_tabs->clear_tabs();
 	Ref<Texture> script_icon = gui_base->get_icon("Script", "EditorIcons");
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
@@ -149,10 +151,15 @@ void EditorNode::_update_scene_tabs() {
 		bool unsaved = (i == current) ? saved_version != editor_data.get_undo_redo().get_version() : editor_data.get_scene_version(i) != 0;
 		scene_tabs->add_tab(editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), icon);
 
+		OS::get_singleton()->global_menu_add_item("_dock", editor_data.get_scene_title(i) + (unsaved ? "(*)" : ""), GLOBAL_SCENE, i);
+
 		if (show_rb && editor_data.get_scene_root_script(i).is_valid()) {
 			scene_tabs->set_tab_right_button(i, script_icon);
 		}
 	}
+
+	OS::get_singleton()->global_menu_add_separator("_dock");
+	OS::get_singleton()->global_menu_add_item("_dock", TTR("New Window"), GLOBAL_NEW_WINDOW, Variant());
 
 	scene_tabs->set_current_tab(editor_data.get_edited_scene());
 
@@ -290,6 +297,7 @@ void EditorNode::_notification(int p_what) {
 			get_tree()->get_root()->set_as_audio_listener_2d(false);
 			get_tree()->set_auto_accept_quit(false);
 			get_tree()->connect("files_dropped", this, "_dropped_files");
+			get_tree()->connect("global_menu_action", this, "_global_menu_action");
 
 			/* DO NOT LOAD SCENES HERE, WAIT FOR FILE SCANNING AND REIMPORT TO COMPLETE */
 		} break;
@@ -4941,6 +4949,23 @@ void EditorNode::remove_tool_menu_item(const String &p_name) {
 	}
 }
 
+void EditorNode::_global_menu_action(const Variant &p_id, const Variant &p_meta) {
+
+	int id = (int)p_id;
+	if (id == GLOBAL_NEW_WINDOW) {
+		if (OS::get_singleton()->get_main_loop()) {
+			List<String> args;
+			String exec = OS::get_singleton()->get_executable_path();
+
+			OS::ProcessID pid = 0;
+			OS::get_singleton()->execute(exec, args, false, &pid);
+		}
+	} else if (id == GLOBAL_SCENE) {
+		int idx = (int)p_meta;
+		scene_tabs->set_current_tab(idx);
+	}
+}
+
 void EditorNode::_dropped_files(const Vector<String> &p_files, int p_screen) {
 
 	String to_path = ProjectSettings::get_singleton()->globalize_path(get_filesystem_dock()->get_selected_path());
@@ -5322,6 +5347,7 @@ void EditorNode::_bind_methods() {
 
 	ClassDB::bind_method("_clear_undo_history", &EditorNode::_clear_undo_history);
 	ClassDB::bind_method("_dropped_files", &EditorNode::_dropped_files);
+	ClassDB::bind_method(D_METHOD("_global_menu_action"), &EditorNode::_global_menu_action, DEFVAL(Variant()));
 	ClassDB::bind_method("_toggle_distraction_free_mode", &EditorNode::_toggle_distraction_free_mode);
 	ClassDB::bind_method("edit_item_resource", &EditorNode::edit_item_resource);
 

@@ -204,11 +204,53 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	}
 }
 
+- (void)globalMenuCallback:(id)sender {
+
+	if (![sender representedObject])
+		return;
+
+	OS_OSX::GlobalMenuItem *item = (OS_OSX::GlobalMenuItem *)[[sender representedObject] pointerValue];
+
+	if (!item)
+		return;
+
+	OS_OSX::singleton->main_loop->global_menu_action(item->signal, item->meta);
+}
+
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender {
+
+	NSMenu *menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+
+	Vector<OS_OSX::GlobalMenuItem> &E = OS_OSX::singleton->global_menus["_dock"];
+	for (int i = 0; i < E.size(); i++) {
+		if (E[i].label == String()) {
+			[menu addItem:[NSMenuItem separatorItem]];
+		} else {
+			NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:E[i].label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
+			[menu_item setRepresentedObject:[NSValue valueWithPointer:&(E[i])]];
+		}
+	}
+
+	return menu;
+}
+
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
-	// Note: called before main loop init!
+	// Note: may be called called before main loop init!
 	char *utfs = strdup([filename UTF8String]);
 	OS_OSX::singleton->open_with_filename.parse_utf8(utfs);
 	free(utfs);
+
+#ifdef TOOLS_ENABLED
+	// Open new instance
+	if (OS_OSX::singleton->get_main_loop()) {
+		List<String> args;
+		args.push_back(OS_OSX::singleton->open_with_filename);
+		String exec = OS::get_singleton()->get_executable_path();
+
+		OS::ProcessID pid = 0;
+		OS::get_singleton()->execute(exec, args, false, &pid);
+	}
+#endif
 	return YES;
 }
 
@@ -1265,6 +1307,56 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 }
 
 @end
+
+void OS_OSX::_update_global_menu() {
+
+	NSMenu *main_menu = [NSApp mainMenu];
+
+	for (int i = 1; i < [main_menu numberOfItems]; i++) {
+		[main_menu removeItemAtIndex:i];
+	}
+	for (Map<String, Vector<GlobalMenuItem> >::Element *E = global_menus.front(); E; E = E->next()) {
+		if (E->key() != "_dock") {
+			NSMenu *menu = [[[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:E->key().utf8().get_data()]] autorelease];
+			for (int i = 0; i < E->get().size(); i++) {
+				if (E->get()[i].label == String()) {
+					[menu addItem:[NSMenuItem separatorItem]];
+				} else {
+					NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:E->get()[i].label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
+					[menu_item setRepresentedObject:[NSValue valueWithPointer:&(E->get()[i])]];
+				}
+			}
+			NSMenuItem *menu_item = [main_menu addItemWithTitle:[NSString stringWithUTF8String:E->key().utf8().get_data()] action:nil keyEquivalent:@""];
+			[main_menu setSubmenu:menu forItem:menu_item];
+		}
+	}
+}
+
+void OS_OSX::global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta) {
+
+	global_menus[p_menu].push_back(GlobalMenuItem(p_label, p_signal, p_meta));
+	_update_global_menu();
+}
+
+void OS_OSX::global_menu_add_separator(const String &p_menu) {
+
+	global_menus[p_menu].push_back(GlobalMenuItem());
+	_update_global_menu();
+}
+
+void OS_OSX::global_menu_remove_item(const String &p_menu, int p_idx) {
+
+	ERR_FAIL_INDEX(p_idx, global_menus[p_menu].size());
+
+	global_menus[p_menu].remove(p_idx);
+	_update_global_menu();
+}
+
+void OS_OSX::global_menu_clear(const String &p_menu) {
+
+	global_menus[p_menu].clear();
+	_update_global_menu();
+}
 
 Point2 OS_OSX::get_ime_selection() const {
 

@@ -185,10 +185,31 @@ _ResourceSaver::_ResourceSaver() {
 
 /////////////////OS
 
+void _OS::global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta) {
+
+	OS::get_singleton()->global_menu_add_item(p_menu, p_label, p_signal, p_meta);
+}
+
+void _OS::global_menu_add_separator(const String &p_menu) {
+
+	OS::get_singleton()->global_menu_add_separator(p_menu);
+}
+
+void _OS::global_menu_remove_item(const String &p_menu, int p_idx) {
+
+	OS::get_singleton()->global_menu_remove_item(p_menu, p_idx);
+}
+
+void _OS::global_menu_clear(const String &p_menu) {
+
+	OS::get_singleton()->global_menu_clear(p_menu);
+}
+
 Point2 _OS::get_mouse_position() const {
 
 	return OS::get_singleton()->get_mouse_position();
 }
+
 void _OS::set_window_title(const String &p_title) {
 
 	OS::get_singleton()->set_window_title(p_title);
@@ -202,6 +223,7 @@ int _OS::get_mouse_button_state() const {
 String _OS::get_unique_id() const {
 	return OS::get_singleton()->get_unique_id();
 }
+
 bool _OS::has_touchscreen_ui_hint() const {
 
 	return OS::get_singleton()->has_touchscreen_ui_hint();
@@ -211,6 +233,7 @@ void _OS::set_clipboard(const String &p_text) {
 
 	OS::get_singleton()->set_clipboard(p_text);
 }
+
 String _OS::get_clipboard() const {
 
 	return OS::get_singleton()->get_clipboard();
@@ -257,12 +280,14 @@ void _OS::set_video_mode(const Size2 &p_size, bool p_fullscreen, bool p_resizeab
 	vm.resizable = p_resizeable;
 	OS::get_singleton()->set_video_mode(vm, p_screen);
 }
+
 Size2 _OS::get_video_mode(int p_screen) const {
 
 	OS::VideoMode vm;
 	vm = OS::get_singleton()->get_video_mode(p_screen);
 	return Size2(vm.width, vm.height);
 }
+
 bool _OS::is_video_mode_fullscreen(int p_screen) const {
 
 	OS::VideoMode vm;
@@ -1124,6 +1149,11 @@ void _OS::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("is_video_mode_fullscreen","screen"),&_OS::is_video_mode_fullscreen,DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("is_video_mode_resizable","screen"),&_OS::is_video_mode_resizable,DEFVAL(0));
 	//ClassDB::bind_method(D_METHOD("get_fullscreen_mode_list","screen"),&_OS::get_fullscreen_mode_list,DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("global_menu_add_item", "menu", "label", "id", "meta"), &_OS::global_menu_add_item);
+	ClassDB::bind_method(D_METHOD("global_menu_add_separator", "menu"), &_OS::global_menu_add_separator);
+	ClassDB::bind_method(D_METHOD("global_menu_remove_item", "menu", "idx"), &_OS::global_menu_remove_item);
+	ClassDB::bind_method(D_METHOD("global_menu_clear", "menu"), &_OS::global_menu_clear);
 
 	ClassDB::bind_method(D_METHOD("get_video_driver_count"), &_OS::get_video_driver_count);
 	ClassDB::bind_method(D_METHOD("get_video_driver_name", "driver"), &_OS::get_video_driver_name);
