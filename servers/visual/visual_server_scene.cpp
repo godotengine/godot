@@ -711,7 +711,9 @@ void VisualServerScene::instance_set_use_lightmap(RID p_instance, RID p_lightmap
 		instance->lightmap = p_lightmap;
 	}
 
-	VSG::scene_render->instance_custom_data_update_lightmap(instance);
+	if (instance->custom_data) {
+		VSG::scene_render->instance_custom_data_update_lightmap(instance);
+	}
 }
 
 void VisualServerScene::instance_set_custom_aabb(RID p_instance, AABB p_aabb) {

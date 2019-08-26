@@ -46,11 +46,23 @@ public:
 		BG_CLEAR_COLOR,
 		BG_COLOR,
 		BG_SKY,
-		BG_COLOR_SKY,
 		BG_CANVAS,
 		BG_KEEP,
 		BG_CAMERA_FEED,
 		BG_MAX
+	};
+
+	enum AmbientSource {
+		AMBIENT_SOURCE_BG,
+		AMBIENT_SOURCE_DISABLED,
+		AMBIENT_SOURCE_COLOR,
+		AMBIENT_SOURCE_SKY,
+	};
+
+	enum ReflectionSource {
+		REFLECTION_SOURCE_BG,
+		REFLECTION_SOURCE_DISABLED,
+		REFLECTION_SOURCE_SKY,
 	};
 
 	enum ToneMapper {
@@ -92,7 +104,7 @@ private:
 	BGMode bg_mode;
 	Ref<Sky> bg_sky;
 	float bg_sky_custom_fov;
-	Basis bg_sky_orientation;
+	Vector3 sky_rotation;
 	Color bg_color;
 	float bg_energy;
 	int bg_canvas_max_layer;
@@ -100,6 +112,8 @@ private:
 	float ambient_energy;
 	float ambient_sky_contribution;
 	int camera_feed_id;
+	AmbientSource ambient_source;
+	ReflectionSource reflection_source;
 
 	ToneMapper tone_mapper;
 	float tonemap_exposure;
@@ -183,11 +197,10 @@ protected:
 
 public:
 	void set_background(BGMode p_bg);
+
 	void set_sky(const Ref<Sky> &p_sky);
 	void set_sky_custom_fov(float p_scale);
-	void set_sky_orientation(const Basis &p_orientation);
-	void set_sky_rotation(const Vector3 &p_euler_rad);
-	void set_sky_rotation_degrees(const Vector3 &p_euler_deg);
+	void set_sky_rotation(const Vector3 &p_rotation);
 	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
@@ -195,13 +208,15 @@ public:
 	void set_ambient_light_energy(float p_energy);
 	void set_ambient_light_sky_contribution(float p_energy);
 	void set_camera_feed_id(int p_camera_feed_id);
+	void set_ambient_source(AmbientSource p_source);
+	AmbientSource get_ambient_source() const;
+	void set_reflection_source(ReflectionSource p_source);
+	ReflectionSource get_reflection_source() const;
 
 	BGMode get_background() const;
 	Ref<Sky> get_sky() const;
 	float get_sky_custom_fov() const;
-	Basis get_sky_orientation() const;
 	Vector3 get_sky_rotation() const;
-	Vector3 get_sky_rotation_degrees() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;
 	int get_canvas_max_layer() const;
@@ -412,6 +427,8 @@ public:
 };
 
 VARIANT_ENUM_CAST(Environment::BGMode)
+VARIANT_ENUM_CAST(Environment::AmbientSource)
+VARIANT_ENUM_CAST(Environment::ReflectionSource)
 VARIANT_ENUM_CAST(Environment::ToneMapper)
 VARIANT_ENUM_CAST(Environment::GlowBlendMode)
 VARIANT_ENUM_CAST(Environment::DOFBlurQuality)

@@ -186,11 +186,6 @@ public:
 
 	BIND2(texture_set_force_redraw_if_visible, RID, bool)
 
-	/* SKY API */
-
-	BIND0R(RID, sky_create)
-	BIND3(sky_set_texture, RID, RID, int)
-
 	/* SHADER API */
 
 	BIND0R(RID, shader_create)
@@ -494,6 +489,13 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::scene_render
 
+	/* SKY API */
+
+	BIND0R(RID, sky_create)
+	BIND2(sky_set_radiance_size, RID, int)
+	BIND2(sky_set_mode, RID, SkyMode)
+	BIND2(sky_set_texture, RID, RID)
+
 	BIND0R(RID, environment_create)
 
 	BIND2(environment_set_background, RID, EnvironmentBG)
@@ -503,7 +505,8 @@ public:
 	BIND2(environment_set_bg_color, RID, const Color &)
 	BIND2(environment_set_bg_energy, RID, float)
 	BIND2(environment_set_canvas_max_layer, RID, int)
-	BIND4(environment_set_ambient_light, RID, const Color &, float, float)
+	BIND6(environment_set_ambient_light, RID, const Color &, EnvironmentAmbientSource, float, float, EnvironmentReflectionSource)
+
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	BIND2(environment_set_camera_feed_id, RID, int)

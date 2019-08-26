@@ -840,7 +840,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	VulkanContext *context;
 
 	void _free_internal(RID p_id);
-	void _flush(bool p_setup, bool p_draw);
+	void _flush(bool p_current_frame);
 
 	bool screen_prepared;
 
@@ -850,7 +850,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 public:
 	virtual RID texture_create(const TextureFormat &p_format, const TextureView &p_view, const Vector<PoolVector<uint8_t> > &p_data = Vector<PoolVector<uint8_t> >());
 	virtual RID texture_create_shared(const TextureView &p_view, RID p_with_texture);
-	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap);
+
+	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D);
 	virtual Error texture_update(RID p_texture, uint32_t p_layer, const PoolVector<uint8_t> &p_data, bool p_sync_with_draw = false);
 	virtual PoolVector<uint8_t> texture_get_data(RID p_texture, uint32_t p_layer);
 
