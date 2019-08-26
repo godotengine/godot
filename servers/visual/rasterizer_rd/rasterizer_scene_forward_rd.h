@@ -214,12 +214,10 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		RID color;
 		RID depth;
 		RID color_fb;
+		RID color_only_fb;
 		int width, height;
 
 		RID render_target;
-
-		RID uniform_set_opaque;
-		RID uniform_set_alpha;
 
 		void clear();
 		virtual void configure(RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
@@ -229,18 +227,8 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 	virtual RenderBufferData *_create_render_buffer_data();
 
-	RID default_render_buffer_uniform_set;
-	/* Instance Data */
-
-	struct InstanceData {
-		struct UBO {
-		};
-
-		RID state_buffer;
-		RID uniform_set;
-	};
-
-	RID_Owner<InstanceData> instance_data_owner;
+	RID render_base_uniform_set;
+	void _setup_render_base_uniform_set(RID p_depth_buffer, RID p_color_buffer, RID p_normal_buffer, RID p_roughness_limit_buffer, RID p_radiance_cubemap);
 
 	/* Scene State UBO */
 
@@ -260,6 +248,15 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 			float time;
 			float reflection_multiplier;
+
+			float ambient_light_color_energy[4];
+
+			float ambient_color_sky_mix;
+			uint32_t use_ambient_light;
+			uint32_t use_ambient_cubemap;
+			uint32_t use_reflection_cubemap;
+
+			float radiance_inverse_xform[12];
 		};
 
 		UBO ubo;
@@ -427,13 +424,15 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
 	};
 
-	void _setup_environment(RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog);
+	void _setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog);
 
-	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, RID p_screen_uniform_set, bool p_no_gi);
+	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi);
 	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode);
 	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, PassMode p_pass_mode);
 
 	void _fill_render_list(InstanceBase **p_cull_result, int p_cull_count, PassMode p_pass_mode, bool p_no_gi);
+
+	void _draw_sky(RD::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, float p_alpha);
 
 protected:
 	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);

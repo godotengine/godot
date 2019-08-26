@@ -1,5 +1,20 @@
 #include "rasterizer_effects_rd.h"
 
+static _FORCE_INLINE_ void store_transform_3x3(const Basis &p_basis, float *p_array) {
+	p_array[0] = p_basis.elements[0][0];
+	p_array[1] = p_basis.elements[1][0];
+	p_array[2] = p_basis.elements[2][0];
+	p_array[3] = 0;
+	p_array[4] = p_basis.elements[0][1];
+	p_array[5] = p_basis.elements[1][1];
+	p_array[6] = p_basis.elements[2][1];
+	p_array[7] = 0;
+	p_array[8] = p_basis.elements[0][2];
+	p_array[9] = p_basis.elements[1][2];
+	p_array[10] = p_basis.elements[2][2];
+	p_array[11] = 0;
+}
+
 RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture) {
 
 	if (texture_to_uniform_set_cache.has(p_texture)) {
@@ -86,31 +101,127 @@ void RasterizerEffectsRD::gaussian_blur(RID p_source_rd_texture, RID p_framebuff
 	RD::get_singleton()->draw_list_end();
 }
 
+void RasterizerEffectsRD::cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness) {
+
+	zeromem(&roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+
+	roughness.push_constant.face_id = p_face_id;
+	roughness.push_constant.roughness = p_roughness;
+	roughness.push_constant.sample_count = p_sample_count;
+	roughness.push_constant.use_direct_write = p_roughness == 0.0;
+
+	//RUN
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, roughness.pipelines[p_source_is_panorama ? CUBEMAP_ROUGHNESS_SOURCE_PANORAMA : CUBEMAP_ROUGHNESS_SOURCE_CUBEMAP].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &roughness.push_constant, sizeof(CubemapRoughnessPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
+void RasterizerEffectsRD::render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler) {
+
+	zeromem(&sky.push_constant, sizeof(SkyPushConstant));
+
+	sky.push_constant.proj[0] = p_camera.matrix[2][0];
+	sky.push_constant.proj[1] = p_camera.matrix[0][0];
+	sky.push_constant.proj[2] = p_camera.matrix[2][1];
+	sky.push_constant.proj[3] = p_camera.matrix[1][1];
+	sky.push_constant.alpha = p_alpha;
+	sky.push_constant.depth = 1.0;
+	sky.push_constant.multiplier = p_multipler;
+	store_transform_3x3(p_orientation, sky.push_constant.orientation);
+
+	RD::DrawListID draw_list = p_list;
+
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, sky.pipeline.get_render_pipeline(RD::INVALID_ID, p_fb_format));
+
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_panorama), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &sky.push_constant, sizeof(SkyPushConstant));
+
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+}
+
+void RasterizerEffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_framebuffer, const Vector2 &p_pixel_size) {
+
+	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+
+	blur.push_constant.pixel_size[0] = p_pixel_size.x;
+	blur.push_constant.pixel_size[1] = p_pixel_size.y;
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_MIPMAP].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
 RasterizerEffectsRD::RasterizerEffectsRD() {
 
-	// Initialize blur
-	Vector<String> blur_modes;
-	blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
-	blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n");
-	blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
-	blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_LOW\n");
-	blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_MEDIUM\n");
-	blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_HIGH\n");
-	blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_LOW\n#define DOF_NEAR_BLUR_MERGE\n");
-	blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_MEDIUM\n#define DOF_NEAR_BLUR_MERGE\n");
-	blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_HIGH\n#define DOF_NEAR_BLUR_MERGE\n");
-	blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_LOW\n");
-	blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_MEDIUM\n");
-	blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_HIGH\n");
-	blur_modes.push_back("\n#define MODE_SSAO_MERGE\n");
-	blur_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
+	{
+		// Initialize blur
+		Vector<String> blur_modes;
+		blur_modes.push_back("\n#define MODE_GAUSSIAN_BLUR\n");
+		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n");
+		blur_modes.push_back("\n#define MODE_GAUSSIAN_GLOW\n#define GLOW_USE_AUTO_EXPOSURE\n");
+		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_LOW\n");
+		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_MEDIUM\n");
+		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_HIGH\n");
+		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_LOW\n#define DOF_NEAR_BLUR_MERGE\n");
+		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_MEDIUM\n#define DOF_NEAR_BLUR_MERGE\n");
+		blur_modes.push_back("\n#define MODE_DOF_NEAR_BLUR\n#define DOF_QUALITY_HIGH\n#define DOF_NEAR_BLUR_MERGE\n");
+		blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_LOW\n");
+		blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_MEDIUM\n");
+		blur_modes.push_back("\n#define MODE_DOF_FAR_BLUR\n#define DOF_QUALITY_HIGH\n");
+		blur_modes.push_back("\n#define MODE_SSAO_MERGE\n");
+		blur_modes.push_back("\n#define MODE_SIMPLE_COPY\n");
+		blur_modes.push_back("\n#define MODE_MIPMAP\n");
 
-	blur.shader.initialize(blur_modes);
-	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
-	blur.shader_version = blur.shader.version_create();
+		blur.shader.initialize(blur_modes);
+		zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+		blur.shader_version = blur.shader.version_create();
 
-	for (int i = 0; i < BLUR_MODE_MAX; i++) {
-		blur.pipelines[i].setup(blur.shader.version_get_shader(blur.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		for (int i = 0; i < BLUR_MODE_MAX; i++) {
+			blur.pipelines[i].setup(blur.shader.version_get_shader(blur.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
+	}
+
+	{
+		// Initialize roughness
+		Vector<String> cubemap_roughness_modes;
+		cubemap_roughness_modes.push_back("\n#define MODE_SOURCE_PANORAMA\n");
+		cubemap_roughness_modes.push_back("\n#define MODE_SOURCE_CUBEMAP\n");
+		roughness.shader.initialize(cubemap_roughness_modes);
+
+		roughness.shader_version = roughness.shader.version_create();
+
+		for (int i = 0; i < CUBEMAP_ROUGHNESS_SOURCE_MAX; i++) {
+			roughness.pipelines[i].setup(roughness.shader.version_get_shader(roughness.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
+	}
+
+	{
+		// Initialize sky
+		Vector<String> sky_modes;
+		sky_modes.push_back("");
+		sky.shader.initialize(sky_modes);
+
+		sky.shader_version = sky.shader.version_create();
+
+		RD::PipelineDepthStencilState depth_stencil_state;
+
+		depth_stencil_state.enable_depth_test = true;
+		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
+
+		sky.pipeline.setup(sky.shader.version_get_shader(sky.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
 	}
 
 	RD::SamplerState sampler;

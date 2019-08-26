@@ -85,7 +85,7 @@ public:
 		_create_func = _create_current;
 	}
 
-	virtual bool is_low_end() const { return true; }
+	virtual bool is_low_end() const { return false; }
 
 	static ThreadWorkPool thread_work_pool;
 

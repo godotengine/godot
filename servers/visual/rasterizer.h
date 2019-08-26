@@ -49,6 +49,13 @@ public:
 	virtual int get_directional_light_shadow_size(RID p_light_intance) = 0;
 	virtual void set_directional_shadow_count(int p_count) = 0;
 
+	/* SKY API */
+
+	virtual RID sky_create() = 0;
+	virtual void sky_set_radiance_size(RID p_sky, int p_radiance_size) = 0;
+	virtual void sky_set_mode(RID p_sky, VS::SkyMode p_samples) = 0;
+	virtual void sky_set_texture(RID p_sky, RID p_panorama) = 0;
+
 	/* ENVIRONMENT API */
 
 	virtual RID environment_create() = 0;
@@ -60,7 +67,7 @@ public:
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color) = 0;
 	virtual void environment_set_bg_energy(RID p_env, float p_energy) = 0;
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer) = 0;
-	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, float p_energy = 1.0, float p_sky_contribution = 0.0) = 0;
+	virtual void environment_set_ambient_light(RID p_env, const Color &p_color, VS::EnvironmentAmbientSource p_ambient = VS::ENV_AMBIENT_SOURCE_BG, float p_energy = 1.0, float p_sky_contribution = 0.0, VS::EnvironmentReflectionSource p_reflection_source = VS::ENV_REFLECTION_SOURCE_BG) = 0;
 // FIXME: Disabled during Vulkan refactoring, should be ported.
 #if 0
 	virtual void environment_set_camera_feed_id(RID p_env, int p_camera_feed_id) = 0;
@@ -82,9 +89,9 @@ public:
 	virtual void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) = 0;
 	virtual void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) = 0;
 
-	virtual bool is_environment(RID p_env) = 0;
-	virtual VS::EnvironmentBG environment_get_background(RID p_env) = 0;
-	virtual int environment_get_canvas_max_layer(RID p_env) = 0;
+	virtual bool is_environment(RID p_env) const = 0;
+	virtual VS::EnvironmentBG environment_get_background(RID p_env) const = 0;
+	virtual int environment_get_canvas_max_layer(RID p_env) const = 0;
 
 	struct InstanceBase;
 
@@ -258,6 +265,7 @@ public:
 
 	virtual bool free(RID p_rid) = 0;
 
+	virtual void update() = 0;
 	virtual ~RasterizerScene() {}
 };
 
@@ -303,11 +311,6 @@ public:
 	virtual void texture_set_force_redraw_if_visible(RID p_texture, bool p_enable) = 0;
 
 	virtual Size2 texture_size_with_proxy(RID p_proxy) = 0;
-
-	/* SKY API */
-
-	virtual RID sky_create() = 0;
-	virtual void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) = 0;
 
 	/* SHADER API */
 

@@ -7,8 +7,35 @@
 layout(set=0,binding=1) uniform texture2D depth_buffer;
 layout(set=0,binding=2) uniform texture2D color_buffer;
 layout(set=0,binding=3) uniform texture2D normal_buffer;
+layout(set=0,binding=4) uniform texture2D roughness_limit;
 
-layout(set=0,binding=4,std140) uniform SceneData {
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
+
+layout(set = 0, binding = 5) uniform textureCubeArray radiance_cubemap;
+
+#else
+
+layout(set = 0, binding = 5) uniform textureCube radiance_cubemap;
+
+#endif
+
+
+#define SAMPLER_NEAREST_CLAMP 0
+#define SAMPLER_LINEAR_CLAMP 1
+#define SAMPLER_NEAREST_WITH_MIMPAMPS_CLAMP 2
+#define SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP 3
+#define SAMPLER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC_CLAMP 4
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_CLAMP 5
+#define SAMPLER_NEAREST_REPEAT 6
+#define SAMPLER_LINEAR_REPEAT 7
+#define SAMPLER_NEAREST_WITH_MIMPAMPS_REPEAT 8
+#define SAMPLER_LINEAR_WITH_MIPMAPS_REPEAT 9
+#define SAMPLER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC_REPEAT 10
+#define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
+
+layout(set = 0, binding = 6) uniform sampler material_samplers[12];
+
+layout(set=0,binding=7,std140) uniform SceneData {
 
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
@@ -26,6 +53,15 @@ layout(set=0,binding=4,std140) uniform SceneData {
 
 	float time;
 	float reflection_multiplier; // one normally, zero when rendering reflections
+
+	vec4 ambient_light_color_energy;
+
+	float ambient_color_sky_mix;
+	bool use_ambient_light;
+	bool use_ambient_cubemap;
+	bool use_reflection_cubemap;
+
+	mat3 radiance_inverse_xform;
 
 #if 0
 	vec4 ambient_light_color;
@@ -65,7 +101,6 @@ layout(set=0,binding=4,std140) uniform SceneData {
 #endif
 } scene_data;
 
-layout(set = 0, binding = 5) uniform sampler material_samplers[12];
 
 #if 0
 struct DirectionalLightData {

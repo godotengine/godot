@@ -223,7 +223,9 @@ EditorInspectorPluginMaterial::EditorInspectorPluginMaterial() {
 	env.instance();
 	Ref<ProceduralSky> proc_sky = memnew(ProceduralSky(true));
 	env->set_sky(proc_sky);
-	env->set_background(Environment::BG_COLOR_SKY);
+	env->set_background(Environment::BG_COLOR);
+	env->set_ambient_source(Environment::AMBIENT_SOURCE_SKY);
+	env->set_reflection_source(Environment::REFLECTION_SOURCE_SKY);
 }
 
 MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {

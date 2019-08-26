@@ -265,10 +265,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 	if ((uint32_t)p_uvs.size() == vertex_count) {
 		stride += 2;
 	}
-	if ((uint32_t)p_bones.size() == vertex_count * 4) {
-		stride += 4;
-	}
-	if ((uint32_t)p_weights.size() == vertex_count * 4) {
+	if ((uint32_t)p_bones.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
 		stride += 4;
 	}
 
@@ -277,9 +274,9 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 	PoolVector<uint8_t> polygon_buffer;
 	polygon_buffer.resize(buffer_size * sizeof(float));
 	Vector<RD::VertexDescription> descriptions;
-	descriptions.resize(5);
+	descriptions.resize(4);
 	Vector<RID> buffers;
-	buffers.resize(5);
+	buffers.resize(4);
 
 	{
 		PoolVector<uint8_t>::Read r = polygon_buffer.read();
@@ -374,7 +371,7 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 		}
 
 		//bones
-		if ((uint32_t)p_indices.size() == vertex_count * 4) {
+		if ((uint32_t)p_indices.size() == vertex_count * 4 && (uint32_t)p_weights.size() == vertex_count * 4) {
 			RD::VertexDescription vd;
 			vd.format = RD::DATA_FORMAT_R32G32B32A32_UINT;
 			vd.offset = base_offset * sizeof(float);
@@ -384,12 +381,22 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 			descriptions.write[3] = vd;
 
 			const int *bone_ptr = p_bones.ptr();
+			const float *weight_ptr = p_weights.ptr();
 
 			for (uint32_t i = 0; i < vertex_count; i++) {
-				uptr[base_offset + i * stride + 0] = bone_ptr[i * 4 + 0];
-				uptr[base_offset + i * stride + 1] = bone_ptr[i * 4 + 1];
-				uptr[base_offset + i * stride + 2] = bone_ptr[i * 4 + 2];
-				uptr[base_offset + i * stride + 3] = bone_ptr[i * 4 + 3];
+
+				uint16_t *bone16w = (uint16_t *)&uptr[base_offset + i * stride];
+				uint16_t *weight16w = (uint16_t *)&uptr[base_offset + i * stride + 2];
+
+				bone16w[0] = bone_ptr[i * 4 + 0];
+				bone16w[1] = bone_ptr[i * 4 + 1];
+				bone16w[2] = bone_ptr[i * 4 + 2];
+				bone16w[3] = bone_ptr[i * 4 + 3];
+
+				weight16w[0] = CLAMP(weight_ptr[i * 4 + 0] * 65535, 0, 65535);
+				weight16w[1] = CLAMP(weight_ptr[i * 4 + 1] * 65535, 0, 65535);
+				weight16w[2] = CLAMP(weight_ptr[i * 4 + 2] * 65535, 0, 65535);
+				weight16w[3] = CLAMP(weight_ptr[i * 4 + 3] * 65535, 0, 65535);
 			}
 
 			base_offset += 4;
@@ -402,37 +409,6 @@ RasterizerCanvas::PolygonID RasterizerCanvasRD::request_polygon(const Vector<int
 
 			descriptions.write[3] = vd;
 			buffers.write[3] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_BONES);
-		}
-
-		//bones
-		if ((uint32_t)p_weights.size() == vertex_count * 4) {
-			RD::VertexDescription vd;
-			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-			vd.offset = base_offset * sizeof(float);
-			vd.location = VS::ARRAY_WEIGHTS;
-			vd.stride = stride * sizeof(float);
-
-			descriptions.write[4] = vd;
-
-			const float *weight_ptr = p_weights.ptr();
-
-			for (uint32_t i = 0; i < vertex_count; i++) {
-				fptr[base_offset + i * stride + 0] = weight_ptr[i * 4 + 0];
-				fptr[base_offset + i * stride + 1] = weight_ptr[i * 4 + 1];
-				fptr[base_offset + i * stride + 2] = weight_ptr[i * 4 + 2];
-				fptr[base_offset + i * stride + 3] = weight_ptr[i * 4 + 3];
-			}
-
-			base_offset += 4;
-		} else {
-			RD::VertexDescription vd;
-			vd.format = RD::DATA_FORMAT_R32G32B32A32_SFLOAT;
-			vd.offset = 0;
-			vd.location = VS::ARRAY_WEIGHTS;
-			vd.stride = 0;
-
-			descriptions.write[4] = vd;
-			buffers.write[4] = storage->mesh_get_default_rd_buffer(RasterizerStorageRD::DEFAULT_RD_BUFFER_WEIGHTS);
 		}
 
 		//check that everything is as it should be
@@ -913,7 +889,7 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 				ERR_CONTINUE(!pb);
 				//bind pipeline
 				{
-					static const PipelineVariant variant[VS::PRIMITIVE_MAX] = { PIPELINE_VARIANT_ATTRIBUTE_POINTS, PIPELINE_VARIANT_ATTRIBUTE_LINES, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLES };
+					static const PipelineVariant variant[VS::PRIMITIVE_MAX] = { PIPELINE_VARIANT_ATTRIBUTE_POINTS, PIPELINE_VARIANT_ATTRIBUTE_LINES, PIPELINE_VARIANT_ATTRIBUTE_LINES_STRIP, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLES, PIPELINE_VARIANT_ATTRIBUTE_TRIANGLE_STRIP };
 					ERR_CONTINUE(polygon->primitive < 0 || polygon->primitive >= VS::PRIMITIVE_MAX);
 					RID pipeline = pipeline_variants->variants[light_mode][variant[polygon->primitive]].get_render_pipeline(pb->vertex_format_id, p_framebuffer_format);
 					RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, pipeline);
@@ -1976,9 +1952,12 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 				RD::RENDER_PRIMITIVE_LINES,
 				RD::RENDER_PRIMITIVE_POINTS,
 				RD::RENDER_PRIMITIVE_TRIANGLES,
+				RD::RENDER_PRIMITIVE_TRIANGLE_STRIPS,
 				RD::RENDER_PRIMITIVE_LINES,
+				RD::RENDER_PRIMITIVE_LINESTRIPS,
 				RD::RENDER_PRIMITIVE_POINTS,
 			};
+
 			ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
 				{ //non lit
 						SHADER_VARIANT_QUAD,
@@ -1988,6 +1967,8 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 						SHADER_VARIANT_PRIMITIVE_POINTS,
 						SHADER_VARIANT_ATTRIBUTES,
 						SHADER_VARIANT_ATTRIBUTES,
+						SHADER_VARIANT_ATTRIBUTES,
+						SHADER_VARIANT_ATTRIBUTES,
 						SHADER_VARIANT_ATTRIBUTES_POINTS },
 				{ //lit
 						SHADER_VARIANT_QUAD_LIGHT,
@@ -1995,6 +1976,8 @@ void RasterizerCanvasRD::ShaderData::set_code(const String &p_code) {
 						SHADER_VARIANT_PRIMITIVE_LIGHT,
 						SHADER_VARIANT_PRIMITIVE_LIGHT,
 						SHADER_VARIANT_PRIMITIVE_POINTS_LIGHT,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT,
+						SHADER_VARIANT_ATTRIBUTES_LIGHT,
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
 						SHADER_VARIANT_ATTRIBUTES_LIGHT,
 						SHADER_VARIANT_ATTRIBUTES_POINTS_LIGHT },
@@ -2283,6 +2266,7 @@ RasterizerCanvasRD::RasterizerCanvasRD(RasterizerStorageRD *p_storage) {
 					RD::RENDER_PRIMITIVE_LINESTRIPS,
 					RD::RENDER_PRIMITIVE_POINTS,
 				};
+
 				ShaderVariant shader_variants[PIPELINE_LIGHT_MODE_MAX][PIPELINE_VARIANT_MAX] = {
 					{ //non lit
 							SHADER_VARIANT_QUAD,

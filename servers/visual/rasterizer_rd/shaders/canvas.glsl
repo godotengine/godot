@@ -13,8 +13,7 @@ layout(location = 0) in vec2 vertex_attrib;
 layout(location = 3) in vec4 color_attrib;
 layout(location = 4) in vec2 uv_attrib;
 
-layout(location = 6) in uvec4 bone_indices_attrib;
-layout(location = 7) in vec4 bone_weights_attrib;
+layout(location = 6) in uvec4 bones_attrib;
 
 #endif
 
@@ -68,8 +67,7 @@ void main() {
 		uv = draw_data.uvs[2];
 		color = vec4(unpackHalf2x16(draw_data.colors[4]),unpackHalf2x16(draw_data.colors[5]));
 	}
-	uvec4 bone_indices = uvec4(0,0,0,0);
-	vec4 bone_weights = vec4(0,0,0,0);
+	uvec4 bones = uvec4(0,0,0,0);
 
 #elif defined(USE_ATTRIBUTES)
 
@@ -77,8 +75,7 @@ void main() {
 	vec4 color = color_attrib;
 	vec2 uv = uv_attrib;
 
-	uvec4 bone_indices = bone_indices_attrib;
-	vec4 bone_weights = bone_weights_attrib;
+	uvec4 bones = bones_attrib;
 #else
 
 	vec2 vertex_base_arr[4] = vec2[](vec2(0.0,0.0),vec2(0.0,1.0),vec2(1.0,1.0),vec2(1.0,0.0));
@@ -87,8 +84,7 @@ void main() {
 	vec2 uv = draw_data.src_rect.xy + abs(draw_data.src_rect.zw) * ((draw_data.flags&FLAGS_TRANSPOSE_RECT)!=0 ? vertex_base.yx : vertex_base.xy);
 	vec4 color = draw_data.modulation;
 	vec2 vertex = draw_data.dst_rect.xy + abs(draw_data.dst_rect.zw) * mix(vertex_base, vec2(1.0, 1.0) - vertex_base, lessThan(draw_data.src_rect.zw, vec2(0.0, 0.0)));
-	uvec4 bone_indices = uvec4(0,0,0,0);
-	vec4 bone_weights = vec4(0,0,0,0);
+	uvec4 bones = uvec4(0,0,0,0);
 
 #endif
 

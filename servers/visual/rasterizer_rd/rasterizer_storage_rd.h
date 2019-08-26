@@ -77,6 +77,8 @@ public:
 		DEFAULT_RD_TEXTURE_NORMAL,
 		DEFAULT_RD_TEXTURE_ANISO,
 		DEFAULT_RD_TEXTURE_MULTIMESH_BUFFER,
+		DEFAULT_RD_TEXTURE_CUBEMAP_BLACK,
+		DEFAULT_RD_TEXTURE_CUBEMAP_ARRAY_BLACK,
 		DEFAULT_RD_TEXTURE_MAX
 	};
 
@@ -392,11 +394,6 @@ public:
 	_FORCE_INLINE_ RID sampler_rd_get_default(VS::CanvasItemTextureFilter p_filter, VS::CanvasItemTextureRepeat p_repeat) {
 		return default_rd_samplers[p_filter][p_repeat];
 	}
-
-	/* SKY API */
-
-	RID sky_create() { return RID(); }
-	void sky_set_texture(RID p_sky, RID p_cube_map, int p_radiance_size) {}
 
 	/* SHADER API */
 
