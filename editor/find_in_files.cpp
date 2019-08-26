@@ -221,8 +221,8 @@ float FindInFiles::get_progress() const {
 
 void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
-	DirAccess *dir = DirAccess::open(path);
-	if (dir == NULL) {
+	DirAccessRef dir = DirAccess::open(path);
+	if (!dir) {
 		print_verbose("Cannot open directory! " + path);
 		return;
 	}
@@ -253,8 +253,8 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
 void FindInFiles::_scan_file(String fpath) {
 
-	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
-	if (f == NULL) {
+	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
+	if (!f) {
 		print_verbose(String("Cannot open file ") + fpath);
 		return;
 	}
