@@ -56,7 +56,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "android_mono_config.gen.h"
+#include "android_mono_config.h"
 #endif
 
 GDMono *GDMono::singleton = NULL;
