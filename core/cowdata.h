@@ -119,11 +119,7 @@ private:
 			return false;
 
 		uint8_t *data = (uint8_t *)_ptr;
-		if (p_ptr >= data && p_ptr <= data + _size * sizeof(T)) {
-			return true;
-		}
-
-		return false;
+		return p_ptr >= data && p_ptr <= data + _size * sizeof(T);
 	}
 
 	void _unref(void *p_data);
