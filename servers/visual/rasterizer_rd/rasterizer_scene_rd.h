@@ -54,6 +54,7 @@ private:
 
 	struct Environent {
 
+		// BG
 		VS::EnvironmentBG background = VS::ENV_BG_CLEAR_COLOR;
 		RID sky;
 		float sky_custom_fov = 0.0;
@@ -66,6 +67,17 @@ private:
 		float ambient_light_energy = 1.0;
 		float ambient_sky_contribution = 1.0;
 		VS::EnvironmentReflectionSource reflection_source = VS::ENV_REFLECTION_SOURCE_BG;
+
+		/// Tonemap
+
+		VS::EnvironmentToneMapper tone_mapper;
+		float exposure = 1.0;
+		float white = 1.0;
+		bool auto_exposure = false;
+		float min_luminance = 0.2;
+		float max_luminance = 8.0;
+		float auto_exp_speed = 0.2;
+		float auto_exp_scale = 0.5;
 	};
 
 	mutable RID_Owner<Environent> environment_owner;
@@ -138,7 +150,15 @@ public:
 	void environment_set_ssr(RID p_env, bool p_enable, int p_max_steps, float p_fade_int, float p_fade_out, float p_depth_tolerance, bool p_roughness) {}
 	void environment_set_ssao(RID p_env, bool p_enable, float p_radius, float p_intensity, float p_radius2, float p_intensity2, float p_bias, float p_light_affect, float p_ao_channel_affect, const Color &p_color, VS::EnvironmentSSAOQuality p_quality, VS::EnvironmentSSAOBlur p_blur, float p_bilateral_sharpness) {}
 
-	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {}
+	void environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale);
+	VS::EnvironmentToneMapper environment_get_tonemapper(RID p_env) const;
+	float environment_get_exposure(RID p_env) const;
+	float environment_get_white(RID p_env) const;
+	bool environment_get_auto_exposure(RID p_env) const;
+	float environment_get_min_luminance(RID p_env) const;
+	float environment_get_max_luminance(RID p_env) const;
+	float environment_get_auto_exposure_scale(RID p_env) const;
+	float environment_get_auto_exposure_speed(RID p_env) const;
 
 	void environment_set_adjustment(RID p_env, bool p_enable, float p_brightness, float p_contrast, float p_saturation, RID p_ramp) {}
 
