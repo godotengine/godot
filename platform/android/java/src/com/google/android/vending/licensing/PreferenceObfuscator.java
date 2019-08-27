@@ -45,6 +45,9 @@ public class PreferenceObfuscator {
     public void putString(String key, String value) {
         if (mEditor == null) {
             mEditor = mPreferences.edit();
+            // -- GODOT start --
+            mEditor.apply();
+            // -- GODOT end --
         }
         String obfuscatedValue = mObfuscator.obfuscate(value, key);
         mEditor.putString(key, obfuscatedValue);

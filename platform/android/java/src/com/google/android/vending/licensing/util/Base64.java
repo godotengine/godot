@@ -31,6 +31,10 @@ package com.google.android.vending.licensing.util;
  * @version 1.3
  */
 
+// -- GODOT start --
+import com.godot.game.BuildConfig;
+// -- GODOT end --
+
 /**
  * Base64 converter class. This code is not a full-blown MIME encoder;
  * it simply converts binary data to base64 data and back.
@@ -341,7 +345,11 @@ public class Base64 {
       e += 4;
     }
 
-    assert (e == outBuff.length);
+    // -- GODOT start --
+    //assert (e == outBuff.length);
+    if (BuildConfig.DEBUG && e != outBuff.length)
+      throw new RuntimeException();
+    // -- GODOT end --
     return outBuff;
   }
 
