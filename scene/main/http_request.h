@@ -111,6 +111,7 @@ private:
 	Thread *thread;
 
 	void _request_done(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
+	Error _make_request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const Variant &p_request_data);
 	static void _thread_func(void *p_userdata);
 
 protected:

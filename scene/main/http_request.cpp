@@ -86,6 +86,16 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
 
+	return _make_request(p_url, p_custom_headers, p_ssl_validate_domain, p_method, p_request_data);
+}
+
+Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const PoolVector<uint8_t> &p_body) {
+
+	return _make_request(p_url, p_custom_headers, p_ssl_validate_domain, p_method, p_body);
+}
+
+Error HTTPRequest::_make_request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const Variant &p_request_data) {
+
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
@@ -104,51 +114,11 @@ Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_h
 
 	headers = p_custom_headers;
 
-	request_is_raw = false;
-	request_data = p_request_data;
-
-	requesting = true;
-
-	if (use_threads) {
-
-		thread_done = false;
-		thread_request_quit = false;
-		client->set_blocking_mode(true);
-		thread = Thread::create(_thread_func, this);
-	} else {
-		client->set_blocking_mode(false);
-		err = _request();
-		if (err != OK) {
-			call_deferred("_request_done", RESULT_CANT_CONNECT, 0, PoolStringArray(), PoolByteArray());
-			return ERR_CANT_CONNECT;
-		}
-
-		set_process_internal(true);
-	}
-
-	return OK;
-}
-
-Error HTTPRequest::request_raw(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const PoolVector<uint8_t> &p_body) {
-
-	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
-	if (requesting) {
-		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
-		ERR_FAIL_V(ERR_BUSY);
-	}
-
-	method = p_method;
-
-	Error err = _parse_url(p_url);
-	if (err)
-		return err;
-
-	validate_ssl = p_ssl_validate_domain;
-
-	headers = p_custom_headers;
-
-	request_is_raw = true;
-	raw_request_data = p_body;
+	request_is_raw = (p_request_data.get_type() == Variant::POOL_BYTE_ARRAY);
+	if (request_is_raw)
+		raw_request_data = p_request_data;
+	else
+		request_data = p_request_data;
 
 	requesting = true;
 
