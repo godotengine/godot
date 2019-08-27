@@ -86,11 +86,11 @@ private:
 
 		if (!_ptr)
 			return NULL;
-		return reinterpret_cast<T *>(_ptr);
+
+		return reinterpret_cast<T *>(_ptr); // TODO: figure out if this is just superstitious? looks like a no-op? (including the above if)
 	}
 
 	_FORCE_INLINE_ size_t _get_alloc_size(size_t p_elements) const {
-		//return nearest_power_of_2_templated(p_elements*sizeof(T)+sizeof(SafeRefCount)+sizeof(int));
 		return next_power_of_2(p_elements * sizeof(T));
 	}
 
