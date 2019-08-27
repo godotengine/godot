@@ -287,7 +287,8 @@ public class LicenseChecker implements ServiceConnection {
 						}
 
 						if (logResponse) {
-							String android_id = Secure.ANDROID_ID;
+							String android_id = Secure.getString(mContext.getContentResolver(),
+									Secure.ANDROID_ID);
 							Date date = new Date();
 							Log.d(TAG, "Server Failure: " + stringError);
 							Log.d(TAG, "Android ID: " + android_id);

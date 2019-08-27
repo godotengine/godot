@@ -746,7 +746,8 @@ public abstract class DownloaderService extends CustomIntentService implements I
 		public void run() {
 			setServiceRunning(true);
 			mNotification.onDownloadStateChanged(IDownloaderClient.STATE_FETCHING_URL);
-			String deviceId = Secure.ANDROID_ID;
+			String deviceId = Secure.getString(mContext.getContentResolver(),
+					Secure.ANDROID_ID);
 
 			final APKExpansionPolicy aep = new APKExpansionPolicy(mContext,
 					new AESObfuscator(getSALT(), mContext.getPackageName(), deviceId));

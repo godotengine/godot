@@ -1,5 +1,7 @@
-# Third party libraries
+# Third-party libraries
 
+This file list third-party libraries used in the Android source folder,
+with their provenance and, when relevant, modifications made to those files.
 
 ## Google's vending library
 
@@ -7,12 +9,13 @@
 - Version: git (eb57657, 2018) with modifications
 - License: Apache 2.0
 
-Overwrite all files under `com/google/android/vending`
+Overwrite all files under `com/google/android/vending`.
 
-### Modify some files to avoid compile error and lint warning
+Modify those files to avoid compile error and lint warning:
 
-#### com/google/android/vending/licensing/util/Base64.java
-```
+- `com/google/android/vending/licensing/util/Base64.java`
+
+```diff
 @@ -338,7 +338,8 @@ public class Base64 {
                         e += 4;
                 }
@@ -24,8 +27,9 @@ Overwrite all files under `com/google/android/vending`
         }
 ```
 
-#### com/google/android/vending/licensing/LicenseChecker.java
-```
+- `com/google/android/vending/licensing/LicenseChecker.java`
+
+```diff
 @@ -29,8 +29,8 @@ import android.os.RemoteException;
  import android.provider.Settings.Secure;
  import android.util.Log;
@@ -36,12 +40,4 @@ Overwrite all files under `com/google/android/vending`
 +import com.google.android.vending.licensing.ILicensingService;
  import com.google.android.vending.licensing.util.Base64;
  import com.google.android.vending.licensing.util.Base64DecoderException;
-```
-```
-@@ -287,13 +287,15 @@ public class LicenseChecker implements ServiceConnection {
-     if (logResponse) {
--        String android_id = Secure.getString(mContext.getContentResolver(),
--                            Secure.ANDROID_ID);
-+        String android_id = Secure.ANDROID_ID;
-         Date date = new Date();
 ```
