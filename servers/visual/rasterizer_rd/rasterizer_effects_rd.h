@@ -6,6 +6,8 @@
 #include "servers/visual/rasterizer_rd/shaders/blur.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/tonemap.glsl.gen.h"
+#include "servers/visual_server.h"
 
 class RasterizerEffectsRD {
 
@@ -110,6 +112,40 @@ class RasterizerEffectsRD {
 		RenderPipelineVertexFormatCacheRD pipeline;
 	} sky;
 
+	enum TonemapMode {
+		TONEMAP_MODE_NORMAL,
+		TONEMAP_MODE_BICUBIC_GLOW_FILTER,
+		TONEMAP_MODE_MAX
+	};
+
+	struct TonemapPushConstant {
+		float bcs[3];
+		uint32_t use_bcs;
+
+		uint32_t use_glow;
+		uint32_t use_auto_exposure;
+		uint32_t use_color_correction;
+		uint32_t tonemapper;
+
+		uint32_t glow_texture_size[2];
+
+		float glow_intensity;
+		uint32_t glow_level_flags;
+		uint32_t glow_mode;
+
+		float exposure;
+		float white;
+		float auto_exposure_grey;
+	};
+
+	struct Tonemap {
+
+		TonemapPushConstant push_constant;
+		TonemapShaderRD shader;
+		RID shader_version;
+		RenderPipelineVertexFormatCacheRD pipelines[TONEMAP_MODE_MAX];
+	} tonemap;
+
 	RID default_sampler;
 	RID index_buffer;
 	RID index_array;
@@ -124,6 +160,42 @@ public:
 	void cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness);
 	void render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler);
 	void make_mipmap(RID p_source_rd_texture, RID p_framebuffer_half, const Vector2 &p_pixel_size);
+
+	struct TonemapSettings {
+
+		bool use_glow = false;
+		enum GlowMode {
+			GLOW_MODE_ADD,
+			GLOW_MODE_SCREEN,
+			GLOW_MODE_SOFTLIGHT,
+			GLOW_MODE_REPLACE
+		};
+
+		GlowMode glow_mode = GLOW_MODE_ADD;
+		float glow_intensity = 1.0;
+		uint32_t glow_level_flags = 0;
+		Vector2i glow_texture_size;
+		bool glow_use_bicubic_upscale = false;
+		RID glow_texture;
+
+		VS::EnvironmentToneMapper tonemap_mode = VS::ENV_TONE_MAPPER_LINEAR;
+		float exposure = 1.0;
+		float white = 1.0;
+
+		bool use_auto_exposure = false;
+		float auto_exposure_grey = 0.5;
+		RID exposure_texture;
+
+		bool use_bcs = false;
+		float brightness = 1.0;
+		float contrast = 1.0;
+		float saturation = 1.0;
+
+		bool use_color_correction = false;
+		RID color_correction_texture;
+	};
+
+	void tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings);
 
 	RasterizerEffectsRD();
 	~RasterizerEffectsRD();
