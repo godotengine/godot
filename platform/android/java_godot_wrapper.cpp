@@ -63,6 +63,7 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_get_surface = p_env->GetMethodID(cls, "getSurface", "()Landroid/view/Surface;");
 	_is_activity_resumed = p_env->GetMethodID(cls, "isActivityResumed", "()Z");
 	_vibrate = p_env->GetMethodID(cls, "vibrate", "(I)V");
+	_get_input_fallback_mapping = p_env->GetMethodID(cls, "getInputFallbackMapping", "()Ljava/lang/String;");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -161,6 +162,16 @@ String GodotJavaWrapper::get_clipboard() {
 		JNIEnv *env = ThreadAndroid::get_env();
 		jstring s = (jstring)env->CallObjectMethod(godot_instance, _get_clipboard);
 		return jstring_to_string(s, env);
+	} else {
+		return String();
+	}
+}
+
+String GodotJavaWrapper::get_input_fallback_mapping() {
+	if (_get_input_fallback_mapping) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		jstring fallback_mapping = (jstring)env->CallObjectMethod(godot_instance, _get_input_fallback_mapping);
+		return jstring_to_string(fallback_mapping, env);
 	} else {
 		return String();
 	}

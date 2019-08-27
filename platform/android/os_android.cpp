@@ -173,7 +173,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
-	input->set_fallback_mapping("Default Android Gamepad");
+	input->set_fallback_mapping(godot_java->get_input_fallback_mapping());
 
 	///@TODO implement a subclass for Android and instantiate that instead
 	camera_server = memnew(CameraServer);
