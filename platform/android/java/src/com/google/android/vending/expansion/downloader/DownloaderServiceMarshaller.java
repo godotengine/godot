@@ -25,6 +25,9 @@ import android.os.Message;
 import android.os.Messenger;
 import android.os.RemoteException;
 
+// -- GODOT start --
+import java.lang.ref.WeakReference;
+// -- GODOT end --
 
 
 /**
@@ -108,32 +111,49 @@ public class DownloaderServiceMarshaller {
 
     private static class Stub implements IStub {
         private IDownloaderService mItf = null;
-        final Messenger mMessenger = new Messenger(new Handler() {
+        // -- GODOT start --
+        private final MessengerHandlerServer mMsgHandler = new MessengerHandlerServer(this);
+        final Messenger mMessenger = new Messenger(mMsgHandler);
+
+        private static class MessengerHandlerServer extends Handler {
+            private final WeakReference<Stub> mDownloader;
+            public MessengerHandlerServer(Stub downloader) {
+                mDownloader = new WeakReference<>(downloader);
+            }
+
             @Override
             public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case MSG_REQUEST_ABORT_DOWNLOAD:
-                        mItf.requestAbortDownload();
-                        break;
-                    case MSG_REQUEST_CONTINUE_DOWNLOAD:
-                        mItf.requestContinueDownload();
-                        break;
-                    case MSG_REQUEST_PAUSE_DOWNLOAD:
-                        mItf.requestPauseDownload();
-                        break;
-                    case MSG_SET_DOWNLOAD_FLAGS:
-                        mItf.setDownloadFlags(msg.getData().getInt(PARAMS_FLAGS));
-                        break;
-                    case MSG_REQUEST_DOWNLOAD_STATE:
-                        mItf.requestDownloadStatus();
-                        break;
-                    case MSG_REQUEST_CLIENT_UPDATE:
-                        mItf.onClientUpdated((Messenger) msg.getData().getParcelable(
-                                PARAM_MESSENGER));
-                        break;
+                Stub downloader = mDownloader.get();
+                if (downloader != null) {
+                    downloader.handleMessage(msg);
                 }
             }
-        });
+        }
+
+        private void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_REQUEST_ABORT_DOWNLOAD:
+                    mItf.requestAbortDownload();
+                    break;
+                case MSG_REQUEST_CONTINUE_DOWNLOAD:
+                    mItf.requestContinueDownload();
+                    break;
+                case MSG_REQUEST_PAUSE_DOWNLOAD:
+                    mItf.requestPauseDownload();
+                    break;
+                case MSG_SET_DOWNLOAD_FLAGS:
+                    mItf.setDownloadFlags(msg.getData().getInt(PARAMS_FLAGS));
+                    break;
+                case MSG_REQUEST_DOWNLOAD_STATE:
+                    mItf.requestDownloadStatus();
+                    break;
+                case MSG_REQUEST_CLIENT_UPDATE:
+                    mItf.onClientUpdated((Messenger)msg.getData().getParcelable(
+                            PARAM_MESSENGER));
+                    break;
+            }
+        }
+        // -- GODOT end --
 
         public Stub(IDownloaderService itf) {
             mItf = itf;

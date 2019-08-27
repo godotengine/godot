@@ -32,6 +32,9 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+// -- GODOT start --
+import java.lang.ref.WeakReference;
+// -- GODOT end --
 
 
 /**
@@ -118,29 +121,46 @@ public class DownloaderClientMarshaller {
         /**
          * Target we publish for clients to send messages to IncomingHandler.
          */
-        final Messenger mMessenger = new Messenger(new Handler() {
+        // -- GODOT start --
+        private final MessengerHandlerClient mMsgHandler = new MessengerHandlerClient(this);
+        final Messenger mMessenger = new Messenger(mMsgHandler);
+
+        private static class MessengerHandlerClient extends Handler {
+            private final WeakReference<Stub> mDownloader;
+            public MessengerHandlerClient(Stub downloader) {
+                mDownloader = new WeakReference<>(downloader);
+            }
+
             @Override
             public void handleMessage(Message msg) {
-                switch (msg.what) {
-                    case MSG_ONDOWNLOADPROGRESS:
-                        Bundle bun = msg.getData();
-                        if ( null != mContext ) {
-                            bun.setClassLoader(mContext.getClassLoader());
-                            DownloadProgressInfo dpi = (DownloadProgressInfo) msg.getData()
-                                    .getParcelable(PARAM_PROGRESS);
-                            mItf.onDownloadProgress(dpi);
-                        }
-                        break;
-                    case MSG_ONDOWNLOADSTATE_CHANGED:
-                        mItf.onDownloadStateChanged(msg.getData().getInt(PARAM_NEW_STATE));
-                        break;
-                    case MSG_ONSERVICECONNECTED:
-                        mItf.onServiceConnected(
-                                (Messenger) msg.getData().getParcelable(PARAM_MESSENGER));
-                        break;
+                Stub downloader = mDownloader.get();
+                if (downloader != null) {
+                    downloader.handleMessage(msg);
                 }
             }
-        });
+        }
+
+        private void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_ONDOWNLOADPROGRESS:
+                    Bundle bun = msg.getData();
+                    if (null != mContext) {
+                        bun.setClassLoader(mContext.getClassLoader());
+                        DownloadProgressInfo dpi = (DownloadProgressInfo)msg.getData()
+                                                            .getParcelable(PARAM_PROGRESS);
+                        mItf.onDownloadProgress(dpi);
+                    }
+                    break;
+                case MSG_ONDOWNLOADSTATE_CHANGED:
+                    mItf.onDownloadStateChanged(msg.getData().getInt(PARAM_NEW_STATE));
+                    break;
+                case MSG_ONSERVICECONNECTED:
+                    mItf.onServiceConnected(
+                            (Messenger)msg.getData().getParcelable(PARAM_MESSENGER));
+                    break;
+            }
+        }
+        // -- GODOT end --
 
         public Stub(IDownloaderClient itf, Class<?> downloaderService) {
             mItf = itf;

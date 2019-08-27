@@ -146,8 +146,12 @@ public class DownloadThread {
 
         try {
             PowerManager pm = (PowerManager) mContext.getSystemService(Context.POWER_SERVICE);
-            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
-            wakeLock.acquire();
+            // -- GODOT start --
+            //wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, Constants.TAG);
+            //wakeLock.acquire();
+            wakeLock = pm.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK, "org.godot.game:wakelock");
+            wakeLock.acquire(20 * 60 * 1000L /*20 minutes*/);
+            // -- GODOT end --
 
             if (Constants.LOGV) {
                 Log.v(Constants.TAG, "initiating download for " + mInfo.mFileName);

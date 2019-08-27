@@ -26,6 +26,10 @@ import android.net.NetworkInfo;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+// -- GODOT start --
+import android.annotation.SuppressLint;
+// -- GODOT end --
+
 /**
  * Contains useful helper functions, typically tied to the application context.
  */
@@ -51,6 +55,7 @@ class SystemFacade {
             return null;
         }
 
+        @SuppressLint("MissingPermission")
         NetworkInfo activeInfo = connectivity.getActiveNetworkInfo();
         if (activeInfo == null) {
             if (Constants.LOGVV) {
@@ -69,6 +74,7 @@ class SystemFacade {
             return false;
         }
 
+        @SuppressLint("MissingPermission")
         NetworkInfo info = connectivity.getActiveNetworkInfo();
         boolean isMobile = (info != null && info.getType() == ConnectivityManager.TYPE_MOBILE);
         TelephonyManager tm = (TelephonyManager) mContext

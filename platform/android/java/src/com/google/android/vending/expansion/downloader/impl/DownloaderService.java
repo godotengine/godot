@@ -50,6 +50,10 @@ import android.provider.Settings.Secure;
 import android.telephony.TelephonyManager;
 import android.util.Log;
 
+// -- GODOT start --
+import android.annotation.SuppressLint;
+// -- GODOT end --
+
 import java.io.File;
 
 /**
@@ -578,6 +582,7 @@ public abstract class DownloaderService extends CustomIntentService implements I
             Log.w(Constants.TAG,
                     "couldn't get connectivity manager to poll network state");
         } else {
+            @SuppressLint("MissingPermission")
             NetworkInfo activeInfo = mConnectivityManager
                     .getActiveNetworkInfo();
             updateNetworkState(activeInfo);

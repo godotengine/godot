@@ -16,7 +16,11 @@
 
 package com.google.android.vending.expansion.downloader.impl;
 
-import com.android.vending.expansion.downloader.R;
+// -- GODOT start --
+//import com.android.vending.expansion.downloader.R;
+import com.godot.game.R;
+// -- GODOT end --
+
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
 import com.google.android.vending.expansion.downloader.Helpers;

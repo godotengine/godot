@@ -13,6 +13,9 @@ Overwrite all files under:
 
 - `src/com/google/android/vending/expansion/downloader`
 
+Some files have been modified for yet unclear reasons.
+See the `patches/com.google.android.vending.expansion.downloader.patch` file.
+
 ## com.google.android.vending.licensing
 
 - Upstream: https://github.com/google/play-licensing/tree/master/lvl_library/
