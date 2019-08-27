@@ -404,7 +404,7 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 	icon->set_texture(p_preview);
 	asset_id = p_asset_id;
 	if (!p_preview.is_valid())
-		icon->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
+		icon->set_texture(get_icon("FileBrokenBigThumb", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
 	_make_request();
@@ -770,7 +770,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 		}
 
 		if (!image_set && final) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("FileBrokenBigThumb", "EditorIcons"));
 		}
 	}
 }
@@ -815,7 +815,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
-			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
+			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("FileBrokenBigThumb", "EditorIcons"));
 		}
 	}
 
