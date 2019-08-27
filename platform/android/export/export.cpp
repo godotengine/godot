@@ -1610,19 +1610,16 @@ public:
 				valid = false;
 			} else {
 				Error errn;
-				DirAccess *da = DirAccess::open(sdk_path.plus_file("tools"), &errn);
+				DirAccessRef da = DirAccess::open(sdk_path.plus_file("tools"), &errn);
 				if (errn != OK) {
 					err += TTR("Invalid Android SDK path for custom build in Editor Settings.") + "\n";
 					valid = false;
-				}
-				if (da) {
-					memdelete(da);
 				}
 			}
 
 			if (!FileAccess::exists("res://android/build/build.gradle")) {
 
-				err += TTR("Android project is not installed for compiling. Install from Editor menu.") + "\n";
+				err += TTR("Android build template not installed in the project. Install it from the Project menu.") + "\n";
 				valid = false;
 			}
 		}
@@ -2513,7 +2510,7 @@ void register_android_exporter() {
 	EDITOR_DEF("export/android/debug_keystore_pass", "android");
 	EDITOR_DEF("export/android/force_system_user", false);
 	EDITOR_DEF("export/android/custom_build_sdk_path", "");
-	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/custom_build_sdk_path", PROPERTY_HINT_GLOBAL_DIR, "*.keystore"));
+	EditorSettings::get_singleton()->add_property_hint(PropertyInfo(Variant::STRING, "export/android/custom_build_sdk_path", PROPERTY_HINT_GLOBAL_DIR));
 
 	EDITOR_DEF("export/android/timestamping_authority_url", "");
 	EDITOR_DEF("export/android/shutdown_adb_on_exit", true);

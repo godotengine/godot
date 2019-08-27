@@ -6411,13 +6411,13 @@ EditorNode::EditorNode() {
 	gui_base->add_child(custom_build_manage_templates);
 
 	install_android_build_template = memnew(ConfirmationDialog);
-	install_android_build_template->set_text(TTR("This will install the Android project for custom builds.\nNote that, in order to use it, it needs to be enabled per export preset."));
+	install_android_build_template->set_text(TTR("This will set up your project for custom Android builds by installing the source template to \"res://android/build\".\nYou can then apply modifications and build your own custom APK on export (adding modules, changing the AndroidManifest.xml, etc.).\nNote that in order to make custom builds instead of using pre-built APKs, the \"Use Custom Build\" option should be enabled in the Android export preset."));
 	install_android_build_template->get_ok()->set_text(TTR("Install"));
 	install_android_build_template->connect("confirmed", this, "_menu_confirm_current");
 	gui_base->add_child(install_android_build_template);
 
 	remove_android_build_template = memnew(ConfirmationDialog);
-	remove_android_build_template->set_text(TTR("Android build template is already installed and it won't be overwritten.\nRemove the \"build\" directory manually before attempting this operation again."));
+	remove_android_build_template->set_text(TTR("The Android build template is already installed in this project and it won't be overwritten.\nRemove the \"res://android/build\" directory manually before attempting this operation again."));
 	remove_android_build_template->get_ok()->set_text(TTR("Show in File Manager"));
 	remove_android_build_template->connect("confirmed", this, "_menu_option", varray(FILE_EXPLORE_ANDROID_BUILD_TEMPLATES));
 	gui_base->add_child(remove_android_build_template);
