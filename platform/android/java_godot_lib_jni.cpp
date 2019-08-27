@@ -644,7 +644,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 	godot_java->on_video_init(env);
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env, jobject obj, jobject activity) {
 	// lets cleanup
 	if (godot_io_java) {
 		delete godot_io_java;
