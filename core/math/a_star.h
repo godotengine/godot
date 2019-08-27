@@ -46,6 +46,10 @@ class AStar : public Reference {
 
 	struct Point {
 
+		Point() :
+				neighbours(4u),
+				unlinked_neighbours(4u) {}
+
 		int id;
 		Vector3 pos;
 		real_t weight_scale;
@@ -132,6 +136,9 @@ public:
 	void disconnect_points(int p_id, int p_with_id);
 	bool are_points_connected(int p_id, int p_with_id) const;
 
+	int get_point_count() const;
+	int get_point_capacity() const;
+	void reserve_space(int p_num_nodes);
 	void clear();
 
 	int get_closest_point(const Vector3 &p_point) const;
@@ -171,6 +178,9 @@ public:
 	void disconnect_points(int p_id, int p_with_id);
 	bool are_points_connected(int p_id, int p_with_id) const;
 
+	int get_point_count() const;
+	int get_point_capacity() const;
+	void reserve_space(int p_num_nodes);
 	void clear();
 
 	int get_closest_point(const Vector2 &p_point) const;
