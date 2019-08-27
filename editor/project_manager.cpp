@@ -1832,7 +1832,7 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 					break;
 
 				int index = _project_list->get_single_selected_index();
-				if (index - 1 > 0) {
+				if (index > 0) {
 					_project_list->select_project(index - 1);
 					_project_list->ensure_project_visible(index - 1);
 					_update_project_buttons();
