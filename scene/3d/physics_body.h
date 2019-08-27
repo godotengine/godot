@@ -162,6 +162,7 @@ protected:
 		ShapePair(int p_bs, int p_ls) {
 			body_shape = p_bs;
 			local_shape = p_ls;
+			tagged = false;
 		}
 	};
 	struct RigidBody_RemoveAction {

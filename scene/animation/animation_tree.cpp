@@ -1412,6 +1412,7 @@ void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<A
 		Vector<Activity> activity;
 		for (int i = 0; i < node->get_input_count(); i++) {
 			Activity a;
+			a.activity = 0;
 			a.last_pass = 0;
 			activity.push_back(a);
 		}
