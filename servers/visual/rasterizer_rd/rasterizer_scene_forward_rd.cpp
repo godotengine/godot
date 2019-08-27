@@ -1910,7 +1910,23 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	}
 
 	RasterizerEffectsRD *effects = storage->get_effects();
-	effects->copy(render_buffer->color, storage->render_target_get_rd_framebuffer(render_buffer->render_target), Rect2());
+
+	{
+		//tonemap
+		RasterizerEffectsRD::TonemapSettings tonemap;
+
+		tonemap.color_correction_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);
+		tonemap.exposure_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_WHITE);
+		tonemap.glow_texture = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_BLACK);
+
+		if (is_environment(p_environment)) {
+			tonemap.tonemap_mode = environment_get_tonemapper(p_environment);
+			tonemap.white = environment_get_white(p_environment);
+			tonemap.exposure = environment_get_exposure(p_environment);
+		}
+		effects->tonemapper(render_buffer->color, storage->render_target_get_rd_framebuffer(render_buffer->render_target), tonemap);
+	}
+
 	storage->render_target_disable_clear_request(render_buffer->render_target);
 
 #if 0
