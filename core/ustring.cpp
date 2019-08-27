@@ -2398,6 +2398,8 @@ Array String::find_occurrences(const String &p_str, bool p_case_sensitive, int p
 			s++;
 			if (s < p_str.length()) {
 				search_char_case = p_str.substr(s, 1);
+			} else {
+				break;
 			}
 		} else {
 			if (s < p_str.length()) {

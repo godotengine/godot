@@ -809,7 +809,7 @@ void CodeTextEditor::_complete_request() {
 	}
 	if (entries.size() == 0) {
 		return;
-
+	}
 	for (List<ScriptCodeCompletionOption>::Element *E = entries.front(); E; E = E->next()) {
 		E->get().icon = _get_completion_icon(E->get());
 	}

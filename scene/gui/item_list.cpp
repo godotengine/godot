@@ -494,7 +494,7 @@ Size2 ItemList::Item::get_icon_size() const {
 
 void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
-        double prev_scroll = v_scroll->get_value();
+	double prev_scroll = v_scroll->get_value();
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (defer_select_single >= 0 && mm.is_valid()) {
@@ -792,7 +792,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			h_scroll->set_value(h_scroll->get_value() + h_scroll->get_page() * pan_gesture->get_delta().x / 8);
 	}
 
-        if (v_scroll->get_value() != prev_scroll)
+	if (v_scroll->get_value() != prev_scroll)
 		accept_event(); //accept event if scroll changed
 }
 
@@ -1333,11 +1333,8 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 	pos -= bg->get_offset();
 	pos.y += v_scroll->get_value();
 
-	if (h_scroll_enabled)
-		pos.x += h_scroll->get_value();
-
 	int closest = -1;
-        int closest_dist = 0x7FFFFFFF;
+	int closest_dist = 0x7FFFFFFF;
 
 	for (int i = 0; i < items.size(); i++) {
 

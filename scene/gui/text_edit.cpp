@@ -2045,22 +2045,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 			if (!mb->is_pressed())
 				return;
 
-			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
-
-				if (completion->is_anything_selected() && completion->get_current() > 0) {
-					completion->select(completion->get_current() - 1);
-					completion->ensure_current_is_visible();
-				}
-			}
-
-			if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
-
-				if (completion->is_anything_selected() && completion->get_current() < completion->get_item_count() - 1) {
-					completion->select(completion->get_current() + 1);
-					completion->ensure_current_is_visible();
-				}
-			}
-
 			if (mb->get_button_index() == BUTTON_LEFT) {
 
 				if (completion_rect.has_point(mb->get_position())) {
@@ -2472,20 +2456,21 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						return;
 					}
 
-					if (k->get_scancode() == KEY_BACKSPACE) {
-
-						_reset_caret_blink_timer();
-
-						backspace_at_cursor();
-						_update_completion_candidates();
-						accept_event();
-						return;
-					}
-
 					if (k->get_scancode() == KEY_SHIFT) {
 						accept_event();
 						return;
 					}
+				}
+
+				if (k->get_scancode() == KEY_BACKSPACE) {
+
+					_reset_caret_blink_timer();
+
+					backspace_at_cursor();
+					_cancel_completion();
+					_update_completion_candidates();
+					accept_event();
+					return;
 				}
 
 				if (k->get_unicode() > 32) {
@@ -2514,6 +2499,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						}
 					}
 					accept_event();
+					_cancel_completion();
 					_update_completion_candidates();
 					return;
 				}
@@ -6124,30 +6110,9 @@ void TextEdit::confirm_completion(int id) {
 
 	begin_complex_operation();
 
-	String word = get_word_at_cursor(cursor.line, cursor.column);
-
-	if (String("():. ,+-*/").find(word.left(1))) {
-		word = get_word_at_cursor(cursor.line, cursor.column - 1);
-	}
-
-	if (completion_base == word) {
-		_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
-	} else {
-		int end_col_of_word = cursor.column - completion_base.length() + word.length();
-		if (end_col_of_word + 1 < text[cursor.line].length() && text[cursor.line][end_col_of_word + 1] == ')') {
-			end_col_of_word += 2;
-		} else if (text[cursor.line][end_col_of_word] == '(') {
-			end_col_of_word += 1;
-		} else if (text[cursor.line][cursor.column - completion_base.length()] == '"' || text[cursor.line][cursor.column - completion_base.length()] == '\'') {
-			end_col_of_word += 1;
-		} else if (end_col_of_word + 1 < text[cursor.line].length() && (text[cursor.line][end_col_of_word + 1] == '"' || text[cursor.line][end_col_of_word + 1] == '\'')) {
-			end_col_of_word += 2;
-		}
-
-		_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, end_col_of_word);
-	}
+	_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
 	cursor_set_column(cursor.column - completion_base.length(), false);
-	insert_text_at_cursor(completion->get_item_text(id));
+	insert_text_at_cursor(completion_current.insert_text);
 
 	// When inserted into the middle of an existing string/method, don't add an unnecessary quote/bracket.
 	String line = text[cursor.line];
@@ -6195,6 +6160,9 @@ void TextEdit::_cancel_completion() {
 		return;
 
 	completion->hide();
+	completion_current = ScriptCodeCompletionOption();
+	completion_active = false;
+	completion_index = 0;
 	completion_forced = false;
 	update();
 }
@@ -6287,7 +6255,13 @@ void TextEdit::_update_completion_candidates() {
 	completion_base = s;
 	Vector<float> sim_cache;
 	bool single_quote = s.begins_with("'");
-	Vector<ScriptCodeCompletionOption> completion_options_casei;
+
+	if (completion_sources.size() == 0) {
+		// No options to complete, cancel.
+		_cancel_completion();
+		return;
+	}
+	Vector<ScriptCodeCompletionOption> completion_options_cache;
 
 	for (List<ScriptCodeCompletionOption>::Element *E = completion_sources.front(); E; E = E->next()) {
 		ScriptCodeCompletionOption &option = E->get();
@@ -6301,69 +6275,61 @@ void TextEdit::_update_completion_candidates() {
 			option.display = option.display.quote(quote);
 		}
 
-		if (option.display.begins_with(s)) {
+		// find_occurrences
+		String curr = option.display;
+		Array occurrences = curr.find_occurrences(s, false);
+		if (occurrences.size() > 0) {
+			option.occurrences = occurrences;
+			option.input = s;
 			completion_options.push_back(option);
-		} else if (option.display.to_lower().begins_with(s.to_lower())) {
-			completion_options_casei.push_back(option);
 		}
-
-                // find_occurrences
-                String curr = option.display;
-                Array occurrences = curr.find_occurrences(s, false);
-                if (occurrences.size() > 0) {
-                    option.occurrences = occurrences;
-                    option.input = s;
-                }
+		completion_options_cache.push_back(option);
 	}
-        completion_options.append_array(completion_options_casei);
 
-        //Sort
-        completion_options.sort_custom<TextEdit::SortOptions>();
+	//Sort
+	completion_options.sort_custom<TextEdit::SortOptions>();
 
+	// s match with nothing so far, show all
 	if (completion_options.size() == 0) {
-		// No options to complete, cancel.
-		_cancel_completion();
-		return;
-	}
-
-	if (completion_options.size() == 1 && s == completion_options[0].display) {
-		// A perfect match, stop completion.
-		_cancel_completion();
-		return;
+		completion_options.append_array(completion_options_cache);
 	}
 
 	// The top of the list is the best match.
-        completion_current = completion_options[0].display;
+	completion_current = completion_options[0];
 
 	if (completion_options.size() > 0) {
 		// code completion box
-                Vector2 s_size = completion->get_font("font")->get_string_size(completion_options[0].display);
+		Vector2 s_size = completion->get_font("font")->get_string_size(completion_options[0].display);
 
 		int nofs = cache.font->get_string_size(completion_base).width;
 
 		int maxlines = get_constant("completion_lines");
-                int icon_width = 32; // guessing max icon width
-                int cmax_width = (get_constant("completion_max_width") * cache.font->get_char_size('x').x) + icon_width;
-                int scrollw = get_constant("completion_scroll_width");
+		int cmax_width = (get_constant("completion_max_width") * cache.font->get_char_size('x').x);
+		int scrollw = get_constant("completion_scroll_width");
 
-                completion->clear();
+		completion->clear();
 
 		for (int i = 0; i < completion_options.size(); i++) {
-                        ScriptCodeCompletionOption option = completion_options[i];
-                        completion->add_icon_item(option.icon);
-                        completion->set_item_text(i, option.display);
+			ScriptCodeCompletionOption option = completion_options[i];
+			completion->add_icon_item(option.icon);
+			completion->set_item_text(i, option.display);
 			completion->set_item_custom_hl_color(completion->get_item_count() - 1, Color(1, 0, 0));
-
-                        completion->set_item_highlights(completion->get_item_count() - 1, option.occurrences); // TODO add occurrences
+			Array columns_hl;
+			for (int j = 0; j < option.occurrences.size(); j++) {
+				for (int k = (int)((Array)((Array)option.occurrences[j])[1])[0]; k <= (int)((Array)((Array)option.occurrences[j])[1])[1]; k++) {
+					columns_hl.push_back(k);
+				}
+			}
+			completion->set_item_highlights(completion->get_item_count() - 1, columns_hl);
 
 			for (int j = 0; j < color_regions.size(); j++) {
-                                if (option.display.begins_with(color_regions[j].begin_key)) {
+				if (option.display.begins_with(color_regions[j].begin_key)) {
 					completion->set_item_custom_fg_color(i, color_regions[j].color);
 				}
 			}
 		}
 
-                int w = MIN(completion->get_max_length(), cmax_width) + 20;
+		int w = MIN(completion->get_max_item_width(), cmax_width) + 20;
 		int h = MIN(((completion_options.size() + 1) * s_size.height) + 3, maxlines * s_size.height);
 
 		if (cursor_pos.y + get_row_height() + h > get_size().height) {

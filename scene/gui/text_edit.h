@@ -488,7 +488,7 @@ public:
 	ColorRegion _get_color_region(int p_region) const;
 	Map<int, Text::ColorRegionInfo> _get_line_color_region_info(int p_line) const;
 
-   struct SortOptions {
+	struct SortOptions {
 		bool operator()(ScriptCodeCompletionOption p_a, ScriptCodeCompletionOption p_b) const {
 			//Hack check case for first character
 			String input = p_a.input.substr(0, 1);
