@@ -304,6 +304,7 @@ void register_scene_types() {
 	ClassDB::register_class<TextureRect>();
 	ClassDB::register_class<ColorRect>();
 	ClassDB::register_class<NinePatchRect>();
+	ClassDB::register_class<ReferenceRect>();
 	ClassDB::register_class<TabContainer>();
 	ClassDB::register_class<Tabs>();
 	ClassDB::register_virtual_class<Separator>();
@@ -339,7 +340,6 @@ void register_scene_types() {
 	ClassDB::register_virtual_class<TreeItem>();
 	ClassDB::register_class<OptionButton>();
 	ClassDB::register_class<SpinBox>();
-	ClassDB::register_class<ReferenceRect>();
 	ClassDB::register_class<ColorPicker>();
 	ClassDB::register_class<ColorPickerButton>();
 	ClassDB::register_class<RichTextLabel>();
