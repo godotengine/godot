@@ -60,6 +60,12 @@ android {
 		buildType.zipAlignEnabled false
 		buildType.signingConfig null
 	}
+
+	buildTypes.release {
+		minifyEnabled true
+		proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+	}
+
 	sourceSets {
 		main {
 			manifest.srcFile 'AndroidManifest.xml'
@@ -106,8 +112,3 @@ android {
 
 //CHUNK_GLOBAL_BEGIN
 //CHUNK_GLOBAL_END
-
-
-
-
-
