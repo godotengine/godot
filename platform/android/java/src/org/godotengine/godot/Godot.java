@@ -31,6 +31,7 @@
 package org.godotengine.godot;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -56,8 +57,10 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Messenger;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
+import android.support.annotation.Keep;
 import android.support.v4.content.ContextCompat;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -101,7 +104,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	static final int REQUEST_CAMERA_PERMISSION = 2;
 	static final int REQUEST_VIBRATE_PERMISSION = 3;
 	private IStub mDownloaderClientStub;
-	private IDownloaderService mRemoteService;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
 	private TextView mProgressPercent;
@@ -224,15 +226,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private Sensor mMagnetometer;
 	private Sensor mGyroscope;
 
-	public FrameLayout layout;
-
 	public static GodotIO io;
 
-	public static void setWindowTitle(String title) {
-		//setTitle(title);
-	}
-
-	static SingletonBase singletons[] = new SingletonBase[MAX_SINGLETONS];
+	static SingletonBase[] singletons = new SingletonBase[MAX_SINGLETONS];
 	static int singleton_count = 0;
 
 	public interface ResultCallback {
@@ -268,13 +264,14 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	};
 
-	public void onVideoInit() {
+	/**
+	 * Used by the native code (java_godot_lib_jni.cpp) to complete initialization of the GLSurfaceView view and renderer.
+	 */
+	@Keep
+	private void onVideoInit() {
 		boolean use_gl3 = getGLESVersionCode() >= 0x00030000;
 
-		//mView = new GodotView(getApplication(),io,use_gl3);
-		//setContentView(mView);
-
-		layout = new FrameLayout(this);
+		final FrameLayout layout = new FrameLayout(this);
 		layout.setLayoutParams(new LayoutParams(LayoutParams.MATCH_PARENT, LayoutParams.MATCH_PARENT));
 		setContentView(layout);
 
@@ -326,11 +323,22 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		});
 	}
 
-	public void vibrate(int p_duration_ms) {
+	/**
+	 * Used by the native code (java_godot_wrapper.h) to vibrate the device.
+	 * @param durationMs
+	 */
+	@SuppressLint("MissingPermission")
+	@Keep
+	private void vibrate(int durationMs) {
 		if (requestPermission("VIBRATE")) {
 			Vibrator v = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
 			if (v != null) {
-				v.vibrate(p_duration_ms);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					v.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE));
+				} else {
+					//deprecated in API 26
+					v.vibrate(durationMs);
+				}
 			}
 		}
 	}
@@ -416,6 +424,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	/**
 	 * Used by the native code (java_godot_wrapper.h) to check whether the activity is resumed or paused.
 	 */
+	@Keep
 	private boolean isActivityResumed() {
 		return activityResumed;
 	}
@@ -423,8 +432,18 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	/**
 	 * Used by the native code (java_godot_wrapper.h) to access the Android surface.
 	 */
+	@Keep
 	private Surface getSurface() {
 		return mView.getHolder().getSurface();
+	}
+
+	/**
+	 * Used by the native code (java_godot_wrapper.h) to access the input fallback mapping.
+	 * @return The input fallback mapping for the current XR mode.
+	 */
+	@Keep
+	private String getInputFallbackMapping() {
+		return xrMode.inputFallbackMapping;
 	}
 
 	String expansion_pack_path;
@@ -474,8 +493,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 	@Override
 	public void onServiceConnected(Messenger m) {
-		mRemoteService = DownloaderServiceMarshaller.CreateProxy(m);
-		mRemoteService.onClientUpdated(mDownloaderClientStub.getMessenger());
+		IDownloaderService remoteService = DownloaderServiceMarshaller.CreateProxy(m);
+		remoteService.onClientUpdated(mDownloaderClientStub.getMessenger());
 	}
 
 	@Override
@@ -483,7 +502,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 
 		super.onCreate(icicle);
 		Window window = getWindow();
-		//window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON | WindowManager.LayoutParams.FLAG_KEEP_SCREEN_ON);
 		window.addFlags(WindowManager.LayoutParams.FLAG_TURN_SCREEN_ON);
 		mClipboard = (ClipboardManager)getSystemService(Context.CLIPBOARD_SERVICE);
 
@@ -609,7 +627,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 							mWiFiSettingsButton = (Button)findViewById(com.godot.game.R.id.wifiSettingsButton);
 
 							return;
-						} else {
 						}
 					} catch (NameNotFoundException e) {
 						// TODO Auto-generated catch block
@@ -621,8 +638,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		mCurrentIntent = getIntent();
 
 		initializeGodot();
-
-		//instanceSingleton( new GodotFacebook(this) );
 	}
 
 	@Override
@@ -831,8 +846,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	}
 
-	public void forceQuit() {
-
+	private void forceQuit() {
 		System.exit(0);
 	}
 
@@ -879,7 +893,6 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	}
 
-	//@Override public boolean dispatchTouchEvent (MotionEvent event) {
 	public boolean gotTouchEvent(final MotionEvent event) {
 
 		final int evcount = event.getPointerCount();
@@ -950,8 +963,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		for (int i = cc.length; --i >= 0; cnt += cc[i] != 0 ? 1 : 0)
 			;
 		if (cnt == 0) return super.onKeyMultiple(inKeyCode, repeatCount, event);
-		final Activity me = this;
-		queueEvent(new Runnable() {
+		mView.queueEvent(new Runnable() {
 			// This method will be called on the rendering thread:
 			public void run() {
 				for (int i = 0, n = cc.length; i < n; i++) {
@@ -967,19 +979,9 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		return true;
 	}
 
-	private void queueEvent(Runnable runnable) {
-		// TODO Auto-generated method stub
-	}
-
 	public PaymentsManager getPaymentsManager() {
 		return mPaymentsManager;
 	}
-
-	/*
-	public void setPaymentsManager(PaymentsManager mPaymentsManager) {
-		this.mPaymentsManager = mPaymentsManager;
-	}
-	*/
 
 	public boolean requestPermission(String p_name) {
 		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) {
@@ -1025,7 +1027,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		switch (newState) {
 			case IDownloaderClient.STATE_IDLE:
 				// STATE_IDLE means the service is listening, so it's
-				// safe to start making calls via mRemoteService.
+				// safe to start making remote service calls.
 				paused = false;
 				indeterminate = true;
 				break;

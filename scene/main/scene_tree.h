@@ -407,6 +407,7 @@ public:
 	static SceneTree *get_singleton() { return singleton; }
 
 	void drop_files(const Vector<String> &p_files, int p_from_screen = 0);
+	void global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	//network API
 

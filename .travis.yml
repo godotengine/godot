@@ -135,8 +135,7 @@ script:
   - if [ "$STATIC_CHECKS" = "yes" ]; then
       sh ./misc/travis/clang-format.sh;
     else
-      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS;
-
+      scons -j2 CC=$CC CXX=$CXX platform=$PLATFORM tools=$TOOLS target=$TARGET $OPTIONS $EXTRA_ARGS &&
       if [ "$TEST_PROJECT" = "yes" ]; then
         git clone --depth 1 "https://github.com/godotengine/godot-tests.git";
         sed -i "s:custom_template/release=\"\":custom_template/release=\"$(readlink -e bin/godot_server.x11.opt.tools.64)\":" godot-tests/tests/project_export/export_presets.cfg;

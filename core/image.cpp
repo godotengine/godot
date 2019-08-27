@@ -863,7 +863,7 @@ bool Image::is_size_po2() const {
 
 void Image::resize_to_po2(bool p_square) {
 
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in indexed, compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
 	int w = next_power_of_2(width);
 	int h = next_power_of_2(height);
@@ -881,7 +881,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	ERR_FAIL_COND_MSG(data.size() == 0, "Cannot resize image before creating it, use create() or create_from_data() first.");
 
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in indexed, compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot resize in compressed or custom image formats.");
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
 
@@ -1094,7 +1094,7 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot crop in indexed, compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot crop in compressed or custom image formats.");
 
 	ERR_FAIL_COND(p_x < 0);
 	ERR_FAIL_COND(p_y < 0);
@@ -1149,7 +1149,7 @@ void Image::crop(int p_width, int p_height) {
 
 void Image::flip_y() {
 
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in indexed, compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_y in compressed or custom image formats.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1182,7 +1182,7 @@ void Image::flip_y() {
 
 void Image::flip_x() {
 
-	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_x in indexed, compressed or custom image formats.");
+	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot flip_x in compressed or custom image formats.");
 
 	bool used_mipmaps = has_mipmaps();
 	if (used_mipmaps) {
@@ -1441,7 +1441,7 @@ void Image::normalize() {
 
 Error Image::generate_mipmaps(bool p_renormalize) {
 
-	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in indexed, compressed or custom image formats.");
+	ERR_FAIL_COND_V_MSG(!_can_modify(format), ERR_UNAVAILABLE, "Cannot generate mipmaps in compressed or custom image formats.");
 
 	ERR_FAIL_COND_V_MSG(width == 0 || height == 0, ERR_UNCONFIGURED, "Cannot generate mipmaps with width or height equal to 0.");
 

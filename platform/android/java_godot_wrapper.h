@@ -58,6 +58,7 @@ private:
 	jmethodID _get_surface = 0;
 	jmethodID _is_activity_resumed = 0;
 	jmethodID _vibrate = 0;
+	jmethodID _get_input_fallback_mapping = 0;
 
 public:
 	GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance);
@@ -84,6 +85,7 @@ public:
 	jobject get_surface();
 	bool is_activity_resumed();
 	void vibrate(int p_duration_ms);
+	String get_input_fallback_mapping();
 };
 
 #endif /* !JAVA_GODOT_WRAPPER_H */

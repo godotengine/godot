@@ -19,6 +19,7 @@ package com.google.android.vending.expansion.downloader;
 import android.os.Parcel;
 import android.os.Parcelable;
 
+
 /**
  * This class contains progress information about the active download(s).
  *
@@ -30,49 +31,50 @@ import android.os.Parcelable;
  * as the progress so far, time remaining and current speed.
  */
 public class DownloadProgressInfo implements Parcelable {
-	public long mOverallTotal;
-	public long mOverallProgress;
-	public long mTimeRemaining; // time remaining
-	public float mCurrentSpeed; // speed in KB/S
+    public long mOverallTotal;
+    public long mOverallProgress;
+    public long mTimeRemaining; // time remaining
+    public float mCurrentSpeed; // speed in KB/S
 
-	@Override
-	public int describeContents() {
-		return 0;
-	}
+    @Override
+    public int describeContents() {
+        return 0;
+    }
 
-	@Override
-	public void writeToParcel(Parcel p, int i) {
-		p.writeLong(mOverallTotal);
-		p.writeLong(mOverallProgress);
-		p.writeLong(mTimeRemaining);
-		p.writeFloat(mCurrentSpeed);
-	}
+    @Override
+    public void writeToParcel(Parcel p, int i) {
+        p.writeLong(mOverallTotal);
+        p.writeLong(mOverallProgress);
+        p.writeLong(mTimeRemaining);
+        p.writeFloat(mCurrentSpeed);
+    }
 
-	public DownloadProgressInfo(Parcel p) {
-		mOverallTotal = p.readLong();
-		mOverallProgress = p.readLong();
-		mTimeRemaining = p.readLong();
-		mCurrentSpeed = p.readFloat();
-	}
+    public DownloadProgressInfo(Parcel p) {
+        mOverallTotal = p.readLong();
+        mOverallProgress = p.readLong();
+        mTimeRemaining = p.readLong();
+        mCurrentSpeed = p.readFloat();
+    }
 
-	public DownloadProgressInfo(long overallTotal, long overallProgress,
-			long timeRemaining,
-			float currentSpeed) {
-		this.mOverallTotal = overallTotal;
-		this.mOverallProgress = overallProgress;
-		this.mTimeRemaining = timeRemaining;
-		this.mCurrentSpeed = currentSpeed;
-	}
+    public DownloadProgressInfo(long overallTotal, long overallProgress,
+            long timeRemaining,
+            float currentSpeed) {
+        this.mOverallTotal = overallTotal;
+        this.mOverallProgress = overallProgress;
+        this.mTimeRemaining = timeRemaining;
+        this.mCurrentSpeed = currentSpeed;
+    }
 
-	public static final Creator<DownloadProgressInfo> CREATOR = new Creator<DownloadProgressInfo>() {
-		@Override
-		public DownloadProgressInfo createFromParcel(Parcel parcel) {
-			return new DownloadProgressInfo(parcel);
-		}
+    public static final Creator<DownloadProgressInfo> CREATOR = new Creator<DownloadProgressInfo>() {
+        @Override
+        public DownloadProgressInfo createFromParcel(Parcel parcel) {
+            return new DownloadProgressInfo(parcel);
+        }
 
-		@Override
-		public DownloadProgressInfo[] newArray(int i) {
-			return new DownloadProgressInfo[i];
-		}
-	};
+        @Override
+        public DownloadProgressInfo[] newArray(int i) {
+            return new DownloadProgressInfo[i];
+        }
+    };
+
 }

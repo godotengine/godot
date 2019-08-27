@@ -966,6 +966,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["outerProduct"] = "#define OUTER_PRODUCT_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["round"] = "#define ROUND_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["roundEven"] = "#define ROUND_EVEN_USED\n";
+	actions[VS::SHADER_CANVAS_ITEM].usage_defines["inverse"] = "#define INVERSE_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["isinf"] = "#define IS_INF_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["isnan"] = "#define IS_NAN_USED\n";
 	actions[VS::SHADER_CANVAS_ITEM].usage_defines["trunc"] = "#define TRUNC_USED\n";
@@ -1075,6 +1076,7 @@ ShaderCompilerGLES2::ShaderCompilerGLES2() {
 	actions[VS::SHADER_SPATIAL].usage_defines["outerProduct"] = "#define OUTER_PRODUCT_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["round"] = "#define ROUND_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["roundEven"] = "#define ROUND_EVEN_USED\n";
+	actions[VS::SHADER_SPATIAL].usage_defines["inverse"] = "#define INVERSE_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["isinf"] = "#define IS_INF_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["isnan"] = "#define IS_NAN_USED\n";
 	actions[VS::SHADER_SPATIAL].usage_defines["trunc"] = "#define TRUNC_USED\n";

@@ -16,7 +16,11 @@
 
 package com.google.android.vending.expansion.downloader.impl;
 
+// -- GODOT start --
+//import com.android.vending.expansion.downloader.R;
 import com.godot.game.R;
+// -- GODOT end --
+
 import com.google.android.vending.expansion.downloader.DownloadProgressInfo;
 import com.google.android.vending.expansion.downloader.DownloaderClientMarshaller;
 import com.google.android.vending.expansion.downloader.Helpers;
@@ -42,183 +46,184 @@ import android.support.v4.app.NotificationCompat;
  */
 public class DownloadNotification implements IDownloaderClient {
 
-	private int mState;
-	private final Context mContext;
-	private final NotificationManager mNotificationManager;
-	private CharSequence mCurrentTitle;
+    private int mState;
+    private final Context mContext;
+    private final NotificationManager mNotificationManager;
+    private CharSequence mCurrentTitle;
 
-	private IDownloaderClient mClientProxy;
-	private NotificationCompat.Builder mActiveDownloadBuilder;
-	private NotificationCompat.Builder mBuilder;
-	private NotificationCompat.Builder mCurrentBuilder;
-	private CharSequence mLabel;
-	private String mCurrentText;
-	private DownloadProgressInfo mProgressInfo;
-	private PendingIntent mContentIntent;
+    private IDownloaderClient mClientProxy;
+    private NotificationCompat.Builder mActiveDownloadBuilder;
+    private NotificationCompat.Builder mBuilder;
+    private NotificationCompat.Builder mCurrentBuilder;
+    private CharSequence mLabel;
+    private String mCurrentText;
+    private DownloadProgressInfo mProgressInfo;
+    private PendingIntent mContentIntent;
 
-	static final String LOGTAG = "DownloadNotification";
-	static final int NOTIFICATION_ID = LOGTAG.hashCode();
+    static final String LOGTAG = "DownloadNotification";
+    static final int NOTIFICATION_ID = LOGTAG.hashCode();
 
-	public PendingIntent getClientIntent() {
-		return mContentIntent;
-	}
+    public PendingIntent getClientIntent() {
+        return mContentIntent;
+    }
 
-	public void setClientIntent(PendingIntent clientIntent) {
-		this.mBuilder.setContentIntent(clientIntent);
-		this.mActiveDownloadBuilder.setContentIntent(clientIntent);
-		this.mContentIntent = clientIntent;
-	}
+    public void setClientIntent(PendingIntent clientIntent) {
+        this.mBuilder.setContentIntent(clientIntent);
+        this.mActiveDownloadBuilder.setContentIntent(clientIntent);
+        this.mContentIntent = clientIntent;
+    }
 
-	public void resendState() {
-		if (null != mClientProxy) {
-			mClientProxy.onDownloadStateChanged(mState);
-		}
-	}
+    public void resendState() {
+        if (null != mClientProxy) {
+            mClientProxy.onDownloadStateChanged(mState);
+        }
+    }
 
-	@Override
-	public void onDownloadStateChanged(int newState) {
-		if (null != mClientProxy) {
-			mClientProxy.onDownloadStateChanged(newState);
-		}
-		if (newState != mState) {
-			mState = newState;
-			if (newState == IDownloaderClient.STATE_IDLE || null == mContentIntent) {
-				return;
-			}
-			int stringDownloadID;
-			int iconResource;
-			boolean ongoingEvent;
+    @Override
+    public void onDownloadStateChanged(int newState) {
+        if (null != mClientProxy) {
+            mClientProxy.onDownloadStateChanged(newState);
+        }
+        if (newState != mState) {
+            mState = newState;
+            if (newState == IDownloaderClient.STATE_IDLE || null == mContentIntent) {
+                return;
+            }
+            int stringDownloadID;
+            int iconResource;
+            boolean ongoingEvent;
 
-			// get the new title string and paused text
-			switch (newState) {
-				case 0:
-					iconResource = android.R.drawable.stat_sys_warning;
-					stringDownloadID = R.string.state_unknown;
-					ongoingEvent = false;
-					break;
+            // get the new title string and paused text
+            switch (newState) {
+                case 0:
+                    iconResource = android.R.drawable.stat_sys_warning;
+                    stringDownloadID = R.string.state_unknown;
+                    ongoingEvent = false;
+                    break;
 
-				case IDownloaderClient.STATE_DOWNLOADING:
-					iconResource = android.R.drawable.stat_sys_download;
-					stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
-					ongoingEvent = true;
-					break;
+                case IDownloaderClient.STATE_DOWNLOADING:
+                    iconResource = android.R.drawable.stat_sys_download;
+                    stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
+                    ongoingEvent = true;
+                    break;
 
-				case IDownloaderClient.STATE_FETCHING_URL:
-				case IDownloaderClient.STATE_CONNECTING:
-					iconResource = android.R.drawable.stat_sys_download_done;
-					stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
-					ongoingEvent = true;
-					break;
+                case IDownloaderClient.STATE_FETCHING_URL:
+                case IDownloaderClient.STATE_CONNECTING:
+                    iconResource = android.R.drawable.stat_sys_download_done;
+                    stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
+                    ongoingEvent = true;
+                    break;
 
-				case IDownloaderClient.STATE_COMPLETED:
-				case IDownloaderClient.STATE_PAUSED_BY_REQUEST:
-					iconResource = android.R.drawable.stat_sys_download_done;
-					stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
-					ongoingEvent = false;
-					break;
+                case IDownloaderClient.STATE_COMPLETED:
+                case IDownloaderClient.STATE_PAUSED_BY_REQUEST:
+                    iconResource = android.R.drawable.stat_sys_download_done;
+                    stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
+                    ongoingEvent = false;
+                    break;
 
-				case IDownloaderClient.STATE_FAILED:
-				case IDownloaderClient.STATE_FAILED_CANCELED:
-				case IDownloaderClient.STATE_FAILED_FETCHING_URL:
-				case IDownloaderClient.STATE_FAILED_SDCARD_FULL:
-				case IDownloaderClient.STATE_FAILED_UNLICENSED:
-					iconResource = android.R.drawable.stat_sys_warning;
-					stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
-					ongoingEvent = false;
-					break;
+                case IDownloaderClient.STATE_FAILED:
+                case IDownloaderClient.STATE_FAILED_CANCELED:
+                case IDownloaderClient.STATE_FAILED_FETCHING_URL:
+                case IDownloaderClient.STATE_FAILED_SDCARD_FULL:
+                case IDownloaderClient.STATE_FAILED_UNLICENSED:
+                    iconResource = android.R.drawable.stat_sys_warning;
+                    stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
+                    ongoingEvent = false;
+                    break;
 
-				default:
-					iconResource = android.R.drawable.stat_sys_warning;
-					stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
-					ongoingEvent = true;
-					break;
-			}
+                default:
+                    iconResource = android.R.drawable.stat_sys_warning;
+                    stringDownloadID = Helpers.getDownloaderStringResourceIDFromState(newState);
+                    ongoingEvent = true;
+                    break;
+            }
 
-			mCurrentText = mContext.getString(stringDownloadID);
-			mCurrentTitle = mLabel;
-			mCurrentBuilder.setTicker(mLabel + ": " + mCurrentText);
-			mCurrentBuilder.setSmallIcon(iconResource);
-			mCurrentBuilder.setContentTitle(mCurrentTitle);
-			mCurrentBuilder.setContentText(mCurrentText);
-			if (ongoingEvent) {
-				mCurrentBuilder.setOngoing(true);
-			} else {
-				mCurrentBuilder.setOngoing(false);
-				mCurrentBuilder.setAutoCancel(true);
-			}
-			mNotificationManager.notify(NOTIFICATION_ID, mCurrentBuilder.build());
-		}
-	}
+            mCurrentText = mContext.getString(stringDownloadID);
+            mCurrentTitle = mLabel;
+            mCurrentBuilder.setTicker(mLabel + ": " + mCurrentText);
+            mCurrentBuilder.setSmallIcon(iconResource);
+            mCurrentBuilder.setContentTitle(mCurrentTitle);
+            mCurrentBuilder.setContentText(mCurrentText);
+            if (ongoingEvent) {
+                mCurrentBuilder.setOngoing(true);
+            } else {
+                mCurrentBuilder.setOngoing(false);
+                mCurrentBuilder.setAutoCancel(true);
+            }
+            mNotificationManager.notify(NOTIFICATION_ID, mCurrentBuilder.build());
+        }
+    }
 
-	@Override
-	public void onDownloadProgress(DownloadProgressInfo progress) {
-		mProgressInfo = progress;
-		if (null != mClientProxy) {
-			mClientProxy.onDownloadProgress(progress);
-		}
-		if (progress.mOverallTotal <= 0) {
-			// we just show the text
-			mBuilder.setTicker(mCurrentTitle);
-			mBuilder.setSmallIcon(android.R.drawable.stat_sys_download);
-			mBuilder.setContentTitle(mCurrentTitle);
-			mBuilder.setContentText(mCurrentText);
-			mCurrentBuilder = mBuilder;
-		} else {
-			mActiveDownloadBuilder.setProgress((int)progress.mOverallTotal, (int)progress.mOverallProgress, false);
-			mActiveDownloadBuilder.setContentText(Helpers.getDownloadProgressString(progress.mOverallProgress, progress.mOverallTotal));
-			mActiveDownloadBuilder.setSmallIcon(android.R.drawable.stat_sys_download);
-			mActiveDownloadBuilder.setTicker(mLabel + ": " + mCurrentText);
-			mActiveDownloadBuilder.setContentTitle(mLabel);
-			mActiveDownloadBuilder.setContentInfo(mContext.getString(R.string.time_remaining_notification,
-					Helpers.getTimeRemaining(progress.mTimeRemaining)));
-			mCurrentBuilder = mActiveDownloadBuilder;
-		}
-		mNotificationManager.notify(NOTIFICATION_ID, mCurrentBuilder.build());
-	}
+    @Override
+    public void onDownloadProgress(DownloadProgressInfo progress) {
+        mProgressInfo = progress;
+        if (null != mClientProxy) {
+            mClientProxy.onDownloadProgress(progress);
+        }
+        if (progress.mOverallTotal <= 0) {
+            // we just show the text
+            mBuilder.setTicker(mCurrentTitle);
+            mBuilder.setSmallIcon(android.R.drawable.stat_sys_download);
+            mBuilder.setContentTitle(mCurrentTitle);
+            mBuilder.setContentText(mCurrentText);
+            mCurrentBuilder = mBuilder;
+        } else {
+            mActiveDownloadBuilder.setProgress((int) progress.mOverallTotal, (int) progress.mOverallProgress, false);
+            mActiveDownloadBuilder.setContentText(Helpers.getDownloadProgressString(progress.mOverallProgress, progress.mOverallTotal));
+            mActiveDownloadBuilder.setSmallIcon(android.R.drawable.stat_sys_download);
+            mActiveDownloadBuilder.setTicker(mLabel + ": " + mCurrentText);
+            mActiveDownloadBuilder.setContentTitle(mLabel);
+            mActiveDownloadBuilder.setContentInfo(mContext.getString(R.string.time_remaining_notification,
+                    Helpers.getTimeRemaining(progress.mTimeRemaining)));
+            mCurrentBuilder = mActiveDownloadBuilder;
+        }
+        mNotificationManager.notify(NOTIFICATION_ID, mCurrentBuilder.build());
+    }
 
-	/**
+    /**
      * Called in response to onClientUpdated. Creates a new proxy and notifies
      * it of the current state.
      *
      * @param msg the client Messenger to notify
      */
-	public void setMessenger(Messenger msg) {
-		mClientProxy = DownloaderClientMarshaller.CreateProxy(msg);
-		if (null != mProgressInfo) {
-			mClientProxy.onDownloadProgress(mProgressInfo);
-		}
-		if (mState != -1) {
-			mClientProxy.onDownloadStateChanged(mState);
-		}
-	}
+    public void setMessenger(Messenger msg) {
+        mClientProxy = DownloaderClientMarshaller.CreateProxy(msg);
+        if (null != mProgressInfo) {
+            mClientProxy.onDownloadProgress(mProgressInfo);
+        }
+        if (mState != -1) {
+            mClientProxy.onDownloadStateChanged(mState);
+        }
+    }
 
-	/**
+    /**
      * Constructor
      *
      * @param ctx The context to use to obtain access to the Notification
      *            Service
      */
-	DownloadNotification(Context ctx, CharSequence applicationLabel) {
-		mState = -1;
-		mContext = ctx;
-		mLabel = applicationLabel;
-		mNotificationManager = (NotificationManager)
-									   mContext.getSystemService(Context.NOTIFICATION_SERVICE);
-		mActiveDownloadBuilder = new NotificationCompat.Builder(ctx);
-		mBuilder = new NotificationCompat.Builder(ctx);
+    DownloadNotification(Context ctx, CharSequence applicationLabel) {
+        mState = -1;
+        mContext = ctx;
+        mLabel = applicationLabel;
+        mNotificationManager = (NotificationManager)
+                mContext.getSystemService(Context.NOTIFICATION_SERVICE);
+        mActiveDownloadBuilder = new NotificationCompat.Builder(ctx);
+        mBuilder = new NotificationCompat.Builder(ctx);
 
-		// Set Notification category and priorities to something that makes sense for a long
-		// lived background task.
-		mActiveDownloadBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
-		mActiveDownloadBuilder.setCategory(NotificationCompat.CATEGORY_PROGRESS);
+        // Set Notification category and priorities to something that makes sense for a long
+        // lived background task.
+        mActiveDownloadBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
+        mActiveDownloadBuilder.setCategory(NotificationCompat.CATEGORY_PROGRESS);
 
-		mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
-		mBuilder.setCategory(NotificationCompat.CATEGORY_PROGRESS);
+        mBuilder.setPriority(NotificationCompat.PRIORITY_LOW);
+        mBuilder.setCategory(NotificationCompat.CATEGORY_PROGRESS);
 
-		mCurrentBuilder = mBuilder;
-	}
+        mCurrentBuilder = mBuilder;
+    }
 
-	@Override
-	public void onServiceConnected(Messenger m) {
-	}
+    @Override
+    public void onServiceConnected(Messenger m) {
+    }
+
 }

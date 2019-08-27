@@ -359,7 +359,7 @@ namespace GodotTools
                 aboutLabel.Text =
                     "C# support in Godot Engine is in late alpha stage and, while already usable, " +
                     "it is not meant for use in production.\n\n" +
-                    "Projects can be exported to Linux, macOS and Windows, but not yet to mobile or web platforms. " +
+                    "Projects can be exported to Linux, macOS, Windows and Android, but not yet to iOS, HTML5 or UWP. " +
                     "Bugs and usability issues will be addressed gradually over future releases, " +
                     "potentially including compatibility breaking changes as new features are implemented for a better overall C# experience.\n\n" +
                     "If you experience issues with this Mono build, please report them on Godot's issue tracker with details about your system, MSBuild version, IDE, etc.:\n\n" +

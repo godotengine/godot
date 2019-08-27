@@ -8,13 +8,7 @@ Import('env_modules')
 
 env_mono = env_modules.Clone()
 
-env_mono.add_source_files(env.modules_sources, '*.cpp')
-env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
-env_mono.add_source_files(env.modules_sources, 'mono_gd/*.cpp')
-env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
-
 if env['tools']:
-    env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')
     # NOTE: It is safe to generate this file here, since this is still executed serially
     import build_scripts.make_cs_compressed_header as make_cs_compressed_header
     make_cs_compressed_header.generate_header(
@@ -62,3 +56,13 @@ if env_mono['tools']:
         # GodotTools.ProjectEditor which doesn't depend on the Godot API solution and
         # is required by the bindings generator in order to be able to generated it.
         godot_tools_build.build_project_editor_only(env_mono)
+
+# Add sources
+
+env_mono.add_source_files(env.modules_sources, '*.cpp')
+env_mono.add_source_files(env.modules_sources, 'glue/*.cpp')
+env_mono.add_source_files(env.modules_sources, 'mono_gd/*.cpp')
+env_mono.add_source_files(env.modules_sources, 'utils/*.cpp')
+
+if env['tools']:
+    env_mono.add_source_files(env.modules_sources, 'editor/*.cpp')

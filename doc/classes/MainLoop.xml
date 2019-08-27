@@ -61,6 +61,16 @@
 				Called before the program exits.
 			</description>
 		</method>
+		<method name="_global_menu_action" qualifiers="virtual">
+			<return type="void">
+			</return>
+			<argument index="0" name="id" type="Variant">
+			</argument>
+			<argument index="1" name="meta" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="_idle" qualifiers="virtual">
 			<return type="bool">
 			</return>

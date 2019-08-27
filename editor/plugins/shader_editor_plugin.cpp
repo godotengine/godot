@@ -55,6 +55,7 @@ void ShaderTextEditor::set_edited_shader(const Ref<Shader> &p_shader) {
 	_load_theme_settings();
 
 	get_text_edit()->set_text(p_shader->get_code());
+	get_text_edit()->clear_undo_history();
 
 	_validate_script();
 	_line_col_changed();
