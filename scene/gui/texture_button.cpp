@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -64,7 +64,9 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 		Rect2 rect = Rect2();
 		Size2 mask_size = click_mask->get_size();
 
-		if (_tile) {
+		if (_position_rect.has_no_area()) {
+			rect.size = mask_size;
+		} else if (_tile) {
 			// if the stretch mode is tile we offset the point to keep it inside the mask size
 			rect.size = mask_size;
 			if (_position_rect.has_point(point)) {
@@ -88,6 +90,9 @@ bool TextureButton::has_point(const Point2 &p_point) const {
 					scale.y = min;
 					ofs -= _texture_region.position / min;
 				} break;
+				default: {
+					// FIXME: Why a switch if we only handle one enum value?
+				}
 			}
 
 			// offset and scale the new point position to adjust it to the bitmask size
@@ -125,6 +130,7 @@ void TextureButton::_notification(int p_what) {
 					if (normal.is_valid())
 						texdraw = normal;
 				} break;
+				case DRAW_HOVER_PRESSED:
 				case DRAW_PRESSED: {
 
 					if (pressed.is_null()) {
@@ -202,8 +208,8 @@ void TextureButton::_notification(int p_what) {
 							Size2 scaleSize(size.width / tex_size.width, size.height / tex_size.height);
 							float scale = scaleSize.width > scaleSize.height ? scaleSize.width : scaleSize.height;
 							Size2 scaledTexSize = tex_size * scale;
-							Point2 ofs = ((scaledTexSize - size) / scale).abs() / 2.0f;
-							_texture_region = Rect2(ofs, size / scale);
+							Point2 ofs2 = ((scaledTexSize - size) / scale).abs() / 2.0f;
+							_texture_region = Rect2(ofs2, size / scale);
 						} break;
 					}
 				}
@@ -212,11 +218,12 @@ void TextureButton::_notification(int p_what) {
 					draw_texture_rect(texdraw, _position_rect, _tile);
 				else
 					draw_texture_rect_region(texdraw, _position_rect, _texture_region);
+			} else {
+				_position_rect = Rect2();
 			}
 			if (has_focus() && focused.is_valid()) {
 
-				Rect2 drect(Point2(), get_size());
-				draw_texture_rect(focused, drect, false);
+				draw_texture_rect(focused, _position_rect, false);
 			};
 		} break;
 	}
@@ -243,14 +250,14 @@ void TextureButton::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_stretch_mode"), &TextureButton::get_stretch_mode);
 
 	ADD_GROUP("Textures", "texture_");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_texture", "get_normal_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_pressed_texture", "get_pressed_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_hover_texture", "get_hover_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_disabled_texture", "get_disabled_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_focused_texture", "get_focused_texture");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "texture_click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_click_mask", "get_click_mask");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "expand", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_expand", "get_expand");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_normal", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_normal_texture", "get_normal_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_pressed", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_pressed_texture", "get_pressed_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_hover", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_hover_texture", "get_hover_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_disabled", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_disabled_texture", "get_disabled_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_focused", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_focused_texture", "get_focused_texture");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "texture_click_mask", PROPERTY_HINT_RESOURCE_TYPE, "BitMap"), "set_click_mask", "get_click_mask");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "expand", PROPERTY_HINT_RESOURCE_TYPE, "bool"), "set_expand", "get_expand");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "stretch_mode", PROPERTY_HINT_ENUM, "Scale,Tile,Keep,Keep Centered,Keep Aspect,Keep Aspect Centered,Keep Aspect Covered"), "set_stretch_mode", "get_stretch_mode");
 
 	BIND_ENUM_CONSTANT(STRETCH_SCALE);
 	BIND_ENUM_CONSTANT(STRETCH_TILE);

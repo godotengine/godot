@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "container.h"
-#include "message_queue.h"
+#include "core/message_queue.h"
 #include "scene/scene_string_names.h"
 
 void Container::_child_minsize_changed() {
@@ -95,6 +95,7 @@ void Container::_sort_children() {
 
 void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 
+	ERR_FAIL_COND(!p_child);
 	ERR_FAIL_COND(p_child->get_parent() != this);
 
 	Size2 minsize = p_child->get_combined_minimum_size();
@@ -166,6 +167,19 @@ void Container::_notification(int p_what) {
 			}
 		} break;
 	}
+}
+
+String Container::get_configuration_warning() const {
+
+	String warning = Control::get_configuration_warning();
+
+	if (get_class() == "Container" && get_script().is_null()) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+		warning += TTR("Container by itself serves no purpose unless a script configures its children placement behavior.\nIf you don't intend to add a script, use a plain Control node instead.");
+	}
+	return warning;
 }
 
 void Container::_bind_methods() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "color.h"
 
-#include "color_names.inc"
-#include "map.h"
-#include "math_funcs.h"
-#include "print_string.h"
+#include "core/color_names.inc"
+#include "core/map.h"
+#include "core/math/math_funcs.h"
+#include "core/print_string.h"
 
 uint32_t Color::to_argb32() const {
 
@@ -253,6 +253,21 @@ Color Color::hex64(uint64_t p_hex) {
 	return Color(r, g, b, a);
 }
 
+Color Color::from_rgbe9995(uint32_t p_rgbe) {
+
+	float r = p_rgbe & 0x1ff;
+	float g = (p_rgbe >> 9) & 0x1ff;
+	float b = (p_rgbe >> 18) & 0x1ff;
+	float e = (p_rgbe >> 27);
+	float m = Math::pow(2, e - 15.0 - 9.0);
+
+	float rd = r * m;
+	float gd = g * m;
+	float bd = b * m;
+
+	return Color(rd, gd, bd, 1.0f);
+}
+
 static float _parse_col(const String &p_str, int p_ofs) {
 
 	int ig = 0;
@@ -320,36 +335,23 @@ Color Color::html(const String &p_color) {
 	} else if (color.length() == 6) {
 		alpha = false;
 	} else {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
+		ERR_FAIL_V_MSG(Color(), "Invalid color code: " + p_color + ".");
 	}
 
 	int a = 255;
 	if (alpha) {
 		a = _parse_col(color, 0);
-		if (a < 0) {
-			ERR_EXPLAIN("Invalid Color Code: " + p_color);
-			ERR_FAIL_V(Color());
-		}
+		ERR_FAIL_COND_V_MSG(a < 0, Color(), "Invalid color code: " + p_color + ".");
 	}
 
 	int from = alpha ? 2 : 0;
 
 	int r = _parse_col(color, from + 0);
-	if (r < 0) {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_COND_V_MSG(r < 0, Color(), "Invalid color code: " + p_color + ".");
 	int g = _parse_col(color, from + 2);
-	if (g < 0) {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_COND_V_MSG(g < 0, Color(), "Invalid color code: " + p_color + ".");
 	int b = _parse_col(color, from + 4);
-	if (b < 0) {
-		ERR_EXPLAIN("Invalid Color Code: " + p_color);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_COND_V_MSG(b < 0, Color(), "Invalid color code: " + p_color + ".");
 
 	return Color(r / 255.0, g / 255.0, b / 255.0, a / 255.0);
 }
@@ -373,9 +375,8 @@ bool Color::html_is_valid(const String &p_color) {
 		return false;
 	}
 
-	int a = 255;
 	if (alpha) {
-		a = _parse_col(color, 0);
+		int a = _parse_col(color, 0);
 		if (a < 0) {
 			return false;
 		}
@@ -411,12 +412,8 @@ Color Color::named(const String &p_name) {
 	name = name.to_lower();
 
 	const Map<String, Color>::Element *color = _named_colors.find(name);
-	if (color) {
-		return color->value();
-	} else {
-		ERR_EXPLAIN("Invalid Color Name: " + p_name);
-		ERR_FAIL_V(Color());
-	}
+	ERR_FAIL_NULL_V_MSG(color, Color(), "Invalid color name: " + p_name + ".");
+	return color->value();
 }
 
 String _to_hex(float p_val) {
@@ -453,7 +450,7 @@ String Color::to_html(bool p_alpha) const {
 	return txt;
 }
 
-Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) {
+Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) const {
 
 	p_h = Math::fmod(p_h * 360.0f, 360.0f);
 	if (p_h < 0.0)
@@ -506,8 +503,10 @@ Color Color::from_hsv(float p_h, float p_s, float p_v, float p_a) {
 	return Color(m + r, m + g, m + b, p_a);
 }
 
+// FIXME: Remove once Godot 3.1 has been released
 float Color::gray() const {
 
+	WARN_DEPRECATED_MSG("Color.gray() is deprecated and will be removed in a future version. Use Color.get_v() for a better grayscale approximation.");
 	return (r + g + b) / 3.0;
 }
 

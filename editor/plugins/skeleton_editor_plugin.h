@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -61,6 +61,7 @@ class SkeletonEditor : public Node {
 	friend class SkeletonEditorPlugin;
 
 protected:
+	void _notification(int p_what);
 	void _node_removed(Node *p_node);
 	static void _bind_methods();
 
@@ -68,7 +69,7 @@ protected:
 	PhysicalBone *create_physical_bone(int bone_id, int bone_child_id, const Vector<BoneInfo> &bones_infos);
 
 public:
-	void edit(Skeleton *p_mesh);
+	void edit(Skeleton *p_node);
 
 	SkeletonEditor();
 	~SkeletonEditor();

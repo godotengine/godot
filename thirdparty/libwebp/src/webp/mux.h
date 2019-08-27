@@ -527,4 +527,4 @@ WEBP_EXTERN void WebPAnimEncoderDelete(WebPAnimEncoder* enc);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_WEBP_MUX_H_ */
+#endif  // WEBP_WEBP_MUX_H_

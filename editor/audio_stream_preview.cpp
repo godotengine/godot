@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  audio_stream_preview.cpp                                             */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "audio_stream_preview.h"
 
 /////////////////////
@@ -20,7 +50,7 @@ float AudioStreamPreview::get_max(float p_time, float p_time_next) const {
 		time_to = time_from + 1;
 	}
 
-	uint8_t vmax;
+	uint8_t vmax = 0;
 
 	for (int i = time_from; i < time_to; i++) {
 
@@ -47,7 +77,7 @@ float AudioStreamPreview::get_min(float p_time, float p_time_next) const {
 		time_to = time_from + 1;
 	}
 
-	uint8_t vmin;
+	uint8_t vmin = 255;
 
 	for (int i = time_from; i < time_to; i++) {
 
@@ -99,7 +129,7 @@ void AudioStreamPreviewGenerator::_preview_thread(void *p_preview) {
 			float max = -1000;
 			float min = 1000;
 			int from = uint64_t(i) * to_read / to_write;
-			int to = uint64_t(i + 1) * to_read / to_write;
+			int to = (uint64_t(i) + 1) * to_read / to_write;
 			to = MIN(to, to_read);
 			from = MIN(from, to_read - 1);
 			if (to == from) {
@@ -169,7 +199,8 @@ Ref<AudioStreamPreview> AudioStreamPreviewGenerator::generate_preview(const Ref<
 	preview->preview->preview = maxmin;
 	preview->preview->length = len_s;
 
-	preview->thread = Thread::create(_preview_thread, preview);
+	if (preview->playback.is_valid())
+		preview->thread = Thread::create(_preview_thread, preview);
 
 	return preview->preview;
 }

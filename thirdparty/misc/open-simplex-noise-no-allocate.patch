@@ -1,0 +1,133 @@
+diff -u orig/open-simplex-noise.c misc/open-simplex-noise.c
+--- orig/open-simplex-noise.c	2018-09-14 11:11:40.049810000 +0200
++++ misc/open-simplex-noise.c	2018-09-14 11:09:39.726457000 +0200
+@@ -13,6 +13,11 @@
+  *   of any particular randomization library, so results
+  *   will be the same when ported to other languages.
+  */
++
++// -- GODOT start --
++// Modified to work without allocating memory, also removed some unused function. 
++// -- GODOT end --
++
+ #include <math.h>
+ #include <stdlib.h>
+ #include <stdint.h>
+@@ -34,11 +39,12 @@
+ 	
+ #define DEFAULT_SEED (0LL)
+ 
+-struct osn_context {
++// -- GODOT start --
++/*struct osn_context {
+ 	int16_t *perm;
+ 	int16_t *permGradIndex3D;
+-};
+-
++};*/
++// -- GODOT end --
+ #define ARRAYSIZE(x) (sizeof((x)) / sizeof((x)[0]))
+ 
+ /* 
+@@ -126,7 +132,9 @@
+ 	int xi = (int) x;
+ 	return x < xi ? xi - 1 : xi;
+ }
+-	
++
++// -- GODOT start --
++/*
+ static int allocate_perm(struct osn_context *ctx, int nperm, int ngrad)
+ {
+ 	if (ctx->perm)
+@@ -154,18 +162,21 @@
+ 	memcpy(ctx->perm, p, sizeof(*ctx->perm) * nelements);
+ 		
+ 	for (i = 0; i < 256; i++) {
+-		/* Since 3D has 24 gradients, simple bitmask won't work, so precompute modulo array. */
++		// Since 3D has 24 gradients, simple bitmask won't work, so precompute modulo array.
+ 		ctx->permGradIndex3D[i] = (int16_t)((ctx->perm[i] % (ARRAYSIZE(gradients3D) / 3)) * 3);
+ 	}
+ 	return 0;
+ }
++*/
++// -- GODOT end --
+ 
+ /*	
+  * Initializes using a permutation array generated from a 64-bit seed.
+  * Generates a proper permutation (i.e. doesn't merely perform N successive pair
+  * swaps on a base array).  Uses a simple 64-bit LCG.
+  */
+-int open_simplex_noise(int64_t seed, struct osn_context **ctx)
++// -- GODOT start --
++int open_simplex_noise(int64_t seed, struct osn_context *ctx)
+ {
+ 	int rc;
+ 	int16_t source[256];
+@@ -174,20 +185,9 @@
+ 	int16_t *permGradIndex3D;
+ 	int r;
+ 
+-	*ctx = (struct osn_context *) malloc(sizeof(**ctx));
+-	if (!(*ctx))
+-		return -ENOMEM;
+-	(*ctx)->perm = NULL;
+-	(*ctx)->permGradIndex3D = NULL;
+-
+-	rc = allocate_perm(*ctx, 256, 256);
+-	if (rc) {
+-		free(*ctx);
+-		return rc;
+-	}
+-
+-	perm = (*ctx)->perm;
+-	permGradIndex3D = (*ctx)->permGradIndex3D;
++	perm = ctx->perm;
++	permGradIndex3D = ctx->permGradIndex3D;
++// -- GODOT end --
+ 
+ 	for (i = 0; i < 256; i++)
+ 		source[i] = (int16_t) i;
+@@ -206,6 +206,8 @@
+ 	return 0;
+ }
+ 
++// -- GODOT start --
++/*
+ void open_simplex_noise_free(struct osn_context *ctx)
+ {
+ 	if (!ctx)
+@@ -220,6 +222,8 @@
+ 	}
+ 	free(ctx);
+ }
++*/
++// -- GODOT end --
+ 	
+ /* 2D OpenSimplex (Simplectic) Noise. */
+ double open_simplex_noise2(struct osn_context *ctx, double x, double y) 
+diff -u orig/open-simplex-noise.h misc/open-simplex-noise.h
+--- orig/open-simplex-noise.h	2018-09-14 11:11:19.659807000 +0200
++++ misc/open-simplex-noise.h	2018-09-14 11:10:05.006460000 +0200
+@@ -35,11 +35,18 @@
+ 	extern "C" {
+ #endif
+ 
+-struct osn_context;
++// -- GODOT start --
++// Modified to work without allocating memory, also removed some unused function. 
+ 
+-int open_simplex_noise(int64_t seed, struct osn_context **ctx);
++struct osn_context {
++	int16_t perm[256];
++	int16_t permGradIndex3D[256];
++};
++
++int open_simplex_noise(int64_t seed, struct osn_context *ctx);
++//int open_simplex_noise_init_perm(struct osn_context *ctx, int16_t p[], int nelements);
++// -- GODOT end --
+ void open_simplex_noise_free(struct osn_context *ctx);
+-int open_simplex_noise_init_perm(struct osn_context *ctx, int16_t p[], int nelements);
+ double open_simplex_noise2(struct osn_context *ctx, double x, double y);
+ double open_simplex_noise3(struct osn_context *ctx, double x, double y, double z);
+ double open_simplex_noise4(struct osn_context *ctx, double x, double y, double z, double w);

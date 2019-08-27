@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,12 +49,21 @@ class RayCast2D : public Node2D {
 
 	Vector2 cast_to;
 
+	bool collide_with_areas;
+	bool collide_with_bodies;
+
 protected:
 	void _notification(int p_what);
 	void _update_raycast_state();
 	static void _bind_methods();
 
 public:
+	void set_collide_with_areas(bool p_clip);
+	bool is_collide_with_areas_enabled() const;
+
+	void set_collide_with_bodies(bool p_clip);
+	bool is_collide_with_bodies_enabled() const;
+
 	void set_enabled(bool p_enabled);
 	bool is_enabled() const;
 

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -505,7 +505,7 @@ Arguments:
   utf         TRUE in UTF mode
   cb          compile data block
   base_list   the data list of the base opcode
-  base_end    the end of the data list
+  base_end    the end of the base opcode
   rec_limit   points to recursion depth counter
 
 Returns:      TRUE if the auto-possessification is possible
@@ -605,6 +605,15 @@ for(;;)
       if (cb->had_recurse) return FALSE;
       break;
 
+      /* A script run might have to backtrack if the iterated item can match
+      characters from more than one script. So give up unless repeating an
+      explicit character. */
+
+      case OP_SCRIPT_RUN:
+      if (base_list[0] != OP_CHAR && base_list[0] != OP_CHARI)
+        return FALSE;
+      break;
+
       /* Atomic sub-patterns and assertions can always auto-possessify their
       last iterator. However, if the group was entered as a result of checking
       a previous iterator, this is not possible. */
@@ -614,7 +623,6 @@ for(;;)
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
       case OP_ONCE:
-
       return !entered_a_group;
       }
 
@@ -730,7 +738,7 @@ for(;;)
       if ((*xclass_flags & XCL_MAP) == 0)
         {
         /* No bits are set for characters < 256. */
-        if (list[1] == 0) return TRUE;
+        if (list[1] == 0) return (*xclass_flags & XCL_NOT) == 0;
         /* Might be an empty repeat. */
         continue;
         }
@@ -1043,7 +1051,7 @@ for(;;)
       if (chr > 255) break;
       class_bitset = (uint8_t *)
         ((list_ptr == list ? code : base_end) - list_ptr[2]);
-      if ((class_bitset[chr >> 3] & (1 << (chr & 7))) != 0) return FALSE;
+      if ((class_bitset[chr >> 3] & (1u << (chr & 7))) != 0) return FALSE;
       break;
 
 #ifdef SUPPORT_WIDE_CHARS
@@ -1235,6 +1243,7 @@ for (;;)
 #endif
 
     case OP_MARK:
+    case OP_COMMIT_ARG:
     case OP_PRUNE_ARG:
     case OP_SKIP_ARG:
     case OP_THEN_ARG:

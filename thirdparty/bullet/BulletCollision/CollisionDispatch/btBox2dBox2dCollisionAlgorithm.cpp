@@ -26,60 +26,54 @@ subject to the following restrictions:
 
 #define USE_PERSISTENT_CONTACTS 1
 
-btBox2dBox2dCollisionAlgorithm::btBox2dBox2dCollisionAlgorithm(btPersistentManifold* mf,const btCollisionAlgorithmConstructionInfo& ci,const btCollisionObjectWrapper* obj0Wrap,const btCollisionObjectWrapper* obj1Wrap)
-: btActivatingCollisionAlgorithm(ci,obj0Wrap,obj1Wrap),
-m_ownManifold(false),
-m_manifoldPtr(mf)
+btBox2dBox2dCollisionAlgorithm::btBox2dBox2dCollisionAlgorithm(btPersistentManifold* mf, const btCollisionAlgorithmConstructionInfo& ci, const btCollisionObjectWrapper* obj0Wrap, const btCollisionObjectWrapper* obj1Wrap)
+	: btActivatingCollisionAlgorithm(ci, obj0Wrap, obj1Wrap),
+	  m_ownManifold(false),
+	  m_manifoldPtr(mf)
 {
-	if (!m_manifoldPtr && m_dispatcher->needsCollision(obj0Wrap->getCollisionObject(),obj1Wrap->getCollisionObject()))
+	if (!m_manifoldPtr && m_dispatcher->needsCollision(obj0Wrap->getCollisionObject(), obj1Wrap->getCollisionObject()))
 	{
-		m_manifoldPtr = m_dispatcher->getNewManifold(obj0Wrap->getCollisionObject(),obj1Wrap->getCollisionObject());
+		m_manifoldPtr = m_dispatcher->getNewManifold(obj0Wrap->getCollisionObject(), obj1Wrap->getCollisionObject());
 		m_ownManifold = true;
 	}
 }
 
 btBox2dBox2dCollisionAlgorithm::~btBox2dBox2dCollisionAlgorithm()
 {
-	
 	if (m_ownManifold)
 	{
 		if (m_manifoldPtr)
 			m_dispatcher->releaseManifold(m_manifoldPtr);
 	}
-	
 }
 
-
-void b2CollidePolygons(btManifoldResult* manifold,  const btBox2dShape* polyA, const btTransform& xfA, const btBox2dShape* polyB, const btTransform& xfB);
+void b2CollidePolygons(btManifoldResult* manifold, const btBox2dShape* polyA, const btTransform& xfA, const btBox2dShape* polyB, const btTransform& xfB);
 
 //#include <stdio.h>
-void btBox2dBox2dCollisionAlgorithm::processCollision (const btCollisionObjectWrapper* body0Wrap,const btCollisionObjectWrapper* body1Wrap,const btDispatcherInfo& dispatchInfo,btManifoldResult* resultOut)
+void btBox2dBox2dCollisionAlgorithm::processCollision(const btCollisionObjectWrapper* body0Wrap, const btCollisionObjectWrapper* body1Wrap, const btDispatcherInfo& dispatchInfo, btManifoldResult* resultOut)
 {
 	if (!m_manifoldPtr)
 		return;
 
-	
 	const btBox2dShape* box0 = (const btBox2dShape*)body0Wrap->getCollisionShape();
 	const btBox2dShape* box1 = (const btBox2dShape*)body1Wrap->getCollisionShape();
 
 	resultOut->setPersistentManifold(m_manifoldPtr);
 
-	b2CollidePolygons(resultOut,box0,body0Wrap->getWorldTransform(),box1,body1Wrap->getWorldTransform());
+	b2CollidePolygons(resultOut, box0, body0Wrap->getWorldTransform(), box1, body1Wrap->getWorldTransform());
 
 	//  refreshContactPoints is only necessary when using persistent contact points. otherwise all points are newly added
 	if (m_ownManifold)
 	{
 		resultOut->refreshContactPoints();
 	}
-
 }
 
-btScalar btBox2dBox2dCollisionAlgorithm::calculateTimeOfImpact(btCollisionObject* /*body0*/,btCollisionObject* /*body1*/,const btDispatcherInfo& /*dispatchInfo*/,btManifoldResult* /*resultOut*/)
+btScalar btBox2dBox2dCollisionAlgorithm::calculateTimeOfImpact(btCollisionObject* /*body0*/, btCollisionObject* /*body1*/, const btDispatcherInfo& /*dispatchInfo*/, btManifoldResult* /*resultOut*/)
 {
 	//not yet
 	return 1.f;
 }
-
 
 struct ClipVertex
 {
@@ -89,16 +83,16 @@ struct ClipVertex
 	//b2ContactID id;
 };
 
-#define b2Dot(a,b) (a).dot(b)
-#define b2Mul(a,b) (a)*(b)
-#define b2MulT(a,b) (a).transpose()*(b)
-#define b2Cross(a,b) (a).cross(b)
-#define btCrossS(a,s) btVector3(s * a.getY(), -s * a.getX(),0.f)
+#define b2Dot(a, b) (a).dot(b)
+#define b2Mul(a, b) (a) * (b)
+#define b2MulT(a, b) (a).transpose() * (b)
+#define b2Cross(a, b) (a).cross(b)
+#define btCrossS(a, s) btVector3(s* a.getY(), -s* a.getX(), 0.f)
 
-int b2_maxManifoldPoints =2;
+int b2_maxManifoldPoints = 2;
 
 static int ClipSegmentToLine(ClipVertex vOut[2], ClipVertex vIn[2],
-					  const btVector3& normal, btScalar offset)
+							 const btVector3& normal, btScalar offset)
 {
 	// Start with no output points
 	int numOut = 0;
@@ -133,7 +127,7 @@ static int ClipSegmentToLine(ClipVertex vOut[2], ClipVertex vIn[2],
 
 // Find the separation between poly1 and poly2 for a give edge normal on poly1.
 static btScalar EdgeSeparation(const btBox2dShape* poly1, const btTransform& xf1, int edge1,
-							  const btBox2dShape* poly2, const btTransform& xf2)
+							   const btBox2dShape* poly2, const btTransform& xf2)
 {
 	const btVector3* vertices1 = poly1->getVertices();
 	const btVector3* normals1 = poly1->getNormals();
@@ -151,8 +145,8 @@ static btScalar EdgeSeparation(const btBox2dShape* poly1, const btTransform& xf1
 	int index = 0;
 	btScalar minDot = BT_LARGE_FLOAT;
 
-    if( count2 > 0 )
-        index = (int) normal1.minDot( vertices2, count2, minDot);
+	if (count2 > 0)
+		index = (int)normal1.minDot(vertices2, count2, minDot);
 
 	btVector3 v1 = b2Mul(xf1, vertices1[edge1]);
 	btVector3 v2 = b2Mul(xf2, vertices2[index]);
@@ -162,8 +156,8 @@ static btScalar EdgeSeparation(const btBox2dShape* poly1, const btTransform& xf1
 
 // Find the max separation between poly1 and poly2 using edge normals from poly1.
 static btScalar FindMaxSeparation(int* edgeIndex,
-								 const btBox2dShape* poly1, const btTransform& xf1,
-								 const btBox2dShape* poly2, const btTransform& xf2)
+								  const btBox2dShape* poly1, const btTransform& xf1,
+								  const btBox2dShape* poly2, const btTransform& xf2)
 {
 	int count1 = poly1->getVertexCount();
 	const btVector3* normals1 = poly1->getNormals();
@@ -174,9 +168,9 @@ static btScalar FindMaxSeparation(int* edgeIndex,
 
 	// Find edge normal on poly1 that has the largest projection onto d.
 	int edge = 0;
-    btScalar maxDot;
-    if( count1 > 0 )
-        edge = (int) dLocal1.maxDot( normals1, count1, maxDot);
+	btScalar maxDot;
+	if (count1 > 0)
+		edge = (int)dLocal1.maxDot(normals1, count1, maxDot);
 
 	// Get the separation for the edge normal.
 	btScalar s = EdgeSeparation(poly1, xf1, edge, poly2, xf2);
@@ -224,7 +218,7 @@ static btScalar FindMaxSeparation(int* edgeIndex,
 	}
 
 	// Perform a local search for the best edge normal.
-	for ( ; ; )
+	for (;;)
 	{
 		if (increment == -1)
 			edge = bestEdge - 1 >= 0 ? bestEdge - 1 : count1 - 1;
@@ -285,14 +279,14 @@ static void FindIncidentEdge(ClipVertex c[2],
 	int i2 = i1 + 1 < count2 ? i1 + 1 : 0;
 
 	c[0].v = b2Mul(xf2, vertices2[i1]);
-//	c[0].id.features.referenceEdge = (unsigned char)edge1;
-//	c[0].id.features.incidentEdge = (unsigned char)i1;
-//	c[0].id.features.incidentVertex = 0;
+	//	c[0].id.features.referenceEdge = (unsigned char)edge1;
+	//	c[0].id.features.incidentEdge = (unsigned char)i1;
+	//	c[0].id.features.incidentVertex = 0;
 
 	c[1].v = b2Mul(xf2, vertices2[i2]);
-//	c[1].id.features.referenceEdge = (unsigned char)edge1;
-//	c[1].id.features.incidentEdge = (unsigned char)i2;
-//	c[1].id.features.incidentVertex = 1;
+	//	c[1].id.features.referenceEdge = (unsigned char)edge1;
+	//	c[1].id.features.incidentEdge = (unsigned char)i2;
+	//	c[1].id.features.incidentVertex = 1;
 }
 
 // Find edge normal of max separation on A - return if separating axis is found
@@ -303,10 +297,9 @@ static void FindIncidentEdge(ClipVertex c[2],
 
 // The normal points from 1 to 2
 void b2CollidePolygons(btManifoldResult* manifold,
-					  const btBox2dShape* polyA, const btTransform& xfA,
-					  const btBox2dShape* polyB, const btTransform& xfB)
+					   const btBox2dShape* polyA, const btTransform& xfA,
+					   const btBox2dShape* polyB, const btTransform& xfB)
 {
-
 	int edgeA = 0;
 	btScalar separationA = FindMaxSeparation(&edgeA, polyA, xfA, polyB, xfB);
 	if (separationA > 0.0f)
@@ -317,10 +310,10 @@ void b2CollidePolygons(btManifoldResult* manifold,
 	if (separationB > 0.0f)
 		return;
 
-	const btBox2dShape* poly1;	// reference poly
-	const btBox2dShape* poly2;	// incident poly
+	const btBox2dShape* poly1;  // reference poly
+	const btBox2dShape* poly2;  // incident poly
 	btTransform xf1, xf2;
-	int edge1;		// reference edge
+	int edge1;  // reference edge
 	unsigned char flip;
 	const btScalar k_relativeTol = 0.98f;
 	const btScalar k_absoluteTol = 0.001f;
@@ -352,14 +345,13 @@ void b2CollidePolygons(btManifoldResult* manifold,
 	const btVector3* vertices1 = poly1->getVertices();
 
 	btVector3 v11 = vertices1[edge1];
-	btVector3 v12 = edge1 + 1 < count1 ? vertices1[edge1+1] : vertices1[0];
+	btVector3 v12 = edge1 + 1 < count1 ? vertices1[edge1 + 1] : vertices1[0];
 
 	//btVector3 dv = v12 - v11;
 	btVector3 sideNormal = b2Mul(xf1.getBasis(), v12 - v11);
 	sideNormal.normalize();
 	btVector3 frontNormal = btCrossS(sideNormal, 1.0f);
-	
-	
+
 	v11 = b2Mul(xf1, v11);
 	v12 = b2Mul(xf1, v12);
 
@@ -369,13 +361,12 @@ void b2CollidePolygons(btManifoldResult* manifold,
 
 	// Clip incident edge against extruded edge1 side edges.
 	ClipVertex clipPoints1[2];
-	clipPoints1[0].v.setValue(0,0,0);
-	clipPoints1[1].v.setValue(0,0,0);
+	clipPoints1[0].v.setValue(0, 0, 0);
+	clipPoints1[1].v.setValue(0, 0, 0);
 
 	ClipVertex clipPoints2[2];
-	clipPoints2[0].v.setValue(0,0,0);
-	clipPoints2[1].v.setValue(0,0,0);
-
+	clipPoints2[0].v.setValue(0, 0, 0);
+	clipPoints2[1].v.setValue(0, 0, 0);
 
 	int np;
 
@@ -386,7 +377,7 @@ void b2CollidePolygons(btManifoldResult* manifold,
 		return;
 
 	// Clip to negative box side 1
-	np = ClipSegmentToLine(clipPoints2, clipPoints1,  sideNormal, sideOffset2);
+	np = ClipSegmentToLine(clipPoints2, clipPoints1, sideNormal, sideOffset2);
 
 	if (np < 2)
 	{
@@ -403,19 +394,18 @@ void b2CollidePolygons(btManifoldResult* manifold,
 
 		if (separation <= 0.0f)
 		{
-			
 			//b2ManifoldPoint* cp = manifold->points + pointCount;
 			//btScalar separation = separation;
 			//cp->localPoint1 = b2MulT(xfA, clipPoints2[i].v);
 			//cp->localPoint2 = b2MulT(xfB, clipPoints2[i].v);
 
-			manifold->addContactPoint(-manifoldNormal,clipPoints2[i].v,separation);
+			manifold->addContactPoint(-manifoldNormal, clipPoints2[i].v, separation);
 
-//			cp->id = clipPoints2[i].id;
-//			cp->id.features.flip = flip;
+			//			cp->id = clipPoints2[i].id;
+			//			cp->id.features.flip = flip;
 			++pointCount;
 		}
 	}
 
-//	manifold->pointCount = pointCount;}
+	//	manifold->pointCount = pointCount;}
 }

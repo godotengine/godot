@@ -1,3 +1,4 @@
+/* clang-format off */
 static const int _hidpi_font_height=25;
 static const int _hidpi_font_ascent=19;
 static const int _hidpi_font_charcount=191;
@@ -25459,3 +25460,4 @@ static const unsigned char _hidpi_font_img_data[25255]={
 96,
 130,
 };
+/* clang-format on */

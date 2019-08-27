@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,28 +38,67 @@
 #include "../utils/thread_local.h"
 #include "gd_mono_header.h"
 
-#include "object.h"
-#include "reference.h"
+#include "core/object.h"
+#include "core/reference.h"
 
-#define UNLIKELY_UNHANDLED_EXCEPTION(m_exc)            \
+#define UNHANDLED_EXCEPTION(m_exc)                     \
 	if (unlikely(m_exc != NULL)) {                     \
 		GDMonoUtils::debug_unhandled_exception(m_exc); \
-		_UNREACHABLE_();                               \
+		GD_UNREACHABLE();                              \
 	}
 
 namespace GDMonoUtils {
 
-typedef Array *(*Array_GetPtr)(MonoObject *, MonoObject **);
-typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoObject **);
-typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoObject **);
-typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoObject **);
-typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoObject **);
-typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsArrayGenericType)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsDictionaryGenericType)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsArrayGenericType)(MonoObject *, MonoObject **);
-typedef MonoBoolean (*IsDictionaryGenericType)(MonoObject *, MonoObject **);
-typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoObject **);
+typedef void (*GodotObject_Dispose)(MonoObject *, MonoException **);
+typedef Array *(*Array_GetPtr)(MonoObject *, MonoException **);
+typedef Dictionary *(*Dictionary_GetPtr)(MonoObject *, MonoException **);
+typedef MonoObject *(*SignalAwaiter_SignalCallback)(MonoObject *, MonoArray *, MonoException **);
+typedef MonoObject *(*SignalAwaiter_FailureCallback)(MonoObject *, MonoException **);
+typedef MonoObject *(*GodotTaskScheduler_Activate)(MonoObject *, MonoException **);
+typedef MonoArray *(*StackTrace_GetFrames)(MonoObject *, MonoException **);
+typedef void (*DebugUtils_StackFrameInfo)(MonoObject *, MonoString **, int *, MonoString **, MonoException **);
+
+typedef MonoBoolean (*TypeIsGenericArray)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*TypeIsGenericDictionary)(MonoReflectionType *, MonoException **);
+
+typedef void (*ArrayGetElementType)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef void (*DictionaryGetKeyValueTypes)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef MonoBoolean (*GenericIEnumerableIsAssignableFromType)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*GenericIDictionaryIsAssignableFromType)(MonoReflectionType *, MonoException **);
+typedef MonoBoolean (*GenericIEnumerableIsAssignableFromType_with_info)(MonoReflectionType *, MonoReflectionType **, MonoException **);
+typedef MonoBoolean (*GenericIDictionaryIsAssignableFromType_with_info)(MonoReflectionType *, MonoReflectionType **, MonoReflectionType **, MonoException **);
+
+typedef MonoReflectionType *(*MakeGenericArrayType)(MonoReflectionType *, MonoException **);
+typedef MonoReflectionType *(*MakeGenericDictionaryType)(MonoReflectionType *, MonoReflectionType *, MonoException **);
+
+typedef void (*EnumerableToArray)(MonoObject *, Array *, MonoException **);
+typedef void (*IDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
+typedef void (*GenericIDictionaryToDictionary)(MonoObject *, Dictionary *, MonoException **);
+
+namespace Marshal {
+
+bool type_is_generic_array(MonoReflectionType *p_reftype);
+bool type_is_generic_dictionary(MonoReflectionType *p_reftype);
+
+void array_get_element_type(MonoReflectionType *p_array_reftype, MonoReflectionType **r_elem_reftype);
+void dictionary_get_key_value_types(MonoReflectionType *p_dict_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+
+bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype);
+bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype);
+bool generic_ienumerable_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_elem_reftype);
+bool generic_idictionary_is_assignable_from(MonoReflectionType *p_reftype, MonoReflectionType **r_key_reftype, MonoReflectionType **r_value_reftype);
+
+GDMonoClass *make_generic_array_type(MonoReflectionType *p_elem_reftype);
+GDMonoClass *make_generic_dictionary_type(MonoReflectionType *p_key_reftype, MonoReflectionType *p_value_reftype);
+
+Array enumerable_to_array(MonoObject *p_enumerable);
+Dictionary idictionary_to_dictionary(MonoObject *p_idictionary);
+Dictionary generic_idictionary_to_dictionary(MonoObject *p_generic_idictionary);
+
+} // namespace Marshal
+
+// End of MarshalUtils methods
 
 struct MonoCache {
 
@@ -81,6 +120,9 @@ struct MonoCache {
 	GDMonoClass *class_double;
 	GDMonoClass *class_String;
 	GDMonoClass *class_IntPtr;
+
+	GDMonoClass *class_System_Collections_IEnumerable;
+	GDMonoClass *class_System_Collections_IDictionary;
 
 #ifdef DEBUG_ENABLED
 	GDMonoClass *class_System_Diagnostics_StackTrace;
@@ -107,7 +149,7 @@ struct MonoCache {
 	GDMonoClass *class_NodePath;
 	GDMonoClass *class_RID;
 	GDMonoClass *class_GodotObject;
-	GDMonoClass *class_GodotReference;
+	GDMonoClass *class_GodotResource;
 	GDMonoClass *class_Node;
 	GDMonoClass *class_Control;
 	GDMonoClass *class_Spatial;
@@ -115,6 +157,7 @@ struct MonoCache {
 	GDMonoClass *class_Array;
 	GDMonoClass *class_Dictionary;
 	GDMonoClass *class_MarshalUtils;
+	GDMonoClass *class_ISerializationListener;
 
 #ifdef DEBUG_ENABLED
 	GDMonoClass *class_DebuggingUtils;
@@ -130,8 +173,9 @@ struct MonoCache {
 	GDMonoClass *class_SyncAttribute;
 	GDMonoClass *class_RemoteSyncAttribute;
 	GDMonoClass *class_MasterSyncAttribute;
-	GDMonoClass *class_SlaveSyncAttribute;
+	GDMonoClass *class_PuppetSyncAttribute;
 	GDMonoClass *class_MasterAttribute;
+	GDMonoClass *class_PuppetAttribute;
 	GDMonoClass *class_SlaveAttribute;
 	GDMonoClass *class_GodotMethodAttribute;
 	GDMonoField *field_GodotMethodAttribute_methodName;
@@ -141,27 +185,46 @@ struct MonoCache {
 	GDMonoField *field_Image_ptr;
 	GDMonoField *field_RID_ptr;
 
+	GodotObject_Dispose methodthunk_GodotObject_Dispose;
 	Array_GetPtr methodthunk_Array_GetPtr;
 	Dictionary_GetPtr methodthunk_Dictionary_GetPtr;
-	IsArrayGenericType methodthunk_MarshalUtils_IsArrayGenericType;
-	IsDictionaryGenericType methodthunk_MarshalUtils_IsDictionaryGenericType;
 	SignalAwaiter_SignalCallback methodthunk_SignalAwaiter_SignalCallback;
 	SignalAwaiter_FailureCallback methodthunk_SignalAwaiter_FailureCallback;
 	GodotTaskScheduler_Activate methodthunk_GodotTaskScheduler_Activate;
+
+	// Start of MarshalUtils methods
+
+	TypeIsGenericArray methodthunk_MarshalUtils_TypeIsGenericArray;
+	TypeIsGenericDictionary methodthunk_MarshalUtils_TypeIsGenericDictionary;
+
+	ArrayGetElementType methodthunk_MarshalUtils_ArrayGetElementType;
+	DictionaryGetKeyValueTypes methodthunk_MarshalUtils_DictionaryGetKeyValueTypes;
+
+	GenericIEnumerableIsAssignableFromType methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType;
+	GenericIDictionaryIsAssignableFromType methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType;
+	GenericIEnumerableIsAssignableFromType_with_info methodthunk_MarshalUtils_GenericIEnumerableIsAssignableFromType_with_info;
+	GenericIDictionaryIsAssignableFromType_with_info methodthunk_MarshalUtils_GenericIDictionaryIsAssignableFromType_with_info;
+
+	MakeGenericArrayType methodthunk_MarshalUtils_MakeGenericArrayType;
+	MakeGenericDictionaryType methodthunk_MarshalUtils_MakeGenericDictionaryType;
+
+	EnumerableToArray methodthunk_MarshalUtils_EnumerableToArray;
+	IDictionaryToDictionary methodthunk_MarshalUtils_IDictionaryToDictionary;
+	GenericIDictionaryToDictionary methodthunk_MarshalUtils_GenericIDictionaryToDictionary;
+
+	// End of MarshalUtils methods
 
 	Ref<MonoGCHandle> task_scheduler_handle;
 
 	bool corlib_cache_updated;
 	bool godot_api_cache_updated;
 
-	void clear_members();
-	void cleanup();
+	void clear_corlib_cache();
+	void clear_godot_api_cache();
 
 	MonoCache() {
-		corlib_cache_updated = false;
-		godot_api_cache_updated = false;
-
-		clear_members();
+		clear_corlib_cache();
+		clear_godot_api_cache();
 	}
 };
 
@@ -169,7 +232,22 @@ extern MonoCache mono_cache;
 
 void update_corlib_cache();
 void update_godot_api_cache();
-void clear_cache();
+
+inline void clear_corlib_cache() {
+	mono_cache.clear_corlib_cache();
+}
+
+inline void clear_godot_api_cache() {
+	mono_cache.clear_godot_api_cache();
+}
+
+_FORCE_INLINE_ bool tools_godot_api_check() {
+#ifdef TOOLS_ENABLED
+	return mono_cache.godot_api_cache_updated;
+#else
+	return true; // Assume it's updated if this was called, otherwise it's a bug
+#endif
+}
 
 _FORCE_INLINE_ void hash_combine(uint32_t &p_hash, const uint32_t &p_with_hash) {
 	p_hash ^= p_with_hash + 0x9e3779b9 + (p_hash << 6) + (p_hash >> 2);
@@ -191,7 +269,7 @@ _FORCE_INLINE_ bool is_main_thread() {
 	return mono_domain_get() != NULL && mono_thread_get_main() == mono_thread_current();
 }
 
-void runtime_object_init(MonoObject *p_this_obj);
+void runtime_object_init(MonoObject *p_this_obj, GDMonoClass *p_class, MonoException **r_exc = NULL);
 
 GDMonoClass *get_object_class(MonoObject *p_object);
 GDMonoClass *type_get_proxy_class(const StringName &p_type);
@@ -211,7 +289,7 @@ void set_exception_message(MonoException *p_exc, String message);
 
 void debug_print_unhandled_exception(MonoException *p_exc);
 void debug_send_unhandled_exception_error(MonoException *p_exc);
-_NO_RETURN_ void debug_unhandled_exception(MonoException *p_exc);
+void debug_unhandled_exception(MonoException *p_exc);
 void print_unhandled_exception(MonoException *p_exc);
 
 /**
@@ -230,13 +308,17 @@ _FORCE_INLINE_ int &get_runtime_invoke_count_ref() {
 	return current_invoke_count;
 }
 
-MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **p_exc);
+MonoObject *runtime_invoke(MonoMethod *p_method, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *runtime_invoke_array(MonoMethod *p_method, void *p_obj, MonoArray *p_params, MonoException **r_exc);
 
-MonoString *object_to_string(MonoObject *p_obj, MonoException **p_exc);
+MonoString *object_to_string(MonoObject *p_obj, MonoException **r_exc);
 
-void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
-MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **p_exc);
+void property_set_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_params, MonoException **r_exc);
+
+uint64_t unbox_enum_value(MonoObject *p_boxed, MonoType *p_enum_basetype, bool &r_error);
+
+void dispose(MonoObject *p_mono_object, MonoException **r_exc);
 
 } // namespace GDMonoUtils
 
@@ -248,6 +330,7 @@ MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_param
 #define CACHED_FIELD(m_class, m_field) (GDMonoUtils::mono_cache.field_##m_class##_##m_field)
 #define CACHED_METHOD(m_class, m_method) (GDMonoUtils::mono_cache.method_##m_class##_##m_method)
 #define CACHED_METHOD_THUNK(m_class, m_method) (GDMonoUtils::mono_cache.methodthunk_##m_class##_##m_method)
+#define CACHED_PROPERTY(m_class, m_property) (GDMonoUtils::mono_cache.property_##m_class##_##m_property)
 
 #ifdef REAL_T_IS_DOUBLE
 #define REAL_T_MONOCLASS CACHED_CLASS_RAW(double)
@@ -261,5 +344,94 @@ MonoObject *property_get_value(MonoProperty *p_prop, void *p_obj, void **p_param
 
 #define GD_MONO_END_RUNTIME_INVOKE \
 	_runtime_invoke_count_ref -= 1;
+
+inline void invoke_method_thunk(void (*p_method_thunk)()) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk();
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R>
+R invoke_method_thunk(R (*p_method_thunk)()) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk();
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1>
+void invoke_method_thunk(void (*p_method_thunk)(P1), P1 p_arg1) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1>
+R invoke_method_thunk(R (*p_method_thunk)(P1), P1 p_arg1) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2), P1 p_arg1, P2 p_arg2) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2), P1 p_arg1, P2 p_arg2) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3), P1 p_arg1, P2 p_arg2, P3 p_arg3) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3), P1 p_arg1, P2 p_arg2, P3 p_arg3) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3, class P4>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3, P4), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3, class P4>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3, P4), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
+
+template <class P1, class P2, class P3, class P4, class P5>
+void invoke_method_thunk(void (*p_method_thunk)(P1, P2, P3, P4, P5), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4, P5 p_arg5) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4, p_arg5);
+	GD_MONO_END_RUNTIME_INVOKE;
+}
+
+template <class R, class P1, class P2, class P3, class P4, class P5>
+R invoke_method_thunk(R (*p_method_thunk)(P1, P2, P3, P4, P5), P1 p_arg1, P2 p_arg2, P3 p_arg3, P4 p_arg4, P5 p_arg5) {
+	GD_MONO_BEGIN_RUNTIME_INVOKE;
+	R r = p_method_thunk(p_arg1, p_arg2, p_arg3, p_arg4, p_arg5);
+	GD_MONO_END_RUNTIME_INVOKE;
+	return r;
+}
 
 #endif // GD_MONOUTILS_H

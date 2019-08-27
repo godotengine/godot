@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,12 @@
 
 #include "test_render.h"
 
-#include "math_funcs.h"
-#include "os/keyboard.h"
-#include "os/main_loop.h"
-#include "os/os.h"
-#include "print_string.h"
-#include "quick_hull.h"
+#include "core/math/math_funcs.h"
+#include "core/math/quick_hull.h"
+#include "core/os/keyboard.h"
+#include "core/os/main_loop.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 #include "servers/visual_server.h"
 
 #define OBJECT_COUNT 50

@@ -30,7 +30,7 @@
     <string name="notification_download_failed">다운로드 실패</string>
 
 
-    <string name="state_unknown">시작중...</string>
+    <string name="state_unknown">시작중…</string>
     <string name="state_idle">다운로드 시작을 기다리는 중</string>
     <string name="state_fetching_url">다운로드할 항목을 찾는 중</string>
     <string name="state_connecting">다운로드 서버에 연결 중</string>

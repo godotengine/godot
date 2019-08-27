@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,7 @@
 class ExportTemplateVersion;
 
 class ExportTemplateManager : public ConfirmationDialog {
-	GDCLASS(ExportTemplateManager, ConfirmationDialog)
+	GDCLASS(ExportTemplateManager, ConfirmationDialog);
 
 	AcceptDialog *template_downloader;
 	VBoxContainer *template_list;
@@ -70,7 +70,7 @@ class ExportTemplateManager : public ConfirmationDialog {
 	void _uninstall_template_confirm();
 
 	virtual void ok_pressed();
-	void _install_from_file(const String &p_file, bool p_use_progress = true);
+	bool _install_from_file(const String &p_file, bool p_use_progress = true);
 
 	void _http_download_mirror_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
 	void _http_download_templates_completed(int p_status, int p_code, const PoolStringArray &headers, const PoolByteArray &p_data);
@@ -84,6 +84,9 @@ protected:
 	static void _bind_methods();
 
 public:
+	bool can_install_android_template();
+	Error install_android_template();
+
 	void popup_manager();
 
 	ExportTemplateManager();

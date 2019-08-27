@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "navigation_mesh_editor_plugin.h"
 
-#include "io/marshalls.h"
-#include "io/resource_saver.h"
+#include "core/io/marshalls.h"
+#include "core/io/resource_saver.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/box_container.h"
 
@@ -54,28 +54,26 @@ void NavigationMeshEditor::_notification(int p_option) {
 }
 
 void NavigationMeshEditor::_bake_pressed() {
+	button_bake->set_pressed(false);
 
 	ERR_FAIL_COND(!node);
 	const String conf_warning = node->get_configuration_warning();
 	if (!conf_warning.empty()) {
 		err_dialog->set_text(conf_warning);
 		err_dialog->popup_centered_minsize();
-		button_bake->set_pressed(false);
 		return;
 	}
 
-	NavigationMeshGenerator::clear(node->get_navigation_mesh());
-	NavigationMeshGenerator::bake(node->get_navigation_mesh(), node);
+	EditorNavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
+	EditorNavigationMeshGenerator::get_singleton()->bake(node->get_navigation_mesh(), node);
 
-	if (node) {
-		node->update_gizmo();
-	}
+	node->update_gizmo();
 }
 
 void NavigationMeshEditor::_clear_pressed() {
 
 	if (node)
-		NavigationMeshGenerator::clear(node->get_navigation_mesh());
+		EditorNavigationMeshGenerator::get_singleton()->clear(node->get_navigation_mesh());
 
 	button_bake->set_pressed(false);
 	bake_info->set_text("");
@@ -103,24 +101,25 @@ void NavigationMeshEditor::_bind_methods() {
 NavigationMeshEditor::NavigationMeshEditor() {
 
 	bake_hbox = memnew(HBoxContainer);
+
 	button_bake = memnew(ToolButton);
-	button_bake->set_text(TTR("Bake!"));
+	bake_hbox->add_child(button_bake);
 	button_bake->set_toggle_mode(true);
-	button_reset = memnew(Button);
-	button_bake->set_tooltip(TTR("Bake the navigation mesh.") + "\n");
+	button_bake->set_text(TTR("Bake NavMesh"));
+	button_bake->connect("pressed", this, "_bake_pressed");
+
+	button_reset = memnew(ToolButton);
+	bake_hbox->add_child(button_reset);
+	// No button text, we only use a revert icon which is set when entering the tree.
+	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
+	button_reset->connect("pressed", this, "_clear_pressed");
 
 	bake_info = memnew(Label);
-	bake_hbox->add_child(button_bake);
-	bake_hbox->add_child(button_reset);
 	bake_hbox->add_child(bake_info);
 
 	err_dialog = memnew(AcceptDialog);
 	add_child(err_dialog);
 	node = NULL;
-
-	button_bake->connect("pressed", this, "_bake_pressed");
-	button_reset->connect("pressed", this, "_clear_pressed");
-	button_reset->set_tooltip(TTR("Clear the navigation mesh."));
 }
 
 NavigationMeshEditor::~NavigationMeshEditor() {

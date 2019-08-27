@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "voxel_light_baker.h"
-#include "os/os.h"
-#include "os/threaded_array_processor.h"
+#include "core/os/os.h"
+#include "core/os/threaded_array_processor.h"
 
 #include <stdlib.h>
 
@@ -212,9 +212,7 @@ static bool fast_tri_box_overlap(const Vector3 &boxcenter, const Vector3 boxhalf
 	/*  compute plane equation of triangle: normal*x+d=0 */
 	normal = e0.cross(e1);
 	d = -normal.dot(v0); /* plane eq: normal.x+d=0 */
-	if (!planeBoxOverlap(normal, d, boxhalfsize)) return false;
-
-	return true; /* box and triangle overlaps */
+	return planeBoxOverlap(normal, d, boxhalfsize); /* if true, box and triangle overlaps */
 }
 
 static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3 *p_vtx, const Vector2 *p_uv, const Vector3 *p_normal, Vector2 &r_uv, Vector3 &r_normal) {
@@ -261,7 +259,7 @@ static _FORCE_INLINE_ void get_uv_and_normal(const Vector3 &p_pos, const Vector3
 void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p_z, const Vector3 *p_vtx, const Vector3 *p_normal, const Vector2 *p_uv, const MaterialCache &p_material, const AABB &p_aabb) {
 
 	if (p_level == cell_subdiv - 1) {
-		//plot the face by guessing it's albedo and emission value
+		//plot the face by guessing its albedo and emission value
 
 		//find best axis to map to, for scanning values
 		int closest_axis = 0;
@@ -342,8 +340,8 @@ void VoxelLightBaker::_plot_face(int p_idx, int p_level, int p_x, int p_y, int p
 				if (lnormal == Vector3()) //just in case normal as nor provided
 					lnormal = normal;
 
-				int uv_x = CLAMP(Math::fposmod(uv.x, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
-				int uv_y = CLAMP(Math::fposmod(uv.y, 1.0f) * bake_texture_size, 0, bake_texture_size - 1);
+				int uv_x = CLAMP(int(Math::fposmod(uv.x, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
+				int uv_y = CLAMP(int(Math::fposmod(uv.y, 1.0f) * bake_texture_size), 0, bake_texture_size - 1);
 
 				int ofs = uv_y * bake_texture_size + uv_x;
 				albedo_accum.r += p_material.albedo[ofs].r;
@@ -491,8 +489,6 @@ Vector<Color> VoxelLightBaker::_get_bake_texture(Ref<Image> p_image, const Color
 	p_image = p_image->duplicate();
 
 	if (p_image->is_compressed()) {
-		print_line("DECOMPRESSING!!!!");
-
 		p_image->decompress();
 	}
 	p_image->convert(Image::FORMAT_RGBA8);
@@ -736,7 +732,8 @@ void VoxelLightBaker::_check_init_light() {
 		leaf_voxel_count = 0;
 		_fixup_plot(0, 0); //pre fixup, so normal, albedo, emission, etc. work for lighting.
 		bake_light.resize(bake_cells.size());
-		zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
+		print_line("bake light size: " + itos(bake_light.size()));
+		//zeromem(bake_light.ptrw(), bake_light.size() * sizeof(Light));
 		first_leaf = -1;
 		_init_light_plot(0, 0, 0, 0, 0, CHILD_EMPTY);
 	}
@@ -836,7 +833,7 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 
 	for (int i = 0; i < 3; i++) {
 
-		if (ABS(light_axis[i]) < CMP_EPSILON)
+		if (Math::is_zero_approx(light_axis[i]))
 			continue;
 		clip[clip_planes].normal[i] = 1.0;
 
@@ -859,7 +856,6 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 	int idx = first_leaf;
 	while (idx >= 0) {
 
-		//print_line("plot idx " + itos(idx));
 		Light *light = &light_data[idx];
 
 		Vector3 to(light->x + 0.5, light->y + 0.5, light->z + 0.5);
@@ -889,7 +885,7 @@ void VoxelLightBaker::plot_light_directional(const Vector3 &p_direction, const C
 			distance -= distance_adv;
 		}
 
-		if (result == idx) {
+		if (result == (uint32_t)idx) {
 			//cell hit itself! hooray!
 
 			Vector3 normal(cells[idx].normal[0], cells[idx].normal[1], cells[idx].normal[2]);
@@ -949,7 +945,6 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 	int idx = first_leaf;
 	while (idx >= 0) {
 
-		//print_line("plot idx " + itos(idx));
 		Light *light = &light_data[idx];
 
 		Vector3 to(light->x + 0.5, light->y + 0.5, light->z + 0.5);
@@ -981,7 +976,7 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 
 		for (int c = 0; c < 3; c++) {
 
-			if (ABS(light_axis[c]) < CMP_EPSILON)
+			if (Math::is_zero_approx(light_axis[c]))
 				continue;
 			clip[clip_planes].normal[c] = 1.0;
 
@@ -1021,7 +1016,7 @@ void VoxelLightBaker::plot_light_omni(const Vector3 &p_pos, const Color &p_color
 			distance -= distance_adv;
 		}
 
-		if (result == idx) {
+		if (result == (uint32_t)idx) {
 			//cell hit itself! hooray!
 
 			if (normal == Vector3()) {
@@ -1079,7 +1074,6 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 	int idx = first_leaf;
 	while (idx >= 0) {
 
-		//print_line("plot idx " + itos(idx));
 		Light *light = &light_data[idx];
 
 		Vector3 to(light->x + 0.5, light->y + 0.5, light->z + 0.5);
@@ -1117,7 +1111,7 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 
 		for (int c = 0; c < 3; c++) {
 
-			if (ABS(light_axis[c]) < CMP_EPSILON)
+			if (Math::is_zero_approx(light_axis[c]))
 				continue;
 			clip[clip_planes].normal[c] = 1.0;
 
@@ -1156,7 +1150,7 @@ void VoxelLightBaker::plot_light_spot(const Vector3 &p_pos, const Vector3 &p_axi
 			distance -= distance_adv;
 		}
 
-		if (result == idx) {
+		if (result == (uint32_t)idx) {
 			//cell hit itself! hooray!
 
 			if (normal == Vector3()) {
@@ -1498,12 +1492,8 @@ void VoxelLightBaker::_sample_baked_octree_filtered_and_anisotropic(const Vector
 				for (int i = 0; i < 6; i++) {
 					//anisotropic read light
 					float amount = p_direction.dot(aniso_normal[i]);
-					//if (c == 0) {
-					//	print_line("\t" + itos(n) + " aniso " + itos(i) + " " + rtos(light[cell].accum[i][0]) + " VEC: " + aniso_normal[i]);
-					//}
 					if (amount < 0)
 						amount = 0;
-					//amount = 1;
 					color[c][n].x += light[cell].accum[i][0] * amount;
 					color[c][n].y += light[cell].accum[i][1] * amount;
 					color[c][n].z += light[cell].accum[i][2] * amount;
@@ -1513,8 +1503,6 @@ void VoxelLightBaker::_sample_baked_octree_filtered_and_anisotropic(const Vector
 				color[c][n].y += cells[cell].emission[1];
 				color[c][n].z += cells[cell].emission[2];
 			}
-
-			//print_line("\tlev " + itos(c) + " - " + itos(n) + " alpha: " + rtos(cells[test_cell].alpha) + " col: " + color[c][n]);
 		}
 	}
 
@@ -1559,8 +1547,6 @@ void VoxelLightBaker::_sample_baked_octree_filtered_and_anisotropic(const Vector
 
 	r_color = color_interp[0].linear_interpolate(color_interp[1], level_filter);
 	r_alpha = Math::lerp(alpha_interp[0], alpha_interp[1], level_filter);
-
-	//	print_line("pos: " + p_posf + " level " + rtos(p_level) + " down to " + itos(target_level) + "." + rtos(level_filter) + " color " + r_color + " alpha " + rtos(r_alpha));
 }
 
 Vector3 VoxelLightBaker::_voxel_cone_trace(const Vector3 &p_pos, const Vector3 &p_normal, float p_aperture) {
@@ -1577,8 +1563,6 @@ Vector3 VoxelLightBaker::_voxel_cone_trace(const Vector3 &p_pos, const Vector3 &
 
 	while (dist < max_distance && alpha < 0.95) {
 		float diameter = MAX(1.0, 2.0 * p_aperture * dist);
-		//print_line("VCT: pos " + (p_pos + dist * p_normal) + " dist " + rtos(dist) + " mipmap " + rtos(log2(diameter)) + " alpha " + rtos(alpha));
-		//Plane scolor = textureLod(probe, (pos + dist * direction) * cell_size, log2(diameter) );
 		_sample_baked_octree_filtered_and_anisotropic(p_pos + dist * p_normal, p_normal, log2(diameter), scolor, salpha);
 		float a = (1.0 - alpha);
 		color += scolor * a;
@@ -1601,11 +1585,10 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 	Vector3 bitangent = tangent.cross(p_normal).normalized();
 	Basis normal_xform = Basis(tangent, bitangent, p_normal).transposed();
 
-	//	print_line("normal xform: " + normal_xform);
-	const Vector3 *cone_dirs;
-	const float *cone_weights;
-	int cone_dir_count;
-	float cone_aperture;
+	const Vector3 *cone_dirs = NULL;
+	const float *cone_weights = NULL;
+	int cone_dir_count = 0;
+	float cone_aperture = 0;
 
 	switch (bake_quality) {
 		case BAKE_QUALITY_LOW: {
@@ -1634,7 +1617,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 				Vector3(-0.700629, -0.509037, 0.5),
 				Vector3(0.267617, -0.823639, 0.5)
 			};
-			static const float weights[6] = { 0.25, 0.15, 0.15, 0.15, 0.15, 0.15 };
+			static const float weights[6] = { 0.25f, 0.15f, 0.15f, 0.15f, 0.15f, 0.15f };
 			//
 			cone_dirs = dirs;
 			cone_dir_count = 6;
@@ -1656,7 +1639,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 				Vector3(0.19124006749743122, 0.39355745585016605, 0.8991883926788214),
 				Vector3(0.19124006749743122, -0.39355745585016605, 0.8991883926788214),
 			};
-			static const float weights[10] = { 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.08571, 0.133333, 0.133333, 0.13333 };
+			static const float weights[10] = { 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.08571f, 0.133333f, 0.133333f, 0.13333f };
 			cone_dirs = dirs;
 			cone_dir_count = 10;
 			cone_aperture = 0.404; // tan(angle) 45 degrees
@@ -1667,10 +1650,7 @@ Vector3 VoxelLightBaker::_compute_pixel_light_at_pos(const Vector3 &p_pos, const
 	Vector3 accum;
 
 	for (int i = 0; i < cone_dir_count; i++) {
-		//	if (i > 0)
-		//		continue;
 		Vector3 dir = normal_xform.xform(cone_dirs[i]).normalized(); //normal may not completely correct when transformed to cell
-		//print_line("direction: " + dir);
 		accum += _voxel_cone_trace(p_pos, dir, cone_aperture) * cone_weights[i];
 	}
 
@@ -1748,7 +1728,7 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 			//int level_limit = max_level;
 
 			cell = 0; //start from root
-			for (int i = 0; i < max_level; i++) {
+			for (int j = 0; j < max_level; j++) {
 
 				const Cell *bc = &cells[cell];
 
@@ -1777,14 +1757,14 @@ Vector3 VoxelLightBaker::_compute_ray_trace_at_pos(const Vector3 &p_pos, const V
 		}
 
 		if (unlikely(cell != CHILD_EMPTY)) {
-			for (int i = 0; i < 6; i++) {
+			for (int j = 0; j < 6; j++) {
 				//anisotropic read light
-				float amount = direction.dot(aniso_normal[i]);
+				float amount = direction.dot(aniso_normal[j]);
 				if (amount <= 0)
 					continue;
-				accum.x += light[cell].accum[i][0] * amount;
-				accum.y += light[cell].accum[i][1] * amount;
-				accum.z += light[cell].accum[i][2] * amount;
+				accum.x += light[cell].accum[j][0] * amount;
+				accum.y += light[cell].accum[j][1] * amount;
+				accum.z += light[cell].accum[j][2] * amount;
 			}
 			accum.x += cells[cell].emission[0];
 			accum.y += cells[cell].emission[1];
@@ -1802,7 +1782,6 @@ void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
 	LightMap *pixel = &p_line[p_x];
 	if (pixel->pos == Vector3())
 		return;
-	//print_line("pos: " + pixel->pos + " normal " + pixel->normal);
 	switch (bake_mode) {
 		case BAKE_MODE_CONE_TRACE: {
 			pixel->light = _compute_pixel_light_at_pos(pixel->pos, pixel->normal) * energy;
@@ -1810,24 +1789,85 @@ void VoxelLightBaker::_lightmap_bake_point(uint32_t p_x, LightMap *p_line) {
 		case BAKE_MODE_RAY_TRACE: {
 			pixel->light = _compute_ray_trace_at_pos(pixel->pos, pixel->normal) * energy;
 		} break;
-			//	pixel->light = Vector3(1, 1, 1);
-			//}
 	}
 }
 
-Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float), void *p_bake_time_ud) {
+Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, float default_texels_per_unit, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float), void *p_bake_time_ud) {
 
 	//transfer light information to a lightmap
 	Ref<Mesh> mesh = p_mesh;
 
-	int width = mesh->get_lightmap_size_hint().x;
-	int height = mesh->get_lightmap_size_hint().y;
-
 	//step 1 - create lightmap
+	int width;
+	int height;
 	Vector<LightMap> lightmap;
-	lightmap.resize(width * height);
-
 	Transform xform = to_cell_space * p_xform;
+	if (mesh->get_lightmap_size_hint() == Size2()) {
+		double area = 0;
+		double uv_area = 0;
+		for (int i = 0; i < mesh->get_surface_count(); i++) {
+			Array arrays = mesh->surface_get_arrays(i);
+			PoolVector<Vector3> vertices = arrays[Mesh::ARRAY_VERTEX];
+			PoolVector<Vector2> uv2 = arrays[Mesh::ARRAY_TEX_UV2];
+			PoolVector<int> indices = arrays[Mesh::ARRAY_INDEX];
+
+			ERR_FAIL_COND_V(vertices.size() == 0, ERR_INVALID_PARAMETER);
+			ERR_FAIL_COND_V(uv2.size() == 0, ERR_INVALID_PARAMETER);
+
+			int vc = vertices.size();
+			PoolVector<Vector3>::Read vr = vertices.read();
+			PoolVector<Vector2>::Read u2r = uv2.read();
+			PoolVector<int>::Read ir;
+			int ic = 0;
+
+			if (indices.size()) {
+				ic = indices.size();
+				ir = indices.read();
+			}
+
+			int faces = ic ? ic / 3 : vc / 3;
+			for (int j = 0; j < faces; j++) {
+				Vector3 vertex[3];
+				Vector2 uv[3];
+
+				for (int k = 0; k < 3; k++) {
+					int idx = ic ? ir[j * 3 + k] : j * 3 + k;
+					vertex[k] = xform.xform(vr[idx]);
+					uv[k] = u2r[idx];
+				}
+
+				Vector3 p1 = vertex[0];
+				Vector3 p2 = vertex[1];
+				Vector3 p3 = vertex[2];
+				double a = p1.distance_to(p2);
+				double b = p2.distance_to(p3);
+				double c = p3.distance_to(p1);
+				double halfPerimeter = (a + b + c) / 2.0;
+				area += sqrt(halfPerimeter * (halfPerimeter - a) * (halfPerimeter - b) * (halfPerimeter - c));
+
+				Vector2 uv_p1 = uv[0];
+				Vector2 uv_p2 = uv[1];
+				Vector2 uv_p3 = uv[2];
+				double uv_a = uv_p1.distance_to(uv_p2);
+				double uv_b = uv_p2.distance_to(uv_p3);
+				double uv_c = uv_p3.distance_to(uv_p1);
+				double uv_halfPerimeter = (uv_a + uv_b + uv_c) / 2.0;
+				uv_area += sqrt(uv_halfPerimeter * (uv_halfPerimeter - uv_a) * (uv_halfPerimeter - uv_b) * (uv_halfPerimeter - uv_c));
+			}
+		}
+
+		if (uv_area < 0.0001f) {
+			uv_area = 1.0;
+		}
+
+		int pixels = (ceil((1.0 / sqrt(uv_area)) * sqrt(area * default_texels_per_unit)));
+		width = height = CLAMP(pixels, 2, 4096);
+	} else {
+		width = mesh->get_lightmap_size_hint().x;
+		height = mesh->get_lightmap_size_hint().y;
+	}
+
+	lightmap.resize(width * height);
 
 	//step 2 plot faces to lightmap
 	for (int i = 0; i < mesh->get_surface_count(); i++) {
@@ -1854,16 +1894,16 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 		}
 
 		int faces = ic ? ic / 3 : vc / 3;
-		for (int i = 0; i < faces; i++) {
+		for (int j = 0; j < faces; j++) {
 			Vector3 vertex[3];
 			Vector3 normal[3];
 			Vector2 uv[3];
 
-			for (int j = 0; j < 3; j++) {
-				int idx = ic ? ir[i * 3 + j] : i * 3 + j;
-				vertex[j] = xform.xform(vr[idx]);
-				normal[j] = xform.basis.xform(nr[idx]).normalized();
-				uv[j] = u2r[idx];
+			for (int k = 0; k < 3; k++) {
+				int idx = ic ? ir[j * 3 + k] : j * 3 + k;
+				vertex[k] = xform.xform(vr[idx]);
+				normal[k] = xform.basis.xform(nr[idx]).normalized();
+				uv[k] = u2r[idx];
 			}
 
 			_plot_triangle(uv, vertex, normal, lightmap.ptrw(), width, height);
@@ -1895,9 +1935,8 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 
 		if (bake_mode == BAKE_MODE_RAY_TRACE) {
 			//blur
-			print_line("bluring, use pos for separatable copy");
 			//gauss kernel, 7 step sigma 2
-			static const float gauss_kernel[4] = { 0.214607, 0.189879, 0.131514, 0.071303 };
+			static const float gauss_kernel[4] = { 0.214607f, 0.189879f, 0.131514f, 0.071303f };
 			//horizontal pass
 			for (int i = 0; i < height; i++) {
 				for (int j = 0; j < width; j++) {
@@ -1953,15 +1992,12 @@ Error VoxelLightBaker::make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh
 
 		//add directional light (do this after blur)
 		{
-			LightMap *lightmap_ptr = lightmap.ptrw();
 			const Cell *cells = bake_cells.ptr();
 			const Light *light = bake_light.ptr();
 #ifdef _OPENMP
 #pragma omp parallel
 #endif
 			for (int i = 0; i < height; i++) {
-
-				//print_line("bake line " + itos(i) + " / " + itos(height));
 #ifdef _OPENMP
 #pragma omp parallel for schedule(dynamic, 1)
 #endif
@@ -2233,7 +2269,7 @@ PoolVector<int> VoxelLightBaker::create_gi_probe_data() {
 			}
 
 			{
-				uint16_t alpha = CLAMP(uint32_t(bake_cells[i].alpha * 65535.0), 0, 65535);
+				uint16_t alpha = MIN(uint32_t(bake_cells[i].alpha * 65535.0), 65535);
 				uint16_t level = bake_cells[i].level;
 
 				w32[ofs++] = (uint32_t(level) << 16) | uint32_t(alpha);
@@ -2277,7 +2313,7 @@ void VoxelLightBaker::_debug_mesh(int p_idx, int p_level, const AABB &p_aabb, Re
 
 			uint32_t child = bake_cells[p_idx].children[i];
 
-			if (child == CHILD_EMPTY || child >= max_original_cells)
+			if (child == CHILD_EMPTY || child >= (uint32_t)max_original_cells)
 				continue;
 
 			AABB aabb = p_aabb;
@@ -2304,7 +2340,6 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 
 	mm->set_transform_format(MultiMesh::TRANSFORM_3D);
 	mm->set_color_format(MultiMesh::COLOR_8BIT);
-	print_line("leaf voxels: " + itos(leaf_voxel_count));
 	mm->set_instance_count(leaf_voxel_count);
 
 	Ref<ArrayMesh> mesh;

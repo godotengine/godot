@@ -128,7 +128,7 @@ static void ImportLine(const uint8_t* src, int src_stride,
   for (; i < total_len; ++i) dst[i] = dst[len - 1];
 }
 
-void VP8IteratorImport(VP8EncIterator* const it, uint8_t* tmp_32) {
+void VP8IteratorImport(VP8EncIterator* const it, uint8_t* const tmp_32) {
   const VP8Encoder* const enc = it->enc_;
   const int x = it->x_, y = it->y_;
   const WebPPicture* const pic = enc->pic_;

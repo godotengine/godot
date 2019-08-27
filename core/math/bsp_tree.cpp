@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "bsp_tree.h"
-#include "error_macros.h"
-#include "print_string.h"
+
+#include "core/error_macros.h"
+#include "core/print_string.h"
 
 void BSP_Tree::from_aabb(const AABB &p_aabb) {
 
@@ -141,7 +142,7 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 		}
 
 		return _get_points_inside(node->over, p_points, p_indices, p_center, p_half_extents, p_indices_count);
-	} else if (dist_min <= 0) { //all points behind plane
+	} else { //all points behind plane
 
 		if (node->under == UNDER_LEAF) {
 
@@ -149,8 +150,6 @@ int BSP_Tree::_get_points_inside(int p_node, const Vector3 *p_points, int *p_ind
 		}
 		return _get_points_inside(node->under, p_points, p_indices, p_center, p_half_extents, p_indices_count);
 	}
-
-	return 0;
 }
 
 int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) const {
@@ -164,7 +163,6 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 	int pass_count = 0;
 	const Node *nodesptr = &nodes[0];
 	const Plane *planesptr = &planes[0];
-	int plane_count = planes.size();
 	int node_count = nodes.size();
 
 	if (node_count == 0) // no nodes!
@@ -191,10 +189,10 @@ int BSP_Tree::get_points_inside(const Vector3 *p_points, int p_point_count) cons
 				break;
 			}
 
-			uint16_t plane = nodesptr[idx].plane;
 #ifdef DEBUG_ENABLED
-
-			ERR_FAIL_INDEX_V(plane, plane_count, false);
+			int plane_count = planes.size();
+			uint16_t plane = nodesptr[idx].plane;
+			ERR_FAIL_UNSIGNED_INDEX_V(plane, plane_count, false);
 #endif
 
 			idx = planesptr[nodesptr[idx].plane].is_point_over(point) ? nodes[idx].over : nodes[idx].under;
@@ -260,7 +258,7 @@ bool BSP_Tree::point_is_inside(const Vector3 &p_point) const {
 #ifdef DEBUG_ENABLED
 		int plane_count = planes.size();
 		uint16_t plane = nodesptr[idx].plane;
-		ERR_FAIL_INDEX_V(plane, plane_count, false);
+		ERR_FAIL_UNSIGNED_INDEX_V(plane, plane_count, false);
 #endif
 
 		bool over = planesptr[nodesptr[idx].plane].is_point_over(p_point);
@@ -271,8 +269,6 @@ bool BSP_Tree::point_is_inside(const Vector3 &p_point) const {
 		ERR_FAIL_COND_V(idx < MAX_NODES && idx >= node_count, false);
 #endif
 	}
-
-	return false;
 }
 
 static int _bsp_find_best_half_plane(const Face3 *p_faces, const Vector<int> &p_indices, real_t p_tolerance) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,13 +37,14 @@
 #include "scene/gui/graph_edit.h"
 #include "visual_script.h"
 #include "visual_script_property_selector.h"
+
 class VisualScriptEditorSignalEdit;
 class VisualScriptEditorVariableEdit;
 
 #ifdef TOOLS_ENABLED
 
 class VisualScriptEditor : public ScriptEditorBase {
-	GDCLASS(VisualScriptEditor, ScriptEditorBase)
+	GDCLASS(VisualScriptEditor, ScriptEditorBase);
 
 	enum {
 		TYPE_SEQUENCE = 1000,
@@ -93,7 +94,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	VisualScriptEditorSignalEdit *signal_editor;
 
 	AcceptDialog *edit_signal_dialog;
-	PropertyEditor *edit_signal_edit;
+	EditorInspector *edit_signal_edit;
 
 	VisualScriptPropertySelector *method_select;
 	VisualScriptPropertySelector *new_connect_node_select;
@@ -102,7 +103,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	VisualScriptEditorVariableEdit *variable_editor;
 
 	AcceptDialog *edit_variable_dialog;
-	PropertyEditor *edit_variable_edit;
+	EditorInspector *edit_variable_edit;
 
 	CustomPropertyEditor *default_value_edit;
 
@@ -159,8 +160,6 @@ class VisualScriptEditor : public ScriptEditorBase {
 	MemberType member_type;
 	String member_name;
 
-	bool seq_connect = false;
-
 	PortAction port_action;
 	int port_action_node;
 	int port_action_output;
@@ -177,7 +176,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _cancel_connect_node();
 	void _create_new_node(const String &p_text, const String &p_category, const Vector2 &p_point);
-	void _selected_new_virtual_method(const String &p_text = String(""), const String &p_category = String(""), const bool p_connecting = true);
+	void _selected_new_virtual_method(const String &p_text, const String &p_category, const bool p_connecting);
 
 	int error_line;
 
@@ -213,7 +212,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _input(const Ref<InputEvent> &p_event);
 
-	void _generic_search();
+	void _generic_search(String p_base_type = "");
 
 	void _members_gui_input(const Ref<InputEvent> &p_event);
 	void _on_nodes_delete();
@@ -235,10 +234,10 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _comment_node_resized(const Vector2 &p_new_size, int p_node);
 
 	int selecting_method_id;
-	void _selected_method(const String &p_method, const String &p_type);
+	void _selected_method(const String &p_method, const String &p_type, const bool p_connecting);
 
 	void _draw_color_over_button(Object *obj, Color p_color);
-	void _button_resource_previewed(const String &p_path, const Ref<Texture> &p_preview, Variant p_ud);
+	void _button_resource_previewed(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, Variant p_ud);
 
 	VisualScriptNode::TypeGuess _guess_output_type(int p_port_action_node, int p_port_action_output, Set<int> &visited_nodes);
 
@@ -264,7 +263,10 @@ public:
 	virtual Variant get_edit_state();
 	virtual void set_edit_state(const Variant &p_state);
 	virtual void goto_line(int p_line, bool p_with_error = false);
+	virtual void set_executing_line(int p_line);
+	virtual void clear_executing_line();
 	virtual void trim_trailing_whitespace();
+	virtual void insert_final_newline();
 	virtual void convert_indent_to_spaces();
 	virtual void convert_indent_to_tabs();
 	virtual void ensure_focus();
@@ -279,6 +281,7 @@ public:
 	virtual Control *get_edit_menu();
 	virtual void clear_edit_menu();
 	virtual bool can_lose_focus_on_node_selection() { return false; }
+	virtual void validate();
 
 	static void register_editor();
 

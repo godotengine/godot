@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t42objs.c                                                              */
-/*                                                                         */
-/*    Type 42 objects manager (body).                                      */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  Roberto Alameda.                                                       */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t42objs.c
+ *
+ *   Type 42 objects manager (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * Roberto Alameda.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "t42objs.h"
@@ -25,7 +25,7 @@
 
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t42
+#define FT_COMPONENT  t42
 
 
   static FT_Error
@@ -98,8 +98,7 @@
     /* we must now build type1.encoding when we have a custom array */
     if ( type1->encoding_type == T1_ENCODING_TYPE_ARRAY )
     {
-      FT_Int    charcode, idx, min_char, max_char;
-      FT_Byte*  glyph_name;
+      FT_Int  charcode, idx, min_char, max_char;
 
 
       /* OK, we do the following: for each element in the encoding   */
@@ -114,27 +113,27 @@
       charcode = 0;
       for ( ; charcode < loader.encoding_table.max_elems; charcode++ )
       {
-        FT_Byte*  char_name;
+        const FT_String*  char_name =
+              (const FT_String*)loader.encoding_table.elements[charcode];
 
 
         type1->encoding.char_index[charcode] = 0;
-        type1->encoding.char_name [charcode] = (char *)".notdef";
+        type1->encoding.char_name [charcode] = ".notdef";
 
-        char_name = loader.encoding_table.elements[charcode];
         if ( char_name )
           for ( idx = 0; idx < type1->num_glyphs; idx++ )
           {
-            glyph_name = (FT_Byte*)type1->glyph_names[idx];
-            if ( ft_strcmp( (const char*)char_name,
-                            (const char*)glyph_name ) == 0 )
+            const FT_String*  glyph_name = type1->glyph_names[idx];
+
+
+            if ( ft_strcmp( char_name, glyph_name ) == 0 )
             {
               type1->encoding.char_index[charcode] = (FT_UShort)idx;
-              type1->encoding.char_name [charcode] = (char*)glyph_name;
+              type1->encoding.char_name [charcode] = glyph_name;
 
               /* Change min/max encoded char only if glyph name is */
               /* not /.notdef                                      */
-              if ( ft_strcmp( (const char*)".notdef",
-                              (const char*)glyph_name ) != 0 )
+              if ( ft_strcmp( ".notdef", glyph_name ) != 0 )
               {
                 if ( charcode < min_char )
                   min_char = charcode;
@@ -354,7 +353,8 @@
 
         error = FT_CMap_New( cmap_classes->unicode, NULL, &charmap, NULL );
         if ( error                                      &&
-             FT_ERR_NEQ( error, No_Unicode_Glyph_Name ) )
+             FT_ERR_NEQ( error, No_Unicode_Glyph_Name ) &&
+             FT_ERR_NEQ( error, Unimplemented_Feature ) )
           goto Exit;
         error = FT_Err_Ok;
 
@@ -457,20 +457,21 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Function>                                                            */
-  /*    T42_Driver_Init                                                    */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    Initializes a given Type 42 driver object.                         */
-  /*                                                                       */
-  /* <Input>                                                               */
-  /*    driver :: A handle to the target driver object.                    */
-  /*                                                                       */
-  /* <Return>                                                              */
-  /*    FreeType error code.  0 means success.                             */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @Function:
+   *   T42_Driver_Init
+   *
+   * @Description:
+   *   Initializes a given Type 42 driver object.
+   *
+   * @Input:
+   *   driver ::
+   *     A handle to the target driver object.
+   *
+   * @Return:
+   *   FreeType error code.  0 means success.
+   */
   FT_LOCAL_DEF( FT_Error )
   T42_Driver_Init( FT_Module  module )        /* T42_Driver */
   {

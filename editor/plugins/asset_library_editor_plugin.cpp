@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 #include "editor_node.h"
 #include "editor_settings.h"
 
-void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost) {
+void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 
 	title->set_text(p_title);
 	asset_id = p_asset_id;
@@ -44,13 +44,6 @@ void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, co
 	author->set_text(p_author);
 	author_id = p_author_id;
 	price->set_text(p_cost);
-
-	for (int i = 0; i < 5; i++) {
-		if (i < p_rating)
-			stars[i]->set_texture(get_icon("Favorites", "EditorIcons"));
-		else
-			stars[i]->set_texture(get_icon("NonFavorite", "EditorIcons"));
-	}
 }
 
 void EditorAssetLibraryItem::set_image(int p_type, int p_index, const Ref<Texture> &p_image) {
@@ -65,9 +58,10 @@ void EditorAssetLibraryItem::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		icon->set_normal_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
+		icon->set_normal_texture(get_icon("ProjectIconLoading", "EditorIcons"));
 		category->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 		author->add_color_override("font_color", Color(0.5, 0.5, 0.5));
+		price->add_color_override("font_color", Color(0.5, 0.5, 0.5));
 	}
 }
 
@@ -100,17 +94,19 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 
 	Ref<StyleBoxEmpty> border;
 	border.instance();
-	border->set_default_margin(MARGIN_LEFT, 5);
-	border->set_default_margin(MARGIN_RIGHT, 5);
-	border->set_default_margin(MARGIN_BOTTOM, 5);
-	border->set_default_margin(MARGIN_TOP, 5);
+	border->set_default_margin(MARGIN_LEFT, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_RIGHT, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_BOTTOM, 5 * EDSCALE);
+	border->set_default_margin(MARGIN_TOP, 5 * EDSCALE);
 	add_style_override("panel", border);
 
 	HBoxContainer *hb = memnew(HBoxContainer);
+	// Add some spacing to visually separate the icon from the asset details
+	hb->add_constant_override("separation", 15 * EDSCALE);
 	add_child(hb);
 
 	icon = memnew(TextureButton);
-	icon->set_custom_minimum_size(Size2(64, 64));
+	icon->set_custom_minimum_size(Size2(64, 64) * EDSCALE);
 	icon->set_default_cursor_shape(CURSOR_POINTING_HAND);
 	icon->connect("pressed", this, "_asset_clicked");
 
@@ -139,18 +135,11 @@ EditorAssetLibraryItem::EditorAssetLibraryItem() {
 	author->connect("pressed", this, "_author_clicked");
 	vb->add_child(author);
 
-	HBoxContainer *rating_hb = memnew(HBoxContainer);
-	vb->add_child(rating_hb);
-
-	for (int i = 0; i < 5; i++) {
-		stars[i] = memnew(TextureRect);
-		rating_hb->add_child(stars[i]);
-	}
 	price = memnew(Label);
 	price->set_text(TTR("Free"));
 	vb->add_child(price);
 
-	set_custom_minimum_size(Size2(250, 100));
+	set_custom_minimum_size(Size2(250, 100) * EDSCALE);
 	set_h_size_flags(SIZE_EXPAND_FILL);
 
 	set_mouse_filter(MOUSE_FILTER_PASS);
@@ -174,8 +163,11 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 					if (preview_images[i].is_video) {
 						Ref<Image> overlay = get_icon("PlayOverlay", "EditorIcons")->get_data();
 						Ref<Image> thumbnail = p_image->get_data();
-						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width()) / 2, (thumbnail->get_height() - overlay->get_height()) / 2);
+						thumbnail = thumbnail->duplicate();
+						Point2 overlay_pos = Point2((thumbnail->get_width() - overlay->get_width() / 2) / 2, (thumbnail->get_height() - overlay->get_height() / 2) / 2);
 
+						// Overlay and thumbnail need the same format for `blend_rect` to work.
+						thumbnail->convert(Image::FORMAT_RGBA8);
 						thumbnail->lock();
 						thumbnail->blend_rect(overlay, overlay->get_used_rect(), overlay_pos);
 						thumbnail->unlock();
@@ -185,13 +177,14 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 						tex->create_from_image(thumbnail);
 
 						preview_images[i].button->set_icon(tex);
+						// Make it clearer that clicking it will open an external link
+						preview_images[i].button->set_default_cursor_shape(CURSOR_POINTING_HAND);
 					} else {
 						preview_images[i].button->set_icon(p_image);
 					}
 					break;
 				}
 			}
-			//item->call("set_image",p_type,p_index,p_image);
 		} break;
 		case EditorAssetLibrary::IMAGE_QUEUE_SCREENSHOT: {
 
@@ -204,7 +197,6 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 					break;
 				}
 			}
-			//item->call("set_image",p_type,p_index,p_image);
 		} break;
 	}
 }
@@ -245,13 +237,13 @@ void EditorAssetLibraryItemDescription::_preview_click(int p_id) {
 	}
 }
 
-void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
+void EditorAssetLibraryItemDescription::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash) {
 
 	asset_id = p_asset_id;
 	title = p_title;
 	download_url = p_download_url;
 	sha256 = p_sha256_hash;
-	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_rating, p_cost);
+	item->configure(p_title, p_asset_id, p_category, p_category_id, p_author, p_author_id, p_cost);
 	description->clear();
 	description->add_text(TTR("Version:") + " " + p_version_string + "\n");
 	description->add_text(TTR("Contents:") + " ");
@@ -278,10 +270,10 @@ void EditorAssetLibraryItemDescription::add_preview(int p_id, bool p_video, cons
 	if (!p_video) {
 		preview.image = get_icon("ThumbnailWait", "EditorIcons");
 	}
-	if (preview_images.size() == 0 && !p_video) {
+	preview_images.push_back(preview);
+	if (preview_images.size() == 1 && !p_video) {
 		_preview_click(p_id);
 	}
-	preview_images.push_back(preview);
 }
 
 EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
@@ -307,15 +299,20 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 
 	description = memnew(RichTextLabel);
 	description->connect("meta_clicked", this, "_link_click");
+	description->set_custom_minimum_size(Size2(440 * EDSCALE, 300 * EDSCALE));
 	desc_bg->add_child(description);
+
+	VBoxContainer *previews_vbox = memnew(VBoxContainer);
+	hbox->add_child(previews_vbox);
+	previews_vbox->add_constant_override("separation", 15 * EDSCALE);
 
 	preview = memnew(TextureRect);
 	preview->set_custom_minimum_size(Size2(640 * EDSCALE, 345 * EDSCALE));
-	hbox->add_child(preview);
+	previews_vbox->add_child(preview);
 
 	previews_bg = memnew(PanelContainer);
-	vbox->add_child(previews_bg);
-	previews_bg->set_custom_minimum_size(Size2(0, 101 * EDSCALE));
+	previews_vbox->add_child(previews_bg);
+	previews_bg->set_custom_minimum_size(Size2(640 * EDSCALE, 101 * EDSCALE));
 
 	previews = memnew(ScrollContainer);
 	previews_bg->add_child(previews);
@@ -336,18 +333,14 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 
 	switch (p_status) {
 
-		case HTTPRequest::RESULT_CANT_RESOLVE: {
-			error_text = TTR("Can't resolve hostname:") + " " + host;
-			status->set_text(TTR("Can't resolve."));
-		} break;
-		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
-		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
+		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED: {
 			error_text = TTR("Connection error, please try again.");
 			status->set_text(TTR("Can't connect."));
 		} break;
-		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
-		case HTTPRequest::RESULT_CANT_CONNECT: {
+		case HTTPRequest::RESULT_CANT_CONNECT:
+		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR: {
 			error_text = TTR("Can't connect to host:") + " " + host;
 			status->set_text(TTR("Can't connect."));
 		} break;
@@ -355,13 +348,26 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 			error_text = TTR("No response from host:") + " " + host;
 			status->set_text(TTR("No response."));
 		} break;
+		case HTTPRequest::RESULT_CANT_RESOLVE: {
+			error_text = TTR("Can't resolve hostname:") + " " + host;
+			status->set_text(TTR("Can't resolve."));
+		} break;
 		case HTTPRequest::RESULT_REQUEST_FAILED: {
 			error_text = TTR("Request failed, return code:") + " " + itos(p_code);
-			status->set_text(TTR("Request Failed."));
+			status->set_text(TTR("Request failed."));
+		} break;
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_CANT_OPEN:
+		case HTTPRequest::RESULT_DOWNLOAD_FILE_WRITE_ERROR: {
+			error_text = TTR("Cannot save response to:") + " " + download->get_download_file();
+			status->set_text(TTR("Write error."));
 		} break;
 		case HTTPRequest::RESULT_REDIRECT_LIMIT_REACHED: {
 			error_text = TTR("Request failed, too many redirects");
-			status->set_text(TTR("Redirect Loop."));
+			status->set_text(TTR("Redirect loop."));
+		} break;
+		case HTTPRequest::RESULT_TIMEOUT: {
+			error_text = TTR("Request failed, timeout");
+			status->set_text(TTR("Timeout."));
 		} break;
 		default: {
 			if (p_code != 200) {
@@ -384,14 +390,11 @@ void EditorAssetLibraryItemDownload::_http_download_completed(int p_status, int 
 		return;
 	}
 
-	progress->set_max(download->get_body_size());
-	progress->set_value(download->get_downloaded_bytes());
-
 	install->set_disabled(false);
+	status->set_text(TTR("Success!"));
+	// Make the progress bar invisible but don't reflow other Controls around it
+	progress->set_modulate(Color(0, 0, 0, 0));
 
-	progress->set_value(download->get_downloaded_bytes());
-
-	status->set_text(TTR("Success!") + " (" + String::humanize_size(download->get_downloaded_bytes()) + ")");
 	set_process(false);
 }
 
@@ -404,46 +407,73 @@ void EditorAssetLibraryItemDownload::configure(const String &p_title, int p_asse
 		icon->set_texture(get_icon("DefaultProjectIcon", "EditorIcons"));
 	host = p_download_url;
 	sha256 = p_sha256_hash;
-	asset_installer->connect("confirmed", this, "_close");
-	dismiss->set_normal_texture(get_icon("Close", "EditorIcons"));
 	_make_request();
 }
 
 void EditorAssetLibraryItemDownload::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_PROCESS) {
+	switch (p_what) {
 
-		progress->set_max(download->get_body_size());
-		progress->set_value(download->get_downloaded_bytes());
+		// FIXME: The editor crashes if 'NOTICATION_THEME_CHANGED' is used.
+		case NOTIFICATION_ENTER_TREE: {
 
-		int cstatus = download->get_http_client_status();
+			add_style_override("panel", get_stylebox("panel", "TabContainer"));
+			dismiss->set_normal_texture(get_icon("Close", "EditorIcons"));
+		} break;
+		case NOTIFICATION_PROCESS: {
 
-		if (cstatus == HTTPClient::STATUS_BODY)
-			status->set_text(TTR("Fetching:") + " " + String::humanize_size(download->get_downloaded_bytes()));
+			// Make the progress bar visible again when retrying the download.
+			progress->set_modulate(Color(1, 1, 1, 1));
 
-		if (cstatus != prev_status) {
-			switch (cstatus) {
-
-				case HTTPClient::STATUS_RESOLVING: {
-					status->set_text(TTR("Resolving..."));
-				} break;
-				case HTTPClient::STATUS_CONNECTING: {
-					status->set_text(TTR("Connecting..."));
-				} break;
-				case HTTPClient::STATUS_REQUESTING: {
-					status->set_text(TTR("Requesting..."));
-				} break;
-				default: {}
+			if (download->get_downloaded_bytes() > 0) {
+				progress->set_max(download->get_body_size());
+				progress->set_value(download->get_downloaded_bytes());
 			}
-			prev_status = cstatus;
-		}
+
+			int cstatus = download->get_http_client_status();
+
+			if (cstatus == HTTPClient::STATUS_BODY) {
+				if (download->get_body_size() > 0) {
+					status->set_text(vformat(
+							TTR("Downloading (%s / %s)..."),
+							String::humanize_size(download->get_downloaded_bytes()),
+							String::humanize_size(download->get_body_size())));
+				} else {
+					// Total file size is unknown, so it cannot be displayed.
+					status->set_text(TTR("Downloading..."));
+				}
+			}
+
+			if (cstatus != prev_status) {
+				switch (cstatus) {
+
+					case HTTPClient::STATUS_RESOLVING: {
+						status->set_text(TTR("Resolving..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					case HTTPClient::STATUS_CONNECTING: {
+						status->set_text(TTR("Connecting..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					case HTTPClient::STATUS_REQUESTING: {
+						status->set_text(TTR("Requesting..."));
+						progress->set_max(1);
+						progress->set_value(0);
+					} break;
+					default: {
+					}
+				}
+				prev_status = cstatus;
+			}
+		} break;
 	}
 }
 void EditorAssetLibraryItemDownload::_close() {
 
-	DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
-	da->remove(download->get_download_file()); //clean up removed file
-	memdelete(da);
+	// Clean up downloaded file.
+	DirAccess::remove_file_or_error(download->get_download_file());
 	queue_delete();
 }
 
@@ -517,7 +547,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	hb2->add_spacer();
 
 	install = memnew(Button);
-	install->set_text(TTR("Install"));
+	install->set_text(TTR("Install..."));
 	install->set_disabled(true);
 	install->connect("pressed", this, "_install");
 
@@ -527,7 +557,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	hb2->add_child(retry);
 	hb2->add_child(install);
-	set_custom_minimum_size(Size2(250, 0));
+	set_custom_minimum_size(Size2(310, 0) * EDSCALE);
 
 	download = memnew(HTTPRequest);
 	add_child(download);
@@ -540,6 +570,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 
 	asset_installer = memnew(EditorAssetInstaller);
 	add_child(asset_installer);
+	asset_installer->connect("confirmed", this, "_close");
 
 	prev_status = -1;
 
@@ -550,50 +581,34 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 void EditorAssetLibrary::_notification(int p_what) {
 
 	switch (p_what) {
+
 		case NOTIFICATION_READY: {
 
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
+			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 
 			error_label->raise();
 		} break;
-
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
 			if (is_visible()) {
-				_repository_changed(0); // Update when shown for the first time
+				_repository_changed(0); // Update when shown for the first time.
 			}
 		} break;
-
 		case NOTIFICATION_PROCESS: {
 
 			HTTPClient::Status s = request->get_http_client_status();
-			bool visible = s != HTTPClient::STATUS_DISCONNECTED;
+			const bool loading = s != HTTPClient::STATUS_DISCONNECTED;
 
-			if (visible != load_status->is_visible()) {
-				load_status->set_visible(visible);
+			if (loading) {
+				library_scroll->set_modulate(Color(1, 1, 1, 0.5));
+			} else {
+				library_scroll->set_modulate(Color(1, 1, 1, 1));
 			}
 
-			if (visible) {
-				switch (s) {
-
-					case HTTPClient::STATUS_RESOLVING: {
-						load_status->set_value(0.1);
-					} break;
-					case HTTPClient::STATUS_CONNECTING: {
-						load_status->set_value(0.2);
-					} break;
-					case HTTPClient::STATUS_REQUESTING: {
-						load_status->set_value(0.3);
-					} break;
-					case HTTPClient::STATUS_BODY: {
-						load_status->set_value(0.4);
-					} break;
-					default: {}
-				}
-			}
-
-			bool no_downloads = downloads_hb->get_child_count() == 0;
+			const bool no_downloads = downloads_hb->get_child_count() == 0;
 			if (no_downloads == downloads_scroll->is_visible()) {
 				downloads_scroll->set_visible(!no_downloads);
 			}
@@ -602,8 +617,11 @@ void EditorAssetLibrary::_notification(int p_what) {
 		case NOTIFICATION_THEME_CHANGED: {
 
 			library_scroll_bg->add_style_override("panel", get_stylebox("bg", "Tree"));
+			downloads_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 			error_tr->set_texture(get_icon("Error", "EditorIcons"));
 			reverse->set_icon(get_icon("Sort", "EditorIcons"));
+			filter->set_right_icon(get_icon("Search", "EditorIcons"));
+			filter->set_clear_button_enabled(true);
 		} break;
 	}
 }
@@ -634,7 +652,6 @@ void EditorAssetLibrary::_install_asset() {
 }
 
 const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
-	"rating",
 	"downloads",
 	"name",
 	"cost",
@@ -642,10 +659,9 @@ const char *EditorAssetLibrary::sort_key[SORT_MAX] = {
 };
 
 const char *EditorAssetLibrary::sort_text[SORT_MAX] = {
-	"Rating",
 	"Downloads",
 	"Name",
-	"Cost",
+	"License", // "cost" stores the SPDX license name in the Godot Asset Library
 	"Updated"
 };
 
@@ -701,6 +717,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 				image_data = cached_data;
 				file->close();
+				memdelete(file);
 			}
 		}
 
@@ -723,7 +740,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 			switch (image_queue[p_queue_id].image_type) {
 				case IMAGE_QUEUE_ICON:
 
-					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_CUBIC);
+					image->resize(64 * EDSCALE, 64 * EDSCALE, Image::INTERPOLATE_LANCZOS);
 
 					break;
 				case IMAGE_QUEUE_THUMBNAIL: {
@@ -731,7 +748,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
 					}
 				} break;
 				case IMAGE_QUEUE_SCREENSHOT: {
@@ -739,7 +756,7 @@ void EditorAssetLibrary::_image_update(bool use_cache, bool final, const PoolByt
 
 					float scale_ratio = max_height / (image->get_height() * EDSCALE);
 					if (scale_ratio < 1) {
-						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_CUBIC);
+						image->resize(image->get_width() * EDSCALE * scale_ratio, image->get_height() * EDSCALE * scale_ratio, Image::INTERPOLATE_LANCZOS);
 					}
 				} break;
 			}
@@ -775,6 +792,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 					if (file) {
 						file->store_line(new_etag);
 						file->close();
+						memdelete(file);
 					}
 
 					int len = p_data.size();
@@ -784,6 +802,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 						file->store_32(len);
 						file->store_buffer(r.ptr(), len);
 						file->close();
+						memdelete(file);
 					}
 
 					break;
@@ -793,7 +812,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 		_image_update(p_code == HTTPClient::RESPONSE_NOT_MODIFIED, true, p_data, p_queue_id);
 
 	} else {
-		// WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
+		WARN_PRINTS("Error getting image file from URL: " + image_queue[p_queue_id].image_url);
 		Object *obj = ObjectDB::get_instance(image_queue[p_queue_id].target);
 		if (obj) {
 			obj->call("set_image", image_queue[p_queue_id].image_type, image_queue[p_queue_id].image_index, get_icon("DefaultProjectIcon", "EditorIcons"));
@@ -823,6 +842,7 @@ void EditorAssetLibrary::_update_image_queue() {
 				if (file) {
 					headers.push_back("If-None-Match: " + file->get_line());
 					file->close();
+					memdelete(file);
 				}
 			}
 
@@ -940,6 +960,9 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 
 	HBoxContainer *hbc = memnew(HBoxContainer);
 
+	if (p_page_count < 2)
+		return hbc;
+
 	//do the mario
 	int from = p_page - 5;
 	if (from < 0)
@@ -949,7 +972,7 @@ HBoxContainer *EditorAssetLibrary::_make_pages(int p_page, int p_page_count, int
 		to = p_page_count;
 
 	hbc->add_spacer();
-	hbc->add_constant_override("separation", 5);
+	hbc->add_constant_override("separation", 5 * EDSCALE);
 
 	Button *first = memnew(Button);
 	first->set_text(TTR("First"));
@@ -1116,6 +1139,10 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			_search();
 		} break;
 		case REQUESTING_SEARCH: {
+
+			// The loading text only needs to be displayed before the first page is loaded
+			library_loading->hide();
+
 			if (asset_items) {
 				memdelete(asset_items);
 			}
@@ -1155,8 +1182,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 
 			asset_items = memnew(GridContainer);
 			asset_items->set_columns(2);
-			asset_items->add_constant_override("hseparation", 10);
-			asset_items->add_constant_override("vseparation", 10);
+			asset_items->add_constant_override("hseparation", 10 * EDSCALE);
+			asset_items->add_constant_override("vseparation", 10 * EDSCALE);
 
 			library_vb->add_child(asset_items);
 
@@ -1173,12 +1200,11 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 				ERR_CONTINUE(!r.has("author_id"));
 				ERR_CONTINUE(!r.has("category_id"));
 				ERR_FAIL_COND(!category_map.has(r["category_id"]));
-				ERR_CONTINUE(!r.has("rating"));
 				ERR_CONTINUE(!r.has("cost"));
 
 				EditorAssetLibraryItem *item = memnew(EditorAssetLibraryItem);
 				asset_items->add_child(item);
-				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["rating"], r["cost"]);
+				item->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"]);
 				item->connect("asset_selected", this, "_select_asset");
 				item->connect("author_selected", this, "_select_author");
 				item->connect("category_selected", this, "_select_category");
@@ -1199,7 +1225,6 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			ERR_FAIL_COND(!r.has("version_string"));
 			ERR_FAIL_COND(!r.has("category_id"));
 			ERR_FAIL_COND(!category_map.has(r["category_id"]));
-			ERR_FAIL_COND(!r.has("rating"));
 			ERR_FAIL_COND(!r.has("cost"));
 			ERR_FAIL_COND(!r.has("description"));
 			ERR_FAIL_COND(!r.has("download_url"));
@@ -1215,10 +1240,7 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 			description->popup_centered_minsize();
 			description->connect("confirmed", this, "_install_asset");
 
-			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["rating"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
-			/*item->connect("asset_selected",this,"_select_asset");
-			item->connect("author_selected",this,"_select_author");
-			item->connect("category_selected",this,"_category_selected");*/
+			description->configure(r["title"], r["asset_id"], category_map[r["category_id"]], r["category_id"], r["author"], r["author_id"], r["cost"], r["version"], r["version_string"], r["description"], r["download_url"], r["browse_url"], r["download_hash"]);
 
 			if (r.has("icon_url") && r["icon_url"] != "") {
 				_request_image(description->get_instance_id(), r["icon_url"], IMAGE_QUEUE_ICON, 0);
@@ -1245,9 +1267,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 					if (p.has("thumbnail")) {
 						_request_image(description->get_instance_id(), p["thumbnail"], IMAGE_QUEUE_THUMBNAIL, i);
 					}
-					if (is_video) {
-						//_request_image(description->get_instance_id(),p["link"],IMAGE_QUEUE_SCREENSHOT,i);
-					} else {
+
+					if (!is_video) {
 						_request_image(description->get_instance_id(), p["link"], IMAGE_QUEUE_SCREENSHOT, i);
 					}
 				}
@@ -1312,6 +1333,7 @@ void EditorAssetLibrary::_bind_methods() {
 
 EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
+	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
@@ -1321,7 +1343,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	HBoxContainer *search_hb = memnew(HBoxContainer);
 
 	library_main->add_child(search_hb);
-	library_main->add_constant_override("separation", 10);
+	library_main->add_constant_override("separation", 10 * EDSCALE);
 
 	search_hb->add_child(memnew(Label(TTR("Search:") + " ")));
 	filter = memnew(LineEdit);
@@ -1367,19 +1389,16 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	reverse = memnew(ToolButton);
 	reverse->set_toggle_mode(true);
 	reverse->connect("toggled", this, "_rerun_search");
-	//reverse->set_text(TTR("Reverse"));
+	reverse->set_tooltip(TTR("Reverse sorting."));
 	search_hb2->add_child(reverse);
 
 	search_hb2->add_child(memnew(VSeparator));
-
-	//search_hb2->add_spacer();
 
 	search_hb2->add_child(memnew(Label(TTR("Category:") + " ")));
 	categories = memnew(OptionButton);
 	categories->add_item(TTR("All"));
 	search_hb2->add_child(categories);
 	categories->set_h_size_flags(SIZE_EXPAND_FILL);
-	//search_hb2->add_spacer();
 	categories->connect("item_selected", this, "_rerun_search");
 
 	search_hb2->add_child(memnew(VSeparator));
@@ -1423,10 +1442,10 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	Ref<StyleBoxEmpty> border2;
 	border2.instance();
-	border2->set_default_margin(MARGIN_LEFT, 15);
-	border2->set_default_margin(MARGIN_RIGHT, 35);
-	border2->set_default_margin(MARGIN_BOTTOM, 15);
-	border2->set_default_margin(MARGIN_TOP, 15);
+	border2->set_default_margin(MARGIN_LEFT, 15 * EDSCALE);
+	border2->set_default_margin(MARGIN_RIGHT, 35 * EDSCALE);
+	border2->set_default_margin(MARGIN_BOTTOM, 15 * EDSCALE);
+	border2->set_default_margin(MARGIN_TOP, 15 * EDSCALE);
 
 	PanelContainer *library_vb_border = memnew(PanelContainer);
 	library_scroll->add_child(library_vb_border);
@@ -1438,15 +1457,18 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	library_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	library_vb_border->add_child(library_vb);
-	//margin_panel->set_stop_mouse(false);
+
+	library_loading = memnew(Label(TTR("Loading...")));
+	library_loading->set_align(Label::ALIGN_CENTER);
+	library_vb->add_child(library_loading);
 
 	asset_top_page = memnew(HBoxContainer);
 	library_vb->add_child(asset_top_page);
 
 	asset_items = memnew(GridContainer);
 	asset_items->set_columns(2);
-	asset_items->add_constant_override("hseparation", 10);
-	asset_items->add_constant_override("vseparation", 10);
+	asset_items->add_constant_override("hseparation", 10 * EDSCALE);
+	asset_items->add_constant_override("vseparation", 10 * EDSCALE);
 
 	library_vb->add_child(asset_items);
 
@@ -1460,13 +1482,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	last_queue_id = 0;
 
-	library_vb->add_constant_override("separation", 20);
-
-	load_status = memnew(ProgressBar);
-	load_status->set_min(0);
-	load_status->set_max(1);
-	load_status->set_step(0.001);
-	library_main->add_child(load_status);
+	library_vb->add_constant_override("separation", 20 * EDSCALE);
 
 	error_hb = memnew(HBoxContainer);
 	library_main->add_child(error_hb);

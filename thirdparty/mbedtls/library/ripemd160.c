@@ -147,22 +147,29 @@ int mbedtls_internal_ripemd160_process( mbedtls_ripemd160_context *ctx,
     D = Dp = ctx->state[3];
     E = Ep = ctx->state[4];
 
-#define F1( x, y, z )   ( x ^ y ^ z )
-#define F2( x, y, z )   ( ( x & y ) | ( ~x & z ) )
-#define F3( x, y, z )   ( ( x | ~y ) ^ z )
-#define F4( x, y, z )   ( ( x & z ) | ( y & ~z ) )
-#define F5( x, y, z )   ( x ^ ( y | ~z ) )
+#define F1( x, y, z )   ( (x) ^ (y) ^ (z) )
+#define F2( x, y, z )   ( ( (x) & (y) ) | ( ~(x) & (z) ) )
+#define F3( x, y, z )   ( ( (x) | ~(y) ) ^ (z) )
+#define F4( x, y, z )   ( ( (x) & (z) ) | ( (y) & ~(z) ) )
+#define F5( x, y, z )   ( (x) ^ ( (y) | ~(z) ) )
 
-#define S( x, n ) ( ( x << n ) | ( x >> (32 - n) ) )
+#define S( x, n ) ( ( (x) << (n) ) | ( (x) >> (32 - (n)) ) )
 
-#define P( a, b, c, d, e, r, s, f, k )      \
-    a += f( b, c, d ) + X[r] + k;           \
-    a = S( a, s ) + e;                      \
-    c = S( c, 10 );
+#define P( a, b, c, d, e, r, s, f, k )                \
+    do                                                \
+    {                                                 \
+        (a) += f( (b), (c), (d) ) + X[r] + (k);       \
+        (a) = S( (a), (s) ) + (e);                    \
+        (c) = S( (c), 10 );                           \
+    } while( 0 )
 
-#define P2( a, b, c, d, e, r, s, rp, sp )   \
-    P( a, b, c, d, e, r, s, F, K );         \
-    P( a ## p, b ## p, c ## p, d ## p, e ## p, rp, sp, Fp, Kp );
+#define P2( a, b, c, d, e, r, s, rp, sp )                               \
+    do                                                                  \
+    {                                                                   \
+        P( (a), (b), (c), (d), (e), (r), (s), F, K );                   \
+        P( a ## p, b ## p, c ## p, d ## p, e ## p,                      \
+           (rp), (sp), Fp, Kp );                                        \
+    } while( 0 )
 
 #define F   F1
 #define K   0x00000000

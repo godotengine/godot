@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef OA_HASH_MAP_H
 #define OA_HASH_MAP_H
 
-#include "hashfuncs.h"
-#include "math_funcs.h"
-#include "os/copymem.h"
-#include "os/memory.h"
+#include "core/hashfuncs.h"
+#include "core/math/math_funcs.h"
+#include "core/os/copymem.h"
+#include "core/os/memory.h"
 
 /**
  * A HashMap implementation that uses open addressing with robinhood hashing.
@@ -62,7 +62,7 @@ private:
 	static const uint32_t EMPTY_HASH = 0;
 	static const uint32_t DELETED_HASH_BIT = 1 << 31;
 
-	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) {
+	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
 
 		if (hash == EMPTY_HASH) {
@@ -74,12 +74,11 @@ private:
 		return hash;
 	}
 
-	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) {
+	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) const {
 		p_hash = p_hash & ~DELETED_HASH_BIT; // we don't care if it was deleted or not
 
 		uint32_t original_pos = p_hash % capacity;
-
-		return p_pos - original_pos;
+		return (p_pos - original_pos) % capacity;
 	}
 
 	_FORCE_INLINE_ void _construct(uint32_t p_pos, uint32_t p_hash, const TKey &p_key, const TValue &p_value) {
@@ -90,7 +89,7 @@ private:
 		num_elements++;
 	}
 
-	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) {
+	bool _lookup_pos(const TKey &p_key, uint32_t &r_pos) const {
 		uint32_t hash = _hash(p_key);
 		uint32_t pos = hash % capacity;
 		uint32_t distance = 0;
@@ -125,7 +124,7 @@ private:
 
 		while (42) {
 			if (hashes[pos] == EMPTY_HASH) {
-				_construct(pos, hash, p_key, p_value);
+				_construct(pos, hash, key, value);
 
 				return;
 			}
@@ -136,7 +135,7 @@ private:
 
 				if (hashes[pos] & DELETED_HASH_BIT) {
 					// we found a place where we can fit in!
-					_construct(pos, hash, p_key, p_value);
+					_construct(pos, hash, key, value);
 
 					return;
 				}
@@ -151,22 +150,22 @@ private:
 			distance++;
 		}
 	}
-	void _resize_and_rehash() {
+
+	void _resize_and_rehash(uint32_t p_new_capacity) {
+
+		uint32_t old_capacity = capacity;
+		capacity = p_new_capacity;
 
 		TKey *old_keys = keys;
 		TValue *old_values = values;
 		uint32_t *old_hashes = hashes;
 
-		uint32_t old_capacity = capacity;
-
-		capacity = old_capacity * 2;
 		num_elements = 0;
-
 		keys = memnew_arr(TKey, capacity);
 		values = memnew_arr(TValue, capacity);
 		hashes = memnew_arr(uint32_t, capacity);
 
-		for (int i = 0; i < capacity; i++) {
+		for (uint32_t i = 0; i < capacity; i++) {
 			hashes[i] = 0;
 		}
 
@@ -186,9 +185,37 @@ private:
 		memdelete_arr(old_hashes);
 	}
 
+	void _resize_and_rehash() {
+		_resize_and_rehash(capacity * 2);
+	}
+
 public:
 	_FORCE_INLINE_ uint32_t get_capacity() const { return capacity; }
 	_FORCE_INLINE_ uint32_t get_num_elements() const { return num_elements; }
+
+	bool empty() const {
+		return num_elements == 0;
+	}
+
+	void clear() {
+
+		for (uint32_t i = 0; i < capacity; i++) {
+
+			if (hashes[i] == EMPTY_HASH) {
+				continue;
+			}
+
+			if (hashes[i] & DELETED_HASH_BIT) {
+				continue;
+			}
+
+			hashes[i] = EMPTY_HASH;
+			values[i].~TValue();
+			keys[i].~TKey();
+		}
+
+		num_elements = 0;
+	}
 
 	void insert(const TKey &p_key, const TValue &p_value) {
 
@@ -219,7 +246,7 @@ public:
 	 * if r_data is not NULL then the value will be written to the object
 	 * it points to.
 	 */
-	bool lookup(const TKey &p_key, TValue &r_data) {
+	bool lookup(const TKey &p_key, TValue &r_data) const {
 		uint32_t pos = 0;
 		bool exists = _lookup_pos(p_key, pos);
 
@@ -232,7 +259,7 @@ public:
 		return false;
 	}
 
-	_FORCE_INLINE_ bool has(const TKey &p_key) {
+	_FORCE_INLINE_ bool has(const TKey &p_key) const {
 		uint32_t _pos = 0;
 		return _lookup_pos(p_key, _pos);
 	}
@@ -249,6 +276,16 @@ public:
 		values[pos].~TValue();
 		keys[pos].~TKey();
 		num_elements--;
+	}
+
+	/**
+	 * reserves space for a number of elements, useful to avoid many resizes and rehashes
+	 *  if adding a known (possibly large) number of elements at once, must be larger than old
+	 *  capacity.
+	 **/
+	void reserve(uint32_t p_new_capacity) {
+		ERR_FAIL_COND(p_new_capacity < capacity);
+		_resize_and_rehash(p_new_capacity);
 	}
 
 	struct Iterator {
@@ -302,6 +339,9 @@ public:
 		return it;
 	}
 
+	OAHashMap(const OAHashMap &) = delete; // Delete the copy constructor so we don't get unexpected copies and dangling pointers.
+	OAHashMap &operator=(const OAHashMap &) = delete; // Same for assignment operator.
+
 	OAHashMap(uint32_t p_initial_capacity = 64) {
 
 		capacity = p_initial_capacity;
@@ -311,8 +351,8 @@ public:
 		values = memnew_arr(TValue, p_initial_capacity);
 		hashes = memnew_arr(uint32_t, p_initial_capacity);
 
-		for (int i = 0; i < p_initial_capacity; i++) {
-			hashes[i] = 0;
+		for (uint32_t i = 0; i < p_initial_capacity; i++) {
+			hashes[i] = EMPTY_HASH;
 		}
 	}
 
@@ -320,7 +360,7 @@ public:
 
 		memdelete_arr(keys);
 		memdelete_arr(values);
-		memdelete(hashes);
+		memdelete_arr(hashes);
 	}
 };
 

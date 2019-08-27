@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,9 @@
 
 #include "audio_driver_jandroid.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 #include "thread_jandroid.h"
-
-#ifndef ANDROID_NATIVE_ACTIVITY
 
 AudioDriverAndroid *AudioDriverAndroid::s_ad = NULL;
 
@@ -82,9 +80,7 @@ Error AudioDriverAndroid::init() {
 
 	int latency = GLOBAL_DEF_RST("audio/output_latency", 25);
 	unsigned int buffer_size = next_power_of_2(latency * mix_rate / 1000);
-	if (OS::get_singleton()->is_stdout_verbose()) {
-		print_line("audio buffer size: " + itos(buffer_size));
-	}
+	print_verbose("Audio buffer size: " + itos(buffer_size));
 
 	audioBuffer = env->CallObjectMethod(io, _init_audio, mix_rate, buffer_size);
 
@@ -206,5 +202,3 @@ AudioDriverAndroid::AudioDriverAndroid() {
 	s_ad = this;
 	active = false;
 }
-
-#endif

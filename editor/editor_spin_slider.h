@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,7 +36,7 @@
 #include "scene/gui/texture_rect.h"
 
 class EditorSpinSlider : public Range {
-	GDCLASS(EditorSpinSlider, Range)
+	GDCLASS(EditorSpinSlider, Range);
 
 	String label;
 	int updown_offset;
@@ -59,6 +59,7 @@ class EditorSpinSlider : public Range {
 	bool read_only;
 	float grabbing_spinner_dist_cache;
 	Vector2 grabbing_spinner_mouse_pos;
+	double pre_grab_value;
 
 	LineEdit *value_input;
 	bool value_input_just_closed;
@@ -73,6 +74,8 @@ class EditorSpinSlider : public Range {
 	bool use_custom_label_color;
 	Color custom_label_color;
 
+	void _evaluate_input_text();
+
 protected:
 	void _notification(int p_what);
 	void _gui_input(const Ref<InputEvent> &p_event);
@@ -82,6 +85,8 @@ protected:
 	void _focus_entered();
 
 public:
+	String get_tooltip(const Point2 &p_pos) const;
+
 	String get_text_value() const;
 	void set_label(const String &p_label);
 	String get_label() const;
@@ -96,6 +101,9 @@ public:
 	bool is_flat() const;
 
 	void set_custom_label_color(bool p_use_custom_label_color, Color p_custom_label_color);
+
+	void setup_and_show() { _focus_entered(); }
+	LineEdit *get_line_edit() { return value_input; }
 
 	virtual Size2 get_minimum_size() const;
 	EditorSpinSlider();

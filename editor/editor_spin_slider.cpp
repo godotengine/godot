@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,53 +29,66 @@
 /*************************************************************************/
 
 #include "editor_spin_slider.h"
+#include "core/math/expression.h"
+#include "core/os/input.h"
 #include "editor_scale.h"
-#include "os/input.h"
-String EditorSpinSlider::get_text_value() const {
-	int zeros = Math::step_decimals(get_step());
-	return String::num(get_value(), zeros);
+
+String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
+	return rtos(get_value());
 }
+
+String EditorSpinSlider::get_text_value() const {
+	return String::num(get_value(), Math::range_step_decimals(get_step()));
+}
+
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (read_only)
 		return;
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid()) {
 
-		if (mb->is_pressed()) {
+		if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->is_pressed()) {
 
-			if (updown_offset != -1 && mb->get_position().x > updown_offset) {
-				//there is an updown, so use it.
-				if (mb->get_position().y < get_size().height / 2) {
-					set_value(get_value() + get_step());
+				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
+					//there is an updown, so use it.
+					if (mb->get_position().y < get_size().height / 2) {
+						set_value(get_value() + get_step());
+					} else {
+						set_value(get_value() - get_step());
+					}
+					return;
 				} else {
-					set_value(get_value() - get_step());
+
+					grabbing_spinner_attempt = true;
+					grabbing_spinner_dist_cache = 0;
+					pre_grab_value = get_value();
+					grabbing_spinner = false;
+					grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
 				}
-				return;
 			} else {
 
-				grabbing_spinner_attempt = true;
-				grabbing_spinner_dist_cache = 0;
-				grabbing_spinner = false;
-				grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
-			}
-		} else {
+				if (grabbing_spinner_attempt) {
 
-			if (grabbing_spinner_attempt) {
+					if (grabbing_spinner) {
 
-				if (grabbing_spinner) {
+						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						update();
+					} else {
+						_focus_entered();
+					}
 
-					Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-					Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
-					update();
-				} else {
-					_focus_entered();
+					grabbing_spinner = false;
+					grabbing_spinner_attempt = false;
 				}
-
-				grabbing_spinner = false;
-				grabbing_spinner_attempt = false;
 			}
+		} else if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+
+			if (grabber->is_visible())
+				call_deferred("update");
 		}
 	}
 
@@ -101,10 +114,10 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 					if (ABS(grabbing_spinner_dist_cache) > 6) {
 						set_value(get_value() + SGN(grabbing_spinner_dist_cache));
 						grabbing_spinner_dist_cache = 0;
+						pre_grab_value = get_value();
 					}
 				} else {
-					set_value(get_value() + get_step() * grabbing_spinner_dist_cache * 10);
-					grabbing_spinner_dist_cache = 0;
+					set_value(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10);
 				}
 			}
 		} else if (updown_offset != -1) {
@@ -148,7 +161,9 @@ void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 void EditorSpinSlider::_notification(int p_what) {
 
-	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT || p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT) {
+	if (p_what == MainLoop::NOTIFICATION_WM_FOCUS_OUT ||
+			p_what == MainLoop::NOTIFICATION_WM_FOCUS_IN ||
+			p_what == NOTIFICATION_EXIT_TREE) {
 		if (grabbing_spinner) {
 			Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
 			grabbing_spinner = false;
@@ -204,14 +219,14 @@ void EditorSpinSlider::_notification(int p_what) {
 		draw_string(font, Vector2(sb->get_offset().x + string_width + sep, vofs), numstr, fc, number_width);
 
 		if (get_step() == 1) {
-			Ref<Texture> updown = get_icon("updown", "SpinBox");
-			int updown_vofs = (get_size().height - updown->get_height()) / 2;
-			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown->get_width();
+			Ref<Texture> updown2 = get_icon("updown", "SpinBox");
+			int updown_vofs = (get_size().height - updown2->get_height()) / 2;
+			updown_offset = get_size().width - sb->get_margin(MARGIN_RIGHT) - updown2->get_width();
 			Color c(1, 1, 1);
 			if (hover_updown) {
 				c *= Color(1.2, 1.2, 1.2);
 			}
-			draw_texture(updown, Vector2(updown_offset, updown_vofs), c);
+			draw_texture(updown2, Vector2(updown_offset, updown_vofs), c);
 			if (grabber->is_visible()) {
 				grabber->hide();
 			}
@@ -268,12 +283,14 @@ void EditorSpinSlider::_notification(int p_what) {
 		update();
 	}
 	if (p_what == NOTIFICATION_FOCUS_ENTER) {
-		/* Sorry, I dont like this, it makes navigating the different fields with arrows more difficult.
+		/* Sorry, I don't like this, it makes navigating the different fields with arrows more difficult.
 		 * Just press enter to edit.
-		 * if (!Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
+		 * if (Input::get_singleton()->is_mouse_button_pressed(BUTTON_LEFT) && !value_input_just_closed) {
 			_focus_entered();
 		}*/
-
+		if ((Input::get_singleton()->is_action_pressed("ui_focus_next") || Input::get_singleton()->is_action_pressed("ui_focus_prev")) && !value_input_just_closed) {
+			_focus_entered();
+		}
 		value_input_just_closed = false;
 	}
 }
@@ -307,6 +324,21 @@ String EditorSpinSlider::get_label() const {
 	return label;
 }
 
+void EditorSpinSlider::_evaluate_input_text() {
+	String text = value_input->get_text();
+	Ref<Expression> expr;
+	expr.instance();
+	Error err = expr->parse(text);
+	if (err != OK) {
+		return;
+	}
+
+	Variant v = expr->execute(Array(), NULL, false);
+	if (v.get_type() == Variant::NIL)
+		return;
+	set_value(v);
+}
+
 //text_entered signal
 void EditorSpinSlider::_value_input_entered(const String &p_text) {
 	value_input_just_closed = true;
@@ -315,13 +347,18 @@ void EditorSpinSlider::_value_input_entered(const String &p_text) {
 
 //modal_closed signal
 void EditorSpinSlider::_value_input_closed() {
-	set_value(value_input->get_text().to_double());
+	_evaluate_input_text();
 	value_input_just_closed = true;
 }
 
 //focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
-	set_value(value_input->get_text().to_double());
+
+	// discontinue because the focus_exit was caused by right-click context menu
+	if (value_input->get_menu()->is_visible())
+		return;
+
+	_evaluate_input_text();
 	// focus is not on the same element after the vlalue_input was exited
 	// -> focus is on next element
 	// -> TAB was pressed
@@ -411,6 +448,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabbing_spinner_attempt = false;
 	grabbing_spinner = false;
 	grabbing_spinner_dist_cache = 0;
+	pre_grab_value = 0;
 	set_focus_mode(FOCUS_ALL);
 	updown_offset = -1;
 	hover_updown = false;

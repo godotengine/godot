@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "shape_sw.h"
 
-#include "geometry.h"
-#include "quick_hull.h"
-#include "sort.h"
+#include "core/math/geometry.h"
+#include "core/math/quick_hull.h"
+#include "core/sort_array.h"
 
 #define _POINT_SNAP 0.001953125
 #define _EDGE_IS_VALID_SUPPORT_THRESHOLD 0.0002
@@ -543,16 +543,6 @@ void CapsuleShapeSW::project_range(const Vector3 &p_normal, const Transform &p_t
 
 	r_max = p_normal.dot(p_transform.xform(n));
 	r_min = p_normal.dot(p_transform.xform(-n));
-	return;
-
-	n = p_transform.basis.xform(n);
-
-	real_t distance = p_normal.dot(p_transform.origin);
-	real_t length = Math::abs(p_normal.dot(n));
-	r_min = distance - length;
-	r_max = distance + length;
-
-	ERR_FAIL_COND(r_max < r_min);
 }
 
 Vector3 CapsuleShapeSW::get_support(const Vector3 &p_normal) const {
@@ -1047,7 +1037,7 @@ void FaceShapeSW::get_supports(const Vector3 &p_normal, int p_max, Vector3 *r_su
 	/** FIND SUPPORT VERTEX **/
 
 	int vert_support_idx = -1;
-	real_t support_max;
+	real_t support_max = 0;
 
 	for (int i = 0; i < 3; i++) {
 
@@ -1524,8 +1514,8 @@ void ConcavePolygonShapeSW::_setup(PoolVector<Vector3> p_faces) {
 			_aabb.merge_with(bvh_arrayw[i].aabb);
 	}
 
-	w = PoolVector<Face>::Write();
-	vw = PoolVector<Vector3>::Write();
+	w.release();
+	vw.release();
 
 	int count = 0;
 	_VolumeSW_BVH *bvh_tree = _volume_sw_build_bvh(bvh_arrayw, src_face_count, count);

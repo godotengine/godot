@@ -1,0 +1,23 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeExpression" inherits="VisualShaderNodeGroupBase" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="build">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="expression" type="String" setter="set_expression" getter="get_expression" default="&quot;&quot;">
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

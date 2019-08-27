@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,8 +40,6 @@ void MeshDataTool::clear() {
 }
 
 Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surface) {
-
-	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 
 	ERR_FAIL_COND_V(p_mesh.is_null(), ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_mesh->surface_get_primitive_type(p_surface) != Mesh::PRIMITIVE_TRIANGLES, ERR_INVALID_PARAMETER);
@@ -79,9 +77,9 @@ Error MeshDataTool::create_from_surface(const Ref<ArrayMesh> &p_mesh, int p_surf
 	if (arrays[Mesh::ARRAY_COLOR].get_type() != Variant::NIL)
 		col = arrays[Mesh::ARRAY_COLOR].operator PoolVector<Color>().read();
 
-	PoolVector<real_t>::Read bo;
+	PoolVector<int>::Read bo;
 	if (arrays[Mesh::ARRAY_BONES].get_type() != Variant::NIL)
-		bo = arrays[Mesh::ARRAY_BONES].operator PoolVector<real_t>().read();
+		bo = arrays[Mesh::ARRAY_BONES].operator PoolVector<int>().read();
 
 	PoolVector<real_t>::Read we;
 	if (arrays[Mesh::ARRAY_WEIGHTS].get_type() != Variant::NIL)
@@ -194,7 +192,7 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 	PoolVector<Vector2> u;
 	PoolVector<Vector2> u2;
 	PoolVector<Color> c;
-	PoolVector<real_t> b;
+	PoolVector<int> b;
 	PoolVector<real_t> w;
 	PoolVector<int> in;
 
@@ -233,7 +231,7 @@ Error MeshDataTool::commit_to_surface(const Ref<ArrayMesh> &p_mesh) {
 			col = c.write();
 		}
 
-		PoolVector<real_t>::Write bo;
+		PoolVector<int>::Write bo;
 		if (format & Mesh::ARRAY_FORMAT_BONES) {
 			b.resize(vcount * 4);
 			bo = b.write();

@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2017 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -54,7 +54,7 @@ collecting data (e.g. minimum matching length). */
 
 /* Set a bit in the starting code unit bit map. */
 
-#define SET_BIT(c) re->start_bitmap[(c)/8] |= (1 << ((c)&7))
+#define SET_BIT(c) re->start_bitmap[(c)/8] |= (1u << ((c)&7))
 
 /* Returns from set_start_bits() */
 
@@ -171,6 +171,7 @@ for (;;)
     /* Fall through */
 
     case OP_ONCE:
+    case OP_SCRIPT_RUN:
     case OP_SBRA:
     case OP_BRAPOS:
     case OP_SBRAPOS:
@@ -707,6 +708,7 @@ for (;;)
     /* Skip these, but we need to add in the name length. */
 
     case OP_MARK:
+    case OP_COMMIT_ARG:
     case OP_PRUNE_ARG:
     case OP_SKIP_ARG:
     case OP_THEN_ARG:
@@ -841,7 +843,7 @@ for (c = 0; c < table_limit; c++)
 if (table_limit == 32) return;
 for (c = 128; c < 256; c++)
   {
-  if ((re->tables[cbits_offset + c/8] & (1 << (c&7))) != 0)
+  if ((re->tables[cbits_offset + c/8] & (1u << (c&7))) != 0)
     {
     PCRE2_UCHAR buff[6];
     (void)PRIV(ord2utf)(c, buff);
@@ -956,6 +958,7 @@ do
       case OP_CIRCM:
       case OP_CLOSE:
       case OP_COMMIT:
+      case OP_COMMIT_ARG:
       case OP_COND:
       case OP_CREF:
       case OP_FALSE:
@@ -1073,6 +1076,7 @@ do
       case OP_CBRAPOS:
       case OP_SCBRAPOS:
       case OP_ONCE:
+      case OP_SCRIPT_RUN:
       case OP_ASSERT:
       rc = set_start_bits(re, tcode, utf);
       if (rc == SSB_FAIL || rc == SSB_UNKNOWN) return rc;
@@ -1274,7 +1278,7 @@ do
       break;
 
       /* Single character types set the bits and stop. Note that if PCRE2_UCP
-      is set, we do not see these op codes because \d etc are converted to
+      is set, we do not see these opcodes because \d etc are converted to
       properties. Therefore, these apply in the case when only characters less
       than 256 are recognized to match the types. */
 
@@ -1503,11 +1507,11 @@ do
           for (c = 0; c < 16; c++) re->start_bitmap[c] |= classmap[c];
           for (c = 128; c < 256; c++)
             {
-            if ((classmap[c/8] & (1 << (c&7))) != 0)
+            if ((classmap[c/8] & (1u << (c&7))) != 0)
               {
-              int d = (c >> 6) | 0xc0;            /* Set bit for this starter */
-              re->start_bitmap[d/8] |= (1 << (d&7));  /* and then skip on to the */
-              c = (c & 0xc0) + 0x40 - 1;          /* next relevant character. */
+              int d = (c >> 6) | 0xc0;                 /* Set bit for this starter */
+              re->start_bitmap[d/8] |= (1u << (d&7));  /* and then skip on to the */
+              c = (c & 0xc0) + 0x40 - 1;               /* next relevant character. */
               }
             }
           }

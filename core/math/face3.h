@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef FACE3_H
 #define FACE3_H
 
-#include "aabb.h"
-#include "plane.h"
-#include "transform.h"
-#include "vector3.h"
+#include "core/math/aabb.h"
+#include "core/math/plane.h"
+#include "core/math/transform.h"
+#include "core/math/vector3.h"
 
 class Face3 {
 public:
@@ -241,13 +241,13 @@ bool Face3::intersects_aabb2(const AABB &p_aabb) const {
 			real_t minT = 1e20, maxT = -1e20;
 			for (int k = 0; k < 3; k++) {
 
-				real_t d = axis.dot(vertex[k]);
+				real_t vert_d = axis.dot(vertex[k]);
 
-				if (d > maxT)
-					maxT = d;
+				if (vert_d > maxT)
+					maxT = vert_d;
 
-				if (d < minT)
-					minT = d;
+				if (vert_d < minT)
+					minT = vert_d;
 			}
 
 			if (maxB < minT || maxT < minB)

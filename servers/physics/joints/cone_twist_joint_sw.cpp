@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -127,10 +127,10 @@ bool ConeTwistJointSW::setup(real_t p_timestep) {
 		Vector3 relPos = pivotBInW - pivotAInW;
 
 		Vector3 normal[3];
-		if (relPos.length_squared() > CMP_EPSILON) {
-			normal[0] = relPos.normalized();
-		} else {
+		if (Math::is_zero_approx(relPos.length_squared())) {
 			normal[0] = Vector3(real_t(1.0), 0, 0);
+		} else {
+			normal[0] = relPos.normalized();
 		}
 
 		plane_space(normal[0], normal[1], normal[2]);
@@ -205,9 +205,9 @@ bool ConeTwistJointSW::setup(real_t p_timestep) {
 
 	// Twist limits
 	if (m_twistSpan >= real_t(0.)) {
-		Vector3 b2Axis2 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_axis(1));
+		Vector3 b2Axis22 = B->get_transform().basis.xform(this->m_rbBFrame.basis.get_axis(1));
 		Quat rotationArc = Quat(b2Axis1, b1Axis1);
-		Vector3 TwistRef = rotationArc.xform(b2Axis2);
+		Vector3 TwistRef = rotationArc.xform(b2Axis22);
 		real_t twist = atan2fast(TwistRef.dot(b1Axis3), TwistRef.dot(b1Axis2));
 
 		real_t lockedFreeFactor = (m_twistSpan > real_t(0.05f)) ? m_limitSoftness : real_t(0.);
@@ -332,6 +332,7 @@ void ConeTwistJointSW::set_param(PhysicsServer::ConeTwistJointParam p_param, rea
 
 			m_relaxationFactor = p_value;
 		} break;
+		case PhysicsServer::CONE_TWIST_MAX: break; // Can't happen, but silences warning
 	}
 }
 
@@ -358,6 +359,7 @@ real_t ConeTwistJointSW::get_param(PhysicsServer::ConeTwistJointParam p_param) c
 
 			return m_relaxationFactor;
 		} break;
+		case PhysicsServer::CONE_TWIST_MAX: break; // Can't happen, but silences warning
 	}
 
 	return 0;

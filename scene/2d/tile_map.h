@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,13 @@
 #ifndef TILE_MAP_H
 #define TILE_MAP_H
 
-#include "scene/2d/navigation2d.h"
+#include "core/self_list.h"
+#include "core/vset.h"
+#include "scene/2d/navigation_2d.h"
 #include "scene/2d/node_2d.h"
 #include "scene/resources/tile_set.h"
-#include "self_list.h"
-#include "vset.h"
+
+class CollisionObject2D;
 
 class TileMap : public Node2D {
 
@@ -52,6 +54,8 @@ public:
 		HALF_OFFSET_X,
 		HALF_OFFSET_Y,
 		HALF_OFFSET_DISABLED,
+		HALF_OFFSET_NEGATIVE_X,
+		HALF_OFFSET_NEGATIVE_Y,
 	};
 
 	enum TileOrigin {
@@ -72,6 +76,8 @@ private:
 	Mode mode;
 	Transform2D custom_transform;
 	HalfOffset half_offset;
+	bool use_parent;
+	CollisionObject2D *collision_parent;
 	bool use_kinematic;
 	Navigation2D *navigation;
 
@@ -87,6 +93,13 @@ private:
 		bool operator<(const PosKey &p_k) const { return (y == p_k.y) ? x < p_k.x : y < p_k.y; }
 
 		bool operator==(const PosKey &p_k) const { return (y == p_k.y && x == p_k.x); }
+
+		PosKey to_quadrant(const int &p_quadrant_size) const {
+			// rounding down, instead of simply rounding towards zero (truncating)
+			return PosKey(
+					x > 0 ? x / p_quadrant_size : (x - (p_quadrant_size - 1)) / p_quadrant_size,
+					y > 0 ? y / p_quadrant_size : (y - (p_quadrant_size - 1)) / p_quadrant_size);
+		}
 
 		PosKey(int16_t p_x, int16_t p_y) {
 			x = p_x;
@@ -121,6 +134,7 @@ private:
 		Vector2 pos;
 		List<RID> canvas_items;
 		RID body;
+		uint32_t shape_owner_id;
 
 		SelfList<Quadrant> dirty_list;
 
@@ -143,6 +157,7 @@ private:
 			pos = q.pos;
 			canvas_items = q.canvas_items;
 			body = q.body;
+			shape_owner_id = q.shape_owner_id;
 			cells = q.cells;
 			navpoly_ids = q.navpoly_ids;
 			occluder_instances = q.occluder_instances;
@@ -152,6 +167,7 @@ private:
 			pos = q.pos;
 			canvas_items = q.canvas_items;
 			body = q.body;
+			shape_owner_id = q.shape_owner_id;
 			cells = q.cells;
 			occluder_instances = q.occluder_instances;
 			navpoly_ids = q.navpoly_ids;
@@ -172,6 +188,8 @@ private:
 	bool used_size_cache_dirty;
 	bool quadrant_order_dirty;
 	bool y_sort_mode;
+	bool compatibility_mode;
+	bool centered_textures;
 	bool clip_uv;
 	float fp_adjust;
 	float friction;
@@ -185,6 +203,8 @@ private:
 	int occluder_light_mask;
 
 	void _fix_cell_transform(Transform2D &xform, const Cell &p_cell, const Vector2 &p_offset, const Size2 &p_sc);
+
+	void _add_shape(int &shape_idx, const Quadrant &p_q, const Ref<Shape2D> &p_shape, const TileSet::ShapeData &p_shape_data, const Transform2D &p_xform, const Vector2 &p_metadata);
 
 	Map<PosKey, Quadrant>::Element *_create_quadrant(const PosKey &p_qk);
 	void _erase_quadrant(Map<PosKey, Quadrant>::Element *Q);
@@ -216,12 +236,15 @@ protected:
 	void _notification(int p_what);
 	static void _bind_methods();
 
+	virtual void _validate_property(PropertyInfo &property) const;
 	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
 	enum {
 		INVALID_CELL = -1
 	};
+
+	virtual Rect2 _edit_get_rect() const;
 
 	void set_tileset(const Ref<TileSet> &p_tileset);
 	Ref<TileSet> get_tileset() const;
@@ -240,7 +263,7 @@ public:
 	void set_cell_autotile_coord(int p_x, int p_y, const Vector2 &p_coord);
 	Vector2 get_cell_autotile_coord(int p_x, int p_y) const;
 
-	void set_celld(const Vector2 &p_pos, const Dictionary &p_data);
+	void _set_celld(const Vector2 &p_pos, const Dictionary &p_data);
 	void set_cellv(const Vector2 &p_pos, int p_tile, bool p_flip_x = false, bool p_flip_y = false, bool p_transpose = false);
 	int get_cellv(const Vector2 &p_pos) const;
 
@@ -266,6 +289,9 @@ public:
 
 	void set_collision_use_kinematic(bool p_use_kinematic);
 	bool get_collision_use_kinematic() const;
+
+	void set_collision_use_parent(bool p_use_parent);
+	bool get_collision_use_parent() const;
 
 	void set_collision_friction(float p_friction);
 	float get_collision_friction() const;
@@ -294,6 +320,12 @@ public:
 	void set_y_sort_mode(bool p_enable);
 	bool is_y_sort_mode_enabled() const;
 
+	void set_compatibility_mode(bool p_enable);
+	bool is_compatibility_mode_enabled() const;
+
+	void set_centered_textures(bool p_enable);
+	bool is_centered_textures_enabled() const;
+
 	Array get_used_cells() const;
 	Array get_used_cells_by_id(int p_id) const;
 	Rect2 get_used_rect(); // Not const because of cache
@@ -309,6 +341,8 @@ public:
 
 	void set_clip_uv(bool p_enable);
 	bool get_clip_uv() const;
+
+	String get_configuration_warning() const;
 
 	void fix_invalid_tiles();
 	void clear();

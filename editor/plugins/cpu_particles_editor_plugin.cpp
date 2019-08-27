@@ -1,4 +1,35 @@
+/*************************************************************************/
+/*  cpu_particles_editor_plugin.cpp                                      */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "cpu_particles_editor_plugin.h"
+
 #include "editor/plugins/spatial_editor_plugin.h"
 
 void CPUParticlesEditor::_node_removed(Node *p_node) {
@@ -29,6 +60,12 @@ void CPUParticlesEditor::_menu_option(int p_option) {
 		case MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE: {
 
 			emission_tree_dialog->popup_centered_ratio();
+
+		} break;
+
+		case MENU_OPTION_RESTART: {
+
+			node->restart();
 
 		} break;
 	}
@@ -70,12 +107,15 @@ CPUParticlesEditor::CPUParticlesEditor() {
 	particles_editor_hb = memnew(HBoxContainer);
 	SpatialEditor::get_singleton()->add_control_to_menu_panel(particles_editor_hb);
 	options = memnew(MenuButton);
+	options->set_switch_on_hover(true);
 	particles_editor_hb->add_child(options);
 	particles_editor_hb->hide();
 
 	options->set_text(TTR("CPUParticles"));
 	options->get_popup()->add_item(TTR("Create Emission Points From Mesh"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_MESH);
 	options->get_popup()->add_item(TTR("Create Emission Points From Node"), MENU_OPTION_CREATE_EMISSION_VOLUME_FROM_NODE);
+	options->get_popup()->add_separator();
+	options->get_popup()->add_item(TTR("Restart"), MENU_OPTION_RESTART);
 	options->get_popup()->connect("id_pressed", this, "_menu_option");
 }
 

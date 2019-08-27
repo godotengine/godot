@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,15 +31,15 @@
 #ifndef CSHARP_PROJECT_H
 #define CSHARP_PROJECT_H
 
-#include "ustring.h"
+#include "core/ustring.h"
 
 namespace CSharpProject {
 
-String generate_core_api_project(const String &p_dir, const Vector<String> &p_files = Vector<String>());
-String generate_editor_api_project(const String &p_dir, const String &p_core_dll_path, const Vector<String> &p_files = Vector<String>());
-String generate_game_project(const String &p_dir, const String &p_name, const Vector<String> &p_files = Vector<String>());
+bool generate_api_solution(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
+		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items);
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include);
+
 } // namespace CSharpProject
 
 #endif // CSHARP_PROJECT_H

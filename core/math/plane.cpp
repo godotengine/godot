@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "plane.h"
 
-#include "math_funcs.h"
+#include "core/math/math_funcs.h"
 
 #define _PLANE_EQ_DOT_EPSILON 0.999
 #define _PLANE_EQ_D_EPSILON 0.0001
@@ -110,7 +110,7 @@ bool Plane::intersects_ray(const Vector3 &p_from, const Vector3 &p_dir, Vector3 
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
-	if (Math::abs(den) <= CMP_EPSILON) {
+	if (Math::is_zero_approx(den)) {
 
 		return false;
 	}
@@ -135,7 +135,7 @@ bool Plane::intersects_segment(const Vector3 &p_begin, const Vector3 &p_end, Vec
 	real_t den = normal.dot(segment);
 
 	//printf("den is %i\n",den);
-	if (Math::abs(den) <= CMP_EPSILON) {
+	if (Math::is_zero_approx(den)) {
 
 		return false;
 	}

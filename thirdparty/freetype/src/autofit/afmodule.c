@@ -1,26 +1,25 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afmodule.c                                                             */
-/*                                                                         */
-/*    Auto-fitter module implementation (body).                            */
-/*                                                                         */
-/*  Copyright 2003-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afmodule.c
+ *
+ *   Auto-fitter module implementation (body).
+ *
+ * Copyright (C) 2003-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include "afglobal.h"
 #include "afmodule.h"
 #include "afloader.h"
 #include "aferrors.h"
-#include "afpic.h"
 
 #ifdef FT_DEBUG_AUTOFIT
 
@@ -60,14 +59,14 @@
 #include FT_SERVICE_PROPERTIES_H
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_afmodule
+#define FT_COMPONENT  afmodule
 
 
   static FT_Error
@@ -104,19 +103,6 @@
   }
 
 
-#ifdef FT_CONFIG_OPTION_PIC
-
-#undef  AF_SCRIPT_CLASSES_GET
-#define AF_SCRIPT_CLASSES_GET  \
-          ( GET_PIC( ft_module->library )->af_script_classes )
-
-#undef  AF_STYLE_CLASSES_GET
-#define AF_STYLE_CLASSES_GET  \
-          ( GET_PIC( ft_module->library )->af_style_classes )
-
-#endif
-
-
   static FT_Error
   af_property_set( FT_Module    ft_module,
                    const char*  property_name,
@@ -147,9 +133,9 @@
       /* We translate the fallback script to a fallback style that uses */
       /* `fallback-script' as its script and `AF_COVERAGE_NONE' as its  */
       /* coverage value.                                                */
-      for ( ss = 0; AF_STYLE_CLASSES_GET[ss]; ss++ )
+      for ( ss = 0; af_style_classes[ss]; ss++ )
       {
-        AF_StyleClass  style_class = AF_STYLE_CLASSES_GET[ss];
+        AF_StyleClass  style_class = af_style_classes[ss];
 
 
         if ( (FT_UInt)style_class->script == *fallback_script &&
@@ -160,7 +146,7 @@
         }
       }
 
-      if ( !AF_STYLE_CLASSES_GET[ss] )
+      if ( !af_style_classes[ss] )
       {
         FT_TRACE0(( "af_property_set: Invalid value %d for property `%s'\n",
                     fallback_script, property_name ));
@@ -357,7 +343,7 @@
     {
       FT_UInt*  val = (FT_UInt*)value;
 
-      AF_StyleClass  style_class = AF_STYLE_CLASSES_GET[fallback_style];
+      AF_StyleClass  style_class = af_style_classes[fallback_style];
 
 
       *val = style_class->script;
@@ -440,28 +426,16 @@
   FT_DEFINE_SERVICEDESCREC1(
     af_services,
 
-    FT_SERVICE_ID_PROPERTIES, &AF_SERVICE_PROPERTIES_GET )
+    FT_SERVICE_ID_PROPERTIES, &af_service_properties )
 
 
   FT_CALLBACK_DEF( FT_Module_Interface )
   af_get_interface( FT_Module    module,
                     const char*  module_interface )
   {
-    /* AF_SERVICES_GET dereferences `library' in PIC mode */
-#ifdef FT_CONFIG_OPTION_PIC
-    FT_Library  library;
-
-
-    if ( !module )
-      return NULL;
-    library = module->library;
-    if ( !library )
-      return NULL;
-#else
     FT_UNUSED( module );
-#endif
 
-    return ft_service_list_lookup( AF_SERVICES_GET, module_interface );
+    return ft_service_list_lookup( af_services, module_interface );
   }
 
 
@@ -533,7 +507,7 @@
                                   glyph_index, load_flags );
 
 #ifdef FT_DEBUG_LEVEL_TRACE
-    if ( ft_trace_levels[FT_COMPONENT] )
+    if ( ft_trace_levels[FT_TRACE_COMP( FT_COMPONENT )] )
     {
 #endif
       af_glyph_hints_dump_points( hints, 0 );
@@ -589,7 +563,7 @@
     0x10000L,   /* version 1.0 of the autofitter  */
     0x20000L,   /* requires FreeType 2.0 or above */
 
-    (const void*)&AF_INTERFACE_GET,
+    (const void*)&af_autofitter_interface,
 
     (FT_Module_Constructor)af_autofitter_init,  /* module_init   */
     (FT_Module_Destructor) af_autofitter_done,  /* module_done   */

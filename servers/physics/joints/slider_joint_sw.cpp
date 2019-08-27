@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -404,6 +404,8 @@ void SliderJointSW::set_param(PhysicsServer::SliderJointParam p_param, real_t p_
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: m_softnessOrthoAng = p_value; break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: m_restitutionOrthoAng = p_value; break;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: m_dampingOrthoAng = p_value; break;
+
+		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 }
 
@@ -433,6 +435,8 @@ real_t SliderJointSW::get_param(PhysicsServer::SliderJointParam p_param) const {
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_SOFTNESS: return m_softnessOrthoAng;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_RESTITUTION: return m_restitutionOrthoAng;
 		case PhysicsServer::SLIDER_JOINT_ANGULAR_ORTHOGONAL_DAMPING: return m_dampingOrthoAng;
+
+		case PhysicsServer::SLIDER_JOINT_MAX: break; // Can't happen, but silences warning
 	}
 
 	return 0;

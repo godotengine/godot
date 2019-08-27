@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "animated_sprite.h"
-#include "os/os.h"
+
+#include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
 #define NORMAL_SUFFIX "_normal"
@@ -69,10 +70,7 @@ bool AnimatedSprite::_edit_use_rect() const {
 	Ref<Texture> t;
 	if (animation)
 		t = frames->get_frame(animation, frame);
-	if (t.is_null())
-		return false;
-
-	return true;
+	return t.is_valid();
 }
 
 Rect2 AnimatedSprite::get_anchorable_rect() const {
@@ -93,7 +91,7 @@ Rect2 AnimatedSprite::_get_rect() const {
 
 	Point2 ofs = offset;
 	if (centered)
-		ofs -= s / 2;
+		ofs -= Size2(s) / 2;
 
 	if (s == Size2(0, 0))
 		s = Size2(1, 1);
@@ -276,9 +274,9 @@ void SpriteFrames::_set_animations(const Array &p_animations) {
 		anim.speed = d["speed"];
 		anim.loop = d["loop"];
 		Array frames = d["frames"];
-		for (int i = 0; i < frames.size(); i++) {
+		for (int j = 0; j < frames.size(); j++) {
 
-			RES res = frames[i];
+			RES res = frames[j];
 			anim.frames.push_back(res);
 		}
 
@@ -312,12 +310,12 @@ void SpriteFrames::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_frames"), &SpriteFrames::_set_frames);
 	ClassDB::bind_method(D_METHOD("_get_frames"), &SpriteFrames::_get_frames);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "frames", PROPERTY_HINT_NONE, "", 0), "_set_frames", "_get_frames"); //compatibility
 
 	ClassDB::bind_method(D_METHOD("_set_animations"), &SpriteFrames::_set_animations);
 	ClassDB::bind_method(D_METHOD("_get_animations"), &SpriteFrames::_get_animations);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "animations", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_animations", "_get_animations"); //compatibility
 }
 
 SpriteFrames::SpriteFrames() {
@@ -359,12 +357,11 @@ void AnimatedSprite::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "frame") {
-
-		property.hint = PROPERTY_HINT_SPRITE_FRAME;
-
+		property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
 		}
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 
@@ -393,17 +390,30 @@ void AnimatedSprite::_notification(int p_what) {
 					timeout = _get_frame_duration();
 
 					int fc = frames->get_frame_count(animation);
-					if (frame >= fc - 1) {
+					if ((!backwards && frame >= fc - 1) || (backwards && frame <= 0)) {
 						if (frames->get_animation_loop(animation)) {
-							frame = 0;
+							if (backwards)
+								frame = fc - 1;
+							else
+								frame = 0;
+
+							emit_signal(SceneStringNames::get_singleton()->animation_finished);
 						} else {
-							frame = fc - 1;
+							if (backwards)
+								frame = 0;
+							else
+								frame = fc - 1;
+
+							if (!is_over) {
+								is_over = true;
+								emit_signal(SceneStringNames::get_singleton()->animation_finished);
+							}
 						}
 					} else {
-						frame++;
-						if (frame == fc - 1) {
-							emit_signal(SceneStringNames::get_singleton()->animation_finished);
-						}
+						if (backwards)
+							frame--;
+						else
+							frame++;
 					}
 
 					update();
@@ -592,10 +602,12 @@ bool AnimatedSprite::_is_playing() const {
 	return playing;
 }
 
-void AnimatedSprite::play(const StringName &p_animation) {
+void AnimatedSprite::play(const StringName &p_animation, const bool p_backwards) {
 
 	if (p_animation)
 		set_animation(p_animation);
+
+	backwards = p_backwards;
 	_set_playing(true);
 }
 
@@ -625,9 +637,13 @@ void AnimatedSprite::_reset_timeout() {
 		return;
 
 	timeout = _get_frame_duration();
+	is_over = false;
 }
 
 void AnimatedSprite::set_animation(const StringName &p_animation) {
+
+	ERR_FAIL_COND_MSG(frames == NULL, vformat("There is no animation with name '%s'.", p_animation));
+	ERR_FAIL_COND_MSG(frames->get_animation_names().find(p_animation) == -1, vformat("There is no animation with name '%s'.", p_animation));
 
 	if (animation == p_animation)
 		return;
@@ -646,7 +662,7 @@ StringName AnimatedSprite::get_animation() const {
 String AnimatedSprite::get_configuration_warning() const {
 
 	if (frames.is_null()) {
-		return TTR("A SpriteFrames resource must be created or set in the 'Frames' property in order for AnimatedSprite to display frames.");
+		return TTR("A SpriteFrames resource must be created or set in the \"Frames\" property in order for AnimatedSprite to display frames.");
 	}
 
 	return String();
@@ -663,7 +679,7 @@ void AnimatedSprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_playing", "playing"), &AnimatedSprite::_set_playing);
 	ClassDB::bind_method(D_METHOD("_is_playing"), &AnimatedSprite::_is_playing);
 
-	ClassDB::bind_method(D_METHOD("play", "anim"), &AnimatedSprite::play, DEFVAL(StringName()));
+	ClassDB::bind_method(D_METHOD("play", "anim", "backwards"), &AnimatedSprite::play, DEFVAL(StringName()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("stop"), &AnimatedSprite::stop);
 	ClassDB::bind_method(D_METHOD("is_playing"), &AnimatedSprite::is_playing);
 
@@ -690,15 +706,15 @@ void AnimatedSprite::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("frame_changed"));
 	ADD_SIGNAL(MethodInfo("animation_finished"));
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
-	ADD_PROPERTYNO(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
-	ADD_PROPERTYNO(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "offset"), "set_offset", "get_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_h"), "set_flip_h", "is_flipped_h");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flip_v"), "set_flip_v", "is_flipped_v");
 }
 
 AnimatedSprite::AnimatedSprite() {
@@ -710,6 +726,8 @@ AnimatedSprite::AnimatedSprite() {
 	frame = 0;
 	speed_scale = 1.0f;
 	playing = false;
+	backwards = false;
 	animation = "default";
 	timeout = 0;
+	is_over = false;
 }

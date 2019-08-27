@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,7 +94,7 @@ private:
 	Vector2 connecting_to;
 	String connecting_target_to;
 	int connecting_target_index;
-	bool just_disconected;
+	bool just_disconnected;
 
 	bool dragging;
 	bool just_selected;
@@ -131,7 +131,7 @@ private:
 	GraphEditFilter *top_layer;
 	void _top_layer_input(const Ref<InputEvent> &p_ev);
 
-	Rect2 create_hot_zone(const Vector2 &pos);
+	bool is_in_hot_zone(const Vector2 &pos, const Vector2 &p_mouse_pos);
 
 	void _top_layer_draw();
 	void _connections_layer_draw();
@@ -171,6 +171,8 @@ private:
 	bool _filter_input(const Point2 &p_point);
 	void _snap_toggled();
 	void _snap_value_changed(double);
+
+	bool _check_clickable_control(Control *p_control, const Vector2 &pos);
 
 protected:
 	static void _bind_methods();

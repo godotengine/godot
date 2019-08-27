@@ -94,19 +94,66 @@ static SLJIT_INLINE void free_chunk(void *chunk, sljit_uw size)
 
 #else
 
+#ifdef __APPLE__
+/* Configures TARGET_OS_OSX when appropriate */
+#include <TargetConditionals.h>
+
+#if TARGET_OS_OSX && defined(MAP_JIT)
+#include <sys/utsname.h>
+#endif /* TARGET_OS_OSX && MAP_JIT */
+
+#ifdef MAP_JIT
+
+static SLJIT_INLINE int get_map_jit_flag()
+{
+#if TARGET_OS_OSX
+	/* On macOS systems, returns MAP_JIT if it is defined _and_ we're running on a version
+	   of macOS where it's OK to have more than one JIT block. On non-macOS systems, returns
+	   MAP_JIT if it is defined. */
+	static int map_jit_flag = -1;
+
+	/* The following code is thread safe because multiple initialization
+	   sets map_jit_flag to the same value and the code has no side-effects.
+	   Changing the kernel version witout system restart is (very) unlikely. */
+	if (map_jit_flag == -1) {
+		struct utsname name;
+
+		uname(&name);
+
+		/* Kernel version for 10.14.0 (Mojave) */
+		map_jit_flag = (atoi(name.release) >= 18) ? MAP_JIT : 0;
+	}
+
+	return map_jit_flag;
+#else /* !TARGET_OS_OSX */
+	return MAP_JIT;
+#endif /* TARGET_OS_OSX */
+}
+
+#endif /* MAP_JIT */
+
+#endif /* __APPLE__ */
+
 static SLJIT_INLINE void* alloc_chunk(sljit_uw size)
 {
 	void *retval;
 
 #ifdef MAP_ANON
-	retval = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE | MAP_ANON, -1, 0);
-#else
+
+	int flags = MAP_PRIVATE | MAP_ANON;
+
+#ifdef MAP_JIT
+	flags |= get_map_jit_flag();
+#endif
+
+	retval = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, flags, -1, 0);
+#else /* !MAP_ANON */
 	if (dev_zero < 0) {
 		if (open_dev_zero())
 			return NULL;
 	}
 	retval = mmap(NULL, size, PROT_READ | PROT_WRITE | PROT_EXEC, MAP_PRIVATE, dev_zero, 0);
-#endif
+#endif /* MAP_ANON */
 
 	return (retval != MAP_FAILED) ? retval : NULL;
 }

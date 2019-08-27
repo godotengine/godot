@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,9 @@
 /*************************************************************************/
 
 #include "button.h"
-#include "print_string.h"
+
+#include "core/translation.h"
 #include "servers/visual_server.h"
-#include "translation.h"
 
 Size2 Button::get_minimum_size() const {
 
@@ -76,8 +76,6 @@ void Button::_notification(int p_what) {
 		Color color;
 		Color color_icon(1, 1, 1, 1);
 
-		//print_line(get_text()+": "+itos(is_flat())+" hover "+itos(get_draw_mode()));
-
 		Ref<StyleBox> style = get_stylebox("normal");
 
 		switch (get_draw_mode()) {
@@ -91,6 +89,22 @@ void Button::_notification(int p_what) {
 				if (has_color("icon_color_normal"))
 					color_icon = get_color("icon_color_normal");
 			} break;
+			case DRAW_HOVER_PRESSED: {
+				if (has_stylebox("hover_pressed") && has_stylebox_override("hover_pressed")) {
+					style = get_stylebox("hover_pressed");
+					if (!flat)
+						style->draw(ci, Rect2(Point2(0, 0), size));
+					if (has_color("font_color_hover_pressed"))
+						color = get_color("font_color_hover_pressed");
+					else
+						color = get_color("font_color");
+					if (has_color("icon_color_hover_pressed"))
+						color_icon = get_color("icon_color_hover_pressed");
+
+					break;
+				}
+				FALLTHROUGH;
+			}
 			case DRAW_PRESSED: {
 
 				style = get_stylebox("pressed");
@@ -128,8 +142,8 @@ void Button::_notification(int p_what) {
 
 		if (has_focus()) {
 
-			Ref<StyleBox> style = get_stylebox("focus");
-			style->draw(ci, Rect2(Point2(), size));
+			Ref<StyleBox> style2 = get_stylebox("focus");
+			style2->draw(ci, Rect2(Point2(), size));
 		}
 
 		Ref<Font> font = get_font("font");
@@ -262,10 +276,10 @@ void Button::_bind_methods() {
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
 	BIND_ENUM_CONSTANT(ALIGN_RIGHT);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_button_icon", "get_button_icon");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "text", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT_INTL), "set_text", "get_text");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_button_icon", "get_button_icon");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "flat"), "set_flat", "is_flat");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clip_text"), "set_clip_text", "get_clip_text");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_text_align", "get_text_align");
 }
 

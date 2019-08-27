@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "shape_2d_sw.h"
 
-#include "geometry.h"
-#include "sort.h"
+#include "core/math/geometry.h"
+#include "core/sort_array.h"
 
 void Shape2DSW::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;
@@ -240,12 +240,7 @@ bool SegmentShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &
 
 real_t SegmentShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
-	Vector2 s[2] = { a * p_scale, b * p_scale };
-
-	real_t l = s[1].distance_to(s[0]);
-	Vector2 ofs = (s[0] + s[1]) * 0.5;
-
-	return p_mass * (l * l / 12.0 + ofs.length_squared());
+	return p_mass * ((a * p_scale).distance_squared_to(b * p_scale)) / 12;
 }
 
 void SegmentShape2DSW::set_data(const Variant &p_data) {
@@ -318,7 +313,9 @@ bool CircleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p
 
 real_t CircleShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 &p_scale) const {
 
-	return (radius * radius) * (p_scale.x * 0.5 + p_scale.y * 0.5);
+	real_t a = radius * p_scale.x;
+	real_t b = radius * p_scale.y;
+	return p_mass * (a * a + b * b) / 4;
 }
 
 void CircleShape2DSW::set_data(const Variant &p_data) {
@@ -369,8 +366,11 @@ void RectangleShape2DSW::get_supports(const Vector2 &p_normal, Vector2 *r_suppor
 }
 
 bool RectangleShape2DSW::contains_point(const Vector2 &p_point) const {
-
-	return Math::abs(p_point.x) < half_extents.x && Math::abs(p_point.y) < half_extents.y;
+	float x = p_point.x;
+	float y = p_point.y;
+	float edge_x = half_extents.x;
+	float edge_y = half_extents.y;
+	return (x >= -edge_x) && (x < edge_x) && (y >= -edge_y) && (y < edge_y);
 }
 
 bool RectangleShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
@@ -583,7 +583,7 @@ bool ConvexPolygonShape2DSW::contains_point(const Vector2 &p_point) const {
 			in = true;
 	}
 
-	return (in && !out) || (!in && out);
+	return in != out;
 }
 
 bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {
@@ -634,7 +634,7 @@ real_t ConvexPolygonShape2DSW::get_moment_of_inertia(real_t p_mass, const Size2 
 		aabb.expand_to(points[i].pos * p_scale);
 	}
 
-	return p_mass * aabb.size.dot(aabb.size) / 12.0 + p_mass * (aabb.position + aabb.size * 0.5).length_squared();
+	return p_mass * aabb.size.dot(aabb.size) / 12.0;
 }
 
 void ConvexPolygonShape2DSW::set_data(const Variant &p_data) {
@@ -775,22 +775,22 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Ve
 	while (true) {
 
 		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &b = bvhptr[node];
+		const BVH &bvh = bvhptr[node];
 		bool done = false;
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
 
-				bool valid = b.aabb.intersects_segment(p_begin, p_end);
+				bool valid = bvh.aabb.intersects_segment(p_begin, p_end);
 				if (!valid) {
 
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 				} else {
 
-					if (b.left < 0) {
+					if (bvh.left < 0) {
 
-						const Segment &s = segmentptr[b.right];
+						const Segment &s = segmentptr[bvh.right];
 						Vector2 a = pointptr[s.points[0]];
 						Vector2 b = pointptr[s.points[1]];
 
@@ -820,14 +820,14 @@ bool ConcavePolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Ve
 			case VISIT_LEFT_BIT: {
 
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
+				stack[level + 1] = bvh.left | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
 			case VISIT_RIGHT_BIT: {
 
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
+				stack[level + 1] = bvh.right | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
@@ -986,7 +986,7 @@ Variant ConcavePolygonShape2DSW::get_data() const {
 		w[(i << 1) + 1] = points[segments[i].points[1]];
 	}
 
-	w = PoolVector<Vector2>::Write();
+	w.release();
 
 	return rsegments;
 }
@@ -1025,21 +1025,21 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 	while (true) {
 
 		uint32_t node = stack[level] & NODE_IDX_MASK;
-		const BVH &b = bvhptr[node];
+		const BVH &bvh = bvhptr[node];
 
 		switch (stack[level] >> VISITED_BIT_SHIFT) {
 			case TEST_AABB_BIT: {
 
-				bool valid = p_local_aabb.intersects(b.aabb);
+				bool valid = p_local_aabb.intersects(bvh.aabb);
 				if (!valid) {
 
 					stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
 
 				} else {
 
-					if (b.left < 0) {
+					if (bvh.left < 0) {
 
-						const Segment &s = segmentptr[b.right];
+						const Segment &s = segmentptr[bvh.right];
 						Vector2 a = pointptr[s.points[0]];
 						Vector2 b = pointptr[s.points[1]];
 
@@ -1058,14 +1058,14 @@ void ConcavePolygonShape2DSW::cull(const Rect2 &p_local_aabb, Callback p_callbac
 			case VISIT_LEFT_BIT: {
 
 				stack[level] = (VISIT_RIGHT_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.left | TEST_AABB_BIT;
+				stack[level + 1] = bvh.left | TEST_AABB_BIT;
 				level++;
 			}
 				continue;
 			case VISIT_RIGHT_BIT: {
 
 				stack[level] = (VISIT_DONE_BIT << VISITED_BIT_SHIFT) | node;
-				stack[level + 1] = b.right | TEST_AABB_BIT;
+				stack[level + 1] = bvh.right | TEST_AABB_BIT;
 				level++;
 			}
 				continue;

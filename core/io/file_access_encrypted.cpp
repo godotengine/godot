@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,12 +30,10 @@
 
 #include "file_access_encrypted.h"
 
+#include "core/crypto/crypto_core.h"
+#include "core/os/copymem.h"
+#include "core/print_string.h"
 #include "core/variant.h"
-#include "os/copymem.h"
-#include "print_string.h"
-
-#include "thirdparty/misc/aes256.h"
-#include "thirdparty/misc/md5.h"
 
 #include <stdio.h>
 
@@ -43,7 +41,6 @@
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
 
-	//print_line("open and parse!");
 	ERR_FAIL_COND_V(file != NULL, ERR_ALREADY_IN_USE);
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
@@ -84,24 +81,20 @@ Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8
 		uint32_t blen = p_base->get_buffer(data.ptrw(), ds);
 		ERR_FAIL_COND_V(blen != ds, ERR_FILE_CORRUPT);
 
-		aes256_context ctx;
-		aes256_init(&ctx, key.ptrw());
+		CryptoCore::AESContext ctx;
+		ctx.set_decode_key(key.ptrw(), 256);
 
 		for (size_t i = 0; i < ds; i += 16) {
 
-			aes256_decrypt_ecb(&ctx, &data.write[i]);
+			ctx.decrypt_ecb(&data.write[i], &data.write[i]);
 		}
-
-		aes256_done(&ctx);
 
 		data.resize(length);
 
-		MD5_CTX md5;
-		MD5Init(&md5);
-		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
-		MD5Final(&md5);
+		unsigned char hash[16];
+		ERR_FAIL_COND_V(CryptoCore::md5(data.ptr(), data.size(), hash) != OK, ERR_BUG);
 
-		ERR_FAIL_COND_V(String::md5(md5.digest) != String::md5(md5d), ERR_FILE_CORRUPT);
+		ERR_FAIL_COND_V_MSG(String::md5(hash) != String::md5(md5d), ERR_FILE_CORRUPT, "The MD5 sum of the decrypted file does not match the expected value. It could be that the file is corrupt, or that the provided decryption key is invalid.");
 
 		file = p_base;
 	}
@@ -140,10 +133,8 @@ void FileAccessEncrypted::close() {
 			len += 16 - (len % 16);
 		}
 
-		MD5_CTX md5;
-		MD5Init(&md5);
-		MD5Update(&md5, (uint8_t *)data.ptr(), data.size());
-		MD5Final(&md5);
+		unsigned char hash[16];
+		ERR_FAIL_COND(CryptoCore::md5(data.ptr(), data.size(), hash) != OK); // Bug?
 
 		compressed.resize(len);
 		zeromem(compressed.ptrw(), len);
@@ -151,20 +142,18 @@ void FileAccessEncrypted::close() {
 			compressed.write[i] = data[i];
 		}
 
-		aes256_context ctx;
-		aes256_init(&ctx, key.ptrw());
+		CryptoCore::AESContext ctx;
+		ctx.set_encode_key(key.ptrw(), 256);
 
 		for (size_t i = 0; i < len; i += 16) {
 
-			aes256_encrypt_ecb(&ctx, &compressed.write[i]);
+			ctx.encrypt_ecb(&compressed.write[i], &compressed.write[i]);
 		}
-
-		aes256_done(&ctx);
 
 		file->store_32(COMP_MAGIC);
 		file->store_32(mode);
 
-		file->store_buffer(md5.digest, 16);
+		file->store_buffer(hash, 16);
 		file->store_64(data.size());
 
 		file->store_buffer(compressed.ptr(), compressed.size());
@@ -300,6 +289,16 @@ bool FileAccessEncrypted::file_exists(const String &p_name) {
 uint64_t FileAccessEncrypted::_get_modified_time(const String &p_file) {
 
 	return 0;
+}
+
+uint32_t FileAccessEncrypted::_get_unix_permissions(const String &p_file) {
+
+	return 0;
+}
+
+Error FileAccessEncrypted::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+	ERR_PRINT("Setting UNIX permissions on encrypted files is not implemented yet.");
+	return ERR_UNAVAILABLE;
 }
 
 FileAccessEncrypted::FileAccessEncrypted() {

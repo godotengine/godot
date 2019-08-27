@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -128,6 +128,7 @@ class AnimatedSprite : public Node2D {
 
 	Ref<SpriteFrames> frames;
 	bool playing;
+	bool backwards;
 	StringName animation;
 	int frame;
 	float speed_scale;
@@ -135,6 +136,7 @@ class AnimatedSprite : public Node2D {
 	bool centered;
 	Point2 offset;
 
+	bool is_over;
 	float timeout;
 
 	bool hflip;
@@ -168,7 +170,7 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName());
+	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
 	void stop();
 	bool is_playing() const;
 

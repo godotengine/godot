@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,6 +62,7 @@ public:
 		ITEM_FONT,
 		ITEM_COLOR,
 		ITEM_UNDERLINE,
+		ITEM_STRIKETHROUGH,
 		ITEM_ALIGN,
 		ITEM_INDENT,
 		ITEM_LIST,
@@ -164,6 +165,11 @@ private:
 		ItemUnderline() { type = ITEM_UNDERLINE; }
 	};
 
+	struct ItemStrikethrough : public Item {
+
+		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
+	};
+
 	struct ItemMeta : public Item {
 
 		Variant meta;
@@ -219,6 +225,7 @@ private:
 	bool scroll_following;
 	bool scroll_active;
 	int scroll_w;
+	bool scroll_updated;
 	bool updating_scroll;
 	int current_idx;
 	int visible_line_count;
@@ -277,7 +284,9 @@ private:
 	Align _find_align(Item *p_item);
 	Color _find_color(Item *p_item, const Color &p_default_color);
 	bool _find_underline(Item *p_item);
-	bool _find_meta(Item *p_item, Variant *r_meta);
+	bool _find_strikethrough(Item *p_item);
+	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
+	bool _find_layout_subitem(Item *from, Item *to);
 
 	void _update_scroll();
 	void _scroll_changed(double);
@@ -307,6 +316,7 @@ public:
 	void push_font(const Ref<Font> &p_font);
 	void push_color(const Color &p_color);
 	void push_underline();
+	void push_strikethrough();
 	void push_align(Align p_align);
 	void push_indent(int p_level);
 	void push_list(ListType p_list);

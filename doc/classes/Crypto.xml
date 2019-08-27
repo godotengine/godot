@@ -1,0 +1,43 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Crypto" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="generate_random_bytes">
+			<return type="PoolByteArray">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="generate_rsa">
+			<return type="CryptoKey">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="generate_self_signed_certificate">
+			<return type="X509Certificate">
+			</return>
+			<argument index="0" name="key" type="CryptoKey">
+			</argument>
+			<argument index="1" name="issuer_name" type="String" default="&quot;CN=myserver,O=myorganisation,C=IT&quot;">
+			</argument>
+			<argument index="2" name="not_before" type="String" default="&quot;20140101000000&quot;">
+			</argument>
+			<argument index="3" name="not_after" type="String" default="&quot;20340101000000&quot;">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

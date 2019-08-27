@@ -24,6 +24,12 @@
 #ifndef MBEDTLS_SSL_TICKET_H
 #define MBEDTLS_SSL_TICKET_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 /*
  * This implementation of the session ticket callbacks includes key
  * management, rotating the keys periodically in order to preserve forward
@@ -44,7 +50,7 @@ extern "C" {
 /**
  * \brief   Information for session ticket protection
  */
-typedef struct
+typedef struct mbedtls_ssl_ticket_key
 {
     unsigned char name[4];          /*!< random key identifier              */
     uint32_t generation_time;       /*!< key generation timestamp (seconds) */
@@ -55,7 +61,7 @@ mbedtls_ssl_ticket_key;
 /**
  * \brief   Context for session ticket handling functions
  */
-typedef struct
+typedef struct mbedtls_ssl_ticket_context
 {
     mbedtls_ssl_ticket_key keys[2]; /*!< ticket protection keys             */
     unsigned char active;           /*!< index of the currently active key  */

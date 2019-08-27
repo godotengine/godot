@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "joints_2d.h"
 
-#include "engine.h"
+#include "core/engine.h"
 #include "physics_body_2d.h"
 #include "servers/physics_2d_server.h"
 
@@ -61,9 +61,7 @@ void Joint2D::_update_joint(bool p_only_free) {
 	if (!body_a || !body_b)
 		return;
 
-	if (!body_a) {
-		SWAP(body_a, body_b);
-	}
+	SWAP(body_a, body_b);
 
 	joint = _configure_joint(body_a, body_b);
 

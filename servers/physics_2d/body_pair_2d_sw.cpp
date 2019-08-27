@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -138,7 +138,7 @@ void BodyPair2DSW::_validate_contacts() {
 		Contact &c = contacts[i];
 
 		bool erase = false;
-		if (c.reused == false) {
+		if (!c.reused) {
 			//was left behind in previous frame
 			erase = true;
 		} else {
@@ -220,41 +220,11 @@ bool BodyPair2DSW::_test_ccd(real_t p_step, Body2DSW *p_A, int p_shape_A, const 
 }
 
 real_t combine_bounce(Body2DSW *A, Body2DSW *B) {
-	const Physics2DServer::CombineMode cm = A->get_bounce_combine_mode();
-
-	switch (cm) {
-		case Physics2DServer::COMBINE_MODE_INHERIT:
-			if (B->get_bounce_combine_mode() != Physics2DServer::COMBINE_MODE_INHERIT)
-				return combine_bounce(B, A);
-			// else use MAX [This is used when the two bodies doesn't use physical material]
-		case Physics2DServer::COMBINE_MODE_MAX:
-			return MAX(A->get_bounce(), B->get_bounce());
-		case Physics2DServer::COMBINE_MODE_MIN:
-			return MIN(A->get_bounce(), B->get_bounce());
-		case Physics2DServer::COMBINE_MODE_MULTIPLY:
-			return A->get_bounce() * B->get_bounce();
-		default: // Is always Physics2DServer::COMBINE_MODE_AVERAGE:
-			return (A->get_bounce() + B->get_bounce()) / 2;
-	}
+	return CLAMP(A->get_bounce() + B->get_bounce(), 0, 1);
 }
 
 real_t combine_friction(Body2DSW *A, Body2DSW *B) {
-	const Physics2DServer::CombineMode cm = A->get_friction_combine_mode();
-
-	switch (cm) {
-		case Physics2DServer::COMBINE_MODE_INHERIT:
-			if (B->get_friction_combine_mode() != Physics2DServer::COMBINE_MODE_INHERIT)
-				return combine_friction(B, A);
-			// else use Multiply [This is used when the two bodies doesn't use physical material]
-		case Physics2DServer::COMBINE_MODE_MULTIPLY:
-			return A->get_friction() * B->get_friction();
-		case Physics2DServer::COMBINE_MODE_MAX:
-			return MAX(A->get_friction(), B->get_friction());
-		case Physics2DServer::COMBINE_MODE_MIN:
-			return MIN(A->get_friction(), B->get_friction());
-		default: // Is always Physics2DServer::COMBINE_MODE_AVERAGE:
-			return (A->get_friction() + B->get_friction()) / 2;
-	}
+	return ABS(MIN(A->get_friction(), B->get_friction()));
 }
 
 bool BodyPair2DSW::setup(real_t p_step) {
@@ -333,7 +303,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 					Contact &c = contacts[i];
 					if (!c.reused)
 						continue;
-					if (c.normal.dot(direction) < 0)
+					if (c.normal.dot(direction) > 0) //greater (normal inverted)
 						continue;
 
 					valid = true;
@@ -356,7 +326,7 @@ bool BodyPair2DSW::setup(real_t p_step) {
 					Contact &c = contacts[i];
 					if (!c.reused)
 						continue;
-					if (c.normal.dot(direction) < 0)
+					if (c.normal.dot(direction) < 0) //less (normal ok)
 						continue;
 
 					valid = true;

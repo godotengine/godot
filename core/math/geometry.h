@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,15 @@
 #ifndef GEOMETRY_H
 #define GEOMETRY_H
 
-#include "dvector.h"
-#include "face3.h"
-#include "math_2d.h"
-#include "object.h"
-#include "print_string.h"
-#include "triangulate.h"
-#include "vector.h"
-#include "vector3.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "core/math/delaunay.h"
+#include "core/math/face3.h"
+#include "core/math/rect2.h"
+#include "core/math/triangulate.h"
+#include "core/math/vector3.h"
+#include "core/object.h"
+#include "core/pool_vector.h"
+#include "core/print_string.h"
+#include "core/vector.h"
 
 class Geometry {
 	Geometry();
@@ -180,8 +178,8 @@ public:
 			}
 		}
 		// finally do the division to get sc and tc
-		sc = (Math::abs(sN) < CMP_EPSILON ? 0.0 : sN / sD);
-		tc = (Math::abs(tN) < CMP_EPSILON ? 0.0 : tN / tD);
+		sc = (Math::is_zero_approx(sN) ? 0.0 : sN / sD);
+		tc = (Math::is_zero_approx(tN) ? 0.0 : tN / tD);
 
 		// get the difference of the two closest points
 		Vector3 dP = w + (sc * u) - (tc * v); // = S1(sc) - S2(tc)
@@ -194,7 +192,7 @@ public:
 		Vector3 e2 = p_v2 - p_v0;
 		Vector3 h = p_dir.cross(e2);
 		real_t a = e1.dot(h);
-		if (a > -CMP_EPSILON && a < CMP_EPSILON) // parallel test
+		if (Math::is_zero_approx(a)) // parallel test
 			return false;
 
 		real_t f = 1.0 / a;
@@ -232,7 +230,7 @@ public:
 		Vector3 e2 = p_v2 - p_v0;
 		Vector3 h = rel.cross(e2);
 		real_t a = e1.dot(h);
-		if (a > -CMP_EPSILON && a < CMP_EPSILON) // parallel test
+		if (Math::is_zero_approx(a)) // parallel test
 			return false;
 
 		real_t f = 1.0 / a;
@@ -453,16 +451,15 @@ public:
 
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		if (d <= 0.0)
 			return p_segment[0]; // before first point
-		else if (d >= l)
+		else if (d >= 1.0)
 			return p_segment[1]; // after first point
 		else
 			return p_segment[0] + n * d; // inside
@@ -472,12 +469,11 @@ public:
 
 		Vector3 p = p_point - p_segment[0];
 		Vector3 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		return p_segment[0] + n * d; // inside
 	}
@@ -486,16 +482,15 @@ public:
 
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		if (d <= 0.0)
 			return p_segment[0]; // before first point
-		else if (d >= l)
+		else if (d >= 1.0)
 			return p_segment[1]; // after first point
 		else
 			return p_segment[0] + n * d; // inside
@@ -513,18 +508,17 @@ public:
 		return (cn.cross(an) > 0) == orientation;
 	}
 
-	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
+	//static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon);
 
 	static Vector2 get_closest_point_to_segment_uncapped_2d(const Vector2 &p_point, const Vector2 *p_segment) {
 
 		Vector2 p = p_point - p_segment[0];
 		Vector2 n = p_segment[1] - p_segment[0];
-		real_t l = n.length();
-		if (l < 1e-10)
+		real_t l2 = n.length_squared();
+		if (l2 < 1e-20)
 			return p_segment[0]; // both points are the same, just give any
-		n /= l;
 
-		real_t d = n.dot(p);
+		real_t d = n.dot(p) / l2;
 
 		return p_segment[0] + n * d; // inside
 	}
@@ -534,7 +528,7 @@ public:
 		// see http://paulbourke.net/geometry/pointlineplane/
 
 		const real_t denom = p_dir_b.y * p_dir_a.x - p_dir_b.x * p_dir_a.y;
-		if (Math::abs(denom) < CMP_EPSILON) { // parallel?
+		if (Math::is_zero_approx(denom)) { // parallel?
 			return false;
 		}
 
@@ -701,9 +695,11 @@ public:
 		/* if we can assume that the line segment starts outside the circle (e.g. for continuous time collision detection) then the following can be skipped and we can just return the equivalent of res1 */
 		sqrtterm = Math::sqrt(sqrtterm);
 		real_t res1 = (-b - sqrtterm) / (2 * a);
-		//real_t res2 = ( -b + sqrtterm ) / (2 * a);
+		real_t res2 = (-b + sqrtterm) / (2 * a);
 
-		return (res1 >= 0 && res1 <= 1) ? res1 : -1;
+		if (res1 >= 0 && res1 <= 1) return res1;
+		if (res2 >= 0 && res2 <= 1) return res2;
+		return -1;
 	}
 
 	static inline Vector<Vector3> clip_polygon(const Vector<Vector3> &polygon, const Plane &p_plane) {
@@ -782,6 +778,90 @@ public:
 		return clipped;
 	}
 
+	enum PolyBooleanOperation {
+		OPERATION_UNION,
+		OPERATION_DIFFERENCE,
+		OPERATION_INTERSECTION,
+		OPERATION_XOR
+	};
+	enum PolyJoinType {
+		JOIN_SQUARE,
+		JOIN_ROUND,
+		JOIN_MITER
+	};
+	enum PolyEndType {
+		END_POLYGON,
+		END_JOINED,
+		END_BUTT,
+		END_SQUARE,
+		END_ROUND
+	};
+
+	static Vector<Vector<Point2> > merge_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_UNION, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > clip_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > intersect_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > exclude_polygons_2d(const Vector<Point2> &p_polygon_a, const Vector<Point2> &p_polygon_b) {
+
+		return _polypaths_do_operation(OPERATION_XOR, p_polygon_a, p_polygon_b);
+	}
+
+	static Vector<Vector<Point2> > clip_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+
+		return _polypaths_do_operation(OPERATION_DIFFERENCE, p_polyline, p_polygon, true);
+	}
+
+	static Vector<Vector<Point2> > intersect_polyline_with_polygon_2d(const Vector<Vector2> &p_polyline, const Vector<Vector2> &p_polygon) {
+
+		return _polypaths_do_operation(OPERATION_INTERSECTION, p_polyline, p_polygon, true);
+	}
+
+	static Vector<Vector<Point2> > offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type) {
+
+		return _polypath_offset(p_polygon, p_delta, p_join_type, END_POLYGON);
+	}
+
+	static Vector<Vector<Point2> > offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type) {
+
+		ERR_FAIL_COND_V_MSG(p_end_type == END_POLYGON, Vector<Vector<Point2> >(), "Attempt to offset a polyline like a polygon (use offset_polygon_2d instead).");
+
+		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
+	}
+
+	static Vector<Point2> transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat) {
+
+		Vector<Point2> points;
+
+		for (int i = 0; i < p_points.size(); ++i) {
+			points.push_back(p_mat.xform(p_points[i]));
+		}
+		return points;
+	}
+
+	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
+
+		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(p_points);
+		Vector<int> triangles;
+
+		for (int i = 0; i < tr.size(); i++) {
+			triangles.push_back(tr[i].points[0]);
+			triangles.push_back(tr[i].points[1]);
+			triangles.push_back(tr[i].points[2]);
+		}
+		return triangles;
+	}
+
 	static Vector<int> triangulate_polygon(const Vector<Vector2> &p_polygon) {
 
 		Vector<int> triangles;
@@ -797,6 +877,51 @@ public:
 			return _decompose_func(p_polygon);
 
 		return Vector<Vector<Vector2> >();
+	}
+
+	static bool is_polygon_clockwise(const Vector<Vector2> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3)
+			return false;
+		const Vector2 *p = p_polygon.ptr();
+		real_t sum = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+			sum += (v2.x - v1.x) * (v2.y + v1.y);
+		}
+
+		return sum > 0.0f;
+	}
+
+	/* alternate implementation that should be faster */
+	static bool is_point_in_polygon(const Vector2 &p_point, const Vector<Vector2> &p_polygon) {
+		int c = p_polygon.size();
+		if (c < 3)
+			return false;
+		const Vector2 *p = p_polygon.ptr();
+		Vector2 further_away(-1e20, -1e20);
+		Vector2 further_away_opposite(1e20, 1e20);
+
+		for (int i = 0; i < c; i++) {
+			further_away.x = MAX(p[i].x, further_away.x);
+			further_away.y = MAX(p[i].y, further_away.y);
+			further_away_opposite.x = MIN(p[i].x, further_away_opposite.x);
+			further_away_opposite.y = MIN(p[i].y, further_away_opposite.y);
+		}
+
+		further_away += (further_away - further_away_opposite) * Vector2(1.221313, 1.512312); // make point outside that won't intersect with points in segment from p_point
+
+		int intersections = 0;
+		for (int i = 0; i < c; i++) {
+			const Vector2 &v1 = p[i];
+			const Vector2 &v2 = p[(i + 1) % c];
+			if (segment_intersects_segment_2d(v1, v2, p_point, further_away, NULL)) {
+				intersections++;
+			}
+		}
+
+		return (intersections & 1);
 	}
 
 	static PoolVector<PoolVector<Face3> > separate_objects(PoolVector<Face3> p_array);
@@ -903,6 +1028,7 @@ public:
 		H.resize(k);
 		return H;
 	}
+	static Vector<Vector<Vector2> > decompose_polygon_in_convex(Vector<Point2> polygon);
 
 	static MeshData build_convex_mesh(const PoolVector<Plane> &p_planes);
 	static PoolVector<Plane> build_sphere_planes(real_t p_radius, int p_lats, int p_lons, Vector3::Axis p_axis = Vector3::AXIS_Z);
@@ -911,6 +1037,10 @@ public:
 	static PoolVector<Plane> build_capsule_planes(real_t p_radius, real_t p_height, int p_sides, int p_lats, Vector3::Axis p_axis = Vector3::AXIS_Z);
 
 	static void make_atlas(const Vector<Size2i> &p_rects, Vector<Point2i> &r_result, Size2i &r_size);
+
+private:
+	static Vector<Vector<Point2> > _polypaths_do_operation(PolyBooleanOperation p_op, const Vector<Point2> &p_polypath_a, const Vector<Point2> &p_polypath_b, bool is_a_open = false);
+	static Vector<Vector<Point2> > _polypath_offset(const Vector<Point2> &p_polypath, real_t p_delta, PolyJoinType p_join_type, PolyEndType p_end_type);
 };
 
 #endif

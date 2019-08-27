@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,27 +31,28 @@
 #ifndef VMAP_H
 #define VMAP_H
 
-#include "cowdata.h"
-#include "typedefs.h"
+#include "core/cowdata.h"
+#include "core/typedefs.h"
 
 template <class T, class V>
 class VMap {
-
-	struct _Pair {
+public:
+	struct Pair {
 
 		T key;
 		V value;
 
-		_FORCE_INLINE_ _Pair() {}
+		_FORCE_INLINE_ Pair() {}
 
-		_FORCE_INLINE_ _Pair(const T &p_key, const V &p_value) {
+		_FORCE_INLINE_ Pair(const T &p_key, const V &p_value) {
 
 			key = p_key;
 			value = p_value;
 		}
 	};
 
-	CowData<_Pair> _cowdata;
+private:
+	CowData<Pair> _cowdata;
 
 	_FORCE_INLINE_ int _find(const T &p_val, bool &r_exact) const {
 
@@ -61,10 +62,10 @@ class VMap {
 
 		int low = 0;
 		int high = _cowdata.size() - 1;
-		const _Pair *a = _cowdata.ptr();
+		const Pair *a = _cowdata.ptr();
 		int middle = 0;
 
-#if DEBUG_ENABLED
+#ifdef DEBUG_ENABLED
 		if (low > high)
 			ERR_PRINT("low > high, this may be a bug");
 #endif
@@ -95,7 +96,7 @@ class VMap {
 		int low = 0;
 		int high = _cowdata.size() - 1;
 		int middle;
-		const _Pair *a = _cowdata.ptr();
+		const Pair *a = _cowdata.ptr();
 
 		while (low <= high) {
 			middle = (low + high) / 2;
@@ -121,7 +122,7 @@ public:
 			_cowdata.get_m(pos).value = p_val;
 			return pos;
 		}
-		_cowdata.insert(pos, _Pair(p_key, p_val));
+		_cowdata.insert(pos, Pair(p_key, p_val));
 		return pos;
 	}
 
@@ -152,12 +153,12 @@ public:
 	_FORCE_INLINE_ int size() const { return _cowdata.size(); }
 	_FORCE_INLINE_ bool empty() const { return _cowdata.empty(); }
 
-	const _Pair *get_array() const {
+	const Pair *get_array() const {
 
 		return _cowdata.ptr();
 	}
 
-	_Pair *get_array() {
+	Pair *get_array() {
 
 		return _cowdata.ptrw();
 	}

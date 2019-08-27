@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,7 +50,7 @@
 	}                                                                                      \
 	void m_type##_free_cached_ids() {                                                      \
 		while (m_type##_id_pool.size()) {                                                  \
-			free(m_type##_id_pool.front()->get());                                         \
+			server_name->free(m_type##_id_pool.front()->get());                            \
 			m_type##_id_pool.pop_front();                                                  \
 		}                                                                                  \
 	}                                                                                      \
@@ -197,9 +197,10 @@
 	}
 
 #define FUNC5RID(m_type, m_arg1, m_arg2, m_arg3, m_arg4, m_arg5)                                               \
-	int m_type##allocn() {                                                                                     \
-		for (int i = 0; i < m_type##_pool_max_size; i++) {                                                     \
-			m_type##_id_pool.push_back(server_name->m_type##_create());                                        \
+	List<RID> m_type##_id_pool;                                                                                \
+	int m_type##allocn(m_arg1 p1, m_arg2 p2, m_arg3 p3, m_arg4 p4, m_arg5 p5) {                                \
+		for (int i = 0; i < pool_max_size; i++) {                                                              \
+			m_type##_id_pool.push_back(server_name->m_type##_create(p1, p2, p3, p4, p5));                      \
 		}                                                                                                      \
 		return 0;                                                                                              \
 	}                                                                                                          \

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,81 +30,76 @@
 
 #include "csharp_project.h"
 
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/json.h"
+#include "core/os/dir_access.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
+#include "../csharp_script.h"
 #include "../mono_gd/gd_mono_class.h"
 #include "../mono_gd/gd_mono_marshal.h"
+#include "../utils/string_utils.h"
+#include "script_class_parser.h"
 
 namespace CSharpProject {
 
-String generate_core_api_project(const String &p_dir, const Vector<String> &p_files) {
+bool generate_api_solution_impl(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
+		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items,
+		GDMonoAssembly *p_tools_project_editor_assembly) {
 
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+	GDMonoClass *klass = p_tools_project_editor_assembly->get_class("GodotTools.ProjectEditor", "ApiSolutionGenerator");
 
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectGenerator");
-
-	Variant dir = p_dir;
-	Variant compile_items = p_files;
-	const Variant *args[2] = { &dir, &compile_items };
+	Variant solution_dir = p_solution_dir;
+	Variant core_proj_dir = p_core_proj_dir;
+	Variant core_compile_items = p_core_compile_items;
+	Variant editor_proj_dir = p_editor_proj_dir;
+	Variant editor_compile_items = p_editor_compile_items;
+	const Variant *args[5] = { &solution_dir, &core_proj_dir, &core_compile_items, &editor_proj_dir, &editor_compile_items };
 	MonoException *exc = NULL;
-	MonoObject *ret = klass->get_method("GenCoreApiProject", 2)->invoke(NULL, args, &exc);
+	klass->get_method("GenerateApiSolution", 5)->invoke(NULL, args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
-		ERR_FAIL_V(String());
+		GDMonoUtils::debug_print_unhandled_exception(exc);
+		ERR_FAIL_V(false);
 	}
 
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
+	return true;
 }
 
-String generate_editor_api_project(const String &p_dir, const String &p_core_dll_path, const Vector<String> &p_files) {
+bool generate_api_solution(const String &p_solution_dir, const String &p_core_proj_dir, const Vector<String> &p_core_compile_items,
+		const String &p_editor_proj_dir, const Vector<String> &p_editor_compile_items) {
 
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+	if (GDMono::get_singleton()->get_tools_project_editor_assembly()) {
+		return generate_api_solution_impl(p_solution_dir, p_core_proj_dir, p_core_compile_items,
+				p_editor_proj_dir, p_editor_compile_items,
+				GDMono::get_singleton()->get_tools_project_editor_assembly());
+	} else {
+		MonoDomain *temp_domain = GDMonoUtils::create_domain("GodotEngine.ApiSolutionGenerationDomain");
+		CRASH_COND(temp_domain == NULL);
+		_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(temp_domain);
 
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectGenerator");
+		_GDMONO_SCOPE_DOMAIN_(temp_domain);
 
-	Variant dir = p_dir;
-	Variant core_dll_path = p_core_dll_path;
-	Variant compile_items = p_files;
-	const Variant *args[3] = { &dir, &core_dll_path, &compile_items };
-	MonoException *exc = NULL;
-	MonoObject *ret = klass->get_method("GenEditorApiProject", 3)->invoke(NULL, args, &exc);
+		GDMonoAssembly *tools_project_editor_asm = NULL;
 
-	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
-		ERR_FAIL_V(String());
+		bool assembly_loaded = GDMono::get_singleton()->load_assembly(TOOLS_PROJECT_EDITOR_ASM_NAME, &tools_project_editor_asm);
+		ERR_FAIL_COND_V_MSG(!assembly_loaded, false, "Failed to load assembly: '" TOOLS_PROJECT_EDITOR_ASM_NAME "'.");
+
+		return generate_api_solution_impl(p_solution_dir, p_core_proj_dir, p_core_compile_items,
+				p_editor_proj_dir, p_editor_compile_items,
+				tools_project_editor_asm);
 	}
-
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
-}
-
-String generate_game_project(const String &p_dir, const String &p_name, const Vector<String> &p_files) {
-
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
-
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectGenerator");
-
-	Variant dir = p_dir;
-	Variant name = p_name;
-	Variant compile_items = p_files;
-	const Variant *args[3] = { &dir, &name, &compile_items };
-	MonoException *exc = NULL;
-	MonoObject *ret = klass->get_method("GenGameProject", 3)->invoke(NULL, args, &exc);
-
-	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
-		ERR_FAIL_V(String());
-	}
-
-	return ret ? GDMonoMarshal::mono_string_to_godot((MonoString *)ret) : String();
 }
 
 void add_item(const String &p_project_path, const String &p_item_type, const String &p_include) {
 
-	_GDMONO_SCOPE_DOMAIN_(TOOLS_DOMAIN)
+	if (!GLOBAL_DEF("mono/project/auto_update_project", true))
+		return;
 
-	GDMonoClass *klass = GDMono::get_singleton()->get_editor_tools_assembly()->get_class("GodotSharpTools.Project", "ProjectUtils");
+	GDMonoAssembly *tools_project_editor_assembly = GDMono::get_singleton()->get_tools_project_editor_assembly();
+
+	GDMonoClass *klass = tools_project_editor_assembly->get_class("GodotTools.ProjectEditor", "ProjectUtils");
 
 	Variant project_path = p_project_path;
 	Variant item_type = p_item_type;
@@ -114,8 +109,9 @@ void add_item(const String &p_project_path, const String &p_item_type, const Str
 	klass->get_method("AddItemToProjectChecked", 3)->invoke(NULL, args, &exc);
 
 	if (exc) {
-		GDMonoUtils::debug_unhandled_exception(exc);
+		GDMonoUtils::debug_print_unhandled_exception(exc);
 		ERR_FAIL();
 	}
 }
+
 } // namespace CSharpProject

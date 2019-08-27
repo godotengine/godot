@@ -4,11 +4,11 @@ PCRE2 LICENCE
 PCRE2 is a library of functions to support regular expressions whose syntax
 and semantics are as close as possible to those of the Perl 5 language.
 
-Release 10 of PCRE2 is distributed under the terms of the "BSD" licence, as
-specified below, with one exemption for certain binary redistributions. The
-documentation for PCRE2, supplied in the "doc" directory, is distributed under
-the same terms as the software itself. The data in the testdata directory is
-not copyrighted and is in the public domain.
+Releases 10.00 and above of PCRE2 are distributed under the terms of the "BSD"
+licence, as specified below, with one exemption for certain binary
+redistributions. The documentation for PCRE2, supplied in the "doc" directory,
+is distributed under the same terms as the software itself. The data in the
+testdata directory is not copyrighted and is in the public domain.
 
 The basic library functions are written in C and are freestanding. Also
 included in the distribution is a just-in-time compiler that can be used to
@@ -26,7 +26,7 @@ Email domain:     cam.ac.uk
 University of Cambridge Computing Service,
 Cambridge, England.
 
-Copyright (c) 1997-2018 University of Cambridge
+Copyright (c) 1997-2019 University of Cambridge
 All rights reserved.
 
 
@@ -35,9 +35,9 @@ PCRE2 JUST-IN-TIME COMPILATION SUPPORT
 
 Written by:       Zoltan Herczeg
 Email local part: hzmester
-Emain domain:     freemail.hu
+Email domain:     freemail.hu
 
-Copyright(c) 2010-2018 Zoltan Herczeg
+Copyright(c) 2010-2019 Zoltan Herczeg
 All rights reserved.
 
 
@@ -46,9 +46,9 @@ STACK-LESS JUST-IN-TIME COMPILER
 
 Written by:       Zoltan Herczeg
 Email local part: hzmester
-Emain domain:     freemail.hu
+Email domain:     freemail.hu
 
-Copyright(c) 2009-2018 Zoltan Herczeg
+Copyright(c) 2009-2019 Zoltan Herczeg
 All rights reserved.
 
 

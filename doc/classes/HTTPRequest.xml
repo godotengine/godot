@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="HTTPRequest" inherits="Node" category="Core" version="3.1">
+<class name="HTTPRequest" inherits="Node" category="Core" version="3.2">
 	<brief_description>
 		A node with the ability to send HTTP requests.
 	</brief_description>
@@ -8,10 +8,8 @@
 		Can be used to make HTTP requests, i.e. download or upload files or web content via HTTP.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/networking/ssl_certificates.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="cancel_request">
 			<return type="void">
@@ -56,22 +54,24 @@
 			</argument>
 			<description>
 				Creates request on the underlying [HTTPClient]. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].
-				Returns [code]OK[/code] if request is successfully created. (Does not imply that the server has responded), [code]ERR_UNCONFIGURED[/code] if not in the tree, [code]ERR_BUSY[/code] if still processing previous request, [code]ERR_INVALID_PARAMETER[/code] if given string is not a valid URL format, or [code]ERR_CANT_CONNECT[/code] if not using thread and the [HTTPClient] cannot connect to host.
+				Returns [constant OK] if request is successfully created. (Does not imply that the server has responded), [constant ERR_UNCONFIGURED] if not in the tree, [constant ERR_BUSY] if still processing previous request, [constant ERR_INVALID_PARAMETER] if given string is not a valid URL format, or [constant ERR_CANT_CONNECT] if not using thread and the [HTTPClient] cannot connect to host.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit">
+		<member name="body_size_limit" type="int" setter="set_body_size_limit" getter="get_body_size_limit" default="-1">
 			Maximum allowed size for response bodies.
 		</member>
-		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file">
+		<member name="download_file" type="String" setter="set_download_file" getter="get_download_file" default="&quot;&quot;">
 			The file to download into. Will output any received file into it.
 		</member>
-		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects">
+		<member name="max_redirects" type="int" setter="set_max_redirects" getter="get_max_redirects" default="8">
 			Maximum number of allowed redirects.
 		</member>
-		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads">
-			If [code]true[/code] multithreading is used to improve performance.
+		<member name="timeout" type="int" setter="set_timeout" getter="get_timeout" default="0">
+		</member>
+		<member name="use_threads" type="bool" setter="set_use_threads" getter="is_using_threads" default="false">
+			If [code]true[/code], multithreading is used to improve performance.
 		</member>
 	</members>
 	<signals>
@@ -85,7 +85,7 @@
 			<argument index="3" name="body" type="PoolByteArray">
 			</argument>
 			<description>
-				This signal is emitted upon request completion.
+				Emitted when a request is completed.
 			</description>
 		</signal>
 	</signals>
@@ -102,16 +102,16 @@
 			Request failed while resolving.
 		</constant>
 		<constant name="RESULT_CONNECTION_ERROR" value="4" enum="Result">
-			Request failed due to connection(read/write) error.
+			Request failed due to connection (read/write) error.
 		</constant>
 		<constant name="RESULT_SSL_HANDSHAKE_ERROR" value="5" enum="Result">
 			Request failed on SSL handshake.
 		</constant>
 		<constant name="RESULT_NO_RESPONSE" value="6" enum="Result">
-			Request does not have a response(yet).
+			Request does not have a response (yet).
 		</constant>
 		<constant name="RESULT_BODY_SIZE_LIMIT_EXCEEDED" value="7" enum="Result">
-			Request exceeded its maximum size limit, see [method set_body_size_limit].
+			Request exceeded its maximum size limit, see [member body_size_limit].
 		</constant>
 		<constant name="RESULT_REQUEST_FAILED" value="8" enum="Result">
 			Request failed. (Unused)
@@ -123,7 +123,9 @@
 			HTTPRequest couldn't write to the download file.
 		</constant>
 		<constant name="RESULT_REDIRECT_LIMIT_REACHED" value="11" enum="Result">
-			Request reached its maximum redirect limit, see [method set_max_redirects].
+			Request reached its maximum redirect limit, see [member max_redirects].
+		</constant>
+		<constant name="RESULT_TIMEOUT" value="12" enum="Result">
 		</constant>
 	</constants>
 </class>

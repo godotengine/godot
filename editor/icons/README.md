@@ -9,4 +9,4 @@ There you can find the optimizer script.
 If you add a new icon, please make a pull request to this repo:
 https://github.com/godotengine/godot-design/
 
-and store the the optimized SVG version here.
+and store the optimized SVG version here.

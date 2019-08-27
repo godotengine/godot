@@ -29,20 +29,17 @@ if env['builtin_libwebp']:
         "dsp/cost.c",
         "dsp/cost_mips32.c",
         "dsp/cost_mips_dsp_r2.c",
+        "dsp/cost_neon.c",
         "dsp/cost_sse2.c",
         "dsp/cpu.c",
         "dsp/dec.c",
         "dsp/dec_clip_tables.c",
-        "dsp/ssim.c",
-        "dsp/ssim_sse2.c",
-        "dsp/yuv_neon.c",
         "dsp/dec_mips32.c",
         "dsp/dec_mips_dsp_r2.c",
         "dsp/dec_msa.c",
         "dsp/dec_neon.c",
         "dsp/dec_sse2.c",
         "dsp/dec_sse41.c",
-        "dsp/enc_avx2.c",
         "dsp/enc.c",
         "dsp/enc_mips32.c",
         "dsp/enc_mips_dsp_r2.c",
@@ -73,6 +70,8 @@ if env['builtin_libwebp']:
         "dsp/rescaler_msa.c",
         "dsp/rescaler_neon.c",
         "dsp/rescaler_sse2.c",
+        "dsp/ssim.c",
+        "dsp/ssim_sse2.c",
         "dsp/upsampling.c",
         "dsp/upsampling_mips_dsp_r2.c",
         "dsp/upsampling_msa.c",
@@ -82,6 +81,7 @@ if env['builtin_libwebp']:
         "dsp/yuv.c",
         "dsp/yuv_mips32.c",
         "dsp/yuv_mips_dsp_r2.c",
+        "dsp/yuv_neon.c",
         "dsp/yuv_sse2.c",
         "dsp/yuv_sse41.c",
         "enc/alpha_enc.c",
@@ -90,7 +90,6 @@ if env['builtin_libwebp']:
         "enc/backward_references_enc.c",
         "enc/config_enc.c",
         "enc/cost_enc.c",
-        "enc/delta_palettization_enc.c",
         "enc/filter_enc.c",
         "enc/frame_enc.c",
         "enc/histogram_enc.c",
@@ -127,8 +126,11 @@ if env['builtin_libwebp']:
     ]
     thirdparty_sources = [thirdparty_dir + "src/" + file for file in thirdparty_sources]
 
-    env_webp.add_source_files(env.modules_sources, thirdparty_sources)
-    env_webp.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "src/"])
+    env_webp.Prepend(CPPPATH=[thirdparty_dir, thirdparty_dir + "src/"])
+
+    env_thirdparty = env_webp.Clone()
+    env_thirdparty.disable_warnings()
+    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_webp.add_source_files(env.modules_sources, "*.cpp")

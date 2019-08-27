@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cffcmap.c                                                              */
-/*                                                                         */
-/*    CFF character mapping table (cmap) support (body).                   */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cffcmap.c
+ *
+ *   CFF character mapping table (cmap) support (body).
+ *
+ * Copyright (C) 2002-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -160,6 +160,9 @@
     /* because we don't know glyph names.         */
     if ( !charset->sids )
       return FT_THROW( No_Unicode_Glyph_Name );
+
+    if ( !psnames->unicodes_init )
+      return FT_THROW( Unimplemented_Feature );
 
     return psnames->unicodes_init( memory,
                                    unicodes,

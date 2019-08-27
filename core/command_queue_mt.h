@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,14 +31,11 @@
 #ifndef COMMAND_QUEUE_MT_H
 #define COMMAND_QUEUE_MT_H
 
-#include "os/memory.h"
-#include "os/mutex.h"
-#include "os/semaphore.h"
-#include "simple_type.h"
-#include "typedefs.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "core/os/memory.h"
+#include "core/os/mutex.h"
+#include "core/os/semaphore.h"
+#include "core/simple_type.h"
+#include "core/typedefs.h"
 
 #define COMMA(N) _COMMA_##N
 #define _COMMA_0
@@ -254,6 +251,7 @@
 		unlock();                                                                              \
 		if (sync) sync->post();                                                                \
 		ss->sem->wait();                                                                       \
+		ss->in_use = false;                                                                    \
 	}
 
 #define CMD_SYNC_TYPE(N) CommandSync##N<T, M COMMA(N) COMMA_SEP_LIST(TYPE_ARG, N)>
@@ -270,6 +268,7 @@
 		unlock();                                                                     \
 		if (sync) sync->post();                                                       \
 		ss->sem->wait();                                                              \
+		ss->in_use = false;                                                           \
 	}
 
 #define MAX_CMD_PARAMS 13
@@ -295,7 +294,6 @@ class CommandQueueMT {
 
 		virtual void post() {
 			sync_sem->sem->post();
-			sync_sem->in_use = false;
 		}
 	};
 
@@ -318,7 +316,7 @@ class CommandQueueMT {
 		SYNC_SEMAPHORES = 8
 	};
 
-	uint8_t command_mem[COMMAND_MEM_SIZE];
+	uint8_t *command_mem;
 	uint32_t read_ptr;
 	uint32_t write_ptr;
 	uint32_t dealloc_ptr;
@@ -330,7 +328,7 @@ class CommandQueueMT {
 	T *allocate() {
 
 		// alloc size is size+T+safeguard
-		uint32_t alloc_size = sizeof(T) + sizeof(uint32_t);
+		uint32_t alloc_size = ((sizeof(T) + 8 - 1) & ~(8 - 1)) + 8;
 
 	tryagain:
 
@@ -344,7 +342,7 @@ class CommandQueueMT {
 				}
 				return NULL;
 			}
-		} else if (write_ptr >= dealloc_ptr) {
+		} else {
 			// ahead of dealloc_ptr, check that there is room
 
 			if ((COMMAND_MEM_SIZE - write_ptr) < alloc_size + sizeof(uint32_t)) {
@@ -360,7 +358,7 @@ class CommandQueueMT {
 				}
 
 				// if this happens, it's a bug
-				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < sizeof(uint32_t), NULL);
+				ERR_FAIL_COND_V((COMMAND_MEM_SIZE - write_ptr) < 8, NULL);
 				// zero means, wrap to beginning
 
 				uint32_t *p = (uint32_t *)&command_mem[write_ptr];
@@ -372,12 +370,13 @@ class CommandQueueMT {
 		// Allocate the size and the 'in use' bit.
 		// First bit used to mark if command is still in use (1)
 		// or if it has been destroyed and can be deallocated (0).
+		uint32_t size = (sizeof(T) + 8 - 1) & ~(8 - 1);
 		uint32_t *p = (uint32_t *)&command_mem[write_ptr];
-		*p = (sizeof(T) << 1) | 1;
-		write_ptr += sizeof(uint32_t);
+		*p = (size << 1) | 1;
+		write_ptr += 8;
 		// allocate the command
 		T *cmd = memnew_placement(&command_mem[write_ptr], T);
-		write_ptr += sizeof(T);
+		write_ptr += size;
 		return cmd;
 	}
 
@@ -403,8 +402,10 @@ class CommandQueueMT {
 	tryagain:
 
 		// tried to read an empty queue
-		if (read_ptr == write_ptr)
+		if (read_ptr == write_ptr) {
+			if (p_lock) unlock();
 			return false;
+		}
 
 		uint32_t size_ptr = read_ptr;
 		uint32_t size = *(uint32_t *)&command_mem[read_ptr] >> 1;
@@ -415,7 +416,7 @@ class CommandQueueMT {
 			goto tryagain;
 		}
 
-		read_ptr += sizeof(uint32_t);
+		read_ptr += 8;
 
 		CommandBase *cmd = reinterpret_cast<CommandBase *>(&command_mem[read_ptr]);
 

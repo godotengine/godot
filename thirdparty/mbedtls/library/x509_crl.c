@@ -103,17 +103,17 @@ static int x509_get_crl_ext( unsigned char **p,
 {
     int ret;
 
+    if( *p == end )
+        return( 0 );
+
     /*
      * crlExtensions           [0]  EXPLICIT Extensions OPTIONAL
      *                              -- if present, version MUST be v2
      */
     if( ( ret = mbedtls_x509_get_ext( p, end, ext, 0 ) ) != 0 )
-    {
-        if( ret == MBEDTLS_ERR_ASN1_UNEXPECTED_TAG )
-            return( 0 );
-
         return( ret );
-    }
+
+    end = ext->p + ext->len;
 
     while( *p < end )
     {

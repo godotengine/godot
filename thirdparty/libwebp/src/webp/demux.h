@@ -360,4 +360,4 @@ WEBP_EXTERN void WebPAnimDecoderDelete(WebPAnimDecoder* dec);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_WEBP_DEMUX_H_ */
+#endif  // WEBP_WEBP_DEMUX_H_

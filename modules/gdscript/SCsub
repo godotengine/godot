@@ -9,5 +9,3 @@ env_gdscript.add_source_files(env.modules_sources, "*.cpp")
 
 if env['tools']:
 	env_gdscript.add_source_files(env.modules_sources, "./editor/*.cpp")
-
-Export('env')

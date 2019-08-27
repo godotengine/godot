@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,6 +37,7 @@
 #include "os_iphone.h"
 
 #import "GameController/GameController.h"
+#import <AudioToolbox/AudioServices.h>
 
 #define kFilteringFactor 0.1
 #define kRenderingFrequency 60
@@ -59,6 +60,10 @@ Error _shell_open(String p_uri) {
 
 void _set_keep_screen_on(bool p_enabled) {
 	[[UIApplication sharedApplication] setIdleTimerDisabled:(BOOL)p_enabled];
+};
+
+void _vibrate() {
+	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 };
 
 @implementation AppDelegate
@@ -598,8 +603,10 @@ static int frame_count = 0;
 };
 
 - (void)applicationDidReceiveMemoryWarning:(UIApplication *)application {
-	OS::get_singleton()->get_main_loop()->notification(
-			MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
+	if (OS::get_singleton()->get_main_loop()) {
+		OS::get_singleton()->get_main_loop()->notification(
+				MainLoop::NOTIFICATION_OS_MEMORY_WARNING);
+	}
 };
 
 - (BOOL)application:(UIApplication *)application didFinishLaunchingWithOptions:(NSDictionary *)launchOptions {
@@ -613,18 +620,6 @@ static int frame_count = 0;
 
 	// Create a full-screen window
 	window = [[UIWindow alloc] initWithFrame:rect];
-	// window.autoresizesSubviews = YES;
-	//[window setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-	// UIViewAutoresizingFlexibleWidth];
-
-	// Create the OpenGL ES view and add it to the window
-	GLView *glView = [[GLView alloc] initWithFrame:rect];
-	printf("glview is %p\n", glView);
-	//[window addSubview:glView];
-	glView.delegate = self;
-	// glView.autoresizesSubviews = YES;
-	//[glView setAutoresizingMask:UIViewAutoresizingFlexibleWidth |
-	// UIViewAutoresizingFlexibleWidth];
 
 	OS::VideoMode vm = _get_video_mode();
 
@@ -638,6 +633,12 @@ static int frame_count = 0;
 		exit(0);
 		return FALSE;
 	};
+
+	// WARNING: We must *always* create the GLView after we have constructed the
+	// OS with iphone_main. This allows the GLView to access project settings so
+	// it can properly initialize the OpenGL context
+	GLView *glView = [[GLView alloc] initWithFrame:rect];
+	glView.delegate = self;
 
 	view_controller = [[ViewController alloc] init];
 	view_controller.view = glView;

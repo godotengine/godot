@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,10 @@
 #ifndef VISUAL_SERVER_WRAP_MT_H
 #define VISUAL_SERVER_WRAP_MT_H
 
-#include "command_queue_mt.h"
-#include "os/thread.h"
+#include "core/command_queue_mt.h"
+#include "core/os/thread.h"
 #include "servers/visual_server.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class VisualServerWrapMT : public VisualServer {
 
 	// the real visual server
@@ -82,17 +79,20 @@ public:
 
 	/* EVENT QUEUING */
 	FUNCRID(texture)
-	FUNC5(texture_allocate, RID, int, int, Image::Format, uint32_t)
-	FUNC3(texture_set_data, RID, const Ref<Image> &, CubeMapSide)
-	FUNC10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, CubeMapSide)
-	FUNC2RC(Ref<Image>, texture_get_data, RID, CubeMapSide)
+	FUNC7(texture_allocate, RID, int, int, int, Image::Format, TextureType, uint32_t)
+	FUNC3(texture_set_data, RID, const Ref<Image> &, int)
+	FUNC10(texture_set_data_partial, RID, const Ref<Image> &, int, int, int, int, int, int, int, int)
+	FUNC2RC(Ref<Image>, texture_get_data, RID, int)
 	FUNC2(texture_set_flags, RID, uint32_t)
 	FUNC1RC(uint32_t, texture_get_flags, RID)
 	FUNC1RC(Image::Format, texture_get_format, RID)
+	FUNC1RC(TextureType, texture_get_type, RID)
 	FUNC1RC(uint32_t, texture_get_texid, RID)
 	FUNC1RC(uint32_t, texture_get_width, RID)
 	FUNC1RC(uint32_t, texture_get_height, RID)
-	FUNC3(texture_set_size_override, RID, int, int)
+	FUNC1RC(uint32_t, texture_get_depth, RID)
+	FUNC4(texture_set_size_override, RID, int, int, int)
+	FUNC2(texture_bind, RID, uint32_t)
 
 	FUNC3(texture_set_detect_3d_callback, RID, TextureDetectCallback, void *)
 	FUNC3(texture_set_detect_srgb_callback, RID, TextureDetectCallback, void *)
@@ -135,6 +135,7 @@ public:
 
 	FUNC3(material_set_param, RID, const StringName &, const Variant &)
 	FUNC2RC(Variant, material_get_param, RID, const StringName &)
+	FUNC2RC(Variant, material_get_param_default, RID, const StringName &)
 
 	FUNC2(material_set_render_priority, RID, int)
 	FUNC2(material_set_line_width, RID, float)
@@ -229,6 +230,7 @@ public:
 	FUNC3(skeleton_bone_set_transform_2d, RID, int, const Transform2D &)
 	FUNC2RC(Transform2D, skeleton_bone_get_transform_2d, RID, int)
 	FUNC2(skeleton_set_base_transform_2d, RID, const Transform2D &)
+	FUNC3(skeleton_set_world_transform, RID, bool, const Transform &)
 
 	/* Light API */
 
@@ -244,6 +246,7 @@ public:
 	FUNC2(light_set_negative, RID, bool)
 	FUNC2(light_set_cull_mask, RID, uint32_t)
 	FUNC2(light_set_reverse_cull_face_mode, RID, bool)
+	FUNC2(light_set_use_gi, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
 	FUNC2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
@@ -268,6 +271,7 @@ public:
 	FUNC2(reflection_probe_set_enable_box_projection, RID, bool)
 	FUNC2(reflection_probe_set_enable_shadows, RID, bool)
 	FUNC2(reflection_probe_set_cull_mask, RID, uint32_t)
+	FUNC2(reflection_probe_set_resolution, RID, int)
 
 	/* BAKED LIGHT API */
 
@@ -355,6 +359,7 @@ public:
 	FUNCRID(camera)
 	FUNC4(camera_set_perspective, RID, float, float, float)
 	FUNC4(camera_set_orthogonal, RID, float, float, float)
+	FUNC5(camera_set_frustum, RID, float, Vector2, float, float)
 	FUNC2(camera_set_transform, RID, const Transform &)
 	FUNC2(camera_set_cull_mask, RID, uint32_t)
 	FUNC2(camera_set_environment, RID, RID)
@@ -374,6 +379,7 @@ public:
 	FUNC2(viewport_set_clear_mode, RID, ViewportClearMode)
 
 	FUNC3(viewport_attach_to_screen, RID, const Rect2 &, int)
+	FUNC2(viewport_set_render_direct_to_screen, RID, bool)
 	FUNC1(viewport_detach, RID)
 
 	FUNC2(viewport_set_update_mode, RID, ViewportUpdateMode)
@@ -396,7 +402,7 @@ public:
 	FUNC2(viewport_set_transparent_background, RID, bool)
 
 	FUNC2(viewport_set_global_canvas_transform, RID, const Transform2D &)
-	FUNC3(viewport_set_canvas_layer, RID, RID, int)
+	FUNC4(viewport_set_canvas_stacking, RID, RID, int, int)
 	FUNC2(viewport_set_shadow_atlas_size, RID, int)
 	FUNC3(viewport_set_shadow_atlas_quadrant_subdivision, RID, int, int)
 	FUNC2(viewport_set_msaa, RID, ViewportMSAA)
@@ -417,23 +423,25 @@ public:
 	FUNC2(environment_set_background, RID, EnvironmentBG)
 	FUNC2(environment_set_sky, RID, RID)
 	FUNC2(environment_set_sky_custom_fov, RID, float)
+	FUNC2(environment_set_sky_orientation, RID, const Basis &)
 	FUNC2(environment_set_bg_color, RID, const Color &)
 	FUNC2(environment_set_bg_energy, RID, float)
 	FUNC2(environment_set_canvas_max_layer, RID, int)
 	FUNC4(environment_set_ambient_light, RID, const Color &, float, float)
+	FUNC2(environment_set_camera_feed_id, RID, int)
 	FUNC7(environment_set_ssr, RID, bool, int, float, float, float, bool)
 	FUNC13(environment_set_ssao, RID, bool, float, float, float, float, float, float, float, const Color &, EnvironmentSSAOQuality, EnvironmentSSAOBlur, float)
 
 	FUNC6(environment_set_dof_blur_near, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
 	FUNC6(environment_set_dof_blur_far, RID, bool, float, float, float, EnvironmentDOFBlurQuality)
-	FUNC10(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, bool)
+	FUNC11(environment_set_glow, RID, bool, int, float, float, float, EnvironmentGlowBlendMode, float, float, float, bool)
 
 	FUNC9(environment_set_tonemap, RID, EnvironmentToneMapper, float, float, bool, float, float, float, float)
 
 	FUNC6(environment_set_adjustment, RID, bool, float, float, float, RID)
 
 	FUNC5(environment_set_fog, RID, bool, const Color &, const Color &, float)
-	FUNC6(environment_set_fog_depth, RID, bool, float, float, bool, float)
+	FUNC7(environment_set_fog_depth, RID, bool, float, float, float, bool, float)
 	FUNC5(environment_set_fog_height, RID, bool, float, float, float)
 
 	FUNCRID(scenario)
@@ -481,12 +489,16 @@ public:
 	FUNCRID(canvas)
 	FUNC3(canvas_set_item_mirroring, RID, RID, const Point2 &)
 	FUNC2(canvas_set_modulate, RID, const Color &)
+	FUNC3(canvas_set_parent, RID, RID, float)
+	FUNC1(canvas_set_disable_scale, bool)
 
 	FUNCRID(canvas_item)
 	FUNC2(canvas_item_set_parent, RID, RID)
 
 	FUNC2(canvas_item_set_visible, RID, bool)
 	FUNC2(canvas_item_set_light_mask, RID, int)
+
+	FUNC2(canvas_item_set_update_when_visible, RID, bool)
 
 	FUNC2(canvas_item_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_item_set_clip, RID, bool)
@@ -508,9 +520,9 @@ public:
 	FUNC7(canvas_item_add_primitive, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, float, RID)
 	FUNC7(canvas_item_add_polygon, RID, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, RID, RID, bool)
 	FUNC10(canvas_item_add_triangle_array, RID, const Vector<int> &, const Vector<Point2> &, const Vector<Color> &, const Vector<Point2> &, const Vector<int> &, const Vector<float> &, RID, int, RID)
-	FUNC4(canvas_item_add_mesh, RID, const RID &, RID, RID)
+	FUNC6(canvas_item_add_mesh, RID, const RID &, const Transform2D &, const Color &, RID, RID)
 	FUNC4(canvas_item_add_multimesh, RID, RID, RID, RID)
-	FUNC6(canvas_item_add_particles, RID, RID, RID, RID, int, int)
+	FUNC4(canvas_item_add_particles, RID, RID, RID, RID)
 	FUNC2(canvas_item_add_set_transform, RID, const Transform2D &)
 	FUNC2(canvas_item_add_clip_ignore, RID, bool)
 	FUNC2(canvas_item_set_sort_children_by_y, RID, bool)
@@ -589,7 +601,7 @@ public:
 		return visual_server->get_render_info(p_info);
 	}
 
-	FUNC3(set_boot_image, const Ref<Image> &, const Color &, bool)
+	FUNC4(set_boot_image, const Ref<Image> &, const Color &, bool, bool)
 	FUNC1(set_default_clear_color, const Color &)
 
 	FUNC0R(RID, get_test_cube)
@@ -602,6 +614,10 @@ public:
 	FUNC1(call_set_use_vsync, bool)
 
 	static void set_use_vsync_callback(bool p_enable);
+
+	virtual bool is_low_end() const {
+		return visual_server->is_low_end();
+	}
 
 	VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread);
 	~VisualServerWrapMT();

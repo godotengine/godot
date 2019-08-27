@@ -22,7 +22,6 @@ extern "C" {
 void vpx_convolve8_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 void vpx_convolve8_sse2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 void vpx_convolve8_ssse3(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
-void vpx_convolve8_avx2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 RTCD_EXTERN void (*vpx_convolve8)(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 
 void vpx_convolve8_avg_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
@@ -43,13 +42,11 @@ RTCD_EXTERN void (*vpx_convolve8_avg_vert)(const uint8_t *src, ptrdiff_t src_str
 void vpx_convolve8_horiz_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 void vpx_convolve8_horiz_sse2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 void vpx_convolve8_horiz_ssse3(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
-void vpx_convolve8_horiz_avx2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 RTCD_EXTERN void (*vpx_convolve8_horiz)(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 
 void vpx_convolve8_vert_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 void vpx_convolve8_vert_sse2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 void vpx_convolve8_vert_ssse3(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
-void vpx_convolve8_vert_avx2(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 RTCD_EXTERN void (*vpx_convolve8_vert)(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
 
 void vpx_convolve_avg_c(const uint8_t *src, ptrdiff_t src_stride, uint8_t *dst, ptrdiff_t dst_stride, const int16_t *filter_x, int x_step_q4, const int16_t *filter_y, int y_step_q4, int w, int h);
@@ -343,12 +340,10 @@ RTCD_EXTERN void (*vpx_lpf_horizontal_8_dual)(uint8_t *s, int pitch, const uint8
 
 void vpx_lpf_horizontal_edge_16_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
 void vpx_lpf_horizontal_edge_16_sse2(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
-void vpx_lpf_horizontal_edge_16_avx2(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
 RTCD_EXTERN void (*vpx_lpf_horizontal_edge_16)(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
 
 void vpx_lpf_horizontal_edge_8_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
 void vpx_lpf_horizontal_edge_8_sse2(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
-void vpx_lpf_horizontal_edge_8_avx2(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
 RTCD_EXTERN void (*vpx_lpf_horizontal_edge_8)(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
 
 void vpx_lpf_vertical_16_c(uint8_t *s, int pitch, const uint8_t *blimit, const uint8_t *limit, const uint8_t *thresh);
@@ -440,7 +435,6 @@ static void setup_rtcd_internal(void)
     vpx_convolve8 = vpx_convolve8_c;
     if (flags & HAS_SSE2) vpx_convolve8 = vpx_convolve8_sse2;
     if (flags & HAS_SSSE3) vpx_convolve8 = vpx_convolve8_ssse3;
-    if (flags & HAS_AVX2) vpx_convolve8 = vpx_convolve8_avx2;
     vpx_convolve8_avg = vpx_convolve8_avg_c;
     if (flags & HAS_SSE2) vpx_convolve8_avg = vpx_convolve8_avg_sse2;
     if (flags & HAS_SSSE3) vpx_convolve8_avg = vpx_convolve8_avg_ssse3;
@@ -453,11 +447,9 @@ static void setup_rtcd_internal(void)
     vpx_convolve8_horiz = vpx_convolve8_horiz_c;
     if (flags & HAS_SSE2) vpx_convolve8_horiz = vpx_convolve8_horiz_sse2;
     if (flags & HAS_SSSE3) vpx_convolve8_horiz = vpx_convolve8_horiz_ssse3;
-    if (flags & HAS_AVX2) vpx_convolve8_horiz = vpx_convolve8_horiz_avx2;
     vpx_convolve8_vert = vpx_convolve8_vert_c;
     if (flags & HAS_SSE2) vpx_convolve8_vert = vpx_convolve8_vert_sse2;
     if (flags & HAS_SSSE3) vpx_convolve8_vert = vpx_convolve8_vert_ssse3;
-    if (flags & HAS_AVX2) vpx_convolve8_vert = vpx_convolve8_vert_avx2;
     vpx_convolve_avg = vpx_convolve_avg_c;
     if (flags & HAS_SSE2) vpx_convolve_avg = vpx_convolve_avg_sse2;
     vpx_convolve_copy = vpx_convolve_copy_c;
@@ -570,10 +562,8 @@ static void setup_rtcd_internal(void)
     if (flags & HAS_SSE2) vpx_lpf_horizontal_8_dual = vpx_lpf_horizontal_8_dual_sse2;
     vpx_lpf_horizontal_edge_16 = vpx_lpf_horizontal_edge_16_c;
     if (flags & HAS_SSE2) vpx_lpf_horizontal_edge_16 = vpx_lpf_horizontal_edge_16_sse2;
-    if (flags & HAS_AVX2) vpx_lpf_horizontal_edge_16 = vpx_lpf_horizontal_edge_16_avx2;
     vpx_lpf_horizontal_edge_8 = vpx_lpf_horizontal_edge_8_c;
     if (flags & HAS_SSE2) vpx_lpf_horizontal_edge_8 = vpx_lpf_horizontal_edge_8_sse2;
-    if (flags & HAS_AVX2) vpx_lpf_horizontal_edge_8 = vpx_lpf_horizontal_edge_8_avx2;
     vpx_lpf_vertical_16 = vpx_lpf_vertical_16_c;
     if (flags & HAS_SSE2) vpx_lpf_vertical_16 = vpx_lpf_vertical_16_sse2;
     vpx_lpf_vertical_16_dual = vpx_lpf_vertical_16_dual_c;

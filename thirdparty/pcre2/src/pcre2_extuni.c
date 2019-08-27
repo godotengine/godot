@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -100,7 +100,7 @@ while (eptr < end_subject)
   int len = 1;
   if (!utf) c = *eptr; else { GETCHARLEN(c, eptr, len); }
   rgb = UCD_GRAPHBREAK(c);
-  if ((PRIV(ucp_gbtable)[lgb] & (1 << rgb)) == 0) break;
+  if ((PRIV(ucp_gbtable)[lgb] & (1u << rgb)) == 0) break;
 
   /* Not breaking between Regional Indicators is allowed only if there
   are an even number of preceding RIs. */
@@ -129,11 +129,11 @@ while (eptr < end_subject)
     if ((ricount & 1) != 0) break;  /* Grapheme break required */
     }
 
-  /* If Extend follows E_Base[_GAZ] do not update lgb; this allows
-  any number of Extend before a following E_Modifier. */
+  /* If Extend or ZWJ follows Extended_Pictographic, do not update lgb; this
+  allows any number of them before a following Extended_Pictographic. */
 
-  if (rgb != ucp_gbExtend ||
-      (lgb != ucp_gbE_Base && lgb != ucp_gbE_Base_GAZ))
+  if ((rgb != ucp_gbExtend && rgb != ucp_gbZWJ) ||
+       lgb != ucp_gbExtended_Pictographic)
     lgb = rgb;
 
   eptr += len;

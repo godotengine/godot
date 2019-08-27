@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,10 +32,11 @@
 #define OS_JAVASCRIPT_H
 
 #include "audio_driver_javascript.h"
+#include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
-#include "unix/os_unix.h"
 
 #include <emscripten/html5.h>
 
@@ -44,22 +45,30 @@ class OS_JavaScript : public OS_Unix {
 	VideoMode video_mode;
 	Vector2 windowed_size;
 	bool window_maximized;
-	bool soft_fullscreen_enabled;
-	bool canvas_size_adjustment_requested;
+	bool entering_fullscreen;
+	bool just_exited_fullscreen;
 
 	InputDefault *input;
 	Ref<InputEventKey> deferred_key_event;
 	CursorShape cursor_shape;
+	String cursors[CURSOR_MAX];
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 	Point2 touches[32];
 
+	Point2i last_click_pos;
+	uint64_t last_click_ms;
+	int last_click_button_index;
+
 	MainLoop *main_loop;
+	int video_driver_index;
 	AudioDriverJavaScript audio_driver_javascript;
 
 	bool idb_available;
 	int64_t sync_wait_time;
 	int64_t last_sync_check_time;
 
-	static EM_BOOL browser_resize_callback(int p_event_type, const EmscriptenUiEvent *p_event, void *p_user_data);
+	CameraServer *camera_server;
+
 	static EM_BOOL fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data);
 
 	static EM_BOOL keydown_callback(int p_event_type, const EmscriptenKeyboardEvent *p_event, void *p_user_data);
@@ -80,8 +89,6 @@ class OS_JavaScript : public OS_Unix {
 	static void main_loop_callback();
 
 	static void file_access_close_callback(const String &p_file, int p_flags);
-
-	int video_driver_index;
 
 protected:
 	virtual int get_current_video_driver() const;
@@ -130,15 +137,23 @@ public:
 	virtual int get_audio_driver_count() const;
 	virtual const char *get_audio_driver_name(int p_driver) const;
 
+	virtual void set_clipboard(const String &p_text);
+	virtual String get_clipboard() const;
+
 	virtual MainLoop *get_main_loop() const;
 	void run_async();
 	bool main_loop_iterate();
 
+	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
+	virtual Error kill(const ProcessID &p_pid);
+	virtual int get_process_id() const;
+
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 	virtual void set_window_title(const String &p_title);
+	virtual void set_icon(const Ref<Image> &p_icon);
 	String get_executable_path() const;
 	virtual Error shell_open(String p_uri);
-	virtual String get_name();
+	virtual String get_name() const;
 	virtual bool can_draw() const;
 
 	virtual String get_resource_dir() const;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,27 +32,26 @@
 #define OS_X11_H
 
 #include "context_gl_x11.h"
+#include "core/os/input.h"
 #include "crash_handler_x11.h"
-#include "drivers/unix/os_unix.h"
-#include "os/input.h"
-#include "servers/visual_server.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
 #include "drivers/alsa/audio_driver_alsa.h"
-#include "drivers/alsamidi/alsa_midi.h"
+#include "drivers/alsamidi/midi_driver_alsamidi.h"
 #include "drivers/pulseaudio/audio_driver_pulseaudio.h"
+#include "drivers/unix/os_unix.h"
 #include "joypad_linux.h"
 #include "main/input_default.h"
 #include "power_x11.h"
 #include "servers/audio_server.h"
+#include "servers/camera_server.h"
 #include "servers/visual/rasterizer.h"
+#include "servers/visual_server.h"
+//#include "servers/visual/visual_server_wrap_mt.h"
 
 #include <X11/Xcursor/Xcursor.h>
 #include <X11/Xlib.h>
+#include <X11/extensions/XInput2.h>
 #include <X11/extensions/Xrandr.h>
 #include <X11/keysym.h>
-#ifdef TOUCH_ENABLED
-#include <X11/extensions/XInput2.h>
-#endif
 
 // Hints for X11 fullscreen
 typedef struct {
@@ -78,9 +77,6 @@ typedef struct _xrr_monitor_info {
 } xrr_monitor_info;
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_X11 : public OS_Unix {
 
@@ -121,23 +117,37 @@ class OS_X11 : public OS_Unix {
 	bool im_active;
 	Vector2 im_position;
 
-	Point2i last_mouse_pos;
+	Size2 min_size;
+	Size2 max_size;
+
+	Point2 last_mouse_pos;
 	bool last_mouse_pos_valid;
 	Point2i last_click_pos;
 	uint64_t last_click_ms;
+	int last_click_button_index;
 	uint32_t last_button_state;
-#ifdef TOUCH_ENABLED
+
 	struct {
 		int opcode;
-		Vector<int> devices;
-		XIEventMask event_mask;
+		Vector<int> touch_devices;
+		Map<int, Vector2> absolute_devices;
+		XIEventMask all_event_mask;
+		XIEventMask all_master_event_mask;
 		Map<int, Vector2> state;
 		Vector2 mouse_pos_to_filter;
-	} touch;
-#endif
+		Vector2 relative_motion;
+		Vector2 raw_pos;
+		Vector2 old_raw_pos;
+		::Time last_relative_time;
+	} xi;
 
-	unsigned int get_mouse_button_state(unsigned int p_x11_state);
+	bool refresh_device_info();
+
+	unsigned int get_mouse_button_state(unsigned int p_x11_button, int p_x11_type);
 	void get_key_modifier_state(unsigned int p_x11_state, Ref<InputEventWithModifiers> state);
+	void flush_mouse_motion();
+
+	CameraServer *camera_server;
 
 	MouseMode mouse_mode;
 	Point2i center;
@@ -145,7 +155,6 @@ class OS_X11 : public OS_Unix {
 	void handle_key_event(XKeyEvent *p_event, bool p_echo = false);
 	void process_xevents();
 	virtual void delete_main_loop();
-	IP_Unix *ip_unix;
 
 	bool force_quit;
 	bool minimized;
@@ -158,6 +167,7 @@ class OS_X11 : public OS_Unix {
 	Cursor cursors[CURSOR_MAX];
 	Cursor null_cursor;
 	CursorShape current_cursor;
+	Map<CursorShape, Vector<Variant> > cursors_cache;
 
 	InputDefault *input;
 
@@ -177,8 +187,6 @@ class OS_X11 : public OS_Unix {
 	AudioDriverPulseAudio driver_pulseaudio;
 #endif
 
-	Atom net_wm_icon;
-
 	PowerX11 *power_manager;
 
 	bool layered_window;
@@ -186,8 +194,6 @@ class OS_X11 : public OS_Unix {
 	CrashHandler crash_handler;
 
 	int video_driver_index;
-	int audio_driver_index;
-	unsigned int capture_idle;
 	bool maximized;
 	//void set_wm_border(bool p_enabled);
 	void set_wm_fullscreen(bool p_enabled);
@@ -214,9 +220,10 @@ protected:
 	bool is_window_maximize_allowed();
 
 public:
-	virtual String get_name();
+	virtual String get_name() const;
 
 	virtual void set_cursor_shape(CursorShape p_shape);
+	virtual CursorShape get_cursor_shape() const;
 	virtual void set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot);
 
 	void set_mouse_mode(MouseMode p_mode);
@@ -262,6 +269,10 @@ public:
 	virtual void set_window_position(const Point2 &p_position);
 	virtual Size2 get_window_size() const;
 	virtual Size2 get_real_window_size() const;
+	virtual Size2 get_max_window_size() const;
+	virtual Size2 get_min_window_size() const;
+	virtual void set_min_window_size(const Size2 p_size);
+	virtual void set_max_window_size(const Size2 p_size);
 	virtual void set_window_size(const Size2 p_size);
 	virtual void set_window_fullscreen(bool p_enabled);
 	virtual bool is_window_fullscreen() const;
@@ -313,6 +324,7 @@ public:
 
 	virtual LatinKeyboardVariant get_latin_keyboard_variant() const;
 
+	void update_real_mouse_position();
 	OS_X11();
 };
 

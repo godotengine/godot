@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,7 +69,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 	HBoxContainer *search_bar;
 	Button *search_button;
 	LineEdit *search_box;
-	ToolButton *clear_button;
 
 	HBoxContainer *add_prop_bar;
 	AcceptDialog *message;
@@ -158,7 +157,6 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _translation_filter_mode_changed(int p_mode);
 
 	void _toggle_search_bar(bool p_pressed);
-	void _clear_search_box();
 
 	void _copy_to_platform_about_to_show();
 
@@ -188,6 +186,7 @@ public:
 	static ProjectSettingsEditor *get_singleton() { return singleton; }
 	void popup_project_settings();
 	void set_plugins_page();
+	void update_plugins();
 
 	EditorAutoloadSettings *get_autoload_settings() { return autoload_settings; }
 

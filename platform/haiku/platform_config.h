@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,4 +33,5 @@
 // for ifaddrs.h needed in drivers/unix/ip_unix.cpp
 #define _BSD_SOURCE 1
 
-#define GLES3_INCLUDE_H "glad/glad.h"
+#define GLES3_INCLUDE_H "thirdparty/glad/glad/glad.h"
+#define GLES2_INCLUDE_H "thirdparty/glad/glad/glad.h"

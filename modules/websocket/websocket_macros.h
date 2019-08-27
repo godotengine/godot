@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,8 +27,19 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef WEBSOCKETMACTOS_H
 #define WEBSOCKETMACTOS_H
+
+#define WSC_IN_BUF "network/limits/websocket_client/max_in_buffer_kb"
+#define WSC_IN_PKT "network/limits/websocket_client/max_in_packets"
+#define WSC_OUT_BUF "network/limits/websocket_client/max_out_buffer_kb"
+#define WSC_OUT_PKT "network/limits/websocket_client/max_out_packets"
+
+#define WSS_IN_BUF "network/limits/websocket_server/max_in_buffer_kb"
+#define WSS_IN_PKT "network/limits/websocket_server/max_in_packets"
+#define WSS_OUT_BUF "network/limits/websocket_server/max_out_buffer_kb"
+#define WSS_OUT_PKT "network/limits/websocket_server/max_out_packets"
 
 /* clang-format off */
 #define GDCICLASS(CNAME) \

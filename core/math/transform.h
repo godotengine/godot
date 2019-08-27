@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,12 +31,10 @@
 #ifndef TRANSFORM_H
 #define TRANSFORM_H
 
-#include "aabb.h"
-#include "matrix3.h"
-#include "plane.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include "core/math/aabb.h"
+#include "core/math/basis.h"
+#include "core/math/plane.h"
+
 class Transform {
 public:
 	Basis basis;
@@ -106,6 +104,7 @@ public:
 
 	operator String() const;
 
+	Transform(real_t xx, real_t xy, real_t xz, real_t yx, real_t yy, real_t yz, real_t zx, real_t zy, real_t zz, real_t ox, real_t oy, real_t oz);
 	Transform(const Basis &p_basis, const Vector3 &p_origin = Vector3());
 	Transform() {}
 };

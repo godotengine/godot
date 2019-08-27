@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,10 @@
 #ifndef DICTIONARY_H
 #define DICTIONARY_H
 
-#include "array.h"
-#include "list.h"
-#include "ustring.h"
+#include "core/array.h"
+#include "core/list.h"
+#include "core/ustring.h"
+
 class Variant;
 
 struct DictionaryPrivate;
@@ -57,6 +58,7 @@ public:
 	Variant *getptr(const Variant &p_key);
 
 	Variant get_valid(const Variant &p_key) const;
+	Variant get(const Variant &p_key, const Variant &p_default) const;
 
 	int size() const;
 	bool empty() const;
@@ -65,10 +67,10 @@ public:
 	bool has(const Variant &p_key) const;
 	bool has_all(const Array &p_keys) const;
 
-	void erase(const Variant &p_key);
-	bool erase_checked(const Variant &p_key);
+	bool erase(const Variant &p_key);
 
 	bool operator==(const Dictionary &p_dictionary) const;
+	bool operator!=(const Dictionary &p_dictionary) const;
 
 	uint32_t hash() const;
 	void operator=(const Dictionary &p_dictionary);
@@ -79,6 +81,8 @@ public:
 	Array values() const;
 
 	Dictionary duplicate(bool p_deep = false) const;
+
+	const void *id() const;
 
 	Dictionary(const Dictionary &p_from);
 	Dictionary();

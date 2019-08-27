@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.1">
+<class name="StreamPeerTCP" inherits="StreamPeer" category="Core" version="3.2">
 	<brief_description>
-		TCP Stream peer.
+		TCP stream peer.
 	</brief_description>
 	<description>
-		TCP Stream peer. This object can be used to connect to TCP servers, or also is returned by a tcp server.
+		TCP stream peer. This object can be used to connect to TCP servers, or also is returned by a TCP server.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="connect_to_host">
 			<return type="int" enum="Error">
@@ -19,41 +17,42 @@
 			<argument index="1" name="port" type="int">
 			</argument>
 			<description>
-				Connect to the specified host:port pair. A hostname will be resolved if valid. Returns [OK] on success or [FAILED] on failure.
+				Connects to the specified [code]host:port[/code] pair. A hostname will be resolved if valid. Returns [constant OK] on success or [constant FAILED] on failure.
 			</description>
 		</method>
 		<method name="disconnect_from_host">
 			<return type="void">
 			</return>
 			<description>
-				Disconnect from host.
+				Disconnects from host.
 			</description>
 		</method>
 		<method name="get_connected_host" qualifiers="const">
 			<return type="String">
 			</return>
 			<description>
-				Return the IP of this peer.
+				Returns the IP of this peer.
 			</description>
 		</method>
 		<method name="get_connected_port" qualifiers="const">
 			<return type="int">
 			</return>
 			<description>
-				Return the port of this peer.
+				Returns the port of this peer.
 			</description>
 		</method>
-		<method name="get_status" qualifiers="const">
+		<method name="get_status">
 			<return type="int" enum="StreamPeerTCP.Status">
 			</return>
 			<description>
-				Return the status of the connection, one of STATUS_* enum.
+				Returns the status of the connection, see [enum Status].
 			</description>
 		</method>
 		<method name="is_connected_to_host" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns [code]true[/code] if this peer is currently connected to a host, [code]false[/code] otherwise.
 			</description>
 		</method>
 		<method name="set_no_delay">
@@ -62,23 +61,23 @@
 			<argument index="0" name="enabled" type="bool">
 			</argument>
 			<description>
-				Disable Nagle algorithm to improve latency for small packets.
-				Note that for applications that send large packets, or need to transfer a lot of data, this can reduce total bandwidth.
+				Disables Nagle's algorithm to improve latency for small packets.
+				[b]Note:[/b] For applications that send large packets or need to transfer a lot of data, this can decrease the total available bandwidth.
 			</description>
 		</method>
 	</methods>
 	<constants>
 		<constant name="STATUS_NONE" value="0" enum="Status">
-			The initial status of the [code]StreamPeerTCP[/code], also the status after a disconnect.
+			The initial status of the [StreamPeerTCP]. This is also the status after disconnecting.
 		</constant>
 		<constant name="STATUS_CONNECTING" value="1" enum="Status">
-			A status representing a [code]StreamPeerTCP[/code] that is connecting to a host.
+			A status representing a [StreamPeerTCP] that is connecting to a host.
 		</constant>
 		<constant name="STATUS_CONNECTED" value="2" enum="Status">
-			A status representing a [code]StreamPeerTCP[/code] that is connected to a host.
+			A status representing a [StreamPeerTCP] that is connected to a host.
 		</constant>
 		<constant name="STATUS_ERROR" value="3" enum="Status">
-			A staus representing a [code]StreamPeerTCP[/code] in error state.
+			A status representing a [StreamPeerTCP] in error state.
 		</constant>
 	</constants>
 </class>

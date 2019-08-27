@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "ray_cast_2d.h"
 
 #include "collision_object_2d.h"
-#include "engine.h"
+#include "core/engine.h"
 #include "physics_body_2d.h"
 #include "servers/physics_2d_server.h"
 
@@ -100,6 +100,7 @@ Vector2 RayCast2D::get_collision_normal() const {
 void RayCast2D::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
+	update();
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
 		set_physics_process_internal(p_enabled);
 	if (!p_enabled)
@@ -167,19 +168,25 @@ void RayCast2D::_notification(int p_what) {
 			xf.rotate(cast_to.angle());
 			xf.translate(Vector2(cast_to.length(), 0));
 
-			//Vector2 tip = Vector2(0,s->get_length());
-			Color dcol = get_tree()->get_debug_collisions_color(); //0.9,0.2,0.2,0.4);
-			draw_line(Vector2(), cast_to, dcol, 3);
+			// Draw an arrow indicating where the RayCast is pointing to
+			Color draw_col = get_tree()->get_debug_collisions_color();
+			if (!enabled) {
+				float g = draw_col.get_v();
+				draw_col.r = g;
+				draw_col.g = g;
+				draw_col.b = g;
+			}
+			draw_line(Vector2(), cast_to, draw_col, 2, true);
 			Vector<Vector2> pts;
-			float tsize = 4;
+			float tsize = 8;
 			pts.push_back(xf.xform(Vector2(tsize, 0)));
 			pts.push_back(xf.xform(Vector2(0, 0.707 * tsize)));
 			pts.push_back(xf.xform(Vector2(0, -0.707 * tsize)));
 			Vector<Color> cols;
 			for (int i = 0; i < 3; i++)
-				cols.push_back(dcol);
+				cols.push_back(draw_col);
 
-			draw_primitive(pts, cols, Vector<Vector2>()); //small arrow
+			draw_primitive(pts, cols, Vector<Vector2>());
 
 		} break;
 
@@ -209,7 +216,7 @@ void RayCast2D::_update_raycast_state() {
 
 	Physics2DDirectSpaceState::RayResult rr;
 
-	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask)) {
+	if (dss->intersect_ray(gt.get_origin(), gt.xform(to), rr, exclude, collision_mask, collide_with_bodies, collide_with_areas)) {
 
 		collided = true;
 		against = rr.collider_id;
@@ -218,6 +225,8 @@ void RayCast2D::_update_raycast_state() {
 		against_shape = rr.shape;
 	} else {
 		collided = false;
+		against = 0;
+		against_shape = 0;
 	}
 }
 
@@ -258,6 +267,26 @@ void RayCast2D::clear_exceptions() {
 	exclude.clear();
 }
 
+void RayCast2D::set_collide_with_areas(bool p_clip) {
+
+	collide_with_areas = p_clip;
+}
+
+bool RayCast2D::is_collide_with_areas_enabled() const {
+
+	return collide_with_areas;
+}
+
+void RayCast2D::set_collide_with_bodies(bool p_clip) {
+
+	collide_with_bodies = p_clip;
+}
+
+bool RayCast2D::is_collide_with_bodies_enabled() const {
+
+	return collide_with_bodies;
+}
+
 void RayCast2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_enabled", "enabled"), &RayCast2D::set_enabled);
@@ -291,10 +320,20 @@ void RayCast2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_exclude_parent_body", "mask"), &RayCast2D::set_exclude_parent_body);
 	ClassDB::bind_method(D_METHOD("get_exclude_parent_body"), &RayCast2D::get_exclude_parent_body);
 
+	ClassDB::bind_method(D_METHOD("set_collide_with_areas", "enable"), &RayCast2D::set_collide_with_areas);
+	ClassDB::bind_method(D_METHOD("is_collide_with_areas_enabled"), &RayCast2D::is_collide_with_areas_enabled);
+
+	ClassDB::bind_method(D_METHOD("set_collide_with_bodies", "enable"), &RayCast2D::set_collide_with_bodies);
+	ClassDB::bind_method(D_METHOD("is_collide_with_bodies_enabled"), &RayCast2D::is_collide_with_bodies_enabled);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "enabled"), "set_enabled", "is_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "exclude_parent"), "set_exclude_parent_body", "get_exclude_parent_body");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "cast_to"), "set_cast_to", "get_cast_to");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "collision_mask", PROPERTY_HINT_LAYERS_2D_PHYSICS), "set_collision_mask", "get_collision_mask");
+
+	ADD_GROUP("Collide With", "collide_with");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_areas", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_areas", "is_collide_with_areas_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "collide_with_bodies", PROPERTY_HINT_LAYERS_3D_PHYSICS), "set_collide_with_bodies", "is_collide_with_bodies_enabled");
 }
 
 RayCast2D::RayCast2D() {
@@ -306,4 +345,6 @@ RayCast2D::RayCast2D() {
 	collision_mask = 1;
 	cast_to = Vector2(0, 50);
 	exclude_parent_body = true;
+	collide_with_bodies = true;
+	collide_with_areas = false;
 }

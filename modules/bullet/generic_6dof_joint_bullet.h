@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 class RigidBodyBullet;
 
 class Generic6DOFJointBullet : public JointBullet {
-	class btGeneric6DofConstraint *sixDOFConstraint;
+	class btGeneric6DofSpring2Constraint *sixDOFConstraint;
 
 	// First is linear second is angular
 	Vector3 limits_lower[2];
@@ -48,7 +48,7 @@ class Generic6DOFJointBullet : public JointBullet {
 	bool flags[3][PhysicsServer::G6DOF_JOINT_FLAG_MAX];
 
 public:
-	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB, bool useLinearReferenceFrameA);
+	Generic6DOFJointBullet(RigidBodyBullet *rbA, RigidBodyBullet *rbB, const Transform &frameInA, const Transform &frameInB);
 
 	virtual PhysicsServer::JointType get_type() const { return PhysicsServer::JOINT_6DOF; }
 
@@ -68,6 +68,9 @@ public:
 
 	void set_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag, bool p_value);
 	bool get_flag(Vector3::Axis p_axis, PhysicsServer::G6DOFJointAxisFlag p_flag) const;
+
+	void set_precision(int p_precision);
+	int get_precision() const;
 };
 
 #endif

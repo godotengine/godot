@@ -18,54 +18,48 @@ subject to the following restrictions:
 
 #include "LinearMath/btQuaternion.h"
 
-btVector3	btSphereShape::localGetSupportingVertexWithoutMargin(const btVector3& vec)const
+btVector3 btSphereShape::localGetSupportingVertexWithoutMargin(const btVector3& vec) const
 {
 	(void)vec;
-	return btVector3(btScalar(0.),btScalar(0.),btScalar(0.));
+	return btVector3(btScalar(0.), btScalar(0.), btScalar(0.));
 }
 
-void	btSphereShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const
+void btSphereShape::batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const
 {
 	(void)vectors;
 
-	for (int i=0;i<numVectors;i++)
+	for (int i = 0; i < numVectors; i++)
 	{
-		supportVerticesOut[i].setValue(btScalar(0.),btScalar(0.),btScalar(0.));
+		supportVerticesOut[i].setValue(btScalar(0.), btScalar(0.), btScalar(0.));
 	}
 }
 
-
-btVector3	btSphereShape::localGetSupportingVertex(const btVector3& vec)const
+btVector3 btSphereShape::localGetSupportingVertex(const btVector3& vec) const
 {
 	btVector3 supVertex;
 	supVertex = localGetSupportingVertexWithoutMargin(vec);
 
 	btVector3 vecnorm = vec;
-	if (vecnorm .length2() < (SIMD_EPSILON*SIMD_EPSILON))
+	if (vecnorm.length2() < (SIMD_EPSILON * SIMD_EPSILON))
 	{
-		vecnorm.setValue(btScalar(-1.),btScalar(-1.),btScalar(-1.));
-	} 
+		vecnorm.setValue(btScalar(-1.), btScalar(-1.), btScalar(-1.));
+	}
 	vecnorm.normalize();
-	supVertex+= getMargin() * vecnorm;
+	supVertex += getMargin() * vecnorm;
 	return supVertex;
 }
 
-
 //broken due to scaling
-void btSphereShape::getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
+void btSphereShape::getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
 {
 	const btVector3& center = t.getOrigin();
-	btVector3 extent(getMargin(),getMargin(),getMargin());
+	btVector3 extent(getMargin(), getMargin(), getMargin());
 	aabbMin = center - extent;
 	aabbMax = center + extent;
 }
 
-
-
-void	btSphereShape::calculateLocalInertia(btScalar mass,btVector3& inertia) const
+void btSphereShape::calculateLocalInertia(btScalar mass, btVector3& inertia) const
 {
-	btScalar elem = btScalar(0.4) * mass * getMargin()*getMargin();
-	inertia.setValue(elem,elem,elem);
-
+	btScalar elem = btScalar(0.4) * mass * getMargin() * getMargin();
+	inertia.setValue(elem, elem, elem);
 }
-

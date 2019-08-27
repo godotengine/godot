@@ -24,6 +24,12 @@
 #ifndef MBEDTLS_HAVEGE_H
 #define MBEDTLS_HAVEGE_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include <stddef.h>
 
 #define MBEDTLS_HAVEGE_COLLECT_SIZE 1024
@@ -35,7 +41,7 @@ extern "C" {
 /**
  * \brief          HAVEGE state structure
  */
-typedef struct
+typedef struct mbedtls_havege_state
 {
     int PT1, PT2, offset[2];
     int pool[MBEDTLS_HAVEGE_COLLECT_SIZE];

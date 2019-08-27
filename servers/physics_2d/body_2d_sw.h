@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 
 #include "area_2d_sw.h"
 #include "collision_object_2d_sw.h"
-#include "vset.h"
+#include "core/vset.h"
 
 class Constraint2DSW;
 
@@ -52,10 +52,9 @@ class Body2DSW : public CollisionObject2DSW {
 	real_t gravity_scale;
 
 	real_t mass;
+	real_t inertia;
 	real_t bounce;
 	real_t friction;
-	Physics2DServer::CombineMode bounce_combine_mode;
-	Physics2DServer::CombineMode friction_combine_mode;
 
 	real_t _inv_mass;
 	real_t _inv_inertia;
@@ -273,12 +272,6 @@ public:
 	_FORCE_INLINE_ real_t get_bounce() const { return bounce; }
 	_FORCE_INLINE_ real_t get_linear_damp() const { return linear_damp; }
 	_FORCE_INLINE_ real_t get_angular_damp() const { return angular_damp; }
-
-	void set_combine_mode(Physics2DServer::BodyParameter p_param, Physics2DServer::CombineMode p_mode);
-	Physics2DServer::CombineMode get_combine_mode(Physics2DServer::BodyParameter p_param) const;
-
-	_FORCE_INLINE_ Physics2DServer::CombineMode get_bounce_combine_mode() const { return bounce_combine_mode; }
-	_FORCE_INLINE_ Physics2DServer::CombineMode get_friction_combine_mode() const { return friction_combine_mode; }
 
 	void integrate_forces(real_t p_step);
 	void integrate_velocities(real_t p_step);

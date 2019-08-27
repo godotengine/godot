@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "face3.h"
-#include "geometry.h"
+
+#include "core/math/geometry.h"
 
 int Face3::split_by_plane(const Plane &p_plane, Face3 p_res[3], bool p_is_point_over[3]) const {
 
@@ -201,11 +202,12 @@ bool Face3::intersects_aabb(const AABB &p_aabb) const {
 	{                                                              \
 		real_t aabb_min = p_aabb.position.m_ax;                    \
 		real_t aabb_max = p_aabb.position.m_ax + p_aabb.size.m_ax; \
-		real_t tri_min, tri_max;                                   \
-		for (int i = 0; i < 3; i++) {                              \
-			if (i == 0 || vertex[i].m_ax > tri_max)                \
+		real_t tri_min = vertex[0].m_ax;                           \
+		real_t tri_max = vertex[0].m_ax;                           \
+		for (int i = 1; i < 3; i++) {                              \
+			if (vertex[i].m_ax > tri_max)                          \
 				tri_max = vertex[i].m_ax;                          \
-			if (i == 0 || vertex[i].m_ax < tri_min)                \
+			if (vertex[i].m_ax < tri_min)                          \
 				tri_min = vertex[i].m_ax;                          \
 		}                                                          \
                                                                    \

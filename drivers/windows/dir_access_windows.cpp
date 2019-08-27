@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,9 @@
 
 #include "dir_access_windows.h"
 
-#include "os/memory.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
 
-#include "print_string.h"
 #include <stdio.h>
 #include <wchar.h>
 #include <windows.h>
@@ -346,6 +346,34 @@ size_t DirAccessWindows::get_space_left() {
 	return (size_t)bytes;
 }
 
+String DirAccessWindows::get_filesystem_type() const {
+	String path = fix_path(const_cast<DirAccessWindows *>(this)->get_current_dir());
+
+	int unit_end = path.find(":");
+	ERR_FAIL_COND_V(unit_end == -1, String());
+	String unit = path.substr(0, unit_end + 1) + "\\";
+
+	WCHAR szVolumeName[100];
+	WCHAR szFileSystemName[10];
+	DWORD dwSerialNumber = 0;
+	DWORD dwMaxFileNameLength = 0;
+	DWORD dwFileSystemFlags = 0;
+
+	if (::GetVolumeInformationW(unit.c_str(),
+				szVolumeName,
+				sizeof(szVolumeName),
+				&dwSerialNumber,
+				&dwMaxFileNameLength,
+				&dwFileSystemFlags,
+				szFileSystemName,
+				sizeof(szFileSystemName)) == TRUE) {
+
+		return String(szFileSystemName);
+	}
+
+	ERR_FAIL_V("");
+}
+
 DirAccessWindows::DirAccessWindows() {
 
 	p = memnew(DirAccessWindowsPrivate);
@@ -366,7 +394,7 @@ DirAccessWindows::DirAccessWindows() {
 
 		if (mask & (1 << i)) { //DRIVE EXISTS
 
-			drives[drive_count] = 'a' + i;
+			drives[drive_count] = 'A' + i;
 			drive_count++;
 		}
 	}

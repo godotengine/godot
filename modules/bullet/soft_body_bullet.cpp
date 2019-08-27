@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,17 +37,17 @@
 
 SoftBodyBullet::SoftBodyBullet() :
 		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
-		total_mass(1),
+		bt_soft_body(NULL),
+		isScratched(false),
 		simulation_precision(5),
+		total_mass(1.),
 		linear_stiffness(0.5),
 		areaAngular_stiffness(0.5),
 		volume_stiffness(0.5),
 		pressure_coefficient(0.),
 		pose_matching_coefficient(0.),
 		damping_coefficient(0.01),
-		drag_coefficient(0.),
-		bt_soft_body(NULL),
-		isScratched(false) {}
+		drag_coefficient(0.) {}
 
 SoftBodyBullet::~SoftBodyBullet() {
 }
@@ -71,12 +71,6 @@ void SoftBodyBullet::set_space(SpaceBullet *p_space) {
 		space->add_soft_body(this);
 	}
 }
-
-void SoftBodyBullet::dispatch_callbacks() {}
-
-void SoftBodyBullet::on_collision_filters_change() {}
-
-void SoftBodyBullet::on_collision_checker_start() {}
 
 void SoftBodyBullet::on_enter_area(AreaBullet *p_area) {}
 

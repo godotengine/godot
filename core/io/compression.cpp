@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "compression.h"
-#include "os/copymem.h"
-#include "project_settings.h"
-#include "zip_io.h"
+
+#include "core/io/zip_io.h"
+#include "core/os/copymem.h"
+#include "core/project_settings.h"
 
 #include "thirdparty/misc/fastlz.h"
 
@@ -80,10 +81,10 @@ int Compression::compress(uint8_t *p_dst, const uint8_t *p_src, int p_src_size, 
 		} break;
 		case MODE_ZSTD: {
 			ZSTD_CCtx *cctx = ZSTD_createCCtx();
-			ZSTD_CCtx_setParameter(cctx, ZSTD_p_compressionLevel, zstd_level);
+			ZSTD_CCtx_setParameter(cctx, ZSTD_c_compressionLevel, zstd_level);
 			if (zstd_long_distance_matching) {
-				ZSTD_CCtx_setParameter(cctx, ZSTD_p_enableLongDistanceMatching, 1);
-				ZSTD_CCtx_setParameter(cctx, ZSTD_p_windowLog, zstd_window_log_size);
+				ZSTD_CCtx_setParameter(cctx, ZSTD_c_enableLongDistanceMatching, 1);
+				ZSTD_CCtx_setParameter(cctx, ZSTD_c_windowLog, zstd_window_log_size);
 			}
 			int max_dst_size = get_max_compressed_buffer_size(p_src_size, MODE_ZSTD);
 			int ret = ZSTD_compressCCtx(cctx, p_dst, max_dst_size, p_src, p_src_size, zstd_level);
@@ -174,7 +175,9 @@ int Compression::decompress(uint8_t *p_dst, int p_dst_max_size, const uint8_t *p
 		} break;
 		case MODE_ZSTD: {
 			ZSTD_DCtx *dctx = ZSTD_createDCtx();
-			if (zstd_long_distance_matching) ZSTD_DCtx_setMaxWindowSize(dctx, 1 << zstd_window_log_size);
+			if (zstd_long_distance_matching) {
+				ZSTD_DCtx_setParameter(dctx, ZSTD_d_windowLogMax, zstd_window_log_size);
+			}
 			int ret = ZSTD_decompressDCtx(dctx, p_dst, p_dst_max_size, p_src, p_src_size);
 			ZSTD_freeDCtx(dctx);
 			return ret;
@@ -188,4 +191,4 @@ int Compression::zlib_level = Z_DEFAULT_COMPRESSION;
 int Compression::gzip_level = Z_DEFAULT_COMPRESSION;
 int Compression::zstd_level = 3;
 bool Compression::zstd_long_distance_matching = false;
-int Compression::zstd_window_log_size = 27;
+int Compression::zstd_window_log_size = 27; // ZSTD_WINDOWLOG_LIMIT_DEFAULT

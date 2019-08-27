@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "visual_server_wrap_mt.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 void VisualServerWrapMT::thread_exit() {
 
@@ -107,16 +107,16 @@ void VisualServerWrapMT::init() {
 
 	if (create_thread) {
 
-		print_line("CREATING RENDER THREAD");
+		print_verbose("VisualServerWrapMT: Creating render thread");
 		OS::get_singleton()->release_rendering_thread();
 		if (create_thread) {
 			thread = Thread::create(_thread_callback, this);
-			print_line("STARTING RENDER THREAD");
+			print_verbose("VisualServerWrapMT: Starting render thread");
 		}
 		while (!draw_thread_up) {
 			OS::get_singleton()->delay_usec(1000);
 		}
-		print_line("DONE RENDER THREAD");
+		print_verbose("VisualServerWrapMT: Finished render thread");
 	} else {
 
 		visual_server->init();

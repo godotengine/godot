@@ -397,10 +397,10 @@ static int oc_dec_init(oc_dec_ctx *_dec,const th_info *_info,
     int qsum;
     qsum=0;
     for(qti=0;qti<2;qti++)for(pli=0;pli<3;pli++){
-      qsum+=_dec->state.dequant_tables[qti][pli][qi][12]+
-       _dec->state.dequant_tables[qti][pli][qi][17]+
-       _dec->state.dequant_tables[qti][pli][qi][18]+
-       _dec->state.dequant_tables[qti][pli][qi][24]<<(pli==0);
+      qsum+=_dec->state.dequant_tables[qi][pli][qti][12]+
+       _dec->state.dequant_tables[qi][pli][qti][17]+
+       _dec->state.dequant_tables[qi][pli][qti][18]+
+       _dec->state.dequant_tables[qi][pli][qti][24]<<(pli==0);
     }
     _dec->pp_sharp_mod[qi]=-(qsum>>11);
   }

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -27,6 +27,7 @@
 /* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
+
 #ifndef EMWSPEER_H
 #define EMWSPEER_H
 
@@ -36,6 +37,7 @@
 #include "core/io/packet_peer.h"
 #include "core/ring_buffer.h"
 #include "emscripten.h"
+#include "packet_buffer.h"
 #include "websocket_peer.h"
 
 class EMWSPeer : public WebSocketPeer {
@@ -43,27 +45,22 @@ class EMWSPeer : public WebSocketPeer {
 	GDCIIMPL(EMWSPeer, WebSocketPeer);
 
 private:
-	enum {
-		PACKET_BUFFER_SIZE = 65536 - 5 // 4 bytes for the size, 1 for for type
-	};
-
 	int peer_sock;
 	WriteMode write_mode;
 
-	uint8_t packet_buffer[PACKET_BUFFER_SIZE];
-	RingBuffer<uint8_t> in_buffer;
-	int queue_count;
-	bool _was_string;
+	PoolVector<uint8_t> _packet_buffer;
+	PacketBuffer<uint8_t> _in_buffer;
+	uint8_t _is_string;
 
 public:
-	void read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string);
-	void set_sock(int sock);
+	Error read_msg(uint8_t *p_data, uint32_t p_size, bool p_is_string);
+	void set_sock(int p_sock, unsigned int p_in_buf_size, unsigned int p_in_pkt_size);
 	virtual int get_available_packet_count() const;
 	virtual Error get_packet(const uint8_t **r_buffer, int &r_buffer_size);
 	virtual Error put_packet(const uint8_t *p_buffer, int p_buffer_size);
-	virtual int get_max_packet_size() const { return PACKET_BUFFER_SIZE; };
+	virtual int get_max_packet_size() const { return _packet_buffer.size(); };
 
-	virtual void close();
+	virtual void close(int p_code = 1000, String p_reason = "");
 	virtual bool is_connected_to_host() const;
 	virtual IP_Address get_connected_host() const;
 	virtual uint16_t get_connected_port() const;
@@ -71,10 +68,6 @@ public:
 	virtual WriteMode get_write_mode() const;
 	virtual void set_write_mode(WriteMode p_mode);
 	virtual bool was_string_packet() const;
-
-	void set_wsi(struct lws *wsi);
-	Error read_wsi(void *in, size_t len);
-	Error write_wsi();
 
 	EMWSPeer();
 	~EMWSPeer();

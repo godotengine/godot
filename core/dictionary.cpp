@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "dictionary.h"
 
-#include "ordered_hash_map.h"
-#include "safe_refcount.h"
-#include "variant.h"
+#include "core/ordered_hash_map.h"
+#include "core/safe_refcount.h"
+#include "core/variant.h"
 
 struct DictionaryPrivate {
 
@@ -112,6 +112,15 @@ Variant Dictionary::get_valid(const Variant &p_key) const {
 	return E.get();
 }
 
+Variant Dictionary::get(const Variant &p_key, const Variant &p_default) const {
+	const Variant *result = getptr(p_key);
+	if (!result) {
+		return p_default;
+	}
+
+	return *result;
+}
+
 int Dictionary::size() const {
 
 	return _p->variant_map.size();
@@ -135,12 +144,7 @@ bool Dictionary::has_all(const Array &p_keys) const {
 	return true;
 }
 
-void Dictionary::erase(const Variant &p_key) {
-
-	_p->variant_map.erase(p_key);
-}
-
-bool Dictionary::erase_checked(const Variant &p_key) {
+bool Dictionary::erase(const Variant &p_key) {
 
 	return _p->variant_map.erase(p_key);
 }
@@ -148,6 +152,11 @@ bool Dictionary::erase_checked(const Variant &p_key) {
 bool Dictionary::operator==(const Dictionary &p_dictionary) const {
 
 	return _p == p_dictionary._p;
+}
+
+bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
+
+	return _p != p_dictionary._p;
 }
 
 void Dictionary::_ref(const Dictionary &p_from) const {
@@ -259,6 +268,10 @@ Dictionary Dictionary::duplicate(bool p_deep) const {
 void Dictionary::operator=(const Dictionary &p_dictionary) {
 
 	_ref(p_dictionary);
+}
+
+const void *Dictionary::id() const {
+	return _p->variant_map.id();
 }
 
 Dictionary::Dictionary(const Dictionary &p_from) {

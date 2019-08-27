@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,9 @@
 #ifndef SAFE_REFCOUNT_H
 #define SAFE_REFCOUNT_H
 
-#include "os/mutex.h"
-/* x86/x86_64 GCC */
-
+#include "core/os/mutex.h"
+#include "core/typedefs.h"
 #include "platform_config.h"
-#include "typedefs.h"
 
 // Atomic functions, these are used for multithread safe reference counters!
 
@@ -99,8 +97,8 @@ static _ALWAYS_INLINE_ T atomic_exchange_if_greater(volatile T *pw, volatile V v
 
 /* Implementation for GCC & Clang */
 
-// GCC guarantees atomic intrinsics for sizes of 1, 2, 4 and 8 bytes.
-// Clang states it supports GCC atomic builtins.
+#include <stdbool.h>
+#include <atomic>
 
 template <class T>
 static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
@@ -109,7 +107,7 @@ static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
 		T tmp = static_cast<T const volatile &>(*pw);
 		if (tmp == 0)
 			return 0; // if zero, can't add to it anymore
-		if (__sync_val_compare_and_swap(pw, tmp, tmp + 1) == tmp)
+		if (__atomic_compare_exchange_n(pw, &tmp, tmp + 1, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST) == true)
 			return tmp + 1;
 	}
 }
@@ -117,25 +115,25 @@ static _ALWAYS_INLINE_ T atomic_conditional_increment(volatile T *pw) {
 template <class T>
 static _ALWAYS_INLINE_ T atomic_decrement(volatile T *pw) {
 
-	return __sync_sub_and_fetch(pw, 1);
+	return __atomic_sub_fetch(pw, 1, __ATOMIC_SEQ_CST);
 }
 
 template <class T>
 static _ALWAYS_INLINE_ T atomic_increment(volatile T *pw) {
 
-	return __sync_add_and_fetch(pw, 1);
+	return __atomic_add_fetch(pw, 1, __ATOMIC_SEQ_CST);
 }
 
 template <class T, class V>
 static _ALWAYS_INLINE_ T atomic_sub(volatile T *pw, volatile V val) {
 
-	return __sync_sub_and_fetch(pw, val);
+	return __atomic_sub_fetch(pw, val, __ATOMIC_SEQ_CST);
 }
 
 template <class T, class V>
 static _ALWAYS_INLINE_ T atomic_add(volatile T *pw, volatile V val) {
 
-	return __sync_add_and_fetch(pw, val);
+	return __atomic_add_fetch(pw, val, __ATOMIC_SEQ_CST);
 }
 
 template <class T, class V>
@@ -145,7 +143,7 @@ static _ALWAYS_INLINE_ T atomic_exchange_if_greater(volatile T *pw, volatile V v
 		T tmp = static_cast<T const volatile &>(*pw);
 		if (tmp >= val)
 			return tmp; // already greater, or equal
-		if (__sync_val_compare_and_swap(pw, tmp, val) == tmp)
+		if (__atomic_compare_exchange_n(pw, &tmp, val, false, __ATOMIC_SEQ_CST, __ATOMIC_SEQ_CST) == true)
 			return val;
 	}
 }
@@ -191,11 +189,7 @@ public:
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
 
-		if (atomic_decrement(&count) == 0) {
-			return true;
-		}
-
-		return false;
+		return atomic_decrement(&count) == 0;
 	}
 
 	_ALWAYS_INLINE_ uint32_t get() const { // nothrow

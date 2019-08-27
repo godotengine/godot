@@ -30,7 +30,7 @@
     <string name="notification_download_failed">Download unsuccessful</string>
 
 
-    <string name="state_unknown">Starting...</string>
+    <string name="state_unknown">Starting…</string>
     <string name="state_idle">Waiting for download to start</string>
     <string name="state_fetching_url">Looking for resources to download</string>
     <string name="state_connecting">Connecting to the download server</string>

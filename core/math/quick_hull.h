@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef QUICK_HULL_H
 #define QUICK_HULL_H
 
-#include "aabb.h"
-#include "geometry.h"
-#include "list.h"
-#include "set.h"
+#include "core/list.h"
+#include "core/math/aabb.h"
+#include "core/math/geometry.h"
+#include "core/set.h"
 
 class QuickHull {
 
@@ -64,7 +64,7 @@ public:
 	struct Face {
 
 		Plane plane;
-		int vertices[3];
+		uint32_t vertices[3];
 		Vector<int> points_over;
 
 		bool operator<(const Face &p_face) const {

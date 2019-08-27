@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -121,6 +121,8 @@ void ViewportContainer::_notification(int p_what) {
 				c->set_update_mode(Viewport::UPDATE_ALWAYS);
 			else
 				c->set_update_mode(Viewport::UPDATE_DISABLED);
+
+			c->set_handle_input_locally(false); //do not handle input locally here
 		}
 	}
 
@@ -165,8 +167,34 @@ void ViewportContainer::_input(const Ref<InputEvent> &p_event) {
 	}
 }
 
+void ViewportContainer::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	if (Engine::get_singleton()->is_editor_hint())
+		return;
+
+	Transform2D xform = get_global_transform();
+
+	if (stretch) {
+		Transform2D scale_xf;
+		scale_xf.scale(Vector2(shrink, shrink));
+		xform *= scale_xf;
+	}
+
+	Ref<InputEvent> ev = p_event->xformed_by(xform.affine_inverse());
+
+	for (int i = 0; i < get_child_count(); i++) {
+
+		Viewport *c = Object::cast_to<Viewport>(get_child(i));
+		if (!c || c->is_input_disabled())
+			continue;
+
+		c->unhandled_input(ev);
+	}
+}
+
 void ViewportContainer::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_unhandled_input", "event"), &ViewportContainer::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_input", "event"), &ViewportContainer::_input);
 	ClassDB::bind_method(D_METHOD("set_stretch", "enable"), &ViewportContainer::set_stretch);
 	ClassDB::bind_method(D_METHOD("is_stretch_enabled"), &ViewportContainer::is_stretch_enabled);

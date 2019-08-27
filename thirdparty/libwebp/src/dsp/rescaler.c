@@ -21,6 +21,7 @@
 
 #define ROUNDER (WEBP_RESCALER_ONE >> 1)
 #define MULT_FIX(x, y) (((uint64_t)(x) * (y) + ROUNDER) >> WEBP_RESCALER_RFIX)
+#define MULT_FIX_FLOOR(x, y) (((uint64_t)(x) * (y)) >> WEBP_RESCALER_RFIX)
 
 //------------------------------------------------------------------------------
 // Row import
@@ -138,7 +139,7 @@ void WebPRescalerExportRowShrink_C(WebPRescaler* const wrk) {
   if (yscale) {
     for (x_out = 0; x_out < x_out_max; ++x_out) {
       const uint32_t frac = (uint32_t)MULT_FIX(frow[x_out], yscale);
-      const int v = (int)MULT_FIX(irow[x_out] - frac, wrk->fxy_scale);
+      const int v = (int)MULT_FIX_FLOOR(irow[x_out] - frac, wrk->fxy_scale);
       assert(v >= 0 && v <= 255);
       dst[x_out] = v;
       irow[x_out] = frac;   // new fractional start
@@ -153,6 +154,7 @@ void WebPRescalerExportRowShrink_C(WebPRescaler* const wrk) {
   }
 }
 
+#undef MULT_FIX_FLOOR
 #undef MULT_FIX
 #undef ROUNDER
 

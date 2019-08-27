@@ -76,10 +76,6 @@ extern "C" {
 #define WEBP_USE_SSE41
 #endif
 
-#if defined(__AVX2__) || defined(WEBP_HAVE_AVX2)
-#define WEBP_USE_AVX2
-#endif
-
 // The intrinsics currently cause compiler errors with arm-nacl-gcc and the
 // inline assembly would need to be modified for use with Native Client.
 #if (defined(__ARM_NEON__) || \
@@ -679,4 +675,4 @@ void VP8FiltersInit(void);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_DSP_DSP_H_ */
+#endif  // WEBP_DSP_DSP_H_

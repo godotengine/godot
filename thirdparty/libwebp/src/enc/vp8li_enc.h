@@ -115,4 +115,4 @@ void VP8LColorSpaceTransform(int width, int height, int bits, int quality,
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_ENC_VP8LI_ENC_H_ */
+#endif  // WEBP_ENC_VP8LI_ENC_H_

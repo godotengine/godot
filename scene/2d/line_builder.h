@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #ifndef LINE_BUILDER_H
 #define LINE_BUILDER_H
 
-#include "color.h"
+#include "core/color.h"
+#include "core/math/vector2.h"
 #include "line_2d.h"
-#include "math_2d.h"
-#include "scene/resources/color_ramp.h"
+#include "scene/resources/gradient.h"
 
 class LineBuilder {
 public:
@@ -45,6 +45,7 @@ public:
 	Line2D::LineCapMode begin_cap_mode;
 	Line2D::LineCapMode end_cap_mode;
 	float width;
+	Curve *curve;
 	Color default_color;
 	Gradient *gradient;
 	Line2D::LineTextureMode texture_mode;

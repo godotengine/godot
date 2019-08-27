@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "light.h"
 
-#include "engine.h"
-#include "project_settings.h"
+#include "core/engine.h"
+#include "core/project_settings.h"
 #include "scene/resources/surface_tool.h"
 
 bool Light::_can_gizmo_scale() const {
@@ -48,6 +48,14 @@ void Light::set_param(Param p_param, float p_value) {
 
 	if (p_param == PARAM_SPOT_ANGLE || p_param == PARAM_RANGE) {
 		update_gizmo();
+
+		if (p_param == PARAM_SPOT_ANGLE) {
+			_change_notify("spot_angle");
+			update_configuration_warning();
+		} else if (p_param == PARAM_RANGE) {
+			_change_notify("omni_range");
+			_change_notify("spot_range");
+		}
 	}
 }
 
@@ -61,6 +69,10 @@ void Light::set_shadow(bool p_enable) {
 
 	shadow = p_enable;
 	VS::get_singleton()->light_set_shadow(light, p_enable);
+
+	if (type == VisualServer::LIGHT_SPOT) {
+		update_configuration_warning();
+	}
 }
 bool Light::has_shadow() const {
 
@@ -145,6 +157,7 @@ PoolVector<Face3> Light::get_faces(uint32_t p_usage_flags) const {
 
 void Light::set_bake_mode(BakeMode p_mode) {
 	bake_mode = p_mode;
+	VS::get_singleton()->light_set_use_gi(light, p_mode != BAKE_DISABLED);
 }
 
 Light::BakeMode Light::get_bake_mode() const {
@@ -172,7 +185,8 @@ void Light::_update_visibility() {
 	}
 #endif
 
-	//VS::get_singleton()->instance_light_set_enabled(get_instance(),is_visible_in_tree() && editor_ok);
+	VS::get_singleton()->instance_set_visible(get_instance(), is_visible_in_tree() && editor_ok);
+
 	_change_notify("geometry/visible");
 }
 
@@ -186,9 +200,6 @@ void Light::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 		_update_visibility();
 	}
-
-	if (p_what == NOTIFICATION_EXIT_TREE) {
-	}
 }
 
 void Light::set_editor_only(bool p_editor_only) {
@@ -200,6 +211,13 @@ void Light::set_editor_only(bool p_editor_only) {
 bool Light::is_editor_only() const {
 
 	return editor_only;
+}
+
+void Light::_validate_property(PropertyInfo &property) const {
+
+	if (VisualServer::get_singleton()->is_low_end() && property.name == "shadow_contact") {
+		property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+	}
 }
 
 void Light::_bind_methods() {
@@ -233,8 +251,8 @@ void Light::_bind_methods() {
 
 	ADD_GROUP("Light", "light_");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "light_color", PROPERTY_HINT_COLOR_NO_ALPHA), "set_color", "get_color");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_ENERGY);
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_ENERGY);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_indirect_energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_param", "get_param", PARAM_INDIRECT_ENERGY);
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "light_negative"), "set_negative", "is_negative");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "light_specular", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param", "get_param", PARAM_SPECULAR);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "light_bake_mode", PROPERTY_HINT_ENUM, "Disable,Indirect,All"), "set_bake_mode", "get_bake_mode");
@@ -278,7 +296,8 @@ Light::Light(VisualServer::LightType p_type) {
 		case VS::LIGHT_DIRECTIONAL: light = VisualServer::get_singleton()->directional_light_create(); break;
 		case VS::LIGHT_OMNI: light = VisualServer::get_singleton()->omni_light_create(); break;
 		case VS::LIGHT_SPOT: light = VisualServer::get_singleton()->spot_light_create(); break;
-		default: {};
+		default: {
+		};
 	}
 
 	VS::get_singleton()->instance_set_base(get_instance(), light);
@@ -312,7 +331,7 @@ Light::Light(VisualServer::LightType p_type) {
 Light::Light() {
 
 	type = VisualServer::LIGHT_DIRECTIONAL;
-	ERR_PRINT("Light shouldn't be instanced dircetly, use the subtypes.");
+	ERR_PRINT("Light should not be instanced directly; use the DirectionalLight, OmniLight or SpotLight subtypes instead.");
 }
 
 Light::~Light() {
@@ -391,7 +410,7 @@ DirectionalLight::DirectionalLight() :
 
 	set_param(PARAM_SHADOW_NORMAL_BIAS, 0.8);
 	set_param(PARAM_SHADOW_BIAS, 0.1);
-	set_param(PARAM_SHADOW_MAX_DISTANCE, 200);
+	set_param(PARAM_SHADOW_MAX_DISTANCE, 100);
 	set_param(PARAM_SHADOW_BIAS_SPLIT_SCALE, 0.25);
 	set_shadow_mode(SHADOW_PARALLEL_4_SPLITS);
 	set_shadow_depth_range(SHADOW_DEPTH_RANGE_STABLE);
@@ -446,6 +465,20 @@ OmniLight::OmniLight() :
 
 	set_shadow_mode(SHADOW_CUBE);
 	set_shadow_detail(SHADOW_DETAIL_HORIZONTAL);
+}
+
+String SpotLight::get_configuration_warning() const {
+	String warning = Light::get_configuration_warning();
+
+	if (has_shadow() && get_param(PARAM_SPOT_ANGLE) >= 90.0) {
+		if (warning != String()) {
+			warning += "\n\n";
+		}
+
+		warning += TTR("A SpotLight with an angle wider than 90 degrees cannot cast shadows.");
+	}
+
+	return warning;
 }
 
 void SpotLight::_bind_methods() {

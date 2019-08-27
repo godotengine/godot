@@ -1,13 +1,12 @@
 /*************************************************************************/
-/*  soft_physics_body.h                                                  */
-/*  Author: AndreaCatania                                                */
+/*  soft_body.h                                                          */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -76,6 +75,7 @@ public:
 
 		PinnedPoint();
 		PinnedPoint(const PinnedPoint &obj_tocopy);
+		PinnedPoint operator=(const PinnedPoint &obj);
 	};
 
 private:
@@ -167,6 +167,7 @@ public:
 	void set_drag_coefficient(real_t p_drag_coefficient);
 	real_t get_drag_coefficient();
 
+	Array get_collision_exceptions();
 	void add_collision_exception_with(Node *p_node);
 	void remove_collision_exception_with(Node *p_node);
 

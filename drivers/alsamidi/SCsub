@@ -4,5 +4,3 @@ Import('env')
 
 # Driver source files
 env.add_source_files(env.drivers_sources, "*.cpp")
-
-Export('env')

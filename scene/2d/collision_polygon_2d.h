@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -54,6 +54,7 @@ protected:
 	CollisionObject2D *parent;
 	bool disabled;
 	bool one_way_collision;
+	float one_way_collision_margin;
 
 	Vector<Vector<Vector2> > _decompose_in_convex();
 
@@ -83,6 +84,9 @@ public:
 
 	void set_one_way_collision(bool p_enable);
 	bool is_one_way_collision_enabled() const;
+
+	void set_one_way_collision_margin(float p_margin);
+	float get_one_way_collision_margin() const;
 
 	CollisionPolygon2D();
 };

@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afstyles.h                                                             */
-/*                                                                         */
-/*    Auto-fitter styles (specification only).                             */
-/*                                                                         */
-/*  Copyright 2013-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afstyles.h
+ *
+ *   Auto-fitter styles (specification only).
+ *
+ * Copyright (C) 2013-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
   /* The following part can be included multiple times. */
@@ -320,6 +320,13 @@
          AF_WRITING_SYSTEM_LATIN,
          AF_SCRIPT_MLYM,
          AF_BLUE_STRINGSET_MLYM,
+         AF_COVERAGE_DEFAULT )
+
+  STYLE( mong_dflt, MONG_DFLT,
+         "Mongolian default style",
+         AF_WRITING_SYSTEM_LATIN,
+         AF_SCRIPT_MONG,
+         AF_BLUE_STRINGSET_MONG,
          AF_COVERAGE_DEFAULT )
 
   STYLE( mymr_dflt, MYMR_DFLT,

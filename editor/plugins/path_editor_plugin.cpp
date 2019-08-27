@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "path_editor_plugin.h"
 
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 #include "scene/resources/curve.h"
 #include "spatial_editor_plugin.h"
 
@@ -57,7 +57,7 @@ String PathSpatialGizmo::get_handle_name(int p_idx) const {
 
 	return n;
 }
-Variant PathSpatialGizmo::get_handle_value(int p_idx) const {
+Variant PathSpatialGizmo::get_handle_value(int p_idx) {
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
@@ -95,6 +95,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
+	// Setting curve point positions
 	if (p_idx < c->get_point_count()) {
 
 		Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
@@ -126,6 +127,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 
 	Vector3 inters;
 
+	// Setting curve in/out positions
 	if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 
 		if (!PathEditorPlugin::singleton->is_handle_clicked()) {
@@ -135,9 +137,13 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 		}
 
 		Vector3 local = gi.xform(inters) - base;
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			float snap = SpatialEditor::get_singleton()->get_translate_snap();
+			local.snap(Vector3(snap, snap, snap));
+		}
+
 		if (t == 0) {
 			c->set_point_in(idx, local);
-
 			if (PathEditorPlugin::singleton->mirror_angle_enabled())
 				c->set_point_out(idx, PathEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
 		} else {
@@ -215,6 +221,10 @@ void PathSpatialGizmo::redraw() {
 
 	clear();
 
+	Ref<SpatialMaterial> path_material = gizmo_plugin->get_material("path_material", this);
+	Ref<SpatialMaterial> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
+	Ref<SpatialMaterial> handles_material = gizmo_plugin->get_material("handles");
+
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
 		return;
@@ -238,7 +248,7 @@ void PathSpatialGizmo::redraw() {
 	}
 
 	if (v3p.size() > 1) {
-		add_lines(v3p, PathEditorPlugin::singleton->path_material);
+		add_lines(v3p, path_material);
 		add_collision_segments(v3p);
 	}
 
@@ -265,13 +275,13 @@ void PathSpatialGizmo::redraw() {
 		}
 
 		if (v3p.size() > 1) {
-			add_lines(v3p, PathEditorPlugin::singleton->path_thin_material);
+			add_lines(v3p, path_thin_material);
 		}
 		if (handles.size()) {
-			add_handles(handles);
+			add_handles(handles, handles_material);
 		}
 		if (sec_handles.size()) {
-			add_handles(sec_handles, false, true);
+			add_handles(sec_handles, handles_material, false, true);
 		}
 	}
 }
@@ -280,16 +290,6 @@ PathSpatialGizmo::PathSpatialGizmo(Path *p_path) {
 
 	path = p_path;
 	set_spatial_node(p_path);
-}
-
-Ref<SpatialEditorGizmo> PathEditorPlugin::create_spatial_gizmo(Spatial *p_spatial) {
-
-	if (Object::cast_to<Path>(p_spatial)) {
-
-		return memnew(PathSpatialGizmo(Object::cast_to<Path>(p_spatial)));
-	}
-
-	return Ref<SpatialEditorGizmo>();
 }
 
 bool PathEditorPlugin::forward_spatial_gui_input(Camera *p_camera, const Ref<InputEvent> &p_event) {
@@ -567,21 +567,9 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 	mirror_handle_angle = true;
 	mirror_handle_length = true;
 
-	path_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	path_material->set_albedo(Color(0.5, 0.5, 1.0, 0.8));
-	path_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	path_material->set_line_width(3);
-	path_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-	path_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-
-	path_thin_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-	path_thin_material->set_albedo(Color(0.5, 0.5, 1.0, 0.4));
-	path_thin_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	path_thin_material->set_line_width(1);
-	path_thin_material->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-	path_thin_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-
-	//SpatialEditor::get_singleton()->add_gizmo_plugin(this);
+	Ref<PathSpatialGizmoPlugin> gizmo_plugin;
+	gizmo_plugin.instance();
+	SpatialEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
 	sep = memnew(VSeparator);
 	sep->hide();
@@ -630,18 +618,40 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 
 	curve_edit->set_pressed(true);
 	/*
-	collision_polygon_editor = memnew( PathEditor(p_node) );
-	editor->get_viewport()->add_child(collision_polygon_editor);
-
-	collision_polygon_editor->set_margin(MARGIN_LEFT,200);
-	collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
-	collision_polygon_editor->set_margin(MARGIN_TOP,0);
-	collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
-
-
-	collision_polygon_editor->hide();
-	*/
+    collision_polygon_editor = memnew( PathEditor(p_node) );
+    editor->get_viewport()->add_child(collision_polygon_editor);
+    collision_polygon_editor->set_margin(MARGIN_LEFT,200);
+    collision_polygon_editor->set_margin(MARGIN_RIGHT,230);
+    collision_polygon_editor->set_margin(MARGIN_TOP,0);
+    collision_polygon_editor->set_margin(MARGIN_BOTTOM,10);
+    collision_polygon_editor->hide();
+    */
 }
 
 PathEditorPlugin::~PathEditorPlugin() {
+}
+
+Ref<EditorSpatialGizmo> PathSpatialGizmoPlugin::create_gizmo(Spatial *p_spatial) {
+	Ref<PathSpatialGizmo> ref;
+
+	Path *path = Object::cast_to<Path>(p_spatial);
+	if (path) ref = Ref<PathSpatialGizmo>(memnew(PathSpatialGizmo(path)));
+
+	return ref;
+}
+
+String PathSpatialGizmoPlugin::get_name() const {
+	return "Path";
+}
+
+int PathSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+PathSpatialGizmoPlugin::PathSpatialGizmoPlugin() {
+
+	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
+	create_material("path_material", path_color);
+	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
+	create_handle_material("handles");
 }

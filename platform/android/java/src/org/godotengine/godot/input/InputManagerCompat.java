@@ -17,7 +17,6 @@
 package org.godotengine.godot.input;
 
 import android.content.Context;
-import android.os.Build;
 import android.os.Handler;
 import android.view.InputDevice;
 import android.view.MotionEvent;
@@ -130,11 +129,7 @@ public interface InputManagerCompat {
 		 * @return a compatible implementation of InputManager
 		 */
 		public static InputManagerCompat getInputManager(Context context) {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.JELLY_BEAN) {
-				return new InputManagerV16(context);
-			} else {
-				return new InputManagerV9();
-			}
+			return new InputManagerV16(context);
 		}
 	}
 }

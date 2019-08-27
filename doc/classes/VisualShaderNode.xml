@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualShaderNode" inherits="Resource" category="Core" version="3.1">
+<class name="VisualShaderNode" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_input_port_default_value" qualifiers="const">
 			<return type="Variant">
@@ -29,9 +27,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values">
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" default="[ 0, Vector3( 0, 0, 0 ) ]">
 		</member>
-		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview">
+		<member name="output_port_for_preview" type="int" setter="set_output_port_for_preview" getter="get_output_port_for_preview" default="-1">
 		</member>
 	</members>
 	<signals>
@@ -41,5 +39,20 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
+			Floating-point scalar. Translated to [code]float[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_VECTOR" value="1" enum="PortType">
+			3D vector of floating-point values. Translated to [code]vec3[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_BOOLEAN" value="2" enum="PortType">
+			Boolean type. Translated to [code]bool[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_TRANSFORM" value="3" enum="PortType">
+			Transform type. Translated to [code]mat4[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_ICON_COLOR" value="4" enum="PortType">
+			Color type. Can be used for return icon type in members dialog (see [method VisualShaderNodeCustom._get_return_icon_type]) - do not use it in other cases!
+		</constant>
 	</constants>
 </class>

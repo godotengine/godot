@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #ifndef TRIANGLE_MESH_H
 #define TRIANGLE_MESH_H
 
-#include "face3.h"
-#include "reference.h"
+#include "core/math/face3.h"
+#include "core/reference.h"
+
 class TriangleMesh : public Reference {
 
 	GDCLASS(TriangleMesh, Reference);
@@ -96,7 +97,7 @@ public:
 
 	PoolVector<Triangle> get_triangles() const { return triangles; }
 	PoolVector<Vector3> get_vertices() const { return vertices; }
-	void get_indices(PoolVector<int> *p_triangles_indices) const;
+	void get_indices(PoolVector<int> *r_triangles_indices) const;
 
 	void create(const PoolVector<Vector3> &p_faces);
 	TriangleMesh();

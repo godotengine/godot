@@ -20,20 +20,15 @@ subject to the following restrictions:
 #include "btConvexInternalShape.h"
 class btConvexPolyhedron;
 
-
 ///The btPolyhedralConvexShape is an internal interface class for polyhedral convex shapes.
-ATTRIBUTE_ALIGNED16(class) btPolyhedralConvexShape : public btConvexInternalShape
+ATTRIBUTE_ALIGNED16(class)
+btPolyhedralConvexShape : public btConvexInternalShape
 {
-	
-
 protected:
-	
 	btConvexPolyhedron* m_polyhedron;
 
 public:
-	
 	BT_DECLARE_ALIGNED_ALLOCATOR();
-	
 
 	btPolyhedralConvexShape();
 
@@ -41,52 +36,49 @@ public:
 
 	///optional method mainly used to generate multiple contact points by clipping polyhedral features (faces/edges)
 	///experimental/work-in-progress
-	virtual bool	initializePolyhedralFeatures(int shiftVerticesByMargin=0);
+	virtual bool initializePolyhedralFeatures(int shiftVerticesByMargin = 0);
 
-	const btConvexPolyhedron*	getConvexPolyhedron() const
+	virtual void setPolyhedralFeatures(btConvexPolyhedron & polyhedron);
+
+	const btConvexPolyhedron* getConvexPolyhedron() const
 	{
 		return m_polyhedron;
 	}
 
 	//brute force implementations
 
-	virtual btVector3	localGetSupportingVertexWithoutMargin(const btVector3& vec)const;
-	virtual void	batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors,btVector3* supportVerticesOut,int numVectors) const;
-	
-	virtual void	calculateLocalInertia(btScalar mass,btVector3& inertia) const;
-	
-	
-	virtual int	getNumVertices() const = 0 ;
+	virtual btVector3 localGetSupportingVertexWithoutMargin(const btVector3& vec) const;
+	virtual void batchedUnitVectorGetSupportingVertexWithoutMargin(const btVector3* vectors, btVector3* supportVerticesOut, int numVectors) const;
+
+	virtual void calculateLocalInertia(btScalar mass, btVector3 & inertia) const;
+
+	virtual int getNumVertices() const = 0;
 	virtual int getNumEdges() const = 0;
-	virtual void getEdge(int i,btVector3& pa,btVector3& pb) const = 0;
-	virtual void getVertex(int i,btVector3& vtx) const = 0;
-	virtual int	getNumPlanes() const = 0;
-	virtual void getPlane(btVector3& planeNormal,btVector3& planeSupport,int i ) const = 0;
-//	virtual int getIndex(int i) const = 0 ; 
+	virtual void getEdge(int i, btVector3& pa, btVector3& pb) const = 0;
+	virtual void getVertex(int i, btVector3& vtx) const = 0;
+	virtual int getNumPlanes() const = 0;
+	virtual void getPlane(btVector3 & planeNormal, btVector3 & planeSupport, int i) const = 0;
+	//	virtual int getIndex(int i) const = 0 ;
 
-	virtual	bool isInside(const btVector3& pt,btScalar tolerance) const = 0;
-	
+	virtual bool isInside(const btVector3& pt, btScalar tolerance) const = 0;
 };
-
 
 ///The btPolyhedralConvexAabbCachingShape adds aabb caching to the btPolyhedralConvexShape
 class btPolyhedralConvexAabbCachingShape : public btPolyhedralConvexShape
 {
+	btVector3 m_localAabbMin;
+	btVector3 m_localAabbMax;
+	bool m_isLocalAabbValid;
 
-	btVector3	m_localAabbMin;
-	btVector3	m_localAabbMax;
-	bool		m_isLocalAabbValid;
-		
 protected:
-
-	void setCachedLocalAabb (const btVector3& aabbMin, const btVector3& aabbMax)
+	void setCachedLocalAabb(const btVector3& aabbMin, const btVector3& aabbMax)
 	{
 		m_isLocalAabbValid = true;
 		m_localAabbMin = aabbMin;
 		m_localAabbMax = aabbMax;
 	}
 
-	inline void getCachedLocalAabb (btVector3& aabbMin, btVector3& aabbMax) const
+	inline void getCachedLocalAabb(btVector3& aabbMin, btVector3& aabbMax) const
 	{
 		btAssert(m_isLocalAabbValid);
 		aabbMin = m_localAabbMin;
@@ -94,25 +86,21 @@ protected:
 	}
 
 protected:
-
 	btPolyhedralConvexAabbCachingShape();
-	
-public:
-	
-	inline void getNonvirtualAabb(const btTransform& trans,btVector3& aabbMin,btVector3& aabbMax, btScalar margin) const
-	{
 
+public:
+	inline void getNonvirtualAabb(const btTransform& trans, btVector3& aabbMin, btVector3& aabbMax, btScalar margin) const
+	{
 		//lazy evaluation of local aabb
 		btAssert(m_isLocalAabbValid);
-		btTransformAabb(m_localAabbMin,m_localAabbMax,margin,trans,aabbMin,aabbMax);
+		btTransformAabb(m_localAabbMin, m_localAabbMax, margin, trans, aabbMin, aabbMax);
 	}
 
-	virtual void	setLocalScaling(const btVector3& scaling);
+	virtual void setLocalScaling(const btVector3& scaling);
 
-	virtual void getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const;
+	virtual void getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const;
 
-	void	recalcLocalAabb();
-
+	void recalcLocalAabb();
 };
 
-#endif //BT_POLYHEDRAL_CONVEX_SHAPE_H
+#endif  //BT_POLYHEDRAL_CONVEX_SHAPE_H

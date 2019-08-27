@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,12 @@
 
 #include "visual_server_raster.h"
 
-#include "default_mouse_cursor.xpm"
-#include "io/marshalls.h"
-#include "os/os.h"
-#include "project_settings.h"
-#include "sort.h"
+#include "core/io/marshalls.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
+#include "core/sort_array.h"
 #include "visual_server_canvas.h"
-#include "visual_server_global.h"
+#include "visual_server_globals.h"
 #include "visual_server_scene.h"
 
 // careful, these may run in different threads than the visual server
@@ -77,6 +76,8 @@ void VisualServerRaster::free(RID p_rid) {
 	if (VSG::viewport->free(p_rid))
 		return;
 	if (VSG::scene->free(p_rid))
+		return;
+	if (VSG::scene_render->free(p_rid))
 		return;
 }
 
@@ -124,7 +125,6 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 		frame_drawn_callbacks.pop_front();
 	}
-
 	VS::get_singleton()->emit_signal("frame_post_draw");
 }
 void VisualServerRaster::sync() {
@@ -155,10 +155,10 @@ int VisualServerRaster::get_render_info(RenderInfo p_info) {
 
 /* TESTING */
 
-void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale) {
+void VisualServerRaster::set_boot_image(const Ref<Image> &p_image, const Color &p_color, bool p_scale, bool p_use_filter) {
 
 	redraw_request();
-	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale);
+	VSG::rasterizer->set_boot_image(p_image, p_color, p_scale, p_use_filter);
 }
 void VisualServerRaster::set_default_clear_color(const Color &p_color) {
 	VSG::viewport->set_default_clear_color(p_color);
@@ -190,6 +190,9 @@ void VisualServerRaster::call_set_use_vsync(bool p_enable) {
 	OS::get_singleton()->_set_use_vsync(p_enable);
 }
 
+bool VisualServerRaster::is_low_end() const {
+	return VSG::rasterizer->is_low_end();
+}
 VisualServerRaster::VisualServerRaster() {
 
 	VSG::canvas = memnew(VisualServerCanvas);
@@ -200,8 +203,10 @@ VisualServerRaster::VisualServerRaster() {
 	VSG::canvas_render = VSG::rasterizer->get_canvas();
 	VSG::scene_render = VSG::rasterizer->get_scene();
 
-	for (int i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++) {
 		black_margin[i] = 0;
+		black_image[i] = RID();
+	}
 }
 
 VisualServerRaster::~VisualServerRaster() {

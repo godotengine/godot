@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "translation.h"
 
-#include "io/resource_loader.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/io/resource_loader.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 // ISO 639-1 language codes, with the addition of glibc locales with their
 // regional identifiers. This list must match the language names (in English)
@@ -179,6 +179,7 @@ static const char *locale_list[] = {
 	"ff_SN", //  Fulah (Senegal)
 	"fi", //  Finnish
 	"fi_FI", //  Finnish (Finland)
+	"fil", //  Filipino
 	"fil_PH", //  Filipino (Philippines)
 	"fo_FO", //  Faroese (Faroe Islands)
 	"fr", //  French
@@ -227,6 +228,7 @@ static const char *locale_list[] = {
 	"ja", //  Japanese
 	"ja_JP", //  Japanese (Japan)
 	"kab_DZ", //  Kabyle (Algeria)
+	"ka", //  Georgian
 	"ka_GE", //  Georgian (Georgia)
 	"kk_KZ", //  Kazakh (Kazakhstan)
 	"kl_GL", //  Kalaallisut (Greenland)
@@ -257,10 +259,12 @@ static const char *locale_list[] = {
 	"mg_MG", //  Malagasy (Madagascar)
 	"mh_MH", //  Marshallese (Marshall Islands)
 	"mhr_RU", //  Eastern Mari (Russia)
-	"mi_NZ", //  Maori (New Zealand)
+	"mi", //  Māori
+	"mi_NZ", //  Māori (New Zealand)
 	"miq_NI", //  Mískito (Nicaragua)
 	"mk", //  Macedonian
 	"mk_MK", //  Macedonian (Macedonia)
+	"ml", //  Malayalam
 	"ml_IN", //  Malayalam (India)
 	"mni_IN", //  Manipuri (India)
 	"mn_MN", //  Mongolian (Mongolia)
@@ -326,6 +330,7 @@ static const char *locale_list[] = {
 	"sgs_LT", //  Samogitian (Lithuania)
 	"shs_CA", //  Shuswap (Canada)
 	"sid_ET", //  Sidamo (Ethiopia)
+	"si", //  Sinhala
 	"si_LK", //  Sinhala (Sri Lanka)
 	"sk", //  Slovak
 	"sk_SK", //  Slovak (Slovakia)
@@ -343,6 +348,7 @@ static const char *locale_list[] = {
 	"sq_MK", //  Albanian (Macedonia)
 	"sr", //  Serbian
 	"sr_Cyrl", //  Serbian (Cyrillic)
+	"sr_Latn", //  Serbian (Latin)
 	"sr_ME", //  Serbian (Montenegro)
 	"sr_RS", //  Serbian (Serbia)
 	"ss_ZA", //  Swati (South Africa)
@@ -357,6 +363,7 @@ static const char *locale_list[] = {
 	"ta_IN", //  Tamil (India)
 	"ta_LK", //  Tamil (Sri Lanka)
 	"tcy_IN", //  Tulu (India)
+	"te", //  Telugu
 	"te_IN", //  Telugu (India)
 	"tg_TJ", //  Tajik (Tajikistan)
 	"the_NP", //  Chitwania Tharu (Nepal)
@@ -540,6 +547,7 @@ static const char *locale_names[] = {
 	"Fulah (Senegal)",
 	"Finnish",
 	"Finnish (Finland)",
+	"Filipino",
 	"Filipino (Philippines)",
 	"Faroese (Faroe Islands)",
 	"French",
@@ -588,6 +596,7 @@ static const char *locale_names[] = {
 	"Japanese",
 	"Japanese (Japan)",
 	"Kabyle (Algeria)",
+	"Georgian",
 	"Georgian (Georgia)",
 	"Kazakh (Kazakhstan)",
 	"Kalaallisut (Greenland)",
@@ -618,10 +627,12 @@ static const char *locale_names[] = {
 	"Malagasy (Madagascar)",
 	"Marshallese (Marshall Islands)",
 	"Eastern Mari (Russia)",
-	"Maori (New Zealand)",
+	"Māori",
+	"Māori (New Zealand)",
 	"Mískito (Nicaragua)",
 	"Macedonian",
 	"Macedonian (Macedonia)",
+	"Malayalam",
 	"Malayalam (India)",
 	"Manipuri (India)",
 	"Mongolian (Mongolia)",
@@ -687,6 +698,7 @@ static const char *locale_names[] = {
 	"Samogitian (Lithuania)",
 	"Shuswap (Canada)",
 	"Sidamo (Ethiopia)",
+	"Sinhala",
 	"Sinhala (Sri Lanka)",
 	"Slovak",
 	"Slovak (Slovakia)",
@@ -704,6 +716,7 @@ static const char *locale_names[] = {
 	"Albanian (Macedonia)",
 	"Serbian",
 	"Serbian (Cyrillic)",
+	"Serbian (Latin)",
 	"Serbian (Montenegro)",
 	"Serbian (Serbia)",
 	"Swati (South Africa)",
@@ -718,6 +731,7 @@ static const char *locale_names[] = {
 	"Tamil (India)",
 	"Tamil (Sri Lanka)",
 	"Tulu (India)",
+	"Telugu",
 	"Telugu (India)",
 	"Tajik (Tajikistan)",
 	"Chitwania Tharu (Nepal)",
@@ -834,8 +848,7 @@ void Translation::set_locale(const String &p_locale) {
 	if (!TranslationServer::is_locale_valid(univ_locale)) {
 		String trimmed_locale = get_trimmed_locale(univ_locale);
 
-		ERR_EXPLAIN("Invalid locale: " + trimmed_locale);
-		ERR_FAIL_COND(!TranslationServer::is_locale_valid(trimmed_locale));
+		ERR_FAIL_COND_MSG(!TranslationServer::is_locale_valid(trimmed_locale), "Invalid locale: " + trimmed_locale + ".");
 
 		locale = trimmed_locale;
 	} else {
@@ -938,11 +951,14 @@ void TranslationServer::set_locale(const String &p_locale) {
 
 	if (!is_locale_valid(univ_locale)) {
 		String trimmed_locale = get_trimmed_locale(univ_locale);
+		print_verbose(vformat("Unsupported locale '%s', falling back to '%s'.", p_locale, trimmed_locale));
 
-		ERR_EXPLAIN("Invalid locale: " + trimmed_locale);
-		ERR_FAIL_COND(!is_locale_valid(trimmed_locale));
-
-		locale = trimmed_locale;
+		if (!is_locale_valid(trimmed_locale)) {
+			ERR_PRINTS(vformat("Unsupported locale '%s', falling back to 'en'.", trimmed_locale));
+			locale = "en";
+		} else {
+			locale = trimmed_locale;
+		}
 	} else {
 		locale = univ_locale;
 	}
@@ -963,6 +979,19 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 
 	if (!locale_name_map.has(p_locale)) return String();
 	return locale_name_map[p_locale];
+}
+
+Array TranslationServer::get_loaded_locales() const {
+	Array locales;
+	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+
+		const Ref<Translation> &t = E->get();
+		String l = t->get_locale();
+
+		locales.push_back(l);
+	}
+
+	return locales;
 }
 
 Vector<String> TranslationServer::get_all_locales() {
@@ -1014,6 +1043,13 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	if (!enabled)
 		return p_message;
 
+	// Locale can be of the form 'll_CC', i.e. language code and regional code,
+	// e.g. 'en_US', 'en_GB', etc. It might also be simply 'll', e.g. 'en'.
+	// To find the relevant translation, we look for those with locale starting
+	// with the language code, and then if any is an exact match for the long
+	// form. If not found, we fall back to a near match (another locale with
+	// same language code).
+
 	StringName res;
 	bool near_match = false;
 	const CharType *lptr = &locale[0];
@@ -1023,13 +1059,11 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		const Ref<Translation> &t = E->get();
 		String l = t->get_locale();
 		if (lptr[0] != l[0] || lptr[1] != l[1])
-			continue; // locale not match
+			continue; // Language code does not match.
 
-		//near match
-		bool match = (l != locale);
-
-		if (near_match && !match)
-			continue; //only near-match once
+		bool exact_match = (l == locale);
+		if (!exact_match && near_match)
+			continue; // Only near-match once, but keep looking for exact matches.
 
 		StringName r = t->get_message(p_message);
 
@@ -1038,43 +1072,38 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 
 		res = r;
 
-		if (match)
+		if (exact_match)
 			break;
 		else
 			near_match = true;
 	}
 
-	if (!res) {
-		//try again with fallback
-		if (fallback.length() >= 2) {
+	if (!res && fallback.length() >= 2) {
+		// Try again with the fallback locale.
+		const CharType *fptr = &fallback[0];
+		near_match = false;
+		for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 
-			const CharType *fptr = &fallback[0];
-			bool near_match = false;
-			for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+			const Ref<Translation> &t = E->get();
+			String l = t->get_locale();
+			if (fptr[0] != l[0] || fptr[1] != l[1])
+				continue; // Language code does not match.
 
-				const Ref<Translation> &t = E->get();
-				String l = t->get_locale();
-				if (fptr[0] != l[0] || fptr[1] != l[1])
-					continue; // locale not match
+			bool exact_match = (l == fallback);
+			if (!exact_match && near_match)
+				continue; // Only near-match once, but keep looking for exact matches.
 
-				//near match
-				bool match = (l != fallback);
+			StringName r = t->get_message(p_message);
 
-				if (near_match && !match)
-					continue; //only near-match once
+			if (!r)
+				continue;
 
-				StringName r = t->get_message(p_message);
+			res = r;
 
-				if (!r)
-					continue;
-
-				res = r;
-
-				if (match)
-					break;
-				else
-					near_match = true;
-			}
+			if (exact_match)
+				break;
+			else
+				near_match = true;
 		}
 	}
 
@@ -1098,7 +1127,6 @@ bool TranslationServer::_load_translations(const String &p_from) {
 
 			for (int i = 0; i < tcount; i++) {
 
-				//print_line( "Loading translation from " + r[i] );
 				Ref<Translation> tr = ResourceLoader::load(r[i]);
 				if (tr.is_valid())
 					add_translation(tr);
@@ -1166,6 +1194,8 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
+
+	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
 }
 
 void TranslationServer::load_translations() {
