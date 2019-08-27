@@ -827,7 +827,7 @@ void EditorAssetLibrary::_image_request_completed(int p_status, int p_code, cons
 
 void EditorAssetLibrary::_update_image_queue() {
 
-	int max_images = 2;
+	const int max_images = 6;
 	int current_images = 0;
 
 	List<int> to_delete;
