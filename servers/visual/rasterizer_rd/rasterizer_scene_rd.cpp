@@ -358,6 +358,60 @@ VS::EnvironmentReflectionSource RasterizerSceneRD::environment_get_reflection_so
 	return env->reflection_source;
 }
 
+void RasterizerSceneRD::environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+	env->tone_mapper = p_tone_mapper;
+	env->auto_exposure = p_auto_exposure;
+	env->white = p_white;
+	env->min_luminance = p_min_luminance;
+	env->max_luminance = p_max_luminance;
+	env->auto_exp_speed = p_auto_exp_speed;
+	env->auto_exp_scale = p_auto_exp_scale;
+}
+
+VS::EnvironmentToneMapper RasterizerSceneRD::environment_get_tonemapper(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, VS::ENV_TONE_MAPPER_LINEAR);
+	return env->tone_mapper;
+}
+float RasterizerSceneRD::environment_get_exposure(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->exposure;
+}
+float RasterizerSceneRD::environment_get_white(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->white;
+}
+bool RasterizerSceneRD::environment_get_auto_exposure(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, false);
+	return env->auto_exposure;
+}
+float RasterizerSceneRD::environment_get_min_luminance(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->min_luminance;
+}
+float RasterizerSceneRD::environment_get_max_luminance(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->max_luminance;
+}
+float RasterizerSceneRD::environment_get_auto_exposure_scale(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->auto_exp_scale;
+}
+
+float RasterizerSceneRD::environment_get_auto_exposure_speed(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, 0);
+	return env->auto_exp_speed;
+}
+
 bool RasterizerSceneRD::is_environment(RID p_env) const {
 	return environment_owner.owns(p_env);
 }

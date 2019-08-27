@@ -164,6 +164,44 @@ void RasterizerEffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_frameb
 	RD::get_singleton()->draw_list_end();
 }
 
+void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings) {
+
+	zeromem(&tonemap.push_constant, sizeof(TonemapPushConstant));
+
+	tonemap.push_constant.use_bcs = p_settings.use_bcs;
+	tonemap.push_constant.bcs[0] = p_settings.brightness;
+	tonemap.push_constant.bcs[1] = p_settings.contrast;
+	tonemap.push_constant.bcs[2] = p_settings.saturation;
+
+	tonemap.push_constant.use_glow = p_settings.use_glow;
+	tonemap.push_constant.glow_intensity = p_settings.glow_intensity;
+	tonemap.push_constant.glow_level_flags = p_settings.glow_level_flags;
+	tonemap.push_constant.glow_texture_size[0] = p_settings.glow_texture_size.x;
+	tonemap.push_constant.glow_texture_size[1] = p_settings.glow_texture_size.y;
+
+	TonemapMode mode = p_settings.glow_use_bicubic_upscale ? TONEMAP_MODE_BICUBIC_GLOW_FILTER : TONEMAP_MODE_NORMAL;
+
+	tonemap.push_constant.tonemapper = p_settings.tonemap_mode;
+	tonemap.push_constant.use_auto_exposure = p_settings.use_auto_exposure;
+	tonemap.push_constant.exposure = p_settings.exposure;
+	tonemap.push_constant.white = p_settings.white;
+	tonemap.push_constant.auto_exposure_grey = p_settings.auto_exposure_grey;
+
+	tonemap.push_constant.use_color_correction = p_settings.use_color_correction;
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dst_framebuffer, RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, tonemap.pipelines[mode].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dst_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_color), 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.exposure_texture), 1);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.glow_texture), 2);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_settings.color_correction_texture), 3);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &tonemap.push_constant, sizeof(TonemapPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
 RasterizerEffectsRD::RasterizerEffectsRD() {
 
 	{
@@ -222,6 +260,21 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
 
 		sky.pipeline.setup(sky.shader.version_get_shader(sky.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
+	}
+
+	{
+		// Initialize tonemapper
+		Vector<String> tonemap_modes;
+		tonemap_modes.push_back("\n");
+		tonemap_modes.push_back("\n#define USE_GLOW_FILTER_BICUBIC\n");
+
+		tonemap.shader.initialize(tonemap_modes);
+
+		tonemap.shader_version = tonemap.shader.version_create();
+
+		for (int i = 0; i < TONEMAP_MODE_MAX; i++) {
+			tonemap.pipelines[i].setup(tonemap.shader.version_get_shader(tonemap.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
 	}
 
 	RD::SamplerState sampler;
