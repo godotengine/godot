@@ -3,7 +3,17 @@
 This file list third-party libraries used in the Android source folder,
 with their provenance and, when relevant, modifications made to those files.
 
-## Google's licensing library
+## com.google.android.vending.expansion.downloader
+
+- Upstream: https://github.com/google/play-apk-expansion/tree/master/apkx_library
+- Version: git (9ecf54e, 2017)
+- License: Apache 2.0
+
+Overwrite all files under:
+
+- `src/com/google/android/vending/expansion/downloader`
+
+## com.google.android.vending.licensing
 
 - Upstream: https://github.com/google/play-licensing/tree/master/lvl_library/
 - Version: git (eb57657, 2018) with modifications
