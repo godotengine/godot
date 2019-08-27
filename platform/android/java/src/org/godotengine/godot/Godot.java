@@ -31,6 +31,7 @@
 package org.godotengine.godot;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.app.Activity;
 import android.app.ActivityManager;
 import android.app.AlertDialog;
@@ -56,6 +57,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Messenger;
+import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.support.annotation.Keep;
@@ -325,12 +327,18 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	 * Used by the native code (java_godot_wrapper.h) to vibrate the device.
 	 * @param durationMs
 	 */
+	@SuppressLint("MissingPermission")
 	@Keep
 	private void vibrate(int durationMs) {
 		if (requestPermission("VIBRATE")) {
 			Vibrator v = (Vibrator)getSystemService(Context.VIBRATOR_SERVICE);
 			if (v != null) {
-				v.vibrate(durationMs);
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+					v.vibrate(VibrationEffect.createOneShot(durationMs, VibrationEffect.DEFAULT_AMPLITUDE));
+				} else {
+					//deprecated in API 26
+					v.vibrate(durationMs);
+				}
 			}
 		}
 	}
