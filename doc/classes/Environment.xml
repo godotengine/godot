@@ -146,10 +146,11 @@
 		<member name="fog_depth_enabled" type="bool" setter="set_fog_depth_enabled" getter="is_fog_depth_enabled" default="true">
 			Enables the fog depth.
 		</member>
-		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="0.0">
+		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="100.0">
+			Fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's [member Camera.far] value.
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
-			Enables the fog. Needs fog_height_enabled and/or for_depth_enabled to actually display fog.
+			Enables the fog. Needs [member fog_height_enabled] and/or [member fog_depth_enabled] to actually display fog.
 		</member>
 		<member name="fog_height_curve" type="float" setter="set_fog_height_curve" getter="get_fog_height_curve" default="1.0">
 			Value defining the fog height intensity.

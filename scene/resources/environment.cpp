@@ -1399,7 +1399,7 @@ Environment::Environment() :
 	fog_depth_enabled = true;
 
 	fog_depth_begin = 10;
-	fog_depth_end = 0;
+	fog_depth_end = 100;
 	fog_depth_curve = 1;
 
 	fog_transmit_enabled = false;
