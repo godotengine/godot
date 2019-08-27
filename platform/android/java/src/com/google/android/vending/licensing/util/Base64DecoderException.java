@@ -20,13 +20,13 @@ package com.google.android.vending.licensing.util;
  * @author nelson
  */
 public class Base64DecoderException extends Exception {
-	public Base64DecoderException() {
-		super();
-	}
+  public Base64DecoderException() {
+    super();
+  }
 
-	public Base64DecoderException(String s) {
-		super(s);
-	}
+  public Base64DecoderException(String s) {
+    super(s);
+  }
 
-	private static final long serialVersionUID = 1L;
+  private static final long serialVersionUID = 1L;
 }
