@@ -431,6 +431,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		profile.frame_call_count++;
 	}
 	bool exit_ok = false;
+	bool yielded = false;
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -1323,6 +1324,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				exit_ok = true;
+				yielded = true;
 #endif
 				OPCODE_BREAK;
 			}
@@ -1588,8 +1590,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		profile.frame_self_time += time_taken - function_call_time;
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
-
-	bool yielded = retvalue.is_ref() && Object::cast_to<GDScriptFunctionState>(retvalue);
 
 	// Check if this is the last time the function is resuming from yield
 	// Will be true if never yielded as well
