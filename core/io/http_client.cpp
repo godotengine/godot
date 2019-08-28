@@ -44,14 +44,14 @@ void MultipartFormDataBuffer::append_string_field(const String &field_name, cons
 
 Error MultipartFormDataBuffer::append_file_field(const String &field_name, const String &file_path, const String &p_custom_mime_type) {
 	Error err;
-	_File *f = memnew(_File);
+	Ref<_File> f(memnew(_File));
 
 	if (!f->file_exists(file_path))
 		return ERR_FILE_NOT_FOUND;
 
 	err = f->open(file_path, _File::READ);
 
-	if (!f)
+	if (!f.ptr())
 		return ERR_CANT_OPEN;
 
 	if (err)
