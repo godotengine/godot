@@ -200,24 +200,30 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		bool is_substring_of_selected = false;
 		bool is_subsequence_of_selected = false;
 		bool is_selected_equal = false;
+		bool is_same_as_selected = false;
 
-		if (*to_select) {
-			String name = (*to_select)->get_text(0).split(" ")[0].to_lower();
-			is_substring_of_selected = name.find(search_term) >= 0;
-			is_subsequence_of_selected = search_term.is_subsequence_of(name);
-			is_selected_equal = name == search_term;
-		}
+		// if the search term matches exactly to the type, is should be the one selected.
+		if (search_term == p_type.to_lower()) {
+			*to_select = item;
+		} else {
+			if (*to_select) {
+				String name = (*to_select)->get_text(0).split(" ")[0].to_lower();
+				is_substring_of_selected = name.find(search_term) >= 0;
+				is_subsequence_of_selected = search_term.is_subsequence_of(name);
+				is_selected_equal = name == search_term;
+			}
 
-		if (is_subsequence_of_type && !is_selected_equal) {
-			if (is_substring_of_type) {
-				if (!is_substring_of_selected || (current_type_prefered && !selected_type_prefered)) {
-					*to_select = item;
-				}
-			} else {
-				// substring results weigh more than subsequences, so let's make sure we don't override them
-				if (!is_substring_of_selected) {
-					if (!is_subsequence_of_selected || (current_type_prefered && !selected_type_prefered)) {
+			if (is_subsequence_of_type && !is_selected_equal) {
+				if (is_substring_of_type) {
+					if (!is_substring_of_selected || (current_type_prefered && !selected_type_prefered) || is_same_as_selected) {
 						*to_select = item;
+					}
+				} else {
+					// substring results weigh more than subsequences, so let's make sure we don't override them
+					if (!is_substring_of_selected) {
+						if (!is_subsequence_of_selected || (current_type_prefered && !selected_type_prefered)) {
+							*to_select = item;
+						}
 					}
 				}
 			}
