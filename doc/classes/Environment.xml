@@ -306,7 +306,7 @@
 			Replace glow blending mode. Replaces all pixels' color by the glow value.
 		</constant>
 		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
-			Linear tonemapper operator. Reads the linear data and performs an exposure adjustment.
+			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
 		</constant>
 		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
 			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code].
