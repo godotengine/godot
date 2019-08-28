@@ -79,7 +79,7 @@ void NativeScript::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_name"), "set_script_class_name", "get_script_class_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_icon_path", PROPERTY_HINT_FILE), "set_script_class_icon_path", "get_script_class_icon_path");
 
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo("new"));
 }
 
 #define NSL NativeScriptLanguage::get_singleton()
