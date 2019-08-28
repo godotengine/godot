@@ -59,7 +59,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	xatlas::PackOptions pack_options;
 
 	pack_options.maxChartSize = 4096;
-	pack_options.bruteForce = true;
+	pack_options.blockAlign = true;
 	pack_options.texelsPerUnit = 1.0 / p_texel_size;
 
 	xatlas::Atlas *atlas = xatlas::Create();
@@ -78,7 +78,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 	float h = *r_size_hint_y;
 
 	if (w == 0 || h == 0) {
-		return false; //could not bake
+		return false; //could not bake because there is no area
 	}
 
 	const xatlas::Mesh &output = atlas->meshes[0];
@@ -106,7 +106,7 @@ bool xatlas_mesh_lightmap_unwrap_callback(float p_texel_size, const float *p_ver
 
 	*r_index_count = output.indexCount;
 
-	//xatlas::Destroy(atlas);
+	xatlas::Destroy(atlas);
 	printf("Done\n");
 	return true;
 }
