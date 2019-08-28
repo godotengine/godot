@@ -8257,6 +8257,10 @@ int GDScriptParser::get_error_column() const {
 	return error_column;
 }
 
+bool GDScriptParser::has_error() const {
+	return error_set;
+}
+
 Error GDScriptParser::_parse(const String &p_base_path) {
 
 	base_path = p_base_path;

@@ -37,6 +37,7 @@
 #include "editor/gdscript_highlighter.h"
 #include "gdscript.h"
 #include "gdscript_tokenizer.h"
+#include "language_server/gdscript_language_server.h"
 
 GDScriptLanguage *script_language_gd = NULL;
 Ref<ResourceFormatLoaderGDScript> resource_loader_gd;
@@ -44,6 +45,7 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 
 #ifdef TOOLS_ENABLED
 
+#include "core/engine.h"
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
@@ -134,6 +136,11 @@ static void _editor_init() {
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
+
+	register_lsp_types();
+	GDScriptLanguageServer *lsp_plugin = memnew(GDScriptLanguageServer);
+	EditorNode::get_singleton()->add_editor_plugin(lsp_plugin);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton()));
 }
 
 #endif
