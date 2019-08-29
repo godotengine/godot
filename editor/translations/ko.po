@@ -17,7 +17,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-21 11:06+0000\n"
+"PO-Revision-Date: 2019-08-04 14:23+0000\n"
 "Last-Translator: 송태섭 <xotjq237@gmail.com>\n"
 "Language-Team: Korean <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ko/>\n"
@@ -138,29 +138,24 @@ msgid "Anim Change Call"
 msgstr "애니메이션 호출 변경"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "애니메이션 키프레임 시간 변경"
+msgstr "애니메이션 여러 키프레임 시간 변경"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "애니메이션 전환 변경"
+msgstr "애니메이션 여러 전환 변경"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "애니메이션 변형 변경"
+msgstr "애니메이션 여러 변형 변경"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "애니메이션 키프레임 값 변경"
+msgstr "애니메이션 여러 키프레임 값 변경"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "애니메이션 호출 변경"
+msgstr "애니메이션 여러 호출 변경"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -1784,32 +1779,28 @@ msgid "Move Favorite Down"
 msgstr "즐겨찾기 아래로 이동"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "부모 폴더로 이동합니다."
+msgstr "이전 폴더로 이동합니다."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "부모 폴더로 이동합니다."
+msgstr "다음 폴더로 이동합니다."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "부모 폴더로 이동합니다."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "파일 검색"
+msgstr "파일을 새로고침합니다."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "현재 폴더를 즐겨찾기 (안) 합니다."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "숨김 파일 가시성 토글하기."
+msgstr "감춘 파일의 표시 여부 토글하기."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -3062,9 +3053,8 @@ msgid "Calls"
 msgstr "호출"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "테마 편집"
+msgstr "문자 편집:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -6747,14 +6737,12 @@ msgid "Rear"
 msgstr "뒷면"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "뷰와 정렬"
+msgstr "변형을 뷰에 정렬"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "선택 항목을 뷰에 정렬"
+msgstr "회전을 뷰에 정렬"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -9833,9 +9821,8 @@ msgid "Extend Script"
 msgstr "스크립트 펼치기"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "부모 노드 재지정"
+msgstr "새 노드에 부모 노드 재지정"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"

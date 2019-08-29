@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"PO-Revision-Date: 2019-08-04 14:23+0000\n"
 "Last-Translator: Tapani Niemi <tapani.niemi@kapsi.fi>\n"
 "Language-Team: Finnish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fi/>\n"
@@ -134,29 +134,24 @@ msgid "Anim Change Call"
 msgstr "Animaatio: muuta kutsua"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Animaatio: muuta avainruudun aikaa"
+msgstr "Animaatio: muuta monen avainruudun aikaa"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Animaatio: muuta siirtymää"
+msgstr "Animaatio: muuta monta siirtymää"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Animaatio: muuta muunnosta"
+msgstr "Animaatio: muuta monta muunnosta"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Animaatio: muuta avainruudun arvoa"
+msgstr "Animaatio: muuta monen avainruudun arvoa"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Animaatio: muuta kutsua"
+msgstr "Animaatio: muuta monta kutsua"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -1785,30 +1780,26 @@ msgid "Move Favorite Down"
 msgstr "Siirrä suosikkia alas"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Siirry yläkansioon."
+msgstr "Siirry edelliseen kansioon."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Siirry yläkansioon."
+msgstr "Siirry seuraavaan kansioon."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Siirry yläkansioon."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Etsi tiedostoista"
+msgstr "Lataa uudelleen tiedostot."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Kansio suosikkeihin."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
 msgstr "Aseta piilotiedostojen näyttäminen."
 
@@ -3063,9 +3054,8 @@ msgid "Calls"
 msgstr "Kutsuja"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Muokkaa teemaa"
+msgstr "Muokkaa tekstiä:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -6775,14 +6765,12 @@ msgid "Rear"
 msgstr "Taka"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Kohdista näkymään"
+msgstr "Kohdista muunnos näkymään"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Kohdista valinta näkymään"
+msgstr "Kohdista kierto näkymään"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -9890,9 +9878,8 @@ msgid "Extend Script"
 msgstr "Laajenna skriptiä"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "Vaihda solmun isäntää"
+msgstr "Vaihda solmulle uusi isäntä"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"

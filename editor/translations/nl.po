@@ -35,12 +35,13 @@
 # Jimmy De  Smet <J773@telenet.be>, 2019.
 # Bastiaan van der Plaat <bastiaan.v.d.plaat@gmail.com>, 2019.
 # Hector Peeters <hector.peeters@gmail.com>, 2019.
+# Shawn Gyina <gyina.shawn@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-06-16 19:42+0000\n"
-"Last-Translator: Hector Peeters <hector.peeters@gmail.com>\n"
+"PO-Revision-Date: 2019-08-04 14:23+0000\n"
+"Last-Translator: Shawn Gyina <gyina.shawn@gmail.com>\n"
 "Language-Team: Dutch <https://hosted.weblate.org/projects/godot-engine/godot/"
 "nl/>\n"
 "Language: nl\n"
@@ -48,7 +49,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -108,9 +109,8 @@ msgid "Time:"
 msgstr "Tijd:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "Nieuwe Waarde:"
+msgstr "Waarde:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -492,10 +492,19 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Deze animatie behoort tot een geïmporteerde scène, dus veranderingen aan "
+"geïmporteerde tracks zullen niet worden opgeslagen.\n"
+"\n"
+"Om aangepaste tracks toe te voegen, navigeert u naar de importinstellingen "
+"van de scène en stelt u deze in\n"
+"\"Animation > Storage\" naar \"Files\", schakel \"Animation > Keep Custom "
+"Tracks\" in, dan herimporteren.\n"
+"U kunt ook een importvoorinstelling gebruiken die animaties importeert om "
+"bestanden te scheiden."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "Waarschuwing:  Geïmporteerde animatie bewerken"
 
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -503,9 +512,8 @@ msgid "Select All"
 msgstr "Alles Selecteren"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select None"
-msgstr "Alles Selecteren"
+msgstr "Niets Selecteren"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -684,7 +692,7 @@ msgstr "Regelnummer:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "%d overeenkomst(en) gevonden."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -744,17 +752,15 @@ msgid "Line and column numbers."
 msgstr "Regel- en kolomnummers."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "Methode in doel Node moet gespecificeerd worden!"
+msgstr "Methode in doel Node moet gespecificeerd worden."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Doel methode niet gevonden! Specificeer een geldige methode of koppel een "
+"Doel methode niet gevonden. Specificeer een geldige methode of koppel een "
 "script aan de doel Node."
 
 #: editor/connections_dialog.cpp

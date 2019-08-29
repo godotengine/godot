@@ -44,7 +44,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-21 11:06+0000\n"
+"PO-Revision-Date: 2019-08-22 17:23+0000\n"
 "Last-Translator: Javier Ocampos <xavier.ocampos@gmail.com>\n"
 "Language-Team: Spanish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/es/>\n"
@@ -53,19 +53,19 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "El argumento para convert() no es correcto, utiliza constantes TYPE_*."
+msgstr "El argumento para convert() es invalido, utiliza constantes TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
-"No hay suficientes bytes para decodificar bytes, o el formato no es válido."
+"No hay suficientes bytes para decodificar bytes, o el formato es invalido."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
@@ -165,29 +165,24 @@ msgid "Anim Change Call"
 msgstr "Cambiar Llamada de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Cambiar Tiempo del Fotograma Clave de Animación"
+msgstr "Cambiar Tiempo de Múltiples Keyframes de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Cambiar Transición de Animación"
+msgstr "Cambiar Múltiples Transiciones de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Cambiar Transformación de la Animación"
+msgstr "Cambiar Múltiples Transforms de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambiar Valor de la Clave de Animación"
+msgstr "Cambiar Valor de Múltiples Keyframes de Animación"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Cambiar Llamada de Animación"
+msgstr "Cambiar Múltiples Llamadas de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -464,7 +459,7 @@ msgstr "Método no encontrado en el objeto: "
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Move Keys"
-msgstr "Mover Claves de Anim"
+msgstr "Mover Claves de Animación"
 
 #: editor/animation_track_editor.cpp
 msgid "Clipboard is empty"
@@ -1828,32 +1823,28 @@ msgid "Move Favorite Down"
 msgstr "Bajar Favorito"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Ir a la carpeta padre."
+msgstr "Ir a la carpeta anterior."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Ir a la carpeta padre."
+msgstr "Ir a la carpeta siguiente."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Ir a la carpeta padre."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Buscar archivos"
+msgstr "Refrescar archivos."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Eliminar carpeta actual de favoritos."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "Ver/Ocultar archivos ocultos."
+msgstr "Mostrar/Ocultar archivos ocultos."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -3131,9 +3122,8 @@ msgid "Calls"
 msgstr "Llamadas"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Editar Tema"
+msgstr "Editar Texto:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -6850,14 +6840,12 @@ msgid "Rear"
 msgstr "Detrás"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Alinear con Vista"
+msgstr "Alinear Transform con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Alinear Selección Con Vista"
+msgstr "Alinear Rotación con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -9975,9 +9963,8 @@ msgid "Extend Script"
 msgstr "Extender Script"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "Reemparentar nodo"
+msgstr "Reemparentar a Nuevo Nodo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"

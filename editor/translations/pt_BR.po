@@ -65,12 +65,13 @@
 # Rarysson Guilherme <r_guilherme12@hotmail.com>, 2019.
 # Gustavo da Silva Santos <gustavo94.rb@gmail.com>, 2019.
 # Rafael Roque <rafael.roquec@gmail.com>, 2019.
+# José Victor Dias Rodrigues <zoldyakopersonal@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: 2016-05-30\n"
-"PO-Revision-Date: 2019-07-29 19:20+0000\n"
-"Last-Translator: Rafael Roque <rafael.roquec@gmail.com>\n"
+"PO-Revision-Date: 2019-08-21 15:56+0000\n"
+"Last-Translator: Julio Yagami <juliohenrique31501234@hotmail.com>\n"
 "Language-Team: Portuguese (Brazil) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/pt_BR/>\n"
 "Language: pt_BR\n"
@@ -78,7 +79,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n > 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1839,32 +1840,28 @@ msgid "Move Favorite Down"
 msgstr "Mover Favorito Abaixo"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Ir para diretório (pasta) pai."
+msgstr "Ir para a pasta anterior."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Ir para diretório (pasta) pai."
+msgstr "Ir para a próxima pasta."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Ir para diretório (pasta) pai."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Pesquisar arquivos"
+msgstr "Atualizar arquivos."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "(Des)favoritar pasta atual."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "Alternar visibilidade de arquivos ocultos."
+msgstr "Alternar a visibilidade de arquivos ocultos."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -3130,9 +3127,8 @@ msgid "Calls"
 msgstr "Chamadas"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Editar Tema"
+msgstr "Editar Texto:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -6850,12 +6846,12 @@ msgstr "Traseira"
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Align Transform with View"
-msgstr "Alinhar com a Vista"
+msgstr "Alinhar Transformação com a Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Align Rotation with View"
-msgstr "Alinhar Seleção com Visualização"
+msgstr "Alinhar Rotação com a Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7835,7 +7831,7 @@ msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Set Tile Region"
-msgstr "Definir a região da Telha"
+msgstr "Definir a região do Mosaico"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Create Tile"
@@ -7946,14 +7942,12 @@ msgid "Add output port"
 msgstr "Adicionar porta de saída"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change input port type"
-msgstr "Mudar tipo de porta de entrada"
+msgstr "Alterar tipo da porta de entrada"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Change output port type"
-msgstr "Mudar tipo de porta de saída"
+msgstr "Alterar tipo da porta de saída"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Change input port name"
@@ -8406,7 +8400,7 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
-"Função SmoothStep( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"Função SmoothStep( escalar(edge0), escalar(edge1), escalar(x) ).\n"
 "\n"
 "Retorna 0.0 se 'x' é menor que 'edge0' e 1.0 se 'x' é maior que 'edge1'. "
 "Caso contrário o valor retornado é interpolado entre 0.0 e 1.0 utilizando "
@@ -8419,7 +8413,7 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
-"Função Step( scalar(edge), scalar(x) ).\n"
+"Função Step( escalar(edge), escalar(x) ).\n"
 "\n"
 "Retorna 0.0 se 'x' é menor que 'edge' e 1.0 caso contrário."
 
@@ -8428,14 +8422,12 @@ msgid "Returns the tangent of the parameter."
 msgstr "Retorna a tangente do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr "(Somente em GLES3) Retorna a tangente hiperbólica do parâmetro."
+msgstr "Retorna a tangente hiperbólica do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Finds the truncated value of the parameter."
-msgstr "(Somente em GLES3) Encontra o valor truncado do parâmetro."
+msgstr "Encontra o valor truncado do parâmetro."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8443,19 +8435,17 @@ msgid "Adds scalar to scalar."
 msgstr "Adiciona escalar a escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Divides scalar by scalar."
 msgstr "Divide escalar por escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Multiplies scalar by scalar."
 msgstr "Multiplica escalar por escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Returns the remainder of the two scalars."
-msgstr "Retorna o resto das duas escalares."
+msgstr "Retorna o resto de dois escalares."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8478,8 +8468,9 @@ msgid "Perform the cubic texture lookup."
 msgstr "Faça a pesquisa da textura cúbica."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Perform the texture lookup."
-msgstr ""
+msgstr "Fazer pesquisa da textura."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy

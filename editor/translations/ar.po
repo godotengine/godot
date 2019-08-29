@@ -29,12 +29,13 @@
 # ButterflyOfFire <ButterflyOfFire@protonmail.com>, 2019.
 # PhoenixHO <oussamahaddouche0@gmail.com>, 2019.
 # orcstudio <orcstudio@orcstudio.org>, 2019.
+# Rachid Graphicos <graphicos1d@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-29 19:20+0000\n"
-"Last-Translator: orcstudio <orcstudio@orcstudio.org>\n"
+"PO-Revision-Date: 2019-08-15 10:23+0000\n"
+"Last-Translator: Rachid Graphicos <graphicos1d@gmail.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -43,7 +44,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.8\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -6421,7 +6422,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Error saving"
-msgstr ""
+msgstr "خطأ في الحفظ"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save Theme As..."
@@ -6435,7 +6436,7 @@ msgstr " مرجع الصنف"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 msgid "Find Next"
-msgstr ""
+msgstr "بحث عن التالي"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6459,13 +6460,13 @@ msgstr "ترتيب"
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Up"
-msgstr ""
+msgstr "تحريك لأعلى"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp editor/scene_tree_dock.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Move Down"
-msgstr ""
+msgstr "تحرك لأسفل"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Next script"
@@ -6477,7 +6478,7 @@ msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "File"
-msgstr ""
+msgstr "ملف"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6486,7 +6487,7 @@ msgstr "إفتح"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
-msgstr ""
+msgstr "احفظ الكل"
 
 #: editor/plugins/script_editor_plugin.cpp
 msgid "Soft Reload Script"
@@ -11890,18 +11891,16 @@ msgid "Input"
 msgstr "إدخال"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "مصدر غير صالح لتظليل."
+msgstr "مصدر غير صالح للمعاينة."
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
 msgstr "مصدر غير صالح لتظليل."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "مصدر غير صالح لتظليل."
+msgstr "comparison function غير صالحة لهذا النوع."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

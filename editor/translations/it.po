@@ -43,7 +43,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"PO-Revision-Date: 2019-08-04 14:23+0000\n"
 "Last-Translator: No <kingofwizards.kw7@gmail.com>\n"
 "Language-Team: Italian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/it/>\n"
@@ -165,29 +165,24 @@ msgid "Anim Change Call"
 msgstr "Cambia chiamata animazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Anim Cambia Tempo Keyframe"
+msgstr "Anim Cambio Multiplo Tempo Keyframe"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Cambia transizione dell'animazione"
+msgstr "Animazione Cambio Multiplo Transizione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Cambia trasformazione dell'animazione"
+msgstr "Animazione Cambio Multiplo Trasformazione"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambia valore fotogramma chiave dell'animazione"
+msgstr "Animazione Cambio Multiplo Valore Keyframe"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Cambia chiamata animazione"
+msgstr "Animazione Cambio Multiplo Chiamata"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -1820,30 +1815,26 @@ msgid "Move Favorite Down"
 msgstr "Sposta preferito in giù"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Va' alla cartella superiore."
+msgstr "Vai alla cartella precedente."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Va' alla cartella superiore."
+msgstr "Vai alla cartella successiva."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Va' alla cartella superiore."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Cerca file"
+msgstr "Ricarica files."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Aggiungi/rimuovi cartella attuale dai preferiti."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
 msgstr "Attiva/disattiva visibilità dei file nascosti."
 
@@ -3121,9 +3112,8 @@ msgid "Calls"
 msgstr "Chiamate"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Modifica Tema"
+msgstr "Modifica Testo:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -4841,9 +4831,8 @@ msgid "Sort:"
 msgstr "Ordina:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Reverse sorting."
-msgstr "Richiedendo..."
+msgstr "Ordinamento inverso."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
@@ -6840,14 +6829,12 @@ msgid "Rear"
 msgstr "Retro"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Allinea alla Vista"
+msgstr "Allinea Trasformazione con la Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Allinea Selezione Con Vista"
+msgstr "Allinea Rotazione con la Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -8131,7 +8118,6 @@ msgid "Less Than or Equal (<=)"
 msgstr "Minore o Uguale (<=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Not Equal (!=)"
 msgstr "Non Uguale (!=)"
 
@@ -8451,19 +8437,16 @@ msgid "Perform the texture lookup."
 msgstr "Esegue la ricerca di texture."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Cubic texture uniform lookup."
-msgstr "Controllo dinamico dell'uniforme della texture cubica."
+msgstr "Controllo dell'uniforme della texture cubica."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform lookup."
-msgstr "Controllo dinamico dell'uniforme della texture 2D."
+msgstr "Controllo dell'uniforme della texture 2D."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "2D texture uniform lookup with triplanar."
-msgstr "Controllo dinamico dell'uniforme della texture cubica con triplanar."
+msgstr "Controllo dell'uniforme della texture cubica con triplanar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform function."
@@ -8552,7 +8535,6 @@ msgid "Calculates the dot product of two vectors."
 msgstr "Calcola il prodotto scalare di due vettori."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns the vector that points in the same direction as a reference vector. "
 "The function has three vector parameters : N, the vector to orient, I, the "
@@ -8561,8 +8543,8 @@ msgid ""
 msgstr ""
 "Ritorna un vettore che punta nella stessa direzione di quello di "
 "riferimento. La funzione ha tre vettori parametro: N, il vettore da "
-"orientare; I, il vettore incidente; ed Nref, il vettore di riferimento. Se "
-"il prodotto scalare di I ed Nref è minore di zero, il valore di ritorno è N. "
+"orientare; I, quello incidente; ed Nref, il vettore di riferimento. Se il "
+"prodotto scalare di I ed Nref è minore di zero, il valore di ritorno è N. "
 "Altrimenti il ritorno sarà -N."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8586,7 +8568,6 @@ msgid "1.0 / vector"
 msgstr "1.0 / vettore"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
@@ -8595,7 +8576,6 @@ msgstr ""
 "incidente, b : vettore normale )."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Returns the vector that points in the direction of refraction."
 msgstr "Ritorna un vettore che punta nella direzione della refrazione."
 
@@ -8695,69 +8675,60 @@ msgstr ""
 "superfice e direzione della telecamera (passa gli input associati ad essa)."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "(Fragment/Light mode only) Scalar derivative function."
-msgstr "(solo GLES3) (Solo modalità Fragment/Light) Fuzione derivata scalare."
+msgstr "(Solo modalità Fragment/Light) Fuzione derivata scalare."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "(Fragment/Light mode only) Vector derivative function."
-msgstr ""
-"(solo GLES3) (Solo modalità Fragment/Light) Fuzione derivata vettoriale."
+msgstr "(Solo modalità Fragment/Light) Fuzione derivata vettoriale."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(solo GLES3) (Solo modalità Fragment/Light) (Vettore) Derivata in 'x' usando "
-"la differenziazione locale."
+"(Solo modalità Fragment/Light) (Vettore) Derivata in 'x' usando la "
+"differenziazione locale."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'x' using local "
 "differencing."
 msgstr ""
-"(solo GLES3) (Solo modalità Fragment/Light) (Scalare) Derivata in 'x' usando "
-"la differeziazione locale."
+"(Solo modalità Fragment/Light) (Scalare) Derivata in 'x' usando la "
+"differeziazione locale."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(solo GLES3) (soltanto modalità Fragment/Light) (Vettore) Derivata in 'y' "
-"usando la differenziazione locale."
+"(Soltanto modalità Fragment/Light) (Vettore) Derivata in 'y' usando la "
+"differenziazione locale."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Derivative in 'y' using local "
 "differencing."
 msgstr ""
-"(solo GLES3) (soltanto modalità Fragment/Light) (Scalare) Derivata in 'y' "
-"usando la differenziazione locale."
+"(Soltanto modalità Fragment/Light) (Scalare) Derivata in 'y' usando la "
+"differenziazione locale."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(solo GLES3) (soltanto modalità Fragment/Light) (Vettore) Somma delle "
-"derivate assolute in 'x' ed 'y'."
+"(Soltanto modalità Fragment/Light) (Vettore) Somma delle derivate assolute "
+"in 'x' ed 'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid ""
 "(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and "
 "'y'."
 msgstr ""
-"(solo GLES3) (soltanto modalità Fragment/Light) (Scalare) Somma delle "
-"derivate assolute in 'x' ed 'y'."
+"(Soltanto modalità Fragment/Light) (Scalare) Somma delle derivate assolute "
+"in 'x' ed 'y'."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "VisualShader"
@@ -9984,9 +9955,8 @@ msgid "Extend Script"
 msgstr "Estendi Script"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "Reparent Nodo"
+msgstr "Reparent a Nuovo Nodo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -10205,9 +10175,8 @@ msgid "Script is valid."
 msgstr "Lo script è valido."
 
 #: editor/script_create_dialog.cpp
-#, fuzzy
 msgid "Allowed: a-z, A-Z, 0-9, _ and ."
-msgstr "Consentiti: a-z, A-Z, 0-9 e _"
+msgstr "Consentiti: a-z, A-Z, 0-9, _ e ."
 
 #: editor/script_create_dialog.cpp
 msgid "Built-in script (into scene file)."
@@ -11910,9 +11879,8 @@ msgid "Invalid source for shader."
 msgstr "Sorgente non valida per la shader."
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "Sorgente non valida per la shader."
+msgstr "Funzione di confronto non valida per quel tipo."
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

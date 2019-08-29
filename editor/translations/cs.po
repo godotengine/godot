@@ -11,12 +11,14 @@
 # zxey <r.hozak@seznam.cz>, 2018.
 # Vojtěch Šamla <auzkok@seznam.cz>, 2018, 2019.
 # Peeter Angelo <contact@peeterangelo.com>, 2019.
+# VojtechBrezina <vojta.brezina@gmail.com>, 2019.
+# Garrom Orc Shaman <garromorcshaman@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-09 10:46+0000\n"
-"Last-Translator: Martin Novák <maidx@seznam.cz>\n"
+"PO-Revision-Date: 2019-08-21 15:57+0000\n"
+"Last-Translator: VojtechBrezina <vojta.brezina@gmail.com>\n"
 "Language-Team: Czech <https://hosted.weblate.org/projects/godot-engine/godot/"
 "cs/>\n"
 "Language: cs\n"
@@ -24,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=(n==1) ? 0 : (n>=2 && n<=4) ? 1 : 2;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -136,27 +138,22 @@ msgid "Anim Change Call"
 msgstr "Animace: změna volání"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Animace: Změnit čas klíčového snímku"
+msgstr "Animace: Změnit čas klíčových snímků"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Animace: změna přechodu"
+msgstr "Animace: změna přechodů"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Animace: změna transformace"
+msgstr "Animace: změna transformací"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Animace: Změnit hodnotu klíčového snímku"
+msgstr "Animace: Změnit hodnotu klíčových snímků"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
 msgstr "Animace: změna volání"
 
@@ -232,7 +229,7 @@ msgstr "Aktivovat/Deaktivovat tuto stopu."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
-msgstr "Režim aktualizece (jak je tato vlastnost nastavena)"
+msgstr "Režim aktualizace (jak je tato vlastnost nastavena)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
@@ -291,7 +288,6 @@ msgid "Clamp Loop Interp"
 msgstr "Režim svorkové smyčky"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Wrap Loop Interp"
 msgstr "Interpolace ovinutou smyčkou"
 
@@ -317,9 +313,8 @@ msgid "Change Animation Interpolation Mode"
 msgstr "Změnit režim interpolace animace"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Change Animation Loop Mode"
-msgstr "Změnit smyčku animace"
+msgstr "Změnit režim smyčky animace"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove Anim Track"
@@ -350,7 +345,7 @@ msgstr "Animace: vložit"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
-msgstr "AnimationPlayer nemůže animovat sám sebe, pouze ostatní."
+msgstr "AnimationPlayer nemůže animovat sám sebe, pouze ostatní přehrávače."
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
@@ -413,23 +408,20 @@ msgid "Track is not of type Spatial, can't insert key"
 msgstr "Stopa není typu Spatial, nelze vložit klíč"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Transform Track Key"
-msgstr "Stopa 3D transformace"
+msgstr "Přidat klíč stopy transformace"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Track Key"
-msgstr "Přidat stopu"
+msgstr "Přidat klíč stopy"
 
 #: editor/animation_track_editor.cpp
 msgid "Track path is invalid, so can't add a method key."
 msgstr "Cesta stopy není validní, nelze vložit klíč metody."
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Add Method Track Key"
-msgstr "Stopa volání metody"
+msgstr "Přidat klíč volání metody"
 
 #: editor/animation_track_editor.cpp
 msgid "Method not found in object: "
@@ -452,12 +444,11 @@ msgid "Anim Scale Keys"
 msgstr "Animace: změnit měřítko klíčů"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid ""
 "This option does not work for Bezier editing, as it's only a single track."
 msgstr ""
-"Tato možnost nefunguje s Beziérovými úpravami, protože se jedná pouze o "
-"jednu stopu."
+"Tato možnost nefunguje pro úpravy Beziérovy křivky , protože se jedná pouze "
+"o jednu stopu."
 
 #: editor/animation_track_editor.cpp
 msgid ""
@@ -471,6 +462,15 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Tato animace patří k importované scéně, takže změny na importovaných stopách "
+"nebudou uloženy\n"
+"\n"
+"Aby jste povolily možnost přidávat vlastní stopy, běžte do nastavení importu "
+"této scény a nastavte\n"
+"\"Animace > Úložiště\" na \"Soubory\", Povolte \"Animace > Ponechat vlastní "
+"stopy\", poté re-importujte.\n"
+"Alternativně použijte přednastavení importu které importuje animace do "
+"separovaných souborů."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -482,9 +482,8 @@ msgid "Select All"
 msgstr "Vybrat vše"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select None"
-msgstr "Vybrat uzel"
+msgstr "Nevybrat nic"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -629,17 +628,16 @@ msgid "Copy"
 msgstr "Kopírovat"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Audio klipy:"
+msgstr "Přidat klip audio stopy"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Změnit počáteční pozici audio klipu"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Změnit koncovou pozici audio klipu"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -663,7 +661,7 @@ msgstr "Číslo řádku:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "Nalezeno %d shod(a)."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -723,33 +721,28 @@ msgid "Line and column numbers."
 msgstr "Čísla řádků a sloupců."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "Je nutné zadat metodu v cílovém uzlu!"
+msgstr "Je nutné zadat metodu v cílovém uzlu."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Cílová metoda nenalezena! Specifikujte existující metodu, nebo k cílovému "
+"Cílová metoda nenalezena. Specifikujte existující metodu, nebo k cílovému "
 "uzlu připojte skript."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
 msgstr "Připojit k uzlu:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Nelze se připojit k hostiteli:"
+msgstr "Připojit ke skriptu:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "Signály:"
+msgstr "Z signálu:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
@@ -781,9 +774,8 @@ msgid "Extra Call Arguments:"
 msgstr "Další argumenty volání:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Advanced"
-msgstr "Pokročilé možnosti"
+msgstr "Pokročilé"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
@@ -858,7 +850,7 @@ msgstr "Připojit Signál: "
 #: editor/connections_dialog.cpp
 #, fuzzy
 msgid "Edit Connection:"
-msgstr "Upravit připojení: "
+msgstr "Upravit připojení:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -1558,9 +1550,8 @@ msgid "On 32-bit exports the embedded PCK cannot be bigger than 4 GiB."
 msgstr ""
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "3D Editor"
-msgstr "Editor"
+msgstr "3D Editor"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy

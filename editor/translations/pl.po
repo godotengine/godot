@@ -39,7 +39,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-29 19:20+0000\n"
+"PO-Revision-Date: 2019-08-29 13:35+0000\n"
 "Last-Translator: Tomek <kobewi4e@gmail.com>\n"
 "Language-Team: Polish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/pl/>\n"
@@ -49,7 +49,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=3; plural=n==1 ? 0 : n%10>=2 && n%10<=4 && (n%100<10 "
 "|| n%100>=20) ? 1 : 2;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -162,29 +162,24 @@ msgid "Anim Change Call"
 msgstr "Animacja - wywołanie funkcji"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Zmiana czasu klatki kluczowej"
+msgstr "Zmień czas wielu klatek animacji"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Zmiana przejścia"
+msgstr "Zmień przejście wielu klatek animacji"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Zmiana transformacji"
+msgstr "Zmień transformację wielu klatek animacji"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Zmiana wartości klatki kluczowej"
+msgstr "Zmień wartość wielu klatek animacji"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Animacja - wywołanie funkcji"
+msgstr "Zmień wywołanie wielu klatek animacji"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -534,7 +529,7 @@ msgstr "sekund"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr "Klatki na sekundę"
+msgstr "klatek na sekundę"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -1810,30 +1805,26 @@ msgid "Move Favorite Down"
 msgstr "Przesuń Ulubiony w dół"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Przejdź folder wyżej."
+msgstr "Przejdź do poprzedniego folderu."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Przejdź folder wyżej."
+msgstr "Przejdź do następnego folderu."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Przejdź folder wyżej."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Przeszukaj pliki"
+msgstr "Odśwież pliki."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Dodaj/usuń aktualny folder z ulubionych."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
 msgstr "Przełącz widoczność ukrytych plików."
 
@@ -1964,7 +1955,7 @@ msgid ""
 "url][/color]."
 msgstr ""
 "Obecnie nie ma żadnych samouczków dla tej klasy, możesz [color=$color][url="
-"$url]dodać jeden[/url][/color] lub [color=$color] [url=$url2]poprosić o "
+"$url]dodać jeden[/url][/color] lub [color=$color][url=$url2]poprosić o "
 "jakiś[/url][/color]."
 
 #: editor/editor_help.cpp
@@ -2633,7 +2624,7 @@ msgstr "Ponów"
 
 #: editor/editor_node.cpp
 msgid "Revert Scene"
-msgstr "Resetuj scenę"
+msgstr "Przywróć scenę"
 
 #: editor/editor_node.cpp
 msgid "Miscellaneous project or scene-wide tools."
@@ -3090,9 +3081,8 @@ msgid "Calls"
 msgstr "Wywołania"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Edytuj motyw"
+msgstr "Edytuj tekst:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -6413,7 +6403,7 @@ msgid ""
 "What action should be taken?:"
 msgstr ""
 "Następujące pliki są nowsze na dysku.\n"
-"Jakie działania należy podjąć?:"
+"Jakie działania powinny zostać podjęte?:"
 
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/shader_editor_plugin.cpp
@@ -6800,14 +6790,12 @@ msgid "Rear"
 msgstr "Tył"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Dopasuj do widoku"
+msgstr "Dopasuj położenie do widoku"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Dopasuj zaznaczenie do widoku"
+msgstr "Dopasuj obrót do widoku"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -9921,7 +9909,6 @@ msgid "Extend Script"
 msgstr "Rozszerz skrypt"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
 msgstr "Zmień nadrzędny węzeł"
 

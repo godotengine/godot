@@ -33,7 +33,7 @@
 # 小菠萝粑粑 <2062152083@qq.com>, 2018.
 # 刘庆文 <liuqingwen@163.com>, 2018.
 # Haowen Liu <liu.haowen.andy@gmail.com>, 2018.
-# tangdou1 <1093505442@qq.com>, 2018.
+# tangdou1 <1093505442@qq.com>, 2018, 2019.
 # yzt <834950797@qq.com>, 2018, 2019.
 # DKLost <514dklost@gmail.com>, 2018.
 # thanksshu <hezihanshangyuan@gmail.com>, 2018.
@@ -52,12 +52,14 @@
 # Lyu Shiqing <shiqing-thu18@yandex.com>, 2019.
 # ColdThunder11 <lslyj27761@gmail.com>, 2019.
 # liu lizhi <kz-xy@163.com>, 2019.
+# 王徐 <jackey20000331@gmail.com>, 2019.
+# 巴哈姆特 <ttwings@126.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Chinese (Simplified) (Godot Engine)\n"
 "POT-Creation-Date: 2018-01-20 12:15+0200\n"
-"PO-Revision-Date: 2019-07-19 13:42+0000\n"
-"Last-Translator: liu lizhi <kz-xy@163.com>\n"
+"PO-Revision-Date: 2019-08-29 13:35+0000\n"
+"Last-Translator: yzt <834950797@qq.com>\n"
 "Language-Team: Chinese (Simplified) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/zh_Hans/>\n"
 "Language: zh_CN\n"
@@ -65,7 +67,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=1; plural=0;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -176,29 +178,24 @@ msgid "Anim Change Call"
 msgstr "修改回调"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "修改动画关键帧的时长"
+msgstr "修改多个动画关键帧的时长"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "修改动画过渡方式"
+msgstr "修改多个动画过渡方式"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "修改动画变换"
+msgstr "动画多次修改变换量"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "修改动画关键帧的值"
+msgstr "修改多个动画关键帧的值"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "修改回调"
+msgstr "修改多个回调"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -1647,7 +1644,7 @@ msgstr "未设置"
 
 #: editor/editor_feature_profile.cpp
 msgid "Current Profile:"
-msgstr "当前配置文件"
+msgstr "当前配置文件:"
 
 #: editor/editor_feature_profile.cpp
 msgid "Make Current"
@@ -1801,32 +1798,28 @@ msgid "Move Favorite Down"
 msgstr "向下移动收藏"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "转到父文件夹。"
+msgstr "转到上个文件夹。"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "转到父文件夹。"
+msgstr "转到下个文件夹。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "转到父文件夹。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "搜索文件"
+msgstr "刷新文件。"
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "（取消）收藏当前文件夹。"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "切换显示隐藏文件。"
+msgstr "切换隐藏文件的可见性。"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -1859,11 +1852,10 @@ msgid "ScanSources"
 msgstr "扫描源文件"
 
 #: editor/editor_file_system.cpp
-#, fuzzy
 msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
-msgstr "%s 文件存在多种导入方式、自动导入失败。"
+msgstr "不同类型的%s 文件存在多种导入方式，自动导入失败"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
@@ -2200,12 +2192,11 @@ msgstr ""
 "请阅读与导入场景相关的文档, 以便更好地理解此工作流。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid ""
 "This resource belongs to a scene that was instanced or inherited.\n"
 "Changes to it won't be kept when saving the current scene."
 msgstr ""
-"此资源属于实例或继承的场景。\n"
+"这个资源属于实例或继承的场景。\n"
 "保存当前场景时不会保留对它的更改。"
 
 #: editor/editor_node.cpp
@@ -2487,9 +2478,8 @@ msgid "Close Tabs to the Right"
 msgstr "关闭右侧"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Close All Tabs"
-msgstr "关闭全部"
+msgstr "关闭全部标签"
 
 #: editor/editor_node.cpp
 msgid "Switch Scene Tab"
@@ -2532,9 +2522,8 @@ msgid "Go to previously opened scene."
 msgstr "前往上一个打开的场景。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Copy Text"
-msgstr "拷贝路径"
+msgstr "复制文本"
 
 #: editor/editor_node.cpp
 msgid "Next tab"
@@ -2851,14 +2840,12 @@ msgid "Spins when the editor window redraws."
 msgstr "编辑器窗口重绘时旋转。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update Continuously"
-msgstr "连续"
+msgstr "持续更新"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Update When Changed"
-msgstr "有更改时更新UI"
+msgstr "当有更改时更新"
 
 #: editor/editor_node.cpp
 #, fuzzy
@@ -2894,9 +2881,8 @@ msgid "Android build template is missing, please install relevant templates."
 msgstr "缺失 Android 构建模板，请安装相应的模板。"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Manage Templates"
-msgstr "管理导出模板"
+msgstr "管理模板"
 
 #: editor/editor_node.cpp
 msgid ""
@@ -3058,9 +3044,8 @@ msgid "Calls"
 msgstr "调用次数"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "编辑主题..."
+msgstr "编辑文本："
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -3382,9 +3367,8 @@ msgid "SSL Handshake Error"
 msgstr "SSL 握手错误"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Uncompressing Android Build Sources"
-msgstr "无压缩资源"
+msgstr "无压缩的Android Build资源"
 
 #: editor/export_template_manager.cpp
 msgid "Current Version:"
@@ -3403,9 +3387,8 @@ msgid "Remove Template"
 msgstr "移除模板"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Select Template File"
-msgstr "删除选中模板文件"
+msgstr "选择模板文件"
 
 #: editor/export_template_manager.cpp
 msgid "Export Template Manager"
@@ -3489,9 +3472,8 @@ msgid "Duplicating folder:"
 msgstr "复制文件夹:"
 
 #: editor/filesystem_dock.cpp
-#, fuzzy
 msgid "New Inherited Scene"
-msgstr "新建继承的场景…"
+msgstr "新继承的场景"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -5182,12 +5164,10 @@ msgid "Preview Canvas Scale"
 msgstr "精灵集预览"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Translation mask for inserting keys."
 msgstr "用于插入键的转换掩码。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#, fuzzy
 msgid "Rotation mask for inserting keys."
 msgstr "用于插入键的旋转掩码。"
 
@@ -5206,6 +5186,9 @@ msgid ""
 "Keys are only added to existing tracks, no new tracks will be created.\n"
 "Keys must be inserted manually for the first time."
 msgstr ""
+"当对象位移变化，按缩放比例旋转（基于蒙版）时自动插入关键帧。\n"
+"关键帧键只会添加到现有轨道，不会创建新轨道。\n"
+"第一次必须手动插入关键帧。"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Auto Insert Key"
@@ -7336,7 +7319,7 @@ msgstr "步长（秒）:"
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "Sep.:"
-msgstr "九月："
+msgstr "间隔："
 
 #: editor/plugins/texture_region_editor_plugin.cpp
 msgid "TextureRegion"
@@ -7427,8 +7410,9 @@ msgid "Checked Radio Item"
 msgstr "已选单选项目"
 
 #: editor/plugins/theme_editor_plugin.cpp
+#, fuzzy
 msgid "Named Sep."
-msgstr ""
+msgstr "称为 Sep。"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Submenu"
@@ -7476,7 +7460,7 @@ msgstr "允许编辑子孙节点"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Subtree"
-msgstr ""
+msgstr "子树"
 
 #: editor/plugins/theme_editor_plugin.cpp
 msgid "Has,Many,Options"
@@ -7870,7 +7854,7 @@ msgstr "不能修改该属性。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
-msgstr "瓦片集"
+msgstr "砖块集"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -7970,7 +7954,7 @@ msgstr "可视着色器输入类型已更改"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
-msgstr ""
+msgstr "只使用GLES3"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Vertex"
@@ -8017,12 +8001,14 @@ msgid "Sepia function."
 msgstr "重命名函数"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Burn operator."
-msgstr ""
+msgstr "Burn 操作。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Darken operator."
-msgstr ""
+msgstr "Darken 运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8030,325 +8016,328 @@ msgid "Difference operator."
 msgstr "仅不同"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Dodge operator."
-msgstr ""
+msgstr "Dodge 运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "HardLight operator"
-msgstr ""
+msgstr "HardLight 操作"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Lighten operator."
-msgstr ""
+msgstr "Lighten运算."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Overlay operator."
-msgstr ""
+msgstr "叠加运算符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Screen operator."
-msgstr ""
+msgstr "屏幕操作符。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "SoftLight operator."
-msgstr ""
+msgstr "SoftLight 操作符."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Color constant."
-msgstr "常量"
+msgstr "颜色常量."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Color uniform."
-msgstr "清除变换"
+msgstr "颜色均匀。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Returns the boolean result of the %s comparison between two parameters."
-msgstr ""
+msgstr "返回两个参数之间％s比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
-msgstr ""
+msgstr "等于 (==)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than (>)"
-msgstr ""
+msgstr "大于 (>)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than or Equal (>=)"
-msgstr ""
+msgstr "大于等于 (>=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided scalars are equal, greater or "
 "less."
-msgstr ""
+msgstr "如果提供的标量相等，更大或更小，则返回关联的向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Returns the boolean result of the comparison between INF and a scalar "
 "parameter."
-msgstr ""
+msgstr "返回 INF 和标量参数之间比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Returns the boolean result of the comparison between NaN and a scalar "
 "parameter."
-msgstr ""
+msgstr "返回 NaN 和标量参数之间比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
-msgstr ""
+msgstr "小于 （*）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
-msgstr ""
+msgstr "小于或等于 （+）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Not Equal (!=)"
-msgstr ""
+msgstr "不等于（!=）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
-msgstr ""
+msgstr "如果提供的布尔值为true或false，则返回关联的向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the boolean result of the comparison between two parameters."
-msgstr ""
+msgstr "返回两个参数之间比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
-msgstr ""
+msgstr "返回 INF（或 NaN）和标量参数之间比较的布尔结果。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Boolean constant."
-msgstr "修改Vec常量系数"
+msgstr "布尔常量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean uniform."
-msgstr ""
+msgstr "布尔统一。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for all shader modes."
-msgstr ""
+msgstr "'%s'为所有着色器模板的输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Input parameter."
-msgstr "吸附到父节点"
+msgstr "输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader modes."
-msgstr ""
+msgstr "'%s'为顶点和片段着色器模板的输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for fragment and light shader modes."
-msgstr ""
+msgstr "'%s'为片段和灯光着色器模板的输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for fragment shader mode."
-msgstr ""
+msgstr "'%s' 为片段着色器模式的输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for light shader mode."
-msgstr ""
+msgstr "'%s' 为灯光着色器模板的输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "'%s' input parameter for vertex shader mode."
-msgstr ""
+msgstr "'%s' 为顶点着色器模板的输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "'%s' input parameter for vertex and fragment shader mode."
-msgstr ""
+msgstr "'%s'为顶点和片段着色器模板的输入参数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar function."
-msgstr "修改Function Scalar"
+msgstr "Scalar 函数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Scalar operator."
-msgstr "更改标量运算符（Scalar Operator）"
+msgstr "标量运算符（Scalar Operator）。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "E constant (2.718282). Represents the base of the natural logarithm."
-msgstr ""
+msgstr "E常数（2.718282）。表示自然对数的基数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Epsilon constant (0.00001). Smallest possible scalar number."
-msgstr ""
+msgstr "Epsilon常数（0.00001）。最小的标量数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Phi constant (1.618034). Golden ratio."
-msgstr ""
+msgstr "Phi常数（1.618034）。黄金比例。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/4 constant (0.785398) or 45 degrees."
-msgstr ""
+msgstr "Pi / 4常数（0.785398）或45度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi/2 constant (1.570796) or 90 degrees."
-msgstr ""
+msgstr "Pi/2常数（1.570796）或90度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Pi constant (3.141593) or 180 degrees."
-msgstr ""
+msgstr "Pi 常数 （3.141593） 或 180 度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Tau constant (6.283185) or 360 degrees."
-msgstr ""
+msgstr "Tau常数（6.283185）或360度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Sqrt2 constant (1.414214). Square root of 2."
-msgstr ""
+msgstr "Sqrt2 常数 （1.414214）。2 的平方根。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the absolute value of the parameter."
-msgstr ""
+msgstr "返回参数的绝对值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-cosine of the parameter."
-msgstr ""
+msgstr "返回参数的反余弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "返回参数的反双曲余弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-sine of the parameter."
-msgstr ""
+msgstr "返回参数的反正弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic sine of the parameter."
-msgstr ""
+msgstr "返回参数的反双曲正弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameter."
-msgstr ""
+msgstr "返回参数的反正切值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the arc-tangent of the parameters."
-msgstr ""
+msgstr "返回参数的反正切值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "返回参数的反双曲正切值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Finds the nearest integer that is greater than or equal to the parameter."
-msgstr ""
+msgstr "查找最接近的大于或等于参数的整数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Constrains a value to lie between two further values."
-msgstr ""
+msgstr "将值限制在两个其他值之间。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the cosine of the parameter."
-msgstr ""
+msgstr "返回参数的余弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic cosine of the parameter."
-msgstr ""
+msgstr "返回参数的双曲余弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in radians to degrees."
-msgstr ""
+msgstr "将以弧度为单位的量转换为度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-e Exponential."
-msgstr ""
+msgstr "以e为底的指数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 Exponential."
-msgstr ""
+msgstr "2为底的指数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer less than or equal to the parameter."
-msgstr ""
+msgstr "查找小于或等于参数的最近整数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Computes the fractional part of the argument."
-msgstr ""
+msgstr "计算参数的小数部分。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the inverse of the square root of the parameter."
-msgstr ""
+msgstr "返回参数的平方根的倒数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Natural logarithm."
-msgstr ""
+msgstr "自然对数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Base-2 logarithm."
-msgstr ""
+msgstr "2为底的对数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the greater of two values."
-msgstr ""
+msgstr "返回两个值中较大的一个。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the lesser of two values."
-msgstr ""
+msgstr "返回两个值中较小的一个。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two scalars."
-msgstr ""
+msgstr "两个标量之间的线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the opposite value of the parameter."
-msgstr ""
+msgstr "返回参数的相反值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - scalar"
-msgstr ""
+msgstr "1.0 - 标量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the value of the first parameter raised to the power of the second."
-msgstr ""
+msgstr "返回第一个参数为第二个参数幂的值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Converts a quantity in degrees to radians."
-msgstr ""
+msgstr "将度数转换为弧度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / scalar"
-msgstr ""
+msgstr "1.0 / 标量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest integer to the parameter."
-msgstr ""
+msgstr "查找参数最近的整数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Finds the nearest even integer to the parameter."
-msgstr ""
+msgstr "查找参数最近的偶数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Clamps the value between 0.0 and 1.0."
-msgstr ""
+msgstr "将值限制在 0.0 和 1.0 之间。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Extracts the sign of the parameter."
-msgstr ""
+msgstr "提取参数的符号。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the sine of the parameter."
-msgstr ""
+msgstr "返回参数的正弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic sine of the parameter."
-msgstr ""
+msgstr "返回参数的双曲正弦值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the square root of the parameter."
-msgstr ""
+msgstr "返回参数的平方根。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8358,6 +8347,10 @@ msgid ""
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
+"SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
+"\n"
+"如果'x'小于'edge0'则返回0.0，如果x大于'edge1'则返回1.0。否则在0.0和1.0之间返"
+"回Hermite多项式插值的值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8365,38 +8358,44 @@ msgid ""
 "\n"
 "Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
 msgstr ""
+"Step function( scalar(edge), scalar(x) ).\n"
+"\n"
+"如果'x'小于'edge'则返回0.0，否则返回1.0。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the tangent of the parameter."
-msgstr ""
+msgstr "返回参数的正切值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the hyperbolic tangent of the parameter."
-msgstr ""
+msgstr "返回参数的双曲正切值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Finds the truncated value of the parameter."
-msgstr ""
+msgstr "查找参数的截断值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Adds scalar to scalar."
-msgstr ""
+msgstr "向标量添加标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Divides scalar by scalar."
-msgstr ""
+msgstr "用标量除标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies scalar by scalar."
-msgstr ""
+msgstr "将标量乘以标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Returns the remainder of the two scalars."
-msgstr ""
+msgstr "返回两个标量的剩余部分。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts scalar from scalar."
-msgstr ""
+msgstr "从标量中减去标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8410,11 +8409,11 @@ msgstr "修改Uniform Scalar"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Perform the cubic texture lookup."
-msgstr ""
+msgstr "执行立方体纹理查找。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Perform the texture lookup."
-msgstr ""
+msgstr "执行立方体纹理查找。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8449,31 +8448,31 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes transform from four vectors."
-msgstr ""
+msgstr "由四个向量构成变换。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes transform to four vectors."
-msgstr ""
+msgstr "将变换分解为四个向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the determinant of a transform."
-msgstr ""
+msgstr "计算变换的行列式。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the inverse of a transform."
-msgstr ""
+msgstr "计算变换的倒数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the transpose of a transform."
-msgstr ""
+msgstr "计算一个变换的转置。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies transform by transform."
-msgstr ""
+msgstr "一个变换乘以一个变换。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by transform."
-msgstr ""
+msgstr "用变换乘以向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8497,23 +8496,23 @@ msgstr "更改 Vec 运算符（Vec Operator）"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Composes vector from three scalars."
-msgstr ""
+msgstr "由三个标量组成向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Decomposes vector to three scalars."
-msgstr ""
+msgstr "将向量分解为三个标量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the cross product of two vectors."
-msgstr ""
+msgstr "计算两个向量的叉乘。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the distance between two points."
-msgstr ""
+msgstr "返回两点之间的距离。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the dot product of two vectors."
-msgstr ""
+msgstr "计算两个向量的点乘。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8522,36 +8521,38 @@ msgid ""
 "incident vector, and Nref, the reference vector. If the dot product of I and "
 "Nref is smaller than zero the return value is N. Otherwise -N is returned."
 msgstr ""
+"返回指向与参考向量相同方向的向量。该函数有三个向量参数：N，方向向量，I，入射"
+"向量，Nref，参考向量。如果I和Nref的点乘小于零，返回值为n，否则返回-N。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the length of a vector."
-msgstr ""
+msgstr "计算向量的长度。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Linear interpolation between two vectors."
-msgstr ""
+msgstr "两个向量之间的线性插值。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
-msgstr ""
+msgstr "计算向量的标准化积。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 - vector"
-msgstr ""
+msgstr "1.0 - 向量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "1.0 / vector"
-msgstr ""
+msgstr "1.0 / 向量"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns the vector that points in the direction of reflection ( a : incident "
 "vector, b : normal vector )."
-msgstr ""
+msgstr "返回指向反射方向的向量（a：入射向量，b：法向量）。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the vector that points in the direction of refraction."
-msgstr ""
+msgstr "返回指向折射方向的矢量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8587,23 +8588,23 @@ msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Adds vector to vector."
-msgstr ""
+msgstr "把向量加到向量上。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Divides vector by vector."
-msgstr ""
+msgstr "将向量除以向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Multiplies vector by vector."
-msgstr ""
+msgstr "把向量乘以向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Returns the remainder of the two vectors."
-msgstr ""
+msgstr "返回两个向量的余数。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Subtracts vector from vector."
-msgstr ""
+msgstr "从向量中减去向量。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8621,6 +8622,8 @@ msgid ""
 "output ports. This is a direct injection of code into the vertex/fragment/"
 "light function, do not use it to write the function declarations inside."
 msgstr ""
+"自定义Godot着色器语言表达式，具有自定义的输入和输出端口数量。这是一个直接注入"
+"代码到顶点/片段/光函数，不要使用它在内部写入函数声明。"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -11607,8 +11610,9 @@ msgid "Pick a color from the screen."
 msgstr "从屏幕中选择一种颜色。"
 
 #: scene/gui/color_picker.cpp
+#, fuzzy
 msgid "HSV"
-msgstr ""
+msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
 #, fuzzy
@@ -11716,9 +11720,8 @@ msgid "Input"
 msgstr "输入"
 
 #: scene/resources/visual_shader_nodes.cpp
-#, fuzzy
 msgid "Invalid source for preview."
-msgstr "非法的着色器源。"
+msgstr "预览的源资源无效。"
 
 #: scene/resources/visual_shader_nodes.cpp
 msgid "Invalid source for shader."
@@ -11727,7 +11730,7 @@ msgstr "非法的着色器源。"
 #: scene/resources/visual_shader_nodes.cpp
 #, fuzzy
 msgid "Invalid comparison function for that type."
-msgstr "非法的着色器源。"
+msgstr "该类型的比较函数无效。"
 
 #: servers/visual/shader_language.cpp
 msgid "Assignment to function."

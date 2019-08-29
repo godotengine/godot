@@ -16,7 +16,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-29 19:21+0000\n"
+"PO-Revision-Date: 2019-08-11 10:24+0000\n"
 "Last-Translator: Lisandro Lorea <lisandrolorea@gmail.com>\n"
 "Language-Team: Spanish (Argentina) <https://hosted.weblate.org/projects/"
 "godot-engine/godot/es_AR/>\n"
@@ -137,29 +137,24 @@ msgid "Anim Change Call"
 msgstr "Cambiar Call de Anim"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Cambiar Tiempo de Keyframe de Anim"
+msgstr "Cambiar Tiempo de Múltiples Keyframes de Anim"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Cambio de transición Anim"
+msgstr "Cambiar Múltiples Transiciones de Anim"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Cambiar Transform de Anim"
+msgstr "Cambiar Múltiples Transforms de Anim"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Cambiar Valor de Keyframe de Anim"
+msgstr "Cambiar Valor de Múltiples Keyframes de Anim"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Cambiar Call de Anim"
+msgstr "Cambiar Múltiples Llamadas de Anim"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -1796,32 +1791,28 @@ msgid "Move Favorite Down"
 msgstr "Bajar Favorito"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Ir a la carpeta padre."
+msgstr "Ir a la carpeta anterior."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Ir a la carpeta padre."
+msgstr "Ir a la carpeta siguiente."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Ir a la carpeta padre."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Buscar archivos"
+msgstr "Refrescar archivos."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Quitar carpeta actual de favoritos."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
-msgstr "Ver/Ocultar archivos ocultos."
+msgstr "Mostrar/Ocultar archivos ocultos."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
 msgid "View items as a grid of thumbnails."
@@ -3096,9 +3087,8 @@ msgid "Calls"
 msgstr "Llamadas"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Editar Tema"
+msgstr "Editar Texto:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -6813,14 +6803,12 @@ msgid "Rear"
 msgstr "Detrás"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Alinear con Vista"
+msgstr "Alinear Transform con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Alinear Selección Con Vista"
+msgstr "Alinear Rotación con Vista"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -9940,9 +9928,8 @@ msgid "Extend Script"
 msgstr "Extender Script"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "Reemparentar Nodo"
+msgstr "Reemparentar a Nuevo Nodo"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"

@@ -15,7 +15,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Ukrainian (Godot Engine)\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-21 11:06+0000\n"
+"PO-Revision-Date: 2019-08-04 14:22+0000\n"
 "Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
 "Language-Team: Ukrainian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/uk/>\n"
@@ -138,27 +138,22 @@ msgid "Anim Change Call"
 msgstr "Змінити виклик анімації"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Змінити час ключового кадру"
+msgstr "Змінити час ключового кадру анімації"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Змінити перехід"
+msgstr "Змінити перехід анімації"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Змінити перетворення"
+msgstr "Змінити перетворення анімації"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Змінити значення ключового кадру"
+msgstr "Змінити значення ключового кадру анімації"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
 msgstr "Змінити виклик анімації"
 
@@ -1794,30 +1789,26 @@ msgid "Move Favorite Down"
 msgstr "Перемістити вибране вниз"
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to previous folder."
-msgstr "Перейти до батьківської теки."
+msgstr "Перейти до попередньої теки."
 
 #: editor/editor_file_dialog.cpp
-#, fuzzy
 msgid "Go to next folder."
-msgstr "Перейти до батьківської теки."
+msgstr "Перейти до наступної теки."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Перейти до батьківської теки."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Шукати файли"
+msgstr "Освіжити файли."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Перемкнути стан вибраності для поточної теки."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Toggle the visibility of hidden files."
 msgstr "Увімкнути або вимкнути видимість прихованих файлів."
 
@@ -3085,9 +3076,8 @@ msgid "Calls"
 msgstr "Виклики"
 
 #: editor/editor_properties.cpp
-#, fuzzy
 msgid "Edit Text:"
-msgstr "Редагувати тему"
+msgstr "Редагувати текст:"
 
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
@@ -6799,14 +6789,12 @@ msgid "Rear"
 msgstr "Ззаду"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Transform with View"
-msgstr "Вирівняти з переглядом"
+msgstr "Вирівняти перетворення з переглядом"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
 msgid "Align Rotation with View"
-msgstr "Вирівняти позначене із переглядом"
+msgstr "Вирівняти обертання із переглядом"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -9927,9 +9915,8 @@ msgid "Extend Script"
 msgstr "Розширити скрипт"
 
 #: editor/scene_tree_dock.cpp
-#, fuzzy
 msgid "Reparent to New Node"
-msgstr "Змінити батьківський вузол"
+msgstr "Змінити батьківський вузол на новий"
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"

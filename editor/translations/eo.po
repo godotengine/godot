@@ -4,18 +4,19 @@
 # This file is distributed under the same license as the Godot source code.
 # Scott Starkey <yekrats@gmail.com>, 2019.
 # AlexHoratio <yukithetupper@gmail.com>, 2019.
+# Teashrock <kajitsu22@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-07-02 10:48+0000\n"
-"Last-Translator: AlexHoratio <yukithetupper@gmail.com>\n"
+"PO-Revision-Date: 2019-08-29 13:34+0000\n"
+"Last-Translator: Teashrock <kajitsu22@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -468,12 +469,11 @@ msgstr "Averto: Redaktanti importis animadon"
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr ""
+msgstr "Elektaro ĉiuj"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select None"
-msgstr "Nur Elektaro"
+msgstr "Elektaro nur"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -651,7 +651,7 @@ msgstr "Lineo-Numeron:"
 
 #: editor/code_editor.cpp
 msgid "Found %d match(es)."
-msgstr ""
+msgstr "Trovis %d matĉo(j)n."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
 msgid "No Matches"
@@ -712,21 +712,24 @@ msgstr "Lineoj kaj kolumnoj numeroj."
 
 #: editor/connections_dialog.cpp
 msgid "Method in target node must be specified."
-msgstr ""
+msgstr "Metodo en celo nodo devas esti specifita."
 
 #: editor/connections_dialog.cpp
+#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
+"Celo metodo maltrovita. Indiku ekzistanta metodo aŭ ligu la skripto al celo "
+"nodo."
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Node:"
-msgstr ""
+msgstr "Konektu al nodo:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect to Script:"
-msgstr ""
+msgstr "Konektu al skripto:"
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
@@ -734,13 +737,13 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr ""
+msgstr "La sceno ne enhavas ajnan skriptojn."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
 msgid "Add"
-msgstr ""
+msgstr "Aldonu"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/editor_feature_profile.cpp editor/groups_editor.cpp
@@ -751,15 +754,15 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp
 msgid "Remove"
-msgstr ""
+msgstr "Forigu"
 
 #: editor/connections_dialog.cpp
 msgid "Add Extra Call Argument:"
-msgstr ""
+msgstr "Aldonu alvoko argumento:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Aldona argumentoj de alvoko:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
@@ -767,7 +770,7 @@ msgstr "Altnivela"
 
 #: editor/connections_dialog.cpp
 msgid "Deferred"
-msgstr ""
+msgstr "Diferita"
 
 #: editor/connections_dialog.cpp
 msgid ""
@@ -776,15 +779,15 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
-msgstr ""
+msgstr "Unu pafo"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnects the signal after its first emission."
-msgstr ""
+msgstr "Malkonektas la signalo post ĝia unua emisio."
 
 #: editor/connections_dialog.cpp
 msgid "Cannot connect signal"
-msgstr ""
+msgstr "Ne povas konekti signalo"
 
 #: editor/connections_dialog.cpp editor/dependency_editor.cpp
 #: editor/export_template_manager.cpp editor/groups_editor.cpp
@@ -798,27 +801,27 @@ msgstr ""
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr ""
+msgstr "Fermiĝu"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr ""
+msgstr "Konektu"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
-msgstr ""
+msgstr "Signalo:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr ""
+msgstr "Konektu '%s' al '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr ""
+msgstr "Malkonektu '%s' de '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr ""
+msgstr "Malkonektu ĉiuj de signalo: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -827,11 +830,11 @@ msgstr ""
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr ""
+msgstr "Malkonektu"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
-msgstr ""
+msgstr "Konektu la signalo al metodo"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
@@ -843,7 +846,7 @@ msgstr ""
 
 #: editor/connections_dialog.cpp editor/editor_help.cpp editor/node_dock.cpp
 msgid "Signals"
-msgstr ""
+msgstr "Signaloj"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from this signal?"
@@ -851,32 +854,32 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr ""
+msgstr "Malkonektu ĉiuj"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr ""
+msgstr "Redaktu..."
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
-msgstr ""
+msgstr "Iru al metodo"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr ""
+msgstr "Ŝanĝu la tipon de %s"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
-msgstr ""
+msgstr "Ŝanĝu"
 
 #: editor/create_dialog.cpp
 msgid "Create New %s"
-msgstr ""
+msgstr "Kreu novan %s"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 #: editor/filesystem_dock.cpp
 msgid "Favorites:"
-msgstr ""
+msgstr "Favoritaj:"
 
 #: editor/create_dialog.cpp editor/editor_file_dialog.cpp
 msgid "Recent:"
@@ -887,20 +890,20 @@ msgstr ""
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
-msgstr ""
+msgstr "Serĉo:"
 
 #: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Matches:"
-msgstr ""
+msgstr "Matĉoj:"
 
 #: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Description:"
-msgstr ""
+msgstr "Priskribo:"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement For:"
@@ -925,20 +928,20 @@ msgstr ""
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Dependecoj"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Rimedo"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
-msgstr ""
+msgstr "Pado"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Dependecoj:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"

@@ -9,12 +9,13 @@
 # RaikaRakka <shaiyatta@gmail.com>, 2018.
 # Ido Dana <idodana01@gmail.com>, 2019.
 # Daniel Dovgun <daniel.dovgun@gmail.com>, 2019.
+# MordechaiHadad <Mordechai.hadad01@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:49+0000\n"
-"Last-Translator: Daniel Dovgun <daniel.dovgun@gmail.com>\n"
+"PO-Revision-Date: 2019-08-11 10:23+0000\n"
+"Last-Translator: Yaron Shahrabani <sh.yaron@gmail.com>\n"
 "Language-Team: Hebrew <https://hosted.weblate.org/projects/godot-engine/"
 "godot/he/>\n"
 "Language: he\n"
@@ -28,7 +29,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "משתנה סוג לא חוקי לפונקציית convert()‎, יש להשתמש בקבועי TYPE_*‎."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp

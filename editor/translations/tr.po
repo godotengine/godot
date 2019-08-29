@@ -28,12 +28,13 @@
 # Anton Semchenko <semchenkoanton@protonmail.com>, 2019.
 # Enes Can Yerlikaya <enescanyerlikaya@gmail.com>, 2019.
 # Ömer Akgöz <omerakgoz34@gmail.com>, 2019.
+# Mehmet Dursun <mehmet.dursun@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:47+0000\n"
-"Last-Translator: Ömer Akgöz <omerakgoz34@gmail.com>\n"
+"PO-Revision-Date: 2019-08-29 13:34+0000\n"
+"Last-Translator: Mehmet Dursun <mehmet.dursun@gmail.com>\n"
 "Language-Team: Turkish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/tr/>\n"
 "Language: tr\n"
@@ -41,12 +42,14 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "convert() için geçersiz argüman tipi, TYPE_* sabitlerini kullanın."
+msgstr ""
+"\"convert ()\" için geçersiz tür bağımsız değişkeni, \"TYPE_ *\" sabitlerini "
+"kullanın."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -56,15 +59,15 @@ msgstr "Byte kodu çözmek için yetersiz byte, ya da geçersiz format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr "İfade de geçersiz girdi %i (geçmedi)."
+msgstr "İfade de geçersiz giriş %i (geçersiz)"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
-msgstr "\"self\" ifadesi kullanılamaz, çünkü nesne \"null\" (tanımlandı)."
+msgstr "\"self\" kullanılamaz çünkü \"null\" değerini almış(geçersiz)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "%s, %s ve %s operatörleri için geçersiz işlem."
+msgstr "\"%s\" düğümünde geçersiz işlem '%s' ve '%s'."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
@@ -152,29 +155,24 @@ msgid "Anim Change Call"
 msgstr "Animasyon Değişikliği Çağrısı"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Time"
-msgstr "Anim Anahtar-kare Zamanını Değiştir"
+msgstr "Animasyon Anahtar-Çerçeve Zamanını Değiştir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transition"
-msgstr "Animasyon Geçişinin Değişimi"
+msgstr "Animasyon geçişinin çoklu değişimi"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Transform"
-msgstr "Animasyon Değişikliği Dönüşümü"
+msgstr "Animasyon Çoklu Değişikliği Dönüşümü"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Keyframe Value"
-msgstr "Anim Anahtar-kare Değerini Değiştir"
+msgstr "Animasyon Çoklu Anahtar-Çerçeve Değerini Değiştir"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Anim Multi Change Call"
-msgstr "Animasyon Değişikliği Çağrısı"
+msgstr "Animasyon Çoklu Değişiklik Çağrısı"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
@@ -211,11 +209,11 @@ msgstr "Animasyon Oynatıcı İzi"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (frames)"
-msgstr "Animasyon uzunluğu (kare)"
+msgstr "Animasyon uzunluğu (çerçeve)"
 
 #: editor/animation_track_editor.cpp
 msgid "Animation length (seconds)"
-msgstr "Animasyon uzunluğu (kare)"
+msgstr "Animasyon uzunluğu (saniye)"
 
 #: editor/animation_track_editor.cpp
 msgid "Add Track"
@@ -232,19 +230,19 @@ msgstr "İşlevler:"
 
 #: editor/animation_track_editor.cpp
 msgid "Audio Clips:"
-msgstr "Ses Klipsi:"
+msgstr "Ses Parçası:"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Clips:"
-msgstr "Animasyon Klipsleri:"
+msgstr "Animasyon Klipleri:"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Track Path"
-msgstr "İz Yolunu Değiştir"
+msgstr "Parça Yolunu Değiştir"
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle this track on/off."
-msgstr "Bu izi Aç/Kapat."
+msgstr "Bu parçayı Aç/Kapat."
 
 #: editor/animation_track_editor.cpp
 msgid "Update Mode (How this property is set)"
@@ -252,11 +250,11 @@ msgstr "Güncelleme Kipi (Bu özellik nasıl belirlenir)"
 
 #: editor/animation_track_editor.cpp
 msgid "Interpolation Mode"
-msgstr "Aradeğerleme Kipi"
+msgstr "Ara Değerleme Kipi"
 
 #: editor/animation_track_editor.cpp
 msgid "Loop Wrap Mode (Interpolate end with beginning on loop)"
-msgstr "Döngü Örtü Kipi (Döngünün başlangıcını sonu ile aradeğerle)"
+msgstr "Döngü Sarma Kipi (Döngünün başlangıcı ile bitiş arası)"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove this track."
@@ -264,7 +262,7 @@ msgstr "Bu izi sil."
 
 #: editor/animation_track_editor.cpp
 msgid "Time (s): "
-msgstr "Süresi (sn): "
+msgstr "Süre (sn): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
@@ -272,11 +270,11 @@ msgstr "İz Dönüştürücü Etkin"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
-msgstr "Kesintisiz"
+msgstr "Sürekli"
 
 #: editor/animation_track_editor.cpp
 msgid "Discrete"
-msgstr "Kesikli"
+msgstr "Ayrık"
 
 #: editor/animation_track_editor.cpp
 msgid "Trigger"
@@ -310,15 +308,15 @@ msgstr "Döngü Aradeğerlemesin Sar"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Insert Key"
-msgstr "Anahtar Gir"
+msgstr "Yeni Anahtar"
 
 #: editor/animation_track_editor.cpp
 msgid "Duplicate Key(s)"
-msgstr "Anahtar(lar)ı Çoğalt"
+msgstr "Yinelenen Anahtar(lar)"
 
 #: editor/animation_track_editor.cpp
 msgid "Delete Key(s)"
-msgstr "Tuşları Sil"
+msgstr "Anahtar(lar)ı Sil"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Update Mode"
@@ -357,7 +355,7 @@ msgstr "Oluştur"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert"
-msgstr "Animasyon Gir"
+msgstr "Animasyon Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "AnimationPlayer can't animate itself, only other players."
@@ -366,15 +364,15 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Create & Insert"
-msgstr "Animasyon Oluştur & Gir"
+msgstr "Animasyon Oluştur & Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Track & Key"
-msgstr "Animasyon İz & Anahtar Gir"
+msgstr "Animasyon İz & Anahtar Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Insert Key"
-msgstr "Animasyon Anahtar Gir"
+msgstr "Animasyon Anahtar Ekle"
 
 #: editor/animation_track_editor.cpp
 msgid "Change Animation Step"
@@ -12115,7 +12113,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Sabit değerler değiştirilemez."
 
 #~ msgid "Previous Folder"
 #~ msgstr "Önceki Klasör"

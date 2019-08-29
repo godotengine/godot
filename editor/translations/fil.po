@@ -7,8 +7,8 @@
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-04-07 08:04+0000\n"
-"Last-Translator: Amado Wilkins <epicalert68@gmail.com>\n"
+"PO-Revision-Date: 2019-08-11 10:23+0000\n"
+"Last-Translator: Marco Santos <enum.scima@gmail.com>\n"
 "Language-Team: Filipino <https://hosted.weblate.org/projects/godot-engine/"
 "godot/fil/>\n"
 "Language: fil\n"
@@ -16,103 +16,108 @@ msgstr ""
 "Content-Transfer-Encoding: 8-bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1 && n != 2 && n != 3 && (n % 10 == 4 "
 "|| n % 10 == 6 || n % 10 == 9);\n"
-"X-Generator: Weblate 3.6-dev\n"
+"X-Generator: Weblate 3.8-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
 msgstr ""
+"Invalid na type argument para sa convert(), gamitin ang mga TYPE_* na "
+"constant."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Not enough bytes for decoding bytes, or invalid format."
 msgstr ""
+"Kulang ang mga byte para sa pag-decode ng mga byte, o kaya naman invalid na "
+"format."
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "Invalid na input %i (hindi pinasa) sa ekspresyon"
 
 #: core/math/expression.cpp
 msgid "self can't be used because instance is null (not passed)"
 msgstr ""
+"Hindi magagamit ang self dahil ang instance ay naka-null (hindi pinasa)"
 
 #: core/math/expression.cpp
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr ""
+msgstr "Invalid na mga operand para sa operator na %s, %s, at %s."
 
 #: core/math/expression.cpp
 msgid "Invalid index of type %s for base type %s"
-msgstr ""
+msgstr "Invalid na index ng type na %s para sa base type na %s"
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "Invalid na pinangalang index '%s' para sa base type na %s"
 
 #: core/math/expression.cpp
 msgid "Invalid arguments to construct '%s'"
-msgstr ""
+msgstr "Mga invalid na argument para i-construct ang '%s'"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "On call sa '%s':"
 
 #: editor/animation_bezier_editor.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
-msgstr ""
+msgstr "Malaya"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Balanse"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
-msgstr ""
+msgstr "Salamin"
 
 #: editor/animation_bezier_editor.cpp editor/editor_profiler.cpp
 msgid "Time:"
-msgstr ""
+msgstr "Oras:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Halaga:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
-msgstr ""
+msgstr "Mag-insert ng Key Rito"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Duplicate Selected Key(s)"
-msgstr ""
+msgstr "I-duplicate ang (mga) Napiling Key"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
-msgstr ""
+msgstr "Burahin ang (mga) Napiling Key"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr "Idagdag Ang Bezier Point"
+msgstr "Magdagdag ng Bezier Point"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Move Bezier Points"
-msgstr "Ilipat Ang Mga Bezier Points"
+msgstr "Maglipat ng (mga) Bezier Point"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
-msgstr ""
+msgstr "I-anim ang (mga) Duplicate Key"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
-msgstr ""
+msgstr "I-anim ang (mga) Delete Key"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Keyframe Time"
-msgstr ""
+msgstr "I-anim ang Oras ng Pagbago ng Keyframe"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transition"
-msgstr ""
+msgstr "I-anim ang Transisyon ng Pagbago"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Transform"
