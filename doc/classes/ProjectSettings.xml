@@ -180,6 +180,9 @@
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
+		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
+			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
