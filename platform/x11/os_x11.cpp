@@ -1757,7 +1757,10 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	// XLookupString returns keysyms usable as nice scancodes/
 	char str[256 + 1];
-	XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
+	XKeyEvent xkeyevent_no_mod = *xkeyevent;
+	xkeyevent_no_mod.state &= ~ShiftMask;
+	xkeyevent_no_mod.state &= ~ControlMask;
+	XLookupString(&xkeyevent_no_mod, str, 256, &keysym_keycode, NULL);
 
 	// Meanwhile, XLookupString returns keysyms useful for unicode.
 
