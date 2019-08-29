@@ -15,7 +15,7 @@
 			Text alignment policy for the button's text, use one of the [code]ALIGN_*[/code] constants.
 		</member>
 		<member name="clip_text" type="bool" setter="set_clip_text" getter="get_clip_text" default="false">
-			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text. This property is disabled by default.
+			When this property is enabled, text that is too large to fit the button is clipped, when disabled the Button will always be wide enough to hold the text.
 		</member>
 		<member name="flat" type="bool" setter="set_flat" getter="is_flat" default="false">
 			Flat buttons don't display decoration.

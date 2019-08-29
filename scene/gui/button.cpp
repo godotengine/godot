@@ -159,7 +159,11 @@ void Button::_notification(int p_what) {
 
 		switch (align) {
 			case ALIGN_LEFT: {
-				text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
+				if (_internal_margin[MARGIN_LEFT] > 0) {
+					text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x + _internal_margin[MARGIN_LEFT] + get_constant("hseparation");
+				} else {
+					text_ofs.x = style->get_margin(MARGIN_LEFT) + icon_ofs.x;
+				}
 				text_ofs.y += style->get_offset().y;
 			} break;
 			case ALIGN_CENTER: {
