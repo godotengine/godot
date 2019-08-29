@@ -286,6 +286,18 @@ SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
 	return alpha_cut;
 }
 
+void SpriteBase3D::set_billboard_mode(SpatialMaterial::BillboardMode p_mode) {
+
+	ERR_FAIL_INDEX(p_mode, 3);
+	billboard_mode = p_mode;
+	_queue_update();
+}
+
+SpatialMaterial::BillboardMode SpriteBase3D::get_billboard_mode() const {
+
+	return billboard_mode;
+}
+
 void SpriteBase3D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_centered", "centered"), &SpriteBase3D::set_centered);
@@ -318,6 +330,9 @@ void SpriteBase3D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_alpha_cut_mode", "mode"), &SpriteBase3D::set_alpha_cut_mode);
 	ClassDB::bind_method(D_METHOD("get_alpha_cut_mode"), &SpriteBase3D::get_alpha_cut_mode);
 
+	ClassDB::bind_method(D_METHOD("set_billboard_mode", "mode"), &SpriteBase3D::set_billboard_mode);
+	ClassDB::bind_method(D_METHOD("get_billboard_mode"), &SpriteBase3D::get_billboard_mode);
+
 	ClassDB::bind_method(D_METHOD("get_item_rect"), &SpriteBase3D::get_item_rect);
 	ClassDB::bind_method(D_METHOD("generate_triangle_mesh"), &SpriteBase3D::generate_triangle_mesh);
 
@@ -333,6 +348,7 @@ void SpriteBase3D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "pixel_size", PROPERTY_HINT_RANGE, "0.0001,128,0.0001"), "set_pixel_size", "get_pixel_size");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "axis", PROPERTY_HINT_ENUM, "X-Axis,Y-Axis,Z-Axis"), "set_axis", "get_axis");
 	ADD_GROUP("Flags", "");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "billboard", PROPERTY_HINT_ENUM, "Disabled,Enabled,Y-Billboard"), "set_billboard_mode", "get_billboard_mode");
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "transparent"), "set_draw_flag", "get_draw_flag", FLAG_TRANSPARENT);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "shaded"), "set_draw_flag", "get_draw_flag", FLAG_SHADED);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "double_sided"), "set_draw_flag", "get_draw_flag", FLAG_DOUBLE_SIDED);
@@ -361,6 +377,7 @@ SpriteBase3D::SpriteBase3D() {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 
 	alpha_cut = ALPHA_CUT_DISABLED;
+	billboard_mode = SpatialMaterial::BILLBOARD_DISABLED;
 	axis = Vector3::AXIS_Z;
 	pixel_size = 0.01;
 	modulate = Color(1, 1, 1, 1);
@@ -463,7 +480,7 @@ void Sprite3D::_draw() {
 		tangent = Plane(1, 0, 0, 1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
 	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLE_FAN, texture->get_rid());
@@ -788,7 +805,7 @@ void AnimatedSprite3D::_draw() {
 		tangent = Plane(1, 0, 0, -1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
 
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 

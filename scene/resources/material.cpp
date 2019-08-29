@@ -1772,7 +1772,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_refraction_texture_channel(
 	return refraction_texture_channel;
 }
 
-RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass) {
+RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y) {
 
 	int version = 0;
 	if (p_shaded)
@@ -1785,6 +1785,10 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 		version |= 8;
 	if (p_double_sided)
 		version |= 16;
+	if (p_billboard)
+		version |= 32;
+	if (p_billboard_y)
+		version |= 64;
 
 	if (materials_for_2d[version].is_valid()) {
 		return materials_for_2d[version]->get_rid();
@@ -1800,6 +1804,11 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
+	if (p_billboard) {
+		material->set_billboard_mode(BILLBOARD_ENABLED);
+	} else if (p_billboard_y) {
+		material->set_billboard_mode(BILLBOARD_FIXED_Y);
+	}
 
 	materials_for_2d[version] = material;
 
