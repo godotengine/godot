@@ -1799,6 +1799,13 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (mm.is_valid()) {
 
+		if (hsize_rect.has_point(mm->get_position())) {
+			// Change the cursor to indicate that the track name column's width can be adjusted
+			set_default_cursor_shape(Control::CURSOR_HSIZE);
+		} else {
+			set_default_cursor_shape(Control::CURSOR_ARROW);
+		}
+
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
 			name_limit = dragging_hsize_at + ofs;
@@ -1857,7 +1864,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 
 	use_fps = false;
 	editing = false;
-	name_limit = 150;
+	name_limit = 150 * EDSCALE;
 	zoom = NULL;
 
 	play_position_pos = 0;
