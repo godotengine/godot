@@ -54,6 +54,7 @@
 #include "editor/editor_audio_buses.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_help.h"
+#include "editor/editor_live_view.h"
 #include "editor/editor_properties.h"
 #include "editor/editor_settings.h"
 #include "editor/editor_themes.h"
@@ -1893,7 +1894,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	}
 
 	if (bool(EDITOR_GET("run/output/always_open_output_on_play"))) {
-		make_bottom_panel_item_visible(log);
+		make_bottom_panel_item_visible(output);
 	}
 
 	List<String> breakpoints;
@@ -1908,6 +1909,8 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 		show_accept(TTR("Could not start subprocess!"), TTR("OK"));
 		return;
 	}
+
+	live_view->start();
 
 	emit_signal("play_pressed");
 	if (p_current) {
@@ -2274,6 +2277,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 				break;
 
 			editor_run.stop();
+			live_view->stop();
 			run_custom_filename.clear();
 			play_button->set_pressed(false);
 			play_button->set_icon(gui_base->get_icon("MainPlay", "EditorIcons"));
@@ -2285,7 +2289,7 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 
 			if (bool(EDITOR_GET("run/output/always_close_output_on_stop"))) {
 				for (int i = 0; i < bottom_panel_items.size(); i++) {
-					if (bottom_panel_items[i].control == log) {
+					if (bottom_panel_items[i].control == output) {
 						_bottom_panel_switch(false, i);
 						break;
 					}
@@ -3471,6 +3475,7 @@ void EditorNode::notify_child_process_exited() {
 	_menu_option_confirm(RUN_STOP, false);
 	stop_button->set_pressed(false);
 	editor_run.stop();
+	live_view->stop();
 }
 
 void EditorNode::add_io_error(const String &p_error) {
@@ -6383,8 +6388,13 @@ EditorNode::EditorNode() {
 	bottom_panel_raise->set_toggle_mode(true);
 	bottom_panel_raise->connect("toggled", this, "_bottom_panel_raise_toggled");
 
+	output = memnew(HSplitContainer);
+	live_view = memnew(EditorLiveView);
+	output->add_child(live_view);
 	log = memnew(EditorLog);
-	ToolButton *output_button = add_bottom_panel_item(TTR("Output"), log);
+	output->add_child(log);
+
+	ToolButton *output_button = add_bottom_panel_item(TTR("Output"), output);
 	log->set_tool_button(output_button);
 
 	old_split_ofs = 0;

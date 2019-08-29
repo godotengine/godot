@@ -38,6 +38,9 @@
 #include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
+#ifdef TOOLS_ENABLED
+#include "editor/editor_live_view.h"
+#endif
 
 void ScriptDebuggerRemote::_send_video_memory() {
 
@@ -279,6 +282,11 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				if (request_scene_tree)
 					request_scene_tree(request_scene_tree_ud);
 
+			} else if (command == "request_framebuffer") {
+#ifdef TOOLS_ENABLED
+				if (live_view_helper)
+					live_view_helper->handle_request_framebuffer(cmd[1], cmd[2]);
+#endif
 			} else if (command == "request_video_mem") {
 
 				_send_video_memory();
@@ -729,6 +737,11 @@ void ScriptDebuggerRemote::_poll_events() {
 
 			if (request_scene_tree)
 				request_scene_tree(request_scene_tree_ud);
+		} else if (command == "request_framebuffer") {
+#ifdef TOOLS_ENABLED
+			if (live_view_helper)
+				live_view_helper->handle_request_framebuffer(cmd[1], cmd[2]);
+#endif
 		} else if (command == "request_video_mem") {
 
 			_send_video_memory();
@@ -1056,6 +1069,16 @@ void ScriptDebuggerRemote::set_request_scene_tree_message_func(RequestSceneTreeM
 	request_scene_tree_ud = p_udata;
 }
 
+#ifdef TOOLS_ENABLED
+LiveViewDebugHelper *ScriptDebuggerRemote::get_live_view_helper() {
+	return live_view_helper;
+}
+
+void ScriptDebuggerRemote::set_live_view_helper(LiveViewDebugHelper *p_live_view_helper) {
+	live_view_helper = p_live_view_helper;
+}
+#endif
+
 void ScriptDebuggerRemote::set_live_edit_funcs(LiveEditFuncs *p_funcs) {
 
 	live_edit_funcs = p_funcs;
@@ -1129,6 +1152,9 @@ ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		locking(false),
 		poll_every(0),
 		request_scene_tree(NULL),
+#ifdef TOOLS_ENABLED
+		live_view_helper(NULL),
+#endif
 		live_edit_funcs(NULL) {
 
 	packet_peer_stream->set_stream_peer(tcp_client);

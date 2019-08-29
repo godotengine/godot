@@ -91,6 +91,7 @@ typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
 
 class EditorPluginList;
+class EditorLiveView;
 
 class EditorNode : public Node {
 
@@ -340,6 +341,8 @@ private:
 	bool defer_export_debug;
 	Node *_last_instanced_scene;
 
+	HSplitContainer *output;
+	EditorLiveView *live_view;
 	EditorLog *log;
 	CenterContainer *tabs_center;
 	EditorQuickOpen *quick_open;
@@ -738,6 +741,8 @@ public:
 
 	bool is_changing_scene() const;
 
+	static Control *get_output() { return singleton->output; }
+	static EditorLiveView *get_live_view() { return singleton->live_view; }
 	static EditorLog *get_log() { return singleton->log; }
 	Control *get_viewport();
 

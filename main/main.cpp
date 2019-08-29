@@ -72,6 +72,7 @@
 #ifdef TOOLS_ENABLED
 #include "editor/doc/doc_data.h"
 #include "editor/doc/doc_data_class_path.gen.h"
+#include "editor/editor_live_view.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
 #include "editor/project_manager.h"
@@ -830,11 +831,14 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	}
 
 #ifdef TOOLS_ENABLED
+	if (script_debugger) {
+		script_debugger->set_live_view_helper(memnew(LiveViewDebugHelper));
+	}
+
 	if (editor) {
 		packed_data->set_disabled(true);
 		globals->set_disable_feature_overrides(true);
 	}
-
 #endif
 
 	GLOBAL_DEF("logging/file_logging/enable_file_logging", false);
@@ -2031,6 +2035,15 @@ void Main::force_redraw() {
 void Main::cleanup() {
 
 	ERR_FAIL_COND(!_start_success);
+
+#ifdef TOOLS_ENABLED
+	if (script_debugger) {
+		LiveViewDebugHelper *lvdh = script_debugger->get_live_view_helper();
+		if (lvdh) {
+			memdelete(lvdh);
+		}
+	}
+#endif
 
 	ResourceLoader::remove_custom_loaders();
 	ResourceSaver::remove_custom_savers();

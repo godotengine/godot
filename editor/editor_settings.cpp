@@ -605,12 +605,17 @@ void EditorSettings::_load_defaults(Ref<ConfigFile> p_extra_config) {
 	// Auto save
 	_initial_set("run/auto_save/save_before_running", true);
 
-	// Output
+	// Output (log)
 	_initial_set("run/output/font_size", 13);
 	hints["run/output/font_size"] = PropertyInfo(Variant::INT, "run/output/font_size", PROPERTY_HINT_RANGE, "8,48,1");
 	_initial_set("run/output/always_clear_output_on_play", true);
 	_initial_set("run/output/always_open_output_on_play", true);
 	_initial_set("run/output/always_close_output_on_stop", false);
+
+	// Live view
+	_initial_set("run/live_view/fps_limit", 15);
+	hints["run/live_view/fps_limit"] = PropertyInfo(Variant::INT, "run/live_view/fps_limit", PROPERTY_HINT_RANGE, "0,60,5", PROPERTY_USAGE_DEFAULT);
+	_initial_set("run/live_view/stop_while_editor_unfocused", true);
 
 	/* Network */
 

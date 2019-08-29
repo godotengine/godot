@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "editor/editor_live_view.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
@@ -529,6 +530,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 		le_clear->set_disabled(false);
 		le_set->set_disabled(false);
+	} else if (p_msg == "message:framebuffer") {
+
+		EditorNode::get_live_view()->refresh();
+
 	} else if (p_msg == "message:inspect_object") {
 
 		ScriptEditorDebuggerInspectedObject *debugObj = NULL;
@@ -733,10 +738,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			String t = p_data[i];
 			//LOG
 
-			if (!EditorNode::get_log()->is_visible()) {
+			if (!EditorNode::get_output()->is_visible()) {
 				if (EditorNode::get_singleton()->are_bottom_panels_hidden()) {
 					if (EDITOR_GET("run/output/always_open_output_on_play")) {
-						EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_log());
+						EditorNode::get_singleton()->make_bottom_panel_item_visible(EditorNode::get_output());
 					}
 				}
 			}
@@ -1762,6 +1767,15 @@ void ScriptEditorDebugger::live_debug_reparent_node(const NodePath &p_at, const 
 		msg.push_back(p_at_pos);
 		ppeer->put_var(msg);
 	}
+}
+
+bool ScriptEditorDebugger::send_message(const Array &p_message) {
+
+	if (!connection.is_valid()) {
+		return false;
+	}
+	ppeer->put_var(p_message);
+	return true;
 }
 
 void ScriptEditorDebugger::set_breakpoint(const String &p_path, int p_line, bool p_enabled) {
