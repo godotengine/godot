@@ -260,7 +260,7 @@
 			</description>
 		</method>
 		<method name="get_drag_data" qualifiers="virtual">
-			<return type="Object">
+			<return type="Variant">
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>

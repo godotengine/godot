@@ -19,7 +19,7 @@
 			</description>
 		</method>
 		<method name="new" qualifiers="vararg">
-			<return type="Object">
+			<return type="Variant">
 			</return>
 			<description>
 				Returns a new instance of the script.

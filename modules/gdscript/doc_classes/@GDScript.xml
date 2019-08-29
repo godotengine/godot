@@ -1119,7 +1119,7 @@
 				[codeblock]
 				stepify(100, 32) # Returns 96
 				stepify(3.14159, 0.01) # Returns 3.14
-				[/codeblock]    
+				[/codeblock]
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">

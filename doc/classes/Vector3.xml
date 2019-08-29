@@ -214,7 +214,7 @@
 		<method name="posmodv">
 			<return type="Vector3">
 			</return>
-			<argument index="0" name="mod" type="float">
+			<argument index="0" name="modv" type="Vector3">
 			</argument>
 			<description>
 				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]modv[/code]'s components.
@@ -317,10 +317,10 @@
 			Enumerated value for the X axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="AXIS_Y" value="1">
-			Enumerated value for the Y axis.
+			Enumerated value for the Y axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="AXIS_Z" value="2">
-			Enumerated value for the Z axis.
+			Enumerated value for the Z axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
 			Zero vector.
