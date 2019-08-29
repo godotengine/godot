@@ -1115,7 +1115,11 @@
 			<argument index="1" name="step" type="float">
 			</argument>
 			<description>
-				Snaps float value [code]s[/code] to a given [code]step[/code].
+				Snaps float value [code]s[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				[codeblock]
+				stepify(100, 32) # Returns 96
+				stepify(3.14159, 0.01) # Returns 3.14
+				[/codeblock]    
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">
