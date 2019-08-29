@@ -91,7 +91,6 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	ScrollContainer *previews;
 	HBoxContainer *preview_hb;
 	PanelContainer *previews_bg;
-	PanelContainer *desc_bg;
 
 	struct Preview {
 		int id;

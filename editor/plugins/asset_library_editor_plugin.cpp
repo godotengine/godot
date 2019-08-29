@@ -196,14 +196,15 @@ void EditorAssetLibraryItemDescription::set_image(int p_type, int p_index, const
 		} break;
 	}
 }
+
 void EditorAssetLibraryItemDescription::_notification(int p_what) {
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 			previews_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
-			desc_bg->add_style_override("panel", get_stylebox("normal", "TextEdit"));
 		} break;
 	}
 }
+
 void EditorAssetLibraryItemDescription::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_image"), &EditorAssetLibraryItemDescription::set_image);
 	ClassDB::bind_method(D_METHOD("_link_click"), &EditorAssetLibraryItemDescription::_link_click);
@@ -283,16 +284,12 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	item = memnew(EditorAssetLibraryItem);
 
 	desc_vbox->add_child(item);
-	desc_vbox->set_custom_minimum_size(Size2(300 * EDSCALE, 0));
-
-	desc_bg = memnew(PanelContainer);
-	desc_vbox->add_child(desc_bg);
-	desc_bg->set_v_size_flags(SIZE_EXPAND_FILL);
+	desc_vbox->set_custom_minimum_size(Size2(440 * EDSCALE, 0));
 
 	description = memnew(RichTextLabel);
-	desc_bg->add_child(description);
+	desc_vbox->add_child(description);
+	description->set_v_size_flags(SIZE_EXPAND_FILL);
 	description->connect("meta_clicked", this, "_link_click");
-	description->set_custom_minimum_size(Size2(440 * EDSCALE, 300 * EDSCALE));
 
 	VBoxContainer *previews_vbox = memnew(VBoxContainer);
 	hbox->add_child(previews_vbox);
