@@ -103,8 +103,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
 	static final int REQUEST_VIBRATE_PERMISSION = 3;
-	static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 3;
-	static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 4;
+	static final int REQUEST_READ_EXTERNAL_STORAGE_PERMISSION = 4;
+	static final int REQUEST_WRITE_EXTERNAL_STORAGE_PERMISSION = 5;
 	private IStub mDownloaderClientStub;
 	private TextView mStatusText;
 	private TextView mProgressFraction;
