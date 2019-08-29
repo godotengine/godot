@@ -334,6 +334,9 @@ def configure_mingw(env):
 
     env.Append(CPPDEFINES=['MINGW_ENABLED'])
 
+    if not env['tools']:
+        env.Append(CPPFLAGS=['-DNO_SHARED_MEMORY'])
+
     # resrc
     env.Append(BUILDERS={'RES': env.Builder(action=build_res_file, suffix='.o', src_suffix='.rc')})
 

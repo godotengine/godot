@@ -177,4 +177,4 @@ def configure(env):
     env['ENV']['CODESIGN_ALLOCATE'] = '/Developer/Platforms/iPhoneOS.platform/Developer/usr/bin/codesign_allocate'
 
     env.Prepend(CPPPATH=['#platform/iphone'])
-    env.Append(CPPDEFINES=['IPHONE_ENABLED', 'UNIX_ENABLED', 'GLES_ENABLED', 'COREAUDIO_ENABLED'])
+    env.Append(CPPDEFINES=['IPHONE_ENABLED', 'UNIX_ENABLED', 'NO_SHARED_MEMORY', 'GLES_ENABLED', 'COREAUDIO_ENABLED'])

@@ -281,7 +281,7 @@ def configure(env):
                         '/toolchains/' + target_subpath + '/prebuilt/' + host_subpath + '/' + abi_subpath + '/lib'])
 
     env.Prepend(CPPPATH=['#platform/android'])
-    env.Append(CPPDEFINES=['ANDROID_ENABLED', 'UNIX_ENABLED', 'NO_FCNTL'])
+    env.Append(CPPDEFINES=['ANDROID_ENABLED', 'UNIX_ENABLED', 'NO_FCNTL', 'NO_SHARED_MEMORY'])
     env.Append(LIBS=['OpenSLES', 'EGL', 'GLESv3', 'GLESv2', 'android', 'log', 'z', 'dl'])
 
 

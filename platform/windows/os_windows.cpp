@@ -42,6 +42,7 @@
 #include "drivers/windows/mutex_windows.h"
 #include "drivers/windows/rw_lock_windows.h"
 #include "drivers/windows/semaphore_windows.h"
+#include "drivers/windows/shared_memory_windows.h"
 #include "drivers/windows/thread_windows.h"
 #include "joypad_windows.h"
 #include "lang_table.h"
@@ -212,6 +213,11 @@ void OS_Windows::initialize_core() {
 	SemaphoreWindows::make_default();
 	MutexWindows::make_default();
 	RWLockWindows::make_default();
+#ifdef NO_SHARED_MEMORY
+	SharedMemoryDummy::make_default();
+#else
+	SharedMemoryWindows::make_default();
+#endif
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);

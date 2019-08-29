@@ -221,7 +221,7 @@ def configure(env):
         env.ParseConfig('pkg-config zlib --cflags --libs')
 
     env.Prepend(CPPPATH=['#platform/server'])
-    env.Append(CPPDEFINES=['SERVER_ENABLED', 'UNIX_ENABLED'])
+    env.Append(CPPDEFINES=['SERVER_ENABLED', 'UNIX_ENABLED', 'NO_SHARED_MEMORY'])
 
     if (platform.system() == "Darwin"):
         env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-lz', '-framework', 'IOKit'])

@@ -125,6 +125,8 @@ def configure(env):
     if env['javascript_eval']:
         env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])
 
+    env.Append(CPPDEFINES=['NO_SHARED_MEMORY'])
+
     ## Link flags
 
     env.Append(LINKFLAGS=['-s', 'BINARYEN=1'])

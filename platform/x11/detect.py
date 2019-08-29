@@ -171,7 +171,7 @@ def configure(env):
             else:
                 env.Append(CCFLAGS=['-flto'])
                 env.Append(LINKFLAGS=['-flto'])
-        
+
         if not env['use_llvm']:
             env['RANLIB'] = 'gcc-ranlib'
             env['AR'] = 'gcc-ar'
@@ -319,7 +319,9 @@ def configure(env):
 
     env.Prepend(CPPPATH=['#platform/x11'])
     env.Append(CPPDEFINES=['X11_ENABLED', 'UNIX_ENABLED', 'OPENGL_ENABLED', 'GLES_ENABLED'])
-    env.Append(LIBS=['GL', 'pthread'])
+    if not env['tools']:
+        env.Append(CPPDEFINES=['NO_SHARED_MEMORY'])
+    env.Append(LIBS=['GL', 'pthread', 'rt'])
 
     if (platform.system() == "Linux"):
         env.Append(LIBS=['dl'])
@@ -329,7 +331,7 @@ def configure(env):
 
     if env["execinfo"]:
         env.Append(LIBS=['execinfo'])
-        
+
     if not env['tools']:
         env.Append(LINKFLAGS=['-T', 'platform/x11/pck_embed.ld'])
 

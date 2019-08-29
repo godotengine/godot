@@ -32,6 +32,7 @@
 
 #ifdef UNIX_ENABLED
 
+#include "core/os/shared_memory_dummy.h"
 #include "core/os/thread_dummy.h"
 #include "core/project_settings.h"
 #include "drivers/unix/dir_access_unix.h"
@@ -40,6 +41,7 @@
 #include "drivers/unix/net_socket_posix.h"
 #include "drivers/unix/rw_lock_posix.h"
 #include "drivers/unix/semaphore_posix.h"
+#include "drivers/unix/shared_memory_posix.h"
 #include "drivers/unix/thread_posix.h"
 #include "servers/visual_server.h"
 
@@ -129,6 +131,11 @@ void OS_Unix::initialize_core() {
 	SemaphorePosix::make_default();
 	MutexPosix::make_default();
 	RWLockPosix::make_default();
+#endif
+#ifdef NO_SHARED_MEMORY
+	SharedMemoryDummy::make_default();
+#else
+	SharedMemoryPosix::make_default();
 #endif
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessUnix>(FileAccess::ACCESS_USERDATA);

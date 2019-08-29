@@ -34,6 +34,7 @@
 #include "os_uwp.h"
 
 #include "core/io/marshalls.h"
+#include "core/os/shared_memory_dummy.h"
 #include "core/project_settings.h"
 #include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
@@ -144,6 +145,7 @@ void OS_UWP::initialize_core() {
 	SemaphoreWindows::make_default();
 	MutexWindows::make_default();
 	RWLockWindows::make_default();
+	SharedMemoryDummy::make_default();
 
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_RESOURCES);
 	FileAccess::make_default<FileAccessWindows>(FileAccess::ACCESS_USERDATA);

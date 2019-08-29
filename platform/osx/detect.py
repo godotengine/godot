@@ -128,6 +128,8 @@ def configure(env):
 
     env.Prepend(CPPPATH=['#platform/osx'])
     env.Append(CPPDEFINES=['OSX_ENABLED', 'UNIX_ENABLED', 'GLES_ENABLED', 'APPLE_STYLE_KEYS', 'COREAUDIO_ENABLED', 'COREMIDI_ENABLED'])
+    if not env['tools']:
+        env.Append(CPPDEFINES=['NO_SHARED_MEMORY'])
     env.Append(LINKFLAGS=['-framework', 'Cocoa', '-framework', 'Carbon', '-framework', 'OpenGL', '-framework', 'AGL', '-framework', 'AudioUnit', '-framework', 'CoreAudio', '-framework', 'CoreMIDI', '-lz', '-framework', 'IOKit', '-framework', 'ForceFeedback', '-framework', 'AVFoundation', '-framework', 'CoreMedia', '-framework', 'CoreVideo'])
     env.Append(LIBS=['pthread'])
 
