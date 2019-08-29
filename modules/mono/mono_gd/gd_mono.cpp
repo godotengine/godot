@@ -317,6 +317,13 @@ void GDMono::initialize() {
 		return;
 #endif
 
+#if !defined(WINDOWS_ENABLED) && !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
+	// FIXME: Temporary workaround. See: https://github.com/godotengine/godot/issues/29812
+	if (!OS::get_singleton()->has_environment("MONO_THREADS_SUSPEND")) {
+		OS::get_singleton()->set_environment("MONO_THREADS_SUSPEND", "preemptive");
+	}
+#endif
+
 	root_domain = mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
 	ERR_FAIL_NULL_MSG(root_domain, "Mono: Failed to initialize runtime.");
 
