@@ -268,7 +268,6 @@ private:
 	Vector<ScriptCodeCompletionOption> completion_options;
 	bool completion_active;
 	bool completion_forced;
-	ScriptCodeCompletionOption completion_current;
 	String completion_base;
 	int completion_index;
 	Rect2i completion_rect;
@@ -495,8 +494,8 @@ public:
 			if (input != p_a.input.substr(0, 1).to_lower()) { //input is upper -> prefer upper results
 				if ((int)((Array)((Array)p_a.occurrences[0])[1])[0] == 0 &&
 						(int)((Array)((Array)p_b.occurrences[0])[1])[0] == 0) {
-					if (p_a.display.substr(0, 1) != p_b.display.substr(0, 1)) {
-						return p_a.display.substr(0, 1) != p_a.display.substr(0, 1).to_lower();
+					if (p_a.insert_text.substr(0, 1) != p_b.insert_text.substr(0, 1)) {
+						return p_a.insert_text.substr(0, 1) != p_a.insert_text.substr(0, 1).to_lower();
 					}
 				}
 			}
@@ -511,7 +510,12 @@ public:
 				else if (((Array)((Array)p_a.occurrences[i])[1])[1] < ((Array)((Array)p_b.occurrences[i])[1])[1])
 					return false;
 			}
-			return p_a.display.length() < p_b.display.length();
+
+			// sort by alphabet if same length
+			if (p_a.insert_text.length() == p_b.insert_text.length()) {
+				return p_a.insert_text < p_b.insert_text;
+			}
+			return p_a.insert_text.length() < p_b.insert_text.length();
 		}
 	};
 

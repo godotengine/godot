@@ -2460,17 +2460,17 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						accept_event();
 						return;
 					}
-				}
 
-				if (k->get_scancode() == KEY_BACKSPACE) {
+					if (k->get_scancode() == KEY_BACKSPACE) {
 
-					_reset_caret_blink_timer();
+						_reset_caret_blink_timer();
 
-					backspace_at_cursor();
-					_cancel_completion();
-					_update_completion_candidates();
-					accept_event();
-					return;
+						backspace_at_cursor();
+						_update_completion_candidates();
+
+						accept_event();
+						return;
+					}
 				}
 
 				if (k->get_unicode() > 32) {
@@ -2499,7 +2499,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 						}
 					}
 					accept_event();
-					_cancel_completion();
 					_update_completion_candidates();
 					return;
 				}
@@ -6108,6 +6107,8 @@ void TextEdit::set_completion(bool p_enabled, const Vector<String> &p_prefixes) 
 
 void TextEdit::confirm_completion(int id) {
 
+	ScriptCodeCompletionOption completion_current = completion_options[id];
+
 	begin_complex_operation();
 
 	_remove_text(cursor.line, cursor.column - completion_base.length(), cursor.line, cursor.column);
@@ -6160,7 +6161,6 @@ void TextEdit::_cancel_completion() {
 		return;
 
 	completion->hide();
-	completion_current = ScriptCodeCompletionOption();
 	completion_active = false;
 	completion_index = 0;
 	completion_forced = false;
@@ -6294,18 +6294,16 @@ void TextEdit::_update_completion_candidates() {
 		completion_options.append_array(completion_options_cache);
 	}
 
-	// The top of the list is the best match.
-	completion_current = completion_options[0];
-
 	if (completion_options.size() > 0) {
 		// code completion box
-		Vector2 s_size = completion->get_font("font")->get_string_size(completion_options[0].display);
+		Vector2 s_size = completion->get_font("font")->get_string_size(completion_options[0].insert_text);
 
 		int nofs = cache.font->get_string_size(completion_base).width;
 
 		int maxlines = get_constant("completion_lines");
 		int cmax_width = (get_constant("completion_max_width") * cache.font->get_char_size('x').x);
 		int scrollw = get_constant("completion_scroll_width");
+		Color text_color = get_color("word_highlighted_color");
 
 		completion->clear();
 
@@ -6320,16 +6318,11 @@ void TextEdit::_update_completion_candidates() {
 					columns_hl.push_back(k);
 				}
 			}
+			completion->set_item_custom_hl_color(completion->get_item_count() - 1, text_color);
 			completion->set_item_highlights(completion->get_item_count() - 1, columns_hl);
-
-			for (int j = 0; j < color_regions.size(); j++) {
-				if (option.display.begins_with(color_regions[j].begin_key)) {
-					completion->set_item_custom_fg_color(i, color_regions[j].color);
-				}
-			}
 		}
 
-		int w = MIN(completion->get_max_item_width(), cmax_width) + 20;
+		int w = MIN(completion->get_max_item_width(), cmax_width) + 40;
 		int h = MIN(((completion_options.size() + 1) * s_size.height) + 3, maxlines * s_size.height);
 
 		if (cursor_pos.y + get_row_height() + h > get_size().height) {
@@ -6353,6 +6346,7 @@ void TextEdit::_update_completion_candidates() {
 
 		completion->show();
 
+		// The top of the list is the best match.
 		completion->select(0);
 		completion->ensure_current_is_visible();
 		completion->get_h_scroll()->set_value(0);
@@ -6411,7 +6405,6 @@ void TextEdit::code_complete(const List<ScriptCodeCompletionOption> &p_strings, 
 	completion_sources = p_strings;
 	completion_active = true;
 	completion_forced = p_forced;
-	completion_current = ScriptCodeCompletionOption();
 	completion_index = 0;
 	_update_completion_candidates();
 }

@@ -1018,9 +1018,9 @@ void ItemList::_notification(int p_what) {
 			if (h_scroll_enabled) {
 
 				float page = size.width - bg->get_minimum_size().width;
-				if (v_scroll->is_visible_in_tree())
-					max_item_width += v_scroll->get_size().width;
-
+				if (v_scroll->is_visible_in_tree()) {
+					max_item_width += v_scroll->get_size().width + 12;
+				}
 				h_scroll->set_page(page);
 				h_scroll->set_max(max_item_width);
 
@@ -1099,6 +1099,7 @@ void ItemList::_notification(int p_what) {
 				r.position += base_ofs;
 				r.position.y -= vseparation / 2;
 				r.size.y += vseparation;
+				r.size.x += 18;
 				r.position.x -= hseparation / 2;
 
 				draw_style_box(sbsel, r);
@@ -1158,7 +1159,7 @@ void ItemList::_notification(int p_what) {
 				if (it.disabled)
 					modulate.a *= 0.5;
 
-				// If the icon is transposed, we have to swith the size so that it is drawn correctly
+				// If the icon is transposed, we have to switch the size so that it is drawn correctly
 				if (it.icon_transposed) {
 					Size2 size_tmp = draw_rect.size;
 					draw_rect.size.x = size_tmp.y;
@@ -1290,6 +1291,7 @@ void ItemList::_notification(int p_what) {
 			first_visible_separator = lo;
 		}
 
+		width += 8;
 		for (int i = first_visible_separator; i < separators.size(); i++) {
 			if (separators[i] > clip.position.y + clip.size.y)
 				break; // done
@@ -1319,7 +1321,7 @@ void ItemList::_h_scroll_resized() {
 		h_scroll->disconnect("resized", this, "_h_scroll_resized");
 
 		int h_scroll_height = h_scroll->get_size().height;
-		int new_h_scroll_width = get_size().width - (v_scroll->get_size().width + 5); // v_scroll->get_size().width is not enough, bug?
+		int new_h_scroll_width = get_size().width - (v_scroll->get_size().width);
 		h_scroll->set_size(Vector2(new_h_scroll_width, h_scroll_height));
 
 		h_scroll->connect("resized", this, "_h_scroll_resized");
