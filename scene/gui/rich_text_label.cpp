@@ -916,8 +916,11 @@ void RichTextLabel::_find_click(ItemFrame *p_frame, const Point2i &p_click, Item
 
 Control::CursorShape RichTextLabel::get_cursor_shape(const Point2 &p_pos) const {
 
-	if (!underline_meta || selection.click)
+	if (!underline_meta)
 		return CURSOR_ARROW;
+
+	if (selection.click)
+		return CURSOR_IBEAM;
 
 	if (main->first_invalid_line < main->lines.size())
 		return CURSOR_ARROW; //invalid
