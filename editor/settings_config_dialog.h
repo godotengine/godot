@@ -68,7 +68,6 @@ class EditorSettingsDialog : public AcceptDialog {
 	void _general_menu_option(int p_option);
 	void _shortcut_menu_option(int p_option);
 	void _update_menus();
-	
 
 	Timer *timer;
 
