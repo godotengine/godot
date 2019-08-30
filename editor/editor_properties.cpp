@@ -2540,7 +2540,7 @@ void EditorPropertyResource::update_property() {
 		if (res.is_valid() != assign->is_toggle_mode()) {
 			assign->set_toggle_mode(res.is_valid());
 		}
-#ifdef TOOLS_ENABLED
+
 		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
 
 			if (!sub_inspector) {
@@ -2609,7 +2609,6 @@ void EditorPropertyResource::update_property() {
 				}
 			}
 		}
-#endif
 	}
 
 	preview->set_texture(Ref<Texture>());

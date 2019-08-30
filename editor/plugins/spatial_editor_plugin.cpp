@@ -74,14 +74,6 @@
 #define MIN_FOV 0.01
 #define MAX_FOV 179
 
-#ifdef TOOLS_ENABLED
-#define get_global_gizmo_transform get_global_gizmo_transform
-#define get_local_gizmo_transform get_local_gizmo_transform
-#else
-#define get_global_gizmo_transform get_global_transform
-#define get_local_gizmo_transform get_transform
-#endif
-
 void SpatialEditorViewport::_update_camera(float p_interp_delta) {
 
 	bool is_orthogonal = camera->get_projection() == Camera::PROJECTION_ORTHOGONAL;
