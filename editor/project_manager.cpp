@@ -1754,7 +1754,7 @@ void ProjectManager::_dim_window() {
 
 	// Dim the project manager window while it's quitting to make it clearer that it's busy.
 	// No transition is applied, as the effect needs to be visible immediately
-	float c = 0.4f;
+	float c = 0.5f;
 	Color dim_color = Color(c, c, c);
 	gui_base->set_modulate(dim_color);
 }
