@@ -2194,12 +2194,6 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				int row, col;
 				_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
 
-				if (mb->get_command() && highlighted_word != String()) {
-
-					emit_signal("symbol_lookup", highlighted_word, row, col);
-					return;
-				}
-
 				// Toggle breakpoint on gutter click.
 				if (draw_breakpoint_gutter) {
 					int gutter = cache.style_normal->get_margin(MARGIN_LEFT);
@@ -2368,6 +2362,14 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 		} else {
 
 			if (mb->get_button_index() == BUTTON_LEFT) {
+				if (mb->get_command() && highlighted_word != String()) {
+					int row, col;
+					_get_mouse_pos(Point2i(mb->get_position().x, mb->get_position().y), row, col);
+
+					emit_signal("symbol_lookup", highlighted_word, row, col);
+					return;
+				}
+
 				dragging_minimap = false;
 				dragging_selection = false;
 				can_drag_minimap = false;
