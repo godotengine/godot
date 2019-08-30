@@ -4615,7 +4615,7 @@ Control::CursorShape TextEdit::get_cursor_shape(const Point2 &p_pos) const {
 		return CURSOR_ARROW;
 	} else {
 		int xmargin_end = get_size().width - cache.style_normal->get_margin(MARGIN_RIGHT);
-		if (p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
+		if (draw_minimap && p_pos.x > xmargin_end - minimap_width && p_pos.x <= xmargin_end) {
 			return CURSOR_ARROW;
 		}
 
