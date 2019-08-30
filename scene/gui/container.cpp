@@ -100,9 +100,10 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 
 	Size2 minsize = p_child->get_combined_minimum_size();
 	Rect2 r = p_rect;
+	Size2 scale = p_child->get_scale();
 
 	if (!(p_child->get_h_size_flags() & SIZE_FILL)) {
-		r.size.x = minsize.width;
+		r.size.x = minsize.width / scale.width;
 		if (p_child->get_h_size_flags() & SIZE_SHRINK_END) {
 			r.position.x += p_rect.size.width - minsize.width;
 		} else if (p_child->get_h_size_flags() & SIZE_SHRINK_CENTER) {
@@ -113,7 +114,7 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	}
 
 	if (!(p_child->get_v_size_flags() & SIZE_FILL)) {
-		r.size.y = minsize.y;
+		r.size.y = minsize.y / scale.height;
 		if (p_child->get_v_size_flags() & SIZE_SHRINK_END) {
 			r.position.y += p_rect.size.height - minsize.height;
 		} else if (p_child->get_v_size_flags() & SIZE_SHRINK_CENTER) {
@@ -129,7 +130,6 @@ void Container::fit_child_in_rect(Control *p_child, const Rect2 &p_rect) {
 	p_child->set_position(r.position);
 	p_child->set_size(r.size);
 	p_child->set_rotation(0);
-	p_child->set_scale(Vector2(1, 1));
 }
 
 void Container::queue_sort() {
