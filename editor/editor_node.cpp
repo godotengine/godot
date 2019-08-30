@@ -5780,6 +5780,7 @@ EditorNode::EditorNode() {
 		dock_slot[i]->set_drag_to_rearrange_enabled(true);
 		dock_slot[i]->set_tabs_rearrange_group(1);
 		dock_slot[i]->connect("tab_changed", this, "_dock_tab_changed");
+		dock_slot[i]->set_use_hidden_tabs_for_min_size(true);
 	}
 
 	dock_drag_timer = memnew(Timer);

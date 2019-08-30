@@ -840,7 +840,7 @@ Size2 TabContainer::get_minimum_size() const {
 
 		Control *c = tabs[i];
 
-		if (!c->is_visible_in_tree())
+		if (!c->is_visible_in_tree() && !use_hidden_tabs_for_min_size)
 			continue;
 
 		Size2 cms = c->get_combined_minimum_size();
@@ -887,6 +887,13 @@ int TabContainer::get_tabs_rearrange_group() const {
 	return tabs_rearrange_group;
 }
 
+void TabContainer::set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs) {
+	use_hidden_tabs_for_min_size = p_use_hidden_tabs;
+}
+
+bool TabContainer::get_use_hidden_tabs_for_min_size() const {
+	return use_hidden_tabs_for_min_size;
+}
 void TabContainer::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &TabContainer::_gui_input);
@@ -913,6 +920,9 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_tabs_rearrange_group", "group_id"), &TabContainer::set_tabs_rearrange_group);
 	ClassDB::bind_method(D_METHOD("get_tabs_rearrange_group"), &TabContainer::get_tabs_rearrange_group);
 
+	ClassDB::bind_method(D_METHOD("set_use_hidden_tabs_for_min_size", "enabled"), &TabContainer::set_use_hidden_tabs_for_min_size);
+	ClassDB::bind_method(D_METHOD("get_use_hidden_tabs_for_min_size"), &TabContainer::get_use_hidden_tabs_for_min_size);
+
 	ClassDB::bind_method(D_METHOD("_child_renamed_callback"), &TabContainer::_child_renamed_callback);
 	ClassDB::bind_method(D_METHOD("_on_theme_changed"), &TabContainer::_on_theme_changed);
 	ClassDB::bind_method(D_METHOD("_update_current_tab"), &TabContainer::_update_current_tab);
@@ -925,6 +935,7 @@ void TabContainer::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_hidden_tabs_for_min_size"), "set_use_hidden_tabs_for_min_size", "get_use_hidden_tabs_for_min_size");
 
 	BIND_ENUM_CONSTANT(ALIGN_LEFT);
 	BIND_ENUM_CONSTANT(ALIGN_CENTER);
@@ -945,4 +956,5 @@ TabContainer::TabContainer() {
 	popup = NULL;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
+	use_hidden_tabs_for_min_size = false;
 }

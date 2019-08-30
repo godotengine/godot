@@ -59,6 +59,7 @@ private:
 	int _get_top_margin() const;
 	Popup *popup;
 	bool drag_to_rearrange_enabled;
+	bool use_hidden_tabs_for_min_size;
 	int tabs_rearrange_group;
 
 	Vector<Control *> _get_tabs() const;
@@ -118,6 +119,8 @@ public:
 	bool get_drag_to_rearrange_enabled() const;
 	void set_tabs_rearrange_group(int p_group_id);
 	int get_tabs_rearrange_group() const;
+	void set_use_hidden_tabs_for_min_size(bool p_use_hidden_tabs);
+	bool get_use_hidden_tabs_for_min_size() const;
 
 	TabContainer();
 };

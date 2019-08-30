@@ -1116,6 +1116,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	sections = memnew(TabContainer);
 	sections->set_tab_align(TabContainer::ALIGN_LEFT);
+	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 
