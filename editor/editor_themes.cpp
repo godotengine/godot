@@ -995,8 +995,13 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	// GraphEdit
 	theme->set_stylebox("bg", "GraphEdit", style_tree_bg);
-	theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.15));
-	theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.07));
+	if (dark_theme) {
+		theme->set_color("grid_major", "GraphEdit", Color(1.0, 1.0, 1.0, 0.15));
+		theme->set_color("grid_minor", "GraphEdit", Color(1.0, 1.0, 1.0, 0.07));
+	} else {
+		theme->set_color("grid_major", "GraphEdit", Color(0.0, 0.0, 0.0, 0.15));
+		theme->set_color("grid_minor", "GraphEdit", Color(0.0, 0.0, 0.0, 0.07));
+	}
 	theme->set_color("activity", "GraphEdit", accent_color);
 	theme->set_icon("minus", "GraphEdit", theme->get_icon("ZoomLess", "EditorIcons"));
 	theme->set_icon("more", "GraphEdit", theme->get_icon("ZoomMore", "EditorIcons"));
