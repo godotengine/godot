@@ -191,33 +191,40 @@ void CreateDialog::add_type(const String &p_type, HashMap<String, TreeItem *> &p
 		item->set_custom_color(0, get_color("disabled_font_color", "Editor"));
 		item->set_selectable(0, false);
 	} else if (!(*to_select && (*to_select)->get_text(0) == search_box->get_text())) {
-		bool current_type_prefered = _is_type_prefered(p_type);
-		bool selected_type_prefered = *to_select ? _is_type_prefered((*to_select)->get_text(0).split(" ")[0]) : false;
-
 		String search_term = search_box->get_text().to_lower();
-		bool is_subsequence_of_type = search_box->get_text().is_subsequence_ofi(p_type);
-		bool is_substring_of_type = p_type.to_lower().find(search_term) >= 0;
-		bool is_substring_of_selected = false;
-		bool is_subsequence_of_selected = false;
-		bool is_selected_equal = false;
 
-		if (*to_select) {
-			String name = (*to_select)->get_text(0).split(" ")[0].to_lower();
-			is_substring_of_selected = name.find(search_term) >= 0;
-			is_subsequence_of_selected = search_term.is_subsequence_of(name);
-			is_selected_equal = name == search_term;
-		}
+		// if the node name matches exactly as the search, the node should be selected.
+		// this also fixes when the user clicks on recent nodes.
+		if (p_type.to_lower() == search_term) {
+			*to_select = item;
+		} else {
+			bool current_type_prefered = _is_type_prefered(p_type);
+			bool selected_type_prefered = *to_select ? _is_type_prefered((*to_select)->get_text(0).split(" ")[0]) : false;
 
-		if (is_subsequence_of_type && !is_selected_equal) {
-			if (is_substring_of_type) {
-				if (!is_substring_of_selected || (current_type_prefered && !selected_type_prefered)) {
-					*to_select = item;
-				}
-			} else {
-				// substring results weigh more than subsequences, so let's make sure we don't override them
-				if (!is_substring_of_selected) {
-					if (!is_subsequence_of_selected || (current_type_prefered && !selected_type_prefered)) {
+			bool is_subsequence_of_type = search_box->get_text().is_subsequence_ofi(p_type);
+			bool is_substring_of_type = p_type.to_lower().find(search_term) >= 0;
+			bool is_substring_of_selected = false;
+			bool is_subsequence_of_selected = false;
+			bool is_selected_equal = false;
+
+			if (*to_select) {
+				String name = (*to_select)->get_text(0).split(" ")[0].to_lower();
+				is_substring_of_selected = name.find(search_term) >= 0;
+				is_subsequence_of_selected = search_term.is_subsequence_of(name);
+				is_selected_equal = name == search_term;
+			}
+
+			if (is_subsequence_of_type && !is_selected_equal) {
+				if (is_substring_of_type) {
+					if (!is_substring_of_selected || (current_type_prefered && !selected_type_prefered)) {
 						*to_select = item;
+					}
+				} else {
+					// substring results weigh more than subsequences, so let's make sure we don't override them
+					if (!is_substring_of_selected) {
+						if (!is_subsequence_of_selected || (current_type_prefered && !selected_type_prefered)) {
+							*to_select = item;
+						}
 					}
 				}
 			}
