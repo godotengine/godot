@@ -83,8 +83,8 @@ void ResourceImporterWAV::get_import_options(List<ImportOption> *r_options, int 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/mono"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "force/max_rate", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "force/max_rate_hz", PROPERTY_HINT_EXP_RANGE, "11025,192000,1"), 44100));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/trim"), true));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), true));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/trim"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/normalize"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "edit/loop"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Disabled,RAM (Ima-ADPCM)"), 0));
 }
