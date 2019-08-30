@@ -44,6 +44,14 @@ class EditorSettingsDialog : public AcceptDialog {
 
 	GDCLASS(EditorSettingsDialog, AcceptDialog);
 
+	enum MenuOptions {
+		MENU_COLLAPSE_ALL,
+		MENU_COLLAPSE_UNSELECTED,
+		MENU_EXPAND_ALL,
+		MENU_RESTORE_DEFAULTS
+	};
+
+
 	bool updating;
 
 	TabContainer *tabs;
@@ -53,6 +61,14 @@ class EditorSettingsDialog : public AcceptDialog {
 	LineEdit *search_box;
 	LineEdit *shortcut_search_box;
 	SectionedInspector *inspector;
+
+	MenuButton *general_menu;
+	MenuButton *shortcut_menu;
+
+	void _general_menu_option(int p_option);
+	void _shortcut_menu_option(int p_option);
+	void _update_menus();
+	
 
 	Timer *timer;
 
