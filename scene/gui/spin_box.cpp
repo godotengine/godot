@@ -53,7 +53,8 @@ void SpinBox::_text_entered(const String &p_string) {
 
 	Ref<Expression> expr;
 	expr.instance();
-	Error err = expr->parse(p_string);
+	// Ignore the prefix and suffix in the expression
+	Error err = expr->parse(p_string.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
 	if (err != OK) {
 		return;
 	}
