@@ -51,7 +51,6 @@ class EditorSettingsDialog : public AcceptDialog {
 		MENU_RESTORE_DEFAULTS
 	};
 
-
 	bool updating;
 
 	TabContainer *tabs;
