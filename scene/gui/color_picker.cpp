@@ -964,6 +964,7 @@ void ColorPickerButton::_update_picker() {
 		popup->connect("popup_hide", this, "set_pressed", varray(false));
 		picker->set_pick_color(color);
 		picker->set_edit_alpha(edit_alpha);
+		emit_signal("picker_created");
 	}
 }
 
@@ -980,6 +981,7 @@ void ColorPickerButton::_bind_methods() {
 
 	ADD_SIGNAL(MethodInfo("color_changed", PropertyInfo(Variant::COLOR, "color")));
 	ADD_SIGNAL(MethodInfo("popup_closed"));
+	ADD_SIGNAL(MethodInfo("picker_created"));
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "color"), "set_pick_color", "get_pick_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "edit_alpha"), "set_edit_alpha", "is_editing_alpha");
 }
