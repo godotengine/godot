@@ -1706,8 +1706,7 @@ void FBXExporter::WriteObjects ()
                     }
                     if (end) { break; }
                 }
-                limbnodes.insert(parent);
-                skeleton.insert(parent);
+                
                 // if it was the skeleton root we can finish here
                 if (end) { break; }
             }
@@ -1848,44 +1847,10 @@ void FBXExporter::WriteObjects ()
             inverse_bone_xform.Inverse();
             aiMatrix4x4 tr = inverse_bone_xform * mesh_xform;
 
-            // this should be the same as the bone's mOffsetMatrix.
-            // if it's not the same, the skeleton isn't in the bind pose.
-            float epsilon = 1e-4f; // some error is to be expected
-            float epsilon_custom = mProperties->GetPropertyFloat("BINDPOSE_EPSILON", -1);
-            if(epsilon_custom > 0)
-                epsilon = epsilon_custom;
-            bool bone_xform_okay = true;
-            if (b && ! tr.Equal(b->mOffsetMatrix, epsilon)) {
-                not_in_bind_pose.insert(b);
-                bone_xform_okay = false;
-            }
+            sdnode.AddChild("Transform", tr);
 
-            // if we have a bone we should use the mOffsetMatrix,
-            // otherwise try to just use the calculated transform.
-            if (b) {
-                sdnode.AddChild("Transform", b->mOffsetMatrix);
-            } else {
-                sdnode.AddChild("Transform", tr);
-            }
-            // note: it doesn't matter if we mix these,
-            // because if they disagree we'll throw an exception later.
-            // it could be that the skeleton is not in the bone pose
-            // but all bones are still defined,
-            // in which case this would use the mOffsetMatrix for everything
-            // and a correct skeleton would still be output.
 
-            // transformlink should be the position of the bone in world space.
-            // if the bone is in the bind pose (or nonexistent),
-            // we can just use the matrix we already calculated
-            if (bone_xform_okay) {
-                sdnode.AddChild("TransformLink", bone_xform);
-            // otherwise we can only work it out using the mesh position.
-            } else {
-                aiMatrix4x4 trl = b->mOffsetMatrix;
-                trl.Inverse();
-                trl *= mesh_xform;
-                sdnode.AddChild("TransformLink", trl);
-            }
+            sdnode.AddChild("TransformLink", bone_xform);
             // note: this means we ALWAYS rely on the mesh node transform
             // being unchanged from the time the skeleton was bound.
             // there's not really any way around this at the moment.
