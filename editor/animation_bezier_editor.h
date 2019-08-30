@@ -46,7 +46,9 @@ class AnimationBezierTrackEdit : public Control {
 	enum {
 		MENU_KEY_INSERT,
 		MENU_KEY_DUPLICATE,
-		MENU_KEY_DELETE
+		MENU_KEY_DELETE,
+		MENU_KEY_APPLY_FUNCTION,
+		EDIT_FUNCTION_CONFIRM
 	};
 
 	HandleMode handle_mode;
@@ -75,6 +77,9 @@ class AnimationBezierTrackEdit : public Control {
 	float v_zoom;
 
 	PopupMenu *menu;
+
+	ConfirmationDialog *apply_function_dialog;
+	SpinBox *apply_function_value;
 
 	void _zoom_changed();
 
@@ -164,6 +169,7 @@ public:
 
 	void duplicate_selection();
 	void delete_selection();
+	void apply_function_on_selection();
 
 	AnimationBezierTrackEdit();
 };

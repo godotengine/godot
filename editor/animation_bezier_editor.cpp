@@ -30,6 +30,7 @@
 
 #include "animation_bezier_editor.h"
 
+#include "core/math/expression.h"
 #include "editor/editor_node.h"
 
 float AnimationBezierTrackEdit::_bezier_h_to_pixel(float p_h) {
@@ -673,6 +674,8 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				menu->add_separator();
 				menu->add_icon_item(get_icon("Duplicate", "EditorIcons"), TTR("Duplicate Selected Key(s)"), MENU_KEY_DUPLICATE);
 				menu->add_separator();
+				menu->add_item(TTR("Apply Function on Selected Key(s)"), MENU_KEY_APPLY_FUNCTION);
+				menu->add_separator();
 				menu->add_icon_item(get_icon("Remove", "EditorIcons"), TTR("Delete Selected Key(s)"), MENU_KEY_DELETE);
 			}
 
@@ -1079,6 +1082,12 @@ void AnimationBezierTrackEdit::_menu_selected(int p_index) {
 		case MENU_KEY_DELETE: {
 			delete_selection();
 		} break;
+		case MENU_KEY_APPLY_FUNCTION: {
+			apply_function_dialog->popup_centered(Size2(200, 100) * EDSCALE);
+		} break;
+		case EDIT_FUNCTION_CONFIRM: {
+			apply_function_on_selection();
+		} break;
 	}
 }
 
@@ -1138,6 +1147,87 @@ void AnimationBezierTrackEdit::duplicate_selection() {
 	}
 
 	update();
+}
+
+void AnimationBezierTrackEdit::apply_function_on_selection() {
+
+	String function_text = apply_function_value->get_line_edit()->get_text();
+
+	Ref<Expression> expr;
+	expr.instance();
+
+	Vector<String> params;
+	params.push_back("time");
+	params.push_back("value");
+
+	Error err = expr->parse(function_text, params);
+	if (err != OK) {
+		return;
+	}
+
+	if (selection.size() == 0)
+		return;
+
+	undo_redo->create_action(TTR("Anim Apply Function"));
+
+	List<AnimMoveRestore> to_restore;
+	// 1-remove the keys
+	for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
+
+		undo_redo->add_do_method(animation.ptr(), "track_remove_key", track, E->get());
+	}
+
+	// 2-move the keys (re insert them)
+	for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
+
+		float t = editor->snap_time(animation->track_get_key_time(track, E->get()));
+
+		Array key = animation->track_get_key_value(track, E->get());
+		float v = key[0];
+
+		Array a;
+		a.push_back(t);
+		a.push_back(v);
+
+		Variant res = expr->execute(a, NULL, false);
+		if (res.get_type() == Variant::REAL || res.get_type() == Variant::INT) {
+			v = float(res);
+		}
+
+		key[0] = v;
+		undo_redo->add_do_method(animation.ptr(), "track_insert_key", track, t, key, 1);
+	}
+
+	// 3-(undo) remove inserted keys
+	for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
+
+		float newpos = editor->snap_time(animation->track_get_key_time(track, E->get()));
+
+		undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", track, newpos);
+	}
+
+	// 4-(undo) reinsert keys
+	for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
+
+		float oldpos = animation->track_get_key_time(track, E->get());
+		undo_redo->add_undo_method(animation.ptr(), "track_insert_key", track, oldpos, animation->track_get_key_value(track, E->get()), 1);
+	}
+
+	undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
+	undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
+
+	// 5-reselect
+
+	for (Set<int>::Element *E = selection.back(); E; E = E->prev()) {
+
+		float oldpos = animation->track_get_key_time(track, E->get());
+		float newpos = editor->snap_time(oldpos + moving_selection_offset.x);
+
+		undo_redo->add_do_method(this, "_select_at_anim", animation, track, newpos);
+		undo_redo->add_undo_method(this, "_select_at_anim", animation, track, oldpos);
+	}
+
+	undo_redo->commit_action();
 }
 
 void AnimationBezierTrackEdit::delete_selection() {
@@ -1220,6 +1310,18 @@ AnimationBezierTrackEdit::AnimationBezierTrackEdit() {
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	menu->connect("id_pressed", this, "_menu_selected");
+
+	apply_function_dialog = memnew(ConfirmationDialog);
+	VBoxContainer *vbc = memnew(VBoxContainer);
+	apply_function_dialog->add_child(vbc);
+
+	apply_function_value = memnew(SpinBox);
+	apply_function_value->set_min(-99999);
+	apply_function_value->set_max(99999);
+	apply_function_value->set_step(0.001);
+	vbc->add_margin_child(TTR("Function (time,value):"), apply_function_value);
+	apply_function_dialog->connect("confirmed", this, "_menu_selected", varray(EDIT_FUNCTION_CONFIRM));
+	add_child(apply_function_dialog);
 
 	//set_mouse_filter(MOUSE_FILTER_PASS); //scroll has to work too for selection
 }
