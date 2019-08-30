@@ -54,6 +54,7 @@ void EditorHelp::_init_colors() {
 	qualifier_color = text_color * Color(1, 1, 1, 0.8);
 	type_color = get_color("accent_color", "Editor").linear_interpolate(text_color, 0.5);
 	class_desc->add_color_override("selection_color", get_color("accent_color", "Editor") * Color(1, 1, 1, 0.4));
+	class_desc->add_constant_override("line_separation", Math::round(5 * EDSCALE));
 }
 
 void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
