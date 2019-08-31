@@ -228,7 +228,7 @@ void ProjectSettingsEditor::_device_input_add() {
 	int idx = edit_idx;
 	Dictionary old_val = ProjectSettings::get_singleton()->get(name);
 	Dictionary action = old_val.duplicate();
-	Array events = action["events"];
+	Array events = action["events"].duplicate();
 
 	switch (add_type) {
 
@@ -349,11 +349,11 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 
 	Dictionary old_val = ProjectSettings::get_singleton()->get(name);
 	Dictionary action = old_val.duplicate();
-	Array events = action["events"];
+	Array old_events = action["events"];
 
-	for (int i = 0; i < events.size(); i++) {
+	for (int i = 0; i < old_events.size(); i++) {
 
-		Ref<InputEventKey> aie = events[i];
+		Ref<InputEventKey> aie = old_events[i];
 		if (aie.is_null())
 			continue;
 		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
@@ -361,6 +361,22 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		}
 	}
 
+	Dictionary init_val = ProjectSettings::get_singleton()->property_get_revert(name);
+	Array init_events = init_val["events"];
+
+	// Re-use input from default values if possible
+	for (int i = 0; i < init_events.size(); i++) {
+
+		Ref<InputEventKey> aie = init_events[i];
+		if (aie.is_null())
+			continue;
+		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
+			ie = aie;
+			break;
+		}
+	}
+
+	Array events = old_events.duplicate();
 	if (idx < 0 || idx >= events.size()) {
 		events.push_back(ie);
 	} else {
@@ -613,7 +629,7 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 			Dictionary action = old_val.duplicate();
 			int idx = ti->get_metadata(0);
 
-			Array events = action["events"];
+			Array events = action["events"].duplicate();
 			ERR_FAIL_INDEX(idx, events.size());
 			events.remove(idx);
 			action["events"] = events;
