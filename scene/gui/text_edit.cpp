@@ -596,8 +596,14 @@ void TextEdit::_update_minimap_drag() {
 		return;
 	}
 
+	int control_height = _get_control_height();
+	int scroll_height = v_scroll->get_max() * (minimap_char_size.y + minimap_line_spacing);
+	if (control_height > scroll_height) {
+		control_height = scroll_height;
+	}
+
 	Point2 mp = get_local_mouse_position();
-	double diff = (mp.y - minimap_scroll_click_pos) / _get_control_height();
+	double diff = (mp.y - minimap_scroll_click_pos) / control_height;
 	v_scroll->set_as_ratio(minimap_scroll_ratio + diff);
 }
 
