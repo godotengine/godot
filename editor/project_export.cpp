@@ -931,8 +931,25 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension_list[i] + " ; " + platform->get_name() + " Export");
 	}
 
-	if (current->get_export_path() != "") {
-		export_project->set_current_path(current->get_export_path());
+	String current_preset_export_path = current->get_export_path();
+	if (current_preset_export_path != "") {
+
+		/* NOTE(SonerSound): If we do not have an option for changing between absolute and relative paths, is this
+		 * check necessary? */
+		if (current_preset_export_path.is_rel_path()) {
+			String res_path = OS::get_singleton()->get_resource_dir() + "/";
+			current_preset_export_path = res_path.get_final_path_from(current_preset_export_path);
+		}
+
+		/* NOTE(SonerSound): If the target directory does not exist, it must be created, otherwise the set_current_path
+		 * call sets the export dialog initial path to the res:// directory. */
+		if (!DirAccess::exists(current_preset_export_path.get_base_dir())) {
+
+			DirAccessRef da(DirAccess::create(DirAccess::ACCESS_FILESYSTEM));
+			da->make_dir_recursive(current_preset_export_path.get_base_dir());
+		}
+
+		export_project->set_current_path(current_preset_export_path);
 	} else {
 		if (extension_list.size() >= 1) {
 			export_project->set_current_file(default_filename + "." + extension_list[0]);

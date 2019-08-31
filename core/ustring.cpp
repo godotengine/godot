@@ -3758,6 +3758,35 @@ bool String::is_valid_float() const {
 	return numbers_found;
 }
 
+String String::get_final_path_from(const String &p_relative_path) const {
+
+	if (!p_relative_path.is_rel_path()) {
+
+		return *this;
+	}
+	String final_path = this->replace("\\", "/").get_base_dir();
+	String rel = p_relative_path.replace("\\", "/");
+
+	Vector<String> rel_path_slices = rel.split("/");
+	int rel_path_slice_count = rel_path_slices.size();
+	for (int curr_rel_path_slice = 0; curr_rel_path_slice < rel_path_slice_count; curr_rel_path_slice++) {
+
+		String current_slice = rel_path_slices[curr_rel_path_slice];
+		if (current_slice == ".") {
+
+			continue;
+		} else if (current_slice == "..") {
+
+			final_path = final_path.substr(0, final_path.find_last("/"));
+		} else {
+
+			final_path += "/" + current_slice;
+		}
+	}
+
+	return final_path;
+}
+
 String String::path_to_file(const String &p_path) const {
 
 	String src = this->replace("\\", "/").get_base_dir();
