@@ -24,6 +24,7 @@
 	<members>
 		<member name="data" type="PoolByteArray" setter="set_data" getter="get_data" default="PoolByteArray(  )">
 			Contains the audio data in bytes.
+			[b]Note:[/b] This property expects signed PCM8 data. To convert unsigned PCM8 to signed PCM8, subtract 128 from each byte.
 		</member>
 		<member name="format" type="int" setter="set_format" getter="get_format" enum="AudioStreamSample.Format" default="0">
 			Audio format. See [code]FORMAT_*[/code] constants for values.
