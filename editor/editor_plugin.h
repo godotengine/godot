@@ -78,6 +78,7 @@ public:
 
 	void select_file(const String &p_file);
 	String get_selected_path() const;
+	String get_current_path() const;
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String());
 

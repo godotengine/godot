@@ -211,6 +211,10 @@ String EditorInterface::get_selected_path() const {
 	return EditorNode::get_singleton()->get_filesystem_dock()->get_selected_path();
 }
 
+String EditorInterface::get_current_path() const {
+	return EditorNode::get_singleton()->get_filesystem_dock()->get_current_path();
+}
+
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property) {
 
 	EditorNode::get_singleton()->push_item(p_obj, p_for_property);
@@ -288,6 +292,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
+	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
