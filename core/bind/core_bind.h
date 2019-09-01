@@ -434,8 +434,6 @@ public:
 	Array offset_polygon_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE);
 	Array offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_delta, PolyJoinType p_join_type = JOIN_SQUARE, PolyEndType p_end_type = END_SQUARE);
 
-	Vector<Point2> transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat);
-
 	Dictionary make_atlas(const Vector<Size2> &p_rects);
 
 	_Geometry();

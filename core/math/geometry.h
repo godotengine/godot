@@ -832,16 +832,6 @@ public:
 		return _polypath_offset(p_polygon, p_delta, p_join_type, p_end_type);
 	}
 
-	static Vector<Point2> transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat) {
-
-		Vector<Point2> points;
-
-		for (int i = 0; i < p_points.size(); ++i) {
-			points.push_back(p_mat.xform(p_points[i]));
-		}
-		return points;
-	}
-
 	static Vector<int> triangulate_delaunay_2d(const Vector<Vector2> &p_points) {
 
 		Vector<Delaunay2D::Triangle> tr = Delaunay2D::triangulate(p_points);
