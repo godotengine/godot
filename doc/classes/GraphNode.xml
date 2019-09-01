@@ -257,6 +257,8 @@
 		</theme_item>
 		<theme_item name="resizer" type="Texture">
 		</theme_item>
+		<theme_item name="resizer_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		</theme_item>
 		<theme_item name="selectedframe" type="StyleBox">
 		</theme_item>
 		<theme_item name="separation" type="int" default="1">

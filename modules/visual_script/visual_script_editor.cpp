@@ -591,6 +591,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->add_color_override("title_color", c);
 			c.a = 0.7;
 			gnode->add_color_override("close_color", c);
+			gnode->add_color_override("resizer_color", c);
 			gnode->add_style_override("frame", sbf);
 		}
 

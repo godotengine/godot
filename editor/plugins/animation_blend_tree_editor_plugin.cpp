@@ -249,6 +249,7 @@ void AnimationNodeBlendTreeEditor::_update_graph() {
 			node->add_color_override("title_color", c);
 			c.a = 0.7;
 			node->add_color_override("close_color", c);
+			node->add_color_override("resizer_color", c);
 		}
 	}
 
