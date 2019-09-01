@@ -1066,6 +1066,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("title_color", "GraphNode", default_node_color);
 	default_node_color.a = 0.7;
 	theme->set_color("close_color", "GraphNode", default_node_color);
+	theme->set_color("resizer_color", "GraphNode", default_node_color);
 
 	theme->set_constant("port_offset", "GraphNode", 14 * EDSCALE);
 	theme->set_constant("title_h_offset", "GraphNode", -16 * EDSCALE);
