@@ -13,6 +13,7 @@
 		[/codeblock]
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/latest/tutorials/plugins/editor/visual_shader_plugins.html</link>
 	</tutorials>
 	<methods>
 		<method name="_get_category" qualifiers="virtual">
