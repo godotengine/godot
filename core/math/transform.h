@@ -34,6 +34,7 @@
 #include "core/math/aabb.h"
 #include "core/math/basis.h"
 #include "core/math/plane.h"
+#include "core/pool_vector.h"
 
 class Transform {
 public:
@@ -81,6 +82,9 @@ public:
 
 	_FORCE_INLINE_ AABB xform(const AABB &p_aabb) const;
 	_FORCE_INLINE_ AABB xform_inv(const AABB &p_aabb) const;
+
+	_FORCE_INLINE_ PoolVector<Vector3> xform(const PoolVector<Vector3> &p_array) const;
+	_FORCE_INLINE_ PoolVector<Vector3> xform_inv(const PoolVector<Vector3> &p_array) const;
 
 	void operator*=(const Transform &p_transform);
 	Transform operator*(const Transform &p_transform) const;
@@ -196,6 +200,34 @@ _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
 	}
 
 	return ret;
+}
+
+PoolVector<Vector3> Transform::xform(const PoolVector<Vector3> &p_array) const {
+
+	PoolVector<Vector3> array;
+	array.resize(p_array.size());
+
+	PoolVector<Vector3>::Read r = p_array.read();
+	PoolVector<Vector3>::Write w = array.write();
+
+	for (int i = 0; i < p_array.size(); ++i) {
+		w[i] = xform(r[i]);
+	}
+	return array;
+}
+
+PoolVector<Vector3> Transform::xform_inv(const PoolVector<Vector3> &p_array) const {
+
+	PoolVector<Vector3> array;
+	array.resize(p_array.size());
+
+	PoolVector<Vector3>::Read r = p_array.read();
+	PoolVector<Vector3>::Write w = array.write();
+
+	for (int i = 0; i < p_array.size(); ++i) {
+		w[i] = xform_inv(r[i]);
+	}
+	return array;
 }
 
 #endif // TRANSFORM_H
