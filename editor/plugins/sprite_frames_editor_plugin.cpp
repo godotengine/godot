@@ -31,9 +31,25 @@
 #include "sprite_frames_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/editor_settings.h"
 #include "scene/3d/sprite_3d.h"
+
+void SpriteFramesEditor::_process_input(const Ref<InputEvent> &p_event, Node *p_from) {
+
+	Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_DELETE && !k->is_echo()) {
+		if (p_from == animations) {
+			_animation_remove();
+			animations->accept_event();
+		} else if (p_from == tree) {
+			_delete_pressed();
+			tree->accept_event();
+		}
+	}
+}
 
 void SpriteFramesEditor::_gui_input(Ref<InputEvent> p_event) {
 }
@@ -826,6 +842,7 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 
 void SpriteFramesEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_process_input"), &SpriteFramesEditor::_process_input);
 	ClassDB::bind_method(D_METHOD("_load_pressed"), &SpriteFramesEditor::_load_pressed);
 	ClassDB::bind_method(D_METHOD("_empty_pressed"), &SpriteFramesEditor::_empty_pressed);
 	ClassDB::bind_method(D_METHOD("_empty2_pressed"), &SpriteFramesEditor::_empty2_pressed);
@@ -885,6 +902,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	animations->connect("cell_selected", this, "_animation_select");
 	animations->connect("item_edited", this, "_animation_name_edited");
 	animations->set_allow_reselect(true);
+	animations->connect("gui_input", this, "_process_input", varray(animations));
 
 	anim_speed = memnew(SpinBox);
 	vbc_animlist->add_margin_child(TTR("Speed (FPS):"), anim_speed);
@@ -964,6 +982,7 @@ SpriteFramesEditor::SpriteFramesEditor() {
 	tree->set_max_text_lines(2);
 	tree->set_fixed_icon_size(Size2(thumbnail_size, thumbnail_size));
 	tree->set_drag_forwarding(this);
+	tree->connect("gui_input", this, "_process_input", varray(tree));
 
 	sub_vb->add_child(tree);
 

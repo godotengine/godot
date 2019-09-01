@@ -102,7 +102,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_fps_changed(double p_value);
 
 	bool updating;
-
+	void _process_input(const Ref<InputEvent> &p_event, Node *p_from);
 	UndoRedo *undo_redo;
 
 	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
