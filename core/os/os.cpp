@@ -47,7 +47,7 @@ OS *OS::get_singleton() {
 	return singleton;
 }
 
-uint32_t OS::get_ticks_msec() const {
+uint32_t OS::get_ticks_msec() {
 	return get_ticks_usec() / 1000;
 }
 
@@ -93,6 +93,59 @@ uint64_t OS::get_system_time_secs() const {
 uint64_t OS::get_system_time_msecs() const {
 	return 0;
 }
+
+uint64_t OS::get_ticks_usec() {
+	// This is a workaround for rare OS bugs where a call to get_ticks_raw_usec()
+	// may return an EARLIER value than that given in a previous call.
+	// This ensures that the minimum delta will be zero, and prevents bugs which rely on
+	// the delta being positive.
+	uint64_t t = get_ticks_raw_usec();
+
+	// note that get_ticks_raw_usec() may return 0 if the OS API function failed.
+	// we will deal with this by returning the previous value
+	if (t == 0)
+		return _ticks_usec_running_total;
+
+	if (t >= _ticks_usec_prev)
+	{
+		// time going forwards, normal case
+		uint64_t diff = t - _ticks_usec_prev;
+
+		// cap forward time (shouldn't happen except for long stalls, but just in case)
+		if (diff > 100000)
+		{
+			if (diff < 1000000) {
+				WARN_PRINTS("OS time running forward " + itos(diff) + " usecs detected");
+			}
+			else {
+				WARN_PRINTS("OS time running forward " + itos(diff / 1000000) + " secs detected");
+			}
+			diff = 100000;
+		}
+
+		// move our own robust 'fake clock' forward
+		_ticks_usec_running_total += diff;
+	}
+	else
+	{
+		// time going backwards, we need to deal with this
+		// Do not increment running total
+		uint64_t diff = _ticks_usec_prev - t;
+
+		if (diff < 1000000) {
+			WARN_PRINTS("OS time running backward " + itos(diff) + " usecs detected");
+		}
+		else {
+			WARN_PRINTS("OS time running backward " + itos(diff / 1000000) + " secs detected");
+		}
+	}
+
+	// resync each time, the difference should be based on the previous value
+	_ticks_usec_prev = t;
+
+	return _ticks_usec_running_total;
+}
+
 void OS::debug_break(){
 
 	// something
@@ -769,6 +822,8 @@ OS::OS() {
 	_keep_screen_on = true; // set default value to true, because this had been true before godot 2.0.
 	low_processor_usage_mode = false;
 	low_processor_usage_mode_sleep_usec = 10000;
+	_ticks_usec_prev = 0;
+	_ticks_usec_running_total = 0;
 	_verbose_stdout = false;
 	_no_window = false;
 	_exit_code = 0;

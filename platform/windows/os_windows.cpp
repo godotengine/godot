@@ -2284,7 +2284,7 @@ void OS_Windows::delay_usec(uint32_t p_usec) const {
 	else
 		Sleep(p_usec / 1000);
 }
-uint64_t OS_Windows::get_ticks_usec() const {
+uint64_t OS_Windows::get_ticks_raw_usec() const {
 
 	uint64_t ticks;
 	uint64_t time;

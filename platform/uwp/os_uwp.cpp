@@ -620,7 +620,7 @@ void OS_UWP::delay_usec(uint32_t p_usec) const {
 	// no Sleep()
 	WaitForSingleObjectEx(GetCurrentThread(), msec, false);
 }
-uint64_t OS_UWP::get_ticks_usec() const {
+uint64_t OS_UWP::get_ticks_raw_usec() const {
 
 	uint64_t ticks;
 	uint64_t time;

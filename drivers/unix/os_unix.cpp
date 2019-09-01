@@ -258,17 +258,30 @@ void OS_Unix::delay_usec(uint32_t p_usec) const {
 	while (nanosleep(&rem, &rem) == EINTR) {
 	}
 }
-uint64_t OS_Unix::get_ticks_usec() const {
+uint64_t OS_Unix::get_ticks_raw_usec() const {
 
 #if defined(__APPLE__)
 	uint64_t longtime = mach_absolute_time() * _clock_scale;
 #else
-	// Unchecked return. Static analyzers might complain.
-	// If _setup_clock() succeeded, we assume clock_gettime() works.
 	struct timespec tv_now = { 0, 0 };
-	clock_gettime(GODOT_CLOCK, &tv_now);
+
+	int res = clock_gettime(GODOT_CLOCK, &tv_now);
+
+	// if clock_gettime failed, return zero which is dealt with by wrapper
+	if (res != 0)
+	{
+		WARN_PRINT_ONCE("clock_gettime failed");
+		return 0;
+	}
+
 	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
 #endif
+	// _clock_start should never be ahead of longtime
+	if (_clock_start > longtime) {
+		WARN_PRINT_ONCE("_clock_start is ahead of clock_gettime");
+		return 0;
+	}
+
 	longtime -= _clock_start;
 
 	return longtime;

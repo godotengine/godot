@@ -60,6 +60,8 @@ class OS {
 	bool _allow_hidpi;
 	bool _allow_layered;
 	bool _use_vsync;
+	uint64_t _ticks_usec_prev;
+	uint64_t _ticks_usec_running_total;
 
 	char *last_error;
 
@@ -137,6 +139,8 @@ protected:
 
 	void _ensure_user_data_dir();
 	virtual bool _check_internal_feature_support(const String &p_feature) = 0;
+
+	virtual uint64_t get_ticks_raw_usec() const = 0;
 
 public:
 	typedef int64_t ProcessID;
@@ -344,8 +348,8 @@ public:
 	virtual uint64_t get_system_time_msecs() const;
 
 	virtual void delay_usec(uint32_t p_usec) const = 0;
-	virtual uint64_t get_ticks_usec() const = 0;
-	uint32_t get_ticks_msec() const;
+	uint64_t get_ticks_usec();
+	uint32_t get_ticks_msec();
 	uint64_t get_splash_tick_msec() const;
 
 	virtual bool can_draw() const = 0;

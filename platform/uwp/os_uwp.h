@@ -170,6 +170,8 @@ protected:
 
 	void process_key_events();
 
+	virtual uint64_t get_ticks_raw_usec() const;
+
 public:
 	// Event to send to the app wrapper
 	HANDLE mouse_mode_changed;
@@ -206,7 +208,6 @@ public:
 	virtual Error set_cwd(const String &p_cwd);
 
 	virtual void delay_usec(uint32_t p_usec) const;
-	virtual uint64_t get_ticks_usec() const;
 
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL);
 	virtual Error kill(const ProcessID &p_pid);
