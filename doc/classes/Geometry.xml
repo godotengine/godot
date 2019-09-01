@@ -216,6 +216,19 @@
 				Intersects [code]polyline[/code] with [code]polygon[/code] and returns an array of intersected polylines. This performs [constant OPERATION_INTERSECTION] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
 			</description>
 		</method>
+		<method name="is_point_in_circle">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="circle_position" type="Vector2">
+			</argument>
+			<argument index="2" name="circle_radius" type="float">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]point[/code] is inside the circle or if it's located exactly [i]on[/i] the circle's boundary, otherwise returns [code]false[/code].
+			</description>
+		</method>
 		<method name="is_point_in_polygon">
 			<return type="bool">
 			</return>
