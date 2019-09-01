@@ -1689,11 +1689,6 @@ Array _Geometry::offset_polyline_2d(const Vector<Vector2> &p_polygon, real_t p_d
 	return ret;
 }
 
-Vector<Point2> _Geometry::transform_points_2d(const Vector<Point2> &p_points, const Transform2D &p_mat) {
-
-	return Geometry::transform_points_2d(p_points, p_mat);
-}
-
 Dictionary _Geometry::make_atlas(const Vector<Size2> &p_rects) {
 
 	Dictionary ret;
@@ -1772,8 +1767,6 @@ void _Geometry::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("offset_polygon_2d", "polygon", "delta", "join_type"), &_Geometry::offset_polygon_2d, DEFVAL(JOIN_SQUARE));
 	ClassDB::bind_method(D_METHOD("offset_polyline_2d", "polyline", "delta", "join_type", "end_type"), &_Geometry::offset_polyline_2d, DEFVAL(JOIN_SQUARE), DEFVAL(END_SQUARE));
-
-	ClassDB::bind_method(D_METHOD("transform_points_2d", "points", "transform"), &_Geometry::transform_points_2d);
 
 	ClassDB::bind_method(D_METHOD("make_atlas", "sizes"), &_Geometry::make_atlas);
 
