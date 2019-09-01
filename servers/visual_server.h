@@ -610,6 +610,7 @@ public:
 	virtual void viewport_attach_to_screen(RID p_viewport, const Rect2 &p_rect = Rect2(), int p_screen = 0) = 0;
 	virtual void viewport_set_render_direct_to_screen(RID p_viewport, bool p_enable) = 0;
 	virtual void viewport_detach(RID p_viewport) = 0;
+	virtual void viewport_set_canvas_layer_mask(RID p_viewport, int mask) = 0;
 
 	enum ViewportUpdateMode {
 		VIEWPORT_UPDATE_DISABLED,
@@ -872,6 +873,7 @@ public:
 
 	virtual void canvas_item_set_visible(RID p_item, bool p_visible) = 0;
 	virtual void canvas_item_set_light_mask(RID p_item, int p_mask) = 0;
+	virtual void canvas_item_set_layer_mask(RID p_item, int p_mask) = 0;
 
 	virtual void canvas_item_set_update_when_visible(RID p_item, bool p_update) = 0;
 

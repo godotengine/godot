@@ -224,6 +224,8 @@ private:
 
 	static CanvasItem *current_item_drawn;
 
+	int layers;
+
 protected:
 	_FORCE_INLINE_ void _notify_transform() {
 		if (!is_inside_tree()) return;
@@ -299,6 +301,12 @@ public:
 
 	void set_self_modulate(const Color &p_self_modulate);
 	Color get_self_modulate() const;
+
+	void set_layer_mask(int p_mask);
+	int get_layer_mask() const;
+
+	void set_layer_mask_bit(int p_layer, bool p_enable);
+	bool get_layer_mask_bit(int p_layer) const;
 
 	/* DRAWING API */
 
