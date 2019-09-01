@@ -50,6 +50,7 @@ class TreeItem;
 class HSplitContainer;
 class ItemList;
 class EditorProfiler;
+class EditorNetworkProfiler;
 
 class ScriptEditorDebuggerInspectedObject;
 
@@ -152,6 +153,7 @@ class ScriptEditorDebugger : public Control {
 	Map<String, int> res_path_cache;
 
 	EditorProfiler *profiler;
+	EditorNetworkProfiler *network_profiler;
 
 	EditorNode *editor;
 
@@ -195,6 +197,8 @@ class ScriptEditorDebugger : public Control {
 
 	void _profiler_activate(bool p_enable);
 	void _profiler_seeked();
+
+	void _network_profiler_activate(bool p_enable);
 
 	void _paused();
 
