@@ -47,11 +47,11 @@ void JSONRPC::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_notification", "method", "params"), &JSONRPC::make_notification);
 	ClassDB::bind_method(D_METHOD("make_response_error", "code", "message", "id"), &JSONRPC::make_response_error, DEFVAL(Variant()));
 
-	BIND_ENUM_CONSTANT(ParseError)
-	BIND_ENUM_CONSTANT(InvalidRequest)
-	BIND_ENUM_CONSTANT(MethodNotFound)
-	BIND_ENUM_CONSTANT(InvalidParams)
-	BIND_ENUM_CONSTANT(InternalError)
+	BIND_ENUM_CONSTANT(PARSE_ERROR)
+	BIND_ENUM_CONSTANT(INVALID_REQUEST)
+	BIND_ENUM_CONSTANT(METHOD_NOT_FOUND)
+	BIND_ENUM_CONSTANT(INVALID_PARAMS)
+	BIND_ENUM_CONSTANT(INTERNAL_ERROR)
 }
 
 Dictionary JSONRPC::make_response_error(int p_code, const String &p_message, const Variant &p_id) const {
@@ -120,7 +120,7 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 		}
 
 		if (object == NULL || !object->has_method(method)) {
-			ret = make_response_error(JSONRPC::MethodNotFound, "Method not found", id);
+			ret = make_response_error(JSONRPC::METHOD_NOT_FOUND, "Method not found", id);
 		} else {
 			Variant call_ret = object->callv(method, args);
 			if (id.get_type() != Variant::NIL) {
@@ -138,10 +138,10 @@ Variant JSONRPC::process_action(const Variant &p_action, bool p_process_arr_elem
 			}
 			ret = arr_ret;
 		} else {
-			ret = make_response_error(JSONRPC::InvalidRequest, "Invalid Request");
+			ret = make_response_error(JSONRPC::INVALID_REQUEST, "Invalid Request");
 		}
 	} else {
-		ret = make_response_error(JSONRPC::InvalidRequest, "Invalid Request");
+		ret = make_response_error(JSONRPC::INVALID_REQUEST, "Invalid Request");
 	}
 	return ret;
 }
@@ -155,7 +155,7 @@ String JSONRPC::process_string(const String &p_input) {
 	String err_message;
 	int err_line;
 	if (OK != JSON::parse(p_input, input, err_message, err_line)) {
-		ret = make_response_error(JSONRPC::ParseError, "Parse error");
+		ret = make_response_error(JSONRPC::PARSE_ERROR, "Parse error");
 	} else {
 		ret = process_action(input, true);
 	}
