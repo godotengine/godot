@@ -1944,6 +1944,7 @@ TileMap::TileMap() {
 	quadrant_order_dirty = false;
 	quadrant_size = 16;
 	cell_size = Size2(64, 64);
+	custom_transform = Transform2D(64, 0, 0, 64, 0, 0);
 	collision_layer = 1;
 	collision_mask = 1;
 	friction = 1;
