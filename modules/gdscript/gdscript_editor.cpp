@@ -2833,7 +2833,8 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 					if (!s.begins_with("autoload/")) {
 						continue;
 					}
-					options.insert(s.get_slice("/", 1));
+					ScriptCodeCompletionOption option(s.get_slice("/", 1), ScriptCodeCompletionOption::KIND_CLASS);
+					options.insert(option.display, option);
 				}
 			}
 
