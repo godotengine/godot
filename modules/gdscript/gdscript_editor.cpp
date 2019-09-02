@@ -2826,6 +2826,15 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_path
 					ScriptCodeCompletionOption option(Variant::get_type_name((Variant::Type)i), ScriptCodeCompletionOption::KIND_CLASS);
 					options.insert(option.display, option);
 				}
+				List<PropertyInfo> props;
+				ProjectSettings::get_singleton()->get_property_list(&props);
+				for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+					String s = E->get().name;
+					if (!s.begins_with("autoload/")) {
+						continue;
+					}
+					options.insert(s.get_slice("/", 1));
+				}
 			}
 
 			List<StringName> native_classes;
