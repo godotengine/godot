@@ -106,6 +106,7 @@ const char *GDScriptFunctions::get_func_name(Function p_func) {
 		"typeof",
 		"type_exists",
 		"char",
+		"ord",
 		"str",
 		"print",
 		"printt",
@@ -664,6 +665,33 @@ void GDScriptFunctions::call(Function p_func, const Variant **p_args, int p_arg_
 			VALIDATE_ARG_NUM(0);
 			CharType result[2] = { *p_args[0], 0 };
 			r_ret = String(result);
+		} break;
+		case TEXT_ORD: {
+
+			VALIDATE_ARG_COUNT(1);
+
+			if (p_args[0]->get_type() != Variant::STRING) {
+
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::STRING;
+				r_ret = Variant();
+				return;
+			}
+
+			String str = p_args[0]->operator String();
+
+			if (str.length() != 1) {
+
+				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
+				r_error.argument = 0;
+				r_error.expected = Variant::STRING;
+				r_ret = RTR("Expected a string of length 1 (a character).");
+				return;
+			}
+
+			r_ret = str.get(0);
+
 		} break;
 		case TEXT_STR: {
 			if (p_arg_count < 1) {
@@ -1507,6 +1535,7 @@ bool GDScriptFunctions::is_deterministic(Function p_func) {
 		case TYPE_OF:
 		case TYPE_EXISTS:
 		case TEXT_CHAR:
+		case TEXT_ORD:
 		case TEXT_STR:
 		case COLOR8:
 		case LEN:
@@ -1846,6 +1875,13 @@ MethodInfo GDScriptFunctions::get_info(Function p_func) {
 
 			MethodInfo mi("char", PropertyInfo(Variant::INT, "ascii"));
 			mi.return_val.type = Variant::STRING;
+			return mi;
+
+		} break;
+		case TEXT_ORD: {
+
+			MethodInfo mi("ord", PropertyInfo(Variant::STRING, "char"));
+			mi.return_val.type = Variant::INT;
 			return mi;
 
 		} break;
