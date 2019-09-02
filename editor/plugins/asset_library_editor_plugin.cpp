@@ -586,7 +586,7 @@ void EditorAssetLibrary::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-			if (is_visible()) {
+			if (is_visible() && initial_loading) {
 				_repository_changed(0); // Update when shown for the first time.
 			}
 		} break;
@@ -1133,6 +1133,8 @@ void EditorAssetLibrary::_http_request_completed(int p_status, int p_code, const
 		} break;
 		case REQUESTING_SEARCH: {
 
+			initial_loading = false;
+
 			// The loading text only needs to be displayed before the first page is loaded
 			library_loading->hide();
 
@@ -1328,6 +1330,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	requesting = REQUESTING_NONE;
 	templates_only = p_templates_only;
+	initial_loading = true;
 
 	VBoxContainer *library_main = memnew(VBoxContainer);
 
