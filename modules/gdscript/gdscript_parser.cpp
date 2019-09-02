@@ -6585,7 +6585,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							return DataType();
 						}
 					}
-					if (check_types && !node_type.has_type) {
+					if (check_types && !node_type.has_type && base_type.kind == DataType::BUILTIN) {
 						// Can infer indexing type for some variant types
 						DataType result;
 						result.has_type = true;
