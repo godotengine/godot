@@ -1854,6 +1854,9 @@ bool Main::iteration() {
 	iterating++;
 
 	uint64_t ticks = OS::get_singleton()->get_ticks_usec();
+	if (ticks < Engine::get_singleton()->get_idle_frame_ticks()) {
+		WARN_PRINT_ONCE("Negative delta detected");
+	}
 	Engine::get_singleton()->_frame_ticks = ticks;
 	main_timer_sync.set_cpu_ticks_usec(ticks);
 	main_timer_sync.set_fixed_fps(fixed_fps);
