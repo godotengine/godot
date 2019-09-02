@@ -628,6 +628,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+		float v_zoom_orig = v_zoom;
 		if (mb->get_command()) {
 			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 		} else {
@@ -635,10 +636,12 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				v_zoom *= 1.2;
 			}
 		}
+		v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
 		update();
 	}
 
 	if (mb.is_valid() && mb->is_pressed() && mb->get_button_index() == BUTTON_WHEEL_UP) {
+		float v_zoom_orig = v_zoom;
 		if (mb->get_command()) {
 			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 		} else {
@@ -646,6 +649,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 				v_zoom /= 1.2;
 			}
 		}
+		v_scroll = v_scroll + (mb->get_position().y - get_size().y / 2) * (v_zoom - v_zoom_orig);
 		update();
 	}
 
