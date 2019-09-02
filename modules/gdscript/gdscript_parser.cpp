@@ -252,6 +252,16 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			}
 		}
 
+		// Check that the next token is not TK_CURSOR and if it is, the offset should be incremented.
+		int next_valid_offset = 1;
+		if (tokenizer->get_token(next_valid_offset) == GDScriptTokenizer::TK_CURSOR) {
+			next_valid_offset++;
+			// There is a chunk of the identifier that also needs to be ignored (not always there!)
+			if (tokenizer->get_token(next_valid_offset) == GDScriptTokenizer::TK_IDENTIFIER) {
+				next_valid_offset++;
+			}
+		}
+
 		if (tokenizer->get_token() == GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
 			//subexpression ()
 			tokenizer->advance();
@@ -668,7 +678,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				expr = cn;
 			}
 
-		} else if (tokenizer->get_token(1) == GDScriptTokenizer::TK_PARENTHESIS_OPEN && tokenizer->is_token_literal()) {
+		} else if (tokenizer->get_token(next_valid_offset) == GDScriptTokenizer::TK_PARENTHESIS_OPEN && tokenizer->is_token_literal()) {
 			// We check with is_token_literal, as this allows us to use match/sync/etc. as a name
 			//function or constructor
 
