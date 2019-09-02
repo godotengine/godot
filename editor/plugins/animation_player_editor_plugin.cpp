@@ -477,6 +477,19 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 	_animation_selected(idx);
 }
 
+double AnimationPlayerEditor::_get_editor_step() const {
+
+	// Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
+	if (track_editor->is_snap_enabled()) {
+		const String current = player->get_assigned_animation();
+		const Ref<Animation> anim = player->get_animation(current);
+		// Use more precise snapping when holding Shift
+		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+	}
+
+	return 0.0;
+}
+
 void AnimationPlayerEditor::_animation_name_edited() {
 
 	player->stop();
@@ -1017,7 +1030,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 
 	float pos = CLAMP(anim->get_length() * (p_value / frame->get_max()), 0, anim->get_length());
 	if (track_editor->is_snap_enabled()) {
-		pos = Math::stepify(pos, anim->get_step());
+		pos = Math::stepify(pos, _get_editor_step());
 	}
 
 	if (player->is_valid() && !p_set) {
@@ -1068,7 +1081,7 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
 
 	updating = true;
-	frame->set_value(Math::stepify(p_pos, track_editor->is_snap_enabled() ? anim->get_step() : 0));
+	frame->set_value(Math::stepify(p_pos, _get_editor_step()));
 	updating = false;
 	_seek_value_changed(p_pos, !p_drag);
 
