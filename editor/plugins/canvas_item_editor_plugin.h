@@ -80,6 +80,7 @@ public:
 		TOOL_ROTATE,
 		TOOL_EDIT_PIVOT,
 		TOOL_PAN,
+		TOOL_RULER,
 		TOOL_MAX
 	};
 
@@ -276,6 +277,9 @@ private:
 	bool panning;
 	bool pan_pressed;
 
+	bool ruler_tool_active;
+	Point2 ruler_tool_origin;
+
 	MenuOption last_option;
 
 	struct _SelectResult {
@@ -340,6 +344,8 @@ private:
 	ToolButton *list_select_button;
 	ToolButton *pivot_button;
 	ToolButton *pan_button;
+
+	ToolButton *ruler_button;
 
 	ToolButton *snap_button;
 	MenuButton *snap_config_menu;
@@ -457,6 +463,7 @@ private:
 	void _draw_guides();
 	void _draw_focus();
 	void _draw_grid();
+	void _draw_ruler_tool();
 	void _draw_control_anchors(Control *control);
 	void _draw_control_helpers(Control *control);
 	void _draw_selection();
@@ -476,6 +483,7 @@ private:
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
 	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
 	bool _gui_input_select(const Ref<InputEvent> &p_event);
+	bool _gui_input_ruler_tool(const Ref<InputEvent> &p_event);
 	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted);
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);

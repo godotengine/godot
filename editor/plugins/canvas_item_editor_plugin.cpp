@@ -2246,6 +2246,40 @@ bool CanvasItemEditor::_gui_input_select(const Ref<InputEvent> &p_event) {
 	return false;
 }
 
+bool CanvasItemEditor::_gui_input_ruler_tool(const Ref<InputEvent> &p_event) {
+
+	if (tool != TOOL_RULER)
+		return false;
+
+	Ref<InputEventMouseButton> b = p_event;
+	Ref<InputEventMouseMotion> m = p_event;
+
+	Point2 previous_origin = ruler_tool_origin;
+	if (!ruler_tool_active)
+		ruler_tool_origin = snap_point(viewport->get_local_mouse_position() / zoom + view_offset) * zoom;
+
+	if (b.is_valid() && b->get_button_index() == BUTTON_LEFT) {
+		if (b->is_pressed()) {
+			ruler_tool_active = true;
+		} else {
+			ruler_tool_active = false;
+		}
+
+		viewport->update();
+		return true;
+	}
+
+	bool is_snap_active = snap_active ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+
+	if (m.is_valid() && (ruler_tool_active || (is_snap_active && previous_origin != ruler_tool_origin))) {
+
+		viewport->update();
+		return true;
+	}
+
+	return false;
+}
+
 bool CanvasItemEditor::_gui_input_hover(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseMotion> m = p_event;
@@ -2323,6 +2357,8 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			//printf("Anchors\n");
 		} else if ((accepted = _gui_input_select(p_event))) {
 			//printf("Selection\n");
+		} else if ((accepted = _gui_input_ruler_tool(p_event))) {
+			//printf("Measure\n");
 		} else {
 			//printf("Not accepted\n");
 		}
@@ -2349,6 +2385,9 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 					break;
 				case TOOL_PAN:
 					c = CURSOR_DRAG;
+					break;
+				case TOOL_RULER:
+					c = CURSOR_CROSS;
 					break;
 				default:
 					break;
@@ -2622,6 +2661,83 @@ void CanvasItemEditor::_draw_grid() {
 					viewport->draw_line(Point2(0, i), Point2(s.width, i), grid_color, Math::round(EDSCALE));
 				last_cell = cell;
 			}
+		}
+	}
+}
+
+void CanvasItemEditor::_draw_ruler_tool() {
+
+	if (tool != TOOL_RULER)
+		return;
+
+	bool is_snap_active = snap_active ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
+
+	if (ruler_tool_active) {
+		Color ruler_primary_color = get_color("accent_color", "Editor");
+		Color ruler_secondary_color = ruler_primary_color;
+		ruler_secondary_color.a = 0.5;
+
+		Point2 begin = ruler_tool_origin - view_offset * zoom;
+		Point2 end = snap_point(viewport->get_local_mouse_position() / zoom + view_offset) * zoom - view_offset * zoom;
+		Point2 corner = Point2(begin.x, end.y);
+		Vector2 length_vector = (begin - end).abs() / zoom;
+
+		bool draw_secondary_lines = (begin.y != corner.y && end.x != corner.x);
+
+		viewport->draw_line(begin, end, ruler_primary_color, Math::round(EDSCALE * 3), true);
+		if (draw_secondary_lines) {
+			viewport->draw_line(begin, corner, ruler_secondary_color, Math::round(EDSCALE));
+			viewport->draw_line(corner, end, ruler_secondary_color, Math::round(EDSCALE));
+		}
+
+		Ref<Font> font = get_font("bold", "EditorFonts");
+		Color font_color = get_color("font_color", "Editor");
+		Color font_secondary_color = font_color;
+		font_secondary_color.a = 0.5;
+		float text_height = font->get_height();
+		const float text_width = 76;
+
+		Point2 text_pos = (begin + end) / 2 - Vector2(text_width / 2, text_height / 2);
+		text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
+		text_pos.y = CLAMP(text_pos.y, text_height * 1.5, viewport->get_rect().size.y - text_height * 1.5);
+		viewport->draw_string(font, text_pos, vformat("%.2f px", length_vector.length()), font_color);
+
+		if (draw_secondary_lines) {
+
+			Point2 text_pos2 = text_pos;
+			text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
+			viewport->draw_string(font, text_pos2, vformat("%.2f px", length_vector.y), font_secondary_color);
+
+			text_pos2 = text_pos;
+			text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y - text_height / 2) : MAX(text_pos.y + text_height * 2, end.y - text_height / 2);
+			viewport->draw_string(font, text_pos2, vformat("%.2f px", length_vector.x), font_secondary_color);
+		}
+
+		if (is_snap_active) {
+
+			text_pos = (begin + end) / 2 + Vector2(-text_width / 2, text_height / 2);
+			text_pos.x = CLAMP(text_pos.x, text_width / 2, viewport->get_rect().size.x - text_width * 1.5);
+			text_pos.y = CLAMP(text_pos.y, text_height * 2.5, viewport->get_rect().size.y - text_height / 2);
+
+			if (draw_secondary_lines) {
+				viewport->draw_string(font, text_pos, vformat("%.2f units", (length_vector / grid_step).length()), font_color);
+
+				Point2 text_pos2 = text_pos;
+				text_pos2.x = begin.x < text_pos.x ? MIN(text_pos.x - text_width, begin.x - text_width / 2) : MAX(text_pos.x + text_width, begin.x - text_width / 2);
+				viewport->draw_string(font, text_pos2, vformat("%d units", (int)(length_vector.y / grid_step.y)), font_secondary_color);
+
+				text_pos2 = text_pos;
+				text_pos2.y = end.y < text_pos.y ? MIN(text_pos.y - text_height * 2, end.y + text_height / 2) : MAX(text_pos.y + text_height * 2, end.y + text_height / 2);
+				viewport->draw_string(font, text_pos2, vformat("%d units", (int)(length_vector.x / grid_step.x)), font_secondary_color);
+			} else {
+				viewport->draw_string(font, text_pos, vformat("%d units", roundf((length_vector / grid_step).length())), font_color);
+			}
+		}
+	} else {
+
+		if (is_snap_active) {
+			Ref<Texture> position_icon = get_icon("EditorPosition", "EditorIcons");
+			viewport->draw_texture(get_icon("EditorPosition", "EditorIcons"), ruler_tool_origin - view_offset * zoom - position_icon->get_size() / 2);
 		}
 	}
 }
@@ -3358,6 +3474,7 @@ void CanvasItemEditor::_draw_viewport() {
 	info_overlay->set_margin(MARGIN_LEFT, (show_rulers ? RULER_WIDTH : 0) + 10);
 
 	_draw_grid();
+	_draw_ruler_tool();
 	_draw_selection();
 	_draw_axis();
 	if (editor->get_edited_scene()) {
@@ -3546,6 +3663,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		snap_config_menu->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
 		skeleton_menu->set_icon(get_icon("Bone", "EditorIcons"));
 		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
+		ruler_button->set_icon(get_icon("LineEdit", "EditorIcons")); //Needs a new icon.
 		pivot_button->set_icon(get_icon("EditPivot", "EditorIcons"));
 		select_handle = get_icon("EditorHandle", "EditorIcons");
 		anchor_handle = get_icon("EditorControlAnchor", "EditorIcons");
@@ -3940,13 +4058,13 @@ void CanvasItemEditor::_button_toggle_snap(bool p_status) {
 
 void CanvasItemEditor::_button_tool_select(int p_index) {
 
-	ToolButton *tb[TOOL_MAX] = { select_button, list_select_button, move_button, scale_button, rotate_button, pivot_button, pan_button };
+	ToolButton *tb[TOOL_MAX] = { select_button, list_select_button, move_button, scale_button, rotate_button, pivot_button, pan_button, ruler_button };
 	for (int i = 0; i < TOOL_MAX; i++) {
 		tb[i]->set_pressed(i == p_index);
 	}
 
-	viewport->update();
 	tool = (Tool)p_index;
+	viewport->update();
 }
 
 void CanvasItemEditor::_insert_animation_keys(bool p_location, bool p_rotation, bool p_scale, bool p_on_existing) {
@@ -4926,6 +5044,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	panning = false;
 	pan_pressed = false;
 
+	ruler_tool_active = false;
+	ruler_tool_origin = Point2();
+
 	bone_last_frame = 0;
 
 	bone_list_dirty = false;
@@ -5079,6 +5200,13 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	pan_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_PAN));
 	pan_button->set_tooltip(TTR("Pan Mode"));
 
+	ruler_button = memnew(ToolButton);
+	hb->add_child(ruler_button);
+	ruler_button->set_toggle_mode(true);
+	ruler_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_RULER));
+	ruler_button->set_shortcut(ED_SHORTCUT("canvas_item_editor/ruler_mode", TTR("Ruler Mode"), KEY_R));
+	ruler_button->set_tooltip(TTR("Ruler Mode"));
+
 	hb->add_child(memnew(VSeparator));
 
 	snap_button = memnew(ToolButton);
@@ -5171,7 +5299,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->set_hide_on_checkable_item_selection(false);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_grid", TTR("Show Grid"), KEY_G), SHOW_GRID);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_helpers", TTR("Show Helpers"), KEY_H), SHOW_HELPERS);
-	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show Rulers"), KEY_R), SHOW_RULERS);
+	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_rulers", TTR("Show Rulers"), KEY_MASK_CMD | KEY_R), SHOW_RULERS);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_guides", TTR("Show Guides"), KEY_Y), SHOW_GUIDES);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_origin", TTR("Show Origin")), SHOW_ORIGIN);
 	p->add_check_shortcut(ED_SHORTCUT("canvas_item_editor/show_viewport", TTR("Show Viewport")), SHOW_VIEWPORT);
