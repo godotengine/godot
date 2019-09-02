@@ -5365,6 +5365,9 @@ bool TextEdit::search(const String &p_key, uint32_t p_search_flags, int p_from_l
 						break;
 					}
 					pos_from = last_pos - p_key.length();
+					if (pos_from < 0) {
+						break;
+					}
 				}
 			} else {
 				while ((last_pos = (p_search_flags & SEARCH_MATCH_CASE) ? text_line.find(p_key, pos_from) : text_line.findn(p_key, pos_from)) != -1) {
