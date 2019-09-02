@@ -611,7 +611,6 @@ void TextEdit::_notification(int p_what) {
 
 	switch (p_what) {
 		case NOTIFICATION_ENTER_TREE: {
-
 			_update_caches();
 			if (cursor_changed_dirty)
 				MessageQueue::get_singleton()->push_call(this, "_cursor_changed_emit");
@@ -620,12 +619,16 @@ void TextEdit::_notification(int p_what) {
 			_update_wrap_at();
 		} break;
 		case NOTIFICATION_RESIZED: {
-
 			_update_scrollbars();
 			_update_wrap_at();
 		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
+			if (is_visible()) {
+				call_deferred("_update_scrollbars");
+				call_deferred("_update_wrap_at");
+			}
+		} break;
 		case NOTIFICATION_THEME_CHANGED: {
-
 			_update_caches();
 			_update_wrap_at();
 			syntax_highlighting_cache.clear();
