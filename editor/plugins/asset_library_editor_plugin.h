@@ -206,6 +206,7 @@ class EditorAssetLibrary : public PanelContainer {
 	HTTPRequest *request;
 
 	bool templates_only;
+	bool initial_loading;
 
 	enum Support {
 		SUPPORT_OFFICIAL,
