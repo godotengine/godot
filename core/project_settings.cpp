@@ -32,6 +32,7 @@
 
 #include "core/bind/core_bind.h"
 #include "core/core_string_names.h"
+#include "core/input_map.h"
 #include "core/io/file_access_network.h"
 #include "core/io/file_access_pack.h"
 #include "core/io/marshalls.h"
@@ -293,6 +294,27 @@ void ProjectSettings::_convert_to_last_version(int p_from_version) {
 				action["deadzone"] = Variant(0.5f);
 				action["events"] = array;
 				E->get().variant = action;
+			}
+		}
+	}
+	if (p_from_version <= 4) {
+		// Converts the input events from array to dictionary (player + event)
+		for (Map<StringName, ProjectSettings::VariantContainer>::Element *E = props.front(); E; E = E->next()) {
+			Variant value = E->get().variant;
+			if (String(E->key()).begins_with("input/") && value.get_type() == Variant::DICTIONARY) {
+				Dictionary dict = value;
+				Array array = dict["events"];
+				for (int i = 0; i < array.size(); i++) {
+					if (array[i].get_type() != Variant::OBJECT)
+						continue;
+					Ref<InputEvent> ev = array[i];
+					if (ev.is_null())
+						continue;
+					Dictionary event;
+					event["event"] = ev;
+					event["player"] = InputMap::PLAYER_1;
+					array[i] = event;
+				}
 			}
 		}
 	}
@@ -995,6 +1017,7 @@ ProjectSettings::ProjectSettings() {
 	registering_order = true;
 
 	Array events;
+	Dictionary event;
 	Dictionary action;
 	Ref<InputEventKey> key;
 	Ref<InputEventJoypadButton> joyb;
@@ -1027,15 +1050,24 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_ENTER);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_KP_ENTER);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_SPACE);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_0);
 	events.push_back(joyb);
@@ -1046,9 +1078,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_SPACE);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_3);
 	events.push_back(joyb);
@@ -1059,9 +1094,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_ESCAPE);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	joyb.instance();
 	joyb->set_button_index(JOY_BUTTON_1);
 	events.push_back(joyb);
@@ -1072,9 +1110,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_TAB);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_focus_next", action);
 	input_presets.push_back("input/ui_focus_next");
@@ -1082,10 +1123,13 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_TAB);
 	key->set_shift(true);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_focus_prev", action);
 	input_presets.push_back("input/ui_focus_prev");
@@ -1093,9 +1137,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_LEFT);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_LEFT);
 	events.push_back(joyb);
@@ -1106,9 +1153,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_RIGHT);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_RIGHT);
 	events.push_back(joyb);
@@ -1119,9 +1169,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_UP);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_UP);
 	events.push_back(joyb);
@@ -1132,9 +1185,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_DOWN);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	joyb.instance();
 	joyb->set_button_index(JOY_DPAD_DOWN);
 	events.push_back(joyb);
@@ -1145,9 +1201,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_PAGEUP);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_page_up", action);
 	input_presets.push_back("input/ui_page_up");
@@ -1155,9 +1214,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_PAGEDOWN);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_page_down", action);
 	input_presets.push_back("input/ui_page_down");
@@ -1165,9 +1227,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_HOME);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_home", action);
 	input_presets.push_back("input/ui_home");
@@ -1175,9 +1240,12 @@ ProjectSettings::ProjectSettings() {
 	action = Dictionary();
 	action["deadzone"] = Variant(0.5f);
 	events = Array();
+	event = Dictionary();
+	event["player"] = InputMap::PLAYER_1;
 	key.instance();
 	key->set_scancode(KEY_END);
-	events.push_back(key);
+	event["event"] = key;
+	events.push_back(event);
 	action["events"] = events;
 	GLOBAL_DEF("input/ui_end", action);
 	input_presets.push_back("input/ui_end");

@@ -33,6 +33,7 @@
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
+#include "scene/main/viewport.h"
 
 bool ScrollBar::focus_by_default = false;
 
@@ -191,36 +192,36 @@ void ScrollBar::_gui_input(Ref<InputEvent> p_event) {
 
 	if (p_event->is_pressed()) {
 
-		if (p_event->is_action("ui_left")) {
+		if (p_event->is_action("ui_left", get_viewport()->get_input_player())) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_right")) {
+		} else if (p_event->is_action("ui_right", get_viewport()->get_input_player())) {
 
 			if (orientation != HORIZONTAL)
 				return;
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_up")) {
+		} else if (p_event->is_action("ui_up", get_viewport()->get_input_player())) {
 
 			if (orientation != VERTICAL)
 				return;
 
 			set_value(get_value() - (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_down")) {
+		} else if (p_event->is_action("ui_down", get_viewport()->get_input_player())) {
 
 			if (orientation != VERTICAL)
 				return;
 			set_value(get_value() + (custom_step >= 0 ? custom_step : get_step()));
 
-		} else if (p_event->is_action("ui_home")) {
+		} else if (p_event->is_action("ui_home", get_viewport()->get_input_player())) {
 
 			set_value(get_min());
 
-		} else if (p_event->is_action("ui_end")) {
+		} else if (p_event->is_action("ui_end", get_viewport()->get_input_player())) {
 
 			set_value(get_max());
 		}

@@ -218,6 +218,26 @@ void ProjectSettingsEditor::_action_edited() {
 		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_action);
 		undo_redo->add_undo_method(this, "_settings_changed");
 		undo_redo->commit_action();
+	} else if (input_editor->get_selected_column() == 2) {
+
+		// Change action player
+		String name = "input/" + ti->get_parent()->get_text(0);
+		Dictionary old_val = ProjectSettings::get_singleton()->get(name);
+		Dictionary action = old_val.duplicate();
+		int idx = ti->get_metadata(0);
+
+		Array events = action["events"];
+		ERR_FAIL_INDEX(idx, events.size());
+
+		Dictionary event = events[idx];
+		event["player"] = ti->get_range(2);
+
+		undo_redo->create_action(TTR("Change Action Event Player"));
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set", name, action);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set", name, old_val);
+		undo_redo->add_do_method(this, "_settings_changed");
+		undo_redo->add_undo_method(this, "_settings_changed");
+		undo_redo->commit_action();
 	}
 }
 
@@ -298,10 +318,13 @@ void ProjectSettingsEditor::_device_input_add() {
 		}
 	}
 
+	Dictionary event;
+	event["player"] = InputMap::PLAYER_1;
+	event["event"] = ie;
 	if (idx < 0 || idx >= events.size()) {
-		events.push_back(ie);
+		events.push_back(event);
 	} else {
-		events[idx] = ie;
+		events[idx] = event;
 	}
 	action["events"] = events;
 
@@ -343,6 +366,7 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	ie->set_alt(last_wait_for_key->get_alt());
 	ie->set_control(last_wait_for_key->get_control());
 	ie->set_metakey(last_wait_for_key->get_metakey());
+	InputMap::ActionPlayer player = InputMap::PLAYER_1;
 
 	String name = add_at;
 	int idx = edit_idx;
@@ -351,9 +375,27 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 	Dictionary action = old_val.duplicate();
 	Array events = action["events"];
 
+	// Check that we don't already have this event.
 	for (int i = 0; i < events.size(); i++) {
 
-		Ref<InputEventKey> aie = events[i];
+		Ref<InputEventKey> aie;
+		Dictionary event;
+		if (events[i].get_type() == Variant::OBJECT) {
+			// Old style
+			aie = events[i];
+			if (aie.is_null())
+				continue;
+			event["player"] = InputMap::PLAYER_1;
+			event["event"] = aie;
+		} else {
+			// New style
+			ERR_CONTINUE(events[i].get_type() != Variant::DICTIONARY);
+			event = events[i];
+			aie = event["event"];
+		}
+
+		if (player != event["player"].operator int())
+			continue;
 		if (aie.is_null())
 			continue;
 		if (aie->get_scancode_with_modifiers() == ie->get_scancode_with_modifiers()) {
@@ -361,10 +403,13 @@ void ProjectSettingsEditor::_press_a_key_confirm() {
 		}
 	}
 
+	Dictionary event;
+	event["player"] = InputMap::PLAYER_1;
+	event["event"] = ie;
 	if (idx < 0 || idx >= events.size()) {
-		events.push_back(ie);
+		events.push_back(event);
 	} else {
-		events[idx] = ie;
+		events[idx] = event;
 	}
 	action["events"] = events;
 
@@ -560,7 +605,8 @@ void ProjectSettingsEditor::_action_activated() {
 	Array events = action["events"];
 
 	ERR_FAIL_INDEX(idx, events.size());
-	Ref<InputEvent> event = events[idx];
+	Dictionary ev = events[idx];
+	Ref<InputEvent> event = ev["event"];
 	if (event.is_null())
 		return;
 
@@ -644,7 +690,8 @@ void ProjectSettingsEditor::_action_button_pressed(Object *p_obj, int p_column, 
 			Array events = action["events"];
 			ERR_FAIL_INDEX(idx, events.size());
 
-			Ref<InputEvent> event = events[idx];
+			Dictionary ev = events[idx];
+			Ref<InputEvent> event = ev["event"];
 
 			if (event.is_null())
 				return;
@@ -701,16 +748,31 @@ void ProjectSettingsEditor::_update_actions() {
 		item->set_range_config(1, 0.0, 1.0, 0.01);
 		item->set_range(1, action["deadzone"]);
 		item->set_custom_bg_color(1, get_color("prop_subsection", "Editor"));
+		item->set_custom_bg_color(2, get_color("prop_subsection", "Editor"));
 
-		item->add_button(2, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
+		item->add_button(3, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
-			item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			item->add_button(3, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 			item->set_editable(0, true);
 		}
 
 		for (int i = 0; i < events.size(); i++) {
+			Ref<InputEvent> event;
+			Dictionary ev;
+			if (events[i].get_type() == Variant::OBJECT) {
+				// Old style
+				event = events[i];
+				if (event.is_null())
+					continue;
+				ev["player"] = InputMap::PLAYER_1;
+				ev["event"] = event;
+			} else {
+				// New style
+				ERR_CONTINUE(events[i].get_type() != Variant::DICTIONARY);
+				ev = events[i];
+				event = ev["event"];
+			}
 
-			Ref<InputEvent> event = events[i];
 			if (event.is_null())
 				continue;
 
@@ -778,8 +840,13 @@ void ProjectSettingsEditor::_update_actions() {
 			action2->set_metadata(0, i);
 			action2->set_meta("__input", event);
 
-			action2->add_button(2, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
-			action2->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			action2->set_editable(2, true);
+			action2->set_cell_mode(2, TreeItem::CELL_MODE_RANGE);
+			action2->set_range_config(2, 1.0, 16.0, 1.0);
+			action2->set_range(2, ev["player"]);
+
+			action2->add_button(3, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
+			action2->add_button(3, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 		}
 	}
 
@@ -1832,14 +1899,17 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor = memnew(Tree);
 	vbc->add_child(input_editor);
 	input_editor->set_v_size_flags(SIZE_EXPAND_FILL);
-	input_editor->set_columns(3);
+	input_editor->set_columns(4);
 	input_editor->set_column_titles_visible(true);
 	input_editor->set_column_title(0, TTR("Action"));
 	input_editor->set_column_title(1, TTR("Deadzone"));
 	input_editor->set_column_expand(1, false);
 	input_editor->set_column_min_width(1, 80 * EDSCALE);
+	input_editor->set_column_title(2, TTR("Player"));
 	input_editor->set_column_expand(2, false);
 	input_editor->set_column_min_width(2, 50 * EDSCALE);
+	input_editor->set_column_expand(3, false);
+	input_editor->set_column_min_width(3, 50 * EDSCALE);
 	input_editor->connect("item_edited", this, "_action_edited");
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");

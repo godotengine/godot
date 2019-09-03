@@ -274,6 +274,7 @@ void Viewport::_notification(int p_what) {
 			find_world_2d()->_register_viewport(this, Rect2());
 
 			add_to_group("_viewports");
+			add_to_group(focus_group);
 			if (get_tree()->is_debugging_collisions_hint()) {
 				//2D
 				Physics2DServer::get_singleton()->space_set_debug_contacts(find_world_2d()->get_space(), get_tree()->get_collision_debug_contact_count());
@@ -350,7 +351,7 @@ void Viewport::_notification(int p_what) {
 			}
 
 			remove_from_group("_viewports");
-
+			remove_from_group(focus_group);
 			VS::get_singleton()->viewport_set_active(viewport, false);
 
 		} break;
@@ -1356,6 +1357,27 @@ void Viewport::_gui_prepare_subwindows() {
 	_gui_sort_subwindows();
 }
 
+void Viewport::set_focus_group(String p_focus_group) {
+	StringName old = focus_group;
+	focus_group = "_viewport_focus_" + p_focus_group;
+	if (is_inside_tree()) {
+		remove_from_group(old);
+		add_to_group(focus_group);
+	}
+}
+
+String Viewport::get_focus_group() const {
+	return String(focus_group).replace("_viewport_focus_", "");
+}
+
+void Viewport::set_input_player(int p_input_player) {
+	input_player = p_input_player;
+}
+
+int Viewport::get_input_player() const {
+	return input_player;
+}
+
 void Viewport::_gui_sort_subwindows() {
 
 	if (!gui.subwindow_order_dirty)
@@ -2262,7 +2284,7 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 			}
 		}
 
-		if (p_event->is_pressed() && p_event->is_action("ui_cancel") && !gui.modal_stack.empty()) {
+		if (p_event->is_pressed() && p_event->is_action("ui_cancel", get_viewport()->get_input_player()) && !gui.modal_stack.empty()) {
 
 			_gui_sort_modal_stack();
 			Control *top = gui.modal_stack.back()->get();
@@ -2289,32 +2311,32 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 		if (from && p_event->is_pressed()) {
 			Control *next = NULL;
 
-			if (p_event->is_action_pressed("ui_focus_next")) {
+			if (p_event->is_action_pressed("ui_focus_next", get_viewport()->get_input_player())) {
 
 				next = from->find_next_valid_focus();
 			}
 
-			if (p_event->is_action_pressed("ui_focus_prev")) {
+			if (p_event->is_action_pressed("ui_focus_prev", get_viewport()->get_input_player())) {
 
 				next = from->find_prev_valid_focus();
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_up")) {
+			if (!mods && p_event->is_action_pressed("ui_up", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_TOP);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_left")) {
+			if (!mods && p_event->is_action_pressed("ui_left", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_LEFT);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_right")) {
+			if (!mods && p_event->is_action_pressed("ui_right", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_RIGHT);
 			}
 
-			if (!mods && p_event->is_action_pressed("ui_down")) {
+			if (!mods && p_event->is_action_pressed("ui_down", get_viewport()->get_input_player())) {
 
 				next = from->_get_focus_neighbour(MARGIN_BOTTOM);
 			}
@@ -2515,7 +2537,7 @@ void Viewport::_gui_control_grab_focus(Control *p_control) {
 	//no need for change
 	if (gui.key_focus && gui.key_focus == p_control)
 		return;
-	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, "_viewports", "_gui_remove_focus");
+	get_tree()->call_group_flags(SceneTree::GROUP_CALL_REALTIME, focus_group, "_gui_remove_focus");
 	gui.key_focus = p_control;
 	p_control->notification(Control::NOTIFICATION_FOCUS_ENTER);
 	p_control->update();
@@ -3023,6 +3045,12 @@ void Viewport::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mouse_position"), &Viewport::get_mouse_position);
 	ClassDB::bind_method(D_METHOD("warp_mouse", "to_position"), &Viewport::warp_mouse);
 
+	ClassDB::bind_method(D_METHOD("set_focus_group", "focus_group"), &Viewport::set_focus_group);
+	ClassDB::bind_method(D_METHOD("get_focus_group"), &Viewport::get_focus_group);
+
+	ClassDB::bind_method(D_METHOD("set_input_player", "input_player"), &Viewport::set_input_player);
+	ClassDB::bind_method(D_METHOD("get_input_player"), &Viewport::get_input_player);
+
 	ClassDB::bind_method(D_METHOD("gui_has_modal_stack"), &Viewport::gui_has_modal_stack);
 	ClassDB::bind_method(D_METHOD("gui_get_drag_data"), &Viewport::gui_get_drag_data);
 	ClassDB::bind_method(D_METHOD("gui_is_dragging"), &Viewport::gui_is_dragging);
@@ -3086,6 +3114,8 @@ void Viewport::_bind_methods() {
 	ADD_GROUP("Physics", "physics_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "physics_object_picking"), "set_physics_object_picking", "get_physics_object_picking");
 	ADD_GROUP("GUI", "gui_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "gui_focus_group", PROPERTY_HINT_NONE, ""), "set_focus_group", "get_focus_group");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "gui_input_player", PROPERTY_HINT_ENUM, "All,1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16"), "set_input_player", "get_input_player");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_disable_input"), "set_disable_input", "is_input_disabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "gui_snap_controls_to_pixels"), "set_snap_controls_to_pixels", "is_snap_controls_to_pixels_enabled");
 	ADD_GROUP("Shadow Atlas", "shadow_atlas_");
@@ -3204,7 +3234,9 @@ Viewport::Viewport() {
 	gui_input_group = "_vp_gui_input" + id;
 	unhandled_input_group = "_vp_unhandled_input" + id;
 	unhandled_key_input_group = "_vp_unhandled_key_input" + id;
+	focus_group = "_viewport_focus_main";
 
+	input_player = 0;
 	disable_input = false;
 	disable_3d = false;
 	keep_3d_linear = false;
