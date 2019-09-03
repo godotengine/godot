@@ -158,22 +158,29 @@ _FORCE_INLINE_ Plane Transform::xform_inv(const Plane &p_plane) const {
 }
 
 _FORCE_INLINE_ AABB Transform::xform(const AABB &p_aabb) const {
-	/* define vertices */
-	Vector3 x = basis.get_axis(0) * p_aabb.size.x;
-	Vector3 y = basis.get_axis(1) * p_aabb.size.y;
-	Vector3 z = basis.get_axis(2) * p_aabb.size.z;
-	Vector3 pos = xform(p_aabb.position);
-	//could be even further optimized
-	AABB new_aabb;
-	new_aabb.position = pos;
-	new_aabb.expand_to(pos + x);
-	new_aabb.expand_to(pos + y);
-	new_aabb.expand_to(pos + z);
-	new_aabb.expand_to(pos + x + y);
-	new_aabb.expand_to(pos + x + z);
-	new_aabb.expand_to(pos + y + z);
-	new_aabb.expand_to(pos + x + y + z);
-	return new_aabb;
+
+	/* http://dev.theomader.com/transform-bounding-boxes/ */
+	Vector3 min = p_aabb.position;
+	Vector3 max = p_aabb.position + p_aabb.size;
+	Vector3 tmin, tmax;
+	for (int i = 0; i < 3; i++) {
+		tmin[i] = tmax[i] = origin[i];
+		for (int j = 0; j < 3; j++) {
+			real_t e = basis[i][j] * min[j];
+			real_t f = basis[i][j] * max[j];
+			if (e < f) {
+				tmin[i] += e;
+				tmax[i] += f;
+			} else {
+				tmin[i] += f;
+				tmax[i] += e;
+			}
+		}
+	}
+	AABB r_aabb;
+	r_aabb.position = tmin;
+	r_aabb.size = tmax - tmin;
+	return r_aabb;
 }
 
 _FORCE_INLINE_ AABB Transform::xform_inv(const AABB &p_aabb) const {
