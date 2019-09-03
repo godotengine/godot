@@ -129,10 +129,13 @@ void ScriptDebuggerRemote::_save_node(ObjectID id, const String &p_path) {
 	ResourceSaver::save(p_path, ps);
 }
 
-void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) {
+void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue, bool p_is_error_breakpoint) {
 
 	//this function is called when there is a debugger break (bug on script)
 	//or when execution is paused from editor
+
+	if (skip_breakpoints && !p_is_error_breakpoint)
+		return;
 
 	ERR_FAIL_COND_MSG(!tcp_client->is_connected_to_host(), "Script Debugger failed to connect, but being used anyway.");
 
@@ -155,6 +158,7 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 			Variant var;
 			Error err = packet_peer_stream->get_var(var);
+
 			ERR_CONTINUE(err != OK);
 			ERR_CONTINUE(var.get_type() != Variant::ARRAY);
 
@@ -266,7 +270,6 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 				break;
 
 			} else if (command == "continue") {
-
 				set_depth(-1);
 				set_lines_left(-1);
 				OS::get_singleton()->move_window_to_foreground();
@@ -302,6 +305,8 @@ void ScriptDebuggerRemote::debug(ScriptLanguage *p_script, bool p_can_continue) 
 
 			} else if (command == "save_node") {
 				_save_node(cmd[1], cmd[2]);
+			} else if (command == "set_skip_breakpoints") {
+				skip_breakpoints = cmd[1];
 			} else {
 				_parse_live_edit(cmd);
 			}
@@ -773,6 +778,8 @@ void ScriptDebuggerRemote::_poll_events() {
 				insert_breakpoint(cmd[2], cmd[1]);
 			else
 				remove_breakpoint(cmd[2], cmd[1]);
+		} else if (command == "set_skip_breakpoints") {
+			skip_breakpoints = cmd[1];
 		} else {
 			_parse_live_edit(cmd);
 		}
@@ -1100,6 +1107,10 @@ void ScriptDebuggerRemote::profiling_set_frame_times(float p_frame_time, float p
 	idle_time = p_idle_time;
 	physics_time = p_physics_time;
 	physics_frame_time = p_physics_frame_time;
+}
+
+void ScriptDebuggerRemote::set_skip_breakpoints(bool p_skip_breakpoints) {
+	skip_breakpoints = p_skip_breakpoints;
 }
 
 ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_func = NULL;

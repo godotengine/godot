@@ -1101,7 +1101,7 @@ bool CSharpLanguage::debug_break_parse(const String &p_file, int p_line, const S
 		_debug_parse_err_line = p_line;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false);
+		ScriptDebugger::get_singleton()->debug(this, false, true);
 		return true;
 	} else {
 		return false;

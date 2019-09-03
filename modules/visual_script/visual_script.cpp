@@ -2450,7 +2450,7 @@ bool VisualScriptLanguage::debug_break_parse(const String &p_file, int p_node, c
 		_debug_parse_err_node = p_node;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false);
+		ScriptDebugger::get_singleton()->debug(this, false, true);
 		return true;
 	} else {
 		return false;
@@ -2464,7 +2464,7 @@ bool VisualScriptLanguage::debug_break(const String &p_error, bool p_allow_conti
 		_debug_parse_err_node = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, p_allow_continue);
+		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, true);
 		return true;
 	} else {
 		return false;

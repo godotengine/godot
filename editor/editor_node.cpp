@@ -1850,6 +1850,7 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	String main_scene;
 	String run_filename;
 	String args;
+	bool skip_breakpoints;
 
 	if (p_current || (editor_data.get_edited_scene_root() && p_custom == editor_data.get_edited_scene_root()->get_filename())) {
 
@@ -1915,8 +1916,9 @@ void EditorNode::_run(bool p_current, const String &p_custom) {
 	editor_data.get_editor_breakpoints(&breakpoints);
 
 	args = ProjectSettings::get_singleton()->get("editor/main_run_args");
+	skip_breakpoints = ScriptEditor::get_singleton()->get_debugger()->is_skip_breakpoints();
 
-	Error error = editor_run.run(run_filename, args, breakpoints);
+	Error error = editor_run.run(run_filename, args, breakpoints, skip_breakpoints);
 
 	if (error != OK) {
 

@@ -48,7 +48,7 @@ class ScriptDebuggerLocal : public ScriptDebugger {
 	void print_variables(const List<String> &names, const List<Variant> &values, const String &variable_prefix);
 
 public:
-	void debug(ScriptLanguage *p_script, bool p_can_continue);
+	void debug(ScriptLanguage *p_script, bool p_can_continue, bool p_is_error_breakpoint);
 	virtual void send_message(const String &p_message, const Array &p_args);
 	virtual void send_error(const String &p_func, const String &p_file, int p_line, const String &p_err, const String &p_descr, ErrorHandlerType p_type, const Vector<ScriptLanguage::StackInfo> &p_stack_info);
 
