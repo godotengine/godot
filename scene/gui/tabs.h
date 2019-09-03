@@ -46,6 +46,11 @@ public:
 		ALIGN_MAX
 	};
 
+	enum Position {
+		TOP,
+		BOTTOM
+	};
+
 	enum CloseButtonDisplayPolicy {
 
 		CLOSE_BUTTON_SHOW_NEVER,
@@ -80,6 +85,7 @@ private:
 	int current;
 	int _get_top_margin() const;
 	TabAlign tab_align;
+	Position position;
 	int rb_hover;
 	bool rb_pressing;
 
@@ -129,6 +135,9 @@ public:
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
 
+	void set_tab_position(Position p_position);
+	Position get_tab_position() const;
+
 	void move_tab(int from, int to);
 
 	void set_tab_close_display_policy(CloseButtonDisplayPolicy p_policy);
@@ -167,6 +176,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(Tabs::TabAlign);
+VARIANT_ENUM_CAST(Tabs::Position);
 VARIANT_ENUM_CAST(Tabs::CloseButtonDisplayPolicy);
 
 #endif // TABS_H

@@ -274,8 +274,18 @@ void TabContainer::_notification(int p_what) {
 					break;
 			}
 
+			int area_y;
+			int tabs_y;
+			if (position == TOP) {
+				area_y = header_height;
+				tabs_y = 0;
+			} else {
+				area_y = 0;
+				tabs_y = size.height - header_height;
+			}
+
 			// Draw the tab area.
-			panel->draw(canvas, Rect2(0, header_height, size.width, size.height - header_height));
+			panel->draw(canvas, Rect2(0, area_y, size.width, size.height - header_height));
 
 			// Draw all visible tabs.
 			int x = 0;
@@ -298,7 +308,7 @@ void TabContainer::_notification(int p_what) {
 
 				// Draw the tab background.
 				int tab_width = tab_widths[i];
-				Rect2 tab_rect(tabs_ofs_cache + x, 0, tab_width, header_height);
+				Rect2 tab_rect(tabs_ofs_cache + x, tabs_y, tab_width, header_height);
 				tab_style->draw(canvas, tab_rect);
 
 				// Draw the tab contents.
@@ -307,7 +317,7 @@ void TabContainer::_notification(int p_what) {
 
 				int x_content = tab_rect.position.x + tab_style->get_margin(MARGIN_LEFT);
 				int top_margin = tab_style->get_margin(MARGIN_TOP);
-				int y_center = top_margin + (tab_rect.size.y - tab_style->get_minimum_size().y) / 2;
+				int y_center = tab_rect.position.y + top_margin + (tab_rect.size.y - tab_style->get_minimum_size().y) / 2;
 
 				// Draw the tab icon.
 				if (control->has_meta("_tab_icon")) {
@@ -697,9 +707,23 @@ void TabContainer::set_tab_align(TabAlign p_align) {
 	_change_notify("tab_align");
 }
 
+void TabContainer::set_tab_position(Position p_position) {
+
+	ERR_FAIL_INDEX(p_position, 2);
+	position = p_position;
+	update();
+
+	_change_notify("tab_position");
+}
+
 TabContainer::TabAlign TabContainer::get_tab_align() const {
 
 	return align;
+}
+
+TabContainer::Position TabContainer::get_tab_position() const {
+
+	return position;
 }
 
 void TabContainer::set_tabs_visible(bool p_visibe) {
@@ -905,6 +929,8 @@ void TabContainer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_tab_control", "idx"), &TabContainer::get_tab_control);
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &TabContainer::set_tab_align);
 	ClassDB::bind_method(D_METHOD("get_tab_align"), &TabContainer::get_tab_align);
+	ClassDB::bind_method(D_METHOD("set_tab_position", "position"), &TabContainer::set_tab_position);
+	ClassDB::bind_method(D_METHOD("get_tab_position"), &TabContainer::get_tab_position);
 	ClassDB::bind_method(D_METHOD("set_tabs_visible", "visible"), &TabContainer::set_tabs_visible);
 	ClassDB::bind_method(D_METHOD("are_tabs_visible"), &TabContainer::are_tabs_visible);
 	ClassDB::bind_method(D_METHOD("set_tab_title", "tab_idx", "title"), &TabContainer::set_tab_title);
@@ -932,6 +958,7 @@ void TabContainer::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("pre_popup_pressed"));
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_tab_position", "get_tab_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "tabs_visible"), "set_tabs_visible", "are_tabs_visible");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
@@ -952,6 +979,7 @@ TabContainer::TabContainer() {
 	previous = 0;
 	mouse_x_cache = 0;
 	align = ALIGN_CENTER;
+	position = TOP;
 	tabs_visible = true;
 	popup = NULL;
 	drag_to_rearrange_enabled = false;

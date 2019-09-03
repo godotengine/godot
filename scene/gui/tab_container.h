@@ -45,6 +45,11 @@ public:
 		ALIGN_RIGHT
 	};
 
+	enum Position {
+		TOP,
+		BOTTOM
+	};
+
 private:
 	int mouse_x_cache;
 	int first_tab_cache;
@@ -55,6 +60,7 @@ private:
 	bool tabs_visible;
 	bool buttons_visible_cache;
 	TabAlign align;
+	Position position;
 	Control *_get_tab(int p_idx) const;
 	int _get_top_margin() const;
 	Popup *popup;
@@ -84,6 +90,9 @@ protected:
 public:
 	void set_tab_align(TabAlign p_align);
 	TabAlign get_tab_align() const;
+
+	void set_tab_position(Position p_position);
+	Position get_tab_position() const;
 
 	void set_tabs_visible(bool p_visibe);
 	bool are_tabs_visible() const;
@@ -126,5 +135,6 @@ public:
 };
 
 VARIANT_ENUM_CAST(TabContainer::TabAlign);
+VARIANT_ENUM_CAST(TabContainer::Position);
 
 #endif // TAB_CONTAINER_H

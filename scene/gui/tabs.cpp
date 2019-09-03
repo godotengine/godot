@@ -252,6 +252,9 @@ void Tabs::_notification(int p_what) {
 
 			int h = get_size().height;
 			int w = 0;
+			int y = 0;
+			int font_y = 0;
+			int icon_y = 0;
 			int mw = 0;
 
 			for (int i = 0; i < tabs.size(); i++) {
@@ -268,6 +271,10 @@ void Tabs::_notification(int p_what) {
 
 			if (w < 0) {
 				w = 0;
+			}
+
+			if (position == BOTTOM) {
+				y = get_size().height - (font->get_height() + font->get_ascent());
 			}
 
 			Ref<Texture> incr = get_icon("increment");
@@ -310,7 +317,7 @@ void Tabs::_notification(int p_what) {
 					max_drawn_tab = i;
 				}
 
-				Rect2 sb_rect = Rect2(w, 0, tabs[i].size_cache, h);
+				Rect2 sb_rect = Rect2(w, y, tabs[i].size_cache, font->get_height() + font->get_ascent());
 				sb->draw(ci, sb_rect);
 
 				w += sb->get_margin(MARGIN_LEFT);
@@ -319,12 +326,24 @@ void Tabs::_notification(int p_what) {
 				Ref<Texture> icon = tabs[i].icon;
 				if (icon.is_valid()) {
 
-					icon->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2));
+					if (position == BOTTOM) {
+						icon_y = get_size().height - icon->get_height() / 2;
+					} else {
+						icon_y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - icon->get_height()) / 2;
+					}
+
+					icon->draw(ci, Point2i(w, icon_y));
 					if (tabs[i].text != "")
 						w += icon->get_width() + get_constant("hseparation");
 				}
 
-				font->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent()), tabs[i].text, col, tabs[i].size_text);
+				if (position == BOTTOM) {
+					font_y = get_size().height - (font->get_height() / 2);
+				} else {
+					font_y = sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent();
+				}
+
+				font->draw(ci, Point2i(w, font_y), tabs[i].text, col, tabs[i].size_text);
 
 				w += tabs[i].size_text;
 
@@ -766,9 +785,23 @@ void Tabs::set_tab_align(TabAlign p_align) {
 	update();
 }
 
+void Tabs::set_tab_position(Position p_position) {
+
+	ERR_FAIL_INDEX(p_position, 2);
+	position = p_position;
+	update();
+
+	_change_notify("tab_position");
+}
+
 Tabs::TabAlign Tabs::get_tab_align() const {
 
 	return tab_align;
+}
+
+Tabs::Position Tabs::get_tab_position() const {
+
+	return position;
 }
 
 void Tabs::move_tab(int from, int to) {
@@ -961,6 +994,8 @@ void Tabs::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("add_tab", "title", "icon"), &Tabs::add_tab, DEFVAL(""), DEFVAL(Ref<Texture>()));
 	ClassDB::bind_method(D_METHOD("set_tab_align", "align"), &Tabs::set_tab_align);
 	ClassDB::bind_method(D_METHOD("get_tab_align"), &Tabs::get_tab_align);
+	ClassDB::bind_method(D_METHOD("set_tab_position", "position"), &Tabs::set_tab_position);
+	ClassDB::bind_method(D_METHOD("get_tab_position"), &Tabs::get_tab_position);
 	ClassDB::bind_method(D_METHOD("get_tab_offset"), &Tabs::get_tab_offset);
 	ClassDB::bind_method(D_METHOD("get_offset_buttons_visible"), &Tabs::get_offset_buttons_visible);
 	ClassDB::bind_method(D_METHOD("ensure_tab_visible", "idx"), &Tabs::ensure_tab_visible);
@@ -987,6 +1022,7 @@ void Tabs::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "current_tab", PROPERTY_HINT_RANGE, "-1,4096,1", PROPERTY_USAGE_EDITOR), "set_current_tab", "get_current_tab");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_align", PROPERTY_HINT_ENUM, "Left,Center,Right"), "set_tab_align", "get_tab_align");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_position", PROPERTY_HINT_ENUM, "Top,Bottom"), "set_tab_position", "get_tab_position");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tab_close_display_policy", PROPERTY_HINT_ENUM, "Show Never,Show Active Only,Show Always"), "set_tab_close_display_policy", "get_tab_close_display_policy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrolling_enabled"), "set_scrolling_enabled", "get_scrolling_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "drag_to_rearrange_enabled"), "set_drag_to_rearrange_enabled", "get_drag_to_rearrange_enabled");
@@ -1006,6 +1042,7 @@ Tabs::Tabs() {
 
 	current = 0;
 	tab_align = ALIGN_CENTER;
+	position = TOP;
 	rb_hover = -1;
 	rb_pressing = false;
 	highlight_arrow = -1;
