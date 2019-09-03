@@ -347,7 +347,7 @@ Array Array::filter(Object *p_obj, const StringName &p_function, const Variant &
 			ERR_FAIL_V(ret);
 		}
 
-		if (((bool)res)) {
+		if (res.operator bool()) {
 			ret.append(get(i));
 		}
 	}
