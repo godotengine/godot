@@ -466,11 +466,11 @@ Dictionary PolygonPathFinder::_get_data() const {
 	PoolVector<Vector2> p;
 	PoolVector<int> ind;
 	Array connections;
-	p.resize(points.size() - 2);
-	connections.resize(points.size() - 2);
+	p.resize(MAX(0, points.size() - 2));
+	connections.resize(MAX(0, points.size() - 2));
 	ind.resize(edges.size() * 2);
 	PoolVector<float> penalties;
-	penalties.resize(points.size() - 2);
+	penalties.resize(MAX(0, points.size() - 2));
 	{
 		PoolVector<Vector2>::Write wp = p.write();
 		PoolVector<float>::Write pw = penalties.write();

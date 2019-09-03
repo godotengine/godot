@@ -55,6 +55,15 @@ void ScriptCreateDialog::_notification(int p_what) {
 			String last_lang = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
 			Ref<Texture> last_lang_icon;
 			if (!last_lang.empty()) {
+
+				for (int i = 0; i < language_menu->get_item_count(); i++) {
+					if (language_menu->get_item_text(i) == last_lang) {
+						language_menu->select(i);
+						current_language = i;
+						break;
+					}
+				}
+
 				last_lang_icon = get_icon(last_lang, "EditorIcons");
 			} else {
 				last_lang_icon = language_menu->get_item_icon(default_language);
@@ -757,7 +766,6 @@ ScriptCreateDialog::ScriptCreateDialog() {
 
 	status_panel = memnew(PanelContainer);
 	status_panel->set_h_size_flags(Control::SIZE_FILL);
-	status_panel->add_style_override("panel", EditorNode::get_singleton()->get_gui_base()->get_stylebox("bg", "Tree"));
 	status_panel->add_child(vb);
 
 	/* Spacing */
@@ -794,19 +802,8 @@ ScriptCreateDialog::ScriptCreateDialog() {
 		}
 	}
 
-	String last_selected_language = EditorSettings::get_singleton()->get_project_metadata("script_setup", "last_selected_language", "");
-	if (last_selected_language != "") {
-		for (int i = 0; i < language_menu->get_item_count(); i++) {
-			if (language_menu->get_item_text(i) == last_selected_language) {
-				language_menu->select(i);
-				current_language = i;
-				break;
-			}
-		}
-	} else {
-		language_menu->select(default_language);
-		current_language = default_language;
-	}
+	language_menu->select(default_language);
+	current_language = default_language;
 
 	language_menu->connect("item_selected", this, "_lang_changed");
 

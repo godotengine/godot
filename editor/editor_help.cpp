@@ -487,6 +487,10 @@ void EditorHelp::_update_doc() {
 				describe = true;
 			}
 
+			if (cd.properties[i].overridden) {
+				describe = false;
+			}
+
 			class_desc->push_cell();
 			class_desc->push_font(doc_code_font);
 			class_desc->push_color(headline_color);
@@ -504,7 +508,7 @@ void EditorHelp::_update_doc() {
 
 			if (cd.properties[i].default_value != "") {
 				class_desc->push_color(symbol_color);
-				class_desc->add_text(" [default: ");
+				class_desc->add_text(cd.properties[i].overridden ? " [override: " : " [default: ");
 				class_desc->pop();
 				class_desc->push_color(value_color);
 				_add_text(_fix_constant(cd.properties[i].default_value));
@@ -988,6 +992,9 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 
 		for (int i = 0; i < cd.properties.size(); i++) {
+
+			if (cd.properties[i].overridden)
+				continue;
 
 			property_line[cd.properties[i].name] = class_desc->get_line_count() - 2;
 

@@ -37,13 +37,14 @@ class TypeName:
 
 
 class PropertyDef:
-    def __init__(self, name, type_name, setter, getter, text, default_value):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str], Optional[str]) -> None
+    def __init__(self, name, type_name, setter, getter, text, default_value, overridden):  # type: (str, TypeName, Optional[str], Optional[str], Optional[str], Optional[str], Optional[bool]) -> None
         self.name = name
         self.type_name = type_name
         self.setter = setter
         self.getter = getter
         self.text = text
         self.default_value = default_value
+        self.overridden = overridden
 
 class ParameterDef:
     def __init__(self, name, type_name, default_value):  # type: (str, TypeName, Optional[str]) -> None
@@ -147,8 +148,9 @@ class State:
                 setter = property.get("setter") or None  # Use or None so '' gets turned into None.
                 getter = property.get("getter") or None
                 default_value = property.get("default") or None
+                overridden = property.get("override") or False
 
-                property_def = PropertyDef(property_name, type_name, setter, getter, property.text, default_value)
+                property_def = PropertyDef(property_name, type_name, setter, getter, property.text, default_value, overridden)
                 class_def.properties[property_name] = property_def
 
         methods = class_root.find("methods")
@@ -401,12 +403,15 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
     # Properties overview
     if len(class_def.properties) > 0:
         f.write(make_heading('Properties', '-'))
-        ml = []  # type: List[Tuple[str, str]]
+        ml = []  # type: List[Tuple[str, str, str]]
         for property_def in class_def.properties.values():
             type_rst = property_def.type_name.to_rst(state)
-            ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
             default = property_def.default_value
-            ml.append((type_rst, ref, default))
+            if property_def.overridden:
+                ml.append((type_rst, property_def.name, "**O:** " + default))
+            else:
+                ref = ":ref:`{0}<class_{1}_property_{0}>`".format(property_def.name, class_name)
+                ml.append((type_rst, ref, default))
         format_table(f, ml, True)
 
     # Methods overview
@@ -487,9 +492,12 @@ def make_rst_class(class_def, state, dry_run, output_dir):  # type: (ClassDef, S
             f.write("- " + make_url(link) + "\n\n")
 
     # Property descriptions
-    if len(class_def.properties) > 0:
+    if any(not p.overridden for p in class_def.properties.values()) > 0:
         f.write(make_heading('Property Descriptions', '-'))
         for property_def in class_def.properties.values():
+            if property_def.overridden:
+                continue
+
             #f.write(".. _class_{}_{}:\n\n".format(class_name, property_def.name))
             f.write(".. _class_{}_property_{}:\n\n".format(class_name, property_def.name))
             f.write('- {} **{}**\n\n'.format(property_def.type_name.to_rst(state), property_def.name))
