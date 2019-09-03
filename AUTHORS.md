@@ -57,6 +57,7 @@ name is available.
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     DualMatrix
+    Emmanuel Barroga (sparkart)
     Emmanuel Leblond (touilleMan)
     Eric Lasota (elasota)
     est31
@@ -106,6 +107,7 @@ name is available.
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
+    merumelu
     Michael Alexsander Silva Dias (YeldhamDev)
     mrezai
     Nathan Warden (NathanWarden)
