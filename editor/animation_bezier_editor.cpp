@@ -354,10 +354,12 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 		{ //guides
 			float min_left_scale = font->get_height() + vsep;
 
-			float scale = 1;
+			float scale = (min_left_scale * 2) * v_zoom;
+			float step = Math::pow(10.0, Math::round(Math::log(scale / 5.0) / Math::log(10.0))) * 5.0;
+			scale = Math::stepify(scale, step);
 
 			while (scale / v_zoom < min_left_scale * 2) {
-				scale *= 5;
+				scale += step;
 			}
 
 			bool first = true;
@@ -378,7 +380,7 @@ void AnimationBezierTrackEdit::_notification(int p_what) {
 					draw_line(Point2(limit, i), Point2(right_limit, i), lc);
 					Color c = color;
 					c.a *= 0.5;
-					draw_string(font, Point2(limit + 8, i - 2), itos((iv + 1) * scale), c);
+					draw_string(font, Point2(limit + 8, i - 2), rtos(Math::stepify((iv + 1) * scale, step)), c);
 				}
 
 				first = false;
@@ -631,7 +633,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_command()) {
 			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() * 1.05);
 		} else {
-			if (v_zoom < 1000) {
+			if (v_zoom < 100000) {
 				v_zoom *= 1.2;
 			}
 		}
@@ -642,7 +644,7 @@ void AnimationBezierTrackEdit::_gui_input(const Ref<InputEvent> &p_event) {
 		if (mb->get_command()) {
 			timeline->get_zoom()->set_value(timeline->get_zoom()->get_value() / 1.05);
 		} else {
-			if (v_zoom > 0.01) {
+			if (v_zoom > 0.000001) {
 				v_zoom /= 1.2;
 			}
 		}
