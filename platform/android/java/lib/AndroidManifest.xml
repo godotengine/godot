@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android"
+    package="org.godotengine.godot"
+    android:versionCode="1"
+    android:versionName="1.0">
+
+    <application>
+
+        <service android:name=".GodotDownloaderService" />
+
+    </application>
+
+    <instrumentation
+        android:icon="@drawable/icon"
+        android:label="@string/godot_project_name_string"
+        android:name=".GodotInstrumentation"
+        android:targetPackage="org.godotengine.godot" />
+
+</manifest>

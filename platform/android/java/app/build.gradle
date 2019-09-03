@@ -1,0 +1,121 @@
+// Gradle build config for Godot Engine's Android port.
+//
+// Do not remove/modify comments ending with BEGIN/END, they are used to inject
+// addon-specific configuration.
+apply from: 'config.gradle'
+
+buildscript {
+    apply from: 'config.gradle'
+
+    repositories {
+        google()
+        jcenter()
+//CHUNK_BUILDSCRIPT_REPOSITORIES_BEGIN
+//CHUNK_BUILDSCRIPT_REPOSITORIES_END
+    }
+    dependencies {
+        classpath libraries.androidGradlePlugin
+//CHUNK_BUILDSCRIPT_DEPENDENCIES_BEGIN
+//CHUNK_BUILDSCRIPT_DEPENDENCIES_END
+    }
+}
+
+apply plugin: 'com.android.application'
+
+allprojects {
+    repositories {
+        mavenCentral()
+        google()
+        jcenter()
+//CHUNK_ALLPROJECTS_REPOSITORIES_BEGIN
+//CHUNK_ALLPROJECTS_REPOSITORIES_END
+    }
+}
+
+dependencies {
+    if (rootProject.findProject(":lib")) {
+        implementation project(":lib")
+    } else {
+        // Custom build mode. In this scenario this project is the only one around and the Godot
+        // library is available through the pre-generated godot-lib.*.aar android archive files.
+        debugImplementation fileTree(dir: 'libs/debug', include: ['*.jar', '*.aar'])
+        releaseImplementation fileTree(dir: 'libs/release', include: ['*.jar', '*.aar'])
+    }
+//CHUNK_DEPENDENCIES_BEGIN
+//CHUNK_DEPENDENCIES_END
+}
+
+android {
+    compileSdkVersion versions.compileSdk
+    buildToolsVersion versions.buildTools
+
+    defaultConfig {
+        // Feel free to modify the application id to your own.
+        applicationId "com.godot.game"
+        minSdkVersion versions.minSdk
+        targetSdkVersion versions.targetSdk
+//CHUNK_ANDROID_DEFAULTCONFIG_BEGIN
+//CHUNK_ANDROID_DEFAULTCONFIG_END
+    }
+
+    lintOptions {
+        abortOnError false
+        disable 'MissingTranslation', 'UnusedResources'
+    }
+
+    packagingOptions {
+        exclude 'META-INF/LICENSE'
+        exclude 'META-INF/NOTICE'
+    }
+
+    // Both signing and zip-aligning will be done at export time
+    buildTypes.all { buildType ->
+        buildType.zipAlignEnabled false
+        buildType.signingConfig null
+    }
+
+    sourceSets {
+        main {
+            manifest.srcFile 'AndroidManifest.xml'
+            java.srcDirs = [
+                    'src'
+//DIR_SRC_BEGIN
+//DIR_SRC_END
+            ]
+            res.srcDirs = [
+                    'res'
+//DIR_RES_BEGIN
+//DIR_RES_END
+            ]
+            aidl.srcDirs = [
+                    'aidl'
+//DIR_AIDL_BEGIN
+//DIR_AIDL_END
+            ]
+            assets.srcDirs = [
+                    'assets'
+//DIR_ASSETS_BEGIN
+//DIR_ASSETS_END
+            ]
+        }
+        debug.jniLibs.srcDirs = [
+                'libs/debug'
+//DIR_JNI_DEBUG_BEGIN
+//DIR_JNI_DEBUG_END
+        ]
+        release.jniLibs.srcDirs = [
+                'libs/release'
+//DIR_JNI_RELEASE_BEGIN
+//DIR_JNI_RELEASE_END
+        ]
+    }
+
+    applicationVariants.all { variant ->
+        variant.outputs.all { output ->
+            output.outputFileName = "android_${variant.name}.apk"
+        }
+    }
+}
+
+//CHUNK_GLOBAL_BEGIN
+//CHUNK_GLOBAL_END
