@@ -645,6 +645,7 @@ void Control::_notification(int p_notification) {
 		} break;
 		case NOTIFICATION_THEME_CHANGED: {
 
+			minimum_size_changed();
 			update();
 		} break;
 		case NOTIFICATION_MODAL_CLOSE: {
