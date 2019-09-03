@@ -694,6 +694,14 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="ord">
+			<return type="int">
+			</return>
+			<argument index="0" name="char" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="parse_json">
 			<return type="Variant">
 			</return>
