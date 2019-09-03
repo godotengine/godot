@@ -759,7 +759,16 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				_delete_confirm();
 
 			} else {
-				delete_dialog->set_text(TTR("Delete Node(s)?"));
+				if (remove_list.size() > 1) {
+					delete_dialog->set_text(vformat(TTR("Delete %d nodes?"), remove_list.size()));
+				} else {
+					delete_dialog->set_text(vformat(TTR("Delete node \"%s\"?"), remove_list[0]->get_name()));
+				}
+
+				// Resize the dialog to its minimum size.
+				// This prevents the dialog from being too wide after displaying
+				// a deletion confirmation for a node with a long name.
+				delete_dialog->set_size(Size2());
 				delete_dialog->popup_centered_minsize();
 			}
 
