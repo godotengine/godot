@@ -248,10 +248,19 @@ void VisibilityEnabler2D::_notification(int p_what) {
 
 		_find_nodes(from);
 
-		if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent())
-			get_parent()->set_physics_process(false);
-		if (enabler[ENABLER_PARENT_PROCESS] && get_parent())
-			get_parent()->set_process(false);
+		// We need to defer the call of set_process and set_physics_process,
+		// otherwise they are overwritten inside NOTIFICATION_READY.
+		// We can't use call_deferred, because it happens after a physics frame.
+		// The ready signal works as it's emitted immediately after NOTIFICATION_READY.
+
+		if (enabler[ENABLER_PARENT_PHYSICS_PROCESS] && get_parent()) {
+			get_parent()->connect(SceneStringNames::get_singleton()->ready,
+					get_parent(), "set_physics_process", varray(false), CONNECT_ONESHOT);
+		}
+		if (enabler[ENABLER_PARENT_PROCESS] && get_parent()) {
+			get_parent()->connect(SceneStringNames::get_singleton()->ready,
+					get_parent(), "set_process", varray(false), CONNECT_ONESHOT);
+		}
 	}
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
