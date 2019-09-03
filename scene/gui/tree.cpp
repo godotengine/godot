@@ -1184,23 +1184,22 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if (p_item->cells[i].selected && select_mode != SELECT_ROW) {
-
+			if (select_mode != SELECT_ROW && (p_item->cells[i].selected || selected_item == p_item)) {
 				Rect2i r(cell_rect.position, cell_rect.size);
+
 				if (p_item->cells[i].text.size() > 0) {
 					float icon_width = p_item->cells[i].get_icon_size().width;
 					r.position.x += icon_width;
 					r.size.x -= icon_width;
 				}
 				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
-				if (has_focus()) {
-					cache.selected_focus->draw(ci, r);
-				} else {
-					cache.selected->draw(ci, r);
-				}
-				if (text_editor->is_visible_in_tree()) {
-					Vector2 ofs2(0, (text_editor->get_size().height - r.size.height) / 2);
-					text_editor->set_position(get_global_position() + r.position - ofs2);
+
+				if (p_item->cells[i].selected) {
+					if (has_focus()) {
+						cache.selected_focus->draw(ci, r);
+					} else {
+						cache.selected->draw(ci, r);
+					}
 				}
 			}
 
