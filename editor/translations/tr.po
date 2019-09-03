@@ -28,6 +28,7 @@
 # Anton Semchenko <semchenkoanton@protonmail.com>, 2019.
 # Enes Can Yerlikaya <enescanyerlikaya@gmail.com>, 2019.
 # Ömer Akgöz <omerakgoz34@gmail.com>, 2019.
+# Ali Can Çekmez <alcamez@icloud.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
@@ -471,15 +472,23 @@ msgstr ""
 #: editor/animation_track_editor.cpp
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
+msgstr "Bu animasyon içe aktarılmış bir sahneye ait, bu yüzden aktarılan parçalar ile değiştirildi"
 "will not be saved.\n"
+msgstr "Üzgünüz, biz bunu kaydedemeyeceğiz.\n"
 "\n"
 "To enable the ability to add custom tracks, navigate to the scene's import "
+msgstr "Özel parçalar ekleme özelliğini etkinleştirmek için, sahnenin içe aktarılmasına gidin"
 "settings and set\n"
+msgstr "ayarlar ve ayar\n"
+
 "\"Animation > Storage\" to \"Files\", enable \"Animation > Keep Custom Tracks"
+msgstr "Animasyon > Depolama\" için \"Dosyaları\", etkinleştir\"Animasyon > Özel izinleri sakla"
 "\", then re-import.\n"
+msgstr "\", sonra yeniden içe aktarın.\n"
 "Alternatively, use an import preset that imports animations to separate "
+msgtr "Alternatif olarak, ayırmak için animasyonları içe aktaran, hazır içe aktarma işlevini kullanın "
 "files."
-msgstr ""
+msgstr "dosyalar."
 "Bu animasyon içe aktarılmış bir sahneye ait, bu yüzden içe aktarılan "
 "parçalara yapılan değişiklikler kaydedilmeyecek.\n"
 "\n"
