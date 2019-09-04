@@ -547,6 +547,11 @@ Ref<Texture> TreeItem::get_button(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), Ref<Texture>());
 	return cells[p_column].buttons[p_idx].texture;
 }
+String TreeItem::get_button_tooltip(int p_column, int p_idx) const {
+	ERR_FAIL_INDEX_V(p_column, cells.size(), String());
+	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), String());
+	return cells[p_column].buttons[p_idx].tooltip;
+}
 int TreeItem::get_button_id(int p_column, int p_idx) const {
 	ERR_FAIL_INDEX_V(p_column, cells.size(), -1);
 	ERR_FAIL_INDEX_V(p_idx, cells[p_column].buttons.size(), -1);
@@ -795,6 +800,7 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
+	ClassDB::bind_method(D_METHOD("get_button_tooltip", "column"), &TreeItem::get_button_tooltip);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);

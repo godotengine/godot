@@ -84,6 +84,15 @@
 				Returns the number of buttons in column [code]column[/code]. May be used to get the most recently added button's index, if no index was specified.
 			</description>
 		</method>
+		<method name="get_button_tooltip" qualifiers="const">
+			<return type="String">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+				Returns the tooltip for the button in column [code]column[/code].
+			</description>
+		</method>
 		<method name="get_cell_mode" qualifiers="const">
 			<return type="int" enum="TreeItem.TreeCellMode">
 			</return>
