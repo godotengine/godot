@@ -3855,7 +3855,7 @@
 			<argument index="1" name="size" type="int">
 			</argument>
 			<description>
-				Sets the size of the shadow atlas's images.
+				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>
 		</method>
 		<method name="viewport_set_size">
