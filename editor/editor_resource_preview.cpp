@@ -295,8 +295,9 @@ void EditorResourcePreview::_thread() {
 								//update modified time
 
 								f = FileAccess::open(file, FileAccess::WRITE);
-								f->store_line(itos(modtime));
+								f->store_line(itos(thumbnail_size));
 								f->store_line(itos(has_small_texture));
+								f->store_line(itos(modtime));
 								f->store_line(md5);
 								memdelete(f);
 							}
