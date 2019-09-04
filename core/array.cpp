@@ -335,6 +335,26 @@ Array &Array::invert() {
 	return *this;
 }
 
+Array Array::filter(Object *p_obj, const StringName &p_function, const Variant &p_args) {
+	Array ret;
+
+	for (int i = 0; i < size(); i++) {
+
+		Variant res = p_obj->call(p_function, get(i), p_args);
+
+		if (res.get_type() != Variant::Type::BOOL) {
+			ERR_EXPLAIN("Comparison function must return a value of type bool");
+			ERR_FAIL_V(ret);
+		}
+
+		if (res.operator bool()) {
+			ret.append(get(i));
+		}
+	}
+
+	return ret;
+}
+
 void Array::push_front(const Variant &p_value) {
 
 	_p->array.insert(0, p_value);
