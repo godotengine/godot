@@ -304,6 +304,8 @@ class AnimationTrackEditor : public VBoxContainer {
 	VBoxContainer *track_vbox;
 	AnimationBezierTrackEdit *bezier_edit;
 
+	Label *info_message;
+
 	AnimationTimelineEdit *timeline;
 	HSlider *zoom;
 	EditorSpinSlider *step;

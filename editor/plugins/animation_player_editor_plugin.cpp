@@ -38,7 +38,7 @@
 #include "editor/animation_track_editor.h"
 #include "editor/editor_settings.h"
 
-// For onion skinning
+// For onion skinning.
 #include "editor/plugins/canvas_item_editor_plugin.h"
 #include "editor/plugins/spatial_editor_plugin.h"
 #include "scene/main/viewport.h"
@@ -1088,20 +1088,6 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	EditorNode::get_singleton()->get_inspector()->refresh();
 }
 
-void AnimationPlayerEditor::_hide_anim_editors() {
-
-	player = NULL;
-	hide();
-	set_process(false);
-
-	track_editor->set_animation(Ref<Animation>());
-	track_editor->set_root(NULL);
-	track_editor->show_select_node_warning(true);
-}
-
-void AnimationPlayerEditor::_animation_about_to_show_menu() {
-}
-
 void AnimationPlayerEditor::_animation_tool_menu(int p_option) {
 
 	String current;
@@ -1489,7 +1475,7 @@ void AnimationPlayerEditor::_prepare_onion_layers_2() {
 	player->seek(cpos, false);
 	player->restore_animated_values(values_backup);
 
-	// Restor state of main editors.
+	// Restore state of main editors.
 	if (SpatialEditor::get_singleton()->is_visible()) {
 		// 3D
 		SpatialEditor::get_singleton()->set_state(spatial_edit_state);
@@ -1519,7 +1505,7 @@ void AnimationPlayerEditor::_stop_onion_skinning() {
 
 		_free_onion_layers();
 
-		// Clean up the overlay
+		// Clean up the overlay.
 		onion.can_overlay = false;
 		plugin->update_overlays();
 	}
@@ -1557,7 +1543,6 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
 	ClassDB::bind_method(D_METHOD("_animation_key_editor_seek"), &AnimationPlayerEditor::_animation_key_editor_seek);
 	ClassDB::bind_method(D_METHOD("_animation_key_editor_anim_len_changed"), &AnimationPlayerEditor::_animation_key_editor_anim_len_changed);
-	ClassDB::bind_method(D_METHOD("_hide_anim_editors"), &AnimationPlayerEditor::_hide_anim_editors);
 	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
 	ClassDB::bind_method(D_METHOD("_blend_editor_next_changed"), &AnimationPlayerEditor::_blend_editor_next_changed);
 	ClassDB::bind_method(D_METHOD("_unhandled_key_input"), &AnimationPlayerEditor::_unhandled_key_input);
@@ -1776,7 +1761,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	_update_player();
 
-	// Onion skinning
+	// Onion skinning.
 
 	track_editor->connect("visibility_changed", this, "_editor_visibility_changed");
 

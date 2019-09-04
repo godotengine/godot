@@ -82,6 +82,8 @@ class TileMapEditor : public VBoxContainer {
 	ItemList *palette;
 	ItemList *manual_palette;
 
+	Label *info_message;
+
 	HBoxContainer *toolbar;
 	HBoxContainer *toolbar_right;
 
