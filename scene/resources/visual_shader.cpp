@@ -2466,6 +2466,7 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 		pre_symbols.push_back(";");
 		pre_symbols.push_back("{");
 		pre_symbols.push_back("[");
+		pre_symbols.push_back("]");
 		pre_symbols.push_back("(");
 		pre_symbols.push_back(" ");
 		pre_symbols.push_back("-");
@@ -2485,6 +2486,7 @@ String VisualShaderNodeExpression::generate_code(Shader::Mode p_mode, VisualShad
 		post_symbols.push_back(",");
 		post_symbols.push_back(";");
 		post_symbols.push_back("}");
+		post_symbols.push_back("[");
 		post_symbols.push_back("]");
 		post_symbols.push_back(")");
 		post_symbols.push_back(" ");
