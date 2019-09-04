@@ -538,6 +538,10 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 		// if it's a path then it's most likely a deleted file not help
 	} else if (path.find("::") != -1) {
 		// built-in script
+		String scene_path = path.get_slice("::", 0);
+		if (!EditorNode::get_singleton()->is_scene_open(scene_path)) {
+			EditorNode::get_singleton()->load_scene(scene_path);
+		}
 		Ref<Script> script = ResourceLoader::load(path);
 		if (script.is_valid()) {
 			edit(script, true);
