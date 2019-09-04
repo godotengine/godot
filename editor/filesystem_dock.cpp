@@ -2153,8 +2153,8 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 
 	if (all_files) {
 		if (filenames.size() == 1) {
-			p_popup->add_item(TTR("Edit Dependencies..."), FILE_DEPENDENCIES);
-			p_popup->add_item(TTR("View Owners..."), FILE_OWNERS);
+			p_popup->add_item(TTR("Edit Dependencies…"), FILE_DEPENDENCIES);
+			p_popup->add_item(TTR("View Owners…"), FILE_OWNERS);
 			p_popup->add_separator();
 		}
 
@@ -2166,23 +2166,23 @@ void FileSystemDock::_file_and_folders_fill_popup(PopupMenu *p_popup, Vector<Str
 	if (p_paths.size() == 1) {
 		p_popup->add_item(TTR("Copy Path"), FILE_COPY_PATH);
 		if (p_paths[0] != "res://") {
-			p_popup->add_item(TTR("Rename..."), FILE_RENAME);
-			p_popup->add_item(TTR("Duplicate..."), FILE_DUPLICATE);
+			p_popup->add_item(TTR("Rename…"), FILE_RENAME);
+			p_popup->add_item(TTR("Duplicate…"), FILE_DUPLICATE);
 		}
 	}
 
 	if (p_paths.size() > 1 || p_paths[0] != "res://") {
-		p_popup->add_item(TTR("Move To..."), FILE_MOVE);
+		p_popup->add_item(TTR("Move To…"), FILE_MOVE);
 		p_popup->add_item(TTR("Delete"), FILE_REMOVE);
 	}
 
 	if (p_paths.size() == 1) {
 		p_popup->add_separator();
 		if (p_display_path_dependent_options) {
-			p_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-			p_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
-			p_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-			p_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+			p_popup->add_item(TTR("New Folder…"), FILE_NEW_FOLDER);
+			p_popup->add_item(TTR("New Scene…"), FILE_NEW_SCENE);
+			p_popup->add_item(TTR("New Script…"), FILE_NEW_SCRIPT);
+			p_popup->add_item(TTR("New Resource…"), FILE_NEW_RESOURCE);
 			p_popup->add_separator();
 		}
 
@@ -2219,10 +2219,10 @@ void FileSystemDock::_tree_rmb_empty(const Vector2 &p_pos) {
 	path = "res://";
 	tree_popup->clear();
 	tree_popup->set_size(Size2(1, 1));
-	tree_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-	tree_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
-	tree_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-	tree_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+	tree_popup->add_item(TTR("New Folder…"), FILE_NEW_FOLDER);
+	tree_popup->add_item(TTR("New Scene…"), FILE_NEW_SCENE);
+	tree_popup->add_item(TTR("New Script…"), FILE_NEW_SCRIPT);
+	tree_popup->add_item(TTR("New Resource…"), FILE_NEW_RESOURCE);
 	tree_popup->set_position(tree->get_global_position() + p_pos);
 	tree_popup->popup();
 }
@@ -2262,10 +2262,10 @@ void FileSystemDock::_file_list_rmb_pressed(const Vector2 &p_pos) {
 	file_list_popup->clear();
 	file_list_popup->set_size(Size2(1, 1));
 
-	file_list_popup->add_item(TTR("New Folder..."), FILE_NEW_FOLDER);
-	file_list_popup->add_item(TTR("New Scene..."), FILE_NEW_SCENE);
-	file_list_popup->add_item(TTR("New Script..."), FILE_NEW_SCRIPT);
-	file_list_popup->add_item(TTR("New Resource..."), FILE_NEW_RESOURCE);
+	file_list_popup->add_item(TTR("New Folder…"), FILE_NEW_FOLDER);
+	file_list_popup->add_item(TTR("New Scene…"), FILE_NEW_SCENE);
+	file_list_popup->add_item(TTR("New Script…"), FILE_NEW_SCRIPT);
+	file_list_popup->add_item(TTR("New Resource…"), FILE_NEW_RESOURCE);
 	file_list_popup->add_separator();
 	file_list_popup->add_item(TTR("Open in File Manager"), FILE_SHOW_IN_EXPLORER);
 	file_list_popup->set_position(files->get_global_position() + p_pos);
@@ -2469,7 +2469,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	path = "res://";
 
 	ED_SHORTCUT("filesystem_dock/copy_path", TTR("Copy Path"), KEY_MASK_CMD | KEY_C);
-	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate..."), KEY_MASK_CMD | KEY_D);
+	ED_SHORTCUT("filesystem_dock/duplicate", TTR("Duplicate…"), KEY_MASK_CMD | KEY_D);
 	ED_SHORTCUT("filesystem_dock/delete", TTR("Delete"), KEY_DELETE);
 	ED_SHORTCUT("filesystem_dock/rename", TTR("Rename"));
 
@@ -2584,7 +2584,7 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	add_child(scanning_vb);
 
 	Label *slabel = memnew(Label);
-	slabel->set_text(TTR("Scanning Files,\nPlease Wait..."));
+	slabel->set_text(TTR("Scanning Files,\nPlease Wait…"));
 	slabel->set_align(Label::ALIGN_CENTER);
 	scanning_vb->add_child(slabel);
 
