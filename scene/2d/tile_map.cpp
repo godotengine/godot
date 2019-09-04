@@ -1549,7 +1549,8 @@ Vector2 TileMap::_map_to_world(int p_x, int p_y, bool p_ignore_ofs) const {
 					ret += get_cell_transform()[1] * (half_offset == HALF_OFFSET_Y ? 0.5 : -0.5);
 				}
 			} break;
-			default: {
+			case HALF_OFFSET_DISABLED: {
+				// Nothing to do.
 			}
 		}
 	}
@@ -1612,26 +1613,27 @@ Vector2 TileMap::world_to_map(const Vector2 &p_pos) const {
 	switch (half_offset) {
 
 		case HALF_OFFSET_X: {
-			if (ret.y > 0 ? int(ret.y) & 1 : (int(ret.y) - 1) & 1) {
+			if (int(floor(ret.y)) & 1) {
 				ret.x -= 0.5;
 			}
 		} break;
 		case HALF_OFFSET_NEGATIVE_X: {
-			if (ret.y > 0 ? int(ret.y) & 1 : (int(ret.y) - 1) & 1) {
+			if (int(floor(ret.y)) & 1) {
 				ret.x += 0.5;
 			}
 		} break;
 		case HALF_OFFSET_Y: {
-			if (ret.x > 0 ? int(ret.x) & 1 : (int(ret.x) - 1) & 1) {
+			if (int(floor(ret.x)) & 1) {
 				ret.y -= 0.5;
 			}
 		} break;
 		case HALF_OFFSET_NEGATIVE_Y: {
-			if (ret.x > 0 ? int(ret.x) & 1 : (int(ret.x) - 1) & 1) {
+			if (int(floor(ret.x)) & 1) {
 				ret.y += 0.5;
 			}
 		} break;
-		default: {
+		case HALF_OFFSET_DISABLED: {
+			// Nothing to do.
 		}
 	}
 
