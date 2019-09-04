@@ -1738,7 +1738,9 @@ void TextEdit::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
-			if (!caret_blink_enabled) {
+			if (caret_blink_enabled) {
+				caret_blink_timer->start();
+			} else {
 				draw_caret = true;
 			}
 
@@ -1750,6 +1752,10 @@ void TextEdit::_notification(int p_what) {
 				OS::get_singleton()->show_virtual_keyboard(get_text(), get_global_rect());
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
+
+			if (caret_blink_enabled) {
+				caret_blink_timer->stop();
+			}
 
 			OS::get_singleton()->set_ime_position(Point2());
 			OS::get_singleton()->set_ime_active(false);
@@ -4396,11 +4402,14 @@ bool TextEdit::cursor_get_blink_enabled() const {
 void TextEdit::cursor_set_blink_enabled(const bool p_enabled) {
 	caret_blink_enabled = p_enabled;
 
-	if (p_enabled) {
-		caret_blink_timer->start();
-	} else {
-		caret_blink_timer->stop();
+	if (has_focus()) {
+		if (p_enabled) {
+			caret_blink_timer->start();
+		} else {
+			caret_blink_timer->stop();
+		}
 	}
+
 	draw_caret = true;
 }
 
@@ -4817,10 +4826,12 @@ int TextEdit::get_max_chars() const {
 
 void TextEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
-		caret_blink_timer->stop();
-		caret_blink_timer->start();
 		draw_caret = true;
-		update();
+		if (has_focus()) {
+			caret_blink_timer->stop();
+			caret_blink_timer->start();
+			update();
+		}
 	}
 }
 
