@@ -628,10 +628,10 @@ void ConnectionsDock::_tree_item_selected() {
 
 	TreeItem *item = tree->get_selected();
 	if (!item) { // Unlikely. Disable button just in case.
-		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_text(TTR("Connect…"));
 		connect_button->set_disabled(true);
 	} else if (_is_item_signal(*item)) {
-		connect_button->set_text(TTR("Connect..."));
+		connect_button->set_text(TTR("Connect…"));
 		connect_button->set_disabled(false);
 	} else {
 		connect_button->set_text(TTR("Disconnect"));
@@ -1024,7 +1024,7 @@ void ConnectionsDock::update_tree() {
 		}
 	}
 
-	connect_button->set_text(TTR("Connect..."));
+	connect_button->set_text(TTR("Connect…"));
 	connect_button->set_disabled(true);
 }
 
@@ -1063,7 +1063,7 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	signal_menu = memnew(PopupMenu);
 	add_child(signal_menu);
 	signal_menu->connect("id_pressed", this, "_handle_signal_menu_option");
-	signal_menu->add_item(TTR("Connect..."), CONNECT);
+	signal_menu->add_item(TTR("Connect…"), CONNECT);
 	signal_menu->add_item(TTR("Disconnect All"), DISCONNECT_ALL);
 
 	slot_menu = memnew(PopupMenu);
