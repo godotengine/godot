@@ -2367,6 +2367,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("LessThanEqual", "Conditional", "Functions", "VisualShaderNodeCompare", vformat(compare_func_desc, TTR("Less Than or Equal (<=)")), VisualShaderNodeCompare::FUNC_LESS_THAN_EQUAL, VisualShaderNode::PORT_TYPE_BOOLEAN));
 	add_options.push_back(AddOption("NotEqual", "Conditional", "Functions", "VisualShaderNodeCompare", vformat(compare_func_desc, TTR("Not Equal (!=)")), VisualShaderNodeCompare::FUNC_NOT_EQUAL, VisualShaderNode::PORT_TYPE_BOOLEAN));
 	add_options.push_back(AddOption("Switch", "Conditional", "Functions", "VisualShaderNodeSwitch", TTR("Returns an associated vector if the provided boolean value is true or false."), -1, VisualShaderNode::PORT_TYPE_VECTOR));
+	add_options.push_back(AddOption("SwitchS", "Conditional", "Functions", "VisualShaderNodeScalarSwitch", TTR("Returns an associated scalar if the provided boolean value is true or false."), -1, VisualShaderNode::PORT_TYPE_SCALAR));
 
 	add_options.push_back(AddOption("Compare", "Conditional", "Common", "VisualShaderNodeCompare", TTR("Returns the boolean result of the comparison between two parameters."), -1, VisualShaderNode::PORT_TYPE_BOOLEAN));
 	add_options.push_back(AddOption("Is", "Conditional", "Common", "VisualShaderNodeIs", TTR("Returns the boolean result of the comparison between INF (or NaN) and a scalar parameter."), -1, VisualShaderNode::PORT_TYPE_BOOLEAN));
