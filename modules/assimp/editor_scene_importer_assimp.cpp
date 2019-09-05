@@ -541,6 +541,25 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 	mesh.instance();
 	bool has_uvs = false;
 
+	Map<String, uint32_t> morph_mesh_string_lookup;
+
+	for (int i = 0; i < p_surface_indices.size(); i++) {
+		const unsigned int mesh_idx = p_surface_indices[0];
+		const aiMesh *ai_mesh = state.assimp_scene->mMeshes[mesh_idx];
+		for (size_t j = 0; j < ai_mesh->mNumAnimMeshes; j++) {
+
+			String ai_anim_mesh_name = AssimpUtils::get_assimp_string(ai_mesh->mAnimMeshes[j]->mName);
+			if (!morph_mesh_string_lookup.has(ai_anim_mesh_name)) {
+				morph_mesh_string_lookup.insert(ai_anim_mesh_name, j);
+				mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+				if (ai_anim_mesh_name.empty()) {
+					ai_anim_mesh_name = String("morph_") + itos(j);
+				}
+				mesh->add_blend_shape(ai_anim_mesh_name);
+			}
+		}
+	}
+
 	//
 	// Process Vertex Weights
 	//
@@ -789,16 +808,15 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 		Array morphs;
 		morphs.resize(ai_mesh->mNumAnimMeshes);
 		Mesh::PrimitiveType primitive = Mesh::PRIMITIVE_TRIANGLES;
-		Map<uint32_t, String> morph_mesh_idx_names;
+
 		for (size_t j = 0; j < ai_mesh->mNumAnimMeshes; j++) {
 
 			String ai_anim_mesh_name = AssimpUtils::get_assimp_string(ai_mesh->mAnimMeshes[j]->mName);
-			mesh->set_blend_shape_mode(Mesh::BLEND_SHAPE_MODE_NORMALIZED);
+
 			if (ai_anim_mesh_name.empty()) {
 				ai_anim_mesh_name = String("morph_") + itos(j);
 			}
-			mesh->add_blend_shape(ai_anim_mesh_name);
-			morph_mesh_idx_names.insert(j, ai_anim_mesh_name);
+
 			Array array_copy;
 			array_copy.resize(VisualServer::ARRAY_MAX);
 
