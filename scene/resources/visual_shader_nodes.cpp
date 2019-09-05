@@ -3269,15 +3269,7 @@ String VisualShaderNodeSwitch::get_output_port_name(int p_port) const {
 String VisualShaderNodeSwitch::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
 
 	String code;
-	if (p_input_vars[0] == String()) {
-		if ((bool)get_input_port_default_value(0)) {
-			code += "\tif(true)\n";
-		} else {
-			code += "\tif(false)\n";
-		}
-	} else {
-		code += "\tif(" + p_input_vars[0] + ")\n";
-	}
+	code += "\tif(" + p_input_vars[0] + ")\n";
 	code += "\t{\n";
 	code += "\t\t" + p_output_vars[0] + "=" + p_input_vars[1] + ";\n";
 	code += "\t}\n";
