@@ -2304,7 +2304,13 @@ static void _find_call_arguments(const GDScriptCompletionContext &p_context, con
 								List<String> options;
 								obj->get_argument_options(p_method, p_argidx, &options);
 								for (List<String>::Element *F = options.front(); F; F = F->next()) {
-									ScriptCodeCompletionOption option(F->get(), ScriptCodeCompletionOption::KIND_FUNCTION);
+									ScriptCodeCompletionOption::Kind option_kind;
+									if (p_method == "change_scene") {
+										option_kind = ScriptCodeCompletionOption::KIND_FILE_PATH;
+									} else {
+										option_kind = ScriptCodeCompletionOption::KIND_FUNCTION;
+									}
+									ScriptCodeCompletionOption option(F->get(), option_kind);
 									r_result.insert(option.display, option);
 								}
 							}
