@@ -101,6 +101,7 @@
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/reference_rect.h"
+#include "scene/gui/rich_text_effect.h"
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/scroll_container.h"
@@ -344,6 +345,7 @@ void register_scene_types() {
 	ClassDB::register_class<ColorPickerButton>();
 	ClassDB::register_class<RichTextLabel>();
 	ClassDB::register_class<RichTextEffect>();
+	ClassDB::register_class<CharFXTransform>();
 	ClassDB::register_class<PopupDialog>();
 	ClassDB::register_class<WindowDialog>();
 	ClassDB::register_class<AcceptDialog>();
