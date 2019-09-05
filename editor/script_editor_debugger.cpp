@@ -33,6 +33,7 @@
 #include "core/io/marshalls.h"
 #include "core/project_settings.h"
 #include "core/ustring.h"
+#include "editor_network_profiler.h"
 #include "editor_node.h"
 #include "editor_profiler.h"
 #include "editor_settings.h"
@@ -992,7 +993,20 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			profiler->add_frame_metric(metric, false);
 		else
 			profiler->add_frame_metric(metric, true);
-
+	} else if (p_msg == "network_profile") {
+		int frame_size = 6;
+		for (int i = 0; i < p_data.size(); i += frame_size) {
+			MultiplayerAPI::ProfilingInfo pi;
+			pi.node = p_data[i + 0];
+			pi.node_path = p_data[i + 1];
+			pi.incoming_rpc = p_data[i + 2];
+			pi.incoming_rset = p_data[i + 3];
+			pi.outgoing_rpc = p_data[i + 4];
+			pi.outgoing_rset = p_data[i + 5];
+			network_profiler->add_node_frame_data(pi);
+		}
+	} else if (p_msg == "network_bandwidth") {
+		network_profiler->set_bandwidth(p_data[0], p_data[1]);
 	} else if (p_msg == "kill_me") {
 
 		editor->call_deferred("stop_child_process");
@@ -1207,6 +1221,10 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					update_live_edit_root();
 					if (profiler->is_profiling()) {
 						_profiler_activate(true);
+					}
+
+					if (network_profiler->is_profiling()) {
+						_network_profiler_activate(true);
 					}
 				}
 			}
@@ -1424,6 +1442,25 @@ void ScriptEditorDebugger::_profiler_activate(bool p_enable) {
 		msg.push_back("stop_profiling");
 		ppeer->put_var(msg);
 		print_verbose("Ending profiling.");
+	}
+}
+
+void ScriptEditorDebugger::_network_profiler_activate(bool p_enable) {
+
+	if (!connection.is_valid())
+		return;
+
+	if (p_enable) {
+		Array msg;
+		msg.push_back("start_network_profiling");
+		ppeer->put_var(msg);
+		print_verbose("Starting network profiling.");
+
+	} else {
+		Array msg;
+		msg.push_back("stop_network_profiling");
+		ppeer->put_var(msg);
+		print_verbose("Ending network profiling.");
 	}
 }
 
@@ -2020,6 +2057,7 @@ void ScriptEditorDebugger::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_expand_errors_list"), &ScriptEditorDebugger::_expand_errors_list);
 	ClassDB::bind_method(D_METHOD("_collapse_errors_list"), &ScriptEditorDebugger::_collapse_errors_list);
 	ClassDB::bind_method(D_METHOD("_profiler_activate"), &ScriptEditorDebugger::_profiler_activate);
+	ClassDB::bind_method(D_METHOD("_network_profiler_activate"), &ScriptEditorDebugger::_network_profiler_activate);
 	ClassDB::bind_method(D_METHOD("_profiler_seeked"), &ScriptEditorDebugger::_profiler_seeked);
 	ClassDB::bind_method(D_METHOD("_clear_errors_list"), &ScriptEditorDebugger::_clear_errors_list);
 
@@ -2243,6 +2281,13 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		tabs->add_child(profiler);
 		profiler->connect("enable_profiling", this, "_profiler_activate");
 		profiler->connect("break_request", this, "_profiler_seeked");
+	}
+
+	{ //network profiler
+		network_profiler = memnew(EditorNetworkProfiler);
+		network_profiler->set_name(TTR("Network Profiler"));
+		tabs->add_child(network_profiler);
+		network_profiler->connect("enable_profiling", this, "_network_profiler_activate");
 	}
 
 	{ //monitors

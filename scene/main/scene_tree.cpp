@@ -2096,6 +2096,7 @@ SceneTree::SceneTree() {
 
 	if (ScriptDebugger::get_singleton()) {
 		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree, this);
+		ScriptDebugger::get_singleton()->set_multiplayer(multiplayer);
 	}
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));

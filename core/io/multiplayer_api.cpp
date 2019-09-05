@@ -33,6 +33,10 @@
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
 
+#ifdef DEBUG_ENABLED
+#include "core/os/os.h"
+#endif
+
 _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc) {
 
 	switch (mode) {
@@ -166,6 +170,14 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 	ERR_FAIL_COND_MSG(root_node == NULL, "Multiplayer root node was not initialized. If you are using custom multiplayer, remember to set the root node via MultiplayerAPI.set_root_node before using it.");
 	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
 
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		bandwidth_incoming_data.write[bandwidth_incoming_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
+		bandwidth_incoming_data.write[bandwidth_incoming_pointer].packet_size = p_packet_len;
+		bandwidth_incoming_pointer = (bandwidth_incoming_pointer + 1) % bandwidth_incoming_data.size();
+	}
+#endif
+
 	uint8_t packet_type = p_packet[0];
 
 	switch (packet_type) {
@@ -284,6 +296,14 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 
 	p_offset++;
 
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		ObjectID id = p_node->get_instance_id();
+		_init_node_profile(id);
+		profiler_frame_data[id].incoming_rpc += 1;
+	}
+#endif
+
 	for (int i = 0; i < argc; i++) {
 
 		ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
@@ -321,6 +341,14 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 
 	bool can_call = _can_call_mode(p_node, rset_mode, p_from);
 	ERR_FAIL_COND_MSG(!can_call, "RSET '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		ObjectID id = p_node->get_instance_id();
+		_init_node_profile(id);
+		profiler_frame_data[id].incoming_rset += 1;
+	}
+#endif
 
 	Variant value;
 	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL, allow_object_decoding || network_peer->is_object_decoding_allowed());
@@ -512,6 +540,14 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		}
 	}
 
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		bandwidth_outgoing_data.write[bandwidth_outgoing_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
+		bandwidth_outgoing_data.write[bandwidth_outgoing_pointer].packet_size = ofs;
+		bandwidth_outgoing_pointer = (bandwidth_outgoing_pointer + 1) % bandwidth_outgoing_data.size();
+	}
+#endif
+
 	// See if all peers have cached path (is so, call can be fast).
 	bool has_all_peers = _send_confirm_path(from_path, psc, p_to);
 
@@ -615,6 +651,15 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 	}
 
 	if (!skip_rpc) {
+
+#ifdef DEBUG_ENABLED
+		if (profiling) {
+			ObjectID id = p_node->get_instance_id();
+			_init_node_profile(id);
+			profiler_frame_data[id].outgoing_rpc += 1;
+		}
+#endif
+
 		_send_rpc(p_node, p_peer_id, p_unreliable, false, p_method, p_arg, p_argcount);
 	}
 
@@ -709,6 +754,14 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 		return;
 	}
 
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		ObjectID id = p_node->get_instance_id();
+		_init_node_profile(id);
+		profiler_frame_data[id].outgoing_rset += 1;
+	}
+#endif
+
 	const Variant *vptr = &p_value;
 
 	_send_rpc(p_node, p_peer_id, p_unreliable, true, p_property, &vptr, 1);
@@ -792,6 +845,96 @@ bool MultiplayerAPI::is_object_decoding_allowed() const {
 	return allow_object_decoding;
 }
 
+void MultiplayerAPI::profiling_start() {
+#ifdef DEBUG_ENABLED
+	profiling = true;
+	profiler_frame_data.clear();
+
+	bandwidth_incoming_pointer = 0;
+	bandwidth_incoming_data.resize(16384); // ~128kB
+	for (int i = 0; i < bandwidth_incoming_data.size(); ++i) {
+		bandwidth_incoming_data.write[i].packet_size = -1;
+	}
+
+	bandwidth_outgoing_pointer = 0;
+	bandwidth_outgoing_data.resize(16384); // ~128kB
+	for (int i = 0; i < bandwidth_outgoing_data.size(); ++i) {
+		bandwidth_outgoing_data.write[i].packet_size = -1;
+	}
+#endif
+}
+
+void MultiplayerAPI::profiling_end() {
+#ifdef DEBUG_ENABLED
+	profiling = false;
+	bandwidth_incoming_data.clear();
+	bandwidth_outgoing_data.clear();
+#endif
+}
+
+int MultiplayerAPI::get_profiling_frame(ProfilingInfo *r_info) {
+	int i = 0;
+#ifdef DEBUG_ENABLED
+	for (Map<ObjectID, ProfilingInfo>::Element *E = profiler_frame_data.front(); E; E = E->next()) {
+		r_info[i] = E->get();
+		++i;
+	}
+	profiler_frame_data.clear();
+#endif
+	return i;
+}
+
+int MultiplayerAPI::get_incoming_bandwidth_usage() {
+#ifdef DEBUG_ENABLED
+	return _get_bandwidth_usage(bandwidth_incoming_data, bandwidth_incoming_pointer);
+#else
+	return 0;
+#endif
+}
+
+int MultiplayerAPI::get_outgoing_bandwidth_usage() {
+#ifdef DEBUG_ENABLED
+	return _get_bandwidth_usage(bandwidth_outgoing_data, bandwidth_outgoing_pointer);
+#else
+	return 0;
+#endif
+}
+
+#ifdef DEBUG_ENABLED
+int MultiplayerAPI::_get_bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
+	int total_bandwidth = 0;
+
+	uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
+	uint32_t final_timestamp = timestamp - 1000;
+
+	int i = (p_pointer + p_buffer.size() - 1) % p_buffer.size();
+
+	while (i != p_pointer && p_buffer[i].packet_size > 0) {
+		if (p_buffer[i].timestamp < final_timestamp) {
+			return total_bandwidth;
+		}
+		total_bandwidth += p_buffer[i].packet_size;
+		i = (i + p_buffer.size() - 1) % p_buffer.size();
+	}
+
+	ERR_EXPLAIN("Reached the end of the bandwidth profiler buffer, values might be inaccurate.");
+	ERR_FAIL_COND_V(i == p_pointer, total_bandwidth);
+	return total_bandwidth;
+}
+
+void MultiplayerAPI::_init_node_profile(ObjectID p_node) {
+	if (profiler_frame_data.has(p_node))
+		return;
+	profiler_frame_data.insert(p_node, ProfilingInfo());
+	profiler_frame_data[p_node].node = p_node;
+	profiler_frame_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
+	profiler_frame_data[p_node].incoming_rpc = 0;
+	profiler_frame_data[p_node].incoming_rset = 0;
+	profiler_frame_data[p_node].outgoing_rpc = 0;
+	profiler_frame_data[p_node].outgoing_rset = 0;
+}
+#endif
+
 void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_node", "node"), &MultiplayerAPI::set_root_node);
 	ClassDB::bind_method(D_METHOD("send_bytes", "bytes", "id", "mode"), &MultiplayerAPI::send_bytes, DEFVAL(NetworkedMultiplayerPeer::TARGET_PEER_BROADCAST), DEFVAL(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE));
@@ -842,6 +985,9 @@ MultiplayerAPI::MultiplayerAPI() :
 		allow_object_decoding(false) {
 	rpc_sender_id = 0;
 	root_node = NULL;
+#ifdef DEBUG_ENABLED
+	profiling = false;
+#endif
 	clear();
 }
 
