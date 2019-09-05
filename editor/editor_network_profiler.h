@@ -56,7 +56,6 @@ private:
 
 	void _activate_pressed();
 	void _clear_pressed();
-	String _format_bandwidth(int p_value);
 
 protected:
 	void _notification(int p_what);
