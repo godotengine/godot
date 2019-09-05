@@ -870,6 +870,14 @@ void EditorData::get_plugin_window_layout(Ref<ConfigFile> p_layout) {
 	}
 }
 
+bool EditorData::class_equals_or_inherits(const String &p_class, const String &p_inherits) {
+	if (p_class == p_inherits)
+		return true;
+	if (ScriptServer::is_global_class(p_class))
+		return script_class_is_parent(p_class, p_inherits);
+	return ClassDB::is_parent_class(p_class, p_inherits);
+}
+
 bool EditorData::script_class_is_parent(const String &p_class, const String &p_inherits) {
 	if (!ScriptServer::is_global_class(p_class))
 		return false;

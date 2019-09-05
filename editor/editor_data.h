@@ -215,6 +215,7 @@ public:
 	void notify_edited_scene_changed();
 	void notify_resource_saved(const Ref<Resource> &p_resource);
 
+	bool class_equals_or_inherits(const String &p_class, const String &p_inherits);
 	bool script_class_is_parent(const String &p_class, const String &p_inherits);
 	StringName script_class_get_base(const String &p_class) const;
 	Object *script_class_instance(const String &p_class);

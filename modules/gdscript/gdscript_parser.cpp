@@ -1309,7 +1309,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 		OperatorNode::Operator op;
 		bool valid = true;
 
-//assign, if allowed is only allowed on the first operator
+		//assign, if allowed is only allowed on the first operator
 #define _VALIDATE_ASSIGN                  \
 	if (!p_allow_assign || has_casting) { \
 		_set_error("Unexpected assign."); \
@@ -1335,7 +1335,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 			case GDScriptTokenizer::TK_OP_MOD:
 				op = OperatorNode::OP_MOD;
 				break;
-			//case GDScriptTokenizer::TK_OP_NEG: op=OperatorNode::OP_NEG ; break;
+				//case GDScriptTokenizer::TK_OP_NEG: op=OperatorNode::OP_NEG ; break;
 			case GDScriptTokenizer::TK_OP_SHIFT_LEFT: op = OperatorNode::OP_SHIFT_LEFT; break;
 			case GDScriptTokenizer::TK_OP_SHIFT_RIGHT: op = OperatorNode::OP_SHIFT_RIGHT; break;
 			case GDScriptTokenizer::TK_OP_ASSIGN: {
@@ -1921,7 +1921,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 
 			switch (op->op) {
 
-				//unary operators
+					//unary operators
 				case OperatorNode::OP_NEG: {
 					_REDUCE_UNARY(Variant::OP_NEGATE);
 				} break;
@@ -1934,7 +1934,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 				case OperatorNode::OP_BIT_INVERT: {
 					_REDUCE_UNARY(Variant::OP_BIT_NEGATE);
 				} break;
-				//binary operators (in precedence order)
+					//binary operators (in precedence order)
 				case OperatorNode::OP_IN: {
 					_REDUCE_BINARY(Variant::OP_IN);
 				} break;
@@ -2053,7 +2053,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 	}
 
 	switch (token) {
-		// array
+			// array
 		case GDScriptTokenizer::TK_BRACKET_OPEN: {
 			tokenizer->advance();
 			pattern->pt_type = GDScriptParser::PatternNode::PT_ARRAY;
@@ -2101,7 +2101,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 				}
 			}
 		} break;
-		// bind
+			// bind
 		case GDScriptTokenizer::TK_PR_VAR: {
 			tokenizer->advance();
 			if (!tokenizer->is_token_literal()) {
@@ -2125,7 +2125,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 			current_block->variables.insert(lv->name, lv);
 			tokenizer->advance();
 		} break;
-		// dictionary
+			// dictionary
 		case GDScriptTokenizer::TK_CURLY_BRACKET_OPEN: {
 			tokenizer->advance();
 			pattern->pt_type = GDScriptParser::PatternNode::PT_DICTIONARY;
@@ -2195,7 +2195,7 @@ GDScriptParser::PatternNode *GDScriptParser::_parse_pattern(bool p_static) {
 			tokenizer->advance();
 			pattern->pt_type = PatternNode::PT_WILDCARD;
 		} break;
-		// all the constants like strings and numbers
+			// all the constants like strings and numbers
 		default: {
 			Node *value = _parse_and_reduce_expression(pattern, p_static);
 			if (!value) {
@@ -3704,7 +3704,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				current_class = p_class;
 
 			} break;
-			/* this is for functions....
+				/* this is for functions....
 			case GDScriptTokenizer::TK_CF_PASS: {
 
 				tokenizer->advance(1);
@@ -3859,11 +3859,11 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							on->arguments.push_back(in);
 							on->arguments.push_back(defval);
 							/* no ..
-							if (defval->type!=Node::TYPE_CONSTANT) {
+						if (defval->type!=Node::TYPE_CONSTANT) {
 
-								_set_error("default argument must be constant");
-							}
-							*/
+							_set_error("default argument must be constant");
+						}
+						*/
 							default_values.push_back(on);
 						}
 
@@ -4503,71 +4503,104 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						}
 						parenthesis--;
 
-						if (subexpr->type != Node::TYPE_CONSTANT) {
-							current_export = PropertyInfo();
-							_set_error("Expected a constant expression.");
-						}
+						if (subexpr->type == Node::TYPE_CONSTANT) {
 
-						Variant constant = static_cast<ConstantNode *>(subexpr)->value;
+							Variant constant = static_cast<ConstantNode *>(subexpr)->value;
 
-						if (constant.get_type() == Variant::OBJECT) {
-							GDScriptNativeClass *native_class = Object::cast_to<GDScriptNativeClass>(constant);
+							if (constant.get_type() == Variant::OBJECT) {
+								GDScriptNativeClass *native_class = Object::cast_to<GDScriptNativeClass>(constant);
 
-							if (native_class && ClassDB::is_parent_class(native_class->get_name(), "Resource")) {
-								current_export.type = Variant::OBJECT;
-								current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
-								current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+								if (native_class && ClassDB::is_parent_class(native_class->get_name(), "Resource")) {
+									current_export.type = Variant::OBJECT;
+									current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+									current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 
-								current_export.hint_string = native_class->get_name();
-								current_export.class_name = native_class->get_name();
+									current_export.hint_string = native_class->get_name();
+									current_export.class_name = native_class->get_name();
 
-							} else {
-								current_export = PropertyInfo();
-								_set_error("The export hint isn't a resource type.");
-							}
-						} else if (constant.get_type() == Variant::DICTIONARY) {
-							// Enumeration
-							bool is_flags = false;
-
-							if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
-								_ADVANCE_AND_CONSUME_NEWLINES;
-
-								if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
-									is_flags = true;
-									_ADVANCE_AND_CONSUME_NEWLINES;
 								} else {
-									current_export = PropertyInfo();
-									_set_error("Expected \"FLAGS\" after comma.");
-								}
-							}
+									Ref<Script> script = Object::cast_to<Script>(constant);
+									if (script.is_valid()) {
+										bool is_script_class = false;
+										for (int i = 0; i < ScriptServer::get_language_count() && !is_script_class; i++) {
+											ScriptLanguage *lang = ScriptServer::get_language(i);
+											String base;
+											String class_name = lang->get_global_class_name(script->get_path(), &base);
+											if (class_name.length()) {
+												is_script_class = true;
+												String to_test = base;
+												if (ScriptServer::is_global_class(base)) {
+													to_test = ScriptServer::get_global_class_native_base(base);
+												}
+												if (ClassDB::is_parent_class(to_test, "Resource")) {
+													current_export.type = Variant::OBJECT;
+													current_export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+													current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
 
-							current_export.type = Variant::INT;
-							current_export.hint = is_flags ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
-							current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
-							Dictionary enum_values = constant;
-
-							List<Variant> keys;
-							enum_values.get_key_list(&keys);
-
-							bool first = true;
-							for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-								if (enum_values[E->get()].get_type() == Variant::INT) {
-									if (!first)
-										current_export.hint_string += ",";
-									else
-										first = false;
-
-									current_export.hint_string += E->get().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
-									if (!is_flags) {
-										current_export.hint_string += ":";
-										current_export.hint_string += enum_values[E->get()].operator String().xml_escape();
+													current_export.hint_string = class_name;
+													current_export.class_name = class_name;
+												} else {
+													current_export = PropertyInfo();
+													_set_error("The exported script class isn't a resource type.");
+												}
+											}
+										}
+										if (!is_script_class) {
+											current_export = PropertyInfo();
+											_set_error("The exported script isn't a script class.");
+										}
+									} else {
+										current_export = PropertyInfo();
+										_set_error("The export hint isn't a resource type.");
 									}
 								}
+							} else if (constant.get_type() == Variant::DICTIONARY) {
+								// Enumeration
+								bool is_flags = false;
+
+								if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
+									_ADVANCE_AND_CONSUME_NEWLINES;
+
+									if (tokenizer->get_token() == GDScriptTokenizer::TK_IDENTIFIER && tokenizer->get_token_identifier() == "FLAGS") {
+										is_flags = true;
+										_ADVANCE_AND_CONSUME_NEWLINES;
+									} else {
+										current_export = PropertyInfo();
+										_set_error("Expected \"FLAGS\" after comma.");
+									}
+								}
+
+								current_export.type = Variant::INT;
+								current_export.hint = is_flags ? PROPERTY_HINT_FLAGS : PROPERTY_HINT_ENUM;
+								current_export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+								Dictionary enum_values = constant;
+
+								List<Variant> keys;
+								enum_values.get_key_list(&keys);
+
+								bool first = true;
+								for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+									if (enum_values[E->get()].get_type() == Variant::INT) {
+										if (!first)
+											current_export.hint_string += ",";
+										else
+											first = false;
+
+										current_export.hint_string += E->get().operator String().camelcase_to_underscore(true).capitalize().xml_escape();
+										if (!is_flags) {
+											current_export.hint_string += ":";
+											current_export.hint_string += enum_values[E->get()].operator String().xml_escape();
+										}
+									}
+								}
+							} else {
+								current_export = PropertyInfo();
+								_set_error("Expected type for export.");
+								return;
 							}
 						} else {
 							current_export = PropertyInfo();
-							_set_error("Expected type for export.");
-							return;
+							_set_error("Expected a constant or identifier expression.");
 						}
 					}
 
@@ -4803,6 +4836,7 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 				}
 
 				if (autoexport && member.data_type.has_type) {
+					String invalid_type_error_msg = "Invalid export type. Only built-in, native, and script class resource types can be exported.";
 					if (member.data_type.kind == DataType::BUILTIN) {
 						member._export.type = member.data_type.builtin_type;
 					} else if (member.data_type.kind == DataType::NATIVE) {
@@ -4813,12 +4847,32 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 							member._export.hint_string = member.data_type.native_type;
 							member._export.class_name = member.data_type.native_type;
 						} else {
-							_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
+							_set_error("Invalid native export type. \"" + member.data_type.native_type + "\" is not a Resource type.", member.line);
+							return;
+						}
+					} else if (member.data_type.kind == DataType::SCRIPT || member.data_type.kind == DataType::GDSCRIPT) {
+						if (member.data_type.script_type.is_null()) {
+							_set_error("The member's data type is a script that did not load successfully.", member.line);
+							return;
+						}
+						StringName class_name = ScriptServer::get_global_class_name(member.data_type.script_type->get_path());
+						if (class_name == StringName()) {
+							_set_error("Invalid script export type. \"" + class_name + "\" is not a script class.", member.line);
+							return;
+						}
+						if (ClassDB::is_parent_class(member.data_type.native_type, "Resource")) {
+							member._export.type = Variant::OBJECT;
+							member._export.hint = PROPERTY_HINT_RESOURCE_TYPE;
+							member._export.usage |= PROPERTY_USAGE_SCRIPT_VARIABLE;
+							member._export.hint_string = class_name;
+							member._export.class_name = class_name;
+						} else {
+							_set_error("Invalid script class export type. \"" + class_name + "\" is not a Resource type.", member.line);
 							return;
 						}
 
 					} else {
-						_set_error("Invalid export type. Only built-in and native resource types can be exported.", member.line);
+						_set_error("Invalid export type. Only built-in, native, and script class resource types can be exported.", member.line);
 						return;
 					}
 				}
@@ -5576,9 +5630,22 @@ bool GDScriptParser::_parse_type(DataType &r_type, bool p_can_be_void) {
 			}
 		} break;
 		case GDScriptTokenizer::TK_IDENTIFIER: {
-			r_type.native_type = tokenizer->get_token_identifier();
-			if (ClassDB::class_exists(r_type.native_type) || ClassDB::class_exists("_" + r_type.native_type.operator String())) {
+			String type = tokenizer->get_token_identifier();
+			if (ClassDB::class_exists(type) || ClassDB::class_exists("_" + type)) {
+				r_type.native_type = type;
 				r_type.kind = DataType::NATIVE;
+			} else if (ScriptServer::is_global_class(type)) {
+				String path = ScriptServer::get_global_class_path(type);
+				String script_type = ResourceLoader::get_resource_type(path);
+				if (script_type == "GDScript") {
+					r_type.kind = DataType::GDSCRIPT;
+				} else {
+					r_type.kind = DataType::SCRIPT;
+				}
+
+				r_type.native_type = ScriptServer::get_global_class_native_base(type);
+				r_type.builtin_type = Variant::OBJECT;
+				r_type.script_type = ResourceLoader::load(path);
 			} else {
 				r_type.kind = DataType::UNRESOLVED;
 				can_index = true;
@@ -5669,6 +5736,12 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 
 		ClassNode *p = NULL;
 		if (name_part == 0) {
+			if (GDScriptLanguage::get_singleton()->get_global_map().has(id)) {
+				int idx = GDScriptLanguage::get_singleton()->get_global_map()[id];
+				Variant g = GDScriptLanguage::get_singleton()->get_global_array()[idx];
+				return _type_from_variant(g);
+			}
+
 			if (ScriptServer::is_global_class(id)) {
 				String script_path = ScriptServer::get_global_class_path(id);
 				if (script_path == self_path) {
@@ -5895,7 +5968,22 @@ GDScriptParser::DataType GDScriptParser::_type_from_property(const PropertyInfo 
 	ret.builtin_type = p_property.type;
 	if (p_property.type == Variant::OBJECT) {
 		ret.kind = DataType::NATIVE;
-		ret.native_type = p_property.class_name == StringName() ? "Object" : p_property.class_name;
+		ret.native_type = "Object";
+		if (p_property.class_name != StringName()) {
+			if (ScriptServer::is_global_class(p_property.class_name)) {
+				String p = ScriptServer::get_global_class_path(p_property.class_name);
+				ret.native_type = ScriptServer::get_global_class_native_base(p_property.class_name);
+				if (GDScriptLanguage::get_singleton()->get_extension() == p.get_extension()) {
+					ret.kind = DataType::GDSCRIPT;
+					ret.script_type = ResourceLoader::load(p, "GDScript");
+				} else {
+					ret.kind = DataType::SCRIPT;
+					ret.script_type = ResourceLoader::load(p, "Script");
+				}
+			} else {
+				ret.native_type = p_property.class_name;
+			}
+		}
 	} else {
 		ret.kind = DataType::BUILTIN;
 	}
@@ -6407,7 +6495,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					node_type.kind = DataType::BUILTIN;
 					node_type.builtin_type = Variant::BOOL;
 				} break;
-				// Unary operators
+					// Unary operators
 				case OperatorNode::OP_NEG:
 				case OperatorNode::OP_POS:
 				case OperatorNode::OP_NOT:
@@ -6430,7 +6518,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					}
 
 				} break;
-				// Binary operators
+					// Binary operators
 				case OperatorNode::OP_IN:
 				case OperatorNode::OP_EQUAL:
 				case OperatorNode::OP_NOT_EQUAL:
@@ -6481,7 +6569,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 #endif // DEBUG_ENABLED
 
 				} break;
-				// Ternary operators
+					// Ternary operators
 				case OperatorNode::OP_TERNARY_IF: {
 					if (op->arguments.size() != 3) {
 						_set_error("Parser bug: ternary operation without 3 arguments.");
@@ -6505,7 +6593,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 #endif // DEBUG_ENABLED
 					}
 				} break;
-				// Assignment should never happen within an expression
+					// Assignment should never happen within an expression
 				case OperatorNode::OP_ASSIGN:
 				case OperatorNode::OP_ASSIGN_ADD:
 				case OperatorNode::OP_ASSIGN_SUB:
@@ -6610,7 +6698,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 							bool error = index_type.kind != DataType::BUILTIN && base_type.builtin_type != Variant::DICTIONARY;
 							if (!error) {
 								switch (base_type.builtin_type) {
-									// Expect int or real as index
+										// Expect int or real as index
 									case Variant::POOL_BYTE_ARRAY:
 									case Variant::POOL_COLOR_ARRAY:
 									case Variant::POOL_INT_ARRAY:
@@ -6622,7 +6710,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									case Variant::STRING: {
 										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::REAL;
 									} break;
-									// Expect String only
+										// Expect String only
 									case Variant::RECT2:
 									case Variant::PLANE:
 									case Variant::QUAT:
@@ -6630,7 +6718,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 									case Variant::OBJECT: {
 										error = index_type.builtin_type != Variant::STRING;
 									} break;
-									// Expect String or number
+										// Expect String or number
 									case Variant::VECTOR2:
 									case Variant::VECTOR3:
 									case Variant::TRANSFORM2D:
@@ -6639,7 +6727,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::REAL &&
 												index_type.builtin_type != Variant::STRING;
 									} break;
-									// Expect String or int
+										// Expect String or int
 									case Variant::COLOR: {
 										error = index_type.builtin_type != Variant::INT && index_type.builtin_type != Variant::STRING;
 									} break;
@@ -6657,7 +6745,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 								ConstantNode *cn = static_cast<ConstantNode *>(op->arguments[1]);
 								// Index is a constant, just try it if possible
 								switch (base_type.builtin_type) {
-									// Arrays/string have variable indexing, can't test directly
+										// Arrays/string have variable indexing, can't test directly
 									case Variant::STRING:
 									case Variant::ARRAY:
 									case Variant::DICTIONARY:
@@ -6702,7 +6790,7 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 						result.has_type = true;
 						result.kind = DataType::BUILTIN;
 						switch (base_type.builtin_type) {
-							// Can't index at all
+								// Can't index at all
 							case Variant::NIL:
 							case Variant::BOOL:
 							case Variant::INT:
@@ -7758,14 +7846,28 @@ void GDScriptParser::_check_class_level_types(ClassNode *p_class) {
 			}
 		}
 
-		// Check export hint
-		if (v.data_type.has_type && v._export.type != Variant::NIL) {
+		if (v._export.type != Variant::NIL) {
 			DataType export_type = _type_from_property(v._export);
-			if (!_is_type_compatible(v.data_type, export_type, true)) {
-				_set_error("The export hint's type (" + export_type.to_string() + ") doesn't match the variable's type (" +
-								   v.data_type.to_string() + ").",
-						v.line);
-				return;
+
+			if (export_type.kind == DataType::GDSCRIPT || export_type.kind == DataType::SCRIPT) {
+				String class_name = v._export.class_name;
+				if (ScriptServer::is_global_class(class_name)) {
+					class_name = ScriptServer::get_global_class_native_base(class_name);
+				}
+				if (!ClassDB::is_parent_class(class_name, "Resource")) {
+					_set_error("Exported script-defined type (" + export_type.to_string() + ") must inherit from Resource.", v.line);
+					return;
+				}
+			}
+
+			// Check export hint
+			if (v.data_type.has_type) {
+				if (!_is_type_compatible(v.data_type, export_type, true)) {
+					_set_error("Export hint type (" + export_type.to_string() + ") doesn't match the variable's type (" +
+									   v.data_type.to_string() + ").",
+							v.line);
+					return;
+				}
 			}
 		}
 
