@@ -428,12 +428,12 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 			if (cstatus == HTTPClient::STATUS_BODY) {
 				if (download->get_body_size() > 0) {
 					status->set_text(vformat(
-							TTR("Downloading (%s / %s)..."),
+							TTR("Downloading (%s / %s)…"),
 							String::humanize_size(download->get_downloaded_bytes()),
 							String::humanize_size(download->get_body_size())));
 				} else {
 					// Total file size is unknown, so it cannot be displayed.
-					status->set_text(TTR("Downloading..."));
+					status->set_text(TTR("Downloading…"));
 				}
 			}
 
@@ -441,17 +441,17 @@ void EditorAssetLibraryItemDownload::_notification(int p_what) {
 				switch (cstatus) {
 
 					case HTTPClient::STATUS_RESOLVING: {
-						status->set_text(TTR("Resolving..."));
+						status->set_text(TTR("Resolving…"));
 						progress->set_max(1);
 						progress->set_value(0);
 					} break;
 					case HTTPClient::STATUS_CONNECTING: {
-						status->set_text(TTR("Connecting..."));
+						status->set_text(TTR("Connecting…"));
 						progress->set_max(1);
 						progress->set_value(0);
 					} break;
 					case HTTPClient::STATUS_REQUESTING: {
-						status->set_text(TTR("Requesting..."));
+						status->set_text(TTR("Requesting…"));
 						progress->set_max(1);
 						progress->set_value(0);
 					} break;
@@ -540,7 +540,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	hb2->add_spacer();
 
 	install = memnew(Button);
-	install->set_text(TTR("Install..."));
+	install->set_text(TTR("Install…"));
 	install->set_disabled(true);
 	install->connect("pressed", this, "_install");
 
@@ -1355,12 +1355,12 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 		search_hb->add_child(memnew(VSeparator));
 
 	Button *open_asset = memnew(Button);
-	open_asset->set_text(TTR("Import..."));
+	open_asset->set_text(TTR("Import…"));
 	search_hb->add_child(open_asset);
 	open_asset->connect("pressed", this, "_asset_open");
 
 	Button *plugins = memnew(Button);
-	plugins->set_text(TTR("Plugins..."));
+	plugins->set_text(TTR("Plugins…"));
 	search_hb->add_child(plugins);
 	plugins->connect("pressed", this, "_manage_plugins");
 
@@ -1449,7 +1449,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 
 	library_vb_border->add_child(library_vb);
 
-	library_loading = memnew(Label(TTR("Loading...")));
+	library_loading = memnew(Label(TTR("Loading…")));
 	library_loading->set_align(Label::ALIGN_CENTER);
 	library_vb->add_child(library_loading);
 
