@@ -95,8 +95,8 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	instance->owner = p_owner;
 #ifdef DEBUG_ENABLED
 	//needed for hot reloading
-	for (Map<StringName, MemberInfo>::Element *E = member_indices.front(); E; E = E->next()) {
-		instance->member_indices_cache[E->key()] = E->get().index;
+	for (OrderedHashMap<StringName, MemberInfo>::Element E = member_indices.front(); E; E = E.next()) {
+		instance->member_indices_cache[E.key()] = E.get().index;
 	}
 #endif
 	instance->owner->set_script_instance(instance);
@@ -844,10 +844,10 @@ const Map<StringName, GDScriptFunction *> &GDScript::debug_get_member_functions(
 
 StringName GDScript::debug_get_member_by_index(int p_idx) const {
 
-	for (const Map<StringName, MemberInfo>::Element *E = member_indices.front(); E; E = E->next()) {
+	for (OrderedHashMap<StringName, MemberInfo>::ConstElement E = member_indices.front(); E; E = E.next()) {
 
-		if (E->get().index == p_idx)
-			return E->key();
+		if (E.get().index == p_idx)
+			return E.key();
 	}
 
 	return "<error>";
@@ -952,20 +952,20 @@ bool GDScriptInstance::set(const StringName &p_name, const Variant &p_value) {
 
 	//member
 	{
-		const Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
+		OrderedHashMap<StringName, GDScript::MemberInfo>::Element E = script->member_indices.find(p_name);
 		if (E) {
-			if (E->get().setter) {
+			if (E.get().setter) {
 				const Variant *val = &p_value;
 				Variant::CallError err;
-				call(E->get().setter, &val, 1, err);
+				call(E.get().setter, &val, 1, err);
 				if (err.error == Variant::CallError::CALL_OK) {
 					return true; //function exists, call was successful
 				}
 			} else {
-				if (!E->get().data_type.is_type(p_value)) {
+				if (!E.get().data_type.is_type(p_value)) {
 					return false; // Type mismatch
 				}
-				members.write[E->get().index] = p_value;
+				members.write[E.get().index] = p_value;
 			}
 			return true;
 		}
@@ -997,16 +997,16 @@ bool GDScriptInstance::get(const StringName &p_name, Variant &r_ret) const {
 	while (sptr) {
 
 		{
-			const Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.find(p_name);
+			OrderedHashMap<StringName, GDScript::MemberInfo>::ConstElement E = script->member_indices.find(p_name);
 			if (E) {
-				if (E->get().getter) {
+				if (E.get().getter) {
 					Variant::CallError err;
-					r_ret = const_cast<GDScriptInstance *>(this)->call(E->get().getter, NULL, 0, err);
+					r_ret = const_cast<GDScriptInstance *>(this)->call(E.get().getter, NULL, 0, err);
 					if (err.error == Variant::CallError::CALL_OK) {
 						return true;
 					}
 				}
-				r_ret = members[E->get().index];
+				r_ret = members[E.get().index];
 				return true; //index found
 			}
 		}
@@ -1267,11 +1267,11 @@ MultiplayerAPI::RPCMode GDScriptInstance::get_rset_mode(const StringName &p_vari
 	const GDScript *cscript = script.ptr();
 
 	while (cscript) {
-		const Map<StringName, GDScript::MemberInfo>::Element *E = cscript->member_indices.find(p_variable);
+		OrderedHashMap<StringName, GDScript::MemberInfo>::ConstElement E = cscript->member_indices.find(p_variable);
 		if (E) {
 
-			if (E->get().rpc_mode) {
-				return E->get().rpc_mode;
+			if (E.get().rpc_mode) {
+				return E.get().rpc_mode;
 			}
 		}
 		cscript = cscript->_base;
@@ -1290,11 +1290,11 @@ void GDScriptInstance::reload_members() {
 	new_members.resize(script->member_indices.size());
 
 	//pass the values to the new indices
-	for (Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.front(); E; E = E->next()) {
+	for (OrderedHashMap<StringName, GDScript::MemberInfo>::Element E = script->member_indices.front(); E; E = E.next()) {
 
-		if (member_indices_cache.has(E->key())) {
-			Variant value = members[member_indices_cache[E->key()]];
-			new_members.write[E->get().index] = value;
+		if (member_indices_cache.has(E.key())) {
+			Variant value = members[member_indices_cache[E.key()]];
+			new_members.write[E.get().index] = value;
 		}
 	}
 
@@ -1303,9 +1303,9 @@ void GDScriptInstance::reload_members() {
 
 	//pass the values to the new indices
 	member_indices_cache.clear();
-	for (Map<StringName, GDScript::MemberInfo>::Element *E = script->member_indices.front(); E; E = E->next()) {
+	for (OrderedHashMap<StringName, GDScript::MemberInfo>::Element E = script->member_indices.front(); E; E = E.next()) {
 
-		member_indices_cache[E->key()] = E->get().index;
+		member_indices_cache[E.key()] = E.get().index;
 	}
 
 #endif

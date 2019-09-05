@@ -33,9 +33,9 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/ordered_hash_map.h"
 #include "core/script_language.h"
 #include "gdscript_function.h"
-
 class GDScriptNativeClass : public Reference {
 
 	GDCLASS(GDScriptNativeClass, Reference);
@@ -82,7 +82,7 @@ class GDScript : public Script {
 	Set<StringName> members; //members are just indices to the instanced script.
 	Map<StringName, Variant> constants;
 	Map<StringName, GDScriptFunction *> member_functions;
-	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
+	OrderedHashMap<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
 	Map<StringName, Ref<GDScript> > subclasses;
 	Map<StringName, Vector<StringName> > _signals;
 
@@ -161,7 +161,7 @@ public:
 	bool is_tool() const { return tool; }
 	Ref<GDScript> get_base() const;
 
-	const Map<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
+	const OrderedHashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
 	const Map<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 

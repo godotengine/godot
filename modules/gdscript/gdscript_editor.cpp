@@ -316,12 +316,12 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 	Ref<GDScript> script = instance->get_script();
 	ERR_FAIL_COND(script.is_null());
 
-	const Map<StringName, GDScript::MemberInfo> &mi = script->debug_get_member_indices();
+	const OrderedHashMap<StringName, GDScript::MemberInfo> &mi = script->debug_get_member_indices();
 
-	for (const Map<StringName, GDScript::MemberInfo>::Element *E = mi.front(); E; E = E->next()) {
+	for (OrderedHashMap<StringName, GDScript::MemberInfo>::ConstElement E = mi.front(); E; E = E.next()) {
 
-		p_members->push_back(E->key());
-		p_values->push_back(instance->debug_get_member_by_index(E->get().index));
+		p_members->push_back(E.key());
+		p_values->push_back(instance->debug_get_member_by_index(E.get().index));
 	}
 }
 
