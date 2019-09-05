@@ -743,7 +743,9 @@ Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 	if (frame.is_null())
 		return Variant();
 
-	return EditorNode::get_singleton()->drag_resource(frame, p_from);
+	Dictionary drag_data = EditorNode::get_singleton()->drag_resource(frame, p_from);
+	drag_data["frame"] = idx; // store the frame, incase we want to reorder frames inside 'drop_data_fw'
+	return drag_data;
 }
 
 bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
@@ -753,8 +755,9 @@ bool SpriteFramesEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 	if (!d.has("type"))
 		return false;
 
+	// reordering frames
 	if (d.has("from") && (Object *)(d["from"]) == tree)
-		return false;
+		return true;
 
 	if (String(d["type"]) == "resource" && d.has("resource")) {
 		RES r = d["resource"];
@@ -806,13 +809,31 @@ void SpriteFramesEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		Ref<Texture> texture = r;
 
 		if (texture.is_valid()) {
+			bool reorder = false;
+			if (d.has("from") && (Object *)(d["from"]) == tree)
+				reorder = true;
 
-			undo_redo->create_action(TTR("Add Frame"));
-			undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
-			undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) : at_pos);
-			undo_redo->add_do_method(this, "_update_library");
-			undo_redo->add_undo_method(this, "_update_library");
-			undo_redo->commit_action();
+			if (reorder) { //drop is from reordering frames
+				int from_frame = -1;
+				if (d.has("frame"))
+					from_frame = d["frame"];
+
+				undo_redo->create_action(TTR("Move Frame"));
+				undo_redo->add_do_method(frames, "remove_frame", edited_anim, from_frame == -1 ? frames->get_frame_count(edited_anim) : from_frame);
+				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
+				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) - 1 : at_pos);
+				undo_redo->add_undo_method(frames, "add_frame", edited_anim, texture, from_frame);
+				undo_redo->add_do_method(this, "_update_library");
+				undo_redo->add_undo_method(this, "_update_library");
+				undo_redo->commit_action();
+			} else {
+				undo_redo->create_action(TTR("Add Frame"));
+				undo_redo->add_do_method(frames, "add_frame", edited_anim, texture, at_pos == -1 ? -1 : at_pos);
+				undo_redo->add_undo_method(frames, "remove_frame", edited_anim, at_pos == -1 ? frames->get_frame_count(edited_anim) : at_pos);
+				undo_redo->add_do_method(this, "_update_library");
+				undo_redo->add_undo_method(this, "_update_library");
+				undo_redo->commit_action();
+			}
 		}
 	}
 
