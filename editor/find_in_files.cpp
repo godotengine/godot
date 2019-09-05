@@ -373,10 +373,10 @@ FindInFilesDialog::FindInFilesDialog() {
 	_filters_container = memnew(HBoxContainer);
 	gc->add_child(_filters_container);
 
-	_find_button = add_button(TTR("Find..."), false, "find");
+	_find_button = add_button(TTR("Find…"), false, "find");
 	_find_button->set_disabled(true);
 
-	_replace_button = add_button(TTR("Replace..."), false, "replace");
+	_replace_button = add_button(TTR("Replace…"), false, "replace");
 	_replace_button->set_disabled(true);
 
 	Button *cancel_button = get_ok();
@@ -605,7 +605,7 @@ void FindInFilesPanel::start_search() {
 
 	clear();
 
-	_status_label->set_text(TTR("Searching..."));
+	_status_label->set_text(TTR("Searching…"));
 	_search_text_label->set_text(_finder->get_search_text());
 
 	set_process(true);
