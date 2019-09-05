@@ -1083,7 +1083,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 			} else if (defval.get_type() == Variant::BOOL) {
 				bool val = defval;
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
-				code += "\nbool " + inputs[i] + " = " + (val ? "true" : "false") + ";\n";
+				code += "\tbool " + inputs[i] + " = " + (val ? "true" : "false") + ";\n";
 			} else if (defval.get_type() == Variant::VECTOR3) {
 				Vector3 val = defval;
 				inputs[i] = "n_in" + itos(node) + "p" + itos(i);
