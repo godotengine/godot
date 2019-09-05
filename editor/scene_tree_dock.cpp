@@ -835,7 +835,7 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			new_scene_from_dialog->set_current_path(existing);
 
 			new_scene_from_dialog->popup_centered_ratio();
-			new_scene_from_dialog->set_title(TTR("Save New Scene As..."));
+			new_scene_from_dialog->set_title(TTR("Save New Scene As…"));
 		} break;
 		case TOOL_COPY_NODE_PATH: {
 
