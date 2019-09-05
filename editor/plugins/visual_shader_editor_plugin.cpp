@@ -2230,7 +2230,7 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	add_node = memnew(ToolButton);
 	graph->get_zoom_hbox()->add_child(add_node);
-	add_node->set_text(TTR("Add Node..."));
+	add_node->set_text(TTR("Add Node…"));
 	graph->get_zoom_hbox()->move_child(add_node, 0);
 	add_node->connect("pressed", this, "_show_members_dialog", varray(false));
 
