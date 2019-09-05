@@ -612,7 +612,7 @@ Button *ConfirmationDialog::get_cancel() {
 
 ConfirmationDialog::ConfirmationDialog() {
 
-	set_title(RTR("Please Confirm..."));
+	set_title(RTR("Please Confirm…"));
 #ifdef TOOLS_ENABLED
 	set_custom_minimum_size(Size2(200, 70) * EDSCALE);
 #endif
