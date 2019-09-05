@@ -300,7 +300,7 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 		rcHeightfield *hf, rcCompactHeightfield *chf, rcContourSet *cset, rcPolyMesh *poly_mesh, rcPolyMeshDetail *detail_mesh,
 		Vector<float> &vertices, Vector<int> &indices) {
 	rcContext ctx;
-	ep->step(TTR("Setting up Configuration..."), 1);
+	ep->step(TTR("Setting up Configuration…"), 1);
 
 	const float *verts = vertices.ptr();
 	const int nverts = vertices.size() / 3;
@@ -334,16 +334,16 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 	cfg.bmax[1] = bmax[1];
 	cfg.bmax[2] = bmax[2];
 
-	ep->step(TTR("Calculating grid size..."), 2);
+	ep->step(TTR("Calculating grid size…"), 2);
 	rcCalcGridSize(cfg.bmin, cfg.bmax, cfg.cs, &cfg.width, &cfg.height);
 
-	ep->step(TTR("Creating heightfield..."), 3);
+	ep->step(TTR("Creating heightfield…"), 3);
 	hf = rcAllocHeightfield();
 
 	ERR_FAIL_COND(!hf);
 	ERR_FAIL_COND(!rcCreateHeightfield(&ctx, *hf, cfg.width, cfg.height, cfg.bmin, cfg.bmax, cfg.cs, cfg.ch));
 
-	ep->step(TTR("Marking walkable triangles..."), 4);
+	ep->step(TTR("Marking walkable triangles…"), 4);
 	{
 		Vector<unsigned char> tri_areas;
 		tri_areas.resize(ntris);
@@ -363,7 +363,7 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 	if (p_nav_mesh->get_filter_walkable_low_height_spans())
 		rcFilterWalkableLowHeightSpans(&ctx, cfg.walkableHeight, *hf);
 
-	ep->step(TTR("Constructing compact heightfield..."), 5);
+	ep->step(TTR("Constructing compact heightfield…"), 5);
 
 	chf = rcAllocCompactHeightfield();
 
@@ -373,10 +373,10 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 	rcFreeHeightField(hf);
 	hf = 0;
 
-	ep->step(TTR("Eroding walkable area..."), 6);
+	ep->step(TTR("Eroding walkable area…"), 6);
 	ERR_FAIL_COND(!rcErodeWalkableArea(&ctx, cfg.walkableRadius, *chf));
 
-	ep->step(TTR("Partitioning..."), 7);
+	ep->step(TTR("Partitioning…"), 7);
 	if (p_nav_mesh->get_sample_partition_type() == NavigationMesh::SAMPLE_PARTITION_WATERSHED) {
 		ERR_FAIL_COND(!rcBuildDistanceField(&ctx, *chf));
 		ERR_FAIL_COND(!rcBuildRegions(&ctx, *chf, 0, cfg.minRegionArea, cfg.mergeRegionArea));
@@ -386,14 +386,14 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 		ERR_FAIL_COND(!rcBuildLayerRegions(&ctx, *chf, 0, cfg.minRegionArea));
 	}
 
-	ep->step(TTR("Creating contours..."), 8);
+	ep->step(TTR("Creating contours…"), 8);
 
 	cset = rcAllocContourSet();
 
 	ERR_FAIL_COND(!cset);
 	ERR_FAIL_COND(!rcBuildContours(&ctx, *chf, cfg.maxSimplificationError, cfg.maxEdgeLen, *cset));
 
-	ep->step(TTR("Creating polymesh..."), 9);
+	ep->step(TTR("Creating polymesh…"), 9);
 
 	poly_mesh = rcAllocPolyMesh();
 	ERR_FAIL_COND(!poly_mesh);
@@ -408,7 +408,7 @@ void EditorNavigationMeshGenerator::_build_recast_navigation_mesh(Ref<Navigation
 	rcFreeContourSet(cset);
 	cset = 0;
 
-	ep->step(TTR("Converting to native navigation mesh..."), 10);
+	ep->step(TTR("Converting to native navigation mesh…"), 10);
 
 	_convert_detail_mesh_to_native_navigation_mesh(detail_mesh, p_nav_mesh);
 
@@ -434,7 +434,7 @@ void EditorNavigationMeshGenerator::bake(Ref<NavigationMesh> p_nav_mesh, Node *p
 	ERR_FAIL_COND(!p_nav_mesh.is_valid());
 
 	EditorProgress ep("bake", TTR("Navigation Mesh Generator Setup:"), 11);
-	ep.step(TTR("Parsing Geometry..."), 0);
+	ep.step(TTR("Parsing Geometry…"), 0);
 
 	Vector<float> vertices;
 	Vector<int> indices;
