@@ -430,7 +430,7 @@ void InspectorDock::update(Object *p_object) {
 	p->add_separator();
 	if (is_resource) {
 		p->add_item(TTR("Save"), RESOURCE_SAVE);
-		p->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
+		p->add_item(TTR("Save As…"), RESOURCE_SAVE_AS);
 		p->add_separator();
 	}
 	p->add_shortcut(ED_SHORTCUT("property_editor/copy_params", TTR("Copy Params")), OBJECT_COPY_PARAMS);
@@ -525,7 +525,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
 	general_options_hb->add_child(resource_save_button);
 	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
-	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
+	resource_save_button->get_popup()->add_item(TTR("Save As…"), RESOURCE_SAVE_AS);
 	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
 	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
 	resource_save_button->set_disabled(true);
