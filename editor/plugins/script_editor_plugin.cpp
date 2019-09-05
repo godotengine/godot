@@ -31,6 +31,7 @@
 #include "script_editor_plugin.h"
 
 #include "core/io/resource_loader.h"
+#include "core/message_queue.h"
 #include "core/os/file_access.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
@@ -2681,6 +2682,11 @@ void ScriptEditor::set_window_layout(Ref<ConfigFile> p_layout) {
 			if (se) {
 				se->set_edit_state(script_info["state"]);
 			}
+		}
+
+		if ((i > 0) && (i % 50 == 0)) {
+			ERR_CONTINUE(MessageQueue::get_singleton()->is_flushing());
+			MessageQueue::get_singleton()->flush();
 		}
 	}
 
