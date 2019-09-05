@@ -1078,7 +1078,7 @@ ProjectExportDialog::ProjectExportDialog() {
 	preset_vb->add_child(preset_hb);
 
 	add_preset = memnew(MenuButton);
-	add_preset->set_text(TTR("Add..."));
+	add_preset->set_text(TTR("Add…"));
 	add_preset->get_popup()->connect("index_pressed", this, "_add_preset");
 	preset_hb->add_child(add_preset);
 	MarginContainer *mc = memnew(MarginContainer);
