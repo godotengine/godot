@@ -5232,7 +5232,7 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	p->add_submenu_item(TTR("Smart Snapping"), "SmartSnapping");
 
 	p->add_separator();
-	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTR("Configure Snap...")), SNAP_CONFIGURE);
+	p->add_shortcut(ED_SHORTCUT("canvas_item_editor/configure_snap", TTR("Configure Snap…")), SNAP_CONFIGURE);
 
 	smartsnap_config_popup = memnew(PopupMenu);
 	p->add_child(smartsnap_config_popup);
@@ -5476,7 +5476,7 @@ void CanvasItemEditorViewport::_on_select_type(Object *selected) {
 	CheckBox *check = Object::cast_to<CheckBox>(selected);
 	String type = check->get_text();
 	selector->set_title(vformat(TTR("Add %s"), type));
-	label->set_text(vformat(TTR("Adding %s..."), type));
+	label->set_text(vformat(TTR("Adding %s…"), type));
 }
 
 void CanvasItemEditorViewport::_on_change_type_confirmed() {
@@ -5774,7 +5774,7 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 				}
 				Transform2D trans = canvas_item_editor->get_canvas_transform();
 				preview_node->set_position((p_point - trans.get_origin()) / trans.get_scale().x);
-				label->set_text(vformat(TTR("Adding %s..."), default_type));
+				label->set_text(vformat(TTR("Adding %s…"), default_type));
 			}
 			return can_instance;
 		}
