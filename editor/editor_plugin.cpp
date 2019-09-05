@@ -125,7 +125,7 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 		VS::get_singleton()->instance_set_transform(light_instance, xform * Transform().looking_at(Vector3(-2, -1, -1), Vector3(0, 1, 0)));
 		VS::get_singleton()->instance_set_transform(light_instance2, xform * Transform().looking_at(Vector3(+1, -1, -2), Vector3(0, 1, 0)));
 
-		ep.step(TTR("Thumbnail..."), i);
+		ep.step(TTR("Thumbnail…"), i);
 		Main::iteration();
 		Main::iteration();
 		Ref<Image> img = VS::get_singleton()->texture_get_data(viewport_texture);
