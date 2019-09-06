@@ -378,6 +378,7 @@ float EditorAudioBus::_scaled_db_to_normalized_volume(float db) {
 void EditorAudioBus::_show_value(float slider_value) {
 	String text = vformat("%10.1f dB", _normalized_volume_to_scaled_db(slider_value));
 
+	slider->set_tooltip(text);
 	audio_value_preview_label->set_text(text);
 	Vector2 slider_size = slider->get_size();
 	Vector2 slider_position = slider->get_global_position();
@@ -773,7 +774,7 @@ EditorAudioBus::EditorAudioBus(EditorAudioBuses *p_buses, bool p_is_master) {
 	is_master = p_is_master;
 	hovering_drop = false;
 
-	set_tooltip(TTR("Audio Bus, Drag and Drop to rearrange."));
+	set_tooltip(TTR("Drag & drop to rearrange."));
 
 	VBoxContainer *vb = memnew(VBoxContainer);
 	add_child(vb);
