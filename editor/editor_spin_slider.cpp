@@ -109,13 +109,8 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 
 			if (grabbing_spinner) {
-				if (mm->get_control() || updown_offset != -1) {
-					set_value(Math::round(get_value()));
-					if (ABS(grabbing_spinner_dist_cache) > 6) {
-						set_value(get_value() + SGN(grabbing_spinner_dist_cache));
-						grabbing_spinner_dist_cache = 0;
-						pre_grab_value = get_value();
-					}
+				if (mm->get_control()) {
+					set_value(Math::round(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10));
 				} else {
 					set_value(pre_grab_value + get_step() * grabbing_spinner_dist_cache * 10);
 				}
