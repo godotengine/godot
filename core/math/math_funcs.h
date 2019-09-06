@@ -39,6 +39,7 @@
 
 #include <float.h>
 #include <math.h>
+#include <string.h>
 
 class Math {
 
@@ -487,10 +488,13 @@ public:
 
 	// fast inverse square root, see https://en.wikipedia.org/wiki/Fast_inverse_square_root
 	static _ALWAYS_INLINE_ float fast_inv_sqrt(float x) {
-		int i = *(int *)&x;
+
+		float x2 = x * 0.5F, y = x;
+		int i;
+		memcpy(&i, &y, sizeof(float));
 		i = 0x5f3759df - (i >> 1);
-		float y = *(float *)&i;
-		return y * (1.5F - 0.5F * x * y * y);
+		memcpy(&y, &i, sizeof(float));
+		return y * (1.5F - (x2 * y * y));
 	}
 };
 
