@@ -43,14 +43,14 @@ void Basis::from_z(const Vector3 &p_z) {
 
 		// choose p in y-z plane
 		real_t a = p_z[1] * p_z[1] + p_z[2] * p_z[2];
-		real_t k = 1.0 / Math::sqrt(a);
+		real_t k = Math::fast_inv_sqrt(a);
 		elements[0] = Vector3(0, -p_z[2] * k, p_z[1] * k);
 		elements[1] = Vector3(a * k, -p_z[0] * elements[0][2], p_z[0] * elements[0][1]);
 	} else {
 
 		// choose p in x-y plane
 		real_t a = p_z.x * p_z.x + p_z.y * p_z.y;
-		real_t k = 1.0 / Math::sqrt(a);
+		real_t k = Math::fast_inv_sqrt(a);
 		elements[0] = Vector3(-p_z.y * k, p_z.x * k, 0);
 		elements[1] = Vector3(-p_z.z * elements[0].y, p_z.z * elements[0].x, a * k);
 	}

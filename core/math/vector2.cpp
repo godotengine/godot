@@ -50,9 +50,9 @@ void Vector2::normalize() {
 	real_t l = x * x + y * y;
 	if (l != 0) {
 
-		l = Math::sqrt(l);
-		x /= l;
-		y /= l;
+		l = Math::fast_inv_sqrt(l);
+		x *= l;
+		y *= l;
 	}
 }
 

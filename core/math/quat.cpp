@@ -127,7 +127,7 @@ real_t Quat::length() const {
 }
 
 void Quat::normalize() {
-	*this /= length();
+	*this *= Math::fast_inv_sqrt(length_squared());
 }
 
 Quat Quat::normalized() const {
