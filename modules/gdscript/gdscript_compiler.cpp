@@ -1869,8 +1869,8 @@ Error GDScriptCompiler::_parse_class_level(GDScript *p_script, GDScript *p_owner
 	p_script->_base = NULL;
 	p_script->members.clear();
 	p_script->constants.clear();
-	for (Map<StringName, GDScriptFunction *>::Element *E = p_script->member_functions.front(); E; E = E->next()) {
-		memdelete(E->get());
+	for (OrderedHashMap<StringName, GDScriptFunction *>::Element E = p_script->member_functions.front(); E; E = E.next()) {
+		memdelete(E.get());
 	}
 	p_script->member_functions.clear();
 	p_script->member_indices.clear();
@@ -2153,7 +2153,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 
 void GDScriptCompiler::_make_scripts(const GDScript *p_script, const GDScriptParser::ClassNode *p_class, bool p_keep_state) {
 
-	Map<StringName, Ref<GDScript> > old_subclasses;
+	OrderedHashMap<StringName, Ref<GDScript> > old_subclasses;
 
 	if (p_keep_state) {
 		old_subclasses = p_script->subclasses;

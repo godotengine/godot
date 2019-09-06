@@ -1921,22 +1921,22 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 						}
 					}
 					if (!p_only_functions) {
-						for (const Map<StringName, Variant>::Element *E = script->get_constants().front(); E; E = E->next()) {
-							r_result.insert(E->key().operator String());
+						for (OrderedHashMap<StringName, Variant>::ConstElement E = script->get_constants().front(); E; E = E.next()) {
+							r_result.insert(E.key().operator String());
 						}
 					}
-					for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
-						if (!_static || E->get()->is_static()) {
-							if (E->get()->get_argument_count()) {
-								r_result.insert(E->key().operator String() + "(");
+					for (OrderedHashMap<StringName, GDScriptFunction *>::ConstElement E = script->get_member_functions().front(); E; E = E.next()) {
+						if (!_static || E.get()->is_static()) {
+							if (E.get()->get_argument_count()) {
+								r_result.insert(E.key().operator String() + "(");
 							} else {
-								r_result.insert(E->key().operator String() + "()");
+								r_result.insert(E.key().operator String() + "()");
 							}
 						}
 					}
 					if (!p_only_functions) {
-						for (const Map<StringName, Ref<GDScript> >::Element *E = script->get_subclasses().front(); E; E = E->next()) {
-							r_result.insert(E->key().operator String());
+						for (OrderedHashMap<StringName, Ref<GDScript> >::ConstElement E = script->get_subclasses().front(); E; E = E.next()) {
+							r_result.insert(E.key().operator String());
 						}
 					}
 					base_type = GDScriptParser::DataType();
