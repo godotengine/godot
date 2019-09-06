@@ -311,6 +311,7 @@ class EditorPropertyEasing : public EditorProperty {
 	EditorSpinSlider *spin;
 	bool setting;
 
+	bool dragging;
 	bool full;
 	bool flip;
 
