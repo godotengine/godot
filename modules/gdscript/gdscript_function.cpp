@@ -77,9 +77,9 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 				GDScript *s = o;
 				while (s) {
 
-					Map<StringName, Variant>::Element *E = s->constants.find(*sn);
+					OrderedHashMap<StringName, Variant>::Element E = s->constants.find(*sn);
 					if (E) {
-						return &E->get();
+						return &E.get();
 					}
 					s = s->_base;
 				}
@@ -1196,7 +1196,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				const GDScript *gds = _script;
 
-				const Map<StringName, GDScriptFunction *>::Element *E = NULL;
+				OrderedHashMap<StringName, GDScriptFunction *>::ConstElement E;
 				while (gds->base.ptr()) {
 					gds = gds->base.ptr();
 					E = gds->member_functions.find(*methodname);
@@ -1208,7 +1208,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 				if (E) {
 
-					*dst = E->get()->call(p_instance, (const Variant **)argptrs, argc, err);
+					*dst = E.get()->call(p_instance, (const Variant **)argptrs, argc, err);
 				} else if (gds->native.ptr()) {
 
 					if (*methodname != GDScriptLanguage::get_singleton()->strings._init) {

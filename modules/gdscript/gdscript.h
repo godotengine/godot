@@ -33,6 +33,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/ordered_hash_map.h"
 #include "core/script_language.h"
 #include "gdscript_function.h"
 
@@ -80,11 +81,11 @@ class GDScript : public Script {
 	GDScript *_owner; //for subclasses
 
 	Set<StringName> members; //members are just indices to the instanced script.
-	Map<StringName, Variant> constants;
-	Map<StringName, GDScriptFunction *> member_functions;
-	Map<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
-	Map<StringName, Ref<GDScript> > subclasses;
-	Map<StringName, Vector<StringName> > _signals;
+	OrderedHashMap<StringName, Variant> constants;
+	OrderedHashMap<StringName, GDScriptFunction *> member_functions;
+	OrderedHashMap<StringName, MemberInfo> member_indices; //members are just indices to the instanced script.
+	OrderedHashMap<StringName, Ref<GDScript> > subclasses;
+	OrderedHashMap<StringName, Vector<StringName> > _signals;
 
 #ifdef TOOLS_ENABLED
 
@@ -101,7 +102,7 @@ class GDScript : public Script {
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
 #endif
-	Map<StringName, PropertyInfo> member_info;
+	OrderedHashMap<StringName, PropertyInfo> member_info;
 
 	GDScriptFunction *initializer; //direct pointer to _init , faster to locate
 
@@ -144,14 +145,14 @@ protected:
 public:
 	virtual bool is_valid() const { return valid; }
 
-	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
-	const Map<StringName, Variant> &get_constants() const { return constants; }
+	const OrderedHashMap<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
+	const OrderedHashMap<StringName, Variant> &get_constants() const { return constants; }
 	const Set<StringName> &get_members() const { return members; }
 	const GDScriptDataType &get_member_type(const StringName &p_member) const {
 		CRASH_COND(!member_indices.has(p_member));
 		return member_indices[p_member].data_type;
 	}
-	const Map<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
+	const OrderedHashMap<StringName, GDScriptFunction *> &get_member_functions() const { return member_functions; }
 	const Ref<GDScriptNativeClass> &get_native() const { return native; }
 	const String &get_script_class_name() const { return name; }
 
@@ -161,8 +162,8 @@ public:
 	bool is_tool() const { return tool; }
 	Ref<GDScript> get_base() const;
 
-	const Map<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
-	const Map<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
+	const OrderedHashMap<StringName, MemberInfo> &debug_get_member_indices() const { return member_indices; }
+	const OrderedHashMap<StringName, GDScriptFunction *> &debug_get_member_functions() const; //this is debug only
 	StringName debug_get_member_by_index(int p_idx) const;
 
 	Variant _new(const Variant **p_args, int p_argcount, Variant::CallError &r_error);

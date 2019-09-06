@@ -6772,7 +6772,7 @@ bool GDScriptParser::_get_function_signature(DataType &p_base_type, const String
 	while (base_gdscript.is_valid()) {
 		native = base_gdscript->get_instance_base_type();
 
-		Map<StringName, GDScriptFunction *> funcs = base_gdscript->get_member_functions();
+		OrderedHashMap<StringName, GDScriptFunction *> funcs = base_gdscript->get_member_functions();
 
 		if (funcs.has(p_function)) {
 			GDScriptFunction *f = funcs[p_function];

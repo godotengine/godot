@@ -321,12 +321,12 @@ void GDScriptLanguage::debug_get_stack_level_members(int p_level, List<String> *
 	Ref<GDScript> script = instance->get_script();
 	ERR_FAIL_COND(script.is_null());
 
-	const Map<StringName, GDScript::MemberInfo> &mi = script->debug_get_member_indices();
+	OrderedHashMap<StringName, GDScript::MemberInfo> mi = script->debug_get_member_indices();
 
-	for (const Map<StringName, GDScript::MemberInfo>::Element *E = mi.front(); E; E = E->next()) {
+	for (OrderedHashMap<StringName, GDScript::MemberInfo>::Element E = mi.front(); E; E = E.next()) {
 
-		p_members->push_back(E->key());
-		p_values->push_back(instance->debug_get_member_by_index(E->get().index));
+		p_members->push_back(E.key());
+		p_values->push_back(instance->debug_get_member_by_index(E.get().index));
 	}
 }
 
@@ -1952,15 +1952,15 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 						}
 					}
 					if (!p_only_functions) {
-						for (const Map<StringName, Variant>::Element *E = script->get_constants().front(); E; E = E->next()) {
-							ScriptCodeCompletionOption option(E->key().operator String(), ScriptCodeCompletionOption::KIND_CONSTANT);
+						for (OrderedHashMap<StringName, Variant>::ConstElement E = script->get_constants().front(); E; E = E.next()) {
+							ScriptCodeCompletionOption option(E.key().operator String(), ScriptCodeCompletionOption::KIND_CONSTANT);
 							r_result.insert(option.display, option);
 						}
 					}
-					for (const Map<StringName, GDScriptFunction *>::Element *E = script->get_member_functions().front(); E; E = E->next()) {
-						if (!_static || E->get()->is_static()) {
-							ScriptCodeCompletionOption option(E->key().operator String(), ScriptCodeCompletionOption::KIND_FUNCTION);
-							if (E->get()->get_argument_count()) {
+					for (OrderedHashMap<StringName, GDScriptFunction *>::ConstElement E = script->get_member_functions().front(); E; E = E.next()) {
+						if (!_static || E.get()->is_static()) {
+							ScriptCodeCompletionOption option(E.key().operator String(), ScriptCodeCompletionOption::KIND_FUNCTION);
+							if (E.get()->get_argument_count()) {
 								option.insert_text += "(";
 							} else {
 								option.insert_text += "()";
@@ -1969,8 +1969,8 @@ static void _find_identifiers_in_base(const GDScriptCompletionContext &p_context
 						}
 					}
 					if (!p_only_functions) {
-						for (const Map<StringName, Ref<GDScript> >::Element *E = script->get_subclasses().front(); E; E = E->next()) {
-							ScriptCodeCompletionOption option(E->key().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
+						for (OrderedHashMap<StringName, Ref<GDScript> >::ConstElement E = script->get_subclasses().front(); E; E = E.next()) {
+							ScriptCodeCompletionOption option(E.key().operator String(), ScriptCodeCompletionOption::KIND_CLASS);
 							r_result.insert(option.display, option);
 						}
 					}

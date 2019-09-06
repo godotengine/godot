@@ -535,11 +535,11 @@ static String _disassemble_addr(const Ref<GDScript> &p_script, const GDScriptFun
 
 static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String> &p_code) {
 
-	const Map<StringName, GDScriptFunction *> &mf = p_class->debug_get_member_functions();
+	const OrderedHashMap<StringName, GDScriptFunction *> &mf = p_class->debug_get_member_functions();
 
-	for (const Map<StringName, GDScriptFunction *>::Element *E = mf.front(); E; E = E->next()) {
+	for (OrderedHashMap<StringName, GDScriptFunction *>::ConstElement E = mf.front(); E; E = E.next()) {
 
-		const GDScriptFunction &func = *E->get();
+		const GDScriptFunction &func = *E.get();
 		const int *code = func.get_code();
 		int codelen = func.get_code_size();
 		String defargs;
