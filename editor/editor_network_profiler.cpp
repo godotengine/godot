@@ -92,22 +92,6 @@ void EditorNetworkProfiler::_clear_pressed() {
 	}
 }
 
-String EditorNetworkProfiler::_format_bandwidth(int p_value) {
-	String unit = "B";
-	float v = p_value;
-	if (v > 1073741824.0) {
-		unit = "GiB";
-		v /= 1073741824.0;
-	} else if (v > 1048576.0) {
-		unit = "MiB";
-		v /= 1048576.0;
-	} else if (v > 1024.0) {
-		unit = "KiB";
-		v /= 1024.0;
-	}
-	return vformat("%.1f %s/s", v, unit);
-}
-
 void EditorNetworkProfiler::add_node_frame_data(const MultiplayerAPI::ProfilingInfo p_frame) {
 
 	if (!nodes_data.has(p_frame.node)) {
@@ -127,8 +111,8 @@ void EditorNetworkProfiler::add_node_frame_data(const MultiplayerAPI::ProfilingI
 
 void EditorNetworkProfiler::set_bandwidth(int p_incoming, int p_outgoing) {
 
-	incoming_bandwidth_text->set_text(_format_bandwidth(p_incoming));
-	outgoing_bandwidth_text->set_text(_format_bandwidth(p_outgoing));
+	incoming_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_incoming)));
+	outgoing_bandwidth_text->set_text(vformat(TTR("%s/s"), String::humanize_size(p_outgoing)));
 }
 
 bool EditorNetworkProfiler::is_profiling() {
