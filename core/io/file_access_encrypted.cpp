@@ -176,6 +176,22 @@ bool FileAccessEncrypted::is_open() const {
 	return file != NULL;
 }
 
+String FileAccessEncrypted::get_path() const {
+
+	if (file)
+		return file->get_path();
+	else
+		return "";
+}
+
+String FileAccessEncrypted::get_path_absolute() const {
+
+	if (file)
+		return file->get_path_absolute();
+	else
+		return "";
+}
+
 void FileAccessEncrypted::seek(size_t p_position) {
 
 	if (p_position > (size_t)data.size())
