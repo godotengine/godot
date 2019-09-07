@@ -39,7 +39,23 @@ RID RasterizerEffectsRD::_get_uniform_set_from_texture(RID p_texture) {
 	return uniform_set;
 }
 
-void RasterizerEffectsRD::copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region) {
+void RasterizerEffectsRD::copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y) {
+
+	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
+	if (p_flip_y) {
+		blur.push_constant.flags |= BLUR_FLAG_FLIP_Y;
+	}
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, Vector<Color>(), p_rect);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, blur.pipelines[BLUR_MODE_SIMPLY_COPY].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &blur.push_constant, sizeof(BlurPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
+void RasterizerEffectsRD::region_copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region) {
 
 	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
 
@@ -164,6 +180,23 @@ void RasterizerEffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_frameb
 	RD::get_singleton()->draw_list_end();
 }
 
+void RasterizerEffectsRD::copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip) {
+
+	CopyToDPPushConstant push_constant;
+	push_constant.bias = p_bias;
+	push_constant.z_far = p_z_far;
+	push_constant.z_near = p_z_near;
+	push_constant.z_flip = p_dp_flip;
+
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_dest_framebuffer, RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, Vector<Color>(), p_rect);
+	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, copy.pipelines[COPY_MODE_CUBE_TO_DP].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_dest_framebuffer)));
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_source_rd_texture), 0);
+	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
+	RD::get_singleton()->draw_list_set_push_constant(draw_list, &push_constant, sizeof(CopyToDPPushConstant));
+	RD::get_singleton()->draw_list_draw(draw_list, true);
+	RD::get_singleton()->draw_list_end();
+}
+
 void RasterizerEffectsRD::tonemapper(RID p_source_color, RID p_dst_framebuffer, const TonemapSettings &p_settings) {
 
 	zeromem(&tonemap.push_constant, sizeof(TonemapPushConstant));
@@ -274,6 +307,20 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 
 		for (int i = 0; i < TONEMAP_MODE_MAX; i++) {
 			tonemap.pipelines[i].setup(tonemap.shader.version_get_shader(tonemap.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
+		}
+	}
+
+	{
+		// Initialize copier
+		Vector<String> copy_modes;
+		copy_modes.push_back("\n#define MODE_CUBE_TO_DP\n");
+
+		copy.shader.initialize(copy_modes);
+
+		copy.shader_version = copy.shader.version_create();
+
+		for (int i = 0; i < COPY_MODE_MAX; i++) {
+			copy.pipelines[i].setup(copy.shader.version_get_shader(copy.shader_version, i), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), RD::PipelineDepthStencilState(), RD::PipelineColorBlendState::create_disabled(), 0);
 		}
 	}
 

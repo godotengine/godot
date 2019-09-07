@@ -216,7 +216,7 @@ public:
 
 	/* SHADOW ATLAS API */
 
-	struct ShadowAtlas  {
+	struct ShadowAtlas {
 
 		enum {
 			QUADRANT_SHIFT = 27,
@@ -288,7 +288,7 @@ public:
 
 	/* REFLECTION PROBE ATLAS API */
 
-	struct ReflectionAtlas  {
+	struct ReflectionAtlas {
 
 		int subdiv;
 		int size;
@@ -307,8 +307,7 @@ public:
 	mutable RID_PtrOwner<ReflectionAtlas> reflection_atlas_owner;
 
 	virtual RID reflection_atlas_create();
-	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_size);
-	virtual void reflection_atlas_set_subdivision(RID p_ref_atlas, int p_subdiv);
+	virtual void reflection_atlas_configure(RID p_ref_atlas, int p_size, int p_count);
 
 	/* REFLECTION CUBEMAPS */
 
@@ -324,7 +323,7 @@ public:
 
 	/* REFLECTION PROBE INSTANCE */
 
-	struct ReflectionProbeInstance  {
+	struct ReflectionProbeInstance {
 
 		RasterizerStorageGLES3::ReflectionProbe *probe_ptr;
 		RID probe;
@@ -364,7 +363,7 @@ public:
 
 	/* ENVIRONMENT API */
 
-	struct Environment  {
+	struct Environment {
 
 		VS::EnvironmentBG bg_mode;
 
@@ -590,7 +589,7 @@ public:
 		float shadow_split_offsets[4];
 	};
 
-	struct LightInstance  {
+	struct LightInstance {
 
 		struct ShadowTransform {
 
@@ -639,7 +638,7 @@ public:
 
 	/* REFLECTION INSTANCE */
 
-	struct GIProbeInstance  {
+	struct GIProbeInstance {
 		RID data;
 		RasterizerStorageGLES3::GIProbe *probe;
 		GLuint tex_cache;

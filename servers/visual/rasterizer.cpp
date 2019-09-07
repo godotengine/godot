@@ -47,6 +47,8 @@ void RasterizerScene::InstanceDependency::instance_notify_deleted(RID p_deleted)
 	for (Map<InstanceBase *, uint32_t>::Element *E = instances.front(); E; E = E->next()) {
 		E->key()->dependencies.erase(this);
 	}
+
+	instances.clear();
 }
 
 RasterizerScene::InstanceDependency::~InstanceDependency() {

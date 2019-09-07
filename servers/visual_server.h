@@ -432,14 +432,6 @@ public:
 
 	virtual void light_omni_set_shadow_mode(RID p_light, LightOmniShadowMode p_mode) = 0;
 
-	// omni light
-	enum LightOmniShadowDetail {
-		LIGHT_OMNI_SHADOW_DETAIL_VERTICAL,
-		LIGHT_OMNI_SHADOW_DETAIL_HORIZONTAL
-	};
-
-	virtual void light_omni_set_shadow_detail(RID p_light, LightOmniShadowDetail p_detail) = 0;
-
 	// directional light
 	enum LightDirectionalShadowMode {
 		LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL,
@@ -667,11 +659,16 @@ public:
 	enum ViewportDebugDraw {
 		VIEWPORT_DEBUG_DRAW_DISABLED,
 		VIEWPORT_DEBUG_DRAW_UNSHADED,
+		VIEWPORT_DEBUG_DRAW_LIGHTING,
 		VIEWPORT_DEBUG_DRAW_OVERDRAW,
 		VIEWPORT_DEBUG_DRAW_WIREFRAME,
+		VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS
+
 	};
 
 	virtual void viewport_set_debug_draw(RID p_viewport, ViewportDebugDraw p_draw) = 0;
+
+	virtual void directional_shadow_atlas_set_size(int p_size) = 0;
 
 	/* SKY API */
 
@@ -792,7 +789,6 @@ public:
 
 	virtual void scenario_set_debug(RID p_scenario, ScenarioDebugMode p_debug_mode) = 0;
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment) = 0;
-	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size, int p_subdiv) = 0;
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment) = 0;
 
 	/* INSTANCING API */
@@ -1106,7 +1102,6 @@ VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
 VARIANT_ENUM_CAST(VisualServer::MultimeshCustomDataFormat);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
-VARIANT_ENUM_CAST(VisualServer::LightOmniShadowDetail);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowDepthRangeMode);
 VARIANT_ENUM_CAST(VisualServer::ReflectionProbeUpdateMode);

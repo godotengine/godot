@@ -2,6 +2,13 @@
 #define M_PI 3.14159265359
 #define ROUGHNESS_MAX_LOD 5
 
+layout(push_constant, binding = 0, std430) uniform DrawCall {
+	uint instance_index;
+	uint pad[3]; //16 bits minimum size
+} draw_call;
+
+
+
 /* Set 0 Scene data, screen and sources (changes the least) */
 
 layout(set=0,binding=1) uniform texture2D depth_buffer;
@@ -35,7 +42,9 @@ layout(set = 0, binding = 5) uniform textureCube radiance_cubemap;
 
 layout(set = 0, binding = 6) uniform sampler material_samplers[12];
 
-layout(set=0,binding=7,std140) uniform SceneData {
+layout(set = 0, binding = 7) uniform sampler shadow_sampler;
+
+layout(set=0,binding=8,std140) uniform SceneData {
 
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
@@ -62,6 +71,14 @@ layout(set=0,binding=7,std140) uniform SceneData {
 	bool use_reflection_cubemap;
 
 	mat3 radiance_inverse_xform;
+
+	vec2 shadow_atlas_pixel_size;
+	vec2 directional_shadow_pixel_size;
+
+	uint directional_light_count;
+	float dual_paraboloid_side;
+	float z_far;
+	uint pad0;
 
 #if 0
 	vec4 ambient_light_color;
@@ -101,80 +118,125 @@ layout(set=0,binding=7,std140) uniform SceneData {
 #endif
 } scene_data;
 
+#define INSTANCE_FLAGS_FORWARD_MASK 3
+#define INSTANCE_FLAGS_FORWARD_OMNI_LIGHT_SHIFT 3
+#define INSTANCE_FLAGS_FORWARD_SPOT_LIGHT_SHIFT 6
+#define INSTANCE_FLAGS_FORWARD_DECAL_SHIFT 9
 
-#if 0
+
+struct InstanceData {
+	mat4 transform;
+	mat4 normal_transform;
+	uint flags;
+	uint instance_ofs; //instance_offset in instancing/skeleton buffer
+	uint gi_offset; //GI information when using lightmapping (VCT or lightmap)
+	uint layer_mask;
+
+	uint reflection_probe_indices[4];
+	uint omni_light_indices[4];
+	uint spot_light_indices[4];
+	uint decal_indices[4];
+};
+
+
+layout(set=0,binding=9,std430)  buffer Instances {
+    InstanceData data[];
+} instances;
+
+struct ReflectionData {
+
+	vec4 box_extents;
+	vec4 box_offset;
+	vec4 params; // intensity, 0, interior , boxproject
+	vec4 ambient; // ambient color, energy
+	mat4 local_matrix; // up to here for spot and omni, rest is for directional
+	// notes: for ambientblend, use distance to edge to blend between already existing global environment
+};
+
+layout(set=0,binding=10,std140) uniform ReflectionProbeData {
+	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
+} reflections;
+
+
+struct LightData { //this structure needs to be 128 bits
+
+	vec3 position;
+	float inv_radius;
+	vec3 direction;
+	uint attenuation_energy; //attenuation
+	uint color_specular; //rgb color, a specular (8 bit unorm)
+	uint cone_attenuation_angle; // attenuation and angle, (16bit float)
+	uint mask;
+	uint shadow_color_enabled; //shadow rgb color, a>0.5 enabled (8bit unorm)
+	vec4 atlas_rect; //used for shadow atlas uv on omni, and for projection atlas on spot
+	mat4 shadow_matrix;
+};
+
+layout(set=0,binding=11,std140) uniform Lights {
+	LightData data[MAX_LIGHT_DATA_STRUCTS];
+} lights;
+
+layout(set=0,binding=12) uniform texture2D shadow_atlas;
+
 struct DirectionalLightData {
 
-	vec4 light_pos_inv_radius;
-	vec4 light_direction_attenuation;
-	vec4 light_color_energy;
-	vec4 light_params; // cone attenuation, angle, specular, shadow enabled,
-	vec4 light_clamp;
-	vec4 shadow_color_contact;
+	vec3 direction;
+	float energy;
+	vec3 color;
+	float specular;
+	uint mask;
+	uint pad0,pad1,pad2;
+	vec3 shadow_color;
+	bool shadow_enabled;
+	vec4 shadow_atlas_rect;
+	vec4 shadow_split_offsets;
 	mat4 shadow_matrix1;
 	mat4 shadow_matrix2;
 	mat4 shadow_matrix3;
 	mat4 shadow_matrix4;
-	vec4 shadow_split_offsets;
-};
-#endif
 
-/* Set 1 Skeleton Data (most objects lack it, so it changes little */
+};
+
+layout(set=0,binding=13,std140) uniform DirectionalLights {
+	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
+} directional_lights;
+
+layout(set=0,binding=14) uniform texture2D directional_shadow_atlas;
+
+/*
+layout(set=0,binding=15,std430)  buffer Skeletons {
+    vec4 data[];
+} skeletons;
+*/
+
+/* Set 1 Instancing (Multimesh) */
+
+//layout(set = 1, binding = 0) uniform textureBuffer multimesh_transforms;
+
+/* Set 2 Instancing (Multimesh) data */
 
 #if 0
-layout(set = 1 binding = 0, std140) uniform SkeletonData {
-	mat4 transform;
-	bool use_skeleton;
-	bool use_world_coords;
-	bool pad1;
-	bool pad2;
-} skeleton;
 
-layout(set = 1, binding = 1) uniform textureBuffer skeleton_bones;
-#endif
+#ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-/* Set 2 Custom Material Data (changess less than instance) */
+layout(set = 3, binding = 2) uniform textureCubeArray reflection_probes[MAX_REFLECTION_PROBES];
 
+#else
 
-/* Set 3 Instance Data (Set on every draw call) */
-
-layout(push_constant, binding = 0, std430) uniform DrawData {
-	//used in forward rendering, 16 bits indices, max 8
-	uint reflection_probe_count;
-	uint omni_light_count;
-	uint spot_light_count;
-	uint decal_count;
-	uvec4 reflection_probe_indices;
-	uvec4 omni_light_indices;
-	uvec4 spot_light_indices;
-	uvec4 decal_indices;
-} draw_data;
-
-layout(set = 3, binding = 0, std140) uniform InstanceData {
-	mat4 transform;
-	mat3 normal_transform;
-	uint flags;
-	uint pad0;
-	uint pad1;
-	uint pad2;
-} instance_data;
-
-layout(set = 3, binding = 1) uniform textureBuffer multimesh_transforms;
-
-#ifdef USE_LIGHTMAP
-
-layout(set = 3, binding = 2) uniform texture2D lightmap;
+layout(set = 3, binding = 2) uniform textureCube reflection_probes[MAX_REFLECTION_PROBES];
 
 #endif
+
 
 #ifdef USE_VOXEL_CONE_TRACING
 
-layout(set = 3, binding = 3) uniform texture3D gi_probe[2];
+layout(set = 3, binding = 4) uniform texture3D gi_probe[2];
 
 #ifdef USE_ANISOTROPIC_VOXEL_CONE_TRACING
-layout(set = 3, binding = 4) uniform texture3D gi_probe_aniso_pos[2];
-layout(set = 3, binding = 5) uniform texture3D gi_probe_aniso_neg[2];
+layout(set = 3, binding = 5) uniform texture3D gi_probe_aniso_pos[2];
+layout(set = 3, binding = 6) uniform texture3D gi_probe_aniso_neg[2];
 #endif
 
 
+#endif
 #endif

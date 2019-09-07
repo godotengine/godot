@@ -4,6 +4,7 @@
 #include "core/math/camera_matrix.h"
 #include "render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rasterizer_rd/shaders/blur.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/copy.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/tonemap.glsl.gen.h"
@@ -36,7 +37,8 @@ class RasterizerEffectsRD {
 		BLUR_FLAG_USE_BLUR_SECTION = (1 << 1),
 		BLUR_FLAG_USE_ORTHOGONAL_PROJECTION = (1 << 2),
 		BLUR_FLAG_DOF_NEAR_FIRST_TAP = (1 << 3),
-		BLUR_FLAG_GLOW_FIRST_PASS = (1 << 4)
+		BLUR_FLAG_GLOW_FIRST_PASS = (1 << 4),
+		BLUR_FLAG_FLIP_Y = (1 << 5)
 	};
 
 	struct BlurPushConstant {
@@ -146,6 +148,25 @@ class RasterizerEffectsRD {
 		RenderPipelineVertexFormatCacheRD pipelines[TONEMAP_MODE_MAX];
 	} tonemap;
 
+	struct CopyToDPPushConstant {
+		float bias;
+		float z_far;
+		float z_near;
+		uint32_t z_flip;
+	};
+
+	enum CopyMode {
+		COPY_MODE_CUBE_TO_DP,
+		COPY_MODE_MAX
+	};
+
+	struct Copy {
+
+		CopyShaderRD shader;
+		RID shader_version;
+		RenderPipelineVertexFormatCacheRD pipelines[COPY_MODE_MAX];
+	} copy;
+
 	RID default_sampler;
 	RID index_buffer;
 	RID index_array;
@@ -155,11 +176,13 @@ class RasterizerEffectsRD {
 	RID _get_uniform_set_from_texture(RID p_texture);
 
 public:
-	void copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
+	void region_copy(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_region);
+	void copy_to_rect(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, bool p_flip_y = false);
 	void gaussian_blur(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, const Rect2 &p_region);
 	void cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness);
 	void render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler);
 	void make_mipmap(RID p_source_rd_texture, RID p_framebuffer_half, const Vector2 &p_pixel_size);
+	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip);
 
 	struct TonemapSettings {
 

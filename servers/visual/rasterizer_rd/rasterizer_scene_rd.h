@@ -15,20 +15,17 @@ protected:
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip) = 0;
 
 private:
 	int roughness_layers;
 
 	RasterizerStorageRD *storage;
 
-	struct Sky {
-		int radiance_size = 256;
-		VS::SkyMode mode = VS::SKY_MODE_QUALITY;
-		RID panorama;
+	struct ReflectionData {
 		RID radiance;
-		bool dirty = false;
-		Sky *dirty_list = nullptr;
+
 		struct Layer {
 			struct Mipmap {
 				RID framebuffers[6];
@@ -38,7 +35,24 @@ private:
 			Vector<Mipmap> mipmaps;
 		};
 		RID radiance_base_cubemap; //cubemap for first layer, first cubemap
+
 		Vector<Layer> layers;
+	};
+
+	void _clear_reflection_data(ReflectionData &rd);
+	void _update_reflection_data(ReflectionData &rd, int p_size, bool p_quality);
+	void _create_reflection_from_panorama(ReflectionData &rd, RID p_panorama, bool p_quality);
+	void _create_reflection_from_base_mipmap(ReflectionData &rd, bool p_quality, int p_cube_side);
+	void _update_reflection_mipmaps(ReflectionData &rd, bool p_quality);
+
+	/* SKY */
+	struct Sky {
+		int radiance_size = 256;
+		VS::SkyMode mode = VS::SKY_MODE_QUALITY;
+		RID panorama;
+		ReflectionData reflection;
+		bool dirty = false;
+		Sky *dirty_list = nullptr;
 	};
 
 	Sky *dirty_sky_list = nullptr;
@@ -51,6 +65,156 @@ private:
 	bool sky_use_cubemap_array;
 
 	mutable RID_Owner<Sky> sky_owner;
+
+	/* REFLECTION PROBE INSTANCE */
+
+	struct ReflectionProbeInstance {
+
+		RID probe;
+
+		ReflectionData reflection;
+		RID depth_buffer;
+		RID render_fb[6];
+
+		int current_resolution = 0;
+
+		bool dirty = true;
+		bool rendering = false;
+		int processing_side = 0;
+
+		uint32_t render_index = 0;
+
+		Transform transform;
+	};
+
+	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
+
+	/* SHADOW ATLAS */
+
+	struct ShadowAtlas {
+
+		enum {
+			QUADRANT_SHIFT = 27,
+			SHADOW_INDEX_MASK = (1 << QUADRANT_SHIFT) - 1,
+			SHADOW_INVALID = 0xFFFFFFFF
+		};
+
+		struct Quadrant {
+
+			uint32_t subdivision;
+
+			struct Shadow {
+				RID owner;
+				uint64_t version;
+				uint64_t alloc_tick;
+
+				Shadow() {
+					version = 0;
+					alloc_tick = 0;
+				}
+			};
+
+			Vector<Shadow> shadows;
+
+			Quadrant() {
+				subdivision = 0; //not in use
+			}
+
+		} quadrants[4];
+
+		int size_order[4] = { 0, 1, 2, 3 };
+		uint32_t smallest_subdiv = 0;
+
+		int size = 0;
+
+		RID depth;
+		RID fb; //for copying
+
+		Map<RID, uint32_t> shadow_owners;
+	};
+
+	RID_Owner<ShadowAtlas> shadow_atlas_owner;
+
+	bool _shadow_atlas_find_shadow(ShadowAtlas *shadow_atlas, int *p_in_quadrants, int p_quadrant_count, int p_current_subdiv, uint64_t p_tick, int &r_quadrant, int &r_shadow);
+
+	/* DIRECTIONAL SHADOW */
+
+	struct DirectionalShadow {
+		RID depth;
+		RID fb; //for copying
+
+		int light_count = 0;
+		int size = 0;
+		int current_light = 0;
+	} directional_shadow;
+
+	/* SHADOW CUBEMAPS */
+
+	struct ShadowCubemap {
+
+		RID cubemap;
+		RID side_fb[6];
+	};
+
+	Map<int, ShadowCubemap> shadow_cubemaps;
+	ShadowCubemap *_get_shadow_cubemap(int p_size);
+
+	struct ShadowMap {
+		RID depth;
+		RID fb;
+	};
+
+	Map<Vector2i, ShadowMap> shadow_maps;
+	ShadowMap *_get_shadow_map(const Size2i &p_size);
+
+	void _create_shadow_cubemaps();
+
+	/* LIGHT INSTANCE */
+
+	struct LightInstance {
+
+		struct ShadowTransform {
+
+			CameraMatrix camera;
+			Transform transform;
+			float farplane;
+			float split;
+			float bias_scale;
+		};
+
+		VS::LightType light_type;
+
+		ShadowTransform shadow_transform[4];
+
+		RID self;
+		RID light;
+		Transform transform;
+
+		Vector3 light_vector;
+		Vector3 spot_vector;
+		float linear_att;
+
+		uint64_t shadow_pass = 0;
+		uint64_t last_scene_pass = 0;
+		uint64_t last_scene_shadow_pass = 0;
+		uint64_t last_pass = 0;
+		uint32_t light_index = 0;
+		uint32_t light_directional_index = 0;
+
+		uint32_t current_shadow_atlas_key;
+
+		Vector2 dp;
+
+		Rect2 directional_rect;
+
+		Set<RID> shadow_atlases; //shadow atlases where this light is registered
+
+		LightInstance() {}
+	};
+
+	mutable RID_Owner<LightInstance> light_instance_owner;
+
+	/* ENVIRONMENT */
 
 	struct Environent {
 
@@ -82,6 +246,8 @@ private:
 
 	mutable RID_Owner<Environent> environment_owner;
 
+	/* RENDER BUFFERS */
+
 	struct RenderBuffers {
 
 		RenderBufferData *data = nullptr;
@@ -92,16 +258,45 @@ private:
 
 	mutable RID_Owner<RenderBuffers> render_buffers_owner;
 
+	uint64_t scene_pass = 0;
+	uint64_t shadow_atlas_realloc_tolerance_msec = 500;
+
 public:
 	/* SHADOW ATLAS API */
 
-	RID shadow_atlas_create() { return RID(); }
-	void shadow_atlas_set_size(RID p_atlas, int p_size) {}
-	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) {}
-	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) { return false; }
+	RID shadow_atlas_create();
+	void shadow_atlas_set_size(RID p_atlas, int p_size);
+	void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision);
+	bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version);
+	_FORCE_INLINE_ bool shadow_atlas_owns_light_instance(RID p_atlas, RID p_light_intance) {
+		ShadowAtlas *atlas = shadow_atlas_owner.getornull(p_atlas);
+		ERR_FAIL_COND_V(!atlas, false);
+		return atlas->shadow_owners.has(p_light_intance);
+	}
 
-	int get_directional_light_shadow_size(RID p_light_intance) { return 0; }
-	void set_directional_shadow_count(int p_count) {}
+	_FORCE_INLINE_ RID shadow_atlas_get_texture(RID p_atlas) {
+		ShadowAtlas *atlas = shadow_atlas_owner.getornull(p_atlas);
+		ERR_FAIL_COND_V(!atlas, RID());
+		return atlas->depth;
+	}
+
+	_FORCE_INLINE_ Size2i shadow_atlas_get_size(RID p_atlas) {
+		ShadowAtlas *atlas = shadow_atlas_owner.getornull(p_atlas);
+		ERR_FAIL_COND_V(!atlas, Size2i());
+		return Size2(atlas->size, atlas->size);
+	}
+
+	void directional_shadow_atlas_set_size(int p_size);
+	int get_directional_light_shadow_size(RID p_light_intance);
+	void set_directional_shadow_count(int p_count);
+
+	_FORCE_INLINE_ RID directional_shadow_get_texture() {
+		return directional_shadow.depth;
+	}
+
+	_FORCE_INLINE_ Size2i directional_shadow_get_size() {
+		return Size2i(directional_shadow.size, directional_shadow.size);
+	}
 
 	/* SKY API */
 
@@ -166,22 +361,121 @@ public:
 	void environment_set_fog_depth(RID p_env, bool p_enable, float p_depth_begin, float p_depth_end, float p_depth_curve, bool p_transmit, float p_transmit_curve) {}
 	void environment_set_fog_height(RID p_env, bool p_enable, float p_min_height, float p_max_height, float p_height_curve) {}
 
-	RID light_instance_create(RID p_light) { return RID(); }
-	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform) {}
-	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0) {}
-	void light_instance_mark_visible(RID p_light_instance) {}
+	RID light_instance_create(RID p_light);
+	void light_instance_set_transform(RID p_light_instance, const Transform &p_transform);
+	void light_instance_set_shadow_transform(RID p_light_instance, const CameraMatrix &p_projection, const Transform &p_transform, float p_far, float p_split, int p_pass, float p_bias_scale = 1.0);
+	void light_instance_mark_visible(RID p_light_instance);
 
-	RID reflection_atlas_create() { return RID(); }
-	void reflection_atlas_set_size(RID p_ref_atlas, int p_size) {}
-	void reflection_atlas_set_subdivision(RID p_ref_atlas, int p_subdiv) {}
+	_FORCE_INLINE_ RID light_instance_get_base_light(RID p_light_instance) {
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->light;
+	}
 
-	RID reflection_probe_instance_create(RID p_probe) { return RID(); }
-	void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform) {}
-	void reflection_probe_release_atlas_index(RID p_instance) {}
-	bool reflection_probe_instance_needs_redraw(RID p_instance) { return false; }
-	bool reflection_probe_instance_has_reflection(RID p_instance) { return false; }
-	bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) { return false; }
-	bool reflection_probe_instance_postprocess_step(RID p_instance) { return true; }
+	_FORCE_INLINE_ Transform light_instance_get_base_transform(RID p_light_instance) {
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->transform;
+	}
+
+	_FORCE_INLINE_ Rect2 light_instance_get_shadow_atlas_rect(RID p_light_instance, RID p_shadow_atlas) {
+
+		ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_shadow_atlas);
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		uint32_t key = shadow_atlas->shadow_owners[li->self];
+
+		uint32_t quadrant = (key >> ShadowAtlas::QUADRANT_SHIFT) & 0x3;
+		uint32_t shadow = key & ShadowAtlas::SHADOW_INDEX_MASK;
+
+		ERR_FAIL_COND_V(shadow >= (uint32_t)shadow_atlas->quadrants[quadrant].shadows.size(), Rect2());
+
+		uint32_t atlas_size = shadow_atlas->size;
+		uint32_t quadrant_size = atlas_size >> 1;
+
+		uint32_t x = (quadrant & 1) * quadrant_size;
+		uint32_t y = (quadrant >> 1) * quadrant_size;
+
+		uint32_t shadow_size = (quadrant_size / shadow_atlas->quadrants[quadrant].subdivision);
+		x += (shadow % shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
+		y += (shadow / shadow_atlas->quadrants[quadrant].subdivision) * shadow_size;
+
+		uint32_t width = shadow_size;
+		uint32_t height = shadow_size;
+
+		return Rect2(x / float(shadow_atlas->size), y / float(shadow_atlas->size), width / float(shadow_atlas->size), height / float(shadow_atlas->size));
+	}
+
+	_FORCE_INLINE_ CameraMatrix light_instance_get_shadow_camera(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].camera;
+	}
+
+	_FORCE_INLINE_ void light_instance_set_render_pass(RID p_light_instance, uint64_t p_pass) {
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		li->last_pass = p_pass;
+	}
+
+	_FORCE_INLINE_ uint64_t light_instance_get_render_pass(RID p_light_instance) {
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->last_pass;
+	}
+
+	_FORCE_INLINE_ void light_instance_set_index(RID p_light_instance, uint32_t p_index) {
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		li->light_index = p_index;
+	}
+
+	_FORCE_INLINE_ uint32_t light_instance_get_index(RID p_light_instance) {
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->light_index;
+	}
+
+	_FORCE_INLINE_ VS::LightType light_instance_get_type(RID p_light_instance) {
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->light_type;
+	}
+
+	virtual RID reflection_probe_instance_create(RID p_probe);
+	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
+	virtual bool reflection_probe_instance_needs_redraw(RID p_instance);
+	virtual void reflection_probe_instance_begin_render(RID p_instance);
+	virtual bool reflection_probe_instance_postprocess_step(RID p_instance);
+
+	uint32_t reflection_probe_instance_get_resolution(RID p_instance);
+	RID reflection_probe_instance_get_framebuffer(RID p_instance, int p_index);
+
+	_FORCE_INLINE_ RID reflection_probe_instance_get_probe(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND_V(!rpi, RID());
+
+		return rpi->probe;
+	}
+
+	_FORCE_INLINE_ void reflection_probe_instance_set_render_index(RID p_instance, uint32_t p_render_index) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND(!rpi);
+		rpi->render_index = p_render_index;
+	}
+
+	_FORCE_INLINE_ uint32_t reflection_probe_instance_get_render_index(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND_V(!rpi, 0);
+
+		return rpi->render_index;
+	}
+
+	_FORCE_INLINE_ Transform reflection_probe_instance_get_transform(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND_V(!rpi, Transform());
+
+		return rpi->transform;
+	}
+
+	_FORCE_INLINE_ RID reflection_probe_instance_get_texture(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND_V(!rpi, RID());
+
+		return rpi->reflection.radiance;
+	}
 
 	RID gi_probe_instance_create() { return RID(); }
 	void gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data) {}
@@ -191,7 +485,12 @@ public:
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+
+	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
+
+	virtual void set_scene_pass(uint64_t p_pass) { scene_pass = p_pass; }
+	_FORCE_INLINE_ uint64_t get_scene_pass() { return scene_pass; }
 
 	int get_roughness_layers() const;
 	bool is_using_radiance_cubemap_array() const;
@@ -201,6 +500,7 @@ public:
 	virtual void update();
 
 	RasterizerSceneRD(RasterizerStorageRD *p_storage);
+	~RasterizerSceneRD();
 };
 
 #endif // RASTERIZER_SCENE_RD_H
