@@ -23,6 +23,10 @@ void main() {
 
 	gl_Position = vec4( uv_interp *2.0 - 1.0, 0.0, 1.0);
 
+	if (bool(blur.flags&FLAG_FLIP_Y)) {
+		uv_interp.y = 1.0 - uv_interp.y;
+	}
+
 }
 
 /* clang-format off */

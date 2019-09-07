@@ -131,7 +131,6 @@ public:
 		RID environment;
 		RID fallback_environment;
 		RID reflection_probe_shadow_atlas;
-		RID reflection_atlas;
 
 		SelfList<Instance>::List instances;
 
@@ -148,7 +147,6 @@ public:
 	virtual void scenario_set_debug(RID p_scenario, VS::ScenarioDebugMode p_debug_mode);
 	virtual void scenario_set_environment(RID p_scenario, RID p_environment);
 	virtual void scenario_set_fallback_environment(RID p_scenario, RID p_environment);
-	virtual void scenario_set_reflection_atlas_size(RID p_scenario, int p_size, int p_subdiv);
 
 	/* INSTANCING API */
 

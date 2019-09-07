@@ -1497,6 +1497,23 @@ void RenderingDeviceVulkan::_memory_barrier(VkPipelineStageFlags p_src_stage_mas
 
 	vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, p_src_stage_mask, p_dst_stage_mask, 0, 1, &mem_barrier, 0, NULL, 0, NULL);
 }
+
+void RenderingDeviceVulkan::_buffer_memory_barrier(VkBuffer buffer, uint64_t p_from, uint64_t p_size, VkPipelineStageFlags p_src_stage_mask, VkPipelineStageFlags p_dst_stage_mask, VkAccessFlags p_src_access, VkAccessFlags p_dst_sccess, bool p_sync_with_draw) {
+
+	VkBufferMemoryBarrier buffer_mem_barrier;
+	buffer_mem_barrier.sType = VK_STRUCTURE_TYPE_BUFFER_MEMORY_BARRIER;
+	buffer_mem_barrier.pNext = NULL;
+	buffer_mem_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	buffer_mem_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+	buffer_mem_barrier.srcAccessMask = p_src_access;
+	buffer_mem_barrier.dstAccessMask = p_dst_sccess;
+	buffer_mem_barrier.buffer = buffer;
+	buffer_mem_barrier.offset = p_from;
+	buffer_mem_barrier.size = p_size;
+
+	vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, p_src_stage_mask, p_dst_stage_mask, 0, 0, NULL, 1, &buffer_mem_barrier, 0, NULL);
+}
+
 /*****************/
 /**** TEXTURE ****/
 /*****************/
@@ -1746,7 +1763,7 @@ RID RenderingDeviceVulkan::texture_create(const TextureFormat &p_format, const T
 		}
 
 		if (p_format.usage_bits & TEXTURE_USAGE_SAMPLING_BIT) {
-			texture.unbound_layout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+			texture.unbound_layout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
 		} else {
 			texture.unbound_layout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 		}
@@ -2548,6 +2565,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 		ERR_EXPLAIN("Source texture requires the TEXTURE_USAGE_CAN_COPY_FROM_BIT in order to be retreieved.");
 		ERR_FAIL_V(ERR_INVALID_PARAMETER);
 	}
+
 	uint32_t src_layer_count = src_tex->layers;
 	uint32_t src_width, src_height, src_depth;
 	get_image_format_required_size(src_tex->format, src_tex->width, src_tex->height, src_tex->depth, p_src_mipmap + 1, &src_width, &src_height, &src_depth);
@@ -2585,6 +2603,11 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	ERR_FAIL_COND_V(p_to.z < 0 || p_to.z + p_size.z > dst_depth, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_dst_mipmap >= dst_tex->mipmaps, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(p_dst_layer >= dst_layer_count, ERR_INVALID_PARAMETER);
+
+	if (src_tex->read_aspect_mask != dst_tex->read_aspect_mask) {
+		ERR_EXPLAIN("Source and destination texture must be of the same type (color or depth).");
+		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+	}
 
 	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
 
@@ -2646,7 +2669,7 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 			image_copy_region.srcOffset.y = p_from.y;
 			image_copy_region.srcOffset.z = p_from.z;
 
-			image_copy_region.dstSubresource.aspectMask = src_tex->barrier_aspect_mask;
+			image_copy_region.dstSubresource.aspectMask = dst_tex->read_aspect_mask;
 			image_copy_region.dstSubresource.baseArrayLayer = p_dst_layer;
 			image_copy_region.dstSubresource.layerCount = 1;
 			image_copy_region.dstSubresource.mipLevel = p_dst_mipmap;
@@ -2774,6 +2797,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			ERR_FAIL_V(VK_NULL_HANDLE);
 		}
 
+		bool can_be_sampled = p_format[i].usage_flags & TEXTURE_USAGE_SAMPLING_BIT;
+
 		switch (p_initial_action) {
 
 			case INITIAL_ACTION_CLEAR: {
@@ -2784,7 +2809,7 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			case INITIAL_ACTION_KEEP_COLOR: {
 				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					description.initialLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
@@ -2800,10 +2825,10 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					description.initialLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL; //don't care what is there
+					description.initialLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL; //don't care what is there
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 				} else {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2834,15 +2859,16 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 
 		switch (p_final_action) {
 			case FINAL_ACTION_READ_COLOR_AND_DEPTH: {
+
 				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-					description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+					description.finalLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-					description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+					description.finalLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 				} else {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2853,12 +2879,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
 						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+						description.finalLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 					} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 
 						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+						description.finalLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 					} else {
 						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -2869,12 +2895,12 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
+						description.finalLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
 					} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 
 						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
 						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_READ_ONLY_STENCIL_ATTACHMENT_OPTIMAL;
+						description.finalLayout = can_be_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
 					} else {
 						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
@@ -3136,7 +3162,7 @@ RID RenderingDeviceVulkan::vertex_buffer_create(uint32_t p_size_bytes, const Poo
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
-		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
+		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT, false);
 	}
 
 	return vertex_buffer_owner.make_rid(buffer);
@@ -3306,7 +3332,7 @@ RID RenderingDeviceVulkan::index_buffer_create(uint32_t p_index_count, IndexBuff
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&index_buffer, 0, r.ptr(), data_size);
-		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
+		_buffer_memory_barrier(index_buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT, false);
 	}
 	return index_buffer_owner.make_rid(index_buffer);
 }
@@ -4052,7 +4078,7 @@ RID RenderingDeviceVulkan::uniform_buffer_create(uint32_t p_size_bytes, const Po
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
-		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
+		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_UNIFORM_READ_BIT, false);
 	}
 	return uniform_buffer_owner.make_rid(buffer);
 }
@@ -4071,7 +4097,7 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Po
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&buffer, 0, r.ptr(), data_size);
-		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
+		_buffer_memory_barrier(buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT | VK_ACCESS_SHADER_WRITE_BIT, false);
 	}
 	return storage_buffer_owner.make_rid(buffer);
 }
@@ -4097,7 +4123,7 @@ RID RenderingDeviceVulkan::texture_buffer_create(uint32_t p_size_elements, DataF
 		uint64_t data_size = p_data.size();
 		PoolVector<uint8_t>::Read r = p_data.read();
 		_buffer_update(&texture_buffer.buffer, 0, r.ptr(), data_size);
-		_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
+		_buffer_memory_barrier(texture_buffer.buffer.buffer, 0, data_size, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_FRAGMENT_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_TRANSFER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, false);
 	}
 
 	VkBufferViewCreateInfo view_create_info;
@@ -4579,7 +4605,7 @@ RID RenderingDeviceVulkan::uniform_set_create(const Vector<Uniform> &p_uniforms,
 					ERR_FAIL_V(RID());
 				}
 
-				if (buffer->size != (uint32_t)set_uniform.length) {
+				if (set_uniform.length > 0 && buffer->size != (uint32_t)set_uniform.length) { //if 0, then its sized on link time
 					ERR_EXPLAIN("Storage buffer supplied (binding: " + itos(uniform.binding) + ") size (" + itos(buffer->size) + ") does not match size of shader uniform: (" + itos(set_uniform.length) + ").");
 					ERR_FAIL_V(RID());
 				}
@@ -4712,8 +4738,47 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 		return err;
 	}
 
-	_memory_barrier(VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
+	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
+#if 0
+	if (p_sync_with_draw) {
+		VkMemoryBarrier memoryBarrier;
 
+		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		memoryBarrier.pNext = NULL;
+		memoryBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
+									  VK_ACCESS_INDEX_READ_BIT |
+									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+									  VK_ACCESS_UNIFORM_READ_BIT |
+									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_SHADER_READ_BIT |
+									  VK_ACCESS_SHADER_WRITE_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_TRANSFER_READ_BIT |
+									  VK_ACCESS_TRANSFER_WRITE_BIT |
+									  VK_ACCESS_HOST_READ_BIT |
+									  VK_ACCESS_HOST_WRITE_BIT;
+		memoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
+									  VK_ACCESS_INDEX_READ_BIT |
+									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+									  VK_ACCESS_UNIFORM_READ_BIT |
+									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_SHADER_READ_BIT |
+									  VK_ACCESS_SHADER_WRITE_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_TRANSFER_READ_BIT |
+									  VK_ACCESS_TRANSFER_WRITE_BIT |
+									  VK_ACCESS_HOST_READ_BIT |
+									  VK_ACCESS_HOST_WRITE_BIT;
+
+		vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &memoryBarrier, 0, NULL, 0, NULL);
+	}
+#endif
 	return err;
 }
 
@@ -5344,6 +5409,47 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	return OK;
 }
 
+void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, const Vector<Color> &p_clear_colors) {
+	Vector<VkClearAttachment> clear_attachments;
+	int color_index = 0;
+	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
+		Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
+		VkClearAttachment clear_at;
+		if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+			ERR_FAIL_INDEX(color_index, p_clear_colors.size()); //a bug
+			Color clear_color = p_clear_colors[color_index];
+			clear_at.clearValue.color.float32[0] = clear_color.r;
+			clear_at.clearValue.color.float32[1] = clear_color.g;
+			clear_at.clearValue.color.float32[2] = clear_color.b;
+			clear_at.clearValue.color.float32[3] = clear_color.a;
+			clear_at.colorAttachment = color_index++;
+			clear_at.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
+		} else if (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+
+			clear_at.clearValue.depthStencil.depth = 1.0;
+			clear_at.clearValue.depthStencil.stencil = 0;
+			clear_at.colorAttachment = 0;
+			clear_at.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
+			if (format_has_stencil(texture->format)) {
+				clear_at.aspectMask |= VK_IMAGE_ASPECT_STENCIL_BIT;
+			}
+		} else {
+			ERR_CONTINUE(true);
+		}
+		clear_attachments.push_back(clear_at);
+	}
+
+	VkClearRect cr;
+	cr.baseArrayLayer = 0;
+	cr.layerCount = 1;
+	cr.rect.offset.x = viewport_offset.x;
+	cr.rect.offset.y = viewport_offset.y;
+	cr.rect.extent.width = viewport_size.width;
+	cr.rect.extent.height = viewport_size.height;
+
+	vkCmdClearAttachments(draw_list->command_buffer, clear_attachments.size(), clear_attachments.ptr(), 1, &cr);
+}
+
 RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, const Rect2 &p_region) {
 
 	_THREAD_SAFE_METHOD_
@@ -5353,8 +5459,9 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
+	bool needs_clear_region = false;
 
-	if (p_region != Rect2()) { //check custom region
+	if (p_region != Rect2() && p_region != Rect2(Vector2(), viewport_size)) { //check custom region
 		Rect2i viewport(viewport_offset, viewport_size);
 		Rect2i regioni = p_region;
 		if (!(regioni.position.x >= viewport.position.x) && (regioni.position.y >= viewport.position.y) &&
@@ -5366,6 +5473,11 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 		viewport_offset = regioni.position;
 		viewport_size = regioni.size;
+
+		if (p_initial_action == INITIAL_ACTION_CLEAR) {
+			p_initial_action = INITIAL_ACTION_KEEP_COLOR_AND_DEPTH;
+			needs_clear_region = true;
+		}
 	}
 
 	if (p_initial_action == INITIAL_ACTION_CLEAR) { //check clear values
@@ -5397,6 +5509,10 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 #endif
 	draw_list_count = 0;
 	draw_list_split = false;
+
+	if (needs_clear_region) {
+		_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, p_clear_colors);
+	}
 
 	VkViewport viewport;
 	viewport.x = viewport_offset.x;
@@ -5432,7 +5548,9 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
 
-	if (p_region != Rect2()) { //check custom region
+	bool needs_clear_region = false;
+
+	if (p_region != Rect2() && p_region != Rect2(Vector2(), viewport_size)) { //check custom region
 		Rect2i viewport(viewport_offset, viewport_size);
 		Rect2i regioni = p_region;
 		if (!(regioni.position.x >= viewport.position.x) && (regioni.position.y >= viewport.position.y) &&
@@ -5444,6 +5562,11 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 
 		viewport_offset = regioni.position;
 		viewport_size = regioni.size;
+
+		if (p_initial_action == INITIAL_ACTION_CLEAR) {
+			p_initial_action = INITIAL_ACTION_KEEP_COLOR_AND_DEPTH;
+			needs_clear_region = true;
+		}
 	}
 
 	if (p_initial_action == INITIAL_ACTION_CLEAR) { //check clear values
@@ -5545,6 +5668,9 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 #ifdef DEBUG_ENABLED
 		draw_list[i].validation.framebuffer_format = framebuffer->format_id;
 #endif
+		if (i == 0 && needs_clear_region) {
+			_draw_list_insert_clear_region(&draw_list[i], framebuffer, viewport_offset, viewport_size, p_clear_colors);
+		}
 
 		VkViewport viewport;
 		viewport.x = viewport_offset.x;
@@ -6030,6 +6156,11 @@ void RenderingDeviceVulkan::draw_list_end() {
 		}
 	}
 	draw_list_bound_textures.clear();
+
+	// To ensure proper synchronization, we must make sure rendering is done before:
+	//  * Some buffer is copied
+	//  * Another render pass happens (since we may be done
+	_memory_barrier(VK_PIPELINE_STAGE_COLOR_ATTACHMENT_OUTPUT_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT, VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT, true);
 }
 #if 0
 void RenderingDeviceVulkan::draw_list_render_secondary_to_framebuffer(ID p_framebuffer, ID *p_draw_lists, uint32_t p_draw_list_count, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Variant> &p_clear_colors) {

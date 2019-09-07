@@ -251,6 +251,12 @@ private:
 			RID blend_shape_base_buffer; //source buffer goes here when using blend shapes, and main one is uncompressed
 
 			RID material;
+
+			uint32_t render_index = 0;
+			uint64_t render_pass = 0;
+
+			uint32_t multimesh_render_index = 0;
+			uint64_t multimesh_render_pass = 0;
 		};
 
 		uint32_t blend_shape_count = 0;
@@ -274,6 +280,54 @@ private:
 	void _mesh_surface_generate_version_for_input_mask(Mesh::Surface *s, uint32_t p_input_mask);
 
 	RID mesh_default_rd_buffers[DEFAULT_RD_BUFFER_MAX];
+
+	/* LIGHT */
+
+	struct Light {
+
+		VS::LightType type;
+		float param[VS::LIGHT_PARAM_MAX];
+		Color color = Color(1, 1, 1, 1);
+		Color shadow_color;
+		RID projector;
+		bool shadow = false;
+		bool negative = false;
+		bool reverse_cull = false;
+		bool use_gi = true;
+		uint32_t cull_mask = 0xFFFFFFFF;
+		VS::LightOmniShadowMode omni_shadow_mode = VS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID;
+		VS::LightDirectionalShadowMode directional_shadow_mode = VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL;
+		VS::LightDirectionalShadowDepthRangeMode directional_range_mode = VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE;
+		bool directional_blend_splits = false;
+		uint64_t version = 0;
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	mutable RID_Owner<Light> light_owner;
+
+	/* REFLECTION PROBE */
+
+	struct ReflectionProbe {
+
+		VS::ReflectionProbeUpdateMode update_mode = VS::REFLECTION_PROBE_UPDATE_ONCE;
+		int resolution = 256;
+		float intensity = 1.0;
+		Color interior_ambient;
+		float interior_ambient_energy = 1.0;
+		float interior_ambient_probe_contrib = 0.0;
+		float max_distance = 0;
+		Vector3 extents = Vector3(1, 1, 1);
+		Vector3 origin_offset;
+		bool interior = false;
+		bool box_projection = false;
+		bool enable_shadows = false;
+		uint32_t cull_mask = (1 << 20) - 1;
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
 
 	/* RENDER TARGET */
 
@@ -530,6 +584,32 @@ public:
 		return mesh_default_rd_buffers[p_buffer];
 	}
 
+	_FORCE_INLINE_ uint32_t mesh_surface_get_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+
+		if (s->render_pass != p_render_pass) {
+			(*r_index)++;
+			s->render_pass = p_render_pass;
+			s->render_index = *r_index;
+		}
+
+		return s->render_index;
+	}
+
+	_FORCE_INLINE_ uint32_t mesh_surface_get_multimesh_render_pass_index(RID p_mesh, uint32_t p_surface_index, uint64_t p_render_pass, uint32_t *r_index) {
+		Mesh *mesh = mesh_owner.getornull(p_mesh);
+		Mesh::Surface *s = mesh->surfaces[p_surface_index];
+
+		if (s->multimesh_render_pass != p_render_pass) {
+			(*r_index)++;
+			s->multimesh_render_pass = p_render_pass;
+			s->multimesh_render_index = *r_index;
+		}
+
+		return s->multimesh_render_index;
+	}
+
 	/* MULTIMESH API */
 
 	virtual RID multimesh_create() { return RID(); }
@@ -587,68 +667,125 @@ public:
 
 	/* Light API */
 
-	RID light_create(VS::LightType p_type) { return RID(); }
+	RID light_create(VS::LightType p_type);
 
 	RID directional_light_create() { return light_create(VS::LIGHT_DIRECTIONAL); }
 	RID omni_light_create() { return light_create(VS::LIGHT_OMNI); }
 	RID spot_light_create() { return light_create(VS::LIGHT_SPOT); }
 
-	void light_set_color(RID p_light, const Color &p_color) {}
-	void light_set_param(RID p_light, VS::LightParam p_param, float p_value) {}
-	void light_set_shadow(RID p_light, bool p_enabled) {}
-	void light_set_shadow_color(RID p_light, const Color &p_color) {}
-	void light_set_projector(RID p_light, RID p_texture) {}
-	void light_set_negative(RID p_light, bool p_enable) {}
-	void light_set_cull_mask(RID p_light, uint32_t p_mask) {}
-	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {}
-	void light_set_use_gi(RID p_light, bool p_enabled) {}
+	void light_set_color(RID p_light, const Color &p_color);
+	void light_set_param(RID p_light, VS::LightParam p_param, float p_value);
+	void light_set_shadow(RID p_light, bool p_enabled);
+	void light_set_shadow_color(RID p_light, const Color &p_color);
+	void light_set_projector(RID p_light, RID p_texture);
+	void light_set_negative(RID p_light, bool p_enable);
+	void light_set_cull_mask(RID p_light, uint32_t p_mask);
+	void light_set_reverse_cull_face_mode(RID p_light, bool p_enabled);
+	void light_set_use_gi(RID p_light, bool p_enabled);
 
-	void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) {}
-	void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail) {}
+	void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode);
 
-	void light_directional_set_shadow_mode(RID p_light, VS::LightDirectionalShadowMode p_mode) {}
-	void light_directional_set_blend_splits(RID p_light, bool p_enable) {}
-	bool light_directional_get_blend_splits(RID p_light) const { return false; }
-	void light_directional_set_shadow_depth_range_mode(RID p_light, VS::LightDirectionalShadowDepthRangeMode p_range_mode) {}
-	VS::LightDirectionalShadowDepthRangeMode light_directional_get_shadow_depth_range_mode(RID p_light) const { return VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE; }
+	void light_directional_set_shadow_mode(RID p_light, VS::LightDirectionalShadowMode p_mode);
+	void light_directional_set_blend_splits(RID p_light, bool p_enable);
+	bool light_directional_get_blend_splits(RID p_light) const;
+	void light_directional_set_shadow_depth_range_mode(RID p_light, VS::LightDirectionalShadowDepthRangeMode p_range_mode);
+	VS::LightDirectionalShadowDepthRangeMode light_directional_get_shadow_depth_range_mode(RID p_light) const;
 
-	VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light) { return VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL; }
-	VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light) { return VS::LIGHT_OMNI_SHADOW_DUAL_PARABOLOID; }
+	VS::LightDirectionalShadowMode light_directional_get_shadow_mode(RID p_light);
+	VS::LightOmniShadowMode light_omni_get_shadow_mode(RID p_light);
 
-	bool light_has_shadow(RID p_light) const { return false; }
+	_FORCE_INLINE_ VS::LightType light_get_type(RID p_light) const {
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, VS::LIGHT_DIRECTIONAL);
 
-	VS::LightType light_get_type(RID p_light) const { return VS::LIGHT_OMNI; }
-	AABB light_get_aabb(RID p_light) const { return AABB(); }
-	float light_get_param(RID p_light, VS::LightParam p_param) { return 0.0; }
-	Color light_get_color(RID p_light) { return Color(); }
-	bool light_get_use_gi(RID p_light) { return false; }
-	uint64_t light_get_version(RID p_light) const { return 0; }
+		return light->type;
+	}
+	AABB light_get_aabb(RID p_light) const;
+
+	_FORCE_INLINE_ float light_get_param(RID p_light, VS::LightParam p_param) {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, 0);
+
+		return light->param[p_param];
+	}
+
+	_FORCE_INLINE_ Color light_get_color(RID p_light) {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, Color());
+
+		return light->color;
+	}
+
+	_FORCE_INLINE_ Color light_get_shadow_color(RID p_light) {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, Color());
+
+		return light->shadow_color;
+	}
+
+	_FORCE_INLINE_ uint32_t light_get_cull_mask(RID p_light) {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, 0);
+
+		return light->cull_mask;
+	}
+
+	_FORCE_INLINE_ bool light_has_shadow(RID p_light) const {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, VS::LIGHT_DIRECTIONAL);
+
+		return light->shadow;
+	}
+
+	_FORCE_INLINE_ bool light_is_negative(RID p_light) const {
+
+		const Light *light = light_owner.getornull(p_light);
+		ERR_FAIL_COND_V(!light, VS::LIGHT_DIRECTIONAL);
+
+		return light->negative;
+	}
+
+	bool light_get_use_gi(RID p_light);
+	uint64_t light_get_version(RID p_light) const;
 
 	/* PROBE API */
 
-	RID reflection_probe_create() { return RID(); }
+	RID reflection_probe_create();
 
-	void reflection_probe_set_update_mode(RID p_probe, VS::ReflectionProbeUpdateMode p_mode) {}
-	void reflection_probe_set_intensity(RID p_probe, float p_intensity) {}
-	void reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient) {}
-	void reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy) {}
-	void reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib) {}
-	void reflection_probe_set_max_distance(RID p_probe, float p_distance) {}
-	void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {}
-	void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {}
-	void reflection_probe_set_as_interior(RID p_probe, bool p_enable) {}
-	void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {}
-	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {}
-	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {}
-	void reflection_probe_set_resolution(RID p_probe, int p_resolution) {}
+	void reflection_probe_set_update_mode(RID p_probe, VS::ReflectionProbeUpdateMode p_mode);
+	void reflection_probe_set_intensity(RID p_probe, float p_intensity);
+	void reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient);
+	void reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy);
+	void reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib);
+	void reflection_probe_set_max_distance(RID p_probe, float p_distance);
+	void reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents);
+	void reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset);
+	void reflection_probe_set_as_interior(RID p_probe, bool p_enable);
+	void reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable);
+	void reflection_probe_set_enable_shadows(RID p_probe, bool p_enable);
+	void reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers);
+	void reflection_probe_set_resolution(RID p_probe, int p_resolution);
 
-	AABB reflection_probe_get_aabb(RID p_probe) const { return AABB(); }
-	VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const { return VisualServer::REFLECTION_PROBE_UPDATE_ONCE; }
-	uint32_t reflection_probe_get_cull_mask(RID p_probe) const { return 0; }
-	Vector3 reflection_probe_get_extents(RID p_probe) const { return Vector3(); }
-	Vector3 reflection_probe_get_origin_offset(RID p_probe) const { return Vector3(); }
-	float reflection_probe_get_origin_max_distance(RID p_probe) const { return 0.0; }
-	bool reflection_probe_renders_shadows(RID p_probe) const { return false; }
+	AABB reflection_probe_get_aabb(RID p_probe) const;
+	VS::ReflectionProbeUpdateMode reflection_probe_get_update_mode(RID p_probe) const;
+	uint32_t reflection_probe_get_cull_mask(RID p_probe) const;
+	Vector3 reflection_probe_get_extents(RID p_probe) const;
+	Vector3 reflection_probe_get_origin_offset(RID p_probe) const;
+	float reflection_probe_get_origin_max_distance(RID p_probe) const;
+	int reflection_probe_get_resolution(RID p_probe) const;
+	bool reflection_probe_renders_shadows(RID p_probe) const;
+
+	float reflection_probe_get_intensity(RID p_probe) const;
+	bool reflection_probe_is_interior(RID p_probe) const;
+	bool reflection_probe_is_box_projection(RID p_probe) const;
+	Color reflection_probe_get_interior_ambient(RID p_probe) const;
+	float reflection_probe_get_interior_ambient_energy(RID p_probe) const;
+	float reflection_probe_get_interior_ambient_probe_contribution(RID p_probe) const;
 
 	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance);
 	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {}
