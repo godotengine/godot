@@ -16,7 +16,7 @@ namespace GodotTools
     {
         private void AddFile(string srcPath, string dstPath, bool remap = false)
         {
-            AddFile(dstPath, File.ReadAllBytes(srcPath), remap);
+            AddFile(dstPath.Replace("\\", "/"), File.ReadAllBytes(srcPath), remap);
         }
 
         public override void _ExportFile(string path, string type, string[] features)
