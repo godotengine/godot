@@ -209,7 +209,7 @@ public:
 
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
-		bool has_yield;
+		bool has_yield_or_await;
 		bool has_unreachable_code;
 		StringName name;
 		DataType return_type;
@@ -229,7 +229,7 @@ public:
 			type = TYPE_FUNCTION;
 			_static = false;
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
-			has_yield = false;
+			has_yield_or_await = false;
 			has_unreachable_code = false;
 		}
 	};
@@ -351,6 +351,7 @@ public:
 			OP_CALL,
 			OP_PARENT_CALL,
 			OP_YIELD,
+			OP_AWAIT,
 			OP_IS,
 			OP_IS_BUILTIN,
 			//indexing operator

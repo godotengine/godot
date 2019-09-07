@@ -539,7 +539,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				return NULL;
 			}
 
-			current_function->has_yield = true;
+			current_function->has_yield_or_await = true;
 
 			tokenizer->advance();
 			if (tokenizer->get_token() != GDScriptTokenizer::TK_PARENTHESIS_OPEN) {
@@ -605,6 +605,47 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 				expr = yield;
 			}
+
+		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ADD || tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB || tokenizer->get_token() == GDScriptTokenizer::TK_OP_NOT || tokenizer->get_token() == GDScriptTokenizer::TK_OP_BIT_INVERT || tokenizer->get_token() == GDScriptTokenizer::TK_PR_AWAIT) {
+
+			//single prefix operators like !expr, +expr, -expr, ++expr, --expr, await expr
+			alloc_node<OperatorNode>();
+			Expression e;
+			e.is_op = true;
+
+			switch (tokenizer->get_token()) {
+				case GDScriptTokenizer::TK_OP_ADD: e.op = OperatorNode::OP_POS; break;
+				case GDScriptTokenizer::TK_OP_SUB: e.op = OperatorNode::OP_NEG; break;
+				case GDScriptTokenizer::TK_OP_NOT: e.op = OperatorNode::OP_NOT; break;
+				case GDScriptTokenizer::TK_OP_BIT_INVERT: e.op = OperatorNode::OP_BIT_INVERT; break;
+				case GDScriptTokenizer::TK_PR_AWAIT: {
+					if (!current_function) {
+						_set_error("'await' can only be used inside function blocks.");
+						return NULL;
+					}
+					current_function->has_yield_or_await = true;
+					e.op = OperatorNode::OP_AWAIT;
+				} break;
+				default: {
+				}
+			}
+
+			tokenizer->advance();
+
+			if (e.op != OperatorNode::OP_NOT && tokenizer->get_token() == GDScriptTokenizer::TK_OP_NOT) {
+				_set_error("Misplaced 'not'.");
+				return NULL;
+			}
+
+			expression.push_back(e);
+			continue; //only exception, must continue...
+
+			/*
+			Node *subexpr=_parse_expression(op,p_static);
+			if (!subexpr)
+				return NULL;
+			op->arguments.push_back(subexpr);
+			expr=op;*/
 
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_SELF) {
 
@@ -891,39 +932,6 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 				id->line = id_line;
 				expr = id;
 			}
-
-		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_OP_ADD || tokenizer->get_token() == GDScriptTokenizer::TK_OP_SUB || tokenizer->get_token() == GDScriptTokenizer::TK_OP_NOT || tokenizer->get_token() == GDScriptTokenizer::TK_OP_BIT_INVERT) {
-
-			//single prefix operators like !expr +expr -expr ++expr --expr
-			alloc_node<OperatorNode>();
-			Expression e;
-			e.is_op = true;
-
-			switch (tokenizer->get_token()) {
-				case GDScriptTokenizer::TK_OP_ADD: e.op = OperatorNode::OP_POS; break;
-				case GDScriptTokenizer::TK_OP_SUB: e.op = OperatorNode::OP_NEG; break;
-				case GDScriptTokenizer::TK_OP_NOT: e.op = OperatorNode::OP_NOT; break;
-				case GDScriptTokenizer::TK_OP_BIT_INVERT: e.op = OperatorNode::OP_BIT_INVERT; break;
-				default: {
-				}
-			}
-
-			tokenizer->advance();
-
-			if (e.op != OperatorNode::OP_NOT && tokenizer->get_token() == GDScriptTokenizer::TK_OP_NOT) {
-				_set_error("Misplaced 'not'.");
-				return NULL;
-			}
-
-			expression.push_back(e);
-			continue; //only exception, must continue...
-
-			/*
-			Node *subexpr=_parse_expression(op,p_static);
-			if (!subexpr)
-				return NULL;
-			op->arguments.push_back(subexpr);
-			expr=op;*/
 
 		} else if (tokenizer->get_token() == GDScriptTokenizer::TK_PR_IS && tokenizer->get_token(1) == GDScriptTokenizer::TK_BUILT_IN_TYPE) {
 			// 'is' operator with built-in type
@@ -1408,74 +1416,79 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 
 			switch (expression[i].op) {
 
-				case OperatorNode::OP_IS:
-				case OperatorNode::OP_IS_BUILTIN:
-					priority = -1;
+				case OperatorNode::OP_AWAIT:
+					priority = 0;
+					unary = true;
 					break; //before anything
 
+				case OperatorNode::OP_IS:
+				case OperatorNode::OP_IS_BUILTIN:
+					priority = 1;
+					break;
+
 				case OperatorNode::OP_BIT_INVERT:
-					priority = 0;
+					priority = 2;
 					unary = true;
 					break;
 				case OperatorNode::OP_NEG:
 				case OperatorNode::OP_POS:
-					priority = 1;
+					priority = 3;
 					unary = true;
 					break;
 
-				case OperatorNode::OP_MUL: priority = 2; break;
-				case OperatorNode::OP_DIV: priority = 2; break;
-				case OperatorNode::OP_MOD: priority = 2; break;
+				case OperatorNode::OP_MUL: priority = 4; break;
+				case OperatorNode::OP_DIV: priority = 4; break;
+				case OperatorNode::OP_MOD: priority = 4; break;
 
-				case OperatorNode::OP_ADD: priority = 3; break;
-				case OperatorNode::OP_SUB: priority = 3; break;
+				case OperatorNode::OP_ADD: priority = 5; break;
+				case OperatorNode::OP_SUB: priority = 5; break;
 
-				case OperatorNode::OP_SHIFT_LEFT: priority = 4; break;
-				case OperatorNode::OP_SHIFT_RIGHT: priority = 4; break;
+				case OperatorNode::OP_SHIFT_LEFT: priority = 6; break;
+				case OperatorNode::OP_SHIFT_RIGHT: priority = 6; break;
 
-				case OperatorNode::OP_BIT_AND: priority = 5; break;
-				case OperatorNode::OP_BIT_XOR: priority = 6; break;
-				case OperatorNode::OP_BIT_OR: priority = 7; break;
+				case OperatorNode::OP_BIT_AND: priority = 7; break;
+				case OperatorNode::OP_BIT_XOR: priority = 8; break;
+				case OperatorNode::OP_BIT_OR: priority = 9; break;
 
-				case OperatorNode::OP_LESS: priority = 8; break;
-				case OperatorNode::OP_LESS_EQUAL: priority = 8; break;
-				case OperatorNode::OP_GREATER: priority = 8; break;
-				case OperatorNode::OP_GREATER_EQUAL: priority = 8; break;
+				case OperatorNode::OP_LESS: priority = 10; break;
+				case OperatorNode::OP_LESS_EQUAL: priority = 10; break;
+				case OperatorNode::OP_GREATER: priority = 10; break;
+				case OperatorNode::OP_GREATER_EQUAL: priority = 10; break;
 
-				case OperatorNode::OP_EQUAL: priority = 8; break;
-				case OperatorNode::OP_NOT_EQUAL: priority = 8; break;
+				case OperatorNode::OP_EQUAL: priority = 10; break;
+				case OperatorNode::OP_NOT_EQUAL: priority = 10; break;
 
-				case OperatorNode::OP_IN: priority = 10; break;
+				case OperatorNode::OP_IN: priority = 11; break;
 
 				case OperatorNode::OP_NOT:
-					priority = 11;
+					priority = 12;
 					unary = true;
 					break;
-				case OperatorNode::OP_AND: priority = 12; break;
-				case OperatorNode::OP_OR: priority = 13; break;
+				case OperatorNode::OP_AND: priority = 13; break;
+				case OperatorNode::OP_OR: priority = 14; break;
 
 				case OperatorNode::OP_TERNARY_IF:
-					priority = 14;
+					priority = 15;
 					ternary = true;
 					right_to_left = true;
 					break;
 				case OperatorNode::OP_TERNARY_ELSE:
-					priority = 14;
+					priority = 15;
 					error = true;
 					// Rigth-to-left should be false in this case, otherwise it would always error.
 					break;
 
-				case OperatorNode::OP_ASSIGN: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_ADD: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SUB: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_MUL: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_DIV: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_MOD: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_LEFT: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_AND: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_OR: priority = 15; break;
-				case OperatorNode::OP_ASSIGN_BIT_XOR: priority = 15; break;
+				case OperatorNode::OP_ASSIGN: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_ADD: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_SUB: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_MUL: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_DIV: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_MOD: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_SHIFT_LEFT: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_SHIFT_RIGHT: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_BIT_AND: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_BIT_OR: priority = 16; break;
+				case OperatorNode::OP_ASSIGN_BIT_XOR: priority = 16; break;
 
 				default: {
 					_set_error("GDScriptParser bug, invalid operator in expression: " + itos(expression[i].op));
@@ -1797,7 +1810,7 @@ GDScriptParser::Node *GDScriptParser::_reduce_expression(Node *p_node, bool p_to
 
 				return op; //don't reduce yet
 
-			} else if (op->op == OperatorNode::OP_YIELD) {
+			} else if (op->op == OperatorNode::OP_YIELD || op->op == OperatorNode::OP_AWAIT) {
 				return op;
 
 			} else if (op->op == OperatorNode::OP_INDEX) {
@@ -6369,6 +6382,17 @@ GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
 					// yield can return anything
 					node_type.has_type = false;
 				} break;
+				case OperatorNode::OP_AWAIT: {
+#ifdef DEBUG_ENABLED
+					DataType operand_type = _reduce_node_type(op->arguments[0]);
+					if (operand_type.has_type && (operand_type.kind != DataType::NATIVE || operand_type.native_type != StringName("GDScriptFunctionState"))) {
+						_add_warning(GDScriptWarning::REDUNDANT_AWAIT, op->line);
+					}
+#endif // DEBUG_ENABLED
+
+					// await can return anything
+					node_type.has_type = false;
+				} break;
 				case OperatorNode::OP_IS:
 				case OperatorNode::OP_IS_BUILTIN: {
 
@@ -7962,8 +7986,8 @@ void GDScriptParser::_check_function_types(FunctionNode *p_function) {
 		}
 	}
 
-	if (p_function->has_yield) {
-		// yield() will make the function return a GDScriptFunctionState, so the type is ambiguous
+	if (p_function->has_yield_or_await) {
+		// yield() or await will make the function return a GDScriptFunctionState, so the type is ambiguous
 		p_function->return_type.has_type = false;
 		p_function->return_type.may_yield = true;
 	}
@@ -8279,7 +8303,8 @@ void GDScriptParser::_check_block_types(BlockNode *p_block) {
 #endif // DEBUG_ENABLED
 						if (error_set) return;
 					} break;
-					case OperatorNode::OP_YIELD: {
+					case OperatorNode::OP_YIELD:
+					case OperatorNode::OP_AWAIT: {
 						_mark_line_as_safe(op->line);
 						_reduce_node_type(op);
 					} break;

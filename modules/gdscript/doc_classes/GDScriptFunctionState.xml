@@ -4,7 +4,7 @@
 		State of a function call after yielding.
 	</brief_description>
 	<description>
-		Calling [method @GDScript.yield] within a function will cause that function to yield and return its current state as an object of this type. The yielded function call can then be resumed later by calling [method resume] on this state object.
+		Calling [method @GDScript.yield] or using the [code]await[/code] operator within a function will cause that function to yield and return its current state as an object of this type. The yielded function call can then be resumed later by calling [method resume] on this state object.
 	</description>
 	<tutorials>
 	</tutorials>

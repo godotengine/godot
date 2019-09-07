@@ -1831,6 +1831,7 @@ void GDScriptLanguage::get_reserved_words(List<String> *p_words) const {
 		"signal",
 		"tool",
 		"yield",
+		"await",
 		// var
 		"const",
 		"enum",
@@ -2082,7 +2083,10 @@ String GDScriptWarning::get_message() const {
 		} break;
 		case STANDALONE_TERNARY: {
 			return "Standalone ternary conditional operator: the return value is being discarded.";
-		}
+		} break;
+		case REDUNDANT_AWAIT: {
+			return "The 'await' operand could never be a GDScriptFunctionState, so 'await' is redundant.";
+		} break;
 		case WARNING_MAX: break; // Can't happen, but silences warning
 	}
 	ERR_FAIL_V_MSG(String(), "Invalid GDScript warning code: " + get_name_from_code(code) + ".");
@@ -2125,6 +2129,7 @@ String GDScriptWarning::get_name_from_code(Code p_code) {
 		"UNSAFE_CALL_ARGUMENT",
 		"DEPRECATED_KEYWORD",
 		"STANDALONE_TERNARY",
+		"REDUNDANT_AWAIT",
 		NULL
 	};
 

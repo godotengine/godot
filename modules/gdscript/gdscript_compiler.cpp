@@ -689,6 +689,82 @@ int GDScriptCompiler::_parse_expression(CodeGen &codegen, const GDScriptParser::
 					//next will be where to place the result :)
 
 				} break;
+				case GDScriptParser::OperatorNode::OP_AWAIT: {
+
+					ERR_FAIL_COND_V(on->arguments.size() != 1, -1);
+
+					const GDScriptParser::Node *operand = on->arguments[0];
+					const StringName type_name("GDScriptFunctionState");
+					const StringName signal_name("completed");
+
+					codegen.alloc_stack(p_stack_level); // for the operand (if on the stack) and return value
+
+					bool operand_on_stack = false;
+					int operand_addr = _parse_expression(codegen, operand, p_stack_level);
+					if (operand_addr < 0)
+						return operand_addr;
+					if ((operand_addr >> GDScriptFunction::ADDR_BITS & GDScriptFunction::ADDR_TYPE_STACK) == GDScriptFunction::ADDR_TYPE_STACK) {
+						operand_on_stack = true;
+						codegen.alloc_stack(p_stack_level + 1); // for the OPCODE_EXTENDS_TEST result
+					}
+
+					int stack_top_addr = p_stack_level | GDScriptFunction::ADDR_TYPE_STACK << GDScriptFunction::ADDR_BITS;
+
+					int type_addr = GDScriptLanguage::get_singleton()->get_global_map()[type_name] | GDScriptFunction::ADDR_TYPE_GLOBAL << GDScriptFunction::ADDR_BITS;
+
+					int signal_addr;
+					if (codegen.constant_map.has(signal_name)) {
+						signal_addr = codegen.constant_map[signal_name];
+					} else {
+						signal_addr = codegen.constant_map.size();
+						codegen.constant_map[signal_name] = signal_addr;
+					}
+					signal_addr |= GDScriptFunction::ADDR_TYPE_LOCAL_CONSTANT << GDScriptFunction::ADDR_BITS;
+
+					// start pushing instructions:
+					// is the operand a GDScriptFunctionState?
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_EXTENDS_TEST);
+					codegen.opcodes.push_back(operand_addr);
+					codegen.opcodes.push_back(type_addr);
+					codegen.opcodes.push_back(operand_on_stack ? stack_top_addr + 1 : stack_top_addr);
+
+					// if not, jump to cleanup
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP_IF_NOT);
+					codegen.opcodes.push_back(operand_on_stack ? stack_top_addr + 1 : stack_top_addr);
+					int jump_fail_pos = codegen.opcodes.size();
+					codegen.opcodes.push_back(0);
+
+					// else yield and resume on the "completed" signal
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_YIELD_SIGNAL);
+					codegen.opcodes.push_back(operand_addr);
+					codegen.opcodes.push_back(signal_addr);
+
+					codegen.opcodes.push_back(GDScriptFunction::OPCODE_YIELD_RESUME);
+					codegen.opcodes.push_back(stack_top_addr);
+
+					// cleanup
+					if (operand_on_stack) {
+						// either the operand on the stack was overwritten or it's still there, either way we're done
+						codegen.opcodes.write[jump_fail_pos] = codegen.opcodes.size();
+					} else {
+						// we made it here, so the result is on the stack - jump past the next instruction
+						codegen.opcodes.push_back(GDScriptFunction::OPCODE_JUMP);
+						int jump_past_pos = codegen.opcodes.size();
+						codegen.opcodes.push_back(0);
+
+						codegen.opcodes.write[jump_fail_pos] = codegen.opcodes.size();
+
+						// we did not yield. just copy the operand to the stack
+						codegen.opcodes.push_back(GDScriptFunction::OPCODE_ASSIGN);
+						codegen.opcodes.push_back(stack_top_addr);
+						codegen.opcodes.push_back(operand_addr);
+
+						codegen.opcodes.write[jump_past_pos] = codegen.opcodes.size();
+					}
+
+					return stack_top_addr;
+
+				} break;
 
 				//indexing operator
 				case GDScriptParser::OperatorNode::OP_INDEX:

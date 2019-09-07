@@ -301,6 +301,7 @@ struct GDScriptWarning {
 		UNSAFE_CALL_ARGUMENT, // Function call argument is of a supertype of the require argument
 		DEPRECATED_KEYWORD, // The keyword is deprecated and should be replaced
 		STANDALONE_TERNARY, // Return value of ternary expression is discarded
+		REDUNDANT_AWAIT, // The await operand cannot be GDScriptFunctionState so await is redundant
 		WARNING_MAX,
 	} code;
 	Vector<String> symbols;
