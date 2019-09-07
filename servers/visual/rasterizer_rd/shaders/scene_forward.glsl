@@ -1190,7 +1190,7 @@ FRAGMENT_SHADER_CODE
 
 				shadow = mix(shadow,1.0,smoothstep(directional_lights.data[i].fade_from,directional_lights.data[i].fade_to,vertex.z)); //done with negative values for performance
 
-				light_attenuation = vec3(shadow); //mix(directional_lights.data[i].shadow_color, vec3(1.0), shadow);
+				light_attenuation = mix(directional_lights.data[i].shadow_color, vec3(1.0), shadow);
 			}
 
 

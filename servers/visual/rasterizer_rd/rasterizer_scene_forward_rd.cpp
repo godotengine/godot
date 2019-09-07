@@ -1432,7 +1432,7 @@ void RasterizerSceneForwardRD::_setup_lights(RID *p_light_cull_result, int p_lig
 					}
 
 					float fade_start = storage->light_get_param(base, VS::LIGHT_PARAM_SHADOW_FADE_START);
-					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999);
+					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999); //using 1.0 would break smoothstep
 					light_data.fade_to = -light_data.shadow_split_offsets[3];
 				}
 
@@ -2161,7 +2161,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 		}
 	}
 
-	if (true) {
+	if (false) {
 		if (directional_shadow_get_texture().is_valid()) {
 			RID shadow_atlas_texture = directional_shadow_get_texture();
 			Size2 rtsize = storage->render_target_get_size(render_buffer->render_target);
@@ -2462,7 +2462,7 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 			scene_state.light_buffer = RD::get_singleton()->uniform_buffer_create(light_buffer_size);
 			defines += "\n#define MAX_LIGHT_DATA_STRUCTS " + itos(scene_state.max_lights) + "\n";
 
-			scene_state.max_directional_lights = 4;
+			scene_state.max_directional_lights = 8;
 			uint32_t directional_light_buffer_size = scene_state.max_directional_lights * sizeof(DirectionalLightData);
 			scene_state.directional_lights = memnew_arr(DirectionalLightData, scene_state.max_directional_lights);
 			scene_state.directional_light_buffer = RD::get_singleton()->uniform_buffer_create(directional_light_buffer_size);
