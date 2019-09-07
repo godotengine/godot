@@ -235,16 +235,14 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		float energy;
 		float color[3];
 		float specular;
-		uint32_t mask;
-		uint32_t pad[3];
 		float shadow_color[3];
+		uint32_t mask;
+		uint32_t blend_splits;
 		uint32_t shadow_enabled;
-		float shadow_atlas_rect[4];
+		float fade_from;
+		float fade_to;
 		float shadow_split_offsets[4];
-		float shadow_matrix1[16];
-		float shadow_matrix2[16];
-		float shadow_matrix3[16];
-		float shadow_matrix4[16];
+		float shadow_matrices[4][16];
 	};
 
 	struct InstanceData {

@@ -180,6 +180,7 @@ private:
 			float farplane;
 			float split;
 			float bias_scale;
+			Rect2 atlas_rect;
 		};
 
 		VS::LightType light_type;
@@ -407,6 +408,24 @@ public:
 
 		LightInstance *li = light_instance_owner.getornull(p_light_instance);
 		return li->shadow_transform[p_index].camera;
+	}
+
+	_FORCE_INLINE_ Transform light_instance_get_shadow_transform(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].transform;
+	}
+
+	_FORCE_INLINE_ Rect2 light_instance_get_directional_shadow_atlas_rect(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].atlas_rect;
+	}
+
+	_FORCE_INLINE_ float light_instance_get_directional_shadow_split(RID p_light_instance, int p_index) {
+
+		LightInstance *li = light_instance_owner.getornull(p_light_instance);
+		return li->shadow_transform[p_index].split;
 	}
 
 	_FORCE_INLINE_ void light_instance_set_render_pass(RID p_light_instance, uint64_t p_pass) {
