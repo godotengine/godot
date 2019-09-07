@@ -3,6 +3,7 @@
 #define FLAG_USE_ORTHOGONAL_PROJECTION (1<<2)
 #define FLAG_DOF_NEAR_FIRST_TAP (1<<3)
 #define FLAG_GLOW_FIRST_PASS (1<<4)
+#define FLAG_FLIP_Y (1<<5)
 
 layout(push_constant, binding = 1, std430) uniform Blur {
 	vec4 section;

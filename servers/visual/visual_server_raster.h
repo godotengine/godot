@@ -313,7 +313,6 @@ public:
 	BIND2(light_set_use_gi, RID, bool)
 
 	BIND2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
-	BIND2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
 
 	BIND2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	BIND2(light_directional_set_blend_splits, RID, bool)
@@ -487,6 +486,8 @@ public:
 //from now on, calls forwarded to this singleton
 #define BINDBASE VSG::scene_render
 
+	BIND1(directional_shadow_atlas_set_size, int)
+
 	/* SKY API */
 
 	BIND0R(RID, sky_create)
@@ -533,7 +534,6 @@ public:
 
 	BIND2(scenario_set_debug, RID, ScenarioDebugMode)
 	BIND2(scenario_set_environment, RID, RID)
-	BIND3(scenario_set_reflection_atlas_size, RID, int, int)
 	BIND2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */
