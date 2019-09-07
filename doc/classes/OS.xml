@@ -105,11 +105,11 @@
 				This method has slightly different behavior based on whether the [code]blocking[/code] mode is enabled.
 				If [code]blocking[/code] is [code]true[/code], the Godot thread will pause its execution while waiting for the process to terminate. The shell output of the process will be written to the [code]output[/code] array as a single string. When the process terminates, the Godot thread will resume execution.
 				If [code]blocking[/code] is [code]false[/code], the Godot thread will continue while the new process runs. It is not possible to retrieve the shell output in non-blocking mode, so [code]output[/code] will be empty.
-				The return value also depends on the blocking mode. When blocking, the method will return -2 (no process ID information is available in blocking mode). When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code].
+				The return value also depends on the blocking mode. When blocking, the method will return an exit code of the process. When non-blocking, the method returns a process ID, which you can use to monitor the process (and potentially terminate it with [method kill]). If the process forking (non-blocking) or opening (blocking) fails, the method will return [code]-1[/code] or another exit code.
 				Example of blocking mode and retrieving the shell output:
 				[codeblock]
 				var output = []
-				OS.execute("ls", ["-l", "/tmp"], true, output)
+				var exit_code = OS.execute("ls", ["-l", "/tmp"], true, output)
 				[/codeblock]
 				Example of non-blocking mode, running another instance of the project and storing its process ID:
 				[codeblock]

@@ -314,7 +314,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		}
 		int rv = pclose(f);
 		if (r_exitcode)
-			*r_exitcode = rv;
+			*r_exitcode = WEXITSTATUS(rv);
 
 		return OK;
 	}
