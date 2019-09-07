@@ -429,6 +429,7 @@ void register_editor_internal_calls() {
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorEdit", (void *)godot_icall_Internal_ScriptEditorEdit);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorNodeShowScriptScreen", (void *)godot_icall_Internal_EditorNodeShowScriptScreen);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_GetScriptsMetadataOrNothing", (void *)godot_icall_Internal_GetScriptsMetadataOrNothing);
+	mono_add_internal_call("GodotTools.Internals.Internal::internal_MonoWindowsInstallRoot", (void *)godot_icall_Internal_MonoWindowsInstallRoot);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunPlay", (void *)godot_icall_Internal_EditorRunPlay);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_EditorRunStop", (void *)godot_icall_Internal_EditorRunStop);
 	mono_add_internal_call("GodotTools.Internals.Internal::internal_ScriptEditorDebugger_ReloadScripts", (void *)godot_icall_Internal_ScriptEditorDebugger_ReloadScripts);
