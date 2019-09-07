@@ -2087,6 +2087,462 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 	v.vertex_array = RD::get_singleton()->vertex_array_create(s->vertex_count, v.vertex_format, buffers);
 }
 
+/* LIGHT */
+
+RID RasterizerStorageRD::light_create(VS::LightType p_type) {
+
+	Light light;
+	light.type = p_type;
+
+	light.param[VS::LIGHT_PARAM_ENERGY] = 1.0;
+	light.param[VS::LIGHT_PARAM_INDIRECT_ENERGY] = 1.0;
+	light.param[VS::LIGHT_PARAM_SPECULAR] = 0.5;
+	light.param[VS::LIGHT_PARAM_RANGE] = 1.0;
+	light.param[VS::LIGHT_PARAM_SPOT_ANGLE] = 45;
+	light.param[VS::LIGHT_PARAM_CONTACT_SHADOW_SIZE] = 45;
+	light.param[VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE] = 0;
+	light.param[VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET] = 0.1;
+	light.param[VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET] = 0.3;
+	light.param[VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET] = 0.6;
+	light.param[VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS] = 0.1;
+	light.param[VS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE] = 0.1;
+
+	return light_owner.make_rid(light);
+}
+
+void RasterizerStorageRD::light_set_color(RID p_light, const Color &p_color) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->color = p_color;
+}
+void RasterizerStorageRD::light_set_param(RID p_light, VS::LightParam p_param, float p_value) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+	ERR_FAIL_INDEX(p_param, VS::LIGHT_PARAM_MAX);
+
+	switch (p_param) {
+		case VS::LIGHT_PARAM_RANGE:
+		case VS::LIGHT_PARAM_SPOT_ANGLE:
+		case VS::LIGHT_PARAM_SHADOW_MAX_DISTANCE:
+		case VS::LIGHT_PARAM_SHADOW_SPLIT_1_OFFSET:
+		case VS::LIGHT_PARAM_SHADOW_SPLIT_2_OFFSET:
+		case VS::LIGHT_PARAM_SHADOW_SPLIT_3_OFFSET:
+		case VS::LIGHT_PARAM_SHADOW_NORMAL_BIAS:
+		case VS::LIGHT_PARAM_SHADOW_BIAS: {
+
+			light->version++;
+			light->instance_dependency.instance_notify_changed(true, false);
+		} break;
+		default: {
+		}
+	}
+
+	light->param[p_param] = p_value;
+}
+void RasterizerStorageRD::light_set_shadow(RID p_light, bool p_enabled) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+	light->shadow = p_enabled;
+
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::light_set_shadow_color(RID p_light, const Color &p_color) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+	light->shadow_color = p_color;
+}
+
+void RasterizerStorageRD::light_set_projector(RID p_light, RID p_texture) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->projector = p_texture;
+}
+
+void RasterizerStorageRD::light_set_negative(RID p_light, bool p_enable) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->negative = p_enable;
+}
+void RasterizerStorageRD::light_set_cull_mask(RID p_light, uint32_t p_mask) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->cull_mask = p_mask;
+
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::light_set_reverse_cull_face_mode(RID p_light, bool p_enabled) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->reverse_cull = p_enabled;
+
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::light_set_use_gi(RID p_light, bool p_enabled) {
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->use_gi = p_enabled;
+
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+void RasterizerStorageRD::light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->omni_shadow_mode = p_mode;
+
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+
+VS::LightOmniShadowMode RasterizerStorageRD::light_omni_get_shadow_mode(RID p_light) {
+
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, VS::LIGHT_OMNI_SHADOW_CUBE);
+
+	return light->omni_shadow_mode;
+}
+
+void RasterizerStorageRD::light_directional_set_shadow_mode(RID p_light, VS::LightDirectionalShadowMode p_mode) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_shadow_mode = p_mode;
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::light_directional_set_blend_splits(RID p_light, bool p_enable) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_blend_splits = p_enable;
+	light->version++;
+	light->instance_dependency.instance_notify_changed(true, false);
+}
+
+bool RasterizerStorageRD::light_directional_get_blend_splits(RID p_light) const {
+
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, false);
+
+	return light->directional_blend_splits;
+}
+
+VS::LightDirectionalShadowMode RasterizerStorageRD::light_directional_get_shadow_mode(RID p_light) {
+
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL);
+
+	return light->directional_shadow_mode;
+}
+
+void RasterizerStorageRD::light_directional_set_shadow_depth_range_mode(RID p_light, VS::LightDirectionalShadowDepthRangeMode p_range_mode) {
+
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND(!light);
+
+	light->directional_range_mode = p_range_mode;
+}
+
+VS::LightDirectionalShadowDepthRangeMode RasterizerStorageRD::light_directional_get_shadow_depth_range_mode(RID p_light) const {
+
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, VS::LIGHT_DIRECTIONAL_SHADOW_DEPTH_RANGE_STABLE);
+
+	return light->directional_range_mode;
+}
+
+bool RasterizerStorageRD::light_get_use_gi(RID p_light) {
+	Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, false);
+
+	return light->use_gi;
+}
+
+uint64_t RasterizerStorageRD::light_get_version(RID p_light) const {
+
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, 0);
+
+	return light->version;
+}
+
+AABB RasterizerStorageRD::light_get_aabb(RID p_light) const {
+
+	const Light *light = light_owner.getornull(p_light);
+	ERR_FAIL_COND_V(!light, AABB());
+
+	switch (light->type) {
+
+		case VS::LIGHT_SPOT: {
+
+			float len = light->param[VS::LIGHT_PARAM_RANGE];
+			float size = Math::tan(Math::deg2rad(light->param[VS::LIGHT_PARAM_SPOT_ANGLE])) * len;
+			return AABB(Vector3(-size, -size, -len), Vector3(size * 2, size * 2, len));
+		};
+		case VS::LIGHT_OMNI: {
+
+			float r = light->param[VS::LIGHT_PARAM_RANGE];
+			return AABB(-Vector3(r, r, r), Vector3(r, r, r) * 2);
+		};
+		case VS::LIGHT_DIRECTIONAL: {
+
+			return AABB();
+		};
+	}
+
+	ERR_FAIL_V(AABB());
+}
+
+/* REFLECTION PROBE */
+
+RID RasterizerStorageRD::reflection_probe_create() {
+
+	return reflection_probe_owner.make_rid(ReflectionProbe());
+}
+
+void RasterizerStorageRD::reflection_probe_set_update_mode(RID p_probe, VS::ReflectionProbeUpdateMode p_mode) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->update_mode = p_mode;
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::reflection_probe_set_intensity(RID p_probe, float p_intensity) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->intensity = p_intensity;
+}
+
+void RasterizerStorageRD::reflection_probe_set_interior_ambient(RID p_probe, const Color &p_ambient) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior_ambient = p_ambient;
+}
+
+void RasterizerStorageRD::reflection_probe_set_interior_ambient_energy(RID p_probe, float p_energy) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior_ambient_energy = p_energy;
+}
+
+void RasterizerStorageRD::reflection_probe_set_interior_ambient_probe_contribution(RID p_probe, float p_contrib) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior_ambient_probe_contrib = p_contrib;
+}
+
+void RasterizerStorageRD::reflection_probe_set_max_distance(RID p_probe, float p_distance) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->max_distance = p_distance;
+
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+void RasterizerStorageRD::reflection_probe_set_extents(RID p_probe, const Vector3 &p_extents) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->extents = p_extents;
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+void RasterizerStorageRD::reflection_probe_set_origin_offset(RID p_probe, const Vector3 &p_offset) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->origin_offset = p_offset;
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::reflection_probe_set_as_interior(RID p_probe, bool p_enable) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->interior = p_enable;
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+void RasterizerStorageRD::reflection_probe_set_enable_box_projection(RID p_probe, bool p_enable) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->box_projection = p_enable;
+}
+
+void RasterizerStorageRD::reflection_probe_set_enable_shadows(RID p_probe, bool p_enable) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->enable_shadows = p_enable;
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+void RasterizerStorageRD::reflection_probe_set_cull_mask(RID p_probe, uint32_t p_layers) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+
+	reflection_probe->cull_mask = p_layers;
+	reflection_probe->instance_dependency.instance_notify_changed(true, false);
+}
+
+void RasterizerStorageRD::reflection_probe_set_resolution(RID p_probe, int p_resolution) {
+
+	ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND(!reflection_probe);
+	ERR_FAIL_COND(p_resolution < 32);
+
+	reflection_probe->resolution = p_resolution;
+}
+
+AABB RasterizerStorageRD::reflection_probe_get_aabb(RID p_probe) const {
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, AABB());
+
+	AABB aabb;
+	aabb.position = -reflection_probe->extents;
+	aabb.size = reflection_probe->extents * 2.0;
+
+	return aabb;
+}
+VS::ReflectionProbeUpdateMode RasterizerStorageRD::reflection_probe_get_update_mode(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, VS::REFLECTION_PROBE_UPDATE_ALWAYS);
+
+	return reflection_probe->update_mode;
+}
+
+uint32_t RasterizerStorageRD::reflection_probe_get_cull_mask(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->cull_mask;
+}
+
+Vector3 RasterizerStorageRD::reflection_probe_get_extents(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, Vector3());
+
+	return reflection_probe->extents;
+}
+Vector3 RasterizerStorageRD::reflection_probe_get_origin_offset(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, Vector3());
+
+	return reflection_probe->origin_offset;
+}
+
+bool RasterizerStorageRD::reflection_probe_renders_shadows(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, false);
+
+	return reflection_probe->enable_shadows;
+}
+
+float RasterizerStorageRD::reflection_probe_get_origin_max_distance(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->max_distance;
+}
+
+int RasterizerStorageRD::reflection_probe_get_resolution(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->resolution;
+}
+
+float RasterizerStorageRD::reflection_probe_get_intensity(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->intensity;
+}
+bool RasterizerStorageRD::reflection_probe_is_interior(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, false);
+
+	return reflection_probe->interior;
+}
+bool RasterizerStorageRD::reflection_probe_is_box_projection(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, false);
+
+	return reflection_probe->box_projection;
+}
+
+Color RasterizerStorageRD::reflection_probe_get_interior_ambient(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, Color());
+
+	return reflection_probe->interior_ambient;
+}
+float RasterizerStorageRD::reflection_probe_get_interior_ambient_energy(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->interior_ambient_energy;
+}
+float RasterizerStorageRD::reflection_probe_get_interior_ambient_probe_contribution(RID p_probe) const {
+
+	const ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_probe);
+	ERR_FAIL_COND_V(!reflection_probe, 0);
+
+	return reflection_probe->interior_ambient_probe_contrib;
+}
+
 /* RENDER TARGET API */
 
 void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
@@ -2432,6 +2888,12 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	if (mesh_owner.owns(p_base)) {
 		Mesh *mesh = mesh_owner.getornull(p_base);
 		p_instance->update_dependency(&mesh->instance_dependency);
+	} else if (reflection_probe_owner.owns(p_base)) {
+		ReflectionProbe *rp = reflection_probe_owner.getornull(p_base);
+		p_instance->update_dependency(&rp->instance_dependency);
+	} else if (light_owner.owns(p_base)) {
+		Light *l = light_owner.getornull(p_base);
+		p_instance->update_dependency(&l->instance_dependency);
 	}
 }
 
@@ -2440,6 +2902,13 @@ VS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	if (mesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MESH;
 	}
+	if (reflection_probe_owner.owns(p_rid)) {
+		return VS::INSTANCE_REFLECTION_PROBE;
+	}
+	if (light_owner.owns(p_rid)) {
+		return VS::INSTANCE_LIGHT;
+	}
+
 	return VS::INSTANCE_NONE;
 }
 void RasterizerStorageRD::update_dirty_resources() {
@@ -2459,6 +2928,13 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		}
 		if (RD::get_singleton()->texture_is_valid(t->rd_texture)) {
 			RD::get_singleton()->free(t->rd_texture);
+		}
+
+		if (t->is_proxy && t->proxy_to.is_valid()) {
+			Texture *proxy_to = texture_owner.getornull(t->proxy_to);
+			if (proxy_to) {
+				proxy_to->proxies.erase(p_rid);
+			}
 		}
 
 		for (int i = 0; i < t->proxies.size(); i++) {
@@ -2495,6 +2971,18 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		Mesh *mesh = mesh_owner.getornull(p_rid);
 		mesh->instance_dependency.instance_notify_deleted(p_rid);
 		mesh_owner.free(p_rid);
+	} else if (reflection_probe_owner.owns(p_rid)) {
+		ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_rid);
+		reflection_probe->instance_dependency.instance_notify_deleted(p_rid);
+		reflection_probe_owner.free(p_rid);
+
+	} else if (light_owner.owns(p_rid)) {
+
+		// delete the texture
+		Light *light = light_owner.getornull(p_rid);
+		light->instance_dependency.instance_notify_deleted(p_rid);
+		light_owner.free(p_rid);
+
 	} else if (render_target_owner.owns(p_rid)) {
 		RenderTarget *rt = render_target_owner.getornull(p_rid);
 
@@ -2606,7 +3094,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		tformat.height = 4;
 		tformat.array_layers = 6;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_CUBE;
+		tformat.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
 
 		PoolVector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -2634,7 +3122,7 @@ RasterizerStorageRD::RasterizerStorageRD() {
 		tformat.height = 4;
 		tformat.array_layers = 6;
 		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+		tformat.type = RD::TEXTURE_TYPE_CUBE;
 
 		PoolVector<uint8_t> pv;
 		pv.resize(16 * 4);
@@ -2677,34 +3165,6 @@ RasterizerStorageRD::RasterizerStorageRD() {
 			Vector<PoolVector<uint8_t> > vpv;
 			vpv.push_back(pv);
 			default_rd_textures[DEFAULT_RD_TEXTURE_3D_WHITE] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
-		}
-	}
-
-	{ //create default cubemap array
-
-		RD::TextureFormat tformat;
-		tformat.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
-		tformat.width = 4;
-		tformat.height = 4;
-		tformat.array_layers = 6;
-		tformat.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT;
-		tformat.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
-
-		PoolVector<uint8_t> pv;
-		pv.resize(16 * 4);
-		for (int i = 0; i < 16; i++) {
-			pv.set(i * 4 + 0, 0);
-			pv.set(i * 4 + 1, 0);
-			pv.set(i * 4 + 2, 0);
-			pv.set(i * 4 + 3, 0);
-		}
-
-		{
-			Vector<PoolVector<uint8_t> > vpv;
-			for (int i = 0; i < 6; i++) {
-				vpv.push_back(pv);
-			}
-			default_rd_textures[DEFAULT_RD_TEXTURE_CUBEMAP_BLACK] = RD::get_singleton()->texture_create(tformat, RD::TextureView(), vpv);
 		}
 	}
 

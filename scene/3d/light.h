@@ -183,15 +183,8 @@ public:
 		SHADOW_CUBE,
 	};
 
-	// omni light
-	enum ShadowDetail {
-		SHADOW_DETAIL_VERTICAL,
-		SHADOW_DETAIL_HORIZONTAL
-	};
-
 private:
 	ShadowMode shadow_mode;
-	ShadowDetail shadow_detail;
 
 protected:
 	static void _bind_methods();
@@ -200,14 +193,10 @@ public:
 	void set_shadow_mode(ShadowMode p_mode);
 	ShadowMode get_shadow_mode() const;
 
-	void set_shadow_detail(ShadowDetail p_detail);
-	ShadowDetail get_shadow_detail() const;
-
 	OmniLight();
 };
 
 VARIANT_ENUM_CAST(OmniLight::ShadowMode)
-VARIANT_ENUM_CAST(OmniLight::ShadowDetail)
 
 class SpotLight : public Light {
 

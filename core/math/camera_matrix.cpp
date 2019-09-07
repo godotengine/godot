@@ -512,6 +512,28 @@ CameraMatrix CameraMatrix::operator*(const CameraMatrix &p_matrix) const {
 	return new_matrix;
 }
 
+void CameraMatrix::set_depth_correction() {
+
+	real_t *m = &matrix[0][0];
+
+	m[0] = 1;
+	m[1] = 0.0;
+	m[2] = 0.0;
+	m[3] = 0.0;
+	m[4] = 0.0;
+	m[5] = -1;
+	m[6] = 0.0;
+	m[7] = 0.0;
+	m[8] = 0.0;
+	m[9] = 0.0;
+	m[10] = 0.5;
+	m[11] = 0.0;
+	m[12] = 0.0;
+	m[13] = 0.0;
+	m[14] = 0.5;
+	m[15] = 1.0;
+}
+
 void CameraMatrix::set_light_bias() {
 
 	real_t *m = &matrix[0][0];
