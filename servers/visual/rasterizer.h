@@ -46,6 +46,7 @@ public:
 	virtual void shadow_atlas_set_quadrant_subdivision(RID p_atlas, int p_quadrant, int p_subdivision) = 0;
 	virtual bool shadow_atlas_update_light(RID p_atlas, RID p_light_intance, float p_coverage, uint64_t p_light_version) = 0;
 
+	virtual void directional_shadow_atlas_set_size(int p_size) = 0;
 	virtual int get_directional_light_shadow_size(RID p_light_intance) = 0;
 	virtual void set_directional_shadow_count(int p_count) = 0;
 
@@ -107,17 +108,10 @@ public:
 		Map<InstanceBase *, uint32_t> instances;
 	};
 
-	struct InstanceCustomData {
-
-		virtual ~InstanceCustomData() {}
-	};
-
 	struct InstanceBase {
 
 		VS::InstanceType base_type;
 		RID base;
-
-		InstanceCustomData *custom_data;
 
 		RID skeleton;
 		RID material_override;
@@ -201,7 +195,6 @@ public:
 		InstanceBase() :
 				dependency_item(this) {
 
-			custom_data = nullptr;
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
 			receive_shadows = true;
@@ -215,9 +208,6 @@ public:
 		}
 
 		virtual ~InstanceBase() {
-			if (custom_data) {
-				memdelete(custom_data);
-			}
 			clear_dependencies();
 		}
 	};
@@ -228,16 +218,10 @@ public:
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const { return true; }
 
-	virtual RID reflection_atlas_create() = 0;
-	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_size) = 0;
-	virtual void reflection_atlas_set_subdivision(RID p_ref_atlas, int p_subdiv) = 0;
-
 	virtual RID reflection_probe_instance_create(RID p_probe) = 0;
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
-	virtual void reflection_probe_release_atlas_index(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) = 0;
-	virtual bool reflection_probe_instance_has_reflection(RID p_instance) = 0;
-	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) = 0;
+	virtual void reflection_probe_instance_begin_render(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) = 0;
 
 	virtual RID gi_probe_instance_create() = 0;
@@ -245,20 +229,12 @@ public:
 	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) = 0;
 	virtual void gi_probe_instance_set_bounds(RID p_probe, const Vector3 &p_bounds) = 0;
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
 	virtual void set_time(double p_time) = 0;
 	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) = 0;
-
-	virtual void instance_create_custom_data(InstanceBase *p_instance) = 0;
-	virtual void instance_free_custom_data(InstanceBase *p_instance) = 0;
-	virtual void instance_custom_data_update_lights(InstanceBase *p_instance) = 0;
-	virtual void instance_custom_data_update_reflection_probes(InstanceBase *p_instance) = 0;
-	virtual void instance_custom_data_update_gi_probes(InstanceBase *p_instance) = 0;
-	virtual void instance_custom_data_update_lightmap(InstanceBase *p_instance) = 0;
-	virtual void instance_custom_data_update_transform(InstanceBase *p_instance) = 0;
 
 	virtual RID render_buffers_create() = 0;
 	virtual void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa) = 0;
@@ -442,7 +418,6 @@ public:
 	virtual void light_set_use_gi(RID p_light, bool p_enable) = 0;
 
 	virtual void light_omni_set_shadow_mode(RID p_light, VS::LightOmniShadowMode p_mode) = 0;
-	virtual void light_omni_set_shadow_detail(RID p_light, VS::LightOmniShadowDetail p_detail) = 0;
 
 	virtual void light_directional_set_shadow_mode(RID p_light, VS::LightDirectionalShadowMode p_mode) = 0;
 	virtual void light_directional_set_blend_splits(RID p_light, bool p_enable) = 0;
