@@ -1377,6 +1377,66 @@ void RasterizerSceneForwardRD::_setup_lights(RID *p_light_cull_result, int p_lig
 				if (scene_state.ubo.directional_light_count >= scene_state.max_directional_lights) {
 					continue;
 				}
+
+				DirectionalLightData &light_data = scene_state.directional_lights[scene_state.ubo.directional_light_count];
+
+				Transform light_transform = light_instance_get_base_transform(li);
+
+				Vector3 direction = p_camera_inverse_transform.basis.xform(light_transform.basis.xform(Vector3(0, 0, 1))).normalized();
+
+				light_data.direction[0] = direction.x;
+				light_data.direction[1] = direction.y;
+				light_data.direction[2] = direction.z;
+
+				float sign = storage->light_is_negative(base) ? -1 : 1;
+
+				light_data.energy = sign * storage->light_get_param(base, VS::LIGHT_PARAM_ENERGY) * Math_PI;
+
+				Color linear_col = storage->light_get_color(base).to_linear();
+				light_data.color[0] = linear_col.r;
+				light_data.color[1] = linear_col.g;
+				light_data.color[2] = linear_col.b;
+
+				light_data.specular = storage->light_get_param(base, VS::LIGHT_PARAM_SPECULAR);
+				light_data.mask = storage->light_get_cull_mask(base);
+
+				Color shadow_col = storage->light_get_shadow_color(base).to_linear();
+
+				light_data.shadow_color[0] = shadow_col.r;
+				light_data.shadow_color[1] = shadow_col.g;
+				light_data.shadow_color[2] = shadow_col.b;
+
+				light_data.shadow_enabled = storage->light_has_shadow(base);
+
+				if (light_data.shadow_enabled) {
+
+					VS::LightDirectionalShadowMode smode = storage->light_directional_get_shadow_mode(base);
+
+					int limit = smode == VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL ? 0 : (smode == VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS ? 1 : 3);
+					light_data.blend_splits = storage->light_directional_get_blend_splits(base);
+					for (int j = 0; j < 4; j++) {
+						Rect2 atlas_rect = light_instance_get_directional_shadow_atlas_rect(li, j);
+						CameraMatrix matrix = light_instance_get_shadow_camera(li, j);
+						float split = light_instance_get_directional_shadow_split(li, MIN(limit, j));
+
+						CameraMatrix bias;
+						bias.set_light_bias();
+						CameraMatrix rectm;
+						rectm.set_light_atlas_rect(atlas_rect);
+
+						Transform modelview = (p_camera_inverse_transform * light_instance_get_shadow_transform(li, j)).inverse();
+
+						CameraMatrix shadow_mtx = rectm * bias * matrix * modelview;
+						light_data.shadow_split_offsets[j] = split;
+						store_camera(shadow_mtx, light_data.shadow_matrices[j]);
+					}
+
+					float fade_start = storage->light_get_param(base, VS::LIGHT_PARAM_SHADOW_FADE_START);
+					light_data.fade_from = -light_data.shadow_split_offsets[3] * MIN(fade_start, 0.999);
+					light_data.fade_to = -light_data.shadow_split_offsets[3];
+				}
+
+				scene_state.ubo.directional_light_count++;
 			} break;
 			case VS::LIGHT_SPOT:
 			case VS::LIGHT_OMNI: {
@@ -1476,7 +1536,7 @@ void RasterizerSceneForwardRD::_setup_lights(RID *p_light_cull_result, int p_lig
 	}
 
 	if (scene_state.ubo.directional_light_count) {
-		RD::get_singleton()->buffer_update(scene_state.directional_light_buffer, 0, sizeof(DirectionalLightData) * light_count, scene_state.directional_lights, true);
+		RD::get_singleton()->buffer_update(scene_state.directional_light_buffer, 0, sizeof(DirectionalLightData) * scene_state.ubo.directional_light_count, scene_state.directional_lights, true);
 	}
 }
 
@@ -2090,9 +2150,18 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	storage->render_target_disable_clear_request(render_buffer->render_target);
 
-	if (true) {
+	if (false) {
 		if (p_shadow_atlas.is_valid()) {
 			RID shadow_atlas_texture = shadow_atlas_get_texture(p_shadow_atlas);
+			Size2 rtsize = storage->render_target_get_size(render_buffer->render_target);
+
+			effects->copy_to_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(render_buffer->render_target), Rect2(Vector2(), rtsize / 2));
+		}
+	}
+
+	if (true) {
+		if (directional_shadow_get_texture().is_valid()) {
+			RID shadow_atlas_texture = directional_shadow_get_texture();
 			Size2 rtsize = storage->render_target_get_size(render_buffer->render_target);
 
 			effects->copy_to_rect(shadow_atlas_texture, storage->render_target_get_rd_framebuffer(render_buffer->render_target), Rect2(Vector2(), rtsize / 2));
