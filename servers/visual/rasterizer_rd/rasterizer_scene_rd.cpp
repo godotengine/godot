@@ -898,6 +898,8 @@ void RasterizerSceneRD::directional_shadow_atlas_set_size(int p_size) {
 		return;
 	}
 
+	directional_shadow.size = p_size;
+
 	if (directional_shadow.depth.is_valid()) {
 		RD::get_singleton()->free(directional_shadow.depth);
 		directional_shadow.depth = RID();
@@ -925,17 +927,34 @@ void RasterizerSceneRD::set_directional_shadow_count(int p_count) {
 	directional_shadow.current_light = 0;
 }
 
+static Rect2i _get_directional_shadow_rect(int p_size, int p_shadow_count, int p_shadow_index) {
+
+	int split_h = 1;
+	int split_v = 1;
+
+	while (split_h * split_v < p_shadow_count) {
+		if (split_h == split_v) {
+			split_h <<= 1;
+		} else {
+			split_v <<= 1;
+		}
+	}
+
+	Rect2i rect(0, 0, p_size, p_size);
+	rect.size.width /= split_h;
+	rect.size.height /= split_v;
+
+	rect.position.x = rect.size.width * (p_shadow_index % split_h);
+	rect.position.y = rect.size.height * (p_shadow_index / split_h);
+
+	return rect;
+}
+
 int RasterizerSceneRD::get_directional_light_shadow_size(RID p_light_intance) {
 
 	ERR_FAIL_COND_V(directional_shadow.light_count == 0, 0);
 
-	int shadow_size;
-
-	if (directional_shadow.light_count == 1) {
-		shadow_size = directional_shadow.size;
-	} else {
-		shadow_size = directional_shadow.size / 2; //more than 4 not supported anyway
-	}
+	Rect2i r = _get_directional_shadow_rect(directional_shadow.size, directional_shadow.light_count, 0);
 
 	LightInstance *light_instance = light_instance_owner.getornull(p_light_intance);
 	ERR_FAIL_COND_V(!light_instance, 0);
@@ -943,11 +962,11 @@ int RasterizerSceneRD::get_directional_light_shadow_size(RID p_light_intance) {
 	switch (storage->light_directional_get_shadow_mode(light_instance->light)) {
 		case VS::LIGHT_DIRECTIONAL_SHADOW_ORTHOGONAL:
 			break; //none
-		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS:
-		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: shadow_size /= 2; break;
+		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_2_SPLITS: r.size.height /= 2; break;
+		case VS::LIGHT_DIRECTIONAL_SHADOW_PARALLEL_4_SPLITS: r.size /= 2; break;
 	}
 
-	return shadow_size;
+	return MAX(r.size.width, r.size.height);
 }
 
 //////////////////////////////////////////////////
@@ -1112,27 +1131,9 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 	if (storage->light_get_type(light_instance->light) == VS::LIGHT_DIRECTIONAL) {
 		//set pssm stuff
 		if (light_instance->last_scene_shadow_pass != scene_pass) {
-			//assign rect if unassigned
-			light_instance->light_directional_index = directional_shadow.current_light;
-			light_instance->last_scene_shadow_pass = scene_pass;
+			light_instance->directional_rect = _get_directional_shadow_rect(directional_shadow.size, directional_shadow.light_count, directional_shadow.current_light);
 			directional_shadow.current_light++;
-
-			if (directional_shadow.light_count == 1) {
-				light_instance->directional_rect = Rect2(0, 0, directional_shadow.size, directional_shadow.size);
-			} else if (directional_shadow.light_count == 2) {
-				light_instance->directional_rect = Rect2(0, 0, directional_shadow.size, directional_shadow.size / 2);
-				if (light_instance->light_directional_index == 1) {
-					light_instance->directional_rect.position.x += light_instance->directional_rect.size.x;
-				}
-			} else { //3 and 4
-				light_instance->directional_rect = Rect2(0, 0, directional_shadow.size / 2, directional_shadow.size / 2);
-				if (light_instance->light_directional_index & 1) {
-					light_instance->directional_rect.position.x += light_instance->directional_rect.size.x;
-				}
-				if (light_instance->light_directional_index / 2) {
-					light_instance->directional_rect.position.y += light_instance->directional_rect.size.y;
-				}
-			}
+			light_instance->last_scene_shadow_pass = scene_pass;
 		}
 
 		light_projection = light_instance->shadow_transform[p_pass].camera;
@@ -1167,6 +1168,11 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 				atlas_rect.position.y += atlas_rect.size.height;
 			}
 		}
+
+		light_instance->shadow_transform[p_pass].atlas_rect = atlas_rect;
+
+		light_instance->shadow_transform[p_pass].atlas_rect.position /= directional_shadow.size;
+		light_instance->shadow_transform[p_pass].atlas_rect.size /= directional_shadow.size;
 
 		float bias_mult = Math::lerp(1.0f, light_instance->shadow_transform[p_pass].bias_scale, storage->light_get_param(light_instance->light, VS::LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE));
 		zfar = storage->light_get_param(light_instance->light, VS::LIGHT_PARAM_RANGE);
