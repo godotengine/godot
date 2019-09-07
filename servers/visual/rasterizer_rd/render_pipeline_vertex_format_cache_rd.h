@@ -31,9 +31,12 @@
 #ifndef RENDER_PIPELINE_CACHE_RD_H
 #define RENDER_PIPELINE_CACHE_RD_H
 
+#include "core/spin_lock.h"
 #include "servers/visual/rendering_device.h"
 
 class RenderPipelineVertexFormatCacheRD {
+
+	SpinLock spin_lock;
 
 	RID shader;
 	uint32_t input_mask;
@@ -68,12 +71,19 @@ public:
 		ERR_FAIL_COND_V_MSG(shader.is_null(), RID(),
 				"Attempted to use an unused shader variant (shader is null),");
 #endif
+
+		spin_lock.lock();
+		RID result;
 		for (uint32_t i = 0; i < version_count; i++) {
 			if (versions[i].vertex_id == p_vertex_format_id && versions[i].framebuffer_id == p_framebuffer_format_id) {
-				return versions[i].pipeline;
+				result = versions[i].pipeline;
+				spin_lock.unlock();
+				return result;
 			}
 		}
-		return _generate_version(p_vertex_format_id, p_framebuffer_format_id);
+		result = _generate_version(p_vertex_format_id, p_framebuffer_format_id);
+		spin_lock.unlock();
+		return result;
 	}
 
 	_FORCE_INLINE_ uint32_t get_vertex_input_mask() const {
