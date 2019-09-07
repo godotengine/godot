@@ -1683,6 +1683,12 @@ bool Main::start() {
 		}
 #endif
 
+		{
+
+			int directional_atlas_size = GLOBAL_GET("rendering/quality/directional_shadow/size");
+			VisualServer::get_singleton()->directional_shadow_atlas_set_size(directional_atlas_size);
+		}
+
 		if (!editor && !project_manager) {
 			//standard helpers that can be changed from main config
 
