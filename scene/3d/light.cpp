@@ -429,42 +429,24 @@ OmniLight::ShadowMode OmniLight::get_shadow_mode() const {
 	return shadow_mode;
 }
 
-void OmniLight::set_shadow_detail(ShadowDetail p_detail) {
-
-	shadow_detail = p_detail;
-	VS::get_singleton()->light_omni_set_shadow_detail(light, VS::LightOmniShadowDetail(p_detail));
-}
-OmniLight::ShadowDetail OmniLight::get_shadow_detail() const {
-
-	return shadow_detail;
-}
-
 void OmniLight::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_shadow_mode", "mode"), &OmniLight::set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("get_shadow_mode"), &OmniLight::get_shadow_mode);
 
-	ClassDB::bind_method(D_METHOD("set_shadow_detail", "detail"), &OmniLight::set_shadow_detail);
-	ClassDB::bind_method(D_METHOD("get_shadow_detail"), &OmniLight::get_shadow_detail);
-
 	ADD_GROUP("Omni", "omni_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "omni_range", PROPERTY_HINT_EXP_RANGE, "0,4096,0.1,or_greater"), "set_param", "get_param", PARAM_RANGE);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "omni_attenuation", PROPERTY_HINT_EXP_EASING, "attenuation"), "set_param", "get_param", PARAM_ATTENUATION);
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_mode", PROPERTY_HINT_ENUM, "Dual Paraboloid,Cube"), "set_shadow_mode", "get_shadow_mode");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "omni_shadow_detail", PROPERTY_HINT_ENUM, "Vertical,Horizontal"), "set_shadow_detail", "get_shadow_detail");
 
 	BIND_ENUM_CONSTANT(SHADOW_DUAL_PARABOLOID);
 	BIND_ENUM_CONSTANT(SHADOW_CUBE);
-
-	BIND_ENUM_CONSTANT(SHADOW_DETAIL_VERTICAL);
-	BIND_ENUM_CONSTANT(SHADOW_DETAIL_HORIZONTAL);
 }
 
 OmniLight::OmniLight() :
 		Light(VisualServer::LIGHT_OMNI) {
 
 	set_shadow_mode(SHADOW_CUBE);
-	set_shadow_detail(SHADOW_DETAIL_HORIZONTAL);
 }
 
 String SpotLight::get_configuration_warning() const {

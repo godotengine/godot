@@ -240,7 +240,6 @@ public:
 	FUNC2(light_set_use_gi, RID, bool)
 
 	FUNC2(light_omni_set_shadow_mode, RID, LightOmniShadowMode)
-	FUNC2(light_omni_set_shadow_detail, RID, LightOmniShadowDetail)
 
 	FUNC2(light_directional_set_shadow_mode, RID, LightDirectionalShadowMode)
 	FUNC2(light_directional_set_blend_splits, RID, bool)
@@ -402,6 +401,8 @@ public:
 
 	FUNC2(viewport_set_debug_draw, RID, ViewportDebugDraw)
 
+	FUNC1(directional_shadow_atlas_set_size, int)
+
 	/* SKY API */
 
 	FUNCRID(sky)
@@ -445,7 +446,6 @@ public:
 
 	FUNC2(scenario_set_debug, RID, ScenarioDebugMode)
 	FUNC2(scenario_set_environment, RID, RID)
-	FUNC3(scenario_set_reflection_atlas_size, RID, int, int)
 	FUNC2(scenario_set_fallback_environment, RID, RID)
 
 	/* INSTANCING API */

@@ -166,7 +166,9 @@ vec3 tonemap_reinhard(vec3 color, float white) {
 	return (white * color + color) / (color * white + white);
 }
 
-vec3 linear_to_srgb(vec3 color) { // convert linear rgb to srgb, assumes clamped input in range [0;1]
+vec3 linear_to_srgb(vec3 color) {
+	//if going to srgb, clamp from 0 to 1.
+	color = clamp(color,vec3(0.0),vec3(1.0));
 	const vec3 a = vec3(0.055f);
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
@@ -233,15 +235,9 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 		return color + glow;
 	} else if (params.glow_mode==GLOW_MODE_SCREEN) {
 		//need color clamping
-		color = clamp(color,0.0,1.0);
-		glow = clamp(glow,0.0,1.0);
-
 		return max((color + glow) - (color * glow), vec3(0.0));
 	} else if ( params.glow_mode==GLOW_MODE_SOFTLIGHT) {
 		//need color clamping
-		color = clamp(color,0.0,1.0);
-		glow = clamp(glow,0.0,1.0);
-
 		glow = glow * vec3(0.5f) + vec3(0.5f);
 
 		color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
