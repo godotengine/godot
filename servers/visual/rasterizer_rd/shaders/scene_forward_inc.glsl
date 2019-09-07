@@ -184,11 +184,12 @@ struct DirectionalLightData {
 	float energy;
 	vec3 color;
 	float specular;
-	uint mask;
-	uint pad0,pad1,pad2;
 	vec3 shadow_color;
+	uint mask;
+	bool blend_splits;
 	bool shadow_enabled;
-	vec4 shadow_atlas_rect;
+	float fade_from;
+	float fade_to;
 	vec4 shadow_split_offsets;
 	mat4 shadow_matrix1;
 	mat4 shadow_matrix2;

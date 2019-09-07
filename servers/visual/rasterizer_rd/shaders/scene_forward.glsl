@@ -584,7 +584,11 @@ LIGHT_SHADER_CODE
 
 #ifndef USE_NO_SHADOWS
 
-float sample_shadow(texture2D shadow, vec2 shadow_pixel_size, vec2 pos, float depth) {
+float sample_shadow(texture2D shadow, vec2 shadow_pixel_size, vec4 coord) {
+
+	//todo optimize
+	vec2 pos = coord.xy;
+	float depth = coord.z;
 
 #ifdef SHADOW_MODE_PCF_13
 
@@ -657,7 +661,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 a
 	if (shadow_color_enabled.w > 0.5) {
 		// there is a shadowmap
 
-		vec3 splane = (lights.data[idx].shadow_matrix * vec4(vertex, 1.0)).xyz;
+		vec4 splane = (lights.data[idx].shadow_matrix * vec4(vertex, 1.0));
 		float shadow_len = length(splane);
 		splane = normalize(splane);
 		vec4 clamp_rect = lights.data[idx].atlas_rect;
@@ -677,9 +681,9 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 a
 		splane.xy /= splane.z;
 		splane.xy = splane.xy * 0.5 + 0.5;
 		splane.z = shadow_len * lights.data[idx].inv_radius;
-
 		splane.xy = clamp_rect.xy + splane.xy * clamp_rect.zw;
-		float shadow = sample_shadow(shadow_atlas, scene_data.shadow_atlas_pixel_size, splane.xy, splane.z);
+		splane.w = 1.0; //needed? i think it should be 1 already
+		float shadow = sample_shadow(shadow_atlas, scene_data.shadow_atlas_pixel_size, splane);
 
 		light_attenuation *= mix(shadow_color_enabled.rgb, vec3(1.0), shadow);
 	}
@@ -750,9 +754,8 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 a
 	if (shadow_color_enabled.w > 0.5) {
 		//there is a shadowmap
 		vec4 splane = (lights.data[idx].shadow_matrix * vec4(vertex, 1.0));
-		splane.xyz /= splane.w;
-
-		float shadow = sample_shadow(shadow_atlas, scene_data.shadow_atlas_pixel_size, splane.xy, splane.z);
+		splane /= splane.w;
+		float shadow = sample_shadow(shadow_atlas, scene_data.shadow_atlas_pixel_size, splane);
 
 		light_attenuation *= mix(shadow_color_enabled.rgb, vec3(1.0), shadow);
 	}
@@ -1132,7 +1135,84 @@ FRAGMENT_SHADER_CODE
 #endif
 	}
 
-	//directional light
+	{ //directional light
+
+		for (uint i = 0; i < scene_data.directional_light_count; i++) {
+
+			if (!bool(directional_lights.data[i].mask&instances.data[instance_index].layer_mask)) {
+				continue; //not masked
+			}
+
+			vec3 light_attenuation = vec3(1.0);
+
+			if (directional_lights.data[i].shadow_enabled) {
+				float depth_z = -vertex.z;
+
+				vec4 pssm_coord;
+
+				if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
+					pssm_coord = (directional_lights.data[i].shadow_matrix1 * vec4(vertex, 1.0));
+				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
+					pssm_coord = (directional_lights.data[i].shadow_matrix2 * vec4(vertex, 1.0));
+				} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
+					pssm_coord = (directional_lights.data[i].shadow_matrix3 * vec4(vertex, 1.0));
+				} else {
+					pssm_coord = (directional_lights.data[i].shadow_matrix4 * vec4(vertex, 1.0));
+				}
+
+				pssm_coord/=pssm_coord.w;
+
+				float shadow = sample_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size, pssm_coord);
+
+				if (directional_lights.data[i].blend_splits) {
+
+					float pssm_blend;
+
+					if (depth_z < directional_lights.data[i].shadow_split_offsets.x) {
+						pssm_coord = (directional_lights.data[i].shadow_matrix2 * vec4(vertex, 1.0));
+						pssm_blend = smoothstep(0.0, directional_lights.data[i].shadow_split_offsets.x, depth_z);
+					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.y) {
+						pssm_coord = (directional_lights.data[i].shadow_matrix3 * vec4(vertex, 1.0));
+						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.x, directional_lights.data[i].shadow_split_offsets.y, depth_z);
+					} else if (depth_z < directional_lights.data[i].shadow_split_offsets.z) {
+						pssm_coord = (directional_lights.data[i].shadow_matrix4 * vec4(vertex, 1.0));
+						pssm_blend = smoothstep(directional_lights.data[i].shadow_split_offsets.y, directional_lights.data[i].shadow_split_offsets.z, depth_z);
+					} else {
+						pssm_blend = 0.0; //if no blend, same coord will be used (divide by z will result in same value, and already cached)
+					}
+
+					pssm_coord/=pssm_coord.w;
+
+					float shadow2 = sample_shadow(directional_shadow_atlas, scene_data.directional_shadow_pixel_size, pssm_coord);
+					shadow = mix(shadow,shadow2,pssm_blend);
+
+				}
+
+				shadow = mix(shadow,1.0,smoothstep(directional_lights.data[i].fade_from,directional_lights.data[i].fade_to,vertex.z)); //done with negative values for performance
+
+				light_attenuation = vec3(shadow); //mix(directional_lights.data[i].shadow_color, vec3(1.0), shadow);
+			}
+
+
+			light_compute(normal, directional_lights.data[i].direction, normalize(view), directional_lights.data[i].color * directional_lights.data[i].energy, light_attenuation, albedo, roughness, metallic, specular,directional_lights.data[i].specular * specular_blob_intensity,
+#ifdef LIGHT_TRANSMISSION_USED
+				transmission,
+#endif
+#ifdef LIGHT_RIM_USED
+				rim * omni_attenuation, rim_tint,
+#endif
+#ifdef LIGHT_CLEARCOAT_USED
+				clearcoat, clearcoat_gloss,
+#endif
+#ifdef LIGHT_ANISOTROPY_USED
+				binormal, tangent, anisotropy,
+#endif
+#ifdef USE_SHADOW_TO_OPACITY
+				alpha
+#endif
+				diffuse_light, specular_light);
+		}
+	}
 
 	{ //omni lights
 		uint omni_light_count = (instances.data[instance_index].flags >> INSTANCE_FLAGS_FORWARD_OMNI_LIGHT_SHIFT) & INSTANCE_FLAGS_FORWARD_MASK;
