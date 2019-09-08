@@ -208,14 +208,18 @@ String str_format(const char *p_format, ...) {
 #endif
 
 #if defined(MINGW_ENABLED) || defined(_MSC_VER) && _MSC_VER < 1900
-#define vsnprintf(m_buffer, m_count, m_format, m_argptr) vsnprintf_s(m_buffer, m_count, _TRUNCATE, m_format, m_argptr)
+#define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf_s(m_buffer, m_count, _TRUNCATE, m_format, m_args_copy)
+#define gd_vscprintf(m_format, m_args_copy) _vscprintf(m_format, m_args_copy)
+#else
+#define gd_vsnprintf(m_buffer, m_count, m_format, m_args_copy) vsnprintf(m_buffer, m_count, m_format, m_args_copy)
+#define gd_vscprintf(m_format, m_args_copy) vsnprintf(NULL, 0, p_format, m_args_copy)
 #endif
 
 String str_format(const char *p_format, va_list p_list) {
 	va_list list;
 
 	va_copy(list, p_list);
-	int len = vsnprintf(NULL, 0, p_format, list);
+	int len = gd_vscprintf(p_format, list);
 	va_end(list);
 
 	len += 1; // for the trailing '/0'
@@ -223,7 +227,7 @@ String str_format(const char *p_format, va_list p_list) {
 	char *buffer(memnew_arr(char, len));
 
 	va_copy(list, p_list);
-	vsnprintf(buffer, len, p_format, list);
+	gd_vsnprintf(buffer, len, p_format, list);
 	va_end(list);
 
 	String res(buffer);
