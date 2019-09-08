@@ -159,7 +159,7 @@ void GDMonoLog::initialize() {
 
 		log_file = FileAccess::open(log_file_path, FileAccess::WRITE);
 		if (!log_file) {
-			ERR_PRINT("Mono: Cannot create log file.");
+			ERR_PRINTS("Mono: Cannot create log file at: " + log_file_path);
 		}
 	}
 
