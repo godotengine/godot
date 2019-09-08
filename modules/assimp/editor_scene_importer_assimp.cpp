@@ -699,7 +699,6 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 			}
 		}
 
-		// Now process materials
 		aiTextureType tex_diffuse = aiTextureType_DIFFUSE;
 		{
 			String filename, path;
@@ -843,6 +842,20 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_specular, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
 				mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, image_data.texture);
+			}
+		}
+
+		aiTextureType tex_ao_map = aiTextureType_AMBIENT_OCCLUSION;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_ao_map, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
+				mat->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, image_data.texture);
 			}
 		}
 
