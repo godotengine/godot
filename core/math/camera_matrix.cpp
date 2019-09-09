@@ -513,7 +513,7 @@ CameraMatrix CameraMatrix::operator*(const CameraMatrix &p_matrix) const {
 	return new_matrix;
 }
 
-void CameraMatrix::set_depth_correction() {
+void CameraMatrix::set_depth_correction(bool p_flip_y) {
 
 	real_t *m = &matrix[0][0];
 
@@ -522,7 +522,7 @@ void CameraMatrix::set_depth_correction() {
 	m[2] = 0.0;
 	m[3] = 0.0;
 	m[4] = 0.0;
-	m[5] = -1;
+	m[5] = p_flip_y ? -1 : 1;
 	m[6] = 0.0;
 	m[7] = 0.0;
 	m[8] = 0.0;

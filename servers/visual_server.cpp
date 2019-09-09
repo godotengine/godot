@@ -2300,6 +2300,9 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/reflections/ggx_samples.mobile", 128);
 	GLOBAL_DEF("rendering/quality/reflections/ggx_samples_realtime", 64);
 	GLOBAL_DEF("rendering/quality/reflections/ggx_samples_realtime.mobile", 16);
+	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size", 256);
+	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_size.mobile", 128);
+	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
