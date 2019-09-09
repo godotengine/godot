@@ -313,6 +313,8 @@ private:
 	PopupMenu *editor_layouts;
 	EditorLayoutsDialog *layout_dialog;
 
+	Ref<ConfigFile> window_config;
+
 	ConfirmationDialog *custom_build_manage_templates;
 	ConfirmationDialog *install_android_build_template;
 	ConfirmationDialog *remove_android_build_template;
@@ -596,6 +598,9 @@ private:
 	void _load_docks_from_config(Ref<ConfigFile> p_layout, const String &p_section);
 	void _update_dock_slots_visibility();
 	void _dock_tab_changed(int p_tab);
+
+	void _save_window_config();
+	void _load_window_config();
 
 	bool restoring_scenes;
 	void _save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section);

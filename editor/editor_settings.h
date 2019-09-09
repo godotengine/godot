@@ -190,6 +190,7 @@ public:
 
 	Vector<String> get_script_templates(const String &p_extension, const String &p_custom_path = String());
 	String get_editor_layouts_config() const;
+	String get_window_config() const;
 
 	void add_shortcut(const String &p_name, Ref<ShortCut> &p_shortcut);
 	bool is_shortcut(const String &p_name, const Ref<InputEvent> &p_event) const;

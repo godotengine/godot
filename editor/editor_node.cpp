@@ -2780,6 +2780,7 @@ void EditorNode::_exit_editor() {
 	exiting = true;
 	resource_preview->stop(); //stop early to avoid crashes
 	_save_docks();
+	_save_window_config();
 
 	// Dim the editor window while it's quitting to make it clearer that it's busy
 	dim_editor(true, true);
@@ -4256,6 +4257,35 @@ void EditorNode::_save_docks_to_config(Ref<ConfigFile> p_layout, const String &p
 	}
 }
 
+void EditorNode::_save_window_config() {
+	window_config->set_value("window", "maximized", OS::get_singleton()->is_window_maximized() || OS::get_singleton()->is_window_fullscreen());
+	// Save the window position relative to the current monitor
+	window_config->set_value("window", "position", OS::get_singleton()->get_window_position() - OS::get_singleton()->get_screen_position());
+	window_config->set_value("window", "size", OS::get_singleton()->get_window_size());
+
+	Error err = window_config->save(EditorSettings::get_singleton()->get_window_config());
+	ERR_FAIL_COND_MSG(err != OK, "Couldn't save the editor window configuration file.");
+}
+
+void EditorNode::_load_window_config() {
+	window_config.instance();
+	String window_config_path = EditorSettings::get_singleton()->get_window_config();
+
+	DirAccessRef dar = DirAccess::open(window_config_path.get_base_dir());
+	if (dar->file_exists(window_config_path.get_file())) {
+		window_config->load(window_config_path);
+
+		// Set the window configuration that was previously saved
+		OS::get_singleton()->set_window_maximized((bool)window_config->get_value("window", "maximized"));
+
+		if (!(bool)window_config->get_value("window", "maximized")) {
+			// Load the window position relative to the current monitor
+			OS::get_singleton()->set_window_position((Vector2)window_config->get_value("window", "position") + OS::get_singleton()->get_screen_position());
+			OS::get_singleton()->set_window_size((Vector2)window_config->get_value("window", "size"));
+		}
+	}
+}
+
 void EditorNode::_save_open_scenes_to_config(Ref<ConfigFile> p_layout, const String &p_section) {
 	Array scenes;
 	for (int i = 0; i < editor_data.get_edited_scene_count(); i++) {
@@ -5640,6 +5670,8 @@ EditorNode::EditorNode() {
 	// load settings
 	if (!EditorSettings::get_singleton())
 		EditorSettings::create();
+
+	_load_window_config();
 
 	FileAccess::set_backup_save(EDITOR_GET("filesystem/on_save/safe_save_on_backup_then_rename"));
 
