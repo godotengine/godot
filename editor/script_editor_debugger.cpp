@@ -434,6 +434,15 @@ int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &node
 	}
 	item->set_metadata(0, id);
 
+	if (id == inspected_object_id) {
+		TreeItem *cti = item->get_parent();
+		while (cti) {
+			cti->set_collapsed(false);
+			cti = cti->get_parent();
+		}
+		item->select(0);
+	}
+
 	// Set current item as collapsed if necessary
 	if (parent) {
 		if (!unfold_cache.has(id)) {
