@@ -15,7 +15,7 @@ protected:
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip) = 0;
 
 private:
@@ -24,7 +24,6 @@ private:
 	RasterizerStorageRD *storage;
 
 	struct ReflectionData {
-		RID radiance;
 
 		struct Layer {
 			struct Mipmap {
@@ -40,13 +39,14 @@ private:
 	};
 
 	void _clear_reflection_data(ReflectionData &rd);
-	void _update_reflection_data(ReflectionData &rd, int p_size, bool p_quality);
+	void _update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer);
 	void _create_reflection_from_panorama(ReflectionData &rd, RID p_panorama, bool p_quality);
-	void _create_reflection_from_base_mipmap(ReflectionData &rd, bool p_quality, int p_cube_side);
+	void _create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side);
 	void _update_reflection_mipmaps(ReflectionData &rd, bool p_quality);
 
 	/* SKY */
 	struct Sky {
+		RID radiance;
 		int radiance_size = 256;
 		VS::SkyMode mode = VS::SKY_MODE_QUALITY;
 		RID panorama;
@@ -66,22 +66,41 @@ private:
 
 	mutable RID_Owner<Sky> sky_owner;
 
+	/* REFLECTION ATLAS */
+
+	struct ReflectionAtlas {
+
+		int count = 0;
+		int size = 0;
+
+		RID reflection;
+		RID depth_buffer;
+
+		struct Reflection {
+			RID owner;
+			ReflectionData data;
+			RID fbs[6];
+		};
+
+		Vector<Reflection> reflections;
+	};
+
+	RID_Owner<ReflectionAtlas> reflection_atlas_owner;
+
 	/* REFLECTION PROBE INSTANCE */
 
 	struct ReflectionProbeInstance {
 
 		RID probe;
-
-		ReflectionData reflection;
-		RID depth_buffer;
-		RID render_fb[6];
-
-		int current_resolution = 0;
+		int atlas_index = -1;
+		RID atlas;
 
 		bool dirty = true;
 		bool rendering = false;
 		int processing_side = 0;
 
+		uint32_t render_step = 0;
+		uint64_t last_pass = 0;
 		uint32_t render_index = 0;
 
 		Transform transform;
@@ -453,10 +472,20 @@ public:
 		return li->light_type;
 	}
 
+	virtual RID reflection_atlas_create();
+	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count);
+	_FORCE_INLINE_ RID reflection_atlas_get_texture(RID p_ref_atlas) {
+		ReflectionAtlas *atlas = reflection_atlas_owner.getornull(p_ref_atlas);
+		ERR_FAIL_COND_V(!atlas, RID());
+		return atlas->reflection;
+	}
+
 	virtual RID reflection_probe_instance_create(RID p_probe);
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform);
+	virtual void reflection_probe_release_atlas_index(RID p_instance);
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance);
-	virtual void reflection_probe_instance_begin_render(RID p_instance);
+	virtual bool reflection_probe_instance_has_reflection(RID p_instance);
+	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas);
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance);
 
 	uint32_t reflection_probe_instance_get_resolution(RID p_instance);
@@ -482,6 +511,19 @@ public:
 		return rpi->render_index;
 	}
 
+	_FORCE_INLINE_ void reflection_probe_instance_set_render_pass(RID p_instance, uint32_t p_render_pass) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND(!rpi);
+		rpi->last_pass = p_render_pass;
+	}
+
+	_FORCE_INLINE_ uint32_t reflection_probe_instance_get_render_pass(RID p_instance) {
+		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND_V(!rpi, 0);
+
+		return rpi->last_pass;
+	}
+
 	_FORCE_INLINE_ Transform reflection_probe_instance_get_transform(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 		ERR_FAIL_COND_V(!rpi, Transform());
@@ -489,11 +531,11 @@ public:
 		return rpi->transform;
 	}
 
-	_FORCE_INLINE_ RID reflection_probe_instance_get_texture(RID p_instance) {
+	_FORCE_INLINE_ int reflection_probe_instance_get_atlas_index(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
-		ERR_FAIL_COND_V(!rpi, RID());
+		ERR_FAIL_COND_V(!rpi, -1);
 
-		return rpi->reflection.radiance;
+		return rpi->atlas_index;
 	}
 
 	RID gi_probe_instance_create() { return RID(); }
@@ -504,7 +546,7 @@ public:
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 
 	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 

@@ -83,7 +83,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 	bool scenario_draw_canvas_bg = false; //draw canvas, or some layer of it, as BG for 3D instead of in front
 	int scenario_canvas_max_layer = 0;
 
-	Color bgcolor = clear_color;
+	Color bgcolor = VSG::storage->get_default_clear_color();
 
 	if (!p_viewport->hide_canvas && !p_viewport->disable_environment && VSG::scene->scenario_owner.owns(p_viewport->scenario)) {
 
@@ -295,7 +295,7 @@ void VisualServerViewport::draw_viewports() {
 #endif
 
 	if (Engine::get_singleton()->is_editor_hint()) {
-		clear_color = GLOBAL_GET("rendering/environment/default_clear_color");
+		set_default_clear_color(GLOBAL_GET("rendering/environment/default_clear_color"));
 	}
 
 	//sort viewports
@@ -719,7 +719,7 @@ bool VisualServerViewport::free(RID p_rid) {
 }
 
 void VisualServerViewport::set_default_clear_color(const Color &p_color) {
-	clear_color = p_color;
+	VSG::storage->set_default_clear_color(p_color);
 }
 
 VisualServerViewport::VisualServerViewport() {

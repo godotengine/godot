@@ -38,6 +38,7 @@
 #include "core/self_list.h"
 
 class RasterizerScene {
+
 public:
 	/* SHADOW ATLAS API */
 
@@ -218,10 +219,15 @@ public:
 	virtual void light_instance_mark_visible(RID p_light_instance) = 0;
 	virtual bool light_instances_can_render_shadow_cube() const { return true; }
 
+	virtual RID reflection_atlas_create() = 0;
+	virtual void reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) = 0;
+
 	virtual RID reflection_probe_instance_create(RID p_probe) = 0;
 	virtual void reflection_probe_instance_set_transform(RID p_instance, const Transform &p_transform) = 0;
+	virtual void reflection_probe_release_atlas_index(RID p_instance) = 0;
 	virtual bool reflection_probe_instance_needs_redraw(RID p_instance) = 0;
-	virtual void reflection_probe_instance_begin_render(RID p_instance) = 0;
+	virtual bool reflection_probe_instance_has_reflection(RID p_instance) = 0;
+	virtual bool reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) = 0;
 	virtual bool reflection_probe_instance_postprocess_step(RID p_instance) = 0;
 
 	virtual RID gi_probe_instance_create() = 0;
@@ -229,7 +235,7 @@ public:
 	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) = 0;
 	virtual void gi_probe_instance_set_bounds(RID p_probe, const Vector3 &p_bounds) = 0;
 
-	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
@@ -246,6 +252,9 @@ public:
 };
 
 class RasterizerStorage {
+
+	Color default_clear_color;
+
 public:
 	/* TEXTURE API */
 
@@ -619,6 +628,14 @@ public:
 	virtual String get_video_adapter_vendor() const = 0;
 
 	static RasterizerStorage *base_singleton;
+
+	void set_default_clear_color(const Color &p_color) {
+		default_clear_color = p_color;
+	}
+
+	Color get_default_clear_color() const {
+		return default_clear_color;
+	}
 
 	RasterizerStorage();
 	virtual ~RasterizerStorage() {}

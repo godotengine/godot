@@ -268,7 +268,7 @@ RID VisualServerScene::scenario_create() {
 	VSG::scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 1, 4);
 	VSG::scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 2, 4);
 	VSG::scene_render->shadow_atlas_set_quadrant_subdivision(scenario->reflection_probe_shadow_atlas, 3, 8);
-
+	scenario->reflection_atlas = VSG::scene_render->reflection_atlas_create();
 	return scenario_rid;
 }
 
@@ -291,6 +291,13 @@ void VisualServerScene::scenario_set_fallback_environment(RID p_scenario, RID p_
 	Scenario *scenario = scenario_owner.getornull(p_scenario);
 	ERR_FAIL_COND(!scenario);
 	scenario->fallback_environment = p_environment;
+}
+
+void VisualServerScene::scenario_set_reflection_atlas_size(RID p_scenario, int p_reflection_size, int p_reflection_count) {
+
+	Scenario *scenario = scenario_owner.getornull(p_scenario);
+	ERR_FAIL_COND(!scenario);
+	VSG::scene_render->reflection_atlas_set_size(scenario->reflection_atlas, p_reflection_size, p_reflection_count);
 }
 
 /* INSTANCING API */
@@ -510,6 +517,8 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 				}
 			} break;
 			case VS::INSTANCE_REFLECTION_PROBE: {
+				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(instance->base_data);
+				VSG::scene_render->reflection_probe_release_atlas_index(reflection_probe->instance);
 
 			} break;
 			case VS::INSTANCE_GI_PROBE: {
@@ -1808,7 +1817,7 @@ void VisualServerScene::render_camera(RID p_render_buffers, Ref<ARVRInterface> &
 	_render_scene(p_render_buffers, cam_transform, camera_matrix, false, camera->env, p_scenario, p_shadow_atlas, RID(), -1);
 };
 
-void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe) {
+void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows) {
 	// Note, in stereo rendering:
 	// - p_cam_transform will be a transform in the middle of our two eyes
 	// - p_cam_projection is a wider frustrum that encompasses both eyes
@@ -1894,8 +1903,10 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 							reflection_probe->reflection_dirty = false;
 						}
 
-						reflection_probe_instance_cull_result[reflection_probe_cull_count] = reflection_probe->instance;
-						reflection_probe_cull_count++;
+						if (VSG::scene_render->reflection_probe_instance_has_reflection(reflection_probe->instance)) {
+							reflection_probe_instance_cull_result[reflection_probe_cull_count] = reflection_probe->instance;
+							reflection_probe_cull_count++;
+						}
 					}
 				}
 			}
@@ -2015,7 +2026,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			//check shadow..
 
 			if (light) {
-				if (p_shadow_atlas.is_valid() && VSG::storage->light_has_shadow(E->get()->base)) {
+				if (p_using_shadows && p_shadow_atlas.is_valid() && VSG::storage->light_has_shadow(E->get()->base)) {
 					lights_with_shadow[directional_shadow_count++] = E->get();
 				}
 				//add to list
@@ -2031,7 +2042,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		}
 	}
 
-	{ //setup shadow maps
+	if (p_using_shadows) { //setup shadow maps
 
 		//SortArray<Instance*,_InstanceLightsort> sorter;
 		//sorter.sort(light_cull_result,light_cull_count);
@@ -2148,7 +2159,7 @@ void VisualServerScene::_render_scene(RID p_render_buffers, const Transform p_ca
 
 	/* PROCESS GEOMETRY AND DRAW SCENE */
 
-	VSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, p_reflection_probe, p_reflection_probe_pass);
+	VSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
 void VisualServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas) {
@@ -2162,7 +2173,7 @@ void VisualServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario,
 		environment = scenario->environment;
 	else
 		environment = scenario->fallback_environment;
-	VSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, RID(), 0);
+	VSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
 
@@ -2176,18 +2187,28 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 
 	if (p_step == 0) {
 
-		VSG::scene_render->reflection_probe_instance_begin_render(reflection_probe->instance);
+		if (!VSG::scene_render->reflection_probe_instance_begin_render(reflection_probe->instance, scenario->reflection_atlas)) {
+			return true; //all full
+		}
 	}
 
 	if (p_step >= 0 && p_step < 6) {
 
 		static const Vector3 view_normals[6] = {
-			Vector3(-1, 0, 0),
 			Vector3(+1, 0, 0),
-			Vector3(0, -1, 0),
+			Vector3(-1, 0, 0),
 			Vector3(0, +1, 0),
+			Vector3(0, -1, 0),
+			Vector3(0, 0, +1),
+			Vector3(0, 0, -1)
+		};
+		static const Vector3 view_up[6] = {
+			Vector3(0, -1, 0),
+			Vector3(0, -1, 0),
+			Vector3(0, 0, +1),
 			Vector3(0, 0, -1),
-			Vector3(0, 0, +1)
+			Vector3(0, -1, 0),
+			Vector3(0, -1, 0)
 		};
 
 		Vector3 extents = VSG::storage->reflection_probe_get_extents(p_instance->base);
@@ -2203,15 +2224,6 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 		CameraMatrix cm;
 		cm.set_perspective(90, 1, 0.01, max_distance);
 
-		static const Vector3 view_up[6] = {
-			Vector3(0, -1, 0),
-			Vector3(0, -1, 0),
-			Vector3(0, 0, -1),
-			Vector3(0, 0, +1),
-			Vector3(0, -1, 0),
-			Vector3(0, -1, 0)
-		};
-
 		Transform local_view;
 		local_view.set_look_at(origin_offset, origin_offset + view_normals[p_step], view_up[p_step]);
 
@@ -2219,12 +2231,13 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 
 		RID shadow_atlas;
 
-		if (VSG::storage->reflection_probe_renders_shadows(p_instance->base)) {
+		bool use_shadows = VSG::storage->reflection_probe_renders_shadows(p_instance->base);
+		if (use_shadows) {
 
 			shadow_atlas = scenario->reflection_probe_shadow_atlas;
 		}
 
-		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance);
+		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, use_shadows);
 		_render_scene(RID(), xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
@@ -3465,6 +3478,7 @@ bool VisualServerScene::free(RID p_rid) {
 			instance_set_scenario(scenario->instances.first()->self()->self, RID());
 		}
 		VSG::scene_render->free(scenario->reflection_probe_shadow_atlas);
+		VSG::scene_render->free(scenario->reflection_atlas);
 		scenario_owner.free(p_rid);
 		memdelete(scenario);
 
