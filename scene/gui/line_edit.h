@@ -82,7 +82,7 @@ private:
 
 	int cursor_pos;
 	int window_pos;
-	int max_length; // 0 for no maximum
+	int max_length; // 0 for no maximum.
 
 	int cached_width;
 	int cached_placeholder_width;
@@ -229,6 +229,7 @@ public:
 	bool is_selecting_enabled() const;
 
 	void set_right_icon(const Ref<Texture> &p_icon);
+	Ref<Texture> get_right_icon();
 
 	virtual bool is_text_field() const;
 	LineEdit();

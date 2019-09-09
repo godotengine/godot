@@ -201,7 +201,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			switch (code) {
 
-				case (KEY_X): { // CUT
+				case (KEY_X): { // CUT.
 
 					if (editable) {
 						cut_text();
@@ -209,12 +209,13 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 				} break;
 
-				case (KEY_C): { // COPY
+				case (KEY_C): { // COPY.
+
 					copy_text();
 
 				} break;
 
-				case (KEY_V): { // PASTE
+				case (KEY_V): { // PASTE.
 
 					if (editable) {
 
@@ -223,7 +224,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 				} break;
 
-				case (KEY_Z): { // undo / redo
+				case (KEY_Z): { // Undo/redo.
 					if (editable) {
 						if (k->get_shift()) {
 							redo();
@@ -233,7 +234,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					}
 				} break;
 
-				case (KEY_U): { // Delete from start to cursor
+				case (KEY_U): { // Delete from start to cursor.
 
 					if (editable) {
 
@@ -254,7 +255,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 				} break;
 
-				case (KEY_Y): { // PASTE (Yank for unix users)
+				case (KEY_Y): { // PASTE (Yank for unix users).
 
 					if (editable) {
 
@@ -262,7 +263,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					}
 
 				} break;
-				case (KEY_K): { // Delete from cursor_pos to end
+				case (KEY_K): { // Delete from cursor_pos to end.
 
 					if (editable) {
 
@@ -272,15 +273,15 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					}
 
 				} break;
-				case (KEY_A): { //Select All
+				case (KEY_A): { // Select all.
 					select();
 
 				} break;
 #ifdef APPLE_STYLE_KEYS
-				case (KEY_LEFT): { // Go to start of text - like HOME key
+				case (KEY_LEFT): { // Go to start of text - like HOME key.
 					set_cursor_position(0);
 				} break;
-				case (KEY_RIGHT): { // Go to end of text - like END key
+				case (KEY_RIGHT): { // Go to end of text - like END key.
 					set_cursor_position(text.length());
 				} break;
 #endif
@@ -473,7 +474,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 					int text_len = text.length();
 
 					if (cursor_pos == text_len)
-						break; // nothing to do
+						break; // Nothing to do.
 
 #ifdef APPLE_STYLE_KEYS
 					if (k->get_alt()) {
@@ -730,7 +731,7 @@ void LineEdit::_notification(int p_what) {
 			Color cursor_color = get_color("cursor_color");
 
 			const String &t = using_placeholder ? placeholder_translated : text;
-			// draw placeholder color
+			// Draw placeholder color.
 			if (using_placeholder)
 				font_color.a *= placeholder_alpha;
 
@@ -745,24 +746,28 @@ void LineEdit::_notification(int p_what) {
 						color_icon = get_color("clear_button_color");
 					}
 				}
-				r_icon->draw(ci, Point2(width - r_icon->get_width() - style->get_margin(MARGIN_RIGHT), height / 2 - r_icon->get_height() / 2), color_icon);
+
+				float icon_width = MIN(r_icon->get_width(), r_icon->get_width() * (height - (style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM))) / r_icon->get_height());
+				float icon_height = MIN(r_icon->get_height(), height - (style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM)));
+				Rect2 icon_region = Rect2(Point2(width - icon_width - style->get_margin(MARGIN_RIGHT), height / 2 - icon_height / 2), Size2(icon_width, icon_height));
+				draw_texture_rect_region(r_icon, icon_region, Rect2(Point2(), r_icon->get_size()), color_icon);
 
 				if (align == ALIGN_CENTER) {
 					if (window_pos == 0) {
-						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - cached_text_width - r_icon->get_width() - style->get_margin(MARGIN_RIGHT) * 2) / 2);
+						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - cached_text_width - icon_width - style->get_margin(MARGIN_RIGHT) * 2) / 2);
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(MARGIN_LEFT), x_ofs - r_icon->get_width() - style->get_margin(MARGIN_RIGHT));
+					x_ofs = MAX(style->get_margin(MARGIN_LEFT), x_ofs - icon_width - style->get_margin(MARGIN_RIGHT));
 				}
 
-				ofs_max -= r_icon->get_width();
+				ofs_max -= icon_width;
 			}
 
 			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
 			FontDrawer drawer(font, Color(1, 1, 1));
 			while (true) {
 
-				//end of string, break!
+				// End of string, break.
 				if (char_ofs >= t.length())
 					break;
 
@@ -799,7 +804,7 @@ void LineEdit::_notification(int p_what) {
 				CharType next = (pass && !text.empty()) ? secret_character[0] : t[char_ofs + 1];
 				int char_width = font->get_char_size(cchar, next).width;
 
-				// end of widget, break!
+				// End of widget, break.
 				if ((x_ofs + char_width) > ofs_max)
 					break;
 
@@ -854,7 +859,7 @@ void LineEdit::_notification(int p_what) {
 				}
 			}
 
-			if (char_ofs == cursor_pos && draw_caret) { //may be at the end
+			if (char_ofs == cursor_pos && draw_caret) { // May be at the end.
 				if (ime_text.length() == 0) {
 #ifdef TOOLS_ENABLED
 					VisualServer::get_singleton()->canvas_item_add_rect(ci, Rect2(Point2(x_ofs, y_ofs), Size2(Math::round(EDSCALE), caret_height)), cursor_color);
@@ -1043,7 +1048,7 @@ void LineEdit::set_cursor_at_pixel_pos(int p_x) {
 		}
 		pixel_ofs += char_w;
 
-		if (pixel_ofs > p_x) { //found what we look for
+		if (pixel_ofs > p_x) { // Found what we look for.
 			break;
 		}
 
@@ -1210,15 +1215,18 @@ void LineEdit::set_cursor_position(int p_pos) {
 	Ref<Font> font = get_font("font");
 
 	if (cursor_pos <= window_pos) {
-		/* Adjust window if cursor goes too much to the left */
+		// Adjust window if cursor goes too much to the left.
 		set_window_pos(MAX(0, cursor_pos - 1));
 	} else {
-		/* Adjust window if cursor goes too much to the right */
+		// Adjust window if cursor goes too much to the right.
 		int window_width = get_size().width - style->get_minimum_size().width;
 		bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
 			Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
-			window_width -= r_icon->get_width();
+
+			float icon_width = MIN(r_icon->get_width(), r_icon->get_width() * (get_size().height - (style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM))) / r_icon->get_height());
+
+			window_width -= icon_width;
 		}
 
 		if (window_width < 0)
@@ -1232,10 +1240,10 @@ void LineEdit::set_cursor_position(int p_pos) {
 			for (int i = cursor_pos; i >= window_pos; i--) {
 
 				if (i >= text.length()) {
-					//do not do this, because if the cursor is at the end, its just fine that it takes no space
-					//accum_width = font->get_char_size(' ').width; //anything should do
+					// Do not do this, because if the cursor is at the end, its just fine that it takes no space.
+					// accum_width = font->get_char_size(' ').width;
 				} else {
-					accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; //anything should do
+					accum_width += font->get_char_size(text[i], i + 1 < text.length() ? text[i + 1] : 0).width; // Anything should do.
 				}
 				if (accum_width > window_width)
 					break;
@@ -1300,20 +1308,19 @@ Size2 LineEdit::get_minimum_size() const {
 	Size2 min = style->get_minimum_size();
 	min.height += font->get_height();
 
-	//minimum size of text
+	// Minimum size of text.
 	int space_size = font->get_char_size(' ').x;
 	int mstext = get_constant("minimum_spaces") * space_size;
 
 	if (expand_to_text_length) {
-		mstext = MAX(mstext, font->get_string_size(text).x + space_size); //add a spce because some fonts are too exact, and because cursor needs a bit more when at the end
+		// Add a space because some fonts are too exact, and because cursor needs a bit more when at the end.
+		mstext = MAX(mstext, font->get_string_size(text).x + space_size);
 	}
 
 	min.width += mstext;
 
 	return min;
 }
-
-/* selection */
 
 void LineEdit::deselect() {
 
@@ -1404,8 +1411,8 @@ bool LineEdit::is_secret() const {
 
 void LineEdit::set_secret_character(const String &p_string) {
 
-	// An empty string as the secret character would crash the engine
-	// It also wouldn't make sense to use multiple characters as the secret character
+	// An empty string as the secret character would crash the engine.
+	// It also wouldn't make sense to use multiple characters as the secret character.
 	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
 
 	secret_character = p_string;
@@ -1557,8 +1564,11 @@ void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
 	update();
 }
 
-void LineEdit::_text_changed() {
+Ref<Texture> LineEdit::get_right_icon() {
+	return right_icon;
+}
 
+void LineEdit::_text_changed() {
 	if (expand_to_text_length)
 		minimum_size_changed();
 
@@ -1679,6 +1689,8 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &LineEdit::is_shortcut_keys_enabled);
 	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &LineEdit::set_selecting_enabled);
 	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &LineEdit::is_selecting_enabled);
+	ClassDB::bind_method(D_METHOD("set_right_icon", "icon"), &LineEdit::set_right_icon);
+	ClassDB::bind_method(D_METHOD("get_right_icon"), &LineEdit::get_right_icon);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
@@ -1709,6 +1721,7 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_button_enabled"), "set_clear_button_enabled", "is_clear_button_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "right_icon", PROPERTY_HINT_RESOURCE_TYPE, "Texture"), "set_right_icon", "get_right_icon");
 	ADD_GROUP("Placeholder", "placeholder_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "placeholder_alpha", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_placeholder_alpha", "get_placeholder_alpha");
@@ -1755,7 +1768,7 @@ LineEdit::LineEdit() {
 	context_menu_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
-	editable = false; // initialise to opposite first, so we get past the early-out in set_editable
+	editable = false; // Initialise to opposite first, so we get past the early-out in set_editable.
 	set_editable(true);
 	menu->connect("id_pressed", this, "menu_option");
 	expand_to_text_length = false;
