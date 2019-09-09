@@ -58,17 +58,18 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 
 void EditorLog::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_ENTER_TREE) {
+	switch (p_what) {
+		case NOTIFICATION_ENTER_TREE:
+		case NOTIFICATION_THEME_CHANGED: {
 
-		//button->set_icon(get_icon("Console","EditorIcons"));
-		log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		Ref<DynamicFont> df_output_code = get_font("output_source", "EditorFonts");
-		if (df_output_code.is_valid()) {
-			if (log != NULL) {
-				log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+			const Ref<DynamicFont> df_output_code = get_font("output_source", "EditorFonts");
+			if (df_output_code.is_valid()) {
+				if (log != NULL) {
+					log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
+					log->add_constant_override("line_separation", Math::round((int)EDITOR_GET("text_editor/theme/line_spacing") * EDSCALE));
+				}
 			}
-		}
+		} break;
 	}
 }
 

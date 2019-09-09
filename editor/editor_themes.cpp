@@ -419,6 +419,9 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 
 	const int default_margin_size = 4;
 	const int margin_size_extra = default_margin_size + CLAMP(border_size, 0, 3);
+	// Dynamic margin based on the font size. On lower font sizes, one additional pixel will be added.
+	// This value should be used for separating list items, so they remain easy to click.
+	const int dynamic_margin_size = ((int)EDITOR_GET("interface/editor/main_font_size") <= 13) ? 1 : 0;
 
 	// styleboxes
 	// this is the most commonly used stylebox, variations should be made as duplicate of this
@@ -662,7 +665,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("visibility_hidden", "PopupMenu", theme->get_icon("GuiVisibilityHidden", "EditorIcons"));
 	theme->set_icon("visibility_visible", "PopupMenu", theme->get_icon("GuiVisibilityVisible", "EditorIcons"));
 	theme->set_icon("visibility_xray", "PopupMenu", theme->get_icon("GuiVisibilityXray", "EditorIcons"));
-	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + 1) * EDSCALE);
+	theme->set_constant("vseparation", "PopupMenu", (extra_spacing + default_margin_size + dynamic_margin_size + 2) * EDSCALE);
 
 	Ref<StyleBoxFlat> sub_inspector_bg = make_flat_stylebox(dark_color_1.linear_interpolate(accent_color, 0.08), 2, 0, 2, 2);
 	sub_inspector_bg->set_border_width(MARGIN_LEFT, 2);
@@ -702,7 +705,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("guide_color", "Tree", guide_color);
 	theme->set_color("relationship_line_color", "Tree", relationship_line_color);
 	theme->set_color("drop_position_color", "Tree", accent_color);
-	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
+	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size + dynamic_margin_size) * EDSCALE);
 	theme->set_constant("hseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_constant("guide_width", "Tree", border_width);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
@@ -766,7 +769,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("font_color", "ItemList", font_color);
 	theme->set_color("font_color_selected", "ItemList", mono_color);
 	theme->set_color("guide_color", "ItemList", guide_color);
-	theme->set_constant("vseparation", "ItemList", 3 * EDSCALE);
+	theme->set_constant("vseparation", "ItemList", (3 + dynamic_margin_size) * EDSCALE);
 	theme->set_constant("hseparation", "ItemList", 3 * EDSCALE);
 	theme->set_constant("icon_margin", "ItemList", default_margin_size * EDSCALE);
 	theme->set_constant("line_separation", "ItemList", 3 * EDSCALE);
@@ -879,7 +882,7 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_constant("margin_right", "MarginContainer", 0);
 	theme->set_constant("margin_bottom", "MarginContainer", 0);
 	theme->set_constant("hseparation", "GridContainer", default_margin_size * EDSCALE);
-	theme->set_constant("vseparation", "GridContainer", default_margin_size * EDSCALE);
+	theme->set_constant("vseparation", "GridContainer", (default_margin_size + dynamic_margin_size) * EDSCALE);
 
 	// WindowDialog
 	Ref<StyleBoxFlat> style_window = style_popup->duplicate();
