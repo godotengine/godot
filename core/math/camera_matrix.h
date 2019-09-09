@@ -50,7 +50,7 @@ struct CameraMatrix {
 	void set_identity();
 	void set_zero();
 	void set_light_bias();
-	void set_depth_correction();
+	void set_depth_correction(bool p_flip_y = true);
 	void set_light_atlas_rect(const Rect2 &p_rect);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov = false);
 	void set_perspective(real_t p_fovy_degrees, real_t p_aspect, real_t p_z_near, real_t p_z_far, bool p_flip_fov, int p_eye, real_t p_intraocular_dist, real_t p_convergence_dist);

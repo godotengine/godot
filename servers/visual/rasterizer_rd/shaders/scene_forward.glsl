@@ -710,6 +710,7 @@ void light_process_omni(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 a
 
 
 
+
 void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 albedo,float roughness, float metallic, float specular,float p_blob_intensity,
 #ifdef LIGHT_TRANSMISSION_USED
 	vec3 transmission,
@@ -781,6 +782,86 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 a
 		diffuse_light, specular_light);
 }
 
+void reflection_process(uint ref_index, vec3 vertex, vec3 normal,float roughness,vec3 ambient_light,vec3 specular_light,inout vec4 ambient_accum, inout vec4 reflection_accum) {
+
+	vec3 box_extents = reflections.data[ref_index].box_extents;
+	vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
+
+	if (any(greaterThan(abs(local_pos), box_extents))) { //out of the reflection box
+		return;
+	}
+
+	vec3 ref_vec = normalize(reflect(vertex, normal));
+
+	vec3 inner_pos = abs(local_pos / box_extents);
+	float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));
+	//make blend more rounded
+	blend = mix(length(inner_pos), blend, blend);
+	blend *= blend;
+	blend = max(0.0, 1.0 - blend);
+
+	if (reflections.data[ref_index].params.x > 0.0) { // compute reflection
+
+		vec3 local_ref_vec = (reflections.data[ref_index].local_matrix * vec4(ref_vec, 0.0)).xyz;
+
+		if (reflections.data[ref_index].params.w > 0.5) { //box project
+
+			vec3 nrdir = normalize(local_ref_vec);
+			vec3 rbmax = (box_extents - local_pos) / nrdir;
+			vec3 rbmin = (-box_extents - local_pos) / nrdir;
+
+			vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
+
+			float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
+			vec3 posonbox = local_pos + nrdir * fa;
+			local_ref_vec = posonbox - reflections.data[ref_index].box_offset;
+		}
+
+		vec4 reflection;
+
+		reflection.rgb = textureLod(samplerCubeArray(reflection_atlas,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(local_ref_vec,reflections.data[ref_index].index), roughness * MAX_ROUGHNESS_LOD).rgb;
+
+		if (reflections.data[ref_index].params.z < 0.5) {
+			reflection.rgb = mix(specular_light, reflection.rgb, blend);
+		}
+
+		reflection.rgb *= reflections.data[ref_index].params.x;
+		reflection.a = blend;
+		reflection.rgb *= reflection.a;
+
+		reflection_accum += reflection;
+	}
+
+#ifndef USE_LIGHTMAP
+	if (reflections.data[ref_index].ambient.a > 0.0) { //compute ambient using skybox
+
+		vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(normal, 0.0)).xyz;
+
+		vec4 ambient_out;
+
+		ambient_out.rgb = textureLod(samplerCubeArray(reflection_atlas,material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(local_amb_vec,reflections.data[ref_index].index), MAX_ROUGHNESS_LOD).rgb;
+
+		ambient_out.a = blend;
+		ambient_out.rgb = mix(reflections.data[ref_index].ambient.rgb, ambient_out.rgb, reflections.data[ref_index].ambient.a);
+		if (reflections.data[ref_index].params.z < 0.5) {
+			ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
+		}
+
+		ambient_out.rgb *= ambient_out.a;
+		ambient_accum += ambient_out;
+	} else {
+
+		vec4 ambient_out;
+		ambient_out.a = blend;
+		ambient_out.rgb = reflections.data[ref_index].ambient.rgb;
+		if (reflections.data[ref_index].params.z < 0.5) {
+			ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
+		}
+		ambient_out.rgb *= ambient_out.a;
+		ambient_accum += ambient_out;
+	}
+#endif //USE_LIGHTMAP
+}
 void main() {
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -976,126 +1057,28 @@ FRAGMENT_SHADER_CODE
 
 	//lightmap capture
 
-#if 0
+
 	{ // process reflections
 
 
 		vec4 reflection_accum = vec4(0.0, 0.0, 0.0, 0.0);
 		vec4 ambient_accum = vec4(0.0, 0.0, 0.0, 0.0);
 
-		for (uint i = 0; i < MAX_REFLECTION_PROBES; i++) {
-			if (i >= draw_data.reflection_probe_count) {
-				break;
-			}
+		uint reflection_probe_count = instances.data[instance_index].flags & INSTANCE_FLAGS_FORWARD_MASK;
 
-			uint ref_index;
-			if (i<4) {
-				if (i<2) {
-					ref_index=draw_data.reflection_probe_indices[0];
-				} else {
-					ref_index=draw_data.reflection_probe_indices[1];
-				}
+		for (uint i = 0; i < reflection_probe_count; i++) {
+
+
+			uint ref_index = instances.data[instance_index].reflection_probe_indices[i>>1];
+
+			if (bool(i&1)) {
+				ref_index>>=16;
 			} else {
-				if (i<6) {
-					ref_index=draw_data.reflection_probe_indices[2];
-				} else {
-					ref_index=draw_data.reflection_probe_indices[3];
-				}
-			}
-			ref_index>>=(i&1)*16;
-			ref_index&=0xFFFF;
-
-			vec3 box_extents = reflections.data[ref_index].box_extents.xyz;
-			vec3 local_pos = (reflections.data[ref_index].local_matrix * vec4(vertex, 1.0)).xyz;
-
-			if (any(greaterThan(abs(local_pos), box_extents))) { //out of the reflection box
-				continue;
+				ref_index&=0xFFFF;
 			}
 
-			vec3 ref_vec = normalize(reflect(vertex, normal));
 
-			vec3 inner_pos = abs(local_pos / box_extents);
-			float blend = max(inner_pos.x, max(inner_pos.y, inner_pos.z));
-			//make blend more rounded
-			blend = mix(length(inner_pos), blend, blend);
-			blend *= blend;
-			blend = max(0.0, 1.0 - blend);
-
-			if (reflections.data[ref_index].params.x > 0.0) { // compute reflection
-
-				vec3 local_ref_vec = (reflections.data[ref_index].local_matrix * vec4(ref_vec, 0.0)).xyz;
-
-				if (reflections.data[ref_index].params.w > 0.5) { //box project
-
-					vec3 nrdir = normalize(local_ref_vec);
-					vec3 rbmax = (box_extents - local_pos) / nrdir;
-					vec3 rbmin = (-box_extents - local_pos) / nrdir;
-
-					vec3 rbminmax = mix(rbmin, rbmax, greaterThan(nrdir, vec3(0.0, 0.0, 0.0)));
-
-					float fa = min(min(rbminmax.x, rbminmax.y), rbminmax.z);
-					vec3 posonbox = local_pos + nrdir * fa;
-					local_ref_vec = posonbox - reflections.data[ref_index].box_offset.xyz;
-				}
-
-				vec4 reflection;
-
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-
-				float lod,layer_blend;
-				layer_blend = modf(roughness * MAX_ROUGHNESS_LOD, lod);
-				reflection.rgb = texture(samplerCubeArray(reflection_probes[i],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(local_ref_vec, lod)).rgb;
-				reflection.rgb = mix(reflection.rgb,texture(samplerCubeArray(reflection_probes[i],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(local_ref_vec, lod+1)).rgb,layer_blend);
-
-#else
-				reflection.rgb = textureLod(samplerCube(reflection_probes[i],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), local_ref_vec, roughness * MAX_ROUGHNESS_LOD).rgb;
-
-#endif
-
-				if (reflections.data[ref_index].params.z < 0.5) {
-					reflection.rgb = mix(specular_light, reflection.rgb, blend);
-				}
-
-				reflection.rgb *= reflections.data[ref_index].params.x;
-				reflection.a = blend;
-				reflection.rgb *= reflection.a;
-
-				reflection_accum += reflection;
-			}
-
-#ifndef USE_LIGHTMAP
-			if (reflections.data[ref_index].ambient.a > 0.0) { //compute ambient using skybox
-
-				vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(normal, 0.0)).xyz;
-
-				vec4 ambient_out;
-
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-				ambient_out.rgb = texture(samplerCubeArray(reflection_probes[i],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), vec4(local_amb_vec, MAX_ROUGHNESS_LOD)).rgb;
-#else
-				ambient_out.rgb = textureLod(samplerCube(reflection_probes[i],material_samplers[SAMPLER_LINEAR_WITH_MIPMAPS_CLAMP]), local_amb_vec, MAX_ROUGHNESS_LOD).rgb;
-#endif //USE_RADIANCE_CUBEMAP_ARRAY
-
-				ambient_out.a = blend;
-				ambient_out.rgb = mix(reflections.data[ref_index].ambient.rgb, ambient_out.rgb, reflections.data[ref_index].ambient.a);
-				if (reflections.data[ref_index].params.z < 0.5) {
-					ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
-				}
-
-				ambient_out.rgb *= ambient_out.a;
-				ambient_accum += ambient_out;
-			} else {
-
-				vec4 ambient_out;
-				ambient_out.a = blend;
-				ambient_out.rgb = reflections.data[ref_index].ambient.rgb;
-				if (reflections.data[ref_index].params.z < 0.5) {
-					ambient_out.rgb = mix(ambient_light, ambient_out.rgb, blend);
-				}
-				ambient_out.rgb *= ambient_out.a;
-				ambient_accum += ambient_out;
-			}
-#endif //USE_LIGHTMAP
+			reflection_process(ref_index,vertex,normal,roughness,ambient_light,specular_light,ambient_accum,reflection_accum);
 
 		}
 
@@ -1111,7 +1094,7 @@ FRAGMENT_SHADER_CODE
 
 
 	}
-#endif //0
+
 	{
 
 #if defined(DIFFUSE_TOON)

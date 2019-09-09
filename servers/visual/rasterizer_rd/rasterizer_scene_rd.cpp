@@ -4,38 +4,17 @@
 
 void RasterizerSceneRD::_clear_reflection_data(ReflectionData &rd) {
 
-	if (rd.radiance.is_valid()) {
-		//if size changes, everything must be cleared
-		RD::get_singleton()->free(rd.radiance);
-		//everything else gets dependency, erase, so just clean it up
-		rd.radiance = RID();
-		rd.layers.clear();
-		rd.radiance_base_cubemap = RID();
-	}
+	rd.layers.clear();
+	rd.radiance_base_cubemap = RID();
 }
 
-void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, bool p_quality) {
+void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, int p_mipmaps, bool p_use_array, RID p_base_cube, int p_base_layer) {
 	//recreate radiance and all data
-	int mipmaps = Image::get_image_required_mipmaps(p_size, p_size, Image::FORMAT_RGBAH) + 1;
-	if (!p_quality) {
-		//use less mipmaps
-		mipmaps = MIN(8, mipmaps);
-	}
 
+	int mipmaps = p_mipmaps;
 	uint32_t w = p_size, h = p_size;
 
-	if (sky_use_cubemap_array) {
-		//array (higher quality, 6 times more memory)
-		RD::TextureFormat tf;
-		tf.array_layers = roughness_layers * 6;
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-		tf.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
-		tf.mipmaps = mipmaps;
-		tf.width = w;
-		tf.height = h;
-		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-
-		rd.radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
+	if (p_use_array) {
 
 		for (int i = 0; i < roughness_layers; i++) {
 			ReflectionData::Layer layer;
@@ -47,7 +26,7 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 				mm.size.width = mmw;
 				mm.size.height = mmh;
 				for (int k = 0; k < 6; k++) {
-					mm.views[k] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rd.radiance, i * 6 + k, j);
+					mm.views[k] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + i * 6 + k, j);
 					Vector<RID> fbtex;
 					fbtex.push_back(mm.views[k]);
 					mm.framebuffers[k] = RD::get_singleton()->framebuffer_create(fbtex);
@@ -62,17 +41,6 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 
 	} else {
 		//regular cubemap, lower quality (aliasing, less memory)
-		RD::TextureFormat tf;
-		tf.array_layers = 6;
-		tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
-		tf.type = RD::TEXTURE_TYPE_CUBE;
-		tf.mipmaps = roughness_layers;
-		tf.width = w;
-		tf.height = h;
-		tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
-
-		rd.radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
-
 		ReflectionData::Layer layer;
 		uint32_t mmw = w;
 		uint32_t mmh = h;
@@ -82,7 +50,7 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 			mm.size.width = mmw;
 			mm.size.height = mmh;
 			for (int k = 0; k < 6; k++) {
-				mm.views[k] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rd.radiance, k, j);
+				mm.views[k] = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer + k, j);
 				Vector<RID> fbtex;
 				fbtex.push_back(mm.views[k]);
 				mm.framebuffers[k] = RD::get_singleton()->framebuffer_create(fbtex);
@@ -95,11 +63,14 @@ void RasterizerSceneRD::_update_reflection_data(ReflectionData &rd, int p_size, 
 		rd.layers.push_back(layer);
 	}
 
-	rd.radiance_base_cubemap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), rd.radiance, 0, 0, RD::TEXTURE_SLICE_CUBEMAP);
+	rd.radiance_base_cubemap = RD::get_singleton()->texture_create_shared_from_slice(RD::TextureView(), p_base_cube, p_base_layer, 0, RD::TEXTURE_SLICE_CUBEMAP);
 }
 
 void RasterizerSceneRD::_create_reflection_from_panorama(ReflectionData &rd, RID p_panorama, bool p_quality) {
 
+#ifndef _MSC_VER
+#warning TODO, should probably use this algorithm instead. Volunteers? - https://www.ppsloan.org/publications/ggx_filtering.pdf	 / https://github.com/dariomanesku/cmft
+#endif
 	if (sky_use_cubemap_array) {
 
 		if (p_quality) {
@@ -148,9 +119,9 @@ void RasterizerSceneRD::_create_reflection_from_panorama(ReflectionData &rd, RID
 	}
 }
 
-void RasterizerSceneRD::_create_reflection_from_base_mipmap(ReflectionData &rd, bool p_quality, int p_cube_side) {
+void RasterizerSceneRD::_create_reflection_from_base_mipmap(ReflectionData &rd, bool p_use_arrays, bool p_quality, int p_cube_side) {
 
-	if (sky_use_cubemap_array) {
+	if (p_use_arrays) {
 
 		if (p_quality) {
 			//render directly to the layers
@@ -220,6 +191,10 @@ void RasterizerSceneRD::sky_set_radiance_size(RID p_sky, int p_radiance_size) {
 	}
 	sky->radiance_size = p_radiance_size;
 	_sky_invalidate(sky);
+	if (sky->radiance.is_valid()) {
+		RD::get_singleton()->free(sky->radiance);
+		sky->radiance = RID();
+	}
 	_clear_reflection_data(sky->reflection);
 }
 
@@ -242,6 +217,10 @@ void RasterizerSceneRD::sky_set_texture(RID p_sky, RID p_panorama) {
 
 	if (sky->panorama.is_valid()) {
 		sky->panorama = RID();
+		if (sky->radiance.is_valid()) {
+			RD::get_singleton()->free(sky->radiance);
+			sky->radiance = RID();
+		}
 		_clear_reflection_data(sky->reflection);
 	}
 
@@ -260,8 +239,45 @@ void RasterizerSceneRD::_update_dirty_skys() {
 
 		//update sky configuration if texture is missing
 
-		if (sky->reflection.radiance.is_null()) {
-			_update_reflection_data(sky->reflection, sky->radiance_size, sky->mode == VS::SKY_MODE_QUALITY);
+		if (sky->radiance.is_null()) {
+			int mipmaps = Image::get_image_required_mipmaps(sky->radiance_size, sky->radiance_size, Image::FORMAT_RGBAH) + 1;
+			if (sky->mode != VS::SKY_MODE_QUALITY) {
+				//use less mipmaps
+				mipmaps = MIN(8, mipmaps);
+			}
+
+			uint32_t w = sky->radiance_size, h = sky->radiance_size;
+
+			if (sky_use_cubemap_array) {
+				//array (higher quality, 6 times more memory)
+				RD::TextureFormat tf;
+				tf.array_layers = roughness_layers * 6;
+				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+				tf.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+				tf.mipmaps = mipmaps;
+				tf.width = w;
+				tf.height = h;
+				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+
+				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+				_update_reflection_data(sky->reflection, sky->radiance_size, mipmaps, true, sky->radiance, 0);
+
+			} else {
+				//regular cubemap, lower quality (aliasing, less memory)
+				RD::TextureFormat tf;
+				tf.array_layers = 6;
+				tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+				tf.type = RD::TEXTURE_TYPE_CUBE;
+				tf.mipmaps = roughness_layers;
+				tf.width = w;
+				tf.height = h;
+				tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+
+				sky->radiance = RD::get_singleton()->texture_create(tf, RD::TextureView());
+
+				_update_reflection_data(sky->reflection, sky->radiance_size, mipmaps, false, sky->radiance, 0);
+			}
 		}
 
 		RID panorama_texture = storage->texture_get_rd_texture(sky->panorama);
@@ -295,7 +311,7 @@ RID RasterizerSceneRD::sky_get_radiance_texture_rd(RID p_sky) const {
 	Sky *sky = sky_owner.getornull(p_sky);
 	ERR_FAIL_COND_V(!sky, RID());
 
-	return sky->reflection.radiance;
+	return sky->radiance;
 }
 
 RID RasterizerSceneRD::environment_create() {
@@ -469,6 +485,42 @@ bool RasterizerSceneRD::is_environment(RID p_env) const {
 
 ////////////////////////////////////////////////////////////
 
+RID RasterizerSceneRD::reflection_atlas_create() {
+
+	ReflectionAtlas ra;
+	ra.count = GLOBAL_GET("rendering/quality/reflection_atlas/reflection_count");
+	ra.size = GLOBAL_GET("rendering/quality/reflection_atlas/reflection_size");
+
+	return reflection_atlas_owner.make_rid(ra);
+}
+
+void RasterizerSceneRD::reflection_atlas_set_size(RID p_ref_atlas, int p_reflection_size, int p_reflection_count) {
+
+	ReflectionAtlas *ra = reflection_atlas_owner.getornull(p_ref_atlas);
+	ERR_FAIL_COND(!ra);
+
+	if (ra->size == p_reflection_size && ra->count == p_reflection_count) {
+		return; //no changes
+	}
+
+	if (ra->reflection.is_valid()) {
+		//clear and invalidate everything
+		RD::get_singleton()->free(ra->reflection);
+		ra->reflection = RID();
+
+		for (int i = 0; i < ra->reflections.size(); i++) {
+			if (ra->reflections[i].owner.is_null()) {
+				continue;
+			}
+			reflection_probe_release_atlas_index(ra->reflections[i].owner);
+			//rp->atlasindex clear
+		}
+
+		ra->reflections.clear();
+	}
+}
+
+////////////////////////
 RID RasterizerSceneRD::reflection_probe_instance_create(RID p_probe) {
 	ReflectionProbeInstance rpi;
 	rpi.probe = p_probe;
@@ -481,6 +533,22 @@ void RasterizerSceneRD::reflection_probe_instance_set_transform(RID p_instance, 
 
 	rpi->transform = p_transform;
 	rpi->dirty = true;
+}
+
+void RasterizerSceneRD::reflection_probe_release_atlas_index(RID p_instance) {
+
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ERR_FAIL_COND(!rpi);
+
+	if (rpi->atlas.is_null()) {
+		return; //nothing to release
+	}
+	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ERR_FAIL_COND(!atlas);
+	ERR_FAIL_INDEX(rpi->atlas_index, atlas->reflections.size());
+	atlas->reflections.write[rpi->atlas_index].owner = RID();
+	rpi->atlas_index = -1;
+	rpi->atlas = RID();
 }
 
 bool RasterizerSceneRD::reflection_probe_instance_needs_redraw(RID p_instance) {
@@ -496,52 +564,93 @@ bool RasterizerSceneRD::reflection_probe_instance_needs_redraw(RID p_instance) {
 		return true;
 	}
 
-	if (rpi->current_resolution != storage->reflection_probe_get_resolution(rpi->probe)) {
-		return true;
-	}
-
 	if (storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ALWAYS) {
 		return true;
 	}
 
-	return false;
+	return rpi->atlas_index == -1;
 }
 
-void RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance) {
+bool RasterizerSceneRD::reflection_probe_instance_has_reflection(RID p_instance) {
 
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
-	ERR_FAIL_COND(!rpi);
-	rpi->rendering = true;
-	rpi->processing_side = 0;
+	ERR_FAIL_COND_V(!rpi, false);
 
-	int probe_resolution = storage->reflection_probe_get_resolution(rpi->probe);
-	if (rpi->current_resolution != probe_resolution) {
-		//need to re-create everything
-		_clear_reflection_data(rpi->reflection);
-		_update_reflection_data(rpi->reflection, probe_resolution, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE);
+	return rpi->atlas.is_valid();
+}
 
-		rpi->current_resolution = probe_resolution;
+bool RasterizerSceneRD::reflection_probe_instance_begin_render(RID p_instance, RID p_reflection_atlas) {
 
-		if (rpi->depth_buffer.is_valid()) {
-			RD::get_singleton()->free(rpi->depth_buffer);
+	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(p_reflection_atlas);
+
+	ERR_FAIL_COND_V(!atlas, false);
+
+	if (atlas->reflection.is_null()) {
+		{
+			//reflection atlas was unused, create:
+			RD::TextureFormat tf;
+			tf.array_layers = 6 * atlas->count;
+			tf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+			tf.type = RD::TEXTURE_TYPE_CUBE_ARRAY;
+			tf.mipmaps = roughness_layers;
+			tf.width = atlas->size;
+			tf.height = atlas->size;
+			tf.usage_bits = RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+
+			atlas->reflection = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
 		{
+
 			RD::TextureFormat tf;
-			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D24_UNORM_S8_UINT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D24_UNORM_S8_UINT : RD::DATA_FORMAT_D32_SFLOAT_S8_UINT;
-			tf.width = probe_resolution;
-			tf.height = probe_resolution;
-			tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
-
-			rpi->depth_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			tf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+			tf.width = atlas->size;
+			tf.height = atlas->size;
+			tf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT | RD::TEXTURE_USAGE_SAMPLING_BIT;
+			atlas->depth_buffer = RD::get_singleton()->texture_create(tf, RD::TextureView());
 		}
-
-		for (int i = 0; i < 6; i++) {
-			Vector<RID> fb;
-			fb.push_back(rpi->reflection.layers[0].mipmaps[0].views[i]);
-			fb.push_back(rpi->depth_buffer);
-			rpi->render_fb[i] = RD::get_singleton()->framebuffer_create(fb);
+		atlas->reflections.resize(atlas->count);
+		for (int i = 0; i < atlas->count; i++) {
+			_update_reflection_data(atlas->reflections.write[i].data, atlas->size, roughness_layers, false, atlas->reflection, i * 6);
+			for (int j = 0; j < 6; j++) {
+				Vector<RID> fb;
+				fb.push_back(atlas->reflections.write[i].data.layers[0].mipmaps[0].views[j]);
+				fb.push_back(atlas->depth_buffer);
+				atlas->reflections.write[i].fbs[j] = RD::get_singleton()->framebuffer_create(fb);
+			}
 		}
 	}
+
+	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
+	ERR_FAIL_COND_V(!rpi, false);
+
+	if (rpi->atlas_index == -1) {
+		for (int i = 0; i < atlas->reflections.size(); i++) {
+			if (atlas->reflections[i].owner.is_null()) {
+				rpi->atlas_index = i;
+				break;
+			}
+		}
+		//find the one used last
+		if (rpi->atlas_index == -1) {
+			//everything is in use, find the one least used via LRU
+			uint64_t pass_min = 0;
+
+			for (int i = 0; i < atlas->reflections.size(); i++) {
+				ReflectionProbeInstance *rpi2 = reflection_probe_instance_owner.getornull(atlas->reflections[i].owner);
+				if (rpi2->last_pass < pass_min) {
+					pass_min = rpi2->last_pass;
+					rpi->atlas_index = i;
+				}
+			}
+		}
+	}
+
+	rpi->atlas = p_reflection_atlas;
+	rpi->rendering = true;
+	rpi->dirty = false;
+	rpi->processing_side = 0;
+
+	return true;
 }
 
 bool RasterizerSceneRD::reflection_probe_instance_postprocess_step(RID p_instance) {
@@ -549,15 +658,22 @@ bool RasterizerSceneRD::reflection_probe_instance_postprocess_step(RID p_instanc
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 	ERR_FAIL_COND_V(!rpi, false);
 	ERR_FAIL_COND_V(!rpi->rendering, false);
+	ERR_FAIL_COND_V(rpi->atlas.is_null(), false);
 
-	_create_reflection_from_base_mipmap(rpi->reflection, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE, rpi->processing_side);
+	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	if (!atlas || rpi->atlas_index == -1) {
+		//does not belong to an atlas anymore, cancel (was removed from atlas or atlas changed while rendering)
+		rpi->rendering = false;
+		return false;
+	}
+
+	_create_reflection_from_base_mipmap(atlas->reflections.write[rpi->atlas_index].data, false, storage->reflection_probe_get_update_mode(rpi->probe) == VS::REFLECTION_PROBE_UPDATE_ONCE, rpi->processing_side);
 
 	rpi->processing_side++;
 
 	if (rpi->processing_side == 6) {
 		rpi->rendering = false;
 		rpi->processing_side = 0;
-
 		return true;
 	} else {
 		return false;
@@ -568,7 +684,9 @@ uint32_t RasterizerSceneRD::reflection_probe_instance_get_resolution(RID p_insta
 	ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
 	ERR_FAIL_COND_V(!rpi, 0);
 
-	return rpi->current_resolution;
+	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ERR_FAIL_COND_V(!atlas, 0);
+	return atlas->size;
 }
 
 RID RasterizerSceneRD::reflection_probe_instance_get_framebuffer(RID p_instance, int p_index) {
@@ -576,7 +694,9 @@ RID RasterizerSceneRD::reflection_probe_instance_get_framebuffer(RID p_instance,
 	ERR_FAIL_COND_V(!rpi, RID());
 	ERR_FAIL_INDEX_V(p_index, 6, RID());
 
-	return rpi->render_fb[p_index];
+	ReflectionAtlas *atlas = reflection_atlas_owner.getornull(rpi->atlas);
+	ERR_FAIL_COND_V(!atlas, RID());
+	return atlas->reflections[rpi->atlas_index].fbs[p_index];
 }
 
 ///////////////////////////////////////////////////////////
@@ -591,8 +711,8 @@ void RasterizerSceneRD::shadow_atlas_set_size(RID p_atlas, int p_size) {
 	ShadowAtlas *shadow_atlas = shadow_atlas_owner.getornull(p_atlas);
 	ERR_FAIL_COND(!shadow_atlas);
 	ERR_FAIL_COND(p_size < 0);
-
 	p_size = next_power_of_2(p_size);
+	p_size = MAX(p_size, 1 << roughness_layers);
 
 	if (p_size == shadow_atlas->size)
 		return;
@@ -1097,12 +1217,12 @@ bool RasterizerSceneRD::is_using_radiance_cubemap_array() const {
 	return sky_use_cubemap_array;
 }
 
-void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
+void RasterizerSceneRD::render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) {
 
 	RenderBuffers *rb = render_buffers_owner.getornull(p_render_buffers);
 	ERR_FAIL_COND(!rb && p_render_buffers.is_valid());
 
-	_render_scene(rb->data, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_environment, p_shadow_atlas, p_reflection_probe, p_reflection_probe_pass);
+	_render_scene(rb ? rb->data : (RenderBufferData *)NULL, p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_light_cull_result, p_light_cull_count, p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_environment, p_shadow_atlas, p_reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
 void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) {
@@ -1289,14 +1409,21 @@ bool RasterizerSceneRD::free(RID p_rid) {
 	} else if (environment_owner.owns(p_rid)) {
 		//not much to delete, just free it
 		environment_owner.free(p_rid);
+	} else if (reflection_atlas_owner.owns(p_rid)) {
+		reflection_atlas_set_size(p_rid, 0, 0);
+		reflection_atlas_owner.free(p_rid);
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
 		//not much to delete, just free it
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
-		_clear_reflection_data(rpi->reflection);
+		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
 	} else if (sky_owner.owns(p_rid)) {
 		_update_dirty_skys();
 		Sky *sky = sky_owner.getornull(p_rid);
+		if (sky->radiance.is_valid()) {
+			RD::get_singleton()->free(sky->radiance);
+			sky->radiance = RID();
+		}
 		_clear_reflection_data(sky->reflection);
 		sky_owner.free(p_rid);
 	} else if (light_instance_owner.owns(p_rid)) {
@@ -1340,7 +1467,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	sky_ggx_samples_quality = GLOBAL_GET("rendering/quality/reflections/ggx_samples");
 	sky_ggx_samples_realtime = GLOBAL_GET("rendering/quality/reflections/ggx_samples_realtime");
 	sky_use_cubemap_array = GLOBAL_GET("rendering/quality/reflections/texture_array_reflections");
-	sky_use_cubemap_array = false;
+	//	sky_use_cubemap_array = false;
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {
