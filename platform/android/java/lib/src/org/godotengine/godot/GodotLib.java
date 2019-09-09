@@ -211,4 +211,16 @@ public class GodotLib {
 	 * Invoked on the GL thread to configure the height of the virtual keyboard.
 	 */
 	public static native void setVirtualKeyboardHeight(int p_height);
+
+	/**
+	 * Invoked on the GL thread when the {@link GodotRenderer} has been resumed.
+	 * @see GodotRenderer#onActivityResumed()
+	 */
+	public static native void onRendererResumed();
+
+	/**
+	 * Invoked on the GL thread when the {@link GodotRenderer} has been paused.
+	 * @see GodotRenderer#onActivityPaused()
+	 */
+	public static native void onRendererPaused();
 }

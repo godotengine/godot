@@ -40,7 +40,14 @@ import org.godotengine.godot.utils.GLUtils;
  */
 class GodotRenderer implements GLSurfaceView.Renderer {
 
+	private boolean activityJustResumed = false;
+
 	public void onDrawFrame(GL10 gl) {
+		if (activityJustResumed) {
+			GodotLib.onRendererResumed();
+			activityJustResumed = false;
+		}
+
 		GodotLib.step();
 		for (int i = 0; i < Godot.singleton_count; i++) {
 			Godot.singletons[i].onGLDrawFrame(gl);
@@ -57,5 +64,15 @@ class GodotRenderer implements GLSurfaceView.Renderer {
 
 	public void onSurfaceCreated(GL10 gl, EGLConfig config) {
 		GodotLib.newcontext(GLUtils.use_32);
+	}
+
+	void onActivityResumed() {
+		// We defer invoking GodotLib.onRendererResumed() until the first draw frame call.
+		// This ensures we have a valid GL context and surface when we do so.
+		activityJustResumed = true;
+	}
+
+	void onActivityPaused() {
+		GodotLib.onRendererPaused();
 	}
 }

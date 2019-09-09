@@ -68,6 +68,7 @@ public class GodotView extends GLSurfaceView {
 
 	private final Godot activity;
 	private final GodotInputHandler inputHandler;
+	private final GodotRenderer godotRenderer;
 
 	public GodotView(Godot activity, XRMode xrMode, boolean p_use_gl3, boolean p_use_32_bits, boolean p_use_debug_opengl) {
 		super(activity);
@@ -77,6 +78,7 @@ public class GodotView extends GLSurfaceView {
 
 		this.activity = activity;
 		this.inputHandler = new GodotInputHandler(this);
+		this.godotRenderer = new GodotRenderer();
 		init(xrMode, false, 16, 0);
 	}
 
@@ -161,10 +163,38 @@ public class GodotView extends GLSurfaceView {
 		}
 
 		/* Set the renderer responsible for frame rendering */
-		setRenderer(new GodotRenderer());
+		setRenderer(godotRenderer);
 	}
 
 	public void onBackPressed() {
 		activity.onBackPressed();
+	}
+
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				// Resume the renderer
+				godotRenderer.onActivityResumed();
+				GodotLib.focusin();
+			}
+		});
+	}
+
+	@Override
+	public void onPause() {
+		super.onPause();
+
+		queueEvent(new Runnable() {
+			@Override
+			public void run() {
+				GodotLib.focusout();
+				// Pause the renderer
+				godotRenderer.onActivityPaused();
+			}
+		});
 	}
 }
