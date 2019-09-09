@@ -209,8 +209,10 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 	/* Scene State UBO */
 
 	struct ReflectionData { //should always be 128 bytes
-		float box_extents[4];
-		float box_offset[4];
+		float box_extents[3];
+		float index;
+		float box_offset[3];
+		uint32_t mask;
 		float params[4]; // intensity, 0, interior , boxproject
 		float ambient[4]; // ambient color, energy
 		float local_matrix[16]; // up to here for spot and omni, rest is for directional
@@ -480,8 +482,8 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
 	};
 
-	void _setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas);
-	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas);
+	void _setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas);
+	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
 
 	void _fill_instances(RenderList::Element **p_elements, int p_element_count);
@@ -494,7 +496,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 	void _draw_sky(RD::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, float p_alpha);
 
 protected:
-	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip);
 
 public:
