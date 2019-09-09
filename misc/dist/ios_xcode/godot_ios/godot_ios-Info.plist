@@ -36,6 +36,8 @@
 	<string>$camera_usage_description</string>
 	<key>NSPhotoLibraryUsageDescription</key>
 	<string>$photolibrary_usage_description</string>
+	<key>NSLocationWhenInUseUsageDescription</key>
+	<string>$location_when_in_usage_description</string>
 	<key>UIRequiresFullScreen</key>
 	<true/>
 	<key>UIStatusBarHidden</key>

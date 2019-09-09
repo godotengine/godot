@@ -62,7 +62,8 @@ import android.os.Messenger;
 import android.os.VibrationEffect;
 import android.os.Vibrator;
 import android.provider.Settings.Secure;
-import android.support.v4.content.ContextCompat;
+import androidx.core.content.ContextCompat;
+
 import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
@@ -108,6 +109,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	static final int REQUEST_RECORD_AUDIO_PERMISSION = 1;
 	static final int REQUEST_CAMERA_PERMISSION = 2;
 	static final int REQUEST_VIBRATE_PERMISSION = 3;
+	static final int REQUEST_COARSE_LOCATION_PERMISSION = 4;
+	static final int REQUEST_FINE_LOCATION_PERMISSION = 5;
 	private IStub mDownloaderClientStub;
 	private IDownloaderService mRemoteService;
 	private TextView mStatusText;
@@ -129,6 +132,8 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 	private boolean use_debug_opengl = false;
 	private boolean mStatePaused;
 	private int mState;
+
+	private GodotLocationManager locationManager;
 
 	static private Intent mCurrentIntent;
 
@@ -347,6 +352,24 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	}
 
+	public void startPeriodicLocationUpdate(final long interval, final long maxWaitTime, final int priority) {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				locationManager.startLocationUpdates(interval, maxWaitTime, priority);
+			}
+		});
+	}
+
+	public void stopPeriodicLocationUpdate() {
+		runOnUiThread(new Runnable() {
+			@Override
+			public void run() {
+				locationManager.stopLocationUpdates();
+			}
+		});
+	}
+
 	public void restart() {
 		// HACK:
 		//
@@ -466,6 +489,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		result_callback = null;
 
 		mPaymentsManager = PaymentsManager.createManager(this).initService();
+		locationManager = GodotLocationManager.getInstance(this);
 
 		godot_initialized = true;
 	}
@@ -646,6 +670,7 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 			}
 		});
 		mSensorManager.unregisterListener(this);
+		locationManager.stopLocationUpdates();
 
 		for (int i = 0; i < singleton_count; i++) {
 			singletons[i].onMainPause();
@@ -987,6 +1012,20 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		if (p_name.equals("VIBRATE")) {
 			if (ContextCompat.checkSelfPermission(this, Manifest.permission.VIBRATE) != PackageManager.PERMISSION_GRANTED) {
 				requestPermissions(new String[] { Manifest.permission.VIBRATE }, REQUEST_VIBRATE_PERMISSION);
+				return false;
+			}
+		}
+
+		if (GodotLocationManager.ACCESS_COARSE_LOCATION_PERMISSION.equals(p_name)) {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[] { Manifest.permission.ACCESS_COARSE_LOCATION }, REQUEST_COARSE_LOCATION_PERMISSION);
+				return false;
+			}
+		}
+
+		if (GodotLocationManager.ACCESS_FINE_LOCATION_PERMISSION.equals(p_name)) {
+			if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+				requestPermissions(new String[] { Manifest.permission.ACCESS_FINE_LOCATION }, REQUEST_FINE_LOCATION_PERMISSION);
 				return false;
 			}
 		}

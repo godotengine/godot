@@ -1,4 +1,5 @@
 /*************************************************************************/
+/*************************************************************************/
 /*  os.h                                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -264,6 +265,26 @@ public:
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
+
+	struct LocationParameter {
+		uint64_t interval;
+		uint64_t max_wait_time;
+		uint32_t priority;
+	};
+	
+	struct Location {
+		float longitute;
+		float latitude;
+		float horizontal_accuracy;
+		float vertical_accuracy;
+		float altitude;
+		float speed;
+		uint64_t time;
+	};
+
+	virtual void request_location(LocationParameter p_location_parameter);
+	virtual void stop_request_location();
+	virtual void update_location(Location p_location);
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String &p_cwd);

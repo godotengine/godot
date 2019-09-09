@@ -162,6 +162,18 @@ void OS::vibrate_handheld(int p_duration_ms) {
 	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
 }
 
+void OS::request_location(LocationParameter p_location_parameter) {
+	WARN_PRINTS("request_location(LocationParameter p_location_parameter) only works with Android and iOS");
+}
+
+void OS::stop_request_location() {
+	WARN_PRINTS("stop_request_location() only works with Android and iOS");
+}
+
+void OS::update_location(Location p_location) {
+	WARN_PRINTS("update_location(Location p_location) only works with Android and iOS");
+}
+
 bool OS::is_stdout_verbose() const {
 
 	return _verbose_stdout;

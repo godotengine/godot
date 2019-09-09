@@ -623,6 +623,8 @@ static jmethodID _setKeepScreenOn = 0;
 static jmethodID _alertDialog = 0;
 static jmethodID _requestPermission = 0;
 static jmethodID _vibrateDevice = 0;
+static jmethodID _start_periodic_location_update = 0;
+static jmethodID _stop_periodic_location_update = 0;
 
 static void _gfx_init_func(void *ud, bool gl2) {
 }
@@ -759,6 +761,16 @@ static void _vibrate(int p_duration_ms) {
 	env->CallVoidMethod(_godot_instance, _vibrateDevice, p_duration_ms);
 }
 
+static void _start_periodic_location(uint64_t p_interval, uint64_t p_max_wait_time, uint32_t p_priority) {
+	JNIEnv *env = ThreadAndroid::get_env();
+	env->CallVoidMethod(_godot_instance, _start_periodic_location_update, p_interval, p_max_wait_time, p_priority);
+}
+
+static void _stop_periodic_location() {
+	JNIEnv *env = ThreadAndroid::get_env();
+	env->CallVoidMethod(_godot_instance, _stop_periodic_location_update);
+}
+
 // volatile because it can be changed from non-main thread and we need to
 // ensure the change is immediately visible to other threads.
 static volatile int virtual_keyboard_height;
@@ -805,7 +817,8 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		_setClipboard = env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 		_requestPermission = env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
 		_vibrateDevice = env->GetMethodID(cls, "vibrate", "(I)V");
-
+		_start_periodic_location_update = env->GetMethodID(cls, "startPeriodicLocationUpdate", "(JJI)V");
+		_stop_periodic_location_update = env->GetMethodID(cls, "stopPeriodicLocationUpdate", "()V");
 		if (cls) {
 			jclass c = env->GetObjectClass(gob);
 			_openURI = env->GetMethodID(c, "openURI", "(Ljava/lang/String;)I");
@@ -837,7 +850,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		AudioDriverAndroid::setup(gob);
 	}
 
-	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _get_gles_version_code, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, _set_clipboard, _get_clipboard, _request_permission, _vibrate, p_use_apk_expansion);
+	os_android = new OS_Android(_gfx_init_func, env, _open_uri, _get_user_data_dir, _get_locale, _get_model, _get_screen_dpi, _show_vk, _hide_vk, _get_vk_height, _set_screen_orient, _get_unique_id, _get_system_dir, _get_gles_version_code, _play_video, _is_video_playing, _pause_video, _stop_video, _set_keep_screen_on, _alert, _set_clipboard, _get_clipboard, _request_permission, _vibrate, _start_periodic_location, _stop_periodic_location, p_use_apk_expansion);
 
 	char wd[500];
 	getcwd(wd, 500);
@@ -1593,4 +1606,16 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 	if (permission == "android.permission.RECORD_AUDIO" && p_result) {
 		AudioDriver::get_singleton()->capture_start();
 	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateLocation(JNIEnv *env, jobject p_obj, jfloat p_longitude, jfloat p_latitude, jfloat p_h_accuracy,jfloat p_v_accuracy, jfloat p_altitude, jfloat p_speed, jlong p_time) {
+	OS::Location location;
+	location.longitute = p_longitude;
+	location.latitude = p_latitude;
+	location.horizontal_accuracy = p_h_accuracy;
+	location.vertical_accuracy = p_v_accuracy;
+	location.altitude = p_altitude;
+	location.speed = p_speed;
+	location.time = p_time;
+	os_android->update_location(location);
 }

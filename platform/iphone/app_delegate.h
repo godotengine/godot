@@ -33,8 +33,9 @@
 #import <UIKit/UIKit.h>
 
 #import <CoreMotion/CoreMotion.h>
+#import <CoreLocation/CoreLocation.h>
 
-@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate> {
+@interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate, CLLocationManagerDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;
 	ViewController *view_controller;
 	bool is_focus_out;

@@ -44,6 +44,7 @@
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
+#include "modules/location/location_manager.h"
 
 class OSIPhone : public OS_Unix {
 
@@ -71,6 +72,7 @@ private:
 #endif
 
 	MainLoop *main_loop;
+    LocationManager *location_manager;
 
 	VideoMode video_mode;
 
@@ -149,6 +151,7 @@ public:
 	virtual void set_window_title(const String &p_title);
 
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
+	virtual bool request_permission(const String &p_name);
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);
 	virtual Error close_dynamic_library(void *p_library_handle);
@@ -196,6 +199,9 @@ public:
 	virtual void native_video_focus_out();
 	virtual void native_video_stop();
 	virtual void vibrate_handheld(int p_duration_ms = 500);
+    virtual void request_location(LocationParameter p_location_parameter);
+	virtual void stop_request_location();
+	virtual void update_location(Location p_location);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OSIPhone(int width, int height, String p_data_dir);

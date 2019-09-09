@@ -166,6 +166,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
+    location_manager = memnew(LocationManager);
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -366,6 +367,7 @@ void OSIPhone::finalize() {
 	//	memdelete(rasterizer);
 
 	memdelete(input);
+    memdelete(location_manager);
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};
@@ -393,6 +395,12 @@ void OSIPhone::alert(const String &p_alert, const String &p_title) {
 	const CharString utf8_alert = p_alert.utf8();
 	const CharString utf8_title = p_title.utf8();
 	iOS::alert(utf8_alert.get_data(), utf8_title.get_data());
+}
+
+extern bool _request_permission(String p_name);
+
+bool OSIPhone::request_permission(const String &p_name) {
+	return _request_permission(p_name);
 }
 
 Error OSIPhone::open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path) {
@@ -465,6 +473,8 @@ extern void _hide_keyboard();
 extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
+extern void _start_location_update();
+extern void _stop_location_update();
 
 void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 	_show_keyboard(p_existing_text);
@@ -589,6 +599,18 @@ void OSIPhone::native_video_stop() {
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
 	// iOS does not support duration for vibration
 	_vibrate();
+}
+
+void OSIPhone::request_location(LocationParameter p_location_parameter) {
+    _start_location_update();
+}
+
+void OSIPhone::stop_request_location() {
+    _stop_location_update();
+}
+
+void OSIPhone::update_location(Location p_location) {
+	LocationManager::get_singleton()->_send_location_data(p_location);
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {

@@ -40,6 +40,7 @@
 //#include "power_android.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
+#include "modules/location/location_manager.h"
 
 typedef void (*GFXInitFunc)(void *ud, bool gl2);
 typedef int (*OpenURIFunc)(const String &);
@@ -65,6 +66,8 @@ typedef void (*AlertFunc)(const String &, const String &);
 typedef int (*VirtualKeyboardHeightFunc)();
 typedef bool (*RequestPermissionFunc)(const String &);
 typedef void (*VibrateFunc)(int);
+typedef void (*StartPeriodicLocationFunc)(uint64_t, uint64_t, uint32_t);
+typedef void (*StopPeriodicLocationFunc)();
 
 class OS_Android : public OS_Unix {
 public:
@@ -112,6 +115,7 @@ private:
 	InputDefault *input;
 	VideoMode default_videomode;
 	MainLoop *main_loop;
+	LocationManager *location_manager;
 
 	OpenURIFunc open_uri_func;
 	GetUserDataDirFunc get_user_data_dir_func;
@@ -136,6 +140,8 @@ private:
 	AlertFunc alert_func;
 	RequestPermissionFunc request_permission_func;
 	VibrateFunc vibrate_func;
+	StartPeriodicLocationFunc start_periodic_location_func;
+	StopPeriodicLocationFunc stop_periodic_location_func;
 
 	//PowerAndroid *power_manager;
 	int video_driver_index;
@@ -242,9 +248,12 @@ public:
 	virtual String get_joy_guid(int p_device) const;
 	void joy_connection_changed(int p_device, bool p_connected, String p_name);
 	void vibrate_handheld(int p_duration_ms = 500);
+	virtual void request_location(LocationParameter p_location_parameter);
+	virtual void stop_request_location();
+	virtual void update_location(Location p_location);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
-	OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard, GetClipboardFunc p_get_clipboard, RequestPermissionFunc p_request_permission, VibrateFunc p_vibrate_func, bool p_use_apk_expansion);
+	OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard, GetClipboardFunc p_get_clipboard, RequestPermissionFunc p_request_permission, VibrateFunc p_vibrate_func, StartPeriodicLocationFunc p_start_periodic_location_func, StopPeriodicLocationFunc p_stop_periodic_location_func, bool p_use_apk_expansion);
 	~OS_Android();
 };
 

@@ -175,6 +175,7 @@ Error OS_Android::initialize(const VideoMode &p_desired, int p_video_driver, int
 	input = memnew(InputDefault);
 	input->set_fallback_mapping("Default Android Gamepad");
 
+	location_manager = memnew(LocationManager);
 	//power_manager = memnew(PowerAndroid);
 
 	return OK;
@@ -193,6 +194,7 @@ void OS_Android::delete_main_loop() {
 
 void OS_Android::finalize() {
 	memdelete(input);
+	memdelete(location_manager);
 }
 
 void OS_Android::alert(const String &p_alert, const String &p_title) {
@@ -703,6 +705,22 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 		vibrate_func(p_duration_ms);
 }
 
+void OS_Android::request_location(LocationParameter p_location_parameter) {
+	if (start_periodic_location_func) {
+		start_periodic_location_func(p_location_parameter.interval, p_location_parameter.max_wait_time, p_location_parameter.priority);
+	}
+}
+
+void OS_Android::stop_request_location() {
+	if (stop_periodic_location_func) {
+		stop_periodic_location_func();
+	}
+}
+
+void OS_Android::update_location(Location p_location) {
+	LocationManager::get_singleton()->_send_location_data(p_location);
+}
+
 bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "mobile") {
 		//TODO support etc2 only if GLES3 driver is selected
@@ -724,7 +742,7 @@ bool OS_Android::_check_internal_feature_support(const String &p_feature) {
 	return false;
 }
 
-OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func, RequestPermissionFunc p_request_permission, VibrateFunc p_vibrate_func, bool p_use_apk_expansion) {
+OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURIFunc p_open_uri_func, GetUserDataDirFunc p_get_user_data_dir_func, GetLocaleFunc p_get_locale_func, GetModelFunc p_get_model_func, GetScreenDPIFunc p_get_screen_dpi_func, ShowVirtualKeyboardFunc p_show_vk, HideVirtualKeyboardFunc p_hide_vk, VirtualKeyboardHeightFunc p_vk_height_func, SetScreenOrientationFunc p_screen_orient, GetUniqueIDFunc p_get_unique_id, GetSystemDirFunc p_get_sdir_func, GetGLVersionCodeFunc p_get_gl_version_func, VideoPlayFunc p_video_play_func, VideoIsPlayingFunc p_video_is_playing_func, VideoPauseFunc p_video_pause_func, VideoStopFunc p_video_stop_func, SetKeepScreenOnFunc p_set_keep_screen_on_func, AlertFunc p_alert_func, SetClipboardFunc p_set_clipboard_func, GetClipboardFunc p_get_clipboard_func, RequestPermissionFunc p_request_permission, VibrateFunc p_vibrate_func, StartPeriodicLocationFunc p_start_periodic_location_func, StopPeriodicLocationFunc p_stop_periodic_location_func, bool p_use_apk_expansion) {
 
 	use_apk_expansion = p_use_apk_expansion;
 	default_videomode.width = 800;
@@ -765,6 +783,8 @@ OS_Android::OS_Android(GFXInitFunc p_gfx_init_func, void *p_gfx_init_ud, OpenURI
 	alert_func = p_alert_func;
 	request_permission_func = p_request_permission;
 	vibrate_func = p_vibrate_func;
+	start_periodic_location_func = p_start_periodic_location_func;
+	stop_periodic_location_func = p_stop_periodic_location_func;
 
 	Vector<Logger *> loggers;
 	loggers.push_back(memnew(AndroidLogger));

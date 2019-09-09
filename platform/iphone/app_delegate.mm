@@ -45,6 +45,7 @@
 
 Error _shell_open(String);
 void _set_keep_screen_on(bool p_enabled);
+bool locationUpdateStart = false;
 
 Error _shell_open(String p_uri) {
 	NSString *url = [[NSString alloc] initWithUTF8String:p_uri.utf8().get_data()];
@@ -65,6 +66,57 @@ void _set_keep_screen_on(bool p_enabled) {
 void _vibrate() {
 	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 };
+
+bool _request_permission(String p_name) {
+	if (p_name == "ACCESS_FINE_LOCATION") {
+		CLLocationManager *locationManager = [[CLLocationManager alloc] init];
+		switch ([CLLocationManager authorizationStatus]) {
+			case kCLAuthorizationStatusNotDetermined:
+				[locationManager requestWhenInUseAuthorization];
+				return false;
+			case kCLAuthorizationStatusDenied:
+			case kCLAuthorizationStatusRestricted: {
+				return false;
+			}
+			case kCLAuthorizationStatusAuthorizedAlways:
+			case kCLAuthorizationStatusAuthorizedWhenInUse:
+				return true;
+		}
+	}
+	return false;
+}
+
+void _start_location_update() {
+	if (locationUpdateStart)
+		return;
+
+	switch ([CLLocationManager authorizationStatus]) {
+		case kCLAuthorizationStatusNotDetermined:
+		case kCLAuthorizationStatusDenied:
+		case kCLAuthorizationStatusRestricted: {
+			return;
+		}
+		case kCLAuthorizationStatusAuthorizedAlways:
+		case kCLAuthorizationStatusAuthorizedWhenInUse:
+			CLLocationManager *locationManager = [[CLLocationManager alloc] init];
+			locationManager.desiredAccuracy = kCLLocationAccuracyBest;
+			locationManager.delegate = ((AppDelegate *)[[UIApplication sharedApplication] delegate]);
+			[locationManager startUpdatingLocation];
+			locationUpdateStart = true;
+			NSLog(@"Location update started.");
+			break;
+	}
+	
+}
+
+void _stop_location_update() {
+	if (locationUpdateStart) {
+		CLLocationManager *locationManager = [[CLLocationManager alloc] init];
+		[locationManager stopUpdatingLocation];
+		locationUpdateStart = false;
+		NSLog(@"Location update stopped.");
+	}
+}
 
 @implementation AppDelegate
 
@@ -680,9 +732,24 @@ static int frame_count = 0;
 
 	// prevent to stop music in another background app
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
-
+    
 	return TRUE;
 };
+
+- (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
+    CLLocation *lastLoc = [locations lastObject];
+
+	OS::Location location;
+	location.longitute = lastLoc.coordinate.latitude;
+	location.latitude = lastLoc.coordinate.longitude;
+	location.horizontal_accuracy = lastLoc.horizontalAccuracy;
+	location.vertical_accuracy = lastLoc.verticalAccuracy;
+	location.altitude = lastLoc.altitude;
+	location.speed = lastLoc.speed;
+	location.time = [[NSNumber numberWithDouble:[lastLoc.timestamp timeIntervalSince1970]] unsignedLongLongValue];
+	
+	OSIPhone::get_singleton()->update_location(location);
+}
 
 - (void)onAudioInterruption:(NSNotification *)notification {
 	if ([notification.name isEqualToString:AVAudioSessionInterruptionNotification]) {
