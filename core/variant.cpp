@@ -910,7 +910,15 @@ bool Variant::is_one() const {
 
 void Variant::reference(const Variant &p_variant) {
 
-	clear();
+	switch (type) {
+		case NIL:
+		case BOOL:
+		case INT:
+		case REAL:
+			break;
+		default:
+			clear();
+	}
 
 	type = p_variant.type;
 
