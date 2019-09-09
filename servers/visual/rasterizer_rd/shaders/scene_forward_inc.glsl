@@ -145,8 +145,10 @@ layout(set=0,binding=9,std430)  buffer Instances {
 
 struct ReflectionData {
 
-	vec4 box_extents;
-	vec4 box_offset;
+	vec3 box_extents;
+	float index;
+	vec3 box_offset;
+	uint mask;
 	vec4 params; // intensity, 0, interior , boxproject
 	vec4 ambient; // ambient color, energy
 	mat4 local_matrix; // up to here for spot and omni, rest is for directional
@@ -157,6 +159,7 @@ layout(set=0,binding=10,std140) uniform ReflectionProbeData {
 	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
 } reflections;
 
+layout(set=0,binding=11) uniform textureCubeArray reflection_atlas;
 
 struct LightData { //this structure needs to be 128 bits
 
@@ -172,11 +175,11 @@ struct LightData { //this structure needs to be 128 bits
 	mat4 shadow_matrix;
 };
 
-layout(set=0,binding=11,std140) uniform Lights {
+layout(set=0,binding=12,std140) uniform Lights {
 	LightData data[MAX_LIGHT_DATA_STRUCTS];
 } lights;
 
-layout(set=0,binding=12) uniform texture2D shadow_atlas;
+layout(set=0,binding=13) uniform texture2D shadow_atlas;
 
 struct DirectionalLightData {
 
@@ -198,11 +201,11 @@ struct DirectionalLightData {
 
 };
 
-layout(set=0,binding=13,std140) uniform DirectionalLights {
+layout(set=0,binding=14,std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 } directional_lights;
 
-layout(set=0,binding=14) uniform texture2D directional_shadow_atlas;
+layout(set=0,binding=15) uniform texture2D directional_shadow_atlas;
 
 /*
 layout(set=0,binding=15,std430)  buffer Skeletons {
