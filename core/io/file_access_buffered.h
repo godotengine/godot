@@ -43,12 +43,12 @@ public:
 	};
 
 private:
-	int cache_size;
 
 	int cache_data_left() const;
 	mutable Error last_error;
 
 protected:
+	int cache_size;
 	Error set_error(Error p_error) const;
 
 	mutable struct File {
@@ -64,9 +64,13 @@ protected:
 
 		Vector<uint8_t> buffer;
 		int offset;
-	} cache;
+		int size;
+	} write_cache, read_cache;
+
+	void _write_cache_commit();
 
 	virtual int read_data_block(int p_offset, int p_size, uint8_t *p_dest = 0) const = 0;
+	virtual int write_data_block(int p_offset, int p_size, uint8_t *p_src = 0) = 0;
 
 	void set_cache_size(int p_size);
 	int get_cache_size();
@@ -81,7 +85,10 @@ public:
 	virtual bool eof_reached() const;
 
 	virtual uint8_t get_8() const;
+	virtual void store_8(uint8_t p_dest);
+
 	virtual int get_buffer(uint8_t *p_dst, int p_length) const; ///< get an array of bytes
+	virtual void store_buffer(const uint8_t *p_src, int p_length); ///< store an array of bytes
 
 	virtual bool is_open() const;
 

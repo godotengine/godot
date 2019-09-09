@@ -50,19 +50,33 @@ class FileAccessBufferedFA : public FileAccessBuffered {
 
 		} else {
 
-			cache.offset = p_offset;
-			cache.buffer.resize(p_size);
+			if (read_cache.buffer.size() == 0) {
+                read_cache.buffer.resize(cache_size);
+                read_cache.size = 0;
+            };
+
+            read_cache.offset = p_offset;
 
 			// on dvector
 			//DVector<uint8_t>::Write write = cache.buffer.write();
 			//f.get_buffer(write.ptr(), p_size);
 
 			// on vector
-			f.get_buffer(cache.buffer.ptr(), p_size);
+			f.get_buffer(read_cache.buffer.ptr(), p_size);
 
 			return p_size;
 		};
 	};
+
+	int write_data_block(int p_offset, int p_size, uint8_t *p_src = 0) {
+        
+        ERR_FAIL_COND_V(!f.is_open(), -1);
+
+        ((T *)&f)->seek(p_offset);
+
+        f.store_buffer(p_src, p_size);
+        return p_size;
+    };
 
 	static FileAccess *create() {
 
@@ -76,15 +90,6 @@ protected:
 	};
 
 public:
-	void store_8(uint8_t p_dest) {
-
-		f.store_8(p_dest);
-	};
-
-	void store_buffer(const uint8_t *p_src, int p_length) {
-
-		f.store_buffer(p_src, p_length);
-	};
 
 	bool file_exists(const String &p_name) {
 
@@ -106,13 +111,16 @@ public:
 		file.name = p_path;
 		file.access_flags = p_mode_flags;
 
-		cache.buffer.resize(0);
-		cache.offset = 0;
+		read_cache.buffer.resize(0);
+		write_cache.buffer.resize(0);
+		read_cache.offset = write_cache.offset = 0;
 
 		return set_error(OK);
 	};
 
 	void close() {
+
+		_write_cache_commit();
 
 		f.close();
 
@@ -121,8 +129,9 @@ public:
 		file.open = false;
 		file.name = "";
 
-		cache.buffer.resize(0);
-		cache.offset = 0;
+		read_cache.buffer.resize(0);
+		write_cache.buffer.resize(0);
+		read_cache.offset = write_cache.offset = 0;
 		set_error(OK);
 	};
 
@@ -138,6 +147,10 @@ public:
 
 	FileAccessBufferedFA(){
 
+	};
+
+	~FileAccessBufferedFA() {
+		close();
 	};
 };
 
