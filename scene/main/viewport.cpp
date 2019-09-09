@@ -1742,6 +1742,12 @@ void Viewport::_gui_input_event(Ref<InputEvent> p_event) {
 							return; // no one gets the event if exclusive NO ONE
 						}
 
+						if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN || mb->get_button_index() == BUTTON_WHEEL_LEFT || mb->get_button_index() == BUTTON_WHEEL_RIGHT) {
+							//cancel scroll wheel events, only clicks should trigger focus changes.
+							set_input_as_handled();
+							return;
+						}
+
 						top->notification(Control::NOTIFICATION_MODAL_CLOSE);
 						top->_modal_stack_remove();
 						top->hide();
