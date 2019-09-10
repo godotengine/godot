@@ -144,7 +144,8 @@ void CharString::copy_from(const char *p_cstr) {
 
 	resize(len + 1); // include terminating null char
 
-	strcpy(ptrw(), p_cstr);
+	int err = strcpy_s(ptrw(), len + 1, p_cstr);
+	ERR_FAIL_COND(err != 0);
 }
 
 void String::copy_from(const char *p_cstr) {
