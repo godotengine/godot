@@ -163,6 +163,19 @@ void EditorHelp::_class_desc_select(const String &p_select) {
 }
 
 void EditorHelp::_class_desc_input(const Ref<InputEvent> &p_input) {
+	Ref<InputEventMouseButton> mb = p_input;
+
+	if (mb.is_valid() && mb->is_pressed()) {
+		switch (mb->get_button_index()) {
+			case BUTTON_XBUTTON1: {
+				ScriptEditor::get_singleton()->call("_history_back");
+			} break;
+
+			case BUTTON_XBUTTON2: {
+				ScriptEditor::get_singleton()->call("_history_forward");
+			} break;
+		}
+	}
 }
 
 void EditorHelp::_class_desc_resized() {
