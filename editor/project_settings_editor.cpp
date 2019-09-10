@@ -1310,7 +1310,7 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 void ProjectSettingsEditor::_translation_filter_option_changed() {
 
 	int sel_id = translation_locale_filter_mode->get_selected_id();
-	TreeItem *t = translation_filter->get_selected();
+	TreeItem *t = translation_filter->get_edited();
 	String locale = t->get_tooltip(0);
 	bool checked = t->is_checked(0);
 
