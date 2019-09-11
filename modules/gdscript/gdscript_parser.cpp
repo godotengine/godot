@@ -5727,27 +5727,34 @@ GDScriptParser::DataType GDScriptParser::_resolve_type(const DataType &p_source,
 			}
 		}
 
-		// Still look for class constants in parent script
+		// Still look for class constants in parent scripts
 		if (!found && (base_type.kind == DataType::GDSCRIPT || base_type.kind == DataType::SCRIPT)) {
 			Ref<Script> scr = base_type.script_type;
 			ERR_FAIL_COND_V(scr.is_null(), result);
-			Map<StringName, Variant> constants;
-			scr->get_constants(&constants);
+			while (scr.is_valid()) {
+				Map<StringName, Variant> constants;
+				scr->get_constants(&constants);
 
-			if (constants.has(id)) {
-				Ref<GDScript> gds = constants[id];
+				if (constants.has(id)) {
+					Ref<GDScript> gds = constants[id];
 
-				if (gds.is_valid()) {
-					result.kind = DataType::GDSCRIPT;
-					result.script_type = gds;
-					found = true;
-				} else {
-					Ref<Script> scr2 = constants[id];
-					if (scr2.is_valid()) {
-						result.kind = DataType::SCRIPT;
-						result.script_type = scr2;
+					if (gds.is_valid()) {
+						result.kind = DataType::GDSCRIPT;
+						result.script_type = gds;
 						found = true;
+					} else {
+						Ref<Script> scr2 = constants[id];
+						if (scr2.is_valid()) {
+							result.kind = DataType::SCRIPT;
+							result.script_type = scr2;
+							found = true;
+						}
 					}
+				}
+				if (found) {
+					break;
+				} else {
+					scr = scr->get_base_script();
 				}
 			}
 		}
