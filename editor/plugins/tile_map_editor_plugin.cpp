@@ -1252,6 +1252,9 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 			if (node->get_tileset()->has_tile(tile_under))
 				tile_name = node->get_tileset()->tile_get_name(tile_under);
+			int max_length = 12;
+			if (tile_name.length() > max_length)
+				tile_name = tile_name.substr(0, max_length) + "...";
 			tile_info->set_text(String::num(over_tile.x) + ", " + String::num(over_tile.y) + " [" + tile_name + "]");
 		}
 
@@ -2040,6 +2043,8 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	// Tile position
 	tile_info = memnew(Label);
+	tile_info->set_align(Label::Align::ALIGN_RIGHT);
+	tile_info->set_custom_minimum_size(Size2(200, 0) * EDSCALE);
 	toolbar_right->add_child(tile_info);
 
 	// Menu
