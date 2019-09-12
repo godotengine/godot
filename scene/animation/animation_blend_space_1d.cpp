@@ -266,7 +266,7 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 
 	// fill in weights
 
-	if (point_lower == -1) {
+	if (point_lower == -1 && point_higher != -1) {
 		// we are on the left side, no other point to the left
 		// we just play the next point.
 

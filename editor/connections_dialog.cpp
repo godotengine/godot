@@ -881,7 +881,6 @@ void ConnectionsDock::update_tree() {
 					icon = get_icon(scr->get_class(), "EditorIcons");
 				}
 			}
-
 		} else {
 
 			ClassDB::get_signal_list(base, &node_signals2, true);
@@ -889,6 +888,10 @@ void ConnectionsDock::update_tree() {
 				icon = get_icon(base, "EditorIcons");
 			}
 			name = base;
+		}
+
+		if (!icon.is_valid()) {
+			icon = get_icon("Object", "EditorIcons");
 		}
 
 		TreeItem *pitem = NULL;
@@ -939,7 +942,7 @@ void ConnectionsDock::update_tree() {
 			item->set_metadata(0, sinfo);
 			item->set_icon(0, get_icon("Signal", "EditorIcons"));
 
-			// Set tooltip with the signal's documentation
+			// Set tooltip with the signal's documentation.
 			{
 				String descr;
 				bool found = false;

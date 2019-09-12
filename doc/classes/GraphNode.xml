@@ -174,6 +174,7 @@
 	</methods>
 	<members>
 		<member name="comment" type="bool" setter="set_comment" getter="is_comment" default="false">
+			If [code]true[/code], the GraphNode is a comment node.
 		</member>
 		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
 			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
@@ -256,6 +257,8 @@
 		<theme_item name="position" type="StyleBox">
 		</theme_item>
 		<theme_item name="resizer" type="Texture">
+		</theme_item>
+		<theme_item name="resizer_color" type="Color" default="Color( 0, 0, 0, 1 )">
 		</theme_item>
 		<theme_item name="selectedframe" type="StyleBox">
 		</theme_item>

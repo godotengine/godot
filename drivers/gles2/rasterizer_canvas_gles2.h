@@ -84,7 +84,7 @@ public:
 
 		Transform2D skeleton_transform;
 		Transform2D skeleton_transform_inverse;
-		Vector2i skeleton_texture_size;
+		Size2i skeleton_texture_size;
 
 		RID current_tex;
 		RID current_normal;

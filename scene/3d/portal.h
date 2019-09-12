@@ -32,9 +32,6 @@
 #define PORTAL_H
 
 #include "scene/3d/visual_instance.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 /* Portal Logic:
    If a portal is placed next (very close to) a similar, opposing portal, they automatically connect,

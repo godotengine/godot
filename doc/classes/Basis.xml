@@ -208,5 +208,13 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="IDENTITY" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+		</constant>
+		<constant name="FLIP_X" value="Basis( -1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+		</constant>
+		<constant name="FLIP_Y" value="Basis( 1, 0, 0, 0, -1, 0, 0, 0, 1 )">
+		</constant>
+		<constant name="FLIP_Z" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, -1 )">
+		</constant>
 	</constants>
 </class>

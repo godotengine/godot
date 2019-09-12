@@ -208,6 +208,10 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="editable" type="bool" setter="set_editable" getter="is_editable" default="false">
+		</member>
+	</members>
 	<constants>
 	</constants>
 </class>

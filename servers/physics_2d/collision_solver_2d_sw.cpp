@@ -249,6 +249,4 @@ bool CollisionSolver2DSW::solve(const Shape2DSW *p_shape_A, const Transform2D &p
 
 		return collision_solver(p_shape_A, p_transform_A, p_motion_A, p_shape_B, p_transform_B, p_motion_B, p_result_callback, p_userdata, false, sep_axis, margin_A, margin_B);
 	}
-
-	return false;
 }

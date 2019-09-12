@@ -38,7 +38,7 @@
 // See java/src/org/godotengine/godot/GodotLib.java for the JAVA side of this (yes that's why we have the long names)
 extern "C" {
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *env, jobject obj, jobject activity, jobject p_asset_manager, jboolean p_use_apk_expansion);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_ondestroy(JNIEnv *env, jobject obj, jobject activity);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setup(JNIEnv *env, jobject obj, jobjectArray p_cmdline);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_resize(JNIEnv *env, jobject obj, jint width, jint height);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_newcontext(JNIEnv *env, jobject obj, bool p_32_bits);

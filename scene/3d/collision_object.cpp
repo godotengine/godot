@@ -105,7 +105,8 @@ void CollisionObject::_mouse_exit() {
 void CollisionObject::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = ray_pickable && is_inside_tree() && is_visible_in_tree();
+
+	bool pickable = ray_pickable && is_visible_in_tree();
 	if (area)
 		PhysicsServer::get_singleton()->area_set_ray_pickable(rid, pickable);
 	else
@@ -370,7 +371,7 @@ String CollisionObject::get_configuration_warning() const {
 	String warning = Spatial::get_configuration_warning();
 
 	if (shapes.empty()) {
-		if (warning == String()) {
+		if (!warning.empty()) {
 			warning += "\n\n";
 		}
 		warning += TTR("This node has no shape, so it can't collide or interact with other objects.\nConsider adding a CollisionShape or CollisionPolygon as a child to define its shape.");

@@ -39,10 +39,7 @@
 void Material::set_next_pass(const Ref<Material> &p_pass) {
 
 	for (Ref<Material> pass_child = p_pass; pass_child != NULL; pass_child = pass_child->get_next_pass()) {
-		if (pass_child == this) {
-			ERR_EXPLAIN("Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
-			ERR_FAIL_COND(pass_child == this);
-		}
+		ERR_FAIL_COND_MSG(pass_child == this, "Can't set as next_pass one of its parents to prevent crashes due to recursive loop.");
 	}
 
 	if (next_pass == p_pass)
@@ -1775,7 +1772,7 @@ SpatialMaterial::TextureChannel SpatialMaterial::get_refraction_texture_channel(
 	return refraction_texture_channel;
 }
 
-RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass) {
+RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, bool p_double_sided, bool p_cut_alpha, bool p_opaque_prepass, bool p_billboard, bool p_billboard_y) {
 
 	int version = 0;
 	if (p_shaded)
@@ -1788,6 +1785,10 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 		version |= 8;
 	if (p_double_sided)
 		version |= 16;
+	if (p_billboard)
+		version |= 32;
+	if (p_billboard_y)
+		version |= 64;
 
 	if (materials_for_2d[version].is_valid()) {
 		return materials_for_2d[version]->get_rid();
@@ -1803,6 +1804,11 @@ RID SpatialMaterial::get_material_rid_for_2d(bool p_shaded, bool p_transparent, 
 	material->set_flag(FLAG_SRGB_VERTEX_COLOR, true);
 	material->set_flag(FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	material->set_flag(FLAG_USE_ALPHA_SCISSOR, p_cut_alpha);
+	if (p_billboard) {
+		material->set_billboard_mode(BILLBOARD_ENABLED);
+	} else if (p_billboard_y) {
+		material->set_billboard_mode(BILLBOARD_FIXED_Y);
+	}
 
 	materials_for_2d[version] = material;
 
@@ -2353,8 +2359,8 @@ SpatialMaterial::SpatialMaterial() :
 
 	set_ao_light_affect(0.0);
 
-	set_metallic_texture_channel(TEXTURE_CHANNEL_BLUE);
-	set_roughness_texture_channel(TEXTURE_CHANNEL_GREEN);
+	set_metallic_texture_channel(TEXTURE_CHANNEL_RED);
+	set_roughness_texture_channel(TEXTURE_CHANNEL_RED);
 	set_ao_texture_channel(TEXTURE_CHANNEL_RED);
 	set_refraction_texture_channel(TEXTURE_CHANNEL_RED);
 

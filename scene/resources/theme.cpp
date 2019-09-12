@@ -32,8 +32,6 @@
 #include "core/os/file_access.h"
 #include "core/print_string.h"
 
-Ref<Theme> Theme::default_theme;
-
 void Theme::_emit_theme_changed() {
 
 	emit_changed();
@@ -186,11 +184,6 @@ void Theme::_get_property_list(List<PropertyInfo> *p_list) const {
 	}
 }
 
-Ref<Theme> Theme::get_default() {
-
-	return default_theme;
-}
-
 void Theme::set_default_theme_font(const Ref<Font> &p_default_font) {
 
 	if (default_theme_font == p_default_font)
@@ -215,14 +208,31 @@ Ref<Font> Theme::get_default_theme_font() const {
 	return default_theme_font;
 }
 
+Ref<Theme> Theme::project_default_theme;
+Ref<Theme> Theme::default_theme;
+Ref<Texture> Theme::default_icon;
+Ref<StyleBox> Theme::default_style;
+Ref<Font> Theme::default_font;
+
+Ref<Theme> Theme::get_default() {
+
+	return default_theme;
+}
+
 void Theme::set_default(const Ref<Theme> &p_default) {
 
 	default_theme = p_default;
 }
 
-Ref<Texture> Theme::default_icon;
-Ref<StyleBox> Theme::default_style;
-Ref<Font> Theme::default_font;
+Ref<Theme> Theme::get_project_default() {
+
+	return project_default_theme;
+}
+
+void Theme::set_project_default(const Ref<Theme> &p_project_default) {
+
+	project_default_theme = p_project_default;
+}
 
 void Theme::set_default_icon(const Ref<Texture> &p_icon) {
 

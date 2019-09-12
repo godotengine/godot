@@ -37,9 +37,7 @@
 #include "scene/gui/button.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class SceneTreeEditor : public Control {
 
 	GDCLASS(SceneTreeEditor, Control);

@@ -8,6 +8,7 @@
     <RootNamespace>GodotTools.Core</RootNamespace>
     <AssemblyName>GodotTools.Core</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>

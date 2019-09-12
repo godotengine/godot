@@ -962,9 +962,13 @@ void CPUParticles2D::_set_redraw(bool p_redraw) {
 	if (redraw) {
 		VS::get_singleton()->connect("frame_pre_draw", this, "_update_render_thread");
 		VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), true);
+
+		VS::get_singleton()->multimesh_set_visible_instances(multimesh, -1);
 	} else {
 		VS::get_singleton()->disconnect("frame_pre_draw", this, "_update_render_thread");
 		VS::get_singleton()->canvas_item_set_update_when_visible(get_canvas_item(), false);
+
+		VS::get_singleton()->multimesh_set_visible_instances(multimesh, 0);
 	}
 #ifndef NO_THREADS
 	update_mutex->unlock();

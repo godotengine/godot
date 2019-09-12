@@ -122,6 +122,12 @@
 			<description>
 				Adds a child node. Nodes can have any number of children, but every child must have a unique name. Child nodes are automatically deleted when the parent node is deleted, so an entire scene can be removed by deleting its topmost node.
 				If [code]legible_unique_name[/code] is [code]true[/code], the child node will have an human-readable name based on the name of the node being instanced instead of its type.
+				[b]Note:[/b] If the child node already has a parent, the function will fail. Use [method remove_child] first to remove the node from its current parent. For example:
+				[codeblock]
+				if child_node.get_parent():
+				    child_node.get_parent().remove_child(child_node)
+				add_child(child_node)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="add_child_below_node">

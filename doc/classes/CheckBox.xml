@@ -14,6 +14,7 @@
 	</constants>
 	<theme_items>
 		<theme_item name="check_vadjust" type="int" default="0">
+			The vertical offset used when rendering the check icons.
 		</theme_item>
 		<theme_item name="checked" type="Texture">
 		</theme_item>

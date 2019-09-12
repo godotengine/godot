@@ -233,11 +233,11 @@ OSStatus AudioDriverCoreAudio::input_callback(void *inRefCon,
 	if (result == noErr) {
 		for (int i = 0; i < inNumberFrames * ad->capture_channels; i++) {
 			int32_t sample = ad->input_buf[i] << 16;
-			ad->input_buffer_write(sample);
+			ad->capture_buffer_write(sample);
 
 			if (ad->capture_channels == 1) {
-				// In case input device is single channel convert it to Stereo
-				ad->input_buffer_write(sample);
+				// In case capture device is single channel convert it to Stereo
+				ad->capture_buffer_write(sample);
 			}
 		}
 	} else {
@@ -487,7 +487,7 @@ void AudioDriverCoreAudio::capture_finish() {
 
 Error AudioDriverCoreAudio::capture_start() {
 
-	input_buffer_init(buffer_frames);
+	capture_buffer_init(buffer_frames);
 
 	OSStatus result = AudioOutputUnitStart(input_unit);
 	if (result != noErr) {
@@ -642,9 +642,9 @@ void AudioDriverCoreAudio::_set_device(const String &device, bool capture) {
 		ERR_FAIL_COND(result != noErr);
 
 		if (capture) {
-			// Reset audio input to keep synchronisation.
-			input_position = 0;
-			input_size = 0;
+			// Reset audio capture to keep synchronisation.
+			capture_position = 0;
+			capture_size = 0;
 		}
 	}
 }

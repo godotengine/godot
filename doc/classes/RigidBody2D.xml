@@ -154,7 +154,7 @@
 			Multiplies the gravity applied to the body. The body's gravity is calculated from the [b]Default Gravity[/b] value in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b] and/or any additional gravity vector applied by [Area2D]s.
 		</member>
 		<member name="inertia" type="float" setter="set_inertia" getter="get_inertia">
-			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 (or negative) inertia to return to automatically computing it.
+			The body's moment of inertia. This is like mass, but for rotation: it determines how much torque it takes to rotate the body. The moment of inertia is usually computed automatically from the mass and the shapes, but this function allows you to set a custom value. Set 0 inertia to return to automatically computing it.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="-1.0">
 			Damps the body's [member linear_velocity]. If [code]-1[/code], the body will use the [b]Default Linear Damp[/b] in [b]Project &gt; Project Settings &gt; Physics &gt; 2d[/b].

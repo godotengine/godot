@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "webrtc_data_channel.h"
+#include "core/project_settings.h"
 
 void WebRTCDataChannel::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("poll"), &WebRTCDataChannel::poll);
@@ -58,6 +59,7 @@ void WebRTCDataChannel::_bind_methods() {
 }
 
 WebRTCDataChannel::WebRTCDataChannel() {
+	_in_buffer_shift = nearest_shift((int)GLOBAL_GET(WRTC_IN_BUF) - 1) + 10;
 }
 
 WebRTCDataChannel::~WebRTCDataChannel() {

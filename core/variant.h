@@ -31,10 +31,6 @@
 #ifndef VARIANT_H
 #define VARIANT_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #include "core/array.h"
 #include "core/color.h"
 #include "core/dictionary.h"

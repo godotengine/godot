@@ -1570,7 +1570,7 @@ void RasterizerStorageGLES2::shader_get_param_list(RID p_shader, List<PropertyIn
 
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
-					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]);
+					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);
 				}
 			} break;
 
@@ -2171,8 +2171,7 @@ void RasterizerStorageGLES2::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	//must have index and bones, both.
 	{
 		uint32_t bones_weight = VS::ARRAY_FORMAT_BONES | VS::ARRAY_FORMAT_WEIGHTS;
-		ERR_EXPLAIN("Array must have both bones and weights in format or none.");
-		ERR_FAIL_COND((p_format & bones_weight) && (p_format & bones_weight) != bones_weight);
+		ERR_FAIL_COND_MSG((p_format & bones_weight) && (p_format & bones_weight) != bones_weight, "Array must have both bones and weights in format or none.");
 	}
 
 	//bool has_morph = p_blend_shapes.size();
@@ -3497,6 +3496,8 @@ RID RasterizerStorageGLES2::skeleton_create() {
 
 	Skeleton *skeleton = memnew(Skeleton);
 
+	glGenTextures(1, &skeleton->tex_id);
+
 	return skeleton_owner.make_rid(skeleton);
 }
 
@@ -3514,7 +3515,6 @@ void RasterizerStorageGLES2::skeleton_allocate(RID p_skeleton, int p_bones, bool
 	skeleton->use_2d = p_2d_skeleton;
 
 	if (config.float_texture_supported) {
-		glGenTextures(1, &skeleton->tex_id);
 
 		glActiveTexture(GL_TEXTURE0);
 		glBindTexture(GL_TEXTURE_2D, skeleton->tex_id);
@@ -5691,21 +5691,49 @@ void RasterizerStorageGLES2::initialize() {
 
 		GLenum status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
 
-		if (status == GL_FRAMEBUFFER_COMPLETE) {
-			config.depth_internalformat = GL_DEPTH_COMPONENT;
-			config.depth_type = GL_UNSIGNED_INT;
-		} else {
-			config.depth_internalformat = GL_DEPTH_COMPONENT16;
-			config.depth_type = GL_UNSIGNED_SHORT;
-		}
-
 		glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
 		glDeleteFramebuffers(1, &fbo);
 		glBindTexture(GL_TEXTURE_2D, 0);
 		glDeleteTextures(1, &depth);
 
+		if (status == GL_FRAMEBUFFER_COMPLETE) {
+			config.depth_internalformat = GL_DEPTH_COMPONENT;
+			config.depth_type = GL_UNSIGNED_INT;
+		} else {
+			// If it fails, test to see if it supports a framebuffer texture using UNSIGNED_SHORT
+			// This is needed because many OSX devices don't support either UNSIGNED_INT or UNSIGNED_SHORT
+
+			config.depth_internalformat = GL_DEPTH_COMPONENT16;
+			config.depth_type = GL_UNSIGNED_SHORT;
+
+			glGenFramebuffers(1, &fbo);
+			glBindFramebuffer(GL_FRAMEBUFFER, fbo);
+
+			glGenTextures(1, &depth);
+			glBindTexture(GL_TEXTURE_2D, depth);
+			glTexImage2D(GL_TEXTURE_2D, 0, GL_DEPTH_COMPONENT16, 32, 32, 0, GL_DEPTH_COMPONENT16, GL_UNSIGNED_SHORT, NULL);
+
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_EDGE);
+			glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_EDGE);
+
+			glFramebufferTexture2D(GL_FRAMEBUFFER, GL_DEPTH_ATTACHMENT, GL_TEXTURE_2D, depth, 0);
+
+			status = glCheckFramebufferStatus(GL_FRAMEBUFFER);
+			if (status != GL_FRAMEBUFFER_COMPLETE) {
+				//if it fails again depth textures aren't supported, use rgba shadows and renderbuffer for depth
+				config.support_depth_texture = false;
+				config.use_rgba_3d_shadows = true;
+			}
+
+			glBindFramebuffer(GL_FRAMEBUFFER, system_fbo);
+			glDeleteFramebuffers(1, &fbo);
+			glBindTexture(GL_TEXTURE_2D, 0);
+			glDeleteTextures(1, &depth);
+		}
 	} else {
-		// Will use renderbuffer for depth
+		// Will use renderbuffer for depth, on mobile check for 24 bit depth support
 		if (config.extensions.has("GL_OES_depth24")) {
 			config.depth_internalformat = _DEPTH_COMPONENT24_OES;
 			config.depth_type = GL_UNSIGNED_INT;

@@ -31,10 +31,6 @@
 #ifndef TEST_PHYSICS_H
 #define TEST_PHYSICS_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #include "core/os/main_loop.h"
 
 namespace TestPhysics {

@@ -36,10 +36,6 @@
 #include "core/pair.h"
 #include "core/resource.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ScriptLanguage;
 
 typedef void (*ScriptEditRequestFunction)(const String &p_path);
@@ -112,6 +108,12 @@ protected:
 
 	friend class PlaceHolderScriptInstance;
 	virtual void _placeholder_erased(PlaceHolderScriptInstance *p_placeholder) {}
+
+	Variant _get_property_default_value(const StringName &p_property);
+	Array _get_script_property_list();
+	Array _get_script_method_list();
+	Array _get_script_signal_list();
+	Dictionary _get_script_constant_map();
 
 public:
 	virtual bool can_instance() const = 0;
@@ -465,7 +467,7 @@ public:
 	void clear_breakpoints();
 	const Map<int, Set<StringName> > &get_breakpoints() const { return breakpoints; }
 
-	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true) = 0;
+	virtual void debug(ScriptLanguage *p_script, bool p_can_continue = true, bool p_is_error_breakpoint = false) = 0;
 	virtual void idle_poll();
 	virtual void line_poll();
 
@@ -480,6 +482,7 @@ public:
 
 	virtual void set_request_scene_tree_message_func(RequestSceneTreeMessageFunc p_func, void *p_udata) {}
 	virtual void set_live_edit_funcs(LiveEditFuncs *p_funcs) {}
+	virtual void set_multiplayer(Ref<MultiplayerAPI> p_multiplayer) {}
 
 	virtual bool is_profiling() const = 0;
 	virtual void add_profiling_frame_data(const StringName &p_name, const Array &p_data) = 0;

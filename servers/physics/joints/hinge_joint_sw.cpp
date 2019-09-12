@@ -198,7 +198,6 @@ bool HingeJointSW::setup(real_t p_step) {
 
 	plane_space(m_rbAFrame.basis.get_axis(2), jointAxis0local, jointAxis1local);
 
-	A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(2));
 	Vector3 jointAxis0 = A->get_transform().basis.xform(jointAxis0local);
 	Vector3 jointAxis1 = A->get_transform().basis.xform(jointAxis1local);
 	Vector3 hingeAxisWorld = A->get_transform().basis.xform(m_rbAFrame.basis.get_axis(2));

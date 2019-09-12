@@ -32,9 +32,7 @@
 #define NINE_PATCH_RECT_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class NinePatchRect : public Control {
 
 	GDCLASS(NinePatchRect, Control);

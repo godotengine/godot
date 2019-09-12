@@ -38,9 +38,7 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class FileDialog : public ConfirmationDialog {
 
 	GDCLASS(FileDialog, ConfirmationDialog);

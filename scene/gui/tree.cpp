@@ -224,14 +224,14 @@ Rect2 TreeItem::get_icon_region(int p_column) const {
 	return cells[p_column].icon_region;
 }
 
-void TreeItem::set_icon_color(int p_column, const Color &p_icon_color) {
+void TreeItem::set_icon_modulate(int p_column, const Color &p_modulate) {
 
 	ERR_FAIL_INDEX(p_column, cells.size());
-	cells.write[p_column].icon_color = p_icon_color;
+	cells.write[p_column].icon_color = p_modulate;
 	_changed_notify(p_column);
 }
 
-Color TreeItem::get_icon_color(int p_column) const {
+Color TreeItem::get_icon_modulate(int p_column) const {
 
 	ERR_FAIL_INDEX_V(p_column, cells.size(), Color());
 	return cells[p_column].icon_color;
@@ -744,6 +744,9 @@ void TreeItem::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_icon_max_width", "column", "width"), &TreeItem::set_icon_max_width);
 	ClassDB::bind_method(D_METHOD("get_icon_max_width", "column"), &TreeItem::get_icon_max_width);
 
+	ClassDB::bind_method(D_METHOD("set_icon_modulate", "column", "modulate"), &TreeItem::set_icon_modulate);
+	ClassDB::bind_method(D_METHOD("get_icon_modulate", "column"), &TreeItem::get_icon_modulate);
+
 	ClassDB::bind_method(D_METHOD("set_range", "column", "value"), &TreeItem::set_range);
 	ClassDB::bind_method(D_METHOD("get_range", "column"), &TreeItem::get_range);
 	ClassDB::bind_method(D_METHOD("set_range_config", "column", "min", "max", "step", "expr"), &TreeItem::set_range_config, DEFVAL(false));
@@ -1181,23 +1184,22 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 				}
 			}
 
-			if (p_item->cells[i].selected && select_mode != SELECT_ROW) {
-
+			if (select_mode != SELECT_ROW && (p_item->cells[i].selected || selected_item == p_item)) {
 				Rect2i r(cell_rect.position, cell_rect.size);
+
 				if (p_item->cells[i].text.size() > 0) {
 					float icon_width = p_item->cells[i].get_icon_size().width;
 					r.position.x += icon_width;
 					r.size.x -= icon_width;
 				}
 				p_item->set_meta("__focus_rect", Rect2(r.position, r.size));
-				if (has_focus()) {
-					cache.selected_focus->draw(ci, r);
-				} else {
-					cache.selected->draw(ci, r);
-				}
-				if (text_editor->is_visible_in_tree()) {
-					Vector2 ofs2(0, (text_editor->get_size().height - r.size.height) / 2);
-					text_editor->set_position(get_global_position() + r.position - ofs2);
+
+				if (p_item->cells[i].selected) {
+					if (has_focus()) {
+						cache.selected_focus->draw(ci, r);
+					} else {
+						cache.selected->draw(ci, r);
+					}
 				}
 			}
 
@@ -1259,10 +1261,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					check_ofs.y += Math::floor((real_t)(item_rect.size.y - checked->get_height()) / 2);
 
 					if (p_item->cells[i].checked) {
-
-						checked->draw(ci, check_ofs, icon_col);
+						checked->draw(ci, check_ofs);
 					} else {
-						unchecked->draw(ci, check_ofs, icon_col);
+						unchecked->draw(ci, check_ofs);
 					}
 
 					int check_w = checked->get_width() + cache.hseparation;
@@ -1273,8 +1274,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					item_rect.position.x += check_w;
 
 					draw_item_rect(p_item->cells[i], item_rect, col, icon_col);
-
-					//font->draw( ci, text_pos, p_item->cells[i].text, col,item_rect.size.x-check_w );
 
 				} break;
 				case TreeItem::CELL_MODE_RANGE: {
@@ -1305,18 +1304,16 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 						font->draw(ci, text_pos, s, col, item_rect.size.x - downarrow->get_width());
 
-						//?
 						Point2i arrow_pos = item_rect.position;
 						arrow_pos.x += item_rect.size.x - downarrow->get_width();
 						arrow_pos.y += Math::floor(((item_rect.size.y - downarrow->get_height())) / 2.0);
 
-						downarrow->draw(ci, arrow_pos, icon_col);
+						downarrow->draw(ci, arrow_pos);
 					} else {
 
 						Ref<Texture> updown = cache.updown;
 
-						String valtext = String::num(p_item->cells[i].val, Math::step_decimals(p_item->cells[i].step));
-						//String valtext = rtos( p_item->cells[i].val );
+						String valtext = String::num(p_item->cells[i].val, Math::range_step_decimals(p_item->cells[i].step));
 
 						if (p_item->cells[i].suffix != String())
 							valtext += " " + p_item->cells[i].suffix;
@@ -1330,7 +1327,7 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 						updown_pos.x += item_rect.size.x - updown->get_width();
 						updown_pos.y += Math::floor(((item_rect.size.y - updown->get_height())) / 2.0);
 
-						updown->draw(ci, updown_pos, icon_col);
+						updown->draw(ci, updown_pos);
 					}
 
 				} break;
@@ -1348,12 +1345,9 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 					icon_ofs += item_rect.position;
 
 					draw_texture_rect(p_item->cells[i].icon, Rect2(icon_ofs, icon_size), false, icon_col);
-					//p_item->cells[i].icon->draw(ci, icon_ofs);
 
 				} break;
 				case TreeItem::CELL_MODE_CUSTOM: {
-
-					//int option = (int)p_item->cells[i].val;
 
 					if (p_item->cells[i].custom_draw_obj) {
 
@@ -1429,10 +1423,6 @@ int Tree::draw_item(const Point2i &p_pos, const Point2 &p_draw_ofs, const Size2 
 
 			arrow->draw(ci, p_pos + p_draw_ofs + Point2i(0, (label_h - arrow->get_height()) / 2) - cache.offset);
 		}
-		//separator
-		//get_painter()->draw_fill_rect( Point2i(0,pos.y),Size2i(get_size().width,1),color( COLOR_TREE_GRID) );
-
-		//pos=p_pos; //reset pos
 	}
 
 	Point2 children_pos = p_pos;
@@ -1926,7 +1916,7 @@ int Tree::propagate_mouse_event(const Point2i &p_pos, int x_ofs, int y_ofs, bool
 
 					} else {
 
-						editor_text = String::num(p_item->cells[col].val, Math::step_decimals(p_item->cells[col].step));
+						editor_text = String::num(p_item->cells[col].val, Math::range_step_decimals(p_item->cells[col].step));
 						if (select_mode == SELECT_MULTI && get_tree()->get_event_count() == focus_in_id)
 							bring_up_editor = false;
 					}
@@ -2700,12 +2690,10 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 bool Tree::edit_selected() {
 
 	TreeItem *s = get_selected();
-	ERR_EXPLAIN("No item selected!");
-	ERR_FAIL_COND_V(!s, false);
+	ERR_FAIL_COND_V_MSG(!s, false, "No item selected.");
 	ensure_cursor_is_visible();
 	int col = get_selected_column();
-	ERR_EXPLAIN("No item column selected!");
-	ERR_FAIL_INDEX_V(col, columns.size(), false);
+	ERR_FAIL_INDEX_V_MSG(col, columns.size(), false, "No item column selected.");
 
 	if (!s->cells[col].editable)
 		return false;
@@ -2755,7 +2743,7 @@ bool Tree::edit_selected() {
 		text_editor->set_position(textedpos);
 		text_editor->set_size(rect.size);
 		text_editor->clear();
-		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::step_decimals(c.step)));
+		text_editor->set_text(c.mode == TreeItem::CELL_MODE_STRING ? c.text : String::num(c.val, Math::range_step_decimals(c.step)));
 		text_editor->select_all();
 
 		if (c.mode == TreeItem::CELL_MODE_RANGE) {

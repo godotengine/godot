@@ -39,9 +39,6 @@
 #include "scene/gui/label.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/spin_box.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class CanvasItemEditorViewport;
 
@@ -83,11 +80,23 @@ public:
 		TOOL_ROTATE,
 		TOOL_EDIT_PIVOT,
 		TOOL_PAN,
+		TOOL_RULER,
 		TOOL_MAX
 	};
 
 private:
 	EditorNode *editor;
+
+	enum SnapTarget {
+		SNAP_TARGET_NONE = 0,
+		SNAP_TARGET_PARENT,
+		SNAP_TARGET_SELF_ANCHORS,
+		SNAP_TARGET_SELF,
+		SNAP_TARGET_OTHER_NODE,
+		SNAP_TARGET_GUIDE,
+		SNAP_TARGET_GRID,
+		SNAP_TARGET_PIXEL
+	};
 
 	enum MenuOption {
 		SNAP_USE,
@@ -170,6 +179,7 @@ private:
 		ANIM_COPY_POSE,
 		ANIM_PASTE_POSE,
 		ANIM_CLEAR_POSE,
+		CLEAR_GUIDES,
 		VIEW_CENTER_TO_SELECTION,
 		VIEW_FRAME_TO_SELECTION,
 		PREVIEW_CANVAS_SCALE,
@@ -267,6 +277,9 @@ private:
 	bool panning;
 	bool pan_pressed;
 
+	bool ruler_tool_active;
+	Point2 ruler_tool_origin;
+
 	MenuOption last_option;
 
 	struct _SelectResult {
@@ -331,6 +344,8 @@ private:
 	ToolButton *list_select_button;
 	ToolButton *pivot_button;
 	ToolButton *pan_button;
+
+	ToolButton *ruler_button;
 
 	ToolButton *snap_button;
 	MenuButton *snap_config_menu;
@@ -443,10 +458,12 @@ private:
 	void _draw_percentage_at_position(float p_value, Point2 p_position, Margin p_side);
 	void _draw_straight_line(Point2 p_from, Point2 p_to, Color p_color);
 
+	void _draw_smart_snapping();
 	void _draw_rulers();
 	void _draw_guides();
 	void _draw_focus();
 	void _draw_grid();
+	void _draw_ruler_tool();
 	void _draw_control_anchors(Control *control);
 	void _draw_control_helpers(Control *control);
 	void _draw_selection();
@@ -466,7 +483,8 @@ private:
 	bool _gui_input_resize(const Ref<InputEvent> &p_event);
 	bool _gui_input_rotate(const Ref<InputEvent> &p_event);
 	bool _gui_input_select(const Ref<InputEvent> &p_event);
-	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event);
+	bool _gui_input_ruler_tool(const Ref<InputEvent> &p_event);
+	bool _gui_input_zoom_or_pan(const Ref<InputEvent> &p_event, bool p_already_accepted);
 	bool _gui_input_rulers_and_guides(const Ref<InputEvent> &p_event);
 	bool _gui_input_hover(const Ref<InputEvent> &p_event);
 
@@ -478,9 +496,25 @@ private:
 
 	void _solve_IK(Node2D *leaf_node, Point2 target_position);
 
-	void _snap_if_closer_float(float p_value, float p_target_snap, float &r_current_snap, bool &r_snapped, float p_radius = 10.0);
-	void _snap_if_closer_point(Point2 p_value, Point2 p_target_snap, Point2 &r_current_snap, bool (&r_snapped)[2], real_t rotation = 0.0, float p_radius = 10.0);
-	void _snap_other_nodes(Point2 p_value, Point2 &r_current_snap, bool (&r_snapped)[2], const Node *p_current, const CanvasItem *p_to_snap = NULL);
+	SnapTarget snap_target[2];
+	Transform2D snap_transform;
+	void _snap_if_closer_float(
+			float p_value,
+			float &r_current_snap, SnapTarget &r_current_snap_target,
+			float p_target_value, SnapTarget p_snap_target,
+			float p_radius = 10.0);
+	void _snap_if_closer_point(
+			Point2 p_value,
+			Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
+			Point2 p_target_value, SnapTarget p_snap_target,
+			real_t rotation = 0.0,
+			float p_radius = 10.0);
+	void _snap_other_nodes(
+			const Point2 p_value,
+			const Transform2D p_transform_to_snap,
+			Point2 &r_current_snap, SnapTarget (&r_current_snap_target)[2],
+			const SnapTarget p_snap_target, List<const CanvasItem *> p_exceptions,
+			const Node *p_current);
 
 	void _set_anchors_preset(Control::LayoutPreset p_preset);
 	void _set_margins_preset(Control::LayoutPreset p_preset);
@@ -561,7 +595,7 @@ public:
 		SNAP_DEFAULT = SNAP_GRID | SNAP_GUIDES | SNAP_PIXEL,
 	};
 
-	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, const CanvasItem *p_canvas_item = NULL, unsigned int p_forced_modes = 0);
+	Point2 snap_point(Point2 p_target, unsigned int p_modes = SNAP_DEFAULT, unsigned int p_forced_modes = 0, const CanvasItem *p_self_canvas_item = NULL, List<CanvasItem *> p_other_nodes_exceptions = List<CanvasItem *>());
 	float snap_angle(float p_target, float p_start = 0) const;
 
 	Transform2D get_canvas_transform() const { return transform; }
@@ -584,6 +618,7 @@ public:
 	void update_viewport();
 
 	Tool get_current_tool() { return tool; }
+	void set_current_tool(Tool p_tool);
 
 	void set_undo_redo(UndoRedo *p_undo_redo) { undo_redo = p_undo_redo; }
 	void edit(CanvasItem *p_canvas_item);

@@ -768,8 +768,7 @@ Error EditorExportPlatformIOS::_export_additional_assets(const String &p_out_dir
 			DirAccess *da = DirAccess::create_for_path(asset);
 			if (!da) {
 				memdelete(filesystem_da);
-				ERR_EXPLAIN("Can't create directory: " + asset);
-				ERR_FAIL_V(ERR_CANT_CREATE);
+				ERR_FAIL_V_MSG(ERR_CANT_CREATE, "Can't create directory: " + asset + ".");
 			}
 			bool file_exists = da->file_exists(asset);
 			bool dir_exists = da->dir_exists(asset);
@@ -848,8 +847,7 @@ Error EditorExportPlatformIOS::export_project(const Ref<EditorExportPreset> &p_p
 	EditorProgress ep("export", "Exporting for iOS", 5, true);
 
 	String team_id = p_preset->get("application/app_store_team_id");
-	ERR_EXPLAIN("App Store Team ID not specified - cannot configure the project.");
-	ERR_FAIL_COND_V(team_id.length() == 0, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(team_id.length() == 0, ERR_CANT_OPEN, "App Store Team ID not specified - cannot configure the project.");
 
 	if (p_debug)
 		src_pkg_name = p_preset->get("custom_package/debug");

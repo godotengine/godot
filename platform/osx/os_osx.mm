@@ -204,11 +204,53 @@ static CVReturn DisplayLinkCallback(CVDisplayLinkRef displayLink, const CVTimeSt
 	}
 }
 
+- (void)globalMenuCallback:(id)sender {
+
+	if (![sender representedObject])
+		return;
+
+	OS_OSX::GlobalMenuItem *item = (OS_OSX::GlobalMenuItem *)[[sender representedObject] pointerValue];
+
+	if (!item)
+		return;
+
+	OS_OSX::singleton->main_loop->global_menu_action(item->signal, item->meta);
+}
+
+- (NSMenu *)applicationDockMenu:(NSApplication *)sender {
+
+	NSMenu *menu = [[[NSMenu alloc] initWithTitle:@""] autorelease];
+
+	Vector<OS_OSX::GlobalMenuItem> &E = OS_OSX::singleton->global_menus["_dock"];
+	for (int i = 0; i < E.size(); i++) {
+		if (E[i].label == String()) {
+			[menu addItem:[NSMenuItem separatorItem]];
+		} else {
+			NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:E[i].label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
+			[menu_item setRepresentedObject:[NSValue valueWithPointer:&(E[i])]];
+		}
+	}
+
+	return menu;
+}
+
 - (BOOL)application:(NSApplication *)sender openFile:(NSString *)filename {
-	// Note: called before main loop init!
+	// Note: may be called called before main loop init!
 	char *utfs = strdup([filename UTF8String]);
 	OS_OSX::singleton->open_with_filename.parse_utf8(utfs);
 	free(utfs);
+
+#ifdef TOOLS_ENABLED
+	// Open new instance
+	if (OS_OSX::singleton->get_main_loop()) {
+		List<String> args;
+		args.push_back(OS_OSX::singleton->open_with_filename);
+		String exec = OS::get_singleton()->get_executable_path();
+
+		OS::ProcessID pid = 0;
+		OS::get_singleton()->execute(exec, args, false, &pid);
+	}
+#endif
 	return YES;
 }
 
@@ -1266,6 +1308,56 @@ inline void sendPanEvent(double dx, double dy, int modifierFlags) {
 
 @end
 
+void OS_OSX::_update_global_menu() {
+
+	NSMenu *main_menu = [NSApp mainMenu];
+
+	for (int i = 1; i < [main_menu numberOfItems]; i++) {
+		[main_menu removeItemAtIndex:i];
+	}
+	for (Map<String, Vector<GlobalMenuItem> >::Element *E = global_menus.front(); E; E = E->next()) {
+		if (E->key() != "_dock") {
+			NSMenu *menu = [[[NSMenu alloc] initWithTitle:[NSString stringWithUTF8String:E->key().utf8().get_data()]] autorelease];
+			for (int i = 0; i < E->get().size(); i++) {
+				if (E->get()[i].label == String()) {
+					[menu addItem:[NSMenuItem separatorItem]];
+				} else {
+					NSMenuItem *menu_item = [menu addItemWithTitle:[NSString stringWithUTF8String:E->get()[i].label.utf8().get_data()] action:@selector(globalMenuCallback:) keyEquivalent:@""];
+					[menu_item setRepresentedObject:[NSValue valueWithPointer:&(E->get()[i])]];
+				}
+			}
+			NSMenuItem *menu_item = [main_menu addItemWithTitle:[NSString stringWithUTF8String:E->key().utf8().get_data()] action:nil keyEquivalent:@""];
+			[main_menu setSubmenu:menu forItem:menu_item];
+		}
+	}
+}
+
+void OS_OSX::global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta) {
+
+	global_menus[p_menu].push_back(GlobalMenuItem(p_label, p_signal, p_meta));
+	_update_global_menu();
+}
+
+void OS_OSX::global_menu_add_separator(const String &p_menu) {
+
+	global_menus[p_menu].push_back(GlobalMenuItem());
+	_update_global_menu();
+}
+
+void OS_OSX::global_menu_remove_item(const String &p_menu, int p_idx) {
+
+	ERR_FAIL_INDEX(p_idx, global_menus[p_menu].size());
+
+	global_menus[p_menu].remove(p_idx);
+	_update_global_menu();
+}
+
+void OS_OSX::global_menu_clear(const String &p_menu) {
+
+	global_menus[p_menu].clear();
+	_update_global_menu();
+}
+
 Point2 OS_OSX::get_ime_selection() const {
 
 	return im_selection;
@@ -1599,6 +1691,7 @@ void OS_OSX::finalize() {
 	memdelete(joypad_osx);
 	memdelete(input);
 
+	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);
@@ -1718,10 +1811,7 @@ Error OS_OSX::open_dynamic_library(const String p_path, void *&p_library_handle,
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ", error: " + dlerror() + ".");
 	return OK;
 }
 
@@ -1961,15 +2051,10 @@ void OS_OSX::set_native_icon(const String &p_filename) {
 	memdelete(f);
 
 	NSData *icon_data = [[[NSData alloc] initWithBytes:&data.write[0] length:len] autorelease];
-	if (!icon_data) {
-		ERR_EXPLAIN("Error reading icon data");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!icon_data, "Error reading icon data.");
+
 	NSImage *icon = [[[NSImage alloc] initWithData:icon_data] autorelease];
-	if (!icon) {
-		ERR_EXPLAIN("Error loading icon");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(!icon, "Error loading icon.");
 
 	[NSApp setApplicationIconImage:icon];
 }
@@ -2410,7 +2495,7 @@ Size2 OS_OSX::get_min_window_size() const {
 void OS_OSX::set_min_window_size(const Size2 p_size) {
 
 	if ((p_size != Size2()) && (max_size != Size2()) && ((p_size.x > max_size.x) || (p_size.y > max_size.y))) {
-		WARN_PRINT("Minimum window size can't be larger than maximum window size!");
+		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
 		return;
 	}
 	min_size = p_size;
@@ -2426,7 +2511,7 @@ void OS_OSX::set_min_window_size(const Size2 p_size) {
 void OS_OSX::set_max_window_size(const Size2 p_size) {
 
 	if ((p_size != Size2()) && ((p_size.x < min_size.x) || (p_size.y < min_size.y))) {
-		WARN_PRINT("Maximum window size can't be smaller than minimum window size!");
+		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
 		return;
 	}
 	max_size = p_size;

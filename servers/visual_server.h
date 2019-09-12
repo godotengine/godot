@@ -39,9 +39,6 @@
 #include "core/rid.h"
 #include "core/variant.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class VisualServer : public Object {
 
 	GDCLASS(VisualServer, Object);

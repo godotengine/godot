@@ -245,8 +245,7 @@ extern "C" {
 
 void GDAPI godot_arvr_register_interface(const godot_arvr_interface_gdnative *p_interface) {
 	// If our major version is 0 or bigger then 10, we're likely looking at our constructor pointer from an older plugin
-	ERR_EXPLAINC("GDNative ARVR interfaces build for Godot 3.0 are not supported");
-	ERR_FAIL_COND((p_interface->version.major == 0) || (p_interface->version.major > 10));
+	ERR_FAIL_COND_MSG((p_interface->version.major == 0) || (p_interface->version.major > 10), "GDNative ARVR interfaces build for Godot 3.0 are not supported.");
 
 	Ref<ARVRInterfaceGDNative> new_interface;
 	new_interface.instance();

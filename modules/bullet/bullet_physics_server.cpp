@@ -1548,8 +1548,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(space);
 	} else {
 
-		ERR_EXPLAIN("Invalid ID");
-		ERR_FAIL();
+		ERR_FAIL_MSG("Invalid ID.");
 	}
 }
 

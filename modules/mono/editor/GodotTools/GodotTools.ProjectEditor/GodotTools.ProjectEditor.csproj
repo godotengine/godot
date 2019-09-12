@@ -9,6 +9,7 @@
     <AssemblyName>GodotTools.ProjectEditor</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <BaseIntermediateOutputPath>obj</BaseIntermediateOutputPath>
+    <LangVersion>7</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -36,9 +37,8 @@
       entire solution. $(SolutionDir) is not defined in that case, so we need to workaround that.
       We make SCons restore the NuGet packages in the project directory instead in this case.
       -->
-      <HintPath Condition=" '$(SolutionDir)' != '' ">$(SolutionDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
-      <HintPath>$(ProjectDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
-      <HintPath>packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath> <!-- Are you happy CI? -->
+      <HintPath Condition=" '$(SolutionDir)' != '' And Exists('$(SolutionDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll') ">$(SolutionDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
+      <HintPath Condition=" '$(SolutionDir)' == '' Or !Exists('$(SolutionDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll') ">$(ProjectDir)\packages\DotNet.Glob.2.1.1\lib\net45\DotNet.Glob.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

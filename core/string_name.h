@@ -34,9 +34,6 @@
 #include "core/os/mutex.h"
 #include "core/safe_refcount.h"
 #include "core/ustring.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 struct StaticCString {
 

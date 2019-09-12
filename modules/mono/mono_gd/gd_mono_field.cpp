@@ -219,16 +219,14 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 						break;
 					}
 					default: {
-						ERR_EXPLAIN(String() + "Attempted to convert Variant to a managed enum value of unmarshallable base type.");
-						ERR_FAIL();
+						ERR_FAIL_MSG("Attempted to convert Variant to a managed enum value of unmarshallable base type.");
 					}
 				}
 
 				break;
 			}
 
-			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + tclass->get_name());
-			ERR_FAIL();
+			ERR_FAIL_MSG("Attempted to set the value of a field of unmarshallable type: '" + tclass->get_name() + "'.");
 		} break;
 
 		case MONO_TYPE_ARRAY:
@@ -275,8 +273,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
-			ERR_EXPLAIN(String() + "Attempted to convert Variant to a managed array of unmarshallable element type.");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Attempted to convert Variant to a managed array of unmarshallable element type.");
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -351,8 +348,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				}
 			}
 
-			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + type_class->get_name());
-			ERR_FAIL();
+			ERR_FAIL_MSG("Attempted to set the value of a field of unmarshallable type: '" + type_class->get_name() + "'.");
 		} break;
 
 		case MONO_TYPE_OBJECT: {
@@ -508,7 +504,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		default: {
-			ERR_PRINTS(String() + "Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding));
+			ERR_PRINTS("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
 		} break;
 	}
 

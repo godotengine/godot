@@ -450,7 +450,7 @@ bool InputEventMouseButton::is_doubleclick() const {
 
 Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 
-	Vector2 g = p_xform.xform(get_global_position());
+	Vector2 g = get_global_position();
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 
 	Ref<InputEventMouseButton> mb;
@@ -577,7 +577,7 @@ Vector2 InputEventMouseMotion::get_speed() const {
 
 Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 
-	Vector2 g = p_xform.xform(get_global_position());
+	Vector2 g = get_global_position();
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 	Vector2 r = p_xform.basis_xform(get_relative());
 	Vector2 s = p_xform.basis_xform(get_speed());

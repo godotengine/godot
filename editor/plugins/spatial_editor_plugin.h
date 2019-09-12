@@ -37,9 +37,6 @@
 #include "scene/3d/light.h"
 #include "scene/3d/visual_instance.h"
 #include "scene/gui/panel_container.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Camera;
 class SpatialEditor;
@@ -153,7 +150,8 @@ class SpatialEditorViewport : public Control {
 		VIEW_REAR,
 		VIEW_CENTER_TO_ORIGIN,
 		VIEW_CENTER_TO_SELECTION,
-		VIEW_ALIGN_SELECTION_WITH_VIEW,
+		VIEW_ALIGN_TRANSFORM_WITH_VIEW,
+		VIEW_ALIGN_ROTATION_WITH_VIEW,
 		VIEW_PERSPECTIVE,
 		VIEW_ENVIRONMENT,
 		VIEW_ORTHOGONAL,
@@ -527,7 +525,8 @@ private:
 	Ref<ArrayMesh> move_gizmo[3], move_plane_gizmo[3], rotate_gizmo[3], scale_gizmo[3], scale_plane_gizmo[3];
 	Ref<SpatialMaterial> gizmo_color[3];
 	Ref<SpatialMaterial> plane_gizmo_color[3];
-	Ref<SpatialMaterial> gizmo_hl;
+	Ref<SpatialMaterial> gizmo_color_hl[3];
+	Ref<SpatialMaterial> plane_gizmo_color_hl[3];
 
 	int over_gizmo_handle;
 
@@ -634,6 +633,7 @@ private:
 	Node *custom_camera;
 
 	Object *_get_editor_data(Object *p_what);
+	Color _get_axis_color(int axis);
 
 	Ref<Environment> viewport_environment;
 

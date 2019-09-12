@@ -527,7 +527,7 @@ float AnimationNodeBlendSpace2D::process(float p_time, bool p_seek) {
 			}
 		}
 
-		if (new_closest != closest) {
+		if (new_closest != closest && new_closest != -1) {
 
 			float from = 0;
 			if (blend_mode == BLEND_MODE_DISCRETE_CARRY && closest != -1) {

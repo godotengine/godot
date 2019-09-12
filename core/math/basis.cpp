@@ -618,10 +618,7 @@ Basis::operator String() const {
 Quat Basis::get_quat() const {
 
 #ifdef MATH_CHECKS
-	if (!is_rotation()) {
-		ERR_EXPLAIN("Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() instead.");
-		ERR_FAIL_V(Quat());
-	}
+	ERR_FAIL_COND_V_MSG(!is_rotation(), Quat(), "Basis must be normalized in order to be casted to a Quaternion. Use get_rotation_quat() or call orthonormalized() instead.");
 #endif
 	/* Allow getting a quaternion from an unnormalized transform */
 	Basis m = *this;

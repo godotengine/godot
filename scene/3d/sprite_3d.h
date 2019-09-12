@@ -80,6 +80,7 @@ private:
 
 	bool flags[FLAG_MAX];
 	AlphaCutMode alpha_cut;
+	SpatialMaterial::BillboardMode billboard_mode;
 	bool pending_update;
 	void _im_update();
 
@@ -130,6 +131,8 @@ public:
 
 	void set_alpha_cut_mode(AlphaCutMode p_mode);
 	AlphaCutMode get_alpha_cut_mode() const;
+	void set_billboard_mode(SpatialMaterial::BillboardMode p_mode);
+	SpatialMaterial::BillboardMode get_billboard_mode() const;
 
 	virtual Rect2 get_item_rect() const = 0;
 
@@ -172,6 +175,9 @@ public:
 
 	void set_frame(int p_frame);
 	int get_frame() const;
+
+	void set_frame_coords(const Vector2 &p_coord);
+	Vector2 get_frame_coords() const;
 
 	void set_vframes(int p_amount);
 	int get_vframes() const;

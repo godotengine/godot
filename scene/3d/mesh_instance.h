@@ -34,9 +34,6 @@
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/mesh.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class MeshInstance : public GeometryInstance {
 
 	GDCLASS(MeshInstance, GeometryInstance);

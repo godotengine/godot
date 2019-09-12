@@ -37,6 +37,10 @@
 #include "core/project_settings.h"
 #include "core/reference.h"
 
+#ifdef TOOLS_ENABLED
+#include "editor/script_editor_debugger.h"
+#endif
+
 #include "../csharp_script.h"
 #include "../utils/macros.h"
 #include "../utils/mutex_utils.h"
@@ -48,14 +52,11 @@ namespace GDMonoUtils {
 
 MonoCache mono_cache;
 
-#define CACHE_AND_CHECK(m_var, m_val)                             \
-	{                                                             \
-		CRASH_COND(m_var != NULL);                                \
-		m_var = m_val;                                            \
-		if (!m_var) {                                             \
-			ERR_EXPLAIN("Mono Cache: Member " #m_var " is null"); \
-			ERR_FAIL();                                           \
-		}                                                         \
+#define CACHE_AND_CHECK(m_var, m_val)                                        \
+	{                                                                        \
+		CRASH_COND(m_var != NULL);                                           \
+		m_var = m_val;                                                       \
+		ERR_FAIL_COND_MSG(!m_var, "Mono Cache: Member " #m_var " is null."); \
 	}
 
 #define CACHE_CLASS_AND_CHECK(m_class, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.class_##m_class, m_val)
@@ -449,10 +450,9 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 }
 
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
-	if (!ClassDB::is_parent_class(p_object->get_class_name(), p_native)) {
-		ERR_EXPLAIN("Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'");
-		ERR_FAIL_V(NULL);
-	}
+	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), p_native);
+	ERR_FAIL_COND_V_MSG(!parent_is_object_class, NULL,
+			"Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'.");
 
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, NULL);
@@ -596,8 +596,14 @@ void debug_print_unhandled_exception(MonoException *p_exc) {
 
 void debug_send_unhandled_exception_error(MonoException *p_exc) {
 #ifdef DEBUG_ENABLED
-	if (!ScriptDebugger::get_singleton())
+	if (!ScriptDebugger::get_singleton()) {
+#ifdef TOOLS_ENABLED
+		if (Engine::get_singleton()->is_editor_hint()) {
+			ERR_PRINTS(GDMonoUtils::get_exception_name_and_message(p_exc));
+		}
+#endif
 		return;
+	}
 
 	_TLS_RECURSION_GUARD_;
 
@@ -621,7 +627,7 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 		if (unexpected_exc) {
 			GDMonoInternals::unhandled_exception(unexpected_exc);
-			GD_UNREACHABLE();
+			return;
 		}
 
 		Vector<ScriptLanguage::StackInfo> _si;
@@ -655,7 +661,6 @@ void debug_send_unhandled_exception_error(MonoException *p_exc) {
 
 void debug_unhandled_exception(MonoException *p_exc) {
 	GDMonoInternals::unhandled_exception(p_exc); // prints the exception as well
-	GD_UNREACHABLE();
 }
 
 void print_unhandled_exception(MonoException *p_exc) {
@@ -665,11 +670,9 @@ void print_unhandled_exception(MonoException *p_exc) {
 void set_pending_exception(MonoException *p_exc) {
 #ifdef NO_PENDING_EXCEPTIONS
 	debug_unhandled_exception(p_exc);
-	GD_UNREACHABLE();
 #else
 	if (get_runtime_invoke_count() == 0) {
 		debug_unhandled_exception(p_exc);
-		GD_UNREACHABLE();
 	}
 
 	if (!mono_runtime_set_pending_exception(p_exc, false)) {

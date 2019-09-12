@@ -334,9 +334,6 @@ def make_version(template, nargs, argmax, const, ret):
         elif (cmd == "noarg"):
             for i in range(nargs + 1, argmax + 1):
                 outtext += data.replace("@", str(i))
-        elif (cmd == "noarg"):
-            for i in range(nargs + 1, argmax + 1):
-                outtext += data.replace("@", str(i))
 
         from_pos = end + 1
 

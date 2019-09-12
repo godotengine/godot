@@ -51,13 +51,11 @@ Error WebRTCPeerConnectionGDNative::set_default_library(const godot_net_webrtc_l
 WebRTCPeerConnection *WebRTCPeerConnectionGDNative::_create() {
 
 	WebRTCPeerConnectionGDNative *obj = memnew(WebRTCPeerConnectionGDNative);
-	ERR_EXPLAIN("Default GDNative WebRTC implementation not defined.");
-	ERR_FAIL_COND_V(!default_library, obj);
+	ERR_FAIL_COND_V_MSG(!default_library, obj, "Default GDNative WebRTC implementation not defined.");
 
 	// Call GDNative constructor
 	Error err = (Error)default_library->create_peer_connection(obj);
-	ERR_EXPLAIN("GDNative default library constructor returned an error");
-	ERR_FAIL_COND_V(err != OK, obj);
+	ERR_FAIL_COND_V_MSG(err != OK, obj, "GDNative default library constructor returned an error.");
 
 	return obj;
 }

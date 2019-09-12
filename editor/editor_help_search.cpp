@@ -354,7 +354,7 @@ bool EditorHelpSearch::Runner::_phase_match_classes() {
 						match.constants.push_back(const_cast<DocData::ConstantDoc *>(&class_doc.constants[i]));
 			if (search_flags & SEARCH_PROPERTIES)
 				for (int i = 0; i < class_doc.properties.size(); i++)
-					if (_match_string(term, class_doc.properties[i].name))
+					if (_match_string(term, class_doc.properties[i].name) || _match_string(term, class_doc.properties[i].getter) || _match_string(term, class_doc.properties[i].setter))
 						match.properties.push_back(const_cast<DocData::PropertyDoc *>(&class_doc.properties[i]));
 			if (search_flags & SEARCH_THEME_ITEMS)
 				for (int i = 0; i < class_doc.theme_properties.size(); i++)

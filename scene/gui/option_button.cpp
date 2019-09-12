@@ -43,40 +43,42 @@ Size2 OptionButton::get_minimum_size() const {
 
 void OptionButton::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_DRAW) {
+	switch (p_what) {
+		case NOTIFICATION_DRAW: {
 
-		if (!has_icon("arrow"))
-			return;
+			if (!has_icon("arrow"))
+				return;
 
-		RID ci = get_canvas_item();
-		Ref<Texture> arrow = Control::get_icon("arrow");
-		Ref<StyleBox> normal = get_stylebox("normal");
-		Color clr = Color(1, 1, 1);
-		if (get_constant("modulate_arrow")) {
-			switch (get_draw_mode()) {
-				case DRAW_PRESSED:
-					clr = get_color("font_color_pressed");
-					break;
-				case DRAW_HOVER:
-					clr = get_color("font_color_hover");
-					break;
-				case DRAW_DISABLED:
-					clr = get_color("font_color_disabled");
-					break;
-				default:
-					clr = get_color("font_color");
+			RID ci = get_canvas_item();
+			Ref<Texture> arrow = Control::get_icon("arrow");
+			Color clr = Color(1, 1, 1);
+			if (get_constant("modulate_arrow")) {
+				switch (get_draw_mode()) {
+					case DRAW_PRESSED:
+						clr = get_color("font_color_pressed");
+						break;
+					case DRAW_HOVER:
+						clr = get_color("font_color_hover");
+						break;
+					case DRAW_DISABLED:
+						clr = get_color("font_color_disabled");
+						break;
+					default:
+						clr = get_color("font_color");
+				}
 			}
-		}
 
-		Size2 size = get_size();
+			Size2 size = get_size();
 
-		Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
-		arrow->draw(ci, ofs, clr);
-	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
+			Point2 ofs(size.width - arrow->get_width() - get_constant("arrow_margin"), int(Math::abs((size.height - arrow->get_height()) / 2)));
+			arrow->draw(ci, ofs, clr);
+		} break;
+		case NOTIFICATION_VISIBILITY_CHANGED: {
 
-		if (!is_visible_in_tree()) {
-			popup->hide();
-		}
+			if (!is_visible_in_tree()) {
+				popup->hide();
+			}
+		} break;
 	}
 }
 

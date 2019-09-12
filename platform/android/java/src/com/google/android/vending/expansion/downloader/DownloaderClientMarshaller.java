@@ -32,7 +32,10 @@ import android.os.Messenger;
 import android.os.RemoteException;
 import android.util.Log;
 
+// -- GODOT start --
 import java.lang.ref.WeakReference;
+// -- GODOT end --
+
 
 /**
  * This class binds the service API to your application client.  It contains the IDownloaderClient proxy,
@@ -58,172 +61,175 @@ import java.lang.ref.WeakReference;
  * interface.
  */
 public class DownloaderClientMarshaller {
-	public static final int MSG_ONDOWNLOADSTATE_CHANGED = 10;
-	public static final int MSG_ONDOWNLOADPROGRESS = 11;
-	public static final int MSG_ONSERVICECONNECTED = 12;
+    public static final int MSG_ONDOWNLOADSTATE_CHANGED = 10;
+    public static final int MSG_ONDOWNLOADPROGRESS = 11;
+    public static final int MSG_ONSERVICECONNECTED = 12;
 
-	public static final String PARAM_NEW_STATE = "newState";
-	public static final String PARAM_PROGRESS = "progress";
-	public static final String PARAM_MESSENGER = DownloaderService.EXTRA_MESSAGE_HANDLER;
+    public static final String PARAM_NEW_STATE = "newState";
+    public static final String PARAM_PROGRESS = "progress";
+    public static final String PARAM_MESSENGER = DownloaderService.EXTRA_MESSAGE_HANDLER;
 
-	public static final int NO_DOWNLOAD_REQUIRED = DownloaderService.NO_DOWNLOAD_REQUIRED;
-	public static final int LVL_CHECK_REQUIRED = DownloaderService.LVL_CHECK_REQUIRED;
-	public static final int DOWNLOAD_REQUIRED = DownloaderService.DOWNLOAD_REQUIRED;
+    public static final int NO_DOWNLOAD_REQUIRED = DownloaderService.NO_DOWNLOAD_REQUIRED;
+    public static final int LVL_CHECK_REQUIRED = DownloaderService.LVL_CHECK_REQUIRED;
+    public static final int DOWNLOAD_REQUIRED = DownloaderService.DOWNLOAD_REQUIRED;
 
-	private static class Proxy implements IDownloaderClient {
-		private Messenger mServiceMessenger;
+    private static class Proxy implements IDownloaderClient {
+        private Messenger mServiceMessenger;
 
-		@Override
-		public void onDownloadStateChanged(int newState) {
-			Bundle params = new Bundle(1);
-			params.putInt(PARAM_NEW_STATE, newState);
-			send(MSG_ONDOWNLOADSTATE_CHANGED, params);
-		}
+        @Override
+        public void onDownloadStateChanged(int newState) {
+            Bundle params = new Bundle(1);
+            params.putInt(PARAM_NEW_STATE, newState);
+            send(MSG_ONDOWNLOADSTATE_CHANGED, params);
+        }
 
-		@Override
-		public void onDownloadProgress(DownloadProgressInfo progress) {
-			Bundle params = new Bundle(1);
-			params.putParcelable(PARAM_PROGRESS, progress);
-			send(MSG_ONDOWNLOADPROGRESS, params);
-		}
+        @Override
+        public void onDownloadProgress(DownloadProgressInfo progress) {
+            Bundle params = new Bundle(1);
+            params.putParcelable(PARAM_PROGRESS, progress);
+            send(MSG_ONDOWNLOADPROGRESS, params);
+        }
 
-		private void send(int method, Bundle params) {
-			Message m = Message.obtain(null, method);
-			m.setData(params);
-			try {
-				mServiceMessenger.send(m);
-			} catch (RemoteException e) {
-				e.printStackTrace();
-			}
-		}
+        private void send(int method, Bundle params) {
+            Message m = Message.obtain(null, method);
+            m.setData(params);
+            try {
+                mServiceMessenger.send(m);
+            } catch (RemoteException e) {
+                e.printStackTrace();
+            }
+        }
 
-		public Proxy(Messenger msg) {
-			mServiceMessenger = msg;
-		}
+        public Proxy(Messenger msg) {
+            mServiceMessenger = msg;
+        }
 
-		@Override
-		public void onServiceConnected(Messenger m) {
-			/**
+        @Override
+        public void onServiceConnected(Messenger m) {
+            /**
              * This is never called through the proxy.
              */
-		}
-	}
+        }
+    }
 
-	private static class Stub implements IStub {
-		private IDownloaderClient mItf = null;
-		private Class<?> mDownloaderServiceClass;
-		private boolean mBound;
-		private Messenger mServiceMessenger;
-		private Context mContext;
-		/**
+    private static class Stub implements IStub {
+        private IDownloaderClient mItf = null;
+        private Class<?> mDownloaderServiceClass;
+        private boolean mBound;
+        private Messenger mServiceMessenger;
+        private Context mContext;
+        /**
          * Target we publish for clients to send messages to IncomingHandler.
          */
-		private final MessengerHandlerClient mMsgHandler = new MessengerHandlerClient(this);
-		final Messenger mMessenger = new Messenger(mMsgHandler);
+        // -- GODOT start --
+        private final MessengerHandlerClient mMsgHandler = new MessengerHandlerClient(this);
+        final Messenger mMessenger = new Messenger(mMsgHandler);
 
-		private static class MessengerHandlerClient extends Handler {
-			private final WeakReference<Stub> mDownloader;
-			public MessengerHandlerClient(Stub downloader) {
-				mDownloader = new WeakReference<>(downloader);
-			}
+        private static class MessengerHandlerClient extends Handler {
+            private final WeakReference<Stub> mDownloader;
+            public MessengerHandlerClient(Stub downloader) {
+                mDownloader = new WeakReference<>(downloader);
+            }
 
-			@Override
-			public void handleMessage(Message msg) {
-				Stub downloader = mDownloader.get();
-				if (downloader != null) {
-					downloader.handleMessage(msg);
-				}
-			}
-		}
+            @Override
+            public void handleMessage(Message msg) {
+                Stub downloader = mDownloader.get();
+                if (downloader != null) {
+                    downloader.handleMessage(msg);
+                }
+            }
+        }
 
-		private void handleMessage(Message msg) {
-			switch (msg.what) {
-				case MSG_ONDOWNLOADPROGRESS:
-					Bundle bun = msg.getData();
-					if (null != mContext) {
-						bun.setClassLoader(mContext.getClassLoader());
-						DownloadProgressInfo dpi = (DownloadProgressInfo)msg.getData()
-														   .getParcelable(PARAM_PROGRESS);
-						mItf.onDownloadProgress(dpi);
-					}
-					break;
-				case MSG_ONDOWNLOADSTATE_CHANGED:
-					mItf.onDownloadStateChanged(msg.getData().getInt(PARAM_NEW_STATE));
-					break;
-				case MSG_ONSERVICECONNECTED:
-					mItf.onServiceConnected(
-							(Messenger)msg.getData().getParcelable(PARAM_MESSENGER));
-					break;
-			}
-		}
+        private void handleMessage(Message msg) {
+            switch (msg.what) {
+                case MSG_ONDOWNLOADPROGRESS:
+                    Bundle bun = msg.getData();
+                    if (null != mContext) {
+                        bun.setClassLoader(mContext.getClassLoader());
+                        DownloadProgressInfo dpi = (DownloadProgressInfo)msg.getData()
+                                                            .getParcelable(PARAM_PROGRESS);
+                        mItf.onDownloadProgress(dpi);
+                    }
+                    break;
+                case MSG_ONDOWNLOADSTATE_CHANGED:
+                    mItf.onDownloadStateChanged(msg.getData().getInt(PARAM_NEW_STATE));
+                    break;
+                case MSG_ONSERVICECONNECTED:
+                    mItf.onServiceConnected(
+                            (Messenger)msg.getData().getParcelable(PARAM_MESSENGER));
+                    break;
+            }
+        }
+        // -- GODOT end --
 
-		public Stub(IDownloaderClient itf, Class<?> downloaderService) {
-			mItf = itf;
-			mDownloaderServiceClass = downloaderService;
-		}
+        public Stub(IDownloaderClient itf, Class<?> downloaderService) {
+            mItf = itf;
+            mDownloaderServiceClass = downloaderService;
+        }
 
-		/**
+        /**
          * Class for interacting with the main interface of the service.
          */
-		private ServiceConnection mConnection = new ServiceConnection() {
-			public void onServiceConnected(ComponentName className, IBinder service) {
-				// This is called when the connection with the service has been
-				// established, giving us the object we can use to
-				// interact with the service. We are communicating with the
-				// service using a Messenger, so here we get a client-side
-				// representation of that from the raw IBinder object.
-				mServiceMessenger = new Messenger(service);
-				mItf.onServiceConnected(
-						mServiceMessenger);
-			}
+        private ServiceConnection mConnection = new ServiceConnection() {
+            public void onServiceConnected(ComponentName className, IBinder service) {
+                // This is called when the connection with the service has been
+                // established, giving us the object we can use to
+                // interact with the service. We are communicating with the
+                // service using a Messenger, so here we get a client-side
+                // representation of that from the raw IBinder object.
+                mServiceMessenger = new Messenger(service);
+                mItf.onServiceConnected(
+                        mServiceMessenger);
+            }
 
-			public void onServiceDisconnected(ComponentName className) {
-				// This is called when the connection with the service has been
-				// unexpectedly disconnected -- that is, its process crashed.
-				mServiceMessenger = null;
-			}
-		};
+            public void onServiceDisconnected(ComponentName className) {
+                // This is called when the connection with the service has been
+                // unexpectedly disconnected -- that is, its process crashed.
+                mServiceMessenger = null;
+            }
+        };
 
-		@Override
-		public void connect(Context c) {
-			mContext = c;
-			Intent bindIntent = new Intent(c, mDownloaderServiceClass);
-			bindIntent.putExtra(PARAM_MESSENGER, mMessenger);
-			if (!c.bindService(bindIntent, mConnection, Context.BIND_DEBUG_UNBIND)) {
-				if (Constants.LOGVV) {
-					Log.d(Constants.TAG, "Service Unbound");
-				}
-			} else {
-				mBound = true;
-			}
-		}
+        @Override
+        public void connect(Context c) {
+            mContext = c;
+            Intent bindIntent = new Intent(c, mDownloaderServiceClass);
+            bindIntent.putExtra(PARAM_MESSENGER, mMessenger);
+            if ( !c.bindService(bindIntent, mConnection, Context.BIND_DEBUG_UNBIND) ) {
+                if ( Constants.LOGVV ) {
+                    Log.d(Constants.TAG, "Service Unbound");
+                }
+            } else {
+                mBound = true;
+            }
 
-		@Override
-		public void disconnect(Context c) {
-			if (mBound) {
-				c.unbindService(mConnection);
-				mBound = false;
-			}
-			mContext = null;
-		}
+        }
 
-		@Override
-		public Messenger getMessenger() {
-			return mMessenger;
-		}
-	}
+        @Override
+        public void disconnect(Context c) {
+            if (mBound) {
+                c.unbindService(mConnection);
+                mBound = false;
+            }
+            mContext = null;
+        }
 
-	/**
+        @Override
+        public Messenger getMessenger() {
+            return mMessenger;
+        }
+    }
+
+    /**
      * Returns a proxy that will marshal calls to IDownloaderClient methods
      *
      * @param msg
      * @return
      */
-	public static IDownloaderClient CreateProxy(Messenger msg) {
-		return new Proxy(msg);
-	}
+    public static IDownloaderClient CreateProxy(Messenger msg) {
+        return new Proxy(msg);
+    }
 
-	/**
+    /**
      * Returns a stub object that, when connected, will listen for marshaled
      * {@link IDownloaderClient} methods and translate them into calls to the supplied
      * interface.
@@ -235,11 +241,11 @@ public class DownloaderClientMarshaller {
      * @return The {@link IStub} that allows you to connect to the service such that
      * your {@link IDownloaderClient} receives status updates.
      */
-	public static IStub CreateStub(IDownloaderClient itf, Class<?> downloaderService) {
-		return new Stub(itf, downloaderService);
-	}
+    public static IStub CreateStub(IDownloaderClient itf, Class<?> downloaderService) {
+        return new Stub(itf, downloaderService);
+    }
 
-	/**
+    /**
      * Starts the download if necessary. This function starts a flow that does `
      * many things. 1) Checks to see if the APK version has been checked and
      * the metadata database updated 2) If the APK version does not match,
@@ -262,14 +268,14 @@ public class DownloaderClientMarshaller {
      * #DOWNLOAD_REQUIRED}.
      * @throws NameNotFoundException
      */
-	public static int startDownloadServiceIfRequired(Context context, PendingIntent notificationClient,
-			Class<?> serviceClass)
-			throws NameNotFoundException {
-		return DownloaderService.startDownloadServiceIfRequired(context, notificationClient,
-				serviceClass);
-	}
+    public static int startDownloadServiceIfRequired(Context context, PendingIntent notificationClient,
+            Class<?> serviceClass)
+            throws NameNotFoundException {
+        return DownloaderService.startDownloadServiceIfRequired(context, notificationClient,
+                serviceClass);
+    }
 
-	/**
+    /**
      * This version assumes that the intent contains the pending intent as a parameter. This
      * is used for responding to alarms.
      * <p>The pending intent must be in an extra with the key {@link
@@ -281,10 +287,11 @@ public class DownloaderClientMarshaller {
      * @return
      * @throws NameNotFoundException
      */
-	public static int startDownloadServiceIfRequired(Context context, Intent notificationClient,
-			Class<?> serviceClass)
-			throws NameNotFoundException {
-		return DownloaderService.startDownloadServiceIfRequired(context, notificationClient,
-				serviceClass);
-	}
+    public static int startDownloadServiceIfRequired(Context context, Intent notificationClient,
+            Class<?> serviceClass)
+            throws NameNotFoundException {
+        return DownloaderService.startDownloadServiceIfRequired(context, notificationClient,
+                serviceClass);
+    }
+
 }

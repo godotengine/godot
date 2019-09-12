@@ -46,8 +46,7 @@ bool EditorResourcePreviewGenerator::handles(const String &p_type) const {
 	if (get_script_instance() && get_script_instance()->has_method("handles")) {
 		return get_script_instance()->call("handles", p_type);
 	}
-	ERR_EXPLAIN("EditorResourcePreviewGenerator::handles needs to be overridden");
-	ERR_FAIL_V(false);
+	ERR_FAIL_V_MSG(false, "EditorResourcePreviewGenerator::handles needs to be overridden.");
 }
 
 Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from, const Size2 &p_size) const {
@@ -55,8 +54,7 @@ Ref<Texture> EditorResourcePreviewGenerator::generate(const RES &p_from, const S
 	if (get_script_instance() && get_script_instance()->has_method("generate")) {
 		return get_script_instance()->call("generate", p_from, p_size);
 	}
-	ERR_EXPLAIN("EditorResourcePreviewGenerator::generate needs to be overridden");
-	ERR_FAIL_V(Ref<Texture>());
+	ERR_FAIL_V_MSG(Ref<Texture>(), "EditorResourcePreviewGenerator::generate needs to be overridden.");
 }
 
 Ref<Texture> EditorResourcePreviewGenerator::generate_from_path(const String &p_path, const Size2 &p_size) const {
@@ -297,8 +295,9 @@ void EditorResourcePreview::_thread() {
 								//update modified time
 
 								f = FileAccess::open(file, FileAccess::WRITE);
-								f->store_line(itos(modtime));
+								f->store_line(itos(thumbnail_size));
 								f->store_line(itos(has_small_texture));
+								f->store_line(itos(modtime));
 								f->store_line(md5);
 								memdelete(f);
 							}

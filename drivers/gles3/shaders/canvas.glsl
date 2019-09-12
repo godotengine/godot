@@ -597,7 +597,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_RGBA_SHADOWS
 
-#define SHADOW_DEPTH(m_tex, m_uv) dot(texture((m_tex), (m_uv)), vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0))
+#define SHADOW_DEPTH(m_tex, m_uv) dot(texture((m_tex), (m_uv)), vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0))
 
 #else
 

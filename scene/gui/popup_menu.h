@@ -33,10 +33,6 @@
 
 #include "scene/gui/popup.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class PopupMenu : public Popup {
 
 	GDCLASS(PopupMenu, Popup);

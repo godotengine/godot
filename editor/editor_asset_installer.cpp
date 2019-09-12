@@ -90,7 +90,7 @@ void EditorAssetInstaller::open(const String &p_path, int p_depth) {
 	unzFile pkg = unzOpen2(p_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text(TTR("Error opening package file, not in zip format."));
+		error->set_text(TTR("Error opening package file, not in ZIP format."));
 		return;
 	}
 
@@ -217,7 +217,7 @@ void EditorAssetInstaller::ok_pressed() {
 	unzFile pkg = unzOpen2(package_path.utf8().get_data(), &io);
 	if (!pkg) {
 
-		error->set_text(TTR("Error opening package file, not in zip format."));
+		error->set_text(TTR("Error opening package file, not in ZIP format."));
 		return;
 	}
 

@@ -279,7 +279,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 			Vector<String> link_target_parts = link_target.split(".");
 
 			if (link_target_parts.size() <= 0 || link_target_parts.size() > 2) {
-				ERR_PRINTS("Invalid reference format: " + tag);
+				ERR_PRINTS("Invalid reference format: '" + tag + "'.");
 
 				xml_output.append("<c>");
 				xml_output.append(tag);
@@ -375,7 +375,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(target_enum_itype.proxy_name); // Includes nesting class if any
 					xml_output.append("\"/>");
 				} else {
-					ERR_PRINTS("Cannot resolve enum reference in documentation: " + link_target);
+					ERR_PRINTS("Cannot resolve enum reference in documentation: '" + link_target + "'.");
 
 					xml_output.append("<c>");
 					xml_output.append(link_target);
@@ -424,7 +424,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 							xml_output.append(target_iconst->proxy_name);
 							xml_output.append("\"/>");
 						} else {
-							ERR_PRINTS("Cannot resolve global constant reference in documentation: " + link_target);
+							ERR_PRINTS("Cannot resolve global constant reference in documentation: '" + link_target + "'.");
 
 							xml_output.append("<c>");
 							xml_output.append(link_target);
@@ -464,7 +464,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 							xml_output.append(target_iconst->proxy_name);
 							xml_output.append("\"/>");
 						} else {
-							ERR_PRINTS("Cannot resolve constant reference in documentation: " + link_target);
+							ERR_PRINTS("Cannot resolve constant reference in documentation: '" + link_target + "'.");
 
 							xml_output.append("<c>");
 							xml_output.append(link_target);
@@ -534,7 +534,7 @@ String BindingsGenerator::bbcode_to_xml(const String &p_bbcode, const TypeInterf
 					xml_output.append(target_itype->proxy_name);
 					xml_output.append("\"/>");
 				} else {
-					ERR_PRINTS("Cannot resolve type reference in documentation: " + tag);
+					ERR_PRINTS("Cannot resolve type reference in documentation: '" + tag + "'.");
 
 					xml_output.append("<c>");
 					xml_output.append(tag);
@@ -812,7 +812,7 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 			CRASH_COND(enum_class_name != "Variant"); // Hard-coded...
 
-			_log("Declaring global enum `%s` inside static class `%s`\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
+			_log("Declaring global enum '%s' inside static class '%s'\n", enum_proxy_name.utf8().get_data(), enum_class_name.utf8().get_data());
 
 			p_output.append("\n" INDENT1 "public static partial class ");
 			p_output.append(enum_class_name);
@@ -1083,7 +1083,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 	proj_err = generate_cs_core_project(core_proj_dir, core_compile_items);
 	if (proj_err != OK) {
-		ERR_PRINT("Generation of the Core API C# project failed");
+		ERR_PRINT("Generation of the Core API C# project failed.");
 		return proj_err;
 	}
 
@@ -1094,7 +1094,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 	proj_err = generate_cs_editor_project(editor_proj_dir, editor_compile_items);
 	if (proj_err != OK) {
-		ERR_PRINT("Generation of the Editor API C# project failed");
+		ERR_PRINT("Generation of the Editor API C# project failed.");
 		return proj_err;
 	}
 
@@ -1112,7 +1112,7 @@ Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
 
 // FIXME: There are some members that hide other inherited members.
 // - In the case of both members being the same kind, the new one must be declared
-// explicitly as `new` to avoid the warning (and we must print a message about it).
+// explicitly as 'new' to avoid the warning (and we must print a message about it).
 // - In the case of both members being of a different kind, then the new one must
 // be renamed to avoid the name collision (and we must print a warning about it).
 // - Csc warning e.g.:
@@ -1186,7 +1186,7 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 			output.append(obj_types[itype.base_name].proxy_name);
 			output.append("\n");
 		} else {
-			ERR_PRINTS("Base type '" + itype.base_name.operator String() + "' does not exist, for class " + itype.name);
+			ERR_PRINTS("Base type '" + itype.base_name.operator String() + "' does not exist, for class '" + itype.name + "'.");
 			return ERR_INVALID_DATA;
 		}
 	}
@@ -1273,11 +1273,9 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 		for (const List<PropertyInterface>::Element *E = itype.properties.front(); E; E = E->next()) {
 			const PropertyInterface &iprop = E->get();
 			Error prop_err = _generate_cs_property(itype, iprop, output);
-			if (prop_err != OK) {
-				ERR_EXPLAIN("Failed to generate property '" + iprop.cname.operator String() +
-							"' for class '" + itype.name + "'");
-				ERR_FAIL_V(prop_err);
-			}
+			ERR_FAIL_COND_V_MSG(prop_err != OK, prop_err,
+					"Failed to generate property '" + iprop.cname.operator String() +
+							"' for class '" + itype.name + "'.");
 		}
 	}
 
@@ -1340,10 +1338,8 @@ Error BindingsGenerator::_generate_cs_type(const TypeInterface &itype, const Str
 	for (const List<MethodInterface>::Element *E = itype.methods.front(); E; E = E->next()) {
 		const MethodInterface &imethod = E->get();
 		Error method_err = _generate_cs_method(itype, imethod, method_bind_count, output);
-		if (method_err != OK) {
-			ERR_EXPLAIN("Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'");
-			ERR_FAIL_V(method_err);
-		}
+		ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+				"Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'.");
 	}
 
 	if (itype.is_singleton) {
@@ -1626,7 +1622,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 		if (p_imethod.is_deprecated) {
 			if (p_imethod.deprecation_message.empty())
-				WARN_PRINTS("An empty deprecation message is discouraged. Method: " + p_imethod.proxy_name);
+				WARN_PRINTS("An empty deprecation message is discouraged. Method: '" + p_imethod.proxy_name + "'.");
 
 			p_output.append(MEMBER_BEGIN "[Obsolete(\"");
 			p_output.append(p_imethod.deprecation_message);
@@ -1708,8 +1704,7 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
 	bool dir_exists = DirAccess::exists(p_output_dir);
-	ERR_EXPLAIN("The output directory does not exist.");
-	ERR_FAIL_COND_V(!dir_exists, ERR_FILE_BAD_PATH);
+	ERR_FAIL_COND_V_MSG(!dir_exists, ERR_FILE_BAD_PATH, "The output directory does not exist.");
 
 	StringBuilder output;
 
@@ -1742,10 +1737,8 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 		for (const List<MethodInterface>::Element *E = itype.methods.front(); E; E = E->next()) {
 			const MethodInterface &imethod = E->get();
 			Error method_err = _generate_glue_method(itype, imethod, output);
-			if (method_err != OK) {
-				ERR_EXPLAIN("Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'");
-				ERR_FAIL_V(method_err);
-			}
+			ERR_FAIL_COND_V_MSG(method_err != OK, method_err,
+					"Failed to generate method '" + imethod.name + "' for class '" + itype.name + "'.");
 		}
 
 		if (itype.is_singleton) {
@@ -1879,8 +1872,7 @@ Error BindingsGenerator::_save_file(const String &p_path, const StringBuilder &p
 
 	FileAccessRef file = FileAccess::open(p_path, FileAccess::WRITE);
 
-	ERR_EXPLAIN("Cannot open file: " + p_path);
-	ERR_FAIL_COND_V(!file, ERR_FILE_CANT_WRITE);
+	ERR_FAIL_COND_V_MSG(!file, ERR_FILE_CANT_WRITE, "Cannot open file: '" + p_path + "'.");
 
 	file->store_string(p_content.as_string());
 	file->close();
@@ -2091,7 +2083,7 @@ const BindingsGenerator::TypeInterface *BindingsGenerator::_get_type_or_placehol
 	if (found)
 		return found;
 
-	ERR_PRINTS(String() + "Type not found. Creating placeholder: " + p_typeref.cname.operator String());
+	ERR_PRINTS(String() + "Type not found. Creating placeholder: '" + p_typeref.cname.operator String() + "'.");
 
 	const Map<StringName, TypeInterface>::Element *match = placeholder_types.find(p_typeref.cname);
 
@@ -2175,13 +2167,13 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		}
 
 		if (!ClassDB::is_class_exposed(type_cname)) {
-			_log("Ignoring type `%s` because it's not exposed\n", String(type_cname).utf8().get_data());
+			_log("Ignoring type '%s' because it's not exposed\n", String(type_cname).utf8().get_data());
 			class_list.pop_front();
 			continue;
 		}
 
 		if (!ClassDB::is_class_enabled(type_cname)) {
-			_log("Ignoring type `%s` because it's not enabled\n", String(type_cname).utf8().get_data());
+			_log("Ignoring type '%s' because it's not enabled\n", String(type_cname).utf8().get_data());
 			class_list.pop_front();
 			continue;
 		}
@@ -2240,7 +2232,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			// Prevent the property and its enclosing type from sharing the same name
 			if (iprop.proxy_name == itype.proxy_name) {
-				_log("Name of property `%s` is ambiguous with the name of its enclosing class `%s`. Renaming property to `%s_`\n",
+				_log("Name of property '%s' is ambiguous with the name of its enclosing class '%s'. Renaming property to '%s_'\n",
 						iprop.proxy_name.utf8().get_data(), itype.proxy_name.utf8().get_data(), iprop.proxy_name.utf8().get_data());
 
 				iprop.proxy_name += "_";
@@ -2298,28 +2290,26 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			imethod.is_vararg = m && m->is_vararg();
 
 			if (!m && !imethod.is_virtual) {
-				if (virtual_method_list.find(method_info)) {
-					// A virtual method without the virtual flag. This is a special case.
+				ERR_FAIL_COND_MSG(!virtual_method_list.find(method_info),
+						"Missing MethodBind for non-virtual method: '" + itype.name + "." + imethod.name + "'.");
 
-					// There is no method bind, so let's fallback to Godot's object.Call(string, params)
-					imethod.requires_object_call = true;
+				// A virtual method without the virtual flag. This is a special case.
 
-					// The method Object.free is registered as a virtual method, but without the virtual flag.
-					// This is because this method is not supposed to be overridden, but called.
-					// We assume the return type is void.
-					imethod.return_type.cname = name_cache.type_void;
+				// There is no method bind, so let's fallback to Godot's object.Call(string, params)
+				imethod.requires_object_call = true;
 
-					// Actually, more methods like this may be added in the future,
-					// which could actually will return something different.
-					// Let's put this to notify us if that ever happens.
-					if (itype.cname != name_cache.type_Object || imethod.name != "free") {
-						ERR_PRINTS("Notification: New unexpected virtual non-overridable method found.\n"
-								   "We only expected Object.free, but found " +
-								   itype.name + "." + imethod.name);
-					}
-				} else {
-					ERR_EXPLAIN("Missing MethodBind for non-virtual method: " + itype.name + "." + imethod.name);
-					ERR_FAIL();
+				// The method Object.free is registered as a virtual method, but without the virtual flag.
+				// This is because this method is not supposed to be overridden, but called.
+				// We assume the return type is void.
+				imethod.return_type.cname = name_cache.type_void;
+
+				// Actually, more methods like this may be added in the future,
+				// which could actually will return something different.
+				// Let's put this to notify us if that ever happens.
+				if (itype.cname != name_cache.type_Object || imethod.name != "free") {
+					ERR_PRINTS("Notification: New unexpected virtual non-overridable method found."
+							   " We only expected Object.free, but found '" +
+							   itype.name + "." + imethod.name + "'.");
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
@@ -2328,8 +2318,8 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				imethod.return_type.cname = return_info.class_name;
 				if (!imethod.is_virtual && ClassDB::is_parent_class(return_info.class_name, name_cache.type_Reference) && return_info.hint != PROPERTY_HINT_RESOURCE_TYPE) {
 					/* clang-format off */
-					ERR_PRINTS("Return type is reference but hint is not " _STR(PROPERTY_HINT_RESOURCE_TYPE) "."
-							" Are you returning a reference type by pointer? Method: " + itype.name + "." + imethod.name);
+					ERR_PRINTS("Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'."
+							" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
 					/* clang-format on */
 					ERR_FAIL();
 				}
@@ -2394,7 +2384,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			// Prevent the method and its enclosing type from sharing the same name
 			if (imethod.proxy_name == itype.proxy_name) {
-				_log("Name of method `%s` is ambiguous with the name of its enclosing class `%s`. Renaming method to `%s_`\n",
+				_log("Name of method '%s' is ambiguous with the name of its enclosing class '%s'. Renaming method to '%s_'\n",
 						imethod.proxy_name.utf8().get_data(), itype.proxy_name.utf8().get_data(), imethod.proxy_name.utf8().get_data());
 
 				imethod.proxy_name += "_";
@@ -2880,8 +2870,7 @@ void BindingsGenerator::_populate_global_constants() {
 	if (global_constants_count > 0) {
 		Map<String, DocData::ClassDoc>::Element *match = EditorHelp::get_doc_data()->class_list.find("@GlobalScope");
 
-		ERR_EXPLAIN("Could not find `@GlobalScope` in DocData");
-		CRASH_COND(!match);
+		CRASH_COND_MSG(!match, "Could not find '@GlobalScope' in DocData.");
 
 		const DocData::ClassDoc &global_scope_doc = match->value();
 
@@ -2935,7 +2924,7 @@ void BindingsGenerator::_populate_global_constants() {
 			// HARDCODED: The Error enum have the prefix 'ERR_' for everything except 'OK' and 'FAILED'.
 			if (ienum.cname == name_cache.enum_Error) {
 				if (prefix_length > 0) { // Just in case it ever changes
-					ERR_PRINTS("Prefix for enum 'Error' is not empty");
+					ERR_PRINTS("Prefix for enum '" _STR(Error) "' is not empty.");
 				}
 
 				prefix_length = 1; // 'ERR_'
@@ -3024,7 +3013,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				glue_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_all_glue_option + ": No output directory specified (expected path to {GODOT_ROOT}/modules/mono/glue)");
+				ERR_PRINTS(generate_all_glue_option + ": No output directory specified (expected path to '{GODOT_ROOT}/modules/mono/glue').");
 			}
 
 			--options_left;
@@ -3035,7 +3024,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				cs_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_cs_glue_option + ": No output directory specified");
+				ERR_PRINTS(generate_cs_glue_option + ": No output directory specified.");
 			}
 
 			--options_left;
@@ -3046,7 +3035,7 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 				cpp_dir_path = path_elem->get();
 				elem = elem->next();
 			} else {
-				ERR_PRINTS(generate_cpp_glue_option + ": No output directory specified");
+				ERR_PRINTS(generate_cpp_glue_option + ": No output directory specified.");
 			}
 
 			--options_left;
@@ -3061,20 +3050,20 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 
 		if (glue_dir_path.length()) {
 			if (bindings_generator.generate_glue(glue_dir_path) != OK)
-				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C++ glue");
+				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C++ glue.");
 
 			if (bindings_generator.generate_cs_api(glue_dir_path.plus_file("Managed/Generated")) != OK)
-				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C# API");
+				ERR_PRINTS(generate_all_glue_option + ": Failed to generate the C# API.");
 		}
 
 		if (cs_dir_path.length()) {
 			if (bindings_generator.generate_cs_api(cs_dir_path) != OK)
-				ERR_PRINTS(generate_cs_glue_option + ": Failed to generate the C# API");
+				ERR_PRINTS(generate_cs_glue_option + ": Failed to generate the C# API.");
 		}
 
 		if (cpp_dir_path.length()) {
 			if (bindings_generator.generate_glue(cpp_dir_path) != OK)
-				ERR_PRINTS(generate_cpp_glue_option + ": Failed to generate the C++ glue");
+				ERR_PRINTS(generate_cpp_glue_option + ": Failed to generate the C++ glue.");
 		}
 
 		// Exit once done

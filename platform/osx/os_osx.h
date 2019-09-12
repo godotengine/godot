@@ -51,9 +51,6 @@
 #include <CoreVideo/CoreVideo.h>
 
 #undef CursorShape
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class OS_OSX : public OS_Unix {
 public:
@@ -160,6 +157,26 @@ public:
 	int video_driver_index;
 	virtual int get_current_video_driver() const;
 
+	struct GlobalMenuItem {
+		String label;
+		Variant signal;
+		Variant meta;
+
+		GlobalMenuItem() {
+			//NOP
+		}
+
+		GlobalMenuItem(const String &p_label, const Variant &p_signal, const Variant &p_meta) {
+			label = p_label;
+			signal = p_signal;
+			meta = p_meta;
+		}
+	};
+
+	Map<String, Vector<GlobalMenuItem> > global_menus;
+
+	void _update_global_menu();
+
 protected:
 	virtual void initialize_core();
 	virtual Error initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver);
@@ -170,6 +187,11 @@ protected:
 
 public:
 	static OS_OSX *singleton;
+
+	void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta);
+	void global_menu_add_separator(const String &p_menu);
+	void global_menu_remove_item(const String &p_menu, int p_idx);
+	void global_menu_clear(const String &p_menu);
 
 	void wm_minimized(bool p_minimized);
 

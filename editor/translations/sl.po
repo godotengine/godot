@@ -13,7 +13,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-05-16 18:49+0000\n"
+"PO-Revision-Date: 2019-08-29 13:35+0000\n"
 "Last-Translator: Andrej Poženel <andrej.pozenel@outlook.com>\n"
 "Language-Team: Slovenian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/sl/>\n"
@@ -23,7 +23,7 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=4; plural=n%100==1 ? 0 : n%100==2 ? 1 : n%100==3 || n"
 "%100==4 ? 2 : 3;\n"
-"X-Generator: Weblate 3.7-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -46,9 +46,8 @@ msgid "self can't be used because instance is null (not passed)"
 msgstr "self ne more biti uporabljen, ker instanca ni null (ni podano)"
 
 #: core/math/expression.cpp
-#, fuzzy
 msgid "Invalid operands to operator %s, %s and %s."
-msgstr "Neveljaven indeks lastnosti imena '%s' v vozlišču %s."
+msgstr "Neveljaven operand za operator %s, %s ter %s."
 
 #: core/math/expression.cpp
 #, fuzzy
@@ -68,7 +67,6 @@ msgid "On call to '%s':"
 msgstr "Na klic '%s':"
 
 #: editor/animation_bezier_editor.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
 msgstr "Prosto"
 
@@ -137,6 +135,31 @@ msgstr "Animacija Spremeni vrednost ključne slike"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
+msgstr "Animacija Spremeni klic"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Animacija Spremeni čas ključne slike"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Animacija Spremeni prehod"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Animacija Spremeni transformacijo"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Animacija Spremeni vrednost ključne slike"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
 msgstr "Animacija Spremeni klic"
 
 #: editor/animation_track_editor.cpp
@@ -659,16 +682,17 @@ msgid "Line Number:"
 msgstr "Številka Vrste:"
 
 #: editor/code_editor.cpp
-msgid "Found %d match(es)."
+msgid "Replaced %d occurrence(s)."
+msgstr "Zamenjana %d ponovitev/e."
+
+#: editor/code_editor.cpp editor/editor_help.cpp
+msgid "%d match."
 msgstr ""
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-msgid "No Matches"
+#, fuzzy
+msgid "%d matches."
 msgstr "Ni Zadetkov"
-
-#: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "Zamenjana %d ponovitev/e."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -907,8 +931,7 @@ msgstr "Priljubljene:"
 msgid "Recent:"
 msgstr "Nedavni:"
 
-#: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
@@ -1011,7 +1034,7 @@ msgstr ""
 "Izbrisane datoteke so potrebne za delovanje drugih virov.\n"
 "Ali jih vseeno odstranim? (brez vrnitve)"
 
-#: editor/dependency_editor.cpp editor/export_template_manager.cpp
+#: editor/dependency_editor.cpp
 msgid "Cannot remove:"
 msgstr "Ni mogoče odstraniti:"
 
@@ -1049,7 +1072,7 @@ msgstr "Trajno izbrišem %d predmet(e)? (Brez vrnitve!)"
 msgid "Show Dependencies"
 msgstr "Odvisnosti"
 
-#: editor/dependency_editor.cpp editor/editor_node.cpp
+#: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
 msgstr "Raziskovalec Osamljenih Virov"
 
@@ -1138,14 +1161,16 @@ msgid "License"
 msgstr "Licenca"
 
 #: editor/editor_about.cpp
-msgid "Thirdparty License"
+#, fuzzy
+msgid "Third-party Licenses"
 msgstr "Licenca Tretjih Oseb"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid ""
-"Godot Engine relies on a number of thirdparty free and open source "
+"Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
-"is an exhaustive list of all such thirdparty components with their "
+"is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
 "Godot Engine se nanaša na številne brezplačne in odprokodne knjižnice tretih "
@@ -1166,7 +1191,8 @@ msgid "Licenses"
 msgstr "Licence"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Error opening package file, not in zip format."
+#, fuzzy
+msgid "Error opening package file, not in ZIP format."
 msgstr "Napaka pri odpiranju datoteke paketa, ker ni v formatu zip."
 
 #: editor/editor_asset_installer.cpp
@@ -1676,12 +1702,11 @@ msgid "New"
 msgstr ""
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_manager.cpp
 msgid "Import"
 msgstr "Uvozi"
 
-#: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/project_export.cpp
+#: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
 msgstr "Izvozi"
 
@@ -1752,7 +1777,7 @@ msgstr "Pokaži V Upravitelju Datotek"
 msgid "New Folder..."
 msgstr "Nova Mapa..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Osveži"
 
@@ -1803,7 +1828,7 @@ msgstr "Pojdi Naprej"
 msgid "Go Up"
 msgstr "Pojdi Navzgor"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Preklopi na Skrite Datoteke"
 
@@ -1829,27 +1854,32 @@ msgstr "Premakni Priljubljeno Navzdol"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "Prejšnji zavihek"
+msgid "Go to previous folder."
+msgstr "Pojdi v nadrejeno mapo"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "Ustvarite Mapo"
+msgid "Go to next folder."
+msgstr "Pojdi v nadrejeno mapo"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "Pojdi v nadrejeno mapo"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Išči Razrede"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "Mape ni mogoče ustvariti."
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "Preklopi na Skrite Datoteke"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2108,6 +2138,10 @@ msgstr "Počisti"
 #: editor/editor_log.cpp
 msgid "Clear Output"
 msgstr "Počisti Izhod"
+
+#: editor/editor_node.cpp editor/project_manager.cpp
+msgid "New Window"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
@@ -2426,6 +2460,15 @@ msgid "Pick a Main Scene"
 msgstr "Izberi Glavno Sceno"
 
 #: editor/editor_node.cpp
+msgid "Close Scene"
+msgstr "Zapri Prizor"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Reopen Closed Scene"
+msgstr "Zapri Prizor"
+
+#: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
 "Ni mogoče omogočiti dodatnega vtičnika na: '%s'. Razčlenjevanje "
@@ -2543,6 +2586,11 @@ msgstr "Zaženi Prizor"
 msgid "Close Tab"
 msgstr "Zapri"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo Close Tab"
+msgstr "Zapri"
+
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
 msgstr ""
@@ -2629,6 +2677,10 @@ msgstr "Nov Podedovan Prizor..."
 msgid "Open Scene..."
 msgstr "Odpri Prizor..."
 
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Open Recent"
+msgstr "Odpri Nedavne"
+
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Shrani Prizor"
@@ -2637,14 +2689,6 @@ msgstr "Shrani Prizor"
 #, fuzzy
 msgid "Save All Scenes"
 msgstr "Shrani vse Prizore"
-
-#: editor/editor_node.cpp
-msgid "Close Scene"
-msgstr "Zapri Prizor"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Open Recent"
-msgstr "Odpri Nedavne"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -2676,13 +2720,28 @@ msgstr "Povrni Prizor"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "Različna projektna ali prizorska orodja."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Projekt"
 
 #: editor/editor_node.cpp
-msgid "Project Settings"
+#, fuzzy
+msgid "Project Settings..."
 msgstr "Nastavitve Projekta"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Export..."
+msgstr "Izvozi"
+
+#: editor/editor_node.cpp
+msgid "Install Android Build Template..."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Project Data Folder"
+msgstr "Odprem Upravljalnik Projekta?"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -2690,12 +2749,8 @@ msgstr "Orodja"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Open Project Data Folder"
-msgstr "Odprem Upravljalnik Projekta?"
-
-#: editor/editor_node.cpp
-msgid "Install Android Build Template"
-msgstr ""
+msgid "Orphan Resource Explorer..."
+msgstr "Raziskovalec Osamljenih Virov"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2791,12 +2846,13 @@ msgstr ""
 "Če se uporablja napravo na daljavo, je to bolj učinkovito pri omrežnem "
 "datotečnem sistemu."
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
 msgstr "Urejevalnik"
 
-#: editor/editor_node.cpp editor/settings_config_dialog.cpp
-msgid "Editor Settings"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Editor Settings..."
 msgstr "Nastavitve Urejevalnika"
 
 #: editor/editor_node.cpp
@@ -2812,15 +2868,6 @@ msgstr "Shrani Prizor"
 #, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Nastavitve Urejevalnika"
-
-#: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "Odpri naslednji Urejevalnik"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
@@ -2847,14 +2894,15 @@ msgstr "Nastavitve Urejevalnika"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Manage Editor Features"
-msgstr "Upravljaj Izvozne Predloge"
-
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Manage Export Templates"
+msgid "Manage Editor Features..."
 msgstr "Upravljaj Izvozne Predloge"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Manage Export Templates..."
+msgstr "Upravljaj Izvozne Predloge"
+
+#: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
 msgstr "Pomoč"
 
@@ -2862,12 +2910,13 @@ msgstr "Pomoč"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "Iskanje"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Spletna Dokumentacija"
 
@@ -3149,6 +3198,11 @@ msgstr "Čas"
 msgid "Calls"
 msgstr "Klici"
 
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Člani"
+
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr ""
@@ -3316,7 +3370,8 @@ msgid "Import From Node:"
 msgstr "Uvozi iz Gradnika:"
 
 #: editor/export_template_manager.cpp
-msgid "Re-Download"
+#, fuzzy
+msgid "Redownload"
 msgstr "Ponovno Prenesi"
 
 #: editor/export_template_manager.cpp
@@ -3331,6 +3386,10 @@ msgstr "(Nameščeno)"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
 msgstr "Prenesi"
+
+#: editor/export_template_manager.cpp
+msgid "Official export templates aren't available for development builds."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3397,12 +3456,10 @@ msgid "No response."
 msgstr "Ni odgovora."
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request Failed."
 msgstr "Zahteva Ni Uspela."
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
 msgstr "Preusmeritev Zanke."
 
@@ -3416,13 +3473,19 @@ msgid "Download Complete."
 msgstr "Prenos je Dokončan."
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Cannot remove temporary file:"
+msgstr "Ni mogoče odstraniti:"
+
+#: editor/export_template_manager.cpp
 msgid ""
-"Templates installation failed. The problematic templates archives can be "
-"found at '%s'."
+"Templates installation failed.\n"
+"The problematic templates archives can be found at '%s'."
 msgstr ""
 
 #: editor/export_template_manager.cpp
-msgid "Error requesting url: "
+#, fuzzy
+msgid "Error requesting URL:"
 msgstr "Napaka pri zahtevi URL-ja: "
 
 #: editor/export_template_manager.cpp
@@ -3510,22 +3573,10 @@ msgstr "Prenesi Predloge"
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
 msgstr "Izberi vire s seznama: "
 
-#: editor/file_type_cache.cpp
-msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
-msgstr ""
-"Za pisanje ni mogoče odpreti file_type_cache.cch, ne da bi shranili "
-"predpomnilnik tipa datoteke!"
-
 #: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Favorites"
 msgstr "Priljubljene:"
-
-#: editor/filesystem_dock.cpp
-msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr ""
-"Ne morem se postaviti na mesto '%s', ker ni bilo najdeno v datotečnem "
-"sistemu!"
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
@@ -3562,12 +3613,12 @@ msgid "Provided name contains invalid characters."
 msgstr "Vnešeno ime vsebuje neveljavne znake"
 
 #: editor/filesystem_dock.cpp
-msgid "Name contains invalid characters."
-msgstr "Ime vsebuje neveljavne znake."
-
-#: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
 msgstr "Datoteka ali mapa s tem imenom že obstaja."
+
+#: editor/filesystem_dock.cpp
+msgid "Name contains invalid characters."
+msgstr "Ime vsebuje neveljavne znake."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3628,6 +3679,11 @@ msgstr "Podvoji..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Premakni V..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Scene..."
+msgstr "Nov Prizor"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -3703,6 +3759,11 @@ msgstr "Datoteka ali mapa s tem imenom že obstaja."
 msgid "Overwrite"
 msgstr ""
 
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Create Scene"
+msgstr "Shrani Prizor"
+
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
 msgstr ""
@@ -3772,6 +3833,14 @@ msgid "Search complete"
 msgstr "Išči Besedilo"
 
 #: editor/groups_editor.cpp
+msgid "Add to Group"
+msgstr "Dodaj v Skupino"
+
+#: editor/groups_editor.cpp
+msgid "Remove from Group"
+msgstr "Odstrani iz Skupine"
+
+#: editor/groups_editor.cpp
 #, fuzzy
 msgid "Group name already exists."
 msgstr "NAPAKA: Animacija s tem imenom že obstaja!"
@@ -3781,13 +3850,23 @@ msgstr "NAPAKA: Animacija s tem imenom že obstaja!"
 msgid "Invalid group name."
 msgstr "Neveljavno ime."
 
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Rename Group"
+msgstr "Skupine"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Delete Group"
+msgstr "Izbriši Postavitev"
+
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "Skupine"
 
 #: editor/groups_editor.cpp
 #, fuzzy
-msgid "Nodes not in Group"
+msgid "Nodes Not in Group"
 msgstr "Dodaj v Skupino"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
@@ -3801,12 +3880,13 @@ msgid "Nodes in Group"
 msgstr "Dodaj v Skupino"
 
 #: editor/groups_editor.cpp
-msgid "Add to Group"
-msgstr "Dodaj v Skupino"
+msgid "Empty groups will be automatically removed."
+msgstr ""
 
 #: editor/groups_editor.cpp
-msgid "Remove from Group"
-msgstr "Odstrani iz Skupine"
+#, fuzzy
+msgid "Group Editor"
+msgstr "Odpri Urejevalnik Skript"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -4017,7 +4097,8 @@ msgid "MultiNode Set"
 msgstr "Niz Večkratnih Gradnikov"
 
 #: editor/node_dock.cpp
-msgid "Select a Node to edit Signals and Groups."
+#, fuzzy
+msgid "Select a single node to edit its signals and groups."
 msgstr "Za urejanje Signalov in Skupin izberi Gradnik."
 
 #: editor/plugin_config_dialog.cpp
@@ -4820,10 +4901,6 @@ msgid "View Files"
 msgstr "Ogled datotek"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr "Ne morem razrešiti imena gostitelja:"
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
 msgstr "Napaka pri povezavi, poskusi znova."
 
@@ -4836,12 +4913,45 @@ msgid "No response from host:"
 msgstr "Gostitelj se ne odziva:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr "Ne morem razrešiti imena gostitelja:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
 msgstr "Zahteva ni uspela, povratna koda:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed."
+msgstr "Zahteva Ni Uspela."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Cannot save response to:"
+msgstr "Ni mogoče odstraniti:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Write error."
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
 msgstr "Zahteva ni uspela, preveč preusmeritev"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Redirect loop."
+msgstr "Preusmeritev Zanke."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed, timeout"
+msgstr "Zahteva ni uspela, povratna koda:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Timeout."
+msgstr "Čas"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -4922,13 +5032,17 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Vse"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
-msgid "Plugins"
+#, fuzzy
+msgid "Import..."
+msgstr "Uvozi"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Plugins..."
 msgstr "Vtičniki"
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
@@ -4950,7 +5064,8 @@ msgid "Site:"
 msgstr "Stran:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support..."
+#, fuzzy
+msgid "Support"
 msgstr "Podpora..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -4960,6 +5075,11 @@ msgstr "Uradno"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
 msgstr "Preskušanje"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Loading..."
+msgstr "Naloži"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5140,6 +5260,11 @@ msgstr "Prilepi Pozicijo"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Clear Guides"
+msgstr "Zaženi Prizor po Meri"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Create Custom Bone(s) from Node(s)"
 msgstr "Zaženi Prizor po Meri"
 
@@ -5170,6 +5295,7 @@ msgid "Zoom Reset"
 msgstr "Oddalji"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
 msgstr "Izberi Način"
 
@@ -5192,14 +5318,17 @@ msgid "Alt+RMB: Depth list selection"
 msgstr "Alt+RMB: Izbira globine"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
 msgstr "Način Premika"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
 msgstr "Način Vrtenja"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Scale Mode"
 msgstr "Način Obsega (R)"
@@ -5227,6 +5356,7 @@ msgid "Toggle snapping."
 msgstr "Preklopi pripenjanje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "Uporabi Pripenjanje"
 
@@ -5245,11 +5375,6 @@ msgid "Use Rotation Snap"
 msgstr "Uporabi Rotacijsko Pripenjanje"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap..."
-msgstr "Nastavi Pripenjanje..."
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
 msgstr "Pripni Relativno"
 
@@ -5261,6 +5386,11 @@ msgstr "Uporabi Pripenjanje Pikslov"
 #, fuzzy
 msgid "Smart Snapping"
 msgstr "Pametno pripenjanje"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Configure Snap..."
+msgstr "Nastavi Pripenjanje..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5479,16 +5609,6 @@ msgstr "Uredi Poligon (Odstrani Točko)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
-msgstr ""
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr ""
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
 msgstr ""
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
@@ -5811,14 +5931,6 @@ msgid "Surface source is invalid (no faces)."
 msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Parent has no solid faces to populate."
-msgstr ""
-
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Couldn't map area."
-msgstr ""
-
-#: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
 msgstr ""
 
@@ -5902,19 +6014,23 @@ msgid "Generation Time (sec):"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Faces contain no area!"
+msgid "The geometry's faces don't contain any area."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "No faces!"
+msgid "The geometry doesn't contain any faces."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry."
+msgid "\"%s\" doesn't inherit from Spatial."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry (faces)."
+msgid "\"%s\" doesn't contain geometry."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "\"%s\" doesn't contain face geometry."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -6254,7 +6370,6 @@ msgid "Grid Settings"
 msgstr "Nastavitve Urejevalnika"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr ""
 
@@ -6368,12 +6483,7 @@ msgstr "Napaka pri shranjevanju PloščnegaNiza!"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "Error: could not load file."
-msgstr "Mape ni mogoče ustvariti."
-
-#: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
-msgid "Error could not load file."
+msgid "Could not load file at:"
 msgstr "Mape ni mogoče ustvariti."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6403,7 +6513,7 @@ msgstr "Napaka pri premikanju:"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "New TextFile..."
+msgid "New Text File..."
 msgstr "Nova Mapa..."
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6489,6 +6599,11 @@ msgid "Open..."
 msgstr "Odpri"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Reopen Closed Script"
+msgstr "Zaženi Skripto"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
 msgstr ""
 
@@ -6528,12 +6643,12 @@ msgid "Save Theme"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Close Docs"
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
 msgstr "Zapri Vse"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Close Docs"
+msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
@@ -6623,6 +6738,11 @@ msgstr "Razhroščevalnik"
 msgid "Search Results"
 msgstr "Išči Pomoč"
 
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Clear Recent Scripts"
+msgstr "Počisti Nedavne Prizore"
+
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Connections to method:"
@@ -6695,6 +6815,7 @@ msgid "Syntax Highlighter"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
 msgstr ""
 
@@ -6730,26 +6851,6 @@ msgid "Toggle Comment"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Toggle Bookmark"
-msgstr "Preklopi Svobodni Pregled"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Next Bookmark"
-msgstr "Pojdi na naslednji korak"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Previous Bookmark"
-msgstr "Preklopi na Zaustavitev"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Remove All Bookmarks"
-msgstr "Odstrani Vse Stvari"
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr "Pregibna/Nepregibna Črta"
 
@@ -6770,6 +6871,11 @@ msgid "Complete Symbol"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Evaluate Selection"
+msgstr "Povečaj izbiro"
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr ""
 
@@ -6784,6 +6890,49 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Find in Files..."
+msgstr "Filtriraj datoteke..."
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Toggle Bookmark"
+msgstr "Preklopi Svobodni Pregled"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Next Bookmark"
+msgstr "Pojdi na naslednji korak"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Previous Bookmark"
+msgstr "Preklopi na Zaustavitev"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Remove All Bookmarks"
+msgstr "Odstrani Vse Stvari"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Function..."
+msgstr "Odstrani Funkcijo"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Line..."
+msgstr "Pojdi na Vrstico"
 
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -6803,29 +6952,6 @@ msgstr "Pojdi na naslednji korak"
 #, fuzzy
 msgid "Go to Previous Breakpoint"
 msgstr "Preklopi na Zaustavitev"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Find in Files..."
-msgstr "Filtriraj datoteke..."
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Function..."
-msgstr "Odstrani Funkcijo"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Line..."
-msgstr "Pojdi na Vrstico"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Contextual Help"
-msgstr ""
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid ""
@@ -7006,7 +7132,11 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Rotation with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -7062,8 +7192,9 @@ msgid "Audio Listener"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Doppler Enable"
-msgstr ""
+#, fuzzy
+msgid "Enable Doppler"
+msgstr "Spremeni Dolžino Animacije"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -7118,8 +7249,8 @@ msgid "Snap Nodes To Floor"
 msgstr "Pripni na mrežo"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Select Mode (Q)"
-msgstr "Izberite Način (Q)"
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -7132,28 +7263,9 @@ msgstr ""
 "Alt+RMB: Izbira globine"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
-msgstr "Način Premika (W)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
-msgstr "Način Vrtenja (E)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scale Mode (R)"
-msgstr "Način Obsega (R)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Space Mode (%s)"
+#, fuzzy
+msgid "Use Local Space"
 msgstr "Lokalno prostorski način (%s)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap Mode (%s)"
-msgstr "Način Zaskoka (%s)"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7193,26 +7305,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Select"
-msgstr "Izbira Orodja"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Move"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Rotate"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Scale"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7271,8 +7363,9 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Settings"
-msgstr ""
+#, fuzzy
+msgid "Settings..."
+msgstr "Nastavitve Zaskočenja"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -7580,10 +7673,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Can't save theme to file:"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
 msgstr ""
 
@@ -7672,11 +7761,11 @@ msgid "Submenu"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Item 1"
+msgid "Subitem 1"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Item 2"
+msgid "Subitem 2"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -7800,8 +7889,8 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
-"Shift+RMB: Line Draw\n"
-"Shift+Ctrl+RMB: Rectangle Paint"
+"Shift+LMB: Line Draw\n"
+"Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
@@ -8121,6 +8210,10 @@ msgid "TileSet"
 msgstr "Izvozi Ploščno Zbirko"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Add input +"
 msgstr "Dodaj Vnos"
@@ -8210,16 +8303,17 @@ msgid "Duplicate Nodes"
 msgstr "Animacija Podvoji ključe"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Paste Nodes"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Delete Nodes"
 msgstr "Izberi Gradnik"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only)"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8233,6 +8327,11 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Show resulted shader code."
+msgstr "Ustvarite Mapo"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8602,7 +8701,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if x is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8611,7 +8710,7 @@ msgstr ""
 msgid ""
 "Step function( scalar(edge), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8775,6 +8874,10 @@ msgid "Linear interpolation between two vectors."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Linear interpolation between two vectors using scalar."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
 msgstr ""
 
@@ -8800,7 +8903,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8809,7 +8912,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8818,14 +8921,14 @@ msgstr ""
 msgid ""
 "Step function( vector(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Step function( scalar(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8867,6 +8970,13 @@ msgstr ""
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Custom Godot Shader Language expression, which placed on top of the resulted "
+"shader. You can place various function definitions inside and call it later "
+"in the Expressions. You can also declare varyings, uniforms and constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9085,6 +9195,10 @@ msgid "Export templates for this platform are missing:"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Manage Export Templates"
+msgstr "Upravljaj Izvozne Predloge"
+
+#: editor/project_export.cpp
 msgid "Export With Debug"
 msgstr ""
 
@@ -9234,6 +9348,15 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Missing Project"
+msgstr "Uvoz Obstoječega Projekta"
+
+#: editor/project_manager.cpp
+msgid "Error: Project is missing on the filesystem."
+msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Can't open project at '%s'."
 msgstr "Ni mogoče odpreti '%s'."
 
@@ -9307,8 +9430,8 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Remove all missing projects from the list? (Folders contents will not be "
-"modified)"
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -9328,8 +9451,9 @@ msgid "Project Manager"
 msgstr "Upravljalnik Projekta"
 
 #: editor/project_manager.cpp
-msgid "Project List"
-msgstr "Seznam Projektov"
+#, fuzzy
+msgid "Projects"
+msgstr "Projekt"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -9351,10 +9475,6 @@ msgstr "Odstrani točko"
 #: editor/project_manager.cpp
 msgid "Templates"
 msgstr "Predloge"
-
-#: editor/project_manager.cpp
-msgid "Exit"
-msgstr "Izhod"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -9697,6 +9817,10 @@ msgstr ""
 msgid "AutoLoad"
 msgstr ""
 
+#: editor/project_settings_editor.cpp
+msgid "Plugins"
+msgstr "Vtičniki"
+
 #: editor/property_editor.cpp
 msgid "Zero"
 msgstr ""
@@ -9747,14 +9871,6 @@ msgstr ""
 
 #: editor/property_selector.cpp
 msgid "Select Method"
-msgstr ""
-
-#: editor/pvrtc_compress.cpp
-msgid "Could not execute PVRTC tool:"
-msgstr ""
-
-#: editor/pvrtc_compress.cpp
-msgid "Can't load back converted image using PVRTC tool:"
 msgstr ""
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
@@ -10056,6 +10172,10 @@ msgid "Remove Node(s)"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Change type of node(s)"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -10099,6 +10219,11 @@ msgstr ""
 #, fuzzy
 msgid "Extend Script"
 msgstr "Zaženi Skripto"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Ustvari Nov %s"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10178,19 +10303,19 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connection(s) and group(s).\n"
+"Node has %s connection(s) and %s group(s).\n"
 "Click to show signals dock."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connections.\n"
+"Node has %s connection(s).\n"
 "Click to show signals dock."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node is in group(s).\n"
+"Node is in %s group(s).\n"
 "Click to show groups dock."
 msgstr ""
 
@@ -10285,6 +10410,10 @@ msgstr ""
 
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
+msgstr ""
+
+#: editor/script_create_dialog.cpp
+msgid "Overrides"
 msgstr ""
 
 #: editor/script_create_dialog.cpp
@@ -10483,6 +10612,10 @@ msgstr ""
 #, fuzzy
 msgid "Change Shortcut"
 msgstr "Spremeni Sidrišča"
+
+#: editor/settings_config_dialog.cpp
+msgid "Editor Settings"
+msgstr "Nastavitve Urejevalnika"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -10911,8 +11044,29 @@ msgid "Set Variable Type"
 msgstr "Nastavite Tip Spremenljivke"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Override an existing built-in function."
+msgstr ""
+"Neveljavno ime. Ne sme se prekrivati z obstoječim vgrajenim imenom tipa."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new function."
+msgstr "Ustvari Nov %s"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
 msgstr "Spremenljivke:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new variable."
+msgstr "Ustvari Nov %s"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new signal."
+msgstr "Ustvarite Poligon"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
@@ -11100,10 +11254,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Paste Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11879,22 +12029,6 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
-#: scene/resources/dynamic_font.cpp
-msgid "Error initializing FreeType."
-msgstr "Napaka pri inicializaciji FreeType."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Unknown font format."
-msgstr "Neznani format pisave."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Error loading font."
-msgstr "Napaka nalaganja pisave."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Invalid font size."
-msgstr "Neveljavna velikost pisave."
-
 #: scene/resources/visual_shader.cpp
 #, fuzzy
 msgid "Input"
@@ -11929,6 +12063,69 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid ""
+#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
+#~ msgstr ""
+#~ "Za pisanje ni mogoče odpreti file_type_cache.cch, ne da bi shranili "
+#~ "predpomnilnik tipa datoteke!"
+
+#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
+#~ msgstr ""
+#~ "Ne morem se postaviti na mesto '%s', ker ni bilo najdeno v datotečnem "
+#~ "sistemu!"
+
+#, fuzzy
+#~ msgid "Error: could not load file."
+#~ msgstr "Mape ni mogoče ustvariti."
+
+#~ msgid "Select Mode (Q)"
+#~ msgstr "Izberite Način (Q)"
+
+#~ msgid "Move Mode (W)"
+#~ msgstr "Način Premika (W)"
+
+#~ msgid "Rotate Mode (E)"
+#~ msgstr "Način Vrtenja (E)"
+
+#~ msgid "Scale Mode (R)"
+#~ msgstr "Način Obsega (R)"
+
+#~ msgid "Snap Mode (%s)"
+#~ msgstr "Način Zaskoka (%s)"
+
+#~ msgid "Tool Select"
+#~ msgstr "Izbira Orodja"
+
+#~ msgid "Project List"
+#~ msgstr "Seznam Projektov"
+
+#~ msgid "Exit"
+#~ msgstr "Izhod"
+
+#~ msgid "Error initializing FreeType."
+#~ msgstr "Napaka pri inicializaciji FreeType."
+
+#~ msgid "Unknown font format."
+#~ msgstr "Neznani format pisave."
+
+#~ msgid "Error loading font."
+#~ msgstr "Napaka nalaganja pisave."
+
+#~ msgid "Invalid font size."
+#~ msgstr "Neveljavna velikost pisave."
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "Prejšnji zavihek"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "Ustvarite Mapo"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "Odpri naslednji Urejevalnik"
 
 #~ msgid "Reverse"
 #~ msgstr "Obrni"

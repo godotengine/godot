@@ -97,17 +97,10 @@ Error AudioDriverOpenSL::init() {
 		{ (SLuint32)SL_ENGINEOPTION_THREADSAFE, (SLuint32)SL_BOOLEAN_TRUE }
 	};
 	res = slCreateEngine(&sl, 1, EngineOption, 0, NULL, NULL);
-	if (res != SL_RESULT_SUCCESS) {
+	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not initialize OpenSL.");
 
-		ERR_EXPLAIN("Could not Initialize OpenSL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
 	res = (*sl)->Realize(sl, SL_BOOLEAN_FALSE);
-	if (res != SL_RESULT_SUCCESS) {
-
-		ERR_EXPLAIN("Could not Realize OpenSL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
+	ERR_FAIL_COND_V_MSG(res != SL_RESULT_SUCCESS, ERR_INVALID_PARAMETER, "Could not realize OpenSL.");
 
 	return OK;
 }
@@ -215,8 +208,8 @@ void AudioDriverOpenSL::_record_buffer_callback(SLAndroidSimpleBufferQueueItf qu
 
 	for (int i = 0; i < rec_buffer.size(); i++) {
 		int32_t sample = rec_buffer[i] << 16;
-		input_buffer_write(sample);
-		input_buffer_write(sample); // call twice to convert to Stereo
+		capture_buffer_write(sample);
+		capture_buffer_write(sample); // call twice to convert to Stereo
 	}
 
 	SLresult res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));
@@ -287,7 +280,7 @@ Error AudioDriverOpenSL::capture_init_device() {
 
 	const int rec_buffer_frames = 2048;
 	rec_buffer.resize(rec_buffer_frames);
-	input_buffer_init(rec_buffer_frames);
+	capture_buffer_init(rec_buffer_frames);
 
 	res = (*recordBufferQueueItf)->Enqueue(recordBufferQueueItf, rec_buffer.ptrw(), rec_buffer.size() * sizeof(int16_t));
 	ERR_FAIL_COND_V(res != SL_RESULT_SUCCESS, ERR_CANT_OPEN);

@@ -652,7 +652,6 @@ PathSpatialGizmoPlugin::PathSpatialGizmoPlugin() {
 
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);
-	path_color.a = 0.4;
-	create_material("path_thin_material", path_color);
+	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
 	create_handle_material("handles");
 }

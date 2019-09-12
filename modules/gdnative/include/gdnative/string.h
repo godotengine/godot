@@ -102,6 +102,8 @@ godot_bool GDAPI godot_string_begins_with_char_array(const godot_string *p_self,
 godot_array GDAPI godot_string_bigrams(const godot_string *p_self);
 godot_string GDAPI godot_string_chr(wchar_t p_character);
 godot_bool GDAPI godot_string_ends_with(const godot_string *p_self, const godot_string *p_string);
+godot_int GDAPI godot_string_count(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to);
+godot_int GDAPI godot_string_countn(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to);
 godot_int GDAPI godot_string_find(const godot_string *p_self, godot_string p_what);
 godot_int GDAPI godot_string_find_from(const godot_string *p_self, godot_string p_what, godot_int p_from);
 godot_int GDAPI godot_string_findmk(const godot_string *p_self, const godot_array *p_keys);

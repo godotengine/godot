@@ -31,10 +31,6 @@
 #ifndef MAIN_H
 #define MAIN_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #include "core/error_list.h"
 #include "core/os/thread.h"
 #include "core/typedefs.h"

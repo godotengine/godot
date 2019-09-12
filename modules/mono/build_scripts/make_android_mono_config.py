@@ -3,23 +3,6 @@ def generate_compressed_config(config_src, output_dir):
     import os.path
     from compat import byte_to_str
 
-    # Header file
-    with open(os.path.join(output_dir, 'android_mono_config.gen.h'), 'w') as header:
-        header.write('''/* THIS FILE IS GENERATED DO NOT EDIT */
-#ifndef ANDROID_MONO_CONFIG_GEN_H
-#define ANDROID_MONO_CONFIG_GEN_H
-
-#ifdef ANDROID_ENABLED
-
-#include "core/ustring.h"
-
-String get_godot_android_mono_config();
-
-#endif // ANDROID_ENABLED
-
-#endif // ANDROID_MONO_CONFIG_GEN_H
-''')
-
     # Source file
     with open(os.path.join(output_dir, 'android_mono_config.gen.cpp'), 'w') as cpp:
         with open(config_src, 'rb') as f:
@@ -36,7 +19,7 @@ String get_godot_android_mono_config();
                 bytes_seq_str += byte_to_str(buf[buf_idx])
 
             cpp.write('''/* THIS FILE IS GENERATED DO NOT EDIT */
-#include "android_mono_config.gen.h"
+#include "android_mono_config.h"
 
 #ifdef ANDROID_ENABLED
 

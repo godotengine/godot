@@ -327,11 +327,11 @@ public:
 	static Physics2DServer *init_server() {
 
 		int tm = GLOBAL_DEF("physics/2d/thread_model", 1);
-		if (tm == 0) //single unsafe
+		if (tm == 0) // single unsafe
 			return memnew(T);
-		else if (tm == 1) //single saef
+		else if (tm == 1) // single safe
 			return memnew(Physics2DServerWrapMT(memnew(T), false));
-		else //single unsafe
+		else // multi threaded
 			return memnew(Physics2DServerWrapMT(memnew(T), true));
 	}
 

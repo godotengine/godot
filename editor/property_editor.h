@@ -46,10 +46,6 @@
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tree.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class PropertyValueEvaluator;
 class CreateDialog;
 class PropertySelector;

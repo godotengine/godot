@@ -77,6 +77,14 @@ godot_bool GDAPI godot_vector2_is_normalized(const godot_vector2 *p_self) {
 	return self->is_normalized();
 }
 
+godot_vector2 GDAPI godot_vector2_direction_to(const godot_vector2 *p_self, const godot_vector2 *p_to) {
+	godot_vector2 dest;
+	const Vector2 *self = (const Vector2 *)p_self;
+	const Vector2 *to = (const Vector2 *)p_to;
+	*((Vector2 *)&dest) = self->direction_to(*to);
+	return dest;
+}
+
 godot_real GDAPI godot_vector2_distance_to(const godot_vector2 *p_self, const godot_vector2 *p_to) {
 	const Vector2 *self = (const Vector2 *)p_self;
 	const Vector2 *to = (const Vector2 *)p_to;

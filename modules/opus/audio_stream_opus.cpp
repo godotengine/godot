@@ -287,8 +287,7 @@ int AudioStreamPlaybackOpus::mix(int16_t *p_buffer, int p_frames) {
 		int ret = op_read(opus_file, (opus_int16 *)p_buffer, todo * stream_channels, &current_section);
 		if (ret < 0) {
 			playing = false;
-			ERR_EXPLAIN("Error reading Opus File: " + file);
-			ERR_BREAK(ret < 0);
+			ERR_BREAK_MSG(ret < 0, "Error reading Opus file: " + file + ".");
 		} else if (ret == 0) { // end of song, reload?
 			op_free(opus_file);
 

@@ -33,9 +33,6 @@
 
 #include "core/math/bsp_tree.h"
 #include "core/resource.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 // FIXME: left for reference but will be removed when portals are reimplemented using Area
 #if 0

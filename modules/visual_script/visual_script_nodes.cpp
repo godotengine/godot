@@ -2530,7 +2530,7 @@ String VisualScriptCustomNode::get_category() const {
 	if (get_script_instance() && get_script_instance()->has_method("_get_category")) {
 		return get_script_instance()->call("_get_category");
 	}
-	return "custom";
+	return "Custom";
 }
 
 class VisualScriptNodeInstanceCustomNode : public VisualScriptNodeInstance {

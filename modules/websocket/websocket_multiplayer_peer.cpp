@@ -98,16 +98,14 @@ void WebSocketMultiplayerPeer::_bind_methods() {
 //
 int WebSocketMultiplayerPeer::get_available_packet_count() const {
 
-	ERR_EXPLAIN("Please use get_peer(ID).get_available_packet_count to get available packet count from peers when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).get_available_packet_count to get available packet count from peers when not using the MultiplayerAPI.");
 
 	return _incoming_packets.size();
 }
 
 Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buffer_size) {
 
-	ERR_EXPLAIN("Please use get_peer(ID).get_packet/var to communicate with peers when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).get_packet/var to communicate with peers when not using the MultiplayerAPI.");
 
 	r_buffer_size = 0;
 
@@ -127,8 +125,7 @@ Error WebSocketMultiplayerPeer::get_packet(const uint8_t **r_buffer, int &r_buff
 
 Error WebSocketMultiplayerPeer::put_packet(const uint8_t *p_buffer, int p_buffer_size) {
 
-	ERR_EXPLAIN("Please use get_peer(ID).put_packet/var to communicate with peers when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, ERR_UNCONFIGURED, "Please use get_peer(ID).put_packet/var to communicate with peers when not using the MultiplayerAPI.");
 
 	PoolVector<uint8_t> buffer = _make_pkt(SYS_NONE, get_unique_id(), _target_peer, p_buffer, p_buffer_size);
 
@@ -160,8 +157,7 @@ void WebSocketMultiplayerPeer::set_target_peer(int p_target_peer) {
 
 int WebSocketMultiplayerPeer::get_packet_peer() const {
 
-	ERR_EXPLAIN("This function is not available when not using the MultiplayerAPI.");
-	ERR_FAIL_COND_V(!_is_multiplayer, 1);
+	ERR_FAIL_COND_V_MSG(!_is_multiplayer, 1, "This function is not available when not using the MultiplayerAPI.");
 	ERR_FAIL_COND_V(_incoming_packets.size() == 0, 1);
 
 	return _incoming_packets.front()->get().source;
@@ -269,7 +265,10 @@ Error WebSocketMultiplayerPeer::_server_relay(int32_t p_from, int32_t p_to, cons
 
 		ERR_FAIL_COND_V(p_to == p_from, FAILED);
 
-		return get_peer(p_to)->put_packet(p_buffer, p_buffer_size); // Sending to specific peer
+		Ref<WebSocketPeer> peer_to = get_peer(p_to);
+		ERR_FAIL_COND_V(peer_to.is_null(), FAILED);
+
+		return peer_to->put_packet(p_buffer, p_buffer_size); // Sending to specific peer
 	}
 }
 
@@ -300,8 +299,6 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 		ERR_FAIL_COND(type != SYS_NONE); // Only server sends sys messages
 		ERR_FAIL_COND(from != p_peer_id); // Someone is cheating
 
-		_server_relay(from, to, in_buffer, size); // Relay if needed
-
 		if (to == 1) { // This is for the server
 
 			_store_pkt(from, to, in_buffer, data_size);
@@ -316,13 +313,9 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 			// All but one, for us if not excluded
 			if (_peer_id != -(int32_t)p_peer_id)
 				_store_pkt(from, to, in_buffer, data_size);
-
-		} else {
-
-			// Send to specific peer
-			ERR_FAIL_COND(!_peer_map.has(to));
-			get_peer(to)->put_packet(in_buffer, size);
 		}
+		// Relay if needed (i.e. "to" includes a peer that is not the server)
+		_server_relay(from, to, in_buffer, size);
 
 	} else {
 
@@ -354,8 +347,7 @@ void WebSocketMultiplayerPeer::_process_multiplayer(Ref<WebSocketPeer> p_peer, u
 				_peer_id = id;
 				break;
 			default:
-				ERR_EXPLAIN("Invalid multiplayer message");
-				ERR_FAIL();
+				ERR_FAIL_MSG("Invalid multiplayer message.");
 				break;
 		}
 	}

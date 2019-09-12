@@ -38,10 +38,6 @@
 
 #include <windows.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ThreadWindows : public Thread {
 
 	ThreadCreateCallback callback;

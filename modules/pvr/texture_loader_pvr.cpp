@@ -149,8 +149,7 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 			format = Image::FORMAT_ETC;
 			break;
 		default:
-			ERR_EXPLAIN("Unsupported format in PVR texture: " + itos(flags & 0xFF));
-			ERR_FAIL_V(RES());
+			ERR_FAIL_V_MSG(RES(), "Unsupported format in PVR texture: " + itos(flags & 0xFF) + ".");
 	}
 
 	w.release();

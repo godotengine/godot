@@ -40,10 +40,6 @@
 #include <sys/types.h>
 #include <unistd.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class DirAccessUnix : public DirAccess {
 
 	DIR *dir_stream;

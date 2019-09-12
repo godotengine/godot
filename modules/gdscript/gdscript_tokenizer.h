@@ -222,6 +222,12 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	int tk_rb_pos;
 	String last_error;
 	bool error_flag;
+	enum {
+		INDENT_NONE,
+		INDENT_SPACES,
+		INDENT_TABS,
+	} file_indent_type;
+
 #ifdef DEBUG_ENABLED
 	Vector<Pair<int, String> > warning_skips;
 	Set<String> warning_global_skips;

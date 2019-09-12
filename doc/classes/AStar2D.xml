@@ -134,6 +134,13 @@
 				If you change the 2nd point's weight to 3, then the result will be [code][1, 4, 3][/code] instead, because now even though the distance is longer, it's "easier" to get through point 4 than through point 2.
 			</description>
 		</method>
+		<method name="get_point_capacity" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the capacity of the structure backing the points, useful in conjunction with [code]reserve_space[/code].
+			</description>
+		</method>
 		<method name="get_point_connections">
 			<return type="PoolIntArray">
 			</return>
@@ -153,6 +160,13 @@
 
 				var neighbors = astar.get_point_connections(1) # Returns [2, 3]
 				[/codeblock]
+			</description>
+		</method>
+		<method name="get_point_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of points currently in the points pool.
 			</description>
 		</method>
 		<method name="get_point_path">
@@ -216,6 +230,15 @@
 			</argument>
 			<description>
 				Removes the point associated with the given [code]id[/code] from the points pool.
+			</description>
+		</method>
+		<method name="reserve_space">
+			<return type="void">
+			</return>
+			<argument index="0" name="num_nodes" type="int">
+			</argument>
+			<description>
+				Reserves space internally for [code]num_nodes[/code] points, useful if you're adding a known large number of points at once, for a grid for instance. New capacity must be greater or equals to old capacity.
 			</description>
 		</method>
 		<method name="set_point_disabled">

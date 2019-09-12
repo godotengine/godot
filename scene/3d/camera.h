@@ -35,9 +35,7 @@
 #include "scene/3d/spatial_velocity_tracker.h"
 #include "scene/main/viewport.h"
 #include "scene/resources/environment.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class Camera : public Spatial {
 
 	GDCLASS(Camera, Spatial);

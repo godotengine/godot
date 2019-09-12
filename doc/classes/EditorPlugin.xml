@@ -29,7 +29,7 @@
 			<argument index="1" name="title" type="String">
 			</argument>
 			<description>
-				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [code]queue_free()[/code].
+				Adds a control to the bottom panel (together with Output, Debug, Animation, etc). Returns a reference to the button added. It's up to you to hide/show the button when needed. When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_bottom_panel] and free it with [method Node.queue_free].
 			</description>
 		</method>
 		<method name="add_control_to_container">
@@ -40,9 +40,9 @@
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Adds a custom control to a container (see [code]CONTAINER_*[/code] enum). There are many locations where custom controls can be added in the editor UI.
+				Adds a custom control to a container (see [enum CustomControlContainer]). There are many locations where custom controls can be added in the editor UI.
 				Please remember that you have to manage the visibility of your custom controls yourself (and likely hide it after adding it).
-				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [code]queue_free()[/code].
+				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_container] and free it with [method Node.queue_free].
 			</description>
 		</method>
 		<method name="add_control_to_dock">
@@ -53,9 +53,9 @@
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Adds the control to a specific dock slot (see [code]DOCK_*[/code] enum for options).
+				Adds the control to a specific dock slot (see [enum DockSlot] for options).
 				If the dock is repositioned and as long as the plugin is active, the editor will save the dock position on further sessions.
-				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [code]queue_free()[/code].
+				When your plugin is deactivated, make sure to remove your custom control with [method remove_control_from_docks] and free it with [method Node.queue_free].
 			</description>
 		</method>
 		<method name="add_custom_type">
@@ -128,7 +128,7 @@
 			<argument index="3" name="ud" type="Variant" default="null">
 			</argument>
 			<description>
-				Adds a custom menu to [b]Project &gt; Tools[/b] as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
+				Adds a custom menu item to [b]Project &gt; Tools[/b] as [code]name[/code] that calls [code]callback[/code] on an instance of [code]handler[/code] with a parameter [code]ud[/code] when user activates it.
 			</description>
 		</method>
 		<method name="add_tool_submenu_item">
@@ -139,7 +139,7 @@
 			<argument index="1" name="submenu" type="Object">
 			</argument>
 			<description>
-				Like [method add_tool_menu_item] but adds the [code]submenu[/code] item inside the [code]name[/code] menu.
+				Adds a custom submenu under [b]Project &gt; Tools &gt;[/b] [code]name[/code]. [code]submenu[/code] should be an object of class [PopupMenu]. This submenu should be cleaned up using [code]remove_tool_menu_item(name)[/code].
 			</description>
 		</method>
 		<method name="apply_changes" qualifiers="virtual">
@@ -167,6 +167,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Called by the engine when the user disables the [EditorPlugin] in the Plugin tab of the project settings window.
 			</description>
 		</method>
 		<method name="edit" qualifiers="virtual">
@@ -182,6 +183,7 @@
 			<return type="void">
 			</return>
 			<description>
+				Called by the engine when the user enables the [EditorPlugin] in the Plugin tab of the project settings window.
 			</description>
 		</method>
 		<method name="forward_canvas_draw_over_viewport" qualifiers="virtual">
@@ -190,12 +192,6 @@
 			<argument index="0" name="overlay" type="Control">
 			</argument>
 			<description>
-				This method is called when there is an input event in the 2D viewport, e.g. the user clicks with the mouse in the 2D space (canvas GUI). Keep in mind that for this method to be called you have to first declare the virtual method [method handles] so the editor knows that you want to work with the workspace:
-				[codeblock]
-				func handles(object):
-				    return true
-				[/codeblock]
-				Also note that the edited scene must have a root node.
 			</description>
 		</method>
 		<method name="forward_canvas_force_draw_over_viewport" qualifiers="virtual">
@@ -212,6 +208,22 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
+				Called when there is a root node in the current edited scene, [method handles] is implemented and an [InputEvent] happens in the 2D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [code]event[/code], otherwise forwards [code]event[/code] to other Editor classes. Example:
+				[codeblock]
+				# Prevents the InputEvent to reach other Editor classes
+				func forward_canvas_gui_input(event):
+				    var forward = true
+				    return forward
+				[/codeblock]
+				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
+				[codeblock]
+				# Consumes InputEventMouseMotion and forwards other InputEvent types
+				func forward_canvas_gui_input(event):
+				    var forward = false
+				    if event is InputEventMouseMotion:
+				        forward = true
+				    return forward
+				[/codeblock]
 			</description>
 		</method>
 		<method name="forward_spatial_gui_input" qualifiers="virtual">
@@ -222,12 +234,22 @@
 			<argument index="1" name="event" type="InputEvent">
 			</argument>
 			<description>
-				This method is called when there is an input event in the 3D viewport, e.g. the user clicks with the mouse in the 3D space (spatial GUI). Keep in mind that for this method to be called you have to first declare the virtual method [method handles] so the editor knows that you want to work with the workspace:
+				Called when there is a root node in the current edited scene, [method handles] is implemented and an [InputEvent] happens in the 3D viewport. Intercepts the [InputEvent], if [code]return true[/code] [EditorPlugin] consumes the [code]event[/code], otherwise forwards [code]event[/code] to other Editor classes. Example:
 				[codeblock]
-				func handles(object):
-				    return true
+				# Prevents the InputEvent to reach other Editor classes
+				func forward_spatial_gui_input(camera, event):
+				    var forward = true
+				    return forward
 				[/codeblock]
-				Also note that the edited scene must have a root node.
+				Must [code]return false[/code] in order to forward the [InputEvent] to other Editor classes. Example:
+				[codeblock]
+				# Consumes InputEventMouseMotion and forwards other InputEvent types
+				func forward_spatial_gui_input(camera, event):
+				    var forward = false
+				    if event is InputEventMouseMotion:
+				        forward = true
+				    return forward
+				[/codeblock]
 			</description>
 		</method>
 		<method name="get_breakpoints" qualifiers="virtual">
@@ -349,7 +371,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Removes the control from the bottom panel. You have to manually [code]queue_free()[/code] the control.
+				Removes the control from the bottom panel. You have to manually [method Node.queue_free] the control.
 			</description>
 		</method>
 		<method name="remove_control_from_container">
@@ -360,7 +382,7 @@
 			<argument index="1" name="control" type="Control">
 			</argument>
 			<description>
-				Removes the control from the specified container. You have to manually [code]queue_free()[/code] the control.
+				Removes the control from the specified container. You have to manually [method Node.queue_free] the control.
 			</description>
 		</method>
 		<method name="remove_control_from_docks">
@@ -369,7 +391,7 @@
 			<argument index="0" name="control" type="Control">
 			</argument>
 			<description>
-				Removes the control from the dock. You have to manually [code]queue_free()[/code] the control.
+				Removes the control from the dock. You have to manually [method Node.queue_free] the control.
 			</description>
 		</method>
 		<method name="remove_custom_type">

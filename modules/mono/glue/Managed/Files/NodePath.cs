@@ -55,7 +55,7 @@ namespace Godot
             get { return ptr; }
         }
 
-        public NodePath() : this(string.Empty) { }
+        public NodePath() : this(string.Empty) {}
 
         public NodePath(string path)
         {

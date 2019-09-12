@@ -2351,8 +2351,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 		texarr.instance();
 		lt = texarr;
 	} else {
-		ERR_EXPLAIN("Unrecognized layered texture extension");
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture extension.");
 	}
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
@@ -2373,8 +2372,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 		}
 	} else {
 
-		ERR_EXPLAIN("Unrecognized layered texture file format: " + String((const char *)header));
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture file format: " + String((const char *)header) + ".");
 	}
 
 	int tw = f->get_32();

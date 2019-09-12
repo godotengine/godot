@@ -36,10 +36,6 @@
 #include "scene/3d/multimesh_instance.h"
 #include "scene/gui/spin_box.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class MultiMeshEditor : public Control {
 
 	GDCLASS(MultiMeshEditor, Control);

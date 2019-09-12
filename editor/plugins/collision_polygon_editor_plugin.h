@@ -38,10 +38,6 @@
 #include "scene/3d/mesh_instance.h"
 #include "scene/gui/tool_button.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class CanvasItemEditor;
 
 class Polygon3DEditor : public HBoxContainer {

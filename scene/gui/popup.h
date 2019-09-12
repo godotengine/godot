@@ -33,9 +33,6 @@
 
 #include "scene/gui/control.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Popup : public Control {
 
 	GDCLASS(Popup, Control);

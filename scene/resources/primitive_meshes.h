@@ -322,4 +322,19 @@ public:
 	SphereMesh();
 };
 
+/**
+	A single point for use in particle systems
+*/
+
+class PointMesh : public PrimitiveMesh {
+
+	GDCLASS(PointMesh, PrimitiveMesh)
+
+protected:
+	virtual void _create_mesh_array(Array &p_arr) const;
+
+public:
+	PointMesh();
+};
+
 #endif

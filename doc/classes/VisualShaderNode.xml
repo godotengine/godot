@@ -39,5 +39,20 @@
 		</signal>
 	</signals>
 	<constants>
+		<constant name="PORT_TYPE_SCALAR" value="0" enum="PortType">
+			Floating-point scalar. Translated to [code]float[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_VECTOR" value="1" enum="PortType">
+			3D vector of floating-point values. Translated to [code]vec3[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_BOOLEAN" value="2" enum="PortType">
+			Boolean type. Translated to [code]bool[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_TRANSFORM" value="3" enum="PortType">
+			Transform type. Translated to [code]mat4[/code] type in shader code.
+		</constant>
+		<constant name="PORT_TYPE_ICON_COLOR" value="4" enum="PortType">
+			Color type. Can be used for return icon type in members dialog (see [method VisualShaderNodeCustom._get_return_icon_type]) - do not use it in other cases!
+		</constant>
 	</constants>
 </class>

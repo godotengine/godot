@@ -33,9 +33,7 @@
 
 #include "core/math/math_funcs.h"
 #include "core/ustring.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 struct Color {
 
 	union {

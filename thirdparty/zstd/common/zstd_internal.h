@@ -34,7 +34,6 @@
 #endif
 #include "xxhash.h"                /* XXH_reset, update, digest */
 
-
 #if defined (__cplusplus)
 extern "C" {
 #endif
@@ -193,19 +192,72 @@ static const U32 OF_defaultNormLog = OF_DEFAULTNORMLOG;
 *  Shared functions to include for inlining
 *********************************************/
 static void ZSTD_copy8(void* dst, const void* src) { memcpy(dst, src, 8); }
+
 #define COPY8(d,s) { ZSTD_copy8(d,s); d+=8; s+=8; }
+static void ZSTD_copy16(void* dst, const void* src) { memcpy(dst, src, 16); }
+#define COPY16(d,s) { ZSTD_copy16(d,s); d+=16; s+=16; }
+
+#define WILDCOPY_OVERLENGTH 8
+#define VECLEN 16
+
+typedef enum {
+    ZSTD_no_overlap,
+    ZSTD_overlap_src_before_dst,
+    /*  ZSTD_overlap_dst_before_src, */
+} ZSTD_overlap_e;
 
 /*! ZSTD_wildcopy() :
  *  custom version of memcpy(), can overwrite up to WILDCOPY_OVERLENGTH bytes (if length==0) */
-#define WILDCOPY_OVERLENGTH 8
-MEM_STATIC void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length)
+MEM_STATIC FORCE_INLINE_ATTR DONT_VECTORIZE
+void ZSTD_wildcopy(void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e ovtype)
 {
+    ptrdiff_t diff = (BYTE*)dst - (const BYTE*)src;
     const BYTE* ip = (const BYTE*)src;
     BYTE* op = (BYTE*)dst;
     BYTE* const oend = op + length;
-    do
-        COPY8(op, ip)
-    while (op < oend);
+
+    assert(diff >= 8 || (ovtype == ZSTD_no_overlap && diff < -8));
+    if (length < VECLEN || (ovtype == ZSTD_overlap_src_before_dst && diff < VECLEN)) {
+      do
+          COPY8(op, ip)
+      while (op < oend);
+    }
+    else {
+      if ((length & 8) == 0)
+        COPY8(op, ip);
+      do {
+        COPY16(op, ip);
+      }
+      while (op < oend);
+    }
+}
+
+/*! ZSTD_wildcopy_16min() :
+ *  same semantics as ZSTD_wilcopy() except guaranteed to be able to copy 16 bytes at the start */
+MEM_STATIC FORCE_INLINE_ATTR DONT_VECTORIZE
+void ZSTD_wildcopy_16min(void* dst, const void* src, ptrdiff_t length, ZSTD_overlap_e ovtype)
+{
+    ptrdiff_t diff = (BYTE*)dst - (const BYTE*)src;
+    const BYTE* ip = (const BYTE*)src;
+    BYTE* op = (BYTE*)dst;
+    BYTE* const oend = op + length;
+
+    assert(length >= 8);
+    assert(diff >= 8 || (ovtype == ZSTD_no_overlap && diff < -8));
+
+    if (ovtype == ZSTD_overlap_src_before_dst && diff < VECLEN) {
+      do
+          COPY8(op, ip)
+      while (op < oend);
+    }
+    else {
+      if ((length & 8) == 0)
+        COPY8(op, ip);
+      do {
+        COPY16(op, ip);
+      }
+      while (op < oend);
+    }
 }
 
 MEM_STATIC void ZSTD_wildcopy_e(void* dst, const void* src, void* dstEnd)   /* should be faster for decoding, but strangely, not verified on all platform */

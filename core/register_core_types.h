@@ -31,10 +31,6 @@
 #ifndef REGISTER_CORE_TYPES_H
 #define REGISTER_CORE_TYPES_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 void register_core_types();
 void register_core_settings();
 void register_core_singletons();

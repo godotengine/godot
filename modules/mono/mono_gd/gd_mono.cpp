@@ -56,7 +56,7 @@
 #endif
 
 #ifdef ANDROID_ENABLED
-#include "android_mono_config.gen.h"
+#include "android_mono_config.h"
 #endif
 
 GDMono *GDMono::singleton = NULL;
@@ -265,7 +265,7 @@ void GDMono::initialize() {
 
 #ifdef WINDOWS_ENABLED
 	if (assembly_rootdir.empty() || config_dir.empty()) {
-		ERR_PRINT("Cannot find Mono in the registry");
+		ERR_PRINT("Cannot find Mono in the registry.");
 		// Assertion: if they are not set, then they weren't found in the registry
 		CRASH_COND(mono_reg_info.assembly_dir.length() > 0 || mono_reg_info.config_dir.length() > 0);
 	}
@@ -282,6 +282,18 @@ void GDMono::initialize() {
 			config_dir.length() ? config_dir.utf8().get_data() : NULL);
 
 	add_mono_shared_libs_dir_to_path();
+
+	{
+		PropertyInfo exc_policy_prop = PropertyInfo(Variant::INT, "mono/unhandled_exception_policy", PROPERTY_HINT_ENUM,
+				vformat("Terminate Application:%s,Log Error:%s", (int)POLICY_TERMINATE_APP, (int)POLICY_LOG_ERROR));
+		unhandled_exception_policy = (UnhandledExceptionPolicy)(int)GLOBAL_DEF(exc_policy_prop.name, (int)POLICY_TERMINATE_APP);
+		ProjectSettings::get_singleton()->set_custom_property_info(exc_policy_prop.name, exc_policy_prop);
+
+		if (Engine::get_singleton()->is_editor_hint()) {
+			// Unhandled exceptions should not terminate the editor
+			unhandled_exception_policy = POLICY_LOG_ERROR;
+		}
+	}
 
 	GDMonoAssembly::initialize();
 
@@ -305,10 +317,15 @@ void GDMono::initialize() {
 		return;
 #endif
 
-	root_domain = mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
+#if !defined(WINDOWS_ENABLED) && !defined(NO_MONO_THREADS_SUSPEND_WORKAROUND)
+	// FIXME: Temporary workaround. See: https://github.com/godotengine/godot/issues/29812
+	if (!OS::get_singleton()->has_environment("MONO_THREADS_SUSPEND")) {
+		OS::get_singleton()->set_environment("MONO_THREADS_SUSPEND", "preemptive");
+	}
+#endif
 
-	ERR_EXPLAIN("Mono: Failed to initialize runtime");
-	ERR_FAIL_NULL(root_domain);
+	root_domain = mono_jit_init_version("GodotEngine.RootDomain", "v4.0.30319");
+	ERR_FAIL_NULL_MSG(root_domain, "Mono: Failed to initialize runtime.");
 
 	GDMonoUtils::set_main_thread(GDMonoUtils::get_current_thread());
 
@@ -319,11 +336,11 @@ void GDMono::initialize() {
 	print_verbose("Mono: Runtime initialized");
 
 	// mscorlib assembly MUST be present at initialization
-	ERR_EXPLAIN("Mono: Failed to load mscorlib assembly");
-	ERR_FAIL_COND(!_load_corlib_assembly());
+	bool corlib_loaded = _load_corlib_assembly();
+	ERR_FAIL_COND_MSG(!corlib_loaded, "Mono: Failed to load mscorlib assembly.");
 
-	ERR_EXPLAIN("Mono: Failed to load scripts domain");
-	ERR_FAIL_COND(_load_scripts_domain() != OK);
+	Error domain_load_err = _load_scripts_domain();
+	ERR_FAIL_COND_MSG(domain_load_err != OK, "Mono: Failed to load scripts domain.");
 
 #ifdef DEBUG_ENABLED
 	bool debugger_attached = _wait_for_debugger_msecs(500);
@@ -339,8 +356,7 @@ void GDMono::initialize() {
 void GDMono::initialize_load_assemblies() {
 
 #ifndef MONO_GLUE_ENABLED
-	ERR_EXPLAIN("Mono: This binary was built with `mono_glue=no`; cannot load assemblies");
-	CRASH_NOW();
+	CRASH_NOW_MSG("Mono: This binary was built with 'mono_glue=no'; cannot load assemblies.");
 #endif
 
 	// Load assemblies. The API and tools assemblies are required,
@@ -349,10 +365,8 @@ void GDMono::initialize_load_assemblies() {
 	_load_api_assemblies();
 
 #if defined(TOOLS_ENABLED)
-	if (!_load_tools_assemblies()) {
-		ERR_EXPLAIN("Mono: Failed to load GodotTools assemblies");
-		CRASH_NOW();
-	}
+	bool tool_assemblies_loaded = _load_tools_assemblies();
+	CRASH_COND_MSG(!tool_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
 #endif
 
 	// Load the project's main assembly. This doesn't necessarily need to succeed.
@@ -416,12 +430,12 @@ void GDMono::_initialize_and_check_api_hashes() {
 
 #ifdef MONO_GLUE_ENABLED
 	if (get_api_core_hash() != GodotSharpBindings::get_core_api_hash()) {
-		ERR_PRINT("Mono: Core API hash mismatch!");
+		ERR_PRINT("Mono: Core API hash mismatch.");
 	}
 
 #ifdef TOOLS_ENABLED
 	if (get_api_editor_hash() != GodotSharpBindings::get_editor_api_hash()) {
-		ERR_PRINT("Mono: Editor API hash mismatch!");
+		ERR_PRINT("Mono: Editor API hash mismatch.");
 	}
 #endif // TOOLS_ENABLED
 #endif // MONO_GLUE_ENABLED
@@ -549,14 +563,14 @@ bool GDMono::_load_corlib_assembly() {
 }
 
 #ifdef TOOLS_ENABLED
-bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type) {
+bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type, const String &p_config) {
 
 	bool &api_assembly_out_of_sync = (p_api_type == APIAssembly::API_CORE) ?
 											 GDMono::get_singleton()->core_api_assembly_out_of_sync :
 											 GDMono::get_singleton()->editor_api_assembly_out_of_sync;
 
-	String src_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug");
-	String dst_dir = GodotSharpDirs::get_res_assemblies_dir();
+	String src_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(p_config);
+	String dst_dir = GodotSharpDirs::get_res_assemblies_base_dir().plus_file(p_config);
 
 	String assembly_name = p_api_type == APIAssembly::API_CORE ? CORE_API_ASSEMBLY_NAME : EDITOR_API_ASSEMBLY_NAME;
 
@@ -567,7 +581,7 @@ bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type) {
 		memdelete(da);
 
 		if (err != OK) {
-			ERR_PRINTS("Failed to create destination directory for the API assemblies. Error: " + itos(err));
+			ERR_PRINTS("Failed to create destination directory for the API assemblies. Error: " + itos(err) + ".");
 			return false;
 		}
 	}
@@ -581,16 +595,16 @@ bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type) {
 
 		String xml_file = assembly_name + ".xml";
 		if (da->copy(src_dir.plus_file(xml_file), dst_dir.plus_file(xml_file)) != OK)
-			WARN_PRINTS("Failed to copy " + xml_file);
+			WARN_PRINTS("Failed to copy '" + xml_file + "'.");
 
 		String pdb_file = assembly_name + ".pdb";
 		if (da->copy(src_dir.plus_file(pdb_file), dst_dir.plus_file(pdb_file)) != OK)
-			WARN_PRINTS("Failed to copy " + pdb_file);
+			WARN_PRINTS("Failed to copy '" + pdb_file + "'.");
 
 		Error err = da->copy(assembly_src, assembly_dst);
 
 		if (err != OK) {
-			ERR_PRINTS("Failed to copy " + assembly_file);
+			ERR_PRINTS("Failed to copy '" + assembly_file + "'.");
 			return false;
 		}
 
@@ -602,14 +616,14 @@ bool GDMono::copy_prebuilt_api_assembly(APIAssembly::Type p_api_type) {
 
 String GDMono::update_api_assemblies_from_prebuilt() {
 
-#define FAIL_REASON(m_out_of_sync, m_prebuilt_exist)                             \
+#define FAIL_REASON(m_out_of_sync, m_prebuilt_exists)                            \
 	(                                                                            \
 			(m_out_of_sync ?                                                     \
-							String("The assembly is invalidated") :              \
-							String("The assembly was not found")) +              \
-			(m_prebuilt_exist ?                                                  \
-							String(" and the prebuilt assemblies are missing") : \
-							String(" and we failed to copy the prebuilt assemblies")))
+							String("The assembly is invalidated ") :             \
+							String("The assembly was not found ")) +             \
+			(m_prebuilt_exists ?                                                 \
+							String("and the prebuilt assemblies are missing.") : \
+							String("and we failed to copy the prebuilt assemblies.")))
 
 	bool api_assembly_out_of_sync = core_api_assembly_out_of_sync || editor_api_assembly_out_of_sync;
 
@@ -619,16 +633,28 @@ String GDMono::update_api_assemblies_from_prebuilt() {
 	if (!api_assembly_out_of_sync && FileAccess::exists(core_assembly_path) && FileAccess::exists(editor_assembly_path))
 		return String(); // No update needed
 
-	String prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug");
-	String prebuilt_core_dll_path = prebuilt_api_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
-	String prebuilt_editor_dll_path = prebuilt_api_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+	const int CONFIGS_LEN = 2;
+	String configs[CONFIGS_LEN] = { String("Debug"), String("Release") };
 
-	if (!FileAccess::exists(prebuilt_core_dll_path) || !FileAccess::exists(prebuilt_editor_dll_path))
-		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exist: */ false);
+	for (int i = 0; i < CONFIGS_LEN; i++) {
+		String config = configs[i];
 
-	// Copy the prebuilt Api
-	if (!copy_prebuilt_api_assembly(APIAssembly::API_CORE) || !copy_prebuilt_api_assembly(APIAssembly::API_EDITOR))
-		return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exist: */ true);
+		print_verbose("Updating '" + config + "' API assemblies");
+
+		String prebuilt_api_dir = GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file(config);
+		String prebuilt_core_dll_path = prebuilt_api_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
+		String prebuilt_editor_dll_path = prebuilt_api_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+
+		if (!FileAccess::exists(prebuilt_core_dll_path) || !FileAccess::exists(prebuilt_editor_dll_path)) {
+			return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ false);
+		}
+
+		// Copy the prebuilt Api
+		if (!copy_prebuilt_api_assembly(APIAssembly::API_CORE, config) ||
+				!copy_prebuilt_api_assembly(APIAssembly::API_EDITOR, config)) {
+			return FAIL_REASON(api_assembly_out_of_sync, /* prebuilt_exists: */ true);
+		}
+	}
 
 	return String(); // Updated successfully
 
@@ -643,7 +669,14 @@ bool GDMono::_load_core_api_assembly() {
 
 #ifdef TOOLS_ENABLED
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
-	String assembly_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(CORE_API_ASSEMBLY_NAME ".dll");
+
+	// If running the project manager, load it from the prebuilt API directory
+	String assembly_dir = !Main::is_project_manager() ?
+								  GodotSharpDirs::get_res_assemblies_dir() :
+								  GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug");
+
+	String assembly_path = assembly_dir.plus_file(CORE_API_ASSEMBLY_NAME ".dll");
+
 	bool success = FileAccess::exists(assembly_path) &&
 				   load_assembly_from(CORE_API_ASSEMBLY_NAME, assembly_path, &core_api_assembly);
 #else
@@ -674,7 +707,14 @@ bool GDMono::_load_editor_api_assembly() {
 		return true;
 
 	// For the editor and the editor player we want to load it from a specific path to make sure we can keep it up to date
-	String assembly_path = GodotSharpDirs::get_res_assemblies_dir().plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+
+	// If running the project manager, load it from the prebuilt API directory
+	String assembly_dir = !Main::is_project_manager() ?
+								  GodotSharpDirs::get_res_assemblies_dir() :
+								  GodotSharpDirs::get_data_editor_prebuilt_api_dir().plus_file("Debug");
+
+	String assembly_path = assembly_dir.plus_file(EDITOR_API_ASSEMBLY_NAME ".dll");
+
 	bool success = FileAccess::exists(assembly_path) &&
 				   load_assembly_from(EDITOR_API_ASSEMBLY_NAME, assembly_path, &editor_api_assembly);
 
@@ -699,9 +739,6 @@ bool GDMono::_try_load_api_assemblies() {
 		return false;
 	}
 
-	if (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)
-		return false;
-
 #ifdef TOOLS_ENABLED
 	if (!_load_editor_api_assembly()) {
 		if (OS::get_singleton()->is_stdout_verbose())
@@ -713,6 +750,12 @@ bool GDMono::_try_load_api_assemblies() {
 		return false;
 #endif
 
+	// Check if the core API assembly is out of sync only after trying to load the
+	// editor API assembly. Otherwise, if both assemblies are out of sync, we would
+	// only update the former as we won't know the latter also needs to be updated.
+	if (core_api_assembly_out_of_sync || !GDMonoUtils::mono_cache.godot_api_cache_updated)
+		return false;
+
 	return true;
 }
 
@@ -723,24 +766,20 @@ void GDMono::_load_api_assemblies() {
 		// The API assemblies are out of sync. Fine, try one more time, but this time
 		// update them from the prebuilt assemblies directory before trying to load them.
 
+		// Shouldn't happen. The project manager loads the prebuilt API assemblies
+		CRASH_COND_MSG(Main::is_project_manager(), "Failed to load one of the prebuilt API assemblies.");
+
 		// 1. Unload the scripts domain
-		if (_unload_scripts_domain() != OK) {
-			ERR_EXPLAIN("Mono: Failed to unload scripts domain");
-			CRASH_NOW();
-		}
+		Error domain_unload_err = _unload_scripts_domain();
+		CRASH_COND_MSG(domain_unload_err != OK, "Mono: Failed to unload scripts domain.");
 
 		// 2. Update the API assemblies
 		String update_error = update_api_assemblies_from_prebuilt();
-		if (!update_error.empty()) {
-			ERR_EXPLAIN(update_error);
-			CRASH_NOW();
-		}
+		CRASH_COND_MSG(!update_error.empty(), update_error);
 
 		// 3. Load the scripts domain again
-		if (_load_scripts_domain() != OK) {
-			ERR_EXPLAIN("Mono: Failed to load scripts domain");
-			CRASH_NOW();
-		}
+		Error domain_load_err = _load_scripts_domain();
+		CRASH_COND_MSG(domain_load_err != OK, "Mono: Failed to load scripts domain.");
 
 		// 4. Try loading the updated assemblies
 		if (!_try_load_api_assemblies()) {
@@ -748,24 +787,22 @@ void GDMono::_load_api_assemblies() {
 
 			if (_are_api_assemblies_out_of_sync()) {
 				if (core_api_assembly_out_of_sync) {
-					ERR_PRINT("The assembly '" CORE_API_ASSEMBLY_NAME "' is out of sync");
+					ERR_PRINT("The assembly '" CORE_API_ASSEMBLY_NAME "' is out of sync.");
 				} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
-					ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed");
+					ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed.");
 				}
 
 				if (editor_api_assembly_out_of_sync) {
-					ERR_PRINT("The assembly '" EDITOR_API_ASSEMBLY_NAME "' is out of sync");
+					ERR_PRINT("The assembly '" EDITOR_API_ASSEMBLY_NAME "' is out of sync.");
 				}
 
 				CRASH_NOW();
 			} else {
-				ERR_EXPLAIN("Failed to load one of the API assemblies");
-				CRASH_NOW();
+				CRASH_NOW_MSG("Failed to load one of the API assemblies.");
 			}
 		}
 #else
-		ERR_EXPLAIN("Failed to load one of the API assemblies");
-		CRASH_NOW();
+		CRASH_NOW_MSG("Failed to load one of the API assemblies.");
 #endif
 	}
 }
@@ -776,8 +813,8 @@ bool GDMono::_load_tools_assemblies() {
 	if (tools_assembly && tools_project_editor_assembly)
 		return true;
 
-	bool success = load_assembly(TOOLS_ASSEMBLY_NAME, &tools_assembly) &&
-				   load_assembly(TOOLS_PROJECT_EDITOR_ASSEMBLY_NAME, &tools_project_editor_assembly);
+	bool success = load_assembly(TOOLS_ASM_NAME, &tools_assembly) &&
+				   load_assembly(TOOLS_PROJECT_EDITOR_ASM_NAME, &tools_project_editor_assembly);
 
 	return success;
 }
@@ -814,7 +851,7 @@ void GDMono::_install_trace_listener() {
 			(DebuggingUtils_InstallTraceListener)debug_utils->get_method_thunk("InstallTraceListener");
 	install_func((MonoObject **)&exc);
 	if (exc) {
-		ERR_PRINT("Failed to install System.Diagnostics.Trace listener");
+		ERR_PRINT("Failed to install 'System.Diagnostics.Trace' listener.");
 		GDMonoUtils::debug_print_unhandled_exception(exc);
 	}
 #endif
@@ -828,8 +865,7 @@ Error GDMono::_load_scripts_domain() {
 
 	scripts_domain = GDMonoUtils::create_domain("GodotEngine.ScriptsDomain");
 
-	ERR_EXPLAIN("Mono: Could not create scripts app domain");
-	ERR_FAIL_NULL_V(scripts_domain, ERR_CANT_CREATE);
+	ERR_FAIL_NULL_V_MSG(scripts_domain, ERR_CANT_CREATE, "Mono: Could not create scripts app domain.");
 
 	mono_domain_set(scripts_domain, true);
 
@@ -848,7 +884,7 @@ Error GDMono::_unload_scripts_domain() {
 	finalizing_scripts_domain = true;
 
 	if (!mono_domain_finalize(scripts_domain, 2000)) {
-		ERR_PRINT("Mono: Domain finalization timeout");
+		ERR_PRINT("Mono: Domain finalization timeout.");
 	}
 
 	finalizing_scripts_domain = false;
@@ -874,7 +910,7 @@ Error GDMono::_unload_scripts_domain() {
 	mono_domain_try_unload(domain, (MonoObject **)&exc);
 
 	if (exc) {
-		ERR_PRINT("Exception thrown when unloading scripts domain");
+		ERR_PRINT("Exception thrown when unloading scripts domain.");
 		GDMonoUtils::debug_unhandled_exception(exc);
 		return FAILED;
 	}
@@ -888,20 +924,14 @@ Error GDMono::reload_scripts_domain() {
 	ERR_FAIL_COND_V(!runtime_initialized, ERR_BUG);
 
 	if (scripts_domain) {
-		Error err = _unload_scripts_domain();
-		if (err != OK) {
-			ERR_PRINT("Mono: Failed to unload scripts domain");
-			return err;
-		}
+		Error domain_unload_err = _unload_scripts_domain();
+		ERR_FAIL_COND_V_MSG(domain_unload_err != OK, domain_unload_err, "Mono: Failed to unload scripts domain.");
 	}
 
 	CSharpLanguage::get_singleton()->_on_scripts_domain_unloaded();
 
-	Error err = _load_scripts_domain();
-	if (err != OK) {
-		ERR_PRINT("Mono: Failed to load scripts domain");
-		return err;
-	}
+	Error domain_load_err = _load_scripts_domain();
+	ERR_FAIL_COND_V_MSG(domain_load_err != OK, domain_load_err, "Mono: Failed to load scripts domain.");
 
 	// Load assemblies. The API and tools assemblies are required,
 	// the application is aborted if these assemblies cannot be loaded.
@@ -909,10 +939,8 @@ Error GDMono::reload_scripts_domain() {
 	_load_api_assemblies();
 
 #if defined(TOOLS_ENABLED)
-	if (!_load_tools_assemblies()) {
-		ERR_EXPLAIN("Mono: Failed to load GodotTools assemblies");
-		CRASH_NOW();
-	}
+	bool tools_assemblies_loaded = _load_tools_assemblies();
+	CRASH_COND_MSG(!tools_assemblies_loaded, "Mono: Failed to load '" TOOLS_ASM_NAME "' assemblies.");
 #endif
 
 	// Load the project's main assembly. Here, during hot-reloading, we do
@@ -934,13 +962,13 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 
 	String domain_name = mono_domain_get_friendly_name(p_domain);
 
-	print_verbose("Mono: Unloading domain `" + domain_name + "`...");
+	print_verbose("Mono: Unloading domain '" + domain_name + "'...");
 
 	if (mono_domain_get() == p_domain)
 		mono_domain_set(root_domain, true);
 
 	if (!mono_domain_finalize(p_domain, 2000)) {
-		ERR_PRINT("Mono: Domain finalization timeout");
+		ERR_PRINT("Mono: Domain finalization timeout.");
 	}
 
 	mono_gc_collect(mono_gc_max_generation());
@@ -951,7 +979,7 @@ Error GDMono::finalize_and_unload_domain(MonoDomain *p_domain) {
 	mono_domain_try_unload(p_domain, (MonoObject **)&exc);
 
 	if (exc) {
-		ERR_PRINTS("Exception thrown when unloading domain `" + domain_name + "`");
+		ERR_PRINTS("Exception thrown when unloading domain '" + domain_name + "'.");
 		GDMonoUtils::debug_print_unhandled_exception(exc);
 		return FAILED;
 	}
@@ -1058,6 +1086,8 @@ GDMono::GDMono() {
 #ifdef TOOLS_ENABLED
 	api_editor_hash = 0;
 #endif
+
+	unhandled_exception_policy = POLICY_TERMINATE_APP;
 }
 
 GDMono::~GDMono() {
@@ -1066,7 +1096,7 @@ GDMono::~GDMono() {
 		if (scripts_domain) {
 			Error err = _unload_scripts_domain();
 			if (err != OK) {
-				ERR_PRINT("Mono: Failed to unload scripts domain");
+				ERR_PRINT("Mono: Failed to unload scripts domain.");
 			}
 		}
 

@@ -38,10 +38,6 @@
 #include "core/ustring.h"
 
 /**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
-/**
  * Input Event classes. These are used in the main loop.
  * The events are pretty obvious.
  */

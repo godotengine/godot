@@ -527,8 +527,8 @@ public:
 				fog_transmit_enabled(true),
 				fog_transmit_curve(1),
 				fog_height_enabled(false),
-				fog_height_min(0),
-				fog_height_max(100),
+				fog_height_min(10),
+				fog_height_max(0),
 				fog_height_curve(1) {
 		}
 	};
@@ -669,8 +669,8 @@ public:
 			SORT_FLAG_SKELETON = 1,
 			SORT_FLAG_INSTANCING = 2,
 			MAX_DIRECTIONAL_LIGHTS = 16,
-			MAX_LIGHTS = 4096,
-			MAX_REFLECTIONS = 1024,
+			DEFAULT_MAX_LIGHTS = 4096,
+			DEFAULT_MAX_REFLECTIONS = 1024,
 
 			SORT_KEY_PRIORITY_SHIFT = 56,
 			SORT_KEY_PRIORITY_MASK = 0xFF,
@@ -701,6 +701,8 @@ public:
 		};
 
 		int max_elements;
+		int max_lights;
+		int max_reflections;
 
 		struct Element {
 
@@ -813,6 +815,8 @@ public:
 		RenderList() {
 
 			max_elements = DEFAULT_MAX_ELEMENTS;
+			max_lights = DEFAULT_MAX_LIGHTS;
+			max_reflections = DEFAULT_MAX_REFLECTIONS;
 		}
 
 		~RenderList() {

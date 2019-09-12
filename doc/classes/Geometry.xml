@@ -216,6 +216,19 @@
 				Intersects [code]polyline[/code] with [code]polygon[/code] and returns an array of intersected polylines. This performs [constant OPERATION_INTERSECTION] between the polyline and the polygon. This operation can be thought of as chopping a line with a closed shape.
 			</description>
 		</method>
+		<method name="is_point_in_circle">
+			<return type="bool">
+			</return>
+			<argument index="0" name="point" type="Vector2">
+			</argument>
+			<argument index="1" name="circle_position" type="Vector2">
+			</argument>
+			<argument index="2" name="circle_radius" type="float">
+			</argument>
+			<description>
+				Returns [code]true[/code] if [code]point[/code] is inside the circle or if it's located exactly [i]on[/i] the circle's boundary, otherwise returns [code]false[/code].
+			</description>
+		</method>
 		<method name="is_point_in_polygon">
 			<return type="bool">
 			</return>
@@ -426,18 +439,6 @@
 			</argument>
 			<description>
 				Tests if the segment ([code]from[/code], [code]to[/code]) intersects the triangle [code]a[/code], [code]b[/code], [code]c[/code]. If yes, returns the point of intersection as [Vector3]. If no intersection takes place, an empty [Variant] is returned.
-			</description>
-		</method>
-		<method name="transform_points_2d">
-			<return type="PoolVector2Array">
-			</return>
-			<argument index="0" name="points" type="PoolVector2Array">
-			</argument>
-			<argument index="1" name="transform" type="Transform2D">
-			</argument>
-			<description>
-				Transforms an array of points by [code]transform[/code] and returns the result.
-				Can be useful in conjunction with performing polygon boolean operations in a CSG-like manner, see [method merge_polygons_2d], [method clip_polygons_2d], [method intersect_polygons_2d], [method exclude_polygons_2d].
 			</description>
 		</method>
 		<method name="triangulate_delaunay_2d">

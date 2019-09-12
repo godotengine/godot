@@ -84,10 +84,16 @@ def build(env_mono):
     source_filenames = ['GodotSharp.dll', 'GodotSharpEditor.dll']
     sources = [os.path.join(editor_api_dir, filename) for filename in source_filenames]
 
-    target_filenames = ['GodotTools.dll', 'GodotTools.BuildLogger.dll', 'GodotTools.ProjectEditor.dll', 'DotNet.Glob.dll', 'GodotTools.Core.dll']
+    target_filenames = [
+        'GodotTools.dll', 'GodotTools.IdeConnection.dll', 'GodotTools.BuildLogger.dll',
+        'GodotTools.ProjectEditor.dll', 'DotNet.Glob.dll', 'GodotTools.Core.dll'
+    ]
 
     if env_mono['target'] == 'debug':
-        target_filenames += ['GodotTools.pdb', 'GodotTools.BuildLogger.pdb', 'GodotTools.ProjectEditor.pdb', 'GodotTools.Core.pdb']
+        target_filenames += [
+            'GodotTools.pdb', 'GodotTools.IdeConnection.pdb', 'GodotTools.BuildLogger.pdb',
+            'GodotTools.ProjectEditor.pdb', 'GodotTools.Core.pdb'
+        ]
 
     targets = [os.path.join(editor_tools_dir, filename) for filename in target_filenames]
 

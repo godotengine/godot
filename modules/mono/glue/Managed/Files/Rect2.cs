@@ -8,6 +8,7 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Rect2 : IEquatable<Rect2>
     {

@@ -32,9 +32,6 @@
 #define BASE_BUTTON_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ButtonGroup;
 

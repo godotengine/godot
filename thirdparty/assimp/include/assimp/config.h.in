@@ -651,13 +651,28 @@ enum aiComponent
 
 // ---------------------------------------------------------------------------
 /** @brief Set whether the fbx importer will use the legacy embedded texture naming.
-*
-* The default value is false (0)
-* Property type: bool
-*/
+ *
+ * The default value is false (0)
+ * Property type: bool
+ */
 #define AI_CONFIG_IMPORT_FBX_EMBEDDED_TEXTURES_LEGACY_NAMING \
 	"AI_CONFIG_IMPORT_FBX_EMBEDDED_TEXTURES_LEGACY_NAMING"
-	
+
+// ---------------------------------------------------------------------------
+/** @brief  Set wether the importer shall not remove empty bones.
+ *  
+ *  Empty bone are often used to define connections for other models.
+ */
+#define AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES \
+    "AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES"
+
+
+// ---------------------------------------------------------------------------
+/** @brief  Set wether the FBX importer shall convert the unit from cm to m.
+ */
+#define AI_CONFIG_FBX_CONVERT_TO_M \
+    "AI_CONFIG_FBX_CONVERT_TO_M"
+
 // ---------------------------------------------------------------------------
 /** @brief  Set the vertex animation keyframe to be imported
  *
@@ -966,8 +981,12 @@ enum aiComponent
 
 #define AI_CONFIG_EXPORT_XFILE_64BIT "EXPORT_XFILE_64BIT"
 
-/**
- *
+/** @brief Specifies whether the assimp export shall be able to export point clouds
+ * 
+ *  When this flag is not defined the render data has to contain valid faces.
+ *  Point clouds are only a collection of vertices which have nor spatial organization
+ *  by a face and the validation process will remove them. Enabling this feature will
+ *  switch off the flag and enable the functionality to export pure point clouds.
  */
 #define AI_CONFIG_EXPORT_POINT_CLOUDS "EXPORT_POINT_CLOUDS"
 
@@ -979,6 +998,13 @@ enum aiComponent
 #if (!defined AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT)
 #   define AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT  1.0f
 #endif // !! AI_DEBONE_THRESHOLD
+
+#define AI_CONFIG_APP_SCALE_KEY "APP_SCALE_FACTOR"
+
+#if (!defined AI_CONFIG_APP_SCALE_KEY)
+#   define AI_CONFIG_APP_SCALE_KEY 1.0
+#endif // AI_CONFIG_APP_SCALE_KEY
+
 
 // ---------- All the Build/Compile-time defines ------------
 

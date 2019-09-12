@@ -221,8 +221,8 @@ float FindInFiles::get_progress() const {
 
 void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
-	DirAccess *dir = DirAccess::open(path);
-	if (dir == NULL) {
+	DirAccessRef dir = DirAccess::open(path);
+	if (!dir) {
 		print_verbose("Cannot open directory! " + path);
 		return;
 	}
@@ -253,8 +253,8 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
 void FindInFiles::_scan_file(String fpath) {
 
-	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
-	if (f == NULL) {
+	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
+	if (!f) {
 		print_verbose(String("Cannot open file ") + fpath);
 		return;
 	}
@@ -524,6 +524,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_progress_bar = memnew(ProgressBar);
 		_progress_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+		_progress_bar->set_v_size_flags(SIZE_SHRINK_CENTER);
 		hbc->add_child(_progress_bar);
 		set_progress_visible(false);
 
@@ -546,6 +547,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->connect("item_edited", this, "_on_item_edited");
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);
+	_results_display->set_allow_rmb_select(true);
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 

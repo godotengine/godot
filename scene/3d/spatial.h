@@ -34,10 +34,6 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class SpatialGizmo : public Reference {
 
 	GDCLASS(SpatialGizmo, Reference);

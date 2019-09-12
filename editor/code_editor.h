@@ -64,6 +64,7 @@ class FindReplaceBar : public HBoxContainer {
 	GDCLASS(FindReplaceBar, HBoxContainer);
 
 	LineEdit *search_text;
+	Label *matches_label;
 	ToolButton *find_prev;
 	ToolButton *find_next;
 	CheckBox *case_sensitive;
@@ -90,8 +91,9 @@ class FindReplaceBar : public HBoxContainer {
 
 	void _get_search_from(int &r_line, int &r_col);
 	void _update_results_count();
+	void _update_matches_label();
 
-	void _show_search();
+	void _show_search(bool p_focus_replace = false, bool p_show_only = false);
 	void _hide_bar();
 
 	void _editor_text_changed();
@@ -123,7 +125,7 @@ public:
 
 	void set_text_edit(TextEdit *p_text_edit);
 
-	void popup_search();
+	void popup_search(bool p_show_only = false);
 	void popup_replace();
 
 	bool search_current();

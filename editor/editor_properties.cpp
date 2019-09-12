@@ -116,7 +116,7 @@ void EditorPropertyMultilineText::_open_big_text() {
 		add_child(big_text_dialog);
 	}
 
-	big_text_dialog->popup_centered_ratio();
+	big_text_dialog->popup_centered_clamped(Size2(1000, 900) * EDSCALE, 0.8);
 	big_text->set_text(text->get_text());
 	big_text->grab_focus();
 }
@@ -209,13 +209,7 @@ EditorPropertyTextEnum::EditorPropertyTextEnum() {
 
 void EditorPropertyPath::_path_selected(const String &p_path) {
 
-	String final_path = p_path;
-	if (final_path.is_abs_path()) {
-		String res_path = OS::get_singleton()->get_resource_dir() + "/";
-		final_path = res_path.path_to_file(final_path);
-	}
-
-	emit_changed(get_edited_property(), final_path);
+	emit_changed(get_edited_property(), p_path);
 	update_property();
 }
 void EditorPropertyPath::_path_pressed() {
@@ -228,13 +222,6 @@ void EditorPropertyPath::_path_pressed() {
 	}
 
 	String full_path = get_edited_object()->get(get_edited_property());
-	if (full_path.is_rel_path()) {
-
-		if (!DirAccess::exists(full_path.get_base_dir())) {
-			DirAccessRef da(DirAccess::create(DirAccess::ACCESS_FILESYSTEM));
-			da->make_dir_recursive(full_path.get_base_dir());
-		}
-	}
 
 	dialog->clear_filters();
 
@@ -1855,10 +1842,20 @@ void EditorPropertyColor::_popup_closed() {
 	emit_changed(get_edited_property(), picker->get_pick_color(), "", false);
 }
 
+void EditorPropertyColor::_picker_created() {
+	// get default color picker mode from editor settings
+	int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+	if (default_color_mode == 1)
+		picker->get_picker()->set_hsv_mode(true);
+	else if (default_color_mode == 2)
+		picker->get_picker()->set_raw_mode(true);
+}
+
 void EditorPropertyColor::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_color_changed"), &EditorPropertyColor::_color_changed);
 	ClassDB::bind_method(D_METHOD("_popup_closed"), &EditorPropertyColor::_popup_closed);
+	ClassDB::bind_method(D_METHOD("_picker_created"), &EditorPropertyColor::_picker_created);
 }
 
 void EditorPropertyColor::update_property() {
@@ -1877,6 +1874,7 @@ EditorPropertyColor::EditorPropertyColor() {
 	picker->set_flat(true);
 	picker->connect("color_changed", this, "_color_changed");
 	picker->connect("popup_closed", this, "_popup_closed");
+	picker->connect("picker_created", this, "_picker_created");
 }
 
 ////////////// NODE PATH //////////////////////
@@ -2553,7 +2551,7 @@ void EditorPropertyResource::update_property() {
 		if (res.is_valid() != assign->is_toggle_mode()) {
 			assign->set_toggle_mode(res.is_valid());
 		}
-#ifdef TOOLS_ENABLED
+
 		if (res.is_valid() && get_edited_object()->editor_is_section_unfolded(get_edited_property())) {
 
 			if (!sub_inspector) {
@@ -2622,7 +2620,6 @@ void EditorPropertyResource::update_property() {
 				}
 			}
 		}
-#endif
 	}
 
 	preview->set_texture(Ref<Texture>());
@@ -2904,6 +2901,8 @@ void EditorInspectorDefaultPlugin::parse_begin(Object *p_object) {
 
 bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Type p_type, const String &p_path, PropertyHint p_hint, const String &p_hint_text, int p_usage) {
 
+	float default_float_step = EDITOR_GET("interface/inspector/default_float_step");
+
 	switch (p_type) {
 
 		// atomic types
@@ -3010,7 +3009,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 			} else {
 				EditorPropertyFloat *editor = memnew(EditorPropertyFloat);
-				double min = -65535, max = 65535, step = 0.001;
+				double min = -65535, max = 65535, step = default_float_step;
 				bool hide_slider = true;
 				bool exp_range = false;
 				bool greater = true, lesser = true;
@@ -3107,7 +3106,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 
 		case Variant::VECTOR2: {
 			EditorPropertyVector2 *editor = memnew(EditorPropertyVector2);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3125,7 +3124,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break; // 5
 		case Variant::RECT2: {
 			EditorPropertyRect2 *editor = memnew(EditorPropertyRect2);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3142,7 +3141,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::VECTOR3: {
 			EditorPropertyVector3 *editor = memnew(EditorPropertyVector3);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3160,7 +3159,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::TRANSFORM2D: {
 			EditorPropertyTransform2D *editor = memnew(EditorPropertyTransform2D);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3178,7 +3177,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::PLANE: {
 			EditorPropertyPlane *editor = memnew(EditorPropertyPlane);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3195,7 +3194,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::QUAT: {
 			EditorPropertyQuat *editor = memnew(EditorPropertyQuat);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3212,7 +3211,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break; // 10
 		case Variant::AABB: {
 			EditorPropertyAABB *editor = memnew(EditorPropertyAABB);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3229,7 +3228,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::BASIS: {
 			EditorPropertyBasis *editor = memnew(EditorPropertyBasis);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {
@@ -3246,7 +3245,7 @@ bool EditorInspectorDefaultPlugin::parse_property(Object *p_object, Variant::Typ
 		} break;
 		case Variant::TRANSFORM: {
 			EditorPropertyTransform *editor = memnew(EditorPropertyTransform);
-			double min = -65535, max = 65535, step = 0.001;
+			double min = -65535, max = 65535, step = default_float_step;
 			bool hide_slider = true;
 
 			if (p_hint == PROPERTY_HINT_RANGE && p_hint_text.get_slice_count(",") >= 2) {

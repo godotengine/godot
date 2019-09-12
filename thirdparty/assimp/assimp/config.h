@@ -647,6 +647,21 @@ enum aiComponent {
 	"AI_CONFIG_IMPORT_FBX_EMBEDDED_TEXTURES_LEGACY_NAMING"
 
 // ---------------------------------------------------------------------------
+/** @brief  Set wether the FBX importer shall not remove empty bones.
+ *  
+ *  
+ *  Empty bone are often used to define connections for other models.
+ */
+#define AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES \
+    "AI_CONFIG_IMPORT_REMOVE_EMPTY_BONES"
+
+// ---------------------------------------------------------------------------
+/** @brief  Set wether the FBX importer shall convert the unit from cm to m.
+ */
+#define AI_CONFIG_FBX_CONVERT_TO_M \
+    "AI_CONFIG_FBX_CONVERT_TO_M"
+
+// ---------------------------------------------------------------------------
 /** @brief  Set the vertex animation keyframe to be imported
  *
  * ASSIMP does not support vertex keyframes (only bone animation is supported).
@@ -968,6 +983,13 @@ enum aiComponent {
 #define AI_CONFIG_GLOBAL_SCALE_FACTOR_DEFAULT 1.0f
 #endif // !! AI_DEBONE_THRESHOLD
 
+#define AI_CONFIG_APP_SCALE_KEY "APP_SCALE_FACTOR"
+
+#if (!defined AI_CONFIG_APP_SCALE_KEY)
+#   define AI_CONFIG_APP_SCALE_KEY 1.0
+#endif // AI_CONFIG_APP_SCALE_KEY
+
+
 // ---------- All the Build/Compile-time defines ------------
 
 /** @brief Specifies if double precision is supported inside assimp
@@ -978,3 +1000,4 @@ enum aiComponent {
 /* #cmakedefine ASSIMP_DOUBLE_PRECISION 1 */
 
 #endif // !! AI_CONFIG_H_INC
+

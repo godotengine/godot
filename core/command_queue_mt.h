@@ -37,10 +37,6 @@
 #include "core/simple_type.h"
 #include "core/typedefs.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #define COMMA(N) _COMMA_##N
 #define _COMMA_0
 #define _COMMA_1 ,

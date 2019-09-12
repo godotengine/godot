@@ -76,7 +76,7 @@ void CheckButton::_notification(int p_what) {
 		Size2 tex_size = get_icon_size();
 
 		ofs.x = get_size().width - (tex_size.width + sb->get_margin(MARGIN_RIGHT));
-		ofs.y = (get_size().height - tex_size.height) / 2;
+		ofs.y = (get_size().height - tex_size.height) / 2 + get_constant("check_vadjust");
 
 		if (is_pressed())
 			on->draw(ci, ofs);

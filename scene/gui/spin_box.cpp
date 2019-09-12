@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "spin_box.h"
+#include "core/math/expression.h"
 #include "core/os/input.h"
 
 Size2 SpinBox::get_minimum_size() const {
@@ -40,7 +41,7 @@ Size2 SpinBox::get_minimum_size() const {
 
 void SpinBox::_value_changed(double) {
 
-	String value = String::num(get_value(), Math::step_decimals(get_step()));
+	String value = String::num(get_value(), Math::range_step_decimals(get_step()));
 	if (prefix != "")
 		value = prefix + " " + value;
 	if (suffix != "")
@@ -50,15 +51,19 @@ void SpinBox::_value_changed(double) {
 
 void SpinBox::_text_entered(const String &p_string) {
 
-	/*
-	if (!p_string.is_numeric())
+	Ref<Expression> expr;
+	expr.instance();
+	// Ignore the prefix and suffix in the expression
+	Error err = expr->parse(p_string.trim_prefix(prefix + " ").trim_suffix(" " + suffix));
+	if (err != OK) {
 		return;
-	*/
-	String value = p_string;
-	if (prefix != "" && p_string.begins_with(prefix))
-		value = p_string.substr(prefix.length(), p_string.length() - prefix.length());
-	set_value(value.to_double());
-	_value_changed(0);
+	}
+
+	Variant value = expr->execute(Array(), NULL, false);
+	if (value.get_type() != Variant::NIL) {
+		set_value(value);
+		_value_changed(0);
+	}
 }
 
 LineEdit *SpinBox::get_line_edit() {
@@ -169,6 +174,10 @@ void SpinBox::_gui_input(const Ref<InputEvent> &p_event) {
 }
 
 void SpinBox::_line_edit_focus_exit() {
+
+	// discontinue because the focus_exit was caused by right-click context menu
+	if (line_edit->get_menu()->is_visible())
+		return;
 
 	_text_entered(line_edit->get_text());
 }

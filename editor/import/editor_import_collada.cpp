@@ -692,16 +692,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 				pre_weights[w_i] = weights;
 
-				/*
-				for(Set<int>::Element *E=vertex_map[w_i].front();E;E=E->next()) {
-
-					int dst = E->get();
-					ERR_EXPLAIN("invalid vertex index in array");
-					ERR_FAIL_INDEX_V(dst,vertex_array.size(),ERR_INVALID_DATA);
-					vertex_array[dst].weights=weights;
-
-				}*/
-
 				index_ofs += wstride * amount;
 			}
 
@@ -711,7 +701,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 
 		Set<Collada::Vertex> vertex_set; //vertex set will be the vertices
 		List<int> indices_list; //indices will be the indices
-		//Map<int,Set<int> > vertex_map; //map vertices (for setting skinning/morph)
 
 		/**************************/
 		/* CREATE PRIMITIVE ARRAY */
@@ -834,9 +823,6 @@ Error ColladaImport::_create_mesh_surfaces(bool p_optimize, Ref<ArrayMesh> &p_me
 					vertex_set.insert(vertex);
 				}
 
-				/*	if (!vertex_map.has(vertex_index))
-					vertex_map[vertex_index]=Set<int>();
-				vertex_map[vertex_index].insert(index); //should be outside..*/
 				//build triangles if needed
 				if (j == 0)
 					prev2[0] = index;
@@ -1175,41 +1161,36 @@ Error ColladaImport::_create_resources(Collada::Node *p_node, bool p_use_compres
 					morph = &collada.state.morph_controller_data_map[ngsource];
 					meshid = morph->mesh;
 
-					Vector<String> targets;
+					if (morph->targets.has("MORPH_TARGET")) {
+						String target = morph->targets["MORPH_TARGET"];
+						bool valid = false;
+						if (morph->sources.has(target)) {
+							valid = true;
+							Vector<String> names = morph->sources[target].sarray;
+							for (int i = 0; i < names.size(); i++) {
 
-					morph->targets.has("MORPH_TARGET");
-					String target = morph->targets["MORPH_TARGET"];
-					bool valid = false;
-					if (morph->sources.has(target)) {
-						valid = true;
-						Vector<String> names = morph->sources[target].sarray;
-						for (int i = 0; i < names.size(); i++) {
+								String meshid2 = names[i];
+								if (collada.state.mesh_data_map.has(meshid2)) {
+									Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
+									const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
+									mesh->set_name(meshdata.name);
+									Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
+									ERR_FAIL_COND_V(err, err);
 
-							String meshid2 = names[i];
-							if (collada.state.mesh_data_map.has(meshid2)) {
-								Ref<ArrayMesh> mesh = Ref<ArrayMesh>(memnew(ArrayMesh));
-								const Collada::MeshData &meshdata = collada.state.mesh_data_map[meshid2];
-								mesh->set_name(meshdata.name);
-								Error err = _create_mesh_surfaces(false, mesh, ng2->material_map, meshdata, apply_xform, bone_remap, skin, NULL, Vector<Ref<ArrayMesh> >(), false);
-								ERR_FAIL_COND_V(err, err);
-
-								morphs.push_back(mesh);
-							} else {
-								valid = false;
+									morphs.push_back(mesh);
+								} else {
+									valid = false;
+								}
 							}
 						}
+
+						if (!valid)
+							morphs.clear();
+						ngsource = "";
 					}
-
-					if (!valid)
-						morphs.clear();
-
-					ngsource = "";
 				}
 
-				if (ngsource != "") {
-					ERR_EXPLAIN("Controller Instance Source '" + ngsource + "' is neither skin or morph!");
-					ERR_FAIL_V(ERR_INVALID_DATA);
-				}
+				ERR_FAIL_COND_V_MSG(ngsource != "", ERR_INVALID_DATA, "Controller instance source '" + ngsource + "' is neither skin or morph!");
 
 			} else {
 				meshid = ng2->source;
@@ -1610,7 +1591,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				}
 
 				if (xform_idx == -1) {
-					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param);
+					WARN_PRINTS("Collada: Couldn't find matching node " + at.target + " xform for track " + at.param + ".");
 					continue;
 				}
 
@@ -1632,8 +1613,7 @@ void ColladaImport::create_animation(int p_clip, bool p_make_tracks_in_all_bones
 				} else if (data.size() == xf.data.size()) {
 					xf.data = data;
 				} else {
-					ERR_EXPLAIN("Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()));
-					ERR_CONTINUE(data.size() != xf.data.size());
+					ERR_CONTINUE_MSG(data.size() != xf.data.size(), "Component " + at.component + " has datasize " + itos(data.size()) + ", xfdatasize " + itos(xf.data.size()) + ".");
 				}
 			}
 

@@ -64,6 +64,7 @@ def get_opts():
         BoolVariable('use_ubsan', 'Use LLVM/GCC compiler undefined behavior sanitizer (UBSAN)', False),
         BoolVariable('use_asan', 'Use LLVM/GCC compiler address sanitizer (ASAN))', False),
         BoolVariable('use_lsan', 'Use LLVM/GCC compiler leak sanitizer (LSAN))', False),
+        BoolVariable('use_tsan', 'Use LLVM/GCC compiler thread sanitizer (TSAN))', False),
         BoolVariable('pulseaudio', 'Detect and use PulseAudio', True),
         BoolVariable('udev', 'Use udev for gamepad connection callbacks', False),
         EnumVariable('debug_symbols', 'Add debugging symbols to release builds', 'yes', ('yes', 'no', 'full')),
@@ -140,7 +141,7 @@ def configure(env):
             print("Using LLD with GCC is not supported yet, try compiling with 'use_llvm=yes'.")
             sys.exit(255)
 
-    if env['use_ubsan'] or env['use_asan'] or env['use_lsan']:
+    if env['use_ubsan'] or env['use_asan'] or env['use_lsan'] or env['use_tsan']:
         env.extra_suffix += "s"
 
         if env['use_ubsan']:
@@ -154,6 +155,10 @@ def configure(env):
         if env['use_lsan']:
             env.Append(CCFLAGS=['-fsanitize=leak'])
             env.Append(LINKFLAGS=['-fsanitize=leak'])
+
+        if env['use_tsan']:
+            env.Append(CCFLAGS=['-fsanitize=thread'])
+            env.Append(LINKFLAGS=['-fsanitize=thread'])
 
     if env['use_lto']:
         if not env['use_llvm'] and env.GetOption("num_jobs") > 1:

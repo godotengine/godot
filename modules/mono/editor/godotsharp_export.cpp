@@ -85,18 +85,12 @@ Error GodotSharpExport::get_assembly_dependencies(GDMonoAssembly *p_assembly, co
 			}
 		}
 
-		if (!ref_assembly) {
-			ERR_EXPLAIN("Cannot load assembly (refonly): " + ref_name);
-			ERR_FAIL_V(ERR_CANT_RESOLVE);
-		}
+		ERR_FAIL_COND_V_MSG(!ref_assembly, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + ref_name + "'.");
 
 		r_dependencies[ref_name] = ref_assembly->get_path();
 
 		Error err = get_assembly_dependencies(ref_assembly, p_search_dirs, r_dependencies);
-		if (err != OK) {
-			ERR_EXPLAIN("Cannot load one of the dependencies for the assembly: " + ref_name);
-			ERR_FAIL_V(err);
-		}
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot load one of the dependencies for the assembly: '" + ref_name + "'.");
 	}
 
 	return OK;
@@ -113,8 +107,7 @@ Error GodotSharpExport::get_exported_assembly_dependencies(const String &p_proje
 	bool load_success = GDMono::get_singleton()->load_assembly_from(p_project_dll_name,
 			p_project_dll_src_path, &scripts_assembly, /* refonly: */ true);
 
-	ERR_EXPLAIN("Cannot load assembly (refonly): " + p_project_dll_name);
-	ERR_FAIL_COND_V(!load_success, ERR_CANT_RESOLVE);
+	ERR_FAIL_COND_V_MSG(!load_success, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + p_project_dll_name + "'.");
 
 	Vector<String> search_dirs;
 	GDMonoAssembly::fill_search_dirs(search_dirs, p_build_config, p_custom_lib_dir);

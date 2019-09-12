@@ -125,6 +125,7 @@ public:
 		TK_CF_DO,
 		TK_CF_SWITCH,
 		TK_CF_CASE,
+		TK_CF_DEFAULT,
 		TK_CF_BREAK,
 		TK_CF_CONTINUE,
 		TK_CF_RETURN,
@@ -266,6 +267,8 @@ public:
 		FLOW_OP_DO,
 		FLOW_OP_BREAK,
 		FLOW_OP_SWITCH,
+		FLOW_OP_CASE,
+		FLOW_OP_DEFAULT,
 		FLOW_OP_CONTINUE,
 		FLOW_OP_DISCARD
 	};
@@ -330,15 +333,18 @@ public:
 		DataType datatype_cache;
 		StringName name;
 		virtual DataType get_datatype() const { return datatype_cache; }
+		bool is_const;
 
 		VariableNode() :
 				Node(TYPE_VARIABLE),
-				datatype_cache(TYPE_VOID) {}
+				datatype_cache(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct VariableDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		bool is_const;
 
 		struct Declaration {
 			StringName name;
@@ -351,7 +357,8 @@ public:
 		VariableDeclarationNode() :
 				Node(TYPE_VARIABLE_DECLARATION),
 				precision(PRECISION_DEFAULT),
-				datatype(TYPE_VOID) {}
+				datatype(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct ArrayNode : public Node {
@@ -359,6 +366,7 @@ public:
 		StringName name;
 		Node *index_expression;
 		Node *call_expression;
+		bool is_const;
 
 		virtual DataType get_datatype() const { return datatype_cache; }
 
@@ -366,12 +374,14 @@ public:
 				Node(TYPE_ARRAY),
 				datatype_cache(TYPE_VOID),
 				index_expression(NULL),
-				call_expression(NULL) {}
+				call_expression(NULL),
+				is_const(false) {}
 	};
 
 	struct ArrayDeclarationNode : public Node {
 		DataPrecision precision;
 		DataType datatype;
+		bool is_const;
 
 		struct Declaration {
 			StringName name;
@@ -385,7 +395,8 @@ public:
 		ArrayDeclarationNode() :
 				Node(TYPE_ARRAY_DECLARATION),
 				precision(PRECISION_DEFAULT),
-				datatype(TYPE_VOID) {}
+				datatype(TYPE_VOID),
+				is_const(false) {}
 	};
 
 	struct ConstantNode : public Node {
@@ -412,11 +423,21 @@ public:
 		FunctionNode *parent_function;
 		BlockNode *parent_block;
 
+		enum BlockType {
+			BLOCK_TYPE_STANDART,
+			BLOCK_TYPE_SWITCH,
+			BLOCK_TYPE_CASE,
+			BLOCK_TYPE_DEFAULT,
+		};
+
+		int block_type;
+
 		struct Variable {
 			DataType type;
 			DataPrecision precision;
 			int line; //for completion
 			int array_size;
+			bool is_const;
 		};
 
 		Map<StringName, Variable> variables;
@@ -427,6 +448,7 @@ public:
 				Node(TYPE_BLOCK),
 				parent_function(NULL),
 				parent_block(NULL),
+				block_type(BLOCK_TYPE_STANDART),
 				single_statement(false) {}
 	};
 
@@ -683,7 +705,7 @@ private:
 		IDENTIFIER_CONSTANT,
 	};
 
-	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, int *r_array_size = NULL);
+	bool _find_identifier(const BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, const StringName &p_identifier, DataType *r_data_type = NULL, IdentifierType *r_type = NULL, bool *r_is_const = NULL, int *r_array_size = NULL);
 	bool _is_operator_assign(Operator p_op) const;
 	bool _validate_assign(Node *p_node, const Map<StringName, BuiltInInfo> &p_builtin_types, String *r_message = NULL);
 	bool _validate_operator(OperatorNode *p_op, DataType *r_ret_type = NULL);
@@ -727,6 +749,9 @@ private:
 	Node *_parse_and_reduce_expression(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types);
 	Error _parse_block(BlockNode *p_block, const Map<StringName, BuiltInInfo> &p_builtin_types, bool p_just_one = false, bool p_can_break = false, bool p_can_continue = false);
 	Error _parse_shader(const Map<StringName, FunctionInfo> &p_functions, const Vector<StringName> &p_render_modes, const Set<String> &p_shader_types);
+
+	Error _find_last_flow_op_in_block(BlockNode *p_block, FlowOperation p_op);
+	Error _find_last_flow_op_in_op(ControlFlowNode *p_flow, FlowOperation p_op);
 
 public:
 	//static void get_keyword_list(ShaderType p_type,List<String> *p_keywords);

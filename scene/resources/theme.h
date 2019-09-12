@@ -38,15 +38,11 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Theme : public Resource {
 
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
-	static Ref<Theme> default_theme;
 	void _emit_theme_changed();
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
@@ -61,6 +57,8 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	static Ref<Theme> project_default_theme;
+	static Ref<Theme> default_theme;
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
@@ -136,6 +134,9 @@ protected:
 public:
 	static Ref<Theme> get_default();
 	static void set_default(const Ref<Theme> &p_default);
+
+	static Ref<Theme> get_project_default();
+	static void set_project_default(const Ref<Theme> &p_project_default);
 
 	static void set_default_icon(const Ref<Texture> &p_icon);
 	static void set_default_style(const Ref<StyleBox> &p_style);

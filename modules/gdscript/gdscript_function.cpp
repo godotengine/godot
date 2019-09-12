@@ -86,8 +86,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 				o = o->_owner;
 			}
 
-			ERR_EXPLAIN("GDScriptCompiler bug...");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, "GDScriptCompiler bug.");
 		} break;
 		case ADDR_TYPE_LOCAL_CONSTANT: {
 #ifdef DEBUG_ENABLED
@@ -128,8 +127,7 @@ Variant *GDScriptFunction::_get_variant(int p_address, GDScriptInstance *p_insta
 		} break;
 	}
 
-	ERR_EXPLAIN("Bad Code! (Addressing Mode)");
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Bad code! (unknown addressing mode).");
 	return NULL;
 }
 
@@ -433,6 +431,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		profile.frame_call_count++;
 	}
 	bool exit_ok = false;
+	bool yielded = false;
 #endif
 
 #ifdef DEBUG_ENABLED
@@ -1325,6 +1324,7 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 
 #ifdef DEBUG_ENABLED
 				exit_ok = true;
+				yielded = true;
 #endif
 				OPCODE_BREAK;
 			}
@@ -1591,8 +1591,6 @@ Variant GDScriptFunction::call(GDScriptInstance *p_instance, const Variant **p_a
 		GDScriptLanguage::get_singleton()->script_frame_time += time_taken - function_call_time;
 	}
 
-	bool yielded = retvalue.is_ref() && Object::cast_to<GDScriptFunctionState>(retvalue);
-
 	// Check if this is the last time the function is resuming from yield
 	// Will be true if never yielded as well
 	// When it's the last resume it will postpone the exit from stack,
@@ -1834,8 +1832,7 @@ Variant GDScriptFunctionState::resume(const Variant &p_arg) {
 	ERR_FAIL_COND_V(!function, Variant());
 	if (state.instance_id && !ObjectDB::get_instance(state.instance_id)) {
 #ifdef DEBUG_ENABLED
-		ERR_EXPLAIN("Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
-		ERR_FAIL_V(Variant());
+		ERR_FAIL_V_MSG(Variant(), "Resumed function '" + String(function->get_name()) + "()' after yield, but class instance is gone. At script: " + state.script->get_path() + ":" + itos(state.line));
 #else
 		return Variant();
 #endif

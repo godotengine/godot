@@ -176,6 +176,86 @@ Error TileSetEditor::update_library_file(Node *p_base_scene, Ref<TileSet> ml, bo
 	return OK;
 }
 
+Variant TileSetEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+
+	return false;
+}
+
+bool TileSetEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return false;
+
+	if (d.has("from") && (Object *)(d["from"]) == texture_list)
+		return false;
+
+	if (String(d["type"]) == "resource" && d.has("resource")) {
+		RES r = d["resource"];
+
+		Ref<Texture> texture = r;
+
+		if (texture.is_valid()) {
+
+			return true;
+		}
+	}
+
+	if (String(d["type"]) == "files") {
+
+		Vector<String> files = d["files"];
+
+		if (files.size() == 0)
+			return false;
+
+		for (int i = 0; i < files.size(); i++) {
+			String file = files[i];
+			String ftype = EditorFileSystem::get_singleton()->get_file_type(file);
+
+			if (!ClassDB::is_parent_class(ftype, "Texture")) {
+				return false;
+			}
+		}
+
+		return true;
+	}
+	return false;
+}
+
+void TileSetEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	Dictionary d = p_data;
+
+	if (!d.has("type"))
+		return;
+
+	if (String(d["type"]) == "resource" && d.has("resource")) {
+		RES r = d["resource"];
+
+		Ref<Texture> texture = r;
+
+		if (texture.is_valid())
+			add_texture(texture);
+
+		if (texture_list->get_item_count() > 0) {
+			update_texture_list_icon();
+			texture_list->select(texture_list->get_item_count() - 1);
+			_on_texture_list_selected(texture_list->get_item_count() - 1);
+		}
+	}
+
+	if (String(d["type"]) == "files") {
+
+		PoolVector<String> files = d["files"];
+
+		_on_textures_added(files);
+	}
+}
+
 void TileSetEditor::_bind_methods() {
 
 	ClassDB::bind_method("_undo_redo_import_scene", &TileSetEditor::_undo_redo_import_scene);
@@ -202,6 +282,10 @@ void TileSetEditor::_bind_methods() {
 	ClassDB::bind_method("_zoom_reset", &TileSetEditor::_zoom_reset);
 	ClassDB::bind_method("_select_edited_shape_coord", &TileSetEditor::_select_edited_shape_coord);
 	ClassDB::bind_method("_sort_tiles", &TileSetEditor::_sort_tiles);
+
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &TileSetEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &TileSetEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &TileSetEditor::drop_data_fw);
 
 	ClassDB::bind_method("edit", &TileSetEditor::edit);
 	ClassDB::bind_method("add_texture", &TileSetEditor::add_texture);
@@ -274,6 +358,7 @@ TileSetEditor::TileSetEditor(EditorNode *p_editor) {
 	texture_list->set_v_size_flags(SIZE_EXPAND_FILL);
 	texture_list->set_custom_minimum_size(Size2(200, 0));
 	texture_list->connect("item_selected", this, "_on_texture_list_selected");
+	texture_list->set_drag_forwarding(this);
 
 	HBoxContainer *tileset_toolbar_container = memnew(HBoxContainer);
 	left_container->add_child(tileset_toolbar_container);
@@ -646,8 +731,7 @@ void TileSetEditor::_on_textures_added(const PoolStringArray &p_paths) {
 	for (int i = 0; i < p_paths.size(); i++) {
 		Ref<Texture> t = Ref<Texture>(ResourceLoader::load(p_paths[i]));
 
-		ERR_EXPLAIN("'" + p_paths[i] + "' is not a valid texture.");
-		ERR_CONTINUE(!t.is_valid());
+		ERR_CONTINUE_MSG(!t.is_valid(), "'" + p_paths[i] + "' is not a valid texture.");
 
 		if (texture_map.has(t->get_rid())) {
 			invalid_count++;
@@ -924,8 +1008,7 @@ void TileSetEditor::_on_workspace_draw() {
 			case EDITMODE_OCCLUSION:
 			case EDITMODE_NAVIGATION: {
 				if (tileset->tile_get_tile_mode(get_current_tile()) == TileSet::AUTO_TILE || tileset->tile_get_tile_mode(get_current_tile()) == TileSet::ATLAS_TILE) {
-					Vector2 coord = edited_shape_coord;
-					draw_highlight_subtile(coord);
+					draw_highlight_subtile(edited_shape_coord);
 				}
 				draw_polygon_shapes();
 				draw_grid_snap();
@@ -1519,6 +1602,8 @@ void TileSetEditor::_on_workspace_input(const Ref<InputEvent> &p_ie) {
 										undo_redo->create_action(TTR("Edit Navigation Polygon"));
 										undo_redo->add_do_method(edited_navigation_shape.ptr(), "set_vertices", polygon);
 										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "set_vertices", edited_navigation_shape->get_vertices());
+										undo_redo->add_do_method(edited_navigation_shape.ptr(), "clear_polygons");
+										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "clear_polygons");
 										undo_redo->add_do_method(edited_navigation_shape.ptr(), "add_polygon", indices);
 										undo_redo->add_undo_method(edited_navigation_shape.ptr(), "add_polygon", edited_navigation_shape->get_polygon(0));
 										undo_redo->add_do_method(this, "_select_edited_shape_coord");
@@ -1872,7 +1957,7 @@ void TileSetEditor::_update_tile_data() {
 	} else {
 		int spacing = tileset->autotile_get_spacing(get_current_tile());
 		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 		for (int y = 0; y < cell_count.y; y++) {
 			for (int x = 0; x < cell_count.x; x++) {
 				SubtileData data;
@@ -1974,7 +2059,7 @@ void TileSetEditor::_select_previous_tile() {
 			case EDITMODE_Z_INDEX: {
 				int spacing = tileset->autotile_get_spacing(get_current_tile());
 				Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-				Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+				Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 				cell_count -= Vector2(1, 1);
 				edited_shape_coord = cell_count;
 				_select_edited_shape_coord();
@@ -2031,7 +2116,7 @@ void TileSetEditor::_select_next_subtile() {
 	} else {
 		int spacing = tileset->autotile_get_spacing(get_current_tile());
 		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 		if (edited_shape_coord.x >= cell_count.x - 1 && edited_shape_coord.y >= cell_count.y - 1) {
 			_select_next_tile();
 		} else {
@@ -2057,7 +2142,7 @@ void TileSetEditor::_select_previous_subtile() {
 	} else {
 		int spacing = tileset->autotile_get_spacing(get_current_tile());
 		Vector2 size = tileset->tile_get_region(get_current_tile()).size;
-		Vector2i cell_count = size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing));
+		Vector2 cell_count = (size / (tileset->autotile_get_size(get_current_tile()) + Vector2(spacing, spacing))).floor();
 		if (edited_shape_coord.x <= 0 && edited_shape_coord.y <= 0) {
 			_select_previous_tile();
 		} else {
@@ -2077,9 +2162,9 @@ void TileSetEditor::_select_next_shape() {
 	} else if (edit_mode != EDITMODE_COLLISION) {
 		_select_next_subtile();
 	} else {
-		Vector2i edited_coord = Vector2();
+		Vector2i edited_coord = Vector2i();
 		if (tileset->tile_get_tile_mode(get_current_tile()) != TileSet::SINGLE_TILE) {
-			edited_coord = edited_shape_coord;
+			edited_coord = Vector2i(edited_shape_coord);
 		}
 		SubtileData data = current_tile_data[edited_coord];
 		if (data.collisions.size() == 0) {
@@ -2130,9 +2215,9 @@ void TileSetEditor::_select_previous_shape() {
 	} else if (edit_mode != EDITMODE_COLLISION) {
 		_select_previous_subtile();
 	} else {
-		Vector2i edited_coord = Vector2();
+		Vector2i edited_coord = Vector2i();
 		if (tileset->tile_get_tile_mode(get_current_tile()) != TileSet::SINGLE_TILE) {
-			edited_coord = edited_shape_coord;
+			edited_coord = Vector2i(edited_shape_coord);
 		}
 		SubtileData data = current_tile_data[edited_coord];
 		if (data.collisions.size() == 0) {
@@ -3369,7 +3454,7 @@ void TilesetEditorContext::_get_property_list(List<PropertyInfo> *p_list) const 
 
 void TilesetEditorContext::_bind_methods() {
 
-	ClassDB::bind_method("_hide_object_properties_from_inspector", &TilesetEditorContext::_hide_object_properties_from_inspector);
+	ClassDB::bind_method("_hide_script_from_inspector", &TilesetEditorContext::_hide_script_from_inspector);
 }
 
 TilesetEditorContext::TilesetEditorContext(TileSetEditor *p_tileset_editor) {

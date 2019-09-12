@@ -117,8 +117,7 @@ void HingeJointBullet::set_param(PhysicsServer::HingeJointParam p_param, real_t 
 			hingeConstraint->setMaxMotorImpulse(p_value);
 			break;
 		default:
-			ERR_EXPLAIN("The HingeJoint parameter " + itos(p_param) + " is deprecated.");
-			WARN_DEPRECATED;
+			WARN_DEPRECATED_MSG("The HingeJoint parameter " + itos(p_param) + " is deprecated.");
 			break;
 	}
 }
@@ -143,8 +142,7 @@ real_t HingeJointBullet::get_param(PhysicsServer::HingeJointParam p_param) const
 		case PhysicsServer::HINGE_JOINT_MOTOR_MAX_IMPULSE:
 			return hingeConstraint->getMaxMotorImpulse();
 		default:
-			ERR_EXPLAIN("The HingeJoint parameter " + itos(p_param) + " is deprecated.");
-			WARN_DEPRECATED;
+			WARN_DEPRECATED_MSG("The HingeJoint parameter " + itos(p_param) + " is deprecated.");
 			return 0;
 	}
 }

@@ -258,6 +258,8 @@ precision mediump int;
 #endif
 #endif
 
+#include "stdlib.glsl"
+
 uniform sampler2D color_texture; // texunit:-1
 /* clang-format on */
 uniform highp vec2 color_texpixel_size;
@@ -489,8 +491,7 @@ FRAGMENT_SHADER_CODE
 		highp float shadow_attenuation = 0.0;
 
 #ifdef USE_RGBA_SHADOWS
-
-#define SHADOW_DEPTH(m_tex, m_uv) dot(texture2D((m_tex), (m_uv)), vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0))
+#define SHADOW_DEPTH(m_tex, m_uv) dot(texture2D((m_tex), (m_uv)), vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0))
 
 #else
 

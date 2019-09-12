@@ -87,6 +87,7 @@ private:
 		FILE_INFO,
 		FILE_NEW_FOLDER,
 		FILE_NEW_SCRIPT,
+		FILE_NEW_SCENE,
 		FILE_SHOW_IN_EXPLORER,
 		FILE_COPY_PATH,
 		FILE_NEW_RESOURCE,
@@ -135,6 +136,8 @@ private:
 	LineEdit *duplicate_dialog_text;
 	ConfirmationDialog *make_dir_dialog;
 	LineEdit *make_dir_dialog_text;
+	ConfirmationDialog *make_scene_dialog;
+	LineEdit *make_scene_dialog_text;
 	ConfirmationDialog *overwrite_dialog;
 	ScriptCreateDialog *make_script_dialog_text;
 	CreateDialog *new_resource_dialog;
@@ -168,7 +171,7 @@ private:
 
 	bool updating_tree;
 	int tree_update_id;
-	Tree *tree; //directories
+	Tree *tree;
 	ItemList *files;
 	bool import_dock_needs_update;
 
@@ -213,6 +216,7 @@ private:
 
 	void _resource_created() const;
 	void _make_dir_confirm();
+	void _make_scene_confirm();
 	void _rename_operation_confirm();
 	void _duplicate_operation_confirm();
 	void _move_with_overwrite();
@@ -246,7 +250,6 @@ private:
 		String name;
 		String path;
 		StringName type;
-		int import_status; //0 not imported, 1 - ok, 2- must reimport, 3- broken
 		Vector<String> sources;
 		bool import_broken;
 
@@ -275,6 +278,7 @@ private:
 	bool _is_file_type_disabled_by_feature_profile(const StringName &p_class);
 
 	void _feature_profile_changed();
+	Vector<String> _remove_self_included_paths(Vector<String> selected_strings);
 
 protected:
 	void _notification(int p_what);

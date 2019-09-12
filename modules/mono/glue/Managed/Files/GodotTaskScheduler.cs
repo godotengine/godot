@@ -8,7 +8,7 @@ namespace Godot
 {
     public class GodotTaskScheduler : TaskScheduler
     {
-        private GodotSynchronizationContext Context { get; set; }
+        internal GodotSynchronizationContext Context { get; }
         private readonly LinkedList<Task> _tasks = new LinkedList<Task>();
 
         public GodotTaskScheduler()
@@ -28,14 +28,10 @@ namespace Godot
         protected sealed override bool TryExecuteTaskInline(Task task, bool taskWasPreviouslyQueued)
         {
             if (SynchronizationContext.Current != Context)
-            {
                 return false;
-            }
 
             if (taskWasPreviouslyQueued)
-            {
                 TryDequeue(task);
-            }
 
             return TryExecuteTask(task);
         }
@@ -52,7 +48,8 @@ namespace Godot
         {
             lock (_tasks)
             {
-                return _tasks.ToArray();
+                foreach (Task task in _tasks)
+                    yield return task;
             }
         }
 

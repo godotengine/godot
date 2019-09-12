@@ -2161,10 +2161,8 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 }
 
 Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
-	if (error_set) {
-		ERR_EXPLAIN("There was previously a parse error: " + error_str);
-		ERR_FAIL_V(Variant());
-	}
+
+	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
 
 	execution_error = false;
 	Variant output;
@@ -2173,10 +2171,7 @@ Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
 	if (err) {
 		execution_error = true;
 		error_str = error_txt;
-		if (p_show_error) {
-			ERR_EXPLAIN(error_str);
-			ERR_FAIL_V(Variant());
-		}
+		ERR_FAIL_COND_V_MSG(p_show_error, Variant(), error_str);
 	}
 
 	return output;

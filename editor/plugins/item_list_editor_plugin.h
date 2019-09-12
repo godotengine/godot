@@ -39,10 +39,6 @@
 #include "scene/gui/option_button.h"
 #include "scene/gui/popup_menu.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class ItemListPlugin : public Object {
 
 	GDCLASS(ItemListPlugin, Object);

@@ -69,6 +69,9 @@ Size2 ParallaxLayer::get_motion_offset() const {
 
 void ParallaxLayer::_update_mirroring() {
 
+	if (!is_inside_tree())
+		return;
+
 	ParallaxBackground *pb = Object::cast_to<ParallaxBackground>(get_parent());
 	if (pb) {
 

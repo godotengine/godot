@@ -34,9 +34,6 @@
 #include "scene/gui/control.h"
 #include "scene/gui/popup_menu.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class LineEdit : public Control {
 
 	GDCLASS(LineEdit, Control);

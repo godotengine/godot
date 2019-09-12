@@ -43,49 +43,49 @@ import com.google.android.vending.licensing.util.URIQueryDecoder;
  */
 public class ServerManagedPolicy implements Policy {
 
-	private static final String TAG = "ServerManagedPolicy";
-	private static final String PREFS_FILE = "com.google.android.vending.licensing.ServerManagedPolicy";
-	private static final String PREF_LAST_RESPONSE = "lastResponse";
-	private static final String PREF_VALIDITY_TIMESTAMP = "validityTimestamp";
-	private static final String PREF_RETRY_UNTIL = "retryUntil";
-	private static final String PREF_MAX_RETRIES = "maxRetries";
-	private static final String PREF_RETRY_COUNT = "retryCount";
-	private static final String PREF_LICENSING_URL = "licensingUrl";
-	private static final String DEFAULT_VALIDITY_TIMESTAMP = "0";
-	private static final String DEFAULT_RETRY_UNTIL = "0";
-	private static final String DEFAULT_MAX_RETRIES = "0";
-	private static final String DEFAULT_RETRY_COUNT = "0";
+    private static final String TAG = "ServerManagedPolicy";
+    private static final String PREFS_FILE = "com.google.android.vending.licensing.ServerManagedPolicy";
+    private static final String PREF_LAST_RESPONSE = "lastResponse";
+    private static final String PREF_VALIDITY_TIMESTAMP = "validityTimestamp";
+    private static final String PREF_RETRY_UNTIL = "retryUntil";
+    private static final String PREF_MAX_RETRIES = "maxRetries";
+    private static final String PREF_RETRY_COUNT = "retryCount";
+    private static final String PREF_LICENSING_URL = "licensingUrl";
+    private static final String DEFAULT_VALIDITY_TIMESTAMP = "0";
+    private static final String DEFAULT_RETRY_UNTIL = "0";
+    private static final String DEFAULT_MAX_RETRIES = "0";
+    private static final String DEFAULT_RETRY_COUNT = "0";
 
-	private static final long MILLIS_PER_MINUTE = 60 * 1000;
+    private static final long MILLIS_PER_MINUTE = 60 * 1000;
 
-	private long mValidityTimestamp;
-	private long mRetryUntil;
-	private long mMaxRetries;
-	private long mRetryCount;
-	private long mLastResponseTime = 0;
-	private int mLastResponse;
-	private String mLicensingUrl;
-	private PreferenceObfuscator mPreferences;
+    private long mValidityTimestamp;
+    private long mRetryUntil;
+    private long mMaxRetries;
+    private long mRetryCount;
+    private long mLastResponseTime = 0;
+    private int mLastResponse;
+    private String mLicensingUrl;
+    private PreferenceObfuscator mPreferences;
 
-	/**
+    /**
      * @param context The context for the current application
      * @param obfuscator An obfuscator to be used with preferences.
      */
-	public ServerManagedPolicy(Context context, Obfuscator obfuscator) {
-		// Import old values
-		SharedPreferences sp = context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
-		mPreferences = new PreferenceObfuscator(sp, obfuscator);
-		mLastResponse = Integer.parseInt(
-				mPreferences.getString(PREF_LAST_RESPONSE, Integer.toString(Policy.RETRY)));
-		mValidityTimestamp = Long.parseLong(mPreferences.getString(PREF_VALIDITY_TIMESTAMP,
-				DEFAULT_VALIDITY_TIMESTAMP));
-		mRetryUntil = Long.parseLong(mPreferences.getString(PREF_RETRY_UNTIL, DEFAULT_RETRY_UNTIL));
-		mMaxRetries = Long.parseLong(mPreferences.getString(PREF_MAX_RETRIES, DEFAULT_MAX_RETRIES));
-		mRetryCount = Long.parseLong(mPreferences.getString(PREF_RETRY_COUNT, DEFAULT_RETRY_COUNT));
-		mLicensingUrl = mPreferences.getString(PREF_LICENSING_URL, null);
-	}
+    public ServerManagedPolicy(Context context, Obfuscator obfuscator) {
+        // Import old values
+        SharedPreferences sp = context.getSharedPreferences(PREFS_FILE, Context.MODE_PRIVATE);
+        mPreferences = new PreferenceObfuscator(sp, obfuscator);
+        mLastResponse = Integer.parseInt(
+            mPreferences.getString(PREF_LAST_RESPONSE, Integer.toString(Policy.RETRY)));
+        mValidityTimestamp = Long.parseLong(mPreferences.getString(PREF_VALIDITY_TIMESTAMP,
+                DEFAULT_VALIDITY_TIMESTAMP));
+        mRetryUntil = Long.parseLong(mPreferences.getString(PREF_RETRY_UNTIL, DEFAULT_RETRY_UNTIL));
+        mMaxRetries = Long.parseLong(mPreferences.getString(PREF_MAX_RETRIES, DEFAULT_MAX_RETRIES));
+        mRetryCount = Long.parseLong(mPreferences.getString(PREF_RETRY_COUNT, DEFAULT_RETRY_COUNT));
+        mLicensingUrl = mPreferences.getString(PREF_LICENSING_URL, null);
+    }
 
-	/**
+    /**
      * Process a new response from the license server.
      * <p>
      * This data will be used for computing future policy decisions. The
@@ -102,159 +102,159 @@ public class ServerManagedPolicy implements Policy {
      * @param response the result from validating the server response
      * @param rawData the raw server response data
      */
-	public void processServerResponse(int response, ResponseData rawData) {
+    public void processServerResponse(int response, ResponseData rawData) {
 
-		// Update retry counter
-		if (response != Policy.RETRY) {
-			setRetryCount(0);
-		} else {
-			setRetryCount(mRetryCount + 1);
-		}
+        // Update retry counter
+        if (response != Policy.RETRY) {
+            setRetryCount(0);
+        } else {
+            setRetryCount(mRetryCount + 1);
+        }
 
-		// Update server policy data
-		Map<String, String> extras = decodeExtras(rawData);
-		if (response == Policy.LICENSED) {
-			mLastResponse = response;
-			// Reset the licensing URL since it is only applicable for NOT_LICENSED responses.
-			setLicensingUrl(null);
-			setValidityTimestamp(extras.get("VT"));
-			setRetryUntil(extras.get("GT"));
-			setMaxRetries(extras.get("GR"));
-		} else if (response == Policy.NOT_LICENSED) {
-			// Clear out stale retry params
-			setValidityTimestamp(DEFAULT_VALIDITY_TIMESTAMP);
-			setRetryUntil(DEFAULT_RETRY_UNTIL);
-			setMaxRetries(DEFAULT_MAX_RETRIES);
-			// Update the licensing URL
-			setLicensingUrl(extras.get("LU"));
-		}
+        // Update server policy data
+        Map<String, String> extras = decodeExtras(rawData);
+        if (response == Policy.LICENSED) {
+            mLastResponse = response;
+            // Reset the licensing URL since it is only applicable for NOT_LICENSED responses.
+            setLicensingUrl(null);
+            setValidityTimestamp(extras.get("VT"));
+            setRetryUntil(extras.get("GT"));
+            setMaxRetries(extras.get("GR"));
+        } else if (response == Policy.NOT_LICENSED) {
+            // Clear out stale retry params
+            setValidityTimestamp(DEFAULT_VALIDITY_TIMESTAMP);
+            setRetryUntil(DEFAULT_RETRY_UNTIL);
+            setMaxRetries(DEFAULT_MAX_RETRIES);
+            // Update the licensing URL
+            setLicensingUrl(extras.get("LU"));
+        }
 
-		setLastResponse(response);
-		mPreferences.commit();
-	}
+        setLastResponse(response);
+        mPreferences.commit();
+    }
 
-	/**
+    /**
      * Set the last license response received from the server and add to
      * preferences. You must manually call PreferenceObfuscator.commit() to
      * commit these changes to disk.
      *
      * @param l the response
      */
-	private void setLastResponse(int l) {
-		mLastResponseTime = System.currentTimeMillis();
-		mLastResponse = l;
-		mPreferences.putString(PREF_LAST_RESPONSE, Integer.toString(l));
-	}
+    private void setLastResponse(int l) {
+        mLastResponseTime = System.currentTimeMillis();
+        mLastResponse = l;
+        mPreferences.putString(PREF_LAST_RESPONSE, Integer.toString(l));
+    }
 
-	/**
+    /**
      * Set the current retry count and add to preferences. You must manually
      * call PreferenceObfuscator.commit() to commit these changes to disk.
      *
      * @param c the new retry count
      */
-	private void setRetryCount(long c) {
-		mRetryCount = c;
-		mPreferences.putString(PREF_RETRY_COUNT, Long.toString(c));
-	}
+    private void setRetryCount(long c) {
+        mRetryCount = c;
+        mPreferences.putString(PREF_RETRY_COUNT, Long.toString(c));
+    }
 
-	public long getRetryCount() {
-		return mRetryCount;
-	}
+    public long getRetryCount() {
+        return mRetryCount;
+    }
 
-	/**
+    /**
      * Set the last validity timestamp (VT) received from the server and add to
      * preferences. You must manually call PreferenceObfuscator.commit() to
      * commit these changes to disk.
      *
      * @param validityTimestamp the VT string received
      */
-	private void setValidityTimestamp(String validityTimestamp) {
-		Long lValidityTimestamp;
-		try {
-			lValidityTimestamp = Long.parseLong(validityTimestamp);
-		} catch (NumberFormatException e) {
-			// No response or not parsable, expire in one minute.
-			Log.w(TAG, "License validity timestamp (VT) missing, caching for a minute");
-			lValidityTimestamp = System.currentTimeMillis() + MILLIS_PER_MINUTE;
-			validityTimestamp = Long.toString(lValidityTimestamp);
-		}
+    private void setValidityTimestamp(String validityTimestamp) {
+        Long lValidityTimestamp;
+        try {
+            lValidityTimestamp = Long.parseLong(validityTimestamp);
+        } catch (NumberFormatException e) {
+            // No response or not parsable, expire in one minute.
+            Log.w(TAG, "License validity timestamp (VT) missing, caching for a minute");
+            lValidityTimestamp = System.currentTimeMillis() + MILLIS_PER_MINUTE;
+            validityTimestamp = Long.toString(lValidityTimestamp);
+        }
 
-		mValidityTimestamp = lValidityTimestamp;
-		mPreferences.putString(PREF_VALIDITY_TIMESTAMP, validityTimestamp);
-	}
+        mValidityTimestamp = lValidityTimestamp;
+        mPreferences.putString(PREF_VALIDITY_TIMESTAMP, validityTimestamp);
+    }
 
-	public long getValidityTimestamp() {
-		return mValidityTimestamp;
-	}
+    public long getValidityTimestamp() {
+        return mValidityTimestamp;
+    }
 
-	/**
+    /**
      * Set the retry until timestamp (GT) received from the server and add to
      * preferences. You must manually call PreferenceObfuscator.commit() to
      * commit these changes to disk.
      *
      * @param retryUntil the GT string received
      */
-	private void setRetryUntil(String retryUntil) {
-		Long lRetryUntil;
-		try {
-			lRetryUntil = Long.parseLong(retryUntil);
-		} catch (NumberFormatException e) {
-			// No response or not parsable, expire immediately
-			Log.w(TAG, "License retry timestamp (GT) missing, grace period disabled");
-			retryUntil = "0";
-			lRetryUntil = 0l;
-		}
+    private void setRetryUntil(String retryUntil) {
+        Long lRetryUntil;
+        try {
+            lRetryUntil = Long.parseLong(retryUntil);
+        } catch (NumberFormatException e) {
+            // No response or not parsable, expire immediately
+            Log.w(TAG, "License retry timestamp (GT) missing, grace period disabled");
+            retryUntil = "0";
+            lRetryUntil = 0l;
+        }
 
-		mRetryUntil = lRetryUntil;
-		mPreferences.putString(PREF_RETRY_UNTIL, retryUntil);
-	}
+        mRetryUntil = lRetryUntil;
+        mPreferences.putString(PREF_RETRY_UNTIL, retryUntil);
+    }
 
-	public long getRetryUntil() {
-		return mRetryUntil;
-	}
+    public long getRetryUntil() {
+      return mRetryUntil;
+    }
 
-	/**
+    /**
      * Set the max retries value (GR) as received from the server and add to
      * preferences. You must manually call PreferenceObfuscator.commit() to
      * commit these changes to disk.
      *
      * @param maxRetries the GR string received
      */
-	private void setMaxRetries(String maxRetries) {
-		Long lMaxRetries;
-		try {
-			lMaxRetries = Long.parseLong(maxRetries);
-		} catch (NumberFormatException e) {
-			// No response or not parsable, expire immediately
-			Log.w(TAG, "Licence retry count (GR) missing, grace period disabled");
-			maxRetries = "0";
-			lMaxRetries = 0l;
-		}
+    private void setMaxRetries(String maxRetries) {
+        Long lMaxRetries;
+        try {
+            lMaxRetries = Long.parseLong(maxRetries);
+        } catch (NumberFormatException e) {
+            // No response or not parsable, expire immediately
+            Log.w(TAG, "Licence retry count (GR) missing, grace period disabled");
+            maxRetries = "0";
+            lMaxRetries = 0l;
+        }
 
-		mMaxRetries = lMaxRetries;
-		mPreferences.putString(PREF_MAX_RETRIES, maxRetries);
-	}
+        mMaxRetries = lMaxRetries;
+        mPreferences.putString(PREF_MAX_RETRIES, maxRetries);
+    }
 
-	public long getMaxRetries() {
-		return mMaxRetries;
-	}
+    public long getMaxRetries() {
+        return mMaxRetries;
+    }
 
-	/**
+    /**
      * Set the license URL value (LU) as received from the server and add to preferences. You must
      * manually call PreferenceObfuscator.commit() to commit these changes to disk.
      *
      * @param url the LU string received
      */
-	private void setLicensingUrl(String url) {
-		mLicensingUrl = url;
-		mPreferences.putString(PREF_LICENSING_URL, url);
-	}
+    private void setLicensingUrl(String url) {
+        mLicensingUrl = url;
+        mPreferences.putString(PREF_LICENSING_URL, url);
+    }
 
-	public String getLicensingUrl() {
-		return mLicensingUrl;
-	}
+    public String getLicensingUrl() {
+        return mLicensingUrl;
+    }
 
-	/**
+    /**
      * {@inheritDoc}
      *
      * This implementation allows access if either:<br>
@@ -264,36 +264,37 @@ public class ServerManagedPolicy implements Policy {
      * the RETRY count or in the RETRY period.
      * </ol>
      */
-	public boolean allowAccess() {
-		long ts = System.currentTimeMillis();
-		if (mLastResponse == Policy.LICENSED) {
-			// Check if the LICENSED response occurred within the validity timeout.
-			if (ts <= mValidityTimestamp) {
-				// Cached LICENSED response is still valid.
-				return true;
-			}
-		} else if (mLastResponse == Policy.RETRY &&
-				   ts < mLastResponseTime + MILLIS_PER_MINUTE) {
-			// Only allow access if we are within the retry period or we haven't used up our
-			// max retries.
-			return (ts <= mRetryUntil || mRetryCount <= mMaxRetries);
-		}
-		return false;
-	}
+    public boolean allowAccess() {
+        long ts = System.currentTimeMillis();
+        if (mLastResponse == Policy.LICENSED) {
+            // Check if the LICENSED response occurred within the validity timeout.
+            if (ts <= mValidityTimestamp) {
+                // Cached LICENSED response is still valid.
+                return true;
+            }
+        } else if (mLastResponse == Policy.RETRY &&
+                   ts < mLastResponseTime + MILLIS_PER_MINUTE) {
+            // Only allow access if we are within the retry period or we haven't used up our
+            // max retries.
+            return (ts <= mRetryUntil || mRetryCount <= mMaxRetries);
+        }
+        return false;
+    }
 
-	private Map<String, String> decodeExtras(
-			com.google.android.vending.licensing.ResponseData rawData) {
-		Map<String, String> results = new HashMap<String, String>();
-		if (rawData == null) {
-			return results;
-		}
+    private Map<String, String> decodeExtras(
+        com.google.android.vending.licensing.ResponseData rawData) {
+        Map<String, String> results = new HashMap<String, String>();
+        if (rawData == null) {
+            return results;
+        }
 
-		try {
-			URI rawExtras = new URI("?" + rawData.extra);
-			URIQueryDecoder.DecodeQuery(rawExtras, results);
-		} catch (URISyntaxException e) {
-			Log.w(TAG, "Invalid syntax error while decoding extras data from server.");
-		}
-		return results;
-	}
+        try {
+            URI rawExtras = new URI("?" + rawData.extra);
+            URIQueryDecoder.DecodeQuery(rawExtras, results);
+        } catch (URISyntaxException e) {
+            Log.w(TAG, "Invalid syntax error while decoding extras data from server.");
+        }
+        return results;
+    }
+
 }

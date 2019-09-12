@@ -31,9 +31,6 @@
 #ifndef KEY_MAPPING_X11_H
 #define KEY_MAPPING_X11_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 #include <X11/XF86keysym.h>
 #include <X11/Xlib.h>
 #define XK_MISCELLANY

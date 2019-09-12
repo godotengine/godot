@@ -35,10 +35,6 @@
 #include "scene/3d/visual_instance.h"
 #include "scene/resources/material.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Particles : public GeometryInstance {
 private:
 	GDCLASS(Particles, GeometryInstance);

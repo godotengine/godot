@@ -192,7 +192,7 @@
 		</member>
 		<member name="metallic_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="SpatialMaterial.TextureChannel" default="2">
+		<member name="metallic_texture_channel" type="int" setter="set_metallic_texture_channel" getter="get_metallic_texture_channel" enum="SpatialMaterial.TextureChannel" default="0">
 		</member>
 		<member name="normal_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], normal mapping is enabled.
@@ -277,7 +277,7 @@
 		</member>
 		<member name="roughness_texture" type="Texture" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="SpatialMaterial.TextureChannel" default="1">
+		<member name="roughness_texture_channel" type="int" setter="set_roughness_texture_channel" getter="get_roughness_texture_channel" enum="SpatialMaterial.TextureChannel" default="0">
 		</member>
 		<member name="subsurf_scatter_enabled" type="bool" setter="set_feature" getter="get_feature" default="false">
 			If [code]true[/code], subsurface scattering is enabled. Emulates light that penetrates an object's surface, is scattered, and then emerges.

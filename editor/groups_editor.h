@@ -41,13 +41,9 @@
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
 
-/**
-@author Juan Linietsky <reduzio@gmail.com>
-*/
+class GroupDialog : public WindowDialog {
 
-class GroupDialog : public ConfirmationDialog {
-
-	GDCLASS(GroupDialog, ConfirmationDialog);
+	GDCLASS(GroupDialog, WindowDialog);
 
 	ConfirmationDialog *error;
 
@@ -66,13 +62,15 @@ class GroupDialog : public ConfirmationDialog {
 	TreeItem *remove_node_root;
 	LineEdit *remove_filter;
 
+	Label *group_empty;
+
 	ToolButton *add_button;
 	ToolButton *remove_button;
 
 	String selected_group;
 
-	void ok_pressed();
-	void _cancel_pressed();
+	UndoRedo *undo_redo;
+
 	void _group_selected();
 
 	void _remove_filter_changed(const String &p_filter);
@@ -80,12 +78,14 @@ class GroupDialog : public ConfirmationDialog {
 
 	void _add_pressed();
 	void _removed_pressed();
-	void _add_group_pressed();
+	void _add_group_pressed(const String &p_name);
 
 	void _group_renamed();
+	void _rename_group_item(const String &p_old_name, const String &p_new_name);
 
 	void _add_group(String p_name);
 	void _delete_group_pressed(Object *p_item, int p_column, int p_id);
+	void _delete_group_item(const String &p_name);
 
 	bool _can_edit(Node *p_node, String p_group);
 
@@ -98,6 +98,7 @@ protected:
 
 public:
 	void edit();
+	void set_undo_redo(UndoRedo *p_undoredo) { undo_redo = p_undoredo; }
 
 	GroupDialog();
 };
@@ -122,7 +123,6 @@ class GroupsEditor : public VBoxContainer {
 	void _close();
 
 	void _show_group_dialog();
-	void _group_dialog_closed();
 
 protected:
 	static void _bind_methods();

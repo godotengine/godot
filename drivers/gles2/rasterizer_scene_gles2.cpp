@@ -882,8 +882,7 @@ RID RasterizerSceneGLES2::light_instance_create(RID p_light) {
 
 	if (!light_instance->light_ptr) {
 		memdelete(light_instance);
-		ERR_EXPLAIN("Condition ' !light_instance->light_ptr ' is true.");
-		ERR_FAIL_V(RID());
+		ERR_FAIL_V_MSG(RID(), "Condition ' !light_instance->light_ptr ' is true.");
 	}
 
 	light_instance->self = light_instance_owner.make_rid(light_instance);
@@ -1910,14 +1909,14 @@ void RasterizerSceneGLES2::_setup_light_type(LightInstance *p_light, ShadowAtlas
 	}
 }
 
-void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform) {
+void RasterizerSceneGLES2::_setup_light(LightInstance *light, ShadowAtlas *shadow_atlas, const Transform &p_view_transform, bool accum_pass) {
 
 	RasterizerStorageGLES2::Light *light_ptr = light->light_ptr;
 
 	//common parameters
 	float energy = light_ptr->param[VS::LIGHT_PARAM_ENERGY];
 	float specular = light_ptr->param[VS::LIGHT_PARAM_SPECULAR];
-	float sign = light_ptr->negative ? -1 : 1;
+	float sign = (light_ptr->negative && !accum_pass) ? -1 : 1; //inverse color for base pass lights only
 
 	state.scene_shader.set_uniform(SceneShaderGLES2::LIGHT_SPECULAR, specular);
 	Color color = light_ptr->color * sign * energy * Math_PI;
@@ -2287,19 +2286,6 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				prev_unshaded = unshaded;
 			}
 
-			bool depth_prepass = false;
-
-			if (!p_alpha_pass && material->shader->spatial.depth_draw_mode == RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
-				depth_prepass = true;
-			}
-
-			if (depth_prepass != prev_depth_prepass) {
-
-				state.scene_shader.set_conditional(SceneShaderGLES2::USE_DEPTH_PREPASS, depth_prepass);
-				prev_depth_prepass = depth_prepass;
-				rebind = true;
-			}
-
 			bool base_pass = !accum_pass && !unshaded; //conditions for a base pass
 
 			if (base_pass != prev_base_pass) {
@@ -2323,6 +2309,11 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 
 			if (accum_pass) { //accum pass force pass
 				blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_ADD;
+				if (rebind_light && light && light->light_ptr->negative) {
+					glBlendEquation(GL_FUNC_REVERSE_SUBTRACT);
+					glBlendFunc(GL_SRC_ALPHA, GL_ONE);
+					blend_mode = RasterizerStorageGLES2::Shader::Spatial::BLEND_MODE_SUB;
+				}
 			}
 
 			if (prev_blend_mode != blend_mode) {
@@ -2432,6 +2423,19 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 				rebind = true;
 				rebind_lightmap = true;
 			}
+		}
+
+		bool depth_prepass = false;
+
+		if (!p_alpha_pass && material->shader->spatial.depth_draw_mode == RasterizerStorageGLES2::Shader::Spatial::DEPTH_DRAW_ALPHA_PREPASS) {
+			depth_prepass = true;
+		}
+
+		if (depth_prepass != prev_depth_prepass) {
+
+			state.scene_shader.set_conditional(SceneShaderGLES2::USE_DEPTH_PREPASS, depth_prepass);
+			prev_depth_prepass = depth_prepass;
+			rebind = true;
 		}
 
 		bool instancing = e->instance->base_type == VS::INSTANCE_MULTIMESH;
@@ -2553,7 +2557,7 @@ void RasterizerSceneGLES2::_render_render_list(RenderList::Element **p_elements,
 		}
 
 		if (rebind_light && light) {
-			_setup_light(light, shadow_atlas, p_view_transform);
+			_setup_light(light, shadow_atlas, p_view_transform, accum_pass);
 		}
 
 		if (rebind_reflection && (refprobe_1 || refprobe_2)) {

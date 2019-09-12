@@ -673,12 +673,11 @@ void EditorFileSystem::_scan_new_dir(EditorFileSystemDirectory *p_dir, DirAccess
 	da->list_dir_begin();
 	while (true) {
 
-		bool isdir;
-		String f = da->get_next(&isdir);
+		String f = da->get_next();
 		if (f == "")
 			break;
 
-		if (isdir) {
+		if (da->current_is_dir()) {
 
 			if (f.begins_with(".")) //ignore hidden and . / ..
 				continue;
@@ -870,12 +869,11 @@ void EditorFileSystem::_scan_fs_changes(EditorFileSystemDirectory *p_dir, const 
 		da->list_dir_begin();
 		while (true) {
 
-			bool isdir;
-			String f = da->get_next(&isdir);
+			String f = da->get_next();
 			if (f == "")
 				break;
 
-			if (isdir) {
+			if (da->current_is_dir()) {
 
 				if (f.begins_with(".")) //ignore hidden and . / ..
 					continue;
@@ -1932,8 +1930,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			Error err = da->make_dir(".import");
 			if (err) {
 				memdelete(da);
-				ERR_EXPLAIN("Failed to create 'res://.import' folder.");
-				ERR_FAIL();
+				ERR_FAIL_MSG("Failed to create 'res://.import' folder.");
 			}
 		}
 		memdelete(da);

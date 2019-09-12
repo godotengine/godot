@@ -67,10 +67,7 @@ Error TextFile::load_text(const String &p_path) {
 	w[len] = 0;
 
 	String s;
-	if (s.parse_utf8((const char *)w.ptr())) {
-		ERR_EXPLAIN("Script '" + p_path + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		ERR_FAIL_V(ERR_INVALID_DATA);
-	}
+	ERR_FAIL_COND_V_MSG(s.parse_utf8((const char *)w.ptr()), ERR_INVALID_DATA, "Script '" + p_path + "' contains invalid unicode (UTF-8), so it was not loaded. Please ensure that scripts are saved in valid UTF-8 unicode.");
 	text = s;
 	path = p_path;
 	return OK;

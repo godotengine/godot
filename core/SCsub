@@ -159,6 +159,7 @@ env.CommandNoCache('#core/license.gen.h', ["../COPYRIGHT.txt", "../LICENSE.txt"]
 # Chain load SCsubs
 SConscript('os/SCsub')
 SConscript('math/SCsub')
+SConscript('crypto/SCsub')
 SConscript('io/SCsub')
 SConscript('bind/SCsub')
 

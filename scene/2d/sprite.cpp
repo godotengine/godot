@@ -259,12 +259,24 @@ void Sprite::set_frame(int p_frame) {
 	frame = p_frame;
 
 	_change_notify("frame");
+	_change_notify("frame_coords");
 	emit_signal(SceneStringNames::get_singleton()->frame_changed);
 }
 
 int Sprite::get_frame() const {
 
 	return frame;
+}
+
+void Sprite::set_frame_coords(const Vector2 &p_coord) {
+	ERR_FAIL_INDEX(int(p_coord.x), vframes);
+	ERR_FAIL_INDEX(int(p_coord.y), hframes);
+
+	set_frame(int(p_coord.y) * hframes + int(p_coord.x));
+}
+
+Vector2 Sprite::get_frame_coords() const {
+	return Vector2(frame % hframes, frame / hframes);
 }
 
 void Sprite::set_vframes(int p_amount) {
@@ -371,10 +383,9 @@ Rect2 Sprite::get_rect() const {
 void Sprite::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "frame") {
-
-		property.hint = PROPERTY_HINT_SPRITE_FRAME;
-
+		property.hint = PROPERTY_HINT_RANGE;
 		property.hint_string = "0," + itos(vframes * hframes - 1) + ",1";
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 
@@ -421,6 +432,9 @@ void Sprite::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_frame", "frame"), &Sprite::set_frame);
 	ClassDB::bind_method(D_METHOD("get_frame"), &Sprite::get_frame);
 
+	ClassDB::bind_method(D_METHOD("set_frame_coords", "coords"), &Sprite::set_frame_coords);
+	ClassDB::bind_method(D_METHOD("get_frame_coords"), &Sprite::get_frame_coords);
+
 	ClassDB::bind_method(D_METHOD("set_vframes", "vframes"), &Sprite::set_vframes);
 	ClassDB::bind_method(D_METHOD("get_vframes"), &Sprite::get_vframes);
 
@@ -442,7 +456,8 @@ void Sprite::_bind_methods() {
 	ADD_GROUP("Animation", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "vframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_vframes", "get_vframes");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "hframes", PROPERTY_HINT_RANGE, "1,16384,1"), "set_hframes", "get_hframes");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frame_coords", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_EDITOR), "set_frame_coords", "get_frame_coords");
 
 	ADD_GROUP("Region", "region_");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "region_enabled"), "set_region", "is_region");

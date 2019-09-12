@@ -35,10 +35,6 @@
 #include "editor/editor_plugin.h"
 #include "scene/3d/camera.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class CameraEditor : public Control {
 
 	GDCLASS(CameraEditor, Control);

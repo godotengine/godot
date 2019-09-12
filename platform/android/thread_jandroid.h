@@ -31,10 +31,6 @@
 #ifndef THREAD_POSIX_H
 #define THREAD_POSIX_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #include "core/os/thread.h"
 #include <jni.h>
 #include <pthread.h>

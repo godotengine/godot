@@ -17,10 +17,20 @@
 				Calls the referenced function previously set by [method set_function] or [method @GDScript.funcref].
 			</description>
 		</method>
+		<method name="call_funcv">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="arg_array" type="Array">
+			</argument>
+			<description>
+				Calls the referenced function previously set by [method set_function] or [method @GDScript.funcref]. Contrarily to [method call_func], this method does not support a variable number of arguments but expects all parameters to be passed via a single [Array].
+			</description>
+		</method>
 		<method name="is_valid" qualifiers="const">
 			<return type="bool">
 			</return>
 			<description>
+				Returns whether the object still exists and has the function assigned.
 			</description>
 		</method>
 		<method name="set_function">

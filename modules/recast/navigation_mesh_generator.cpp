@@ -49,6 +49,10 @@
 #include "modules/csg/csg_shape.h"
 #endif
 
+#ifdef MODULE_GRIDMAP_ENABLED
+#include "modules/gridmap/grid_map.h"
+#endif
+
 EditorNavigationMeshGenerator *EditorNavigationMeshGenerator::singleton = NULL;
 
 void EditorNavigationMeshGenerator::_add_vertex(const Vector3 &p_vec3, Vector<float> &p_verticies) {
@@ -240,8 +244,21 @@ void EditorNavigationMeshGenerator::_parse_geometry(Transform p_accumulated_tran
 		}
 	}
 
-	if (Object::cast_to<Spatial>(p_node)) {
+#ifdef MODULE_GRIDMAP_ENABLED
+	if (Object::cast_to<GridMap>(p_node) && p_generate_from != NavigationMesh::PARSED_GEOMETRY_STATIC_COLLIDERS) {
+		GridMap *gridmap_instance = Object::cast_to<GridMap>(p_node);
+		Array meshes = gridmap_instance->get_meshes();
+		Transform xform = gridmap_instance->get_transform();
+		for (int i = 0; i < meshes.size(); i += 2) {
+			Ref<Mesh> mesh = meshes[i + 1];
+			if (mesh.is_valid()) {
+				_add_mesh(mesh, p_accumulated_transform * xform * meshes[i], p_verticies, p_indices);
+			}
+		}
+	}
+#endif
 
+	if (Object::cast_to<Spatial>(p_node)) {
 		Spatial *spatial = Object::cast_to<Spatial>(p_node);
 		p_accumulated_transform = p_accumulated_transform * spatial->get_transform();
 	}

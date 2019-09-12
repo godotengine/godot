@@ -720,8 +720,7 @@ static Error _parse_methods(Ref<XMLParser> &parser, Vector<DocData::MethodDoc> &
 				methods.push_back(method);
 
 			} else {
-				ERR_EXPLAIN("Invalid tag in doc file: " + parser->get_node_name());
-				ERR_FAIL_V(ERR_FILE_CORRUPT);
+				ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + parser->get_node_name() + ".");
 			}
 
 		} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == section)
@@ -741,10 +740,9 @@ Error DocData::load_classes(const String &p_dir) {
 
 	da->list_dir_begin();
 	String path;
-	bool isdir;
-	path = da->get_next(&isdir);
+	path = da->get_next();
 	while (path != String()) {
-		if (!isdir && path.ends_with("xml")) {
+		if (!da->current_is_dir() && path.ends_with("xml")) {
 			Ref<XMLParser> parser = memnew(XMLParser);
 			Error err2 = parser->open(p_dir.plus_file(path));
 			if (err2)
@@ -752,7 +750,7 @@ Error DocData::load_classes(const String &p_dir) {
 
 			_load(parser);
 		}
-		path = da->get_next(&isdir);
+		path = da->get_next();
 	}
 
 	da->list_dir_end();
@@ -771,13 +769,12 @@ Error DocData::erase_classes(const String &p_dir) {
 
 	da->list_dir_begin();
 	String path;
-	bool isdir;
-	path = da->get_next(&isdir);
+	path = da->get_next();
 	while (path != String()) {
-		if (!isdir && path.ends_with("xml")) {
+		if (!da->current_is_dir() && path.ends_with("xml")) {
 			to_erase.push_back(path);
 		}
-		path = da->get_next(&isdir);
+		path = da->get_next();
 	}
 	da->list_dir_end();
 
@@ -843,8 +840,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								if (parser->get_node_type() == XMLParser::NODE_TEXT)
 									c.tutorials.push_back(parser->get_node_data().strip_edges());
 							} else {
-								ERR_EXPLAIN("Invalid tag in doc file: " + name3);
-								ERR_FAIL_V(ERR_FILE_CORRUPT);
+								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "tutorials")
 							break; //end of <tutorials>
@@ -885,8 +881,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 									prop2.description = parser->get_node_data();
 								c.properties.push_back(prop2);
 							} else {
-								ERR_EXPLAIN("Invalid tag in doc file: " + name3);
-								ERR_FAIL_V(ERR_FILE_CORRUPT);
+								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "members")
@@ -914,8 +909,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 									prop2.description = parser->get_node_data();
 								c.theme_properties.push_back(prop2);
 							} else {
-								ERR_EXPLAIN("Invalid tag in doc file: " + name3);
-								ERR_FAIL_V(ERR_FILE_CORRUPT);
+								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "theme_items")
@@ -945,8 +939,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 									constant2.description = parser->get_node_data();
 								c.constants.push_back(constant2);
 							} else {
-								ERR_EXPLAIN("Invalid tag in doc file: " + name3);
-								ERR_FAIL_V(ERR_FILE_CORRUPT);
+								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "constants")
@@ -955,8 +948,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 
 				} else {
 
-					ERR_EXPLAIN("Invalid tag in doc file: " + name2);
-					ERR_FAIL_V(ERR_FILE_CORRUPT);
+					ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name2 + ".");
 				}
 
 			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "class")
@@ -993,10 +985,8 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 		Error err;
 		String save_file = save_path.plus_file(c.name + ".xml");
 		FileAccessRef f = FileAccess::open(save_file, FileAccess::WRITE, &err);
-		if (err) {
-			ERR_EXPLAIN("Can't write doc file: " + save_file);
-			ERR_CONTINUE(err);
-		}
+
+		ERR_CONTINUE_MSG(err != OK, "Can't write doc file: " + save_file + ".");
 
 		_write_string(f, 0, "<?xml version=\"1.0\" encoding=\"UTF-8\" ?>");
 

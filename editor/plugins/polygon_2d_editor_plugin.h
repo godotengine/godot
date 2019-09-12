@@ -33,9 +33,7 @@
 
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/gui/scroll_container.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class Polygon2DEditor : public AbstractPolygon2DEditor {
 
 	GDCLASS(Polygon2DEditor, AbstractPolygon2DEditor);

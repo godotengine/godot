@@ -9,6 +9,7 @@ env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/include'])
 env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/code/Importer/IFC'])
 env_assimp.Prepend(CPPPATH=['#thirdparty/misc'])
 env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/code'])
+env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/common'])
 env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/contrib/irrXML/'])
 env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/contrib/unzip/'])
 env_assimp.Prepend(CPPPATH=['#thirdparty/assimp/code/Importer/STEPParser'])
@@ -65,17 +66,12 @@ env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_STEP_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_IFC_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_XGL_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_ASSBIN_IMPORTER'])
-env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_GLTF_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_C4D_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_3MF_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_X3D_IMPORTER'])
-
+env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_GLTF_IMPORTER'])
+env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_NO_GLTF2_IMPORTER'])
 env_assimp.Append(CPPDEFINES=['ASSIMP_BUILD_SINGLETHREADED'])
-
-if (not env.msvc):
-    env_assimp.Append(CXXFLAGS=['-std=c++11'])
-elif (env.msvc == False and env['platform'] == 'windows'):
-    env_assimp.Append(LDFLAGS=['-pthread'])
 
 if(env['platform'] == 'windows'):
     env_assimp.Append(CPPDEFINES=['PLATFORM_WINDOWS'])
@@ -89,7 +85,13 @@ elif(env['platform'] == 'osx'):
     
 env_thirdparty = env_assimp.Clone()
 env_thirdparty.disable_warnings()
-env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/*.cpp'))
+env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/Common/*.cpp'))
+env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/PostProcessing/*.cpp'))
+env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/Material/*.cpp'))
+env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/FBX/*.cpp'))
+env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/MMD/*.cpp'))
+env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/glTF/*.cpp'))
+env_thirdparty.add_source_files(env.modules_sources, Glob('#thirdparty/assimp/code/glTF2/*.cpp'))
 
 # Godot's own source files
 env_assimp.add_source_files(env.modules_sources, "*.cpp")

@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="X509Certificate" inherits="Resource" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

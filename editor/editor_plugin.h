@@ -41,10 +41,6 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class EditorNode;
 class Spatial;
 class Camera;
@@ -82,6 +78,7 @@ public:
 
 	void select_file(const String &p_file);
 	String get_selected_path() const;
+	String get_current_path() const;
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String());
 
@@ -103,6 +100,9 @@ public:
 
 	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
 
+	void set_main_screen_editor(const String &p_name);
+	void set_distraction_free_mode(bool p_enter);
+
 	EditorInterface();
 };
 
@@ -118,7 +118,6 @@ class EditorPlugin : public Node {
 	bool force_draw_over_forwarding_enabled;
 
 	String last_main_screen_name;
-	String _dir_cache;
 
 protected:
 	static void _bind_methods();
@@ -236,10 +235,6 @@ public:
 
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
-
-	void set_dir_cache(const String &p_dir) { _dir_cache = p_dir; }
-	String get_dir_cache() { return _dir_cache; }
-	Ref<ConfigFile> get_config();
 
 	void enable_plugin();
 	void disable_plugin();

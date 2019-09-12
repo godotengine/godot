@@ -110,10 +110,11 @@ Error PacketPeer::put_var(const Variant &p_packet, bool p_full_objects) {
 
 Variant PacketPeer::_bnd_get_var(bool p_allow_objects) {
 	Variant var;
-	get_var(var, p_allow_objects);
+	Error err = get_var(var, p_allow_objects);
 
+	ERR_FAIL_COND_V(err != OK, Variant());
 	return var;
-};
+}
 
 Error PacketPeer::_put_packet(const PoolVector<uint8_t> &p_buffer) {
 	return put_packet_buffer(p_buffer);
@@ -279,8 +280,7 @@ Ref<StreamPeer> PacketPeerStream::get_stream_peer() const {
 void PacketPeerStream::set_input_buffer_max_size(int p_max_size) {
 
 	//warning may lose packets
-	ERR_EXPLAIN("Buffer in use, resizing would cause loss of data");
-	ERR_FAIL_COND(ring_buffer.data_left());
+	ERR_FAIL_COND_MSG(ring_buffer.data_left(), "Buffer in use, resizing would cause loss of data.");
 	ring_buffer.resize(nearest_shift(p_max_size + 4));
 	input_buffer.resize(next_power_of_2(p_max_size + 4));
 }

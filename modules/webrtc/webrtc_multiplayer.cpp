@@ -321,10 +321,8 @@ Error WebRTCMultiplayer::put_packet(const uint8_t *p_buffer, int p_buffer_size) 
 	if (target_peer > 0) {
 
 		E = peer_map.find(target_peer);
-		if (!E) {
-			ERR_EXPLAIN("Invalid Target Peer: " + itos(target_peer));
-			ERR_FAIL_V(ERR_INVALID_PARAMETER);
-		}
+		ERR_FAIL_COND_V_MSG(!E, ERR_INVALID_PARAMETER, "Invalid target peer: " + itos(target_peer) + ".");
+
 		ERR_FAIL_COND_V(E->value()->channels.size() <= ch, ERR_BUG);
 		ERR_FAIL_COND_V(!E->value()->channels[ch].is_valid(), ERR_BUG);
 		return E->value()->channels[ch]->put_packet(p_buffer, p_buffer_size);

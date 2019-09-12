@@ -32,9 +32,7 @@
 #define RANGE_H
 
 #include "scene/gui/control.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class Range : public Control {
 
 	GDCLASS(Range, Control);

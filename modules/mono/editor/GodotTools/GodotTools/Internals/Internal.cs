@@ -46,6 +46,12 @@ namespace GodotTools.Internals
 
         public static string MonoWindowsInstallRoot => internal_MonoWindowsInstallRoot();
 
+        public static void EditorRunPlay() => internal_EditorRunPlay();
+
+        public static void EditorRunStop() => internal_EditorRunStop();
+
+        public static void ScriptEditorDebugger_ReloadScripts() => internal_ScriptEditorDebugger_ReloadScripts();
+
         // Internal Calls
 
         [MethodImpl(MethodImplOptions.InternalCall)]
@@ -95,5 +101,14 @@ namespace GodotTools.Internals
 
         [MethodImpl(MethodImplOptions.InternalCall)]
         private static extern string internal_MonoWindowsInstallRoot();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern void internal_EditorRunPlay();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern void internal_EditorRunStop();
+
+        [MethodImpl(MethodImplOptions.InternalCall)]
+        private static extern void internal_ScriptEditorDebugger_ReloadScripts();
     }
 }

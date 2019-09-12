@@ -1317,10 +1317,10 @@
 			No hint for the edited property.
 		</constant>
 		<constant name="PROPERTY_HINT_RANGE" value="1" enum="PropertyHint">
-			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"allow_greater"[/code] and/or [code]"allow_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,allow_greater,allow_lesser"[/code].
+			Hints that an integer or float property should be within a range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"-360,360,1,or_greater,or_lesser"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_EXP_RANGE" value="2" enum="PropertyHint">
-			Hints that an integer or float property should be within an exponential range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"allow_greater"[/code] and/or [code]"allow_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"0.01,100,0.01,allow_greater"[/code].
+			Hints that an integer or float property should be within an exponential range specified via the hint string [code]"min,max"[/code] or [code]"min,max,step"[/code]. The hint string can optionally include [code]"or_greater"[/code] and/or [code]"or_lesser"[/code] to allow manual input going respectively above the max or below the min values. Example: [code]"0.01,100,0.01,or_greater"[/code].
 		</constant>
 		<constant name="PROPERTY_HINT_ENUM" value="3" enum="PropertyHint">
 			Hints that an integer, float or string property is an enumerated value to pick in a list specified via a hint string such as [code]"Hello,Something,Else"[/code].

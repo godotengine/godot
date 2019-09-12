@@ -91,7 +91,6 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	ScrollContainer *previews;
 	HBoxContainer *preview_hb;
 	PanelContainer *previews_bg;
-	PanelContainer *desc_bg;
 
 	struct Preview {
 		int id;
@@ -186,13 +185,12 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
+	Label *library_loading;
 	LineEdit *filter;
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
-	ToolButton *reverse;
 	Button *search;
-	ProgressBar *load_status;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
 	Label *error_label;
@@ -207,6 +205,7 @@ class EditorAssetLibrary : public PanelContainer {
 	HTTPRequest *request;
 
 	bool templates_only;
+	bool initial_loading;
 
 	enum Support {
 		SUPPORT_OFFICIAL,
@@ -216,10 +215,12 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	enum SortOrder {
-		SORT_DOWNLOADS,
-		SORT_NAME,
-		SORT_COST,
 		SORT_UPDATED,
+		SORT_UPDATED_REVERSE,
+		SORT_NAME,
+		SORT_NAME_REVERSE,
+		SORT_COST,
+		SORT_COST_REVERSE,
 		SORT_MAX
 	};
 

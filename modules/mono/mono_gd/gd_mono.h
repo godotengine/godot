@@ -80,6 +80,13 @@ String to_string(Type p_type);
 
 class GDMono {
 
+public:
+	enum UnhandledExceptionPolicy {
+		POLICY_TERMINATE_APP,
+		POLICY_LOG_ERROR
+	};
+
+private:
 	bool runtime_initialized;
 	bool finalizing_scripts_domain;
 
@@ -101,6 +108,8 @@ class GDMono {
 #endif
 
 	HashMap<uint32_t, HashMap<String, GDMonoAssembly *> > assemblies;
+
+	UnhandledExceptionPolicy unhandled_exception_policy;
 
 	void _domain_assemblies_cleanup(uint32_t p_domain_id);
 
@@ -156,13 +165,15 @@ public:
 #endif
 
 #ifdef TOOLS_ENABLED
-	bool copy_prebuilt_api_assembly(APIAssembly::Type p_api_type);
+	bool copy_prebuilt_api_assembly(APIAssembly::Type p_api_type, const String &p_config);
 	String update_api_assemblies_from_prebuilt();
 #endif
 
 	static GDMono *get_singleton() { return singleton; }
 
-	static void unhandled_exception_hook(MonoObject *p_exc, void *p_user_data);
+	GD_NORETURN static void unhandled_exception_hook(MonoObject *p_exc, void *p_user_data);
+
+	UnhandledExceptionPolicy get_unhandled_exception_policy() const { return unhandled_exception_policy; }
 
 	// Do not use these, unless you know what you're doing
 	void add_assembly(uint32_t p_domain_id, GDMonoAssembly *p_assembly);

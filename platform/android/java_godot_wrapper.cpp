@@ -62,6 +62,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_init_input_devices = p_env->GetMethodID(cls, "initInputDevices", "()V");
 	_get_surface = p_env->GetMethodID(cls, "getSurface", "()Landroid/view/Surface;");
 	_is_activity_resumed = p_env->GetMethodID(cls, "isActivityResumed", "()Z");
+	_vibrate = p_env->GetMethodID(cls, "vibrate", "(I)V");
+	_get_input_fallback_mapping = p_env->GetMethodID(cls, "getInputFallbackMapping", "()Ljava/lang/String;");
 }
 
 GodotJavaWrapper::~GodotJavaWrapper() {
@@ -165,6 +167,16 @@ String GodotJavaWrapper::get_clipboard() {
 	}
 }
 
+String GodotJavaWrapper::get_input_fallback_mapping() {
+	if (_get_input_fallback_mapping) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		jstring fallback_mapping = (jstring)env->CallObjectMethod(godot_instance, _get_input_fallback_mapping);
+		return jstring_to_string(fallback_mapping, env);
+	} else {
+		return String();
+	}
+}
+
 bool GodotJavaWrapper::has_set_clipboard() {
 	return _set_clipboard != 0;
 }
@@ -209,5 +221,12 @@ bool GodotJavaWrapper::is_activity_resumed() {
 		return env->CallBooleanMethod(godot_instance, _is_activity_resumed);
 	} else {
 		return false;
+	}
+}
+
+void GodotJavaWrapper::vibrate(int p_duration_ms) {
+	if (_vibrate) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		env->CallVoidMethod(godot_instance, _vibrate, p_duration_ms);
 	}
 }

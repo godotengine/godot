@@ -328,8 +328,7 @@ void VisualScript::add_node(const StringName &p_func, int p_id, const Ref<Visual
 
 	if (Object::cast_to<VisualScriptFunction>(*p_node)) {
 		//the function indeed
-		ERR_EXPLAIN("A function node already has been set here.");
-		ERR_FAIL_COND(func.function_id >= 0);
+		ERR_FAIL_COND_MSG(func.function_id >= 0, "A function node has already been set here.");
 
 		func.function_id = p_id;
 	}
@@ -1917,8 +1916,7 @@ Variant VisualScriptInstance::call(const StringName &p_method, const Variant **p
 	if (!E) {
 		r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 
-		ERR_EXPLAIN("No VisualScriptFunction node in function!");
-		ERR_FAIL_V(Variant());
+		ERR_FAIL_V_MSG(Variant(), "No VisualScriptFunction node in function.");
 	}
 
 	VisualScriptNodeInstance *node = E->get();
@@ -1974,8 +1972,7 @@ String VisualScriptInstance::to_string(bool *r_valid) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid)
 					*r_valid = false;
-				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
-				ERR_FAIL_V(String());
+				ERR_FAIL_V_MSG(String(), "Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
 			}
 			if (r_valid)
 				*r_valid = true;
@@ -2262,15 +2259,10 @@ Variant VisualScriptFunctionState::_signal_callback(const Variant **p_args, int 
 	ERR_FAIL_COND_V(function == StringName(), Variant());
 
 #ifdef DEBUG_ENABLED
-	if (instance_id && !ObjectDB::get_instance(instance_id)) {
-		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
-		ERR_FAIL_V(Variant());
-	}
 
-	if (script_id && !ObjectDB::get_instance(script_id)) {
-		ERR_EXPLAIN("Resumed after yield, but script is gone");
-		ERR_FAIL_V(Variant());
-	}
+	ERR_FAIL_COND_V_MSG(instance_id && !ObjectDB::get_instance(instance_id), Variant(), "Resumed after yield, but class instance is gone.");
+	ERR_FAIL_COND_V_MSG(script_id && !ObjectDB::get_instance(script_id), Variant(), "Resumed after yield, but script is gone.");
+
 #endif
 
 	r_error.error = Variant::CallError::CALL_OK;
@@ -2329,15 +2321,10 @@ Variant VisualScriptFunctionState::resume(Array p_args) {
 
 	ERR_FAIL_COND_V(function == StringName(), Variant());
 #ifdef DEBUG_ENABLED
-	if (instance_id && !ObjectDB::get_instance(instance_id)) {
-		ERR_EXPLAIN("Resumed after yield, but class instance is gone");
-		ERR_FAIL_V(Variant());
-	}
 
-	if (script_id && !ObjectDB::get_instance(script_id)) {
-		ERR_EXPLAIN("Resumed after yield, but script is gone");
-		ERR_FAIL_V(Variant());
-	}
+	ERR_FAIL_COND_V_MSG(instance_id && !ObjectDB::get_instance(instance_id), Variant(), "Resumed after yield, but class instance is gone.");
+	ERR_FAIL_COND_V_MSG(script_id && !ObjectDB::get_instance(script_id), Variant(), "Resumed after yield, but script is gone.");
+
 #endif
 
 	Variant::CallError r_error;
@@ -2463,7 +2450,7 @@ bool VisualScriptLanguage::debug_break_parse(const String &p_file, int p_node, c
 		_debug_parse_err_node = p_node;
 		_debug_parse_err_file = p_file;
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, false);
+		ScriptDebugger::get_singleton()->debug(this, false, true);
 		return true;
 	} else {
 		return false;
@@ -2477,7 +2464,7 @@ bool VisualScriptLanguage::debug_break(const String &p_error, bool p_allow_conti
 		_debug_parse_err_node = -1;
 		_debug_parse_err_file = "";
 		_debug_error = p_error;
-		ScriptDebugger::get_singleton()->debug(this, p_allow_continue);
+		ScriptDebugger::get_singleton()->debug(this, p_allow_continue, true);
 		return true;
 	} else {
 		return false;

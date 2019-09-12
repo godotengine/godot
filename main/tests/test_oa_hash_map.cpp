@@ -121,6 +121,25 @@ MainLoop *test() {
 		delete[] keys;
 	}
 
+	// regression test / test for issue related to #31402
+	{
+
+		OS::get_singleton()->print("test for issue #31402 started...\n");
+
+		const int num_test_values = 12;
+		int test_values[num_test_values] = { 0, 24, 48, 72, 96, 120, 144, 168, 192, 216, 240, 264 };
+
+		int dummy = 0;
+		OAHashMap<int, int> map;
+		map.clear();
+
+		for (int i = 0; i < num_test_values; ++i) {
+			map.set(test_values[i], dummy);
+		}
+
+		OS::get_singleton()->print("test for issue #31402 passed.\n");
+	}
+
 	return NULL;
 }
 } // namespace TestOAHashMap

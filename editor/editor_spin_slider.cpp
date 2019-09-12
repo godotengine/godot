@@ -38,51 +38,57 @@ String EditorSpinSlider::get_tooltip(const Point2 &p_pos) const {
 }
 
 String EditorSpinSlider::get_text_value() const {
-	int zeros = Math::step_decimals(get_step());
-	return String::num(get_value(), zeros);
+	return String::num(get_value(), Math::range_step_decimals(get_step()));
 }
+
 void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 
 	if (read_only)
 		return;
 
 	Ref<InputEventMouseButton> mb = p_event;
-	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
+	if (mb.is_valid()) {
 
-		if (mb->is_pressed()) {
+		if (mb->get_button_index() == BUTTON_LEFT) {
+			if (mb->is_pressed()) {
 
-			if (updown_offset != -1 && mb->get_position().x > updown_offset) {
-				//there is an updown, so use it.
-				if (mb->get_position().y < get_size().height / 2) {
-					set_value(get_value() + get_step());
+				if (updown_offset != -1 && mb->get_position().x > updown_offset) {
+					//there is an updown, so use it.
+					if (mb->get_position().y < get_size().height / 2) {
+						set_value(get_value() + get_step());
+					} else {
+						set_value(get_value() - get_step());
+					}
+					return;
 				} else {
-					set_value(get_value() - get_step());
+
+					grabbing_spinner_attempt = true;
+					grabbing_spinner_dist_cache = 0;
+					pre_grab_value = get_value();
+					grabbing_spinner = false;
+					grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
 				}
-				return;
 			} else {
 
-				grabbing_spinner_attempt = true;
-				grabbing_spinner_dist_cache = 0;
-				pre_grab_value = get_value();
-				grabbing_spinner = false;
-				grabbing_spinner_mouse_pos = Input::get_singleton()->get_mouse_position();
-			}
-		} else {
+				if (grabbing_spinner_attempt) {
 
-			if (grabbing_spinner_attempt) {
+					if (grabbing_spinner) {
 
-				if (grabbing_spinner) {
+						Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
+						Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
+						update();
+					} else {
+						_focus_entered();
+					}
 
-					Input::get_singleton()->set_mouse_mode(Input::MOUSE_MODE_VISIBLE);
-					Input::get_singleton()->warp_mouse_position(grabbing_spinner_mouse_pos);
-					update();
-				} else {
-					_focus_entered();
+					grabbing_spinner = false;
+					grabbing_spinner_attempt = false;
 				}
-
-				grabbing_spinner = false;
-				grabbing_spinner_attempt = false;
 			}
+		} else if (mb->get_button_index() == BUTTON_WHEEL_UP || mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+
+			if (grabber->is_visible())
+				call_deferred("update");
 		}
 	}
 
@@ -132,20 +138,39 @@ void EditorSpinSlider::_gui_input(const Ref<InputEvent> &p_event) {
 void EditorSpinSlider::_grabber_gui_input(const Ref<InputEvent> &p_event) {
 
 	Ref<InputEventMouseButton> mb = p_event;
+
+	if (grabbing_grabber) {
+		if (mb.is_valid()) {
+
+			if (mb->get_button_index() == BUTTON_WHEEL_UP) {
+				set_value(get_value() + get_step());
+				mousewheel_over_grabber = true;
+			} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN) {
+				set_value(get_value() - get_step());
+				mousewheel_over_grabber = true;
+			}
+		}
+	}
+
 	if (mb.is_valid() && mb->get_button_index() == BUTTON_LEFT) {
 
 		if (mb->is_pressed()) {
 
 			grabbing_grabber = true;
-			grabbing_ratio = get_as_ratio();
-			grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
+			if (!mousewheel_over_grabber) {
+				grabbing_ratio = get_as_ratio();
+				grabbing_from = grabber->get_transform().xform(mb->get_position()).x;
+			}
 		} else {
 			grabbing_grabber = false;
+			mousewheel_over_grabber = false;
 		}
 	}
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (mm.is_valid() && grabbing_grabber) {
+		if (mousewheel_over_grabber)
+			return;
 
 		float grabbing_ofs = (grabber->get_transform().xform(mm->get_position()).x - grabbing_from) / float(grabber_range);
 		set_as_ratio(grabbing_ratio + grabbing_ofs);
@@ -261,6 +286,11 @@ void EditorSpinSlider::_notification(int p_what) {
 
 				grabber->set_size(Size2(0, 0));
 				grabber->set_position(get_global_position() + grabber_rect.position + grabber_rect.size * 0.5 - grabber->get_size() * 0.5);
+
+				if (mousewheel_over_grabber) {
+					Input::get_singleton()->warp_mouse_position(grabber->get_position() + grabber_rect.size);
+				}
+
 				grabber_range = width;
 			}
 		}
@@ -347,6 +377,11 @@ void EditorSpinSlider::_value_input_closed() {
 
 //focus_exited signal
 void EditorSpinSlider::_value_focus_exited() {
+
+	// discontinue because the focus_exit was caused by right-click context menu
+	if (value_input->get_menu()->is_visible())
+		return;
+
 	_evaluate_input_text();
 	// focus is not on the same element after the vlalue_input was exited
 	// -> focus is on next element
@@ -451,6 +486,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	grabber->connect("gui_input", this, "_grabber_gui_input");
 	mouse_over_spin = false;
 	mouse_over_grabber = false;
+	mousewheel_over_grabber = false;
 	grabbing_grabber = false;
 	grabber_range = 1;
 	value_input = memnew(LineEdit);

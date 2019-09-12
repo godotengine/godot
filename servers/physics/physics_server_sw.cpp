@@ -40,11 +40,8 @@
 #include "joints/pin_joint_sw.h"
 #include "joints/slider_joint_sw.h"
 
-#define FLUSH_QUERY_CHECK(m_object)                                                                                                              \
-	if (m_object->get_space() && flushing_queries) {                                                                                             \
-		ERR_EXPLAIN("Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead"); \
-		ERR_FAIL();                                                                                                                              \
-	}
+#define FLUSH_QUERY_CHECK(m_object) \
+	ERR_FAIL_COND_MSG(m_object->get_space() && flushing_queries, "Can't change this state while flushing queries. Use call_deferred() or set_deferred() to change monitoring state instead.");
 
 RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 
@@ -73,8 +70,7 @@ RID PhysicsServerSW::shape_create(ShapeType p_shape) {
 		} break;
 		case SHAPE_CYLINDER: {
 
-			ERR_EXPLAIN("CylinderShape is not supported in GodotPhysics. Please switch to Bullet in the Project Settings.");
-			ERR_FAIL_V(RID());
+			ERR_FAIL_V_MSG(RID(), "CylinderShape is not supported in GodotPhysics. Please switch to Bullet in the Project Settings.");
 		} break;
 		case SHAPE_CONVEX_POLYGON: {
 
@@ -200,11 +196,7 @@ PhysicsDirectSpaceState *PhysicsServerSW::space_get_direct_state(RID p_space) {
 
 	SpaceSW *space = space_owner.get(p_space);
 	ERR_FAIL_COND_V(!space, NULL);
-	if (!doing_sync || space->is_locked()) {
-
-		ERR_EXPLAIN("Space state is inaccessible right now, wait for iteration or physics process notification.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!doing_sync || space->is_locked(), NULL, "Space state is inaccessible right now, wait for iteration or physics process notification.");
 
 	return space->get_direct_state();
 }
@@ -987,12 +979,7 @@ PhysicsDirectBodyState *PhysicsServerSW::body_get_direct_state(RID p_body) {
 
 	BodySW *body = body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, NULL);
-
-	if (!doing_sync || body->get_space()->is_locked()) {
-
-		ERR_EXPLAIN("Body state is inaccessible right now, wait for iteration or physics process notification.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!doing_sync || body->get_space()->is_locked(), NULL, "Body state is inaccessible right now, wait for iteration or physics process notification.");
 
 	direct_state->body = body;
 	return direct_state;
@@ -1410,8 +1397,7 @@ void PhysicsServerSW::free(RID p_rid) {
 
 	} else {
 
-		ERR_EXPLAIN("Invalid ID");
-		ERR_FAIL();
+		ERR_FAIL_MSG("Invalid ID.");
 	}
 };
 

@@ -33,11 +33,11 @@
 #include "core/io/marshalls.h"
 #include "core/io/resource_loader.h"
 #include "core/message_queue.h"
+#include "core/os/dir_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
-#include "editor/editor_node.h"
 #include "main/input_default.h"
 #include "node.h"
 #include "scene/resources/dynamic_font.h"
@@ -117,10 +117,7 @@ SceneTree::Group *SceneTree::add_to_group(const StringName &p_group, Node *p_nod
 		E = group_map.insert(p_group, Group());
 	}
 
-	if (E->get().nodes.find(p_node) != -1) {
-		ERR_EXPLAIN("Already in group: " + p_group);
-		ERR_FAIL_V(&E->get());
-	}
+	ERR_FAIL_COND_V_MSG(E->get().nodes.find(p_node) != -1, &E->get(), "Already in group: " + p_group + ".");
 	E->get().nodes.push_back(p_node);
 	//E->get().last_tree_version=0;
 	E->get().changed = true;
@@ -647,7 +644,8 @@ void SceneTree::_notification(int p_notification) {
 		case NOTIFICATION_WM_MOUSE_ENTER:
 		case NOTIFICATION_WM_MOUSE_EXIT:
 		case NOTIFICATION_WM_FOCUS_IN:
-		case NOTIFICATION_WM_FOCUS_OUT: {
+		case NOTIFICATION_WM_FOCUS_OUT:
+		case NOTIFICATION_WM_ABOUT: {
 
 			if (p_notification == NOTIFICATION_WM_FOCUS_IN) {
 				InputDefault *id = Object::cast_to<InputDefault>(Input::get_singleton());
@@ -669,19 +667,6 @@ void SceneTree::_notification(int p_notification) {
 
 			get_root()->propagate_notification(p_notification);
 
-		} break;
-
-		case NOTIFICATION_WM_ABOUT: {
-
-#ifdef TOOLS_ENABLED
-			if (EditorNode::get_singleton()) {
-				EditorNode::get_singleton()->show_about();
-			} else {
-#endif
-				get_root()->propagate_notification(p_notification);
-#ifdef TOOLS_ENABLED
-			}
-#endif
 		} break;
 
 		case NOTIFICATION_CRASH: {
@@ -1507,8 +1492,11 @@ void SceneTree::_live_edit_instance_node_func(const NodePath &p_parent, const St
 		Node *n2 = n->get_node(p_parent);
 
 		Node *no = ps->instance();
-		no->set_name(p_name);
+		if (!no) {
+			continue;
+		}
 
+		no->set_name(p_name);
 		n2->add_child(no);
 	}
 }
@@ -1684,6 +1672,12 @@ void SceneTree::drop_files(const Vector<String> &p_files, int p_from_screen) {
 
 	emit_signal("files_dropped", p_files, p_from_screen);
 	MainLoop::drop_files(p_files, p_from_screen);
+}
+
+void SceneTree::global_menu_action(const Variant &p_id, const Variant &p_meta) {
+
+	emit_signal("global_menu_action", p_id, p_meta);
+	MainLoop::global_menu_action(p_id, p_meta);
 }
 
 Ref<SceneTreeTimer> SceneTree::create_timer(float p_delay_sec, bool p_process_pause) {
@@ -1907,6 +1901,7 @@ void SceneTree::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("physics_frame"));
 
 	ADD_SIGNAL(MethodInfo("files_dropped", PropertyInfo(Variant::POOL_STRING_ARRAY, "files"), PropertyInfo(Variant::INT, "screen")));
+	ADD_SIGNAL(MethodInfo("global_menu_action", PropertyInfo(Variant::NIL, "id"), PropertyInfo(Variant::NIL, "meta")));
 	ADD_SIGNAL(MethodInfo("network_peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("network_peer_disconnected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("connected_to_server"));
@@ -1957,6 +1952,38 @@ void SceneTree::set_use_font_oversampling(bool p_oversampling) {
 
 bool SceneTree::is_using_font_oversampling() const {
 	return use_font_oversampling;
+}
+
+void SceneTree::get_argument_options(const StringName &p_function, int p_idx, List<String> *r_options) const {
+
+	if (p_function == "change_scene") {
+		DirAccessRef dir_access = DirAccess::create(DirAccess::ACCESS_RESOURCES);
+		List<String> directories;
+		directories.push_back(dir_access->get_current_dir());
+
+		while (!directories.empty()) {
+			dir_access->change_dir(directories.back()->get());
+			directories.pop_back();
+
+			dir_access->list_dir_begin();
+			String filename = dir_access->get_next();
+
+			while (filename != "") {
+				if (filename == "." || filename == "..") {
+					filename = dir_access->get_next();
+					continue;
+				}
+
+				if (dir_access->dir_exists(filename)) {
+					directories.push_back(dir_access->get_current_dir().plus_file(filename));
+				} else if (filename.ends_with(".tscn") || filename.ends_with(".scn")) {
+					r_options->push_back("\"" + dir_access->get_current_dir().plus_file(filename) + "\"");
+				}
+
+				filename = dir_access->get_next();
+			}
+		}
+	}
 }
 
 SceneTree::SceneTree() {
@@ -2069,6 +2096,7 @@ SceneTree::SceneTree() {
 
 	if (ScriptDebugger::get_singleton()) {
 		ScriptDebugger::get_singleton()->set_request_scene_tree_message_func(_debugger_request_tree, this);
+		ScriptDebugger::get_singleton()->set_multiplayer(multiplayer);
 	}
 
 	root->set_physics_object_picking(GLOBAL_DEF("physics/common/enable_object_picking", true));

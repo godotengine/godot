@@ -149,6 +149,10 @@ Vector<Ref<Texture> > EditorInterface::make_mesh_previews(const Vector<Ref<Mesh>
 	return textures;
 }
 
+void EditorInterface::set_main_screen_editor(const String &p_name) {
+	EditorNode::get_singleton()->select_editor_by_name(p_name);
+}
+
 Control *EditorInterface::get_editor_viewport() {
 
 	return EditorNode::get_singleton()->get_viewport();
@@ -207,6 +211,10 @@ String EditorInterface::get_selected_path() const {
 	return EditorNode::get_singleton()->get_filesystem_dock()->get_selected_path();
 }
 
+String EditorInterface::get_current_path() const {
+	return EditorNode::get_singleton()->get_filesystem_dock()->get_current_path();
+}
+
 void EditorInterface::inspect_object(Object *p_obj, const String &p_for_property) {
 
 	EditorNode::get_singleton()->push_item(p_obj, p_for_property);
@@ -234,7 +242,7 @@ Control *EditorInterface::get_base_control() {
 }
 
 void EditorInterface::set_plugin_enabled(const String &p_plugin, bool p_enabled) {
-	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled);
+	EditorNode::get_singleton()->set_addon_plugin_enabled(p_plugin, p_enabled, true);
 }
 
 bool EditorInterface::is_plugin_enabled(const String &p_plugin) const {
@@ -260,6 +268,10 @@ void EditorInterface::save_scene_as(const String &p_scene, bool p_with_preview) 
 	EditorNode::get_singleton()->save_scene_to_path(p_scene, p_with_preview);
 }
 
+void EditorInterface::set_distraction_free_mode(bool p_enter) {
+	EditorNode::get_singleton()->set_distraction_free_mode(p_enter);
+}
+
 EditorInterface *EditorInterface::singleton = NULL;
 
 void EditorInterface::_bind_methods() {
@@ -280,6 +292,7 @@ void EditorInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_mesh_previews", "meshes", "preview_size"), &EditorInterface::_make_mesh_previews);
 	ClassDB::bind_method(D_METHOD("select_file", "file"), &EditorInterface::select_file);
 	ClassDB::bind_method(D_METHOD("get_selected_path"), &EditorInterface::get_selected_path);
+	ClassDB::bind_method(D_METHOD("get_current_path"), &EditorInterface::get_current_path);
 
 	ClassDB::bind_method(D_METHOD("set_plugin_enabled", "plugin", "enabled"), &EditorInterface::set_plugin_enabled);
 	ClassDB::bind_method(D_METHOD("is_plugin_enabled", "plugin"), &EditorInterface::is_plugin_enabled);
@@ -288,6 +301,9 @@ void EditorInterface::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("save_scene"), &EditorInterface::save_scene);
 	ClassDB::bind_method(D_METHOD("save_scene_as", "path", "with_preview"), &EditorInterface::save_scene_as, DEFVAL(true));
+
+	ClassDB::bind_method(D_METHOD("set_main_screen_editor", "name"), &EditorInterface::set_main_screen_editor);
+	ClassDB::bind_method(D_METHOD("set_distraction_free_mode", "enter"), &EditorInterface::set_distraction_free_mode);
 }
 
 EditorInterface::EditorInterface() {
@@ -311,12 +327,6 @@ void EditorPlugin::add_autoload_singleton(const String &p_name, const String &p_
 
 void EditorPlugin::remove_autoload_singleton(const String &p_name) {
 	EditorNode::get_singleton()->get_project_settings()->get_autoload_settings()->autoload_remove(p_name);
-}
-
-Ref<ConfigFile> EditorPlugin::get_config() {
-	Ref<ConfigFile> cf = memnew(ConfigFile);
-	cf->load(_dir_cache.plus_file("plugin.cfg"));
-	return cf;
 }
 
 ToolButton *EditorPlugin::add_control_to_bottom_panel(Control *p_control, const String &p_title) {

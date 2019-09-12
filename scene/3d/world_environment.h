@@ -33,10 +33,6 @@
 
 #include "scene/3d/spatial.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class WorldEnvironment : public Node {
 
 	GDCLASS(WorldEnvironment, Node);

@@ -116,8 +116,7 @@ int AudioStreamPlaybackOGGVorbis::mix(int16_t *p_buffer, int p_frames) {
 		if (ret < 0) {
 
 			playing = false;
-			ERR_EXPLAIN("Error reading OGG Vorbis File: " + file);
-			ERR_BREAK(ret < 0);
+			ERR_BREAK_MSG(ret < 0, "Error reading OGG Vorbis file: " + file + ".");
 		} else if (ret == 0) { // end of song, reload?
 
 			ov_clear(&vf);

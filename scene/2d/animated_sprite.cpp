@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "animated_sprite.h"
+
 #include "core/os/os.h"
 #include "scene/scene_string_names.h"
 
@@ -356,12 +357,11 @@ void AnimatedSprite::_validate_property(PropertyInfo &property) const {
 	}
 
 	if (property.name == "frame") {
-
-		property.hint = PROPERTY_HINT_SPRITE_FRAME;
-
+		property.hint = PROPERTY_HINT_RANGE;
 		if (frames->has_animation(animation) && frames->get_frame_count(animation) > 1) {
 			property.hint_string = "0," + itos(frames->get_frame_count(animation) - 1) + ",1";
 		}
+		property.usage |= PROPERTY_USAGE_KEYING_INCREMENTS;
 	}
 }
 
@@ -642,9 +642,8 @@ void AnimatedSprite::_reset_timeout() {
 
 void AnimatedSprite::set_animation(const StringName &p_animation) {
 
-	ERR_EXPLAIN(vformat("There is no animation with name '%s'.", p_animation));
-	ERR_FAIL_COND(frames == NULL);
-	ERR_FAIL_COND(frames->get_animation_names().find(p_animation) == -1);
+	ERR_FAIL_COND_MSG(frames == NULL, vformat("There is no animation with name '%s'.", p_animation));
+	ERR_FAIL_COND_MSG(frames->get_animation_names().find(p_animation) == -1, vformat("There is no animation with name '%s'.", p_animation));
 
 	if (animation == p_animation)
 		return;
@@ -709,7 +708,7 @@ void AnimatedSprite::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "frames", PROPERTY_HINT_RESOURCE_TYPE, "SpriteFrames"), "set_sprite_frames", "get_sprite_frames");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "animation"), "set_animation", "get_animation");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame", PROPERTY_HINT_SPRITE_FRAME), "set_frame", "get_frame");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "frame"), "set_frame", "get_frame");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "speed_scale"), "set_speed_scale", "get_speed_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "playing"), "_set_playing", "_is_playing");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "centered"), "set_centered", "is_centered");

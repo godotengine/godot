@@ -2247,7 +2247,7 @@ void RasterizerStorageGLES3::shader_get_param_list(RID p_shader, List<PropertyIn
 				pi.type = Variant::INT;
 				if (u.hint == ShaderLanguage::ShaderNode::Uniform::HINT_RANGE) {
 					pi.hint = PROPERTY_HINT_RANGE;
-					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]);
+					pi.hint_string = rtos(u.hint_range[0]) + "," + rtos(u.hint_range[1]) + "," + rtos(u.hint_range[2]);
 				}
 
 			} break;
@@ -2522,8 +2522,8 @@ _FORCE_INLINE_ static void _fill_std140_variant_ubo_value(ShaderLanguage::DataTy
 
 			int v = value;
 			GLuint *gui = (GLuint *)data;
-			gui[0] = v & 1 ? GL_TRUE : GL_FALSE;
-			gui[1] = v & 2 ? GL_TRUE : GL_FALSE;
+			gui[0] = (v & 1) ? GL_TRUE : GL_FALSE;
+			gui[1] = (v & 2) ? GL_TRUE : GL_FALSE;
 
 		} break;
 		case ShaderLanguage::TYPE_BVEC3: {
@@ -3191,8 +3191,7 @@ void RasterizerStorageGLES3::mesh_add_surface(RID p_mesh, uint32_t p_format, VS:
 	//must have index and bones, both.
 	{
 		uint32_t bones_weight = VS::ARRAY_FORMAT_BONES | VS::ARRAY_FORMAT_WEIGHTS;
-		ERR_EXPLAIN("Array must have both bones and weights in format or none.");
-		ERR_FAIL_COND((p_format & bones_weight) && (p_format & bones_weight) != bones_weight);
+		ERR_FAIL_COND_MSG((p_format & bones_weight) && (p_format & bones_weight) != bones_weight, "Array must have both bones and weights in format or none.");
 	}
 
 	//bool has_morph = p_blend_shapes.size();
@@ -8093,7 +8092,7 @@ void RasterizerStorageGLES3::initialize() {
 	glGetIntegerv(GL_MAX_TEXTURE_IMAGE_UNITS, &config.max_texture_image_units);
 	glGetIntegerv(GL_MAX_TEXTURE_SIZE, &config.max_texture_size);
 
-	config.use_rgba_2d_shadows = config.framebuffer_float_supported;
+	config.use_rgba_2d_shadows = !config.framebuffer_float_supported;
 
 	//generic quadie for copying
 

@@ -33,9 +33,9 @@ import android.os.Messenger;
  * {@link IDownloaderService#onClientUpdated}.
  */
 public interface IStub {
-	Messenger getMessenger();
+    Messenger getMessenger();
 
-	void connect(Context c);
+    void connect(Context c);
 
-	void disconnect(Context c);
+    void disconnect(Context c);
 }

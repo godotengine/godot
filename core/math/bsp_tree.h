@@ -38,9 +38,7 @@
 #include "core/pool_vector.h"
 #include "core/variant.h"
 #include "core/vector.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class BSP_Tree {
 public:
 	enum {

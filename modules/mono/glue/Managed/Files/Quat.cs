@@ -8,6 +8,7 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Quat : IEquatable<Quat>
     {
@@ -95,6 +96,7 @@ namespace Godot
             return this / Length;
         }
 
+        [Obsolete("Set is deprecated. Use the Quat(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y, real_t z, real_t w)
         {
             this.x = x;
@@ -103,16 +105,19 @@ namespace Godot
             this.w = w;
         }
 
+        [Obsolete("Set is deprecated. Use the Quat(" + nameof(Quat) + ") constructor instead.", error: true)]
         public void Set(Quat q)
         {
             this = q;
         }
 
+        [Obsolete("SetAxisAngle is deprecated. Use the Quat(" + nameof(Vector3) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void SetAxisAngle(Vector3 axis, real_t angle)
         {
             this = new Quat(axis, angle);
         }
 
+        [Obsolete("SetEuler is deprecated. Use the Quat(" + nameof(Vector3) + ") constructor instead.", error: true)]
         public void SetEuler(Vector3 eulerYXZ)
         {
             this = new Quat(eulerYXZ);
@@ -229,9 +234,9 @@ namespace Godot
 
         public Quat(Vector3 eulerYXZ)
         {
-            real_t half_a1 = eulerYXZ.y * (real_t)0.5;
-            real_t half_a2 = eulerYXZ.x * (real_t)0.5;
-            real_t half_a3 = eulerYXZ.z * (real_t)0.5;
+            real_t half_a1 = eulerYXZ.y * 0.5f;
+            real_t half_a2 = eulerYXZ.x * 0.5f;
+            real_t half_a3 = eulerYXZ.z * 0.5f;
 
             // R = Y(a1).X(a2).Z(a3) convention for Euler angles.
             // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
@@ -246,7 +251,7 @@ namespace Godot
 
             x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
             y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
-            z = -sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3;
+            z = cos_a1 * cos_a2 * sin_a3 - sin_a1 * sin_a2 * cos_a3;
             w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
         }
 

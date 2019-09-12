@@ -34,9 +34,6 @@
 #include "editor/plugins/abstract_polygon_2d_editor.h"
 #include "scene/2d/navigation_polygon.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class NavigationPolygonEditor : public AbstractPolygon2DEditor {
 
 	GDCLASS(NavigationPolygonEditor, AbstractPolygon2DEditor);

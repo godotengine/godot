@@ -272,6 +272,20 @@ void VehicleWheel::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_rpm"), &VehicleWheel::get_rpm);
 
+	ClassDB::bind_method(D_METHOD("set_engine_force", "engine_force"), &VehicleWheel::set_engine_force);
+	ClassDB::bind_method(D_METHOD("get_engine_force"), &VehicleWheel::get_engine_force);
+
+	ClassDB::bind_method(D_METHOD("set_brake", "brake"), &VehicleWheel::set_brake);
+	ClassDB::bind_method(D_METHOD("get_brake"), &VehicleWheel::get_brake);
+
+	ClassDB::bind_method(D_METHOD("set_steering", "steering"), &VehicleWheel::set_steering);
+	ClassDB::bind_method(D_METHOD("get_steering"), &VehicleWheel::get_steering);
+
+	ADD_GROUP("Per-Wheel Motion", "");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "engine_force", PROPERTY_HINT_RANGE, "0.00,1024.0,0.01,or_greater"), "set_engine_force", "get_engine_force");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "brake", PROPERTY_HINT_RANGE, "0.0,1.0,0.01"), "set_brake", "get_brake");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "steering", PROPERTY_HINT_RANGE, "-180,180.0,0.01"), "set_steering", "get_steering");
+	ADD_GROUP("VehicleBody Motion", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_traction"), "set_use_as_traction", "is_used_as_traction");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "use_as_steering"), "set_use_as_steering", "is_used_as_steering");
 	ADD_GROUP("Wheel", "wheel_");
@@ -286,6 +300,34 @@ void VehicleWheel::_bind_methods() {
 	ADD_GROUP("Damping", "damping_");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "damping_compression"), "set_damping_compression", "get_damping_compression");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "damping_relaxation"), "set_damping_relaxation", "get_damping_relaxation");
+}
+
+void VehicleWheel::set_engine_force(float p_engine_force) {
+
+	m_engineForce = p_engine_force;
+}
+
+float VehicleWheel::get_engine_force() const {
+
+	return m_engineForce;
+}
+
+void VehicleWheel::set_brake(float p_brake) {
+
+	m_brake = p_brake;
+}
+float VehicleWheel::get_brake() const {
+
+	return m_brake;
+}
+
+void VehicleWheel::set_steering(float p_steering) {
+
+	m_steering = p_steering;
+}
+float VehicleWheel::get_steering() const {
+
+	return m_steering;
 }
 
 void VehicleWheel::set_use_as_traction(bool p_enable) {
@@ -374,10 +416,7 @@ void VehicleBody::_update_wheel(int p_idx, PhysicsDirectBodyState *s) {
 	Vector3 fwd = up.cross(right);
 	fwd = fwd.normalized();
 
-	//rotate around steering over de wheelAxleWS
-	real_t steering = wheel.steers ? m_steeringValue : 0.0;
-
-	Basis steeringMat(up, steering);
+	Basis steeringMat(up, wheel.m_steering);
 
 	Basis rotatingMat(right, wheel.m_rotation);
 
@@ -723,12 +762,11 @@ void VehicleBody::_update_friction(PhysicsDirectBodyState *s) {
 			real_t rollingFriction = 0.f;
 
 			if (wheelInfo.m_raycastInfo.m_isInContact) {
-				if (engine_force != 0.f && wheelInfo.engine_traction) {
-					rollingFriction = -engine_force * s->get_step();
+				if (wheelInfo.m_engineForce != 0.f) {
+					rollingFriction = -wheelInfo.m_engineForce * s->get_step();
 				} else {
 					real_t defaultRollingFrictionImpulse = 0.f;
-					float cbrake = MAX(wheelInfo.m_brake, brake);
-					real_t maxImpulse = cbrake ? cbrake : defaultRollingFrictionImpulse;
+					real_t maxImpulse = wheelInfo.m_brake ? wheelInfo.m_brake : defaultRollingFrictionImpulse;
 					btVehicleWheelContactPoint contactPt(s, wheelInfo.m_raycastInfo.m_groundObject, wheelInfo.m_raycastInfo.m_contactPointWS, m_forwardWS[wheel], maxImpulse);
 					rollingFriction = _calc_rolling_friction(contactPt);
 				}
@@ -886,6 +924,11 @@ void VehicleBody::_direct_state_changed(Object *p_state) {
 void VehicleBody::set_engine_force(float p_engine_force) {
 
 	engine_force = p_engine_force;
+	for (int i = 0; i < wheels.size(); i++) {
+		VehicleWheel &wheelInfo = *wheels[i];
+		if (wheelInfo.engine_traction)
+			wheelInfo.m_engineForce = p_engine_force;
+	}
 }
 
 float VehicleBody::get_engine_force() const {
@@ -896,6 +939,10 @@ float VehicleBody::get_engine_force() const {
 void VehicleBody::set_brake(float p_brake) {
 
 	brake = p_brake;
+	for (int i = 0; i < wheels.size(); i++) {
+		VehicleWheel &wheelInfo = *wheels[i];
+		wheelInfo.m_brake = p_brake;
+	}
 }
 float VehicleBody::get_brake() const {
 
@@ -905,6 +952,11 @@ float VehicleBody::get_brake() const {
 void VehicleBody::set_steering(float p_steering) {
 
 	m_steeringValue = p_steering;
+	for (int i = 0; i < wheels.size(); i++) {
+		VehicleWheel &wheelInfo = *wheels[i];
+		if (wheelInfo.steers)
+			wheelInfo.m_steering = p_steering;
+	}
 }
 float VehicleBody::get_steering() const {
 

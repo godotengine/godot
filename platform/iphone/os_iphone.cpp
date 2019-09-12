@@ -64,8 +64,7 @@ const char *OSIPhone::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -471,6 +470,7 @@ extern void _show_keyboard(String p_existing);
 extern void _hide_keyboard();
 extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
+extern void _vibrate();
 
 void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 	_show_keyboard(p_existing_text);
@@ -584,6 +584,11 @@ void OSIPhone::native_video_focus_out() {
 void OSIPhone::native_video_stop() {
 	if (native_video_is_playing())
 		_stop_video();
+}
+
+void OSIPhone::vibrate_handheld(int p_duration_ms) {
+	// iOS does not support duration for vibration
+	_vibrate();
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {

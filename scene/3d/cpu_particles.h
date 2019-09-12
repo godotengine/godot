@@ -34,10 +34,6 @@
 #include "core/rid.h"
 #include "scene/3d/visual_instance.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class CPUParticles : public GeometryInstance {
 private:
 	GDCLASS(CPUParticles, GeometryInstance);

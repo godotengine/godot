@@ -86,10 +86,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 
 	if (!values.has(p_section) || !values[p_section].has(p_key)) {
-		if (p_default.get_type() == Variant::NIL) {
-			ERR_EXPLAIN("Couldn't find the given section/key and no default was given");
-			ERR_FAIL_V(p_default);
-		}
+		ERR_FAIL_COND_V_MSG(p_default.get_type() == Variant::NIL, p_default, "Couldn't find the given section/key and no default was given.");
 		return p_default;
 	}
 	return values[p_section][p_key];
@@ -204,7 +201,7 @@ Error ConfigFile::load(const String &p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (!f)
-		return ERR_CANT_OPEN;
+		return err;
 
 	return _internal_load(p_path, f);
 }
@@ -271,7 +268,7 @@ Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
 			memdelete(f);
 			return err;
 		}

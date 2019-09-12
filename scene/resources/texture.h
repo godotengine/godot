@@ -42,10 +42,6 @@
 #include "servers/camera_server.h"
 #include "servers/visual_server.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Texture : public Resource {
 
 	GDCLASS(Texture, Resource);

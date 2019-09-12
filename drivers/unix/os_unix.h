@@ -31,10 +31,6 @@
 #ifndef OS_UNIX_H
 #define OS_UNIX_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #ifdef UNIX_ENABLED
 
 #include "core/os/os.h"

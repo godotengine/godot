@@ -32,6 +32,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/io/resource_saver.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "core/project_settings.h"
 #include "editor/animation_track_editor.h"
@@ -293,10 +294,6 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 			}
 		}
 		frame->set_max(anim->get_length());
-		if (anim->get_step())
-			frame->set_step(anim->get_step());
-		else
-			frame->set_step(0.00001);
 
 	} else {
 		track_editor->set_animation(Ref<Animation>());
@@ -478,6 +475,19 @@ void AnimationPlayerEditor::_select_anim_by_name(const String &p_anim) {
 	animation->select(idx);
 
 	_animation_selected(idx);
+}
+
+double AnimationPlayerEditor::_get_editor_step() const {
+
+	// Returns the effective snapping value depending on snapping modifiers, or 0 if snapping is disabled.
+	if (track_editor->is_snap_enabled()) {
+		const String current = player->get_assigned_animation();
+		const Ref<Animation> anim = player->get_animation(current);
+		// Use more precise snapping when holding Shift
+		return Input::get_singleton()->is_key_pressed(KEY_SHIFT) ? anim->get_step() * 0.25 : anim->get_step();
+	}
+
+	return 0.0;
 }
 
 void AnimationPlayerEditor::_animation_name_edited() {
@@ -1008,7 +1018,7 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	};
 
 	updating = true;
-	String current = player->get_assigned_animation(); //animation->get_item_text( animation->get_selected() );
+	String current = player->get_assigned_animation();
 	if (current == "" || !player->has_animation(current)) {
 		updating = false;
 		current = "";
@@ -1018,14 +1028,9 @@ void AnimationPlayerEditor::_seek_value_changed(float p_value, bool p_set) {
 	Ref<Animation> anim;
 	anim = player->get_animation(current);
 
-	float pos = anim->get_length() * (p_value / frame->get_max());
-	float step = anim->get_step();
-	if (step) {
-		pos = Math::stepify(pos, step);
-		if (pos < 0)
-			pos = 0;
-		if (pos >= anim->get_length())
-			pos = anim->get_length();
+	float pos = CLAMP(anim->get_length() * (p_value / frame->get_max()), 0, anim->get_length());
+	if (track_editor->is_snap_enabled()) {
+		pos = Math::stepify(pos, _get_editor_step());
 	}
 
 	if (player->is_valid() && !p_set) {
@@ -1063,14 +1068,6 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 	frame->set_max(p_len);
 }
 
-void AnimationPlayerEditor::_animation_key_editor_anim_step_changed(float p_len) {
-
-	if (p_len)
-		frame->set_step(p_len);
-	else
-		frame->set_step(0.00001);
-}
-
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
 
 	if (!is_visible_in_tree())
@@ -1081,8 +1078,10 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 	if (player->is_playing())
 		return;
 
+	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
+
 	updating = true;
-	frame->set_value(p_pos);
+	frame->set_value(Math::stepify(p_pos, _get_editor_step()));
 	updating = false;
 	_seek_value_changed(p_pos, !p_drag);
 
@@ -1558,7 +1557,6 @@ void AnimationPlayerEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_list_changed"), &AnimationPlayerEditor::_list_changed);
 	ClassDB::bind_method(D_METHOD("_animation_key_editor_seek"), &AnimationPlayerEditor::_animation_key_editor_seek);
 	ClassDB::bind_method(D_METHOD("_animation_key_editor_anim_len_changed"), &AnimationPlayerEditor::_animation_key_editor_anim_len_changed);
-	ClassDB::bind_method(D_METHOD("_animation_key_editor_anim_step_changed"), &AnimationPlayerEditor::_animation_key_editor_anim_step_changed);
 	ClassDB::bind_method(D_METHOD("_hide_anim_editors"), &AnimationPlayerEditor::_hide_anim_editors);
 	ClassDB::bind_method(D_METHOD("_animation_duplicate"), &AnimationPlayerEditor::_animation_duplicate);
 	ClassDB::bind_method(D_METHOD("_blend_editor_next_changed"), &AnimationPlayerEditor::_blend_editor_next_changed);
@@ -1621,6 +1619,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	hb->add_child(frame);
 	frame->set_custom_minimum_size(Size2(60, 0));
 	frame->set_stretch_ratio(2);
+	frame->set_step(0.0001);
 	frame->set_tooltip(TTR("Animation position (in seconds)."));
 
 	hb->add_child(memnew(VSeparator));
@@ -1774,7 +1773,6 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 	track_editor->set_v_size_flags(SIZE_EXPAND_FILL);
 	track_editor->connect("timeline_changed", this, "_animation_key_editor_seek");
 	track_editor->connect("animation_len_changed", this, "_animation_key_editor_anim_len_changed");
-	track_editor->connect("animation_step_changed", this, "_animation_key_editor_anim_step_changed");
 
 	_update_player();
 

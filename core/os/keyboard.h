@@ -33,10 +33,6 @@
 
 #include "core/ustring.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 /*
 	Special Key:
 

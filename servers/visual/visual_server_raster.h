@@ -38,9 +38,6 @@
 #include "visual_server_globals.h"
 #include "visual_server_scene.h"
 #include "visual_server_viewport.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class VisualServerRaster : public VisualServer {
 

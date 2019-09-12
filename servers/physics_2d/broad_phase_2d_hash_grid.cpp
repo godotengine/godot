@@ -673,7 +673,7 @@ public IEnumerable<Point3D> GetCellsOnRay(Ray ray, int maxDepth)
     // "A Fast Voxel Traversal Algorithm for Ray Tracing"
     // John Amanatides, Andrew Woo
     // http://www.cse.yorku.ca/~amana/research/grid.pdf
-    // http://www.devmaster.net/articles/raytracing_series/A%20faster%20voxel%20traversal%20algorithm%20for%20ray%20tracing.pdf
+    // https://web.archive.org/web/20100616193049/http://www.devmaster.net/articles/raytracing_series/A%20faster%20voxel%20traversal%20algorithm%20for%20ray%20tracing.pdf
 
     // NOTES:
     // * This code assumes that the ray's position and direction are in 'cell coordinates', which means

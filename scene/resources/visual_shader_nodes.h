@@ -1171,6 +1171,27 @@ public:
 };
 
 ///////////////////////////////////////
+
+class VisualShaderNodeVectorScalarMix : public VisualShaderNode {
+	GDCLASS(VisualShaderNodeVectorScalarMix, VisualShaderNode);
+
+public:
+	virtual String get_caption() const;
+
+	virtual int get_input_port_count() const;
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual String get_input_port_name(int p_port) const;
+
+	virtual int get_output_port_count() const;
+	virtual PortType get_output_port_type(int p_port) const;
+	virtual String get_output_port_name(int p_port) const;
+
+	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
+
+	VisualShaderNodeVectorScalarMix();
+};
+
+///////////////////////////////////////
 /// COMPOSE
 ///////////////////////////////////////
 
@@ -1509,6 +1530,18 @@ public:
 	VisualShaderNodeSwitch();
 };
 
+class VisualShaderNodeScalarSwitch : public VisualShaderNodeSwitch {
+	GDCLASS(VisualShaderNodeScalarSwitch, VisualShaderNodeSwitch);
+
+public:
+	virtual String get_caption() const;
+
+	virtual PortType get_input_port_type(int p_port) const;
+	virtual PortType get_output_port_type(int p_port) const;
+
+	VisualShaderNodeScalarSwitch();
+};
+
 ///////////////////////////////////////
 /// FRESNEL
 ///////////////////////////////////////
@@ -1624,13 +1657,13 @@ public:
 
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
-	void set_comparsion_type(ComparsionType p_func);
+	void set_comparsion_type(ComparsionType p_type);
 	ComparsionType get_comparsion_type() const;
 
 	void set_function(Function p_func);
 	Function get_function() const;
 
-	void set_condition(Condition p_mode);
+	void set_condition(Condition p_cond);
 	Condition get_condition() const;
 
 	virtual Vector<StringName> get_editable_properties() const;

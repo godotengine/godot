@@ -64,10 +64,7 @@ Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
 	file = FileAccess::open(p_file, FileAccess::WRITE);
 
-	if (!file) {
-		ERR_EXPLAIN("Can't open file to write: " + String(p_file));
-		ERR_FAIL_V(ERR_CANT_CREATE);
-	}
+	ERR_FAIL_COND_V_MSG(!file, ERR_CANT_CREATE, "Can't open file to write: " + String(p_file) + ".");
 
 	alignment = p_alignment;
 

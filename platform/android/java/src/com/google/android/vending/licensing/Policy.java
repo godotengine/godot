@@ -22,27 +22,27 @@ package com.google.android.vending.licensing;
  */
 public interface Policy {
 
-	/**
+    /**
      * Change these values to make it more difficult for tools to automatically
      * strip LVL protection from your APK.
      */
 
-	/**
+    /**
      * LICENSED means that the server returned back a valid license response
      */
-	public static final int LICENSED = 0x0100;
-	/**
+    public static final int LICENSED = 0x0100;
+    /**
      * NOT_LICENSED means that the server returned back a valid license response
      * that indicated that the user definitively is not licensed
      */
-	public static final int NOT_LICENSED = 0x0231;
-	/**
+    public static final int NOT_LICENSED = 0x0231;
+    /**
      * RETRY means that the license response was unable to be determined ---
      * perhaps as a result of faulty networking
      */
-	public static final int RETRY = 0x0123;
+    public static final int RETRY = 0x0123;
 
-	/**
+    /**
      * Provide results from contact with the license server. Retry counts are
      * incremented if the current value of response is RETRY. Results will be
      * used for any future policy decisions.
@@ -50,16 +50,16 @@ public interface Policy {
      * @param response the result from validating the server response
      * @param rawData the raw server response data, can be null for RETRY
      */
-	void processServerResponse(int response, ResponseData rawData);
+    void processServerResponse(int response, ResponseData rawData);
 
-	/**
+    /**
      * Check if the user should be allowed access to the application.
      */
-	boolean allowAccess();
+    boolean allowAccess();
 
-	/**
+    /**
      * Gets the licensing URL returned by the server that can enable access for unlicensed apps (e.g.
      * buy app on the Play Store).
      */
-	String getLicensingUrl();
+    String getLicensingUrl();
 }

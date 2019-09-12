@@ -36,6 +36,7 @@ name is available.
     Andy Moss (MillionOstrich)
     Anish Bhobe (KidRigger)
     Anton Yabchinskiy (a12n)
+    Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
     Bastiaan Olij (BastiaanOlij)
@@ -56,6 +57,7 @@ name is available.
     Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
     DualMatrix
+    Emmanuel Barroga (sparkart)
     Emmanuel Leblond (touilleMan)
     Eric Lasota (elasota)
     est31
@@ -68,6 +70,7 @@ name is available.
     Gerrit Großkopf (Grosskopf)
     Gilles Roudiere (groud)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
+    Hanif A (hbina)
     Hein-Pieter van Braam (hpvb)
     Hiroshi Ogawa (hi-ogawa)
     homer666
@@ -104,6 +107,7 @@ name is available.
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
+    merumelu
     Michael Alexsander Silva Dias (YeldhamDev)
     mrezai
     Nathan Warden (NathanWarden)
@@ -128,6 +132,7 @@ name is available.
     romulox-x
     Ruslan Mustakov (endragor)
     Saniko (sanikoyes)
+    santouits
     SaracenOne
     sersoong
     Simon Wenner (swenner)

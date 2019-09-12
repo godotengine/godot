@@ -788,6 +788,7 @@ void OS_X11::finalize() {
 
 	memdelete(camera_server);
 
+	cursors_cache.clear();
 	visual_server->finish();
 	memdelete(visual_server);
 	//memdelete(rasterizer);
@@ -1265,7 +1266,7 @@ Size2 OS_X11::get_min_window_size() const {
 void OS_X11::set_min_window_size(const Size2 p_size) {
 
 	if ((p_size != Size2()) && (max_size != Size2()) && ((p_size.x > max_size.x) || (p_size.y > max_size.y))) {
-		WARN_PRINT("Minimum window size can't be larger than maximum window size!");
+		ERR_PRINT("Minimum window size can't be larger than maximum window size!");
 		return;
 	}
 	min_size = p_size;
@@ -1294,7 +1295,7 @@ void OS_X11::set_min_window_size(const Size2 p_size) {
 void OS_X11::set_max_window_size(const Size2 p_size) {
 
 	if ((p_size != Size2()) && ((p_size.x < min_size.x) || (p_size.y < min_size.y))) {
-		WARN_PRINT("Maximum window size can't be smaller than minimum window size!");
+		ERR_PRINT("Maximum window size can't be smaller than minimum window size!");
 		return;
 	}
 	max_size = p_size;
@@ -1517,9 +1518,12 @@ void OS_X11::set_window_maximized(bool p_enabled) {
 
 	XSendEvent(x11_display, DefaultRootWindow(x11_display), False, SubstructureRedirectMask | SubstructureNotifyMask, &xev);
 
-	if (is_window_maximize_allowed()) {
-		while (p_enabled && !is_window_maximized()) {
-			// Wait for effective resizing (so the GLX context is too).
+	if (p_enabled && is_window_maximize_allowed()) {
+		// Wait for effective resizing (so the GLX context is too).
+		// Give up after 0.5s, it's not going to happen on this WM.
+		// https://github.com/godotengine/godot/issues/19978
+		for (int attempt = 0; !is_window_maximized() && attempt < 50; attempt++) {
+			usleep(10000);
 		}
 	}
 
@@ -1753,7 +1757,10 @@ void OS_X11::handle_key_event(XKeyEvent *p_event, bool p_echo) {
 
 	// XLookupString returns keysyms usable as nice scancodes/
 	char str[256 + 1];
-	XLookupString(xkeyevent, str, 256, &keysym_keycode, NULL);
+	XKeyEvent xkeyevent_no_mod = *xkeyevent;
+	xkeyevent_no_mod.state &= ~ShiftMask;
+	xkeyevent_no_mod.state &= ~ControlMask;
+	XLookupString(&xkeyevent_no_mod, str, 256, &keysym_keycode, NULL);
 
 	// Meanwhile, XLookupString returns keysyms useful for unicode.
 

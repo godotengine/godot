@@ -44,9 +44,6 @@
 
 class DependencyRemoveDialog;
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class EditorFileDialog : public ConfirmationDialog {
 
 	GDCLASS(EditorFileDialog, ConfirmationDialog);

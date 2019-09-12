@@ -31,10 +31,6 @@
 #ifndef TEST_RENDER_H
 #define TEST_RENDER_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #include "core/os/main_loop.h"
 
 namespace TestRender {

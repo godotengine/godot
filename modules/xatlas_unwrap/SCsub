@@ -15,10 +15,6 @@ if env['builtin_xatlas']:
 
     env_xatlas_unwrap.Prepend(CPPPATH=[thirdparty_dir])
 
-    # upstream uses c++11
-    if (not env.msvc):
-        env_xatlas_unwrap.Append(CXXFLAGS="-std=c++11")
-
     env_thirdparty = env_xatlas_unwrap.Clone()
     env_thirdparty.disable_warnings()
     env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)

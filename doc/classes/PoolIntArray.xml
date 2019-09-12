@@ -6,6 +6,7 @@
 	<description>
 		An [Array] specifically designed to hold integer values ([int]). Optimized for memory usage, does not fragment the memory.
 		[b]Note:[/b] This type is passed by value and not by reference.
+		[b]Note:[/b] This type is limited to signed 32-bit integers, which means it can only take values in the interval [code][-2^31, 2^31 - 1][/code], i.e. [code][-2147483648, 2147483647][/code]. Exceeding those bounds will wrap around. In comparison, [int] uses signed 64-bit integers which can hold much larger values.
 	</description>
 	<tutorials>
 	</tutorials>

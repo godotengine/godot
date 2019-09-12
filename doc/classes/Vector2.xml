@@ -4,7 +4,7 @@
 		Vector used for 2D math.
 	</brief_description>
 	<description>
-		2-element structure that can be used to represent positions in 2d space or any other pair of numeric values.
+		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
@@ -203,6 +203,24 @@
 				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
 			</description>
 		</method>
+		<method name="posmod">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="mod" type="float">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]mod[/code].
+			</description>
+		</method>
+		<method name="posmodv">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="modv" type="Vector2">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]modv[/code]'s components.
+			</description>
+		</method>
 		<method name="project">
 			<return type="Vector2">
 			</return>
@@ -235,6 +253,13 @@
 			</return>
 			<description>
 				Returns the vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+			</description>
+		</method>
+		<method name="sign">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the vector with each component set to one or negative one, depending on the signs of the components.
 			</description>
 		</method>
 		<method name="slerp">
@@ -284,6 +309,12 @@
 		</member>
 	</members>
 	<constants>
+		<constant name="AXIS_X" value="0">
+			Enumerated value for the X axis.
+		</constant>
+		<constant name="AXIS_Y" value="1">
+			Enumerated value for the Y axis.
+		</constant>
 		<constant name="ZERO" value="Vector2( 0, 0 )">
 			Zero vector.
 		</constant>
@@ -291,7 +322,7 @@
 			One vector.
 		</constant>
 		<constant name="INF" value="Vector2( inf, inf )">
-			Infinite vector.
+			Infinity vector.
 		</constant>
 		<constant name="LEFT" value="Vector2( -1, 0 )">
 			Left unit vector.

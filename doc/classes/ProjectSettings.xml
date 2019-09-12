@@ -180,6 +180,9 @@
 			This user directory is used for storing persistent data ([code]user://[/code] filesystem). If left empty, [code]user://[/code] resolves to a project-specific folder in Godot's own configuration folder (see [method OS.get_user_data_dir]). If a custom directory name is defined, this name will be used instead and appended to the system-specific user data directory (same parent folder as the Godot configuration folder documented in [method OS.get_user_data_dir]).
 			The [member application/config/use_custom_user_dir] setting must be enabled for this to take effect.
 		</member>
+		<member name="application/config/description" type="String" setter="" getter="" default="&quot;&quot;">
+			The project's description, displayed as a tooltip in the Project Manager when hovering the project.
+		</member>
 		<member name="application/config/icon" type="String" setter="" getter="" default="&quot;&quot;">
 			Icon used for the project, set when project loads. Exporters will also use this icon when possible.
 		</member>
@@ -411,6 +414,8 @@
 		</member>
 		<member name="editor/active" type="bool" setter="" getter="" default="false">
 			Internal editor setting, don't touch.
+		</member>
+		<member name="editor/script_templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
 		</member>
 		<member name="editor/search_in_file_extensions" type="PoolStringArray" setter="" getter="" default="PoolStringArray( &quot;gd&quot;, &quot;shader&quot; )">
 		</member>
@@ -650,16 +655,21 @@
 		<member name="network/limits/debugger_stdout/max_chars_per_second" type="int" setter="" getter="" default="2048">
 			Maximum amount of characters allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
-		<member name="network/limits/debugger_stdout/max_errors_per_frame" type="int" setter="" getter="" default="10">
-			Maximum amount of errors allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+		<member name="network/limits/debugger_stdout/max_errors_per_second" type="int" setter="" getter="" default="100">
+			Maximum number of errors allowed to be sent as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/debugger_stdout/max_messages_per_frame" type="int" setter="" getter="" default="10">
 			Maximum amount of messages allowed to send as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
+		</member>
+		<member name="network/limits/debugger_stdout/max_warnings_per_second" type="int" setter="" getter="" default="100">
+			Maximum number of warnings allowed to be sent as output from the debugger. Over this value, content is dropped. This helps not to stall the debugger connection.
 		</member>
 		<member name="network/limits/packet_peer_stream/max_buffer_po2" type="int" setter="" getter="" default="16">
 			Default size of packet peer stream for deserializing Godot data. Over this size, data is dropped.
 		</member>
 		<member name="network/limits/tcp/connect_timeout_seconds" type="int" setter="" getter="" default="30">
+		</member>
+		<member name="network/limits/webrtc/max_channel_in_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>
 		<member name="network/limits/websocket_client/max_in_buffer_kb" type="int" setter="" getter="" default="64">
 		</member>
@@ -682,6 +692,8 @@
 		</member>
 		<member name="network/remote_fs/page_size" type="int" setter="" getter="" default="65536">
 			Page size used by remote filesystem (in bytes).
+		</member>
+		<member name="network/ssl/certificates" type="String" setter="" getter="" default="&quot;&quot;">
 		</member>
 		<member name="node/name_casing" type="int" setter="" getter="" default="0">
 			When creating node names automatically, set the type of casing in this project. This is mostly an editor setting.
@@ -726,6 +738,12 @@
 		</member>
 		<member name="rendering/limits/rendering/max_renderable_elements" type="int" setter="" getter="" default="65536">
 			Max amount of elements renderable in a frame. If more than this are visible per frame, they will be dropped. Keep in mind elements refer to mesh surfaces and not meshes themselves.
+		</member>
+		<member name="rendering/limits/rendering/max_renderable_lights" type="int" setter="" getter="" default="4096">
+			Max number of lights renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
+		</member>
+		<member name="rendering/limits/rendering/max_renderable_reflections" type="int" setter="" getter="" default="1024">
+			Max number of reflection probes renderable in a frame. If more than this number are used, they will be ignored. On some systems (particularly web) setting this number as low as possible can increase the speed of shader compilation.
 		</member>
 		<member name="rendering/limits/time/time_rollover_secs" type="float" setter="" getter="" default="3600">
 			Shaders have a time variable that constantly increases. At some point, it needs to be rolled back to zero to avoid precision errors on shader animations. This setting specifies when (in seconds).
@@ -825,7 +843,7 @@
 		<member name="rendering/quality/subsurface_scattering/weight_samples" type="bool" setter="" getter="" default="true">
 			Weight subsurface scattering samples. Helps to avoid reading samples from unrelated parts of the screen.
 		</member>
-		<member name="rendering/quality/voxel_cone_tracing/high_quality" type="bool" setter="" getter="" default="true">
+		<member name="rendering/quality/voxel_cone_tracing/high_quality" type="bool" setter="" getter="" default="false">
 			Use high-quality voxel cone tracing. This results in better-looking reflections, but is much more expensive on the GPU.
 		</member>
 		<member name="rendering/threads/thread_model" type="int" setter="" getter="" default="1">

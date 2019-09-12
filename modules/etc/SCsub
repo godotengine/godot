@@ -29,10 +29,6 @@ thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
 env_etc.Prepend(CPPPATH=[thirdparty_dir])
 
-# upstream uses c++11
-if not env.msvc:
-	env_etc.Append(CXXFLAGS="-std=c++11")
-
 env_thirdparty = env_etc.Clone()
 env_thirdparty.disable_warnings()
 env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)

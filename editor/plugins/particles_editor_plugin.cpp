@@ -55,8 +55,7 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 
 		if (!triangle_area_map.size() || area_accum == 0) {
 
-			err_dialog->set_text(TTR("Faces contain no area!"));
-			err_dialog->popup_centered_minsize();
+			EditorNode::get_singleton()->show_warning(TTR("The geometry's faces don't contain any area."));
 			return false;
 		}
 
@@ -90,8 +89,7 @@ bool ParticlesEditorBase::_generate(PoolVector<Vector3> &points, PoolVector<Vect
 
 		if (gcount == 0) {
 
-			err_dialog->set_text(TTR("No faces!"));
-			err_dialog->popup_centered_minsize();
+			EditorNode::get_singleton()->show_warning(TTR("The geometry doesn't contain any faces."));
 			return false;
 		}
 
@@ -169,11 +167,16 @@ void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 	if (!sel)
 		return;
 
+	if (!sel->is_class("Spatial")) {
+
+		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't inherit from Spatial."), sel->get_name()));
+		return;
+	}
+
 	VisualInstance *vi = Object::cast_to<VisualInstance>(sel);
 	if (!vi) {
 
-		err_dialog->set_text(TTR("Node does not contain geometry."));
-		err_dialog->popup_centered_minsize();
+		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain geometry."), sel->get_name()));
 		return;
 	}
 
@@ -181,8 +184,7 @@ void ParticlesEditorBase::_node_selected(const NodePath &p_path) {
 
 	if (geometry.size() == 0) {
 
-		err_dialog->set_text(TTR("Node does not contain geometry (faces)."));
-		err_dialog->popup_centered_minsize();
+		EditorNode::get_singleton()->show_warning(vformat(TTR("\"%s\" doesn't contain face geometry."), sel->get_name()));
 		return;
 	}
 
@@ -230,9 +232,6 @@ ParticlesEditorBase::ParticlesEditorBase() {
 
 	emission_dialog->get_ok()->set_text(TTR("Create"));
 	emission_dialog->connect("confirmed", this, "_generate_emission_points");
-
-	err_dialog = memnew(ConfirmationDialog);
-	add_child(err_dialog);
 
 	emission_file_dialog = memnew(EditorFileDialog);
 	add_child(emission_file_dialog);

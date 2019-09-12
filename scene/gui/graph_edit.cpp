@@ -276,6 +276,11 @@ void GraphEdit::_notification(int p_what) {
 	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED) {
 		port_grab_distance_horizontal = get_constant("port_grab_distance_horizontal");
 		port_grab_distance_vertical = get_constant("port_grab_distance_vertical");
+
+		zoom_minus->set_icon(get_icon("minus"));
+		zoom_reset->set_icon(get_icon("reset"));
+		zoom_plus->set_icon(get_icon("more"));
+		snap_button->set_icon(get_icon("snap"));
 	}
 	if (p_what == NOTIFICATION_READY) {
 		Size2 hmin = h_scroll->get_combined_minimum_size();
@@ -290,11 +295,6 @@ void GraphEdit::_notification(int p_what) {
 		h_scroll->set_anchor_and_margin(MARGIN_RIGHT, ANCHOR_END, 0);
 		h_scroll->set_anchor_and_margin(MARGIN_TOP, ANCHOR_END, -hmin.height);
 		h_scroll->set_anchor_and_margin(MARGIN_BOTTOM, ANCHOR_END, 0);
-
-		zoom_minus->set_icon(get_icon("minus"));
-		zoom_reset->set_icon(get_icon("reset"));
-		zoom_plus->set_icon(get_icon("more"));
-		snap_button->set_icon(get_icon("snap"));
 	}
 	if (p_what == NOTIFICATION_DRAW) {
 
@@ -776,10 +776,16 @@ void GraphEdit::_top_layer_draw() {
 		_draw_cos_line(top_layer, pos, topos, col, col);
 	}
 
-	if (box_selecting)
+	if (box_selecting) {
 		top_layer->draw_rect(
 				box_selecting_rect,
-				get_color("accent_color", "Editor") * Color(1, 1, 1, 0.375));
+				get_color("box_selection_fill_color", "Editor"));
+
+		top_layer->draw_rect(
+				box_selecting_rect,
+				get_color("box_selection_stroke_color", "Editor"),
+				false);
+	}
 }
 
 void GraphEdit::set_selected(Node *p_child) {
@@ -1030,14 +1036,28 @@ void GraphEdit::_gui_input(const Ref<InputEvent> &p_ev) {
 	}
 
 	Ref<InputEventKey> k = p_ev;
-	if (k.is_valid() && k->get_scancode() == KEY_D && k->is_pressed() && k->get_command()) {
-		emit_signal("duplicate_nodes_request");
-		accept_event();
-	}
 
-	if (k.is_valid() && k->get_scancode() == KEY_DELETE && k->is_pressed()) {
-		emit_signal("delete_nodes_request");
-		accept_event();
+	if (k.is_valid()) {
+
+		if (k->get_scancode() == KEY_D && k->is_pressed() && k->get_command()) {
+			emit_signal("duplicate_nodes_request");
+			accept_event();
+		}
+
+		if (k->get_scancode() == KEY_C && k->is_pressed() && k->get_command()) {
+			emit_signal("copy_nodes_request");
+			accept_event();
+		}
+
+		if (k->get_scancode() == KEY_V && k->is_pressed() && k->get_command()) {
+			emit_signal("paste_nodes_request");
+			accept_event();
+		}
+
+		if (k->get_scancode() == KEY_DELETE && k->is_pressed()) {
+			emit_signal("delete_nodes_request");
+			accept_event();
+		}
 	}
 
 	Ref<InputEventMagnifyGesture> magnify_gesture = p_ev;
@@ -1297,6 +1317,8 @@ void GraphEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("disconnection_request", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot")));
 	ADD_SIGNAL(MethodInfo("popup_request", PropertyInfo(Variant::VECTOR2, "position")));
 	ADD_SIGNAL(MethodInfo("duplicate_nodes_request"));
+	ADD_SIGNAL(MethodInfo("copy_nodes_request"));
+	ADD_SIGNAL(MethodInfo("paste_nodes_request"));
 	ADD_SIGNAL(MethodInfo("node_selected", PropertyInfo(Variant::OBJECT, "node", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 	ADD_SIGNAL(MethodInfo("connection_to_empty", PropertyInfo(Variant::STRING, "from"), PropertyInfo(Variant::INT, "from_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));
 	ADD_SIGNAL(MethodInfo("connection_from_empty", PropertyInfo(Variant::STRING, "to"), PropertyInfo(Variant::INT, "to_slot"), PropertyInfo(Variant::VECTOR2, "release_position")));

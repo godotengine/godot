@@ -46,6 +46,8 @@
 		<member name="axis" type="int" setter="set_axis" getter="get_axis" enum="Vector3.Axis" default="2">
 			The direction in which the front of the texture faces.
 		</member>
+		<member name="billboard" type="int" setter="set_billboard_mode" getter="get_billboard_mode" enum="SpatialMaterial.BillboardMode" default="0">
+		</member>
 		<member name="centered" type="bool" setter="set_centered" getter="is_centered" default="true">
 			If [code]true[/code], texture will be centered.
 		</member>

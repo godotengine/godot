@@ -3,10 +3,10 @@
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
-/*                    http://www.godotengine.org                         */
+/*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2017 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2017 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -430,7 +430,7 @@ void ARKitInterface::process() {
 
 				// get some info about our screen and orientation
 				Size2 screen_size = OS::get_singleton()->get_window_size();
-				UIDeviceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
+				UIInterfaceOrientation orientation = [[UIApplication sharedApplication] statusBarOrientation];
 
 				// Grab our camera image for our backbuffer
 				CVPixelBufferRef pixelBuffer = current_frame.capturedImage;
@@ -531,7 +531,7 @@ void ARKitInterface::process() {
 						// we need to invert this, probably row v.s. column notation
 						affine_transform = CGAffineTransformInvert(affine_transform);
 
-						if (orientation != UIDeviceOrientationPortrait) {
+						if (orientation != UIInterfaceOrientationPortrait) {
 							affine_transform.b = -affine_transform.b;
 							affine_transform.d = -affine_transform.d;
 							affine_transform.ty = 1.0 - affine_transform.ty;
@@ -582,28 +582,28 @@ void ARKitInterface::process() {
 
 					// copy our current frame transform
 					matrix_float4x4 m44 = camera.transform;
-					if (orientation == UIDeviceOrientationLandscapeLeft) {
+					if (orientation == UIInterfaceOrientationLandscapeLeft) {
 						transform.basis.elements[0].x = m44.columns[0][0];
 						transform.basis.elements[1].x = m44.columns[0][1];
 						transform.basis.elements[2].x = m44.columns[0][2];
 						transform.basis.elements[0].y = m44.columns[1][0];
 						transform.basis.elements[1].y = m44.columns[1][1];
 						transform.basis.elements[2].y = m44.columns[1][2];
-					} else if (orientation == UIDeviceOrientationPortrait) {
+					} else if (orientation == UIInterfaceOrientationPortrait) {
 						transform.basis.elements[0].x = m44.columns[1][0];
 						transform.basis.elements[1].x = m44.columns[1][1];
 						transform.basis.elements[2].x = m44.columns[1][2];
 						transform.basis.elements[0].y = -m44.columns[0][0];
 						transform.basis.elements[1].y = -m44.columns[0][1];
 						transform.basis.elements[2].y = -m44.columns[0][2];
-					} else if (orientation == UIDeviceOrientationLandscapeRight) {
+					} else if (orientation == UIInterfaceOrientationLandscapeRight) {
 						transform.basis.elements[0].x = -m44.columns[0][0];
 						transform.basis.elements[1].x = -m44.columns[0][1];
 						transform.basis.elements[2].x = -m44.columns[0][2];
 						transform.basis.elements[0].y = -m44.columns[1][0];
 						transform.basis.elements[1].y = -m44.columns[1][1];
 						transform.basis.elements[2].y = -m44.columns[1][2];
-					} else if (orientation == UIDeviceOrientationPortraitUpsideDown) {
+					} else if (orientation == UIInterfaceOrientationPortraitUpsideDown) {
 						// this may not be correct
 						transform.basis.elements[0].x = m44.columns[1][0];
 						transform.basis.elements[1].x = m44.columns[1][1];

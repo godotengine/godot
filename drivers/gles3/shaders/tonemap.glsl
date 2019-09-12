@@ -164,7 +164,8 @@ vec3 linear_to_srgb(vec3 color) { // convert linear rgb to srgb, assumes clamped
 	return mix((vec3(1.0f) + a) * pow(color.rgb, vec3(1.0f / 2.4f)) - a, 12.92f * color.rgb, lessThan(color.rgb, vec3(0.0031308f)));
 }
 
-vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always outputs clamped [0;1] color
+// inputs are LINEAR, If Linear tonemapping is selected no transform is performed else outputs are clamped [0, 1] color
+vec3 apply_tonemapping(vec3 color, float white) {
 #ifdef USE_REINHARD_TONEMAPPER
 	return tonemap_reinhard(color, white);
 #endif
@@ -177,7 +178,7 @@ vec3 apply_tonemapping(vec3 color, float white) { // inputs are LINEAR, always o
 	return tonemap_aces(color, white);
 #endif
 
-	return clamp(color, vec3(0.0f), vec3(1.0f)); // no other selected -> linear
+	return color; // no other selected -> linear: no color transform applied
 }
 
 vec3 gather_glow(sampler2D tex, vec2 uv) { // sample all selected glow levels
@@ -220,10 +221,14 @@ vec3 apply_glow(vec3 color, vec3 glow) { // apply glow using the selected blendi
 #endif
 
 #ifdef USE_GLOW_SCREEN
+	//need color clamping
+	color = clamp(color, vec3(0.0f), vec3(1.0f));
 	color = max((color + glow) - (color * glow), vec3(0.0));
 #endif
 
 #ifdef USE_GLOW_SOFTLIGHT
+	//need color clamping
+	color = clamp(color, vec3(0.0f), vec3(1.0));
 	glow = glow * vec3(0.5f) + vec3(0.5f);
 
 	color.r = (glow.r <= 0.5f) ? (color.r - (1.0f - 2.0f * glow.r) * color.r * (1.0f - color.r)) : (((glow.r > 0.5f) && (color.r <= 0.25f)) ? (color.r + (2.0f * glow.r - 1.0f) * (4.0f * color.r * (4.0f * color.r + 1.0f) * (color.r - 1.0f) + 7.0f * color.r)) : (color.r + (2.0f * glow.r - 1.0f) * (sqrt(color.r) - color.r)));
@@ -265,14 +270,16 @@ void main() {
 
 	color *= exposure;
 
-	// Early Tonemap & SRGB Conversion
+	// Early Tonemap & SRGB Conversion; note that Linear tonemapping does not clamp to [0, 1]; some operations below expect a [0, 1] range and will clamp
 
 	color = apply_tonemapping(color, white);
 
 #ifdef KEEP_3D_LINEAR
 	// leave color as is (-> don't convert to SRGB)
 #else
-	color = linear_to_srgb(color); // regular linear -> SRGB conversion
+	//need color clamping
+	color = clamp(color, vec3(0.0f), vec3(1.0f));
+	color = linear_to_srgb(color); // regular linear -> SRGB conversion (needs clamped values)
 #endif
 
 	// Glow
@@ -282,6 +289,7 @@ void main() {
 
 	// high dynamic range -> SRGB
 	glow = apply_tonemapping(glow, white);
+	glow = clamp(glow, vec3(0.0f), vec3(1.0f));
 	glow = linear_to_srgb(glow);
 
 	color = apply_glow(color, glow);

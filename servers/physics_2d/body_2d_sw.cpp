@@ -47,8 +47,10 @@ void Body2DSW::update_inertias() {
 
 		case Physics2DServer::BODY_MODE_RIGID: {
 
-			if (user_inertia) break;
-
+			if (user_inertia) {
+				_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
+				break;
+			}
 			//update tensor for allshapes, not the best way but should be somehow OK. (inspired from bullet)
 			real_t total_area = 0;
 
@@ -57,7 +59,7 @@ void Body2DSW::update_inertias() {
 				total_area += get_shape_aabb(i).get_area();
 			}
 
-			real_t _inertia = 0;
+			inertia = 0;
 
 			for (int i = 0; i < get_shape_count(); i++) {
 
@@ -73,15 +75,10 @@ void Body2DSW::update_inertias() {
 
 				Transform2D mtx = get_shape_transform(i);
 				Vector2 scale = mtx.get_scale();
-				_inertia += shape->get_moment_of_inertia(mass, scale) + mass * mtx.get_origin().length_squared();
-				//Rect2 ab = get_shape_aabb(i);
-				//_inertia+=mass*ab.size.dot(ab.size)/12.0f;
+				inertia += shape->get_moment_of_inertia(mass, scale) + mass * mtx.get_origin().length_squared();
 			}
 
-			if (_inertia != 0)
-				_inv_inertia = 1.0 / _inertia;
-			else
-				_inv_inertia = 0.0; //wathever
+			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
 
 			if (mass)
 				_inv_mass = 1.0 / mass;
@@ -160,6 +157,7 @@ void Body2DSW::set_param(Physics2DServer::BodyParameter p_param, real_t p_value)
 				_update_inertia();
 			} else {
 				user_inertia = true;
+				inertia = p_value;
 				_inv_inertia = 1.0 / p_value;
 			}
 		} break;
@@ -185,28 +183,28 @@ real_t Body2DSW::get_param(Physics2DServer::BodyParameter p_param) const {
 		case Physics2DServer::BODY_PARAM_BOUNCE: {
 
 			return bounce;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_FRICTION: {
 
 			return friction;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_MASS: {
 			return mass;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_INERTIA: {
-			return _inv_inertia == 0 ? 0 : 1.0 / _inv_inertia;
-		} break;
+			return inertia;
+		}
 		case Physics2DServer::BODY_PARAM_GRAVITY_SCALE: {
 			return gravity_scale;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_LINEAR_DAMP: {
 
 			return linear_damp;
-		} break;
+		}
 		case Physics2DServer::BODY_PARAM_ANGULAR_DAMP: {
 
 			return angular_damp;
-		} break;
+		}
 		default: {
 		}
 	}
@@ -226,6 +224,7 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 
 			_set_inv_transform(get_transform().affine_inverse());
 			_inv_mass = 0;
+			_inv_inertia = 0;
 			_set_static(p_mode == Physics2DServer::BODY_MODE_STATIC);
 			set_active(p_mode == Physics2DServer::BODY_MODE_KINEMATIC && contacts.size());
 			linear_velocity = Vector2();
@@ -237,17 +236,21 @@ void Body2DSW::set_mode(Physics2DServer::BodyMode p_mode) {
 		case Physics2DServer::BODY_MODE_RIGID: {
 
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
+			_inv_inertia = inertia > 0 ? (1.0 / inertia) : 0;
 			_set_static(false);
 
 		} break;
 		case Physics2DServer::BODY_MODE_CHARACTER: {
 
 			_inv_mass = mass > 0 ? (1.0 / mass) : 0;
+			_inv_inertia = 0;
 			_set_static(false);
+			angular_velocity = 0;
 		} break;
 	}
-
-	_update_inertia();
+	if (p_mode == Physics2DServer::BODY_MODE_RIGID && _inv_inertia == 0) {
+		_update_inertia();
+	}
 	/*
 	if (get_space())
 		_update_queries();
@@ -343,19 +346,19 @@ Variant Body2DSW::get_state(Physics2DServer::BodyState p_state) const {
 	switch (p_state) {
 		case Physics2DServer::BODY_STATE_TRANSFORM: {
 			return get_transform();
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_LINEAR_VELOCITY: {
 			return linear_velocity;
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_ANGULAR_VELOCITY: {
 			return angular_velocity;
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_SLEEPING: {
 			return !is_active();
-		} break;
+		}
 		case Physics2DServer::BODY_STATE_CAN_SLEEP: {
 			return can_sleep;
-		} break;
+		}
 	}
 
 	return Variant();
@@ -608,7 +611,7 @@ void Body2DSW::call_queries() {
 			set_force_integration_callback(0, StringName());
 		} else {
 			Variant::CallError ce;
-			if (fi_callback->callback_udata.get_type()) {
+			if (fi_callback->callback_udata.get_type() != Variant::NIL) {
 
 				obj->call(fi_callback->method, vp, 2, ce);
 
@@ -668,6 +671,7 @@ Body2DSW::Body2DSW() :
 	angular_velocity = 0;
 	biased_angular_velocity = 0;
 	mass = 1;
+	inertia = 0;
 	user_inertia = false;
 	_inv_inertia = 0;
 	_inv_mass = 1;

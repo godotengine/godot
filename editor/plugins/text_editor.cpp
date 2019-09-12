@@ -221,19 +221,19 @@ void TextEditor::_validate_script() {
 
 void TextEditor::_update_bookmark_list() {
 
-	bookmarks_menu->get_popup()->clear();
+	bookmarks_menu->clear();
 
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
-	bookmarks_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/remove_all_bookmarks"), BOOKMARK_REMOVE_ALL);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_next_bookmark"), BOOKMARK_GOTO_NEXT);
+	bookmarks_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_previous_bookmark"), BOOKMARK_GOTO_PREV);
 
 	Array bookmark_list = code_editor->get_text_edit()->get_bookmarks_array();
 	if (bookmark_list.size() == 0) {
 		return;
 	}
 
-	bookmarks_menu->get_popup()->add_separator();
+	bookmarks_menu->add_separator();
 
 	for (int i = 0; i < bookmark_list.size(); i++) {
 		String line = code_editor->get_text_edit()->get_line(bookmark_list[i]).strip_edges();
@@ -242,17 +242,17 @@ void TextEditor::_update_bookmark_list() {
 			line = line.substr(0, 50);
 		}
 
-		bookmarks_menu->get_popup()->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
-		bookmarks_menu->get_popup()->set_item_metadata(bookmarks_menu->get_popup()->get_item_count() - 1, bookmark_list[i]);
+		bookmarks_menu->add_item(String::num((int)bookmark_list[i] + 1) + " - \"" + line + "\"");
+		bookmarks_menu->set_item_metadata(bookmarks_menu->get_item_count() - 1, bookmark_list[i]);
 	}
 }
 
 void TextEditor::_bookmark_item_pressed(int p_idx) {
 
 	if (p_idx < 4) { // Any item before the separator.
-		_edit_option(bookmarks_menu->get_popup()->get_item_id(p_idx));
+		_edit_option(bookmarks_menu->get_item_id(p_idx));
 	} else {
-		code_editor->goto_line(bookmarks_menu->get_popup()->get_item_metadata(p_idx));
+		code_editor->goto_line(bookmarks_menu->get_item_metadata(p_idx));
 	}
 }
 
@@ -311,6 +311,11 @@ void TextEditor::tag_saved_version() {
 void TextEditor::goto_line(int p_line, bool p_with_error) {
 
 	code_editor->goto_line(p_line);
+}
+
+void TextEditor::goto_line_selection(int p_line, int p_begin, int p_end) {
+
+	code_editor->goto_line_selection(p_line, p_begin, p_end);
 }
 
 void TextEditor::set_executing_line(int p_line) {
@@ -477,6 +482,14 @@ void TextEditor::_edit_option(int p_op) {
 
 			code_editor->get_find_replace_bar()->popup_replace();
 		} break;
+		case SEARCH_IN_FILES: {
+
+			String selected_text = code_editor->get_text_edit()->get_selection_text();
+
+			// Yep, because it doesn't make sense to instance this dialog for every single script open...
+			// So this will be delegated to the ScriptEditor.
+			emit_signal("search_in_files_requested", selected_text);
+		} break;
 		case SEARCH_GOTO_LINE: {
 
 			goto_line_dialog->popup_find_line(tx);
@@ -553,7 +566,7 @@ void TextEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					int to_column = tx->get_selection_to_column();
 
 					if (row < from_line || row > to_line || (row == from_line && col < from_column) || (row == to_line && col > to_column)) {
-						// Right click is outside the selected text
+						// Right click is outside the selected text.
 						tx->deselect();
 					}
 				}
@@ -632,17 +645,14 @@ TextEditor::TextEditor() {
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_previous"), SEARCH_FIND_PREV);
 	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/replace"), SEARCH_REPLACE);
 	search_menu->get_popup()->add_separator();
-	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
-
-	goto_line_dialog = memnew(GotoLineDialog);
-	add_child(goto_line_dialog);
+	search_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/find_in_files"), SEARCH_IN_FILES);
 
 	edit_menu = memnew(MenuButton);
+	edit_hb->add_child(edit_menu);
 	edit_menu->set_text(TTR("Edit"));
 	edit_menu->set_switch_on_hover(true);
 	edit_menu->get_popup()->connect("id_pressed", this, "_edit_option");
 
-	edit_hb->add_child(edit_menu);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/undo"), EDIT_UNDO);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/redo"), EDIT_REDO);
 	edit_menu->get_popup()->add_separator();
@@ -684,15 +694,36 @@ TextEditor::TextEditor() {
 	highlighter_menu->add_radio_check_item(TTR("Standard"));
 	highlighter_menu->connect("id_pressed", this, "_change_syntax_highlighter");
 
-	bookmarks_menu = memnew(MenuButton);
-	edit_hb->add_child(bookmarks_menu);
-	bookmarks_menu->set_text(TTR("Bookmarks"));
-	bookmarks_menu->set_switch_on_hover(true);
+	MenuButton *goto_menu = memnew(MenuButton);
+	edit_hb->add_child(goto_menu);
+	goto_menu->set_text(TTR("Go To"));
+	goto_menu->set_switch_on_hover(true);
+	goto_menu->get_popup()->connect("id_pressed", this, "_edit_option");
+
+	goto_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("script_text_editor/goto_line"), SEARCH_GOTO_LINE);
+	goto_menu->get_popup()->add_separator();
+
+	bookmarks_menu = memnew(PopupMenu);
+	bookmarks_menu->set_name(TTR("Bookmarks"));
+	goto_menu->get_popup()->add_child(bookmarks_menu);
+	goto_menu->get_popup()->add_submenu_item(TTR("Bookmarks"), "Bookmarks");
 	_update_bookmark_list();
 	bookmarks_menu->connect("about_to_show", this, "_update_bookmark_list");
-	bookmarks_menu->get_popup()->connect("index_pressed", this, "_bookmark_item_pressed");
+	bookmarks_menu->connect("index_pressed", this, "_bookmark_item_pressed");
+
+	goto_line_dialog = memnew(GotoLineDialog);
+	add_child(goto_line_dialog);
 
 	code_editor->get_text_edit()->set_drag_forwarding(this);
+}
+
+TextEditor::~TextEditor() {
+	for (const Map<String, SyntaxHighlighter *>::Element *E = highlighters.front(); E; E = E->next()) {
+		if (E->get() != NULL) {
+			memdelete(E->get());
+		}
+	}
+	highlighters.clear();
 }
 
 void TextEditor::validate() {

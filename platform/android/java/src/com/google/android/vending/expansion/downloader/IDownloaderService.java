@@ -31,47 +31,47 @@ import android.os.Messenger;
  * should immediately call {@link #onClientUpdated}.
  */
 public interface IDownloaderService {
-	/**
+    /**
      * Set this flag in response to the
      * IDownloaderClient.STATE_PAUSED_NEED_CELLULAR_PERMISSION state and then
      * call RequestContinueDownload to resume a download
      */
-	public static final int FLAGS_DOWNLOAD_OVER_CELLULAR = 1;
+    public static final int FLAGS_DOWNLOAD_OVER_CELLULAR = 1;
 
-	/**
+    /**
      * Request that the service abort the current download. The service should
      * respond by changing the state to {@link IDownloaderClient.STATE_ABORTED}.
      */
-	void requestAbortDownload();
+    void requestAbortDownload();
 
-	/**
+    /**
      * Request that the service pause the current download. The service should
      * respond by changing the state to
      * {@link IDownloaderClient.STATE_PAUSED_BY_REQUEST}.
      */
-	void requestPauseDownload();
+    void requestPauseDownload();
 
-	/**
+    /**
      * Request that the service continue a paused download, when in any paused
      * or failed state, including
      * {@link IDownloaderClient.STATE_PAUSED_BY_REQUEST}.
      */
-	void requestContinueDownload();
+    void requestContinueDownload();
 
-	/**
+    /**
      * Set the flags for this download (e.g.
      * {@link DownloaderService.FLAGS_DOWNLOAD_OVER_CELLULAR}).
      *
      * @param flags
      */
-	void setDownloadFlags(int flags);
+    void setDownloadFlags(int flags);
 
-	/**
+    /**
      * Requests that the download status be sent to the client.
      */
-	void requestDownloadStatus();
+    void requestDownloadStatus();
 
-	/**
+    /**
      * Call this when you get {@link
      * IDownloaderClient.onServiceConnected(Messenger m)} from the
      * DownloaderClient to register the client with the service. It will
@@ -79,5 +79,5 @@ public interface IDownloaderService {
      *
      * @param clientMessenger
      */
-	void onClientUpdated(Messenger clientMessenger);
+    void onClientUpdated(Messenger clientMessenger);
 }

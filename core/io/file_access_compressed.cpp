@@ -208,7 +208,8 @@ void FileAccessCompressed::seek(size_t p_position) {
 		if (p_position == read_total) {
 			at_end = true;
 		} else {
-
+			at_end = false;
+			read_eof = false;
 			int block_idx = p_position / block_size;
 			if (block_idx != read_block) {
 

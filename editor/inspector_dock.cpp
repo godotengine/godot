@@ -408,6 +408,10 @@ void InspectorDock::update(Object *p_object) {
 		warning->hide();
 		search->set_editable(false);
 
+		editor_path->set_text("");
+		editor_path->set_tooltip("");
+		editor_path->set_icon(NULL);
+
 		return;
 	}
 
@@ -597,7 +601,7 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_show_categories(true);
 	inspector->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	inspector->set_use_doc_hints(true);
-	inspector->set_hide_object_properties(false);
+	inspector->set_hide_script(false);
 	inspector->set_enable_capitalize_paths(bool(EDITOR_GET("interface/inspector/capitalize_properties")));
 	inspector->set_use_folding(!bool(EDITOR_GET("interface/inspector/disable_folding")));
 	inspector->register_text_enter(search);

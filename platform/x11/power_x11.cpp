@@ -268,9 +268,7 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 			check_proc_acpi_battery(node.utf8().get_data(), &have_battery, &charging /*, seconds, percent*/);
 			node = dirp->get_next();
 		}
-		memdelete(dirp);
 	}
-
 	dirp->change_dir(proc_acpi_ac_adapter_path);
 	err = dirp->list_dir_begin();
 	if (err != OK) {
@@ -281,7 +279,6 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 			check_proc_acpi_ac_adapter(node.utf8().get_data(), &have_ac);
 			node = dirp->get_next();
 		}
-		memdelete(dirp);
 	}
 
 	if (!have_battery) {
@@ -294,6 +291,7 @@ bool PowerX11::GetPowerInfo_Linux_proc_acpi() {
 		this->power_state = OS::POWERSTATE_ON_BATTERY;
 	}
 
+	memdelete(dirp);
 	return true; /* definitive answer. */
 }
 

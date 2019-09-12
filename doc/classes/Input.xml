@@ -20,6 +20,7 @@
 			<description>
 				This will simulate pressing the specified action.
 				The strength can be used for non-boolean actions, it's ranged between 0 and 1 representing the intensity of the given action.
+				[b]Note:[/b] This method will not cause any [method Node._input] calls. It is intended to be used with [method is_action_pressed] and [method is_action_just_pressed]. If you want to simulate [code]_input[/code], use [method parse_input_event] instead.
 			</description>
 		</method>
 		<method name="action_release">
@@ -222,7 +223,7 @@
 			<argument index="0" name="action" type="String">
 			</argument>
 			<description>
-				Returns [code]true[/code] if you are pressing the action event.
+				Returns [code]true[/code] if you are pressing the action event. Note that if an action has multiple buttons asigned and more than one of them is pressed, releasing one button will release the action, even if some other button assigned to this action is still pressed.
 			</description>
 		</method>
 		<method name="is_joy_button_pressed" qualifiers="const">
@@ -283,7 +284,14 @@
 			<argument index="0" name="event" type="InputEvent">
 			</argument>
 			<description>
-				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code.
+				Feeds an [InputEvent] to the game. Can be used to artificially trigger input events from code. Also generates [method Node._input] calls.
+				Example:
+				[codeblock]
+				var a = InputEventAction.new()
+				a.action = "ui_cancel"
+				a.pressed = true
+				Input.parse_input_event(a)
+				[/codeblock]
 			</description>
 		</method>
 		<method name="remove_joy_mapping">
@@ -318,6 +326,7 @@
 			<description>
 				Sets the default cursor shape to be used in the viewport instead of [constant CURSOR_ARROW].
 				[b]Note:[/b] If you want to change the default cursor shape for [Control]'s nodes, use [member Control.mouse_default_cursor_shape] instead.
+				[b]Note:[/b] This method generates an [InputEventMouseMotion] to update cursor immediately.
 			</description>
 		</method>
 		<method name="set_mouse_mode">
@@ -361,6 +370,16 @@
 			</argument>
 			<description>
 				Stops the vibration of the joypad.
+			</description>
+		</method>
+		<method name="vibrate_handheld">
+			<return type="void">
+			</return>
+			<argument index="0" name="duration_ms" type="int" default="500">
+			</argument>
+			<description>
+				Vibrate Android and iOS devices.
+				[b]Note:[/b] It needs VIBRATE permission for Android at export settings. iOS does not support duration.
 			</description>
 		</method>
 		<method name="warp_mouse_position">

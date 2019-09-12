@@ -36,9 +36,6 @@
 #include "scene/2d/polygon_2d.h"
 #include "scene/gui/tool_button.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class CanvasItemEditor;
 
 class AbstractPolygon2DEditor : public HBoxContainer {

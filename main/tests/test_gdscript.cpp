@@ -300,14 +300,11 @@ static String _parser_expr(const GDScriptParser::Node *p_expr) {
 		} break;
 		default: {
 
-			String error = "Parser bug at " + itos(p_expr->line) + ", invalid expression type: " + itos(p_expr->type);
-			ERR_EXPLAIN(error);
-			ERR_FAIL_V("");
+			ERR_FAIL_V_MSG("", "Parser bug at " + itos(p_expr->line) + ", invalid expression type: " + itos(p_expr->type));
 		}
 	}
 
 	return txt;
-	//return "("+txt+")";
 }
 
 static void _parser_show_block(const GDScriptParser::BlockNode *p_block, int p_indent) {
@@ -910,8 +907,7 @@ static void _disassemble_class(const Ref<GDScript> &p_class, const Vector<String
 
 			if (incr == 0) {
 
-				ERR_EXPLAIN("unhandled opcode: " + itos(code[ip]));
-				ERR_BREAK(true);
+				ERR_BREAK_MSG(true, "Unhandled opcode: " + itos(code[ip]));
 			}
 
 			ip += incr;
@@ -936,11 +932,7 @@ MainLoop *test(TestType p_type) {
 	}
 
 	FileAccess *fa = FileAccess::open(test, FileAccess::READ);
-
-	if (!fa) {
-		ERR_EXPLAIN("Could not open file: " + test);
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!fa, NULL, "Could not open file: " + test);
 
 	Vector<uint8_t> buf;
 	int flen = fa->get_len();

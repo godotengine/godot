@@ -56,17 +56,14 @@ RES ResourceFormatPKM::load(const String &p_path, const String &p_original_path,
 	if (r_error)
 		*r_error = ERR_FILE_CORRUPT;
 
-	ERR_EXPLAIN("Unable to open PKM texture file: " + p_path);
-	ERR_FAIL_COND_V(err != OK, RES());
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open PKM texture file: " + p_path + ".");
 
 	// big endian
 	f->set_endian_swap(true);
 
 	ETC1Header h;
-	ERR_EXPLAIN("Invalid or Unsupported PKM texture file: " + p_path);
 	f->get_buffer((uint8_t *)&h.tag, sizeof(h.tag));
-	if (strncmp(h.tag, "PKM 10", sizeof(h.tag)))
-		ERR_FAIL_V(RES());
+	ERR_FAIL_COND_V_MSG(strncmp(h.tag, "PKM 10", sizeof(h.tag)), RES(), "Invalid or unsupported PKM texture file: " + p_path + ".");
 
 	h.format = f->get_16();
 	h.texWidth = f->get_16();

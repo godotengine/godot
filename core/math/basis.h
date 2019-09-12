@@ -36,10 +36,6 @@
 
 #include "core/math/quat.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Basis {
 public:
 	Vector3 elements[3];

@@ -85,6 +85,8 @@ AI_FORCE_INLINE TReal aiColor4t<TReal>::operator[](unsigned int i) const {
             return g;
         case 2:
             return b;
+        case 3:
+            return a;
         default:
             break;
     }
@@ -100,6 +102,8 @@ AI_FORCE_INLINE TReal& aiColor4t<TReal>::operator[](unsigned int i) {
             return g;
         case 2:
             return b;
+        case 3:
+            return a;
         default:
             break;
     }

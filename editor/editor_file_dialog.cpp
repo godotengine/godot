@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "editor_file_dialog.h"
+
 #include "core/os/file_access.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -256,6 +257,7 @@ void EditorFileDialog::_post_popup() {
 
 	if (is_visible_in_tree()) {
 		Ref<Texture> folder = get_icon("folder", "FileDialog");
+		const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 		recent->clear();
 
 		bool res = access == ACCESS_RESOURCES;
@@ -273,6 +275,7 @@ void EditorFileDialog::_post_popup() {
 
 			recent->add_item(name, folder);
 			recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
+			recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
 		}
 
 		local_history.clear();
@@ -679,7 +682,12 @@ void EditorFileDialog::update_file_name() {
 		String filter_str = filters[idx];
 		String file_str = file->get_text();
 		String base_name = file_str.get_basename();
-		file_str = base_name + "." + filter_str.split(";")[1].strip_edges().to_lower();
+		Vector<String> filter_substr = filter_str.split(";");
+		if (filter_substr.size() >= 2) {
+			file_str = base_name + "." + filter_substr[1].strip_edges().to_lower();
+		} else {
+			file_str = base_name + "." + filter_str.get_extension().strip_edges().to_lower();
+		}
 		file->set_text(file_str);
 	}
 }
@@ -728,22 +736,19 @@ void EditorFileDialog::update_file_list() {
 	dir_access->list_dir_begin();
 
 	Ref<Texture> folder = get_icon("folder", "FileDialog");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
-	bool is_dir;
-	bool is_hidden;
 	String item;
 
-	while ((item = dir_access->get_next(&is_dir)) != "") {
+	while ((item = dir_access->get_next()) != "") {
 
 		if (item == "." || item == "..")
 			continue;
 
-		is_hidden = dir_access->current_is_hidden();
-
-		if (show_hidden_files || !is_hidden) {
-			if (!is_dir)
+		if (show_hidden_files || !dir_access->current_is_hidden()) {
+			if (!dir_access->current_is_dir())
 				files.push_back(item);
 			else
 				dirs.push_back(item);
@@ -772,6 +777,7 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
 
 		dirs.pop_front();
 	}
@@ -1198,6 +1204,7 @@ void EditorFileDialog::_update_favorites() {
 
 	String current = get_current_dir();
 	Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	favorites->clear();
 
 	favorite->set_pressed(false);
@@ -1228,6 +1235,7 @@ void EditorFileDialog::_update_favorites() {
 		}
 
 		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
+		favorites->set_item_icon_modulate(favorites->get_item_count() - 1, folder_color);
 
 		if (setthis) {
 			favorite->set_pressed(true);
@@ -1507,9 +1515,9 @@ EditorFileDialog::EditorFileDialog() {
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 
 	dir_prev = memnew(ToolButton);
-	dir_prev->set_tooltip(TTR("Previous Folder"));
+	dir_prev->set_tooltip(TTR("Go to previous folder."));
 	dir_next = memnew(ToolButton);
-	dir_next->set_tooltip(TTR("Next Folder"));
+	dir_next->set_tooltip(TTR("Go to next folder."));
 	dir_up = memnew(ToolButton);
 	dir_up->set_tooltip(TTR("Go to parent folder."));
 
@@ -1528,7 +1536,7 @@ EditorFileDialog::EditorFileDialog() {
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	refresh = memnew(ToolButton);
-	refresh->set_tooltip(TTR("Refresh"));
+	refresh->set_tooltip(TTR("Refresh files."));
 	refresh->connect("pressed", this, "_update_file_list");
 	pathhb->add_child(refresh);
 
@@ -1541,7 +1549,7 @@ EditorFileDialog::EditorFileDialog() {
 	show_hidden = memnew(ToolButton);
 	show_hidden->set_toggle_mode(true);
 	show_hidden->set_pressed(is_showing_hidden_files());
-	show_hidden->set_tooltip(TTR("Toggle visibility of hidden files."));
+	show_hidden->set_tooltip(TTR("Toggle the visibility of hidden files."));
 	show_hidden->connect("toggled", this, "set_show_hidden_files");
 	pathhb->add_child(show_hidden);
 

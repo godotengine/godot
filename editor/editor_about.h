@@ -43,9 +43,6 @@
 #include "scene/gui/tree.h"
 
 #include "editor_scale.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class EditorAbout : public AcceptDialog {
 

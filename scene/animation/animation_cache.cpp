@@ -80,8 +80,7 @@ void AnimationCache::_update_cache() {
 		if (!node) {
 
 			path_cache.push_back(Path());
-			ERR_EXPLAIN("Invalid Track Path in Animation: " + np);
-			ERR_CONTINUE(!node);
+			ERR_CONTINUE_MSG(!node, "Invalid track path in animation: " + np + ".");
 		}
 
 		Path path;
@@ -92,8 +91,7 @@ void AnimationCache::_update_cache() {
 
 			if (np.get_subname_count() > 1) {
 				path_cache.push_back(Path());
-				ERR_EXPLAIN("Transform tracks can't have a subpath: " + np);
-				ERR_CONTINUE(animation->track_get_type(i) == Animation::TYPE_TRANSFORM);
+				ERR_CONTINUE_MSG(animation->track_get_type(i) == Animation::TYPE_TRANSFORM, "Transform tracks can't have a subpath: " + np + ".");
 			}
 
 			Spatial *sp = Object::cast_to<Spatial>(node);
@@ -101,8 +99,7 @@ void AnimationCache::_update_cache() {
 			if (!sp) {
 
 				path_cache.push_back(Path());
-				ERR_EXPLAIN("Transform track not of type Spatial: " + np);
-				ERR_CONTINUE(!sp);
+				ERR_CONTINUE_MSG(!sp, "Transform track not of type Spatial: " + np + ".");
 			}
 
 			if (np.get_subname_count() == 1) {
@@ -113,15 +110,13 @@ void AnimationCache::_update_cache() {
 				if (!sk) {
 
 					path_cache.push_back(Path());
-					ERR_EXPLAIN("Property defined in Transform track, but not a Skeleton!: " + np);
-					ERR_CONTINUE(!sk);
+					ERR_CONTINUE_MSG(!sk, "Property defined in Transform track, but not a Skeleton!: " + np + ".");
 				}
 
 				int idx = sk->find_bone(ps);
 				if (idx == -1) {
 					path_cache.push_back(Path());
-					ERR_EXPLAIN("Property defined in Transform track, but not a Skeleton Bone!: " + np);
-					ERR_CONTINUE(idx == -1);
+					ERR_CONTINUE_MSG(idx == -1, "Property defined in Transform track, but not a Skeleton Bone!: " + np + ".");
 				}
 
 				path.bone_idx = idx;
@@ -161,8 +156,7 @@ void AnimationCache::_update_cache() {
 			if (np.get_subname_count() == 0) {
 
 				path_cache.push_back(Path());
-				ERR_EXPLAIN("Value Track lacks property: " + np);
-				ERR_CONTINUE(np.get_subname_count() == 0);
+				ERR_CONTINUE_MSG(np.get_subname_count() == 0, "Value Track lacks property: " + np + ".");
 			}
 
 		} else if (animation->track_get_type(i) == Animation::TYPE_METHOD) {
@@ -170,8 +164,7 @@ void AnimationCache::_update_cache() {
 			if (path.subpath.size() != 0) { // Trying to call a method of a non-resource
 
 				path_cache.push_back(Path());
-				ERR_EXPLAIN("Method Track has property: " + np);
-				ERR_CONTINUE(path.subpath.size() != 0);
+				ERR_CONTINUE_MSG(path.subpath.size() != 0, "Method Track has property: " + np + ".");
 			}
 		}
 

@@ -146,10 +146,11 @@
 		<member name="fog_depth_enabled" type="bool" setter="set_fog_depth_enabled" getter="is_fog_depth_enabled" default="true">
 			Enables the fog depth.
 		</member>
-		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="0.0">
+		<member name="fog_depth_end" type="float" setter="set_fog_depth_end" getter="get_fog_depth_end" default="100.0">
+			Fog's depth end distance from the camera. If this value is set to 0, it will be equal to the current camera's [member Camera.far] value.
 		</member>
 		<member name="fog_enabled" type="bool" setter="set_fog_enabled" getter="is_fog_enabled" default="false">
-			Enables the fog. Needs fog_height_enabled and/or for_depth_enabled to actually display fog.
+			Enables the fog. Needs [member fog_height_enabled] and/or [member fog_depth_enabled] to actually display fog.
 		</member>
 		<member name="fog_height_curve" type="float" setter="set_fog_height_curve" getter="get_fog_height_curve" default="1.0">
 			Value defining the fog height intensity.
@@ -157,11 +158,11 @@
 		<member name="fog_height_enabled" type="bool" setter="set_fog_height_enabled" getter="is_fog_height_enabled" default="false">
 			Enables the fog height.
 		</member>
-		<member name="fog_height_max" type="float" setter="set_fog_height_max" getter="get_fog_height_max" default="100.0">
-			Maximum height of fog.
+		<member name="fog_height_max" type="float" setter="set_fog_height_max" getter="get_fog_height_max" default="0.0">
+			The Y coordinate where the height fog will be the most intense. If this value is greater than [member fog_height_min], fog will be displayed from bottom to top. Otherwise, it will be displayed from top to bottom.
 		</member>
-		<member name="fog_height_min" type="float" setter="set_fog_height_min" getter="get_fog_height_min" default="0.0">
-			Minimum height of fog.
+		<member name="fog_height_min" type="float" setter="set_fog_height_min" getter="get_fog_height_min" default="10.0">
+			The Y coordinate where the height fog will be the least intense. If this value is greater than [member fog_height_max], fog will be displayed from top to bottom. Otherwise, it will be displayed from bottom to top.
 		</member>
 		<member name="fog_sun_amount" type="float" setter="set_fog_sun_amount" getter="get_fog_sun_amount" default="0.0">
 			Amount of sun that affects the fog rendering.
@@ -305,7 +306,7 @@
 			Replace glow blending mode. Replaces all pixels' color by the glow value.
 		</constant>
 		<constant name="TONE_MAPPER_LINEAR" value="0" enum="ToneMapper">
-			Linear tonemapper operator. Reads the linear data and performs an exposure adjustment.
+			Linear tonemapper operator. Reads the linear data and passes it on unmodified.
 		</constant>
 		<constant name="TONE_MAPPER_REINHARDT" value="1" enum="ToneMapper">
 			Reinhardt tonemapper operator. Performs a variation on rendered pixels' colors by this formula: [code]color = color / (1 + color)[/code].

@@ -37,9 +37,6 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/texture_button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class WindowDialog : public Popup {
 

@@ -322,6 +322,7 @@
 			<description>
 				The natural exponential function. It raises the mathematical constant [b]e[/b] to the power of [code]s[/code] and returns it.
 				[b]e[/b] has an approximate value of 2.71828.
+				For exponents to other bases use the method [method pow].
 				[codeblock]
 				a = exp(2) # Approximately 7.39
 				[/codeblock]
@@ -371,37 +372,6 @@
 				var i = -6
 				while i &lt; 5:
 				    prints(i, fposmod(i, 3))
-				    i += 1
-				[/codeblock]
-				Produces:
-				[codeblock]
-				-6 0
-				-5 1
-				-4 2
-				-3 0
-				-2 1
-				-1 2
-				0 0
-				1 1
-				2 2
-				3 0
-				4 1
-				[/codeblock]
-			</description>
-		</method>
-		<method name="posmod">
-			<return type="int">
-			</return>
-			<argument index="0" name="a" type="int">
-			</argument>
-			<argument index="1" name="b" type="int">
-			</argument>
-			<description>
-				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
-				[codeblock]
-				var i = -6
-				while i &lt; 5:
-				    prints(i, posmod(i, 3))
 				    i += 1
 				[/codeblock]
 				Produces:
@@ -753,12 +723,43 @@
 				Converts a 2D point expressed in the polar coordinate system (a distance from the origin [code]r[/code] and an angle [code]th[/code]) to the cartesian coordinate system (X and Y axis).
 			</description>
 		</method>
+		<method name="posmod">
+			<return type="int">
+			</return>
+			<argument index="0" name="a" type="int">
+			</argument>
+			<argument index="1" name="b" type="int">
+			</argument>
+			<description>
+				Returns the integer modulus of [code]a/b[/code] that wraps equally in positive and negative.
+				[codeblock]
+				var i = -6
+				while i &lt; 5:
+				    prints(i, posmod(i, 3))
+				    i += 1
+				[/codeblock]
+				Produces:
+				[codeblock]
+				-6 0
+				-5 1
+				-4 2
+				-3 0
+				-2 1
+				-1 2
+				0 0
+				1 1
+				2 2
+				3 0
+				4 1
+				[/codeblock]
+			</description>
+		</method>
 		<method name="pow">
 			<return type="float">
 			</return>
-			<argument index="0" name="x" type="float">
+			<argument index="0" name="base" type="float">
 			</argument>
-			<argument index="1" name="y" type="float">
+			<argument index="1" name="exp" type="float">
 			</argument>
 			<description>
 				Returns the result of [code]x[/code] raised to the power of [code]y[/code].
@@ -1095,7 +1096,7 @@
 			<argument index="0" name="step" type="float">
 			</argument>
 			<description>
-				Returns the position of the first non-zero digit, after the decimal point.
+				Returns the position of the first non-zero digit, after the decimal point. Note that the maximum return value is 10, which is a design decision in the implementation.
 				[codeblock]
 				# n is 0
 				n = step_decimals(5)
@@ -1114,7 +1115,11 @@
 			<argument index="1" name="step" type="float">
 			</argument>
 			<description>
-				Snaps float value [code]s[/code] to a given [code]step[/code].
+				Snaps float value [code]s[/code] to a given [code]step[/code]. This can also be used to round a floating point number to an arbitrary number of decimals.
+				[codeblock]
+				stepify(100, 32) # Returns 96
+				stepify(3.14159, 0.01) # Returns 3.14
+				[/codeblock]
 			</description>
 		</method>
 		<method name="str" qualifiers="vararg">

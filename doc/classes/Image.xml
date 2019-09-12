@@ -406,6 +406,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="save_exr" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="grayscale" type="bool" default="false">
+			</argument>
+			<description>
+				Saves the image as an EXR file to [code]path[/code]. If grayscale is true and the image has only one channel, it will be saved explicitely as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE]  if Godot was compiled without the TinyEXR module.
+			</description>
+		</method>
 		<method name="save_png" qualifiers="const">
 			<return type="int" enum="Error">
 			</return>

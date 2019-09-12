@@ -85,26 +85,26 @@ double AudioDriver::get_time_to_next_mix() const {
 	return mix_buffer - total;
 }
 
-void AudioDriver::input_buffer_init(int driver_buffer_frames) {
+void AudioDriver::capture_buffer_init(int driver_buffer_frames) {
 
-	const int input_buffer_channels = 2;
-	input_buffer.resize(driver_buffer_frames * input_buffer_channels * 4);
-	input_position = 0;
-	input_size = 0;
+	const int capture_buffer_channels = 2;
+	capture_buffer.resize(driver_buffer_frames * capture_buffer_channels * 4);
+	capture_position = 0;
+	capture_size = 0;
 }
 
-void AudioDriver::input_buffer_write(int32_t sample) {
+void AudioDriver::capture_buffer_write(int32_t sample) {
 
-	if ((int)input_position < input_buffer.size()) {
-		input_buffer.write[input_position++] = sample;
-		if ((int)input_position >= input_buffer.size()) {
-			input_position = 0;
+	if ((int)capture_position < capture_buffer.size()) {
+		capture_buffer.write()[capture_position++] = sample;
+		if ((int)capture_position >= capture_buffer.size()) {
+			capture_position = 0;
 		}
-		if ((int)input_size < input_buffer.size()) {
-			input_size++;
+		if ((int)capture_size < capture_buffer.size()) {
+			capture_size++;
 		}
 	} else {
-		WARN_PRINTS("input_buffer_write: Invalid input_position=" + itos(input_position) + " input_buffer.size()=" + itos(input_buffer.size()));
+		WARN_PRINTS("capture_buffer_write: Invalid capture_position=" + itos(capture_position) + " capture_buffer.size()=" + itos(capture_buffer.size()));
 	}
 }
 
@@ -154,8 +154,8 @@ AudioDriver::AudioDriver() {
 
 	_last_mix_time = 0;
 	_last_mix_frames = 0;
-	input_position = 0;
-	input_size = 0;
+	capture_position = 0;
+	capture_size = 0;
 
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
@@ -337,6 +337,8 @@ void AudioServer::_mix_step() {
 
 		E->get().callback(E->get().userdata);
 	}
+
+	emit_signal("audio_mix_callback");
 
 	for (int i = buses.size() - 1; i >= 0; i--) {
 		//go bus by bus
@@ -1057,6 +1059,8 @@ void AudioServer::update() {
 
 		E->get().callback(E->get().userdata);
 	}
+
+	emit_signal("audio_update_callback");
 }
 
 void AudioServer::load_default_bus_layout() {
@@ -1302,6 +1306,14 @@ void AudioServer::set_device(String device) {
 	AudioDriver::get_singleton()->set_device(device);
 }
 
+Error AudioServer::capture_start() {
+	return AudioDriver::get_singleton()->capture_start();
+}
+
+Error AudioServer::capture_stop() {
+	return AudioDriver::get_singleton()->capture_stop();
+}
+
 Array AudioServer::capture_get_device_list() {
 
 	return AudioDriver::get_singleton()->capture_get_device_list();
@@ -1315,6 +1327,18 @@ String AudioServer::capture_get_device() {
 void AudioServer::capture_set_device(const String &p_name) {
 
 	AudioDriver::get_singleton()->capture_set_device(p_name);
+}
+
+PoolVector<int32_t> AudioServer::get_capture_buffer() {
+	return AudioDriver::get_singleton()->get_capture_buffer();
+}
+
+unsigned int AudioServer::get_capture_position() {
+	return AudioDriver::get_singleton()->get_capture_position();
+}
+
+unsigned int AudioServer::get_capture_size() {
+	return AudioDriver::get_singleton()->get_capture_size();
 }
 
 void AudioServer::_bind_methods() {
@@ -1377,18 +1401,28 @@ void AudioServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_time_since_last_mix"), &AudioServer::get_time_since_last_mix);
 	ClassDB::bind_method(D_METHOD("get_output_latency"), &AudioServer::get_output_latency);
 
+	ClassDB::bind_method(D_METHOD("capture_start"), &AudioServer::capture_start);
+	ClassDB::bind_method(D_METHOD("capture_stop"), &AudioServer::capture_stop);
+
 	ClassDB::bind_method(D_METHOD("capture_get_device_list"), &AudioServer::capture_get_device_list);
 	ClassDB::bind_method(D_METHOD("capture_get_device"), &AudioServer::capture_get_device);
 	ClassDB::bind_method(D_METHOD("capture_set_device", "name"), &AudioServer::capture_set_device);
+
+	ClassDB::bind_method(D_METHOD("get_capture_buffer"), &AudioServer::get_capture_buffer);
+	ClassDB::bind_method(D_METHOD("get_capture_position"), &AudioServer::get_capture_position);
+	ClassDB::bind_method(D_METHOD("get_capture_size"), &AudioServer::get_capture_size);
 
 	ClassDB::bind_method(D_METHOD("set_bus_layout", "bus_layout"), &AudioServer::set_bus_layout);
 	ClassDB::bind_method(D_METHOD("generate_bus_layout"), &AudioServer::generate_bus_layout);
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "bus_count"), "set_bus_count", "get_bus_count");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "device"), "set_device", "get_device");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "capture_device"), "capture_set_device", "capture_get_device");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "global_rate_scale"), "set_global_rate_scale", "get_global_rate_scale");
 
 	ADD_SIGNAL(MethodInfo("bus_layout_changed"));
+	ADD_SIGNAL(MethodInfo("audio_mix_callback"));
+	ADD_SIGNAL(MethodInfo("audio_update_callback"));
 
 	BIND_ENUM_CONSTANT(SPEAKER_MODE_STEREO);
 	BIND_ENUM_CONSTANT(SPEAKER_SURROUND_31);

@@ -1,10 +1,10 @@
 <?xml version="1.0" encoding="UTF-8" ?>
 <class name="Vector3" category="Built-In Types" version="3.2">
 	<brief_description>
-		Vector class, which performs basic 3D vector math operations.
+		Vector used for 3D math.
 	</brief_description>
 	<description>
-		Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
+		3-element structure that can be used to represent positions in 3D space or any other pair of numeric values.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
@@ -202,6 +202,24 @@
 				Returns the outer product with [code]b[/code].
 			</description>
 		</method>
+		<method name="posmod">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="mod" type="float">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]mod[/code].
+			</description>
+		</method>
+		<method name="posmodv">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="modv" type="Vector3">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]modv[/code]'s components.
+			</description>
+		</method>
 		<method name="project">
 			<return type="Vector3">
 			</return>
@@ -236,6 +254,13 @@
 			</return>
 			<description>
 				Returns the vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+			</description>
+		</method>
+		<method name="sign">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the vector with each component set to one or negative one, depending on the signs of the components.
 			</description>
 		</method>
 		<method name="slerp">
@@ -292,10 +317,10 @@
 			Enumerated value for the X axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="AXIS_Y" value="1">
-			Enumerated value for the Y axis.
+			Enumerated value for the Y axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="AXIS_Z" value="2">
-			Enumerated value for the Z axis.
+			Enumerated value for the Z axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
 			Zero vector.
@@ -304,7 +329,7 @@
 			One vector.
 		</constant>
 		<constant name="INF" value="Vector3( inf, inf, inf )">
-			Infinite vector.
+			Infinity vector.
 		</constant>
 		<constant name="LEFT" value="Vector3( -1, 0, 0 )">
 			Left unit vector.

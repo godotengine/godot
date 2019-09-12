@@ -41,10 +41,6 @@
 
 #include <stdarg.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class Mutex;
 
 class OS {
@@ -146,6 +142,11 @@ public:
 	typedef int64_t ProcessID;
 
 	static OS *get_singleton();
+
+	virtual void global_menu_add_item(const String &p_menu, const String &p_label, const Variant &p_signal, const Variant &p_meta){};
+	virtual void global_menu_add_separator(const String &p_menu){};
+	virtual void global_menu_remove_item(const String &p_menu, int p_idx){};
+	virtual void global_menu_clear(const String &p_menu){};
 
 	void print_error(const char *p_function, const char *p_file, int p_line, const char *p_code, const char *p_rationale, Logger::ErrorType p_type = Logger::ERR_ERROR);
 	void print(const char *p_format, ...) _PRINTF_FORMAT_ATTRIBUTE_2_3;
@@ -269,6 +270,7 @@ public:
 	virtual Error execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id = NULL, String *r_pipe = NULL, int *r_exitcode = NULL, bool read_stderr = false, Mutex *p_pipe_mutex = NULL) = 0;
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
+	virtual void vibrate_handheld(int p_duration_ms = 500);
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String &p_cwd);
