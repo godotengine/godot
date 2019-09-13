@@ -8095,6 +8095,16 @@ int RasterizerStorageGLES3::get_render_info(VS::RenderInfo p_info) {
 	}
 }
 
+String RasterizerStorageGLES3::get_video_adapter_name() const {
+
+	return (const char *)glGetString(GL_RENDERER);
+}
+
+String RasterizerStorageGLES3::get_video_adapter_vendor() const {
+
+	return (const char *)glGetString(GL_VENDOR);
+}
+
 void RasterizerStorageGLES3::initialize() {
 
 	RasterizerStorageGLES3::system_fbo = 0;

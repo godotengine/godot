@@ -1397,6 +1397,22 @@
 				Returns the id of the test texture. Creates one if none exists.
 			</description>
 		</method>
+		<method name="get_video_adapter_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the name of the video adapter (e.g. "GeForce GTX 1080/PCIe/SSE2").
+				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+			</description>
+		</method>
+		<method name="get_video_adapter_vendor" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Returns the vendor of the video adapter (e.g. "NVIDIA Corporation").
+				[b]Note:[/b] When running a headless or server binary, this function returns an empty string.
+			</description>
+		</method>
 		<method name="get_white_texture">
 			<return type="RID">
 			</return>
