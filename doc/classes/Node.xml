@@ -171,6 +171,7 @@
 			<description>
 				Duplicates the node, returning a new node.
 				You can fine-tune the behavior using the [code]flags[/code] (see [enum DuplicateFlags]).
+				[b]Note:[/b] It will not work properly if the node contains a script with constructor arguments (i.e. needs to supply arguments to [method Object._init] method). In that case, the node will be duplicated without a script.
 			</description>
 		</method>
 		<method name="find_node" qualifiers="const">
