@@ -116,7 +116,7 @@ void EditorResourcePreview::_preview_ready(const String &p_str, const Ref<Textur
 	uint64_t modified_time = 0;
 
 	if (p_str.begins_with("ID:")) {
-		hash = p_str.get_slicec(':', 2).to_int();
+		hash = uint32_t(p_str.get_slicec(':', 2).to_int64());
 		path = "ID:" + p_str.get_slicec(':', 1);
 	} else {
 		modified_time = FileAccess::get_modified_time(path);
