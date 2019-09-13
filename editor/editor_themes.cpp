@@ -717,6 +717,11 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	style_tree_btn->set_border_width_all(0);
 	theme->set_stylebox("button_pressed", "Tree", style_tree_btn);
 
+	Ref<StyleBoxFlat> style_tree_hover = style_default->duplicate();
+	style_tree_hover->set_bg_color(highlight_color * Color(1, 1, 1, 0.4));
+	style_tree_hover->set_border_width_all(0);
+	theme->set_stylebox("hover", "Tree", style_tree_hover);
+
 	Ref<StyleBoxFlat> style_tree_focus = style_default->duplicate();
 	style_tree_focus->set_bg_color(highlight_color);
 	style_tree_focus->set_border_width_all(0);
