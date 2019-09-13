@@ -1332,17 +1332,6 @@ Error ResourceFormatLoaderText::convert_file_to_binary(const String &p_src_path,
 	return ria->save_as_binary(f, p_dst_path);
 }
 
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-/*****************************************************************************************************/
-
 String ResourceFormatSaverTextInstance::_write_resources(void *ud, const RES &p_resource) {
 
 	ResourceFormatSaverTextInstance *rsi = (ResourceFormatSaverTextInstance *)ud;
@@ -1353,18 +1342,18 @@ String ResourceFormatSaverTextInstance::_write_resource(const RES &res) {
 
 	if (external_resources.has(res)) {
 
-		return "ExtResource( " + itos(external_resources[res]) + " )";
+		return "ExtResource(" + itos(external_resources[res]) + ")";
 	} else {
 
 		if (internal_resources.has(res)) {
-			return "SubResource( " + itos(internal_resources[res]) + " )";
+			return "SubResource(" + itos(internal_resources[res]) + ")";
 		} else if (res->get_path().length() && res->get_path().find("::") == -1) {
 			if (res->get_path() == local_path) { //circular reference attempt
 				return "null";
 			}
 			//external resource
 			String path = relative_paths ? local_path.path_to_file(res->get_path()) : res->get_path();
-			return "Resource( \"" + path + "\" )";
+			return "Resource(\"" + path + "\")";
 		} else {
 			ERR_FAIL_V_MSG("null", "Resource was not pre cached for the resource section, bug?");
 			//internal resource
@@ -1713,9 +1702,12 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			if (groups.size()) {
-				String sgroups = " groups=[\n";
+				String sgroups = " groups=[";
 				for (int j = 0; j < groups.size(); j++) {
-					sgroups += "\"" + String(groups[j]).c_escape() + "\",\n";
+					sgroups += "\"" + String(groups[j]).c_escape() + "\"";
+					if (j < groups.size() - 1) {
+						sgroups += ", ";
+					}
 				}
 				sgroups += "]";
 				header += sgroups;
