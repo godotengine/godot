@@ -1293,6 +1293,10 @@ static int STBV_CDECL point_compare(const void *p, const void *q)
 
 static uint8 get8(vorb *z)
 {
+// -- GODOT start --
+   if(!z) { return 0; } // To prevent possible import crash.
+// -- GODOT end --
+   
    if (USE_MEMORY(z)) {
       if (z->stream >= z->stream_end) { z->eof = TRUE; return 0; }
       return *z->stream++;

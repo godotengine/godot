@@ -382,7 +382,7 @@ Collection of single-file libraries used in Godot components.
   * Upstream: https://github.com/nothings/stb
   * Version: 1.16
   * License: Public Domain (Unlicense) or MIT
-
+  * Added memory check to prevent possible *.ogg import crash in get8() function
 
 ## nanosvg
 
