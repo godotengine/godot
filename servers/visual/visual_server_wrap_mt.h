@@ -175,7 +175,7 @@ public:
 
 	FUNCRID(multimesh)
 
-	FUNC5(multimesh_allocate, RID, int, MultimeshTransformFormat, MultimeshColorFormat, MultimeshCustomDataFormat)
+	FUNC5(multimesh_allocate, RID, int, MultimeshTransformFormat, bool, bool)
 	FUNC1RC(int, multimesh_get_instance_count, RID)
 
 	FUNC2(multimesh_set_mesh, RID, RID)
@@ -192,7 +192,8 @@ public:
 	FUNC2RC(Color, multimesh_instance_get_color, RID, int)
 	FUNC2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	FUNC2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	FUNC2(multimesh_set_buffer, RID, const PoolVector<float> &)
+	FUNC1RC(PoolVector<float>, multimesh_get_buffer, RID)
 
 	FUNC2(multimesh_set_visible_instances, RID, int)
 	FUNC1RC(int, multimesh_get_visible_instances, RID)
