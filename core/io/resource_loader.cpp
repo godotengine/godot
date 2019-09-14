@@ -404,6 +404,7 @@ RES ResourceLoader::load(const String &p_path, const String &p_type_hint, bool p
 		if (!p_no_cache) {
 			_remove_from_loading_map(local_path);
 		}
+		print_verbose("Failed loading resource: " + path);
 		return RES();
 	}
 	if (!p_no_cache)

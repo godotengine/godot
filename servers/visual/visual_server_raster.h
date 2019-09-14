@@ -248,7 +248,7 @@ public:
 
 	BIND0R(RID, multimesh_create)
 
-	BIND5(multimesh_allocate, RID, int, MultimeshTransformFormat, MultimeshColorFormat, MultimeshCustomDataFormat)
+	BIND5(multimesh_allocate, RID, int, MultimeshTransformFormat, bool, bool)
 	BIND1RC(int, multimesh_get_instance_count, RID)
 
 	BIND2(multimesh_set_mesh, RID, RID)
@@ -265,7 +265,8 @@ public:
 	BIND2RC(Color, multimesh_instance_get_color, RID, int)
 	BIND2RC(Color, multimesh_instance_get_custom_data, RID, int)
 
-	BIND2(multimesh_set_as_bulk_array, RID, const PoolVector<float> &)
+	BIND2(multimesh_set_buffer, RID, const PoolVector<float> &)
+	BIND1RC(PoolVector<float>, multimesh_get_buffer, RID)
 
 	BIND2(multimesh_set_visible_instances, RID, int)
 	BIND1RC(int, multimesh_get_visible_instances, RID)

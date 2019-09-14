@@ -194,6 +194,9 @@ private:
 protected:
 	static void _bind_methods();
 	virtual void _validate_property(PropertyInfo &property) const;
+#ifndef DISABLE_DEPRECATED
+	bool _set(const StringName &p_name, const Variant &p_value);
+#endif
 
 public:
 	void set_background(BGMode p_bg);

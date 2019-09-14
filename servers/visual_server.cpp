@@ -1638,7 +1638,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("mesh_clear", "mesh"), &VisualServer::mesh_clear);
 
 	ClassDB::bind_method(D_METHOD("multimesh_create"), &VisualServer::multimesh_create);
-	ClassDB::bind_method(D_METHOD("multimesh_allocate", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &VisualServer::multimesh_allocate, DEFVAL(MULTIMESH_CUSTOM_DATA_NONE));
+	ClassDB::bind_method(D_METHOD("multimesh_allocate", "multimesh", "instances", "transform_format", "color_format", "custom_data_format"), &VisualServer::multimesh_allocate, DEFVAL(false), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("multimesh_get_instance_count", "multimesh"), &VisualServer::multimesh_get_instance_count);
 	ClassDB::bind_method(D_METHOD("multimesh_set_mesh", "multimesh", "mesh"), &VisualServer::multimesh_set_mesh);
 	ClassDB::bind_method(D_METHOD("multimesh_instance_set_transform", "multimesh", "index", "transform"), &VisualServer::multimesh_instance_set_transform);
@@ -1653,7 +1653,8 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("multimesh_instance_get_custom_data", "multimesh", "index"), &VisualServer::multimesh_instance_get_custom_data);
 	ClassDB::bind_method(D_METHOD("multimesh_set_visible_instances", "multimesh", "visible"), &VisualServer::multimesh_set_visible_instances);
 	ClassDB::bind_method(D_METHOD("multimesh_get_visible_instances", "multimesh"), &VisualServer::multimesh_get_visible_instances);
-	ClassDB::bind_method(D_METHOD("multimesh_set_as_bulk_array", "multimesh", "array"), &VisualServer::multimesh_set_as_bulk_array);
+	ClassDB::bind_method(D_METHOD("multimesh_set_buffer", "multimesh", "buffer"), &VisualServer::multimesh_set_buffer);
+	ClassDB::bind_method(D_METHOD("multimesh_get_buffer", "multimesh"), &VisualServer::multimesh_get_buffer);
 #ifndef _3D_DISABLED
 	ClassDB::bind_method(D_METHOD("immediate_create"), &VisualServer::immediate_create);
 	ClassDB::bind_method(D_METHOD("immediate_begin", "immediate", "primitive", "texture"), &VisualServer::immediate_begin, DEFVAL(RID()));
@@ -2151,12 +2152,6 @@ void VisualServer::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_2D);
 	BIND_ENUM_CONSTANT(MULTIMESH_TRANSFORM_3D);
-	BIND_ENUM_CONSTANT(MULTIMESH_COLOR_NONE);
-	BIND_ENUM_CONSTANT(MULTIMESH_COLOR_8BIT);
-	BIND_ENUM_CONSTANT(MULTIMESH_COLOR_FLOAT);
-	BIND_ENUM_CONSTANT(MULTIMESH_CUSTOM_DATA_NONE);
-	BIND_ENUM_CONSTANT(MULTIMESH_CUSTOM_DATA_8BIT);
-	BIND_ENUM_CONSTANT(MULTIMESH_CUSTOM_DATA_FLOAT);
 
 	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ONCE);
 	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ALWAYS);

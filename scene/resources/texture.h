@@ -155,7 +155,7 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format;
@@ -390,6 +390,7 @@ public:
 class Cubemap : public TextureLayered {
 
 	GDCLASS(Cubemap, TextureLayered);
+
 public:
 	Cubemap() :
 			TextureLayered(VS::TEXTURE_LAYERED_CUBEMAP) {}
@@ -398,6 +399,7 @@ public:
 class CubemapArray : public TextureLayered {
 
 	GDCLASS(CubemapArray, TextureLayered);
+
 public:
 	CubemapArray() :
 			TextureLayered(VS::TEXTURE_LAYERED_CUBEMAP_ARRAY) {}
