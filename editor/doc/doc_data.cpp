@@ -289,6 +289,8 @@ void DocData::generate(bool p_basic_types) {
 					continue;
 			}
 
+			//used to track uninitialized values using valgrind
+			//print_line("getting default value for " + String(name) + "." + String(E->get().name));
 			if (default_value_valid && default_value.get_type() != Variant::OBJECT) {
 				prop.default_value = default_value.get_construct_string().replace("\n", "");
 			}

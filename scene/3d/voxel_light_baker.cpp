@@ -2339,7 +2339,7 @@ Ref<MultiMesh> VoxelLightBaker::create_debug_multimesh(DebugMode p_mode) {
 	mm.instance();
 
 	mm->set_transform_format(MultiMesh::TRANSFORM_3D);
-	mm->set_color_format(MultiMesh::COLOR_8BIT);
+	mm->set_use_colors(true);
 	mm->set_instance_count(leaf_voxel_count);
 
 	Ref<ArrayMesh> mesh;

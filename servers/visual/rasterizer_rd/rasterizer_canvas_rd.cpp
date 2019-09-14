@@ -2107,7 +2107,7 @@ void RasterizerCanvasRD::MaterialData::update_parameters(const Map<StringName, V
 
 	if (p_textures_dirty && tex_uniform_count) {
 
-		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw());
+		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw(), false);
 	}
 
 	if (shader_data->ubo_size == 0 && !shader_data->uses_material_samplers) {
