@@ -73,7 +73,7 @@ void CPUParticles::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((12 + 4 + 1) * p_amount);
-	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_8BIT, VS::MULTIMESH_CUSTOM_DATA_FLOAT);
+	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -1144,7 +1144,7 @@ void CPUParticles::_update_render_thread() {
 	update_mutex->lock();
 #endif
 	if (can_update) {
-		VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
+		VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 		can_update = false; //wait for next time
 	}
 

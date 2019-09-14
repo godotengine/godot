@@ -247,6 +247,15 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		float shadow_matrices[4][16];
 	};
 
+	enum {
+		INSTANCE_DATA_FLAG_MULTIMESH = 1 << 12,
+		INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D = 1 << 13,
+		INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR = 1 << 14,
+		INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA = 1 << 15,
+		INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT = 16,
+		INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_MASK = 0x7,
+	};
+
 	struct InstanceData {
 		float transform[16];
 		float normal_transform[16];
@@ -470,6 +479,9 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 	RID default_shader;
 	RID default_material;
 	RID default_shader_rd;
+
+	RID default_vec4_xform_buffer;
+	RID default_vec4_xform_uniform_set;
 
 	enum PassMode {
 		PASS_MODE_COLOR,

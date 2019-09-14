@@ -118,10 +118,19 @@ layout(set=0,binding=8,std140) uniform SceneData {
 #endif
 } scene_data;
 
-#define INSTANCE_FLAGS_FORWARD_MASK 3
+#define INSTANCE_FLAGS_FORWARD_MASK 0x7
 #define INSTANCE_FLAGS_FORWARD_OMNI_LIGHT_SHIFT 3
 #define INSTANCE_FLAGS_FORWARD_SPOT_LIGHT_SHIFT 6
 #define INSTANCE_FLAGS_FORWARD_DECAL_SHIFT 9
+
+#define INSTANCE_FLAGS_MULTIMESH  (1 << 12)
+#define INSTANCE_FLAGS_MULTIMESH_FORMAT_2D  (1 << 13)
+#define INSTANCE_FLAGS_MULTIMESH_HAS_COLOR  (1 << 14)
+#define INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA  (1 << 15)
+#define INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT 16
+//3 bits of stride
+#define INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK 0x7
+
 
 
 struct InstanceData {
@@ -216,6 +225,11 @@ layout(set=0,binding=15,std430)  buffer Skeletons {
 /* Set 1 Instancing (Multimesh) */
 
 //layout(set = 1, binding = 0) uniform textureBuffer multimesh_transforms;
+
+layout(set=1,binding=0,std430) buffer Transforms {
+    vec4 data[];
+} transforms;
+
 
 /* Set 2 Instancing (Multimesh) data */
 

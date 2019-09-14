@@ -62,7 +62,7 @@ public:
 	struct MaterialData {
 
 		void update_uniform_buffer(const Map<StringName, ShaderLanguage::ShaderNode::Uniform> &p_uniforms, const uint32_t *p_uniform_offsets, const Map<StringName, Variant> &p_parameters, uint8_t *p_buffer, uint32_t p_buffer_size, bool p_use_linear_color);
-		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures);
+		void update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color);
 
 		virtual void set_render_priority(int p_priority) = 0;
 		virtual void set_next_pass(RID p_pass) = 0;
@@ -135,6 +135,15 @@ private:
 
 		RID proxy_to;
 		Vector<RID> proxies;
+
+		VS::TextureDetectCallback detect_3d_callback = nullptr;
+		void *detect_3d_callback_ud = nullptr;
+
+		VS::TextureDetectCallback detect_normal_callback = nullptr;
+		void *detect_normal_callback_ud = nullptr;
+
+		VS::TextureDetectRoughnessCallback detect_roughness_callback = nullptr;
+		void *detect_roughness_callback_ud = nullptr;
 	};
 
 	struct TextureToRDFormat {
@@ -281,6 +290,43 @@ private:
 
 	RID mesh_default_rd_buffers[DEFAULT_RD_BUFFER_MAX];
 
+	/* MultiMesh */
+	struct MultiMesh {
+		RID mesh;
+		int instances = 0;
+		VS::MultimeshTransformFormat xform_format = VS::MULTIMESH_TRANSFORM_3D;
+		bool uses_colors = false;
+		bool uses_custom_data = false;
+		int visible_instances = -1;
+		AABB aabb;
+		bool aabb_dirty = false;
+		bool buffer_set = false;
+		uint32_t stride_cache = 0;
+		uint32_t color_offset_cache = 0;
+		uint32_t custom_data_offset_cache = 0;
+
+		PoolVector<float> data_cache; //used if individual setting is used
+		bool *data_cache_dirty_regions = nullptr;
+		uint32_t data_cache_used_dirty_regions = 0;
+
+		RID buffer; //storage buffer
+		RID uniform_set_3d;
+
+		bool dirty = false;
+		MultiMesh *dirty_list = nullptr;
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	mutable RID_Owner<MultiMesh> multimesh_owner;
+
+	MultiMesh *multimesh_dirty_list = nullptr;
+
+	_FORCE_INLINE_ void _multimesh_make_local(MultiMesh *multimesh) const;
+	_FORCE_INLINE_ void _multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb);
+	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
+	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
+	void _update_dirty_multimeshes();
 	/* LIGHT */
 
 	struct Light {
@@ -485,7 +531,7 @@ public:
 
 	_FORCE_INLINE_ MaterialData *material_get_data(RID p_material, ShaderType p_shader_type) {
 		Material *material = material_owner.getornull(p_material);
-		if (material->shader_type != p_shader_type) {
+		if (!material || material->shader_type != p_shader_type) {
 			return NULL;
 		} else {
 			return material->data;
@@ -612,30 +658,69 @@ public:
 
 	/* MULTIMESH API */
 
-	virtual RID multimesh_create() { return RID(); }
+	RID multimesh_create();
 
-	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, VS::MultimeshColorFormat p_color_format, VS::MultimeshCustomDataFormat p_data = VS::MULTIMESH_CUSTOM_DATA_NONE) {}
-	int multimesh_get_instance_count(RID p_multimesh) const { return 0; }
+	void multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false);
+	int multimesh_get_instance_count(RID p_multimesh) const;
 
-	void multimesh_set_mesh(RID p_multimesh, RID p_mesh) {}
-	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {}
-	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {}
-	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {}
-	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {}
+	void multimesh_set_mesh(RID p_multimesh, RID p_mesh);
+	void multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform);
+	void multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform);
+	void multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color);
+	void multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color);
 
-	RID multimesh_get_mesh(RID p_multimesh) const { return RID(); }
+	RID multimesh_get_mesh(RID p_multimesh) const;
 
-	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const { return Transform(); }
-	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const { return Transform2D(); }
-	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const { return Color(); }
-	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const { return Color(); }
+	Transform multimesh_instance_get_transform(RID p_multimesh, int p_index) const;
+	Transform2D multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const;
+	Color multimesh_instance_get_color(RID p_multimesh, int p_index) const;
+	Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const;
 
-	void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) {}
+	void multimesh_set_buffer(RID p_multimesh, const PoolVector<float> &p_buffer);
+	PoolVector<float> multimesh_get_buffer(RID p_multimesh) const;
 
-	void multimesh_set_visible_instances(RID p_multimesh, int p_visible) {}
-	int multimesh_get_visible_instances(RID p_multimesh) const { return 0; }
+	void multimesh_set_visible_instances(RID p_multimesh, int p_visible);
+	int multimesh_get_visible_instances(RID p_multimesh) const;
 
-	AABB multimesh_get_aabb(RID p_multimesh) const { return AABB(); }
+	AABB multimesh_get_aabb(RID p_multimesh) const;
+
+	_FORCE_INLINE_ VS::MultimeshTransformFormat multimesh_get_transform_format(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		return multimesh->xform_format;
+	}
+
+	_FORCE_INLINE_ bool multimesh_uses_colors(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		return multimesh->uses_colors;
+	}
+
+	_FORCE_INLINE_ bool multimesh_uses_custom_data(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		return multimesh->uses_custom_data;
+	}
+
+	_FORCE_INLINE_ uint32_t multimesh_get_instances_to_draw(RID p_multimesh) const {
+		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		if (multimesh->visible_instances >= 0) {
+			return multimesh->visible_instances;
+		}
+		return multimesh->instances;
+	}
+
+	_FORCE_INLINE_ RID multimesh_get_3d_uniform_set(RID p_multimesh, RID p_shader, uint32_t p_set) const {
+		MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+		if (!multimesh->uniform_set_3d.is_valid()) {
+			Vector<RD::Uniform> uniforms;
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(multimesh->buffer);
+			uniforms.push_back(u);
+			multimesh->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
+		}
+
+		return multimesh->uniform_set_3d;
+	}
 
 	/* IMMEDIATE API */
 
@@ -919,7 +1004,7 @@ public:
 
 	bool free(RID p_rid);
 
-	bool has_os_feature(const String &p_feature) const { return false; }
+	bool has_os_feature(const String &p_feature) const;
 
 	void update_dirty_resources();
 

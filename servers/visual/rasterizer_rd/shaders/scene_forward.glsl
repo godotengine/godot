@@ -86,25 +86,55 @@ layout(location =8) out float dp_clip;
 void main() {
 
 	instance_index = draw_call.instance_index;
-
-	/*if (draw_call.instance_increment) {
-		instance_index += gl_InstanceIndex;
-	}*/
-
-	vec3 vertex = vertex_attrib;
+	vec4 instance_custom = vec4(0.0);
+#if defined(COLOR_USED)
+	color_interp = color_attrib;
+#endif
 
 	mat4 world_matrix = instances.data[instance_index].transform;
 	mat3 world_normal_matrix= mat3(instances.data[instance_index].normal_transform);
 
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH)) {
+		//multimesh, instances are for it
+		uint offset = (instances.data[instance_index].flags>>INSTANCE_FLAGS_MULTIMESH_STRIDE_SHIFT)&INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK;
+		offset*=gl_InstanceIndex;
+
+
+		mat4 matrix;
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
+			mat4 matrix = mat4(transforms.data[offset+0],transforms.data[offset+1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0));
+			offset+=2;
+		} else {
+			mat4 matrix = mat4(transforms.data[offset+0],transforms.data[offset+1],transforms.data[offset+2],vec4(0.0,0.0,0.0,1.0));
+			offset+=3;
+		}
+
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_COLOR)) {
+#ifdef COLOR_USED
+			color_interp *= transforms.data[offset];
+#endif
+			offset+=1;
+		}
+
+		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_HAS_CUSTOM_DATA)) {
+			instance_custom = transforms.data[offset];
+		}
+
+		//transposed, so multiply in opposite order
+		world_matrix = matrix * world_matrix;
+		world_normal_matrix = mat3(matrix) * world_normal_matrix;
+
+	} else {
+		//not a multimesh, instances are for multiple draw calls
+		instance_index += gl_InstanceIndex;
+	}
+
+	vec3 vertex = vertex_attrib;
 	vec3 normal = normal_attrib;
 
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	vec3 tangent = tangent_attrib.xyz;
 	float binormalf = tangent_attrib.a;
-#endif
-
-#if defined(COLOR_USED)
-	color_interp = color_attrib;
 #endif
 
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
@@ -124,7 +154,7 @@ void main() {
 	vec4 position;
 #endif
 
-	vec4 instance_custom = vec4(0.0);
+
 
 	mat4 projection_matrix = scene_data.projection_matrix;
 
@@ -768,7 +798,7 @@ void light_process_spot(uint idx, vec3 vertex, vec3 eye_vec, vec3 normal, vec3 a
 		transmission,
 #endif
 #ifdef LIGHT_RIM_USED
-		rim * omni_attenuation, rim_tint,
+		rim * spot_attenuation, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 		clearcoat, clearcoat_gloss,
@@ -932,7 +962,7 @@ void main() {
 	float normaldepth = 1.0;
 
 #if defined(SCREEN_UV_USED)
-	vec2 screen_uv = gl_FragCoord.xy * screen_pixel_size;
+	vec2 screen_uv = gl_FragCoord.xy * scene_data.screen_pixel_size;
 #endif
 
 	float sss_strength = 0.0;
@@ -1182,7 +1212,7 @@ FRAGMENT_SHADER_CODE
 				transmission,
 #endif
 #ifdef LIGHT_RIM_USED
-				rim * omni_attenuation, rim_tint,
+				rim, rim_tint,
 #endif
 #ifdef LIGHT_CLEARCOAT_USED
 				clearcoat, clearcoat_gloss,

@@ -364,9 +364,8 @@ VehicleWheel::VehicleWheel() {
 
 	steers = false;
 	engine_traction = false;
-
 	m_steering = real_t(0.);
-	//m_engineForce = real_t(0.);
+	m_engineForce = real_t(0.);
 	m_rotation = real_t(0.);
 	m_deltaRotation = real_t(0.);
 	m_brake = real_t(0.);

@@ -172,7 +172,7 @@ void MultiMeshEditor::_populate() {
 	int instance_count = populate_amount->get_value();
 
 	multimesh->set_transform_format(MultiMesh::TRANSFORM_3D);
-	multimesh->set_color_format(MultiMesh::COLOR_NONE);
+	multimesh->set_use_colors(false);
 	multimesh->set_instance_count(instance_count);
 
 	float _tilt_random = populate_tilt_random->get_value();
