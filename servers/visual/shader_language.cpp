@@ -307,6 +307,12 @@ const ShaderLanguage::KeyWord ShaderLanguage::keyword_list[] = {
 	{ TK_HINT_WHITE_TEXTURE, "hint_white" },
 	{ TK_HINT_BLACK_TEXTURE, "hint_black" },
 	{ TK_HINT_NORMAL_TEXTURE, "hint_normal" },
+	{ TK_HINT_ROUGHNESS_NORMAL_TEXTURE, "hint_roughness_normal" },
+	{ TK_HINT_ROUGHNESS_R, "hint_roughness_r" },
+	{ TK_HINT_ROUGHNESS_G, "hint_roughness_g" },
+	{ TK_HINT_ROUGHNESS_B, "hint_roughness_b" },
+	{ TK_HINT_ROUGHNESS_A, "hint_roughness_a" },
+	{ TK_HINT_ROUGHNESS_GRAY, "hint_roughness_gray" },
 	{ TK_HINT_ANISO_TEXTURE, "hint_aniso" },
 	{ TK_HINT_ALBEDO_TEXTURE, "hint_albedo" },
 	{ TK_HINT_BLACK_ALBEDO_TEXTURE, "hint_black_albedo" },
@@ -5129,6 +5135,18 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 							uniform2.hint = ShaderNode::Uniform::HINT_BLACK;
 						} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
 							uniform2.hint = ShaderNode::Uniform::HINT_NORMAL;
+						} else if (tk.type == TK_HINT_ROUGHNESS_NORMAL_TEXTURE) {
+							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL;
+						} else if (tk.type == TK_HINT_ROUGHNESS_R) {
+							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_R;
+						} else if (tk.type == TK_HINT_ROUGHNESS_G) {
+							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_G;
+						} else if (tk.type == TK_HINT_ROUGHNESS_B) {
+							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_B;
+						} else if (tk.type == TK_HINT_ROUGHNESS_A) {
+							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_A;
+						} else if (tk.type == TK_HINT_ROUGHNESS_GRAY) {
+							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
 						} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
 							uniform2.hint = ShaderNode::Uniform::HINT_ANISO;
 						} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {

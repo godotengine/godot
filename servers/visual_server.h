@@ -319,19 +319,7 @@ public:
 		MULTIMESH_TRANSFORM_3D,
 	};
 
-	enum MultimeshColorFormat {
-		MULTIMESH_COLOR_NONE,
-		MULTIMESH_COLOR_8BIT,
-		MULTIMESH_COLOR_FLOAT,
-	};
-
-	enum MultimeshCustomDataFormat {
-		MULTIMESH_CUSTOM_DATA_NONE,
-		MULTIMESH_CUSTOM_DATA_8BIT,
-		MULTIMESH_CUSTOM_DATA_FLOAT,
-	};
-
-	virtual void multimesh_allocate(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, MultimeshColorFormat p_color_format, MultimeshCustomDataFormat p_data_format = MULTIMESH_CUSTOM_DATA_NONE) = 0;
+	virtual void multimesh_allocate(RID p_multimesh, int p_instances, MultimeshTransformFormat p_transform_format, bool p_use_colors = false, bool p_use_custom_data = false) = 0;
 	virtual int multimesh_get_instance_count(RID p_multimesh) const = 0;
 
 	virtual void multimesh_set_mesh(RID p_multimesh, RID p_mesh) = 0;
@@ -348,7 +336,8 @@ public:
 	virtual Color multimesh_instance_get_color(RID p_multimesh, int p_index) const = 0;
 	virtual Color multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const = 0;
 
-	virtual void multimesh_set_as_bulk_array(RID p_multimesh, const PoolVector<float> &p_array) = 0;
+	virtual void multimesh_set_buffer(RID p_multimesh, const PoolVector<float> &p_buffer) = 0;
+	virtual PoolVector<float> multimesh_get_buffer(RID p_multimesh) const = 0;
 
 	virtual void multimesh_set_visible_instances(RID p_multimesh, int p_visible) = 0;
 	virtual int multimesh_get_visible_instances(RID p_multimesh) const = 0;
@@ -1097,8 +1086,6 @@ VARIANT_ENUM_CAST(VisualServer::CanvasOccluderPolygonCullMode);
 VARIANT_ENUM_CAST(VisualServer::RenderInfo);
 VARIANT_ENUM_CAST(VisualServer::Features);
 VARIANT_ENUM_CAST(VisualServer::MultimeshTransformFormat);
-VARIANT_ENUM_CAST(VisualServer::MultimeshColorFormat);
-VARIANT_ENUM_CAST(VisualServer::MultimeshCustomDataFormat);
 VARIANT_ENUM_CAST(VisualServer::LightOmniShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowMode);
 VARIANT_ENUM_CAST(VisualServer::LightDirectionalShadowDepthRangeMode);

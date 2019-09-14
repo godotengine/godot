@@ -3969,7 +3969,7 @@ RID RenderingDeviceVulkan::storage_buffer_create(uint32_t p_size_bytes, const Po
 	ERR_FAIL_COND_V(p_data.size() && (uint32_t)p_data.size() != p_size_bytes, RID());
 
 	Buffer buffer;
-	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
+	Error err = _buffer_allocate(&buffer, p_size_bytes, VK_BUFFER_USAGE_TRANSFER_SRC_BIT | VK_BUFFER_USAGE_TRANSFER_DST_BIT | VK_BUFFER_USAGE_STORAGE_BUFFER_BIT, VMA_MEMORY_USAGE_GPU_ONLY);
 	ERR_FAIL_COND_V(err != OK, RID());
 
 	if (p_data.size()) {
@@ -4600,6 +4600,8 @@ PoolVector<uint8_t> RenderingDeviceVulkan::buffer_get_data(RID p_buffer) {
 		buffer = index_buffer_owner.getornull(p_buffer);
 	} else if (texture_buffer_owner.owns(p_buffer)) {
 		buffer = &texture_buffer_owner.getornull(p_buffer)->buffer;
+	} else if (storage_buffer_owner.owns(p_buffer)) {
+		buffer = storage_buffer_owner.getornull(p_buffer);
 	} else {
 		ERR_FAIL_V_MSG(PoolVector<uint8_t>(), "Buffer is either invalid or this type of buffer can't be retrieved. Only Index and Vertex buffers allow retrieving.");
 	}
