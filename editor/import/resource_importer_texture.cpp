@@ -115,8 +115,8 @@ void ResourceImporterTexture::update_imports() {
 			changed = true;
 		}
 
-		if (E->get().flags & MAKE_3D_FLAG && bool(cf->get_value("params", "detect_3d"))) {
-			cf->set_value("params", "detect_3d", false);
+		if (E->get().flags & MAKE_3D_FLAG && bool(cf->get_value("params", "usage/detect_3d"))) {
+			cf->set_value("params", "usage/detect_3d", false);
 			cf->set_value("params", "compress/mode", 2);
 			cf->set_value("params", "format/mipmaps", true);
 			changed = true;
@@ -214,9 +214,10 @@ void ResourceImporterTexture::get_import_options(List<ImportOption> *r_options, 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/premult_alpha"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/invert_color"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "process/HDR_as_SRGB"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "stream"), false));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
-	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "detect_3d"), p_preset == PRESET_DETECT));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/size_limit", PROPERTY_HINT_RANGE, "0,4096,1"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "process/mipmap_limit", PROPERTY_HINT_RANGE, "0,999,1"), 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "usage/stream"), false));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "usage/detect_3d"), p_preset == PRESET_DETECT));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::REAL, "svg/scale", PROPERTY_HINT_RANGE, "0.001,100,0.001"), 1.0));
 }
 
@@ -385,8 +386,8 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 	bool fix_alpha_border = p_options["process/fix_alpha_border"];
 	bool premult_alpha = p_options["process/premult_alpha"];
 	bool invert_color = p_options["process/invert_color"];
-	bool stream = p_options["stream"];
-	int size_limit = p_options["size_limit"];
+	bool stream = p_options["usage/stream"];
+	int size_limit = p_options["process/size_limit"];
 	bool hdr_as_srgb = p_options["process/HDR_as_SRGB"];
 	int normal = p_options["compress/normal_map"];
 	float scale = p_options["svg/scale"];
@@ -443,7 +444,7 @@ Error ResourceImporterTexture::import(const String &p_source_file, const String 
 		image->unlock();
 	}
 
-	bool detect_3d = p_options["detect_3d"];
+	bool detect_3d = p_options["usage/detect_3d"];
 	bool detect_roughness = roughness == 0;
 	bool detect_normal = normal == 0;
 	bool force_normal = normal == 1;

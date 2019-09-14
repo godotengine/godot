@@ -389,7 +389,7 @@ Image::Format StreamTexture::get_format() const {
 	return format;
 }
 
-Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, int p_size_limit) {
+Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int p_size_limit) {
 
 	alpha_cache.unref();
 
@@ -415,29 +415,16 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 #ifdef TOOLS_ENABLED
 
-	if (request_3d_callback && df & FORMAT_BIT_DETECT_3D) {
-		//print_line("request detect 3D at " + p_path);
-		VS::get_singleton()->texture_set_detect_3d_callback(texture, _requested_3d, this);
-	} else {
-		//print_line("not requesting detect 3D at " + p_path);
-		VS::get_singleton()->texture_set_detect_3d_callback(texture, NULL, NULL);
-	}
+	r_request_3d = request_3d_callback && df & FORMAT_BIT_DETECT_3D;
+	r_request_roughness = request_roughness_callback && df & FORMAT_BIT_DETECT_ROUGNESS;
+	r_request_normal = request_normal_callback && df & FORMAT_BIT_DETECT_NORMAL;
 
-	if (request_roughness_callback && df & FORMAT_BIT_DETECT_ROUGNESS) {
-		//print_line("request detect srgb at " + p_path);
-		VS::get_singleton()->texture_set_detect_roughness_callback(texture, _requested_roughness, this);
-	} else {
-		//print_line("not requesting detect srgb at " + p_path);
-		VS::get_singleton()->texture_set_detect_roughness_callback(texture, NULL, NULL);
-	}
+#else
 
-	if (request_normal_callback && df & FORMAT_BIT_DETECT_NORMAL) {
-		//print_line("request detect srgb at " + p_path);
-		VS::get_singleton()->texture_set_detect_normal_callback(texture, _requested_normal, this);
-	} else {
-		//print_line("not requesting detect normal at " + p_path);
-		VS::get_singleton()->texture_set_detect_normal_callback(texture, NULL, NULL);
-	}
+	r_request_3d = false;
+	r_request_roughness = false;
+	r_request_normal = false;
+
 #endif
 	if (!(df & FORMAT_BIT_STREAM)) {
 		p_size_limit = 0;
@@ -602,7 +589,7 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		}
 	}
 
-	return ERR_BUG; //unreachable
+	ERR_FAIL_V(ERR_BUG); //unreachable
 }
 
 Error StreamTexture::load(const String &p_path) {
@@ -610,14 +597,15 @@ Error StreamTexture::load(const String &p_path) {
 	int lw, lh, lwc, lhc;
 	Ref<Image> image;
 	image.instance();
-	Error err = _load_data(p_path, lw, lh, lwc, lhc, image);
+
+	bool request_3d;
+	bool request_normal;
+	bool request_roughness;
+
+	Error err = _load_data(p_path, lw, lh, lwc, lhc, image, request_3d, request_normal, request_roughness);
 	if (err)
 		return err;
 
-	if (get_path() == String()) {
-		//temporarily set path if no path set for resource, helps find errors
-		VisualServer::get_singleton()->texture_set_path(texture, p_path);
-	}
 	if (texture.is_valid()) {
 		RID new_texture = VS::get_singleton()->texture_2d_create(image);
 		VS::get_singleton()->texture_replace(texture, new_texture);
@@ -633,6 +621,38 @@ Error StreamTexture::load(const String &p_path) {
 	path_to_file = p_path;
 	format = image->get_format();
 
+	if (get_path() == String()) {
+		//temporarily set path if no path set for resource, helps find errors
+		VisualServer::get_singleton()->texture_set_path(texture, p_path);
+	}
+
+#ifdef TOOLS_ENABLED
+
+	if (request_3d) {
+		//print_line("request detect 3D at " + p_path);
+		VS::get_singleton()->texture_set_detect_3d_callback(texture, _requested_3d, this);
+	} else {
+		//print_line("not requesting detect 3D at " + p_path);
+		VS::get_singleton()->texture_set_detect_3d_callback(texture, NULL, NULL);
+	}
+
+	if (request_roughness) {
+		//print_line("request detect srgb at " + p_path);
+		VS::get_singleton()->texture_set_detect_roughness_callback(texture, _requested_roughness, this);
+	} else {
+		//print_line("not requesting detect srgb at " + p_path);
+		VS::get_singleton()->texture_set_detect_roughness_callback(texture, NULL, NULL);
+	}
+
+	if (request_normal) {
+		//print_line("request detect srgb at " + p_path);
+		VS::get_singleton()->texture_set_detect_normal_callback(texture, _requested_normal, this);
+	} else {
+		//print_line("not requesting detect normal at " + p_path);
+		VS::get_singleton()->texture_set_detect_normal_callback(texture, NULL, NULL);
+	}
+
+#endif
 	_change_notify();
 	return OK;
 }

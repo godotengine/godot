@@ -278,7 +278,7 @@ void Viewport::_notification(int p_what) {
 				//3D
 				PhysicsServer::get_singleton()->space_set_debug_contacts(find_world()->get_space(), get_tree()->get_collision_debug_contact_count());
 				contact_3d_debug_multimesh = VisualServer::get_singleton()->multimesh_create();
-				VisualServer::get_singleton()->multimesh_allocate(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), VS::MULTIMESH_TRANSFORM_3D, VS::MULTIMESH_COLOR_8BIT);
+				VisualServer::get_singleton()->multimesh_allocate(contact_3d_debug_multimesh, get_tree()->get_collision_debug_contact_count(), VS::MULTIMESH_TRANSFORM_3D, true);
 				VisualServer::get_singleton()->multimesh_set_visible_instances(contact_3d_debug_multimesh, 0);
 				VisualServer::get_singleton()->multimesh_set_mesh(contact_3d_debug_multimesh, get_tree()->get_debug_contact_mesh()->get_rid());
 				contact_3d_debug_instance = VisualServer::get_singleton()->instance_create();
