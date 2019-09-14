@@ -199,7 +199,7 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 		case Image::FORMAT_DXT1: {
 			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
 				r_format.format = RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK;
-				r_format.format_srgb = RD::DATA_FORMAT_BC1_RGBA_SRGB_BLOCK;
+				r_format.format_srgb = RD::DATA_FORMAT_BC1_RGB_SRGB_BLOCK;
 			} else {
 				//not supported, reconvert
 				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
@@ -788,16 +788,31 @@ void RasterizerStorageRD::texture_set_size_override(RID p_texture, int p_width, 
 }
 
 void RasterizerStorageRD::texture_set_path(RID p_texture, const String &p_path) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
+	tex->path = p_path;
 }
 String RasterizerStorageRD::texture_get_path(RID p_texture) const {
 	return String();
 }
 
 void RasterizerStorageRD::texture_set_detect_3d_callback(RID p_texture, VS::TextureDetectCallback p_callback, void *p_userdata) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
+	tex->detect_3d_callback_ud = p_userdata;
+	tex->detect_3d_callback = p_callback;
 }
 void RasterizerStorageRD::texture_set_detect_normal_callback(RID p_texture, VS::TextureDetectCallback p_callback, void *p_userdata) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
+	tex->detect_normal_callback_ud = p_userdata;
+	tex->detect_normal_callback = p_callback;
 }
 void RasterizerStorageRD::texture_set_detect_roughness_callback(RID p_texture, VS::TextureDetectRoughnessCallback p_callback, void *p_userdata) {
+	Texture *tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND(!tex);
+	tex->detect_roughness_callback_ud = p_userdata;
+	tex->detect_roughness_callback = p_callback;
 }
 void RasterizerStorageRD::texture_debug_usage(List<VS::TextureInfo> *r_info) {
 }
@@ -1611,9 +1626,14 @@ void RasterizerStorageRD::MaterialData::update_uniform_buffer(const Map<StringNa
 	}
 }
 
-void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures) {
+void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Variant> &p_parameters, const Map<StringName, RID> &p_default_textures, const Vector<ShaderCompilerRD::GeneratedCode::Texture> &p_texture_uniforms, RID *p_textures, bool p_use_linear_color) {
 
 	RasterizerStorageRD *singleton = (RasterizerStorageRD *)RasterizerStorage::base_singleton;
+#ifdef TOOLS_ENABLED
+	Texture *roughness_detect_texture = nullptr;
+	VS::TextureDetectRoughnessChannel roughness_channel;
+	Texture *normal_detect_texture = nullptr;
+#endif
 
 	for (int i = 0; i < p_texture_uniforms.size(); i++) {
 
@@ -1653,8 +1673,31 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 				} break;
 			}
 		} else {
-			bool srgb = p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO;
-			rd_texture = singleton->texture_get_rd_texture(texture, srgb);
+			bool srgb = p_use_linear_color && p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO;
+
+			Texture *tex = singleton->texture_owner.getornull(texture);
+
+			if (tex) {
+				rd_texture = (srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
+#ifdef TOOLS_ENABLED
+				if (tex->detect_3d_callback && p_use_linear_color) {
+					tex->detect_3d_callback(tex->detect_3d_callback_ud);
+				}
+				if (tex->detect_normal_callback && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_NORMAL || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL)) {
+					if (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL) {
+						normal_detect_texture = tex;
+					}
+					tex->detect_normal_callback(tex->detect_normal_callback_ud);
+				}
+				if (tex->detect_roughness_callback && (p_texture_uniforms[i].hint >= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R || p_texture_uniforms[i].hint <= ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_GRAY)) {
+					//find the normal texture
+					roughness_detect_texture = tex;
+					roughness_channel = VS::TextureDetectRoughnessChannel(p_texture_uniforms[i].hint - ShaderLanguage::ShaderNode::Uniform::HINT_ROUGHNESS_R);
+				}
+
+#endif
+			}
+
 			if (rd_texture.is_null()) {
 				//wtf
 				rd_texture = singleton->texture_rd_get_default(DEFAULT_RD_TEXTURE_WHITE);
@@ -1663,6 +1706,11 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 
 		p_textures[i] = rd_texture;
 	}
+#ifdef TOOLS_ENABLED
+	if (roughness_detect_texture && normal_detect_texture && normal_detect_texture->path != String()) {
+		roughness_detect_texture->detect_roughness_callback(roughness_detect_texture->detect_roughness_callback_ud, normal_detect_texture->path, roughness_channel);
+	}
+#endif
 }
 
 void RasterizerStorageRD::material_force_update_textures(RID p_material, ShaderType p_shader_type) {
@@ -2085,6 +2133,568 @@ void RasterizerStorageRD::_mesh_surface_generate_version_for_input_mask(Mesh::Su
 	v.input_mask = p_input_mask;
 	v.vertex_format = RD::get_singleton()->vertex_format_create(attributes);
 	v.vertex_array = RD::get_singleton()->vertex_array_create(s->vertex_count, v.vertex_format, buffers);
+}
+
+////////////////// MULTIMESH
+
+RID RasterizerStorageRD::multimesh_create() {
+
+	return multimesh_owner.make_rid(MultiMesh());
+}
+
+void RasterizerStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, VS::MultimeshTransformFormat p_transform_format, bool p_use_colors, bool p_use_custom_data) {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+
+	if (multimesh->instances == p_instances && multimesh->xform_format == p_transform_format && multimesh->uses_colors == p_use_colors && multimesh->uses_custom_data == p_use_custom_data) {
+		return;
+	}
+
+	if (multimesh->buffer.is_valid()) {
+		RD::get_singleton()->free(multimesh->buffer);
+		multimesh->buffer = RID();
+		multimesh->uniform_set_3d = RID(); //cleared by dependency
+	}
+
+	if (multimesh->data_cache_dirty_regions) {
+		memdelete_arr(multimesh->data_cache_dirty_regions);
+		multimesh->data_cache_dirty_regions = nullptr;
+		multimesh->data_cache_used_dirty_regions = 0;
+	}
+
+	multimesh->instances = p_instances;
+	multimesh->xform_format = p_transform_format;
+	multimesh->uses_colors = p_use_colors;
+	multimesh->color_offset_cache = p_transform_format == VS::MULTIMESH_TRANSFORM_2D ? 8 : 12;
+	multimesh->uses_custom_data = p_use_custom_data;
+	multimesh->custom_data_offset_cache = multimesh->color_offset_cache + (p_use_colors ? 4 : 0);
+	multimesh->stride_cache = multimesh->custom_data_offset_cache + (p_use_custom_data ? 4 : 0);
+	multimesh->buffer_set = false;
+
+	print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == VS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
+	multimesh->data_cache = PoolVector<float>();
+	multimesh->aabb = AABB();
+	multimesh->aabb_dirty = false;
+	multimesh->visible_instances = MIN(multimesh->visible_instances, multimesh->instances);
+
+	if (multimesh->instances) {
+
+		multimesh->buffer = RD::get_singleton()->storage_buffer_create(multimesh->instances * multimesh->stride_cache);
+	}
+}
+
+int RasterizerStorageRD::multimesh_get_instance_count(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, 0);
+	return multimesh->instances;
+}
+
+void RasterizerStorageRD::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	if (multimesh->mesh == p_mesh) {
+		return;
+	}
+	multimesh->mesh = p_mesh;
+
+	if (multimesh->instances == 0) {
+		return;
+	}
+
+	if (multimesh->data_cache.size()) {
+		//we have a data cache, just mark it dirt
+		_multimesh_mark_all_dirty(multimesh, false, true);
+	} else if (multimesh->instances) {
+		//need to re-create AABB unfortunately, calling this has a penalty
+		{
+			PoolVector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+			PoolVector<uint8_t>::Read r = buffer.read();
+			const float *data = (const float *)r.ptr();
+			_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
+		}
+	}
+
+	multimesh->instance_dependency.instance_notify_changed(true, true);
+}
+
+#define MULTIMESH_DIRTY_REGION_SIZE 512
+
+void RasterizerStorageRD::_multimesh_make_local(MultiMesh *multimesh) const {
+	if (multimesh->data_cache.size() > 0) {
+		return; //already local
+	}
+	ERR_FAIL_COND(multimesh->data_cache.size() > 0);
+	// this means that the user wants to load/save individual elements,
+	// for this, the data must reside on CPU, so just copy it there.
+	multimesh->data_cache.resize(multimesh->instances * multimesh->stride_cache);
+	{
+		PoolVector<float>::Write w = multimesh->data_cache.write();
+
+		if (multimesh->buffer_set) {
+			PoolVector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+			{
+
+				PoolVector<uint8_t>::Read r = buffer.read();
+				copymem(w.ptr(), r.ptr(), buffer.size());
+			}
+		} else {
+			zeromem(w.ptr(), multimesh->instances * multimesh->stride_cache * sizeof(float));
+		}
+	}
+	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	multimesh->data_cache_dirty_regions = memnew_arr(bool, data_cache_dirty_region_count);
+	for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
+		multimesh->data_cache_dirty_regions[i] = 0;
+	}
+	multimesh->data_cache_used_dirty_regions = 0;
+}
+
+void RasterizerStorageRD::_multimesh_mark_dirty(MultiMesh *multimesh, int p_index, bool p_aabb) {
+
+	uint32_t region_index = p_index / MULTIMESH_DIRTY_REGION_SIZE;
+#ifdef DEBUG_ENABLED
+	uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+	ERR_FAIL_INDEX(region_index, data_cache_dirty_region_count); //bug
+#endif
+	if (!multimesh->data_cache_dirty_regions[region_index]) {
+		multimesh->data_cache_dirty_regions[p_index] = true;
+		multimesh->data_cache_used_dirty_regions++;
+	}
+
+	if (p_aabb) {
+		multimesh->aabb_dirty = true;
+	}
+
+	if (!multimesh->dirty) {
+		multimesh->dirty_list = multimesh_dirty_list;
+		multimesh_dirty_list = multimesh;
+		multimesh->dirty = true;
+	}
+}
+
+void RasterizerStorageRD::_multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb) {
+	if (p_data) {
+		uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+
+		for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
+			if (!multimesh->data_cache_dirty_regions[i]) {
+				multimesh->data_cache_dirty_regions[i] = true;
+				multimesh->data_cache_used_dirty_regions++;
+			}
+		}
+	}
+
+	if (p_aabb) {
+		multimesh->aabb_dirty = true;
+	}
+
+	if (!multimesh->dirty) {
+		multimesh->dirty_list = multimesh_dirty_list;
+		multimesh_dirty_list = multimesh;
+		multimesh->dirty = true;
+	}
+}
+
+void RasterizerStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances) {
+
+	ERR_FAIL_COND(multimesh->mesh.is_null());
+	AABB aabb;
+	AABB mesh_aabb = mesh_get_aabb(multimesh->mesh);
+	for (int i = 0; i < p_instances; i++) {
+		const float *data = p_data + multimesh->stride_cache * i;
+		Transform t;
+
+		if (multimesh->xform_format == VS::MULTIMESH_TRANSFORM_3D) {
+			t.basis[0].x = data[0];
+			t.basis[0].y = data[1];
+			t.basis[0].z = data[2];
+			t.basis[1].x = data[3];
+			t.basis[1].y = data[4];
+			t.basis[1].z = data[5];
+			t.basis[2].x = data[6];
+			t.basis[2].y = data[7];
+			t.basis[2].z = data[8];
+			t.origin.x = data[9];
+			t.origin.y = data[10];
+			t.origin.z = data[11];
+
+		} else {
+
+			t.basis.elements[0].x = data[0];
+			t.basis.elements[1].x = data[1];
+			t.origin.x = data[3];
+
+			t.basis.elements[0].y = data[4];
+			t.basis.elements[1].y = data[5];
+			t.origin.y = data[7];
+		}
+
+		if (i == 0) {
+			aabb = t.xform(mesh_aabb);
+		} else {
+			aabb.merge_with(t.xform(mesh_aabb));
+		}
+	}
+
+	multimesh->aabb = aabb;
+}
+
+void RasterizerStorageRD::multimesh_instance_set_transform(RID p_multimesh, int p_index, const Transform &p_transform) {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_INDEX(p_index, multimesh->instances);
+	ERR_FAIL_COND(multimesh->xform_format != VS::MULTIMESH_TRANSFORM_3D);
+
+	_multimesh_make_local(multimesh);
+
+	{
+		PoolVector<float>::Write w = multimesh->data_cache.write();
+
+		float *dataptr = w.ptr() + p_index * multimesh->stride_cache;
+
+		dataptr[0] = p_transform.basis[0].x;
+		dataptr[1] = p_transform.basis[0].y;
+		dataptr[2] = p_transform.basis[0].z;
+		dataptr[3] = p_transform.basis[1].x;
+		dataptr[4] = p_transform.basis[1].y;
+		dataptr[5] = p_transform.basis[1].z;
+		dataptr[6] = p_transform.basis[2].x;
+		dataptr[7] = p_transform.basis[2].y;
+		dataptr[8] = p_transform.basis[2].z;
+		dataptr[9] = p_transform.origin.x;
+		dataptr[10] = p_transform.origin.y;
+		dataptr[11] = p_transform.origin.z;
+	}
+
+	_multimesh_mark_dirty(multimesh, p_index, true);
+}
+
+void RasterizerStorageRD::multimesh_instance_set_transform_2d(RID p_multimesh, int p_index, const Transform2D &p_transform) {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_INDEX(p_index, multimesh->instances);
+	ERR_FAIL_COND(multimesh->xform_format != VS::MULTIMESH_TRANSFORM_2D);
+
+	_multimesh_make_local(multimesh);
+
+	{
+		PoolVector<float>::Write w = multimesh->data_cache.write();
+
+		float *dataptr = w.ptr() + p_index * multimesh->stride_cache;
+
+		dataptr[0] = p_transform.elements[0].x;
+		dataptr[1] = p_transform.elements[1].x;
+		dataptr[2] = 0;
+		dataptr[3] = p_transform.elements[2].x;
+		dataptr[4] = p_transform.elements[0].y;
+		dataptr[5] = p_transform.elements[1].y;
+		dataptr[6] = 0;
+		dataptr[7] = p_transform.elements[2].y;
+	}
+
+	_multimesh_mark_dirty(multimesh, p_index, true);
+}
+void RasterizerStorageRD::multimesh_instance_set_color(RID p_multimesh, int p_index, const Color &p_color) {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_INDEX(p_index, multimesh->instances);
+	ERR_FAIL_INDEX(p_index, !multimesh->uses_colors);
+
+	_multimesh_make_local(multimesh);
+
+	{
+		PoolVector<float>::Write w = multimesh->data_cache.write();
+
+		float *dataptr = w.ptr() + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
+
+		dataptr[0] = p_color.r;
+		dataptr[1] = p_color.g;
+		dataptr[2] = p_color.b;
+		dataptr[3] = p_color.a;
+	}
+
+	_multimesh_mark_dirty(multimesh, p_index, false);
+}
+void RasterizerStorageRD::multimesh_instance_set_custom_data(RID p_multimesh, int p_index, const Color &p_color) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_INDEX(p_index, multimesh->instances);
+	ERR_FAIL_INDEX(p_index, !multimesh->uses_custom_data);
+
+	_multimesh_make_local(multimesh);
+
+	{
+		PoolVector<float>::Write w = multimesh->data_cache.write();
+
+		float *dataptr = w.ptr() + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
+
+		dataptr[0] = p_color.r;
+		dataptr[1] = p_color.g;
+		dataptr[2] = p_color.b;
+		dataptr[3] = p_color.a;
+	}
+
+	_multimesh_mark_dirty(multimesh, p_index, false);
+}
+
+RID RasterizerStorageRD::multimesh_get_mesh(RID p_multimesh) const {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, RID());
+
+	return multimesh->mesh;
+}
+
+Transform RasterizerStorageRD::multimesh_instance_get_transform(RID p_multimesh, int p_index) const {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, Transform());
+	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform());
+	ERR_FAIL_COND_V(multimesh->xform_format != VS::MULTIMESH_TRANSFORM_3D, Transform());
+
+	_multimesh_make_local(multimesh);
+
+	Transform t;
+	{
+		PoolVector<float>::Read r = multimesh->data_cache.read();
+
+		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache;
+
+		t.basis[0].x = dataptr[0];
+		t.basis[0].y = dataptr[1];
+		t.basis[0].z = dataptr[2];
+		t.basis[1].x = dataptr[3];
+		t.basis[1].y = dataptr[4];
+		t.basis[1].z = dataptr[5];
+		t.basis[2].x = dataptr[6];
+		t.basis[2].y = dataptr[7];
+		t.basis[2].z = dataptr[8];
+		t.origin.x = dataptr[9];
+		t.origin.y = dataptr[10];
+		t.origin.z = dataptr[11];
+	}
+
+	return t;
+}
+Transform2D RasterizerStorageRD::multimesh_instance_get_transform_2d(RID p_multimesh, int p_index) const {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, Transform2D());
+	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Transform2D());
+	ERR_FAIL_COND_V(multimesh->xform_format != VS::MULTIMESH_TRANSFORM_2D, Transform2D());
+
+	_multimesh_make_local(multimesh);
+
+	Transform2D t;
+	{
+		PoolVector<float>::Read r = multimesh->data_cache.read();
+
+		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache;
+
+		t.elements[0].x = dataptr[0];
+		t.elements[1].x = dataptr[1];
+		t.elements[2].x = dataptr[3];
+
+		t.elements[0].y = dataptr[4];
+		t.elements[1].y = dataptr[5];
+		t.elements[2].y = dataptr[7];
+	}
+
+	return t;
+}
+Color RasterizerStorageRD::multimesh_instance_get_color(RID p_multimesh, int p_index) const {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, Color());
+	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
+	ERR_FAIL_INDEX_V(p_index, !multimesh->uses_colors, Color());
+
+	_multimesh_make_local(multimesh);
+
+	Color c;
+	{
+		PoolVector<float>::Read r = multimesh->data_cache.read();
+
+		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache + multimesh->color_offset_cache;
+
+		c.r = dataptr[0];
+		c.g = dataptr[1];
+		c.b = dataptr[2];
+		c.a = dataptr[3];
+	}
+
+	return c;
+}
+Color RasterizerStorageRD::multimesh_instance_get_custom_data(RID p_multimesh, int p_index) const {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, Color());
+	ERR_FAIL_INDEX_V(p_index, multimesh->instances, Color());
+	ERR_FAIL_INDEX_V(p_index, !multimesh->uses_custom_data, Color());
+
+	_multimesh_make_local(multimesh);
+
+	Color c;
+	{
+		PoolVector<float>::Read r = multimesh->data_cache.read();
+
+		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache + multimesh->custom_data_offset_cache;
+
+		c.r = dataptr[0];
+		c.g = dataptr[1];
+		c.b = dataptr[2];
+		c.a = dataptr[3];
+	}
+
+	return c;
+}
+
+void RasterizerStorageRD::multimesh_set_buffer(RID p_multimesh, const PoolVector<float> &p_buffer) {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_COND(p_buffer.size() != (multimesh->instances * (int)multimesh->stride_cache));
+
+	{
+		PoolVector<float>::Read r = p_buffer.read();
+		RD::get_singleton()->buffer_update(multimesh->buffer, 0, p_buffer.size() * sizeof(float), r.ptr(), false);
+		multimesh->buffer_set = true;
+	}
+
+	if (multimesh->data_cache.size()) {
+		//if we have a data cache, just update it
+		multimesh->data_cache = p_buffer;
+		{
+			//clear dirty since nothing will be dirty anymore
+			uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+			for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
+				multimesh->data_cache_dirty_regions[i] = false;
+			}
+			multimesh->data_cache_used_dirty_regions = 0;
+		}
+
+		_multimesh_mark_all_dirty(multimesh, false, true); //update AABB
+	} else if (multimesh->mesh.is_valid()) {
+		//if we have a mesh set, we need to re-generate the AABB from the new data
+		PoolVector<float>::Read r = p_buffer.read();
+		const float *data = r.ptr();
+		_multimesh_re_create_aabb(multimesh, data, multimesh->instances);
+		multimesh->instance_dependency.instance_notify_changed(true, false);
+	}
+}
+
+PoolVector<float> RasterizerStorageRD::multimesh_get_buffer(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, PoolVector<float>());
+	if (multimesh->buffer.is_null()) {
+		return PoolVector<float>();
+	} else if (multimesh->data_cache.size()) {
+		return multimesh->data_cache;
+	} else {
+		//get from memory
+
+		PoolVector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
+		PoolVector<float> ret;
+		ret.resize(multimesh->instances);
+		{
+			PoolVector<float>::Write w = multimesh->data_cache.write();
+			PoolVector<uint8_t>::Read r = buffer.read();
+			copymem(w.ptr(), r.ptr(), buffer.size());
+		}
+
+		return ret;
+	}
+}
+
+void RasterizerStorageRD::multimesh_set_visible_instances(RID p_multimesh, int p_visible) {
+
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND(!multimesh);
+	ERR_FAIL_COND(p_visible < -1 || p_visible > multimesh->instances);
+	if (multimesh->visible_instances == p_visible) {
+		return;
+	}
+
+	if (multimesh->data_cache.size()) {
+		//there is a data cache..
+		_multimesh_mark_all_dirty(multimesh, false, true);
+	}
+
+	multimesh->visible_instances = p_visible;
+}
+int RasterizerStorageRD::multimesh_get_visible_instances(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, 0);
+	return multimesh->visible_instances;
+}
+
+AABB RasterizerStorageRD::multimesh_get_aabb(RID p_multimesh) const {
+	MultiMesh *multimesh = multimesh_owner.getornull(p_multimesh);
+	ERR_FAIL_COND_V(!multimesh, AABB());
+	if (multimesh->aabb_dirty) {
+		const_cast<RasterizerStorageRD *>(this)->_update_dirty_multimeshes();
+	}
+	return multimesh->aabb;
+}
+
+void RasterizerStorageRD::_update_dirty_multimeshes() {
+
+	while (multimesh_dirty_list) {
+
+		MultiMesh *multimesh = multimesh_dirty_list;
+
+		if (multimesh->data_cache.size()) { //may have been cleared, so only process if it exists
+			PoolVector<float>::Read r = multimesh->data_cache.read();
+			const float *data = r.ptr();
+
+			uint32_t visible_instances = multimesh->visible_instances >= 0 ? multimesh->visible_instances : multimesh->instances;
+
+			if (multimesh->data_cache_used_dirty_regions) {
+
+				uint32_t data_cache_dirty_region_count = (multimesh->instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+				uint32_t visible_region_count = (visible_instances - 1) / MULTIMESH_DIRTY_REGION_SIZE + 1;
+
+				uint32_t region_size = multimesh->stride_cache * MULTIMESH_DIRTY_REGION_SIZE * sizeof(float);
+
+				if (multimesh->data_cache_used_dirty_regions > 32 || multimesh->data_cache_used_dirty_regions > visible_region_count / 2) {
+					//if there too many dirty regions, or represent the majority of regions, just copy all, else transfer cost piles up too much
+					RD::get_singleton()->buffer_update(multimesh->buffer, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache), data, false);
+				} else {
+					//not that many regions? update them all
+					for (uint32_t i = 0; i < visible_region_count; i++) {
+						if (multimesh->data_cache_dirty_regions[i]) {
+							uint64_t offset = i * region_size;
+							uint64_t size = multimesh->stride_cache * multimesh->instances;
+							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[i * region_size], false);
+						}
+					}
+				}
+
+				for (uint32_t i = 0; i < data_cache_dirty_region_count; i++) {
+					multimesh->data_cache_dirty_regions[i] = false;
+				}
+
+				multimesh->data_cache_used_dirty_regions = 0;
+			}
+
+			if (multimesh->aabb_dirty) {
+				//aabb is dirty..
+				_multimesh_re_create_aabb(multimesh, data, visible_instances);
+				multimesh->aabb_dirty = false;
+				multimesh->instance_dependency.instance_notify_changed(true, false);
+			}
+		}
+
+		multimesh_dirty_list = multimesh->dirty_list;
+
+		multimesh->dirty_list = nullptr;
+		multimesh->dirty = false;
+	}
+
+	multimesh_dirty_list = nullptr;
 }
 
 /* LIGHT */
@@ -2889,6 +3499,13 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	if (mesh_owner.owns(p_base)) {
 		Mesh *mesh = mesh_owner.getornull(p_base);
 		p_instance->update_dependency(&mesh->instance_dependency);
+	} else if (multimesh_owner.owns(p_base)) {
+
+		MultiMesh *multimesh = multimesh_owner.getornull(p_base);
+		p_instance->update_dependency(&multimesh->instance_dependency);
+		if (multimesh->mesh.is_valid()) {
+			base_update_dependency(multimesh->mesh, p_instance);
+		}
 	} else if (reflection_probe_owner.owns(p_base)) {
 		ReflectionProbe *rp = reflection_probe_owner.getornull(p_base);
 		p_instance->update_dependency(&rp->instance_dependency);
@@ -2903,6 +3520,9 @@ VS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	if (mesh_owner.owns(p_rid)) {
 		return VS::INSTANCE_MESH;
 	}
+	if (multimesh_owner.owns(p_rid)) {
+		return VS::INSTANCE_MULTIMESH;
+	}
 	if (reflection_probe_owner.owns(p_rid)) {
 		return VS::INSTANCE_REFLECTION_PROBE;
 	}
@@ -2914,8 +3534,29 @@ VS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 }
 void RasterizerStorageRD::update_dirty_resources() {
 	_update_queued_materials();
+	_update_dirty_multimeshes();
 }
 
+bool RasterizerStorageRD::has_os_feature(const String &p_feature) const {
+
+	if (p_feature == "s3tc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
+	if (p_feature == "bptc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC7_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
+	if ((p_feature == "etc" || p_feature == "etc2") && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
+	if (p_feature == "pvrtc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_PVRTC1_2BPP_UNORM_BLOCK_IMG, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
+
+	return false;
+}
 bool RasterizerStorageRD::free(RID p_rid) {
 
 	if (texture_owner.owns(p_rid)) {
@@ -2972,6 +3613,12 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		Mesh *mesh = mesh_owner.getornull(p_rid);
 		mesh->instance_dependency.instance_notify_deleted(p_rid);
 		mesh_owner.free(p_rid);
+	} else if (multimesh_owner.owns(p_rid)) {
+		_update_dirty_multimeshes();
+		multimesh_allocate(p_rid, 0, VS::MULTIMESH_TRANSFORM_2D);
+		MultiMesh *multimesh = multimesh_owner.getornull(p_rid);
+		multimesh->instance_dependency.instance_notify_deleted(p_rid);
+		multimesh_owner.free(p_rid);
 	} else if (reflection_probe_owner.owns(p_rid)) {
 		ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_rid);
 		reflection_probe->instance_dependency.instance_notify_deleted(p_rid);

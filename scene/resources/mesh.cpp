@@ -586,6 +586,89 @@ Vector<Ref<Shape> > Mesh::convex_decompose() const {
 Mesh::Mesh() {
 }
 
+static PoolVector<uint8_t> _fix_array_compatibility(const PoolVector<uint8_t> &p_src, uint32_t p_format, uint32_t p_elements) {
+
+	bool vertex_16bit = p_format & ((1 << (Mesh::ARRAY_VERTEX + Mesh::ARRAY_COMPRESS_BASE)));
+	bool bone_32_bits = (p_format & Mesh::ARRAY_FORMAT_BONES) && !(p_format & (Mesh::ARRAY_COMPRESS_INDEX << 2));
+
+	print_line("convert vertex16: " + itos(vertex_16bit) + " bone 32 " + itos(bone_32_bits));
+	if (!vertex_16bit && !bone_32_bits) {
+		return p_src;
+	}
+
+	bool vertex_2d = (p_format & (Mesh::ARRAY_COMPRESS_INDEX << 1));
+
+	uint32_t src_stride = p_src.size() / p_elements;
+	uint32_t dst_stride = src_stride + (vertex_16bit ? 4 : 0) - (bone_32_bits ? 16 : 0);
+
+	PoolVector<uint8_t> ret;
+	ret.resize(dst_stride * p_elements);
+	{
+		PoolVector<uint8_t>::Write w = ret.write();
+		PoolVector<uint8_t>::Read r = p_src.read();
+
+		for (uint32_t i = 0; i < p_elements; i++) {
+
+			uint32_t remaining = src_stride;
+			const uint8_t *src = (const uint8_t *)(r.ptr() + src_stride * i);
+			uint8_t *dst = (uint8_t *)(w.ptr() + dst_stride * i);
+
+			if (!vertex_2d) { //3D
+				if (vertex_16bit) {
+					float *dstw = (float *)dst;
+					const uint16_t *srcr = (const uint16_t *)src;
+					dstw[0] = Math::half_to_float(srcr[0]);
+					dstw[1] = Math::half_to_float(srcr[1]);
+					dstw[2] = Math::half_to_float(srcr[2]);
+					remaining -= 8;
+					src += 8;
+				} else {
+					src += 12;
+					remaining -= 12;
+				}
+				dst += 12;
+			} else {
+				if (vertex_16bit) {
+					float *dstw = (float *)dst;
+					const uint16_t *srcr = (const uint16_t *)src;
+					dstw[0] = Math::half_to_float(srcr[0]);
+					dstw[1] = Math::half_to_float(srcr[1]);
+					remaining -= 4;
+					src += 4;
+				} else {
+					src += 8;
+					remaining -= 8;
+				}
+				dst += 8;
+			}
+
+			if (bone_32_bits) {
+
+				const uint32_t *src_bones = (const uint32_t *)&src[remaining - 32];
+				const float *src_weights = (const float *)&src[remaining - 16];
+				uint16_t *dstw = (uint16_t *)&dst[remaining - 32];
+
+				dstw[0] = src_bones[0];
+				dstw[1] = src_bones[1];
+				dstw[2] = src_bones[2];
+				dstw[3] = src_bones[3];
+				dstw[4] = CLAMP(src_weights[0] * 65535, 0, 65535); //16bits unorm
+				dstw[5] = CLAMP(src_weights[1] * 65535, 0, 65535);
+				dstw[6] = CLAMP(src_weights[2] * 65535, 0, 65535);
+				dstw[7] = CLAMP(src_weights[3] * 65535, 0, 65535);
+
+				remaining -= 32;
+			}
+
+			for (uint32_t j = 0; j < remaining; j++) {
+				dst[j] = src[j];
+			}
+		}
+	}
+
+	return ret;
+}
+
 bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 
 	String sname = p_name;
@@ -620,7 +703,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		return true;
 	}
 
-#ifdef ENABLE_DEPRECATED
+#ifndef DISABLE_DEPRECATED
 	if (!sname.begins_with("surfaces"))
 		return false;
 
@@ -636,12 +719,13 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 		ERR_FAIL_COND_V(!d.has("primitive"), false);
 
 		if (d.has("arrays")) {
-			//old format
+			//oldest format (2.x)
 			ERR_FAIL_COND_V(!d.has("morph_arrays"), false);
 			add_surface_from_arrays(PrimitiveType(int(d["primitive"])), d["arrays"], d["morph_arrays"]);
 
 		} else if (d.has("array_data")) {
-
+			print_line("array data (old style");
+			//older format (3.x)
 			PoolVector<uint8_t> array_data = d["array_data"];
 			PoolVector<uint8_t> array_index_data;
 			if (d.has("array_index_data"))
@@ -651,15 +735,23 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			uint32_t format = d["format"];
 
 			uint32_t primitive = d["primitive"];
-			if (primitive > PRIMITIVE_LINE_STRIP) {
-				primitive--; //line loop was deprecated, so it's not supported and indices go down by one
-			}
-			if (primitive > PRIMITIVE_TRIANGLE_STRIP) {
-				primitive = PRIMITIVE_TRIANGLE_STRIP; //fan is no longer supported
-			}
+
+			uint32_t primitive_remap[7] = {
+				PRIMITIVE_POINTS,
+				PRIMITIVE_LINES,
+				PRIMITIVE_LINE_STRIP,
+				PRIMITIVE_LINES,
+				PRIMITIVE_TRIANGLES,
+				PRIMITIVE_TRIANGLE_STRIP,
+				PRIMITIVE_TRIANGLE_STRIP
+			};
+
+			primitive = primitive_remap[primitive]; //compatibility
 
 			ERR_FAIL_COND_V(!d.has("vertex_count"), false);
 			int vertex_count = d["vertex_count"];
+
+			array_data = _fix_array_compatibility(array_data, format, vertex_count);
 
 			int index_count = 0;
 			if (d.has("index_count"))
@@ -671,9 +763,14 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 				Array blend_shape_data = d["blend_shape_data"];
 				for (int i = 0; i < blend_shape_data.size(); i++) {
 					PoolVector<uint8_t> shape = blend_shape_data[i];
+					shape = _fix_array_compatibility(shape, format, vertex_count);
+
 					blend_shapes.push_back(shape);
 				}
 			}
+
+			//clear unused flags
+			format &= ~((1 << (ARRAY_VERTEX + ARRAY_COMPRESS_BASE)) | (ARRAY_COMPRESS_INDEX << 2));
 
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];

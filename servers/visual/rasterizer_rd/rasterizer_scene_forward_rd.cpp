@@ -465,7 +465,7 @@ void RasterizerSceneForwardRD::MaterialData::update_parameters(const Map<StringN
 
 	if (p_textures_dirty && tex_uniform_count) {
 
-		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw());
+		update_textures(p_parameters, shader_data->default_texture_params, shader_data->texture_uniforms, texture_cache.ptrw(), true);
 	}
 
 	if (shader_data->ubo_size == 0 && shader_data->texture_uniforms.size() == 0) {
@@ -607,6 +607,26 @@ void RasterizerSceneForwardRD::_fill_instances(RenderList::Element **p_elements,
 		id.flags = 0;
 		id.mask = e->instance->layer_mask;
 
+		if (e->instance->base_type == VS::INSTANCE_MULTIMESH) {
+			id.flags |= INSTANCE_DATA_FLAG_MULTIMESH;
+			uint32_t stride;
+			if (storage->multimesh_get_transform_format(e->instance->base) == VS::MULTIMESH_TRANSFORM_2D) {
+				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_FORMAT_2D;
+				stride = 2;
+			} else {
+				stride = 3;
+			}
+			if (storage->multimesh_uses_colors(e->instance->base)) {
+				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_COLOR;
+				stride += 1;
+			}
+			if (storage->multimesh_uses_custom_data(e->instance->base)) {
+				id.flags |= INSTANCE_DATA_FLAG_MULTIMESH_HAS_CUSTOM_DATA;
+				stride += 1;
+			}
+
+			id.flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
+		}
 		//forward
 
 		uint32_t reflection_count = 0;
@@ -632,7 +652,7 @@ void RasterizerSceneForwardRD::_fill_instances(RenderList::Element **p_elements,
 				}
 
 				if (reflection_count < 8) {
-					id.omni_light_indices[omni_count] = reflection_probe_instance_get_render_index(rpi_ptrs[j]);
+					id.reflection_probe_indices[reflection_count] = reflection_probe_instance_get_render_index(rpi_ptrs[j]);
 					reflection_count++;
 				}
 			}
@@ -661,7 +681,7 @@ void RasterizerSceneForwardRD::_fill_instances(RenderList::Element **p_elements,
 					}
 				} else {
 					if (spot_count < 8) {
-						id.omni_light_indices[spot_count] = light_instance_get_index(light_ptrs[j]);
+						id.spot_light_indices[spot_count] = light_instance_get_index(light_ptrs[j]);
 						spot_count++;
 					}
 				}
@@ -686,6 +706,7 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 	//global scope bindings
 	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, render_base_uniform_set, 0);
+	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, default_vec4_xform_uniform_set, 1);
 
 	MaterialData *prev_material = nullptr;
 	//	ShaderData *prev_shader = nullptr;
@@ -693,6 +714,7 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	RID prev_vertex_array_rd;
 	RID prev_index_array_rd;
 	RID prev_pipeline_rd;
+	RID prev_xforms_uniform_set;
 
 	PushConstant push_constant;
 	zeromem(&push_constant, sizeof(PushConstant));
@@ -703,6 +725,7 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 
 		MaterialData *material = e->material;
 		ShaderData *shader = material->shader_data;
+		RID xforms_uniform_set;
 
 		//find cull variant
 		ShaderData::CullVariant cull_variant;
@@ -725,7 +748,12 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 				primitive = storage->mesh_surface_get_primitive(e->instance->base, e->surface_index);
 			} break;
 			case VS::INSTANCE_MULTIMESH: {
-				ERR_CONTINUE(true); //should be a bug
+				RID mesh = storage->multimesh_get_mesh(e->instance->base);
+				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
+				primitive = storage->mesh_surface_get_primitive(mesh, e->surface_index);
+
+				xforms_uniform_set = storage->multimesh_get_3d_uniform_set(e->instance->base, default_shader_rd, 1);
+
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
 				ERR_CONTINUE(true); //should be a bug
@@ -790,7 +818,9 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 				storage->mesh_surface_get_arrays_and_format(e->instance->base, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
 			} break;
 			case VS::INSTANCE_MULTIMESH: {
-				ERR_CONTINUE(true); //should be a bug
+				RID mesh = storage->multimesh_get_mesh(e->instance->base);
+				ERR_CONTINUE(!mesh.is_valid()); //should be a bug
+				storage->mesh_surface_get_arrays_and_format(mesh, e->surface_index, pipeline->get_vertex_input_mask(), vertex_array_rd, index_array_rd, vertex_format);
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
 				ERR_CONTINUE(true); //should be a bug
@@ -824,6 +854,11 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			prev_pipeline_rd = pipeline_rd;
 		}
 
+		if (xforms_uniform_set.is_valid() && prev_xforms_uniform_set != xforms_uniform_set) {
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material->uniform_set, 1);
+			prev_xforms_uniform_set = xforms_uniform_set;
+		}
+
 		if (material != prev_material) {
 			//update uniform set
 			if (material->uniform_set.is_valid()) {
@@ -841,7 +876,8 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid());
 			} break;
 			case VS::INSTANCE_MULTIMESH: {
-
+				uint32_t instances = storage->multimesh_get_instances_to_draw(e->instance->base);
+				RD::get_singleton()->draw_list_draw(draw_list, index_array_rd.is_valid(), instances);
 			} break;
 			case VS::INSTANCE_IMMEDIATE: {
 
@@ -1223,28 +1259,35 @@ void RasterizerSceneForwardRD::_fill_render_list(InstanceBase **p_cull_result, i
 				//mesh->last_pass=frame;
 
 			} break;
-#if 0
+
 			case VS::INSTANCE_MULTIMESH: {
 
-				RasterizerStorageGLES3::MultiMesh *multi_mesh = storage->multimesh_owner.getornull(inst->base);
-				ERR_CONTINUE(!multi_mesh);
-
-				if (multi_mesh->size == 0 || multi_mesh->visible_instances == 0)
+				if (storage->multimesh_get_instances_to_draw(inst->base) == 0) {
+					//not visible, 0 instances
 					continue;
+				}
 
-				RasterizerStorageGLES3::Mesh *mesh = storage->mesh_owner.getornull(multi_mesh->mesh);
-				if (!mesh)
-					continue; //mesh not assigned
+				RID mesh = storage->multimesh_get_mesh(inst->base);
+				if (!mesh.is_valid()) {
+					continue;
+				}
 
-				int ssize = mesh->surfaces.size();
+				const RID *materials = NULL;
+				uint32_t surface_count;
 
-				for (int j = 0; j < ssize; j++) {
+				materials = storage->mesh_get_surface_count_and_materials(mesh, surface_count);
+				if (!materials) {
+					continue; //nothing to do
+				}
 
-					RasterizerStorageGLES3::Surface *s = mesh->surfaces[j];
-					_add_geometry(s, inst, multi_mesh, -1, p_depth_pass, p_shadow_pass);
+				for (uint32_t j = 0; j < surface_count; j++) {
+
+					uint32_t surface_index = storage->mesh_surface_get_multimesh_render_pass_index(inst->base, j, render_pass, &geometry_index);
+					_add_geometry(inst, j, materials[j], p_pass_mode, surface_index);
 				}
 
 			} break;
+#if 0
 			case VS::INSTANCE_IMMEDIATE: {
 
 				RasterizerStorageGLES3::Immediate *immediate = storage->immediate_owner.getornull(inst->base);
@@ -2587,7 +2630,7 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 		actions.renames["POINT_COORD"] = "gl_PointCoord";
 		actions.renames["INSTANCE_CUSTOM"] = "instance_custom";
 		actions.renames["SCREEN_UV"] = "screen_uv";
-		actions.renames["SCREEN_TEXTURE"] = "screen_texture";
+		actions.renames["SCREEN_TEXTURE"] = "color_buffer";
 		actions.renames["DEPTH_TEXTURE"] = "depth_buffer";
 		actions.renames["NORMAL_TEXTURE"] = "normal_buffer";
 		actions.renames["DEPTH"] = "gl_FragDepth";
@@ -2695,6 +2738,17 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 		default_shader_rd = shader.scene_shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
 	}
 
+	{
+		default_vec4_xform_buffer = RD::get_singleton()->storage_buffer_create(256);
+		Vector<RD::Uniform> uniforms;
+		RD::Uniform u;
+		u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+		u.ids.push_back(default_vec4_xform_buffer);
+		u.binding = 0;
+		uniforms.push_back(u);
+
+		default_vec4_xform_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, default_shader_rd, 1);
+	}
 	{
 
 		RD::SamplerState sampler;

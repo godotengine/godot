@@ -145,7 +145,7 @@ vec3 tonemap_filmic(vec3 color, float white) {
 	vec3 color_tonemapped = ((color * (A * color + C * B) + D * E) / (color * (A * color + B) + D * F)) - E / F;
 	float white_tonemapped = ((white * (A * white + C * B) + D * E) / (white * (A * white + B) + D * F)) - E / F;
 
-	return color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f);
+	return color_tonemapped / white_tonemapped;
 }
 
 vec3 tonemap_aces(vec3 color, float white) {
@@ -159,7 +159,7 @@ vec3 tonemap_aces(vec3 color, float white) {
 	vec3 color_tonemapped = (color * (A * color + B)) / (color * (C * color + D) + E);
 	float white_tonemapped = (white * (A * white + B)) / (white * (C * white + D) + E);
 
-	return color_tonemapped / white_tonemapped, vec3(0.0f), vec3(1.0f);
+	return color_tonemapped / white_tonemapped;
 }
 
 vec3 tonemap_reinhard(vec3 color, float white) {

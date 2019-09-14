@@ -1861,7 +1861,6 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 		bool keep = false;
 
 		if ((camera_layer_mask & ins->layer_mask) == 0) {
-
 			//failure
 		} else if (ins->base_type == VS::INSTANCE_LIGHT && ins->visible) {
 

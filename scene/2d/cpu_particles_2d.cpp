@@ -56,7 +56,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 	}
 
 	particle_data.resize((8 + 4 + 1) * p_amount);
-	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_2D, VS::MULTIMESH_COLOR_8BIT, VS::MULTIMESH_CUSTOM_DATA_FLOAT);
+	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
 }
@@ -982,7 +982,7 @@ void CPUParticles2D::_update_render_thread() {
 	update_mutex->lock();
 #endif
 
-	VS::get_singleton()->multimesh_set_as_bulk_array(multimesh, particle_data);
+	VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 
 #ifndef NO_THREADS
 	update_mutex->unlock();

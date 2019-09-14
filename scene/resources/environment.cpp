@@ -941,6 +941,20 @@ float Environment::get_fog_height_curve() const {
 	return fog_height_curve;
 }
 
+#ifndef DISABLE_DEPRECATED
+bool Environment::_set(const StringName &p_name, const Variant &p_value) {
+	if (p_name == "background_sky") {
+		set_sky(p_value);
+		return true;
+	} else if (p_name == "background_sky_custom_fov") {
+		set_sky_custom_fov(p_value);
+		return true;
+	} else {
+		return false;
+	}
+}
+#endif
+
 void Environment::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_background", "mode"), &Environment::set_background);

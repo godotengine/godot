@@ -428,6 +428,7 @@ VS::EnvironmentReflectionSource RasterizerSceneRD::environment_get_reflection_so
 void RasterizerSceneRD::environment_set_tonemap(RID p_env, VS::EnvironmentToneMapper p_tone_mapper, float p_exposure, float p_white, bool p_auto_exposure, float p_min_luminance, float p_max_luminance, float p_auto_exp_speed, float p_auto_exp_scale) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
+	env->exposure = p_exposure;
 	env->tone_mapper = p_tone_mapper;
 	env->auto_exposure = p_auto_exposure;
 	env->white = p_white;
@@ -1414,7 +1415,7 @@ bool RasterizerSceneRD::free(RID p_rid) {
 		reflection_atlas_owner.free(p_rid);
 	} else if (reflection_probe_instance_owner.owns(p_rid)) {
 		//not much to delete, just free it
-		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
+		//ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_rid);
 		reflection_probe_release_atlas_index(p_rid);
 		reflection_probe_instance_owner.free(p_rid);
 	} else if (sky_owner.owns(p_rid)) {
