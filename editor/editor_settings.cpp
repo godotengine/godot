@@ -672,6 +672,7 @@ void EditorSettings::_load_default_text_editor_theme() {
 	_initial_set("text_editor/highlighting/completion_existing_color", Color(0.13, 0.87, 0.87, 0.87));
 	_initial_set("text_editor/highlighting/completion_scroll_color", Color(1, 1, 1));
 	_initial_set("text_editor/highlighting/completion_font_color", Color(0.67, 0.67, 0.67));
+	_initial_set("text_editor/highlighting/completion_occurrences_color", Color(0.3, 0.3, 0.3));
 	_initial_set("text_editor/highlighting/text_color", Color(0.67, 0.67, 0.67));
 	_initial_set("text_editor/highlighting/line_number_color", Color(0.67, 0.67, 0.67, 0.4));
 	_initial_set("text_editor/highlighting/safe_line_number_color", Color(0.67, 0.78, 0.67, 0.6));

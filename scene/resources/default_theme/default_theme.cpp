@@ -438,6 +438,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("completion_existing_color", "TextEdit", Color(0.87, 0.87, 0.87, 0.13));
 	theme->set_color("completion_scroll_color", "TextEdit", control_font_color_pressed);
 	theme->set_color("completion_font_color", "TextEdit", Color(0.67, 0.67, 0.67));
+	theme->set_color("completion_occurrences_color", "TextEdit", Color(0.3, 0.3, 0.3));
 	theme->set_color("font_color", "TextEdit", control_font_color);
 	theme->set_color("font_color_selected", "TextEdit", Color(0, 0, 0));
 	theme->set_color("font_color_readonly", "TextEdit", Color(control_font_color.r, control_font_color.g, control_font_color.b, 0.5f));

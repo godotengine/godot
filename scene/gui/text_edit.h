@@ -180,6 +180,7 @@ private:
 		Color completion_selected_color;
 		Color completion_existing_color;
 		Color completion_font_color;
+		Color completion_occurrences_color;
 		Color caret_color;
 		Color caret_background_color;
 		Color line_number_color;
@@ -489,9 +490,9 @@ public:
 
 	struct SortOptions {
 		bool operator()(ScriptCodeCompletionOption p_a, ScriptCodeCompletionOption p_b) const {
-			//Hack check case for first character
+			// Hack check case for first character
 			String input = p_a.input.substr(0, 1);
-			if (input != p_a.input.substr(0, 1).to_lower()) { //input is upper -> prefer upper results
+			if (input != p_a.input.substr(0, 1).to_lower()) { // input is upper -> prefer upper results
 				if ((int)((Array)((Array)p_a.occurrences[0])[1])[0] == 0 &&
 						(int)((Array)((Array)p_b.occurrences[0])[1])[0] == 0) {
 					if (p_a.insert_text.substr(0, 1) != p_b.insert_text.substr(0, 1)) {
@@ -501,14 +502,21 @@ public:
 			}
 			int min_size = p_a.occurrences.size() < p_b.occurrences.size() ? p_a.occurrences.size() : p_b.occurrences.size();
 			for (int i = 0; i < min_size; i++) {
-				if (((Array)((Array)p_a.occurrences[i])[1])[0] < ((Array)((Array)p_b.occurrences[i])[1])[0])
-					return true;
-				else if (((Array)((Array)p_b.occurrences[i])[1])[0] < ((Array)((Array)p_a.occurrences[i])[1])[0])
+				print_line(((String)((Array)p_a.occurrences[i])[0]));
+				print_line(((String)((Array)p_b.occurrences[i])[0]));
+				if (((String)((Array)p_a.occurrences[i])[0]).size() < ((String)((Array)p_b.occurrences[i])[0]).size()) { // prefer occurrence with higher match
 					return false;
-				else if (((Array)((Array)p_b.occurrences[i])[1])[1] < ((Array)((Array)p_a.occurrences[i])[1])[1])
+				} else if (((String)((Array)p_a.occurrences[i])[0]).size() > ((String)((Array)p_b.occurrences[i])[0]).size()) {
 					return true;
-				else if (((Array)((Array)p_a.occurrences[i])[1])[1] < ((Array)((Array)p_b.occurrences[i])[1])[1])
+				} else if (((Array)((Array)p_a.occurrences[i])[1])[0] < ((Array)((Array)p_b.occurrences[i])[1])[0]) { // different length, prefer closer to start
+					return true;
+				} else if (((Array)((Array)p_b.occurrences[i])[1])[0] < ((Array)((Array)p_a.occurrences[i])[1])[0]) {
 					return false;
+				} else if (((Array)((Array)p_b.occurrences[i])[1])[1] < ((Array)((Array)p_a.occurrences[i])[1])[1]) {
+					return true;
+				} else if (((Array)((Array)p_a.occurrences[i])[1])[1] < ((Array)((Array)p_b.occurrences[i])[1])[1]) {
+					return false;
+				}
 			}
 
 			// sort by alphabet if same length

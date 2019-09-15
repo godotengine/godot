@@ -89,6 +89,7 @@ void TextEditor::_load_theme_settings() {
 	Color current_line_color = EDITOR_GET("text_editor/highlighting/current_line_color");
 	Color line_length_guideline_color = EDITOR_GET("text_editor/highlighting/line_length_guideline_color");
 	Color word_highlighted_color = EDITOR_GET("text_editor/highlighting/word_highlighted_color");
+	Color completion_occurrences_color = EDITOR_GET("text_editor/highlighting/completion_occurrences_color");
 	Color number_color = EDITOR_GET("text_editor/highlighting/number_color");
 	Color function_color = EDITOR_GET("text_editor/highlighting/function_color");
 	Color member_variable_color = EDITOR_GET("text_editor/highlighting/member_variable_color");
@@ -122,6 +123,7 @@ void TextEditor::_load_theme_settings() {
 	text_edit->add_color_override("current_line_color", current_line_color);
 	text_edit->add_color_override("line_length_guideline_color", line_length_guideline_color);
 	text_edit->add_color_override("word_highlighted_color", word_highlighted_color);
+	text_edit->add_color_override("completion_occurrences_color", completion_occurrences_color);
 	text_edit->add_color_override("number_color", number_color);
 	text_edit->add_color_override("function_color", function_color);
 	text_edit->add_color_override("member_variable_color", member_variable_color);

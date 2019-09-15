@@ -4726,6 +4726,7 @@ void TextEdit::_update_caches() {
 	cache.completion_selected_color = get_color("completion_selected_color");
 	cache.completion_existing_color = get_color("completion_existing_color");
 	cache.completion_font_color = get_color("completion_font_color");
+	cache.completion_occurrences_color = get_color("completion_occurrences_color");
 	cache.font = get_font("font");
 	cache.caret_color = get_color("caret_color");
 	cache.caret_background_color = get_color("caret_background_color");
@@ -6303,22 +6304,19 @@ void TextEdit::_update_completion_candidates() {
 		int maxlines = get_constant("completion_lines");
 		int cmax_width = (get_constant("completion_max_width") * cache.font->get_char_size('x').x);
 		int scrollw = get_constant("completion_scroll_width");
-		Color text_color = get_color("word_highlighted_color");
-
 		completion->clear();
 
 		for (int i = 0; i < completion_options.size(); i++) {
 			ScriptCodeCompletionOption option = completion_options[i];
 			completion->add_icon_item(option.icon);
 			completion->set_item_text(i, option.display);
-			completion->set_item_custom_hl_color(completion->get_item_count() - 1, Color(1, 0, 0));
 			Array columns_hl;
 			for (int j = 0; j < option.occurrences.size(); j++) {
 				for (int k = (int)((Array)((Array)option.occurrences[j])[1])[0]; k <= (int)((Array)((Array)option.occurrences[j])[1])[1]; k++) {
 					columns_hl.push_back(k);
 				}
 			}
-			completion->set_item_custom_hl_color(completion->get_item_count() - 1, text_color);
+			completion->set_item_custom_hl_color(completion->get_item_count() - 1, cache.completion_occurrences_color);
 			completion->set_item_highlights(completion->get_item_count() - 1, columns_hl);
 		}
 
