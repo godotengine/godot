@@ -235,18 +235,18 @@ MaterialEditorPlugin::MaterialEditorPlugin(EditorNode *p_node) {
 	add_inspector_plugin(plugin);
 }
 
-String SpatialMaterialConversionPlugin::converts_to() const {
+String StandardMaterial3DConversionPlugin::converts_to() const {
 
 	return "ShaderMaterial";
 }
-bool SpatialMaterialConversionPlugin::handles(const Ref<Resource> &p_resource) const {
+bool StandardMaterial3DConversionPlugin::handles(const Ref<Resource> &p_resource) const {
 
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<StandardMaterial3D> mat = p_resource;
 	return mat.is_valid();
 }
-Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_resource) const {
+Ref<Resource> StandardMaterial3DConversionPlugin::convert(const Ref<Resource> &p_resource) const {
 
-	Ref<SpatialMaterial> mat = p_resource;
+	Ref<StandardMaterial3D> mat = p_resource;
 	ERR_FAIL_COND_V(!mat.is_valid(), Ref<Resource>());
 
 	Ref<ShaderMaterial> smat;
@@ -266,7 +266,7 @@ Ref<Resource> SpatialMaterialConversionPlugin::convert(const Ref<Resource> &p_re
 
 	for (List<PropertyInfo>::Element *E = params.front(); E; E = E->next()) {
 
-		// Texture parameter has to be treated specially since SpatialMaterial saved it
+		// Texture parameter has to be treated specially since StandardMaterial3D saved it
 		// as RID but ShaderMaterial needs Texture itself
 		Ref<Texture2D> texture = mat->get_texture_by_name(E->get().name);
 		if (texture.is_valid()) {

@@ -273,13 +273,13 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 
 	for (int i = 0; i < CULL_VARIANT_MAX; i++) {
 
-		RD::PolygonCullMode cull_mode_rd_table[3][CULL_VARIANT_MAX] = {
+		RD::PolygonCullMode cull_mode_rd_table[CULL_VARIANT_MAX][3] = {
 			{ RD::POLYGON_CULL_DISABLED, RD::POLYGON_CULL_FRONT, RD::POLYGON_CULL_BACK },
 			{ RD::POLYGON_CULL_DISABLED, RD::POLYGON_CULL_BACK, RD::POLYGON_CULL_FRONT },
 			{ RD::POLYGON_CULL_DISABLED, RD::POLYGON_CULL_DISABLED, RD::POLYGON_CULL_DISABLED }
 		};
 
-		RD::PolygonCullMode cull_mode_rd = cull_mode_rd_table[cull][i];
+		RD::PolygonCullMode cull_mode_rd = cull_mode_rd_table[i][cull];
 
 		for (int j = 0; j < VS::PRIMITIVE_MAX; j++) {
 
@@ -309,7 +309,7 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 							depth_stencil.enable_depth_write = false; //alpha does not draw depth
 						}
 					} else if (uses_depth_pre_pass && (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS)) {
-						if (k == SHADER_VERSION_DEPTH_PASS || k == k == SHADER_VERSION_DEPTH_PASS_DP) {
+						if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
 							//none, blend state contains nothing
 						} else {
 							blend_state = blend_state_opaque; //writes to normal and roughness in opaque way
@@ -2701,11 +2701,13 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 		actions.render_mode_defines["shadows_disabled"] = "#define SHADOWS_DISABLED\n";
 		actions.render_mode_defines["ambient_light_disabled"] = "#define AMBIENT_LIGHT_DISABLED\n";
 		actions.render_mode_defines["shadow_to_opacity"] = "#define USE_SHADOW_TO_OPACITY\n";
+		actions.render_mode_defines["unshaded"] = "#define MODE_UNSHADED\n";
 
 		actions.sampler_array_name = "material_samplers";
 		actions.base_texture_binding_index = 1;
 		actions.texture_layout_set = 2;
 		actions.base_uniform_string = "material.";
+		actions.base_varying_index = 10;
 
 		actions.default_filter = ShaderLanguage::FILTER_LINEAR_MIPMAP;
 		actions.default_repeat = ShaderLanguage::REPEAT_ENABLE;

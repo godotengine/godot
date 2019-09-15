@@ -79,7 +79,7 @@ void RootMotionView::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_ENTER_TREE) {
 
-		VS::get_singleton()->immediate_set_material(immediate, SpatialMaterial::get_material_rid_for_2d(false, true, false, false, false));
+		VS::get_singleton()->immediate_set_material(immediate, StandardMaterial3D::get_material_rid_for_2d(false, true, false, false, false));
 		first = true;
 	}
 

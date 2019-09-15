@@ -1649,6 +1649,7 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 		if (!texture.is_valid()) {
 			const Map<StringName, RID>::Element *W = p_default_textures.find(uniform_name);
 			if (W) {
+
 				texture = W->get();
 			}
 		}
@@ -1673,11 +1674,12 @@ void RasterizerStorageRD::MaterialData::update_textures(const Map<StringName, Va
 				} break;
 			}
 		} else {
-			bool srgb = p_use_linear_color && p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO;
+			bool srgb = p_use_linear_color && (p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_ALBEDO || p_texture_uniforms[i].hint == ShaderLanguage::ShaderNode::Uniform::HINT_BLACK_ALBEDO);
 
 			Texture *tex = singleton->texture_owner.getornull(texture);
 
 			if (tex) {
+
 				rd_texture = (srgb && tex->rd_texture_srgb.is_valid()) ? tex->rd_texture_srgb : tex->rd_texture;
 #ifdef TOOLS_ENABLED
 				if (tex->detect_3d_callback && p_use_linear_color) {

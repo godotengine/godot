@@ -820,13 +820,13 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 	ERR_FAIL_INDEX_V(p_index, (int)state.assimp_scene->mNumMaterials, Ref<Material>());
 
 	aiMaterial *ai_material = state.assimp_scene->mMaterials[p_index];
-	Ref<SpatialMaterial> mat;
+	Ref<StandardMaterial3D> mat;
 	mat.instance();
 
 	int32_t mat_two_sided = 0;
 	if (AI_SUCCESS == ai_material->Get(AI_MATKEY_TWOSIDED, mat_two_sided)) {
 		if (mat_two_sided > 0) {
-			mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+			mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 		}
 	}
 
@@ -852,8 +852,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 
 				if (texture.is_valid()) {
 					_set_texture_mapping_mode(map_mode, texture);
-					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-					mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
+					mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+					mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, texture);
 				}
 			}
 		}
@@ -871,8 +871,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			if (found) {
 				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
-					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-					mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
+					mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+					mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, texture);
 				}
 			}
 		}
@@ -895,8 +895,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
 					_set_texture_mapping_mode(map_mode, texture);
-					mat->set_feature(SpatialMaterial::FEATURE_EMISSION, true);
-					mat->set_texture(SpatialMaterial::TEXTURE_EMISSION, texture);
+					mat->set_feature(StandardMaterial3D::FEATURE_EMISSION, true);
+					mat->set_texture(StandardMaterial3D::TEXTURE_EMISSION, texture);
 				}
 			}
 		}
@@ -918,10 +918,9 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() != Image::ALPHA_NONE) {
 						_set_texture_mapping_mode(map_mode, texture);
-						mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-						mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+						mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 					}
-					mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+					mat->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, texture);
 				}
 			}
 		}
@@ -929,8 +928,7 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 		aiColor4D clr_diffuse;
 		if (AI_SUCCESS == ai_material->Get(AI_MATKEY_COLOR_DIFFUSE, clr_diffuse)) {
 			if (Math::is_equal_approx(clr_diffuse.a, 1.0f) == false) {
-				mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-				mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+				mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 			}
 			mat->set_albedo(Color(clr_diffuse.r, clr_diffuse.g, clr_diffuse.b, clr_diffuse.a));
 		}
@@ -949,18 +947,16 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			if (texture != NULL) {
 				if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
 					_set_texture_mapping_mode(map_mode, texture);
-					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-					mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+					mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 				}
-				mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+				mat->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, texture);
 			}
 		}
 	} else {
 		aiColor4D pbr_base_color;
 		if (AI_SUCCESS == ai_material->Get(AI_MATKEY_GLTF_PBRMETALLICROUGHNESS_BASE_COLOR_FACTOR, pbr_base_color)) {
 			if (Math::is_equal_approx(pbr_base_color.a, 1.0f) == false) {
-				mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-				mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+				mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 			}
 			mat->set_albedo(Color(pbr_base_color.r, pbr_base_color.g, pbr_base_color.b, pbr_base_color.a));
 		}
@@ -977,10 +973,9 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
-						mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-						mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+						mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 					}
-					mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+					mat->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, texture);
 				}
 			}
 		} else {
@@ -1008,15 +1003,15 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				Ref<Texture2D> texture = _load_texture(state, path);
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
-					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-					mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
+					mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+					mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, texture);
 				}
 			}
 		}
 	}
 
 	if (p_double_sided) {
-		mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+		mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 	}
 
 	{
@@ -1030,8 +1025,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				Ref<Texture2D> texture = _load_texture(state, path);
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
-					mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
-					mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, texture);
+					mat->set_feature(StandardMaterial3D::Feature::FEATURE_NORMAL_MAPPING, true);
+					mat->set_texture(StandardMaterial3D::TEXTURE_NORMAL, texture);
 				}
 			}
 		}
@@ -1049,10 +1044,9 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
-						mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-						mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+						mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 					}
-					mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+					mat->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, texture);
 				}
 			}
 		} else {
@@ -1081,10 +1075,9 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 				_find_texture_path(state.path, path, found);
 				if (texture != NULL) {
 					if (texture->get_data()->detect_alpha() == Image::ALPHA_BLEND) {
-						mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-						mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+						mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA_DEPTH_PRE_PASS);
 					}
-					mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, texture);
+					mat->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, texture);
 				}
 			}
 		} else {
@@ -1109,10 +1102,10 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 		if (found) {
 			Ref<Texture2D> texture = _load_texture(state, path);
 			if (texture != NULL) {
-				mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
-				mat->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_BLUE);
-				mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
-				mat->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GREEN);
+				mat->set_texture(StandardMaterial3D::TEXTURE_METALLIC, texture);
+				mat->set_metallic_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_BLUE);
+				mat->set_texture(StandardMaterial3D::TEXTURE_ROUGHNESS, texture);
+				mat->set_roughness_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_GREEN);
 			}
 		}
 	} else {
@@ -1136,8 +1129,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			if (found) {
 				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
-					mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
-					mat->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
+					mat->set_texture(StandardMaterial3D::TEXTURE_METALLIC, texture);
+					mat->set_metallic_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 			}
 		} else {
@@ -1156,8 +1149,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			if (found) {
 				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
-					mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
-					mat->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
+					mat->set_texture(StandardMaterial3D::TEXTURE_ROUGHNESS, texture);
+					mat->set_roughness_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 			}
 		} else {
@@ -1179,8 +1172,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			if (found) {
 				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
-					mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, texture);
-					mat->set_metallic_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
+					mat->set_texture(StandardMaterial3D::TEXTURE_METALLIC, texture);
+					mat->set_metallic_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 			}
 		} else {
@@ -1199,8 +1192,8 @@ Ref<Material> EditorSceneImporterAssimp::_generate_material_from_index(ImportSta
 			if (found) {
 				Ref<Texture2D> texture = _load_texture(state, path);
 				if (texture != NULL) {
-					mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, texture);
-					mat->set_roughness_texture_channel(SpatialMaterial::TEXTURE_CHANNEL_GRAYSCALE);
+					mat->set_texture(StandardMaterial3D::TEXTURE_ROUGHNESS, texture);
+					mat->set_roughness_texture_channel(StandardMaterial3D::TEXTURE_CHANNEL_GRAYSCALE);
 				}
 			}
 		} else {

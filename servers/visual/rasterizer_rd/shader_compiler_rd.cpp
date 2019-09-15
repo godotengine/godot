@@ -366,7 +366,7 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					r_gen_code.fragment_global += ucode;
 
 					GeneratedCode::Texture texture;
-					texture.name = _mkid(E->key());
+					texture.name = E->key();
 					texture.hint = E->get().hint;
 					texture.type = E->get().type;
 					texture.filter = E->get().filter;
@@ -452,6 +452,8 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 			}
 #endif
 
+			uint32_t index = p_default_actions.base_varying_index;
+
 			for (Map<StringName, SL::ShaderNode::Varying>::Element *E = pnode->varyings.front(); E; E = E->next()) {
 
 				String vcode;
@@ -460,8 +462,9 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				vcode += _typestr(E->get().type);
 				vcode += " " + _mkid(E->key());
 				vcode += ";\n";
-				r_gen_code.vertex_global += interp_mode + "out " + vcode;
-				r_gen_code.fragment_global += interp_mode + "in " + vcode;
+				r_gen_code.vertex_global += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
+				r_gen_code.fragment_global += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
+				index++;
 			}
 
 			for (Map<StringName, SL::ShaderNode::Constant>::Element *E = pnode->constants.front(); E; E = E->next()) {

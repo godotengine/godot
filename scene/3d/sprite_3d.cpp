@@ -463,7 +463,7 @@ void Sprite3D::_draw() {
 		tangent = Plane(1, 0, 0, 1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
 	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLES, texture->get_rid());
@@ -790,7 +790,7 @@ void AnimatedSprite3D::_draw() {
 		tangent = Plane(1, 0, 0, -1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
+	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS);
 
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 

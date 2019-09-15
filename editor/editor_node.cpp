@@ -5662,7 +5662,7 @@ EditorNode::EditorNode() {
 	EDITOR_DEF("interface/inspector/horizontal_vector2_editing", false);
 	EDITOR_DEF("interface/inspector/horizontal_vector_types_editing", true);
 	EDITOR_DEF("interface/inspector/open_resources_in_current_inspector", true);
-	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "SpatialMaterial,Script,MeshLibrary,TileSet");
+	EDITOR_DEF("interface/inspector/resources_to_open_in_new_inspector", "StandardMaterial3D,ORMMaterial3D,Script,MeshLibrary,TileSet");
 	EDITOR_DEF("run/auto_save/save_before_running", true);
 
 	theme_base = memnew(Control);
@@ -6556,7 +6556,7 @@ EditorNode::EditorNode() {
 	resource_preview->add_preview_generator(Ref<EditorFontPreviewPlugin>(memnew(EditorFontPreviewPlugin)));
 
 	{
-		Ref<SpatialMaterialConversionPlugin> spatial_mat_convert;
+		Ref<StandardMaterial3DConversionPlugin> spatial_mat_convert;
 		spatial_mat_convert.instance();
 		resource_conversion_plugins.push_back(spatial_mat_convert);
 

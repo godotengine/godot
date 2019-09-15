@@ -125,10 +125,10 @@ class GridMapEditor : public VBoxContainer {
 
 	List<ClipboardItem> clipboard_items;
 
-	Ref<SpatialMaterial> indicator_mat;
-	Ref<SpatialMaterial> inner_mat;
-	Ref<SpatialMaterial> outer_mat;
-	Ref<SpatialMaterial> selection_floor_mat;
+	Ref<StandardMaterial3D> indicator_mat;
+	Ref<StandardMaterial3D> inner_mat;
+	Ref<StandardMaterial3D> outer_mat;
+	Ref<StandardMaterial3D> selection_floor_mat;
 
 	bool updating;
 
