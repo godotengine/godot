@@ -861,10 +861,10 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 
 	Ref<Script> base_script = script->get_base_script();
 	if (base_script.is_null()) {
-		return ScriptServer::get_global_class_base(p_class);
+		return ScriptServer::get_global_class_native_base(p_class);
 	}
 
-	return script->get_language()->get_global_class_name(base_script->get_path());
+	return script_class_get_name(base_script->get_path());
 }
 
 Object *EditorData::script_class_instance(const String &p_class) {

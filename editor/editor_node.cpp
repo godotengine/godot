@@ -3785,17 +3785,17 @@ Ref<Texture2D> EditorNode::get_object_icon(const Object *p_object, const String 
 	if (script.is_valid()) {
 		Ref<Script> base_script = script;
 		while (base_script.is_valid()) {
-			StringName name = EditorNode::get_editor_data().script_class_get_name(base_script->get_path());
-			String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
+			StringName name = get_editor_data().script_class_get_name(base_script->get_path());
+			String icon_path = get_editor_data().script_class_get_icon_path(name);
 			Ref<ImageTexture> icon = _load_custom_class_icon(icon_path);
 			if (icon.is_valid()) {
 				return icon;
 			}
 
 			// should probably be deprecated in 4.x
-			StringName base = base_script->get_instance_base_type();
-			if (base != StringName() && EditorNode::get_editor_data().get_custom_types().has(base)) {
-				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[base];
+			StringName native_type = base_script->get_instance_base_type();
+			if (native_type != StringName() && EditorNode::get_editor_data().get_custom_types().has(native_type)) {
+				const Vector<EditorData::CustomType> &types = EditorNode::get_editor_data().get_custom_types()[native_type];
 				for (int i = 0; i < types.size(); ++i) {
 					if (types[i].script == base_script && types[i].icon.is_valid()) {
 						return types[i].icon;

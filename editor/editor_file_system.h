@@ -222,8 +222,7 @@ class EditorFileSystem : public Node {
 	void _scan_script_classes(EditorFileSystemDirectory *p_dir);
 	volatile bool update_script_classes_queued;
 	void _queue_update_script_classes();
-
-	String _get_global_script_class(const String &p_type, const String &p_path, String *r_extends, String *r_icon_path) const;
+	String _get_global_class_name(String p_path, String *p_base = nullptr, String *p_icon_path = nullptr);
 
 	static Error _resource_import(const String &p_path);
 
