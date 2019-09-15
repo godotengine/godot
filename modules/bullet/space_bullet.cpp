@@ -890,8 +890,8 @@ void SpaceBullet::update_gravity() {
 
 static ImmediateGeometry *motionVec(NULL);
 static ImmediateGeometry *normalLine(NULL);
-static Ref<SpatialMaterial> red_mat;
-static Ref<SpatialMaterial> blue_mat;
+static Ref<StandardMaterial3D> red_mat;
+static Ref<StandardMaterial3D> blue_mat;
 #endif
 
 bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, PhysicsServer::MotionResult *r_result, bool p_exclude_raycast_shapes) {
@@ -908,21 +908,21 @@ bool SpaceBullet::test_body_motion(RigidBodyBullet *p_body, const Transform &p_f
 		motionVec->set_as_toplevel(true);
 		normalLine->set_as_toplevel(true);
 
-		red_mat = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-		red_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		red_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+		red_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		red_mat->set_line_width(20.0);
-		red_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		red_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		red_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		red_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		red_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		red_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		red_mat->set_albedo(Color(1, 0, 0, 1));
 		motionVec->set_material_override(red_mat);
 
-		blue_mat = Ref<SpatialMaterial>(memnew(SpatialMaterial));
-		blue_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		blue_mat = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
+		blue_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 		blue_mat->set_line_width(20.0);
-		blue_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		blue_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		blue_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		blue_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		blue_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		blue_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		blue_mat->set_albedo(Color(0, 0, 1, 1));
 		normalLine->set_material_override(blue_mat);
 	}

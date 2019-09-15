@@ -101,7 +101,7 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 
 	if (mesh.is_valid()) {
 		for (int i = 0; i < mesh->get_surface_count(); i++) {
-			p_list->push_back(PropertyInfo(Variant::OBJECT, "material/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SpatialMaterial"));
+			p_list->push_back(PropertyInfo(Variant::OBJECT, "material/" + itos(i), PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,StandardMaterial3D"));
 		}
 	}
 }
@@ -355,12 +355,12 @@ void MeshInstance::create_debug_tangents() {
 
 	if (lines.size()) {
 
-		Ref<SpatialMaterial> sm;
+		Ref<StandardMaterial3D> sm;
 		sm.instance();
 
-		sm->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		sm->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-		sm->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		sm->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		sm->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		sm->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 
 		Ref<ArrayMesh> am;
 		am.instance();

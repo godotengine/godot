@@ -5169,143 +5169,145 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					if (tk.type == TK_COLON) {
 						//hint
-
-						tk = _get_token();
-						if (tk.type == TK_HINT_WHITE_TEXTURE) {
-							uniform2.hint = ShaderNode::Uniform::HINT_WHITE;
-						} else if (tk.type == TK_HINT_BLACK_TEXTURE) {
-							uniform2.hint = ShaderNode::Uniform::HINT_BLACK;
-						} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
-							uniform2.hint = ShaderNode::Uniform::HINT_NORMAL;
-						} else if (tk.type == TK_HINT_ROUGHNESS_NORMAL_TEXTURE) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL;
-						} else if (tk.type == TK_HINT_ROUGHNESS_R) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_R;
-						} else if (tk.type == TK_HINT_ROUGHNESS_G) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_G;
-						} else if (tk.type == TK_HINT_ROUGHNESS_B) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_B;
-						} else if (tk.type == TK_HINT_ROUGHNESS_A) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_A;
-						} else if (tk.type == TK_HINT_ROUGHNESS_GRAY) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
-						} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ANISO;
-						} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {
-							uniform2.hint = ShaderNode::Uniform::HINT_ALBEDO;
-						} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
-							uniform2.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
-						} else if (tk.type == TK_HINT_COLOR) {
-							if (type != TYPE_VEC4) {
-								_set_error("Color hint is for vec4 only");
-								return ERR_PARSE_ERROR;
-							}
-							uniform2.hint = ShaderNode::Uniform::HINT_COLOR;
-						} else if (tk.type == TK_HINT_RANGE) {
-
-							uniform2.hint = ShaderNode::Uniform::HINT_RANGE;
-							if (type != TYPE_FLOAT && type != TYPE_INT) {
-								_set_error("Range hint is for float and int only");
-								return ERR_PARSE_ERROR;
-							}
-
+						do {
 							tk = _get_token();
-							if (tk.type != TK_PARENTHESIS_OPEN) {
-								_set_error("Expected '(' after hint_range");
-								return ERR_PARSE_ERROR;
-							}
+							if (tk.type == TK_HINT_WHITE_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_WHITE;
+							} else if (tk.type == TK_HINT_BLACK_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_BLACK;
+							} else if (tk.type == TK_HINT_NORMAL_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_NORMAL;
+							} else if (tk.type == TK_HINT_ROUGHNESS_NORMAL_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_NORMAL;
+							} else if (tk.type == TK_HINT_ROUGHNESS_R) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_R;
+							} else if (tk.type == TK_HINT_ROUGHNESS_G) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_G;
+							} else if (tk.type == TK_HINT_ROUGHNESS_B) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_B;
+							} else if (tk.type == TK_HINT_ROUGHNESS_A) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_A;
+							} else if (tk.type == TK_HINT_ROUGHNESS_GRAY) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ROUGHNESS_GRAY;
+							} else if (tk.type == TK_HINT_ANISO_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ANISO;
+							} else if (tk.type == TK_HINT_ALBEDO_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_ALBEDO;
+							} else if (tk.type == TK_HINT_BLACK_ALBEDO_TEXTURE) {
+								uniform2.hint = ShaderNode::Uniform::HINT_BLACK_ALBEDO;
+							} else if (tk.type == TK_HINT_COLOR) {
+								if (type != TYPE_VEC4) {
+									_set_error("Color hint is for vec4 only");
+									return ERR_PARSE_ERROR;
+								}
+								uniform2.hint = ShaderNode::Uniform::HINT_COLOR;
+							} else if (tk.type == TK_HINT_RANGE) {
 
-							tk = _get_token();
+								uniform2.hint = ShaderNode::Uniform::HINT_RANGE;
+								if (type != TYPE_FLOAT && type != TYPE_INT) {
+									_set_error("Range hint is for float and int only");
+									return ERR_PARSE_ERROR;
+								}
 
-							float sign = 1.0;
-
-							if (tk.type == TK_OP_SUB) {
-								sign = -1.0;
 								tk = _get_token();
-							}
+								if (tk.type != TK_PARENTHESIS_OPEN) {
+									_set_error("Expected '(' after hint_range");
+									return ERR_PARSE_ERROR;
+								}
 
-							if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
-								_set_error("Expected integer constant");
-								return ERR_PARSE_ERROR;
-							}
-
-							uniform2.hint_range[0] = tk.constant;
-							uniform2.hint_range[0] *= sign;
-
-							tk = _get_token();
-
-							if (tk.type != TK_COMMA) {
-								_set_error("Expected ',' after integer constant");
-								return ERR_PARSE_ERROR;
-							}
-
-							tk = _get_token();
-
-							sign = 1.0;
-
-							if (tk.type == TK_OP_SUB) {
-								sign = -1.0;
 								tk = _get_token();
-							}
 
-							if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
-								_set_error("Expected integer constant after ','");
-								return ERR_PARSE_ERROR;
-							}
+								float sign = 1.0;
 
-							uniform2.hint_range[1] = tk.constant;
-							uniform2.hint_range[1] *= sign;
+								if (tk.type == TK_OP_SUB) {
+									sign = -1.0;
+									tk = _get_token();
+								}
 
-							tk = _get_token();
+								if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
+									_set_error("Expected integer constant");
+									return ERR_PARSE_ERROR;
+								}
 
-							if (tk.type == TK_COMMA) {
+								uniform2.hint_range[0] = tk.constant;
+								uniform2.hint_range[0] *= sign;
+
 								tk = _get_token();
+
+								if (tk.type != TK_COMMA) {
+									_set_error("Expected ',' after integer constant");
+									return ERR_PARSE_ERROR;
+								}
+
+								tk = _get_token();
+
+								sign = 1.0;
+
+								if (tk.type == TK_OP_SUB) {
+									sign = -1.0;
+									tk = _get_token();
+								}
 
 								if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
 									_set_error("Expected integer constant after ','");
 									return ERR_PARSE_ERROR;
 								}
 
-								uniform2.hint_range[2] = tk.constant;
+								uniform2.hint_range[1] = tk.constant;
+								uniform2.hint_range[1] *= sign;
+
 								tk = _get_token();
-							} else {
-								if (type == TYPE_INT) {
-									uniform2.hint_range[2] = 1;
+
+								if (tk.type == TK_COMMA) {
+									tk = _get_token();
+
+									if (tk.type != TK_REAL_CONSTANT && tk.type != TK_INT_CONSTANT) {
+										_set_error("Expected integer constant after ','");
+										return ERR_PARSE_ERROR;
+									}
+
+									uniform2.hint_range[2] = tk.constant;
+									tk = _get_token();
 								} else {
-									uniform2.hint_range[2] = 0.001;
+									if (type == TYPE_INT) {
+										uniform2.hint_range[2] = 1;
+									} else {
+										uniform2.hint_range[2] = 0.001;
+									}
 								}
+
+								if (tk.type != TK_PARENTHESIS_CLOSE) {
+									_set_error("Expected ','");
+									return ERR_PARSE_ERROR;
+								}
+							} else if (tk.type == TK_FILTER_LINEAR) {
+								uniform2.filter = FILTER_LINEAR;
+							} else if (tk.type == TK_FILTER_NEAREST) {
+								uniform2.filter = FILTER_NEAREST;
+							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP) {
+								uniform2.filter = FILTER_NEAREST_MIPMAP;
+							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP) {
+								uniform2.filter = FILTER_LINEAR_MIPMAP;
+							} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISO) {
+								uniform2.filter = FILTER_NEAREST_MIPMAP_ANISO;
+							} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISO) {
+								uniform2.filter = FILTER_LINEAR_MIPMAP_ANISO;
+							} else if (tk.type == TK_REPEAT_DISABLE) {
+								uniform2.repeat = REPEAT_DISABLE;
+							} else if (tk.type == TK_REPEAT_ENABLE) {
+								uniform2.repeat = REPEAT_ENABLE;
+							} else {
+								_set_error("Expected valid type hint after ':'.");
 							}
 
-							if (tk.type != TK_PARENTHESIS_CLOSE) {
-								_set_error("Expected ','");
+							if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && uniform2.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
+								_set_error("This hint is only for sampler types");
 								return ERR_PARSE_ERROR;
 							}
-						} else if (tk.type == TK_FILTER_LINEAR) {
-							uniform2.filter = FILTER_LINEAR;
-						} else if (tk.type == TK_FILTER_NEAREST) {
-							uniform2.filter = FILTER_NEAREST;
-						} else if (tk.type == TK_FILTER_NEAREST_MIPMAP) {
-							uniform2.filter = FILTER_NEAREST_MIPMAP;
-						} else if (tk.type == TK_FILTER_LINEAR_MIPMAP) {
-							uniform2.filter = FILTER_LINEAR_MIPMAP;
-						} else if (tk.type == TK_FILTER_NEAREST_MIPMAP_ANISO) {
-							uniform2.filter = FILTER_NEAREST_MIPMAP_ANISO;
-						} else if (tk.type == TK_FILTER_LINEAR_MIPMAP_ANISO) {
-							uniform2.filter = FILTER_LINEAR_MIPMAP_ANISO;
-						} else if (tk.type == TK_REPEAT_DISABLE) {
-							uniform2.repeat = REPEAT_DISABLE;
-						} else if (tk.type == TK_REPEAT_ENABLE) {
-							uniform2.repeat = REPEAT_ENABLE;
-						} else {
-							_set_error("Expected valid type hint after ':'.");
-						}
 
-						if (uniform2.hint != ShaderNode::Uniform::HINT_RANGE && uniform2.hint != ShaderNode::Uniform::HINT_NONE && uniform2.hint != ShaderNode::Uniform::HINT_COLOR && type <= TYPE_MAT4) {
-							_set_error("This hint is only for sampler types");
-							return ERR_PARSE_ERROR;
-						}
+							tk = _get_token();
 
-						tk = _get_token();
+						} while (tk.type == TK_COMMA);
 					}
 
 					if (tk.type == TK_OP_ASSIGN) {

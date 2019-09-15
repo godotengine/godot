@@ -286,14 +286,14 @@ SpriteBase3D::AlphaCutMode SpriteBase3D::get_alpha_cut_mode() const {
 	return alpha_cut;
 }
 
-void SpriteBase3D::set_billboard_mode(SpatialMaterial::BillboardMode p_mode) {
+void SpriteBase3D::set_billboard_mode(StandardMaterial3D::BillboardMode p_mode) {
 
 	ERR_FAIL_INDEX(p_mode, 3);
 	billboard_mode = p_mode;
 	_queue_update();
 }
 
-SpatialMaterial::BillboardMode SpriteBase3D::get_billboard_mode() const {
+StandardMaterial3D::BillboardMode SpriteBase3D::get_billboard_mode() const {
 
 	return billboard_mode;
 }
@@ -377,7 +377,7 @@ SpriteBase3D::SpriteBase3D() {
 		flags[i] = i == FLAG_TRANSPARENT || i == FLAG_DOUBLE_SIDED;
 
 	alpha_cut = ALPHA_CUT_DISABLED;
-	billboard_mode = SpatialMaterial::BILLBOARD_DISABLED;
+	billboard_mode = StandardMaterial3D::BILLBOARD_DISABLED;
 	axis = Vector3::AXIS_Z;
 	pixel_size = 0.01;
 	modulate = Color(1, 1, 1, 1);
@@ -480,7 +480,7 @@ void Sprite3D::_draw() {
 		tangent = Plane(1, 0, 0, 1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
+	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y);
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 
 	VS::get_singleton()->immediate_begin(immediate, VS::PRIMITIVE_TRIANGLES, texture->get_rid());
@@ -810,7 +810,7 @@ void AnimatedSprite3D::_draw() {
 		tangent = Plane(1, 0, 0, -1);
 	}
 
-	RID mat = SpatialMaterial::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == SpatialMaterial::BILLBOARD_ENABLED, get_billboard_mode() == SpatialMaterial::BILLBOARD_FIXED_Y);
+	RID mat = StandardMaterial3D::get_material_rid_for_2d(get_draw_flag(FLAG_SHADED), get_draw_flag(FLAG_TRANSPARENT), get_draw_flag(FLAG_DOUBLE_SIDED), get_alpha_cut_mode() == ALPHA_CUT_DISCARD, get_alpha_cut_mode() == ALPHA_CUT_OPAQUE_PREPASS, get_billboard_mode() == StandardMaterial3D::BILLBOARD_ENABLED, get_billboard_mode() == StandardMaterial3D::BILLBOARD_FIXED_Y);
 
 	VS::get_singleton()->immediate_set_material(immediate, mat);
 

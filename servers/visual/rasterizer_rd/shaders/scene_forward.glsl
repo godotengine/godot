@@ -351,6 +351,8 @@ layout(location = 0) out vec4 frag_color;
 // E. Heitz, "Understanding the Masking-Shadowing Function in Microfacet-Based BRDFs", J. Comp. Graph. Tech. 3 (2) (2014).
 // Eqns 71-72 and 85-86 (see also Eqns 43 and 80).
 
+#if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
 float G_GGX_2cos(float cos_theta_m, float alpha) {
 	// Schlick's approximation
 	// C. Schlick, "An Inexpensive BRDF Model for Physically-based Rendering", Computer Graphics Forum. 13 (3): 233 (1994)
@@ -892,6 +894,10 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 normal,float roughness
 	}
 #endif //USE_LIGHTMAP
 }
+
+#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
+
 void main() {
 
 #ifdef MODE_DUAL_PARABOLOID
@@ -1030,7 +1036,8 @@ FRAGMENT_SHADER_CODE
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3( 0.0, 0.0, 0.0);
 
-#ifndef MODE_RENDER_DEPTH
+#if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
 	if (scene_data.use_reflection_cubemap){
 
 		vec3 ref_vec = reflect(-view, normal);
@@ -1070,7 +1077,8 @@ FRAGMENT_SHADER_CODE
 	}
 #endif // USE_LIGHTMAP
 
-#endif // MODE_RENDER_DEPTH
+#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
+
 
 	//radiance
 
@@ -1080,7 +1088,7 @@ FRAGMENT_SHADER_CODE
 	specular_blob_intensity *= specular * 2.0;
 #endif
 
-#ifndef MODE_RENDER_DEPTH
+#if !defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 	//gi probes
 
 	//lightmap
@@ -1306,7 +1314,7 @@ FRAGMENT_SHADER_CODE
 	}
 
 
-#endif //!MODE_RENDER_DEPTH
+
 
 #ifdef USE_SHADOW_TO_OPACITY
 	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
@@ -1327,6 +1335,7 @@ FRAGMENT_SHADER_CODE
 
 #endif // USE_SHADOW_TO_OPACITY
 
+#endif //!defined(MODE_RENDER_DEPTH) && !defined(MODE_UNSHADED)
 
 
 #ifdef MODE_RENDER_DEPTH
@@ -1351,7 +1360,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef MODE_MULTIPLE_RENDER_TARGETS
 
-#ifdef USE_NO_SHADING
+#ifdef MODE_UNSHADED
 	diffuse_buffer = vec4(albedo.rgb, 0.0);
 	specular_buffer = vec4(0.0);
 
@@ -1364,7 +1373,7 @@ FRAGMENT_SHADER_CODE
 
 #else //MODE_MULTIPLE_RENDER_TARGETS
 
-#ifdef USE_NO_SHADING
+#ifdef MODE_UNSHADED
 	frag_color = vec4(albedo, alpha);
 #else
 	frag_color = vec4(emission + ambient_light + diffuse_light + specular_light, alpha);
