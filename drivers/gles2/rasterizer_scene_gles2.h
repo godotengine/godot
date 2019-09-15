@@ -242,6 +242,8 @@ public:
 		float sky_custom_fov;
 		Basis sky_orientation;
 
+		RID bg_material;
+
 		Color bg_color;
 		float bg_energy;
 		float sky_ambient;
@@ -357,6 +359,7 @@ public:
 	virtual void environment_set_sky(RID p_env, RID p_sky);
 	virtual void environment_set_sky_custom_fov(RID p_env, float p_scale);
 	virtual void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
+	virtual void environment_set_bg_material(RID p_env, RID p_material);
 	virtual void environment_set_bg_color(RID p_env, const Color &p_color);
 	virtual void environment_set_bg_energy(RID p_env, float p_energy);
 	virtual void environment_set_canvas_max_layer(RID p_env, int p_max_layer);

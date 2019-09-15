@@ -34,6 +34,7 @@
 #include "core/resource.h"
 #include "scene/resources/sky.h"
 #include "scene/resources/texture.h"
+#include "scene/resources/material.h"
 #include "servers/visual_server.h"
 
 class Environment : public Resource {
@@ -92,6 +93,8 @@ private:
 
 	BGMode bg_mode;
 	Ref<Sky> bg_sky;
+	//@TODO for now introducing material but once it works we'll be replacing the current sky classes with material classes
+	Ref<Material> bg_material;
 	float bg_sky_custom_fov;
 	Vector3 sky_rotation;
 	Color bg_color;
@@ -180,6 +183,7 @@ public:
 	void set_sky(const Ref<Sky> &p_sky);
 	void set_sky_custom_fov(float p_scale);
 	void set_sky_rotation(const Vector3 &p_rotation);
+	void set_bg_material(const Ref<Material> &p_material);
 	void set_bg_color(const Color &p_color);
 	void set_bg_energy(float p_energy);
 	void set_canvas_max_layer(int p_max_layer);
@@ -196,6 +200,7 @@ public:
 	Ref<Sky> get_sky() const;
 	float get_sky_custom_fov() const;
 	Vector3 get_sky_rotation() const;
+	Ref<Material> get_bg_material() const;
 	Color get_bg_color() const;
 	float get_bg_energy() const;
 	int get_canvas_max_layer() const;

@@ -285,7 +285,13 @@ ShaderTypes::ShaderTypes() {
 	shader_modes[VS::SHADER_PARTICLES].modes.push_back("disable_velocity");
 	shader_modes[VS::SHADER_PARTICLES].modes.push_back("keep_data");
 
+	/************ SKY **************************/
+
+	shader_modes[VS::SHADER_SKY].functions["fragment"].built_ins["COLOR"] = ShaderLanguage::TYPE_VEC3;
+	shader_modes[VS::SHADER_SKY].functions["fragment"].built_ins["EYEDIR"] = ShaderLanguage::TYPE_VEC3;
+
 	shader_types.insert("spatial");
 	shader_types.insert("canvas_item");
 	shader_types.insert("particles");
+	shader_types.insert("sky");
 }

@@ -274,31 +274,6 @@ void RasterizerEffectsRD::cubemap_roughness(RID p_source_rd_texture, bool p_sour
 	RD::get_singleton()->compute_list_end();
 }
 
-void RasterizerEffectsRD::render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler) {
-
-	zeromem(&sky.push_constant, sizeof(SkyPushConstant));
-
-	sky.push_constant.proj[0] = p_camera.matrix[2][0];
-	sky.push_constant.proj[1] = p_camera.matrix[0][0];
-	sky.push_constant.proj[2] = p_camera.matrix[2][1];
-	sky.push_constant.proj[3] = p_camera.matrix[1][1];
-	sky.push_constant.alpha = p_alpha;
-	sky.push_constant.depth = 1.0;
-	sky.push_constant.multiplier = p_multipler;
-	store_transform_3x3(p_orientation, sky.push_constant.orientation);
-
-	RD::DrawListID draw_list = p_list;
-
-	RD::get_singleton()->draw_list_bind_render_pipeline(draw_list, sky.pipeline.get_render_pipeline(RD::INVALID_ID, p_fb_format));
-
-	RD::get_singleton()->draw_list_bind_uniform_set(draw_list, _get_uniform_set_from_texture(p_panorama), 0);
-	RD::get_singleton()->draw_list_bind_index_array(draw_list, index_array);
-
-	RD::get_singleton()->draw_list_set_push_constant(draw_list, &sky.push_constant, sizeof(SkyPushConstant));
-
-	RD::get_singleton()->draw_list_draw(draw_list, true);
-}
-
 void RasterizerEffectsRD::make_mipmap(RID p_source_rd_texture, RID p_dest_framebuffer, const Vector2 &p_pixel_size) {
 
 	zeromem(&blur.push_constant, sizeof(BlurPushConstant));
@@ -847,22 +822,6 @@ RasterizerEffectsRD::RasterizerEffectsRD() {
 		for (int i = 0; i < CUBEMAP_ROUGHNESS_SOURCE_MAX; i++) {
 			roughness.pipelines[i] = RD::get_singleton()->compute_pipeline_create(roughness.shader.version_get_shader(roughness.shader_version, i));
 		}
-	}
-
-	{
-		// Initialize sky
-		Vector<String> sky_modes;
-		sky_modes.push_back("");
-		sky.shader.initialize(sky_modes);
-
-		sky.shader_version = sky.shader.version_create();
-
-		RD::PipelineDepthStencilState depth_stencil_state;
-
-		depth_stencil_state.enable_depth_test = true;
-		depth_stencil_state.depth_compare_operator = RD::COMPARE_OP_LESS_OR_EQUAL;
-
-		sky.pipeline.setup(sky.shader.version_get_shader(sky.shader_version, 0), RD::RENDER_PRIMITIVE_TRIANGLES, RD::PipelineRasterizationState(), RD::PipelineMultisampleState(), depth_stencil_state, RD::PipelineColorBlendState::create_disabled(), 0);
 	}
 
 	{

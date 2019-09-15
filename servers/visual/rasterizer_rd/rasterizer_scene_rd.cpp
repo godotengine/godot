@@ -444,6 +444,11 @@ void RasterizerSceneRD::environment_set_sky_orientation(RID p_env, const Basis &
 	ERR_FAIL_COND(!env);
 	env->sky_orientation = p_orientation;
 }
+void RasterizerSceneRD::environment_set_bg_material(RID p_env, RID p_material) {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+	env->bg_material = p_material;
+}
 void RasterizerSceneRD::environment_set_bg_color(RID p_env, const Color &p_color) {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);
@@ -489,6 +494,11 @@ Basis RasterizerSceneRD::environment_get_sky_orientation(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND_V(!env, Basis());
 	return env->sky_orientation;
+}
+RID RasterizerSceneRD::environment_get_bg_material(RID p_env) const {
+	Environent *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND_V(!env, RID());
+	return env->bg_material;	
 }
 Color RasterizerSceneRD::environment_get_bg_color(RID p_env) const {
 	Environent *env = environment_owner.getornull(p_env);

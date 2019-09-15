@@ -1427,6 +1427,8 @@ void RasterizerStorageGLES2::shader_set_code(RID p_shader, const String &p_code)
 		mode = VS::SHADER_CANVAS_ITEM;
 	else if (mode_string == "particles")
 		mode = VS::SHADER_PARTICLES;
+	else if (mode_string == "sky")
+		mode = VS::SHADER_SKY;
 	else
 		mode = VS::SHADER_SPATIAL;
 
