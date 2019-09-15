@@ -1571,11 +1571,11 @@ Position3DSpatialGizmoPlugin::Position3DSpatialGizmoPlugin() {
 	cursor_colors.push_back(Color(0.5, 0.5, 1, 0.7));
 	cursor_colors.push_back(Color(0.5, 0.5, 1, 0.7));
 
-	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
-	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 	Array d;
 	d.resize(VS::ARRAY_MAX);
@@ -2088,7 +2088,7 @@ void RayCastSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	lines.push_back(Vector3());
 	lines.push_back(raycast->get_cast_to());
 
-	const Ref<SpatialMaterial> material =
+	const Ref<StandardMaterial3D> material =
 			get_material(raycast->is_enabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
@@ -2108,7 +2108,7 @@ void SpringArmSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	lines.push_back(Vector3());
 	lines.push_back(Vector3(0, 0, 1.0) * spring_arm->get_length());
 
-	Ref<SpatialMaterial> material = get_material("shape_material", p_gizmo);
+	Ref<StandardMaterial3D> material = get_material("shape_material", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);
