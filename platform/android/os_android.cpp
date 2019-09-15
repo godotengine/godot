@@ -707,7 +707,7 @@ void OS_Android::vibrate_handheld(int p_duration_ms) {
 
 void OS_Android::request_location(LocationParameter p_location_parameter) {
 	if (start_periodic_location_func) {
-		start_periodic_location_func(p_location_parameter.interval, p_location_parameter.max_wait_time, p_location_parameter.priority);
+		start_periodic_location_func(p_location_parameter.interval, p_location_parameter.max_wait_time);
 	}
 }
 

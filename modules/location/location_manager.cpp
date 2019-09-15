@@ -2,13 +2,16 @@
 
 #include "location_manager.h"
 
+/**
+	@author Cagdas Caglak <cagdascaglak@gmail.com>
+*/
+
 void LocationManager::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("request_location_updates", "location_parameters"), &LocationManager::request_location_updates);
 	ClassDB::bind_method(D_METHOD("stop_request_location"), &LocationManager::stop_request_location);
 
 	ADD_SIGNAL(MethodInfo("on_location_result", PropertyInfo(Variant::OBJECT, "location_result", PROPERTY_HINT_RESOURCE_TYPE, "LocationResult", 0)));
-
 }
 
 void LocationManager::request_location_updates(const Ref<LocationParam> &p_location_param) {
@@ -16,7 +19,6 @@ void LocationManager::request_location_updates(const Ref<LocationParam> &p_locat
 	OS::LocationParameter location_parameter;
 	location_parameter.interval = location_param->get_interval();
 	location_parameter.max_wait_time = location_param->get_max_wait_time();
-	location_parameter.priority = 100;
 
 	OS::get_singleton()->request_location(location_parameter);
 }
@@ -45,7 +47,7 @@ LocationManager *LocationManager::get_singleton() {
 
 LocationManager::LocationManager() {
 	singleton = this;
-	
+
 	location_result = memnew(LocationResult);
 }
 

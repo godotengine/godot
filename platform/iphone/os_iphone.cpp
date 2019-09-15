@@ -166,7 +166,7 @@ Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
-    location_manager = memnew(LocationManager);
+	location_manager = memnew(LocationManager);
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -367,7 +367,7 @@ void OSIPhone::finalize() {
 	//	memdelete(rasterizer);
 
 	memdelete(input);
-    memdelete(location_manager);
+	memdelete(location_manager);
 };
 
 void OSIPhone::set_mouse_show(bool p_show){};
@@ -602,11 +602,11 @@ void OSIPhone::vibrate_handheld(int p_duration_ms) {
 }
 
 void OSIPhone::request_location(LocationParameter p_location_parameter) {
-    _start_location_update();
+	_start_location_update();
 }
 
 void OSIPhone::stop_request_location() {
-    _stop_location_update();
+	_stop_location_update();
 }
 
 void OSIPhone::update_location(Location p_location) {

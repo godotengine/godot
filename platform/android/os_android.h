@@ -38,9 +38,9 @@
 #include "drivers/unix/os_unix.h"
 #include "main/input_default.h"
 //#include "power_android.h"
+#include "modules/location/location_manager.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
-#include "modules/location/location_manager.h"
 
 typedef void (*GFXInitFunc)(void *ud, bool gl2);
 typedef int (*OpenURIFunc)(const String &);
@@ -66,7 +66,7 @@ typedef void (*AlertFunc)(const String &, const String &);
 typedef int (*VirtualKeyboardHeightFunc)();
 typedef bool (*RequestPermissionFunc)(const String &);
 typedef void (*VibrateFunc)(int);
-typedef void (*StartPeriodicLocationFunc)(uint64_t, uint64_t, uint32_t);
+typedef void (*StartPeriodicLocationFunc)(uint64_t, uint64_t);
 typedef void (*StopPeriodicLocationFunc)();
 
 class OS_Android : public OS_Unix {

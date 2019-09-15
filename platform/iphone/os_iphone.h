@@ -41,10 +41,10 @@
 #include "icloud.h"
 #include "in_app_store.h"
 #include "main/input_default.h"
+#include "modules/location/location_manager.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual_server.h"
-#include "modules/location/location_manager.h"
 
 class OSIPhone : public OS_Unix {
 
@@ -72,7 +72,7 @@ private:
 #endif
 
 	MainLoop *main_loop;
-    LocationManager *location_manager;
+	LocationManager *location_manager;
 
 	VideoMode video_mode;
 
@@ -199,7 +199,7 @@ public:
 	virtual void native_video_focus_out();
 	virtual void native_video_stop();
 	virtual void vibrate_handheld(int p_duration_ms = 500);
-    virtual void request_location(LocationParameter p_location_parameter);
+	virtual void request_location(LocationParameter p_location_parameter);
 	virtual void stop_request_location();
 	virtual void update_location(Location p_location);
 

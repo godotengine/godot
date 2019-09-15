@@ -352,11 +352,11 @@ public class Godot extends Activity implements SensorEventListener, IDownloaderC
 		}
 	}
 
-	public void startPeriodicLocationUpdate(final long interval, final long maxWaitTime, final int priority) {
+	public void startPeriodicLocationUpdate(final long interval, final long maxWaitTime) {
 		runOnUiThread(new Runnable() {
 			@Override
 			public void run() {
-				locationManager.startLocationUpdates(interval, maxWaitTime, priority);
+				locationManager.startLocationUpdates(interval, maxWaitTime);
 			}
 		});
 	}

@@ -61,7 +61,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_callobject(JNIEnv *en
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_calldeferred(JNIEnv *env, jobject p_obj, jint ID, jstring method, jobjectArray params);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_setVirtualKeyboardHeight(JNIEnv *env, jobject obj, jint p_height);
 JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResult(JNIEnv *env, jobject p_obj, jstring p_permission, jboolean p_result);
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateLocation(JNIEnv *env, jobject p_obj, jfloat p_longitude, jfloat p_latitude, jfloat p_h_accuracy,jfloat p_v_accuracy, jfloat p_altitude, jfloat p_speed, jlong p_time);
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateLocation(JNIEnv *env, jobject p_obj, jfloat p_longitude, jfloat p_latitude, jfloat p_h_accuracy, jfloat p_v_accuracy, jfloat p_altitude, jfloat p_speed, jlong p_time);
 }
 
 #endif // JAVA_GLUE_H

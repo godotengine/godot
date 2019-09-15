@@ -69,7 +69,7 @@ public class GodotLocationManager {
 
     }
 
-    void startLocationUpdates(long interval, long maxWaitTime, int priority) {
+    void startLocationUpdates(long interval, long maxWaitTime) {
         if (locationUpdatesStart)
             return;
 
@@ -84,20 +84,7 @@ public class GodotLocationManager {
         LocationRequest request = new LocationRequest();
         request.setInterval(interval);
         request.setMaxWaitTime(maxWaitTime);
-
-        switch (priority) {
-            case LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY:
-                request.setPriority(LocationRequest.PRIORITY_BALANCED_POWER_ACCURACY);
-                break;
-            case LocationRequest.PRIORITY_LOW_POWER:
-                request.setPriority(LocationRequest.PRIORITY_LOW_POWER);
-                break;
-            case LocationRequest.PRIORITY_NO_POWER:
-                request.setPriority(LocationRequest.PRIORITY_NO_POWER);
-                break;
-            default:
-                request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
-        }
+        request.setPriority(LocationRequest.PRIORITY_HIGH_ACCURACY);
 
         mFusedLocationClient.requestLocationUpdates(request,
                 mLocationCallback, null);

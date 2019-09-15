@@ -7,39 +7,34 @@
 #include "core/os/os.h"
 #include "core/os/thread_safe.h"
 
+/**
+	@author Cagdas Caglak <cagdascaglak@gmail.com>
+*/
+
 class LocationResult : public Object {
-    GDCLASS(LocationResult, Object);
-
-    /**
-     *
-     * public Reference {
-
-	GDCLASS(LocationResult, Reference);
-	OBJ_CATEGORY("Resources");
-	RES_BASE_EXTENSION("res"); */
+	GDCLASS(LocationResult, Object);
 
 protected:
-    static void _bind_methods();
+	static void _bind_methods();
 
 public:
-    real_t longitude;
-    real_t latitude;
-    real_t horizontal_accuracy;
-    real_t vertical_accuracy;
-    real_t altitude;
-    real_t speed;
-    uint64_t time;
+	real_t longitude;
+	real_t latitude;
+	real_t horizontal_accuracy;
+	real_t vertical_accuracy;
+	real_t altitude;
+	real_t speed;
+	uint64_t time;
 
-    real_t get_longitude() const;
-    real_t get_latitude() const;
-    real_t get_horizontal_accuracy() const;
-    real_t get_vertical_accuracy() const;
-    real_t get_altitude() const;
-    real_t get_speed() const;
-    uint64_t get_time() const;
+	real_t get_longitude() const;
+	real_t get_latitude() const;
+	real_t get_horizontal_accuracy() const;
+	real_t get_vertical_accuracy() const;
+	real_t get_altitude() const;
+	real_t get_speed() const;
+	uint64_t get_time() const;
 
-    LocationResult();
-
+	LocationResult();
 };
 
 #endif // LOCATION_RESULT_H

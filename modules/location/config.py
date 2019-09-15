@@ -1,5 +1,7 @@
 # config.py
 
+# @author Cagdas Caglak <cagdascaglak@gmail.com>
+
 def can_build(env, platform):
     return True
 

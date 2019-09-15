@@ -761,9 +761,9 @@ static void _vibrate(int p_duration_ms) {
 	env->CallVoidMethod(_godot_instance, _vibrateDevice, p_duration_ms);
 }
 
-static void _start_periodic_location(uint64_t p_interval, uint64_t p_max_wait_time, uint32_t p_priority) {
+static void _start_periodic_location(uint64_t p_interval, uint64_t p_max_wait_time) {
 	JNIEnv *env = ThreadAndroid::get_env();
-	env->CallVoidMethod(_godot_instance, _start_periodic_location_update, p_interval, p_max_wait_time, p_priority);
+	env->CallVoidMethod(_godot_instance, _start_periodic_location_update, p_interval, p_max_wait_time);
 }
 
 static void _stop_periodic_location() {
@@ -817,7 +817,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_initialize(JNIEnv *en
 		_setClipboard = env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 		_requestPermission = env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
 		_vibrateDevice = env->GetMethodID(cls, "vibrate", "(I)V");
-		_start_periodic_location_update = env->GetMethodID(cls, "startPeriodicLocationUpdate", "(JJI)V");
+		_start_periodic_location_update = env->GetMethodID(cls, "startPeriodicLocationUpdate", "(JJ)V");
 		_stop_periodic_location_update = env->GetMethodID(cls, "stopPeriodicLocationUpdate", "()V");
 		if (cls) {
 			jclass c = env->GetObjectClass(gob);
@@ -1608,7 +1608,7 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 	}
 }
 
-JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateLocation(JNIEnv *env, jobject p_obj, jfloat p_longitude, jfloat p_latitude, jfloat p_h_accuracy,jfloat p_v_accuracy, jfloat p_altitude, jfloat p_speed, jlong p_time) {
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_updateLocation(JNIEnv *env, jobject p_obj, jfloat p_longitude, jfloat p_latitude, jfloat p_h_accuracy, jfloat p_v_accuracy, jfloat p_altitude, jfloat p_speed, jlong p_time) {
 	OS::Location location;
 	location.longitute = p_longitude;
 	location.latitude = p_latitude;

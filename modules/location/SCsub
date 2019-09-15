@@ -1,5 +1,7 @@
 # SCsub
 
+# @author Cagdas Caglak <cagdascaglak@gmail.com>
+
 Import('env')
 
 module_env = env.Clone()

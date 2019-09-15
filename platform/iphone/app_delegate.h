@@ -32,8 +32,8 @@
 #import "view_controller.h"
 #import <UIKit/UIKit.h>
 
-#import <CoreMotion/CoreMotion.h>
 #import <CoreLocation/CoreLocation.h>
+#import <CoreMotion/CoreMotion.h>
 
 @interface AppDelegate : NSObject <UIApplicationDelegate, GLViewDelegate, CLLocationManagerDelegate> {
 	//@property (strong, nonatomic) UIWindow *window;

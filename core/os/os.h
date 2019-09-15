@@ -1,5 +1,4 @@
 /*************************************************************************/
-/*************************************************************************/
 /*  os.h                                                                 */
 /*************************************************************************/
 /*                       This file is part of:                           */
@@ -269,9 +268,8 @@ public:
 	struct LocationParameter {
 		uint64_t interval;
 		uint64_t max_wait_time;
-		uint32_t priority;
 	};
-	
+
 	struct Location {
 		float longitute;
 		float latitude;

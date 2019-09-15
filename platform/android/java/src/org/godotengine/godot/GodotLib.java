@@ -70,8 +70,7 @@ public class GodotLib {
 	public static native void callobject(int p_ID, String p_method, Object[] p_params);
 	public static native void calldeferred(int p_ID, String p_method, Object[] p_params);
 	public static native void requestPermissionResult(String p_permission, boolean p_result);
-	public static native void updateLocation(float p_longitude, float p_latitude, float p_h_accuracy,
-											 float p_v_accuracy, float p_altitude, float p_speed, long p_time);
+	public static native void updateLocation(float p_longitude, float p_latitude, float p_h_accuracy, float p_v_accuracy, float p_altitude, float p_speed, long p_time);
 
 	public static native void setVirtualKeyboardHeight(int p_height);
 }

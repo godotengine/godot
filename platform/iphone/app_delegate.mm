@@ -106,7 +106,6 @@ void _start_location_update() {
 			NSLog(@"Location update started.");
 			break;
 	}
-	
 }
 
 void _stop_location_update() {
@@ -732,12 +731,12 @@ static int frame_count = 0;
 
 	// prevent to stop music in another background app
 	[[AVAudioSession sharedInstance] setCategory:AVAudioSessionCategoryAmbient error:nil];
-    
+
 	return TRUE;
 };
 
 - (void)locationManager:(CLLocationManager *)manager didUpdateLocations:(NSArray<CLLocation *> *)locations {
-    CLLocation *lastLoc = [locations lastObject];
+	CLLocation *lastLoc = [locations lastObject];
 
 	OS::Location location;
 	location.longitute = lastLoc.coordinate.latitude;
@@ -747,7 +746,7 @@ static int frame_count = 0;
 	location.altitude = lastLoc.altitude;
 	location.speed = lastLoc.speed;
 	location.time = [[NSNumber numberWithDouble:[lastLoc.timestamp timeIntervalSince1970]] unsignedLongLongValue];
-	
+
 	OSIPhone::get_singleton()->update_location(location);
 }
 
