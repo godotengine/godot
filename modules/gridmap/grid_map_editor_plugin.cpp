@@ -1446,8 +1446,8 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		inner_mat.instance();
 		inner_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.2));
-		inner_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		inner_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+		inner_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		inner_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 		d[VS::ARRAY_VERTEX] = triangles;
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, VS::PRIMITIVE_TRIANGLES, d);
@@ -1456,13 +1456,14 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		outer_mat.instance();
 		outer_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.8));
 		outer_mat->set_on_top_of_alpha();
-		outer_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		outer_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+
+		outer_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		outer_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 
 		selection_floor_mat.instance();
 		selection_floor_mat->set_albedo(Color(0.80, 0.80, 1.0, 1));
 		selection_floor_mat->set_on_top_of_alpha();
-		selection_floor_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+		selection_floor_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 
 		d[VS::ARRAY_VERTEX] = lines;
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, VS::PRIMITIVE_LINES, d);
@@ -1489,10 +1490,10 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	accumulated_floor_delta = 0.0;
 
 	indicator_mat.instance();
-	indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	indicator_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	indicator_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-	indicator_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	indicator_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+	indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
 	indicator_mat->set_albedo(Color(0.8, 0.5, 0.1));
 }
 

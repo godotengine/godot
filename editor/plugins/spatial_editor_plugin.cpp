@@ -4194,12 +4194,12 @@ void SpatialEditor::_generate_selection_box() {
 		st->add_vertex(b);
 	}
 
-	Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
-	mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+	Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+	mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 	mat->set_albedo(Color(1, 1, 1));
-	mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	st->set_material(mat);
 	selection_box = st->commit();
 }
@@ -4753,9 +4753,9 @@ void SpatialEditor::_init_indicators() {
 		grid_enabled = true;
 
 		indicator_mat.instance();
-		indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		indicator_mat->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		indicator_mat->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+		indicator_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		indicator_mat->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		indicator_mat->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 
 		Vector<Color> origin_colors;
 		Vector<Vector3> origin_points;
@@ -4838,14 +4838,14 @@ void SpatialEditor::_init_indicators() {
 			scale_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 			scale_plane_gizmo[i] = Ref<ArrayMesh>(memnew(ArrayMesh));
 
-			Ref<SpatialMaterial> mat = memnew(SpatialMaterial);
-			mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+			Ref<StandardMaterial3D> mat = memnew(StandardMaterial3D);
+			mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 			mat->set_on_top_of_alpha();
-			mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+			mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
 			mat->set_albedo(col);
 			gizmo_color[i] = mat;
 
-			Ref<SpatialMaterial> mat_hl = mat->duplicate();
+			Ref<StandardMaterial3D> mat_hl = mat->duplicate();
 			mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
 			gizmo_color_hl[i] = mat_hl;
 
@@ -4933,17 +4933,17 @@ void SpatialEditor::_init_indicators() {
 				surftool->add_vertex(points[2]);
 				surftool->add_vertex(points[3]);
 
-				Ref<SpatialMaterial> plane_mat = memnew(SpatialMaterial);
-				plane_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+				Ref<StandardMaterial3D> plane_mat = memnew(StandardMaterial3D);
+				plane_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 				plane_mat->set_on_top_of_alpha();
-				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+				plane_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+				plane_mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 				plane_mat->set_albedo(col);
 				plane_gizmo_color[i] = plane_mat; // needed, so we can draw planes from both sides
 				surftool->set_material(plane_mat);
 				surftool->commit(move_plane_gizmo[i]);
 
-				Ref<SpatialMaterial> plane_mat_hl = plane_mat->duplicate();
+				Ref<StandardMaterial3D> plane_mat_hl = plane_mat->duplicate();
 				plane_mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
 				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
@@ -5063,17 +5063,17 @@ void SpatialEditor::_init_indicators() {
 				surftool->add_vertex(points[2]);
 				surftool->add_vertex(points[3]);
 
-				Ref<SpatialMaterial> plane_mat = memnew(SpatialMaterial);
-				plane_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
+				Ref<StandardMaterial3D> plane_mat = memnew(StandardMaterial3D);
+				plane_mat->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
 				plane_mat->set_on_top_of_alpha();
-				plane_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-				plane_mat->set_cull_mode(SpatialMaterial::CULL_DISABLED);
+				plane_mat->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+				plane_mat->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
 				plane_mat->set_albedo(col);
 				plane_gizmo_color[i] = plane_mat; // needed, so we can draw planes from both sides
 				surftool->set_material(plane_mat);
 				surftool->commit(scale_plane_gizmo[i]);
 
-				Ref<SpatialMaterial> plane_mat_hl = plane_mat->duplicate();
+				Ref<StandardMaterial3D> plane_mat_hl = plane_mat->duplicate();
 				plane_mat_hl->set_albedo(Color(col.r, col.g, col.b, 1.0));
 				plane_gizmo_color_hl[i] = plane_mat_hl; // needed, so we can draw planes from both sides
 			}
@@ -6139,13 +6139,13 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 
 	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
 
-	Vector<Ref<SpatialMaterial> > mats;
+	Vector<Ref<StandardMaterial3D> > mats;
 
 	for (int i = 0; i < 4; i++) {
 		bool selected = i % 2 == 1;
 		bool instanced = i < 2;
 
-		Ref<SpatialMaterial> material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+		Ref<StandardMaterial3D> material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 
 		Color color = instanced ? instanced_color : p_color;
 
@@ -6154,17 +6154,17 @@ void EditorSpatialGizmoPlugin::create_material(const String &p_name, const Color
 		}
 
 		material->set_albedo(color);
-		material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		material->set_render_priority(SpatialMaterial::RENDER_PRIORITY_MIN + 1);
+		material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		material->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN + 1);
 
 		if (p_use_vertex_color) {
-			material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-			material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+			material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+			material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 		}
 
 		if (p_billboard) {
-			material->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+			material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
 		}
 
 		if (p_on_top && selected) {
@@ -6181,13 +6181,13 @@ void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const 
 
 	Color instanced_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/instanced", Color(0.7, 0.7, 0.7, 0.6));
 
-	Vector<Ref<SpatialMaterial> > icons;
+	Vector<Ref<StandardMaterial3D> > icons;
 
 	for (int i = 0; i < 4; i++) {
 		bool selected = i % 2 == 1;
 		bool instanced = i < 2;
 
-		Ref<SpatialMaterial> icon = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+		Ref<StandardMaterial3D> icon = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 
 		Color color = instanced ? instanced_color : p_albedo;
 
@@ -6197,16 +6197,16 @@ void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const 
 
 		icon->set_albedo(color);
 
-		icon->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-		icon->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-		icon->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
-		icon->set_cull_mode(SpatialMaterial::CULL_DISABLED);
-		icon->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_DISABLED);
-		icon->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-		icon->set_texture(SpatialMaterial::TEXTURE_ALBEDO, p_texture);
-		icon->set_flag(SpatialMaterial::FLAG_FIXED_SIZE, true);
-		icon->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
-		icon->set_render_priority(SpatialMaterial::RENDER_PRIORITY_MIN);
+		icon->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+		icon->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+		icon->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
+		icon->set_cull_mode(StandardMaterial3D::CULL_DISABLED);
+		icon->set_depth_draw_mode(StandardMaterial3D::DEPTH_DRAW_DISABLED);
+		icon->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+		icon->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, p_texture);
+		icon->set_flag(StandardMaterial3D::FLAG_FIXED_SIZE, true);
+		icon->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
+		icon->set_render_priority(StandardMaterial3D::RENDER_PRIORITY_MIN);
 
 		if (p_on_top && selected) {
 			icon->set_on_top_of_alpha();
@@ -6219,46 +6219,46 @@ void EditorSpatialGizmoPlugin::create_icon_material(const String &p_name, const 
 }
 
 void EditorSpatialGizmoPlugin::create_handle_material(const String &p_name, bool p_billboard) {
-	Ref<SpatialMaterial> handle_material = Ref<SpatialMaterial>(memnew(SpatialMaterial));
+	Ref<StandardMaterial3D> handle_material = Ref<StandardMaterial3D>(memnew(StandardMaterial3D));
 
-	handle_material->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
-	handle_material->set_flag(SpatialMaterial::FLAG_USE_POINT_SIZE, true);
+	handle_material->set_shading_mode(StandardMaterial3D::SHADING_MODE_UNSHADED);
+	handle_material->set_flag(StandardMaterial3D::FLAG_USE_POINT_SIZE, true);
 	Ref<Texture2D> handle_t = SpatialEditor::get_singleton()->get_icon("Editor3DHandle", "EditorIcons");
 	handle_material->set_point_size(handle_t->get_width());
-	handle_material->set_texture(SpatialMaterial::TEXTURE_ALBEDO, handle_t);
+	handle_material->set_texture(StandardMaterial3D::TEXTURE_ALBEDO, handle_t);
 	handle_material->set_albedo(Color(1, 1, 1));
-	handle_material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
-	handle_material->set_flag(SpatialMaterial::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
-	handle_material->set_flag(SpatialMaterial::FLAG_SRGB_VERTEX_COLOR, true);
+	handle_material->set_transparency(StandardMaterial3D::TRANSPARENCY_ALPHA);
+	handle_material->set_flag(StandardMaterial3D::FLAG_ALBEDO_FROM_VERTEX_COLOR, true);
+	handle_material->set_flag(StandardMaterial3D::FLAG_SRGB_VERTEX_COLOR, true);
 	handle_material->set_on_top_of_alpha();
 	if (p_billboard) {
-		handle_material->set_billboard_mode(SpatialMaterial::BILLBOARD_ENABLED);
+		handle_material->set_billboard_mode(StandardMaterial3D::BILLBOARD_ENABLED);
 		handle_material->set_on_top_of_alpha();
 	}
 
-	materials[p_name] = Vector<Ref<SpatialMaterial> >();
+	materials[p_name] = Vector<Ref<StandardMaterial3D> >();
 	materials[p_name].push_back(handle_material);
 }
 
-void EditorSpatialGizmoPlugin::add_material(const String &p_name, Ref<SpatialMaterial> p_material) {
-	materials[p_name] = Vector<Ref<SpatialMaterial> >();
+void EditorSpatialGizmoPlugin::add_material(const String &p_name, Ref<StandardMaterial3D> p_material) {
+	materials[p_name] = Vector<Ref<StandardMaterial3D> >();
 	materials[p_name].push_back(p_material);
 }
 
-Ref<SpatialMaterial> EditorSpatialGizmoPlugin::get_material(const String &p_name, const Ref<EditorSpatialGizmo> &p_gizmo) {
-	ERR_FAIL_COND_V(!materials.has(p_name), Ref<SpatialMaterial>());
-	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<SpatialMaterial>());
+Ref<StandardMaterial3D> EditorSpatialGizmoPlugin::get_material(const String &p_name, const Ref<EditorSpatialGizmo> &p_gizmo) {
+	ERR_FAIL_COND_V(!materials.has(p_name), Ref<StandardMaterial3D>());
+	ERR_FAIL_COND_V(materials[p_name].size() == 0, Ref<StandardMaterial3D>());
 
 	if (p_gizmo.is_null() || materials[p_name].size() == 1) return materials[p_name][0];
 
 	int index = (p_gizmo->is_selected() ? 1 : 0) + (p_gizmo->is_editable() ? 2 : 0);
 
-	Ref<SpatialMaterial> mat = materials[p_name][index];
+	Ref<StandardMaterial3D> mat = materials[p_name][index];
 
 	if (current_state == ON_TOP && p_gizmo->is_selected()) {
-		mat->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, true);
+		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, true);
 	} else {
-		mat->set_flag(SpatialMaterial::FLAG_DISABLE_DEPTH_TEST, false);
+		mat->set_flag(StandardMaterial3D::FLAG_DISABLE_DEPTH_TEST, false);
 	}
 
 	return mat;
