@@ -56,6 +56,17 @@ void Environment::set_sky(const Ref<Sky> &p_sky) {
 	VS::get_singleton()->environment_set_sky(environment, sb_rid);
 }
 
+void Environment::set_bg_material(const Ref<Material> &p_material) {
+
+	bg_material = p_material;
+
+	RID mb_rid;
+	if (bg_material.is_valid())
+		mb_rid = bg_material->get_rid();
+
+	VS::get_singleton()->environment_set_bg_material(environment, mb_rid);
+}
+
 void Environment::set_sky_custom_fov(float p_scale) {
 
 	bg_sky_custom_fov = p_scale;
@@ -138,6 +149,11 @@ void Environment::set_sky_rotation(const Vector3 &p_rotation) {
 Vector3 Environment::get_sky_rotation() const {
 
 	return sky_rotation;
+}
+
+Ref<Material> Environment::get_bg_material() const {
+
+	return bg_material;
 }
 
 Color Environment::get_bg_color() const {
@@ -306,6 +322,13 @@ Ref<Texture2D> Environment::get_adjustment_color_correction() const {
 
 void Environment::_validate_property(PropertyInfo &property) const {
 
+	if (property.name == "background_material") {
+		if (bg_mode != BG_SKY) {
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
+		}
+	}
+
+	// TODO: We are retiring sky in favour of a background material that implements the sky. These properties will become part of the sky material
 	if (property.name == "sky" || property.name == "sky_custom_fov" || property.name == "sky_rotation" || property.name == "ambient_light/sky_contribution") {
 		if (bg_mode != BG_SKY && ambient_source != AMBIENT_SOURCE_SKY && reflection_source != REFLECTION_SOURCE_SKY) {
 			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
@@ -334,7 +357,7 @@ void Environment::_validate_property(PropertyInfo &property) const {
 
 	if (property.name == "background_camera_feed_id") {
 		if (bg_mode != BG_CAMERA_FEED) {
-			property.usage = PROPERTY_USAGE_NOEDITOR;
+			property.usage = PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL;
 		}
 	}
 
@@ -839,6 +862,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_sky", "sky"), &Environment::set_sky);
 	ClassDB::bind_method(D_METHOD("set_sky_custom_fov", "scale"), &Environment::set_sky_custom_fov);
 	ClassDB::bind_method(D_METHOD("set_sky_rotation", "euler_radians"), &Environment::set_sky_rotation);
+	ClassDB::bind_method(D_METHOD("set_bg_material", "material"), &Environment::set_bg_material);
 	ClassDB::bind_method(D_METHOD("set_bg_color", "color"), &Environment::set_bg_color);
 	ClassDB::bind_method(D_METHOD("set_bg_energy", "energy"), &Environment::set_bg_energy);
 	ClassDB::bind_method(D_METHOD("set_canvas_max_layer", "layer"), &Environment::set_canvas_max_layer);
@@ -853,6 +877,7 @@ void Environment::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_sky"), &Environment::get_sky);
 	ClassDB::bind_method(D_METHOD("get_sky_custom_fov"), &Environment::get_sky_custom_fov);
 	ClassDB::bind_method(D_METHOD("get_sky_rotation"), &Environment::get_sky_rotation);
+	ClassDB::bind_method(D_METHOD("get_bg_material"), &Environment::get_bg_material);
 	ClassDB::bind_method(D_METHOD("get_bg_color"), &Environment::get_bg_color);
 	ClassDB::bind_method(D_METHOD("get_bg_energy"), &Environment::get_bg_energy);
 	ClassDB::bind_method(D_METHOD("get_canvas_max_layer"), &Environment::get_canvas_max_layer);
@@ -871,10 +896,14 @@ void Environment::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "background_camera_feed_id", PROPERTY_HINT_RANGE, "1,10,1"), "set_camera_feed_id", "get_camera_feed_id");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "background_color"), "set_bg_color", "get_bg_color");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "background_energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_bg_energy", "get_bg_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "background_material", PROPERTY_HINT_RESOURCE_TYPE, "ShaderMaterial,SkyMaterial"), "set_bg_material", "get_bg_material");
+
+	// TODO: We are retiring sky in favour of a background material that implements the sky. These properties will become part of the sky material
 	ADD_GROUP("Sky", "sky_");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "sky", PROPERTY_HINT_RESOURCE_TYPE, "Sky"), "set_sky", "get_sky");
 	ADD_PROPERTY(PropertyInfo(Variant::FLOAT, "sky_custom_fov", PROPERTY_HINT_RANGE, "0,180,0.1"), "set_sky_custom_fov", "get_sky_custom_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "sky_rotation"), "set_sky_rotation", "get_sky_rotation");
+
 	ADD_GROUP("Ambient Light", "ambient_light_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "ambient_light_source", PROPERTY_HINT_ENUM, "Background,Disabled,Color,Sky"), "set_ambient_source", "get_ambient_source");
 	ADD_PROPERTY(PropertyInfo(Variant::COLOR, "ambient_light_color"), "set_ambient_light_color", "get_ambient_light_color");

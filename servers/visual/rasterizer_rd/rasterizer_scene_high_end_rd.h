@@ -36,6 +36,7 @@
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
 #include "servers/visual/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rasterizer_rd/shaders/scene_high_end.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 
 class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 
@@ -48,7 +49,9 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 		MATERIAL_UNIFORM_SET = 5
 	};
 
-	/* Shader */
+	/* Scene Shader */
+
+	// TODO possibly rename this to make it clear we have a SceneShader and SkyShader??
 
 	enum ShaderVersion {
 		SHADER_VERSION_DEPTH_PASS,
@@ -191,6 +194,87 @@ class RasterizerSceneHighEndRD : public RasterizerSceneRD {
 	struct PushConstant {
 		uint32_t index;
 		uint32_t pad[3];
+	};
+
+	/* Sky shader */
+
+	enum SkyVersion {
+		SKY_VERSION_BACKGROUND,
+		SKY_VERSION_MAX
+	};
+
+	struct SkyShader {
+		SkyShaderRD shader;
+		ShaderCompilerRD compiler;
+
+		RID default_shader;
+		RID default_material;
+		RID default_shader_rd;
+	} sky_shader;
+
+	struct SkyShaderData : public RasterizerStorageRD::ShaderData {
+		bool valid;
+		RID version;
+
+		RenderPipelineVertexFormatCacheRD pipelines[SKY_VERSION_MAX];
+		Map<StringName, ShaderLanguage::ShaderNode::Uniform> uniforms;
+		Vector<ShaderCompilerRD::GeneratedCode::Texture> texture_uniforms;
+
+		Vector<uint32_t> ubo_offsets;
+		uint32_t ubo_size;
+
+		String path;
+		String code;
+		Map<StringName, RID> default_texture_params;
+
+		virtual void set_code(const String &p_Code);
+		virtual void set_default_texture_param(const StringName &p_name, RID p_texture);
+		virtual void get_param_list(List<PropertyInfo> *p_param_list) const;
+		virtual bool is_param_texture(const StringName &p_param) const;
+		virtual bool is_animated() const;
+		virtual bool casts_shadows() const;
+		virtual Variant get_default_parameter(const StringName &p_parameter) const;
+		SkyShaderData();
+		virtual ~SkyShaderData();
+	};
+
+	RasterizerStorageRD::ShaderData *_create_sky_shader_func();
+	static RasterizerStorageRD::ShaderData *_create_sky_shader_funcs() {
+		return static_cast<RasterizerSceneHighEndRD *>(singleton)->_create_sky_shader_func();
+	};
+
+	// !BAS! Can we re-use MaterialData for our sky shader? does it need its own material subclass?
+
+	struct SkyMaterialData : public RasterizerStorageRD::MaterialData {
+		// !BAS! do we need all of these?
+		uint64_t last_frame;
+		SkyShaderData *shader_data;
+		RID uniform_buffer;
+		RID uniform_set;
+		Vector<RID> texture_cache;
+		Vector<uint8_t> ubo_data;
+		uint64_t last_pass = 0;
+		uint32_t index = 0;
+		RID next_pass;
+		uint8_t priority;
+		virtual void set_render_priority(int p_priority);
+		virtual void set_next_pass(RID p_pass);
+		virtual void update_parameters(const Map<StringName, Variant> &p_parameters, bool p_uniform_dirty, bool p_textures_dirty);
+		virtual ~SkyMaterialData();
+	};
+
+	RasterizerStorageRD::MaterialData *_create_sky_material_func(SkyShaderData *p_shader);
+	static RasterizerStorageRD::MaterialData *_create_sky_material_funcs(RasterizerStorageRD::ShaderData *p_shader) {
+		return static_cast<RasterizerSceneHighEndRD *>(singleton)->_create_sky_material_func(static_cast<SkyShaderData *>(p_shader));
+	};
+
+	struct SkyPushConstant {
+		float orientation[12];
+		float proj[4];
+		float multiplier;
+		float alpha;
+		float depth;
+		float pad;
 	};
 
 	/* Framebuffer */

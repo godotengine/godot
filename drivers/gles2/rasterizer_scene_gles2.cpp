@@ -718,6 +718,13 @@ void RasterizerSceneGLES2::environment_set_sky_orientation(RID p_env, const Basi
 	env->sky_orientation = p_orientation;
 }
 
+void RasterizerSceneGLES2::environment_set_bg_material(RID p_env, RID p_material) {
+	Environment *env = environment_owner.getornull(p_env);
+	ERR_FAIL_COND(!env);
+
+	env->bg_material = p_material;
+}
+
 void RasterizerSceneGLES2::environment_set_bg_color(RID p_env, const Color &p_color) {
 	Environment *env = environment_owner.getornull(p_env);
 	ERR_FAIL_COND(!env);

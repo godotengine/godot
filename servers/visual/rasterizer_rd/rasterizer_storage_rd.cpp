@@ -881,6 +881,8 @@ void RasterizerStorageRD::shader_set_code(RID p_shader, const String &p_code) {
 		new_type = SHADER_TYPE_PARTICLES;
 	else if (mode_string == "spatial")
 		new_type = SHADER_TYPE_3D;
+	else if (mode_string == "sky")
+		new_type = SHADER_TYPE_SKY;
 	else
 		new_type = SHADER_TYPE_MAX;
 

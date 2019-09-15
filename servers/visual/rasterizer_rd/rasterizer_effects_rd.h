@@ -32,7 +32,7 @@
 #define RASTERIZER_EFFECTS_RD_H
 
 #include "core/math/camera_matrix.h"
-#include "render_pipeline_vertex_format_cache_rd.h"
+#include "servers/visual/rasterizer_rd/render_pipeline_vertex_format_cache_rd.h"
 #include "servers/visual/rasterizer_rd/shaders/blur.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/bokeh_dof.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/copy.glsl.gen.h"
@@ -41,7 +41,6 @@
 #include "servers/visual/rasterizer_rd/shaders/cubemap_roughness.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/luminance_reduce.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/roughness_limiter.glsl.gen.h"
-#include "servers/visual/rasterizer_rd/shaders/sky.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/ssao.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/ssao_blur.glsl.gen.h"
 #include "servers/visual/rasterizer_rd/shaders/ssao_minify.glsl.gen.h"
@@ -138,23 +137,6 @@ class RasterizerEffectsRD {
 		RID shader_version;
 		RID pipelines[CUBEMAP_ROUGHNESS_SOURCE_MAX];
 	} roughness;
-
-	struct SkyPushConstant {
-		float orientation[12];
-		float proj[4];
-		float multiplier;
-		float alpha;
-		float depth;
-		float pad;
-	};
-
-	struct Sky {
-
-		SkyPushConstant push_constant;
-		SkyShaderRD shader;
-		RID shader_version;
-		RenderPipelineVertexFormatCacheRD pipeline;
-	} sky;
 
 	enum TonemapMode {
 		TONEMAP_MODE_NORMAL,
@@ -422,7 +404,6 @@ public:
 	void gaussian_glow(RID p_source_rd_texture, RID p_framebuffer_half, RID p_rd_texture_half, RID p_dest_framebuffer, const Vector2 &p_pixel_size, float p_strength = 1.0, bool p_first_pass = false, float p_luminance_cap = 16.0, float p_exposure = 1.0, float p_bloom = 0.0, float p_hdr_bleed_treshold = 1.0, float p_hdr_bleed_scale = 1.0, RID p_auto_exposure = RID(), float p_auto_exposure_grey = 1.0);
 
 	void cubemap_roughness(RID p_source_rd_texture, bool p_source_is_panorama, RID p_dest_framebuffer, uint32_t p_face_id, uint32_t p_sample_count, float p_roughness, float p_size);
-	void render_panorama(RD::DrawListID p_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_panorama, const CameraMatrix &p_camera, const Basis &p_orientation, float p_alpha, float p_multipler);
 	void make_mipmap(RID p_source_rd_texture, RID p_framebuffer_half, const Vector2 &p_pixel_size);
 	void copy_cubemap_to_dp(RID p_source_rd_texture, RID p_dest_framebuffer, const Rect2 &p_rect, float p_z_near, float p_z_far, float p_bias, bool p_dp_flip);
 	void luminance_reduction(RID p_source_texture, const Size2i p_source_size, const Vector<RID> p_reduce, RID p_prev_luminance, float p_min_luminance, float p_max_luminance, float p_adjust, bool p_set = false);
@@ -475,4 +456,4 @@ public:
 	~RasterizerEffectsRD();
 };
 
-#endif // EFFECTS_RD_H
+#endif // !RASTERIZER_EFFECTS_RD_H

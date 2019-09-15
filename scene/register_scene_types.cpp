@@ -158,6 +158,7 @@
 #include "scene/resources/resource_format_text.h"
 #include "scene/resources/segment_shape_2d.h"
 #include "scene/resources/sky.h"
+#include "scene/resources/sky_material.h"
 #include "scene/resources/sphere_shape.h"
 #include "scene/resources/surface_tool.h"
 #include "scene/resources/text_file.h"
@@ -608,6 +609,9 @@ void register_scene_types() {
 	ClassDB::register_class<ParticlesMaterial>();
 	SceneTree::add_idle_callback(ParticlesMaterial::flush_changes);
 	ParticlesMaterial::init_shaders();
+
+	ClassDB::register_class<SkyMaterial>();
+	SkyMaterial::init_shaders();
 
 	ClassDB::register_virtual_class<Mesh>();
 	ClassDB::register_class<ArrayMesh>();

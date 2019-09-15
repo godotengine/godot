@@ -49,6 +49,22 @@ layout(push_constant, binding = 1, std430) uniform Params {
 }
 params;
 
+#ifdef USE_MATERIAL_UNIFORMS
+layout(set = 3, binding = 0, std140) uniform MaterialUniforms{
+	/* clang-format off */
+
+MATERIAL_UNIFORMS
+
+	/* clang-format on */
+} material;
+#endif
+
+/* clang-format off */
+
+FRAGMENT_SHADER_GLOBALS
+
+/* clang-format on */
+
 vec4 texturePanorama(sampler2D pano, vec3 normal) {
 
 	vec2 st = vec2(
@@ -68,12 +84,34 @@ layout(location = 0) out vec4 frag_color;
 void main() {
 
 	vec3 cube_normal;
-	cube_normal.z = -1000000.0;
+	cube_normal.z = -1.0;
 	cube_normal.x = (cube_normal.z * (-uv_interp.x - params.proj.x)) / params.proj.y;
 	cube_normal.y = -(cube_normal.z * (-uv_interp.y - params.proj.z)) / params.proj.w;
 	cube_normal = mat3(params.orientation) * cube_normal;
 	cube_normal.z = -cube_normal.z;
 
-	frag_color.rgb = texturePanorama(source_panorama, normalize(cube_normal.xyz)).rgb;
+	vec3 color = vec3(0.0, 0.0, 0.0);
+
+	// unused, just here to make our compiler happy, make sure we don't execute any light code the user adds in..
+#ifndef REALLYINCLUDETHIS
+	{
+		/* clang-format off */
+
+LIGHT_SHADER_CODE
+
+		/* clang-format on */
+	}
+#endif
+
+	// color = texturePanorama(source_panorama, normalize(cube_normal.xyz)).rgb;
+	{
+		/* clang-format off */
+
+FRAGMENT_SHADER_CODE
+
+		/* clang-format on */
+	}
+
+	frag_color.rgb = color;
 	frag_color.a = params.alpha;
 }

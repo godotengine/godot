@@ -465,6 +465,7 @@ private:
 		// BG
 		VS::EnvironmentBG background = VS::ENV_BG_CLEAR_COLOR;
 		RID sky;
+		RID bg_material;
 		float sky_custom_fov = 0.0;
 		Basis sky_orientation;
 		Color bg_color;
@@ -661,6 +662,7 @@ public:
 	void environment_set_sky(RID p_env, RID p_sky);
 	void environment_set_sky_custom_fov(RID p_env, float p_scale);
 	void environment_set_sky_orientation(RID p_env, const Basis &p_orientation);
+	void environment_set_bg_material(RID p_env, RID p_material);
 	void environment_set_bg_color(RID p_env, const Color &p_color);
 	void environment_set_bg_energy(RID p_env, float p_energy);
 	void environment_set_canvas_max_layer(RID p_env, int p_max_layer);
@@ -670,6 +672,7 @@ public:
 	RID environment_get_sky(RID p_env) const;
 	float environment_get_sky_custom_fov(RID p_env) const;
 	Basis environment_get_sky_orientation(RID p_env) const;
+	RID environment_get_bg_material(RID p_env) const;
 	Color environment_get_bg_color(RID p_env) const;
 	float environment_get_bg_energy(RID p_env) const;
 	int environment_get_canvas_max_layer(RID p_env) const;
