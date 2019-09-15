@@ -221,9 +221,9 @@ void PathSpatialGizmo::redraw() {
 
 	clear();
 
-	Ref<SpatialMaterial> path_material = gizmo_plugin->get_material("path_material", this);
-	Ref<SpatialMaterial> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
-	Ref<SpatialMaterial> handles_material = gizmo_plugin->get_material("handles");
+	Ref<StandardMaterial3D> path_material = gizmo_plugin->get_material("path_material", this);
+	Ref<StandardMaterial3D> path_thin_material = gizmo_plugin->get_material("path_thin_material", this);
+	Ref<StandardMaterial3D> handles_material = gizmo_plugin->get_material("handles");
 
 	Ref<Curve3D> c = path->get_curve();
 	if (c.is_null())
