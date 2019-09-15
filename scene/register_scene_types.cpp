@@ -618,9 +618,11 @@ void register_scene_types() {
 	ClassDB::register_class<SphereMesh>();
 	ClassDB::register_class<PointMesh>();
 	ClassDB::register_virtual_class<Material>();
-	ClassDB::register_class<SpatialMaterial>();
-	SceneTree::add_idle_callback(SpatialMaterial::flush_changes);
-	SpatialMaterial::init_shaders();
+	ClassDB::register_virtual_class<BaseMaterial3D>();
+	ClassDB::register_class<StandardMaterial3D>();
+	ClassDB::register_class<ORMMaterial3D>();
+	SceneTree::add_idle_callback(BaseMaterial3D::flush_changes);
+	BaseMaterial3D::init_shaders();
 
 	ClassDB::register_class<MeshLibrary>();
 
@@ -727,7 +729,7 @@ void register_scene_types() {
 
 #ifndef DISABLE_DEPRECATED
 	ClassDB::add_compatibility_class("ImageSkyBox", "PanoramaSky");
-	ClassDB::add_compatibility_class("FixedSpatialMaterial", "SpatialMaterial");
+	ClassDB::add_compatibility_class("SpatialMaterial", "StandardMaterial3D");
 	ClassDB::add_compatibility_class("Mesh", "ArrayMesh");
 
 #endif
@@ -802,9 +804,9 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_bmfont);
 	resource_loader_bmfont.unref();
 
-	//SpatialMaterial is not initialised when 3D is disabled, so it shouldn't be cleaned up either
+	//StandardMaterial3D is not initialised when 3D is disabled, so it shouldn't be cleaned up either
 #ifndef _3D_DISABLED
-	SpatialMaterial::finish_shaders();
+	BaseMaterial3D::finish_shaders();
 #endif // _3D_DISABLED
 
 	ParticlesMaterial::finish_shaders();
