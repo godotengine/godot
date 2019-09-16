@@ -85,8 +85,7 @@ static Error fixup_embedded_pck(const String &p_path, int64_t p_embedded_start, 
 
 	if (bits == 32 && p_embedded_size >= 0x100000000) {
 		f->close();
-		ERR_EXPLAIN("32-bit executables cannot have embedded data >= 4 GiB");
-		ERR_FAIL_V(ERR_INVALID_DATA);
+		ERR_FAIL_V_MSG(ERR_INVALID_DATA, "32-bit executables cannot have embedded data >= 4 GiB.");
 	}
 
 	// Get info about the section header table

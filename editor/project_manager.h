@@ -43,6 +43,7 @@ class ProjectList;
 class ProjectListFilter;
 
 class ProjectManager : public Control {
+
 	GDCLASS(ProjectManager, Control);
 
 	Button *erase_btn;
@@ -96,6 +97,7 @@ class ProjectManager : public Control {
 	void _restart_confirm();
 	void _exit_dialog();
 	void _scan_begin(const String &p_base);
+	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
 
 	void _confirm_update_settings();
 
@@ -152,6 +154,7 @@ protected:
 
 public:
 	void _setup_filters(Vector<String> options);
+	void add_filter_option();
 	void add_search_box();
 	void set_filter_size(int h_size);
 	String get_search_term();

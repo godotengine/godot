@@ -31,8 +31,8 @@
 #ifndef ASTAR_H
 #define ASTAR_H
 
+#include "core/oa_hash_map.h"
 #include "core/reference.h"
-#include "core/self_list.h"
 
 /**
 	A* pathfinding algorithm
@@ -44,19 +44,21 @@ class AStar : public Reference {
 
 	GDCLASS(AStar, Reference);
 
-	uint64_t pass;
-
 	struct Point {
+
+		Point() :
+				neighbours(4u),
+				unlinked_neighbours(4u) {}
 
 		int id;
 		Vector3 pos;
 		real_t weight_scale;
 		bool enabled;
 
-		Set<Point *> neighbours;
-		Set<Point *> unlinked_neighbours;
+		OAHashMap<int, Point *> neighbours;
+		OAHashMap<int, Point *> unlinked_neighbours;
 
-		// Used for pathfinding
+		// Used for pathfinding.
 		Point *prev_point;
 		real_t g_score;
 		real_t f_score;
@@ -64,16 +66,15 @@ class AStar : public Reference {
 		uint64_t closed_pass;
 	};
 
-	Map<int, Point *> points;
-
 	struct SortPoints {
-		_FORCE_INLINE_ bool operator()(const Point *A, const Point *B) const { // Returns true when the Point A is worse than Point B
-			if (A->f_score > B->f_score)
+		_FORCE_INLINE_ bool operator()(const Point *A, const Point *B) const { // Returns true when the Point A is worse than Point B.
+			if (A->f_score > B->f_score) {
 				return true;
-			else if (A->f_score < B->f_score)
+			} else if (A->f_score < B->f_score) {
 				return false;
-			else
-				return A->g_score < B->g_score; // If the f_costs are the same then prioritize the points that are further away from the start
+			} else {
+				return A->g_score < B->g_score; // If the f_costs are the same then prioritize the points that are further away from the start.
+			}
 		}
 	};
 
@@ -101,6 +102,10 @@ class AStar : public Reference {
 		}
 	};
 
+	int last_free_id;
+	uint64_t pass;
+
+	OAHashMap<int, Point *> points;
 	Set<Segment> segments;
 
 	bool _solve(Point *begin_point, Point *end_point);
@@ -131,6 +136,9 @@ public:
 	void disconnect_points(int p_id, int p_with_id);
 	bool are_points_connected(int p_id, int p_with_id) const;
 
+	int get_point_count() const;
+	int get_point_capacity() const;
+	void reserve_space(int p_num_nodes);
 	void clear();
 
 	int get_closest_point(const Vector3 &p_point) const;
@@ -170,6 +178,9 @@ public:
 	void disconnect_points(int p_id, int p_with_id);
 	bool are_points_connected(int p_id, int p_with_id) const;
 
+	int get_point_count() const;
+	int get_point_capacity() const;
+	void reserve_space(int p_num_nodes);
 	void clear();
 
 	int get_closest_point(const Vector2 &p_point) const;

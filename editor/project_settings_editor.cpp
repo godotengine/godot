@@ -1674,6 +1674,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
+	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
 	VBoxContainer *props_base = memnew(VBoxContainer);

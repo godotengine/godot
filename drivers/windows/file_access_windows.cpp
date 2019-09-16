@@ -38,6 +38,7 @@
 #include <shlwapi.h>
 #include <windows.h>
 
+#include <errno.h>
 #include <sys/stat.h>
 #include <sys/types.h>
 #include <tchar.h>
@@ -114,17 +115,25 @@ Error FileAccessWindows::_open(const String &p_path, int p_mode_flags) {
 		path = path + ".tmp";
 	}
 
-	_wfopen_s(&f, path.c_str(), mode_string);
+	errno_t errcode = _wfopen_s(&f, path.c_str(), mode_string);
 
 	if (f == NULL) {
-		last_error = ERR_FILE_CANT_OPEN;
-		return ERR_FILE_CANT_OPEN;
+		switch (errcode) {
+			case ENOENT: {
+				last_error = ERR_FILE_NOT_FOUND;
+			} break;
+			default: {
+				last_error = ERR_FILE_CANT_OPEN;
+			} break;
+		}
+		return last_error;
 	} else {
 		last_error = OK;
 		flags = p_mode_flags;
 		return OK;
 	}
 }
+
 void FileAccessWindows::close() {
 
 	if (!f)
@@ -167,13 +176,11 @@ void FileAccessWindows::close() {
 			if (close_fail_notify) {
 				close_fail_notify(save_path);
 			}
-
-			ERR_EXPLAIN("Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.");
 		}
 
 		save_path = "";
 
-		ERR_FAIL_COND(rename_error);
+		ERR_FAIL_COND_MSG(rename_error, "Safe save failed. This may be a permissions problem, but also may happen because you are running a paranoid antivirus. If this is the case, please switch to Windows Defender or disable the 'safe save' option in editor settings. This makes it work, but increases the risk of file corruption in a crash.");
 	}
 }
 
@@ -334,8 +341,7 @@ uint64_t FileAccessWindows::_get_modified_time(const String &p_file) {
 
 		return st.st_mtime;
 	} else {
-		ERR_EXPLAIN("Failed to get modified time for: " + file);
-		ERR_FAIL_V(0);
+		ERR_FAIL_V_MSG(0, "Failed to get modified time for: " + file + ".");
 	}
 }
 

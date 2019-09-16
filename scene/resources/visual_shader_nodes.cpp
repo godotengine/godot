@@ -2106,7 +2106,7 @@ String VisualShaderNodeOuterProduct::get_output_port_name(int p_port) const {
 }
 
 String VisualShaderNodeOuterProduct::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
-	return "\t" + p_output_vars[0] + " = outerProduct( " + p_input_vars[0] + ", " + p_input_vars[1] + " );\n";
+	return "\t" + p_output_vars[0] + " = outerProduct( vec4(" + p_input_vars[0] + ", 0.0), vec4(" + p_input_vars[1] + ", 0.0) );\n";
 }
 
 VisualShaderNodeOuterProduct::VisualShaderNodeOuterProduct() {
@@ -2399,34 +2399,38 @@ VisualShaderNodeVectorRefract::VisualShaderNodeVectorRefract() {
 	set_input_port_default_value(2, 0.0);
 }
 
-////////////// Scalar Interp
+////////////// Scalar Mix
 
 String VisualShaderNodeScalarInterp::get_caption() const {
-	return "Mix";
+	return "ScalarMix";
 }
 
 int VisualShaderNodeScalarInterp::get_input_port_count() const {
 	return 3;
 }
+
 VisualShaderNodeScalarInterp::PortType VisualShaderNodeScalarInterp::get_input_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
+
 String VisualShaderNodeScalarInterp::get_input_port_name(int p_port) const {
 	if (p_port == 0) {
 		return "a";
 	} else if (p_port == 1) {
 		return "b";
 	} else {
-		return "c";
+		return "weight";
 	}
 }
 
 int VisualShaderNodeScalarInterp::get_output_port_count() const {
 	return 1;
 }
+
 VisualShaderNodeScalarInterp::PortType VisualShaderNodeScalarInterp::get_output_port_type(int p_port) const {
 	return PORT_TYPE_SCALAR;
 }
+
 String VisualShaderNodeScalarInterp::get_output_port_name(int p_port) const {
 	return "mix";
 }
@@ -2437,38 +2441,42 @@ String VisualShaderNodeScalarInterp::generate_code(Shader::Mode p_mode, VisualSh
 
 VisualShaderNodeScalarInterp::VisualShaderNodeScalarInterp() {
 	set_input_port_default_value(0, 0.0);
-	set_input_port_default_value(1, 0.0);
-	set_input_port_default_value(2, 0.0);
+	set_input_port_default_value(1, 1.0);
+	set_input_port_default_value(2, 0.5);
 }
 
-////////////// Vector Interp
+////////////// Vector Mix
 
 String VisualShaderNodeVectorInterp::get_caption() const {
-	return "Mix";
+	return "VectorMix";
 }
 
 int VisualShaderNodeVectorInterp::get_input_port_count() const {
 	return 3;
 }
+
 VisualShaderNodeVectorInterp::PortType VisualShaderNodeVectorInterp::get_input_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR;
 }
+
 String VisualShaderNodeVectorInterp::get_input_port_name(int p_port) const {
 	if (p_port == 0) {
 		return "a";
 	} else if (p_port == 1) {
 		return "b";
 	} else {
-		return "c";
+		return "weight";
 	}
 }
 
 int VisualShaderNodeVectorInterp::get_output_port_count() const {
 	return 1;
 }
+
 VisualShaderNodeVectorInterp::PortType VisualShaderNodeVectorInterp::get_output_port_type(int p_port) const {
 	return PORT_TYPE_VECTOR;
 }
+
 String VisualShaderNodeVectorInterp::get_output_port_name(int p_port) const {
 	return "mix";
 }
@@ -2478,9 +2486,57 @@ String VisualShaderNodeVectorInterp::generate_code(Shader::Mode p_mode, VisualSh
 }
 
 VisualShaderNodeVectorInterp::VisualShaderNodeVectorInterp() {
-	set_input_port_default_value(0, Vector3());
-	set_input_port_default_value(1, Vector3());
-	set_input_port_default_value(2, Vector3());
+	set_input_port_default_value(0, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0));
+	set_input_port_default_value(2, Vector3(0.5, 0.5, 0.5));
+}
+
+////////////// Vector Mix (by scalar)
+
+String VisualShaderNodeVectorScalarMix::get_caption() const {
+	return "VectorScalarMix";
+}
+
+int VisualShaderNodeVectorScalarMix::get_input_port_count() const {
+	return 3;
+}
+
+VisualShaderNodeVectorScalarMix::PortType VisualShaderNodeVectorScalarMix::get_input_port_type(int p_port) const {
+	if (p_port == 2)
+		return PORT_TYPE_SCALAR;
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeVectorScalarMix::get_input_port_name(int p_port) const {
+	if (p_port == 0) {
+		return "a";
+	} else if (p_port == 1) {
+		return "b";
+	} else {
+		return "weight";
+	}
+}
+
+int VisualShaderNodeVectorScalarMix::get_output_port_count() const {
+	return 1;
+}
+
+VisualShaderNodeVectorScalarMix::PortType VisualShaderNodeVectorScalarMix::get_output_port_type(int p_port) const {
+	return PORT_TYPE_VECTOR;
+}
+
+String VisualShaderNodeVectorScalarMix::get_output_port_name(int p_port) const {
+	return "mix";
+}
+
+String VisualShaderNodeVectorScalarMix::generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview) const {
+	return "\t" + p_output_vars[0] + " = mix( " + p_input_vars[0] + " , " + p_input_vars[1] + " , " + p_input_vars[2] + " );\n";
+}
+
+VisualShaderNodeVectorScalarMix::VisualShaderNodeVectorScalarMix() {
+	set_input_port_default_value(0, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0));
+	set_input_port_default_value(2, 0.5);
 }
 
 ////////////// Vector Compose
@@ -3171,7 +3227,7 @@ VisualShaderNodeIf::VisualShaderNodeIf() {
 ////////////// Switch
 
 String VisualShaderNodeSwitch::get_caption() const {
-	return "Switch";
+	return "VectorSwitch";
 }
 
 int VisualShaderNodeSwitch::get_input_port_count() const {
@@ -3226,8 +3282,31 @@ String VisualShaderNodeSwitch::generate_code(Shader::Mode p_mode, VisualShader::
 
 VisualShaderNodeSwitch::VisualShaderNodeSwitch() {
 	set_input_port_default_value(0, false);
-	set_input_port_default_value(1, Vector3(0.0, 0.0, 0.0));
+	set_input_port_default_value(1, Vector3(1.0, 1.0, 1.0));
 	set_input_port_default_value(2, Vector3(0.0, 0.0, 0.0));
+}
+
+////////////// Switch(scalar)
+
+String VisualShaderNodeScalarSwitch::get_caption() const {
+	return "ScalarSwitch";
+}
+
+VisualShaderNodeScalarSwitch::PortType VisualShaderNodeScalarSwitch::get_input_port_type(int p_port) const {
+	if (p_port == 0) {
+		return PORT_TYPE_BOOLEAN;
+	}
+	return PORT_TYPE_SCALAR;
+}
+
+VisualShaderNodeScalarSwitch::PortType VisualShaderNodeScalarSwitch::get_output_port_type(int p_port) const {
+	return PORT_TYPE_SCALAR;
+}
+
+VisualShaderNodeScalarSwitch::VisualShaderNodeScalarSwitch() {
+	set_input_port_default_value(0, false);
+	set_input_port_default_value(1, 1.0);
+	set_input_port_default_value(2, 0.0);
 }
 
 ////////////// Fresnel

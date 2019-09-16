@@ -14,6 +14,10 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// 3-element structure that can be used to represent positions in 3D space or any other pair of numeric values.
+    /// </summary>
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector3 : IEquatable<Vector3>
     {
@@ -224,6 +228,24 @@ namespace Godot
             );
         }
 
+        public Vector3 PosMod(real_t mod)
+        {
+            Vector3 v;
+            v.x = Mathf.PosMod(x, mod);
+            v.y = Mathf.PosMod(y, mod);
+            v.z = Mathf.PosMod(z, mod);
+            return v;
+        }
+
+        public Vector3 PosMod(Vector3 modv)
+        {
+            Vector3 v;
+            v.x = Mathf.PosMod(x, modv.x);
+            v.y = Mathf.PosMod(y, modv.y);
+            v.z = Mathf.PosMod(z, modv.z);
+            return v;
+        }
+
         public Vector3 Project(Vector3 onNormal)
         {
             return onNormal * (Dot(onNormal) / onNormal.LengthSquared());
@@ -248,17 +270,28 @@ namespace Godot
             return new Basis(axis, phi).Xform(this);
         }
 
+        [Obsolete("Set is deprecated. Use the Vector3(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y, real_t z)
         {
             this.x = x;
             this.y = y;
             this.z = z;
         }
+        [Obsolete("Set is deprecated. Use the Vector3(" + nameof(Vector3) + ") constructor instead.", error: true)]
         public void Set(Vector3 v)
         {
             x = v.x;
             y = v.y;
             z = v.z;
+        }
+
+        public Vector3 Sign()
+        {
+            Vector3 v;
+            v.x = Mathf.Sign(x);
+            v.y = Mathf.Sign(y);
+            v.z = Mathf.Sign(z);
+            return v;
         }
 
         public Vector3 Slerp(Vector3 b, real_t t)
@@ -392,6 +425,22 @@ namespace Godot
             left.y /= right.y;
             left.z /= right.z;
             return left;
+        }
+
+        public static Vector3 operator %(Vector3 vec, real_t divisor)
+        {
+            vec.x %= divisor;
+            vec.y %= divisor;
+            vec.z %= divisor;
+            return vec;
+        }
+
+        public static Vector3 operator %(Vector3 vec, Vector3 divisorv)
+        {
+            vec.x %= divisorv.x;
+            vec.y %= divisorv.y;
+            vec.z %= divisorv.z;
+            return vec;
         }
 
         public static bool operator ==(Vector3 left, Vector3 right)

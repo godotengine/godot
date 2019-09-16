@@ -472,6 +472,10 @@ void InputDefault::stop_joy_vibration(int p_device) {
 	joy_vibration[p_device] = vibration;
 }
 
+void InputDefault::vibrate_handheld(int p_duration_ms) {
+	OS::get_singleton()->vibrate_handheld(p_duration_ms);
+}
+
 void InputDefault::set_gravity(const Vector3 &p_gravity) {
 
 	_THREAD_SAFE_METHOD_
@@ -629,6 +633,10 @@ Input::CursorShape InputDefault::get_default_cursor_shape() const {
 }
 
 void InputDefault::set_default_cursor_shape(CursorShape p_shape) {
+
+	if (default_shape == p_shape)
+		return;
+
 	default_shape = p_shape;
 	// The default shape is set in Viewport::_gui_input_event. To instantly
 	// see the shape in the viewport we need to trigger a mouse motion event.

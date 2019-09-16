@@ -32,8 +32,8 @@
 
 #include "core/io/file_access_encrypted.h"
 #include "core/io/resource_loader.h"
+#include "core/os/dir_access.h"
 #include "core/os/file_access.h"
-#include "editor/gdscript_highlighter.h"
 #include "gdscript.h"
 #include "gdscript_tokenizer.h"
 
@@ -46,6 +46,12 @@ Ref<ResourceFormatSaverGDScript> resource_saver_gd;
 #include "editor/editor_export.h"
 #include "editor/editor_node.h"
 #include "editor/editor_settings.h"
+#include "editor/gdscript_highlighter.h"
+
+#ifndef GDSCRIPT_NO_LSP
+#include "core/engine.h"
+#include "language_server/gdscript_language_server.h"
+#endif // !GDSCRIPT_NO_LSP
 
 class EditorExportGDScript : public EditorExportPlugin {
 
@@ -117,6 +123,9 @@ public:
 				file = FileAccess::get_file_as_array(tmp_path);
 				add_file(p_path.get_basename() + ".gde", file, true);
 
+				// Clean up temporary file.
+				DirAccess::remove_file_or_error(tmp_path);
+
 			} else {
 
 				add_file(p_path.get_basename() + ".gdc", file, true);
@@ -130,9 +139,16 @@ static void _editor_init() {
 	Ref<EditorExportGDScript> gd_export;
 	gd_export.instance();
 	EditorExport::get_singleton()->add_export_plugin(gd_export);
+
+#ifndef GDSCRIPT_NO_LSP
+	register_lsp_types();
+	GDScriptLanguageServer *lsp_plugin = memnew(GDScriptLanguageServer);
+	EditorNode::get_singleton()->add_editor_plugin(lsp_plugin);
+	Engine::get_singleton()->add_singleton(Engine::Singleton("GDScriptLanguageProtocol", GDScriptLanguageProtocol::get_singleton()));
+#endif // !GDSCRIPT_NO_LSP
 }
 
-#endif
+#endif // TOOLS_ENABLED
 
 void register_gdscript_types() {
 
@@ -151,7 +167,7 @@ void register_gdscript_types() {
 #ifdef TOOLS_ENABLED
 	ScriptEditor::register_create_syntax_highlighter_function(GDScriptSyntaxHighlighter::create);
 	EditorNode::add_init_callback(_editor_init);
-#endif
+#endif // TOOLS_ENABLED
 }
 
 void unregister_gdscript_types() {

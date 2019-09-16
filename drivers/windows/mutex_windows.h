@@ -37,10 +37,6 @@
 
 #include <windows.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class MutexWindows : public Mutex {
 
 #ifdef WINDOWS_USE_MUTEX

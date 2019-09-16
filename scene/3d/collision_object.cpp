@@ -105,7 +105,8 @@ void CollisionObject::_mouse_exit() {
 void CollisionObject::_update_pickable() {
 	if (!is_inside_tree())
 		return;
-	bool pickable = ray_pickable && is_inside_tree() && is_visible_in_tree();
+
+	bool pickable = ray_pickable && is_visible_in_tree();
 	if (area)
 		PhysicsServer::get_singleton()->area_set_ray_pickable(rid, pickable);
 	else

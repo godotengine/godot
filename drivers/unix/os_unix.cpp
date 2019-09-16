@@ -72,8 +72,7 @@ static double _clock_scale = 0;
 static void _setup_clock() {
 	mach_timebase_info_data_t info;
 	kern_return_t ret = mach_timebase_info(&info);
-	ERR_EXPLAIN("OS CLOCK IS NOT WORKING!");
-	ERR_FAIL_COND(ret != 0);
+	ERR_FAIL_COND_MSG(ret != 0, "OS CLOCK IS NOT WORKING!");
 	_clock_scale = ((double)info.numer / (double)info.denom) / 1000.0;
 	_clock_start = mach_absolute_time() * _clock_scale;
 }
@@ -85,8 +84,7 @@ static void _setup_clock() {
 #endif
 static void _setup_clock() {
 	struct timespec tv_now = { 0, 0 };
-	ERR_EXPLAIN("OS CLOCK IS NOT WORKING!");
-	ERR_FAIL_COND(clock_gettime(GODOT_CLOCK, &tv_now) != 0);
+	ERR_FAIL_COND_MSG(clock_gettime(GODOT_CLOCK, &tv_now) != 0, "OS CLOCK IS NOT WORKING!");
 	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
 }
 #endif
@@ -420,10 +418,7 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
 	return OK;
 }
 
@@ -442,12 +437,9 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 
 	error = dlerror();
 	if (error != NULL) {
-		if (!p_optional) {
-			ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
-			ERR_FAIL_V(ERR_CANT_RESOLVE);
-		} else {
-			return ERR_CANT_RESOLVE;
-		}
+		ERR_FAIL_COND_V_MSG(!p_optional, ERR_CANT_RESOLVE, "Can't resolve symbol " + p_name + ". Error: " + error + ".");
+
+		return ERR_CANT_RESOLVE;
 	}
 	return OK;
 }

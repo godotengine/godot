@@ -484,6 +484,13 @@ if selected_platform in platform_list:
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
 
+    editor_module_list = ['regex']
+    for x in editor_module_list:
+        if not env['module_' + x + '_enabled']:
+            if env['tools']:
+                print("Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
+                sys.exit(255)
+
     if not env['verbose']:
         methods.no_verbose(sys, env)
 

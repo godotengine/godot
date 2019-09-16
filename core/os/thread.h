@@ -34,10 +34,6 @@
 #include "core/typedefs.h"
 #include "core/ustring.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 typedef void (*ThreadCreateCallback)(void *p_userdata);
 
 class Thread {

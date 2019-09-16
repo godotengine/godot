@@ -327,14 +327,9 @@ void Node::_propagate_exit_tree() {
 void Node::move_child(Node *p_child, int p_pos) {
 
 	ERR_FAIL_NULL(p_child);
-	ERR_EXPLAIN("Invalid new child position: " + itos(p_pos));
-	ERR_FAIL_INDEX(p_pos, data.children.size() + 1);
-	ERR_EXPLAIN("child is not a child of this node.");
-	ERR_FAIL_COND(p_child->data.parent != this);
-	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
-		ERR_FAIL_COND(data.blocked > 0);
-	}
+	ERR_FAIL_INDEX_MSG(p_pos, data.children.size() + 1, "Invalid new child position: " + itos(p_pos) + ".");
+	ERR_FAIL_COND_MSG(p_child->data.parent != this, "Child is not a child of this node.");
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, move_child() failed. Consider using call_deferred(\"move_child\") instead (or \"popup\" if this is from a popup).");
 
 	// Specifying one place beyond the end
 	// means the same as moving to the last position
@@ -408,7 +403,6 @@ void Node::set_physics_process(bool p_process) {
 	else
 		remove_from_group("physics_process");
 
-	data.physics_process = p_process;
 	_change_notify("physics_process");
 }
 
@@ -429,7 +423,6 @@ void Node::set_physics_process_internal(bool p_process_internal) {
 	else
 		remove_from_group("physics_process_internal");
 
-	data.physics_process_internal = p_process_internal;
 	_change_notify("physics_process_internal");
 }
 
@@ -811,7 +804,6 @@ void Node::set_process(bool p_idle_process) {
 	else
 		remove_from_group("idle_process");
 
-	data.idle_process = p_idle_process;
 	_change_notify("idle_process");
 }
 
@@ -832,7 +824,6 @@ void Node::set_process_internal(bool p_idle_process_internal) {
 	else
 		remove_from_group("idle_process_internal");
 
-	data.idle_process_internal = p_idle_process_internal;
 	_change_notify("idle_process_internal");
 }
 
@@ -1021,7 +1012,7 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 		if (!unique) {
 
-			node_hrcr_count.ref();
+			ERR_FAIL_COND(!node_hrcr_count.ref());
 			String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
 			p_child->data.name = name;
 		}
@@ -1169,25 +1160,9 @@ void Node::_add_child_nocheck(Node *p_child, const StringName &p_name) {
 void Node::add_child(Node *p_child, bool p_legible_unique_name) {
 
 	ERR_FAIL_NULL(p_child);
-
-	if (p_child == this) {
-		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to itself.");
-		ERR_FAIL_COND(p_child == this); // adding to itself!
-	}
-
-	/* Fail if node has a parent */
-	if (p_child->data.parent) {
-		ERR_EXPLAIN("Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'.");
-		ERR_FAIL_COND(p_child->data.parent);
-	}
-
-	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
-		ERR_FAIL_COND(data.blocked > 0);
-	}
-
-	ERR_EXPLAIN("Can't add child while a notification is happening.");
-	ERR_FAIL_COND(data.blocked > 0);
+	ERR_FAIL_COND_MSG(p_child == this, "Can't add child '" + p_child->get_name() + "' to itself."); // adding to itself!
+	ERR_FAIL_COND_MSG(p_child->data.parent, "Can't add child '" + p_child->get_name() + "' to '" + get_name() + "', already has a parent '" + p_child->data.parent->get_name() + "'."); //Fail if node has a parent
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, add_node() failed. Consider using call_deferred(\"add_child\", child) instead.");
 
 	/* Validate name */
 	_validate_child_name(p_child, p_legible_unique_name);
@@ -1243,10 +1218,7 @@ void Node::_propagate_validate_owner() {
 void Node::remove_child(Node *p_child) {
 
 	ERR_FAIL_NULL(p_child);
-	if (data.blocked > 0) {
-		ERR_EXPLAIN("Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\",child) instead.");
-		ERR_FAIL_COND(data.blocked > 0);
-	}
+	ERR_FAIL_COND_MSG(data.blocked > 0, "Parent node is busy setting up children, remove_node() failed. Consider using call_deferred(\"remove_child\", child) instead.");
 
 	int child_count = data.children.size();
 	Node **children = data.children.ptrw();
@@ -1269,7 +1241,7 @@ void Node::remove_child(Node *p_child) {
 		}
 	}
 
-	ERR_FAIL_COND(idx == -1);
+	ERR_FAIL_COND_MSG(idx == -1, "Cannot remove child node " + p_child->get_name() + " as it is not a child of this node.");
 	//ERR_FAIL_COND( p_child->data.blocked > 0 );
 
 	//if (data.scene) { does not matter
@@ -1333,10 +1305,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 		return NULL;
 	}
 
-	if (!data.inside_tree && p_path.is_absolute()) {
-		ERR_EXPLAIN("Can't use get_node() with absolute paths from outside the active scene tree.");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!data.inside_tree && p_path.is_absolute(), NULL, "Can't use get_node() with absolute paths from outside the active scene tree.");
 
 	Node *current = NULL;
 	Node *root = NULL;
@@ -1397,10 +1366,7 @@ Node *Node::get_node_or_null(const NodePath &p_path) const {
 Node *Node::get_node(const NodePath &p_path) const {
 
 	Node *node = get_node_or_null(p_path);
-	if (!node) {
-		ERR_EXPLAIN("Node not found: " + p_path);
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!node, NULL, "Node not found: " + p_path + ".");
 	return node;
 }
 
@@ -1668,7 +1634,7 @@ NodePath Node::get_path_to(const Node *p_node) const {
 
 NodePath Node::get_path() const {
 
-	ERR_FAIL_COND_V(!is_inside_tree(), NodePath());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), NodePath(), "Cannot get path of node as it is not in a scene tree.");
 
 	if (data.path_cache)
 		return *data.path_cache;
@@ -1750,14 +1716,17 @@ void Node::get_groups(List<GroupInfo> *p_groups) const {
 	}
 }
 
-bool Node::has_persistent_groups() const {
+int Node::get_persistent_group_count() const {
+
+	int count = 0;
 
 	for (const Map<StringName, GroupData>::Element *E = data.grouped.front(); E; E = E->next()) {
-		if (E->get().persistent)
-			return true;
+		if (E->get().persistent) {
+			count += 1;
+		}
 	}
 
-	return false;
+	return count;
 }
 void Node::_print_tree_pretty(const String &prefix, const bool last) {
 
@@ -1904,6 +1873,19 @@ void Node::set_filename(const String &p_filename) {
 String Node::get_filename() const {
 
 	return data.filename;
+}
+
+void Node::set_editor_description(const String &p_editor_description) {
+
+	set_meta("_editor_description_", p_editor_description);
+}
+String Node::get_editor_description() const {
+
+	if (has_meta("_editor_description_")) {
+		return get_meta("_editor_description_");
+	} else {
+		return "";
+	}
 }
 
 void Node::set_editable_instance(Node *p_node, bool p_editable) {
@@ -2195,11 +2177,12 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 	} else {
 
 		Object *obj = ClassDB::instance(get_class());
-		ERR_EXPLAIN("Node: Could not duplicate: " + String(get_class()));
-		ERR_FAIL_COND(!obj);
+		ERR_FAIL_COND_MSG(!obj, "Node: Could not duplicate: " + String(get_class()) + ".");
 		node = Object::cast_to<Node>(obj);
-		if (!node)
+		if (!node) {
 			memdelete(obj);
+			ERR_FAIL_MSG("Node: Could not duplicate: " + String(get_class()) + ".");
+		}
 	}
 
 	List<PropertyInfo> plist;
@@ -2295,16 +2278,14 @@ Node *Node::duplicate_and_reown(const Map<Node *, Node *> &p_reown_map) const {
 
 	ERR_FAIL_COND_V(get_filename() != "", NULL);
 
-	Node *node = NULL;
-
 	Object *obj = ClassDB::instance(get_class());
-	ERR_EXPLAIN("Node: Could not duplicate: " + String(get_class()));
-	ERR_FAIL_COND_V(!obj, NULL);
-	node = Object::cast_to<Node>(obj);
-	if (!node)
-		memdelete(obj);
-	ERR_FAIL_COND_V(!node, NULL);
+	ERR_FAIL_COND_V_MSG(!obj, NULL, "Node: Could not duplicate: " + String(get_class()) + ".");
 
+	Node *node = Object::cast_to<Node>(obj);
+	if (!node) {
+		memdelete(obj);
+		ERR_FAIL_V_MSG(NULL, "Node: Could not duplicate: " + String(get_class()) + ".");
+	}
 	node->set_name(get_name());
 
 	List<PropertyInfo> plist;
@@ -2440,8 +2421,7 @@ void Node::_replace_connections_target(Node *p_new_target) {
 		if (c.flags & CONNECT_PERSIST) {
 			c.source->disconnect(c.signal, this, c.method);
 			bool valid = p_new_target->has_method(c.method) || Ref<Script>(p_new_target->get_script()).is_null() || Ref<Script>(p_new_target->get_script())->has_method(c.method);
-			ERR_EXPLAIN("Attempt to connect signal \'" + c.source->get_class() + "." + c.signal + "\' to nonexistent method \'" + c.target->get_class() + "." + c.method + "\'");
-			ERR_CONTINUE(!valid);
+			ERR_CONTINUE_MSG(!valid, "Attempt to connect signal '" + c.source->get_class() + "." + c.signal + "' to nonexistent method '" + c.target->get_class() + "." + c.method + "'.");
 			c.source->connect(c.signal, p_new_target, c.method, c.binds, c.flags);
 		}
 	}
@@ -2821,6 +2801,10 @@ void Node::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("rpc_config", "method", "mode"), &Node::rpc_config);
 	ClassDB::bind_method(D_METHOD("rset_config", "property", "mode"), &Node::rset_config);
 
+	ClassDB::bind_method(D_METHOD("_set_editor_description", "editor_description"), &Node::set_editor_description);
+	ClassDB::bind_method(D_METHOD("_get_editor_description"), &Node::get_editor_description);
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "editor_description", PROPERTY_HINT_MULTILINE_TEXT, "", PROPERTY_USAGE_EDITOR | PROPERTY_USAGE_INTERNAL), "_set_editor_description", "_get_editor_description");
+
 	ClassDB::bind_method(D_METHOD("_set_import_path", "import_path"), &Node::set_import_path);
 	ClassDB::bind_method(D_METHOD("_get_import_path"), &Node::get_import_path);
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "_import_path", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_import_path", "_get_import_path");
@@ -2893,10 +2877,6 @@ void Node::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("tree_exiting"));
 	ADD_SIGNAL(MethodInfo("tree_exited"));
 
-	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/process" ),"set_process","is_processing") ;
-	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/physics_process" ), "set_physics_process","is_physics_processing") ;
-	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/input" ), "set_process_input","is_processing_input" ) ;
-	//ADD_PROPERTY( PropertyInfo( Variant::BOOL, "process/unhandled_input" ), "set_process_unhandled_input","is_processing_unhandled_input" ) ;
 	ADD_GROUP("Pause", "pause_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "pause_mode", PROPERTY_HINT_ENUM, "Inherit,Stop,Process"), "set_pause_mode", "get_pause_mode");
 
@@ -2920,9 +2900,6 @@ void Node::_bind_methods() {
 	BIND_VMETHOD(MethodInfo("_unhandled_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEvent")));
 	BIND_VMETHOD(MethodInfo("_unhandled_key_input", PropertyInfo(Variant::OBJECT, "event", PROPERTY_HINT_RESOURCE_TYPE, "InputEventKey")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "_get_configuration_warning"));
-
-	//ClassDB::bind_method(D_METHOD("get_child",&Node::get_child,PH("index")));
-	//ClassDB::bind_method(D_METHOD("get_node",&Node::get_node,PH("path")));
 }
 
 String Node::_get_name_num_separator() {

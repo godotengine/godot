@@ -367,18 +367,18 @@ bool Path2DEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
-	if (!node)
-		return;
-
-	if (!node->is_visible_in_tree())
-		return;
-
-	if (!node->get_curve().is_valid())
+	if (!node || !node->is_visible_in_tree() || !node->get_curve().is_valid())
 		return;
 
 	Transform2D xform = canvas_item_editor->get_canvas_transform() * node->get_global_transform();
-	Ref<Texture> handle = get_icon("EditorHandle", "EditorIcons");
-	Size2 handle_size = handle->get_size();
+
+	const Ref<Texture> path_sharp_handle = get_icon("EditorPathSharpHandle", "EditorIcons");
+	const Ref<Texture> path_smooth_handle = get_icon("EditorPathSmoothHandle", "EditorIcons");
+	// Both handle icons must be of the same size
+	const Size2 handle_size = path_sharp_handle->get_size();
+
+	const Ref<Texture> curve_handle = get_icon("EditorCurveHandle", "EditorIcons");
+	const Size2 curve_handle_size = curve_handle->get_size();
 
 	Ref<Curve2D> curve = node->get_curve();
 
@@ -387,19 +387,35 @@ void Path2DEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
 	for (int i = 0; i < len; i++) {
 		Vector2 point = xform.xform(curve->get_point_position(i));
-		vpc->draw_texture_rect(handle, Rect2(point - handle_size * 0.5, handle_size), false, Color(1, 1, 1, 1));
+		// Determines the point icon to be used
+		bool smooth = false;
 
 		if (i < len - 1) {
 			Vector2 pointout = xform.xform(curve->get_point_position(i) + curve->get_point_out(i));
-			vpc->draw_line(point, pointout, Color(0.5, 0.5, 1.0, 0.8), 1.0);
-			vpc->draw_texture_rect(handle, Rect2(pointout - handle_size * 0.5, handle_size), false, Color(1, 0.5, 1, 0.3));
+			if (point != pointout) {
+				smooth = true;
+				// Draw the line with a dark and light color to be visible on all backgrounds
+				vpc->draw_line(point, pointout, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointout, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_texture_rect(curve_handle, Rect2(pointout - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+			}
 		}
 
 		if (i > 0) {
 			Vector2 pointin = xform.xform(curve->get_point_position(i) + curve->get_point_in(i));
-			vpc->draw_line(point, pointin, Color(0.5, 0.5, 1.0, 0.8), 1.0);
-			vpc->draw_texture_rect(handle, Rect2(pointin - handle_size * 0.5, handle_size), false, Color(1, 0.5, 1, 0.3));
+			if (point != pointin) {
+				smooth = true;
+				// Draw the line with a dark and light color to be visible on all backgrounds
+				vpc->draw_line(point, pointin, Color(0, 0, 0, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_line(point, pointin, Color(1, 1, 1, 0.5), Math::round(EDSCALE), true);
+				vpc->draw_texture_rect(curve_handle, Rect2(pointin - curve_handle_size * 0.5, curve_handle_size), false, Color(1, 1, 1, 0.75));
+			}
 		}
+
+		vpc->draw_texture_rect(
+				smooth ? path_smooth_handle : path_sharp_handle,
+				Rect2(point - handle_size * 0.5, handle_size),
+				false);
 	}
 
 	if (on_edge) {

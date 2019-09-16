@@ -1930,8 +1930,7 @@ void EditorFileSystem::reimport_files(const Vector<String> &p_files) {
 			Error err = da->make_dir(".import");
 			if (err) {
 				memdelete(da);
-				ERR_EXPLAIN("Failed to create 'res://.import' folder.");
-				ERR_FAIL();
+				ERR_FAIL_MSG("Failed to create 'res://.import' folder.");
 			}
 		}
 		memdelete(da);

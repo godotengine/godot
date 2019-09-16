@@ -35,9 +35,6 @@
 #include "scene/3d/skeleton.h"
 #include "scene/3d/spatial.h"
 #include "scene/resources/animation.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 #ifdef TOOLS_ENABLED
 // To save/restore animated values

@@ -37,10 +37,6 @@
 
 #include <windows.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class SemaphoreWindows : public Semaphore {
 
 	mutable HANDLE semaphore;

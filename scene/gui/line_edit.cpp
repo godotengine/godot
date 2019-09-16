@@ -59,6 +59,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 			menu->set_scale(get_global_transform().get_scale());
 			menu->popup();
 			grab_focus();
+			accept_event();
 			return;
 		}
 
@@ -871,7 +872,9 @@ void LineEdit::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_FOCUS_ENTER: {
 
-			if (!caret_blink_enabled) {
+			if (caret_blink_enabled) {
+				caret_blink_timer->start();
+			} else {
 				draw_caret = true;
 			}
 
@@ -884,6 +887,10 @@ void LineEdit::_notification(int p_what) {
 
 		} break;
 		case NOTIFICATION_FOCUS_EXIT: {
+
+			if (caret_blink_enabled) {
+				caret_blink_timer->stop();
+			}
 
 			OS::get_singleton()->set_ime_position(Point2());
 			OS::get_singleton()->set_ime_active(false);
@@ -1052,11 +1059,15 @@ bool LineEdit::cursor_get_blink_enabled() const {
 
 void LineEdit::cursor_set_blink_enabled(const bool p_enabled) {
 	caret_blink_enabled = p_enabled;
-	if (p_enabled) {
-		caret_blink_timer->start();
-	} else {
-		caret_blink_timer->stop();
+
+	if (has_focus()) {
+		if (p_enabled) {
+			caret_blink_timer->start();
+		} else {
+			caret_blink_timer->stop();
+		}
 	}
+
 	draw_caret = true;
 }
 
@@ -1071,10 +1082,12 @@ void LineEdit::cursor_set_blink_speed(const float p_speed) {
 
 void LineEdit::_reset_caret_blink_timer() {
 	if (caret_blink_enabled) {
-		caret_blink_timer->stop();
-		caret_blink_timer->start();
 		draw_caret = true;
-		update();
+		if (has_focus()) {
+			caret_blink_timer->stop();
+			caret_blink_timer->start();
+			update();
+		}
 	}
 }
 
@@ -1367,18 +1380,28 @@ void LineEdit::set_editable(bool p_editable) {
 
 	// Reorganize context menu.
 	menu->clear();
-	if (editable)
-		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
-	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
-	if (editable)
-		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
-	menu->add_separator();
-	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
 	if (editable) {
-		menu->add_item(RTR("Clear"), MENU_CLEAR);
-		menu->add_separator();
 		menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
 		menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
+	}
+
+	if (editable) {
+		menu->add_separator();
+		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
+	}
+
+	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
+
+	if (editable) {
+		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
+	}
+
+	menu->add_separator();
+	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
+
+	if (editable) {
+		menu->add_item(RTR("Clear"), MENU_CLEAR);
 	}
 
 	update();
@@ -1404,8 +1427,7 @@ void LineEdit::set_secret_character(const String &p_string) {
 
 	// An empty string as the secret character would crash the engine
 	// It also wouldn't make sense to use multiple characters as the secret character
-	ERR_EXPLAIN("Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given)");
-	ERR_FAIL_COND(p_string.length() != 1);
+	ERR_FAIL_COND_MSG(p_string.length() != 1, "Secret character must be exactly one character long (" + itos(p_string.length()) + " characters given).");
 
 	secret_character = p_string;
 	update();

@@ -8,43 +8,10 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Basis : IEquatable<Basis>
     {
-        private static readonly Basis identity = new Basis
-        (
-            1f, 0f, 0f,
-            0f, 1f, 0f,
-            0f, 0f, 1f
-        );
-
-        private static readonly Basis[] orthoBases = {
-            new Basis(1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f),
-            new Basis(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f),
-            new Basis(-1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f),
-            new Basis(0f, 1f, 0f, -1f, 0f, 0f, 0f, 0f, 1f),
-            new Basis(1f, 0f, 0f, 0f, 0f, -1f, 0f, 1f, 0f),
-            new Basis(0f, 0f, 1f, 1f, 0f, 0f, 0f, 1f, 0f),
-            new Basis(-1f, 0f, 0f, 0f, 0f, 1f, 0f, 1f, 0f),
-            new Basis(0f, 0f, -1f, -1f, 0f, 0f, 0f, 1f, 0f),
-            new Basis(1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, -1f),
-            new Basis(0f, 1f, 0f, 1f, 0f, 0f, 0f, 0f, -1f),
-            new Basis(-1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, -1f),
-            new Basis(0f, -1f, 0f, -1f, 0f, 0f, 0f, 0f, -1f),
-            new Basis(1f, 0f, 0f, 0f, 0f, 1f, 0f, -1f, 0f),
-            new Basis(0f, 0f, -1f, 1f, 0f, 0f, 0f, -1f, 0f),
-            new Basis(-1f, 0f, 0f, 0f, 0f, -1f, 0f, -1f, 0f),
-            new Basis(0f, 0f, 1f, -1f, 0f, 0f, 0f, -1f, 0f),
-            new Basis(0f, 0f, 1f, 0f, 1f, 0f, -1f, 0f, 0f),
-            new Basis(0f, -1f, 0f, 0f, 0f, 1f, -1f, 0f, 0f),
-            new Basis(0f, 0f, -1f, 0f, -1f, 0f, -1f, 0f, 0f),
-            new Basis(0f, 1f, 0f, 0f, 0f, -1f, -1f, 0f, 0f),
-            new Basis(0f, 0f, 1f, 0f, -1f, 0f, 1f, 0f, 0f),
-            new Basis(0f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f),
-            new Basis(0f, 0f, -1f, 0f, 1f, 0f, 1f, 0f, 0f),
-            new Basis(0f, -1f, 0f, 0f, 0f, -1f, 1f, 0f, 0f)
-        };
-
         // NOTE: x, y and z are public-only. Use Column0, Column1 and Column2 internally.
 
         /// <summary>
@@ -63,7 +30,6 @@ namespace Godot
         /// </summary>
         public Vector3 y
         {
-
             get => Column1;
             set => Column1 = value;
         }
@@ -74,7 +40,6 @@ namespace Godot
         /// </summary>
         public Vector3 z
         {
-
             get => Column2;
             set => Column2 = value;
         }
@@ -113,8 +78,6 @@ namespace Godot
                 this.Row2.z = value.z;
             }
         }
-
-        public static Basis Identity => identity;
 
         public Vector3 Scale
         {
@@ -225,7 +188,7 @@ namespace Godot
             return orthonormalizedBasis.Quat();
         }
 
-        internal void SetQuantScale(Quat quat, Vector3 scale)
+        internal void SetQuatScale(Quat quat, Vector3 scale)
         {
             SetDiagonal(scale);
             Rotate(quat);
@@ -241,7 +204,6 @@ namespace Godot
             Row0 = new Vector3(diagonal.x, 0, 0);
             Row1 = new Vector3(0, diagonal.y, 0);
             Row2 = new Vector3(0, 0, diagonal.z);
-
         }
 
         public real_t Determinant()
@@ -361,7 +323,7 @@ namespace Godot
 
             for (int i = 0; i < 24; i++)
             {
-                if (orthoBases[i] == orth)
+                if (orth == _orthoBases[i])
                     return i;
             }
 
@@ -530,6 +492,43 @@ namespace Godot
                 );
             }
         }
+
+        private static readonly Basis[] _orthoBases = {
+            new Basis(1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, 1f),
+            new Basis(0f, -1f, 0f, 1f, 0f, 0f, 0f, 0f, 1f),
+            new Basis(-1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, 1f),
+            new Basis(0f, 1f, 0f, -1f, 0f, 0f, 0f, 0f, 1f),
+            new Basis(1f, 0f, 0f, 0f, 0f, -1f, 0f, 1f, 0f),
+            new Basis(0f, 0f, 1f, 1f, 0f, 0f, 0f, 1f, 0f),
+            new Basis(-1f, 0f, 0f, 0f, 0f, 1f, 0f, 1f, 0f),
+            new Basis(0f, 0f, -1f, -1f, 0f, 0f, 0f, 1f, 0f),
+            new Basis(1f, 0f, 0f, 0f, -1f, 0f, 0f, 0f, -1f),
+            new Basis(0f, 1f, 0f, 1f, 0f, 0f, 0f, 0f, -1f),
+            new Basis(-1f, 0f, 0f, 0f, 1f, 0f, 0f, 0f, -1f),
+            new Basis(0f, -1f, 0f, -1f, 0f, 0f, 0f, 0f, -1f),
+            new Basis(1f, 0f, 0f, 0f, 0f, 1f, 0f, -1f, 0f),
+            new Basis(0f, 0f, -1f, 1f, 0f, 0f, 0f, -1f, 0f),
+            new Basis(-1f, 0f, 0f, 0f, 0f, -1f, 0f, -1f, 0f),
+            new Basis(0f, 0f, 1f, -1f, 0f, 0f, 0f, -1f, 0f),
+            new Basis(0f, 0f, 1f, 0f, 1f, 0f, -1f, 0f, 0f),
+            new Basis(0f, -1f, 0f, 0f, 0f, 1f, -1f, 0f, 0f),
+            new Basis(0f, 0f, -1f, 0f, -1f, 0f, -1f, 0f, 0f),
+            new Basis(0f, 1f, 0f, 0f, 0f, -1f, -1f, 0f, 0f),
+            new Basis(0f, 0f, 1f, 0f, -1f, 0f, 1f, 0f, 0f),
+            new Basis(0f, 1f, 0f, 0f, 0f, 1f, 1f, 0f, 0f),
+            new Basis(0f, 0f, -1f, 0f, 1f, 0f, 1f, 0f, 0f),
+            new Basis(0f, -1f, 0f, 0f, 0f, -1f, 1f, 0f, 0f)
+        };
+
+        private static readonly Basis _identity = new Basis(1, 0, 0, 0, 1, 0, 0, 0, 1);
+        private static readonly Basis _flipX = new Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1);
+        private static readonly Basis _flipY = new Basis(1, 0, 0, 0, -1, 0, 0, 0, 1);
+        private static readonly Basis _flipZ = new Basis(1, 0, 0, 0, 1, 0, 0, 0, -1);
+
+        public static Basis Identity { get { return _identity; } }
+        public static Basis FlipX { get { return _flipX; } }
+        public static Basis FlipY { get { return _flipY; } }
+        public static Basis FlipZ { get { return _flipZ; } }
 
         public Basis(Quat quat)
         {

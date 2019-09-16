@@ -31,9 +31,6 @@
 #ifndef CONTEXT_GL_X11_H
 #define CONTEXT_GL_X11_H
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 #ifdef X11_ENABLED
 
 #if defined(OPENGL_ENABLED)

@@ -848,8 +848,7 @@ void Translation::set_locale(const String &p_locale) {
 	if (!TranslationServer::is_locale_valid(univ_locale)) {
 		String trimmed_locale = get_trimmed_locale(univ_locale);
 
-		ERR_EXPLAIN("Invalid locale: " + trimmed_locale);
-		ERR_FAIL_COND(!TranslationServer::is_locale_valid(trimmed_locale));
+		ERR_FAIL_COND_MSG(!TranslationServer::is_locale_valid(trimmed_locale), "Invalid locale: " + trimmed_locale + ".");
 
 		locale = trimmed_locale;
 	} else {
@@ -1044,6 +1043,13 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 	if (!enabled)
 		return p_message;
 
+	// Locale can be of the form 'll_CC', i.e. language code and regional code,
+	// e.g. 'en_US', 'en_GB', etc. It might also be simply 'll', e.g. 'en'.
+	// To find the relevant translation, we look for those with locale starting
+	// with the language code, and then if any is an exact match for the long
+	// form. If not found, we fall back to a near match (another locale with
+	// same language code).
+
 	StringName res;
 	bool near_match = false;
 	const CharType *lptr = &locale[0];
@@ -1053,13 +1059,11 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 		const Ref<Translation> &t = E->get();
 		String l = t->get_locale();
 		if (lptr[0] != l[0] || lptr[1] != l[1])
-			continue; // locale not match
+			continue; // Language code does not match.
 
-		//near match
-		bool match = (l != locale);
-
-		if (near_match && !match)
-			continue; //only near-match once
+		bool exact_match = (l == locale);
+		if (!exact_match && near_match)
+			continue; // Only near-match once, but keep looking for exact matches.
 
 		StringName r = t->get_message(p_message);
 
@@ -1068,43 +1072,38 @@ StringName TranslationServer::translate(const StringName &p_message) const {
 
 		res = r;
 
-		if (match)
+		if (exact_match)
 			break;
 		else
 			near_match = true;
 	}
 
-	if (!res) {
-		//try again with fallback
-		if (fallback.length() >= 2) {
+	if (!res && fallback.length() >= 2) {
+		// Try again with the fallback locale.
+		const CharType *fptr = &fallback[0];
+		near_match = false;
+		for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
 
-			const CharType *fptr = &fallback[0];
-			near_match = false;
-			for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+			const Ref<Translation> &t = E->get();
+			String l = t->get_locale();
+			if (fptr[0] != l[0] || fptr[1] != l[1])
+				continue; // Language code does not match.
 
-				const Ref<Translation> &t = E->get();
-				String l = t->get_locale();
-				if (fptr[0] != l[0] || fptr[1] != l[1])
-					continue; // locale not match
+			bool exact_match = (l == fallback);
+			if (!exact_match && near_match)
+				continue; // Only near-match once, but keep looking for exact matches.
 
-				//near match
-				bool match = (l != fallback);
+			StringName r = t->get_message(p_message);
 
-				if (near_match && !match)
-					continue; //only near-match once
+			if (!r)
+				continue;
 
-				StringName r = t->get_message(p_message);
+			res = r;
 
-				if (!r)
-					continue;
-
-				res = r;
-
-				if (match)
-					break;
-				else
-					near_match = true;
-			}
+			if (exact_match)
+				break;
+			else
+				near_match = true;
 		}
 	}
 

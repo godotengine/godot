@@ -6,17 +6,16 @@ namespace Godot
 {
     public class GodotSynchronizationContext : SynchronizationContext
     {
-        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> queue = new BlockingCollection<KeyValuePair<SendOrPostCallback, object>>();
+        private readonly BlockingCollection<KeyValuePair<SendOrPostCallback, object>> _queue = new BlockingCollection<KeyValuePair<SendOrPostCallback, object>>();
 
         public override void Post(SendOrPostCallback d, object state)
         {
-            queue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
+            _queue.Add(new KeyValuePair<SendOrPostCallback, object>(d, state));
         }
 
         public void ExecutePendingContinuations()
         {
-            KeyValuePair<SendOrPostCallback, object> workItem;
-            while (queue.TryTake(out workItem))
+            while (_queue.TryTake(out var workItem))
             {
                 workItem.Key(workItem.Value);
             }

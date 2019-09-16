@@ -106,7 +106,7 @@ Transform2D Camera2D::get_camera_transform() {
 
 		if (anchor_mode == ANCHOR_MODE_DRAG_CENTER) {
 
-			if (h_drag_enabled && !Engine::get_singleton()->is_editor_hint()) {
+			if (h_drag_enabled && !Engine::get_singleton()->is_editor_hint() && !h_offset_changed) {
 				camera_pos.x = MIN(camera_pos.x, (new_camera_pos.x + screen_size.x * 0.5 * zoom.x * drag_margin[MARGIN_LEFT]));
 				camera_pos.x = MAX(camera_pos.x, (new_camera_pos.x - screen_size.x * 0.5 * zoom.x * drag_margin[MARGIN_RIGHT]));
 			} else {
@@ -116,9 +116,11 @@ Transform2D Camera2D::get_camera_transform() {
 				} else {
 					camera_pos.x = new_camera_pos.x + screen_size.x * 0.5 * drag_margin[MARGIN_LEFT] * h_ofs;
 				}
+
+				h_offset_changed = false;
 			}
 
-			if (v_drag_enabled && !Engine::get_singleton()->is_editor_hint()) {
+			if (v_drag_enabled && !Engine::get_singleton()->is_editor_hint() && !v_offset_changed) {
 
 				camera_pos.y = MIN(camera_pos.y, (new_camera_pos.y + screen_size.y * 0.5 * zoom.y * drag_margin[MARGIN_TOP]));
 				camera_pos.y = MAX(camera_pos.y, (new_camera_pos.y - screen_size.y * 0.5 * zoom.y * drag_margin[MARGIN_BOTTOM]));
@@ -130,6 +132,8 @@ Transform2D Camera2D::get_camera_transform() {
 				} else {
 					camera_pos.y = new_camera_pos.y + screen_size.y * 0.5 * drag_margin[MARGIN_BOTTOM] * v_ofs;
 				}
+
+				v_offset_changed = false;
 			}
 
 		} else if (anchor_mode == ANCHOR_MODE_FIXED_TOP_LEFT) {
@@ -554,6 +558,7 @@ bool Camera2D::is_v_drag_enabled() const {
 void Camera2D::set_v_offset(float p_offset) {
 
 	v_ofs = p_offset;
+	v_offset_changed = true;
 	_update_scroll();
 }
 
@@ -565,6 +570,7 @@ float Camera2D::get_v_offset() const {
 void Camera2D::set_h_offset(float p_offset) {
 
 	h_ofs = p_offset;
+	h_offset_changed = true;
 	_update_scroll();
 }
 float Camera2D::get_h_offset() const {
@@ -750,8 +756,8 @@ void Camera2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "smoothing_speed"), "set_follow_smoothing", "get_follow_smoothing");
 
 	ADD_GROUP("Offset", "offset_");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset_v", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset_h", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_h_offset", "get_h_offset");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "offset_v", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_v_offset", "get_v_offset");
 
 	ADD_GROUP("Drag Margin", "drag_margin_");
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "drag_margin_left", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_drag_margin", "get_drag_margin", MARGIN_LEFT);
@@ -799,9 +805,12 @@ Camera2D::Camera2D() {
 	limit_drawing_enabled = false;
 	margin_drawing_enabled = false;
 
-	h_drag_enabled = true;
-	v_drag_enabled = true;
+	h_drag_enabled = false;
+	v_drag_enabled = false;
 	h_ofs = 0;
 	v_ofs = 0;
+	h_offset_changed = false;
+	v_offset_changed = false;
+
 	set_notify_transform(true);
 }

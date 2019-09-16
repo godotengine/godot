@@ -84,8 +84,7 @@ static Ref<Image> _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
 	ERR_FAIL_COND_V(r[0] != 'W' || r[1] != 'E' || r[2] != 'B' || r[3] != 'P', Ref<Image>());
 	WebPBitstreamFeatures features;
 	if (WebPGetFeatures(&r[4], size, &features) != VP8_STATUS_OK) {
-		ERR_EXPLAIN("Error unpacking WEBP image:");
-		ERR_FAIL_V(Ref<Image>());
+		ERR_FAIL_V_MSG(Ref<Image>(), "Error unpacking WEBP image.");
 	}
 
 	/*
@@ -107,8 +106,7 @@ static Ref<Image> _webp_lossy_unpack(const PoolVector<uint8_t> &p_buffer) {
 		errdec = WebPDecodeRGBInto(&r[4], size, dst_w.ptr(), datasize, 3 * features.width) == NULL;
 	}
 
-	//ERR_EXPLAIN("Error decoding webp! - "+p_file);
-	ERR_FAIL_COND_V(errdec, Ref<Image>());
+	ERR_FAIL_COND_V_MSG(errdec, Ref<Image>(), "Failed decoding WebP image.");
 
 	dst_w.release();
 
@@ -122,7 +120,6 @@ Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 
 	WebPBitstreamFeatures features;
 	if (WebPGetFeatures(p_buffer, p_buffer_len, &features) != VP8_STATUS_OK) {
-		// ERR_EXPLAIN("Error decoding WEBP image");
 		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
@@ -139,8 +136,7 @@ Error webp_load_image_from_buffer(Image *p_image, const uint8_t *p_buffer, int p
 	}
 	dst_w.release();
 
-	//ERR_EXPLAIN("Error decoding webp!");
-	ERR_FAIL_COND_V(errdec, ERR_FILE_CORRUPT);
+	ERR_FAIL_COND_V_MSG(errdec, ERR_FILE_CORRUPT, "Failed decoding WebP image.");
 
 	p_image->create(features.width, features.height, 0, features.has_alpha ? Image::FORMAT_RGBA8 : Image::FORMAT_RGB8, dst_image);
 

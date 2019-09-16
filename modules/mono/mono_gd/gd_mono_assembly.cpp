@@ -151,14 +151,14 @@ MonoAssembly *GDMonoAssembly::_preload_hook(MonoAssemblyName *aname, char **, vo
 	}
 
 	{
-		// If we find the assembly here, we load it with `mono_assembly_load_from_full`,
+		// If we find the assembly here, we load it with 'mono_assembly_load_from_full',
 		// which in turn invokes load hooks before returning the MonoAssembly to us.
-		// One of the load hooks is `load_aot_module`. This hook can end up calling preload hooks
-		// again for the same assembly in certain in certain circumstances (the `do_load_image` part).
+		// One of the load hooks is 'load_aot_module'. This hook can end up calling preload hooks
+		// again for the same assembly in certain in certain circumstances (the 'do_load_image' part).
 		// If this is the case and we return NULL due to the no_search condition below,
 		// it will result in an internal crash later on. Therefore we need to return the assembly we didn't
-		// get yet from `mono_assembly_load_from_full`. Luckily we have the image, which already got it.
-		// This must be done here. If done in search hooks, it would cause `mono_assembly_load_from_full`
+		// get yet from 'mono_assembly_load_from_full'. Luckily we have the image, which already got it.
+		// This must be done here. If done in search hooks, it would cause 'mono_assembly_load_from_full'
 		// to think another MonoAssembly for this assembly was already loaded, making it delete its own,
 		// when in fact both pointers were the same... This hooks thing is confusing.
 		if (image_corlib_loading) {

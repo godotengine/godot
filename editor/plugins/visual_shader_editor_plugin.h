@@ -48,7 +48,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	virtual Control *create_editor(const Ref<VisualShaderNode> &p_node);
+	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
 class VisualShaderEditor : public VBoxContainer {
@@ -60,13 +60,21 @@ class VisualShaderEditor : public VBoxContainer {
 	int editing_port;
 
 	Ref<VisualShader> visual_shader;
+	HSplitContainer *main_box;
 	GraphEdit *graph;
 	ToolButton *add_node;
+	ToolButton *preview_shader;
 
 	OptionButton *edit_type;
 
 	PanelContainer *error_panel;
 	Label *error_label;
+
+	bool pending_update_preview;
+	bool shader_error;
+	VBoxContainer *preview_vbox;
+	TextEdit *preview_text;
+	Label *error_text;
 
 	UndoRedo *undo_redo;
 	Point2 saved_node_pos;
@@ -74,6 +82,8 @@ class VisualShaderEditor : public VBoxContainer {
 
 	ConfirmationDialog *members_dialog;
 	MenuButton *tools;
+
+	bool preview_showed;
 
 	enum ToolsMenuOptions {
 		EXPAND_ALL,
@@ -104,6 +114,7 @@ class VisualShaderEditor : public VBoxContainer {
 		int func;
 		float value;
 		bool highend;
+		bool is_custom;
 
 		AddOption(const String &p_name = String(), const String &p_category = String(), const String &p_sub_category = String(), const String &p_type = String(), const String &p_description = String(), int p_sub_func = -1, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
 			name = p_name;
@@ -117,6 +128,7 @@ class VisualShaderEditor : public VBoxContainer {
 			func = p_func;
 			value = p_value;
 			highend = p_highend;
+			is_custom = false;
 		}
 
 		AddOption(const String &p_name, const String &p_category, const String &p_sub_category, const String &p_type, const String &p_description, const String &p_sub_func, int p_return_type = -1, int p_mode = -1, int p_func = -1, float p_value = -1, bool p_highend = false) {
@@ -131,6 +143,7 @@ class VisualShaderEditor : public VBoxContainer {
 			func = p_func;
 			value = p_value;
 			highend = p_highend;
+			is_custom = false;
 		}
 	};
 
@@ -140,7 +153,12 @@ class VisualShaderEditor : public VBoxContainer {
 	void _draw_color_over_button(Object *obj, Color p_color);
 
 	void _add_node(int p_idx, int p_op_idx = -1);
+	void _update_custom_nodes();
 	void _update_options_menu();
+
+	void _show_preview_text();
+	void _update_preview();
+	String _get_description(int p_idx);
 
 	static VisualShaderEditor *singleton;
 
@@ -176,7 +194,20 @@ class VisualShaderEditor : public VBoxContainer {
 
 	void _port_name_focus_out(Object *line_edit, int p_node_id, int p_port_id, bool p_output);
 
+	void _dup_copy_nodes(int p_type, List<int> &r_nodes, Set<int> &r_excluded);
+	void _dup_update_excluded(int p_type, Set<int> &r_excluded);
+	void _dup_paste_nodes(int p_type, int p_pasted_type, List<int> &r_nodes, Set<int> &r_excluded, const Vector2 &p_offset, bool p_select);
+
 	void _duplicate_nodes();
+
+	Vector2 selection_center;
+	int copy_type; // shader type
+	List<int> copy_nodes_buffer;
+	Set<int> copy_nodes_excluded_buffer;
+
+	void _clear_buffer();
+	void _copy_nodes();
+	void _paste_nodes();
 
 	Vector<Ref<VisualShaderNodePlugin> > plugins;
 
@@ -227,8 +258,8 @@ public:
 
 	static VisualShaderEditor *get_singleton() { return singleton; }
 
-	void add_custom_type(const String &p_name, const String &p_category, const Ref<Script> &p_script);
-	void remove_custom_type(const Ref<Script> &p_script);
+	void clear_custom_types();
+	void add_custom_type(const String &p_name, const Ref<Script> &p_script, const String &p_description, int p_return_icon_type, const String &p_category, const String &p_sub_category);
 
 	virtual Size2 get_minimum_size() const;
 	void edit(VisualShader *p_visual_shader);
@@ -259,7 +290,7 @@ class VisualShaderNodePluginDefault : public VisualShaderNodePlugin {
 	GDCLASS(VisualShaderNodePluginDefault, VisualShaderNodePlugin);
 
 public:
-	virtual Control *create_editor(const Ref<VisualShaderNode> &p_node);
+	virtual Control *create_editor(const Ref<Resource> &p_parent_resource, const Ref<VisualShaderNode> &p_node);
 };
 
 class EditorPropertyShaderMode : public EditorProperty {

@@ -863,19 +863,21 @@ void GridMapEditor::_icon_size_changed(float p_value) {
 void GridMapEditor::update_palette() {
 	int selected = mesh_library_palette->get_current();
 
+	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
+	min_size *= EDSCALE;
+
 	mesh_library_palette->clear();
 	if (display_mode == DISPLAY_THUMBNAIL) {
 		mesh_library_palette->set_max_columns(0);
 		mesh_library_palette->set_icon_mode(ItemList::ICON_MODE_TOP);
+		mesh_library_palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1.5));
 	} else if (display_mode == DISPLAY_LIST) {
 		mesh_library_palette->set_max_columns(1);
 		mesh_library_palette->set_icon_mode(ItemList::ICON_MODE_LEFT);
+		mesh_library_palette->set_fixed_column_width(0);
 	}
 
-	float min_size = EDITOR_DEF("editors/grid_map/preview_size", 64);
-	min_size *= EDSCALE;
 	mesh_library_palette->set_fixed_icon_size(Size2(min_size, min_size));
-	mesh_library_palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1.5));
 	mesh_library_palette->set_max_text_lines(2);
 
 	Ref<MeshLibrary> mesh_library = node->get_mesh_library();
@@ -1269,7 +1271,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	options->get_popup()->add_item(TTR("Fill Selection"), MENU_OPTION_SELECTION_FILL, KEY_MASK_CTRL + KEY_F);
 
 	options->get_popup()->add_separator();
-	options->get_popup()->add_item(TTR("Settings"), MENU_OPTION_GRIDMAP_SETTINGS);
+	options->get_popup()->add_item(TTR("Settings..."), MENU_OPTION_GRIDMAP_SETTINGS);
 
 	settings_dialog = memnew(ConfirmationDialog);
 	settings_dialog->set_title(TTR("GridMap Settings"));

@@ -382,7 +382,10 @@ void ScrollContainer::update_scrollbars() {
 
 	Size2 min = child_max_size;
 
-	if (!scroll_v || min.height <= size.height - hmin.height) {
+	bool hide_scroll_v = !scroll_v || min.height <= size.height - hmin.height;
+	bool hide_scroll_h = !scroll_h || min.width <= size.width - vmin.width;
+
+	if (hide_scroll_v) {
 
 		v_scroll->hide();
 		v_scroll->set_max(0);
@@ -391,11 +394,16 @@ void ScrollContainer::update_scrollbars() {
 
 		v_scroll->show();
 		v_scroll->set_max(min.height);
-		v_scroll->set_page(size.height - hmin.height);
+		if (hide_scroll_h) {
+			v_scroll->set_page(size.height);
+		} else {
+			v_scroll->set_page(size.height - hmin.height);
+		}
+
 		scroll.y = v_scroll->get_value();
 	}
 
-	if (!scroll_h || min.width <= size.width - vmin.width) {
+	if (hide_scroll_h) {
 
 		h_scroll->hide();
 		h_scroll->set_max(0);
@@ -404,7 +412,12 @@ void ScrollContainer::update_scrollbars() {
 
 		h_scroll->show();
 		h_scroll->set_max(min.width);
-		h_scroll->set_page(size.width - vmin.width);
+		if (hide_scroll_v) {
+			h_scroll->set_page(size.width);
+		} else {
+			h_scroll->set_page(size.width - vmin.width);
+		}
+
 		scroll.x = h_scroll->get_value();
 	}
 }

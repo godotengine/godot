@@ -707,7 +707,7 @@ public:
 	void get_signal_list(List<MethodInfo> *p_signals) const;
 	void get_signal_connection_list(const StringName &p_signal, List<Connection> *p_connections) const;
 	void get_all_signal_connections(List<Connection> *p_connections) const;
-	bool has_persistent_signal_connections() const;
+	int get_persistent_signal_connection_count() const;
 	void get_signals_connected_to_this(List<Connection> *p_connections) const;
 
 	Error connect(const StringName &p_signal, Object *p_to_object, const StringName &p_to_method, const Vector<Variant> &p_binds = Vector<Variant>(), uint32_t p_flags = 0);
@@ -794,8 +794,13 @@ public:
 	static int get_object_count();
 
 	_FORCE_INLINE_ static bool instance_validate(Object *p_ptr) {
+		rw_lock->read_lock();
 
-		return instance_checks.has(p_ptr);
+		bool exists = instance_checks.has(p_ptr);
+
+		rw_lock->read_unlock();
+
+		return exists;
 	}
 };
 

@@ -32,24 +32,25 @@
 				Adds an [AudioEffect] effect to the bus [code]bus_idx[/code] at [code]at_position[/code].
 			</description>
 		</method>
-		<method name="capture_get_device">
-			<return type="String">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="capture_get_device_list">
 			<return type="Array">
 			</return>
 			<description>
+				Returns the names of all audio input devices detected on the system.
 			</description>
 		</method>
-		<method name="capture_set_device">
-			<return type="void">
+		<method name="capture_start">
+			<return type="int" enum="Error">
 			</return>
-			<argument index="0" name="name" type="String">
-			</argument>
 			<description>
+				Attempts to start recording from the audio driver's capture device. On success, the return value is [constant OK].
+			</description>
+		</method>
+		<method name="capture_stop">
+			<return type="int" enum="Error">
+			</return>
+			<description>
+				Attempts to stop recording from the audio driver's capture device. On success, the return value is [constant OK].
 			</description>
 		</method>
 		<method name="generate_bus_layout" qualifiers="const">
@@ -158,11 +159,32 @@
 				Returns the volume of the bus at index [code]bus_idx[/code] in dB.
 			</description>
 		</method>
+		<method name="get_capture_buffer">
+			<return type="PoolIntArray">
+			</return>
+			<description>
+				Returns an [PoolIntArray] containing audio frames from the capture device.
+			</description>
+		</method>
+		<method name="get_capture_position">
+			<return type="int">
+			</return>
+			<description>
+				Returns the write position of the capture device buffer.
+			</description>
+		</method>
+		<method name="get_capture_size">
+			<return type="int">
+			</return>
+			<description>
+				Returns the size of the capture device buffer.
+			</description>
+		</method>
 		<method name="get_device_list">
 			<return type="Array">
 			</return>
 			<description>
-				Returns the names of all audio devices detected on the system.
+				Returns the names of all audio output devices detected on the system.
 			</description>
 		</method>
 		<method name="get_mix_rate" qualifiers="const">
@@ -387,14 +409,25 @@
 		<member name="bus_count" type="int" setter="set_bus_count" getter="get_bus_count" default="1">
 			Number of available audio buses.
 		</member>
+		<member name="capture_device" type="String" setter="capture_set_device" getter="capture_get_device" default="&quot;&quot;">
+			Name of the current device for audio input (see [method capture_get_device_list]).
+		</member>
 		<member name="device" type="String" setter="set_device" getter="get_device" default="&quot;Default&quot;">
-			Name of the current device (see [method get_device_list]).
+			Name of the current device for audio output (see [method get_device_list]).
 		</member>
 		<member name="global_rate_scale" type="float" setter="set_global_rate_scale" getter="get_global_rate_scale" default="1.0">
 			Scales the rate at which audio is played (i.e. setting it to [code]0.5[/code] will make the audio be played twice as fast).
 		</member>
 	</members>
 	<signals>
+		<signal name="audio_mix_callback">
+			<description>
+			</description>
+		</signal>
+		<signal name="audio_update_callback">
+			<description>
+			</description>
+		</signal>
 		<signal name="bus_layout_changed">
 			<description>
 				Emitted when the [AudioBusLayout] changes.

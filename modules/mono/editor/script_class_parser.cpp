@@ -162,8 +162,8 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						error = true;
 						return TK_ERROR;
 					} else if (code[idx] == begin_str) {
-						if (verbatim && code[idx + 1] == '"') { // `""` is verbatim string's `\"`
-							idx += 2; // skip next `"` as well
+						if (verbatim && code[idx + 1] == '"') { // '""' is verbatim string's '\"'
+							idx += 2; // skip next '"' as well
 							continue;
 						}
 
@@ -590,7 +590,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 					name = String(value);
 				} else if (tk == TK_CURLY_BRACKET_OPEN) {
 					if (name.empty()) {
-						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + " after keyword `struct`, found " + get_token_name(TK_CURLY_BRACKET_OPEN);
+						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + " after keyword 'struct', found " + get_token_name(TK_CURLY_BRACKET_OPEN);
 						error = true;
 						return ERR_PARSE_ERROR;
 					}
@@ -657,12 +657,12 @@ Error ScriptClassParser::parse_file(const String &p_filepath) {
 	String source;
 
 	Error ferr = read_all_file_utf8(p_filepath, source);
-	if (ferr != OK) {
-		if (ferr == ERR_INVALID_DATA) {
-			ERR_EXPLAIN("File '" + p_filepath + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		}
-		ERR_FAIL_V(ferr);
-	}
+
+	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
+			ferr == ERR_INVALID_DATA ?
+					"File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
+											" Please ensure that scripts are saved in valid UTF-8 unicode." :
+					"Failed to read file: '" + p_filepath + "'.");
 
 	return parse(source);
 }

@@ -29,8 +29,8 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_gltf.h"
+#include "core/crypto/crypto_core.h"
 #include "core/io/json.h"
-#include "core/math/crypto_core.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
@@ -986,7 +986,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 				Ref<SurfaceTool> st;
 				st.instance();
 				st->create_from_triangle_arrays(array);
-				if (p.has("targets")) {
+				if (!p.has("targets")) {
 					//morph targets should not be reindexed, as array size might differ
 					//removing indices is the best bet here
 					st->deindex();
@@ -1544,8 +1544,7 @@ Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
 				camera.fov_size = 10;
 			}
 		} else {
-			ERR_EXPLAIN("Camera should be in 'orthographic' or 'perspective'");
-			ERR_FAIL_V(ERR_PARSE_ERROR);
+			ERR_FAIL_V_MSG(ERR_PARSE_ERROR, "Camera should be in 'orthographic' or 'perspective'");
 		}
 
 		state.cameras.push_back(camera);

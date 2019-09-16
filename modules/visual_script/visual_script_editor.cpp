@@ -591,6 +591,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 			gnode->add_color_override("title_color", c);
 			c.a = 0.7;
 			gnode->add_color_override("close_color", c);
+			gnode->add_color_override("resizer_color", c);
 			gnode->add_style_override("frame", sbf);
 		}
 
@@ -776,8 +777,8 @@ void VisualScriptEditor::_update_members() {
 	TreeItem *functions = members->create_item(root);
 	functions->set_selectable(0, false);
 	functions->set_text(0, TTR("Functions:"));
-	functions->add_button(0, Control::get_icon("Override", "EditorIcons"), 1);
-	functions->add_button(0, Control::get_icon("Add", "EditorIcons"), 0);
+	functions->add_button(0, Control::get_icon("Override", "EditorIcons"), 1, false, TTR("Override an existing built-in function."));
+	functions->add_button(0, Control::get_icon("Add", "EditorIcons"), 0, false, TTR("Create a new function."));
 	functions->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	List<StringName> func_names;
@@ -795,7 +796,7 @@ void VisualScriptEditor::_update_members() {
 	TreeItem *variables = members->create_item(root);
 	variables->set_selectable(0, false);
 	variables->set_text(0, TTR("Variables:"));
-	variables->add_button(0, Control::get_icon("Add", "EditorIcons"));
+	variables->add_button(0, Control::get_icon("Add", "EditorIcons"), -1, false, TTR("Create a new variable."));
 	variables->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	Ref<Texture> type_icons[Variant::VARIANT_MAX] = {
@@ -848,7 +849,7 @@ void VisualScriptEditor::_update_members() {
 	TreeItem *_signals = members->create_item(root);
 	_signals->set_selectable(0, false);
 	_signals->set_text(0, TTR("Signals:"));
-	_signals->add_button(0, Control::get_icon("Add", "EditorIcons"));
+	_signals->add_button(0, Control::get_icon("Add", "EditorIcons"), -1, false, TTR("Create a new signal."));
 	_signals->set_custom_color(0, Control::get_color("mono_color", "Editor"));
 
 	List<StringName> signal_names;

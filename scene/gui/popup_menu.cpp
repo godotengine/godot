@@ -148,11 +148,9 @@ int PopupMenu::_get_mouse_over(const Point2 &p_over) const {
 void PopupMenu::_activate_submenu(int over) {
 
 	Node *n = get_node(items[over].submenu);
-	ERR_EXPLAIN("Item subnode does not exist: " + items[over].submenu);
-	ERR_FAIL_COND(!n);
+	ERR_FAIL_COND_MSG(!n, "Item subnode does not exist: " + items[over].submenu + ".");
 	Popup *pm = Object::cast_to<Popup>(n);
-	ERR_EXPLAIN("Item subnode is not a Popup: " + items[over].submenu);
-	ERR_FAIL_COND(!pm);
+	ERR_FAIL_COND_MSG(!pm, "Item subnode is not a Popup: " + items[over].submenu + ".");
 	if (pm->is_visible_in_tree())
 		return; //already visible!
 

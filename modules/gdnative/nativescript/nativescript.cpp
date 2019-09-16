@@ -79,7 +79,7 @@ void NativeScript::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_name"), "set_script_class_name", "get_script_class_name");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_icon_path", PROPERTY_HINT_FILE), "set_script_class_icon_path", "get_script_class_icon_path");
 
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo("new"));
 }
 
 #define NSL NativeScriptLanguage::get_singleton()
@@ -402,10 +402,7 @@ void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 String NativeScript::get_class_documentation() const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get class documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get class documentation on invalid NativeScript.");
 
 	return script_data->documentation;
 }
@@ -413,10 +410,7 @@ String NativeScript::get_class_documentation() const {
 String NativeScript::get_method_documentation(const StringName &p_method) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get method documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get method documentation on invalid NativeScript.");
 
 	while (script_data) {
 
@@ -429,17 +423,13 @@ String NativeScript::get_method_documentation(const StringName &p_method) const 
 		script_data = script_data->base_data;
 	}
 
-	ERR_EXPLAIN("Attempt to get method documentation for non-existent method");
-	ERR_FAIL_V("");
+	ERR_FAIL_V_MSG("", "Attempt to get method documentation for non-existent method.");
 }
 
 String NativeScript::get_signal_documentation(const StringName &p_signal_name) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get signal documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get signal documentation on invalid NativeScript.");
 
 	while (script_data) {
 
@@ -452,17 +442,13 @@ String NativeScript::get_signal_documentation(const StringName &p_signal_name) c
 		script_data = script_data->base_data;
 	}
 
-	ERR_EXPLAIN("Attempt to get signal documentation for non-existent signal");
-	ERR_FAIL_V("");
+	ERR_FAIL_V_MSG("", "Attempt to get signal documentation for non-existent signal.");
 }
 
 String NativeScript::get_property_documentation(const StringName &p_path) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get property documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get property documentation on invalid NativeScript.");
 
 	while (script_data) {
 
@@ -475,8 +461,7 @@ String NativeScript::get_property_documentation(const StringName &p_path) const 
 		script_data = script_data->base_data;
 	}
 
-	ERR_EXPLAIN("Attempt to get property documentation for non-existent signal");
-	ERR_FAIL_V("");
+	ERR_FAIL_V_MSG("", "Attempt to get property documentation for non-existent signal.");
 }
 
 Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
@@ -655,10 +640,7 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 			Variant res = *(Variant *)&result;
 			godot_variant_destroy(&result);
 
-			if (res.get_type() != Variant::ARRAY) {
-				ERR_EXPLAIN("_get_property_list must return an array of dictionaries");
-				ERR_FAIL();
-			}
+			ERR_FAIL_COND_MSG(res.get_type() != Variant::ARRAY, "_get_property_list must return an array of dictionaries.");
 
 			Array arr = res;
 			for (int i = 0; i < arr.size(); i++) {
@@ -780,8 +762,7 @@ String NativeScriptInstance::to_string(bool *r_valid) {
 			if (ret.get_type() != Variant::STRING) {
 				if (r_valid)
 					*r_valid = false;
-				ERR_EXPLAIN("Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
-				ERR_FAIL_V(String());
+				ERR_FAIL_V_MSG(String(), "Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
 			}
 			if (r_valid)
 				*r_valid = true;
@@ -1344,10 +1325,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_object) {
 	ERR_FAIL_INDEX_V(p_idx, binding_functions.size(), NULL);
 
-	if (!binding_functions[p_idx].first) {
-		ERR_EXPLAIN("Tried to get binding data for a nativescript binding that does not exist");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!binding_functions[p_idx].first, NULL, "Tried to get binding data for a nativescript binding that does not exist.");
 
 	Vector<void *> *binding_data = (Vector<void *> *)p_object->get_script_instance_binding(lang_idx);
 
@@ -1499,8 +1477,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 #endif
 	// See if this library was "registered" already.
 	const String &lib_path = lib->get_current_library_path();
-	ERR_EXPLAIN(lib->get_name() + " does not have a library for the current platform");
-	ERR_FAIL_COND(lib_path.length() == 0);
+	ERR_FAIL_COND_MSG(lib_path.length() == 0, lib->get_name() + " does not have a library for the current platform.");
 	Map<String, Ref<GDNative> >::Element *E = library_gdnatives.find(lib_path);
 
 	if (!E) {

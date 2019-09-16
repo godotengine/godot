@@ -167,7 +167,7 @@ MonoObject *godot_icall_GD_str2var(MonoString *p_str) {
 	int line;
 	Error err = VariantParser::parse(&ss, ret, errs, line);
 	if (err != OK) {
-		String err_str = "Parse error at line " + itos(line) + ": " + errs;
+		String err_str = "Parse error at line " + itos(line) + ": " + errs + ".";
 		ERR_PRINTS(err_str);
 		ret = err_str;
 	}
@@ -193,8 +193,7 @@ MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_object
 	PoolByteArray barr;
 	int len;
 	Error err = encode_variant(var, NULL, len, p_full_objects);
-	ERR_EXPLAIN("Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
-	ERR_FAIL_COND_V(err != OK, NULL);
+	ERR_FAIL_COND_V_MSG(err != OK, NULL, "Unexpected error encoding variable to bytes, likely unserializable type found (Object or RID).");
 
 	barr.resize(len);
 	{
@@ -209,6 +208,10 @@ MonoString *godot_icall_GD_var2str(MonoObject *p_var) {
 	String vars;
 	VariantWriter::write_to_string(GDMonoMarshal::mono_object_to_variant(p_var), vars);
 	return GDMonoMarshal::mono_string_from_godot(vars);
+}
+
+MonoObject *godot_icall_DefaultGodotTaskScheduler() {
+	return GDMonoUtils::mono_cache.task_scheduler_handle->get_target();
 }
 
 void godot_register_gd_icalls() {
@@ -234,6 +237,9 @@ void godot_register_gd_icalls() {
 	mono_add_internal_call("Godot.GD::godot_icall_GD_type_exists", (void *)godot_icall_GD_type_exists);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_var2bytes", (void *)godot_icall_GD_var2bytes);
 	mono_add_internal_call("Godot.GD::godot_icall_GD_var2str", (void *)godot_icall_GD_var2str);
+
+	// Dispatcher
+	mono_add_internal_call("Godot.Dispatcher::godot_icall_DefaultGodotTaskScheduler", (void *)godot_icall_DefaultGodotTaskScheduler);
 }
 
 #endif // MONO_GLUE_ENABLED

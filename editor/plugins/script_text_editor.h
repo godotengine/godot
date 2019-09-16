@@ -81,7 +81,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 
 	PopupPanel *color_panel;
 	ColorPicker *color_picker;
-	int color_line;
+	Vector2 color_position;
 	String color_args;
 
 	void _update_member_keywords();
@@ -120,6 +120,7 @@ class ScriptTextEditor : public ScriptEditorBase {
 		EDIT_TO_UPPERCASE,
 		EDIT_TO_LOWERCASE,
 		EDIT_CAPITALIZE,
+		EDIT_EVALUATE,
 		EDIT_TOGGLE_FOLD_LINE,
 		EDIT_FOLD_ALL_LINES,
 		EDIT_UNFOLD_ALL_LINES,

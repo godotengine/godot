@@ -632,6 +632,7 @@ private:
 	Error _parse(const String &p_base_path);
 
 public:
+	bool has_error() const;
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;

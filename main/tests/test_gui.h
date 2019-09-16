@@ -33,9 +33,6 @@
 
 #include "core/os/main_loop.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 namespace TestGUI {
 
 MainLoop *test();

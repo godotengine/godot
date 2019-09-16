@@ -109,12 +109,10 @@ Error ImageLoaderSVG::_create_image(Ref<Image> p_image, const PoolVector<uint8_t
 	float upscale = upsample ? 2.0 : 1.0;
 
 	int w = (int)(svg_image->width * p_scale * upscale);
-	ERR_EXPLAIN(vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max width.", rtos(p_scale)));
-	ERR_FAIL_COND_V(w > Image::MAX_WIDTH, ERR_PARAMETER_RANGE_ERROR);
+	ERR_FAIL_COND_V_MSG(w > Image::MAX_WIDTH, ERR_PARAMETER_RANGE_ERROR, vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max width.", rtos(p_scale)));
 
 	int h = (int)(svg_image->height * p_scale * upscale);
-	ERR_EXPLAIN(vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max height.", rtos(p_scale)));
-	ERR_FAIL_COND_V(h > Image::MAX_HEIGHT, ERR_PARAMETER_RANGE_ERROR);
+	ERR_FAIL_COND_V_MSG(h > Image::MAX_HEIGHT, ERR_PARAMETER_RANGE_ERROR, vformat("Can't create image from SVG with scale %s, the resulting image size exceeds max height.", rtos(p_scale)));
 
 	PoolVector<uint8_t> dst_image;
 	dst_image.resize(w * h * 4);

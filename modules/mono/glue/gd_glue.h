@@ -75,6 +75,8 @@ MonoArray *godot_icall_GD_var2bytes(MonoObject *p_var, MonoBoolean p_full_object
 
 MonoString *godot_icall_GD_var2str(MonoObject *p_var);
 
+MonoObject *godot_icall_DefaultGodotTaskScheduler();
+
 // Register internal calls
 
 void godot_register_gd_icalls();

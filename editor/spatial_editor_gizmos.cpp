@@ -36,6 +36,7 @@
 #include "scene/3d/baked_lightmap.h"
 #include "scene/3d/collision_polygon.h"
 #include "scene/3d/collision_shape.h"
+#include "scene/3d/cpu_particles.h"
 #include "scene/3d/gi_probe.h"
 #include "scene/3d/light.h"
 #include "scene/3d/listener.h"
@@ -2036,8 +2037,11 @@ PortalSpatialGizmo::PortalSpatialGizmo(Portal *p_portal) {
 
 RayCastSpatialGizmoPlugin::RayCastSpatialGizmoPlugin() {
 
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
+	const float gizmo_value = gizmo_color.get_v();
+	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
+	create_material("shape_material_disabled", gizmo_color_disabled);
 }
 
 bool RayCastSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -2063,7 +2067,8 @@ void RayCastSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	lines.push_back(Vector3());
 	lines.push_back(raycast->get_cast_to());
 
-	Ref<SpatialMaterial> material = get_material("shape_material", p_gizmo);
+	const Ref<SpatialMaterial> material =
+			get_material(raycast->is_enabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);
@@ -2411,6 +2416,33 @@ void VisibilityNotifierGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	p_gizmo->add_handles(handles, get_material("handles"));
+}
+
+////
+
+CPUParticlesGizmoPlugin::CPUParticlesGizmoPlugin() {
+	create_icon_material("particles_icon", SpatialEditor::get_singleton()->get_icon("GizmoCPUParticles", "EditorIcons"));
+}
+
+bool CPUParticlesGizmoPlugin::has_gizmo(Spatial *p_spatial) {
+	return Object::cast_to<CPUParticles>(p_spatial) != NULL;
+}
+
+String CPUParticlesGizmoPlugin::get_name() const {
+	return "CPUParticles";
+}
+
+int CPUParticlesGizmoPlugin::get_priority() const {
+	return -1;
+}
+
+bool CPUParticlesGizmoPlugin::is_selectable_when_hidden() const {
+	return true;
+}
+
+void CPUParticlesGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
+	Ref<Material> icon = get_material("particles_icon", p_gizmo);
+	p_gizmo->add_unscaled_billboard(icon, 0.05);
 }
 
 ////
@@ -3080,8 +3112,11 @@ void BakedIndirectLightGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 ////
 
 CollisionShapeSpatialGizmoPlugin::CollisionShapeSpatialGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
+	const float gizmo_value = gizmo_color.get_v();
+	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
+	create_material("shape_material_disabled", gizmo_color_disabled);
 	create_handle_material("handles");
 }
 
@@ -3404,7 +3439,8 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	if (s.is_null())
 		return;
 
-	Ref<Material> material = get_material("shape_material", p_gizmo);
+	const Ref<Material> material =
+			get_material(!cs->is_disabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 	Ref<Material> handles_material = get_material("handles");
 
 	if (Object::cast_to<SphereShape>(*s)) {
@@ -3705,8 +3741,11 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 /////
 
 CollisionPolygonSpatialGizmoPlugin::CollisionPolygonSpatialGizmoPlugin() {
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
+	const Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/shape", Color(0.5, 0.7, 1));
 	create_material("shape_material", gizmo_color);
+	const float gizmo_value = gizmo_color.get_v();
+	const Color gizmo_color_disabled = Color(gizmo_value, gizmo_value, gizmo_value, 0.65);
+	create_material("shape_material_disabled", gizmo_color_disabled);
 }
 
 bool CollisionPolygonSpatialGizmoPlugin::has_gizmo(Spatial *p_spatial) {
@@ -3742,7 +3781,8 @@ void CollisionPolygonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		lines.push_back(Vector3(points[i].x, points[i].y, -depth));
 	}
 
-	Ref<Material> material = get_material("shape_material", p_gizmo);
+	const Ref<Material> material =
+			get_material(!polygon->is_disabled() ? "shape_material" : "shape_material_disabled", p_gizmo);
 
 	p_gizmo->add_lines(lines, material);
 	p_gizmo->add_collision_segments(lines);

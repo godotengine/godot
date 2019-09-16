@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  lws_peer.cpp                                                         */
+/*  wsl_peer.cpp                                                         */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -35,7 +35,7 @@
 #include "wsl_client.h"
 #include "wsl_server.h"
 
-#include "core/math/crypto_core.h"
+#include "core/crypto/crypto_core.h"
 #include "core/math/random_number_generator.h"
 #include "core/os/os.h"
 

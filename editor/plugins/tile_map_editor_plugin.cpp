@@ -521,7 +521,13 @@ void TileMapEditor::_update_palette() {
 			for (const Map<Vector2, uint32_t>::Element *E = tiles2.front(); E; E = E->next()) {
 				entries2.push_back(E->key());
 			}
-			entries2.sort();
+			// Sort tiles in row-major order
+			struct SwapComparator {
+				_FORCE_INLINE_ bool operator()(const Vector2 &v_l, const Vector2 &v_r) const {
+					return v_l.y != v_r.y ? v_l.y < v_r.y : v_l.x < v_r.x;
+				}
+			};
+			entries2.sort_custom<SwapComparator>();
 
 			Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
 
@@ -966,7 +972,7 @@ static inline Vector<Point2i> line(int x0, int x1, int y0, int y1) {
 
 bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
-	if (!node || !node->get_tileset().is_valid() || !node->is_visible_in_tree())
+	if (!node || !node->get_tileset().is_valid() || !node->is_visible_in_tree() || CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT)
 		return false;
 
 	Transform2D xform = CanvasItemEditor::get_singleton()->get_canvas_transform() * node->get_global_transform();
@@ -1527,7 +1533,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 
 void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 
-	if (!node)
+	if (!node || CanvasItemEditor::get_singleton()->get_current_tool() != CanvasItemEditor::TOOL_SELECT)
 		return;
 
 	Transform2D cell_xf = node->get_cell_transform();
@@ -2000,7 +2006,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	// Tools
 	paint_button = memnew(ToolButton);
 	paint_button->set_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P));
-	paint_button->set_tooltip(TTR("Shift+RMB: Line Draw\nShift+Ctrl+RMB: Rectangle Paint"));
+	paint_button->set_tooltip(TTR("Shift+LMB: Line Draw\nShift+Ctrl+LMB: Rectangle Paint"));
 	paint_button->connect("pressed", this, "_button_tool_select", make_binds(TOOL_NONE));
 	paint_button->set_toggle_mode(true);
 	toolbar->add_child(paint_button);
@@ -2130,6 +2136,7 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 		tile_map_editor->show();
 		tile_map_editor->get_toolbar()->show();
 		tile_map_editor->get_toolbar_right()->show();
+		CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT); //Change to TOOL_SELECT when TileMap node is selected, to prevent accidental movement.
 	} else {
 
 		tile_map_editor->hide();

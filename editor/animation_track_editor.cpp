@@ -31,6 +31,7 @@
 #include "animation_track_editor.h"
 
 #include "animation_track_editor_plugins.h"
+#include "core/os/input.h"
 #include "core/os/keyboard.h"
 #include "editor/animation_bezier_editor.h"
 #include "editor/plugins/animation_player_editor_plugin.h"
@@ -1747,7 +1748,11 @@ void AnimationTimelineEdit::_play_position_draw() {
 
 	if (px >= get_name_limit() && px < (play_position->get_size().width - get_buttons_width())) {
 		Color color = get_color("accent_color", "Editor");
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(EDSCALE));
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
+		play_position->draw_texture(
+				get_icon("TimelineIndicator", "EditorIcons"),
+				Point2(px - get_icon("TimelineIndicator", "EditorIcons")->get_width() * 0.5, 0),
+				color);
 	}
 }
 
@@ -1793,6 +1798,13 @@ void AnimationTimelineEdit::_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseMotion> mm = p_event;
 
 	if (mm.is_valid()) {
+
+		if (hsize_rect.has_point(mm->get_position())) {
+			// Change the cursor to indicate that the track name column's width can be adjusted
+			set_default_cursor_shape(Control::CURSOR_HSIZE);
+		} else {
+			set_default_cursor_shape(Control::CURSOR_ARROW);
+		}
 
 		if (dragging_hsize) {
 			int ofs = mm->get_position().x - dragging_hsize_from;
@@ -1852,7 +1864,7 @@ AnimationTimelineEdit::AnimationTimelineEdit() {
 
 	use_fps = false;
 	editing = false;
-	name_limit = 150;
+	name_limit = 150 * EDSCALE;
 	zoom = NULL;
 
 	play_position_pos = 0;
@@ -2437,7 +2449,7 @@ void AnimationTrackEdit::_play_position_draw() {
 
 	if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 		Color color = get_color("accent_color", "Editor");
-		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(EDSCALE));
+		play_position->draw_line(Point2(px, 0), Point2(px, h), color, Math::round(2 * EDSCALE));
 	}
 }
 
@@ -3183,7 +3195,7 @@ void AnimationTrackEditGroup::_notification(int p_what) {
 
 		if (px >= timeline->get_name_limit() && px < (get_size().width - timeline->get_buttons_width())) {
 			Color accent = get_color("accent_color", "Editor");
-			draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(EDSCALE));
+			draw_line(Point2(px, 0), Point2(px, get_size().height), accent, Math::round(2 * EDSCALE));
 		}
 	}
 }
@@ -4080,6 +4092,10 @@ bool AnimationTrackEditor::is_key_selected(int p_track, int p_key) const {
 
 bool AnimationTrackEditor::is_selection_active() const {
 	return selection.size();
+}
+
+bool AnimationTrackEditor::is_snap_enabled() const {
+	return snap->is_pressed() ^ Input::get_singleton()->is_key_pressed(KEY_CONTROL);
 }
 
 void AnimationTrackEditor::_update_tracks() {
@@ -5045,10 +5061,9 @@ float AnimationTrackEditor::get_moving_selection_offset() const {
 
 void AnimationTrackEditor::_box_selection_draw() {
 
-	Color color = get_color("accent_color", "Editor");
-	color.a = 0.2;
-	Rect2 rect = Rect2(Point2(), box_selection->get_size());
-	box_selection->draw_rect(rect, color);
+	const Rect2 selection_rect = Rect2(Point2(), box_selection->get_size());
+	box_selection->draw_rect(selection_rect, get_color("box_selection_fill_color", "Editor"));
+	box_selection->draw_rect(selection_rect, get_color("box_selection_stroke_color", "Editor"), false, Math::round(EDSCALE));
 }
 
 void AnimationTrackEditor::_scroll_input(const Ref<InputEvent> &p_event) {
@@ -5679,7 +5694,7 @@ void AnimationTrackEditor::_selection_changed() {
 
 float AnimationTrackEditor::snap_time(float p_value) {
 
-	if (snap->is_pressed()) {
+	if (is_snap_enabled()) {
 
 		double snap_increment;
 		if (timeline->is_using_fps() && step->get_value() > 0)
@@ -5857,7 +5872,7 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	step = memnew(EditorSpinSlider);
 	step->set_min(0);
 	step->set_max(1000000);
-	step->set_step(0.01);
+	step->set_step(0.001);
 	step->set_hide_slider(true);
 	step->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 	step->set_tooltip(TTR("Animation step value."));

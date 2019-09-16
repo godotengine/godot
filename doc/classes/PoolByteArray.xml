@@ -67,6 +67,12 @@
 				Returns a copy of the array's contents as [String]. Slower than [method get_string_from_ascii] but supports UTF-8 encoded data. Use this function if you are unsure about the source of the data. For user input this function should always be preferred.
 			</description>
 		</method>
+		<method name="hex_encode">
+			<return type="String">
+			</return>
+			<description>
+			</description>
+		</method>
 		<method name="insert">
 			<return type="int">
 			</return>
@@ -111,13 +117,6 @@
 			</argument>
 			<description>
 				Changes the byte at the given index.
-			</description>
-		</method>
-		<method name="sha256_string">
-			<return type="String">
-			</return>
-			<description>
-				Returns SHA-256 string of the PoolByteArray.
 			</description>
 		</method>
 		<method name="size">

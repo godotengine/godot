@@ -38,6 +38,11 @@ struct Vector2i;
 
 struct Vector2 {
 
+	enum Axis {
+		AXIS_X,
+		AXIS_Y,
+	};
+
 	union {
 		real_t x;
 		real_t width;
@@ -69,6 +74,8 @@ struct Vector2 {
 
 	real_t dot(const Vector2 &p_other) const;
 	real_t cross(const Vector2 &p_other) const;
+	Vector2 posmod(const real_t p_mod) const;
+	Vector2 posmodv(const Vector2 &p_modv) const;
 	Vector2 project(const Vector2 &p_b) const;
 
 	Vector2 plane_project(real_t p_d, const Vector2 &p_vec) const;
@@ -107,8 +114,10 @@ struct Vector2 {
 	bool operator==(const Vector2 &p_vec2) const;
 	bool operator!=(const Vector2 &p_vec2) const;
 
-	bool operator<(const Vector2 &p_vec2) const { return (Math::is_equal_approx(x, p_vec2.x)) ? (y < p_vec2.y) : (x < p_vec2.x); }
-	bool operator<=(const Vector2 &p_vec2) const { return (Math::is_equal_approx(x, p_vec2.x)) ? (y <= p_vec2.y) : (x < p_vec2.x); }
+	bool operator<(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y < p_vec2.y) : (x < p_vec2.x); }
+	bool operator>(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y > p_vec2.y) : (x > p_vec2.x); }
+	bool operator<=(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y <= p_vec2.y) : (x < p_vec2.x); }
+	bool operator>=(const Vector2 &p_vec2) const { return Math::is_equal_approx(x, p_vec2.x) ? (y >= p_vec2.y) : (x > p_vec2.x); }
 
 	real_t angle() const;
 
@@ -129,6 +138,7 @@ struct Vector2 {
 		return Vector2(y, -x);
 	}
 
+	Vector2 sign() const;
 	Vector2 floor() const;
 	Vector2 ceil() const;
 	Vector2 round() const;
@@ -141,10 +151,7 @@ struct Vector2 {
 		x = p_x;
 		y = p_y;
 	}
-	_FORCE_INLINE_ Vector2() {
-		x = 0;
-		y = 0;
-	}
+	_FORCE_INLINE_ Vector2() { x = y = 0; }
 };
 
 _FORCE_INLINE_ Vector2 Vector2::plane_project(real_t p_d, const Vector2 &p_vec) const {
@@ -261,6 +268,11 @@ typedef Vector2 Point2;
 /* INTEGER STUFF */
 
 struct Vector2i {
+
+	enum Axis {
+		AXIS_X,
+		AXIS_Y,
+	};
 
 	union {
 		int x;

@@ -34,9 +34,6 @@
 #include "core/map.h"
 #include "core/resource.h"
 #include "scene/resources/texture.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Font : public Resource {
 

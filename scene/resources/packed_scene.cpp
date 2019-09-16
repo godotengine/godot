@@ -92,8 +92,7 @@ Node *SceneState::instance(GenEditState p_edit_state) const {
 
 		if (i > 0) {
 
-			ERR_EXPLAIN(vformat("Invalid scene: node %s does not specify its parent node.", snames[n.name]));
-			ERR_FAIL_COND_V(n.parent == -1, NULL);
+			ERR_FAIL_COND_V_MSG(n.parent == -1, NULL, vformat("Invalid scene: node %s does not specify its parent node.", snames[n.name]));
 			NODE_FROM_ID(nparent, n.parent);
 #ifdef DEBUG_ENABLED
 			if (!nparent && (n.parent & FLAG_ID_IS_PATH)) {
@@ -1093,10 +1092,7 @@ void SceneState::set_bundled_scene(const Dictionary &p_dictionary) {
 	if (p_dictionary.has("version"))
 		version = p_dictionary["version"];
 
-	if (version > PACK_VERSION) {
-		ERR_EXPLAIN("Save format version too new!");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(version > PACK_VERSION, "Save format version too new.");
 
 	PoolVector<String> snames = p_dictionary["names"];
 	if (snames.size()) {
@@ -1690,10 +1686,7 @@ bool PackedScene::can_instance() const {
 Node *PackedScene::instance(GenEditState p_edit_state) const {
 
 #ifndef TOOLS_ENABLED
-	if (p_edit_state != GEN_EDIT_STATE_DISABLED) {
-		ERR_EXPLAIN("Edit state is only for editors, does not work without tools compiled");
-		ERR_FAIL_COND_V(p_edit_state != GEN_EDIT_STATE_DISABLED, NULL);
-	}
+	ERR_FAIL_COND_V_MSG(p_edit_state != GEN_EDIT_STATE_DISABLED, NULL, "Edit state is only for editors, does not work without tools compiled.");
 #endif
 
 	Node *s = state->instance((SceneState::GenEditState)p_edit_state);

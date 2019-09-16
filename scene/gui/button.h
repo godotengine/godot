@@ -32,9 +32,6 @@
 #define BUTTON_H
 
 #include "scene/gui/base_button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Button : public BaseButton {
 
@@ -52,6 +49,7 @@ private:
 	String text;
 	String xl_text;
 	Ref<Texture> icon;
+	bool expand_icon;
 	bool clip_text;
 	TextAlign align;
 	float _internal_margin[4];
@@ -62,8 +60,6 @@ protected:
 	static void _bind_methods();
 
 public:
-	//
-
 	virtual Size2 get_minimum_size() const;
 
 	void set_text(const String &p_text);
@@ -71,6 +67,9 @@ public:
 
 	void set_icon(const Ref<Texture> &p_icon);
 	Ref<Texture> get_icon() const;
+
+	void set_expand_icon(bool p_expand_icon);
+	bool is_expand_icon() const;
 
 	void set_flat(bool p_flat);
 	bool is_flat() const;

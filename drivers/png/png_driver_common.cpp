@@ -97,7 +97,7 @@ Error png_to_image(const uint8_t *p_source, size_t p_size, Ref<Image> p_image) {
 			break;
 		default:
 			png_image_free(&png_img); // only required when we return before finish_read
-			ERR_PRINT("Unsupported png format");
+			ERR_PRINT("Unsupported png format.");
 			return ERR_UNAVAILABLE;
 	}
 
@@ -179,10 +179,9 @@ Error image_to_png(const Ref<Image> &p_image, PoolVector<uint8_t> &p_buffer) {
 		ERR_FAIL_COND_V(check_error(png_img), FAILED);
 	}
 	if (!success) {
-		if (compressed_size <= png_size_estimate) {
-			// buffer was big enough, must be some other error
-			ERR_FAIL_V(FAILED);
-		}
+
+		// buffer was big enough, must be some other error
+		ERR_FAIL_COND_V(compressed_size <= png_size_estimate, FAILED);
 
 		// write failed due to buffer size, resize and retry
 		Error err = p_buffer.resize(buffer_offset + compressed_size);

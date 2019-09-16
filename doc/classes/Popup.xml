@@ -56,6 +56,13 @@
 				Popup (show the control in modal form) in the center of the screen relative to the current canvas transform, scaled at a ratio of size of the screen.
 			</description>
 		</method>
+		<method name="set_as_minsize">
+			<return type="void">
+			</return>
+			<description>
+				Shrink popup to keep to the minimum size of content.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="popup_exclusive" type="bool" setter="set_exclusive" getter="is_exclusive" default="false">

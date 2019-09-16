@@ -33,9 +33,6 @@
 
 #include "core/os/thread.h"
 #include "core/resource.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ResourceInteractiveLoader : public Reference {
 

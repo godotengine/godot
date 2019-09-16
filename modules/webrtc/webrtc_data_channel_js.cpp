@@ -56,7 +56,7 @@ EMSCRIPTEN_KEEPALIVE void _emrtc_on_ch_message(void *obj, uint8_t *p_data, uint3
 }
 
 void WebRTCDataChannelJS::_on_open() {
-	in_buffer.resize(16);
+	in_buffer.resize(_in_buffer_shift);
 }
 
 void WebRTCDataChannelJS::_on_close() {
@@ -68,10 +68,8 @@ void WebRTCDataChannelJS::_on_error() {
 }
 
 void WebRTCDataChannelJS::_on_message(uint8_t *p_data, uint32_t p_size, bool p_is_string) {
-	if (in_buffer.space_left() < (int)(p_size + 5)) {
-		ERR_EXPLAIN("Buffer full! Dropping data");
-		ERR_FAIL();
-	}
+
+	ERR_FAIL_COND_MSG(in_buffer.space_left() < (int)(p_size + 5), "Buffer full! Dropping data.");
 
 	uint8_t is_string = p_is_string ? 1 : 0;
 	in_buffer.write((uint8_t *)&p_size, 4);

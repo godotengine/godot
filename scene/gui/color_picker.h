@@ -54,6 +54,7 @@ private:
 	TextureRect *sample;
 	TextureRect *preset;
 	HBoxContainer *preset_container;
+	HBoxContainer *preset_container2;
 	HSeparator *preset_separator;
 	Button *bt_add_preset;
 	List<Color> presets;
@@ -68,6 +69,7 @@ private:
 	bool edit_alpha;
 	Size2i ms;
 	bool text_is_constructor;
+	int presets_per_row;
 
 	Color color;
 	bool raw_mode_enabled;

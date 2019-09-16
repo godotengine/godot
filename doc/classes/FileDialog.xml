@@ -134,6 +134,8 @@
 		</theme_item>
 		<theme_item name="folder" type="Texture">
 		</theme_item>
+		<theme_item name="folder_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+		</theme_item>
 		<theme_item name="parent_folder" type="Texture">
 		</theme_item>
 		<theme_item name="reload" type="Texture">

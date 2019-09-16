@@ -134,7 +134,7 @@
 			<argument index="2" name="no_inheritance" type="bool" default="false">
 			</argument>
 			<description>
-				Returns whether [code]class[/code] (or its ancestry if [code]no_inheritance[/code] is false) has a method called [code]method[/code] or not.
+				Returns whether [code]class[/code] (or its ancestry if [code]no_inheritance[/code] is [code]false[/code]) has a method called [code]method[/code] or not.
 			</description>
 		</method>
 		<method name="class_has_signal" qualifiers="const">
@@ -201,7 +201,7 @@
 			<argument index="0" name="class" type="String">
 			</argument>
 			<description>
-				Returns whether this class is enabled or not.
+				Returns whether this [code]class[/code] is enabled or not.
 			</description>
 		</method>
 		<method name="is_parent_class" qualifiers="const">

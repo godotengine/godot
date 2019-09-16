@@ -61,7 +61,7 @@ class GDNativeLibraryEditor : public Control {
 	};
 
 	Tree *tree;
-	OptionButton *filter;
+	MenuButton *filter;
 	EditorFileDialog *file_dialog;
 	ConfirmationDialog *new_architecture_dialog;
 	LineEdit *new_architecture_input;

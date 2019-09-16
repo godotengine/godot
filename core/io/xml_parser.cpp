@@ -443,10 +443,8 @@ String XMLParser::get_attribute_value(const String &p_name) const {
 		}
 	}
 
-	if (idx < 0) {
-		ERR_EXPLAIN("Attribute not found: " + p_name);
-	}
-	ERR_FAIL_COND_V(idx < 0, "");
+	ERR_FAIL_COND_V_MSG(idx < 0, "", "Attribute not found: " + p_name + ".");
+
 	return attributes[idx].value;
 }
 

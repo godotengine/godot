@@ -38,6 +38,16 @@ class MultiplayerAPI : public Reference {
 
 	GDCLASS(MultiplayerAPI, Reference);
 
+public:
+	struct ProfilingInfo {
+		ObjectID node;
+		String node_path;
+		int incoming_rpc;
+		int incoming_rset;
+		int outgoing_rpc;
+		int outgoing_rset;
+	};
+
 private:
 	//path sent caches
 	struct PathSentCache {
@@ -54,6 +64,23 @@ private:
 
 		Map<int, NodeInfo> nodes;
 	};
+
+#ifdef DEBUG_ENABLED
+	struct BandwidthFrame {
+		uint32_t timestamp;
+		int packet_size;
+	};
+
+	int bandwidth_incoming_pointer;
+	Vector<BandwidthFrame> bandwidth_incoming_data;
+	int bandwidth_outgoing_pointer;
+	Vector<BandwidthFrame> bandwidth_outgoing_data;
+	Map<ObjectID, ProfilingInfo> profiler_frame_data;
+	bool profiling;
+
+	void _init_node_profile(ObjectID p_node);
+	int _get_bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer);
+#endif
 
 	Ref<NetworkedMultiplayerPeer> network_peer;
 	int rpc_sender_id;
@@ -129,6 +156,13 @@ public:
 
 	void set_allow_object_decoding(bool p_enable);
 	bool is_object_decoding_allowed() const;
+
+	void profiling_start();
+	void profiling_end();
+
+	int get_profiling_frame(ProfilingInfo *r_info);
+	int get_incoming_bandwidth_usage();
+	int get_outgoing_bandwidth_usage();
 
 	MultiplayerAPI();
 	~MultiplayerAPI();

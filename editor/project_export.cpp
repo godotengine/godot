@@ -931,17 +931,8 @@ void ProjectExportDialog::_export_project() {
 		export_project->add_filter("*." + extension_list[i] + " ; " + platform->get_name() + " Export");
 	}
 
-	String current_preset_export_path = current->get_export_path();
-
-	if (current_preset_export_path != "") {
-
-		if (!DirAccess::exists(current_preset_export_path.get_base_dir())) {
-
-			DirAccessRef da(DirAccess::create(DirAccess::ACCESS_FILESYSTEM));
-			da->make_dir_recursive(current_preset_export_path.get_base_dir());
-		}
-
-		export_project->set_current_path(current_preset_export_path);
+	if (current->get_export_path() != "") {
+		export_project->set_current_path(current->get_export_path());
 	} else {
 		if (extension_list.size() >= 1) {
 			export_project->set_current_file(default_filename + "." + extension_list[0]);
@@ -1125,6 +1116,7 @@ ProjectExportDialog::ProjectExportDialog() {
 
 	sections = memnew(TabContainer);
 	sections->set_tab_align(TabContainer::ALIGN_LEFT);
+	sections->set_use_hidden_tabs_for_min_size(true);
 	settings_vb->add_child(sections);
 	sections->set_v_size_flags(SIZE_EXPAND_FILL);
 

@@ -79,7 +79,7 @@ void CheckBox::_notification(int p_what) {
 
 		Vector2 ofs;
 		ofs.x = sb->get_margin(MARGIN_LEFT);
-		ofs.y = int((get_size().height - get_icon_size().height) / 2);
+		ofs.y = int((get_size().height - get_icon_size().height) / 2) + get_constant("check_vadjust");
 
 		if (is_pressed())
 			on->draw(ci, ofs);

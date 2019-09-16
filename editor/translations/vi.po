@@ -14,7 +14,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-07-02 10:49+0000\n"
+"PO-Revision-Date: 2019-07-29 19:20+0000\n"
 "Last-Translator: Steve Dang <itsnguu@outlook.com>\n"
 "Language-Team: Vietnamese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/vi/>\n"
@@ -28,7 +28,7 @@ msgstr ""
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr ""
+msgstr "Hàm convert() có đối số không hợp lệ, sử dụng các hằng TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -65,13 +65,12 @@ msgid "On call to '%s':"
 msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
 msgstr "Miễn phí"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "Cân bằng"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Mirror"
@@ -86,14 +85,12 @@ msgid "Value:"
 msgstr "Giá trị:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Insert Key Here"
-msgstr "Chèn Key Anim"
+msgstr "Thêm Khoá Tại Đây"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Duplicate Selected Key(s)"
-msgstr "Nhân đôi lựa chọn"
+msgstr "Nhân đôi các khoá đã chọn"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Delete Selected Key(s)"
@@ -101,12 +98,11 @@ msgstr "Xoá Key(s) được chọn"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Add Bezier Point"
-msgstr ""
+msgstr "Thêm điểm Bezier"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Di chuyển đến..."
+msgstr "Di chuyển điểm Bezier"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -138,13 +134,37 @@ msgstr "Đổi Function Gọi Animation"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "Đổi thời gian khung hình"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "Đổi Transition Animation"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "Đổi Transform Animation"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "Đổi giá trị khung hình"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
+msgstr "Đổi Function Gọi Animation"
+
+#: editor/animation_track_editor.cpp
 msgid "Change Animation Length"
-msgstr "Đổi vòng lặp Anim"
+msgstr "Thay Độ Dài Hoạt Ảnh"
 
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Chỉnh Vòng Lặp Hoạt Ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -172,14 +192,12 @@ msgid "Animation Playback Track"
 msgstr "Ngưng chạy animation. (S)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (frames)"
-msgstr "Độ dài Animation (giây)."
+msgstr "Độ dài hoạt ảnh (khung hình)"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation length (seconds)"
-msgstr "Độ dài Animation (giây)."
+msgstr "Độ dài hoạt ảnh (giây)"
 
 #: editor/animation_track_editor.cpp
 #, fuzzy
@@ -187,9 +205,8 @@ msgid "Add Track"
 msgstr "Thêm Track Animation"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation Looping"
-msgstr "Phóng Animation."
+msgstr "Vòng Lặp Hoạt Ảnh"
 
 #: editor/animation_track_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -366,7 +383,7 @@ msgstr ""
 
 #: editor/animation_track_editor.cpp
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr ""
+msgstr "Các bản hoạt ảnh chỉ có thể trỏ tới các nút AnimationPlayer."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -454,12 +471,11 @@ msgstr "Cảnh bảo: Chỉnh sửa hoạt ảnh đã nhập"
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
 msgid "Select All"
-msgstr ""
+msgstr "Chọn Toàn Bộ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Select None"
-msgstr "Chế độ chọn"
+msgstr "Chọn Không có"
 
 #: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
@@ -470,14 +486,12 @@ msgid "Group tracks by node or display them as plain list."
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Snap:"
-msgstr "Bước (s):"
+msgstr "Chụp:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation step value."
-msgstr "Phóng Animation."
+msgstr "Giá trị bước hoạt ảnh."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
@@ -521,27 +535,24 @@ msgid "Duplicate Transposed"
 msgstr ""
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Delete Selection"
-msgstr "Nhân đôi lựa chọn"
+msgstr "Xoá lựa chọn"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Next Step"
-msgstr "Đến Step tiếp theo"
+msgstr "Đến Bước tiếp theo"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Go to Previous Step"
-msgstr "Đến Step trước đó"
+msgstr "Đến Bước trước đó"
 
 #: editor/animation_track_editor.cpp
 msgid "Optimize Animation"
-msgstr "Tối ưu Animation"
+msgstr "Tối ưu Hoạt ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation"
-msgstr "Dọn dẹp Animation"
+msgstr "Dọn dẹp Hoạt ảnh"
 
 #: editor/animation_track_editor.cpp
 msgid "Pick the node that will be animated:"
@@ -573,12 +584,11 @@ msgstr "Tối ưu"
 
 #: editor/animation_track_editor.cpp
 msgid "Remove invalid keys"
-msgstr "Hủy key không đúng chuẩn"
+msgstr "Gỡ bỏ các khoá không hợp lệ"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Remove unresolved and empty tracks"
-msgstr "Gỡ bỏ track trống và không tìm thấy"
+msgstr "Gỡ bỏ các Tracks không thể xử lý và trống"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-up all animations"
@@ -586,7 +596,7 @@ msgstr "Dọn dẹp tất cả animations"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up Animation(s) (NO UNDO!)"
-msgstr "Dọn dẹp tất cả Animation (KHÔNG THỂ HỒI LẠI)"
+msgstr "Dọn dẹp tất cả Hoạt ảnh (KHÔNG THỂ HỒI LẠI)"
 
 #: editor/animation_track_editor.cpp
 msgid "Clean-Up"
@@ -598,7 +608,7 @@ msgstr "Tỉ lệ Scale:"
 
 #: editor/animation_track_editor.cpp
 msgid "Select tracks to copy:"
-msgstr ""
+msgstr "Chọn các Track để sao chép:"
 
 #: editor/animation_track_editor.cpp editor/editor_log.cpp
 #: editor/editor_properties.cpp
@@ -610,9 +620,8 @@ msgid "Copy"
 msgstr "Sao chép"
 
 #: editor/animation_track_editor_plugins.cpp
-#, fuzzy
 msgid "Add Audio Track Clip"
-msgstr "Thêm Track Animation"
+msgstr "Thêm Track Âm thanh"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
@@ -643,21 +652,22 @@ msgid "Line Number:"
 msgstr "Dòng số:"
 
 #: editor/code_editor.cpp
-msgid "Found %d match(es)."
-msgstr ""
+msgid "Replaced %d occurrence(s)."
+msgstr "Đã thay thế %d biến cố."
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-msgid "No Matches"
-msgstr "Không tìm thấy"
+#, fuzzy
+msgid "%d match."
+msgstr "Tìm thấy %d khớp."
 
-#: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr ""
+#: editor/code_editor.cpp editor/editor_help.cpp
+#, fuzzy
+msgid "%d matches."
+msgstr "Tìm thấy %d khớp."
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
-#, fuzzy
 msgid "Match Case"
-msgstr "Trùng khớp"
+msgstr "Khớp Trường Hợp"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Whole Words"
@@ -705,37 +715,32 @@ msgid "Line and column numbers."
 msgstr "Số dòng và cột."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Method in target node must be specified."
-msgstr "Cách thức trong Node được chọn phải được ghi rõ!"
+msgstr "Phương thức trong nút đích phải được chỉ định."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid ""
 "Target method not found. Specify a valid method or attach a script to the "
 "target node."
 msgstr ""
-"Cách thức của đối tượng không tìm thấy! ghi rõ một cách thức hợp lệ hoặc "
-"đính kèm một script cho đối tượng Node."
+"Phương thức không tìm thấy. Chỉ định phương thức hợp lệ hoặc đính kèm tệp "
+"lệnh vào nút."
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Node:"
-msgstr "Kết nối đến Node:"
+msgstr "Kết nối đến Nút:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Connect to Script:"
-msgstr "Không thể kết nối tới host:"
+msgstr "Kết nối Tệp lệnh:"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "From Signal:"
-msgstr "Đang kết nối Signal:"
+msgstr "Từ tín hiệu:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
-msgstr "Cảnh không chứa mã lệnh."
+msgstr "Cảnh không chứa tệp lệnh."
 
 #: editor/connections_dialog.cpp editor/editor_autoload_settings.cpp
 #: editor/groups_editor.cpp editor/plugins/item_list_editor_plugin.cpp
@@ -755,27 +760,26 @@ msgid "Remove"
 msgstr "Xóa"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Add Extra Call Argument:"
-msgstr "Thêm đối số:"
+msgstr "Thêm đối số mở rộng:"
 
 #: editor/connections_dialog.cpp
 msgid "Extra Call Arguments:"
-msgstr ""
+msgstr "Mở rộng Đối số được gọi:"
 
 #: editor/connections_dialog.cpp
 msgid "Advanced"
 msgstr "Nâng cao"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Deferred"
-msgstr "Hoãn lại"
+msgstr "Trì hoãn"
 
 #: editor/connections_dialog.cpp
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
 msgstr ""
+"Trì hoãn tín hiệu, lưu vào một hàng chờ và chỉ kích nó vào thời gian rãnh."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -808,7 +812,6 @@ msgid "Connect"
 msgstr "Kết nối"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Signal:"
 msgstr "Tín hiệu:"
 
@@ -821,9 +824,8 @@ msgid "Disconnect '%s' from '%s'"
 msgstr "Hủy kết nối '%s' từ '%s'"
 
 #: editor/connections_dialog.cpp
-#, fuzzy
 msgid "Disconnect all from signal: '%s'"
-msgstr "Hủy kết nối '%s' từ '%s'"
+msgstr "Dừng kết nối tất cả từ tín hiệu: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
@@ -868,7 +870,7 @@ msgstr "Đến Method"
 
 #: editor/create_dialog.cpp
 msgid "Change %s Type"
-msgstr "Đổi %s Type"
+msgstr "Đổi %s Loại"
 
 #: editor/create_dialog.cpp editor/project_settings_editor.cpp
 msgid "Change"
@@ -887,8 +889,7 @@ msgstr "Ưa thích:"
 msgid "Recent:"
 msgstr "Gần đây:"
 
-#: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
@@ -921,38 +922,42 @@ msgid ""
 "Scene '%s' is currently being edited.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Cảnh '%s' hiện đang được chỉnh sửa.\n"
+"Các thay đổi chỉ có hiệu lực khi tải lại."
 
 #: editor/dependency_editor.cpp
 msgid ""
 "Resource '%s' is in use.\n"
 "Changes will only take effect when reloaded."
 msgstr ""
+"Tài nguyên '%s' đang sử dụng.\n"
+"Thay đổi sẽ chỉ hiệu lực khi tải lại."
 
 #: editor/dependency_editor.cpp
 #: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "Dependencies"
-msgstr ""
+msgstr "Các phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Resource"
-msgstr ""
+msgstr "Tài nguyên"
 
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
-msgstr ""
+msgstr "Đường dẫn"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"
-msgstr ""
+msgstr "Các phụ thuộc:"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Broken"
-msgstr ""
+msgstr "Sửa chữa"
 
 #: editor/dependency_editor.cpp
 msgid "Dependency Editor"
-msgstr ""
+msgstr "Trình chỉnh sửa Phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Search Replacement Resource:"
@@ -970,11 +975,11 @@ msgstr "Mở"
 
 #: editor/dependency_editor.cpp
 msgid "Owners Of:"
-msgstr ""
+msgstr "Sở hữu của:"
 
 #: editor/dependency_editor.cpp
 msgid "Remove selected files from the project? (Can't be restored)"
-msgstr ""
+msgstr "Gỡ bỏ các tệp đã chọn trong dự án? (Không thể khôi phục)"
 
 #: editor/dependency_editor.cpp
 msgid ""
@@ -983,7 +988,7 @@ msgid ""
 "Remove them anyway? (no undo)"
 msgstr ""
 
-#: editor/dependency_editor.cpp editor/export_template_manager.cpp
+#: editor/dependency_editor.cpp
 msgid "Cannot remove:"
 msgstr "Không thể gỡ bỏ:"
 
@@ -997,15 +1002,15 @@ msgstr ""
 
 #: editor/dependency_editor.cpp editor/editor_node.cpp
 msgid "Open Anyway"
-msgstr ""
+msgstr "Luôn mở"
 
 #: editor/dependency_editor.cpp
 msgid "Which action should be taken?"
-msgstr ""
+msgstr "Chọn hành động nên thực hiện?"
 
 #: editor/dependency_editor.cpp
 msgid "Fix Dependencies"
-msgstr ""
+msgstr "Sửa các phần phụ thuộc"
 
 #: editor/dependency_editor.cpp
 msgid "Errors loading!"
@@ -1020,7 +1025,7 @@ msgstr "Xoá vĩnh viễn các đối tượng %d? (Không thể hoàn lại!)"
 msgid "Show Dependencies"
 msgstr "Phần phụ thuộc cho:"
 
-#: editor/dependency_editor.cpp editor/editor_node.cpp
+#: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
 msgstr ""
 
@@ -1034,7 +1039,7 @@ msgstr "Xóa"
 
 #: editor/dependency_editor.cpp
 msgid "Owns"
-msgstr ""
+msgstr "Sở hữu"
 
 #: editor/dependency_editor.cpp
 msgid "Resources Without Explicit Ownership:"
@@ -1109,16 +1114,22 @@ msgid "License"
 msgstr "Cấp phép"
 
 #: editor/editor_about.cpp
-msgid "Thirdparty License"
+#, fuzzy
+msgid "Third-party Licenses"
 msgstr "Cấp phép nhóm thứ ba"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid ""
-"Godot Engine relies on a number of thirdparty free and open source "
+"Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
-"is an exhaustive list of all such thirdparty components with their "
+"is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
+"Godot Engine dựa trên một số thư viện mã nguồn mở và miễn phí của bên thứ "
+"ba, tất cả đều phù hợp với các điều khoản trong giấy phép MIT. Sau đây là "
+"danh sách tất cả các thành phần của bên thứ ba với các điều khoản bản quyền "
+"và điều khoản cấp phép tương ứng."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -1133,12 +1144,13 @@ msgid "Licenses"
 msgstr "Các giấy phép"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Error opening package file, not in zip format."
+#, fuzzy
+msgid "Error opening package file, not in ZIP format."
 msgstr "Lỗi không thể mở gói, không phải dạng nén."
 
 #: editor/editor_asset_installer.cpp
 msgid "Uncompressing Assets"
-msgstr ""
+msgstr "Giải nén Assets"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
 msgid "Package installed successfully!"
@@ -1159,7 +1171,7 @@ msgstr "Gói cài đặt"
 
 #: editor/editor_audio_buses.cpp
 msgid "Speakers"
-msgstr ""
+msgstr "Máy phát thanh"
 
 #: editor/editor_audio_buses.cpp
 msgid "Add Effect"
@@ -1268,7 +1280,7 @@ msgstr ""
 
 #: editor/editor_audio_buses.cpp
 msgid "Location for New Layout..."
-msgstr ""
+msgstr "Vị trí cho Bố cục mới..."
 
 #: editor/editor_audio_buses.cpp
 msgid "Open Audio Bus Layout"
@@ -1620,12 +1632,11 @@ msgid "New"
 msgstr "Mới"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_manager.cpp
 msgid "Import"
 msgstr "Nhập vào"
 
-#: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/project_export.cpp
+#: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
 msgstr "Xuất ra"
 
@@ -1687,7 +1698,7 @@ msgstr "Xem trong trình quản lý tệp"
 msgid "New Folder..."
 msgstr "Thư mục mới ..."
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "Làm mới"
 
@@ -1738,7 +1749,7 @@ msgstr "Tiến tới"
 msgid "Go Up"
 msgstr "Đi Lên"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "Bật tắt File ẩn"
 
@@ -1763,23 +1774,31 @@ msgid "Move Favorite Down"
 msgstr "Di chuyển Ưa thích xuống"
 
 #: editor/editor_file_dialog.cpp
-msgid "Previous Folder"
-msgstr "Thư mục trước"
+#, fuzzy
+msgid "Go to previous folder."
+msgstr "Đến thư mục cha"
 
 #: editor/editor_file_dialog.cpp
-msgid "Next Folder"
-msgstr "Thư mục sau"
+#, fuzzy
+msgid "Go to next folder."
+msgstr "Đến thư mục cha"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 msgid "Go to parent folder."
 msgstr "Đến thư mục cha"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "Tìm kiếm tệp tin"
+
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
 msgstr "Bỏ yêu thích thư mục hiện tại."
 
-#: editor/editor_file_dialog.cpp
-msgid "Toggle visibility of hidden files."
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Toggle the visibility of hidden files."
 msgstr "Bật tắt hiện các tệp tin ẩn."
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2014,6 +2033,10 @@ msgstr "Xoá"
 #: editor/editor_log.cpp
 msgid "Clear Output"
 msgstr "Xoá đầu ra"
+
+#: editor/editor_node.cpp editor/project_manager.cpp
+msgid "New Window"
+msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
@@ -2332,6 +2355,15 @@ msgid "Pick a Main Scene"
 msgstr "Chọn một Scene chính"
 
 #: editor/editor_node.cpp
+msgid "Close Scene"
+msgstr "Đóng Cảnh"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Reopen Closed Scene"
+msgstr "Đóng Cảnh"
+
+#: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr ""
 
@@ -2435,6 +2467,11 @@ msgstr "Chạy cảnh này"
 msgid "Close Tab"
 msgstr "Đóng Tab"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo Close Tab"
+msgstr "Đóng Tab"
+
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
 msgstr "Đóng tất cả Tab khác"
@@ -2520,6 +2557,10 @@ msgstr "Tạo Cảnh Kế thừa..."
 msgid "Open Scene..."
 msgstr "Mở Cảnh ..."
 
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Open Recent"
+msgstr "Mở gần đây"
+
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "Lưu Cảnh"
@@ -2527,14 +2568,6 @@ msgstr "Lưu Cảnh"
 #: editor/editor_node.cpp
 msgid "Save All Scenes"
 msgstr "Lưu tất cả Cảnh"
-
-#: editor/editor_node.cpp
-msgid "Close Scene"
-msgstr "Đóng Cảnh"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Open Recent"
-msgstr "Mở gần đây"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -2566,25 +2599,37 @@ msgstr ""
 msgid "Miscellaneous project or scene-wide tools."
 msgstr ""
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Project"
 msgstr "Dự án"
 
 #: editor/editor_node.cpp
-msgid "Project Settings"
-msgstr ""
+#, fuzzy
+msgid "Project Settings..."
+msgstr "List Project"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Export..."
+msgstr "Xuất ra"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Install Android Build Template..."
+msgstr "Cài đặt mẫu xây dựng Android"
+
+#: editor/editor_node.cpp
+msgid "Open Project Data Folder"
+msgstr "Mở thư mục dữ liệu dự án"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
 msgstr "Công cụ"
 
 #: editor/editor_node.cpp
-msgid "Open Project Data Folder"
-msgstr "Mở thư mục dữ liệu dự án"
-
-#: editor/editor_node.cpp
-msgid "Install Android Build Template"
-msgstr "Cài đặt mẫu xây dựng Android"
+#, fuzzy
+msgid "Orphan Resource Explorer..."
+msgstr "Lưu tài nguyên thành ..."
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2665,12 +2710,13 @@ msgid ""
 "filesystem."
 msgstr ""
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/script_create_dialog.cpp
 msgid "Editor"
 msgstr "Trình biên tập"
 
-#: editor/editor_node.cpp editor/settings_config_dialog.cpp
-msgid "Editor Settings"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Editor Settings..."
 msgstr "Cài đặt Trình biên tập"
 
 #: editor/editor_node.cpp
@@ -2685,14 +2731,6 @@ msgstr ""
 #, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "Mở thư mục dữ liệu Trình biên tập"
-
-#: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-msgid "Open in an external image editor."
-msgstr ""
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
@@ -2716,14 +2754,16 @@ msgid "Open Editor Settings Folder"
 msgstr ""
 
 #: editor/editor_node.cpp
-msgid "Manage Editor Features"
+#, fuzzy
+msgid "Manage Editor Features..."
 msgstr "Quản lý tính năng Trình biên tập"
 
-#: editor/editor_node.cpp editor/project_export.cpp
-msgid "Manage Export Templates"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Manage Export Templates..."
 msgstr "Quản lý mẫu Xuất ra"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
 msgstr "Trợ giúp"
 
@@ -2731,12 +2771,13 @@ msgstr "Trợ giúp"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "Tìm kiếm"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
 msgid "Online Docs"
 msgstr "Tài liệu trực tuyến"
 
@@ -3010,6 +3051,11 @@ msgstr ""
 msgid "Calls"
 msgstr ""
 
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "Lưu Theme"
+
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr ""
@@ -3172,7 +3218,8 @@ msgid "Import From Node:"
 msgstr "Nhập từ Nút:"
 
 #: editor/export_template_manager.cpp
-msgid "Re-Download"
+#, fuzzy
+msgid "Redownload"
 msgstr "Tải lại"
 
 #: editor/export_template_manager.cpp
@@ -3187,6 +3234,10 @@ msgstr "(Đã cài đặt)"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Download"
 msgstr "Tải"
+
+#: editor/export_template_manager.cpp
+msgid "Official export templates aren't available for development builds."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3250,12 +3301,10 @@ msgid "No response."
 msgstr "Không phản hồi."
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request Failed."
 msgstr "Yêu cầu thất bại."
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
 msgstr "Chuyển hướng vòng lặp."
 
@@ -3269,13 +3318,19 @@ msgid "Download Complete."
 msgstr "Tải xuống xong."
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Cannot remove temporary file:"
+msgstr "Không thể gỡ bỏ:"
+
+#: editor/export_template_manager.cpp
 msgid ""
-"Templates installation failed. The problematic templates archives can be "
-"found at '%s'."
+"Templates installation failed.\n"
+"The problematic templates archives can be found at '%s'."
 msgstr ""
 
 #: editor/export_template_manager.cpp
-msgid "Error requesting url: "
+#, fuzzy
+msgid "Error requesting URL:"
 msgstr "Lỗi khi yêu cầu đường dẫn: "
 
 #: editor/export_template_manager.cpp
@@ -3361,18 +3416,10 @@ msgstr "Tải các Mẫu"
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
 msgstr ""
 
-#: editor/file_type_cache.cpp
-msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
-msgstr ""
-
 #: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Favorites"
 msgstr "Ưa thích:"
-
-#: editor/filesystem_dock.cpp
-msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr ""
 
 #: editor/filesystem_dock.cpp
 msgid "Status: Import of file failed. Please fix file and reimport manually."
@@ -3407,12 +3454,12 @@ msgid "Provided name contains invalid characters."
 msgstr "Tên có chứa ký tự không hợp lệ."
 
 #: editor/filesystem_dock.cpp
-msgid "Name contains invalid characters."
-msgstr "Tên có chứa kí tự không hợp lệ."
-
-#: editor/filesystem_dock.cpp
 msgid "A file or folder with this name already exists."
 msgstr "Đã có một têp tin hoặc thư mục trùng tên."
+
+#: editor/filesystem_dock.cpp
+msgid "Name contains invalid characters."
+msgstr "Tên có chứa kí tự không hợp lệ."
 
 #: editor/filesystem_dock.cpp
 msgid "Renaming file:"
@@ -3469,6 +3516,11 @@ msgstr "Nhân đôi..."
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "Di chuyển đến..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Scene..."
+msgstr "Tạo Cảnh Mới"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "New Script..."
@@ -3535,6 +3587,11 @@ msgstr "Đã có tệp tin hoặc thư mục cùng tên tại vị trí này."
 msgid "Overwrite"
 msgstr "Ghi đè"
 
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Create Scene"
+msgstr "Tạo từ Scene"
+
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
 msgstr "Tạo Mã lệnh"
@@ -3597,6 +3654,14 @@ msgid "Search complete"
 msgstr "Tìm kiếm hoàn tất"
 
 #: editor/groups_editor.cpp
+msgid "Add to Group"
+msgstr "Thêm vào Nhóm"
+
+#: editor/groups_editor.cpp
+msgid "Remove from Group"
+msgstr "Xóa khỏi Nhóm"
+
+#: editor/groups_editor.cpp
 msgid "Group name already exists."
 msgstr "Tên nhóm đã tồn tại."
 
@@ -3604,12 +3669,23 @@ msgstr "Tên nhóm đã tồn tại."
 msgid "Invalid group name."
 msgstr "Tên nhóm không hợp lệ."
 
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Rename Group"
+msgstr "Quản lý Nhóm"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Delete Group"
+msgstr "Xoá bố cục"
+
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "Nhóm"
 
 #: editor/groups_editor.cpp
-msgid "Nodes not in Group"
+#, fuzzy
+msgid "Nodes Not in Group"
 msgstr "Nút không trong Nhóm"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
@@ -3622,12 +3698,13 @@ msgid "Nodes in Group"
 msgstr "Các nút trong Nhóm"
 
 #: editor/groups_editor.cpp
-msgid "Add to Group"
-msgstr "Thêm vào Nhóm"
+msgid "Empty groups will be automatically removed."
+msgstr ""
 
 #: editor/groups_editor.cpp
-msgid "Remove from Group"
-msgstr "Xóa khỏi Nhóm"
+#, fuzzy
+msgid "Group Editor"
+msgstr "Trình viết mã lệnh"
 
 #: editor/groups_editor.cpp
 msgid "Manage Groups"
@@ -3833,7 +3910,7 @@ msgid "MultiNode Set"
 msgstr ""
 
 #: editor/node_dock.cpp
-msgid "Select a Node to edit Signals and Groups."
+msgid "Select a single node to edit its signals and groups."
 msgstr ""
 
 #: editor/plugin_config_dialog.cpp
@@ -3913,7 +3990,7 @@ msgstr ""
 #: editor/plugins/animation_state_machine_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Add Animation"
-msgstr "Thêm Animation"
+msgstr "Thêm Hoạt ảnh"
 
 #: editor/plugins/animation_blend_space_1d_editor.cpp
 #: editor/plugins/animation_blend_space_2d_editor.cpp
@@ -4115,7 +4192,7 @@ msgstr "Đổi bộ lọc"
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "No animation player set, so unable to retrieve track names."
-msgstr ""
+msgstr "Không có trình phát hoạt ảnh, không thể truy xuất tên."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 msgid "Player path set is invalid, so unable to retrieve track names."
@@ -4127,6 +4204,7 @@ msgid ""
 "Animation player has no valid root node path, so unable to retrieve track "
 "names."
 msgstr ""
+"Trính phát hoạt ảnh không có đường dẫn nút Gốc, không thể truy xuất tên."
 
 #: editor/plugins/animation_blend_tree_editor_plugin.cpp
 #: editor/plugins/animation_state_machine_editor.cpp
@@ -4231,7 +4309,7 @@ msgstr "Chạy hoạt ảnh đã chọn ngược lại từ cuối. (Shift+A)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Stop animation playback. (S)"
-msgstr "Ngưng chạy hoạt ảnh. (S)"
+msgstr "Dừng chạy lại hoạt ảnh. (S)"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
 msgid "Play selected animation from start. (Shift+D)"
@@ -4592,10 +4670,6 @@ msgid "View Files"
 msgstr "Xem Files"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr ""
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
 msgstr "Kết nỗi lỗi, thử lại."
 
@@ -4608,13 +4682,46 @@ msgid "No response from host:"
 msgstr "Không có phản hồi từ host:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, return code:"
 msgstr "Yêu cầu thất bại, trả lại code:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
+msgid "Request failed."
+msgstr "Yêu cầu thất bại."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Cannot save response to:"
+msgstr "Không thể gỡ bỏ:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Write error."
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
 msgid "Request failed, too many redirects"
 msgstr "Yêu cầu thất bại, gửi lại quá nhiều"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Redirect loop."
+msgstr "Chuyển hướng vòng lặp."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed, timeout"
+msgstr "Yêu cầu thất bại, trả lại code:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Timeout."
+msgstr "Thời gian:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -4690,13 +4797,16 @@ msgid "Last"
 msgstr "Cuối cùng"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "Tất cả"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
-msgid "Plugins"
+#, fuzzy
+msgid "Import..."
+msgstr "Nhập vào"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Plugins..."
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
@@ -4718,7 +4828,8 @@ msgid "Site:"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support..."
+#, fuzzy
+msgid "Support"
 msgstr "Hỗ trợ ..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -4728,6 +4839,11 @@ msgstr "Chính thức"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
 msgstr "Kiểm tra"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Loading..."
+msgstr "Nạp ..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -4892,6 +5008,11 @@ msgid "Paste Pose"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Clear Guides"
+msgstr "Xoá khung xương"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Create Custom Bone(s) from Node(s)"
 msgstr "Tạo xương tuỳ chỉnh từ Nút"
 
@@ -4920,6 +5041,7 @@ msgid "Zoom Reset"
 msgstr "Đặt lại Thu phóng"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
 msgstr "Chế độ chọn"
 
@@ -4940,14 +5062,17 @@ msgid "Alt+RMB: Depth list selection"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
 msgstr "Chế độ Di chuyển"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
 msgstr "Chế độ Xoay"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Scale Mode"
 msgstr "Chế độ Tỉ lệ"
 
@@ -4973,6 +5098,7 @@ msgid "Toggle snapping."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "Sử dụng Snap"
 
@@ -4989,11 +5115,6 @@ msgid "Use Rotation Snap"
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Configure Snap..."
-msgstr ""
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
 msgstr ""
 
@@ -5003,6 +5124,11 @@ msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Smart Snapping"
+msgstr ""
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Configure Snap..."
 msgstr ""
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
@@ -5211,16 +5337,6 @@ msgstr "Sửa Poly (Xoá điểm)"
 
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
-msgstr ""
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "Lỗi tải nạp hình ảnh:"
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
 msgstr ""
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
@@ -5540,14 +5656,6 @@ msgid "Surface source is invalid (no faces)."
 msgstr ""
 
 #: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Parent has no solid faces to populate."
-msgstr ""
-
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Couldn't map area."
-msgstr ""
-
-#: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
 msgstr ""
 
@@ -5631,19 +5739,24 @@ msgid "Generation Time (sec):"
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Faces contain no area!"
+msgid "The geometry's faces don't contain any area."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "No faces!"
+#, fuzzy
+msgid "The geometry doesn't contain any faces."
+msgstr "Cảnh không chứa tệp lệnh."
+
+#: editor/plugins/particles_editor_plugin.cpp
+msgid "\"%s\" doesn't inherit from Spatial."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry."
+msgid "\"%s\" doesn't contain geometry."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry (faces)."
+msgid "\"%s\" doesn't contain face geometry."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
@@ -5978,7 +6091,6 @@ msgid "Grid Settings"
 msgstr ""
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr ""
 
@@ -6084,12 +6196,9 @@ msgid "Error writing TextFile:"
 msgstr ""
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Error: could not load file."
-msgstr ""
-
-#: editor/plugins/script_editor_plugin.cpp
-msgid "Error could not load file."
-msgstr ""
+#, fuzzy
+msgid "Could not load file at:"
+msgstr "Không viết được file:"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6117,8 +6226,9 @@ msgid "Error Importing"
 msgstr "Lỗi di chuyển:"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "New TextFile..."
-msgstr ""
+#, fuzzy
+msgid "New Text File..."
+msgstr "Thư mục mới ..."
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6203,6 +6313,11 @@ msgid "Open..."
 msgstr "Mở"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Reopen Closed Script"
+msgstr "Tạo Script"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
 msgstr ""
 
@@ -6241,12 +6356,12 @@ msgid "Save Theme"
 msgstr "Lưu Theme"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Close Docs"
-msgstr "Đóng Docs"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
 msgstr "Đóng tất cả"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Close Docs"
+msgstr "Đóng Docs"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
@@ -6334,6 +6449,11 @@ msgstr ""
 msgid "Search Results"
 msgstr "Tìm sự giúp đỡ"
 
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Clear Recent Scripts"
+msgstr "Dọn các cảnh gần đây"
+
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Connections to method:"
@@ -6405,6 +6525,7 @@ msgid "Syntax Highlighter"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
 msgstr ""
 
@@ -6440,25 +6561,6 @@ msgid "Toggle Comment"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Toggle Bookmark"
-msgstr "Bật tắt Chức năng"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Next Bookmark"
-msgstr "Đến Step tiếp theo"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Previous Bookmark"
-msgstr "Đến Step trước đó"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Remove All Bookmarks"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
 msgid "Fold/Unfold Line"
 msgstr ""
 
@@ -6479,6 +6581,11 @@ msgid "Complete Symbol"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Evaluate Selection"
+msgstr "Chọn Scale"
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr ""
 
@@ -6493,6 +6600,48 @@ msgstr ""
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Find in Files..."
+msgstr "Tìm..."
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Toggle Bookmark"
+msgstr "Bật tắt Chức năng"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Next Bookmark"
+msgstr "Đến Step tiếp theo"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Previous Bookmark"
+msgstr "Đến Step trước đó"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Remove All Bookmarks"
+msgstr ""
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Function..."
+msgstr "Xoá Function"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Line..."
+msgstr "Đến Dòng"
 
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -6512,29 +6661,6 @@ msgstr "Đến Step tiếp theo"
 #, fuzzy
 msgid "Go to Previous Breakpoint"
 msgstr "Đến Step trước đó"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
-msgstr ""
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Find in Files..."
-msgstr "Tìm..."
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Function..."
-msgstr "Xoá Function"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Line..."
-msgstr "Đến Dòng"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Contextual Help"
-msgstr ""
 
 #: editor/plugins/shader_editor_plugin.cpp
 msgid ""
@@ -6713,7 +6839,11 @@ msgid "Rear"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align with View"
+msgid "Align Transform with View"
+msgstr ""
+
+#: editor/plugins/spatial_editor_plugin.cpp
+msgid "Align Rotation with View"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
@@ -6769,8 +6899,9 @@ msgid "Audio Listener"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Doppler Enable"
-msgstr ""
+#, fuzzy
+msgid "Enable Doppler"
+msgstr "Kích hoạt lọc"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Cinematic Preview"
@@ -6823,7 +6954,7 @@ msgid "Snap Nodes To Floor"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Select Mode (Q)"
+msgid "Couldn't find a solid floor to snap the selection to."
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6834,27 +6965,7 @@ msgid ""
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scale Mode (R)"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Space Mode (%s)"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Snap Mode (%s)"
+msgid "Use Local Space"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6895,26 +7006,6 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Select"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Move"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Rotate"
-msgstr ""
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Tool Scale"
 msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -6972,8 +7063,9 @@ msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Settings"
-msgstr ""
+#, fuzzy
+msgid "Settings..."
+msgstr "Đang kết nối..."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap Settings"
@@ -7278,10 +7370,6 @@ msgid "TextureRegion"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Can't save theme to file:"
-msgstr ""
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
 msgstr ""
 
@@ -7370,11 +7458,11 @@ msgid "Submenu"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Item 1"
+msgid "Subitem 1"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Item 2"
+msgid "Subitem 2"
 msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -7496,8 +7584,8 @@ msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
-"Shift+RMB: Line Draw\n"
-"Shift+Ctrl+RMB: Rectangle Paint"
+"Shift+LMB: Line Draw\n"
+"Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
@@ -7804,6 +7892,10 @@ msgid "TileSet"
 msgstr "Xuất Tile Set"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Add input +"
 msgstr "Thêm Input"
@@ -7890,16 +7982,17 @@ msgid "Duplicate Nodes"
 msgstr "Nhân đôi Node(s)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Paste Nodes"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Delete Nodes"
 msgstr "Xóa Node(s)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only)"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -7913,6 +8006,11 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Light"
 msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Show resulted shader code."
+msgstr "Tạo Root Node:"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8281,7 +8379,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if x is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8290,7 +8388,7 @@ msgstr ""
 msgid ""
 "Step function( scalar(edge), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8454,6 +8552,10 @@ msgid "Linear interpolation between two vectors."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Linear interpolation between two vectors using scalar."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
 msgstr ""
 
@@ -8479,7 +8581,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8488,7 +8590,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8497,14 +8599,14 @@ msgstr ""
 msgid ""
 "Step function( vector(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Step function( scalar(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8546,6 +8648,13 @@ msgstr ""
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Custom Godot Shader Language expression, which placed on top of the resulted "
+"shader. You can place various function definitions inside and call it later "
+"in the Expressions. You can also declare varyings, uniforms and constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8761,6 +8870,10 @@ msgid "Export templates for this platform are missing:"
 msgstr ""
 
 #: editor/project_export.cpp
+msgid "Manage Export Templates"
+msgstr "Quản lý mẫu Xuất ra"
+
+#: editor/project_export.cpp
 msgid "Export With Debug"
 msgstr ""
 
@@ -8909,6 +9022,15 @@ msgstr ""
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Missing Project"
+msgstr "Dự án"
+
+#: editor/project_manager.cpp
+msgid "Error: Project is missing on the filesystem."
+msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Can't open project at '%s'."
 msgstr "Không thể chạy project"
 
@@ -8978,8 +9100,8 @@ msgstr ""
 
 #: editor/project_manager.cpp
 msgid ""
-"Remove all missing projects from the list? (Folders contents will not be "
-"modified)"
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
 msgstr ""
 
 #: editor/project_manager.cpp
@@ -8999,8 +9121,9 @@ msgid "Project Manager"
 msgstr ""
 
 #: editor/project_manager.cpp
-msgid "Project List"
-msgstr "List Project"
+#, fuzzy
+msgid "Projects"
+msgstr "Dự án"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -9022,10 +9145,6 @@ msgstr "Xóa Animation"
 #: editor/project_manager.cpp
 msgid "Templates"
 msgstr "Khung project"
-
-#: editor/project_manager.cpp
-msgid "Exit"
-msgstr "Thoát"
 
 #: editor/project_manager.cpp
 msgid "Restart Now"
@@ -9368,6 +9487,10 @@ msgstr ""
 msgid "AutoLoad"
 msgstr ""
 
+#: editor/project_settings_editor.cpp
+msgid "Plugins"
+msgstr ""
+
 #: editor/property_editor.cpp
 msgid "Zero"
 msgstr ""
@@ -9418,14 +9541,6 @@ msgstr ""
 
 #: editor/property_selector.cpp
 msgid "Select Method"
-msgstr ""
-
-#: editor/pvrtc_compress.cpp
-msgid "Could not execute PVRTC tool:"
-msgstr ""
-
-#: editor/pvrtc_compress.cpp
-msgid "Can't load back converted image using PVRTC tool:"
 msgstr ""
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
@@ -9720,6 +9835,10 @@ msgid "Remove Node(s)"
 msgstr "Xóa Node(s)"
 
 #: editor/scene_tree_dock.cpp
+msgid "Change type of node(s)"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -9762,6 +9881,11 @@ msgstr ""
 #, fuzzy
 msgid "Extend Script"
 msgstr "Tạo Script"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "Tạo các nút mới."
 
 #: editor/scene_tree_dock.cpp
 msgid "Make Scene Root"
@@ -9839,19 +9963,19 @@ msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connection(s) and group(s).\n"
+"Node has %s connection(s) and %s group(s).\n"
 "Click to show signals dock."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node has connections.\n"
+"Node has %s connection(s).\n"
 "Click to show signals dock."
 msgstr ""
 
 #: editor/scene_tree_editor.cpp
 msgid ""
-"Node is in group(s).\n"
+"Node is in %s group(s).\n"
 "Click to show groups dock."
 msgstr ""
 
@@ -9945,6 +10069,11 @@ msgstr ""
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
 msgstr ""
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Overrides"
+msgstr "Ghi đè"
 
 #: editor/script_create_dialog.cpp
 msgid "N/A"
@@ -10137,6 +10266,10 @@ msgstr ""
 #: editor/settings_config_dialog.cpp
 msgid "Change Shortcut"
 msgstr ""
+
+#: editor/settings_config_dialog.cpp
+msgid "Editor Settings"
+msgstr "Cài đặt Trình biên tập"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -10555,8 +10688,27 @@ msgid "Set Variable Type"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Override an existing built-in function."
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new function."
+msgstr "Tạo nodes mới."
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
 msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new variable."
+msgstr "Tạo nodes mới."
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new signal."
+msgstr "Tạo"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
@@ -10742,10 +10894,6 @@ msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
-msgstr ""
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Paste Nodes"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
@@ -11490,22 +11638,6 @@ msgid ""
 "texture to some node for display."
 msgstr ""
 
-#: scene/resources/dynamic_font.cpp
-msgid "Error initializing FreeType."
-msgstr "Lỗi khởi tạo FreeType."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Unknown font format."
-msgstr "Định dạng font không hợp lệ."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Error loading font."
-msgstr "Lỗi tải font."
-
-#: scene/resources/dynamic_font.cpp
-msgid "Invalid font size."
-msgstr "Kích thước font không hợp lệ."
-
 #: scene/resources/visual_shader.cpp
 msgid "Input"
 msgstr "Nhập"
@@ -11539,6 +11671,33 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "No Matches"
+#~ msgstr "Không khớp"
+
+#~ msgid "Error loading image:"
+#~ msgstr "Lỗi tải nạp hình ảnh:"
+
+#~ msgid "Exit"
+#~ msgstr "Thoát"
+
+#~ msgid "Error initializing FreeType."
+#~ msgstr "Lỗi khởi tạo FreeType."
+
+#~ msgid "Unknown font format."
+#~ msgstr "Định dạng font không hợp lệ."
+
+#~ msgid "Error loading font."
+#~ msgstr "Lỗi tải font."
+
+#~ msgid "Invalid font size."
+#~ msgstr "Kích thước font không hợp lệ."
+
+#~ msgid "Previous Folder"
+#~ msgstr "Thư mục trước"
+
+#~ msgid "Next Folder"
+#~ msgstr "Thư mục sau"
 
 #~ msgid "Reverse"
 #~ msgstr "Ngược lại"

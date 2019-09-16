@@ -52,14 +52,11 @@ namespace GDMonoUtils {
 
 MonoCache mono_cache;
 
-#define CACHE_AND_CHECK(m_var, m_val)                             \
-	{                                                             \
-		CRASH_COND(m_var != NULL);                                \
-		m_var = m_val;                                            \
-		if (!m_var) {                                             \
-			ERR_EXPLAIN("Mono Cache: Member " #m_var " is null"); \
-			ERR_FAIL();                                           \
-		}                                                         \
+#define CACHE_AND_CHECK(m_var, m_val)                                        \
+	{                                                                        \
+		CRASH_COND(m_var != NULL);                                           \
+		m_var = m_val;                                                       \
+		ERR_FAIL_COND_MSG(!m_var, "Mono Cache: Member " #m_var " is null."); \
 	}
 
 #define CACHE_CLASS_AND_CHECK(m_class, m_val) CACHE_AND_CHECK(GDMonoUtils::mono_cache.class_##m_class, m_val)
@@ -453,10 +450,9 @@ GDMonoClass *get_class_native_base(GDMonoClass *p_class) {
 }
 
 MonoObject *create_managed_for_godot_object(GDMonoClass *p_class, const StringName &p_native, Object *p_object) {
-	if (!ClassDB::is_parent_class(p_object->get_class_name(), p_native)) {
-		ERR_EXPLAIN("Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'");
-		ERR_FAIL_V(NULL);
-	}
+	bool parent_is_object_class = ClassDB::is_parent_class(p_object->get_class_name(), p_native);
+	ERR_FAIL_COND_V_MSG(!parent_is_object_class, NULL,
+			"Type inherits from native type '" + p_native + "', so it can't be instanced in object of type: '" + p_object->get_class() + "'.");
 
 	MonoObject *mono_object = mono_object_new(mono_domain_get(), p_class->get_mono_ptr());
 	ERR_FAIL_NULL_V(mono_object, NULL);

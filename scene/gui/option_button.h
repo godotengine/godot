@@ -33,9 +33,7 @@
 
 #include "scene/gui/button.h"
 #include "scene/gui/popup_menu.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class OptionButton : public Button {
 
 	GDCLASS(OptionButton, Button);

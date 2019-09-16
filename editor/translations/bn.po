@@ -65,7 +65,6 @@ msgid "On call to '%s':"
 msgstr ""
 
 #: editor/animation_bezier_editor.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Free"
 msgstr "মুক্ত করে দিন"
 
@@ -140,6 +139,31 @@ msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর
 
 #: editor/animation_track_editor.cpp
 msgid "Anim Change Call"
+msgstr "অ্যানিমেশন (Anim) কল পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Time"
+msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transition"
+msgstr "অ্যানিমেশন (Anim) ট্র্যানজিশন পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Transform"
+msgstr "অ্যানিমেশন (Anim) ট্রান্সফর্ম পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Keyframe Value"
+msgstr "অ্যানিমেশন (Anim) ভ্যালু পরিবর্তন করুন"
+
+#: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Anim Multi Change Call"
 msgstr "অ্যানিমেশন (Anim) কল পরিবর্তন করুন"
 
 #: editor/animation_track_editor.cpp
@@ -666,16 +690,17 @@ msgid "Line Number:"
 msgstr "লাইন নাম্বার:"
 
 #: editor/code_editor.cpp
-msgid "Found %d match(es)."
+msgid "Replaced %d occurrence(s)."
+msgstr "%d সংখ্যক সংঘটন প্রতিস্থাপিত হয়েছে  ।"
+
+#: editor/code_editor.cpp editor/editor_help.cpp
+msgid "%d match."
 msgstr ""
 
 #: editor/code_editor.cpp editor/editor_help.cpp
-msgid "No Matches"
+#, fuzzy
+msgid "%d matches."
 msgstr "কোনো মিল নেই"
-
-#: editor/code_editor.cpp
-msgid "Replaced %d occurrence(s)."
-msgstr "%d সংখ্যক সংঘটন প্রতিস্থাপিত হয়েছে  ।"
 
 #: editor/code_editor.cpp editor/find_in_files.cpp
 msgid "Match Case"
@@ -920,8 +945,7 @@ msgstr "ফেবরিট/প্রিয়-সমূহ:"
 msgid "Recent:"
 msgstr "সাম্প্রতিক:"
 
-#: editor/create_dialog.cpp editor/plugins/asset_library_editor_plugin.cpp
-#: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
+#: editor/create_dialog.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/property_selector.cpp editor/quick_open.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
 msgid "Search:"
@@ -1025,7 +1049,7 @@ msgstr ""
 "দরকারি।\n"
 "তবুও তাদের অপসারণ করবেন? (অফেরৎযোগ্য)"
 
-#: editor/dependency_editor.cpp editor/export_template_manager.cpp
+#: editor/dependency_editor.cpp
 #, fuzzy
 msgid "Cannot remove:"
 msgstr "অপসারণ সম্ভব নয় :\n"
@@ -1064,7 +1088,7 @@ msgstr "%d -টি বস্তু(সমূহ) স্থায়ীভাব�
 msgid "Show Dependencies"
 msgstr "নির্ভরতা-সমূহ"
 
-#: editor/dependency_editor.cpp editor/editor_node.cpp
+#: editor/dependency_editor.cpp
 msgid "Orphan Resource Explorer"
 msgstr "মালিকবিহীন রিসোর্সের অনুসন্ধানকারী"
 
@@ -1154,14 +1178,16 @@ msgid "License"
 msgstr "লাইসেন্স"
 
 #: editor/editor_about.cpp
-msgid "Thirdparty License"
+#, fuzzy
+msgid "Third-party Licenses"
 msgstr "থার্ড পার্টি লাইসেন্স"
 
 #: editor/editor_about.cpp
+#, fuzzy
 msgid ""
-"Godot Engine relies on a number of thirdparty free and open source "
+"Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
-"is an exhaustive list of all such thirdparty components with their "
+"is an exhaustive list of all such third-party components with their "
 "respective copyright statements and license terms."
 msgstr ""
 "Godot ইঞ্জিন বিভিন্ন থার্ড পার্টি ফ্রি এবং ওপেন সোর্স লাইব্রেরি ব্যাবহার করে থাকে। "
@@ -1181,7 +1207,8 @@ msgid "Licenses"
 msgstr "লাইসেন্স"
 
 #: editor/editor_asset_installer.cpp editor/project_manager.cpp
-msgid "Error opening package file, not in zip format."
+#, fuzzy
+msgid "Error opening package file, not in ZIP format."
 msgstr "জিপ ফরম্যাট খুঁজে পেতে ব্যার্থ, প্যাকেজ ফাইল ওপেন করা যায়নি।"
 
 #: editor/editor_asset_installer.cpp
@@ -1705,12 +1732,11 @@ msgid "New"
 msgstr "নতুন"
 
 #: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
+#: editor/project_manager.cpp
 msgid "Import"
 msgstr "ইম্পোর্ট"
 
-#: editor/editor_feature_profile.cpp editor/editor_node.cpp
-#: editor/project_export.cpp
+#: editor/editor_feature_profile.cpp editor/project_export.cpp
 msgid "Export"
 msgstr "এক্সপোর্ট"
 
@@ -1783,7 +1809,7 @@ msgstr "ফাইল-ম্যানেজারে দেখুন"
 msgid "New Folder..."
 msgstr "ফোল্ডার তৈরি করুন"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Refresh"
 msgstr "রিফ্রেস করুন"
 
@@ -1834,7 +1860,7 @@ msgstr "সামনের দিকে যান"
 msgid "Go Up"
 msgstr "উপরের দিকে যান"
 
-#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#: editor/editor_file_dialog.cpp
 msgid "Toggle Hidden Files"
 msgstr "অদৃশ্য ফাইলসমূহ অদলবদল/টগল করুন"
 
@@ -1860,27 +1886,32 @@ msgstr "ফেবরিট/প্রিয়কে নিচের দিকে
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Previous Folder"
-msgstr "পূর্বের ট্যাব"
+msgid "Go to previous folder."
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
 #: editor/editor_file_dialog.cpp
 #, fuzzy
-msgid "Next Folder"
-msgstr "ফোল্ডার তৈরি করুন"
+msgid "Go to next folder."
+msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
 msgid "Go to parent folder."
 msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
+#, fuzzy
+msgid "Refresh files."
+msgstr "ক্লাসের অনুসন্ধান করুন"
+
 #: editor/editor_file_dialog.cpp
 #, fuzzy
 msgid "(Un)favorite current folder."
 msgstr "ফোল্ডার তৈরী করা সম্ভব হয়নি।"
 
-#: editor/editor_file_dialog.cpp
+#: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
 #, fuzzy
-msgid "Toggle visibility of hidden files."
+msgid "Toggle the visibility of hidden files."
 msgstr "অদৃশ্য ফাইলসমূহ অদলবদল/টগল করুন"
 
 #: editor/editor_file_dialog.cpp editor/filesystem_dock.cpp
@@ -2152,6 +2183,11 @@ msgstr "পরিস্কার করুন/ক্লীয়ার"
 #, fuzzy
 msgid "Clear Output"
 msgstr "আউটপুট/ফলাফল"
+
+#: editor/editor_node.cpp editor/project_manager.cpp
+#, fuzzy
+msgid "New Window"
+msgstr "উইন্ডো"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
@@ -2482,6 +2518,15 @@ msgid "Pick a Main Scene"
 msgstr "একটি মুখ্য দৃশ্য মনোনীত করুন"
 
 #: editor/editor_node.cpp
+msgid "Close Scene"
+msgstr "দৃশ্য বন্ধ করুন"
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Reopen Closed Scene"
+msgstr "দৃশ্য বন্ধ করুন"
+
+#: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
 msgstr "অ্যাড-অন প্লাগইন এনাবল করা সম্ভব হয় নি। কনফিগার পার্সিং ('%s') ব্যর্থ হয়েছে।"
 
@@ -2599,6 +2644,11 @@ msgstr "দৃশ্য চালান"
 msgid "Close Tab"
 msgstr "অন্য ট্যাবগুলি বন্ধ করুন"
 
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Undo Close Tab"
+msgstr "অন্য ট্যাবগুলি বন্ধ করুন"
+
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
 msgstr "অন্য ট্যাবগুলি বন্ধ করুন"
@@ -2691,6 +2741,10 @@ msgstr "নতুন উত্তরাধিকারী দৃশ্য..."
 msgid "Open Scene..."
 msgstr "দৃশ্য খুলুন..."
 
+#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+msgid "Open Recent"
+msgstr "সাম্প্রতিকসমূহ খুলুন"
+
 #: editor/editor_node.cpp
 msgid "Save Scene"
 msgstr "দৃশ্য সংরক্ষণ করুন"
@@ -2699,14 +2753,6 @@ msgstr "দৃশ্য সংরক্ষণ করুন"
 #, fuzzy
 msgid "Save All Scenes"
 msgstr "সকল দৃশ্য সংরক্ষণ করুন"
-
-#: editor/editor_node.cpp
-msgid "Close Scene"
-msgstr "দৃশ্য বন্ধ করুন"
-
-#: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
-msgid "Open Recent"
-msgstr "সাম্প্রতিকসমূহ খুলুন"
 
 #: editor/editor_node.cpp
 msgid "Convert To..."
@@ -2738,14 +2784,28 @@ msgstr "দৃশ্য প্রত্যাবৃত্ত করুন"
 msgid "Miscellaneous project or scene-wide tools."
 msgstr "প্রকল্প অথবা দৃশ্যে-ব্যাপী বিবিধ সরঞ্জাম-সমূহ।"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Project"
 msgstr "নতুন প্রকল্প"
 
 #: editor/editor_node.cpp
-msgid "Project Settings"
+#, fuzzy
+msgid "Project Settings..."
 msgstr "প্রকল্পের সেটিংস"
+
+#: editor/editor_node.cpp
+msgid "Export..."
+msgstr "এক্সপোর্ট..."
+
+#: editor/editor_node.cpp
+msgid "Install Android Build Template..."
+msgstr ""
+
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Open Project Data Folder"
+msgstr "প্রকল্প ম্যানেজার"
 
 #: editor/editor_node.cpp editor/plugins/tile_set_editor_plugin.cpp
 msgid "Tools"
@@ -2753,12 +2813,8 @@ msgstr "সরঞ্জাম-সমূহ"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Open Project Data Folder"
-msgstr "প্রকল্প ম্যানেজার"
-
-#: editor/editor_node.cpp
-msgid "Install Android Build Template"
-msgstr ""
+msgid "Orphan Resource Explorer..."
+msgstr "মালিকবিহীন রিসোর্সের অনুসন্ধানকারী"
 
 #: editor/editor_node.cpp
 msgid "Quit to Project List"
@@ -2857,13 +2913,14 @@ msgstr ""
 "রিমোট ডিভাইসে ব্যবহারের সময়, নেটওয়ার্ক ফাইল-সিস্টেম (filesystem) এটিকে আরো "
 "কার্যকর করবে।"
 
-#: editor/editor_node.cpp
+#: editor/editor_node.cpp editor/script_create_dialog.cpp
 #, fuzzy
 msgid "Editor"
 msgstr "সম্পাদন করুন (Edit)"
 
-#: editor/editor_node.cpp editor/settings_config_dialog.cpp
-msgid "Editor Settings"
+#: editor/editor_node.cpp
+#, fuzzy
+msgid "Editor Settings..."
 msgstr "এডিটরের সেটিংস"
 
 #: editor/editor_node.cpp
@@ -2879,15 +2936,6 @@ msgstr "অর্থপূর্ন!"
 #, fuzzy
 msgid "Screenshots are stored in the Editor Data/Settings Folder."
 msgstr "এডিটরের সেটিংস"
-
-#: editor/editor_node.cpp
-msgid "Automatically Open Screenshots"
-msgstr ""
-
-#: editor/editor_node.cpp
-#, fuzzy
-msgid "Open in an external image editor."
-msgstr "এডিটরে খুলুন"
 
 #: editor/editor_node.cpp
 msgid "Toggle Fullscreen"
@@ -2914,15 +2962,15 @@ msgstr "এডিটরের সেটিংস"
 
 #: editor/editor_node.cpp
 #, fuzzy
-msgid "Manage Editor Features"
-msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
-
-#: editor/editor_node.cpp editor/project_export.cpp
-#, fuzzy
-msgid "Manage Export Templates"
+msgid "Manage Editor Features..."
 msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
 
 #: editor/editor_node.cpp
+#, fuzzy
+msgid "Manage Export Templates..."
+msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
+
+#: editor/editor_node.cpp editor/plugins/shader_editor_plugin.cpp
 msgid "Help"
 msgstr "হেল্প"
 
@@ -2930,12 +2978,13 @@ msgstr "হেল্প"
 #: editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
-#: editor/plugins/visual_shader_editor_plugin.cpp
+#: editor/plugins/visual_shader_editor_plugin.cpp editor/project_manager.cpp
 #: editor/project_settings_editor.cpp editor/rename_dialog.cpp
 msgid "Search"
 msgstr "অনুসন্ধান করুন"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
+#: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
 msgid "Online Docs"
 msgstr "ডকুমেন্টসমূহ বন্ধ করুন"
@@ -3229,6 +3278,11 @@ msgstr "সময়:"
 msgid "Calls"
 msgstr "ডাকুন (Call)"
 
+#: editor/editor_properties.cpp
+#, fuzzy
+msgid "Edit Text:"
+msgstr "থিম এডিট করুন..."
+
 #: editor/editor_properties.cpp editor/script_create_dialog.cpp
 msgid "On"
 msgstr "চালু"
@@ -3405,7 +3459,7 @@ msgstr "নোড হতে ইম্পোর্ট করুন:"
 
 #: editor/export_template_manager.cpp
 #, fuzzy
-msgid "Re-Download"
+msgid "Redownload"
 msgstr "রিলোড"
 
 #: editor/export_template_manager.cpp
@@ -3423,6 +3477,10 @@ msgstr "ইন্সটল"
 #, fuzzy
 msgid "Download"
 msgstr "নীচে"
+
+#: editor/export_template_manager.cpp
+msgid "Official export templates aren't available for development builds."
+msgstr ""
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3493,13 +3551,11 @@ msgid "No response."
 msgstr "কোন প্রতিক্রিয়া নেই।"
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "Request Failed."
 msgstr "রিকুয়েস্ট ব্যর্থ হয়েছে।"
 
 #: editor/export_template_manager.cpp
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Redirect Loop."
 msgstr "লুপ পুনঃনির্দেশ করুন।"
 
@@ -3514,14 +3570,19 @@ msgid "Download Complete."
 msgstr "নীচে"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
+msgid "Cannot remove temporary file:"
+msgstr "থিমটি ফাইলে সংরক্ষণ করা সম্ভব হয়নি:"
+
+#: editor/export_template_manager.cpp
 msgid ""
-"Templates installation failed. The problematic templates archives can be "
-"found at '%s'."
+"Templates installation failed.\n"
+"The problematic templates archives can be found at '%s'."
 msgstr ""
 
 #: editor/export_template_manager.cpp
 #, fuzzy
-msgid "Error requesting url: "
+msgid "Error requesting URL:"
 msgstr "এটলাস/মানচিত্রাবলী সংরক্ষণে সমস্যা হয়েছে:"
 
 #: editor/export_template_manager.cpp
@@ -3625,20 +3686,10 @@ msgstr "বস্তু অপসারণ করুন"
 msgid "Select mirror from list: (Shift+Click: Open in Browser)"
 msgstr "লিস্ট থেকে মিরর নির্বাচন করুন: "
 
-#: editor/file_type_cache.cpp
-msgid "Can't open file_type_cache.cch for writing, not saving file type cache!"
-msgstr ""
-"লেখার জন্য file_type_cache.cch খোলা সম্ভব হচ্ছে না, ফাইলের ধরণ ক্যাশ (cache) "
-"সংরক্ষিত হচ্ছে না!"
-
 #: editor/filesystem_dock.cpp
 #, fuzzy
 msgid "Favorites"
 msgstr "ফেবরিট/প্রিয়-সমূহ:"
-
-#: editor/filesystem_dock.cpp
-msgid "Cannot navigate to '%s' as it has not been found in the file system!"
-msgstr "'%s' তে নেভিগেট করা যাবে না কারণ এটি ফাইল সিস্টেমে পাওয়া যায়নি!"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3685,13 +3736,13 @@ msgstr "ব্যবহৃত নামে অগ্রহণযোগ্য অ
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "Name contains invalid characters."
-msgstr "গ্রহনযোগ্য অক্ষরসমূহ:"
+msgid "A file or folder with this name already exists."
+msgstr "গ্রুপের নাম ইতিমধ্যেই আছে!"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
-msgid "A file or folder with this name already exists."
-msgstr "গ্রুপের নাম ইতিমধ্যেই আছে!"
+msgid "Name contains invalid characters."
+msgstr "গ্রহনযোগ্য অক্ষরসমূহ:"
 
 #: editor/filesystem_dock.cpp
 #, fuzzy
@@ -3758,6 +3809,11 @@ msgstr "ডুপ্লিকেট"
 #: editor/filesystem_dock.cpp
 msgid "Move To..."
 msgstr "এখানে সরান..."
+
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "New Scene..."
+msgstr "নতুন দৃশ্য"
 
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -3833,6 +3889,11 @@ msgstr "গ্রুপের নাম ইতিমধ্যেই আছে!"
 msgid "Overwrite"
 msgstr ""
 
+#: editor/filesystem_dock.cpp
+#, fuzzy
+msgid "Create Scene"
+msgstr "দৃশ্য হতে তৈরি করবেন"
+
 #: editor/filesystem_dock.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Create Script"
 msgstr "স্ক্রিপ্ট তৈরি করুন"
@@ -3902,6 +3963,14 @@ msgid "Search complete"
 msgstr "টেক্সট অনুসন্ধান করুন"
 
 #: editor/groups_editor.cpp
+msgid "Add to Group"
+msgstr "গ্রুপ/দলে যোগ করুন"
+
+#: editor/groups_editor.cpp
+msgid "Remove from Group"
+msgstr "গ্রুপ/দল হতে অপসারণ করুন"
+
+#: editor/groups_editor.cpp
 #, fuzzy
 msgid "Group name already exists."
 msgstr "ভুল: অ্যানিমেশনের নাম ইতিমধ্যেই বিদ্যমান!"
@@ -3911,13 +3980,23 @@ msgstr "ভুল: অ্যানিমেশনের নাম ইতিম�
 msgid "Invalid group name."
 msgstr "অগ্রহনযোগ্য নাম।"
 
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Rename Group"
+msgstr "ছবির গ্রুপসমূহ"
+
+#: editor/groups_editor.cpp
+#, fuzzy
+msgid "Delete Group"
+msgstr "ছবির গ্রুপ অপসারণ করুন"
+
 #: editor/groups_editor.cpp editor/node_dock.cpp
 msgid "Groups"
 msgstr "দলসমূহ"
 
 #: editor/groups_editor.cpp
 #, fuzzy
-msgid "Nodes not in Group"
+msgid "Nodes Not in Group"
 msgstr "গ্রুপ/দলে যোগ করুন"
 
 #: editor/groups_editor.cpp editor/scene_tree_dock.cpp
@@ -3932,12 +4011,13 @@ msgid "Nodes in Group"
 msgstr "গ্রুপসমূহ সম্পাদন করুন"
 
 #: editor/groups_editor.cpp
-msgid "Add to Group"
-msgstr "গ্রুপ/দলে যোগ করুন"
+msgid "Empty groups will be automatically removed."
+msgstr ""
 
 #: editor/groups_editor.cpp
-msgid "Remove from Group"
-msgstr "গ্রুপ/দল হতে অপসারণ করুন"
+#, fuzzy
+msgid "Group Editor"
+msgstr "এডিটরে খুলুন"
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -4157,7 +4237,8 @@ msgid "MultiNode Set"
 msgstr "মাল্টি-নোড স্থাপন করুন"
 
 #: editor/node_dock.cpp
-msgid "Select a Node to edit Signals and Groups."
+#, fuzzy
+msgid "Select a single node to edit its signals and groups."
 msgstr "সিগন্যাল-সমূহ এবং দলসমূহ সম্পাদন করতে একটি নোড নির্বাচন করুন।"
 
 #: editor/plugin_config_dialog.cpp
@@ -4973,10 +5054,6 @@ msgid "View Files"
 msgstr "ফাইল"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Can't resolve hostname:"
-msgstr "হোস্টনাম রিসলভ করা যায়নি:"
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Connection error, please try again."
 msgstr "সংযোগ ত্রুটি, আবার চেষ্টা করুন।"
 
@@ -4990,13 +5067,46 @@ msgid "No response from host:"
 msgstr "হোস্ট থেকে কোন প্রতিক্রিয়া নেই:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Can't resolve hostname:"
+msgstr "হোস্টনাম রিসলভ করা যায়নি:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 #, fuzzy
 msgid "Request failed, return code:"
 msgstr "আবেদনকৃত ফাইল ফরম্যাট/ধরণ অজানা:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed."
+msgstr "রিকুয়েস্ট ব্যর্থ হয়েছে।"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Cannot save response to:"
+msgstr "থিমটি ফাইলে সংরক্ষণ করা সম্ভব হয়নি:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+msgid "Write error."
+msgstr ""
+
+#: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
 msgstr "অনুরোধ ব্যর্থ হয়েছে, অধিক সংখ্যক রিডাইরেক্ট এর কারণে"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Redirect loop."
+msgstr "লুপ পুনঃনির্দেশ করুন।"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Request failed, timeout"
+msgstr "আবেদনকৃত ফাইল ফরম্যাট/ধরণ অজানা:"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Timeout."
+msgstr "সময়:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Bad download hash, assuming file has been tampered with."
@@ -5079,13 +5189,17 @@ msgid "Last"
 msgstr ""
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: modules/gdnative/gdnative_library_editor_plugin.cpp
 msgid "All"
 msgstr "সকল"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#: editor/project_settings_editor.cpp
-msgid "Plugins"
+#, fuzzy
+msgid "Import..."
+msgstr "পুন-ইম্পোর্ট..."
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Plugins..."
 msgstr "প্লাগইন-সমূহ"
 
 #: editor/plugins/asset_library_editor_plugin.cpp editor/project_manager.cpp
@@ -5107,7 +5221,8 @@ msgid "Site:"
 msgstr "ওয়েবসাইট:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-msgid "Support..."
+#, fuzzy
+msgid "Support"
 msgstr "সমর্থন..."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
@@ -5117,6 +5232,11 @@ msgstr "অফিসিয়াল/প্রাথমিক উৎস"
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Testing"
 msgstr "পরীক্ষামূলক উৎস"
+
+#: editor/plugins/asset_library_editor_plugin.cpp
+#, fuzzy
+msgid "Loading..."
+msgstr "লোড"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Assets ZIP File"
@@ -5294,6 +5414,11 @@ msgstr "ভঙ্গি প্রতিলেপন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
+msgid "Clear Guides"
+msgstr "ভঙ্গি পরিষ্কার করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
 msgid "Create Custom Bone(s) from Node(s)"
 msgstr "Mesh হতে Emitter তৈরি করুন"
 
@@ -5324,6 +5449,7 @@ msgid "Zoom Reset"
 msgstr "জুম্ পুন:স্থাপন করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Select Mode"
 msgstr "মোড (Mode) বাছাই করুন"
 
@@ -5344,14 +5470,17 @@ msgid "Alt+RMB: Depth list selection"
 msgstr "অল্টার কী + মাউসের ডান বোতাম: গভীর তালিকায় নির্বাচন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Move Mode"
 msgstr "মোড (Mode) সরান"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Rotate Mode"
 msgstr "ঘূর্ণায়ন মোড"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
 msgid "Scale Mode"
 msgstr "মাপের মোড করুন (R)"
@@ -5379,6 +5508,7 @@ msgid "Toggle snapping."
 msgstr "ছেদবিন্দু অদলবদল করুন (টগল ব্রেকপয়েন্ট)"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Use Snap"
 msgstr "স্ন্যাপ ব্যবহার করুন"
 
@@ -5397,12 +5527,6 @@ msgid "Use Rotation Snap"
 msgstr "ঘূর্ণন স্ন্যাপ ব্যবহার করুন"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Configure Snap..."
-msgstr "স্ন্যাপ কনফিগার করুন..."
-
-#: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Snap Relative"
 msgstr "আপেক্ষিক স্ন্যাপ"
 
@@ -5414,6 +5538,12 @@ msgstr "পিক্সেল স্ন্যাপ ব্যবহার কর
 #, fuzzy
 msgid "Smart Snapping"
 msgstr "স্মার্ট স্ন্যাপিং ব্যাবহার করুন"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Configure Snap..."
+msgstr "স্ন্যাপ কনফিগার করুন..."
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #, fuzzy
@@ -5641,16 +5771,6 @@ msgstr "Poly সম্পাদন করুন (বিন্দু অপসা
 #: editor/plugins/collision_shape_2d_editor_plugin.cpp
 msgid "Set Handle"
 msgstr "হ্যান্ডেল স্থাপন করুন"
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "Error loading image:"
-msgstr "ছবি লোডে সমস্যা হয়েছে:"
-
-#: editor/plugins/cpu_particles_2d_editor_plugin.cpp
-#: editor/plugins/particles_2d_editor_plugin.cpp
-msgid "No pixels with transparency > 128 in image..."
-msgstr "স্বচ্ছতাসহ কোনো পিক্সেল নেই > ছবিতে ১২৮..."
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5988,14 +6108,6 @@ msgid "Surface source is invalid (no faces)."
 msgstr "পৃষ্ঠতলের উৎস অকার্যকর (কোনো ফোকাস নেই)।"
 
 #: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Parent has no solid faces to populate."
-msgstr "পপুলেট করার জন্য ধারকের কোনো নিরেট পৃষ্ঠ নেই।"
-
-#: editor/plugins/multimesh_editor_plugin.cpp
-msgid "Couldn't map area."
-msgstr "এলাকার নকশা করা সম্ভব হয়নি।"
-
-#: editor/plugins/multimesh_editor_plugin.cpp
 msgid "Select a Source Mesh:"
 msgstr "Mesh-এর একটি উৎস নির্বাচন করুন:"
 
@@ -6082,20 +6194,27 @@ msgid "Generation Time (sec):"
 msgstr "গড় সময় (সেঃ)"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Faces contain no area!"
-msgstr "পৃষ্ঠসমূহ কোনো আকার নেই!"
+msgid "The geometry's faces don't contain any area."
+msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "No faces!"
-msgstr "কোনো পৃষ্ঠ নেই!"
+#, fuzzy
+msgid "The geometry doesn't contain any faces."
+msgstr "নোডে কোনো জ্যামিতিক আকার নেই (পৃষ্ঠ)।"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry."
+msgid "\"%s\" doesn't inherit from Spatial."
+msgstr ""
+
+#: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
+msgid "\"%s\" doesn't contain geometry."
 msgstr "নোডে কোনো জ্যামিতিক আকার নেই।"
 
 #: editor/plugins/particles_editor_plugin.cpp
-msgid "Node does not contain geometry (faces)."
-msgstr "নোডে কোনো জ্যামিতিক আকার নেই (পৃষ্ঠ)।"
+#, fuzzy
+msgid "\"%s\" doesn't contain face geometry."
+msgstr "নোডে কোনো জ্যামিতিক আকার নেই।"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"
@@ -6449,7 +6568,6 @@ msgid "Grid Settings"
 msgstr "স্ন্যাপ সেটিংস"
 
 #: editor/plugins/polygon_2d_editor_plugin.cpp
-#: editor/plugins/spatial_editor_plugin.cpp
 msgid "Snap"
 msgstr "স্ন্যাপ"
 
@@ -6569,13 +6687,8 @@ msgstr "ছবি লোডে সমস্যা হয়েছে:"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "Error: could not load file."
-msgstr "ছবি লোড অসম্ভব হয়েছে"
-
-#: editor/plugins/script_editor_plugin.cpp
-#, fuzzy
-msgid "Error could not load file."
-msgstr "ছবি লোড অসম্ভব হয়েছে"
+msgid "Could not load file at:"
+msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
@@ -6604,7 +6717,7 @@ msgstr "ইম্পোর্টে সমস্যা হয়েছে"
 
 #: editor/plugins/script_editor_plugin.cpp
 #, fuzzy
-msgid "New TextFile..."
+msgid "New Text File..."
 msgstr "ফোল্ডার তৈরি করুন"
 
 #: editor/plugins/script_editor_plugin.cpp
@@ -6692,6 +6805,11 @@ msgid "Open..."
 msgstr "খুলুন"
 
 #: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Reopen Closed Script"
+msgstr "পরবর্তী স্ক্রিপ্ট"
+
+#: editor/plugins/script_editor_plugin.cpp
 msgid "Save All"
 msgstr "সকল্গুলি সংরক্ষণ করুন"
 
@@ -6732,12 +6850,12 @@ msgid "Save Theme"
 msgstr "থিম সংরক্ষণ করুন"
 
 #: editor/plugins/script_editor_plugin.cpp
-msgid "Close Docs"
-msgstr "ডকুমেন্টসমূহ বন্ধ করুন"
-
-#: editor/plugins/script_editor_plugin.cpp
 msgid "Close All"
 msgstr "সবগুলি বন্ধ করুন"
+
+#: editor/plugins/script_editor_plugin.cpp
+msgid "Close Docs"
+msgstr "ডকুমেন্টসমূহ বন্ধ করুন"
 
 #: editor/plugins/script_editor_plugin.cpp editor/project_manager.cpp
 msgid "Run"
@@ -6831,6 +6949,11 @@ msgstr "ডিবাগার"
 msgid "Search Results"
 msgstr "সাহায্য অনুসন্ধান করুন"
 
+#: editor/plugins/script_editor_plugin.cpp
+#, fuzzy
+msgid "Clear Recent Scripts"
+msgstr "বোন্‌/হাড় পরিষ্কার করুন"
+
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
 msgid "Connections to method:"
@@ -6905,6 +7028,7 @@ msgid "Syntax Highlighter"
 msgstr ""
 
 #: editor/plugins/script_text_editor.cpp
+#: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
 msgstr ""
 
@@ -6942,26 +7066,6 @@ msgstr "কমেন্ট টগল করুন"
 
 #: editor/plugins/script_text_editor.cpp
 #, fuzzy
-msgid "Toggle Bookmark"
-msgstr "পূর্ণ-পর্দা অদলবদল/টগল করুন"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Next Bookmark"
-msgstr "পরের বিরতিবিন্দুতে যান"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Previous Bookmark"
-msgstr "পূর্বের বিরতিবিন্দুতে যান"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Remove All Bookmarks"
-msgstr "ক্লাসের আইটেম অপসারণ করুন"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
 msgid "Fold/Unfold Line"
 msgstr "লাইন আনফোল্ড করুন"
 
@@ -6982,6 +7086,11 @@ msgid "Complete Symbol"
 msgstr "সিম্বল সম্পূর্ণ করুন"
 
 #: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Evaluate Selection"
+msgstr "নির্বাচিত সমূহের আকার পরিবর্তন করুন"
+
+#: editor/plugins/script_text_editor.cpp
 msgid "Trim Trailing Whitespace"
 msgstr "শেষের হোয়াইটস্পেস ছেঁটে ফেলুন"
 
@@ -6998,6 +7107,49 @@ msgstr "ইন্ডেন্টগুলি ট্যাবে রূপান�
 #: editor/plugins/script_text_editor.cpp
 msgid "Auto Indent"
 msgstr "স্বয়ংক্রিয়ভাবে মাত্রা দিন"
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Find Previous"
+msgstr "পূর্বে খুঁজুন"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Find in Files..."
+msgstr "দ্রুত ফাইলসমূহ ফিল্টার করুন..."
+
+#: editor/plugins/script_text_editor.cpp
+msgid "Contextual Help"
+msgstr "প্রাসঙ্গিক সাহায্য"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Toggle Bookmark"
+msgstr "পূর্ণ-পর্দা অদলবদল/টগল করুন"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Next Bookmark"
+msgstr "পরের বিরতিবিন্দুতে যান"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Previous Bookmark"
+msgstr "পূর্বের বিরতিবিন্দুতে যান"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Remove All Bookmarks"
+msgstr "ক্লাসের আইটেম অপসারণ করুন"
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Function..."
+msgstr "ফাংশনে যান..."
+
+#: editor/plugins/script_text_editor.cpp
+#, fuzzy
+msgid "Go to Line..."
+msgstr "লাইনে যান..."
 
 #: editor/plugins/script_text_editor.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -7017,29 +7169,6 @@ msgstr "পরের বিরতিবিন্দুতে যান"
 #, fuzzy
 msgid "Go to Previous Breakpoint"
 msgstr "পূর্বের বিরতিবিন্দুতে যান"
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Find Previous"
-msgstr "পূর্বে খুঁজুন"
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Find in Files..."
-msgstr "দ্রুত ফাইলসমূহ ফিল্টার করুন..."
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Function..."
-msgstr "ফাংশনে যান..."
-
-#: editor/plugins/script_text_editor.cpp
-#, fuzzy
-msgid "Go to Line..."
-msgstr "লাইনে যান..."
-
-#: editor/plugins/script_text_editor.cpp
-msgid "Contextual Help"
-msgstr "প্রাসঙ্গিক সাহায্য"
 
 #: editor/plugins/shader_editor_plugin.cpp
 #, fuzzy
@@ -7232,8 +7361,13 @@ msgstr "পশ্চাৎ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Align with View"
+msgid "Align Transform with View"
 msgstr "দর্শনের সাথে সারিবদ্ধ করুন"
+
+#: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
+msgid "Align Rotation with View"
+msgstr "নির্বাচনকে দর্শনের সাথে সারিবদ্ধ করুন"
 
 #: editor/plugins/spatial_editor_plugin.cpp editor/scene_tree_dock.cpp
 msgid "No parent to instance a child at."
@@ -7295,8 +7429,8 @@ msgstr "অডিও শ্রোতা"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Doppler Enable"
-msgstr "সক্রিয় করুন"
+msgid "Enable Doppler"
+msgstr "সম্পাদনযোগ্য অংশীদারীসমূহ"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -7355,9 +7489,8 @@ msgid "Snap Nodes To Floor"
 msgstr "স্ন্যাপ মোড:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Select Mode (Q)"
-msgstr "মোড (Mode) বাছাই করুন"
+msgid "Couldn't find a solid floor to snap the selection to."
+msgstr ""
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -7368,30 +7501,9 @@ msgid ""
 msgstr "অল্টার কী + মাউসের ডান বোতাম: গভীর তালিকায় নির্বাচন"
 
 #: editor/plugins/spatial_editor_plugin.cpp
-msgid "Move Mode (W)"
-msgstr "সরানোর মোড (W)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Rotate Mode (E)"
-msgstr "ঘোরানোর মোড (E)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Scale Mode (R)"
-msgstr "মাপের মোড করুন (R)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Local Coords"
-msgstr "স্থানীয় স্থানাঙ্কসমূহ"
-
-#: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
-msgid "Local Space Mode (%s)"
+msgid "Use Local Space"
 msgstr "মাপের মোড করুন (R)"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Snap Mode (%s)"
-msgstr "স্ন্যাপ মোড:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Bottom View"
@@ -7433,30 +7545,6 @@ msgstr "অরিজিনে ফোকাস করুন"
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid "Focus Selection"
 msgstr "নির্বাচনে ফোকাস করুন"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-msgid "Align Selection With View"
-msgstr "নির্বাচনকে দর্শনের সাথে সারিবদ্ধ করুন"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Tool Select"
-msgstr "নির্বাচন করুন"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Tool Move"
-msgstr "সরান"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Tool Rotate"
-msgstr "কন্ট্রোল বোতাম: ঘূর্ণন"
-
-#: editor/plugins/spatial_editor_plugin.cpp
-#, fuzzy
-msgid "Tool Scale"
-msgstr "স্কেল/মাপ:"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -7516,7 +7604,8 @@ msgstr "গ্রিড দেখুন"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #: modules/gridmap/grid_map_editor_plugin.cpp
-msgid "Settings"
+#, fuzzy
+msgid "Settings..."
 msgstr "সেটিংস"
 
 #: editor/plugins/spatial_editor_plugin.cpp
@@ -7839,10 +7928,6 @@ msgid "TextureRegion"
 msgstr "গঠনবিন্যাসের এলাকা"
 
 #: editor/plugins/theme_editor_plugin.cpp
-msgid "Can't save theme to file:"
-msgstr "থিমটি ফাইলে সংরক্ষণ করা সম্ভব হয়নি:"
-
-#: editor/plugins/theme_editor_plugin.cpp
 msgid "Add All Items"
 msgstr "সকল বস্তু যোগ করুন"
 
@@ -7937,12 +8022,12 @@ msgstr ""
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Item 1"
+msgid "Subitem 1"
 msgstr "বস্তু/আইটেম"
 
 #: editor/plugins/theme_editor_plugin.cpp
 #, fuzzy
-msgid "Item 2"
+msgid "Subitem 2"
 msgstr "বস্তু/আইটেম"
 
 #: editor/plugins/theme_editor_plugin.cpp
@@ -8072,8 +8157,8 @@ msgstr "TileMap আঁকুন"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
 msgid ""
-"Shift+RMB: Line Draw\n"
-"Shift+Ctrl+RMB: Rectangle Paint"
+"Shift+LMB: Line Draw\n"
+"Shift+Ctrl+LMB: Rectangle Paint"
 msgstr ""
 
 #: editor/plugins/tile_map_editor_plugin.cpp
@@ -8396,6 +8481,10 @@ msgid "TileSet"
 msgstr "TileSet (টাইল-সেট)..."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "(GLES3 only)"
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Add input +"
 msgstr "ইনপুট যোগ করুন"
@@ -8488,16 +8577,17 @@ msgid "Duplicate Nodes"
 msgstr "নোড(সমূহ) প্রতিলিপি করুন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Paste Nodes"
+msgstr "নোড-সমূহ প্রতিলেপন/পেস্ট করুন"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
 msgid "Delete Nodes"
 msgstr "নোড(সমূহ) অপসারণ করুন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Visual Shader Input Type Changed"
-msgstr ""
-
-#: editor/plugins/visual_shader_editor_plugin.cpp
-msgid "(GLES3 only)"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8513,6 +8603,11 @@ msgstr "ফ্রাগমেন্ট"
 #, fuzzy
 msgid "Light"
 msgstr "ডান"
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
+msgid "Show resulted shader code."
+msgstr "নোড তৈরি করুন"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8883,7 +8978,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if x is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if x is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -8892,7 +8987,7 @@ msgstr ""
 msgid ""
 "Step function( scalar(edge), scalar(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9061,6 +9156,10 @@ msgid "Linear interpolation between two vectors."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+msgid "Linear interpolation between two vectors using scalar."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Calculates the normalize product of vector."
 msgstr ""
 
@@ -9086,7 +9185,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( vector(edge0), vector(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -9095,7 +9194,7 @@ msgstr ""
 msgid ""
 "SmoothStep function( scalar(edge0), scalar(edge1), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge0' and 1.0 if 'x' is larger than "
+"Returns 0.0 if 'x' is smaller than 'edge0' and 1.0 if 'x' is larger than "
 "'edge1'. Otherwise the return value is interpolated between 0.0 and 1.0 "
 "using Hermite polynomials."
 msgstr ""
@@ -9104,14 +9203,14 @@ msgstr ""
 msgid ""
 "Step function( vector(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Step function( scalar(edge), vector(x) ).\n"
 "\n"
-"Returns 0.0 if 'x' is smaller then 'edge' and otherwise 1.0."
+"Returns 0.0 if 'x' is smaller than 'edge' and otherwise 1.0."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9155,6 +9254,13 @@ msgstr ""
 msgid ""
 "Returns falloff based on the dot product of surface normal and view "
 "direction of camera (pass associated inputs to it)."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Custom Godot Shader Language expression, which placed on top of the resulted "
+"shader. You can place various function definitions inside and call it later "
+"in the Expressions. You can also declare varyings, uniforms and constants."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9395,6 +9501,11 @@ msgstr "এই প্ল্যাটফর্মের জন্য দরকা
 
 #: editor/project_export.cpp
 #, fuzzy
+msgid "Manage Export Templates"
+msgstr "এক্সপোর্ট টেমপ্লেটসমূহ লোড হচ্ছে"
+
+#: editor/project_export.cpp
+#, fuzzy
 msgid "Export With Debug"
 msgstr "Tile Set এক্সপোর্ট করুন"
 
@@ -9556,6 +9667,15 @@ msgstr "নামহীন প্রকল্প"
 
 #: editor/project_manager.cpp
 #, fuzzy
+msgid "Missing Project"
+msgstr "বিদ্যমান প্রকল্প ইম্পোর্ট করুন"
+
+#: editor/project_manager.cpp
+msgid "Error: Project is missing on the filesystem."
+msgstr ""
+
+#: editor/project_manager.cpp
+#, fuzzy
 msgid "Can't open project at '%s'."
 msgstr "সংযোগ..."
 
@@ -9635,8 +9755,8 @@ msgstr "তালিকা হতে প্রকল্প অপসারণ �
 #: editor/project_manager.cpp
 #, fuzzy
 msgid ""
-"Remove all missing projects from the list? (Folders contents will not be "
-"modified)"
+"Remove all missing projects from the list?\n"
+"The project folders' contents won't be modified."
 msgstr "তালিকা হতে প্রকল্প অপসারণ করবেন? (ফোল্ডারের বিষয়াদি পরিবর্তন হবে না)"
 
 #: editor/project_manager.cpp
@@ -9662,8 +9782,9 @@ msgid "Project Manager"
 msgstr "প্রজেক্ট ম্যানেজার"
 
 #: editor/project_manager.cpp
-msgid "Project List"
-msgstr "প্রকল্পের তালিকা"
+#, fuzzy
+msgid "Projects"
+msgstr "নতুন প্রকল্প"
 
 #: editor/project_manager.cpp
 msgid "Scan"
@@ -9686,10 +9807,6 @@ msgstr "পথের বিন্দু অপসারণ করুন"
 #, fuzzy
 msgid "Templates"
 msgstr "বস্তু অপসারণ করুন"
-
-#: editor/project_manager.cpp
-msgid "Exit"
-msgstr "প্রস্থান করুন"
 
 #: editor/project_manager.cpp
 #, fuzzy
@@ -10048,6 +10165,10 @@ msgstr "ঘটনাস্থল"
 msgid "AutoLoad"
 msgstr "স্বয়ংক্রিয়-লোড"
 
+#: editor/project_settings_editor.cpp
+msgid "Plugins"
+msgstr "প্লাগইন-সমূহ"
+
 #: editor/property_editor.cpp
 msgid "Zero"
 msgstr "শূন্য"
@@ -10102,14 +10223,6 @@ msgstr "মেথড/পদ্ধতি বাছাই করুন"
 #: editor/property_selector.cpp
 msgid "Select Method"
 msgstr "মেথড/পদ্ধতি বাছাই করুন"
-
-#: editor/pvrtc_compress.cpp
-msgid "Could not execute PVRTC tool:"
-msgstr "PVRTC সরঞ্জাম এক্সিকিউট করা সম্ভব হচ্ছে না:"
-
-#: editor/pvrtc_compress.cpp
-msgid "Can't load back converted image using PVRTC tool:"
-msgstr "PVRTC সরঞ্জাম দ্বারা রূপান্তরিত ছবি পুনরায় লোড করা সম্ভব নয়:"
 
 #: editor/rename_dialog.cpp editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10417,6 +10530,11 @@ msgid "Remove Node(s)"
 msgstr "নোড(সমূহ) অপসারণ করুন"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Change type of node(s)"
+msgstr "ইনপুট নাম পরিবর্তন করুন"
+
+#: editor/scene_tree_dock.cpp
 msgid ""
 "Couldn't save new scene. Likely dependencies (instances) couldn't be "
 "satisfied."
@@ -10463,6 +10581,11 @@ msgstr "ধরণ পরিবর্তন করুন"
 #, fuzzy
 msgid "Extend Script"
 msgstr "পরবর্তী স্ক্রিপ্ট"
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Reparent to New Node"
+msgstr "নোডের নতুন অভিভাবক দান করুন"
 
 #: editor/scene_tree_dock.cpp
 #, fuzzy
@@ -10548,23 +10671,25 @@ msgstr "নোড কনফিগারেশন সতর্কবার্ত�
 #: editor/scene_tree_editor.cpp
 #, fuzzy
 msgid ""
-"Node has connection(s) and group(s).\n"
+"Node has %s connection(s) and %s group(s).\n"
 "Click to show signals dock."
 msgstr ""
 "এই নোডের কানেকশন এবং গ্রুপ বিদ্যমান\n"
 "সিগন্যাল ডক দেখানোর জন্য ক্লিক করুন।"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid ""
-"Node has connections.\n"
+"Node has %s connection(s).\n"
 "Click to show signals dock."
 msgstr ""
 "এই নোডের কানেকশন বিদ্যমান\n"
 "সিগন্যাল ডক দেখানোর জন্য ক্লিক করুন।"
 
 #: editor/scene_tree_editor.cpp
+#, fuzzy
 msgid ""
-"Node is in group(s).\n"
+"Node is in %s group(s).\n"
 "Click to show groups dock."
 msgstr ""
 "এই নোডটি একটি গ্রুপের অন্তর্ভুক্ত।\n"
@@ -10672,6 +10797,11 @@ msgstr "ফাইলসিস্টেমে স্ক্রিপ্ট তৈ�
 #: editor/script_create_dialog.cpp
 msgid "Error loading script from %s"
 msgstr "%s হতে স্ক্রিপ্ট তুলতে/লোডে সমস্যা হয়েছে"
+
+#: editor/script_create_dialog.cpp
+#, fuzzy
+msgid "Overrides"
+msgstr "ওভাররাইড..."
 
 #: editor/script_create_dialog.cpp
 msgid "N/A"
@@ -10880,6 +11010,10 @@ msgstr "শর্টকাটসমূহ"
 #, fuzzy
 msgid "Change Shortcut"
 msgstr "অ্যাংকরসমূহ পরিবর্তন করুন"
+
+#: editor/settings_config_dialog.cpp
+msgid "Editor Settings"
+msgstr "এডিটরের সেটিংস"
 
 #: editor/settings_config_dialog.cpp
 msgid "Shortcuts"
@@ -11343,8 +11477,30 @@ msgid "Set Variable Type"
 msgstr "চলক/ভেরিয়েবল সম্পাদন করুন:"
 
 #: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Override an existing built-in function."
+msgstr ""
+"অগ্রহনযোগ্য নাম। নামটি অবশ্যই বিদ্যমান পূর্বনির্মিত ধরণের নামের সাথে পরম্পরবিরোধী "
+"হতে পারবে না।"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new function."
+msgstr "নতুন তৈরি করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Variables:"
 msgstr "ভেরিয়েবলস/চলকসমূহ:"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new variable."
+msgstr "নতুন তৈরি করুন"
+
+#: modules/visual_script/visual_script_editor.cpp
+#, fuzzy
+msgid "Create a new signal."
+msgstr "আরম্ভ হতে নতুন polygon তৈরি করুন।"
 
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Name is not a valid identifier:"
@@ -11553,10 +11709,6 @@ msgstr "নোড-সমূহ প্রতিলিপি/কপি করু�
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Cut Nodes"
 msgstr "নোড-সমূহ কর্তন/কাট করুন"
-
-#: modules/visual_script/visual_script_editor.cpp
-msgid "Paste Nodes"
-msgstr "নোড-সমূহ প্রতিলেপন/পেস্ট করুন"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -12370,22 +12522,6 @@ msgstr ""
 "আকার ধারণ করতে পারে। অন্যথায়, এটিকে একটি RenderTarget করুন এবং এর অভ্যন্তরীণ "
 "দৃশ্যাবলিকে (texture) দৃশ্যমান করতে কোনো নোডে হস্তান্তর করুন।"
 
-#: scene/resources/dynamic_font.cpp
-msgid "Error initializing FreeType."
-msgstr "FreeType আরম্ভে সমস্যা হয়েছে।"
-
-#: scene/resources/dynamic_font.cpp
-msgid "Unknown font format."
-msgstr "অজানা ধরনের ফন্ট।"
-
-#: scene/resources/dynamic_font.cpp
-msgid "Error loading font."
-msgstr "ফন্ট তুলতে/লোডে সমস্যা হয়েছে।"
-
-#: scene/resources/dynamic_font.cpp
-msgid "Invalid font size."
-msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
-
 #: scene/resources/visual_shader.cpp
 #, fuzzy
 msgid "Input"
@@ -12421,6 +12557,123 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid ""
+#~ "Can't open file_type_cache.cch for writing, not saving file type cache!"
+#~ msgstr ""
+#~ "লেখার জন্য file_type_cache.cch খোলা সম্ভব হচ্ছে না, ফাইলের ধরণ ক্যাশ (cache) "
+#~ "সংরক্ষিত হচ্ছে না!"
+
+#~ msgid "Cannot navigate to '%s' as it has not been found in the file system!"
+#~ msgstr "'%s' তে নেভিগেট করা যাবে না কারণ এটি ফাইল সিস্টেমে পাওয়া যায়নি!"
+
+#~ msgid "Error loading image:"
+#~ msgstr "ছবি লোডে সমস্যা হয়েছে:"
+
+#~ msgid "No pixels with transparency > 128 in image..."
+#~ msgstr "স্বচ্ছতাসহ কোনো পিক্সেল নেই > ছবিতে ১২৮..."
+
+#~ msgid "Parent has no solid faces to populate."
+#~ msgstr "পপুলেট করার জন্য ধারকের কোনো নিরেট পৃষ্ঠ নেই।"
+
+#~ msgid "Couldn't map area."
+#~ msgstr "এলাকার নকশা করা সম্ভব হয়নি।"
+
+#~ msgid "Faces contain no area!"
+#~ msgstr "পৃষ্ঠসমূহ কোনো আকার নেই!"
+
+#~ msgid "No faces!"
+#~ msgstr "কোনো পৃষ্ঠ নেই!"
+
+#, fuzzy
+#~ msgid "Error: could not load file."
+#~ msgstr "ছবি লোড অসম্ভব হয়েছে"
+
+#, fuzzy
+#~ msgid "Error could not load file."
+#~ msgstr "ছবি লোড অসম্ভব হয়েছে"
+
+#, fuzzy
+#~ msgid "Doppler Enable"
+#~ msgstr "সক্রিয় করুন"
+
+#, fuzzy
+#~ msgid "Select Mode (Q)"
+#~ msgstr "মোড (Mode) বাছাই করুন"
+
+#~ msgid "Move Mode (W)"
+#~ msgstr "সরানোর মোড (W)"
+
+#~ msgid "Rotate Mode (E)"
+#~ msgstr "ঘোরানোর মোড (E)"
+
+#~ msgid "Scale Mode (R)"
+#~ msgstr "মাপের মোড করুন (R)"
+
+#~ msgid "Local Coords"
+#~ msgstr "স্থানীয় স্থানাঙ্কসমূহ"
+
+#, fuzzy
+#~ msgid "Snap Mode (%s)"
+#~ msgstr "স্ন্যাপ মোড:"
+
+#, fuzzy
+#~ msgid "Tool Select"
+#~ msgstr "নির্বাচন করুন"
+
+#, fuzzy
+#~ msgid "Tool Move"
+#~ msgstr "সরান"
+
+#, fuzzy
+#~ msgid "Tool Rotate"
+#~ msgstr "কন্ট্রোল বোতাম: ঘূর্ণন"
+
+#, fuzzy
+#~ msgid "Tool Scale"
+#~ msgstr "স্কেল/মাপ:"
+
+#, fuzzy
+#~ msgid ""
+#~ "Remove all missing projects from the list? (Folders contents will not be "
+#~ "modified)"
+#~ msgstr "তালিকা হতে প্রকল্প অপসারণ করবেন? (ফোল্ডারের বিষয়াদি পরিবর্তন হবে না)"
+
+#~ msgid "Project List"
+#~ msgstr "প্রকল্পের তালিকা"
+
+#~ msgid "Exit"
+#~ msgstr "প্রস্থান করুন"
+
+#~ msgid "Could not execute PVRTC tool:"
+#~ msgstr "PVRTC সরঞ্জাম এক্সিকিউট করা সম্ভব হচ্ছে না:"
+
+#~ msgid "Can't load back converted image using PVRTC tool:"
+#~ msgstr "PVRTC সরঞ্জাম দ্বারা রূপান্তরিত ছবি পুনরায় লোড করা সম্ভব নয়:"
+
+#~ msgid "Error initializing FreeType."
+#~ msgstr "FreeType আরম্ভে সমস্যা হয়েছে।"
+
+#~ msgid "Unknown font format."
+#~ msgstr "অজানা ধরনের ফন্ট।"
+
+#~ msgid "Error loading font."
+#~ msgstr "ফন্ট তুলতে/লোডে সমস্যা হয়েছে।"
+
+#~ msgid "Invalid font size."
+#~ msgstr "ফন্টের আকার অগ্রহনযোগ্য।"
+
+#, fuzzy
+#~ msgid "Previous Folder"
+#~ msgstr "পূর্বের ট্যাব"
+
+#, fuzzy
+#~ msgid "Next Folder"
+#~ msgstr "ফোল্ডার তৈরি করুন"
+
+#, fuzzy
+#~ msgid "Open in an external image editor."
+#~ msgstr "এডিটরে খুলুন"
 
 #~ msgid "Reverse"
 #~ msgstr "উল্টান/বিপরীত দিকে ফিরান"
@@ -13021,9 +13274,6 @@ msgstr ""
 #~ msgid "Erase selection"
 #~ msgstr "নির্বাচিতসমূহ মুছে ফেলুন"
 
-#~ msgid "Could not find tile:"
-#~ msgstr "টাইলটি খুঁজে পাওয়া যায়নি:"
-
 #~ msgid "Item name or ID:"
 #~ msgstr "আইটেমের নাম বা আইডি:"
 
@@ -13277,9 +13527,6 @@ msgstr ""
 
 #~ msgid "Info"
 #~ msgstr "তথ্য"
-
-#~ msgid "Re-Import..."
-#~ msgstr "পুন-ইম্পোর্ট..."
 
 #~ msgid "No bit masks to import!"
 #~ msgstr "ইম্পোর্ট করার জন্য কোনো বিট মাস্ক নেই!"
@@ -13676,9 +13923,6 @@ msgstr ""
 #~ msgid "Stereo"
 #~ msgstr "স্টেরিও"
 
-#~ msgid "Window"
-#~ msgstr "উইন্ডো"
-
 #~ msgid "Scaling to %s%%."
 #~ msgstr "%s%% -এ মাপিত হচ্ছে।"
 
@@ -13909,9 +14153,6 @@ msgstr ""
 #~ msgid "Add Image Group"
 #~ msgstr "ছবির গ্রুপ যোগ করুন"
 
-#~ msgid "Delete Image Group"
-#~ msgstr "ছবির গ্রুপ অপসারণ করুন"
-
 #~ msgid "Project Export Settings"
 #~ msgstr "প্রকল্প এক্সপোর্ট-এর সেটিংস"
 
@@ -13995,9 +14236,6 @@ msgstr ""
 
 #~ msgid "Export Project PCK"
 #~ msgstr "প্রকল্পের PCK এক্সপোর্ট করুন"
-
-#~ msgid "Export..."
-#~ msgstr "এক্সপোর্ট..."
 
 #~ msgid "Project Export"
 #~ msgstr "এক্সপোর্ট প্রকল্প"

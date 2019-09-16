@@ -102,6 +102,8 @@ Vector3 RayCast::get_collision_normal() const {
 void RayCast::set_enabled(bool p_enabled) {
 
 	enabled = p_enabled;
+	update_gizmo();
+
 	if (is_inside_tree() && !Engine::get_singleton()->is_editor_hint())
 		set_physics_process_internal(p_enabled);
 	if (!p_enabled)

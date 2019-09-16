@@ -38,9 +38,6 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Theme : public Resource {
 
 	GDCLASS(Theme, Resource);
@@ -139,7 +136,7 @@ public:
 	static void set_default(const Ref<Theme> &p_default);
 
 	static Ref<Theme> get_project_default();
-	static void set_project_default(const Ref<Theme> &p_default);
+	static void set_project_default(const Ref<Theme> &p_project_default);
 
 	static void set_default_icon(const Ref<Texture> &p_icon);
 	static void set_default_style(const Ref<StyleBox> &p_style);

@@ -60,14 +60,10 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 		use_ssl = true;
 		port = 443;
 	} else {
-		ERR_EXPLAIN("Malformed URL");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+		ERR_FAIL_V_MSG(ERR_INVALID_PARAMETER, "Malformed URL: " + url + ".");
 	}
 
-	if (url.length() < 1) {
-		ERR_EXPLAIN("URL too short");
-		ERR_FAIL_V(ERR_INVALID_PARAMETER);
-	}
+	ERR_FAIL_COND_V_MSG(url.length() < 1, ERR_INVALID_PARAMETER, "URL too short: " + url + ".");
 
 	int slash_pos = url.find("/");
 
@@ -91,10 +87,7 @@ Error HTTPRequest::_parse_url(const String &p_url) {
 Error HTTPRequest::request(const String &p_url, const Vector<String> &p_custom_headers, bool p_ssl_validate_domain, HTTPClient::Method p_method, const String &p_request_data) {
 
 	ERR_FAIL_COND_V(!is_inside_tree(), ERR_UNCONFIGURED);
-	if (requesting) {
-		ERR_EXPLAIN("HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
-		ERR_FAIL_V(ERR_BUSY);
-	}
+	ERR_FAIL_COND_V_MSG(requesting, ERR_BUSY, "HTTPRequest is processing a request. Wait for completion or cancel it before attempting a new one.");
 
 	if (timeout > 0) {
 		timer->stop();
