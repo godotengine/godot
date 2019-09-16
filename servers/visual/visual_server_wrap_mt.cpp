@@ -39,7 +39,7 @@ void VisualServerWrapMT::thread_exit() {
 
 void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
 
-	if (!atomic_decrement(&draw_pending)) {
+	if (!--draw_pending) {
 
 		visual_server->draw(p_swap_buffers, frame_step);
 	}
@@ -47,7 +47,7 @@ void VisualServerWrapMT::thread_draw(bool p_swap_buffers, double frame_step) {
 
 void VisualServerWrapMT::thread_flush() {
 
-	atomic_decrement(&draw_pending);
+	--draw_pending;
 }
 
 void VisualServerWrapMT::_thread_callback(void *_instance) {
@@ -83,7 +83,7 @@ void VisualServerWrapMT::sync() {
 
 	if (create_thread) {
 
-		atomic_increment(&draw_pending);
+		++draw_pending;
 		command_queue.push_and_sync(this, &VisualServerWrapMT::thread_flush);
 	} else {
 
@@ -95,7 +95,7 @@ void VisualServerWrapMT::draw(bool p_swap_buffers, double frame_step) {
 
 	if (create_thread) {
 
-		atomic_increment(&draw_pending);
+		++draw_pending;
 		command_queue.push(this, &VisualServerWrapMT::thread_draw, p_swap_buffers, frame_step);
 	} else {
 

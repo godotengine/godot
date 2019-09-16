@@ -95,7 +95,7 @@ StringName NodePath::get_subname(int p_idx) const {
 
 void NodePath::unref() {
 
-	if (data && data->refcount.unref()) {
+	if (data && --data->refcount == 0) {
 
 		memdelete(data);
 	}
@@ -157,7 +157,7 @@ void NodePath::operator=(const NodePath &p_path) {
 
 	unref();
 
-	if (p_path.data && p_path.data->refcount.ref()) {
+	if (p_path.data && atomic_conditional_increment(&p_path.data->refcount)) {
 
 		data = p_path.data;
 	}
@@ -191,7 +191,7 @@ NodePath::NodePath(const NodePath &p_path) {
 
 	data = NULL;
 
-	if (p_path.data && p_path.data->refcount.ref()) {
+	if (p_path.data && atomic_conditional_increment(&p_path.data->refcount)) {
 
 		data = p_path.data;
 	}
@@ -293,7 +293,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, bool p_absolute) {
 		return;
 
 	data = memnew(Data);
-	data->refcount.init();
+	data->refcount = 1;
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->has_slashes = true;
@@ -308,7 +308,7 @@ NodePath::NodePath(const Vector<StringName> &p_path, const Vector<StringName> &p
 		return;
 
 	data = memnew(Data);
-	data->refcount.init();
+	data->refcount = 1;
 	data->absolute = p_absolute;
 	data->path = p_path;
 	data->subpath = p_subpath;
@@ -405,7 +405,7 @@ NodePath::NodePath(const String &p_path) {
 		return;
 
 	data = memnew(Data);
-	data->refcount.init();
+	data->refcount = 1;
 	data->absolute = absolute;
 	data->has_slashes = has_slashes;
 	data->subpath = subpath;

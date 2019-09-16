@@ -31,10 +31,10 @@
 #ifndef RID_H
 #define RID_H
 
+#include "core/atomic_utils.h"
 #include "core/list.h"
 #include "core/oa_hash_map.h"
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
 #include "core/set.h"
 #include "core/typedefs.h"
 

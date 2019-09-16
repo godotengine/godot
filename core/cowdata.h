@@ -32,9 +32,10 @@
 #define COWDATA_H_
 
 #include <string.h>
+#include <new>
 
+#include "core/atomic_utils.h"
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
 
 template <class T>
 class Vector;
@@ -42,6 +43,12 @@ class String;
 class CharString;
 template <class T, class V>
 class VMap;
+
+// This is really important because we are keeping an atomic int in the prepadding provided
+// by the memory routines. That's OK because there's a guarantee that atomics of primitive types
+// are trivially copyable. However, we also need to make sure that the mamory layout of such
+// atomic is just the value itself.
+static_assert(sizeof(std::atomic<uint32_t>) == sizeof(uint32_t), "");
 
 template <class T>
 class CowData {
@@ -57,12 +64,12 @@ private:
 
 	// internal helpers
 
-	_FORCE_INLINE_ uint32_t *_get_refcount() const {
+	_FORCE_INLINE_ std::atomic<uint32_t> *_get_refcount() const {
 
 		if (!_ptr)
 			return NULL;
 
-		return reinterpret_cast<uint32_t *>(_ptr) - 2;
+		return reinterpret_cast<std::atomic<uint32_t> *>(_ptr) - 2;
 	}
 
 	_FORCE_INLINE_ uint32_t *_get_size() const {
@@ -104,7 +111,7 @@ private:
 #endif
 	}
 
-	void _unref(void *p_data);
+	void _unref();
 	void _ref(const CowData *p_from);
 	void _ref(const CowData &p_from);
 	void _copy_on_write();
@@ -187,14 +194,12 @@ public:
 };
 
 template <class T>
-void CowData<T>::_unref(void *p_data) {
+void CowData<T>::_unref() {
 
-	if (!p_data)
+	if (!_ptr)
 		return;
 
-	uint32_t *refc = _get_refcount();
-
-	if (atomic_decrement(refc) > 0)
+	if (--(*_get_refcount()) > 0)
 		return; // still in use
 	// clean up
 
@@ -209,7 +214,7 @@ void CowData<T>::_unref(void *p_data) {
 	}
 
 	// free mem
-	Memory::free_static((uint8_t *)p_data, true);
+	Memory::free_static(_ptr, true);
 }
 
 template <class T>
@@ -218,7 +223,7 @@ void CowData<T>::_copy_on_write() {
 	if (!_ptr)
 		return;
 
-	uint32_t *refc = _get_refcount();
+	std::atomic<uint32_t> *refc = _get_refcount();
 
 	if (unlikely(*refc > 1)) {
 		/* in use by more than me */
@@ -226,7 +231,7 @@ void CowData<T>::_copy_on_write() {
 
 		uint32_t *mem_new = (uint32_t *)Memory::alloc_static(_get_alloc_size(current_size), true);
 
-		*(mem_new - 2) = 1; //refcount
+		new (reinterpret_cast<std::atomic<uint32_t> *>(mem_new - 2)) std::atomic<uint32_t>(1); //refcount
 		*(mem_new - 1) = current_size; //size
 
 		T *_data = (T *)(mem_new);
@@ -241,7 +246,7 @@ void CowData<T>::_copy_on_write() {
 			}
 		}
 
-		_unref(_ptr);
+		_unref();
 		_ptr = _data;
 	}
 }
@@ -256,7 +261,7 @@ Error CowData<T>::resize(int p_size) {
 
 	if (p_size == 0) {
 		// wants to clean up
-		_unref(_ptr);
+		_unref();
 		_ptr = NULL;
 		return OK;
 	}
@@ -274,7 +279,7 @@ Error CowData<T>::resize(int p_size) {
 			uint32_t *ptr = (uint32_t *)Memory::alloc_static(alloc_size, true);
 			ERR_FAIL_COND_V(!ptr, ERR_OUT_OF_MEMORY);
 			*(ptr - 1) = 0; //size, currently none
-			*(ptr - 2) = 1; //refcount
+			new (reinterpret_cast<std::atomic<uint32_t> *>(ptr - 2)) std::atomic<uint32_t>(1); //refcount
 
 			_ptr = (T *)ptr;
 
@@ -346,7 +351,7 @@ void CowData<T>::_ref(const CowData &p_from) {
 	if (_ptr == p_from._ptr)
 		return; // self assign, do nothing.
 
-	_unref(_ptr);
+	_unref();
 	_ptr = NULL;
 
 	if (!p_from._ptr)
@@ -366,7 +371,7 @@ CowData<T>::CowData() {
 template <class T>
 CowData<T>::~CowData() {
 
-	_unref(_ptr);
+	_unref();
 }
 
 #endif /* COW_H_ */

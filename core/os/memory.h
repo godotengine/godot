@@ -31,9 +31,10 @@
 #ifndef MEMORY_H
 #define MEMORY_H
 
-#include "core/safe_refcount.h"
+#include "core/typedefs.h"
 
 #include <stddef.h>
+#include <atomic>
 
 #ifndef PAD_ALIGN
 #define PAD_ALIGN 16 //must always be greater than this at much
@@ -43,11 +44,11 @@ class Memory {
 
 	Memory();
 #ifdef DEBUG_ENABLED
-	static uint64_t mem_usage;
-	static uint64_t max_usage;
+	static std::atomic<uint64_t> mem_usage;
+	static std::atomic<uint64_t> max_usage;
 #endif
 
-	static uint64_t alloc_count;
+	static std::atomic<uint64_t> alloc_count;
 
 public:
 	static void *alloc_static(size_t p_bytes, bool p_pad_align = false);

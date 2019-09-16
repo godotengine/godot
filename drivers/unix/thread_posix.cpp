@@ -38,7 +38,6 @@
 #endif
 
 #include "core/os/memory.h"
-#include "core/safe_refcount.h"
 
 static void _thread_id_key_destr_callback(void *p_value) {
 	memdelete(static_cast<Thread::ID *>(p_value));
@@ -51,7 +50,7 @@ static pthread_key_t _create_thread_id_key() {
 }
 
 pthread_key_t ThreadPosix::thread_id_key = _create_thread_id_key();
-Thread::ID ThreadPosix::next_thread_id = 0;
+std::atomic<Thread::ID> ThreadPosix::next_thread_id(1);
 
 Thread::ID ThreadPosix::get_id() const {
 
@@ -66,7 +65,7 @@ Thread *ThreadPosix::create_thread_posix() {
 void *ThreadPosix::thread_callback(void *userdata) {
 
 	ThreadPosix *t = reinterpret_cast<ThreadPosix *>(userdata);
-	t->id = atomic_increment(&next_thread_id);
+	t->id = next_thread_id++;
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(t->id)));
 
 	ScriptServer::thread_enter(); //scripts may need to attach a stack
@@ -98,7 +97,7 @@ Thread::ID ThreadPosix::get_thread_id_func_posix() {
 	if (value)
 		return *static_cast<ID *>(value);
 
-	ID new_id = atomic_increment(&next_thread_id);
+	ID new_id = next_thread_id++;
 	pthread_setspecific(thread_id_key, (void *)memnew(ID(new_id)));
 	return new_id;
 }

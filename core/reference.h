@@ -34,20 +34,21 @@
 #include "core/class_db.h"
 #include "core/object.h"
 #include "core/ref_ptr.h"
-#include "core/safe_refcount.h"
+
+#include <atomic>
 
 class Reference : public Object {
 
 	GDCLASS(Reference, Object);
 	friend class RefBase;
-	SafeRefCount refcount;
-	SafeRefCount refcount_init;
+	std::atomic<uint32_t> refcount;
+	std::atomic<uint32_t> refcount_init;
 
 protected:
 	static void _bind_methods();
 
 public:
-	_FORCE_INLINE_ bool is_referenced() const { return refcount_init.get() != 1; }
+	_FORCE_INLINE_ bool is_referenced() const { return refcount_init != 1; }
 	bool init_ref();
 	bool reference(); // returns false if refcount is at zero and didn't get increased
 	bool unreference();

@@ -96,7 +96,7 @@ void StringName::unref() {
 
 	ERR_FAIL_COND(!configured);
 
-	if (_data && _data->refcount.unref()) {
+	if (_data && --_data->refcount == 0) {
 
 		lock->lock();
 
@@ -158,7 +158,7 @@ void StringName::operator=(const StringName &p_name) {
 
 	unref();
 
-	if (p_name._data && p_name._data->refcount.ref()) {
+	if (p_name._data && atomic_conditional_increment(&p_name._data->refcount)) {
 
 		_data = p_name._data;
 	}
@@ -170,7 +170,7 @@ StringName::StringName(const StringName &p_name) {
 
 	ERR_FAIL_COND(!configured);
 
-	if (p_name._data && p_name._data->refcount.ref()) {
+	if (p_name._data && atomic_conditional_increment(&p_name._data->refcount)) {
 		_data = p_name._data;
 	}
 }
@@ -201,7 +201,7 @@ StringName::StringName(const char *p_name) {
 	}
 
 	if (_data) {
-		if (_data->refcount.ref()) {
+		if (atomic_conditional_increment(&_data->refcount)) {
 			// exists
 			lock->unlock();
 			return;
@@ -210,7 +210,7 @@ StringName::StringName(const char *p_name) {
 
 	_data = memnew(_Data);
 	_data->name = p_name;
-	_data->refcount.init();
+	_data->refcount = 1;
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = NULL;
@@ -248,7 +248,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 	}
 
 	if (_data) {
-		if (_data->refcount.ref()) {
+		if (atomic_conditional_increment(&_data->refcount)) {
 			// exists
 			lock->unlock();
 			return;
@@ -257,7 +257,7 @@ StringName::StringName(const StaticCString &p_static_string) {
 
 	_data = memnew(_Data);
 
-	_data->refcount.init();
+	_data->refcount = 1;
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = p_static_string.ptr;
@@ -295,7 +295,7 @@ StringName::StringName(const String &p_name) {
 	}
 
 	if (_data) {
-		if (_data->refcount.ref()) {
+		if (atomic_conditional_increment(&_data->refcount)) {
 			// exists
 			lock->unlock();
 			return;
@@ -304,7 +304,7 @@ StringName::StringName(const String &p_name) {
 
 	_data = memnew(_Data);
 	_data->name = p_name;
-	_data->refcount.init();
+	_data->refcount = 1;
 	_data->hash = hash;
 	_data->idx = idx;
 	_data->cname = NULL;
@@ -341,7 +341,7 @@ StringName StringName::search(const char *p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data && atomic_conditional_increment(&_data->refcount)) {
 		lock->unlock();
 
 		return StringName(_data);
@@ -375,7 +375,7 @@ StringName StringName::search(const CharType *p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data && atomic_conditional_increment(&_data->refcount)) {
 		lock->unlock();
 		return StringName(_data);
 	}
@@ -403,7 +403,7 @@ StringName StringName::search(const String &p_name) {
 		_data = _data->next;
 	}
 
-	if (_data && _data->refcount.ref()) {
+	if (_data && atomic_conditional_increment(&_data->refcount)) {
 		lock->unlock();
 		return StringName(_data);
 	}

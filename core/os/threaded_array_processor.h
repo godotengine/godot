@@ -35,12 +35,13 @@
 #include "core/os/os.h"
 #include "core/os/thread.h"
 #include "core/os/thread_safe.h"
-#include "core/safe_refcount.h"
+
+#include <atomic>
 
 template <class C, class U>
 struct ThreadArrayProcessData {
 	uint32_t elements;
-	uint32_t index;
+	std::atomic<uint32_t> index;
 	C *instance;
 	U userdata;
 	void (C::*method)(uint32_t, U);
@@ -57,7 +58,7 @@ void process_array_thread(void *ud) {
 
 	T &data = *(T *)ud;
 	while (true) {
-		uint32_t index = atomic_increment(&data.index);
+		uint32_t index = ++data.index;
 		if (index >= data.elements)
 			break;
 		data.process(index);

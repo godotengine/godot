@@ -31,12 +31,13 @@
 #include "dictionary.h"
 
 #include "core/ordered_hash_map.h"
-#include "core/safe_refcount.h"
 #include "core/variant.h"
+
+#include <atomic>
 
 struct DictionaryPrivate {
 
-	SafeRefCount refcount;
+	std::atomic<uint32_t> refcount;
 	OrderedHashMap<Variant, Variant, VariantHasher, VariantComparator> variant_map;
 };
 
@@ -162,12 +163,12 @@ bool Dictionary::operator!=(const Dictionary &p_dictionary) const {
 void Dictionary::_ref(const Dictionary &p_from) const {
 
 	//make a copy first (thread safe)
-	if (!p_from._p->refcount.ref())
+	if (!atomic_conditional_increment(&p_from._p->refcount))
 		return; // couldn't copy
 
 	//if this is the same, unreference the other one
 	if (p_from._p == _p) {
-		_p->refcount.unref();
+		--_p->refcount;
 		return;
 	}
 	if (_p)
@@ -183,7 +184,7 @@ void Dictionary::clear() {
 void Dictionary::_unref() const {
 
 	ERR_FAIL_COND(!_p);
-	if (_p->refcount.unref()) {
+	if (--_p->refcount == 0) {
 		memdelete(_p);
 	}
 	_p = NULL;
@@ -282,7 +283,7 @@ Dictionary::Dictionary(const Dictionary &p_from) {
 Dictionary::Dictionary() {
 
 	_p = memnew(DictionaryPrivate);
-	_p->refcount.init();
+	_p->refcount = 1;
 }
 Dictionary::~Dictionary() {
 

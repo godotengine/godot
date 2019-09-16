@@ -32,8 +32,9 @@
 #define STRING_NAME_H
 
 #include "core/os/mutex.h"
-#include "core/safe_refcount.h"
 #include "core/ustring.h"
+
+#include <atomic>
 
 struct StaticCString {
 
@@ -51,7 +52,7 @@ class StringName {
 	};
 
 	struct _Data {
-		SafeRefCount refcount;
+		std::atomic<uint32_t> refcount;
 		const char *cname;
 		String name;
 

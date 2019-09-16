@@ -4,12 +4,13 @@
 #include "core/print_string.h"
 #include "core/rid.h"
 #include "core/spin_lock.h"
+
 #include <stdio.h>
 #include <typeinfo>
 
 class RID_AllocBase {
 
-	static volatile uint64_t base_id;
+	static std::atomic<uint64_t> base_id;
 
 protected:
 	static RID _make_from_id(uint64_t p_id) {
@@ -19,7 +20,7 @@ protected:
 	}
 
 	static uint64_t _gen_id() {
-		return atomic_increment(&base_id);
+		return ++base_id;
 	}
 
 	static RID _gen_rid() {

@@ -39,6 +39,8 @@
 #include "scene/scene_string_names.h"
 #include "viewport.h"
 
+#include <atomic>
+
 #ifdef TOOLS_ENABLED
 #include "editor/editor_settings.h"
 #endif
@@ -952,10 +954,10 @@ void Node::set_name(const String &p_name) {
 }
 
 static bool node_hrcr = false;
-static SafeRefCount node_hrcr_count;
+static std::atomic<uint32_t> node_hrcr_count;
 
 void Node::init_node_hrcr() {
-	node_hrcr_count.init(1);
+	node_hrcr_count = 1;
 }
 
 void Node::set_human_readable_collision_renaming(bool p_enabled) {
@@ -1012,8 +1014,8 @@ void Node::_validate_child_name(Node *p_child, bool p_force_human_readable) {
 
 		if (!unique) {
 
-			ERR_FAIL_COND(!node_hrcr_count.ref());
-			String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count.get());
+			ERR_FAIL_COND(!atomic_conditional_increment(&node_hrcr_count));
+			String name = "@" + String(p_child->get_name()) + "@" + itos(node_hrcr_count);
 			p_child->data.name = name;
 		}
 	}

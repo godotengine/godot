@@ -34,19 +34,21 @@
 #if (defined(UNIX_ENABLED) || defined(PTHREAD_ENABLED)) && !defined(NO_THREADS)
 
 #include "core/os/thread.h"
+
 #include <pthread.h>
 #include <sys/types.h>
+#include <atomic>
 
 class ThreadPosix : public Thread {
 
 	static pthread_key_t thread_id_key;
-	static ID next_thread_id;
+	static std::atomic<ID> next_thread_id;
 
 	pthread_t pthread;
 	pthread_attr_t pthread_attr;
 	ThreadCreateCallback callback;
 	void *user;
-	ID id;
+	std::atomic<ID> id;
 
 	static Thread *create_thread_posix();
 
