@@ -1125,22 +1125,23 @@ void RasterizerSceneForwardRD::_add_geometry(InstanceBase *p_instance, uint32_t 
 
 	if (!material) {
 		material = (MaterialData *)storage->material_get_data(default_material, RasterizerStorageRD::SHADER_TYPE_3D);
+		m_src = default_material;
 	}
 
 	ERR_FAIL_COND(!material);
 
-	_add_geometry_with_material(p_instance, p_surface, material, p_pass_mode, p_geometry_index);
+	_add_geometry_with_material(p_instance, p_surface, material, m_src, p_pass_mode, p_geometry_index);
 
 	while (material->next_pass.is_valid()) {
 
 		material = (MaterialData *)storage->material_get_data(material->next_pass, RasterizerStorageRD::SHADER_TYPE_3D);
 		if (!material || !material->shader_data->valid)
 			break;
-		_add_geometry_with_material(p_instance, p_surface, material, p_pass_mode, p_geometry_index);
+		_add_geometry_with_material(p_instance, p_surface, material, material->next_pass, p_pass_mode, p_geometry_index);
 	}
 }
 
-void RasterizerSceneForwardRD::_add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, PassMode p_pass_mode, uint32_t p_geometry_index) {
+void RasterizerSceneForwardRD::_add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index) {
 
 	bool has_read_screen_alpha = p_material->shader_data->uses_screen_texture || p_material->shader_data->uses_depth_texture || p_material->shader_data->uses_normal_texture;
 	bool has_base_alpha = (p_material->shader_data->uses_alpha || has_read_screen_alpha);
@@ -1195,6 +1196,10 @@ void RasterizerSceneForwardRD::_add_geometry_with_material(InstanceBase *p_insta
 	e->sort_key = 0;
 
 	if (e->material->last_pass != render_pass) {
+		if (!RD::get_singleton()->uniform_set_is_valid(e->material->uniform_set)) {
+			//uniform set no longer valid, probably a texture changed
+			storage->material_force_update_textures(p_material_rid, RasterizerStorageRD::SHADER_TYPE_3D);
+		}
 		e->material->last_pass = render_pass;
 		e->material->index = scene_state.current_material_index++;
 		if (e->material->shader_data->last_pass != render_pass) {
