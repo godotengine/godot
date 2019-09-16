@@ -39,6 +39,8 @@
 #include "core/variant.h"
 #include "core/vmap.h"
 
+#include <atomic>
+
 #define VARIANT_ARG_LIST const Variant &p_arg1 = Variant(), const Variant &p_arg2 = Variant(), const Variant &p_arg3 = Variant(), const Variant &p_arg4 = Variant(), const Variant &p_arg5 = Variant()
 #define VARIANT_ARG_PASS p_arg1, p_arg2, p_arg3, p_arg4, p_arg5
 #define VARIANT_ARG_DECLARE const Variant &p_arg1, const Variant &p_arg2, const Variant &p_arg3, const Variant &p_arg4, const Variant &p_arg5
@@ -472,7 +474,7 @@ private:
 	HashMap<StringName, Signal> signal_map;
 	List<Connection> connections;
 #ifdef DEBUG_ENABLED
-	SafeRefCount _lock_index;
+	std::atomic<uint32_t> _lock_index;
 #endif
 	bool _block_signals;
 	int _predelete_ok;
@@ -506,7 +508,7 @@ private:
 	void property_list_changed_notify();
 
 	friend class Reference;
-	uint32_t instance_binding_count;
+	std::atomic<uint32_t> instance_binding_count;
 	void *_script_instance_bindings[MAX_SCRIPT_INSTANCE_BINDINGS];
 
 protected:

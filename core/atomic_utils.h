@@ -1,5 +1,5 @@
 /*************************************************************************/
-/*  platform_refcount.h                                                  */
+/*  atomic_utils.h                                                       */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
@@ -28,21 +28,35 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/safe_refcount.h"
+#ifndef ATOMIC_UTILS_H
+#define ATOMIC_UTILS_H
 
-#ifdef IPHONE_ENABLED
+#include "core/typedefs.h"
 
-#define REFCOUNT_T int
-#define REFCOUNT_GET_T int const volatile &
+#include <atomic>
 
-#include <libkern/OSAtomic.h>
+template <class T>
+static _ALWAYS_INLINE_ T atomic_conditional_increment(std::atomic<T> *p_target) {
 
-inline int atomic_conditional_increment(volatile int *v) {
-	return (*v == 0) ? 0 : OSAtomicIncrement32(v);
+	while (true) {
+		T tmp = *p_target;
+		if (tmp == 0)
+			return 0; // if zero, can't add to it anymore
+		if (p_target->compare_exchange_strong(tmp, tmp + 1))
+			return tmp + 1;
+	}
 }
 
-inline int atomic_decrement(volatile int *v) {
-	return OSAtomicDecrement32(v);
+template <class T>
+static _ALWAYS_INLINE_ T atomic_exchange_if_greater(std::atomic<T> *p_target, T p_value) {
+
+	while (true) {
+		T tmp = *p_target;
+		if (tmp >= p_value)
+			return tmp; // already greater, or equal
+		if (p_target->compare_exchange_strong(tmp, p_value))
+			return p_value;
+	}
 }
 
 #endif

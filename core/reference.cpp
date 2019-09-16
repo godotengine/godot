@@ -36,7 +36,7 @@ bool Reference::init_ref() {
 
 	if (reference()) {
 
-		if (!is_referenced() && refcount_init.unref()) {
+		if (!is_referenced() && --refcount_init == 0) {
 			unreference(); // first referencing is already 1, so compensate for the ref above
 		}
 
@@ -55,12 +55,12 @@ void Reference::_bind_methods() {
 }
 
 int Reference::reference_get_count() const {
-	return refcount.get();
+	return refcount;
 }
 
 bool Reference::reference() {
 
-	uint32_t rc_val = refcount.refval();
+	uint32_t rc_val = refcount;
 	bool success = rc_val != 0;
 
 	if (success && rc_val <= 2 /* higher is not relevant */) {
@@ -81,7 +81,7 @@ bool Reference::reference() {
 
 bool Reference::unreference() {
 
-	uint32_t rc_val = refcount.unrefval();
+	uint32_t rc_val = refcount;
 	bool die = rc_val == 0;
 
 	if (rc_val <= 1 /* higher is not relevant */) {
@@ -104,8 +104,8 @@ bool Reference::unreference() {
 
 Reference::Reference() {
 
-	refcount.init();
-	refcount_init.init();
+	refcount = 1;
+	refcount_init = 1;
 }
 
 Reference::~Reference() {

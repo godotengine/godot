@@ -34,6 +34,8 @@
 #include "core/os/thread.h"
 #include "core/print_string.h"
 
+#include <atomic>
+
 #include <ConvectionKernels.h>
 
 struct CVTTCompressionJobParams {
@@ -56,7 +58,7 @@ struct CVTTCompressionJobQueue {
 	CVTTCompressionJobParams job_params;
 	const CVTTCompressionRowTask *job_tasks;
 	uint32_t num_tasks;
-	uint32_t current_task;
+	std::atomic<uint32_t> current_task;
 };
 
 static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const CVTTCompressionRowTask &p_row_task) {
@@ -131,7 +133,7 @@ static void _digest_row_task(const CVTTCompressionJobParams &p_job_params, const
 static void _digest_job_queue(void *p_job_queue) {
 	CVTTCompressionJobQueue *job_queue = static_cast<CVTTCompressionJobQueue *>(p_job_queue);
 
-	for (uint32_t next_task = atomic_increment(&job_queue->current_task); next_task <= job_queue->num_tasks; next_task = atomic_increment(&job_queue->current_task)) {
+	for (uint32_t next_task = ++job_queue->current_task; next_task <= job_queue->num_tasks; next_task = ++job_queue->current_task) {
 		_digest_row_task(job_queue->job_params, job_queue->job_tasks[next_task - 1]);
 	}
 }

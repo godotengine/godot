@@ -39,7 +39,7 @@
 class ThreadAndroid : public Thread {
 
 	static pthread_key_t thread_id_key;
-	static ID next_thread_id;
+	static std::atomic<ID> next_thread_id;
 
 	pthread_t pthread;
 	pthread_attr_t pthread_attr;

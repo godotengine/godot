@@ -34,11 +34,13 @@
 #include "core/string_name.h"
 #include "core/ustring.h"
 
+#include <atomic>
+
 class NodePath {
 
 	struct Data {
 
-		SafeRefCount refcount;
+		std::atomic<uint32_t> refcount;
 		Vector<StringName> path;
 		Vector<StringName> subpath;
 		StringName concatenated_subpath;

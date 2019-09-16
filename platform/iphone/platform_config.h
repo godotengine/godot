@@ -33,6 +33,4 @@
 #define GLES2_INCLUDE_H <ES2/gl.h>
 #define GLES3_INCLUDE_H <ES3/gl.h>
 
-#define PLATFORM_REFCOUNT
-
 #define PTHREAD_RENAME_SELF

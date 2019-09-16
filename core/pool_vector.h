@@ -33,10 +33,12 @@
 
 #include "core/os/copymem.h"
 #include "core/os/memory.h"
+#include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/pool_allocator.h"
-#include "core/safe_refcount.h"
 #include "core/ustring.h"
+
+#include <atomic>
 
 struct MemoryPool {
 
@@ -48,11 +50,11 @@ struct MemoryPool {
 
 	struct Alloc {
 
-		SafeRefCount refcount;
+		std::atomic<uint32_t> refcount;
 		uint32_t lock;
 		void *mem;
 		PoolAllocator::ID pool_id;
-		size_t size;
+		std::atomic<size_t> size;
 
 		Alloc *free_list;
 
@@ -90,7 +92,7 @@ class PoolVector {
 		//		ERR_FAIL_COND(alloc->lock>0); should not be illegal to lock this for copy on write, as it's a copy on write after all
 
 		// Refcount should not be zero, otherwise it's a misuse of COW
-		if (alloc->refcount.get() == 1)
+		if (alloc->refcount == 1)
 			return; //nothing to do
 
 		//must allocate something
@@ -110,8 +112,8 @@ class PoolVector {
 		MemoryPool::allocs_used++;
 
 		//copy the alloc data
-		alloc->size = old_alloc->size;
-		alloc->refcount.init();
+		alloc->size = old_alloc->size.load();
+		alloc->refcount = 1;
 		alloc->pool_id = POOL_ALLOCATOR_INVALID_ID;
 		alloc->lock = 0;
 
@@ -144,7 +146,7 @@ class PoolVector {
 			}
 		}
 
-		if (old_alloc->refcount.unref()) {
+		if (--old_alloc->refcount == 0) {
 			//this should never happen but..
 
 #ifdef DEBUG_ENABLED
@@ -194,7 +196,7 @@ class PoolVector {
 			return;
 		}
 
-		if (p_pool_vector.alloc->refcount.ref()) {
+		if (++p_pool_vector.alloc->refcount) {
 			alloc = p_pool_vector.alloc;
 		}
 	}
@@ -204,7 +206,7 @@ class PoolVector {
 		if (!alloc)
 			return;
 
-		if (!alloc->refcount.unref()) {
+		if (--alloc->refcount) {
 			alloc = NULL;
 			return;
 		}
@@ -263,7 +265,7 @@ public:
 		_FORCE_INLINE_ void _ref(MemoryPool::Alloc *p_alloc) {
 			alloc = p_alloc;
 			if (alloc) {
-				if (atomic_increment(&alloc->lock) == 1) {
+				if (++alloc->lock == 1) {
 					if (MemoryPool::memory_pool) {
 						//lock it and get mem
 					}
@@ -276,7 +278,7 @@ public:
 		_FORCE_INLINE_ void _unref() {
 
 			if (alloc) {
-				if (atomic_decrement(&alloc->lock) == 0) {
+				if (--alloc->lock == 0) {
 					if (MemoryPool::memory_pool) {
 						//put mem back
 					}
@@ -530,7 +532,7 @@ Error PoolVector<T>::resize(int p_size) {
 
 		//cleanup the alloc
 		alloc->size = 0;
-		alloc->refcount.init();
+		alloc->refcount = 1;
 		alloc->pool_id = POOL_ALLOCATOR_INVALID_ID;
 		MemoryPool::alloc_mutex->unlock();
 

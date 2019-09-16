@@ -47,10 +47,10 @@ struct _ObjectDebugLock {
 
 	_ObjectDebugLock(Object *p_obj) {
 		obj = p_obj;
-		obj->_lock_index.ref();
+		atomic_conditional_increment(&obj->_lock_index);
 	}
 	~_ObjectDebugLock() {
-		obj->_lock_index.unref();
+		--obj->_lock_index;
 	}
 };
 
@@ -738,7 +738,7 @@ void Object::call_multilevel(const StringName &p_method, const Variant **p_args,
 #ifdef DEBUG_ENABLED
 		ERR_FAIL_COND_MSG(Object::cast_to<Reference>(this), "Can't 'free' a reference.");
 
-		ERR_FAIL_COND_MSG(_lock_index.get() > 1, "Object is locked and can't be freed.");
+		ERR_FAIL_COND_MSG(_lock_index > 1, "Object is locked and can't be freed.");
 #endif
 
 		//must be here, must be before everything,
@@ -881,7 +881,7 @@ Variant Object::call(const StringName &p_method, const Variant **p_args, int p_a
 			ERR_FAIL_V_MSG(Variant(), "Can't 'free' a reference.");
 		}
 
-		if (_lock_index.get() > 1) {
+		if (_lock_index > 1) {
 			r_error.argument = 0;
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			ERR_FAIL_V_MSG(Variant(), "Object is locked and can't be freed.");
@@ -1893,7 +1893,7 @@ void *Object::get_script_instance_binding(int p_script_language_index) {
 	if (!_script_instance_bindings[p_script_language_index]) {
 		void *script_data = ScriptServer::get_language(p_script_language_index)->alloc_instance_binding_data(this);
 		if (script_data) {
-			atomic_increment(&instance_binding_count);
+			++instance_binding_count;
 			_script_instance_bindings[p_script_language_index] = script_data;
 		}
 	}
@@ -1932,7 +1932,7 @@ Object::Object() {
 #endif
 
 #ifdef DEBUG_ENABLED
-	_lock_index.init(1);
+	_lock_index = 1;
 #endif
 }
 

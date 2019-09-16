@@ -35,9 +35,11 @@
 #include "core/variant.h"
 #include "core/vector.h"
 
+#include <atomic>
+
 class ArrayPrivate {
 public:
-	SafeRefCount refcount;
+	std::atomic<uint32_t> refcount;
 	Vector<Variant> array;
 };
 
@@ -50,7 +52,7 @@ void Array::_ref(const Array &p_from) const {
 	if (_fp == _p)
 		return; // whatever it is, nothing to do here move along
 
-	bool success = _fp->refcount.ref();
+	bool success = atomic_conditional_increment(&_fp->refcount);
 
 	ERR_FAIL_COND(!success); // should really not happen either
 
@@ -64,7 +66,7 @@ void Array::_unref() const {
 	if (!_p)
 		return;
 
-	if (_p->refcount.unref()) {
+	if (--_p->refcount == 0) {
 		memdelete(_p);
 	}
 	_p = NULL;
@@ -474,7 +476,7 @@ Array::Array(const Array &p_from) {
 Array::Array() {
 
 	_p = memnew(ArrayPrivate);
-	_p->refcount.init();
+	_p->refcount = 1;
 }
 Array::~Array() {
 
