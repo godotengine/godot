@@ -246,7 +246,13 @@ void ResourceImporterTexture::_save_stex(const Ref<Image> &p_image, const String
 	f->store_32(0); //texture flags deprecated
 
 	uint32_t format = 0;
-
+	/*
+	print_line("streamable " + itos(p_streamable));
+	print_line("mipmaps " + itos(p_mipmaps));
+	print_line("detect_3d " + itos(p_detect_3d));
+	print_line("roughness " + itos(p_detect_roughness));
+	print_line("normal " + itos(p_detect_normal));
+*/
 	if (p_streamable)
 		format |= StreamTexture::FORMAT_BIT_STREAM;
 	if (p_mipmaps)
