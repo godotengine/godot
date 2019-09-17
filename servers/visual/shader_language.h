@@ -519,11 +519,13 @@ public:
 			DataType type;
 			DataInterpolation interpolation;
 			DataPrecision precision;
+			int array_size;
 
 			Varying() :
 					type(TYPE_VOID),
 					interpolation(INTERPOLATION_FLAT),
-					precision(PRECISION_DEFAULT) {}
+					precision(PRECISION_DEFAULT),
+					array_size(0) {}
 		};
 
 		struct Uniform {

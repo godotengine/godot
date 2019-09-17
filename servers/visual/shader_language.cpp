@@ -924,6 +924,9 @@ bool ShaderLanguage::_find_identifier(const BlockNode *p_block, const Map<String
 		if (r_data_type) {
 			*r_data_type = shader->varyings[p_identifier].type;
 		}
+		if (r_array_size) {
+			*r_array_size = shader->varyings[p_identifier].array_size;
+		}
 		if (r_type) {
 			*r_type = IDENTIFIER_VARYING;
 		}
@@ -2756,6 +2759,12 @@ bool ShaderLanguage::_validate_assign(Node *p_node, const Map<StringName, BuiltI
 		if (arr->is_const) {
 			if (r_message)
 				*r_message = RTR("Constants cannot be modified.");
+			return false;
+		}
+
+		if (shader->varyings.has(arr->name) && current_function != String("vertex")) {
+			if (r_message)
+				*r_message = RTR("Varyings can only be assigned in vertex function.");
 			return false;
 		}
 
@@ -4695,7 +4704,7 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 				}
 
 				if (!uniform && (type < TYPE_FLOAT || type > TYPE_MAT4)) {
-					_set_error("Invalid type for varying, only float,vec2,vec3,vec4,mat2,mat3,mat4 allowed.");
+					_set_error("Invalid type for varying, only float,vec2,vec3,vec4,mat2,mat3,mat4 or array of these types allowed.");
 					return ERR_PARSE_ERROR;
 				}
 
@@ -4877,13 +4886,36 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 					varying.type = type;
 					varying.precision = precision;
 					varying.interpolation = interpolation;
-					shader->varyings[name] = varying;
 
 					tk = _get_token();
-					if (tk.type != TK_SEMICOLON) {
-						_set_error("Expected ';'");
+					if (tk.type != TK_SEMICOLON && tk.type != TK_BRACKET_OPEN) {
+						_set_error("Expected ';' or '['");
 						return ERR_PARSE_ERROR;
 					}
+
+					if (tk.type == TK_BRACKET_OPEN) {
+						tk = _get_token();
+						if (tk.type == TK_INT_CONSTANT && tk.constant > 0) {
+							varying.array_size = (int)tk.constant;
+
+							tk = _get_token();
+							if (tk.type == TK_BRACKET_CLOSE) {
+								tk = _get_token();
+								if (tk.type != TK_SEMICOLON) {
+									_set_error("Expected ';'");
+									return ERR_PARSE_ERROR;
+								}
+							} else {
+								_set_error("Expected ']'");
+								return ERR_PARSE_ERROR;
+							}
+						} else {
+							_set_error("Expected single integer constant > 0");
+							return ERR_PARSE_ERROR;
+						}
+					}
+
+					shader->varyings[name] = varying;
 				}
 
 			} break;
