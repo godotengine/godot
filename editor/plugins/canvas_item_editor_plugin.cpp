@@ -3678,7 +3678,6 @@ void CanvasItemEditor::_notification(int p_what) {
 		key_auto_insert_button->set_icon(get_icon("AutoKey", "EditorIcons"));
 
 		zoom_minus->set_icon(get_icon("ZoomLess", "EditorIcons"));
-		zoom_reset->set_icon(get_icon("ZoomReset", "EditorIcons"));
 		zoom_plus->set_icon(get_icon("ZoomMore", "EditorIcons"));
 
 		presets_menu->set_icon(get_icon("ControlLayout", "EditorIcons"));
@@ -4036,7 +4035,20 @@ void CanvasItemEditor::_zoom_on_position(float p_zoom, Point2 p_position) {
 	view_offset.x = Math::round(view_offset.x + ofs.x);
 	view_offset.y = Math::round(view_offset.y + ofs.y);
 
+	_update_zoom_label();
 	update_viewport();
+}
+
+void CanvasItemEditor::_update_zoom_label() {
+	String zoom_text;
+	if (zoom >= 10) {
+		// Don't show a decimal when the zoom level is higher than 1000 %
+		zoom_text = rtos(Math::round(zoom * 100)) + " %";
+	} else {
+		zoom_text = rtos(Math::stepify(zoom * 100, 0.1)) + " %";
+	}
+
+	zoom_reset->set_text(zoom_text);
 }
 
 void CanvasItemEditor::_button_zoom_minus() {
@@ -4811,6 +4823,7 @@ void CanvasItemEditor::set_state(const Dictionary &p_state) {
 	Dictionary state = p_state;
 	if (state.has("zoom")) {
 		zoom = p_state["zoom"];
+		_update_zoom_label();
 	}
 
 	if (state.has("ofs")) {
@@ -5128,6 +5141,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_hb = memnew(HBoxContainer);
 	viewport->add_child(zoom_hb);
 	zoom_hb->set_begin(Point2(5, 5));
+	// Bring the zoom percentage closer to the zoom buttons
+	zoom_hb->add_constant_override("separation", Math::round(-8 * EDSCALE));
 
 	zoom_minus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_minus);
@@ -5140,6 +5155,9 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	zoom_reset->connect("pressed", this, "_button_zoom_reset");
 	zoom_reset->set_shortcut(ED_SHORTCUT("canvas_item_editor/zoom_reset", TTR("Zoom Reset"), KEY_MASK_CMD | KEY_0));
 	zoom_reset->set_focus_mode(FOCUS_NONE);
+	zoom_reset->set_text_align(Button::TextAlign::ALIGN_CENTER);
+	// Prevent the button's size from changing when the text size changes
+	zoom_reset->set_custom_minimum_size(Size2(75 * EDSCALE, 0));
 
 	zoom_plus = memnew(ToolButton);
 	zoom_hb->add_child(zoom_plus);
