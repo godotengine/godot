@@ -820,11 +820,7 @@ void AnimationTreePlayer::_process_animation(float p_delta) {
 		t.value = t.object->get_indexed(t.subpath);
 		t.value.zero();
 
-		if (t.skeleton) {
-			t.skip = t.skeleton->is_bone_ignore_animation(t.bone_idx);
-		} else {
-			t.skip = false;
-		}
+		t.skip = false;
 	}
 
 	/* STEP 2 PROCESS ANIMATIONS */

@@ -3663,23 +3663,6 @@ void RasterizerStorageGLES2::skeleton_set_base_transform_2d(RID p_skeleton, cons
 	skeleton->base_transform_2d = p_base_transform;
 }
 
-void RasterizerStorageGLES2::skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {
-
-	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
-
-	ERR_FAIL_COND(skeleton->use_2d);
-
-	skeleton->world_transform = p_world_transform;
-	skeleton->use_world_transform = p_enable;
-	if (p_enable) {
-		skeleton->world_transform_inverse = skeleton->world_transform.affine_inverse();
-	}
-
-	if (!skeleton->update_list.in_list()) {
-		skeleton_update_list.add(&skeleton->update_list);
-	}
-}
-
 void RasterizerStorageGLES2::_update_skeleton_transform_buffer(const PoolVector<float> &p_data, size_t p_size) {
 
 	glBindBuffer(GL_ARRAY_BUFFER, resources.skeleton_transform_buffer);

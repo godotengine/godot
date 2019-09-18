@@ -892,15 +892,12 @@ public:
 		SelfList<Skeleton> update_list;
 		Set<RasterizerScene::InstanceBase *> instances; //instances using skeleton
 		Transform2D base_transform_2d;
-		bool use_world_transform;
-		Transform world_transform;
 
 		Skeleton() :
 				use_2d(false),
 				size(0),
 				texture(0),
-				update_list(this),
-				use_world_transform(false) {
+				update_list(this) {
 		}
 	};
 
@@ -918,7 +915,6 @@ public:
 	virtual void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
 	virtual Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 	virtual void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
-	virtual void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform);
 
 	/* Light API */
 

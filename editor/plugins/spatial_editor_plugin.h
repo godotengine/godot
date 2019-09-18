@@ -58,6 +58,7 @@ public:
 		RID instance;
 		Ref<ArrayMesh> mesh;
 		Ref<Material> material;
+		Ref<SkinReference> skin_reference;
 		RID skeleton;
 		bool billboard;
 		bool unscaled;
@@ -101,7 +102,7 @@ protected:
 
 public:
 	void add_lines(const Vector<Vector3> &p_lines, const Ref<Material> &p_material, bool p_billboard = false);
-	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const RID &p_skeleton = RID(), const Ref<Material> &p_material = Ref<Material>());
+	void add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard = false, const Ref<SkinReference> &p_skin_reference = Ref<SkinReference>(), const Ref<Material> &p_material = Ref<Material>());
 	void add_collision_segments(const Vector<Vector3> &p_lines);
 	void add_collision_triangles(const Ref<TriangleMesh> &p_tmesh);
 	void add_unscaled_billboard(const Ref<Material> &p_material, float p_scale = 1);

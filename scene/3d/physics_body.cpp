@@ -2182,7 +2182,7 @@ void PhysicalBone::_notification(int p_what) {
 
 void PhysicalBone::_direct_state_changed(Object *p_state) {
 
-	if (!simulate_physics) {
+	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
 
@@ -2205,7 +2205,7 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 	// Update skeleton
 	if (parent_skeleton) {
 		if (-1 != bone_id) {
-			parent_skeleton->set_bone_global_pose(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse));
+			parent_skeleton->set_bone_global_pose_override(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse), 1.0, true);
 		}
 	}
 }
@@ -2716,7 +2716,6 @@ void PhysicalBone::_start_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
-	parent_skeleton->set_bone_ignore_animation(bone_id, true);
 	_internal_simulate_physics = true;
 }
 
@@ -2728,6 +2727,6 @@ void PhysicalBone::_stop_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
-	parent_skeleton->set_bone_ignore_animation(bone_id, false);
+	parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 	_internal_simulate_physics = false;
 }
