@@ -914,7 +914,6 @@ void Tree::update_cache() {
 	cache.arrow_collapsed = get_icon("arrow_collapsed");
 	cache.arrow = get_icon("arrow");
 	cache.select_arrow = get_icon("select_arrow");
-	cache.select_option = get_icon("select_option");
 	cache.updown = get_icon("updown");
 
 	cache.custom_button = get_stylebox("custom_button");
@@ -930,7 +929,6 @@ void Tree::update_cache() {
 	cache.vseparation = get_constant("vseparation");
 	cache.item_margin = get_constant("item_margin");
 	cache.button_margin = get_constant("button_margin");
-	cache.guide_width = get_constant("guide_width");
 	cache.draw_guides = get_constant("draw_guides");
 	cache.draw_relationship_lines = get_constant("draw_relationship_lines");
 	cache.relationship_line_color = get_color("relationship_line_color");
