@@ -2846,15 +2846,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 					assigned = subexpr;
 				} else {
 
-					ConstantNode *c = alloc_node<ConstantNode>();
-					if (lv->datatype.has_type && lv->datatype.kind == DataType::BUILTIN) {
-						Variant::CallError err;
-						c->value = Variant::construct(lv->datatype.builtin_type, NULL, 0, err);
-					} else {
-						c->value = Variant();
-					}
-					c->line = var_line;
-					assigned = c;
+					assigned = _get_default_value_for_type(lv->datatype, var_line);
 				}
 				lv->assign = assigned;
 				//must be added later, to avoid self-referencing.
@@ -4869,35 +4861,29 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 						return;
 					}
 
-					Variant::Type initial_type = member.data_type.has_type ? member.data_type.builtin_type : member._export.type;
+					Node *expr;
 
-					if (initial_type != Variant::NIL && initial_type != Variant::OBJECT) {
-						IdentifierNode *id = alloc_node<IdentifierNode>();
-						id->name = member.identifier;
-
-						Node *expr;
-
-						// Make sure arrays and dictionaries are not shared
-						if (initial_type == Variant::ARRAY) {
-							expr = alloc_node<ArrayNode>();
-						} else if (initial_type == Variant::DICTIONARY) {
-							expr = alloc_node<DictionaryNode>();
-						} else {
-							ConstantNode *cn = alloc_node<ConstantNode>();
-							Variant::CallError ce2;
-							cn->value = Variant::construct(initial_type, NULL, 0, ce2);
-							expr = cn;
-						}
-
-						OperatorNode *op = alloc_node<OperatorNode>();
-						op->op = OperatorNode::OP_INIT_ASSIGN;
-						op->arguments.push_back(id);
-						op->arguments.push_back(expr);
-
-						p_class->initializer->statements.push_back(op);
-
-						member.initial_assignment = op;
+					if (member.data_type.has_type) {
+						expr = _get_default_value_for_type(member.data_type);
+					} else {
+						DataType exported_type;
+						exported_type.has_type = true;
+						exported_type.kind = DataType::BUILTIN;
+						exported_type.builtin_type = member._export.type;
+						expr = _get_default_value_for_type(exported_type);
 					}
+
+					IdentifierNode *id = alloc_node<IdentifierNode>();
+					id->name = member.identifier;
+
+					OperatorNode *op = alloc_node<OperatorNode>();
+					op->op = OperatorNode::OP_INIT_ASSIGN;
+					op->arguments.push_back(id);
+					op->arguments.push_back(expr);
+
+					p_class->initializer->statements.push_back(op);
+
+					member.initial_assignment = op;
 				}
 
 				if (autoexport && member.data_type.has_type) {
@@ -6175,6 +6161,31 @@ bool GDScriptParser::_is_type_compatible(const DataType &p_container, const Data
 	}
 
 	return false;
+}
+
+GDScriptParser::Node *GDScriptParser::_get_default_value_for_type(const DataType &p_type, int p_line) {
+	Node *result;
+
+	if (p_type.has_type && p_type.kind == DataType::BUILTIN && p_type.builtin_type != Variant::NIL && p_type.builtin_type != Variant::OBJECT) {
+		if (p_type.builtin_type == Variant::ARRAY) {
+			result = alloc_node<ArrayNode>();
+		} else if (p_type.builtin_type == Variant::DICTIONARY) {
+			result = alloc_node<DictionaryNode>();
+		} else {
+			ConstantNode *c = alloc_node<ConstantNode>();
+			Variant::CallError err;
+			c->value = Variant::construct(p_type.builtin_type, NULL, 0, err);
+			result = c;
+		}
+	} else {
+		ConstantNode *c = alloc_node<ConstantNode>();
+		c->value = Variant();
+		result = c;
+	}
+
+	result->line = p_line;
+
+	return result;
 }
 
 GDScriptParser::DataType GDScriptParser::_reduce_node_type(Node *p_node) {
