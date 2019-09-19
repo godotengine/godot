@@ -135,6 +135,7 @@ class ScriptEditorDebugger : public Control {
 
 	Tree *perf_monitors;
 	Control *perf_draw;
+	Label *info_message;
 
 	Tree *vmem_tree;
 	Button *vmem_refresh;

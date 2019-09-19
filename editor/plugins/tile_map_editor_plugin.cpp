@@ -376,7 +376,7 @@ void TileMapEditor::_sbox_input(const Ref<InputEvent> &p_ie) {
 }
 
 // Implementation detail of TileMapEditor::_update_palette();
-// in modern C++ this could have been inside its body
+// In modern C++ this could have been inside its body.
 namespace {
 struct _PaletteEntry {
 	int id;
@@ -393,10 +393,10 @@ void TileMapEditor::_update_palette() {
 	if (!node)
 		return;
 
-	// Update the clear button
+	// Update the clear button.
 	clear_transform_button->set_disabled(!flip_h && !flip_v && !transpose);
 
-	// Update the palette
+	// Update the palette.
 	Vector<int> selected = get_selected_tiles();
 	int selected_single = palette->get_current();
 	int selected_manual = manual_palette->get_current();
@@ -405,8 +405,15 @@ void TileMapEditor::_update_palette() {
 	manual_palette->hide();
 
 	Ref<TileSet> tileset = node->get_tileset();
-	if (tileset.is_null())
+	if (tileset.is_null()) {
+		search_box->set_text("");
+		search_box->set_editable(false);
+		info_message->show();
 		return;
+	}
+
+	search_box->set_editable(true);
+	info_message->hide();
 
 	List<int> tiles;
 	tileset->get_tile_list(&tiles);
@@ -421,7 +428,6 @@ void TileMapEditor::_update_palette() {
 	bool sort_by_name = bool(EDITOR_DEF("editors/tile_map/sort_tiles_by_name", true));
 
 	palette->add_constant_override("hseparation", hseparation * EDSCALE);
-	palette->add_constant_override("vseparation", 8 * EDSCALE);
 
 	palette->set_fixed_icon_size(Size2(min_size, min_size));
 	palette->set_fixed_column_width(min_size * MAX(size_slider->get_value(), 1));
@@ -479,7 +485,7 @@ void TileMapEditor::_update_palette() {
 				region.position += (region.size + Vector2(spacing, spacing)) * tileset->autotile_get_icon_coordinate(entries[i].id);
 			}
 
-			// Transpose and flip
+			// Transpose and flip.
 			palette->set_item_icon_transposed(palette->get_item_count() - 1, transpose);
 			if (flip_h) {
 				region.size.x = -region.size.x;
@@ -488,14 +494,14 @@ void TileMapEditor::_update_palette() {
 				region.size.y = -region.size.y;
 			}
 
-			// Set region
+			// Set region.
 			if (region.size != Size2())
 				palette->set_item_icon_region(palette->get_item_count() - 1, region);
 
-			// Set icon
+			// Set icon.
 			palette->set_item_icon(palette->get_item_count() - 1, tex);
 
-			// Modulation
+			// Modulation.
 			Color color = tileset->tile_get_modulate(entries[i].id);
 			palette->set_item_icon_modulate(palette->get_item_count() - 1, color);
 		}
@@ -511,50 +517,47 @@ void TileMapEditor::_update_palette() {
 		palette->select(0);
 	}
 
-	if (sel_tile != TileMap::INVALID_CELL) {
-		if ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) ||
-				(!priority_atlastile && tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE)) {
+	if (sel_tile != TileMap::INVALID_CELL && ((manual_autotile && tileset->tile_get_tile_mode(sel_tile) == TileSet::AUTO_TILE) || (!priority_atlastile && tileset->tile_get_tile_mode(sel_tile) == TileSet::ATLAS_TILE))) {
 
-			const Map<Vector2, uint32_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
+		const Map<Vector2, uint32_t> &tiles2 = tileset->autotile_get_bitmask_map(sel_tile);
 
-			Vector<Vector2> entries2;
-			for (const Map<Vector2, uint32_t>::Element *E = tiles2.front(); E; E = E->next()) {
-				entries2.push_back(E->key());
+		Vector<Vector2> entries2;
+		for (const Map<Vector2, uint32_t>::Element *E = tiles2.front(); E; E = E->next()) {
+			entries2.push_back(E->key());
+		}
+		// Sort tiles in row-major order.
+		struct SwapComparator {
+			_FORCE_INLINE_ bool operator()(const Vector2 &v_l, const Vector2 &v_r) const {
+				return v_l.y != v_r.y ? v_l.y < v_r.y : v_l.x < v_r.x;
 			}
-			// Sort tiles in row-major order
-			struct SwapComparator {
-				_FORCE_INLINE_ bool operator()(const Vector2 &v_l, const Vector2 &v_r) const {
-					return v_l.y != v_r.y ? v_l.y < v_r.y : v_l.x < v_r.x;
-				}
-			};
-			entries2.sort_custom<SwapComparator>();
+		};
+		entries2.sort_custom<SwapComparator>();
 
-			Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
+		Ref<Texture> tex = tileset->tile_get_texture(sel_tile);
 
-			for (int i = 0; i < entries2.size(); i++) {
+		for (int i = 0; i < entries2.size(); i++) {
 
-				manual_palette->add_item(String());
+			manual_palette->add_item(String());
 
-				if (tex.is_valid()) {
+			if (tex.is_valid()) {
 
-					Rect2 region = tileset->tile_get_region(sel_tile);
-					int spacing = tileset->autotile_get_spacing(sel_tile);
-					region.size = tileset->autotile_get_size(sel_tile); // !!
-					region.position += (region.size + Vector2(spacing, spacing)) * entries2[i];
+				Rect2 region = tileset->tile_get_region(sel_tile);
+				int spacing = tileset->autotile_get_spacing(sel_tile);
+				region.size = tileset->autotile_get_size(sel_tile); // !!
+				region.position += (region.size + Vector2(spacing, spacing)) * entries2[i];
 
-					if (!region.has_no_area())
-						manual_palette->set_item_icon_region(manual_palette->get_item_count() - 1, region);
+				if (!region.has_no_area())
+					manual_palette->set_item_icon_region(manual_palette->get_item_count() - 1, region);
 
-					manual_palette->set_item_icon(manual_palette->get_item_count() - 1, tex);
-				}
-
-				manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries2[i]);
+				manual_palette->set_item_icon(manual_palette->get_item_count() - 1, tex);
 			}
+
+			manual_palette->set_item_metadata(manual_palette->get_item_count() - 1, entries2[i]);
 		}
 	}
 
 	if (manual_palette->get_item_count() > 0) {
-		// Only show the manual palette if at least tile exists in it
+		// Only show the manual palette if at least tile exists in it.
 		if (selected_manual == -1 || selected_single != palette->get_current())
 			selected_manual = 0;
 		if (selected_manual < manual_palette->get_item_count())
@@ -1951,6 +1954,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	add_child(priority_button);
 
 	search_box = memnew(LineEdit);
+	search_box->set_placeholder(TTR("Filter tiles"));
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
 	search_box->connect("text_entered", this, "_text_entered");
 	search_box->connect("text_changed", this, "_text_changed");
@@ -1973,7 +1977,7 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette_container->set_custom_minimum_size(Size2(mw, 0));
 	add_child(palette_container);
 
-	// Add tile palette
+	// Add tile palette.
 	palette = memnew(ItemList);
 	palette->set_h_size_flags(SIZE_EXPAND_FILL);
 	palette->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1981,11 +1985,21 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	palette->set_icon_mode(ItemList::ICON_MODE_TOP);
 	palette->set_max_text_lines(2);
 	palette->set_select_mode(ItemList::SELECT_MULTI);
+	palette->add_constant_override("vseparation", 8 * EDSCALE);
 	palette->connect("item_selected", this, "_palette_selected");
 	palette->connect("multi_selected", this, "_palette_multi_selected");
 	palette_container->add_child(palette);
 
-	// Add autotile override palette
+	// Add message for when no texture is selected.
+	info_message = memnew(Label);
+	info_message->set_text(TTR("Give a TileSet resource to this TileMap to use its tiles."));
+	info_message->set_valign(Label::VALIGN_CENTER);
+	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_autowrap(true);
+	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	palette->add_child(info_message);
+
+	// Add autotile override palette.
 	manual_palette = memnew(ItemList);
 	manual_palette->set_h_size_flags(SIZE_EXPAND_FILL);
 	manual_palette->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1995,15 +2009,14 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 	manual_palette->hide();
 	palette_container->add_child(manual_palette);
 
-	// Add menu items
+	// Add menu items.
 	toolbar = memnew(HBoxContainer);
 	toolbar->hide();
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar);
 
-	// Separator
 	toolbar->add_child(memnew(VSeparator));
 
-	// Tools
+	// Tools.
 	paint_button = memnew(ToolButton);
 	paint_button->set_shortcut(ED_SHORTCUT("tile_map_editor/paint_tile", TTR("Paint Tile"), KEY_P));
 	paint_button->set_tooltip(TTR("Shift+LMB: Line Draw\nShift+Ctrl+LMB: Rectangle Paint"));
@@ -2031,18 +2044,18 @@ TileMapEditor::TileMapEditor(EditorNode *p_editor) {
 
 	_update_button_tool();
 
-	// Container to the right of the toolbar
+	// Container to the right of the toolbar.
 	toolbar_right = memnew(HBoxContainer);
 	toolbar_right->hide();
 	toolbar_right->set_h_size_flags(SIZE_EXPAND_FILL);
 	toolbar_right->set_alignment(BoxContainer::ALIGN_END);
 	CanvasItemEditor::get_singleton()->add_control_to_menu_panel(toolbar_right);
 
-	// Tile position
+	// Tile position.
 	tile_info = memnew(Label);
 	toolbar_right->add_child(tile_info);
 
-	// Menu
+	// Menu.
 	options = memnew(MenuButton);
 	options->set_text("TileMap");
 	options->set_icon(EditorNode::get_singleton()->get_gui_base()->get_icon("TileMap", "EditorIcons"));
@@ -2136,7 +2149,8 @@ void TileMapEditorPlugin::make_visible(bool p_visible) {
 		tile_map_editor->show();
 		tile_map_editor->get_toolbar()->show();
 		tile_map_editor->get_toolbar_right()->show();
-		CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT); //Change to TOOL_SELECT when TileMap node is selected, to prevent accidental movement.
+		// Change to TOOL_SELECT when TileMap node is selected, to prevent accidental movement.
+		CanvasItemEditor::get_singleton()->set_current_tool(CanvasItemEditor::TOOL_SELECT);
 	} else {
 
 		tile_map_editor->hide();

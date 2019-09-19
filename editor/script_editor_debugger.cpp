@@ -1042,17 +1042,15 @@ void ScriptEditorDebugger::_performance_draw() {
 			which.push_back(i);
 	}
 
-	Ref<Font> graph_font = get_font("font", "TextEdit");
-
 	if (which.empty()) {
-		String text = TTR("Pick one or more items from the list to display the graph.");
-
-		perf_draw->draw_string(graph_font, Point2i(MAX(0, perf_draw->get_size().x - graph_font->get_string_size(text).x), perf_draw->get_size().y + graph_font->get_ascent()) / 2, text, get_color("font_color", "Label"), perf_draw->get_size().x);
-
+		info_message->show();
 		return;
 	}
 
+	info_message->hide();
+
 	Ref<StyleBox> graph_sb = get_stylebox("normal", "TextEdit");
+	Ref<Font> graph_font = get_font("font", "TextEdit");
 
 	int cols = Math::ceil(Math::sqrt((float)which.size()));
 	int rows = Math::ceil((float)which.size() / cols);
@@ -1121,7 +1119,6 @@ void ScriptEditorDebugger::_notification(int p_what) {
 			forward->set_icon(get_icon("Forward", "EditorIcons"));
 			dobreak->set_icon(get_icon("Pause", "EditorIcons"));
 			docontinue->set_icon(get_icon("DebugContinue", "EditorIcons"));
-			//scene_tree_refresh->set_icon( get_icon("Reload","EditorIcons"));
 			le_set->connect("pressed", this, "_live_edit_set");
 			le_clear->connect("pressed", this, "_live_edit_clear");
 			error_tree->connect("item_selected", this, "_error_selected");
@@ -2299,11 +2296,14 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		perf_monitors->set_column_title(0, TTR("Monitor"));
 		perf_monitors->set_column_title(1, TTR("Value"));
 		perf_monitors->set_column_titles_visible(true);
-		hsp->add_child(perf_monitors);
 		perf_monitors->connect("item_edited", this, "_performance_select");
+		hsp->add_child(perf_monitors);
+
 		perf_draw = memnew(Control);
+		perf_draw->set_clip_contents(true);
 		perf_draw->connect("draw", this, "_performance_draw");
 		hsp->add_child(perf_draw);
+
 		hsp->set_name(TTR("Monitors"));
 		hsp->set_split_offset(340 * EDSCALE);
 		tabs->add_child(hsp);
@@ -2337,6 +2337,14 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 			perf_items.push_back(it);
 			perf_max.write[i] = 0;
 		}
+
+		info_message = memnew(Label);
+		info_message->set_text(TTR("Pick one or more items from the list to display the graph."));
+		info_message->set_valign(Label::VALIGN_CENTER);
+		info_message->set_align(Label::ALIGN_CENTER);
+		info_message->set_autowrap(true);
+		info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+		perf_draw->add_child(info_message);
 	}
 
 	{ //vmem inspect
@@ -2348,7 +2356,7 @@ ScriptEditorDebugger::ScriptEditorDebugger(EditorNode *p_editor) {
 		vmem_hb->add_child(memnew(Label(TTR("Total:") + " ")));
 		vmem_total = memnew(LineEdit);
 		vmem_total->set_editable(false);
-		vmem_total->set_custom_minimum_size(Size2(100, 1) * EDSCALE);
+		vmem_total->set_custom_minimum_size(Size2(100, 0) * EDSCALE);
 		vmem_hb->add_child(vmem_total);
 		vmem_refresh = memnew(ToolButton);
 		vmem_hb->add_child(vmem_refresh);

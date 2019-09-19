@@ -2466,6 +2466,7 @@ void AnimationTrackEdit::update_play_position() {
 void AnimationTrackEdit::set_root(Node *p_root) {
 	root = p_root;
 }
+
 void AnimationTrackEdit::_zoom_changed() {
 	update();
 	play_position->update();
@@ -3305,6 +3306,7 @@ Ref<Animation> AnimationTrackEditor::get_current_animation() const {
 
 	return animation;
 }
+
 void AnimationTrackEditor::_root_removed(Node *p_root) {
 	root = NULL;
 }
@@ -4079,6 +4081,8 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 }
 
 void AnimationTrackEditor::show_select_node_warning(bool p_show) {
+
+	info_message->set_visible(p_show);
 }
 
 bool AnimationTrackEditor::is_key_selected(int p_track, int p_key) const {
@@ -5793,6 +5797,14 @@ AnimationTrackEditor::AnimationTrackEditor() {
 	timeline_vbox->set_v_size_flags(SIZE_EXPAND_FILL);
 	timeline_vbox->set_h_size_flags(SIZE_EXPAND_FILL);
 	timeline_vbox->add_constant_override("separation", 0);
+
+	info_message = memnew(Label);
+	info_message->set_text(TTR("Select an AnimationPlayer node to create and edit animations."));
+	info_message->set_valign(Label::VALIGN_CENTER);
+	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_autowrap(true);
+	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	main_panel->add_child(info_message);
 
 	timeline = memnew(AnimationTimelineEdit);
 	timeline->set_undo_redo(undo_redo);

@@ -884,8 +884,14 @@ void GridMapEditor::update_palette() {
 
 	if (mesh_library.is_null()) {
 		last_mesh_library = NULL;
+		search_box->set_text("");
+		search_box->set_editable(false);
+		info_message->show();
 		return;
 	}
+
+	search_box->set_editable(true);
+	info_message->hide();
 
 	Vector<int> ids;
 	ids = mesh_library->get_item_list();
@@ -1296,6 +1302,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 	search_box = memnew(LineEdit);
 	search_box->set_h_size_flags(SIZE_EXPAND_FILL);
+	search_box->set_placeholder(TTR("Filter meshes"));
 	hb->add_child(search_box);
 	search_box->connect("text_changed", this, "_text_changed");
 	search_box->connect("gui_input", this, "_sbox_input");
@@ -1331,6 +1338,14 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	add_child(mesh_library_palette);
 	mesh_library_palette->set_v_size_flags(SIZE_EXPAND_FILL);
 
+	info_message = memnew(Label);
+	info_message->set_text(TTR("Give a MeshLibrary resource to this GridMap to use its meshes."));
+	info_message->set_valign(Label::VALIGN_CENTER);
+	info_message->set_align(Label::ALIGN_CENTER);
+	info_message->set_autowrap(true);
+	info_message->set_anchors_and_margins_preset(PRESET_WIDE, PRESET_MODE_KEEP_SIZE, 8 * EDSCALE);
+	mesh_library_palette->add_child(info_message);
+
 	edit_axis = Vector3::AXIS_Y;
 	edit_floor[0] = -1;
 	edit_floor[1] = -1;
@@ -1346,7 +1361,7 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	paste_mesh = VisualServer::get_singleton()->mesh_create();
 
 	{
-		//selection mesh create
+		// Selection mesh create.
 
 		PoolVector<Vector3> lines;
 		PoolVector<Vector3> triangles;
@@ -1424,7 +1439,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 
 		inner_mat.instance();
 		inner_mat->set_albedo(Color(0.7, 0.7, 1.0, 0.2));
-		//inner_mat->set_flag(SpatialMaterial::FLAG_ONTOP, true);
 		inner_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		inner_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
@@ -1444,7 +1458,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 		selection_floor_mat->set_on_top_of_alpha();
 		selection_floor_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		selection_floor_mat->set_line_width(3.0);
-		//selection_floor_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
 
 		d[VS::ARRAY_VERTEX] = lines;
 		VisualServer::get_singleton()->mesh_add_surface_from_arrays(selection_mesh, VS::PRIMITIVE_LINES, d);
