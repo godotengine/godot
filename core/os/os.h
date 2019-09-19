@@ -37,6 +37,7 @@
 #include "core/list.h"
 #include "core/os/main_loop.h"
 #include "core/ustring.h"
+#include "core/variant.h"
 #include "core/vector.h"
 
 #include <stdarg.h>
@@ -530,6 +531,9 @@ public:
 	List<String> get_restart_on_exit_arguments() const;
 
 	virtual bool request_permission(const String &p_name) { return true; }
+	virtual bool request_permission_with_index(int p_index) { return true; }
+	virtual bool request_permissions(const PoolIntArray &p_permissions) { return true; };
+	virtual bool check_permission(int p_index) { return false; }
 
 	virtual void process_and_drop_events() {}
 	OS();

@@ -54,6 +54,9 @@ private:
 	jmethodID _get_clipboard = 0;
 	jmethodID _set_clipboard = 0;
 	jmethodID _request_permission = 0;
+	jmethodID _request_permission_with_index = 0;
+	jmethodID _request_permissions = 0;
+	jmethodID _check_permission = 0;
 	jmethodID _init_input_devices = 0;
 	jmethodID _get_surface = 0;
 	jmethodID _is_activity_resumed = 0;
@@ -81,6 +84,9 @@ public:
 	bool has_set_clipboard();
 	void set_clipboard(const String &p_text);
 	bool request_permission(const String &p_name);
+	bool request_permission_with_index(int p_index);
+	bool request_permissions(const Vector<int> &p_permissions);
+	bool check_permission(int p_index);
 	void init_input_devices();
 	jobject get_surface();
 	bool is_activity_resumed();

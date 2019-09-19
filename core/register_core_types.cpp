@@ -87,6 +87,8 @@ static IP *ip = NULL;
 
 static _Geometry *_geometry = NULL;
 
+static PermissionManager *permission_manager = NULL;
+
 extern Mutex *_global_mutex;
 
 extern void register_global_constants();
@@ -219,6 +221,8 @@ void register_core_types() {
 	_classdb = memnew(_ClassDB);
 	_marshalls = memnew(_Marshalls);
 	_json = memnew(_JSON);
+
+	permission_manager = memnew(PermissionManager);
 }
 
 void register_core_settings() {
@@ -248,6 +252,7 @@ void register_core_singletons() {
 	ClassDB::register_class<InputMap>();
 	ClassDB::register_class<_JSON>();
 	ClassDB::register_class<Expression>();
+	ClassDB::register_class<PermissionManager>();
 
 	Engine::get_singleton()->add_singleton(Engine::Singleton("ProjectSettings", ProjectSettings::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("IP", IP::get_singleton()));
@@ -262,6 +267,7 @@ void register_core_singletons() {
 	Engine::get_singleton()->add_singleton(Engine::Singleton("Input", Input::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("InputMap", InputMap::get_singleton()));
 	Engine::get_singleton()->add_singleton(Engine::Singleton("JSON", _JSON::get_singleton()));
+	Engine::get_singleton()->add_singleton(Engine::Singleton("PermissionManager", PermissionManager::get_singleton()));
 }
 
 void unregister_core_types() {
@@ -275,6 +281,8 @@ void unregister_core_types() {
 	memdelete(_json);
 
 	memdelete(_geometry);
+
+	memdelete(permission_manager);
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();

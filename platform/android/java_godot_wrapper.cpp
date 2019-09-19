@@ -59,6 +59,9 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_get_clipboard = p_env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
+	_request_permission_with_index = p_env->GetMethodID(cls, "requestPermission", "(I)Z");
+	_request_permissions = p_env->GetMethodID(cls, "requestPermissions", "([I)Z");
+	_check_permission = p_env->GetMethodID(cls, "checkPermission", "(I)Z");
 	_init_input_devices = p_env->GetMethodID(cls, "initInputDevices", "()V");
 	_get_surface = p_env->GetMethodID(cls, "getSurface", "()Landroid/view/Surface;");
 	_is_activity_resumed = p_env->GetMethodID(cls, "isActivityResumed", "()Z");
@@ -194,6 +197,36 @@ bool GodotJavaWrapper::request_permission(const String &p_name) {
 		JNIEnv *env = ThreadAndroid::get_env();
 		jstring jStrName = env->NewStringUTF(p_name.utf8().get_data());
 		return env->CallBooleanMethod(godot_instance, _request_permission, jStrName);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::request_permission_with_index(int p_index) {
+	if (_request_permission_with_index) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		return env->CallBooleanMethod(godot_instance, _request_permission_with_index, p_index);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::request_permissions(const Vector<int> &p_permissions) {
+	if (_request_permissions) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		jintArray arr = env->NewIntArray(p_permissions.size());
+		env->SetIntArrayRegion(arr, 0, p_permissions.size(), p_permissions.ptr());
+
+		return env->CallBooleanMethod(godot_instance, _request_permissions, arr);
+	} else {
+		return false;
+	}
+}
+
+bool GodotJavaWrapper::check_permission(int p_index) {
+	if (_check_permission) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		return env->CallBooleanMethod(godot_instance, _check_permission, p_index);
 	} else {
 		return false;
 	}

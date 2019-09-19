@@ -62,6 +62,7 @@ import android.os.Vibrator;
 import android.provider.Settings.Secure;
 import android.support.annotation.Keep;
 import android.support.v4.content.ContextCompat;
+import android.util.Log;
 import android.view.Display;
 import android.view.KeyEvent;
 import android.view.MotionEvent;
@@ -999,6 +1000,32 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			}
 		}
 		return true;
+	}
+
+	public boolean requestPermission(int p_index) {
+		PermissionManager permissionManager = PermissionManager.getInstance(this);
+		PermissionManager.RequestInfo requestInfo = permissionManager.requestPermission(p_index);
+		Log.d("GODOT", requestInfo.getResultText());
+		return requestInfo.isGranted();
+	}
+
+	public boolean requestPermissions(int[] permissions) {
+		if (permissions == null || permissions.length == 0) {
+			Log.d("GODOT", "Requested permissions list size must be grater than 0");
+			return false;
+		}
+
+		PermissionManager permissionManager = PermissionManager.getInstance(this);
+		PermissionManager.RequestInfo requestInfo = permissionManager.requestPermissions(permissions);
+		Log.d("GODOT", requestInfo.getResultText());
+		return requestInfo.isGranted();
+	}
+
+	public boolean checkPermission(int p_index) {
+		PermissionManager permissionManager = PermissionManager.getInstance(this);
+		PermissionManager.RequestInfo requestInfo = permissionManager.checkPermissionStatus(p_index);
+		Log.d("GODOT", requestInfo.getResultText());
+		return requestInfo.isGranted();
 	}
 
 	/**
