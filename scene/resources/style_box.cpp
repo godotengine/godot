@@ -713,6 +713,7 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 	Vector<Point2> verts;
 	Vector<int> indices;
 	Vector<Color> colors;
+	Vector<Point2> uvs;
 
 	//DRAW SHADOW
 	if (draw_shadow) {
@@ -799,9 +800,17 @@ void StyleBoxFlat::draw(RID p_canvas_item, const Rect2 &p_rect) const {
 		}
 	}
 
+	//COMPUTE UV COORDINATES
+	Rect2 uv_rect = style_rect.grow(aa_on ? aa_size : 0);
+	uvs.resize(verts.size());
+	for (int i = 0; i < verts.size(); i++) {
+		uvs.write[i].x = (verts[i].x - uv_rect.position.x) / uv_rect.size.width;
+		uvs.write[i].y = (verts[i].y - uv_rect.position.y) / uv_rect.size.height;
+	}
+
 	//DRAWING
 	VisualServer *vs = VisualServer::get_singleton();
-	vs->canvas_item_add_triangle_array(p_canvas_item, indices, verts, colors);
+	vs->canvas_item_add_triangle_array(p_canvas_item, indices, verts, colors, uvs);
 }
 
 float StyleBoxFlat::get_style_margin(Margin p_margin) const {
