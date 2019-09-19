@@ -22,7 +22,7 @@
 			</return>
 			<description>
 				Virtual method to be implemented by the user. Returns whether [method _gui_input] should not be called for children controls outside this control's rectangle. Input will be clipped to the Rect of this [Control]. Similar to [member rect_clip_content], but doesn't affect visibility.
-				If not overriden, defaults to [code]false[/code].
+				If not overridden, defaults to [code]false[/code].
 			</description>
 		</method>
 		<method name="_get_minimum_size" qualifiers="virtual">
@@ -30,7 +30,7 @@
 			</return>
 			<description>
 				Virtual method to be implemented by the user. Returns the minimum size for this control. Alternative to [member rect_min_size] for controlling minimum size via code. The actual minimum size will be the max value of these two (in each axis separately).
-				If not overriden, defaults to [constant Vector2.ZERO].
+				If not overridden, defaults to [constant Vector2.ZERO].
 			</description>
 		</method>
 		<method name="_gui_input" qualifiers="virtual">
@@ -395,7 +395,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Creates an [InputEventMouseButton] that attempts to click the control. If the event is received, the control aquires focus.
+				Creates an [InputEventMouseButton] that attempts to click the control. If the event is received, the control acquires focus.
 				[codeblock]
 				func _process(delta):
 				    grab_click_focus() #when clicking another Control node, this node will be clicked instead
@@ -503,7 +503,7 @@
 			</argument>
 			<description>
 				Virtual method to be implemented by the user. Returns whether the given [code]point[/code] is inside this control.
-				If not overriden, default behavior is checking if the point is within control's Rect.
+				If not overridden, default behavior is checking if the point is within control's Rect.
 				[b]Node:[/b] If you want to check if a point is inside the control, you can use [code]get_rect().has_point(point)[/code].
 			</description>
 		</method>
@@ -564,7 +564,7 @@
 			<description>
 				Sets the anchor identified by [code]margin[/code] constant from [enum Margin] enum to value [code]anchor[/code]. A setter method for [member anchor_bottom], [member anchor_left], [member anchor_right] and [member anchor_top].
 				If [code]keep_margin[/code] is [code]true[/code], margins aren't updated after this operation.
-				If [code]push_opposite_anchor[/code] is [code]true[/code] and the opposite anchor overlaps this anchor, the opposite one will have its value overriden. For example, when setting left anchor to 1 and the right anchor has value of 0.5, the right anchor will also get value of 1. If [code]push_opposite_anchor[/code] was [code]false[/code], the left anchor would get value 0.5.
+				If [code]push_opposite_anchor[/code] is [code]true[/code] and the opposite anchor overlaps this anchor, the opposite one will have its value overridden. For example, when setting left anchor to 1 and the right anchor has value of 0.5, the right anchor will also get value of 1. If [code]push_opposite_anchor[/code] was [code]false[/code], the left anchor would get value 0.5.
 			</description>
 		</method>
 		<method name="set_anchor_and_margin">

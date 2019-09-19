@@ -616,7 +616,7 @@ void Collada::_parse_effect_material(XMLParser &parser, Effect &effect, String &
 
 										if (colorarr.size() >= 3) {
 
-											// alpha strangely not allright? maybe it needs to be multiplied by value as a channel intensity
+											// alpha strangely not alright? maybe it needs to be multiplied by value as a channel intensity
 											Color color(colorarr[0], colorarr[1], colorarr[2], 1.0);
 											if (what == "diffuse")
 												effect.diffuse.color = color;
@@ -854,7 +854,7 @@ void Collada::_parse_light(XMLParser &parser) {
 				COLLADA_PRINT("colorarr size: " + rtos(colorarr.size()));
 
 				if (colorarr.size() >= 4) {
-					// alpha strangely not allright? maybe it needs to be multiplied by value as a channel intensity
+					// alpha strangely not alright? maybe it needs to be multiplied by value as a channel intensity
 					Color color(colorarr[0], colorarr[1], colorarr[2], 1.0);
 					light.color = color;
 				}
@@ -2297,7 +2297,7 @@ bool Collada::_optimize_skeletons(VisualScene *p_vscene, Node *p_node) {
 		//replace parent by this...
 		Node *parent = node->parent;
 
-		//i wonder if this is allright.. i think it is since created skeleton (first joint) is already animated by bone..
+		//i wonder if this is alright.. i think it is since created skeleton (first joint) is already animated by bone..
 		node->id = parent->id;
 		node->name = parent->name;
 		node->xform_list = parent->xform_list;

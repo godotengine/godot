@@ -99,7 +99,7 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 #endif
 	instance->owner->set_script_instance(instance);
 
-	/* STEP 2, INITIALIZE AND CONSRTUCT */
+	/* STEP 2, INITIALIZE AND CONSTRUCT */
 
 #ifndef NO_THREADS
 	GDScriptLanguage::singleton->lock->lock();

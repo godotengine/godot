@@ -191,7 +191,7 @@ void Tween::_notification(int p_what) {
 		case NOTIFICATION_INTERNAL_PHYSICS_PROCESS: {
 			// Are we processing during 'regular' time?
 			if (tween_process_mode == TWEEN_PROCESS_IDLE)
-				// Do nothing since we whould only process during idle time
+				// Do nothing since we would only process during idle time
 				break;
 
 			// Should we update?

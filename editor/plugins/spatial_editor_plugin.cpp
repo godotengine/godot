@@ -5186,7 +5186,7 @@ void SpatialEditor::snap_selected_nodes_to_floor() {
 	// The maximum height an object can travel to be snapped
 	const float max_snap_height = 20.0;
 
-	// Will be set to `true` if at least one node from the selection was sucessfully snapped
+	// Will be set to `true` if at least one node from the selection was successfully snapped
 	bool snapped_to_floor = false;
 
 	if (keys.size()) {

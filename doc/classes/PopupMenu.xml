@@ -233,7 +233,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Returns the index of the item containing the specified [code]id[/code]. Index is automatically assigned to each item by the engine. Index can not be set manualy.
+				Returns the index of the item containing the specified [code]id[/code]. Index is automatically assigned to each item by the engine. Index can not be set manually.
 			</description>
 		</method>
 		<method name="get_item_metadata" qualifiers="const">

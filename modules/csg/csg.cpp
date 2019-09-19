@@ -114,7 +114,7 @@ void CSGBrush::_regen_face_aabbs() {
 		faces.write[i].aabb.position = faces[i].vertices[0];
 		faces.write[i].aabb.expand_to(faces[i].vertices[1]);
 		faces.write[i].aabb.expand_to(faces[i].vertices[2]);
-		faces.write[i].aabb.grow_by(faces[i].aabb.get_longest_axis_size() * 0.001); //make it a tad bigger to avoid num precision erros
+		faces.write[i].aabb.grow_by(faces[i].aabb.get_longest_axis_size() * 0.001); //make it a tad bigger to avoid num precision errors
 	}
 }
 

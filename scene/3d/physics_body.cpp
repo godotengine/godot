@@ -1137,7 +1137,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 	return colliding;
 }
 
-//so, if you pass 45 as limit, avoid numerical precision erros when angle is 45.
+//so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {

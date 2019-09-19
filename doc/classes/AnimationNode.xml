@@ -73,7 +73,7 @@
 			<argument index="6" name="optimize" type="bool" default="true">
 			</argument>
 			<description>
-				Blend another animaiton node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
+				Blend another animation node (in case this node contains children animation nodes). This function is only useful if you inherit from [AnimationRootNode] instead, else editors will not display your node for addition.
 			</description>
 		</method>
 		<method name="get_caption" qualifiers="virtual">

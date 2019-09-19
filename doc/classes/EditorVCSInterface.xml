@@ -38,7 +38,7 @@
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if the VCS addon has been intialized, else returns [code]false[/code].
+				Returns [code]true[/code] if the VCS addon has been initialized, else returns [code]false[/code].
 			</description>
 		</method>
 		<method name="get_modified_files_data">
@@ -65,7 +65,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Return the name of the VCS if the VCS has been intialized, else return an empty string.
+				Return the name of the VCS if the VCS has been initialized, else return an empty string.
 			</description>
 		</method>
 		<method name="initialize">
