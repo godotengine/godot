@@ -121,6 +121,7 @@ class VideoStreamPlaybackGDNative : public VideoStreamPlayback {
 
 	int num_channels;
 	float time;
+	bool seek_backward;
 	int mix_rate;
 	double delay_compensation;
 
