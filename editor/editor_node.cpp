@@ -2212,27 +2212,27 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 		case EDIT_UNDO: {
 
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't UNDO while mouse buttons are pressed.");
+				log->add_message("Can't undo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				String action = editor_data.get_undo_redo().get_current_action_name();
 
 				if (!editor_data.get_undo_redo().undo()) {
-					log->add_message("There is nothing to UNDO.");
+					log->add_message("Nothing to undo.", EditorLog::MSG_TYPE_EDITOR);
 				} else if (action != "") {
-					log->add_message("UNDO: " + action);
+					log->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;
 		case EDIT_REDO: {
 
 			if (Input::get_singleton()->get_mouse_button_mask() & 0x7) {
-				log->add_message("Can't REDO while mouse buttons are pressed.");
+				log->add_message("Can't redo while mouse buttons are pressed.", EditorLog::MSG_TYPE_EDITOR);
 			} else {
 				if (!editor_data.get_undo_redo().redo()) {
-					log->add_message("There is nothing to REDO.");
+					log->add_message("Nothing to redo.", EditorLog::MSG_TYPE_EDITOR);
 				} else {
 					String action = editor_data.get_undo_redo().get_current_action_name();
-					log->add_message("REDO: " + action);
+					log->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
 				}
 			}
 		} break;

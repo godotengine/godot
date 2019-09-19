@@ -1190,7 +1190,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					if (connection.is_null())
 						break;
 
-					EditorNode::get_log()->add_message("** Debug Process Started **");
+					EditorNode::get_log()->add_message("--- Debugging process started ---", EditorLog::MSG_TYPE_EDITOR);
 
 					ppeer->set_stream_peer(connection);
 
@@ -1200,7 +1200,7 @@ void ScriptEditorDebugger::_notification(int p_what) {
 					dobreak->set_disabled(false);
 					tabs->set_current_tab(0);
 
-					_set_reason_text(TTR("Child Process Connected"), MESSAGE_SUCCESS);
+					_set_reason_text(TTR("Child process connected."), MESSAGE_SUCCESS);
 					profiler->clear();
 
 					inspect_scene_tree->clear();
@@ -1388,7 +1388,7 @@ void ScriptEditorDebugger::stop() {
 	ppeer->set_stream_peer(Ref<StreamPeer>());
 
 	if (connection.is_valid()) {
-		EditorNode::get_log()->add_message("** Debug Process Stopped **");
+		EditorNode::get_log()->add_message("--- Debugging process stopped ---", EditorLog::MSG_TYPE_EDITOR);
 		connection.unref();
 
 		reason->set_text("");
