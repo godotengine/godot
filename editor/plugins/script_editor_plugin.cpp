@@ -538,9 +538,13 @@ void ScriptEditor::_open_recent_script(int p_idx) {
 		// if it's a path then it's most likely a deleted file not help
 	} else if (path.find("::") != -1) {
 		// built-in script
-		String scene_path = path.get_slice("::", 0);
-		if (!EditorNode::get_singleton()->is_scene_open(scene_path)) {
-			EditorNode::get_singleton()->load_scene(scene_path);
+		String res_path = path.get_slice("::", 0);
+		if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
+			if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
+				EditorNode::get_singleton()->load_scene(res_path);
+			}
+		} else {
+			EditorNode::get_singleton()->load_resource(res_path);
 		}
 		Ref<Script> script = ResourceLoader::load(path);
 		if (script.is_valid()) {
@@ -1028,12 +1032,16 @@ void ScriptEditor::_menu_option(int p_option) {
 
 			if (extensions.find(path.get_extension()) || built_in) {
 				if (built_in) {
-					String scene_path = path.get_slice("::", 0);
-					if (!EditorNode::get_singleton()->is_scene_open(scene_path)) {
-						EditorNode::get_singleton()->load_scene(scene_path);
-						script_editor->call_deferred("_menu_option", p_option);
-						previous_scripts.push_back(path); //repeat the operation
-						return;
+					String res_path = path.get_slice("::", 0);
+					if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
+						if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
+							EditorNode::get_singleton()->load_scene(res_path);
+							script_editor->call_deferred("_menu_option", p_option);
+							previous_scripts.push_back(path); //repeat the operation
+							return;
+						}
+					} else {
+						EditorNode::get_singleton()->load_resource(res_path);
 					}
 				}
 
@@ -3463,15 +3471,18 @@ void ScriptEditorPlugin::edit(Object *p_object) {
 	if (Object::cast_to<Script>(p_object)) {
 
 		Script *p_script = Object::cast_to<Script>(p_object);
-		String scene_path = p_script->get_path().get_slice("::", 0);
+		String res_path = p_script->get_path().get_slice("::", 0);
 
-		if (_is_built_in_script(p_script) && !EditorNode::get_singleton()->is_scene_open(scene_path)) {
-			EditorNode::get_singleton()->load_scene(scene_path);
-
-			script_editor->call_deferred("edit", p_script);
-		} else {
-			script_editor->edit(p_script);
+		if (_is_built_in_script(p_script)) {
+			if (ResourceLoader::get_resource_type(res_path) == "PackedScene") {
+				if (!EditorNode::get_singleton()->is_scene_open(res_path)) {
+					EditorNode::get_singleton()->load_scene(res_path);
+				}
+			} else {
+				EditorNode::get_singleton()->load_resource(res_path);
+			}
 		}
+		script_editor->edit(p_script);
 	} else if (Object::cast_to<TextFile>(p_object)) {
 		script_editor->edit(Object::cast_to<TextFile>(p_object));
 	}
