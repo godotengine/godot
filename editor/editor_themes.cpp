@@ -685,7 +685,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	// Tree
 	theme->set_icon("checked", "Tree", theme->get_icon("GuiChecked", "EditorIcons"));
 	theme->set_icon("unchecked", "Tree", theme->get_icon("GuiUnchecked", "EditorIcons"));
-	theme->set_icon("arrow_up", "Tree", theme->get_icon("GuiTreeArrowUp", "EditorIcons"));
 	theme->set_icon("arrow", "Tree", theme->get_icon("GuiTreeArrowDown", "EditorIcons"));
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("updown", "Tree", theme->get_icon("GuiTreeUpdown", "EditorIcons"));
