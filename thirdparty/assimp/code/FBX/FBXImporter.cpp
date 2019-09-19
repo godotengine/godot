@@ -191,7 +191,7 @@ void FBXImporter::InternReadFile( const std::string& pFile, aiScene* pScene, IOS
         }
 
         // convert the FBX DOM to aiScene
-        ConvertToAssimpScene(pScene, doc, settings.removeEmptyBones, unit);
+        ConvertToAssimpScene(pScene, doc, settings.removeEmptyBones);
 
         // size relative to cm
         float size_relative_to_cm = doc.GlobalSettings().UnitScaleFactor();

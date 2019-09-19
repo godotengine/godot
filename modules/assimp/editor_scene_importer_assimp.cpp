@@ -699,6 +699,25 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 		mat->set_cull_mode(SpatialMaterial::CULL_BACK);
 
 		// Now process materials
+		aiTextureType base_color = aiTextureType_BASE_COLOR;
+		{
+			String filename, path;
+			AssimpImageData image_data;
+
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, base_color, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+
+				// anything transparent must be culled
+				if (image_data.raw_image->detect_alpha() != Image::ALPHA_NONE) {
+					mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+					mat->set_depth_draw_mode(SpatialMaterial::DepthDrawMode::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
+					mat->set_cull_mode(SpatialMaterial::CULL_DISABLED); // since you can see both sides in transparent mode
+				}
+
+				mat->set_texture(SpatialMaterial::TEXTURE_ALBEDO, image_data.texture);
+			}
+		}
+
 		aiTextureType tex_diffuse = aiTextureType_DIFFUSE;
 		{
 			String filename, path;
@@ -750,6 +769,60 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 			}
 		}
 
+		aiTextureType tex_normal_camera = aiTextureType_NORMAL_CAMERA;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_normal_camera, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
+				mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+			}
+		}
+
+		aiTextureType tex_emission_color = aiTextureType_EMISSION_COLOR;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_emission_color, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_feature(SpatialMaterial::Feature::FEATURE_NORMAL_MAPPING, true);
+				mat->set_texture(SpatialMaterial::TEXTURE_NORMAL, image_data.texture);
+			}
+		}
+
+		aiTextureType tex_metalness = aiTextureType_METALNESS;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_metalness, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_texture(SpatialMaterial::TEXTURE_METALLIC, image_data.texture);
+			}
+		}
+
+		aiTextureType tex_roughness = aiTextureType_DIFFUSE_ROUGHNESS;
+		{
+			String filename, path;
+			Ref<ImageTexture> texture;
+			AssimpImageData image_data;
+
+			// Process texture normal map
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_roughness, filename, path, image_data)) {
+				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
+				mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, image_data.texture);
+			}
+		}
+
 		aiTextureType tex_emissive = aiTextureType_EMISSIVE;
 		{
 			String filename = "";
@@ -791,16 +864,17 @@ Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 			}
 		}
 
-		aiTextureType tex_roughness = aiTextureType_SHININESS;
+		aiTextureType tex_ao_map = aiTextureType_AMBIENT_OCCLUSION;
 		{
 			String filename, path;
 			Ref<ImageTexture> texture;
 			AssimpImageData image_data;
 
 			// Process texture normal map
-			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_roughness, filename, path, image_data)) {
+			if (AssimpUtils::GetAssimpTexture(state, ai_material, tex_ao_map, filename, path, image_data)) {
 				AssimpUtils::set_texture_mapping_mode(image_data.map_mode, image_data.texture);
-				mat->set_texture(SpatialMaterial::TEXTURE_ROUGHNESS, image_data.texture);
+				mat->set_feature(SpatialMaterial::FEATURE_AMBIENT_OCCLUSION, true);
+				mat->set_texture(SpatialMaterial::TEXTURE_AMBIENT_OCCLUSION, image_data.texture);
 			}
 		}
 
