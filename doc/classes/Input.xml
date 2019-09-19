@@ -316,6 +316,8 @@
 				Sets a custom mouse cursor image, which is only visible inside the game window. The hotspot can also be specified. Passing [code]null[/code] to the image parameter resets to the system cursor. See enum [code]CURSOR_*[/code] for the list of shapes.
 				[code]image[/code]'s size must be lower than 256×256.
 				[code]hotspot[/code] must be within [code]image[/code]'s size.
+				[b]Note:[/b] [AnimatedTexture]s aren't supported as custom mouse cursors. If using an [AnimatedTexture], only the first frame will be displayed.
+				[b]Note:[/b] Only images imported with the [b]Lossless[/b], [b]Lossy[/b] or [b]Uncompressed[/b] compression modes are supported. The [b]Video RAM[/b] compression mode can't be used for custom cursors.
 			</description>
 		</method>
 		<method name="set_default_cursor_shape">
