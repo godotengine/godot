@@ -794,6 +794,10 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 								string_table.write[attr_value] = version_name;
 						}
 
+						if (tname == "instrumentation" && attrname == "targetPackage") {
+							string_table.write[attr_value] = get_package_name(package_name);
+						}
+
 						if (tname == "activity" && attrname == "screenOrientation") {
 
 							encode_uint32(orientation == 0 ? 0 : 1, &p_manifest.write[iofs + 16]);
