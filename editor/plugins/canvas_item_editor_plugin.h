@@ -525,6 +525,7 @@ private:
 
 	HBoxContainer *zoom_hb;
 	void _zoom_on_position(float p_zoom, Point2 p_position = Point2());
+	void _update_zoom_label();
 	void _button_zoom_minus();
 	void _button_zoom_reset();
 	void _button_zoom_plus();
