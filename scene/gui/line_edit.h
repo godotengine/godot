@@ -75,6 +75,8 @@ private:
 	String ime_text;
 	Point2 ime_selection;
 
+	bool selecting_enabled;
+
 	bool context_menu_enabled;
 	PopupMenu *menu;
 
@@ -86,6 +88,8 @@ private:
 	int cached_placeholder_width;
 
 	bool clear_button_enabled;
+
+	bool shortcut_keys_enabled;
 
 	Ref<Texture> right_icon;
 
@@ -117,6 +121,8 @@ private:
 	void _clear_undo_stack();
 	void _clear_redo();
 	void _create_undo_state();
+
+	void _generate_context_menu();
 
 	Timer *caret_blink_timer;
 
@@ -215,6 +221,12 @@ public:
 
 	void set_clear_button_enabled(bool p_enabled);
 	bool is_clear_button_enabled() const;
+
+	void set_shortcut_keys_enabled(bool p_enabled);
+	bool is_shortcut_keys_enabled() const;
+
+	void set_selecting_enabled(bool p_enabled);
+	bool is_selecting_enabled() const;
 
 	void set_right_icon(const Ref<Texture> &p_icon);
 

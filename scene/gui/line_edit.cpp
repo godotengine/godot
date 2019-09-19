@@ -87,7 +87,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 			} else {
 
-				if (b->is_doubleclick()) {
+				if (b->is_doubleclick() && selecting_enabled) {
 
 					selection.enabled = true;
 					selection.begin = 0;
@@ -195,7 +195,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 
 		unsigned int code = k->get_scancode();
 
-		if (k->get_command()) {
+		if (k->get_command() && is_shortcut_keys_enabled()) {
 
 			bool handled = true;
 
@@ -210,7 +210,6 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 
 				case (KEY_C): { // COPY
-
 					copy_text();
 
 				} break;
@@ -275,6 +274,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 				} break;
 				case (KEY_A): { //Select All
 					select();
+
 				} break;
 #ifdef APPLE_STYLE_KEYS
 				case (KEY_LEFT): { // Go to start of text - like HOME key
@@ -1347,6 +1347,8 @@ int LineEdit::get_max_length() const {
 }
 
 void LineEdit::selection_fill_at_cursor() {
+	if (!selecting_enabled)
+		return;
 
 	selection.begin = cursor_pos;
 	selection.end = selection.cursor_start;
@@ -1361,6 +1363,8 @@ void LineEdit::selection_fill_at_cursor() {
 }
 
 void LineEdit::select_all() {
+	if (!selecting_enabled)
+		return;
 
 	if (!text.length())
 		return;
@@ -1377,32 +1381,7 @@ void LineEdit::set_editable(bool p_editable) {
 		return;
 
 	editable = p_editable;
-
-	// Reorganize context menu.
-	menu->clear();
-
-	if (editable) {
-		menu->add_item(RTR("Undo"), MENU_UNDO, KEY_MASK_CMD | KEY_Z);
-		menu->add_item(RTR("Redo"), MENU_REDO, KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z);
-	}
-
-	if (editable) {
-		menu->add_separator();
-		menu->add_item(RTR("Cut"), MENU_CUT, KEY_MASK_CMD | KEY_X);
-	}
-
-	menu->add_item(RTR("Copy"), MENU_COPY, KEY_MASK_CMD | KEY_C);
-
-	if (editable) {
-		menu->add_item(RTR("Paste"), MENU_PASTE, KEY_MASK_CMD | KEY_V);
-	}
-
-	menu->add_separator();
-	menu->add_item(RTR("Select All"), MENU_SELECT_ALL, KEY_MASK_CMD | KEY_A);
-
-	if (editable) {
-		menu->add_item(RTR("Clear"), MENU_CLEAR);
-	}
+	_generate_context_menu();
 
 	update();
 }
@@ -1438,6 +1417,8 @@ String LineEdit::get_secret_character() const {
 }
 
 void LineEdit::select(int p_from, int p_to) {
+	if (!selecting_enabled)
+		return;
 
 	if (p_from == 0 && p_to == 0) {
 		deselect();
@@ -1545,6 +1526,29 @@ bool LineEdit::is_clear_button_enabled() const {
 	return clear_button_enabled;
 }
 
+void LineEdit::set_shortcut_keys_enabled(bool p_enabled) {
+	shortcut_keys_enabled = p_enabled;
+
+	_generate_context_menu();
+}
+
+bool LineEdit::is_shortcut_keys_enabled() const {
+	return shortcut_keys_enabled;
+}
+
+void LineEdit::set_selecting_enabled(bool p_enabled) {
+	selecting_enabled = p_enabled;
+
+	if (!selecting_enabled)
+		deselect();
+
+	_generate_context_menu();
+}
+
+bool LineEdit::is_selecting_enabled() const {
+	return selecting_enabled;
+}
+
 void LineEdit::set_right_icon(const Ref<Texture> &p_icon) {
 	if (right_icon == p_icon) {
 		return;
@@ -1608,6 +1612,25 @@ void LineEdit::_create_undo_state() {
 	undo_stack.push_back(op);
 }
 
+void LineEdit::_generate_context_menu() {
+	// Reorganize context menu.
+	menu->clear();
+	if (editable)
+		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_X : 0);
+	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_C : 0);
+	if (editable)
+		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_V : 0);
+	menu->add_separator();
+	if (is_selecting_enabled())
+		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_A : 0);
+	if (editable) {
+		menu->add_item(RTR("Clear"), MENU_CLEAR);
+		menu->add_separator();
+		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_Z : 0);
+		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z : 0);
+	}
+}
+
 void LineEdit::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_text_changed"), &LineEdit::_text_changed);
@@ -1652,6 +1675,10 @@ void LineEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &LineEdit::is_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("set_clear_button_enabled", "enable"), &LineEdit::set_clear_button_enabled);
 	ClassDB::bind_method(D_METHOD("is_clear_button_enabled"), &LineEdit::is_clear_button_enabled);
+	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &LineEdit::set_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &LineEdit::is_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &LineEdit::set_selecting_enabled);
+	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &LineEdit::is_selecting_enabled);
 
 	ADD_SIGNAL(MethodInfo("text_changed", PropertyInfo(Variant::STRING, "new_text")));
 	ADD_SIGNAL(MethodInfo("text_entered", PropertyInfo(Variant::STRING, "new_text")));
@@ -1680,6 +1707,8 @@ void LineEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "clear_button_enabled"), "set_clear_button_enabled", "is_clear_button_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_GROUP("Placeholder", "placeholder_");
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "placeholder_text"), "set_placeholder", "get_placeholder");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "placeholder_alpha", PROPERTY_HINT_RANGE, "0,1,0.001"), "set_placeholder_alpha", "get_placeholder_alpha");
@@ -1707,6 +1736,8 @@ LineEdit::LineEdit() {
 	clear_button_enabled = false;
 	clear_button_status.press_attempt = false;
 	clear_button_status.pressing_inside = false;
+	shortcut_keys_enabled = true;
+	selecting_enabled = true;
 
 	deselect();
 	set_focus_mode(FOCUS_ALL);

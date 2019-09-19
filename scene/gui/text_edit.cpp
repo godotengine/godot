@@ -3222,7 +3222,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 				if (readonly)
 					break;
 
-				if (k->get_shift() && !k->get_command() && !k->get_alt()) {
+				if (k->get_shift() && !k->get_command() && !k->get_alt() && is_shortcut_keys_enabled()) {
 					cut();
 					break;
 				}
@@ -3453,13 +3453,15 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-				select_all();
+				if (is_shortcut_keys_enabled()) {
+					select_all();
+				}
 #else
 				if ((!k->get_command() && !k->get_control())) {
 					scancode_handled = false;
 					break;
 				}
-				if (!k->get_shift() && k->get_command())
+				if (!k->get_shift() && k->get_command() && is_shortcut_keys_enabled())
 					select_all();
 				else if (k->get_control()) {
 					if (k->get_shift())
@@ -3515,8 +3517,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					scancode_handled = false;
 					break;
 				}
-
-				cut();
+				if (is_shortcut_keys_enabled()) {
+					cut();
+				}
 
 			} break;
 			case KEY_C: {
@@ -3526,7 +3529,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				copy();
+				if (is_shortcut_keys_enabled()) {
+					copy();
+				}
 
 			} break;
 			case KEY_Z: {
@@ -3540,10 +3545,12 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				if (k->get_shift())
-					redo();
-				else
-					undo();
+				if (is_shortcut_keys_enabled()) {
+					if (k->get_shift())
+						redo();
+					else
+						undo();
+				}
 			} break;
 			case KEY_Y: {
 
@@ -3556,7 +3563,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				redo();
+				if (is_shortcut_keys_enabled()) {
+					redo();
+				}
 			} break;
 			case KEY_V: {
 				if (readonly) {
@@ -3567,7 +3576,9 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 					break;
 				}
 
-				paste();
+				if (is_shortcut_keys_enabled()) {
+					paste();
+				}
 
 			} break;
 			case KEY_SPACE: {
@@ -4059,6 +4070,25 @@ int TextEdit::_get_control_height() const {
 		control_height -= h_scroll->get_size().height;
 	}
 	return control_height;
+}
+
+void TextEdit::_generate_context_menu() {
+	// Reorganize context menu.
+	menu->clear();
+	if (!readonly)
+		menu->add_item(RTR("Cut"), MENU_CUT, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_X : 0);
+	menu->add_item(RTR("Copy"), MENU_COPY, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_C : 0);
+	if (!readonly)
+		menu->add_item(RTR("Paste"), MENU_PASTE, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_V : 0);
+	menu->add_separator();
+	if (is_selecting_enabled())
+		menu->add_item(RTR("Select All"), MENU_SELECT_ALL, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_A : 0);
+	if (!readonly) {
+		menu->add_item(RTR("Clear"), MENU_CLEAR);
+		menu->add_separator();
+		menu->add_item(RTR("Undo"), MENU_UNDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_Z : 0);
+		menu->add_item(RTR("Redo"), MENU_REDO, is_shortcut_keys_enabled() ? KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_Z : 0);
+	}
 }
 
 int TextEdit::get_visible_rows() const {
@@ -4769,6 +4799,7 @@ void TextEdit::set_readonly(bool p_readonly) {
 		return;
 
 	readonly = p_readonly;
+	_generate_context_menu();
 
 	// Reorganize context menu.
 	menu->clear();
@@ -5108,6 +5139,8 @@ void TextEdit::paste() {
 }
 
 void TextEdit::select_all() {
+	if (!selecting_enabled)
+		return;
 
 	if (text.size() == 1 && text[0].length() == 0)
 		return;
@@ -5132,6 +5165,8 @@ void TextEdit::deselect() {
 }
 
 void TextEdit::select(int p_from_line, int p_from_column, int p_to_line, int p_to_column) {
+	if (!selecting_enabled)
+		return;
 
 	if (p_from_line < 0)
 		p_from_line = 0;
@@ -6775,6 +6810,29 @@ bool TextEdit::is_context_menu_enabled() {
 	return context_menu_enabled;
 }
 
+void TextEdit::set_shortcut_keys_enabled(bool p_enabled) {
+	shortcut_keys_enabled = p_enabled;
+
+	_generate_context_menu();
+}
+
+void TextEdit::set_selecting_enabled(bool p_enabled) {
+	selecting_enabled = p_enabled;
+
+	if (!selecting_enabled)
+		deselect();
+
+	_generate_context_menu();
+}
+
+bool TextEdit::is_selecting_enabled() const {
+	return selecting_enabled;
+}
+
+bool TextEdit::is_shortcut_keys_enabled() const {
+	return shortcut_keys_enabled;
+}
+
 PopupMenu *TextEdit::get_menu() const {
 	return menu;
 }
@@ -6830,6 +6888,10 @@ void TextEdit::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_wrap_enabled"), &TextEdit::is_wrap_enabled);
 	ClassDB::bind_method(D_METHOD("set_context_menu_enabled", "enable"), &TextEdit::set_context_menu_enabled);
 	ClassDB::bind_method(D_METHOD("is_context_menu_enabled"), &TextEdit::is_context_menu_enabled);
+	ClassDB::bind_method(D_METHOD("set_shortcut_keys_enabled", "enable"), &TextEdit::set_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("is_shortcut_keys_enabled"), &TextEdit::is_shortcut_keys_enabled);
+	ClassDB::bind_method(D_METHOD("set_selecting_enabled", "enable"), &TextEdit::set_selecting_enabled);
+	ClassDB::bind_method(D_METHOD("is_selecting_enabled"), &TextEdit::is_selecting_enabled);
 
 	ClassDB::bind_method(D_METHOD("cut"), &TextEdit::cut);
 	ClassDB::bind_method(D_METHOD("copy"), &TextEdit::copy);
@@ -6920,6 +6982,8 @@ void TextEdit::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "highlight_all_occurrences"), "set_highlight_all_occurrences", "is_highlight_all_occurrences_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "override_selected_font_color"), "set_override_selected_font_color", "is_overriding_selected_font_color");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "context_menu_enabled"), "set_context_menu_enabled", "is_context_menu_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shortcut_keys_enabled"), "set_shortcut_keys_enabled", "is_shortcut_keys_enabled");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "selecting_enabled"), "set_selecting_enabled", "is_selecting_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "smooth_scrolling"), "set_smooth_scroll_enable", "is_smooth_scroll_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_scroll_speed"), "set_v_scroll_speed", "get_v_scroll_speed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "hiding_enabled"), "set_hiding_enabled", "is_hiding_enabled");
@@ -7078,7 +7142,9 @@ TextEdit::TextEdit() {
 	minimap_char_size = Point2(1, 2);
 	minimap_line_spacing = 1;
 
+	selecting_enabled = true;
 	context_menu_enabled = true;
+	shortcut_keys_enabled = true;
 	menu = memnew(PopupMenu);
 	add_child(menu);
 	readonly = true; // Initialise to opposite first, so we get past the early-out in set_readonly.
