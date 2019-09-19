@@ -3554,6 +3554,15 @@ void GDScriptParser::_parse_class(ClassNode *p_class) {
 					return;
 				}
 
+				if (p_class->classname_used && ProjectSettings::get_singleton()->has_setting("autoload/" + p_class->name)) {
+					const String autoload_path = ProjectSettings::get_singleton()->get_setting("autoload/" + p_class->name);
+					if (autoload_path.begins_with("*")) {
+						// It's a singleton, and not just a regular AutoLoad script.
+						_set_error("The class \"" + p_class->name + "\" conflicts with the AutoLoad singleton of the same name, and is therefore redundant. Remove the class_name declaration to fix this error.");
+					}
+					return;
+				}
+
 				tokenizer->advance(2);
 
 				if (tokenizer->get_token() == GDScriptTokenizer::TK_COMMA) {
