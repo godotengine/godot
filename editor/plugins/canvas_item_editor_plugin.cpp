@@ -1967,6 +1967,11 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 			if (key_auto_insert_button->is_pressed()) {
 				_insert_animation_keys(true, false, false, true);
 			}
+
+			//Make sure smart snapping lines disappear.
+			snap_target[0] = SNAP_TARGET_NONE;
+			snap_target[1] = SNAP_TARGET_NONE;
+
 			drag_type = DRAG_NONE;
 			viewport->update();
 			return true;
@@ -1975,6 +1980,8 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		// Cancel a drag
 		if (b.is_valid() && b->get_button_index() == BUTTON_RIGHT && b->is_pressed()) {
 			_restore_canvas_item_state(drag_selection, true);
+			snap_target[0] = SNAP_TARGET_NONE;
+			snap_target[1] = SNAP_TARGET_NONE;
 			drag_type = DRAG_NONE;
 			viewport->update();
 			return true;
@@ -5044,6 +5051,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_rotation = false;
 	snap_relative = false;
 	snap_pixel = false;
+	snap_target[0] = SNAP_TARGET_NONE;
+	snap_target[1] = SNAP_TARGET_NONE;
 
 	anchors_mode = false;
 
