@@ -1046,9 +1046,9 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		if (foldable) {
 			if (object->editor_is_section_unfolded(section)) {
-				arrow = get_icon("arrow_up", "Tree");
-			} else {
 				arrow = get_icon("arrow", "Tree");
+			} else {
+				arrow = get_icon("arrow_collapsed", "Tree");
 			}
 		}
 
@@ -1087,9 +1087,9 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		if (foldable) {
 			if (object->editor_is_section_unfolded(section)) {
-				arrow = get_icon("arrow_up", "Tree");
-			} else {
 				arrow = get_icon("arrow", "Tree");
+			} else {
+				arrow = get_icon("arrow_collapsed", "Tree");
 			}
 		}
 
@@ -1103,13 +1103,12 @@ void EditorInspectorSection::_notification(int p_what) {
 
 		draw_rect(Rect2(Vector2(), Vector2(get_size().width, h)), bg_color);
 
-		int hs = get_constant("hseparation", "Tree");
-
+		const int arrow_margin = 3;
 		Color color = get_color("font_color", "Tree");
-		draw_string(font, Point2(hs, font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
+		draw_string(font, Point2(Math::round((16 + arrow_margin) * EDSCALE), font->get_ascent() + (h - font->get_height()) / 2).floor(), label, color, get_size().width);
 
 		if (arrow.is_valid()) {
-			draw_texture(arrow, Point2(get_size().width - arrow->get_width(), (h - arrow->get_height()) / 2).floor());
+			draw_texture(arrow, Point2(Math::round(arrow_margin * EDSCALE), (h - arrow->get_height()) / 2).floor());
 		}
 	}
 }
