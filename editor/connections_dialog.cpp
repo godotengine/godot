@@ -529,7 +529,7 @@ void ConnectionsDock::_make_or_edit_connection() {
 		// Pick up args here before "it" is deleted by update_tree.
 		script_function_args = it->get_metadata(0).operator Dictionary()["args"];
 		for (int i = 0; i < cToMake.binds.size(); i++) {
-			script_function_args.append("extra_arg_" + itos(i));
+			script_function_args.append("extra_arg_" + itos(i) + ":" + Variant::get_type_name(cToMake.binds[i].get_type()));
 		}
 	}
 
