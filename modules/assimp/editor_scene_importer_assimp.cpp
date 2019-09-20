@@ -529,7 +529,7 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 }
 
 //
-// Mesh Generation from indicies ? why do we need so much mesh code
+// Mesh Generation from indices ? why do we need so much mesh code
 // [debt needs looked into]
 Ref<Mesh> EditorSceneImporterAssimp::_generate_mesh_from_surface_indices(
 		ImportState &state,

@@ -154,7 +154,7 @@
 		</member>
 		<member name="offset_h" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">
 			The horizontal offset of the camera, relative to the drag margins.
-			[b]Note:[/b] Offset H is used only to force offset relative to margins. It's not updated in any way if drag margins are enabled and can be used to set inital offset.
+			[b]Note:[/b] Offset H is used only to force offset relative to margins. It's not updated in any way if drag margins are enabled and can be used to set initial offset.
 		</member>
 		<member name="offset_v" type="float" setter="set_v_offset" getter="get_v_offset" default="0.0">
 			The vertical offset of the camera, relative to the drag margins.

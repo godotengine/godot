@@ -564,7 +564,7 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 
 	diff_heading = memnew(Label);
 	diff_heading->set_text(TTR("Status"));
-	diff_heading->set_tooltip(TTR("View file diffs before commiting them to the latest version"));
+	diff_heading->set_tooltip(TTR("View file diffs before committing them to the latest version"));
 	diff_hbc->add_child(diff_heading);
 
 	diff_file_name = memnew(Label);

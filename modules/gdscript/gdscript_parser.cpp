@@ -1207,7 +1207,7 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					if (_get_completable_identifier(COMPLETION_INDEX, identifier)) {
 
 						if (identifier == StringName()) {
-							identifier = "@temp"; //so it parses allright
+							identifier = "@temp"; //so it parses alright
 						}
 						completion_node = op;
 

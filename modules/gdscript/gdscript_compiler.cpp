@@ -2072,7 +2072,7 @@ Error GDScriptCompiler::_parse_class_blocks(GDScript *p_script, const GDScriptPa
 					}
 					instance->owner->set_script_instance(instance);
 
-					/* STEP 2, INITIALIZE AND CONSRTUCT */
+					/* STEP 2, INITIALIZE AND CONSTRUCT */
 
 					Variant::CallError ce;
 					p_script->initializer->call(instance, NULL, 0, ce);
