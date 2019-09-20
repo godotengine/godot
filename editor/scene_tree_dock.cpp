@@ -759,8 +759,13 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 				_delete_confirm();
 
 			} else {
-				if (remove_list.size() > 1) {
+				if (remove_list.size() >= 2) {
 					delete_dialog->set_text(vformat(TTR("Delete %d nodes?"), remove_list.size()));
+				} else if (remove_list.size() == 1 && remove_list[0] == editor_data->get_edited_scene_root()) {
+					delete_dialog->set_text(vformat(TTR("Delete the root node \"%s\"?"), remove_list[0]->get_name()));
+				} else if (remove_list.size() == 1 && remove_list[0]->get_filename() == "" && remove_list[0]->get_child_count() >= 1) {
+					// Display this message only for non-instanced scenes
+					delete_dialog->set_text(vformat(TTR("Delete node \"%s\" and its children?"), remove_list[0]->get_name()));
 				} else {
 					delete_dialog->set_text(vformat(TTR("Delete node \"%s\"?"), remove_list[0]->get_name()));
 				}
