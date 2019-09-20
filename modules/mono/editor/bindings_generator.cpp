@@ -1785,6 +1785,9 @@ Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 	output.append("uint32_t get_bindings_version() { return ");
 	output.append(String::num_uint64(BINDINGS_GENERATOR_VERSION) + "; }\n");
 
+	output.append("uint32_t get_cs_glue_version() { return ");
+	output.append(String::num_uint64(CS_GLUE_VERSION) + "; }\n");
+
 	output.append("\nvoid register_generated_icalls() " OPEN_BLOCK);
 	output.append("\tgodot_register_glue_header_icalls();\n");
 

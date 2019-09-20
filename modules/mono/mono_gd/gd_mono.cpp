@@ -44,7 +44,6 @@
 #include "core/project_settings.h"
 
 #include "../csharp_script.h"
-#include "../glue/cs_glue_version.gen.h"
 #include "../godotsharp_dirs.h"
 #include "../utils/path_utils.h"
 #include "gd_mono_class.h"
@@ -395,23 +394,24 @@ uint64_t get_core_api_hash();
 uint64_t get_editor_api_hash();
 #endif
 uint32_t get_bindings_version();
+uint32_t get_cs_glue_version();
 
 void register_generated_icalls();
 
 #else
 
 uint64_t get_core_api_hash() {
-	CRASH_NOW();
 	GD_UNREACHABLE();
 }
 #ifdef TOOLS_ENABLED
 uint64_t get_editor_api_hash() {
-	CRASH_NOW();
 	GD_UNREACHABLE();
 }
 #endif
 uint32_t get_bindings_version() {
-	CRASH_NOW();
+	GD_UNREACHABLE();
+}
+uint32_t get_cs_glue_version() {
 	GD_UNREACHABLE();
 }
 
@@ -687,7 +687,7 @@ bool GDMono::_load_core_api_assembly() {
 		APIAssembly::Version api_assembly_ver = APIAssembly::Version::get_from_loaded_assembly(core_api_assembly, APIAssembly::API_CORE);
 		core_api_assembly_out_of_sync = GodotSharpBindings::get_core_api_hash() != api_assembly_ver.godot_api_hash ||
 										GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-										CS_GLUE_VERSION != api_assembly_ver.cs_glue_version;
+										GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
 		if (!core_api_assembly_out_of_sync) {
 			GDMonoUtils::update_godot_api_cache();
 
@@ -722,7 +722,7 @@ bool GDMono::_load_editor_api_assembly() {
 		APIAssembly::Version api_assembly_ver = APIAssembly::Version::get_from_loaded_assembly(editor_api_assembly, APIAssembly::API_EDITOR);
 		editor_api_assembly_out_of_sync = GodotSharpBindings::get_editor_api_hash() != api_assembly_ver.godot_api_hash ||
 										  GodotSharpBindings::get_bindings_version() != api_assembly_ver.bindings_version ||
-										  CS_GLUE_VERSION != api_assembly_ver.cs_glue_version;
+										  GodotSharpBindings::get_cs_glue_version() != api_assembly_ver.cs_glue_version;
 	} else {
 		editor_api_assembly_out_of_sync = false;
 	}
