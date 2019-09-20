@@ -818,7 +818,7 @@ Size2 Control::get_minimum_size() const {
 
 Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 
 		const Ref<Texture> *tex = data.icon_override.getptr(p_name);
 		if (tex)
@@ -860,7 +860,7 @@ Ref<Texture> Control::get_icon(const StringName &p_name, const StringName &p_typ
 }
 
 Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_type) const {
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 
 		const Ref<Shader> *sdr = data.shader_override.getptr(p_name);
 		if (sdr)
@@ -903,7 +903,7 @@ Ref<Shader> Control::get_shader(const StringName &p_name, const StringName &p_ty
 
 Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		const Ref<StyleBox> *style = data.style_override.getptr(p_name);
 		if (style)
 			return *style;
@@ -949,7 +949,7 @@ Ref<StyleBox> Control::get_stylebox(const StringName &p_name, const StringName &
 }
 Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		const Ref<Font> *font = data.font_override.getptr(p_name);
 		if (font)
 			return *font;
@@ -986,7 +986,7 @@ Ref<Font> Control::get_font(const StringName &p_name, const StringName &p_type) 
 }
 Color Control::get_color(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		const Color *color = data.color_override.getptr(p_name);
 		if (color)
 			return *color;
@@ -1026,7 +1026,7 @@ Color Control::get_color(const StringName &p_name, const StringName &p_type) con
 
 int Control::get_constant(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		const int *constant = data.constant_override.getptr(p_name);
 		if (constant)
 			return *constant;
@@ -1102,7 +1102,7 @@ bool Control::has_constant_override(const StringName &p_name) const {
 
 bool Control::has_icon(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_icon_override(p_name))
 			return true;
 	}
@@ -1141,7 +1141,7 @@ bool Control::has_icon(const StringName &p_name, const StringName &p_type) const
 
 bool Control::has_shader(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_shader_override(p_name))
 			return true;
 	}
@@ -1179,7 +1179,7 @@ bool Control::has_shader(const StringName &p_name, const StringName &p_type) con
 }
 bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_stylebox_override(p_name))
 			return true;
 	}
@@ -1217,7 +1217,7 @@ bool Control::has_stylebox(const StringName &p_name, const StringName &p_type) c
 }
 bool Control::has_font(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_font_override(p_name))
 			return true;
 	}
@@ -1256,7 +1256,7 @@ bool Control::has_font(const StringName &p_name, const StringName &p_type) const
 
 bool Control::has_color(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_color_override(p_name))
 			return true;
 	}
@@ -1295,7 +1295,7 @@ bool Control::has_color(const StringName &p_name, const StringName &p_type) cons
 
 bool Control::has_constant(const StringName &p_name, const StringName &p_type) const {
 
-	if (p_type == StringName() || p_type == "") {
+	if (p_type == StringName() || p_type == get_class_name()) {
 		if (has_constant_override(p_name))
 			return true;
 	}
