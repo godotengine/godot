@@ -3402,15 +3402,14 @@ void AnimationTrackEditor::_track_remove_request(int p_track) {
 
 	int idx = p_track;
 	if (idx >= 0 && idx < animation->get_track_count()) {
-		selection.clear();
-		_clear_key_edit();
-		//all will be updated after remove anyway, and triggering update here raises error on tracks already removed
 
 		undo_redo->create_action(TTR("Remove Anim Track"));
+		undo_redo->add_do_method(this, "_clear_selection", false);
 		undo_redo->add_do_method(animation.ptr(), "remove_track", idx);
 		undo_redo->add_undo_method(animation.ptr(), "add_track", animation->track_get_type(idx), idx);
 		undo_redo->add_undo_method(animation.ptr(), "track_set_path", idx, animation->track_get_path(idx));
-		//todo interpolation
+
+		// TODO interpolation.
 		for (int i = 0; i < animation->track_get_key_count(idx); i++) {
 
 			Variant v = animation->track_get_key_value(idx, i);
@@ -3979,10 +3978,10 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 		Animation::UpdateMode update_mode = Animation::UPDATE_DISCRETE;
 
 		if (p_id.type == Animation::TYPE_VALUE || p_id.type == Animation::TYPE_BEZIER) {
-			//wants a new tack
+			// Wants a new track.
 
 			{
-				//hack
+				// Hack.
 				NodePath np;
 				animation->add_track(p_id.type);
 				animation->track_set_path(animation->get_track_count() - 1, p_id.path);
@@ -4036,7 +4035,7 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 			Dictionary d;
 			d["location"] = tr.origin;
 			d["scale"] = tr.basis.get_scale();
-			d["rotation"] = Quat(tr.basis); //.orthonormalized();
+			d["rotation"] = Quat(tr.basis);
 			value = d;
 		} break;
 		case Animation::TYPE_BEZIER: {
@@ -4061,7 +4060,8 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 
 	if (created) {
 
-		//just remove the track
+		// Just remove the track.
+		undo_redo->add_undo_method(this, "_clear_selection", false);
 		undo_redo->add_undo_method(animation.ptr(), "remove_track", p_last_track);
 		p_last_track++;
 	} else {
@@ -4665,6 +4665,7 @@ void AnimationTrackEditor::_insert_key_from_track(float p_ofs, int p_track) {
 
 			undo_redo->create_action(TTR("Add Track Key"));
 			undo_redo->add_do_method(animation.ptr(), "track_insert_key", p_track, p_ofs, value);
+			undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 			undo_redo->add_undo_method(animation.ptr(), "track_remove_key_at_position", p_track, p_ofs);
 			undo_redo->commit_action();
 
@@ -4872,11 +4873,16 @@ void AnimationTrackEditor::_clear_key_edit() {
 	}
 }
 
-void AnimationTrackEditor::_clear_selection() {
+void AnimationTrackEditor::_clear_selection(bool p_update) {
+
 	selection.clear();
-	for (int i = 0; i < track_edits.size(); i++) {
-		track_edits[i]->update();
+
+	if (p_update) {
+		for (int i = 0; i < track_edits.size(); i++) {
+			track_edits[i]->update();
+		}
 	}
+
 	_clear_key_edit();
 }
 
@@ -5547,7 +5553,6 @@ void AnimationTrackEditor::_edit_menu_pressed(int p_option) {
 				undo_redo->add_do_method(this, "_clear_selection_for_anim", animation);
 				undo_redo->add_undo_method(this, "_clear_selection_for_anim", animation);
 				undo_redo->commit_action();
-				//selection.clear();
 				_update_key_edit();
 			}
 		} break;
