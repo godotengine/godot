@@ -38,7 +38,7 @@
 #include "core/project_settings.h"
 #include "scene/main/node.h"
 #include "scene/resources/packed_scene.h"
-
+#include "servers/visual_server.h"
 void ScriptDebuggerRemote::_send_video_memory() {
 
 	List<ResourceUsage> usage;
@@ -769,14 +769,22 @@ void ScriptDebuggerRemote::_poll_events() {
 			profiling = false;
 			_send_profiling_data(false);
 			print_line("PROFILING END!");
+		} else if (command == "start_visual_profiling") {
+
+			visual_profiling = true;
+			VS::get_singleton()->set_frame_profiling_enabled(true);
+		} else if (command == "stop_visual_profiling") {
+
+			visual_profiling = false;
+			VS::get_singleton()->set_frame_profiling_enabled(false);
 		} else if (command == "start_network_profiling") {
 
+			network_profiling = true;
 			multiplayer->profiling_start();
-			profiling_network = true;
 		} else if (command == "stop_network_profiling") {
 
+			network_profiling = false;
 			multiplayer->profiling_end();
-			profiling_network = false;
 		} else if (command == "reload_scripts") {
 			reload_all_scripts = true;
 		} else if (command == "breakpoint") {
@@ -915,6 +923,30 @@ void ScriptDebuggerRemote::idle_poll() {
 			packet_peer_stream->put_var(arr);
 		}
 	}
+	if (visual_profiling) {
+		Vector<VS::FrameProfileArea> profile_areas = VS::get_singleton()->get_frame_profile();
+		if (profile_areas.size()) {
+			PoolVector<String> area_names;
+			PoolVector<real_t> area_times;
+			area_names.resize(profile_areas.size());
+			area_times.resize(profile_areas.size() * 2);
+			{
+				PoolVector<String>::Write area_namesw = area_names.write();
+				PoolVector<real_t>::Write area_timesw = area_times.write();
+
+				for (int i = 0; i < profile_areas.size(); i++) {
+					area_namesw[i] = profile_areas[i].name;
+					area_timesw[i * 2 + 0] = profile_areas[i].cpu_msec;
+					area_timesw[i * 2 + 1] = profile_areas[i].gpu_msec;
+				}
+			}
+			packet_peer_stream->put_var("visual_profile");
+			packet_peer_stream->put_var(3);
+			packet_peer_stream->put_var(VS::get_singleton()->get_frame_profile_frame());
+			packet_peer_stream->put_var(area_names);
+			packet_peer_stream->put_var(area_times);
+		}
+	}
 
 	if (profiling) {
 
@@ -926,7 +958,7 @@ void ScriptDebuggerRemote::idle_poll() {
 		}
 	}
 
-	if (profiling_network) {
+	if (network_profiling) {
 		uint64_t pt = OS::get_singleton()->get_ticks_msec();
 		if (pt - last_net_bandwidth_time > 200) {
 			last_net_bandwidth_time = pt;
@@ -1170,7 +1202,8 @@ ScriptDebuggerRemote::ResourceUsageFunc ScriptDebuggerRemote::resource_usage_fun
 
 ScriptDebuggerRemote::ScriptDebuggerRemote() :
 		profiling(false),
-		profiling_network(false),
+		visual_profiling(false),
+		network_profiling(false),
 		max_frame_functions(16),
 		skip_profile_frame(false),
 		reload_all_scripts(false),

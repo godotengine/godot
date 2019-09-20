@@ -3656,6 +3656,31 @@ RasterizerEffectsRD *RasterizerStorageRD::get_effects() {
 	return &effects;
 }
 
+void RasterizerStorageRD::capture_timestamps_begin() {
+	RD::get_singleton()->capture_timestamp("Frame Begin", false);
+}
+
+void RasterizerStorageRD::capture_timestamp(const String &p_name) {
+	RD::get_singleton()->capture_timestamp(p_name, true);
+}
+
+uint32_t RasterizerStorageRD::get_captured_timestamps_count() const {
+	return RD::get_singleton()->get_captured_timestamps_count();
+}
+uint64_t RasterizerStorageRD::get_captured_timestamps_frame() const {
+	return RD::get_singleton()->get_captured_timestamps_frame();
+}
+
+uint64_t RasterizerStorageRD::get_captured_timestamp_gpu_time(uint32_t p_index) const {
+	return RD::get_singleton()->get_captured_timestamp_gpu_time(p_index);
+}
+uint64_t RasterizerStorageRD::get_captured_timestamp_cpu_time(uint32_t p_index) const {
+	return RD::get_singleton()->get_captured_timestamp_cpu_time(p_index);
+}
+String RasterizerStorageRD::get_captured_timestamp_name(uint32_t p_index) const {
+	return RD::get_singleton()->get_captured_timestamp_name(p_index);
+}
+
 RasterizerStorageRD::RasterizerStorageRD() {
 
 	for (int i = 0; i < SHADER_TYPE_MAX; i++) {

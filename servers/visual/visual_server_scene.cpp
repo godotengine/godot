@@ -1364,6 +1364,8 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 			for (int i = 0; i < splits; i++) {
 
+				RENDER_TIMESTAMP("Culling Directional Light split" + itos(i));
+
 				// setup a camera matrix for that range!
 				CameraMatrix camera_matrix;
 
@@ -1549,6 +1551,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 				for (int i = 0; i < 2; i++) {
 
 					//using this one ensures that raster deferred will have it
+					RENDER_TIMESTAMP("Culling Shadow Paraboloid" + itos(i));
 
 					float radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
 
@@ -1592,6 +1595,7 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 				for (int i = 0; i < 6; i++) {
 
+					RENDER_TIMESTAMP("Culling Shadow Cube side" + itos(i));
 					//using this one ensures that raster deferred will have it
 
 					static const Vector3 view_normals[6] = {
@@ -1644,6 +1648,8 @@ bool VisualServerScene::_light_instance_update_shadow(Instance *p_instance, cons
 
 		} break;
 		case VS::LIGHT_SPOT: {
+
+			RENDER_TIMESTAMP("Culling Spot Light");
 
 			float radius = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_RANGE);
 			float angle = VSG::storage->light_get_param(p_instance->base, VS::LIGHT_PARAM_SPOT_ANGLE);
@@ -1826,6 +1832,8 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 	uint32_t camera_layer_mask = p_visible_layers;
 
 	VSG::scene_render->set_scene_pass(render_pass);
+
+	RENDER_TIMESTAMP("Frustum Culling");
 
 	//rasterizer->set_camera(camera->transform, camera_matrix,ortho);
 
@@ -2035,7 +2043,11 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 		for (int i = 0; i < directional_shadow_count; i++) {
 
+			RENDER_TIMESTAMP(">Rendering Directional Light " + itos(i));
+
 			_light_instance_update_shadow(lights_with_shadow[i], p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+
+			RENDER_TIMESTAMP("<Rendering Directional Light " + itos(i));
 		}
 	}
 
@@ -2134,7 +2146,9 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 
 			if (redraw) {
 				//must redraw!
+				RENDER_TIMESTAMP(">Rendering Light " + itos(i));
 				light->shadow_dirty = _light_instance_update_shadow(ins, p_cam_transform, p_cam_projection, p_cam_orthogonal, p_shadow_atlas, scenario);
+				RENDER_TIMESTAMP("<Rendering Light " + itos(i));
 			}
 		}
 	}
@@ -2156,6 +2170,7 @@ void VisualServerScene::_render_scene(RID p_render_buffers, const Transform p_ca
 
 	/* PROCESS GEOMETRY AND DRAW SCENE */
 
+	RENDER_TIMESTAMP("Render Scene ");
 	VSG::scene_render->render_scene(p_render_buffers, p_cam_transform, p_cam_projection, p_cam_orthogonal, (RasterizerScene::InstanceBase **)instance_cull_result, instance_cull_count, light_instance_cull_result, light_cull_count + directional_light_count, reflection_probe_instance_cull_result, reflection_probe_cull_count, environment, p_shadow_atlas, p_reflection_probe.is_valid() ? RID() : scenario->reflection_atlas, p_reflection_probe, p_reflection_probe_pass);
 }
 
@@ -2170,6 +2185,7 @@ void VisualServerScene::render_empty_scene(RID p_render_buffers, RID p_scenario,
 		environment = scenario->environment;
 	else
 		environment = scenario->fallback_environment;
+	RENDER_TIMESTAMP("Render Empty Scene ");
 	VSG::scene_render->render_scene(p_render_buffers, Transform(), CameraMatrix(), true, NULL, 0, NULL, 0, NULL, 0, environment, p_shadow_atlas, scenario->reflection_atlas, RID(), 0);
 #endif
 }
@@ -2234,11 +2250,13 @@ bool VisualServerScene::_render_reflection_probe_step(Instance *p_instance, int 
 			shadow_atlas = scenario->reflection_probe_shadow_atlas;
 		}
 
+		RENDER_TIMESTAMP("Render Reflection Probe, Step " + itos(p_step));
 		_prepare_scene(xform, cm, false, RID(), VSG::storage->reflection_probe_get_cull_mask(p_instance->base), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, use_shadows);
 		_render_scene(RID(), xform, cm, false, RID(), p_instance->scenario->self, shadow_atlas, reflection_probe->instance, p_step);
 
 	} else {
 		//do roughness postprocess step until it believes it's done
+		RENDER_TIMESTAMP("Post-Process Reflection Probe, Step " + itos(p_step));
 		return VSG::scene_render->reflection_probe_instance_postprocess_step(reflection_probe->instance);
 	}
 

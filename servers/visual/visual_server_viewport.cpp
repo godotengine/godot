@@ -64,6 +64,8 @@ static Transform2D _canvas_get_transform(VisualServerViewport::Viewport *p_viewp
 
 void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
 
+	RENDER_TIMESTAMP(">Begin Rendering 3D Scene");
+
 	Ref<ARVRInterface> arvr_interface;
 	if (ARVRServer::get_singleton() != NULL) {
 		arvr_interface = ARVRServer::get_singleton()->get_primary_interface();
@@ -74,6 +76,7 @@ void VisualServerViewport::_draw_3d(Viewport *p_viewport, ARVRInterface::Eyes p_
 	} else {
 		VSG::scene->render_camera(p_viewport->render_buffers, p_viewport->camera, p_viewport->scenario, p_viewport->size, p_viewport->shadow_atlas);
 	}
+	RENDER_TIMESTAMP("<End Rendering 3D Scene");
 }
 
 void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::Eyes p_eye) {
@@ -132,6 +135,7 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 		int light_count = 0;
 
+		RENDER_TIMESTAMP("Cull Canvas Lights");
 		for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
 
 			VisualServerCanvas::Canvas *canvas = static_cast<VisualServerCanvas::Canvas *>(E->get().canvas);
@@ -194,6 +198,9 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 
 			RasterizerCanvas::LightOccluderInstance *occluders = NULL;
 
+			RENDER_TIMESTAMP(">Render 2D Shadows");
+			RENDER_TIMESTAMP("Cull Occluders");
+
 			//make list of occluders
 			for (Map<RID, Viewport::CanvasData>::Element *E = p_viewport->canvas_map.front(); E; E = E->next()) {
 
@@ -213,14 +220,18 @@ void VisualServerViewport::_draw_viewport(Viewport *p_viewport, ARVRInterface::E
 				}
 			}
 			//update the light shadowmaps with them
+
 			RasterizerCanvas::Light *light = lights_with_shadow;
 			while (light) {
+
+				RENDER_TIMESTAMP("Render Shadow");
 
 				VSG::canvas_render->light_update_shadow(light->light_internal, light->xform_cache.affine_inverse(), light->item_shadow_mask, light->radius_cache / 1000.0, light->radius_cache * 1.1, occluders);
 				light = light->shadows_next_ptr;
 			}
 
 			//VSG::canvas_render->reset_canvas();
+			RENDER_TIMESTAMP("<End rendering 2D Shadows");
 		}
 
 		if (scenario_draw_canvas_bg && canvas_map.front() && canvas_map.front()->key().get_layer() > scenario_canvas_max_layer) {
@@ -303,6 +314,8 @@ void VisualServerViewport::draw_viewports() {
 
 	Map<int, Vector<Rasterizer::BlitToScreen> > blit_to_screen_list;
 	//draw viewports
+	RENDER_TIMESTAMP(">Render Viewports");
+
 	for (int i = 0; i < active_viewports.size(); i++) {
 
 		Viewport *vp = active_viewports[i];
@@ -320,6 +333,8 @@ void VisualServerViewport::draw_viewports() {
 
 		if (!visible)
 			continue;
+
+		RENDER_TIMESTAMP(">Rendering Viewport " + itos(i));
 
 		VSG::storage->render_target_set_as_unused(vp->render_target);
 #if 0
@@ -391,9 +406,12 @@ void VisualServerViewport::draw_viewports() {
 		if (vp->update_mode == VS::VIEWPORT_UPDATE_ONCE) {
 			vp->update_mode = VS::VIEWPORT_UPDATE_DISABLED;
 		}
+
+		RENDER_TIMESTAMP("<Rendering Viewport " + itos(i));
 	}
 	VSG::scene_render->set_debug_draw_mode(VS::VIEWPORT_DEBUG_DRAW_DISABLED);
 
+	RENDER_TIMESTAMP("<Render Viewports");
 	//this needs to be called to make screen swapping more efficient
 	VSG::rasterizer->prepare_for_blitting_render_targets();
 
