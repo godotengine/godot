@@ -381,7 +381,19 @@ void VersionControlEditorPlugin::register_editor() {
 
 void VersionControlEditorPlugin::fetch_available_vcs_addon_names() {
 
-	ScriptServer::get_global_class_list(&available_addons);
+	List<StringName> global_classes;
+	ScriptServer::get_global_class_list(&global_classes);
+
+	for (int i = 0; i != global_classes.size(); i++) {
+
+		String path = ScriptServer::get_global_class_path(global_classes[i]);
+		Ref<Script> script = ResourceLoader::load(path);
+
+		if (script->get_instance_base_type() == "EditorVCSInterface") {
+
+			available_addons.push_back(global_classes[i]);
+		}
+	}
 }
 
 void VersionControlEditorPlugin::clear_stage_area() {
