@@ -6282,7 +6282,7 @@ void TextEdit::_confirm_completion() {
 	CharType last_completion_char = completion_current.insert_text[completion_current.insert_text.length() - 1];
 
 	if ((last_completion_char == '"' || last_completion_char == '\'') && last_completion_char == next_char) {
-		_base_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
+		_remove_text(cursor.line, cursor.column, cursor.line, cursor.column + 1);
 	}
 
 	if (last_completion_char == '(') {
