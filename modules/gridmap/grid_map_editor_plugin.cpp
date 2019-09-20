@@ -1075,6 +1075,7 @@ void GridMapEditor::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_ENTER_TREE: {
+			get_tree()->connect("node_removed", this, "_node_removed");
 			mesh_library_palette->connect("item_selected", this, "_item_selected_cbk");
 			for (int i = 0; i < 3; i++) {
 
@@ -1091,6 +1092,7 @@ void GridMapEditor::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_EXIT_TREE: {
+			get_tree()->disconnect("node_removed", this, "_node_removed");
 			_clear_clipboard_data();
 
 			for (int i = 0; i < 3; i++) {
@@ -1204,6 +1206,7 @@ void GridMapEditor::_bind_methods() {
 	ClassDB::bind_method("_floor_changed", &GridMapEditor::_floor_changed);
 	ClassDB::bind_method("_floor_mouse_exited", &GridMapEditor::_floor_mouse_exited);
 	ClassDB::bind_method("_set_selection", &GridMapEditor::_set_selection);
+	ClassDB::bind_method("_node_removed", &GridMapEditor::_node_removed);
 
 	ClassDB::bind_method(D_METHOD("_set_display_mode", "mode"), &GridMapEditor::_set_display_mode);
 }
