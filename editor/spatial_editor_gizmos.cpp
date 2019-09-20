@@ -783,9 +783,10 @@ Vector3 EditorSpatialGizmo::get_handle_pos(int p_idx) const {
 
 LightSpatialGizmoPlugin::LightSpatialGizmoPlugin() {
 
-	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/light", Color(1, 1, 0.2));
+	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/light", Color(1, 1, 0.7));
 
-	create_material("lines", gizmo_color);
+	create_material("lines_primary", gizmo_color);
+	create_material("lines_secondary", gizmo_color * Color(1, 1, 1, 0.35));
 	create_material("lines_billboard", gizmo_color, true);
 
 	create_icon_material("light_directional_icon", SpatialEditor::get_singleton()->get_icon("GizmoDirectionalLight", "EditorIcons"));
@@ -937,7 +938,7 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	if (Object::cast_to<DirectionalLight>(light)) {
 
-		Ref<Material> material = get_material("lines", p_gizmo);
+		Ref<Material> material = get_material("lines_primary", p_gizmo);
 		Ref<Material> icon = get_material("light_directional_icon", p_gizmo);
 
 		const int arrow_points = 7;
@@ -975,31 +976,39 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	if (Object::cast_to<OmniLight>(light)) {
 
-		Ref<Material> material = get_material("lines_billboard", p_gizmo);
-		Ref<Material> icon = get_material("light_omni_icon", p_gizmo);
+		// Use both a billboard circle and 3 non-billboard circles for a better sphere-like representation
+		const Ref<Material> lines_material = get_material("lines_secondary", p_gizmo);
+		const Ref<Material> lines_billboard_material = get_material("lines_billboard", p_gizmo);
+		const Ref<Material> icon = get_material("light_omni_icon", p_gizmo);
 
 		OmniLight *on = Object::cast_to<OmniLight>(light);
-
-		float r = on->get_param(Light::PARAM_RANGE);
-
+		const float r = on->get_param(Light::PARAM_RANGE);
 		Vector<Vector3> points;
+		Vector<Vector3> points_billboard;
 
-		for (int i = 0; i <= 360; i++) {
+		for (int i = 0; i < 120; i++) {
 
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
-			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
-			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
+			// Create a circle
+			const float ra = Math::deg2rad((float)(i * 3));
+			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * r;
+			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * r;
 
-			/*points.push_back(Vector3(a.x,0,a.y));
-			points.push_back(Vector3(b.x,0,b.y));
-			points.push_back(Vector3(0,a.x,a.y));
-			points.push_back(Vector3(0,b.x,b.y));*/
+			// Draw axis-aligned circles
+			points.push_back(Vector3(a.x, 0, a.y));
+			points.push_back(Vector3(b.x, 0, b.y));
+			points.push_back(Vector3(0, a.x, a.y));
+			points.push_back(Vector3(0, b.x, b.y));
 			points.push_back(Vector3(a.x, a.y, 0));
 			points.push_back(Vector3(b.x, b.y, 0));
+
+			// Draw a billboarded circle
+			points_billboard.push_back(Vector3(a.x, a.y, 0));
+			points_billboard.push_back(Vector3(b.x, b.y, 0));
 		}
 
-		p_gizmo->add_lines(points, material, true);
+		p_gizmo->add_lines(points, lines_material, true);
+		p_gizmo->add_lines(points_billboard, lines_billboard_material, true);
 		p_gizmo->add_unscaled_billboard(icon, 0.05);
 
 		Vector<Vector3> handles;
@@ -1009,40 +1018,44 @@ void LightSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 	if (Object::cast_to<SpotLight>(light)) {
 
-		Ref<Material> material = get_material("lines", p_gizmo);
-		Ref<Material> icon = get_material("light_spot_icon", p_gizmo);
+		const Ref<Material> material_primary = get_material("lines_primary", p_gizmo);
+		const Ref<Material> material_secondary = get_material("lines_secondary", p_gizmo);
+		const Ref<Material> icon = get_material("light_spot_icon", p_gizmo);
 
-		Vector<Vector3> points;
+		Vector<Vector3> points_primary;
+		Vector<Vector3> points_secondary;
 		SpotLight *sl = Object::cast_to<SpotLight>(light);
 
 		float r = sl->get_param(Light::PARAM_RANGE);
 		float w = r * Math::sin(Math::deg2rad(sl->get_param(Light::PARAM_SPOT_ANGLE)));
 		float d = r * Math::cos(Math::deg2rad(sl->get_param(Light::PARAM_SPOT_ANGLE)));
 
-		for (int i = 0; i < 360; i++) {
+		for (int i = 0; i < 120; i++) {
 
-			float ra = Math::deg2rad((float)i);
-			float rb = Math::deg2rad((float)i + 1);
-			Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
-			Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
+			// Draw a circle
+			const float ra = Math::deg2rad((float)(i * 3));
+			const float rb = Math::deg2rad((float)((i + 1) * 3));
+			const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
+			const Point2 b = Vector2(Math::sin(rb), Math::cos(rb)) * w;
 
-			points.push_back(Vector3(a.x, a.y, -d));
-			points.push_back(Vector3(b.x, b.y, -d));
+			points_primary.push_back(Vector3(a.x, a.y, -d));
+			points_primary.push_back(Vector3(b.x, b.y, -d));
 
-			if (i % 90 == 0) {
-
-				points.push_back(Vector3(a.x, a.y, -d));
-				points.push_back(Vector3());
+			if (i % 15 == 0) {
+				// Draw 8 lines from the cone origin to the sides of the circle
+				points_secondary.push_back(Vector3(a.x, a.y, -d));
+				points_secondary.push_back(Vector3());
 			}
 		}
 
-		points.push_back(Vector3(0, 0, -r));
-		points.push_back(Vector3());
+		points_primary.push_back(Vector3(0, 0, -r));
+		points_primary.push_back(Vector3());
 
-		p_gizmo->add_lines(points, material);
+		p_gizmo->add_lines(points_primary, material_primary);
+		p_gizmo->add_lines(points_secondary, material_secondary);
 
-		float ra = 16 * Math_PI * 2.0 / 64.0;
-		Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
+		const float ra = 16 * Math_PI * 2.0 / 64.0;
+		const Point2 a = Vector2(Math::sin(ra), Math::cos(ra)) * w;
 
 		Vector<Vector3> handles;
 		handles.push_back(Vector3(0, 0, -r));
