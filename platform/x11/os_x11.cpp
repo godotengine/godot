@@ -378,6 +378,13 @@ Error OS_X11::initialize(const VideoMode &p_desired, int p_video_driver, int p_a
 		XChangeProperty(x11_display, x11_window, property, property, 32, PropModeReplace, (unsigned char *)&hints, 5);
 	}
 
+	// make PID known to X11
+	{
+		const long pid = this->get_process_id();
+		Atom net_wm_pid = XInternAtom(x11_display, "_NET_WM_PID", False);
+		XChangeProperty(x11_display, x11_window, net_wm_pid, XA_CARDINAL, 32, PropModeReplace, (unsigned char *)&pid, 1);
+	}
+
 	// disable resizable window
 	if (!current_videomode.resizable && !current_videomode.fullscreen) {
 		XSizeHints *xsh;
