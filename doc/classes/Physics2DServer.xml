@@ -822,7 +822,7 @@
 			<argument index="5" name="result" type="Physics2DTestMotionResult" default="null">
 			</argument>
 			<description>
-				Returns whether a body can move from a given point in a given direction. Apart from the boolean return value, a [Physics2DTestMotionResult] can be passed to return additional information in.
+				Returns [code]true[/code] if a collision would result from moving in the given direction from a given point in space. Margin increases the size of the shapes involved in the collision detection. [Physics2DTestMotionResult] can be passed to return additional information in.
 			</description>
 		</method>
 		<method name="capsule_shape_create">
