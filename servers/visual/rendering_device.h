@@ -937,6 +937,17 @@ public:
 	virtual void free(RID p_id) = 0;
 
 	/****************/
+	/**** Timing ****/
+	/****************/
+
+	virtual void capture_timestamp(const String &p_name, bool p_sync_to_draw) = 0;
+	virtual uint32_t get_captured_timestamps_count() const = 0;
+	virtual uint64_t get_captured_timestamps_frame() const = 0;
+	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const = 0;
+	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const = 0;
+	virtual String get_captured_timestamp_name(uint32_t p_index) const = 0;
+
+	/****************/
 	/**** LIMITS ****/
 	/****************/
 
@@ -976,6 +987,7 @@ public:
 	virtual void prepare_screen_for_drawing() = 0;
 	virtual void finalize_frame() = 0;
 	virtual void advance_frame() = 0;
+	virtual uint32_t get_frame_delay() const = 0;
 
 	static RenderingDevice *get_singleton();
 

@@ -37,6 +37,8 @@ static const int z_range = VS::CANVAS_ITEM_Z_MAX - VS::CANVAS_ITEM_Z_MIN + 1;
 
 void VisualServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Canvas::ChildItem *p_child_items, int p_child_item_count, Item *p_canvas_item, const Transform2D &p_transform, const Rect2 &p_clip_rect, const Color &p_modulate, RasterizerCanvas::Light *p_lights) {
 
+	RENDER_TIMESTAMP("Cull CanvasItem Tree");
+
 	memset(z_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 	memset(z_last_list, 0, z_range * sizeof(RasterizerCanvas::Item *));
 
@@ -61,6 +63,8 @@ void VisualServerCanvas::_render_canvas_item_tree(RID p_to_render_target, Canvas
 			list_end = z_last_list[i];
 		}
 	}
+
+	RENDER_TIMESTAMP("Render Canvas Items");
 
 	VSG::canvas_render->canvas_render_items(p_to_render_target, list, p_modulate, p_lights, p_transform);
 }
@@ -240,6 +244,8 @@ void VisualServerCanvas::_light_mask_canvas_items(int p_z, RasterizerCanvas::Ite
 
 void VisualServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, const Transform2D &p_transform, RasterizerCanvas::Light *p_lights, RasterizerCanvas::Light *p_masked_lights, const Rect2 &p_clip_rect) {
 
+	RENDER_TIMESTAMP(">Render Canvas");
+
 	if (p_canvas->children_order_dirty) {
 
 		p_canvas->child_items.sort();
@@ -286,6 +292,8 @@ void VisualServerCanvas::render_canvas(RID p_render_target, Canvas *p_canvas, co
 			}
 		}
 	}
+
+	RENDER_TIMESTAMP("<End Render Canvas");
 }
 
 RID VisualServerCanvas::canvas_create() {

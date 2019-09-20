@@ -524,14 +524,6 @@ Color Color::operator+(const Color &p_color) const {
 			a + p_color.a);
 }
 
-void Color::operator+=(const Color &p_color) {
-
-	r = r + p_color.r;
-	g = g + p_color.g;
-	b = b + p_color.b;
-	a = a + p_color.a;
-}
-
 Color Color::operator-(const Color &p_color) const {
 
 	return Color(
