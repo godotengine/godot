@@ -828,7 +828,25 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkCommandPool command_pool;
 		VkCommandBuffer setup_command_buffer; //used at the begining of every frame for set-up
 		VkCommandBuffer draw_command_buffer; //used at the begining of every frame for set-up
+
+		struct Timestamp {
+			String description;
+			uint64_t value;
+		};
+
+		VkQueryPool timestamp_pool;
+
+		String *timestamp_names;
+		uint64_t *timestamp_cpu_values;
+		uint32_t timestamp_count;
+		String *timestamp_result_names;
+		uint64_t *timestamp_cpu_result_values;
+		uint64_t *timestamp_result_values;
+		uint32_t timestamp_result_count;
+		uint64_t index;
 	};
+
+	uint32_t max_timestamp_query_elements;
 
 	Frame *frames; //frames available, they are cycled (usually 3)
 	int frame; //current frame
@@ -958,6 +976,21 @@ public:
 
 	virtual void free(RID p_id);
 
+	/****************/
+	/**** Timing ****/
+	/****************/
+
+	virtual void capture_timestamp(const String &p_name, bool p_sync_to_draw);
+	virtual uint32_t get_captured_timestamps_count() const;
+	virtual uint64_t get_captured_timestamps_frame() const;
+	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const;
+	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
+	virtual String get_captured_timestamp_name(uint32_t p_index) const;
+
+	/****************/
+	/**** Limits ****/
+	/****************/
+
 	virtual int limit_get(Limit p_limit);
 
 	virtual void prepare_screen_for_drawing();
@@ -966,6 +999,8 @@ public:
 
 	virtual void finalize_frame();
 	virtual void advance_frame();
+
+	virtual uint32_t get_frame_delay() const;
 
 	RenderingDeviceVulkan();
 };

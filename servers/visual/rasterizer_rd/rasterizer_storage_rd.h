@@ -1016,6 +1016,14 @@ public:
 
 	int get_render_info(VS::RenderInfo p_info) { return 0; }
 
+	virtual void capture_timestamps_begin();
+	virtual void capture_timestamp(const String &p_name);
+	virtual uint32_t get_captured_timestamps_count() const;
+	virtual uint64_t get_captured_timestamps_frame() const;
+	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const;
+	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const;
+	virtual String get_captured_timestamp_name(uint32_t p_index) const;
+
 	static RasterizerStorage *base_singleton;
 
 	RasterizerEffectsRD *get_effects();

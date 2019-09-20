@@ -621,6 +621,18 @@ public:
 		return visual_server->is_low_end();
 	}
 
+	virtual uint64_t get_frame_profile_frame() {
+		return visual_server->get_frame_profile_frame();
+	}
+
+	virtual void set_frame_profiling_enabled(bool p_enabled) {
+		visual_server->set_frame_profiling_enabled(p_enabled);
+	}
+
+	virtual Vector<FrameProfileArea> get_frame_profile() {
+		return visual_server->get_frame_profile();
+	}
+
 	VisualServerWrapMT(VisualServer *p_contained, bool p_create_thread);
 	~VisualServerWrapMT();
 
