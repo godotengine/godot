@@ -35,6 +35,7 @@
 
 #ifdef TOOLS_ENABLED
 #include "editor/editor_node.h"
+#include "scene/main/viewport.h" // Only used to check for more modals when dimming the editor.
 #endif
 
 // WindowDialog
@@ -59,7 +60,7 @@ void WindowDialog::_fix_size() {
 	float left = 0;
 	float bottom = 0;
 	float right = 0;
-	// Check validity, because the theme could contain a different type of StyleBox
+	// Check validity, because the theme could contain a different type of StyleBox.
 	if (panel->get_class() == "StyleBoxTexture") {
 		Ref<StyleBoxTexture> panel_texture = Object::cast_to<StyleBoxTexture>(*panel);
 		top = panel_texture->get_expand_margin_size(MARGIN_TOP);
@@ -242,7 +243,7 @@ void WindowDialog::_notification(int p_what) {
 		} break;
 
 		case NOTIFICATION_POPUP_HIDE: {
-			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton())
+			if (get_tree() && Engine::get_singleton()->is_editor_hint() && EditorNode::get_singleton() && !get_viewport()->gui_has_modal_stack())
 				EditorNode::get_singleton()->dim_editor(false);
 		} break;
 #endif
