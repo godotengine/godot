@@ -689,7 +689,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_icon("arrow_collapsed", "Tree", theme->get_icon("GuiTreeArrowRight", "EditorIcons"));
 	theme->set_icon("updown", "Tree", theme->get_icon("GuiTreeUpdown", "EditorIcons"));
 	theme->set_icon("select_arrow", "Tree", theme->get_icon("GuiDropdown", "EditorIcons"));
-	theme->set_icon("select_option", "Tree", theme->get_icon("GuiTreeOption", "EditorIcons"));
 	theme->set_stylebox("bg_focus", "Tree", style_focus);
 	theme->set_stylebox("custom_button", "Tree", make_empty_stylebox());
 	theme->set_stylebox("custom_button_pressed", "Tree", make_empty_stylebox());
@@ -703,7 +702,6 @@ Ref<Theme> create_editor_theme(const Ref<Theme> p_theme) {
 	theme->set_color("drop_position_color", "Tree", accent_color);
 	theme->set_constant("vseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
 	theme->set_constant("hseparation", "Tree", (extra_spacing + default_margin_size) * EDSCALE);
-	theme->set_constant("guide_width", "Tree", border_width);
 	theme->set_constant("item_margin", "Tree", 3 * default_margin_size * EDSCALE);
 	theme->set_constant("button_margin", "Tree", default_margin_size * EDSCALE);
 	theme->set_constant("draw_relationship_lines", "Tree", relationship_line_opacity >= 0.01);

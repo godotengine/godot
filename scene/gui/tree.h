@@ -416,7 +416,6 @@ private:
 		Ref<Texture> arrow_collapsed;
 		Ref<Texture> arrow;
 		Ref<Texture> select_arrow;
-		Ref<Texture> select_option;
 		Ref<Texture> updown;
 
 		Color font_color;
@@ -429,7 +428,6 @@ private:
 		int hseparation;
 		int vseparation;
 		int item_margin;
-		int guide_width;
 		int button_margin;
 		Point2 offset;
 		int draw_relationship_lines;

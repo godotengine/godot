@@ -657,7 +657,6 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 
 	theme->set_constant("hseparation", "Tree", 4 * scale);
 	theme->set_constant("vseparation", "Tree", 4 * scale);
-	theme->set_constant("guide_width", "Tree", 2 * scale);
 	theme->set_constant("item_margin", "Tree", 12 * scale);
 	theme->set_constant("button_margin", "Tree", 4 * scale);
 	theme->set_constant("draw_relationship_lines", "Tree", 0);

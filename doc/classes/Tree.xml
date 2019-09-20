@@ -403,8 +403,6 @@
 		</theme_item>
 		<theme_item name="guide_color" type="Color" default="Color( 0, 0, 0, 0.1 )">
 		</theme_item>
-		<theme_item name="guide_width" type="int" default="2">
-		</theme_item>
 		<theme_item name="hseparation" type="int" default="4">
 		</theme_item>
 		<theme_item name="item_margin" type="int" default="12">
