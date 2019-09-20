@@ -669,12 +669,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 			return;
 		}
 		mView.onPause();
-		mView.queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.focusout();
-			}
-		});
+
 		mSensorManager.unregisterListener(this);
 
 		for (int i = 0; i < singleton_count; i++) {
@@ -703,6 +698,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 	@Override
 	protected void onResume() {
 		super.onResume();
+		activityResumed = true;
 		if (!godot_initialized) {
 			if (null != mDownloaderClientStub) {
 				mDownloaderClientStub.connect(this);
@@ -711,12 +707,7 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 		}
 
 		mView.onResume();
-		mView.queueEvent(new Runnable() {
-			@Override
-			public void run() {
-				GodotLib.focusin();
-			}
-		});
+
 		mSensorManager.registerListener(this, mAccelerometer, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mGravity, SensorManager.SENSOR_DELAY_GAME);
 		mSensorManager.registerListener(this, mMagnetometer, SensorManager.SENSOR_DELAY_GAME);
@@ -737,8 +728,6 @@ public abstract class Godot extends Activity implements SensorEventListener, IDo
 
 			singletons[i].onMainResume();
 		}
-
-		activityResumed = true;
 	}
 
 	public void UiChangeListener() {

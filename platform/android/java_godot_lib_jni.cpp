@@ -1387,3 +1387,21 @@ JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_requestPermissionResu
 		AudioDriver::get_singleton()->capture_start();
 	}
 }
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererResumed(JNIEnv *env, jclass clazz) {
+	if (step == 0)
+		return;
+
+	if (os_android->get_main_loop()) {
+		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APP_RESUMED);
+	}
+}
+
+JNIEXPORT void JNICALL Java_org_godotengine_godot_GodotLib_onRendererPaused(JNIEnv *env, jclass clazz) {
+	if (step == 0)
+		return;
+
+	if (os_android->get_main_loop()) {
+		os_android->get_main_loop()->notification(MainLoop::NOTIFICATION_APP_PAUSED);
+	}
+}
