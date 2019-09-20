@@ -72,6 +72,9 @@ class VisualServerRaster : public VisualServer {
 	void _draw_margins();
 	static void _changes_changed() {}
 
+	uint64_t frame_profile_frame;
+	Vector<FrameProfileArea> frame_profile;
+
 public:
 	//if editor is redrawing when it shouldn't, enable this and put a breakpoint in _changes_changed()
 	//#define DEBUG_CHANGES
@@ -692,6 +695,10 @@ public:
 	virtual int get_render_info(RenderInfo p_info);
 	virtual String get_video_adapter_name() const;
 	virtual String get_video_adapter_vendor() const;
+
+	virtual void set_frame_profiling_enabled(bool p_enable);
+	virtual Vector<FrameProfileArea> get_frame_profile();
+	virtual uint64_t get_frame_profile_frame();
 
 	virtual RID get_test_cube();
 

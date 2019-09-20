@@ -31,6 +31,7 @@
 #include "rendering_device_vulkan.h"
 #include "core/hashfuncs.h"
 #include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
 #include "drivers/vulkan/vulkan_context.h"
 #include "thirdparty/spirv-reflect/spirv_reflect.h"
@@ -6167,6 +6168,20 @@ void RenderingDeviceVulkan::advance_frame() {
 		staging_buffer_current = (staging_buffer_current + 1) % staging_buffer_blocks.size();
 		staging_buffer_used = false;
 	}
+
+	if (frames[frame].timestamp_count) {
+		vkGetQueryPoolResults(device, frames[frame].timestamp_pool, 0, frames[frame].timestamp_count, sizeof(uint64_t) * max_timestamp_query_elements, frames[frame].timestamp_result_values, sizeof(uint64_t), VK_QUERY_RESULT_64_BIT);
+		SWAP(frames[frame].timestamp_names, frames[frame].timestamp_result_names);
+		SWAP(frames[frame].timestamp_cpu_values, frames[frame].timestamp_cpu_result_values);
+	}
+
+	frames[frame].timestamp_result_count = frames[frame].timestamp_count;
+	frames[frame].timestamp_count = 0;
+	frames[frame].index = Engine::get_singleton()->get_frames_drawn();
+}
+
+uint32_t RenderingDeviceVulkan::get_frame_delay() const {
+	return frame_count;
 }
 
 void RenderingDeviceVulkan::_flush(bool p_current_frame) {
@@ -6209,6 +6224,7 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 	device = p_context->get_device();
 	frame_count = p_context->get_swapchain_image_count() + 1; //always need one extra to ensure it's unused at any time, without having to use a fence for this.
 	limits = p_context->get_device_limits();
+	max_timestamp_query_elements = 256;
 
 	{ //initialize allocator
 
@@ -6223,6 +6239,8 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 	frame = 0;
 	//create setup and frame buffers
 	for (int i = 0; i < frame_count; i++) {
+
+		frames[i].index = 0;
 
 		{ //create command pool, one per frame is recommended
 			VkCommandPoolCreateInfo cmd_pool_info;
@@ -6250,6 +6268,27 @@ void RenderingDeviceVulkan::initialize(VulkanContext *p_context) {
 
 			err = vkAllocateCommandBuffers(device, &cmdbuf, &frames[i].draw_command_buffer);
 			ERR_CONTINUE(err);
+		}
+
+		{
+			//create query pool
+			VkQueryPoolCreateInfo query_pool_create_info;
+			query_pool_create_info.sType = VK_STRUCTURE_TYPE_QUERY_POOL_CREATE_INFO;
+			query_pool_create_info.flags = 0;
+			query_pool_create_info.pNext = NULL;
+			query_pool_create_info.queryType = VK_QUERY_TYPE_TIMESTAMP;
+			query_pool_create_info.queryCount = max_timestamp_query_elements;
+			query_pool_create_info.pipelineStatistics = 0;
+
+			vkCreateQueryPool(device, &query_pool_create_info, NULL, &frames[i].timestamp_pool);
+
+			frames[i].timestamp_names = memnew_arr(String, max_timestamp_query_elements);
+			frames[i].timestamp_cpu_values = memnew_arr(uint64_t, max_timestamp_query_elements);
+			frames[i].timestamp_count = 0;
+			frames[i].timestamp_result_names = memnew_arr(String, max_timestamp_query_elements);
+			frames[i].timestamp_cpu_result_values = memnew_arr(uint64_t, max_timestamp_query_elements);
+			frames[i].timestamp_result_values = memnew_arr(uint64_t, max_timestamp_query_elements);
+			frames[i].timestamp_result_count = 0;
 		}
 	}
 
@@ -6317,6 +6356,37 @@ void RenderingDeviceVulkan::_free_rids(T &p_owner, const char *p_type) {
 			free(E->get());
 		}
 	}
+}
+
+void RenderingDeviceVulkan::capture_timestamp(const String &p_name, bool p_sync_to_draw) {
+
+	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
+
+	vkCmdWriteTimestamp(p_sync_to_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, frames[frame].timestamp_pool, frames[frame].timestamp_count);
+	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
+	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
+	frames[frame].timestamp_count++;
+}
+
+uint32_t RenderingDeviceVulkan::get_captured_timestamps_count() const {
+	return frames[frame].timestamp_result_count;
+}
+
+uint64_t RenderingDeviceVulkan::get_captured_timestamps_frame() const {
+	return frames[frame].index;
+}
+
+uint64_t RenderingDeviceVulkan::get_captured_timestamp_gpu_time(uint32_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	return frames[frame].timestamp_result_values[p_index];
+}
+uint64_t RenderingDeviceVulkan::get_captured_timestamp_cpu_time(uint32_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
+	return frames[frame].timestamp_cpu_result_values[p_index];
+}
+String RenderingDeviceVulkan::get_captured_timestamp_name(uint32_t p_index) const {
+	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, String());
+	return frames[frame].timestamp_result_names[p_index];
 }
 
 int RenderingDeviceVulkan::limit_get(Limit p_limit) {
@@ -6400,6 +6470,12 @@ void RenderingDeviceVulkan::finalize() {
 		int f = (frame + i) % frame_count;
 		_free_pending_resources(f);
 		vkDestroyCommandPool(device, frames[i].command_pool, NULL);
+		vkDestroyQueryPool(device, frames[i].timestamp_pool, NULL);
+		memdelete_arr(frames[i].timestamp_names);
+		memdelete_arr(frames[i].timestamp_cpu_values);
+		memdelete_arr(frames[i].timestamp_result_names);
+		memdelete_arr(frames[i].timestamp_result_values);
+		memdelete_arr(frames[i].timestamp_cpu_result_values);
 	}
 
 	for (int i = 0; i < split_draw_list_allocators.size(); i++) {
