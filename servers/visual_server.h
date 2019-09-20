@@ -1022,6 +1022,16 @@ public:
 
 	virtual int get_render_info(RenderInfo p_info) = 0;
 
+	struct FrameProfileArea {
+		String name;
+		float gpu_msec;
+		float cpu_msec;
+	};
+
+	virtual void set_frame_profiling_enabled(bool p_enable) = 0;
+	virtual Vector<FrameProfileArea> get_frame_profile() = 0;
+	virtual uint64_t get_frame_profile_frame() = 0;
+
 	/* Materials for 2D on 3D */
 
 	/* TESTING */
