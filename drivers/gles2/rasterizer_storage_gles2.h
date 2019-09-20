@@ -60,7 +60,9 @@ public:
 
 		bool shrink_textures_x2;
 		bool use_fast_texture_filter;
+		bool use_skeleton_software;
 
+		int max_vertex_texture_image_units;
 		int max_texture_image_units;
 		int max_texture_size;
 
