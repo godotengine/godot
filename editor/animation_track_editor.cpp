@@ -3492,7 +3492,7 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 					case Variant::QUAT:
 					case Variant::PLANE:
 					case Variant::COLOR: {
-						//good
+						// Valid.
 					} break;
 					default: {
 						all_bezier = false;
@@ -3955,7 +3955,9 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 	bool created = false;
 	if (p_id.track_idx < 0) {
 
-		if (p_create_beziers && (p_id.value.get_type() == Variant::VECTOR2 ||
+		if (p_create_beziers && (p_id.value.get_type() == Variant::INT ||
+										p_id.value.get_type() == Variant::REAL ||
+										p_id.value.get_type() == Variant::VECTOR2 ||
 										p_id.value.get_type() == Variant::VECTOR3 ||
 										p_id.value.get_type() == Variant::QUAT ||
 										p_id.value.get_type() == Variant::COLOR ||
