@@ -638,6 +638,20 @@ public:
 	Color get_default_clear_color() const {
 		return default_clear_color;
 	}
+#define RENDER_TIMESTAMP(m_text)                                                         \
+	{                                                                                    \
+		if (VSG::storage->capturing_timestamps) VSG::storage->capture_timestamp(m_text); \
+	}
+
+	bool capturing_timestamps = false;
+
+	virtual void capture_timestamps_begin() = 0;
+	virtual void capture_timestamp(const String &p_name) = 0;
+	virtual uint32_t get_captured_timestamps_count() const = 0;
+	virtual uint64_t get_captured_timestamps_frame() const = 0;
+	virtual uint64_t get_captured_timestamp_gpu_time(uint32_t p_index) const = 0;
+	virtual uint64_t get_captured_timestamp_cpu_time(uint32_t p_index) const = 0;
+	virtual String get_captured_timestamp_name(uint32_t p_index) const = 0;
 
 	RasterizerStorage();
 	virtual ~RasterizerStorage() {}

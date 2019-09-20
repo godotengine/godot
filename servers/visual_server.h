@@ -1027,6 +1027,16 @@ public:
 	virtual String get_video_adapter_name() const = 0;
 	virtual String get_video_adapter_vendor() const = 0;
 
+	struct FrameProfileArea {
+		String name;
+		float gpu_msec;
+		float cpu_msec;
+	};
+
+	virtual void set_frame_profiling_enabled(bool p_enable) = 0;
+	virtual Vector<FrameProfileArea> get_frame_profile() = 0;
+	virtual uint64_t get_frame_profile_frame() = 0;
+
 	/* Materials for 2D on 3D */
 
 	/* TESTING */

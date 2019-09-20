@@ -51,6 +51,7 @@ class TreeItem;
 class HSplitContainer;
 class ItemList;
 class EditorProfiler;
+class EditorVisualProfiler;
 class EditorNetworkProfiler;
 
 class ScriptEditorDebuggerInspectedObject;
@@ -169,6 +170,7 @@ private:
 	Map<String, int> res_path_cache;
 
 	EditorProfiler *profiler;
+	EditorVisualProfiler *visual_profiler;
 	EditorNetworkProfiler *network_profiler;
 
 	EditorNode *editor;
@@ -213,6 +215,7 @@ private:
 	void _expand_errors_list();
 	void _collapse_errors_list();
 
+	void _visual_profiler_activate(bool p_enable);
 	void _profiler_activate(bool p_enable);
 	void _profiler_seeked();
 

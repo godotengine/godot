@@ -70,7 +70,12 @@ struct Color {
 	}
 
 	Color operator+(const Color &p_color) const;
-	void operator+=(const Color &p_color);
+	_FORCE_INLINE_ void operator+=(const Color &p_color) {
+		r = r + p_color.r;
+		g = g + p_color.g;
+		b = b + p_color.b;
+		a = a + p_color.a;
+	}
 
 	Color operator-() const;
 	Color operator-(const Color &p_color) const;

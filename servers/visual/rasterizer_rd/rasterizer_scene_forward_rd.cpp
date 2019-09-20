@@ -1654,6 +1654,8 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	}
 #endif
 
+	RENDER_TIMESTAMP("Setup 3D Scene");
+
 	bool using_shadows = true;
 
 	if (p_reflection_probe.is_valid()) {
@@ -2085,6 +2087,8 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 		}
 	}
 
+	RENDER_TIMESTAMP("Render Opaque Pass");
+
 	_setup_render_base_uniform_set(RID(), RID(), RID(), RID(), radiance_cubemap, p_shadow_atlas, p_reflection_atlas);
 
 	render_list.sort_by_key(false);
@@ -2104,6 +2108,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	}
 
 	if (draw_sky) {
+		RENDER_TIMESTAMP("Render Sky");
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, can_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ_COLOR_AND_DEPTH);
 		_draw_sky(draw_list, RD::get_singleton()->framebuffer_get_format(opaque_framebuffer), p_environment, p_cam_projection, p_cam_transform, 1.0);
 		RD::get_singleton()->draw_list_end();
@@ -2201,6 +2206,9 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	glEnable(GL_DEPTH_TEST);
 	glDisable(GL_SCISSOR_TEST);
 #endif
+
+	RENDER_TIMESTAMP("Render Transparent Pass");
+
 	render_list.sort_by_reverse_depth_and_priority(true);
 
 	_fill_instances(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count);
@@ -2232,6 +2240,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	RasterizerEffectsRD *effects = storage->get_effects();
 
 	{
+		RENDER_TIMESTAMP("Tonemap");
 		//tonemap
 		RasterizerEffectsRD::TonemapSettings tonemap;
 
@@ -2326,6 +2335,8 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 }
 void RasterizerSceneForwardRD::_render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip) {
 
+	RENDER_TIMESTAMP("Setup Rendering Shadow");
+
 	render_pass++;
 
 	scene_state.ubo.shadow_z_offset = p_bias;
@@ -2342,6 +2353,8 @@ void RasterizerSceneForwardRD::_render_shadow(RID p_framebuffer, InstanceBase **
 	_fill_render_list(p_cull_result, p_cull_count, pass_mode, true);
 
 	_setup_render_base_uniform_set(RID(), RID(), RID(), RID(), RID(), RID(), RID());
+
+	RENDER_TIMESTAMP("Render Shadow");
 
 	render_list.sort_by_key(false);
 
