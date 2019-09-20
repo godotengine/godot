@@ -110,7 +110,7 @@ void EditorSettingsDialog::_filter_shortcuts(const String &p_filter) {
 }
 
 void EditorSettingsDialog::_undo_redo_callback(void *p_self, const String &p_name) {
-	EditorNode::get_log()->add_message(p_name);
+	EditorNode::get_log()->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
 void EditorSettingsDialog::_notification(int p_what) {
@@ -151,7 +151,7 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 			if (ED_IS_SHORTCUT("editor/undo", p_event)) {
 				String action = undo_redo->get_current_action_name();
 				if (action != "")
-					EditorNode::get_log()->add_message("UNDO: " + action);
+					EditorNode::get_log()->add_message("Undo: " + action, EditorLog::MSG_TYPE_EDITOR);
 				undo_redo->undo();
 				handled = true;
 			}
@@ -159,7 +159,7 @@ void EditorSettingsDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				undo_redo->redo();
 				String action = undo_redo->get_current_action_name();
 				if (action != "")
-					EditorNode::get_log()->add_message("REDO: " + action);
+					EditorNode::get_log()->add_message("Redo: " + action, EditorLog::MSG_TYPE_EDITOR);
 				handled = true;
 			}
 
