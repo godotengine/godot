@@ -36,10 +36,17 @@
 #include "scene/3d/spatial.h"
 
 class AnimationPlayer;
+class BoneAttachment;
+class MeshInstance;
 
 class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	GDCLASS(EditorSceneImporterGLTF, EditorSceneImporter);
+
+	typedef int GLTFNodeIndex;
+	typedef int GLTFSkinIndex;
+	typedef int GLTFSkeletonIndex;
+	typedef int GLTFMeshIndex;
 
 	enum {
 		ARRAY_BUFFER = 34962,
@@ -77,52 +84,41 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	String _get_type_name(GLTFType p_component);
 
 	struct GLTFNode {
+
 		//matrices need to be transformed to this
-		int parent;
+		GLTFNodeIndex parent;
+		int height;
 
 		Transform xform;
 		String name;
-		//Node *godot_node;
-		//int godot_bone_index;
 
 		int mesh;
 		int camera;
 		int skin;
-		//int skeleton_skin;
-		//int child_of_skeleton; // put as children of skeleton
-		//Vector<int> skeleton_children; //skeleton put as children of this
 
-		struct Joint {
-			int skin;
-			int bone;
-			int godot_bone_index;
+		GLTFSkeletonIndex skeleton;
+		bool joint;
 
-			Joint() {
-				skin = -1;
-				bone = -1;
-				godot_bone_index = -1;
-			}
-		};
 
-		Vector<Joint> joints;
-
-		//keep them for animation
 		Vector3 translation;
 		Quat rotation;
 		Vector3 scale;
 
 		Vector<int> children;
-		Vector<Node *> godot_nodes;
+
+		GLTFNodeIndex fake_joint_parent;
 
 		GLTFNode() :
 				parent(-1),
+				height(-1),
 				mesh(-1),
 				camera(-1),
 				skin(-1),
-				//skeleton_skin(-1),
-				//child_of_skeleton(-1),
-				scale(Vector3(1, 1, 1)) {
-		}
+				skeleton(-1),
+				joint(false),
+				translation(0, 0, 0),
+				scale(Vector3(1, 1, 1)),
+				fake_joint_parent(-1) {}
 	};
 
 	struct GLTFBufferView {
@@ -160,8 +156,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		int sparse_values_buffer_view;
 		int sparse_values_byte_offset;
 
-		//matrices need to be transformed to this
-
 		GLTFAccessor() {
 			buffer_view = 0;
 			byte_offset = 0;
@@ -179,22 +173,63 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		int src_image;
 	};
 
-	struct GLTFSkin {
+	struct GLTFSkeleton {
+		// The *synthesized* skeletons joints
+		Vector<GLTFNodeIndex> joints;
 
-		String name;
-		struct Bone {
-			Transform inverse_bind;
-			int node;
-		};
+		// The roots of the skeleton. If there are multiple, each root must have the same parent
+		// (ie roots are siblings)
+		Vector<GLTFNodeIndex> roots;
 
-		int skeleton;
-		Vector<Bone> bones;
+		// The created Skeleton for the scene
+		Skeleton *godot_skeleton;
 
-		//matrices need to be transformed to this
-
-		GLTFSkin() {
-			skeleton = -1;
+		GLTFSkeleton() :
+				godot_skeleton(nullptr) {
 		}
+	};
+
+	struct GLTFSkin {
+		String name;
+
+		// The "skeleton" property defined in the gltf spec. -1 = Scene Root
+		GLTFNodeIndex skin_root;
+
+		Vector<GLTFNodeIndex> joints_original;
+		Vector<Transform> inverse_binds;
+
+		// Note: joints + non_joints should form a complete subtree, or subtrees with a common parent
+
+		// All nodes that are skins that are caught in-between the original joints
+		// (inclusive of joints_original)
+		Vector<GLTFNodeIndex> joints;
+
+		// All Nodes that are caught in-between skin joint nodes, and are not defined
+		// as joints by any skin
+		Vector<GLTFNodeIndex> non_joints;
+
+		// The roots of the skin. In the case of multiple roots, their parent *must*
+		// be the same (the roots must be siblings)
+		Vector<GLTFNodeIndex> roots;
+
+		// The GLTF Skeleton this Skin points to (after we determine skeletons)
+		GLTFSkeletonIndex skeleton;
+
+		// A mapping from the joint indices (in the order of joints_original) to the
+		// Godot Skeleton's bone_indices
+		Map<int, int> joint_i_to_bone_i;
+
+		// The same inverse-binds as above, but they have been re-rooted to the
+		// skeletons parent node
+		Vector<Transform> skeleton_inverse_binds;
+
+		// The Actual Skin that will be created as a mapping between the IBM's of this skin
+		// to the generated skeleton for the mesh instances.
+		Ref<Skin> godot_skin;
+
+		GLTFSkin() :
+				skin_root(-1),
+				skeleton(-1) {}
 	};
 
 	struct GLTFMesh {
@@ -272,11 +307,10 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 		Set<String> unique_names;
 
+		Vector<GLTFSkeleton> skeletons;
 		Vector<GLTFAnimation> animations;
 
-		Map<int, Vector<int> > skeleton_nodes;
-
-		//Map<int, Vector<int> > skin_users; //cache skin users
+		Map<GLTFNodeIndex, Node *> scene_nodes;
 
 		~GLTFState() {
 			for (int i = 0; i < nodes.size(); i++) {
@@ -294,6 +328,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	Error _parse_scenes(GLTFState &state);
 	Error _parse_nodes(GLTFState &state);
+
+	void _compute_node_heights(GLTFState &state);
+
 	Error _parse_buffers(GLTFState &state, const String &p_base_path);
 	Error _parse_buffer_views(GLTFState &state);
 	GLTFType _get_type_from_str(const String &p_string);
@@ -310,29 +347,53 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Vector<Basis> _decode_accessor_as_basis(GLTFState &state, int p_accessor, bool p_for_vertex);
 	Vector<Transform> _decode_accessor_as_xform(GLTFState &state, int p_accessor, bool p_for_vertex);
 
-	void _reparent_skeleton(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node);
-	void _generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node);
-	void _generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons);
-	void _import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps, Vector<Skeleton *> skeletons);
-
-	Spatial *_generate_scene(GLTFState &state, int p_bake_fps);
-
 	Error _parse_meshes(GLTFState &state);
 	Error _parse_images(GLTFState &state, const String &p_base_path);
 	Error _parse_textures(GLTFState &state);
 
 	Error _parse_materials(GLTFState &state);
 
+	GLTFNodeIndex _find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subtree);
+
+	bool _capture_nodes_in_skin(GLTFState &state, GLTFSkin &skin, GLTFNodeIndex node_index);
+	void _capture_nodes_for_multirooted_skin(GLTFState &state, GLTFSkin &skin);
+	Error _expand_skin(GLTFState &state, GLTFSkin &skin);
+	Error _verify_skin(GLTFState &state, GLTFSkin &skin);
 	Error _parse_skins(GLTFState &state);
+
+	Error _determine_skeletons(GLTFState &state);
+	Error _reparent_non_joint_skeleton_subtrees(GLTFState &state, GLTFSkeleton &skeleton, const Vector<GLTFNodeIndex> &non_joints);
+	Error _reparent_to_fake_joint(GLTFState &state, GLTFSkeleton &skeleton, const GLTFNodeIndex node_index);
+	Error _determine_skeleton_roots(GLTFState &state, GLTFSkeletonIndex &skel_i);
+
+	Error _create_skeletons(GLTFState &state);
+	Error _map_skin_joints_indices_to_skeleton_bone_indices(GLTFState &state);
+
+	Transform _get_scene_transform_for_node(const GLTFState &state, const GLTFNodeIndex node_i);
+	Transform _compute_skin_to_skeleton_transform(const GLTFState &state, const GLTFNodeIndex skin_parent, const GLTFNodeIndex skeleton_parent);
+	void _compute_skeleton_rooted_skin_inverse_binds(GLTFState &state, const GLTFSkinIndex skin_i);
+	Error _create_skins(GLTFState &state);
 
 	Error _parse_cameras(GLTFState &state);
 
 	Error _parse_animations(GLTFState &state);
 
+	BoneAttachment *_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index);
+	MeshInstance *_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Camera *_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+	Spatial *_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index);
+
+	void _generate_scene_node(GLTFState &state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index);
+	Spatial *_generate_scene(GLTFState &state, int p_bake_fps);
+
+	void _process_mesh_instances(GLTFState &state, Spatial *scene_root);
+
 	void _assign_scene_names(GLTFState &state);
 
 	template <class T>
 	T _interpolate_track(const Vector<float> &p_times, const Vector<T> &p_values, float p_time, GLTFAnimation::Interpolation p_interp);
+
+	void _import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps);
 
 public:
 	virtual uint32_t get_import_flags() const;

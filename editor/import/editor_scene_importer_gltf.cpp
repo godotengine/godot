@@ -31,9 +31,11 @@
 #include "editor_scene_importer_gltf.h"
 #include "core/crypto/crypto_core.h"
 #include "core/io/json.h"
+#include "core/math/disjoint_set.h"
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
 #include "scene/animation/animation_player.h"
@@ -187,7 +189,9 @@ Error EditorSceneImporterGLTF::_parse_scenes(GLTFState &state) {
 		}
 
 		if (s.has("name")) {
-			state.scene_name = s["name"];
+			state.scene_name = _gen_unique_name(state, s["name"]);
+		} else {
+			state.scene_name = _gen_unique_name(state, "Scene");
 		}
 	}
 
@@ -214,13 +218,6 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 		}
 		if (n.has("skin")) {
 			node->skin = n["skin"];
-			/*
-			if (!state.skin_users.has(node->skin)) {
-				state.skin_users[node->skin] = Vector<int>();
-			}
-
-			state.skin_users[node->skin].push_back(i);
-			*/
 		}
 		if (n.has("matrix")) {
 			node->xform = _arr_to_xform(n["matrix"]);
@@ -251,12 +248,12 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 		state.nodes.push_back(node);
 	}
 
-	//build the hierarchy
-
-	for (int i = 0; i < state.nodes.size(); i++) {
+	// build the hierarchy
+	for (GLTFNodeIndex i = 0; i < state.nodes.size(); i++) {
 
 		for (int j = 0; j < state.nodes[i]->children.size(); j++) {
-			int child = state.nodes[i]->children[j];
+			GLTFNodeIndex child = state.nodes[i]->children[j];
+
 			ERR_FAIL_INDEX_V(child, state.nodes.size(), ERR_FILE_CORRUPT);
 			ERR_CONTINUE(state.nodes[child]->parent != -1); //node already has a parent, wtf.
 
@@ -264,7 +261,30 @@ Error EditorSceneImporterGLTF::_parse_nodes(GLTFState &state) {
 		}
 	}
 
+	_compute_node_heights(state);
+
 	return OK;
+}
+
+void EditorSceneImporterGLTF::_compute_node_heights(GLTFState &state) {
+
+	state.root_nodes.clear();
+	for (GLTFNodeIndex node_i = 0; node_i < state.nodes.size(); ++node_i) {
+		GLTFNode *node = state.nodes[node_i];
+		node->height = 0;
+
+		GLTFNodeIndex current = node_i;
+		while (current >= 0) {
+			GLTFNodeIndex parent = state.nodes[current]->parent;
+			if (parent >= 0) {
+				++node->height;
+			}
+			current = parent;
+		}
+		if (node->height == 0) {
+			state.root_nodes.push_back(node_i);
+		}
+	}
 }
 
 static Vector<uint8_t> _parse_base64_uri(const String &uri) {
@@ -854,7 +874,7 @@ Error EditorSceneImporterGLTF::_parse_meshes(GLTFState &state) {
 		return OK;
 
 	Array meshes = state.json["meshes"];
-	for (int i = 0; i < meshes.size(); i++) {
+	for (GLTFMeshIndex i = 0; i < meshes.size(); i++) {
 
 		print_verbose("glTF: Parsing mesh: " + itos(i));
 		Dictionary d = meshes[i];
@@ -1399,108 +1419,664 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 	return OK;
 }
 
+EditorSceneImporterGLTF::GLTFNodeIndex EditorSceneImporterGLTF::_find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subtree) {
+	int heighest = -1;
+	GLTFNodeIndex best_node = -1;
+
+	for (int i = 0; i < subtree.size(); ++i) {
+		const GLTFNodeIndex node_i = subtree[i];
+		const GLTFNode *node = state.nodes[node_i];
+
+		if (heighest == -1 || node->height < heighest) {
+			heighest = node->height;
+			best_node = node_i;
+		}
+	}
+
+	return best_node;
+}
+
+bool EditorSceneImporterGLTF::_capture_nodes_in_skin(GLTFState &state, GLTFSkin &skin, GLTFNodeIndex node_index) {
+
+	bool found_joint = false;
+
+	for (int i = 0; i < state.nodes[node_index]->children.size(); ++i) {
+		found_joint |= _capture_nodes_in_skin(state, skin, state.nodes[node_index]->children[i]);
+	}
+
+	if (found_joint) {
+		// Mark it if we happen to find another skins joint...
+		if (state.nodes[node_index]->joint && skin.joints.find(node_index) < 0) {
+			skin.joints.push_back(node_index);
+		} else if (skin.non_joints.find(node_index) < 0) {
+			skin.non_joints.push_back(node_index);
+		}
+	}
+
+	if (skin.joints.find(node_index) > 0) {
+		return true;
+	}
+
+	return false;
+}
+
+void EditorSceneImporterGLTF::_capture_nodes_for_multirooted_skin(GLTFState &state, GLTFSkin &skin) {
+
+	DisjointSet<GLTFNodeIndex> disjoint_set;
+
+	for (int i = 0; i < skin.joints.size(); ++i) {
+		GLTFNodeIndex node_index = skin.joints[i];
+		GLTFNodeIndex parent = state.nodes[node_index]->parent;
+		disjoint_set.insert(node_index);
+
+		if (skin.joints.find(parent) >= 0) {
+			disjoint_set.create_union(parent, node_index);
+		}
+	}
+
+	Vector<GLTFNodeIndex> roots;
+	disjoint_set.get_representatives(roots);
+
+	if (roots.size() <= 1) {
+		return;
+	}
+
+	int maxHeight = -1;
+
+	// Determine the max height rooted tree
+	for (int i = 0; i < roots.size(); ++i) {
+		GLTFNodeIndex root = roots[i];
+
+		if (maxHeight == -1 || state.nodes[root]->height < maxHeight) {
+			maxHeight = state.nodes[root]->height;
+		}
+	}
+
+	// Go up the tree till all of the multiple roots of the skin are at the same hierarchy level.
+	// This sucks, but 99% of all game engines (not just Godot) would have this same issue.
+	for (int i = 0; i < roots.size(); ++i) {
+		GLTFNodeIndex current_node = roots[i];
+
+		while (state.nodes[current_node]->height > maxHeight) {
+			GLTFNodeIndex parent = state.nodes[current_node]->parent;
+
+			if (state.nodes[parent]->joint && skin.joints.find(parent) < 0) {
+				skin.joints.push_back(parent);
+			} else if (skin.non_joints.find(parent) < 0) {
+				skin.non_joints.push_back(parent);
+			}
+
+			current_node = parent;
+		}
+
+		// replace the roots
+		roots.write[i] = current_node;
+	}
+
+	// Climb up the tree until they all have the same parent
+	bool all_same;
+
+	do {
+		all_same = true;
+		const GLTFNode *last_node = state.nodes[roots[0]];
+
+		for (int i = 1; i < roots.size(); ++i) {
+			all_same &= last_node == state.nodes[roots[i]];
+		}
+
+		if (!all_same) {
+			for (int i = 0; i < roots.size(); ++i) {
+				GLTFNodeIndex current_node = roots[i];
+				GLTFNodeIndex parent = state.nodes[current_node]->parent;
+
+				if (state.nodes[parent]->joint && skin.joints.find(parent) < 0) {
+					skin.joints.push_back(parent);
+				} else if (skin.non_joints.find(parent) < 0) {
+					skin.non_joints.push_back(parent);
+				}
+
+				roots.write[i] = parent;
+			}
+		}
+
+	} while (!all_same);
+}
+
+Error EditorSceneImporterGLTF::_expand_skin(GLTFState &state, GLTFSkin &skin) {
+
+	_capture_nodes_for_multirooted_skin(state, skin);
+
+	// Grab all nodes that lay in between skin joints/nodes
+	DisjointSet<GLTFNodeIndex> disjoint_set;
+
+	Vector<GLTFNodeIndex> all_skin_nodes;
+	all_skin_nodes.append_array(skin.joints);
+	all_skin_nodes.append_array(skin.non_joints);
+
+	for (int i = 0; i < all_skin_nodes.size(); ++i) {
+		GLTFNodeIndex node_index = all_skin_nodes[i];
+		GLTFNodeIndex parent = state.nodes[node_index]->parent;
+		disjoint_set.insert(node_index);
+
+		if (all_skin_nodes.find(parent) >= 0) {
+			disjoint_set.create_union(parent, node_index);
+		}
+	}
+
+	Vector<GLTFNodeIndex> out_owners;
+	disjoint_set.get_representatives(out_owners);
+
+	Vector<GLTFNodeIndex> out_roots;
+
+	for (int i = 0; i < out_owners.size(); ++i) {
+		Vector<GLTFNodeIndex> set;
+		disjoint_set.get_members(set, out_owners[i]);
+		GLTFNodeIndex root = _find_highest_node(state, set);
+		ERR_FAIL_COND_V(root < 0, FAILED);
+		out_roots.push_back(root);
+	}
+
+	out_roots.sort();
+
+	for (int i = 0; i < out_roots.size(); ++i) {
+		_capture_nodes_in_skin(state, skin, out_roots[i]);
+	}
+
+	skin.roots = out_roots;
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_verify_skin(GLTFState &state, GLTFSkin &skin) {
+	// Grab all nodes that lay in between skin joints/nodes
+	DisjointSet<GLTFNodeIndex> disjoint_set;
+
+	Vector<GLTFNodeIndex> all_skin_nodes;
+	all_skin_nodes.append_array(skin.joints);
+	all_skin_nodes.append_array(skin.non_joints);
+
+	for (int i = 0; i < all_skin_nodes.size(); ++i) {
+		GLTFNodeIndex node_index = all_skin_nodes[i];
+		GLTFNodeIndex parent = state.nodes[node_index]->parent;
+		disjoint_set.insert(node_index);
+
+		if (all_skin_nodes.find(parent) >= 0) {
+			disjoint_set.create_union(parent, node_index);
+		}
+	}
+
+	Vector<GLTFNodeIndex> out_roots;
+	disjoint_set.get_representatives(out_roots);
+	out_roots.sort();
+
+	ERR_FAIL_COND_V(out_roots.size() == 0, FAILED);
+
+	ERR_FAIL_COND_V(out_roots.size() != skin.roots.size(), FAILED);
+	for (int i = 0; i < out_roots.size(); ++i) {
+		ERR_FAIL_COND_V(out_roots.size() != skin.roots.size(), FAILED);
+	}
+
+	// Single rooted skin? Perfectly ok!
+	if (out_roots.size() == 1) {
+		return OK;
+	}
+
+	// Make sure all parents of a multi-rooted skin are the SAME
+	GLTFNodeIndex parent = state.nodes[out_roots[0]]->parent;
+	for (int i = 1; i < out_roots.size(); ++i) {
+		if (state.nodes[out_roots[i]]->parent != parent) {
+			return FAILED;
+		}
+	}
+
+	return OK;
+}
+
 Error EditorSceneImporterGLTF::_parse_skins(GLTFState &state) {
 
 	if (!state.json.has("skins"))
 		return OK;
 
 	Array skins = state.json["skins"];
+
+	// Create the base skins, and mark nodes that are joints
 	for (int i = 0; i < skins.size(); i++) {
 
-		Dictionary d = skins[i];
+		const Dictionary &d = skins[i];
 
 		GLTFSkin skin;
 
 		ERR_FAIL_COND_V(!d.has("joints"), ERR_PARSE_ERROR);
 
 		Array joints = d["joints"];
-		Vector<Transform> bind_matrices;
 
 		if (d.has("inverseBindMatrices")) {
-			bind_matrices = _decode_accessor_as_xform(state, d["inverseBindMatrices"], false);
-			ERR_FAIL_COND_V(bind_matrices.size() != joints.size(), ERR_PARSE_ERROR);
+			skin.inverse_binds = _decode_accessor_as_xform(state, d["inverseBindMatrices"], false);
+			ERR_FAIL_COND_V(skin.inverse_binds.size() != joints.size(), ERR_PARSE_ERROR);
 		}
 
 		for (int j = 0; j < joints.size(); j++) {
-			int index = joints[j];
-			ERR_FAIL_INDEX_V(index, state.nodes.size(), ERR_PARSE_ERROR);
-			GLTFNode::Joint joint;
-			joint.skin = state.skins.size();
-			joint.bone = j;
-			state.nodes[index]->joints.push_back(joint);
-			GLTFSkin::Bone bone;
-			bone.node = index;
-			if (bind_matrices.size()) {
-				bone.inverse_bind = bind_matrices[j];
-			}
+			int node = joints[j];
+			ERR_FAIL_INDEX_V(node, state.nodes.size(), ERR_PARSE_ERROR);
 
-			skin.bones.push_back(bone);
-		}
+			skin.joints.push_back(node);
+			skin.joints_original.push_back(node);
 
-		print_verbose("glTF: Skin has skeleton? " + itos(d.has("skeleton")));
-		if (d.has("skeleton")) {
-			int skeleton = d["skeleton"];
-			ERR_FAIL_INDEX_V(skeleton, state.nodes.size(), ERR_PARSE_ERROR);
-			print_verbose("glTF: Setting skeleton skin to" + itos(skeleton));
-			skin.skeleton = skeleton;
-			if (!state.skeleton_nodes.has(skeleton)) {
-				state.skeleton_nodes[skeleton] = Vector<int>();
-			}
-			state.skeleton_nodes[skeleton].push_back(i);
+			state.nodes[node]->joint = true;
 		}
 
 		if (d.has("name")) {
 			skin.name = d["name"];
 		}
 
-		//locate the right place to put a Skeleton node
-		/*
-		if (state.skin_users.has(i)) {
-			Vector<int> users = state.skin_users[i];
-			int skin_node = -1;
-			for (int j = 0; j < users.size(); j++) {
-				int user = state.nodes[users[j]]->parent; //always go from parent
-				if (j == 0) {
-					skin_node = user;
-				} else if (skin_node != -1) {
-					bool found = false;
-					while (skin_node >= 0) {
-
-						int cuser = user;
-						while (cuser != -1) {
-							if (cuser == skin_node) {
-								found = true;
-								break;
-							}
-							cuser = state.nodes[skin_node]->parent;
-						}
-						if (found)
-							break;
-						skin_node = state.nodes[skin_node]->parent;
-					}
-
-					if (!found) {
-						skin_node = -1; //just leave where it is
-					}
-
-					//find a common parent
-				}
-			}
-
-			if (skin_node != -1) {
-				for (int j = 0; j < users.size(); j++) {
-					state.nodes[users[j]]->child_of_skeleton = i;
-				}
-
-				state.nodes[skin_node]->skeleton_children.push_back(i);
-			}
+		if (d.has("skeleton")) {
+			skin.skin_root = d["skeleton"];
 		}
-		*/
+
 		state.skins.push_back(skin);
 	}
+
+	for (GLTFSkinIndex i = 0; i < state.skins.size(); ++i) {
+		GLTFSkin &skin = state.skins.write[i];
+
+		// Expand the skin to capture all the extra non-joints that lie in between the actual joints,
+		// and expand the hierarchy to ensure multi-rooted trees lie on the same height level
+		ERR_FAIL_COND_V(_expand_skin(state, skin), ERR_PARSE_ERROR);
+		ERR_FAIL_COND_V(_verify_skin(state, skin), ERR_PARSE_ERROR);
+	}
+
 	print_verbose("glTF: Total skins: " + itos(state.skins.size()));
 
-	//now
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_determine_skeletons(GLTFState &state) {
+
+	// Using a disjoint set, we are going to potentially combine all skins that are actually branches
+	// of a main skeleton, or treat skins defining the same set of nodes as ONE skeleton.
+	// This is another unclear issue caused by the current glTF specification.
+
+	DisjointSet<GLTFNodeIndex> skeleton_sets;
+
+	for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
+		const GLTFSkin &skin = state.skins[skin_i];
+
+		Vector<GLTFNodeIndex> all_skin_nodes;
+		all_skin_nodes.append_array(skin.joints);
+		all_skin_nodes.append_array(skin.non_joints);
+
+		for (int i = 0; i < all_skin_nodes.size(); ++i) {
+			GLTFNodeIndex node_index = all_skin_nodes[i];
+			GLTFNodeIndex parent = state.nodes[node_index]->parent;
+			skeleton_sets.insert(node_index);
+
+			if (all_skin_nodes.find(parent) >= 0) {
+				skeleton_sets.create_union(parent, node_index);
+			}
+		}
+
+		// We are going to connect the separate skin subtrees in each skin together
+		// so that the final roots are entire sets of valid skin trees
+		for (int i = 1; i < skin.roots.size(); ++i) {
+			skeleton_sets.create_union(skin.roots[0], skin.roots[i]);
+		}
+	}
+
+	Vector<GLTFNodeIndex> skeleton_owners;
+	skeleton_sets.get_representatives(skeleton_owners);
+
+	// Mark all the skins actual skeletons, after we have merged them
+	for (GLTFSkeletonIndex skel_i = 0; skel_i < skeleton_owners.size(); ++skel_i) {
+
+		GLTFNodeIndex skeleton_owner = skeleton_owners[skel_i];
+		GLTFSkeleton skeleton;
+
+		for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
+			GLTFSkin &skin = state.skins.write[skin_i];
+
+			if (skin.joints.find(skeleton_owner) >= 0 || skin.non_joints.find(skeleton_owner) >= 0) {
+				skin.skeleton = skel_i;
+			}
+		}
+
+		Vector<GLTFNodeIndex> skeleton_nodes;
+		skeleton_sets.get_members(skeleton_nodes, skeleton_owner);
+
+		Vector<GLTFNodeIndex> non_joints;
+		for (int i = 0; i < skeleton_nodes.size(); ++i) {
+			GLTFNodeIndex node_i = skeleton_nodes[i];
+
+			if (state.nodes[node_i]->joint) {
+				skeleton.joints.push_back(node_i);
+			} else {
+				non_joints.push_back(node_i);
+			}
+		}
+
+		state.skeletons.push_back(skeleton);
+
+		_reparent_non_joint_skeleton_subtrees(state, state.skeletons.write[skel_i], non_joints);
+	}
+
+	for (GLTFSkeletonIndex skel_i = 0; skel_i < state.skeletons.size(); ++skel_i) {
+		GLTFSkeleton &skeleton = state.skeletons.write[skel_i];
+
+		for (int i = 0; i < skeleton.joints.size(); ++i) {
+			GLTFNodeIndex node_i = skeleton.joints[i];
+			GLTFNode *node = state.nodes[node_i];
+
+			ERR_FAIL_COND_V(!node->joint, ERR_PARSE_ERROR);
+			ERR_FAIL_COND_V(node->skeleton >= 0, ERR_PARSE_ERROR);
+			node->skeleton = skel_i;
+		}
+
+		ERR_FAIL_COND_V(_determine_skeleton_roots(state, skel_i), ERR_PARSE_ERROR);
+	}
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_reparent_non_joint_skeleton_subtrees(GLTFState &state, GLTFSkeleton &skeleton, const Vector<GLTFNodeIndex> &non_joints) {
+
+	DisjointSet<GLTFNodeIndex> subtree_set;
+
+	// Populate the disjoint set with ONLY non joints that are in the skeleton hierarchy (non_joints vector)
+	// This way we can find any joints that lie in between joints, as the current glTF specification
+	// mentions nothing about non-joints being in between joints of the same skin. Hopefully one day we
+	// can remove this code.
+
+	// skinD depicted here explains this issue:
+	// https://github.com/KhronosGroup/glTF-Asset-Generator/blob/master/Output/Positive/Animation_Skin
+
+	for (int i = 0; i < non_joints.size(); ++i) {
+		const GLTFNodeIndex node_i = non_joints[i];
+
+		subtree_set.insert(node_i);
+
+		const GLTFNodeIndex parent_i = state.nodes[node_i]->parent;
+		if (parent_i >= 0 && non_joints.find(parent_i) >= 0 && !state.nodes[parent_i]->joint) {
+			subtree_set.create_union(parent_i, node_i);
+		}
+	}
+
+	// Find all the non joint subtrees and re-parent them to a new "fake" joint
+
+	Vector<GLTFNodeIndex> non_joint_subtree_roots;
+	subtree_set.get_representatives(non_joint_subtree_roots);
+
+	for (int root_i = 0; root_i < non_joint_subtree_roots.size(); ++root_i) {
+		const GLTFNodeIndex subtree_root = non_joint_subtree_roots[root_i];
+
+		Vector<GLTFNodeIndex> subtree_nodes;
+		subtree_set.get_members(subtree_nodes, subtree_root);
+
+		for (int subtree_i = 0; subtree_i < subtree_nodes.size(); ++subtree_i) {
+			ERR_FAIL_COND_V(_reparent_to_fake_joint(state, skeleton, subtree_nodes[subtree_i]), FAILED);
+
+			// We modified the tree, recompute all the heights
+			_compute_node_heights(state);
+		}
+	}
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_reparent_to_fake_joint(GLTFState &state, GLTFSkeleton &skeleton, const GLTFNodeIndex node_index) {
+	GLTFNode *node = state.nodes[node_index];
+
+	// Can we just "steal" this joint if it is just a spatial node?
+	if (node->skin < 0 && node->mesh < 0 && node->camera < 0) {
+		node->joint = true;
+		// Add the joint to the skeletons joints
+		skeleton.joints.push_back(node_index);
+		return OK;
+	}
+
+	GLTFNode *fake_joint = memnew(GLTFNode);
+	GLTFNodeIndex fake_joint_index = state.nodes.size();
+	state.nodes.push_back(fake_joint);
+
+	// We better not be a joint, or we messed up in our logic
+	if (node->joint == true)
+		return FAILED;
+
+	fake_joint->translation = node->translation;
+	fake_joint->rotation = node->rotation;
+	fake_joint->scale = node->scale;
+	fake_joint->xform = node->xform;
+	fake_joint->joint = true;
+
+	// Create a new name
+	fake_joint->name = node->name + "_fake_joint";
+
+	// Clear the nodes transforms, since it will be parented to the fake joint
+	node->translation = Vector3(0, 0, 0);
+	node->rotation = Quat();
+	node->scale = Vector3(1, 1, 1);
+	node->xform = Transform();
+
+	// Transfer the node children to the fake joint
+	for (int child_i = 0; child_i < node->children.size(); ++child_i) {
+		GLTFNode *child = state.nodes[node->children[child_i]];
+		child->parent = fake_joint_index;
+	}
+
+	fake_joint->children = node->children;
+	node->children.clear();
+
+	// add the fake joint to the parent and remove the original joint
+	if (node->parent >= 0) {
+		GLTFNode *parent = state.nodes[node->parent];
+		parent->children.erase(node_index);
+		parent->children.push_back(fake_joint_index);
+		fake_joint->parent = node->parent;
+	}
+
+	// Add the node to the fake joint
+	fake_joint->children.push_back(node_index);
+	node->parent = fake_joint_index;
+	node->fake_joint_parent = fake_joint_index;
+
+	// Add the fake joint to the skeletons joints
+	skeleton.joints.push_back(fake_joint_index);
+
+	// Replace skin_skeletons with fake joints if we must.
+	for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
+		GLTFSkin &skin = state.skins.write[skin_i];
+		if (skin.skin_root == node_index) {
+			skin.skin_root = fake_joint_index;
+		}
+	}
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_determine_skeleton_roots(GLTFState &state, GLTFSkeletonIndex &skel_i) {
+
+	DisjointSet<GLTFNodeIndex> disjoint_set;
+
+	for (GLTFNodeIndex i = 0; i < state.nodes.size(); ++i) {
+		const GLTFNode *node = state.nodes[i];
+
+		if (node->skeleton != skel_i) {
+			continue;
+		}
+
+		disjoint_set.insert(i);
+
+		if (node->parent >= 0 && state.nodes[node->parent]->skeleton == skel_i) {
+			disjoint_set.create_union(node->parent, i);
+		}
+	}
+
+	GLTFSkeleton &skeleton = state.skeletons.write[skel_i];
+
+	Vector<GLTFNodeIndex> owners;
+	disjoint_set.get_representatives(owners);
+
+	Vector<GLTFNodeIndex> roots;
+
+	for (int i = 0; i < owners.size(); ++i) {
+		Vector<GLTFNodeIndex> set;
+		disjoint_set.get_members(set, owners[i]);
+		GLTFNodeIndex root = _find_highest_node(state, set);
+		ERR_FAIL_COND_V(root < 0, FAILED);
+		roots.push_back(root);
+	}
+
+	roots.sort();
+
+	skeleton.roots = roots;
+
+	if (roots.size() == 0) {
+		return FAILED;
+	} else if (roots.size() == 1) {
+		return OK;
+	}
+
+	// Check that the subtrees have the same parent root
+	const GLTFNodeIndex parent = state.nodes[roots[0]]->parent;
+	for (int i = 1; i < roots.size(); ++i) {
+		if (state.nodes[roots[i]]->parent != parent) {
+			return FAILED;
+		}
+	}
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_create_skeletons(GLTFState &state) {
+	for (GLTFSkeletonIndex skel_i = 0; skel_i < state.skeletons.size(); ++skel_i) {
+
+		GLTFSkeleton &gltf_skeleton = state.skeletons.write[skel_i];
+
+		Skeleton *skeleton = memnew(Skeleton);
+		gltf_skeleton.godot_skeleton = skeleton;
+
+		//skeleton->set_use_bones_in_world_transform(true);
+		skeleton->set_name(_gen_unique_name(state, "Skeleton"));
+
+		List<GLTFNodeIndex> bones;
+
+		for (int i = 0; i < gltf_skeleton.roots.size(); ++i) {
+			bones.push_back(gltf_skeleton.roots[i]);
+		}
+
+		while (!bones.empty()) {
+			GLTFNodeIndex node_i = bones.front()->get();
+			bones.pop_front();
+
+			GLTFNode *node = state.nodes[node_i];
+
+			// Add all child nodes to the stack
+			for (int i = 0; i < node->children.size(); ++i) {
+				const GLTFNodeIndex child_i = node->children[i];
+				if (state.nodes[child_i]->skeleton == skel_i) {
+					bones.push_back(child_i);
+				}
+			}
+
+			const int bone_index = skeleton->get_bone_count();
+
+			if (node->name.empty()) {
+				node->name = "Bone " + itos(bone_index);
+			}
+
+			skeleton->add_bone(node->name);
+			skeleton->set_bone_rest(bone_index, node->xform);
+			skeleton->set_bone_pose(bone_index, node->xform);
+
+			if (node->parent >= 0 && state.nodes[node->parent]->skeleton == skel_i) {
+				int bone_parent = skeleton->find_bone(state.nodes[node->parent]->name);
+				ERR_FAIL_COND_V(bone_parent < 0, FAILED);
+				skeleton->set_bone_parent(bone_index, skeleton->find_bone(state.nodes[node->parent]->name));
+			}
+
+			state.scene_nodes.insert(node_i, skeleton);
+		}
+	}
+
+	ERR_FAIL_COND_V(_map_skin_joints_indices_to_skeleton_bone_indices(state), ERR_PARSE_ERROR);
+
+	return OK;
+}
+
+Error EditorSceneImporterGLTF::_map_skin_joints_indices_to_skeleton_bone_indices(GLTFState &state) {
+	for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
+		GLTFSkin &skin = state.skins.write[skin_i];
+
+		const GLTFSkeleton &skeleton = state.skeletons[skin.skeleton];
+
+		for (int joint_index = 0; joint_index < skin.joints_original.size(); ++joint_index) {
+			GLTFNodeIndex node_i = skin.joints_original[joint_index];
+			const GLTFNode *node = state.nodes[node_i];
+
+			int bone_index = skeleton.godot_skeleton->find_bone(node->name);
+			ERR_FAIL_COND_V(bone_index < 0, FAILED);
+
+			skin.joint_i_to_bone_i.insert(joint_index, bone_index);
+		}
+	}
+
+	return OK;
+}
+
+Transform EditorSceneImporterGLTF::_get_scene_transform_for_node(const GLTFState &state, const GLTFNodeIndex node_i) {
+	if (node_i < 0) {
+		return Transform();
+	}
+
+	Transform xform;
+	GLTFNodeIndex current_i = state.nodes[node_i]->parent;
+	while (current_i >= 0) {
+		xform = state.nodes[current_i]->xform * xform;
+		current_i = state.nodes[current_i]->parent;
+	}
+	return xform;
+}
+
+Transform EditorSceneImporterGLTF::_compute_skin_to_skeleton_transform(const GLTFState &state, const GLTFNodeIndex skin_parent, const GLTFNodeIndex skeleton_parent) {
+	Transform xform_skin = _get_scene_transform_for_node(state, skin_parent);
+	Transform xform_skel = _get_scene_transform_for_node(state, skeleton_parent);
+
+	return xform_skin.affine_inverse() * xform_skel;
+}
+
+void EditorSceneImporterGLTF::_compute_skeleton_rooted_skin_inverse_binds(GLTFState &state, const GLTFSkinIndex skin_i) {
+	GLTFSkin &skin = state.skins.write[skin_i];
+	const GLTFSkeleton &skeleton = state.skeletons[skin.skeleton];
+
+	const GLTFNodeIndex skin_parent = skin.skin_root;
+	const GLTFNodeIndex skeleton_parent = state.nodes[skeleton.roots[0]]->parent;
+
+	const Transform skin_to_skel_transform = _compute_skin_to_skeleton_transform(state, skin_parent, skeleton_parent);
+
+	const Transform skin_to_skel_transform_inverse = skin_to_skel_transform.affine_inverse();
+	Vector<Transform> new_ibms;
+	for (int i = 0; i < skin.inverse_binds.size(); ++i) {
+		new_ibms.push_back(skin.inverse_binds[i] * skin_to_skel_transform_inverse);
+	}
+
+	skin.skeleton_inverse_binds = new_ibms;
+}
+
+Error EditorSceneImporterGLTF::_create_skins(GLTFState &state) {
+	for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
+		_compute_skeleton_rooted_skin_inverse_binds(state, skin_i);
+
+		GLTFSkin &gltf_skin = state.skins.write[skin_i];
+
+		Ref<Skin> skin = Ref<Skin>(memnew(Skin));
+		skin->set_name(_gen_unique_name(state, "Skin"));
+
+		for (int joint_i = 0; joint_i < gltf_skin.joints_original.size(); ++joint_i) {
+			int bone_i = gltf_skin.joint_i_to_bone_i[joint_i];
+
+			skin->add_bind(bone_i, gltf_skin.inverse_binds[joint_i]);
+		}
+
+		gltf_skin.godot_skin = skin;
+	}
 
 	return OK;
 }
@@ -1689,7 +2265,7 @@ void EditorSceneImporterGLTF::_assign_scene_names(GLTFState &state) {
 		if (n->name == "") {
 			if (n->mesh >= 0) {
 				n->name = "Mesh";
-			} else if (n->joints.size()) {
+			} else if (n->joint) {
 				n->name = "Bone";
 			} else {
 				n->name = "Node";
@@ -1700,127 +2276,122 @@ void EditorSceneImporterGLTF::_assign_scene_names(GLTFState &state) {
 	}
 }
 
-void EditorSceneImporterGLTF::_reparent_skeleton(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node) {
-	//reparent skeletons to proper place
-	Vector<int> nodes = state.skeleton_nodes[p_node];
-	for (int i = 0; i < nodes.size(); i++) {
-		Skeleton *skeleton = skeletons[nodes[i]];
-		Node *owner = skeleton->get_owner();
-		skeleton->get_parent()->remove_child(skeleton);
-		p_parent_node->add_child(skeleton);
-		skeleton->set_owner(owner);
-		//may have meshes as children, set owner in them too
-		for (int j = 0; j < skeleton->get_child_count(); j++) {
-			skeleton->get_child(j)->set_owner(owner);
-		}
-	}
+BoneAttachment *EditorSceneImporterGLTF::_generate_bone_attachment(GLTFState &state, Skeleton *skeleton, const GLTFNodeIndex node_index) {
+
+	const GLTFNode *gltf_node = state.nodes[node_index];
+	const GLTFNode *bone_node = state.nodes[gltf_node->parent];
+
+	BoneAttachment *bone_attachment = memnew(BoneAttachment);
+	print_verbose("glTF: Creating bone attachment for: " + gltf_node->name);
+
+	ERR_FAIL_COND_V(!bone_node->joint, nullptr);
+
+	bone_attachment->set_bone_name(bone_node->name);
+
+	return bone_attachment;
 }
 
-void EditorSceneImporterGLTF::_generate_node(GLTFState &state, int p_node, Node *p_parent, Node *p_owner, Vector<Skeleton *> &skeletons) {
-	ERR_FAIL_INDEX(p_node, state.nodes.size());
+MeshInstance *EditorSceneImporterGLTF::_generate_mesh_instance(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+	const GLTFNode *gltf_node = state.nodes[node_index];
 
-	GLTFNode *n = state.nodes[p_node];
-	Spatial *node;
+	ERR_FAIL_INDEX_V(gltf_node->mesh, state.meshes.size(), nullptr);
 
-	if (n->mesh >= 0) {
-		ERR_FAIL_INDEX(n->mesh, state.meshes.size());
-		MeshInstance *mi = memnew(MeshInstance);
-		print_verbose("glTF: Creating mesh for: " + n->name);
-		GLTFMesh &mesh = state.meshes.write[n->mesh];
-		mi->set_mesh(mesh.mesh);
-		if (mesh.mesh->get_name() == "") {
-			mesh.mesh->set_name(n->name);
-		}
-		for (int i = 0; i < mesh.blend_weights.size(); i++) {
-			mi->set("blend_shapes/" + mesh.mesh->get_blend_shape_name(i), mesh.blend_weights[i]);
-		}
+	MeshInstance *mi = memnew(MeshInstance);
+	print_verbose("glTF: Creating mesh for: " + gltf_node->name);
 
-		node = mi;
+	GLTFMesh &mesh = state.meshes.write[gltf_node->mesh];
+	mi->set_mesh(mesh.mesh);
 
-	} else if (n->camera >= 0) {
-		ERR_FAIL_INDEX(n->camera, state.cameras.size());
-		Camera *camera = memnew(Camera);
-
-		const GLTFCamera &c = state.cameras[n->camera];
-		if (c.perspective) {
-			camera->set_perspective(c.fov_size, c.znear, c.znear);
-		} else {
-			camera->set_orthogonal(c.fov_size, c.znear, c.znear);
-		}
-
-		node = camera;
-	} else {
-		node = memnew(Spatial);
+	if (mesh.mesh->get_name() == "") {
+		mesh.mesh->set_name(gltf_node->name);
 	}
 
-	node->set_name(n->name);
-
-	n->godot_nodes.push_back(node);
-
-	if (n->skin >= 0 && n->skin < skeletons.size() && Object::cast_to<MeshInstance>(node)) {
-		MeshInstance *mi = Object::cast_to<MeshInstance>(node);
-
-		Skeleton *s = skeletons[n->skin];
-		s->add_child(node); //According to spec, mesh should actually act as a child of the skeleton, as it inherits its transform
-		mi->set_skeleton_path(String(".."));
-
-	} else {
-		p_parent->add_child(node);
-		node->set_transform(n->xform);
+	for (int i = 0; i < mesh.blend_weights.size(); i++) {
+		mi->set("blend_shapes/" + mesh.mesh->get_blend_shape_name(i), mesh.blend_weights[i]);
 	}
 
-	node->set_owner(p_owner);
-
-#if 0
-	for (int i = 0; i < n->skeleton_children.size(); i++) {
-
-		Skeleton *s = skeletons[n->skeleton_children[i]];
-		s->get_parent()->remove_child(s);
-		node->add_child(s);
-		s->set_owner(p_owner);
-	}
-#endif
-	for (int i = 0; i < n->children.size(); i++) {
-		if (state.nodes[n->children[i]]->joints.size()) {
-			_generate_bone(state, n->children[i], skeletons, node);
-		} else {
-			_generate_node(state, n->children[i], node, p_owner, skeletons);
-		}
-	}
-
-	if (state.skeleton_nodes.has(p_node)) {
-		_reparent_skeleton(state, p_node, skeletons, node);
-	}
+	return mi;
 }
 
-void EditorSceneImporterGLTF::_generate_bone(GLTFState &state, int p_node, Vector<Skeleton *> &skeletons, Node *p_parent_node) {
-	ERR_FAIL_INDEX(p_node, state.nodes.size());
+Camera *EditorSceneImporterGLTF::_generate_camera(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+	const GLTFNode *gltf_node = state.nodes[node_index];
 
-	if (state.skeleton_nodes.has(p_node)) {
-		_reparent_skeleton(state, p_node, skeletons, p_parent_node);
+	ERR_FAIL_INDEX_V(gltf_node->camera, state.cameras.size(), nullptr);
+
+	Camera *camera = memnew(Camera);
+	print_verbose("glTF: Creating camera for: " + gltf_node->name);
+
+	const GLTFCamera &c = state.cameras[gltf_node->camera];
+	if (c.perspective) {
+		camera->set_perspective(c.fov_size, c.znear, c.znear);
+	} else {
+		camera->set_orthogonal(c.fov_size, c.znear, c.znear);
 	}
 
-	GLTFNode *n = state.nodes[p_node];
+	return camera;
+}
 
-	for (int i = 0; i < n->joints.size(); i++) {
-		const int skin = n->joints[i].skin;
-		ERR_FAIL_COND(skin < 0);
+Spatial *EditorSceneImporterGLTF::_generate_spatial(GLTFState &state, Node *scene_parent, const GLTFNodeIndex node_index) {
+	const GLTFNode *gltf_node = state.nodes[node_index];
 
-		Skeleton *s = skeletons[skin];
-		const GLTFNode *gltf_bone_node = state.nodes[state.skins[skin].bones[n->joints[i].bone].node];
-		const String bone_name = gltf_bone_node->name;
-		const int parent = gltf_bone_node->parent;
-		const int parent_index = s->find_bone(state.nodes[parent]->name);
+	Spatial *spatial = memnew(Spatial);
+	print_verbose("glTF: Creating spatial for: " + gltf_node->name);
 
-		const int bone_index = s->find_bone(bone_name);
-		s->set_bone_parent(bone_index, parent_index);
+	return spatial;
+}
 
-		n->godot_nodes.push_back(s);
-		n->joints.write[i].godot_bone_index = bone_index;
+void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene_parent, Spatial *scene_root, const GLTFNodeIndex node_index) {
+
+	const GLTFNode *gltf_node = state.nodes[node_index];
+
+	Spatial *current_node = nullptr;
+
+	// Is our parent a skeleton?
+	if (Skeleton *skeleton = Object::cast_to<Skeleton>(scene_parent)) {
+		if (gltf_node->skeleton >= 0) {
+			current_node = skeleton;
+
+			// If we are not attached via skin (mesh instance), we need to attach to the parent bone's node_index by bone_attachment
+		} else if (gltf_node->skin < 0) {
+			BoneAttachment *bone_attachment = _generate_bone_attachment(state, skeleton, node_index);
+
+			scene_parent->add_child(bone_attachment);
+			bone_attachment->set_owner(scene_root);
+
+			bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment " + gltf_node->name));
+
+			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
+			// and attach it to the bone_attachment
+			scene_parent = bone_attachment;
+		}
+	} else if (gltf_node->skeleton >= 0) {
+		// Set the current node straight from the skeleton map
+		current_node = state.skeletons[gltf_node->skeleton].godot_skeleton;
+
+		scene_parent->add_child(current_node);
+		current_node->set_owner(scene_root);
 	}
 
-	for (int i = 0; i < n->children.size(); i++) {
-		_generate_bone(state, n->children[i], skeletons, p_parent_node);
+	// We still have not managed to make a node
+	if (current_node == nullptr) {
+		if (gltf_node->mesh >= 0) {
+			current_node = _generate_mesh_instance(state, scene_parent, node_index);
+		} else if (gltf_node->camera >= 0) {
+			current_node = _generate_camera(state, scene_parent, node_index);
+		} else {
+			current_node = _generate_spatial(state, scene_parent, node_index);
+		}
+
+		scene_parent->add_child(current_node);
+		current_node->set_owner(scene_root);
+		current_node->set_transform(gltf_node->xform);
+		current_node->set_name(gltf_node->name);
+	}
+
+	state.scene_nodes.insert(node_index, current_node);
+
+	for (int i = 0; i < gltf_node->children.size(); ++i) {
+		_generate_scene_node(state, current_node, scene_root, gltf_node->children[i]);
 	}
 }
 
@@ -1952,7 +2523,7 @@ T EditorSceneImporterGLTF::_interpolate_track(const Vector<float> &p_times, cons
 	ERR_FAIL_V(p_values[0]);
 }
 
-void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps, Vector<Skeleton *> skeletons) {
+void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlayer *ap, int index, int bake_fps) {
 
 	const GLTFAnimation &anim = state.animations[index];
 
@@ -1973,102 +2544,145 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 		//need to find the path
 		NodePath node_path;
 
+		GLTFNodeIndex node_index = E->key();
+		if (state.nodes[node_index]->fake_joint_parent >= 0) {
+			// Should be same as parent
+			node_index = state.nodes[node_index]->fake_joint_parent;
+		}
+
 		GLTFNode *node = state.nodes[E->key()];
-		for (int n = 0; n < node->godot_nodes.size(); n++) {
 
-			if (node->joints.size()) {
-				Skeleton *sk = (Skeleton *)node->godot_nodes[n];
-				String path = ap->get_parent()->get_path_to(sk);
-				String bone = sk->get_bone_name(node->joints[n].godot_bone_index);
-				node_path = path + ":" + bone;
-			} else {
-				node_path = ap->get_parent()->get_path_to(node->godot_nodes[n]);
+		if (node->skeleton >= 0) {
+			Skeleton *sk = Object::cast_to<Skeleton>(state.scene_nodes.find(node_index)->get());
+			ERR_FAIL_COND(sk == nullptr);
+
+			String path = ap->get_parent()->get_path_to(sk);
+			String bone = node->name;
+			node_path = path + ":" + bone;
+		} else {
+			node_path = ap->get_parent()->get_path_to(state.scene_nodes.find(node_index)->get());
+		}
+
+		for (int i = 0; i < track.rotation_track.times.size(); i++) {
+			length = MAX(length, track.rotation_track.times[i]);
+		}
+		for (int i = 0; i < track.translation_track.times.size(); i++) {
+			length = MAX(length, track.translation_track.times[i]);
+		}
+		for (int i = 0; i < track.scale_track.times.size(); i++) {
+			length = MAX(length, track.scale_track.times[i]);
+		}
+
+		for (int i = 0; i < track.weight_tracks.size(); i++) {
+			for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+				length = MAX(length, track.weight_tracks[i].times[j]);
+			}
+		}
+
+		if (track.rotation_track.values.size() || track.translation_track.values.size() || track.scale_track.values.size()) {
+			//make transform track
+			int track_idx = animation->get_track_count();
+			animation->add_track(Animation::TYPE_TRANSFORM);
+			animation->track_set_path(track_idx, node_path);
+			//first determine animation length
+
+			float increment = 1.0 / float(bake_fps);
+			float time = 0.0;
+
+			Vector3 base_pos;
+			Quat base_rot;
+			Vector3 base_scale = Vector3(1, 1, 1);
+
+			if (!track.rotation_track.values.size()) {
+				base_rot = state.nodes[E->key()]->rotation.normalized();
 			}
 
-			for (int i = 0; i < track.rotation_track.times.size(); i++) {
-				length = MAX(length, track.rotation_track.times[i]);
-			}
-			for (int i = 0; i < track.translation_track.times.size(); i++) {
-				length = MAX(length, track.translation_track.times[i]);
-			}
-			for (int i = 0; i < track.scale_track.times.size(); i++) {
-				length = MAX(length, track.scale_track.times[i]);
+			if (!track.translation_track.values.size()) {
+				base_pos = state.nodes[E->key()]->translation;
 			}
 
-			for (int i = 0; i < track.weight_tracks.size(); i++) {
-				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
-					length = MAX(length, track.weight_tracks[i].times[j]);
+			if (!track.scale_track.values.size()) {
+				base_scale = state.nodes[E->key()]->scale;
+			}
+
+			bool last = false;
+			while (true) {
+
+				Vector3 pos = base_pos;
+				Quat rot = base_rot;
+				Vector3 scale = base_scale;
+
+				if (track.translation_track.times.size()) {
+
+					pos = _interpolate_track<Vector3>(track.translation_track.times, track.translation_track.values, time, track.translation_track.interpolation);
+				}
+
+				if (track.rotation_track.times.size()) {
+
+					rot = _interpolate_track<Quat>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
+				}
+
+				if (track.scale_track.times.size()) {
+
+					scale = _interpolate_track<Vector3>(track.scale_track.times, track.scale_track.values, time, track.scale_track.interpolation);
+				}
+
+				if (node->skeleton >= 0) {
+
+					Transform xform;
+					xform.basis.set_quat_scale(rot, scale);
+					xform.origin = pos;
+
+					Skeleton *skeleton = state.skeletons[node->skeleton].godot_skeleton;
+					int bone = skeleton->find_bone(node->name);
+					xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
+
+					rot = xform.basis.get_rotation_quat();
+					rot.normalize();
+					scale = xform.basis.get_scale();
+					pos = xform.origin;
+				}
+
+				animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
+
+				if (last) {
+					break;
+				}
+				time += increment;
+				if (time >= length) {
+					last = true;
+					time = length;
 				}
 			}
+		}
 
-			if (track.rotation_track.values.size() || track.translation_track.values.size() || track.scale_track.values.size()) {
-				//make transform track
-				int track_idx = animation->get_track_count();
-				animation->add_track(Animation::TYPE_TRANSFORM);
-				animation->track_set_path(track_idx, node_path);
-				//first determine animation length
+		for (int i = 0; i < track.weight_tracks.size(); i++) {
+			ERR_CONTINUE(node->mesh < 0 || node->mesh >= state.meshes.size());
+			const GLTFMesh &mesh = state.meshes[node->mesh];
+			String prop = "blend_shapes/" + mesh.mesh->get_blend_shape_name(i);
+			node_path = String(node_path) + ":" + prop;
 
+			int track_idx = animation->get_track_count();
+			animation->add_track(Animation::TYPE_VALUE);
+			animation->track_set_path(track_idx, node_path);
+
+			// Only LINEAR and STEP (NEAREST) can be supported out of the box by Godot's Animation,
+			// the other modes have to be baked.
+			GLTFAnimation::Interpolation gltf_interp = track.weight_tracks[i].interpolation;
+			if (gltf_interp == GLTFAnimation::INTERP_LINEAR || gltf_interp == GLTFAnimation::INTERP_STEP) {
+				animation->track_set_interpolation_type(track_idx, gltf_interp == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_LINEAR);
+				for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
+					float t = track.weight_tracks[i].times[j];
+					float w = track.weight_tracks[i].values[j];
+					animation->track_insert_key(track_idx, t, w);
+				}
+			} else {
+				// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
 				float increment = 1.0 / float(bake_fps);
 				float time = 0.0;
-
-				Vector3 base_pos;
-				Quat base_rot;
-				Vector3 base_scale = Vector3(1, 1, 1);
-
-				if (!track.rotation_track.values.size()) {
-					base_rot = state.nodes[E->key()]->rotation.normalized();
-				}
-
-				if (!track.translation_track.values.size()) {
-					base_pos = state.nodes[E->key()]->translation;
-				}
-
-				if (!track.scale_track.values.size()) {
-					base_scale = state.nodes[E->key()]->scale;
-				}
-
 				bool last = false;
 				while (true) {
-
-					Vector3 pos = base_pos;
-					Quat rot = base_rot;
-					Vector3 scale = base_scale;
-
-					if (track.translation_track.times.size()) {
-
-						pos = _interpolate_track<Vector3>(track.translation_track.times, track.translation_track.values, time, track.translation_track.interpolation);
-					}
-
-					if (track.rotation_track.times.size()) {
-
-						rot = _interpolate_track<Quat>(track.rotation_track.times, track.rotation_track.values, time, track.rotation_track.interpolation);
-					}
-
-					if (track.scale_track.times.size()) {
-
-						scale = _interpolate_track<Vector3>(track.scale_track.times, track.scale_track.values, time, track.scale_track.interpolation);
-					}
-
-					if (node->joints.size()) {
-
-						Transform xform;
-						//xform.basis = Basis(rot);
-						//xform.basis.scale(scale);
-						xform.basis.set_quat_scale(rot, scale);
-						xform.origin = pos;
-
-						Skeleton *skeleton = skeletons[node->joints[n].skin];
-						int bone = node->joints[n].godot_bone_index;
-						xform = skeleton->get_bone_rest(bone).affine_inverse() * xform;
-
-						rot = xform.basis.get_rotation_quat();
-						rot.normalize();
-						scale = xform.basis.get_scale();
-						pos = xform.origin;
-					}
-
-					animation->transform_track_insert_key(track_idx, time, pos, rot, scale);
-
+					_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
 					if (last) {
 						break;
 					}
@@ -2079,85 +2693,51 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 					}
 				}
 			}
-
-			for (int i = 0; i < track.weight_tracks.size(); i++) {
-				ERR_CONTINUE(node->mesh < 0 || node->mesh >= state.meshes.size());
-				const GLTFMesh &mesh = state.meshes[node->mesh];
-				String prop = "blend_shapes/" + mesh.mesh->get_blend_shape_name(i);
-				node_path = String(node_path) + ":" + prop;
-
-				int track_idx = animation->get_track_count();
-				animation->add_track(Animation::TYPE_VALUE);
-				animation->track_set_path(track_idx, node_path);
-
-				// Only LINEAR and STEP (NEAREST) can be supported out of the box by Godot's Animation,
-				// the other modes have to be baked.
-				GLTFAnimation::Interpolation gltf_interp = track.weight_tracks[i].interpolation;
-				if (gltf_interp == GLTFAnimation::INTERP_LINEAR || gltf_interp == GLTFAnimation::INTERP_STEP) {
-					animation->track_set_interpolation_type(track_idx, gltf_interp == GLTFAnimation::INTERP_STEP ? Animation::INTERPOLATION_NEAREST : Animation::INTERPOLATION_LINEAR);
-					for (int j = 0; j < track.weight_tracks[i].times.size(); j++) {
-						float t = track.weight_tracks[i].times[j];
-						float w = track.weight_tracks[i].values[j];
-						animation->track_insert_key(track_idx, t, w);
-					}
-				} else {
-					// CATMULLROMSPLINE or CUBIC_SPLINE have to be baked, apologies.
-					float increment = 1.0 / float(bake_fps);
-					float time = 0.0;
-					bool last = false;
-					while (true) {
-						_interpolate_track<float>(track.weight_tracks[i].times, track.weight_tracks[i].values, time, gltf_interp);
-						if (last) {
-							break;
-						}
-						time += increment;
-						if (time >= length) {
-							last = true;
-							time = length;
-						}
-					}
-				}
-			}
 		}
 	}
+
 	animation->set_length(length);
 
 	ap->add_animation(name, animation);
+}
+
+void EditorSceneImporterGLTF::_process_mesh_instances(GLTFState &state, Spatial *scene_root) {
+	for (GLTFNodeIndex node_i = 0; node_i < state.nodes.size(); ++node_i) {
+		const GLTFNode *node = state.nodes[node_i];
+
+		if (node->skin >= 0 && node->mesh >= 0) {
+			const GLTFSkinIndex skin_i = node->skin;
+
+			Map<GLTFNodeIndex, Node *>::Element *mi_element = state.scene_nodes.find(node_i);
+			MeshInstance *mi = Object::cast_to<MeshInstance>(mi_element->get());
+			ERR_FAIL_COND(mi == nullptr);
+
+			GLTFSkeletonIndex skel_i = state.skins[node->skin].skeleton;
+			const GLTFSkeleton &gltf_skeleton = state.skeletons[skel_i];
+			Skeleton *skeleton = gltf_skeleton.godot_skeleton;
+			ERR_FAIL_COND(skeleton == nullptr);
+
+			mi->get_parent()->remove_child(mi);
+			skeleton->add_child(mi);
+			mi->set_owner(scene_root);
+
+			mi->set_skin(state.skins[skin_i].godot_skin);
+			mi->set_skeleton_path(mi->get_path_to(skeleton));
+			mi->set_transform(Transform());
+		}
+	}
 }
 
 Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_fps) {
 
 	Spatial *root = memnew(Spatial);
 	root->set_name(state.scene_name);
-	//generate skeletons
-	Vector<Skeleton *> skeletons;
-	for (int i = 0; i < state.skins.size(); i++) {
-		Skeleton *s = memnew(Skeleton);
 
-		String name = state.skins[i].name;
-		if (name == "") {
-			name = _gen_unique_name(state, "Skeleton");
-		}
-		for (int j = 0; j < state.skins[i].bones.size(); j++) {
-			s->add_bone(state.nodes[state.skins[i].bones[j].node]->name);
-			s->set_bone_rest(j, state.skins[i].bones[j].inverse_bind.affine_inverse());
-		}
-		s->set_name(name);
-		root->add_child(s);
-		s->set_owner(root);
-		skeletons.push_back(s);
-	}
-	for (int i = 0; i < state.root_nodes.size(); i++) {
-		if (state.nodes[state.root_nodes[i]]->joints.size()) {
-			_generate_bone(state, state.root_nodes[i], skeletons, root);
-		} else {
-			_generate_node(state, state.root_nodes[i], root, root, skeletons);
-		}
+	for (int i = 0; i < state.root_nodes.size(); ++i) {
+		_generate_scene_node(state, root, root, state.root_nodes[i]);
 	}
 
-	for (int i = 0; i < skeletons.size(); i++) {
-		skeletons[i]->localize_rests();
-	}
+	_process_mesh_instances(state, root);
 
 	if (state.animations.size()) {
 		AnimationPlayer *ap = memnew(AnimationPlayer);
@@ -2166,7 +2746,7 @@ Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, int p_bake_f
 		ap->set_owner(root);
 
 		for (int i = 0; i < state.animations.size(); i++) {
-			_import_animation(state, ap, i, p_bake_fps, skeletons);
+			_import_animation(state, ap, i, p_bake_fps);
 		}
 	}
 
@@ -2241,30 +2821,45 @@ Node *EditorSceneImporterGLTF::import_scene(const String &p_path, uint32_t p_fla
 	if (err != OK)
 		return NULL;
 
-	/* STEP 8 PARSE MESHES (we have enough info now) */
-	err = _parse_meshes(state);
-	if (err != OK)
-		return NULL;
-
 	/* STEP 9 PARSE SKINS */
 	err = _parse_skins(state);
 	if (err != OK)
 		return NULL;
 
-	/* STEP 10 PARSE CAMERAS */
+	/* STEP 10 DETERMINE SKELETONS */
+	err = _determine_skeletons(state);
+	if (err != OK)
+		return NULL;
+
+	/* STEP 11 CREATE SKELETONS */
+	err = _create_skeletons(state);
+	if (err != OK)
+		return NULL;
+
+	/* STEP 12 CREATE SKINS */
+	err = _create_skins(state);
+	if (err != OK)
+		return NULL;
+
+	/* STEP 13 PARSE MESHES (we have enough info now) */
+	err = _parse_meshes(state);
+	if (err != OK)
+		return NULL;
+
+	/* STEP 14 PARSE CAMERAS */
 	err = _parse_cameras(state);
 	if (err != OK)
 		return NULL;
 
-	/* STEP 11 PARSE ANIMATIONS */
+	/* STEP 15 PARSE ANIMATIONS */
 	err = _parse_animations(state);
 	if (err != OK)
 		return NULL;
 
-	/* STEP 12 ASSIGN SCENE NAMES */
+	/* STEP 16 ASSIGN SCENE NAMES */
 	_assign_scene_names(state);
 
-	/* STEP 13 MAKE SCENE! */
+	/* STEP 17 MAKE SCENE! */
 	Spatial *scene = _generate_scene(state, p_bake_fps);
 
 	return scene;
