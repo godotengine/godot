@@ -625,9 +625,12 @@ void TextureRegionEditor::_update_rect() {
 		rect = node_sprite->get_region_rect();
 	else if (node_sprite_3d)
 		rect = node_sprite_3d->get_region_rect();
-	else if (node_ninepatch)
+	else if (node_ninepatch) {
 		rect = node_ninepatch->get_region_rect();
-	else if (obj_styleBox.is_valid())
+		if (rect == Rect2()) {
+			rect = Rect2(Vector2(), node_ninepatch->get_texture()->get_size());
+		}
+	} else if (obj_styleBox.is_valid())
 		rect = obj_styleBox->get_region_rect();
 	else if (atlas_tex.is_valid())
 		rect = atlas_tex->get_region();
