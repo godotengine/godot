@@ -2571,6 +2571,9 @@ void EditorNode::_menu_option_confirm(int p_option, bool p_confirmed) {
 			save_all_scenes();
 			restart_editor();
 		} break;
+		case RUN_PROJECT_DATA_FOLDER: {
+			OS::get_singleton()->shell_open(String("file://") + OS::get_singleton()->get_user_data_dir());
+		} break;
 		default: {
 		}
 	}
