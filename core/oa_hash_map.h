@@ -37,10 +37,11 @@
 #include "core/os/memory.h"
 
 /**
- * A HashMap implementation that uses open addressing with robinhood hashing.
- * Robinhood hashing swaps out entries that have a smaller probing distance
+ * A HashMap implementation that uses open addressing with Robin Hood hashing.
+ * Robin Hood hashing swaps out entries that have a smaller probing distance
  * than the to-be-inserted entry, that evens out the average probing distance
- * and enables faster lookups.
+ * and enables faster lookups. Backward shift deletion is employed to further
+ * improve the performance and to avoid infinite loops in rare cases.
  *
  * The entries are stored inplace, so huge keys or values might fill cache lines
  * a lot faster.
@@ -60,25 +61,20 @@ private:
 	uint32_t num_elements;
 
 	static const uint32_t EMPTY_HASH = 0;
-	static const uint32_t DELETED_HASH_BIT = 1 << 31;
 
 	_FORCE_INLINE_ uint32_t _hash(const TKey &p_key) const {
 		uint32_t hash = Hasher::hash(p_key);
 
 		if (hash == EMPTY_HASH) {
 			hash = EMPTY_HASH + 1;
-		} else if (hash & DELETED_HASH_BIT) {
-			hash &= ~DELETED_HASH_BIT;
 		}
 
 		return hash;
 	}
 
 	_FORCE_INLINE_ uint32_t _get_probe_length(uint32_t p_pos, uint32_t p_hash) const {
-		p_hash = p_hash & ~DELETED_HASH_BIT; // we don't care if it was deleted or not
-
 		uint32_t original_pos = p_hash % capacity;
-		return (p_pos - original_pos) % capacity;
+		return (p_pos - original_pos + capacity) % capacity;
 	}
 
 	_FORCE_INLINE_ void _construct(uint32_t p_pos, uint32_t p_hash, const TKey &p_key, const TValue &p_value) {
@@ -132,14 +128,6 @@ private:
 			// not an empty slot, let's check the probing length of the existing one
 			uint32_t existing_probe_len = _get_probe_length(pos, hashes[pos]);
 			if (existing_probe_len < distance) {
-
-				if (hashes[pos] & DELETED_HASH_BIT) {
-					// we found a place where we can fit in!
-					_construct(pos, hash, key, value);
-
-					return;
-				}
-
 				SWAP(hash, hashes[pos]);
 				SWAP(key, keys[pos]);
 				SWAP(value, values[pos]);
@@ -173,9 +161,6 @@ private:
 			if (old_hashes[i] == EMPTY_HASH) {
 				continue;
 			}
-			if (old_hashes[i] & DELETED_HASH_BIT) {
-				continue;
-			}
 
 			_insert_with_hash(old_hashes[i], old_keys[i], old_values[i]);
 		}
@@ -205,10 +190,6 @@ public:
 				continue;
 			}
 
-			if (hashes[i] & DELETED_HASH_BIT) {
-				continue;
-			}
-
 			hashes[i] = EMPTY_HASH;
 			values[i].~TValue();
 			keys[i].~TKey();
@@ -219,7 +200,7 @@ public:
 
 	void insert(const TKey &p_key, const TValue &p_value) {
 
-		if ((float)num_elements / (float)capacity > 0.9) {
+		if (num_elements + 1 > 0.9 * capacity) {
 			_resize_and_rehash();
 		}
 
@@ -272,9 +253,20 @@ public:
 			return;
 		}
 
-		hashes[pos] |= DELETED_HASH_BIT;
+		uint32_t next_pos = (pos + 1) % capacity;
+		while (hashes[next_pos] != EMPTY_HASH &&
+				_get_probe_length(next_pos, hashes[next_pos]) != 0) {
+			SWAP(hashes[next_pos], hashes[pos]);
+			SWAP(keys[next_pos], keys[pos]);
+			SWAP(values[next_pos], values[pos]);
+			pos = next_pos;
+			next_pos = (pos + 1) % capacity;
+		}
+
+		hashes[pos] = EMPTY_HASH;
 		values[pos].~TValue();
 		keys[pos].~TKey();
+
 		num_elements--;
 	}
 
@@ -324,9 +316,6 @@ public:
 			it.pos = i + 1;
 
 			if (hashes[i] == EMPTY_HASH) {
-				continue;
-			}
-			if (hashes[i] & DELETED_HASH_BIT) {
 				continue;
 			}
 
