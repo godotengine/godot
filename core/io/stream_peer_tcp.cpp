@@ -253,7 +253,7 @@ bool StreamPeerTCP::is_connected_to_host() const {
 		return false;
 	}
 
-	if (status != STATUS_CONNECTED) {
+	if (status == STATUS_CONNECTED) {
 		return true;
 	}
 
