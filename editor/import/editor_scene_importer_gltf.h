@@ -229,10 +229,6 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		// Godot Skeleton's bone_indices
 		Map<int, int> joint_i_to_bone_i;
 
-		// The same inverse-binds as above, but they have been re-rooted to the
-		// skeletons parent node
-		Vector<Transform> skeleton_inverse_binds;
-
 		// The Actual Skin that will be created as a mapping between the IBM's of this skin
 		// to the generated skeleton for the mesh instances.
 		Ref<Skin> godot_skin;
@@ -368,7 +364,7 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 
 	Error _parse_materials(GLTFState &state);
 
-	GLTFNodeIndex _find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subtree);
+	GLTFNodeIndex _find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subset);
 
 	bool _capture_nodes_in_skin(GLTFState &state, GLTFSkin &skin, const GLTFNodeIndex node_index);
 	void _capture_nodes_for_multirooted_skin(GLTFState &state, GLTFSkin &skin);
@@ -384,12 +380,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Error _create_skeletons(GLTFState &state);
 	Error _map_skin_joints_indices_to_skeleton_bone_indices(GLTFState &state);
 
-	Transform _get_scene_transform_for_node(const GLTFState &state, const GLTFNodeIndex node_i);
-	Transform _compute_skin_to_skeleton_transform(const GLTFState &state, const GLTFNodeIndex skin_parent, const GLTFNodeIndex skeleton_parent);
-	void _compute_skeleton_rooted_skin_inverse_binds(GLTFState &state, const GLTFSkinIndex skin_i);
 	Error _create_skins(GLTFState &state);
-	bool _skins_are_same(const Ref<Skin>& skin_a, const Ref<Skin>& skin_b);
-	void _remove_duplicate_skins(GLTFState& state);
+	bool _skins_are_same(const Ref<Skin> &skin_a, const Ref<Skin> &skin_b);
+	void _remove_duplicate_skins(GLTFState &state);
 
 	Error _parse_cameras(GLTFState &state);
 

@@ -1486,12 +1486,12 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 	return OK;
 }
 
-EditorSceneImporterGLTF::GLTFNodeIndex EditorSceneImporterGLTF::_find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subtree) {
+EditorSceneImporterGLTF::GLTFNodeIndex EditorSceneImporterGLTF::_find_highest_node(GLTFState &state, const Vector<GLTFNodeIndex> &subset) {
 	int heighest = -1;
 	GLTFNodeIndex best_node = -1;
 
-	for (int i = 0; i < subtree.size(); ++i) {
-		const GLTFNodeIndex node_i = subtree[i];
+	for (int i = 0; i < subset.size(); ++i) {
+		const GLTFNodeIndex node_i = subset[i];
 		const GLTFNode *node = state.nodes[node_i];
 
 		if (heighest == -1 || node->height < heighest) {
@@ -1585,10 +1585,10 @@ void EditorSceneImporterGLTF::_capture_nodes_for_multirooted_skin(GLTFState &sta
 
 	do {
 		all_same = true;
-		const GLTFNode *last_node = state.nodes[roots[0]];
+		const GLTFNodeIndex first_parent = state.nodes[roots[0]]->parent;
 
 		for (int i = 1; i < roots.size(); ++i) {
-			all_same &= last_node == state.nodes[roots[i]];
+			all_same &= (first_parent == state.nodes[roots[i]]->parent);
 		}
 
 		if (!all_same) {
@@ -1790,6 +1790,48 @@ Error EditorSceneImporterGLTF::_determine_skeletons(GLTFState &state) {
 		}
 	}
 
+	{ // attempt to joint all touching subsets (siblings/parent are part of another skin)
+		Vector<GLTFNodeIndex> groups_representatives;
+		skeleton_sets.get_representatives(groups_representatives);
+
+		Vector<GLTFNodeIndex> highest_group_members;
+		Vector<Vector<GLTFNodeIndex> > groups;
+		for (int i = 0; i < groups_representatives.size(); ++i) {
+			Vector<GLTFNodeIndex> group;
+			skeleton_sets.get_members(group, groups_representatives[i]);
+			highest_group_members.push_back(_find_highest_node(state, group));
+			groups.push_back(group);
+		}
+
+		for (int i = 0; i < highest_group_members.size(); ++i) {
+			const GLTFNodeIndex node_i = highest_group_members[i];
+
+			// Attach any siblings together (this needs to be done n^2/2 times)
+			for (int j = i + 1; j < highest_group_members.size(); ++j) {
+				const GLTFNodeIndex node_j = highest_group_members[j];
+
+				// Even if they are siblings under the root! :)
+				if (state.nodes[node_i]->parent == state.nodes[node_j]->parent) {
+					skeleton_sets.create_union(node_i, node_j);
+				}
+			}
+
+			// Attach any parenting going on together (we need to do this n^2 times)
+			const GLTFNodeIndex node_i_parent = state.nodes[node_i]->parent;
+			if (node_i_parent >= 0) {
+				for (int j = 0; j < groups.size() && i != j; ++j) {
+					const Vector<GLTFNodeIndex> &group = groups[j];
+
+					if (group.find(node_i_parent) >= 0) {
+						const GLTFNodeIndex node_j = highest_group_members[j];
+						skeleton_sets.create_union(node_i, node_j);
+					}
+				}
+			}
+		}
+	}
+
+	// At this point, the skeleton groups should be finalized
 	Vector<GLTFNodeIndex> skeleton_owners;
 	skeleton_sets.get_representatives(skeleton_owners);
 
@@ -2109,58 +2151,24 @@ Error EditorSceneImporterGLTF::_map_skin_joints_indices_to_skeleton_bone_indices
 	return OK;
 }
 
-Transform EditorSceneImporterGLTF::_get_scene_transform_for_node(const GLTFState &state, const GLTFNodeIndex node_i) {
-	if (node_i < 0) {
-		return Transform();
-	}
-
-	Transform xform;
-	GLTFNodeIndex current_i = state.nodes[node_i]->parent;
-	while (current_i >= 0) {
-		xform = state.nodes[current_i]->xform * xform;
-		current_i = state.nodes[current_i]->parent;
-	}
-	return xform;
-}
-
-Transform EditorSceneImporterGLTF::_compute_skin_to_skeleton_transform(const GLTFState &state, const GLTFNodeIndex skin_parent, const GLTFNodeIndex skeleton_parent) {
-	const Transform xform_skin = _get_scene_transform_for_node(state, skin_parent);
-	const Transform xform_skel = _get_scene_transform_for_node(state, skeleton_parent);
-
-	return xform_skin.affine_inverse() * xform_skel;
-}
-
-void EditorSceneImporterGLTF::_compute_skeleton_rooted_skin_inverse_binds(GLTFState &state, const GLTFSkinIndex skin_i) {
-	GLTFSkin &skin = state.skins.write[skin_i];
-	const GLTFSkeleton &skeleton = state.skeletons[skin.skeleton];
-
-	const GLTFNodeIndex skin_parent = skin.skin_root;
-	const GLTFNodeIndex skeleton_parent = state.nodes[skeleton.roots[0]]->parent;
-
-	const Transform skin_to_skel_transform = _compute_skin_to_skeleton_transform(state, skin_parent, skeleton_parent);
-
-	const Transform skin_to_skel_transform_inverse = skin_to_skel_transform.affine_inverse();
-	Vector<Transform> new_ibms;
-	for (int i = 0; i < skin.inverse_binds.size(); ++i) {
-		new_ibms.push_back(skin.inverse_binds[i] * skin_to_skel_transform_inverse);
-	}
-
-	skin.skeleton_inverse_binds = new_ibms;
-}
-
 Error EditorSceneImporterGLTF::_create_skins(GLTFState &state) {
 	for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
-		_compute_skeleton_rooted_skin_inverse_binds(state, skin_i);
-
 		GLTFSkin &gltf_skin = state.skins.write[skin_i];
 
 		Ref<Skin> skin;
 		skin.instance();
 
+		// Some skins don't have IBM's! What absolute monsters!
+		const bool has_ibms = !gltf_skin.inverse_binds.empty();
+
 		for (int joint_i = 0; joint_i < gltf_skin.joints_original.size(); ++joint_i) {
 			int bone_i = gltf_skin.joint_i_to_bone_i[joint_i];
 
-			skin->add_bind(bone_i, gltf_skin.inverse_binds[joint_i]);
+			if (has_ibms) {
+				skin->add_bind(bone_i, gltf_skin.inverse_binds[joint_i]);
+			} else {
+				skin->add_bind(bone_i, Transform());
+			}
 		}
 
 		gltf_skin.godot_skin = skin;
@@ -2206,8 +2214,8 @@ bool EditorSceneImporterGLTF::_skins_are_same(const Ref<Skin> &skin_a, const Ref
 void EditorSceneImporterGLTF::_remove_duplicate_skins(GLTFState &state) {
 	for (int i = 0; i < state.skins.size(); ++i) {
 		for (int j = i + 1; j < state.skins.size(); ++j) {
-			const Ref<Skin>& skin_i = state.skins[i].godot_skin;
-			const Ref<Skin>& skin_j = state.skins[j].godot_skin;
+			const Ref<Skin> &skin_i = state.skins[i].godot_skin;
+			const Ref<Skin> &skin_j = state.skins[j].godot_skin;
 
 			if (_skins_are_same(skin_i, skin_j)) {
 				// replace it and delete the old
@@ -2487,31 +2495,39 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 
 	Spatial *current_node = nullptr;
 
-	// Is our parent a skeleton?
-	if (Skeleton *skeleton = Object::cast_to<Skeleton>(scene_parent)) {
-		if (gltf_node->skeleton >= 0) {
-			current_node = skeleton;
+	// Is our parent a skeleton
+	Skeleton *active_skeleton = Object::cast_to<Skeleton>(scene_parent);
 
-			// If we are not attached via skin (mesh instance), we need to attach to the parent bone's node_index by bone_attachment
-		} else if (gltf_node->skin < 0) {
-			BoneAttachment *bone_attachment = _generate_bone_attachment(state, skeleton, node_index);
+	if (gltf_node->skeleton >= 0) {
+		Skeleton *skeleton = state.skeletons[gltf_node->skeleton].godot_skeleton;
 
-			scene_parent->add_child(bone_attachment);
-			bone_attachment->set_owner(scene_root);
+		if (active_skeleton != skeleton) {
+			ERR_FAIL_COND_MSG(active_skeleton != nullptr, "glTF: Generating scene detected direct parented Skeletons");
 
-			// There is no gltf_node that represent this, so just directly create a unique name
-			bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment"));
-
-			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
-			// and attach it to the bone_attachment
-			scene_parent = bone_attachment;
+			// Add it to the scene if it has not already been added
+			if (skeleton->get_parent() == nullptr) {
+				scene_parent->add_child(skeleton);
+				skeleton->set_owner(scene_root);
+			}
 		}
-	} else if (gltf_node->skeleton >= 0) {
-		// Set the current node straight from the skeleton map
-		current_node = state.skeletons[gltf_node->skeleton].godot_skeleton;
 
-		scene_parent->add_child(current_node);
-		current_node->set_owner(scene_root);
+		active_skeleton = skeleton;
+		current_node = skeleton;
+	}
+
+	// If we have an active skeleton, and the node is node skinned, we need to create a bone attachment
+	if (current_node == nullptr && active_skeleton != nullptr && gltf_node->skin < 0) {
+		BoneAttachment *bone_attachment = _generate_bone_attachment(state, active_skeleton, node_index);
+
+		scene_parent->add_child(bone_attachment);
+		bone_attachment->set_owner(scene_root);
+
+		// There is no gltf_node that represent this, so just directly create a unique name
+		bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment"));
+
+		// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
+		// and attach it to the bone_attachment
+		scene_parent = bone_attachment;
 	}
 
 	// We still have not managed to make a node
