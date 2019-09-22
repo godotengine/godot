@@ -523,8 +523,15 @@ void ShaderEditor::_text_edit_gui_input(const Ref<InputEvent> &ev) {
 					tx->cursor_set_column(col);
 				}
 			}
-			_make_context_menu(tx->is_selection_active());
+			_make_context_menu(tx->is_selection_active(), get_local_mouse_position());
 		}
+	}
+
+	Ref<InputEventKey> k = ev;
+	if (k.is_valid() && k->is_pressed() && k->get_scancode() == KEY_MENU) {
+		TextEdit *tx = shader_editor->get_text_edit();
+		_make_context_menu(tx->is_selection_active(), (get_global_transform().inverse() * tx->get_global_transform()).xform(tx->_get_cursor_pixel_pos()));
+		context_menu->grab_focus();
 	}
 }
 
@@ -565,7 +572,7 @@ void ShaderEditor::_bookmark_item_pressed(int p_idx) {
 	}
 }
 
-void ShaderEditor::_make_context_menu(bool p_selection) {
+void ShaderEditor::_make_context_menu(bool p_selection, Vector2 p_position) {
 
 	context_menu->clear();
 	if (p_selection) {
@@ -585,7 +592,7 @@ void ShaderEditor::_make_context_menu(bool p_selection) {
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_comment"), EDIT_TOGGLE_COMMENT);
 	context_menu->add_shortcut(ED_GET_SHORTCUT("script_text_editor/toggle_bookmark"), BOOKMARK_TOGGLE);
 
-	context_menu->set_position(get_global_transform().xform(get_local_mouse_position()));
+	context_menu->set_position(get_global_transform().xform(p_position));
 	context_menu->set_size(Vector2(1, 1));
 	context_menu->popup();
 }

@@ -587,6 +587,7 @@ public:
 
 	int cursor_get_column() const;
 	int cursor_get_line() const;
+	Vector2i _get_cursor_pixel_pos();
 
 	bool cursor_get_blink_enabled() const;
 	void cursor_set_blink_enabled(const bool p_enabled);

@@ -143,6 +143,7 @@ private:
 	void set_window_pos(int p_pos);
 
 	void set_cursor_at_pixel_pos(int p_x);
+	int get_cursor_pixel_pos();
 
 	void _reset_caret_blink_timer();
 	void _toggle_draw_caret();
