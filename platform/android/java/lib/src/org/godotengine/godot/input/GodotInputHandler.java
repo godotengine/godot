@@ -96,7 +96,6 @@ public class GodotInputHandler implements InputDeviceListener {
 						GodotLib.joybutton(device_id, button, false);
 					}
 				});
-				return true;
 			}
 		} else {
 			final int chr = event.getUnicodeChar(0);
@@ -108,7 +107,7 @@ public class GodotInputHandler implements InputDeviceListener {
 			});
 		};
 
-		return false;
+		return true;
 	}
 
 	public boolean onKeyDown(final int keyCode, KeyEvent event) {
@@ -142,7 +141,6 @@ public class GodotInputHandler implements InputDeviceListener {
 						GodotLib.joybutton(device_id, button, true);
 					}
 				});
-				return true;
 			}
 		} else {
 			final int chr = event.getUnicodeChar(0);
@@ -154,7 +152,7 @@ public class GodotInputHandler implements InputDeviceListener {
 			});
 		};
 
-		return false;
+		return true;
 	}
 
 	public boolean onGenericMotionEvent(MotionEvent event) {
