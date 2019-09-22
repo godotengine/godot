@@ -1537,7 +1537,7 @@ public:
 		args.push_back("-a");
 		args.push_back("android.intent.action.MAIN");
 		args.push_back("-n");
-		args.push_back(get_package_name(package_name) + "/org.godotengine.godot.Godot");
+		args.push_back(get_package_name(package_name) + "/com.godot.game.GodotApp");
 
 		err = OS::get_singleton()->execute(adb, args, true, NULL, NULL, &rv);
 		if (err || rv != 0) {
