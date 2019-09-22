@@ -578,6 +578,10 @@ void VisualScript::get_data_connection_list(const StringName &p_func, List<DataC
 	}
 }
 
+void VisualScript::set_tool_enabled(bool p_enabled) {
+	is_tool_script = p_enabled;
+}
+
 void VisualScript::add_variable(const StringName &p_name, const Variant &p_default_value, bool p_export) {
 
 	ERR_FAIL_COND(instances.size());
@@ -894,7 +898,7 @@ ScriptInstance *VisualScript::instance_create(Object *p_this) {
 
 #ifdef TOOLS_ENABLED
 
-	if (!ScriptServer::is_scripting_enabled()) {
+	if (!ScriptServer::is_scripting_enabled() && !is_tool_script) {
 
 		PlaceHolderScriptInstance *sins = memnew(PlaceHolderScriptInstance(VisualScriptLanguage::singleton, Ref<Script>((Script *)this), p_this));
 		placeholders.insert(sins);
@@ -958,7 +962,7 @@ Error VisualScript::reload(bool p_keep_state) {
 
 bool VisualScript::is_tool() const {
 
-	return false;
+	return is_tool_script;
 }
 
 bool VisualScript::is_valid() const {
@@ -1164,6 +1168,11 @@ void VisualScript::_set_data(const Dictionary &p_data) {
 			data_connect(name, data_connections[j + 0], data_connections[j + 1], data_connections[j + 2], data_connections[j + 3]);
 		}
 	}
+
+	if (d.has("is_tool_script"))
+		is_tool_script = d["is_tool_script"];
+	else
+		is_tool_script = false;
 }
 
 Dictionary VisualScript::_get_data() const {
@@ -1245,6 +1254,8 @@ Dictionary VisualScript::_get_data() const {
 	}
 
 	d["functions"] = funcs;
+
+	d["is_tool_script"] = is_tool_script;
 
 	return d;
 }

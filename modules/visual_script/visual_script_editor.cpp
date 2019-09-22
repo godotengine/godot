@@ -2227,6 +2227,10 @@ void VisualScriptEditor::_change_base_type() {
 	select_base_type->popup_create(true, true);
 }
 
+void VisualScriptEditor::_toggle_tool_script() {
+	script->set_tool_enabled(!script->is_tool());
+}
+
 void VisualScriptEditor::clear_edit_menu() {
 	memdelete(edit_menu);
 	memdelete(left_vsplit);
@@ -3448,6 +3452,7 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_update_members", &VisualScriptEditor::_update_members);
 	ClassDB::bind_method("_change_base_type", &VisualScriptEditor::_change_base_type);
 	ClassDB::bind_method("_change_base_type_callback", &VisualScriptEditor::_change_base_type_callback);
+	ClassDB::bind_method("_toggle_tool_script", &VisualScriptEditor::_toggle_tool_script);
 	ClassDB::bind_method("_node_selected", &VisualScriptEditor::_node_selected);
 	ClassDB::bind_method("_node_moved", &VisualScriptEditor::_node_moved);
 	ClassDB::bind_method("_move_node", &VisualScriptEditor::_move_node);
@@ -3532,6 +3537,11 @@ VisualScriptEditor::VisualScriptEditor() {
 	left_vsplit->add_child(left_vb);
 	left_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	//left_vb->set_custom_minimum_size(Size2(230, 1) * EDSCALE);
+
+	CheckButton *tool_script_check = memnew(CheckButton);
+	tool_script_check->set_text(TTR("Make Tool:"));
+	left_vb->add_child(tool_script_check);
+	tool_script_check->connect("pressed", this, "_toggle_tool_script");
 
 	base_type_select = memnew(Button);
 	left_vb->add_margin_child(TTR("Base Type:"), base_type_select);

@@ -186,6 +186,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _node_filter_changed(const String &p_text);
 	void _change_base_type_callback();
 	void _change_base_type();
+	void _toggle_tool_script();
 	void _member_selected();
 	void _member_edited();
 
