@@ -3308,8 +3308,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	debug_menu->set_text(TTR("Debug"));
 	debug_menu->set_switch_on_hover(true);
 	debug_menu->get_popup()->set_hide_on_window_lose_focus(true);
-	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10), DEBUG_NEXT);
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_into", TTR("Step Into"), KEY_F11), DEBUG_STEP);
+	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/step_over", TTR("Step Over"), KEY_F10), DEBUG_NEXT);
 	debug_menu->get_popup()->add_separator();
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/break", TTR("Break")), DEBUG_BREAK);
 	debug_menu->get_popup()->add_shortcut(ED_SHORTCUT("debugger/continue", TTR("Continue"), KEY_F12), DEBUG_CONTINUE);
