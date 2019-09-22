@@ -1552,18 +1552,20 @@ void SceneTreeDock::_do_reparent(Node *p_new_parent, int p_position_in_parent, V
 	if (p_nodes.size() == 0)
 		return; // Nothing to reparent.
 
-	bool same_parent = true;
+	p_nodes.sort_custom<Node::Comparator>(); //Makes result reliable.
+
+	bool no_change = true;
 	for (int ni = 0; ni < p_nodes.size(); ni++) {
 
 		if (p_nodes[ni] == p_new_parent)
 			return; // Attempt to reparent to itself.
 
-		if (p_nodes[ni]->get_parent() != p_new_parent)
-			same_parent = false;
+		if (p_nodes[ni]->get_parent() != p_new_parent || p_position_in_parent + ni != p_nodes[ni]->get_position_in_parent())
+			no_change = false;
 	}
 
-	if (same_parent)
-		return; // No new parent changes.
+	if (no_change)
+		return; // Position and parent didn't change.
 
 	Node *validate = new_parent;
 	while (validate) {
