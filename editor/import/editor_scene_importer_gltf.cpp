@@ -35,6 +35,7 @@
 #include "core/math/math_defs.h"
 #include "core/os/file_access.h"
 #include "core/os/os.h"
+#include "modules/regex/regex.h"
 #include "scene/3d/bone_attachment.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/mesh_instance.h"
@@ -154,14 +155,21 @@ static Transform _arr_to_xform(const Array &p_array) {
 	return xform;
 }
 
+String EditorSceneImporterGLTF::_sanitize_scene_name(const String &name) {
+	RegEx regex("([^a-zA-Z0-9_ ]+)");
+	String p_name = regex.sub(name, "", true);
+	return p_name;
+}
+
 String EditorSceneImporterGLTF::_gen_unique_name(GLTFState &state, const String &p_name) {
 
-	int index = 1;
+	const String s_name = _sanitize_scene_name(p_name);
 
 	String name;
+	int index = 1;
 	while (true) {
+		name = s_name;
 
-		name = p_name;
 		if (index > 1) {
 			name += " " + itos(index);
 		}
@@ -172,6 +180,47 @@ String EditorSceneImporterGLTF::_gen_unique_name(GLTFState &state, const String 
 	}
 
 	state.unique_names.insert(name);
+
+	return name;
+}
+
+String EditorSceneImporterGLTF::_sanitize_bone_name(const String &name) {
+	String p_name = name.camelcase_to_underscore(true);
+
+	RegEx pattern_del("([^a-zA-Z0-9_ ])+");
+	p_name = pattern_del.sub(p_name, "", true);
+
+	RegEx pattern_nospace(" +");
+	p_name = pattern_nospace.sub(p_name, "_", true);
+
+	RegEx pattern_multiple("_+");
+	p_name = pattern_multiple.sub(p_name, "_", true);
+
+	RegEx pattern_padded("0+(\\d+)");
+	p_name = pattern_padded.sub(p_name, "$1", true);
+
+	return p_name;
+}
+
+String EditorSceneImporterGLTF::_gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name) {
+
+	const String s_name = _sanitize_bone_name(p_name);
+
+	String name;
+	int index = 1;
+	while (true) {
+		name = s_name;
+
+		if (index > 1) {
+			name += "_" + itos(index);
+		}
+		if (!state.skeletons[skel_i].unique_names.has(name)) {
+			break;
+		}
+		index++;
+	}
+
+	state.skeletons.write[skel_i].unique_names.insert(name);
 
 	return name;
 }
@@ -188,7 +237,7 @@ Error EditorSceneImporterGLTF::_parse_scenes(GLTFState &state) {
 			state.root_nodes.push_back(nodes[j]);
 		}
 
-		if (s.has("name")) {
+		if (s.has("name") && s["name"] != "") {
 			state.scene_name = _gen_unique_name(state, s["name"]);
 		} else {
 			state.scene_name = _gen_unique_name(state, "Scene");
@@ -1425,6 +1474,7 @@ Error EditorSceneImporterGLTF::_parse_materials(GLTFState &state) {
 			const String &am = d["alphaMode"];
 			if (am != "OPAQUE") {
 				material->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
+				material->set_depth_draw_mode(SpatialMaterial::DEPTH_DRAW_ALPHA_OPAQUE_PREPASS);
 			}
 		}
 
@@ -1749,16 +1799,21 @@ Error EditorSceneImporterGLTF::_determine_skeletons(GLTFState &state) {
 		const GLTFNodeIndex skeleton_owner = skeleton_owners[skel_i];
 		GLTFSkeleton skeleton;
 
+		Vector<GLTFNodeIndex> skeleton_nodes;
+		skeleton_sets.get_members(skeleton_nodes, skeleton_owner);
+
 		for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
 			GLTFSkin &skin = state.skins.write[skin_i];
 
-			if (skin.joints.find(skeleton_owner) >= 0 || skin.non_joints.find(skeleton_owner) >= 0) {
-				skin.skeleton = skel_i;
+			// If any of the the skeletons nodes exist in a skin, that skin now maps to the skeleton
+			for (int i = 0; i < skeleton_nodes.size(); ++i) {
+				GLTFNodeIndex skel_node_i = skeleton_nodes[i];
+				if (skin.joints.find(skel_node_i) >= 0 || skin.non_joints.find(skel_node_i) >= 0) {
+					skin.skeleton = skel_i;
+					continue;
+				}
 			}
 		}
-
-		Vector<GLTFNodeIndex> skeleton_nodes;
-		skeleton_sets.get_members(skeleton_nodes, skeleton_owner);
 
 		Vector<GLTFNodeIndex> non_joints;
 		for (int i = 0; i < skeleton_nodes.size(); ++i) {
@@ -1864,8 +1919,8 @@ Error EditorSceneImporterGLTF::_reparent_to_fake_joint(GLTFState &state, GLTFSke
 	fake_joint->xform = node->xform;
 	fake_joint->joint = true;
 
-	// Create a new name
-	fake_joint->name = node->name + "_fake_joint";
+	// We can use the exact same name here, because the joint will be inside a skeleton and not the scene
+	fake_joint->name = node->name;
 
 	// Clear the nodes transforms, since it will be parented to the fake joint
 	node->translation = Vector3(0, 0, 0);
@@ -1971,7 +2026,7 @@ Error EditorSceneImporterGLTF::_create_skeletons(GLTFState &state) {
 		Skeleton *skeleton = memnew(Skeleton);
 		gltf_skeleton.godot_skeleton = skeleton;
 
-		//skeleton->set_use_bones_in_world_transform(true);
+		// Make a unique name, no gltf node represents this skeleton
 		skeleton->set_name(_gen_unique_name(state, "Skeleton"));
 
 		List<GLTFNodeIndex> bones;
@@ -1980,25 +2035,40 @@ Error EditorSceneImporterGLTF::_create_skeletons(GLTFState &state) {
 			bones.push_back(gltf_skeleton.roots[i]);
 		}
 
+		// Make the skeleton creation deterministic by going through the roots in
+		// a sorted order, and DEPTH FIRST
+		bones.sort();
+
 		while (!bones.empty()) {
 			const GLTFNodeIndex node_i = bones.front()->get();
 			bones.pop_front();
 
 			GLTFNode *node = state.nodes[node_i];
+			ERR_FAIL_COND_V(node->skeleton != skel_i, FAILED);
 
-			// Add all child nodes to the stack
-			for (int i = 0; i < node->children.size(); ++i) {
-				const GLTFNodeIndex child_i = node->children[i];
-				if (state.nodes[child_i]->skeleton == skel_i) {
-					bones.push_back(child_i);
+			{ // Add all child nodes to the stack (deterministically)
+				Vector<GLTFNodeIndex> child_nodes;
+				for (int i = 0; i < node->children.size(); ++i) {
+					const GLTFNodeIndex child_i = node->children[i];
+					if (state.nodes[child_i]->skeleton == skel_i) {
+						child_nodes.push_back(child_i);
+					}
+				}
+
+				// Depth first insertion
+				child_nodes.sort();
+				for (int i = child_nodes.size() - 1; i >= 0; --i) {
+					bones.push_front(child_nodes[i]);
 				}
 			}
 
 			const int bone_index = skeleton->get_bone_count();
 
 			if (node->name.empty()) {
-				node->name = "Bone " + itos(bone_index);
+				node->name = "bone";
 			}
+
+			node->name = _gen_unique_bone_name(state, skel_i, node->name);
 
 			skeleton->add_bone(node->name);
 			skeleton->set_bone_rest(bone_index, node->xform);
@@ -2087,8 +2157,6 @@ Error EditorSceneImporterGLTF::_create_skins(GLTFState &state) {
 		Ref<Skin> skin;
 		skin.instance();
 
-		skin->set_name(_gen_unique_name(state, "Skin"));
-
 		for (int joint_i = 0; joint_i < gltf_skin.joints_original.size(); ++joint_i) {
 			int bone_i = gltf_skin.joint_i_to_bone_i[joint_i];
 
@@ -2098,7 +2166,55 @@ Error EditorSceneImporterGLTF::_create_skins(GLTFState &state) {
 		gltf_skin.godot_skin = skin;
 	}
 
+	// Purge the duplicates!
+	_remove_duplicate_skins(state);
+
+	// Create unique names now, after removing duplicates
+	for (GLTFSkinIndex skin_i = 0; skin_i < state.skins.size(); ++skin_i) {
+		Ref<Skin> skin = state.skins[skin_i].godot_skin;
+		if (skin->get_name().empty()) {
+			// Make a unique name, no gltf node represents this skin
+			skin->set_name(_gen_unique_name(state, "Skin"));
+		}
+	}
+
 	return OK;
+}
+
+bool EditorSceneImporterGLTF::_skins_are_same(const Ref<Skin> &skin_a, const Ref<Skin> &skin_b) {
+	if (skin_a->get_bind_count() != skin_b->get_bind_count()) {
+		return false;
+	}
+
+	for (int i = 0; i < skin_a->get_bind_count(); ++i) {
+
+		if (skin_a->get_bind_bone(i) != skin_b->get_bind_bone(i)) {
+			return false;
+		}
+
+		Transform a_xform = skin_a->get_bind_pose(i);
+		Transform b_xform = skin_b->get_bind_pose(i);
+
+		if (a_xform != b_xform) {
+			return false;
+		}
+	}
+
+	return true;
+}
+
+void EditorSceneImporterGLTF::_remove_duplicate_skins(GLTFState &state) {
+	for (int i = 0; i < state.skins.size(); ++i) {
+		for (int j = i + 1; j < state.skins.size(); ++j) {
+			const Ref<Skin>& skin_i = state.skins[i].godot_skin;
+			const Ref<Skin>& skin_j = state.skins[j].godot_skin;
+
+			if (_skins_are_same(skin_i, skin_j)) {
+				// replace it and delete the old
+				state.skins.write[j].godot_skin = skin_i;
+			}
+		}
+	}
 }
 
 Error EditorSceneImporterGLTF::_parse_cameras(GLTFState &state) {
@@ -2282,11 +2398,16 @@ void EditorSceneImporterGLTF::_assign_scene_names(GLTFState &state) {
 
 	for (int i = 0; i < state.nodes.size(); i++) {
 		GLTFNode *n = state.nodes[i];
-		if (n->name == "") {
+
+		// Any joints get unique names generated when the skeleton is made, unique to the skeleton
+		if (n->skeleton >= 0)
+			continue;
+
+		if (n->name.empty()) {
 			if (n->mesh >= 0) {
 				n->name = "Mesh";
-			} else if (n->joint) {
-				n->name = "Bone";
+			} else if (n->camera >= 0) {
+				n->name = "Camera";
 			} else {
 				n->name = "Node";
 			}
@@ -2378,7 +2499,8 @@ void EditorSceneImporterGLTF::_generate_scene_node(GLTFState &state, Node *scene
 			scene_parent->add_child(bone_attachment);
 			bone_attachment->set_owner(scene_root);
 
-			bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment " + gltf_node->name));
+			// There is no gltf_node that represent this, so just directly create a unique name
+			bone_attachment->set_name(_gen_unique_name(state, "BoneAttachment"));
 
 			// We change the scene_parent to our bone attachment now. We do not set current_node because we want to make the node
 			// and attach it to the bone_attachment
@@ -2549,6 +2671,7 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 
 	String name = anim.name;
 	if (name.empty()) {
+		// No node represent these, and they are not in the hierarchy, so just make a unique name
 		name = _gen_unique_name(state, "Animation");
 	}
 
@@ -2677,11 +2800,12 @@ void EditorSceneImporterGLTF::_import_animation(GLTFState &state, AnimationPlaye
 			ERR_CONTINUE(node->mesh < 0 || node->mesh >= state.meshes.size());
 			const GLTFMesh &mesh = state.meshes[node->mesh];
 			const String prop = "blend_shapes/" + mesh.mesh->get_blend_shape_name(i);
-			node_path = String(node_path) + ":" + prop;
+
+			const String blend_path = String(node_path) + ":" + prop;
 
 			const int track_idx = animation->get_track_count();
 			animation->add_track(Animation::TYPE_VALUE);
-			animation->track_set_path(track_idx, node_path);
+			animation->track_set_path(track_idx, blend_path);
 
 			// Only LINEAR and STEP (NEAREST) can be supported out of the box by Godot's Animation,
 			// the other modes have to be baked.
@@ -2748,6 +2872,8 @@ void EditorSceneImporterGLTF::_process_mesh_instances(GLTFState &state, Spatial 
 Spatial *EditorSceneImporterGLTF::_generate_scene(GLTFState &state, const int p_bake_fps) {
 
 	Spatial *root = memnew(Spatial);
+
+	// scene_name is already unique
 	root->set_name(state.scene_name);
 
 	for (int i = 0; i < state.root_nodes.size(); ++i) {

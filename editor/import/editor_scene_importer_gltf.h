@@ -191,6 +191,9 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		// The created Skeleton for the scene
 		Skeleton *godot_skeleton;
 
+		// Set of unique bone names for the skeleton
+		Set<String> unique_names;
+
 		GLTFSkeleton() :
 				godot_skeleton(nullptr) {
 		}
@@ -326,7 +329,11 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 		}
 	};
 
+	String _sanitize_scene_name(const String &name);
 	String _gen_unique_name(GLTFState &state, const String &p_name);
+
+	String _sanitize_bone_name(const String &name);
+	String _gen_unique_bone_name(GLTFState &state, const GLTFSkeletonIndex skel_i, const String &p_name);
 
 	Ref<Texture> _get_texture(GLTFState &state, const GLTFTextureIndex p_texture);
 
@@ -381,6 +388,8 @@ class EditorSceneImporterGLTF : public EditorSceneImporter {
 	Transform _compute_skin_to_skeleton_transform(const GLTFState &state, const GLTFNodeIndex skin_parent, const GLTFNodeIndex skeleton_parent);
 	void _compute_skeleton_rooted_skin_inverse_binds(GLTFState &state, const GLTFSkinIndex skin_i);
 	Error _create_skins(GLTFState &state);
+	bool _skins_are_same(const Ref<Skin>& skin_a, const Ref<Skin>& skin_b);
+	void _remove_duplicate_skins(GLTFState& state);
 
 	Error _parse_cameras(GLTFState &state);
 
