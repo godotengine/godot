@@ -102,7 +102,7 @@ Vector<Vector2> expand(const Vector<Vector2> &points, const Rect2i &rect, float 
 
 	int lasti = p2->Contour.size() - 1;
 	Vector2 prev = Vector2(p2->Contour[lasti].X / PRECISION, p2->Contour[lasti].Y / PRECISION);
-	for (unsigned int i = 0; i < p2->Contour.size(); i++) {
+	for (uint64_t i = 0; i < p2->Contour.size(); i++) {
 
 		Vector2 cur = Vector2(p2->Contour[i].X / PRECISION, p2->Contour[i].Y / PRECISION);
 		if (cur.distance_to(prev) > 0.5) {

@@ -1399,9 +1399,6 @@ GDScriptParser::Node *GDScriptParser::_parse_expression(Node *p_parent, bool p_s
 					unary = true;
 					break;
 				case OperatorNode::OP_NEG:
-					priority = 1;
-					unary = true;
-					break;
 				case OperatorNode::OP_POS:
 					priority = 1;
 					unary = true;

@@ -500,7 +500,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 
 		size_t block_size = (p_len - step) > BLOCK_SIZE ? (size_t)BLOCK_SIZE : (p_len - step);
 
-		for (uint32_t i = 0; i < block_size; i++) {
+		for (uint64_t i = 0; i < block_size; i++) {
 			strm_in.write[i] = p_buffer[step + i];
 		}
 
@@ -524,14 +524,14 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 			//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + bh.compressed_size);
-			for (uint32_t i = 0; i < bh.compressed_size; i++)
+			for (uint64_t i = 0; i < bh.compressed_size; i++)
 				file_buffer.write[start + i] = strm_out[i];
 		} else {
 			bh.compressed_size = block_size;
 			//package->store_buffer(strm_in.ptr(), block_size);
 			int start = file_buffer.size();
 			file_buffer.resize(file_buffer.size() + block_size);
-			for (uint32_t i = 0; i < bh.compressed_size; i++)
+			for (uint64_t i = 0; i < bh.compressed_size; i++)
 				file_buffer.write[start + i] = strm_in[i];
 		}
 
@@ -554,7 +554,7 @@ Error AppxPackager::add_file(String p_file_name, const uint8_t *p_buffer, size_t
 		//package->store_buffer(strm_out.ptr(), strm.total_out - total_out_before);
 		int start = file_buffer.size();
 		file_buffer.resize(file_buffer.size() + (strm.total_out - total_out_before));
-		for (uint32_t i = 0; i < (strm.total_out - total_out_before); i++)
+		for (uint64_t i = 0; i < (strm.total_out - total_out_before); i++)
 			file_buffer.write[start + i] = strm_out[i];
 
 		deflateEnd(&strm);

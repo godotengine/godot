@@ -100,9 +100,10 @@ Dictionary GDScriptLanguageProtocol::initialize(const Dictionary &p_params) {
 
 	String root_uri = p_params["rootUri"];
 	String root = p_params["rootPath"];
-	bool is_same_workspace = root == workspace->root;
+	bool is_same_workspace;
+#ifndef WINDOWS_ENABLED
 	is_same_workspace = root.to_lower() == workspace->root.to_lower();
-#ifdef WINDOWS_ENABLED
+#else
 	is_same_workspace = root.replace("\\", "/").to_lower() == workspace->root.to_lower();
 #endif
 
@@ -142,6 +143,7 @@ void GDScriptLanguageProtocol::poll() {
 Error GDScriptLanguageProtocol::start(int p_port) {
 	if (server == NULL) {
 		server = dynamic_cast<WebSocketServer *>(ClassDB::instance("WebSocketServer"));
+		ERR_FAIL_COND_V(!server, FAILED);
 		server->set_buffers(8192, 1024, 8192, 1024); // 8mb should be way more than enough
 		server->connect("data_received", this, "on_data_received");
 		server->connect("client_connected", this, "on_client_connected");

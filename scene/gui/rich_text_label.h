@@ -456,7 +456,7 @@ public:
 	void push_meta(const Variant &p_meta);
 	void push_table(int p_columns);
 	void push_fade(int p_start_index, int p_length);
-	void push_shake(int p_level, float p_rate);
+	void push_shake(int p_strength, float p_rate);
 	void push_wave(float p_frequency, float p_amplitude);
 	void push_tornado(float p_frequency, float p_radius);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);

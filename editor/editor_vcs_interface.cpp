@@ -78,18 +78,12 @@ Dictionary EditorVCSInterface::_get_modified_files_data() {
 }
 
 void EditorVCSInterface::_stage_file(String p_file_path) {
-
-	return;
 }
 
 void EditorVCSInterface::_unstage_file(String p_file_path) {
-
-	return;
 }
 
 void EditorVCSInterface::_commit(String p_msg) {
-
-	return;
 }
 
 Array EditorVCSInterface::_get_file_diff(String p_file_path) {
@@ -134,7 +128,6 @@ void EditorVCSInterface::stage_file(String p_file_path) {
 
 		call("_stage_file", p_file_path);
 	}
-	return;
 }
 
 void EditorVCSInterface::unstage_file(String p_file_path) {
@@ -143,7 +136,6 @@ void EditorVCSInterface::unstage_file(String p_file_path) {
 
 		call("_unstage_file", p_file_path);
 	}
-	return;
 }
 
 bool EditorVCSInterface::is_addon_ready() {
@@ -157,7 +149,6 @@ void EditorVCSInterface::commit(String p_msg) {
 
 		call("_commit", p_msg);
 	}
-	return;
 }
 
 Array EditorVCSInterface::get_file_diff(String p_file_path) {

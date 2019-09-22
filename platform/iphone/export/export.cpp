@@ -287,7 +287,7 @@ void EditorExportPlatformIOS::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_40x40", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "optional_icons/spotlight_80x80", PROPERTY_HINT_FILE, "*.png"), "")); // Spotlight on devices with retina display
 
-	for (unsigned int i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
+	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, loading_screen_infos[i].preset_key, PROPERTY_HINT_FILE, "*.png"), ""));
 	}
 
@@ -489,7 +489,7 @@ Error EditorExportPlatformIOS::_export_icons(const Ref<EditorExportPreset> &p_pr
 	DirAccess *da = DirAccess::open(p_iconset_dir);
 	ERR_FAIL_COND_V(!da, ERR_CANT_OPEN);
 
-	for (unsigned int i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
+	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		IconInfo info = icon_infos[i];
 		String icon_path = p_preset->get(info.preset_key);
 		if (icon_path.length() == 0) {
@@ -539,7 +539,7 @@ Error EditorExportPlatformIOS::_export_loading_screens(const Ref<EditorExportPre
 	DirAccess *da = DirAccess::open(p_dest_dir);
 	ERR_FAIL_COND_V(!da, ERR_CANT_OPEN);
 
-	for (unsigned int i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
+	for (uint64_t i = 0; i < sizeof(loading_screen_infos) / sizeof(loading_screen_infos[0]); ++i) {
 		LoadingScreenInfo info = loading_screen_infos[i];
 		String loading_screen_file = p_preset->get(info.preset_key);
 		if (loading_screen_file.size() > 0) {
@@ -626,7 +626,7 @@ private:
 	static String _hex_pad(uint32_t num) {
 		Vector<char> ret;
 		ret.resize(sizeof(num) * 2);
-		for (unsigned int i = 0; i < sizeof(num) * 2; ++i) {
+		for (uint64_t i = 0; i < sizeof(num) * 2; ++i) {
 			uint8_t four_bits = (num >> (sizeof(num) * 8 - (i + 1) * 4)) & 0xF;
 			ret.write[i] = _hex_char(four_bits);
 		}
@@ -1169,7 +1169,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 		valid = false;
 	}
 
-	for (unsigned int i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
+	for (uint64_t i = 0; i < (sizeof(icon_infos) / sizeof(icon_infos[0])); ++i) {
 		IconInfo info = icon_infos[i];
 		String icon_path = p_preset->get(info.preset_key);
 		if (icon_path.length() == 0) {

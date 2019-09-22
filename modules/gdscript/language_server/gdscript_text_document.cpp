@@ -380,8 +380,8 @@ GDScriptTextDocument::~GDScriptTextDocument() {
 	memdelete(file_checker);
 }
 
-void GDScriptTextDocument::sync_script_content(const String &p_uri, const String &p_content) {
-	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_uri);
+void GDScriptTextDocument::sync_script_content(const String &p_path, const String &p_content) {
+	String path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(p_path);
 	GDScriptLanguageProtocol::get_singleton()->get_workspace()->parse_script(path, p_content);
 }
 
