@@ -34,6 +34,10 @@
 #include "core/class_db.h"
 #include "core/project_settings.h"
 
+#include "scene/3d/soft_body.h"
+#include "scene/resources/cylinder_shape.h"
+#include "scene/resources/height_map_shape.h"
+
 /**
 	@author AndreaCatania
 */
@@ -51,6 +55,10 @@ void register_bullet_types() {
 
 	GLOBAL_DEF("physics/3d/active_soft_world", true);
 	ProjectSettings::get_singleton()->set_custom_property_info("physics/3d/active_soft_world", PropertyInfo(Variant::BOOL, "physics/3d/active_soft_world"));
+
+	ClassDB::register_class<SoftBody>();
+	ClassDB::register_class<CylinderShape>();
+	ClassDB::register_class<HeightMapShape>();
 #endif
 }
 
