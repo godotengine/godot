@@ -36,11 +36,11 @@
 
 #define PACK_VERSION 1
 
-Error PackedData::add_pack(const String &p_path) {
+Error PackedData::add_pack(const String &p_path, bool p_replace_files) {
 
 	for (int i = 0; i < sources.size(); i++) {
 
-		if (sources[i]->try_open_pack(p_path)) {
+		if (sources[i]->try_open_pack(p_path, p_replace_files)) {
 
 			return OK;
 		};
@@ -49,7 +49,7 @@ Error PackedData::add_pack(const String &p_path) {
 	return ERR_FILE_UNRECOGNIZED;
 };
 
-void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src) {
+void PackedData::add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files) {
 
 	PathMD5 pmd5(path.md5_buffer());
 	//printf("adding path %ls, %lli, %lli\n", path.c_str(), pmd5.a, pmd5.b);
@@ -64,7 +64,8 @@ void PackedData::add_path(const String &pkg_path, const String &path, uint64_t o
 		pf.md5[i] = p_md5[i];
 	pf.src = p_src;
 
-	files[pmd5] = pf;
+	if (!exists || p_replace_files)
+		files[pmd5] = pf;
 
 	if (!exists) {
 		//search for dir
@@ -133,7 +134,7 @@ PackedData::~PackedData() {
 
 //////////////////////////////////////////////////////////////////
 
-bool PackedSourcePCK::try_open_pack(const String &p_path) {
+bool PackedSourcePCK::try_open_pack(const String &p_path, bool p_replace_files) {
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
 	if (!f)
@@ -196,7 +197,7 @@ bool PackedSourcePCK::try_open_pack(const String &p_path) {
 		uint64_t size = f->get_64();
 		uint8_t md5[16];
 		f->get_buffer(md5, 16);
-		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5, this);
+		PackedData::get_singleton()->add_path(p_path, path, ofs, size, md5, this, p_replace_files);
 	};
 
 	return true;
