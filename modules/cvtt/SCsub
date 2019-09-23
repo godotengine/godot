@@ -6,19 +6,18 @@ Import('env_modules')
 env_cvtt = env_modules.Clone()
 
 # Thirdparty source files
-if env['builtin_squish']:
-    thirdparty_dir = "#thirdparty/cvtt/"
-    thirdparty_sources = [
-        "ConvectionKernels.cpp"
-    ]
+thirdparty_dir = "#thirdparty/cvtt/"
+thirdparty_sources = [
+    "ConvectionKernels.cpp"
+]
 
-    thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_cvtt.Prepend(CPPPATH=[thirdparty_dir])
+env_cvtt.Prepend(CPPPATH=[thirdparty_dir])
 
-    env_thirdparty = env_cvtt.Clone()
-    env_thirdparty.disable_warnings()
-    env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+env_thirdparty = env_cvtt.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
 
 # Godot source files
 env_cvtt.add_source_files(env.modules_sources, "*.cpp")
