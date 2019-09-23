@@ -534,6 +534,7 @@ struct _VariantCall {
 	VCALL_LOCALMEM2R(Array, bsearch);
 	VCALL_LOCALMEM4R(Array, bsearch_custom);
 	VCALL_LOCALMEM1R(Array, duplicate);
+	VCALL_LOCALMEM4R(Array, slice);
 	VCALL_LOCALMEM0(Array, invert);
 	VCALL_LOCALMEM0R(Array, max);
 	VCALL_LOCALMEM0R(Array, min);
@@ -1759,6 +1760,7 @@ void register_variant_methods() {
 	ADDFUNC4R(ARRAY, INT, Array, bsearch_custom, NIL, "value", OBJECT, "obj", STRING, "func", BOOL, "before", varray(true));
 	ADDFUNC0NC(ARRAY, NIL, Array, invert, varray());
 	ADDFUNC1R(ARRAY, ARRAY, Array, duplicate, BOOL, "deep", varray(false));
+	ADDFUNC4R(ARRAY, ARRAY, Array, slice, INT, "begin", INT, "end", INT, "step", BOOL, "deep", varray(1, false));
 	ADDFUNC0R(ARRAY, NIL, Array, max, varray());
 	ADDFUNC0R(ARRAY, NIL, Array, min, varray());
 

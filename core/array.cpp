@@ -222,6 +222,63 @@ Array Array::duplicate(bool p_deep) const {
 
 	return new_arr;
 }
+
+int Array::_fix_slice_index(int p_index, int p_arr_len, int p_top_mod) {
+	p_index = CLAMP(p_index, -p_arr_len, p_arr_len + p_top_mod);
+	if (p_index < 0) {
+		p_index = (p_index % p_arr_len + p_arr_len) % p_arr_len; // positive modulo
+	}
+	return p_index;
+}
+
+int Array::_clamp_index(int p_index) const {
+	return CLAMP(p_index, -size() + 1, size() - 1);
+}
+
+#define ARRAY_GET_DEEP(idx, is_deep) is_deep ? get(idx).duplicate(is_deep) : get(idx)
+
+Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
+	Array new_arr;
+
+	p_begin = Array::_fix_slice_index(p_begin, size(), -1); // can't start out of range
+	p_end = Array::_fix_slice_index(p_end, size(), 0);
+
+	int x = p_begin;
+	int new_arr_i = 0;
+
+	ERR_FAIL_COND_V(p_step == 0, new_arr);
+	if (Array::_clamp_index(p_begin) == Array::_clamp_index(p_end)) { // don't include element twice
+		new_arr.resize(1);
+		// new_arr[0] = 1;
+		new_arr[0] = ARRAY_GET_DEEP(Array::_clamp_index(p_begin), p_deep);
+		return new_arr;
+	} else {
+		int element_count = ceil((int)MAX(0, (p_end - p_begin) / p_step)) + 1;
+		if (element_count == 1) { // delta going in wrong direction to reach end
+			new_arr.resize(0);
+			return new_arr;
+		}
+		new_arr.resize(element_count);
+	}
+
+	// if going backwards, have to have a different terminating condition
+	if (p_step < 0) {
+		while (x >= p_end) {
+			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
+			x += p_step;
+			new_arr_i += 1;
+		}
+	} else if (p_step > 0) {
+		while (x <= p_end) {
+			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
+			x += p_step;
+			new_arr_i += 1;
+		}
+	}
+
+	return new_arr;
+}
+
 struct _ArrayVariantSort {
 
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
