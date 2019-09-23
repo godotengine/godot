@@ -715,7 +715,7 @@ Vector<Vector<Vector2> > Geometry::decompose_polygon_in_convex(Vector<Point2> po
 
 		decomp.write[idx].resize(tp.GetNumPoints());
 
-		for (int i = 0; i < tp.GetNumPoints(); i++) {
+		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
 			decomp.write[idx].write[i] = tp.GetPoint(i);
 		}
 

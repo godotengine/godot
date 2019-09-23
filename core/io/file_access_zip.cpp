@@ -194,7 +194,7 @@ bool ZipArchive::try_open_pack(const String &p_path) {
 	packages.push_back(pkg);
 	int pkg_num = packages.size() - 1;
 
-	for (unsigned int i = 0; i < gi.number_entry; i++) {
+	for (uint64_t i = 0; i < gi.number_entry; i++) {
 
 		char filename_inzip[256];
 

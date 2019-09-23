@@ -1280,7 +1280,6 @@ void EditorSceneImporterAssimp::create_bone(ImportState &state, RecursiveState &
 	// this transform is a bone
 	recursive_state.skeleton->add_bone(recursive_state.node_name);
 
-	ERR_FAIL_COND(recursive_state.skeleton == NULL); // serious bug we must now exit.
 	//ERR_FAIL_COND(recursive_state.skeleton->get_name() == "");
 	print_verbose("Bone added to lookup: " + AssimpUtils::get_assimp_string(recursive_state.bone->mName));
 	print_verbose("Skeleton attached to: " + recursive_state.skeleton->get_name());

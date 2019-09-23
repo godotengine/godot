@@ -602,9 +602,7 @@ void CanvasItem::_notification(int p_what) {
 			}
 			global_invalid = true;
 		} break;
-		case NOTIFICATION_DRAW: {
-
-		} break;
+		case NOTIFICATION_DRAW:
 		case NOTIFICATION_TRANSFORM_CHANGED: {
 
 		} break;
