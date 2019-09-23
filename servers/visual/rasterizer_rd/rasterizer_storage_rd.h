@@ -327,6 +327,32 @@ private:
 	_FORCE_INLINE_ void _multimesh_mark_all_dirty(MultiMesh *multimesh, bool p_data, bool p_aabb);
 	_FORCE_INLINE_ void _multimesh_re_create_aabb(MultiMesh *multimesh, const float *p_data, int p_instances);
 	void _update_dirty_multimeshes();
+
+	/* Skeleton */
+
+	struct Skeleton {
+		bool use_2d = false;
+		int size = 0;
+		Vector<float> data;
+		RID buffer;
+
+		bool dirty = false;
+		Skeleton *dirty_list = nullptr;
+		Transform2D base_transform_2d;
+
+		RID uniform_set_3d;
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	mutable RID_Owner<Skeleton> skeleton_owner;
+
+	_FORCE_INLINE_ void _skeleton_make_dirty(Skeleton *skeleton);
+
+	Skeleton *skeleton_dirty_list = nullptr;
+
+	void _update_dirty_skeletons();
+
 	/* LIGHT */
 
 	struct Light {
@@ -740,16 +766,33 @@ public:
 
 	/* SKELETON API */
 
-	RID skeleton_create() { return RID(); }
-	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false) {}
-	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {}
-	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform) {}
-	int skeleton_get_bone_count(RID p_skeleton) const { return 0; }
-	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {}
-	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const { return Transform(); }
-	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {}
-	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const { return Transform2D(); }
+	RID skeleton_create();
+	void skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton = false);
+	void skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform);
+	void skeleton_set_world_transform(RID p_skeleton, bool p_enable, const Transform &p_world_transform);
+	int skeleton_get_bone_count(RID p_skeleton) const;
+	void skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform);
+	Transform skeleton_bone_get_transform(RID p_skeleton, int p_bone) const;
+	void skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform);
+	Transform2D skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const;
 
+	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
+		Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+		if (skeleton->use_2d) {
+			return RID();
+		}
+		if (!skeleton->uniform_set_3d.is_valid()) {
+			Vector<RD::Uniform> uniforms;
+			RD::Uniform u;
+			u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+			u.binding = 0;
+			u.ids.push_back(skeleton->buffer);
+			uniforms.push_back(u);
+			skeleton->uniform_set_3d = RD::get_singleton()->uniform_set_create(uniforms, p_shader, p_set);
+		}
+
+		return skeleton->uniform_set_3d;
+	}
 	/* Light API */
 
 	RID light_create(VS::LightType p_type);
@@ -873,7 +916,7 @@ public:
 	float reflection_probe_get_interior_ambient_probe_contribution(RID p_probe) const;
 
 	void base_update_dependency(RID p_base, RasterizerScene::InstanceBase *p_instance);
-	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {}
+	void skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance);
 
 	/* GI PROBE API */
 

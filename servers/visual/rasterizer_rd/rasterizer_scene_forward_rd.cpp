@@ -626,7 +626,12 @@ void RasterizerSceneForwardRD::_fill_instances(RenderList::Element **p_elements,
 			}
 
 			id.flags |= (stride << INSTANCE_DATA_FLAGS_MULTIMESH_STRIDE_SHIFT);
+		} else if (e->instance->base_type == VS::INSTANCE_MESH) {
+			if (e->instance->skeleton.is_valid()) {
+				id.flags |= INSTANCE_DATA_FLAG_SKELETON;
+			}
 		}
+
 		//forward
 
 		uint32_t reflection_count = 0;
@@ -746,6 +751,9 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 		switch (e->instance->base_type) {
 			case VS::INSTANCE_MESH: {
 				primitive = storage->mesh_surface_get_primitive(e->instance->base, e->surface_index);
+				if (e->instance->skeleton.is_valid()) {
+					xforms_uniform_set = storage->skeleton_get_3d_uniform_set(e->instance->skeleton, default_shader_rd, 1);
+				}
 			} break;
 			case VS::INSTANCE_MULTIMESH: {
 				RID mesh = storage->multimesh_get_mesh(e->instance->base);
