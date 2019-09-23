@@ -3285,18 +3285,26 @@ static int _humanize_digits(int p_num) {
 String String::humanize_size(size_t p_size) {
 
 	uint64_t _div = 1;
-	static const char *prefix[] = { " B", " KiB", " MiB", " GiB", " TiB", " PiB", " EiB", "" };
+	Vector<String> prefixes;
+	prefixes.push_back(RTR("B"));
+	prefixes.push_back(RTR("KiB"));
+	prefixes.push_back(RTR("MiB"));
+	prefixes.push_back(RTR("GiB"));
+	prefixes.push_back(RTR("TiB"));
+	prefixes.push_back(RTR("PiB"));
+	prefixes.push_back(RTR("EiB"));
+
 	int prefix_idx = 0;
 
-	while (p_size > (_div * 1024) && prefix[prefix_idx][0]) {
+	while (prefix_idx < prefixes.size() && p_size > (_div * 1024)) {
 		_div *= 1024;
 		prefix_idx++;
 	}
 
-	int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
-	double divisor = prefix_idx > 0 ? _div : 1;
+	const int digits = prefix_idx > 0 ? _humanize_digits(p_size / _div) : 0;
+	const double divisor = prefix_idx > 0 ? _div : 1;
 
-	return String::num(p_size / divisor).pad_decimals(digits) + RTR(prefix[prefix_idx]);
+	return String::num(p_size / divisor).pad_decimals(digits) + " " + prefixes[prefix_idx];
 }
 bool String::is_abs_path() const {
 
