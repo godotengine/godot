@@ -149,7 +149,7 @@ void VideoStreamPlaybackGDNative::update(float p_delta) {
 	if (mix_callback) {
 		if (pcm_write_idx >= 0) {
 			// Previous remains
-			int mixed = mix_callback(mix_udata, pcm, samples_decoded);
+			int mixed = mix_callback(mix_udata, pcm + pcm_write_idx * num_channels, samples_decoded);
 			if (mixed == samples_decoded) {
 				pcm_write_idx = -1;
 			} else {
