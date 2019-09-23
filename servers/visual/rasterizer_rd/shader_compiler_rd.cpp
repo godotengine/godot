@@ -461,6 +461,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 				vcode += _prestr(E->get().precision);
 				vcode += _typestr(E->get().type);
 				vcode += " " + _mkid(E->key());
+				if (E->get().array_size > 0) {
+					vcode += "[";
+					vcode += itos(E->get().array_size);
+					vcode += "]";
+				}
 				vcode += ";\n";
 				r_gen_code.vertex_global += "layout(location=" + itos(index) + ") " + interp_mode + "out " + vcode;
 				r_gen_code.fragment_global += "layout(location=" + itos(index) + ") " + interp_mode + "in " + vcode;
