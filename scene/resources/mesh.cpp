@@ -593,19 +593,23 @@ Mesh::Mesh() {
 static PoolVector<uint8_t> _fix_array_compatibility(const PoolVector<uint8_t> &p_src, uint32_t p_format, uint32_t p_elements) {
 
 	bool vertex_16bit = p_format & ((1 << (Mesh::ARRAY_VERTEX + Mesh::ARRAY_COMPRESS_BASE)));
-	bool bone_32_bits = (p_format & Mesh::ARRAY_FORMAT_BONES) && !(p_format & (Mesh::ARRAY_COMPRESS_INDEX << 2));
+	bool has_bones = (p_format & Mesh::ARRAY_FORMAT_BONES);
+	bool bone_8 = has_bones && !(p_format & (Mesh::ARRAY_COMPRESS_INDEX << 2));
+	bool weight_32 = has_bones && !(p_format & (Mesh::ARRAY_COMPRESS_TEX_UV2 << 2));
 
-	print_line("convert vertex16: " + itos(vertex_16bit) + " bone 32 " + itos(bone_32_bits));
-	if (!vertex_16bit && !bone_32_bits) {
+	print_line("convert vertex16: " + itos(vertex_16bit) + " convert bone 8 " + itos(bone_8) + " convert weight 32 " + itos(weight_32));
+
+	if (!vertex_16bit && !bone_8 && !weight_32) {
 		return p_src;
 	}
 
 	bool vertex_2d = (p_format & (Mesh::ARRAY_COMPRESS_INDEX << 1));
 
 	uint32_t src_stride = p_src.size() / p_elements;
-	uint32_t dst_stride = src_stride + (vertex_16bit ? 4 : 0) - (bone_32_bits ? 16 : 0);
+	uint32_t dst_stride = src_stride + (vertex_16bit ? 4 : 0) + (bone_8 ? 4 : 0) - (weight_32 ? 8 : 0);
 
-	PoolVector<uint8_t> ret;
+	PoolVector<uint8_t> ret = p_src;
+
 	ret.resize(dst_stride * p_elements);
 	{
 		PoolVector<uint8_t>::Write w = ret.write();
@@ -646,26 +650,57 @@ static PoolVector<uint8_t> _fix_array_compatibility(const PoolVector<uint8_t> &p
 				dst += 8;
 			}
 
-			if (bone_32_bits) {
+			if (has_bones) {
 
-				const uint32_t *src_bones = (const uint32_t *)&src[remaining - 32];
-				const float *src_weights = (const float *)&src[remaining - 16];
-				uint16_t *dstw = (uint16_t *)&dst[remaining - 32];
-
-				dstw[0] = src_bones[0];
-				dstw[1] = src_bones[1];
-				dstw[2] = src_bones[2];
-				dstw[3] = src_bones[3];
-				dstw[4] = CLAMP(src_weights[0] * 65535, 0, 65535); //16bits unorm
-				dstw[5] = CLAMP(src_weights[1] * 65535, 0, 65535);
-				dstw[6] = CLAMP(src_weights[2] * 65535, 0, 65535);
-				dstw[7] = CLAMP(src_weights[3] * 65535, 0, 65535);
-
-				remaining -= 32;
+				remaining -= bone_8 ? 4 : 8;
+				remaining -= weight_32 ? 16 : 8;
 			}
 
 			for (uint32_t j = 0; j < remaining; j++) {
 				dst[j] = src[j];
+			}
+
+			if (has_bones) {
+
+				dst += remaining;
+				src += remaining;
+
+				if (bone_8) {
+
+					const uint8_t *src_bones = (const uint8_t *)src;
+					uint16_t *dst_bones = (uint16_t *)dst;
+
+					dst_bones[0] = src_bones[0];
+					dst_bones[1] = src_bones[1];
+					dst_bones[2] = src_bones[2];
+					dst_bones[3] = src_bones[3];
+
+					src += 4;
+				} else {
+					for (uint32_t j = 0; j < 8; j++) {
+						dst[j] = src[j];
+					}
+
+					src += 8;
+				}
+
+				dst += 8;
+
+				if (weight_32) {
+
+					const float *src_weights = (const float *)src;
+					uint16_t *dst_weights = (uint16_t *)dst;
+
+					dst_weights[0] = CLAMP(src_weights[0] * 65535, 0, 65535); //16bits unorm
+					dst_weights[1] = CLAMP(src_weights[1] * 65535, 0, 65535);
+					dst_weights[2] = CLAMP(src_weights[2] * 65535, 0, 65535);
+					dst_weights[3] = CLAMP(src_weights[3] * 65535, 0, 65535);
+
+				} else {
+					for (uint32_t j = 0; j < 8; j++) {
+						dst[j] = src[j];
+					}
+				}
 			}
 		}
 	}
@@ -728,7 +763,7 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			add_surface_from_arrays(PrimitiveType(int(d["primitive"])), d["arrays"], d["morph_arrays"]);
 
 		} else if (d.has("array_data")) {
-			print_line("array data (old style");
+			//print_line("array data (old style");
 			//older format (3.x)
 			PoolVector<uint8_t> array_data = d["array_data"];
 			PoolVector<uint8_t> array_index_data;
@@ -774,7 +809,9 @@ bool ArrayMesh::_set(const StringName &p_name, const Variant &p_value) {
 			}
 
 			//clear unused flags
-			format &= ~((1 << (ARRAY_VERTEX + ARRAY_COMPRESS_BASE)) | (ARRAY_COMPRESS_INDEX << 2));
+			print_line("format pre: " + itos(format));
+			format &= ~uint32_t((1 << (ARRAY_VERTEX + ARRAY_COMPRESS_BASE)) | (ARRAY_COMPRESS_INDEX << 2) | (ARRAY_COMPRESS_TEX_UV2 << 2));
+			print_line("format post: " + itos(format));
 
 			ERR_FAIL_COND_V(!d.has("aabb"), false);
 			AABB aabb = d["aabb"];
@@ -873,6 +910,7 @@ Array ArrayMesh::_get_surfaces() const {
 void ArrayMesh::_create_if_empty() const {
 	if (!mesh.is_valid()) {
 		mesh = VS::get_singleton()->mesh_create();
+		VS::get_singleton()->mesh_set_blend_shape_mode(mesh, (VS::BlendShapeMode)blend_shape_mode);
 	}
 }
 
@@ -962,6 +1000,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		// if mesh does not exist (first time this is loaded, most likely),
 		// we can create it with a single call, which is a lot more efficient and thread friendly
 		mesh = VS::get_singleton()->mesh_create_from_surfaces(surface_data);
+		VS::get_singleton()->mesh_set_blend_shape_mode(mesh, (VS::BlendShapeMode)blend_shape_mode);
 	}
 
 	surfaces.clear();
@@ -1166,7 +1205,9 @@ void ArrayMesh::clear_blend_shapes() {
 void ArrayMesh::set_blend_shape_mode(BlendShapeMode p_mode) {
 
 	blend_shape_mode = p_mode;
-	VS::get_singleton()->mesh_set_blend_shape_mode(mesh, (VS::BlendShapeMode)p_mode);
+	if (mesh.is_valid()) {
+		VS::get_singleton()->mesh_set_blend_shape_mode(mesh, (VS::BlendShapeMode)p_mode);
+	}
 }
 
 ArrayMesh::BlendShapeMode ArrayMesh::get_blend_shape_mode() const {
