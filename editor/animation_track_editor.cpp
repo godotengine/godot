@@ -3470,20 +3470,18 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 	if (p_id.track_idx == -1) {
 		if (bool(EDITOR_DEF("editors/animation/confirm_insert_track", true))) {
 			//potential new key, does not exist
-			if (insert_data.size() == 1)
-				insert_confirm_text->set_text(vformat(TTR("Create NEW track for %s and insert key?"), p_id.query));
-			else
-				insert_confirm_text->set_text(vformat(TTR("Create %d NEW tracks and insert keys?"), insert_data.size()));
-
+			int num_tracks = 0;
 			bool all_bezier = true;
 			for (int i = 0; i < insert_data.size(); i++) {
-				if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER) {
+				if (insert_data[i].type != Animation::TYPE_VALUE && insert_data[i].type != Animation::TYPE_BEZIER)
 					all_bezier = false;
-				}
 
-				if (insert_data[i].type != Animation::TYPE_VALUE) {
+				if (insert_data[i].track_idx == -1)
+					++num_tracks;
+
+				if (insert_data[i].type != Animation::TYPE_VALUE)
 					continue;
-				}
+
 				switch (insert_data[i].value.get_type()) {
 					case Variant::INT:
 					case Variant::REAL:
@@ -3499,6 +3497,11 @@ void AnimationTrackEditor::_query_insert(const InsertData &p_id) {
 					}
 				}
 			}
+
+			if (num_tracks == 1)
+				insert_confirm_text->set_text(vformat(TTR("Create NEW track for %s and insert key?"), p_id.query));
+			else
+				insert_confirm_text->set_text(vformat(TTR("Create %d NEW tracks and insert keys?"), num_tracks));
 
 			insert_confirm_bezier->set_visible(all_bezier);
 			insert_confirm->get_ok()->set_text(TTR("Create"));
@@ -3686,16 +3689,20 @@ void AnimationTrackEditor::insert_node_value_key(Node *p_node, const String &p_p
 		} else if (animation->track_get_type(i) == Animation::TYPE_BEZIER) {
 
 			Variant value;
-			if (animation->track_get_path(i) == np) {
+			String track_path = animation->track_get_path(i);
+			if (track_path == np) {
 				value = p_value; //all good
 			} else {
-				String tpath = animation->track_get_path(i);
-				if (NodePath(tpath.get_basename()) == np) {
-					String subindex = tpath.get_extension();
-					value = p_value.get(subindex);
-				} else {
+				int sep = track_path.find_last(":");
+				if (sep != -1) {
+					String base_path = track_path.substr(0, sep);
+					if (base_path == np) {
+						String value_name = track_path.substr(sep + 1);
+						value = p_value.get(value_name);
+					} else
+						continue;
+				} else
 					continue;
-				}
 			}
 
 			InsertData id;
@@ -3955,25 +3962,20 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 	bool created = false;
 	if (p_id.track_idx < 0) {
 
-		if (p_create_beziers && (p_id.value.get_type() == Variant::INT ||
-										p_id.value.get_type() == Variant::REAL ||
-										p_id.value.get_type() == Variant::VECTOR2 ||
-										p_id.value.get_type() == Variant::VECTOR3 ||
-										p_id.value.get_type() == Variant::QUAT ||
-										p_id.value.get_type() == Variant::COLOR ||
-										p_id.value.get_type() == Variant::PLANE)) {
+		if (p_create_beziers) {
+			bool valid;
+			Vector<String> subindices = _get_bezier_subindices_for_type(p_id.value.get_type(), &valid);
+			if (valid) {
+				for (int i = 0; i < subindices.size(); i++) {
+					InsertData id = p_id;
+					id.type = Animation::TYPE_BEZIER;
+					id.value = p_id.value.get(subindices[i].substr(1, subindices[i].length()));
+					id.path = String(p_id.path) + subindices[i];
+					_confirm_insert(id, p_last_track + i);
+				}
 
-			Vector<String> subindices = _get_bezier_subindices_for_type(p_id.value.get_type());
-
-			for (int i = 0; i < subindices.size(); i++) {
-				InsertData id = p_id;
-				id.type = Animation::TYPE_BEZIER;
-				id.value = p_id.value.get(subindices[i].substr(1, subindices[i].length()));
-				id.path = String(p_id.path) + subindices[i];
-				_confirm_insert(id, p_last_track + i);
+				return p_last_track + subindices.size();
 			}
-
-			return p_last_track + subindices.size() - 1;
 		}
 		created = true;
 		undo_redo->create_action(TTR("Anim Insert Track & Key"));
@@ -4064,7 +4066,7 @@ int AnimationTrackEditor::_confirm_insert(InsertData p_id, int p_last_track, boo
 
 		// Just remove the track.
 		undo_redo->add_undo_method(this, "_clear_selection", false);
-		undo_redo->add_undo_method(animation.ptr(), "remove_track", p_last_track);
+		undo_redo->add_undo_method(animation.ptr(), "remove_track", animation->get_track_count());
 		p_last_track++;
 	} else {
 
@@ -4590,7 +4592,7 @@ void AnimationTrackEditor::_new_track_property_selected(String p_name) {
 		for (int i = 0; i < subindices.size(); i++) {
 			undo_redo->add_do_method(animation.ptr(), "add_track", adding_track_type);
 			undo_redo->add_do_method(animation.ptr(), "track_set_path", base_track + i, full_path + subindices[i]);
-			undo_redo->add_undo_method(animation.ptr(), "remove_track", base_track + i);
+			undo_redo->add_undo_method(animation.ptr(), "remove_track", base_track);
 		}
 		undo_redo->commit_action();
 	}
