@@ -855,7 +855,7 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 		}
 
 		if (xforms_uniform_set.is_valid() && prev_xforms_uniform_set != xforms_uniform_set) {
-			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, material->uniform_set, 1);
+			RD::get_singleton()->draw_list_bind_uniform_set(draw_list, xforms_uniform_set, 1);
 			prev_xforms_uniform_set = xforms_uniform_set;
 		}
 
@@ -1287,7 +1287,7 @@ void RasterizerSceneForwardRD::_fill_render_list(InstanceBase **p_cull_result, i
 
 				for (uint32_t j = 0; j < surface_count; j++) {
 
-					uint32_t surface_index = storage->mesh_surface_get_multimesh_render_pass_index(inst->base, j, render_pass, &geometry_index);
+					uint32_t surface_index = storage->mesh_surface_get_multimesh_render_pass_index(mesh, j, render_pass, &geometry_index);
 					_add_geometry(inst, j, materials[j], p_pass_mode, surface_index);
 				}
 
