@@ -836,6 +836,7 @@ void AudioStreamPlayer3D::set_emission_angle(float p_angle) {
 	ERR_FAIL_COND(p_angle < 0 || p_angle > 90);
 	emission_angle = p_angle;
 	update_gizmo();
+	_change_notify("emission_angle");
 }
 
 float AudioStreamPlayer3D::get_emission_angle() const {
