@@ -102,10 +102,10 @@ void main() {
 
 		mat4 matrix;
 		if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_MULTIMESH_FORMAT_2D)) {
-			mat4 matrix = mat4(transforms.data[offset+0],transforms.data[offset+1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0));
+			matrix = mat4(transforms.data[offset+0],transforms.data[offset+1],vec4(0.0,0.0,1.0,0.0),vec4(0.0,0.0,0.0,1.0));
 			offset+=2;
 		} else {
-			mat4 matrix = mat4(transforms.data[offset+0],transforms.data[offset+1],transforms.data[offset+2],vec4(0.0,0.0,0.0,1.0));
+			matrix = mat4(transforms.data[offset+0],transforms.data[offset+1],transforms.data[offset+2],vec4(0.0,0.0,0.0,1.0));
 			offset+=3;
 		}
 
@@ -120,9 +120,10 @@ void main() {
 			instance_custom = transforms.data[offset];
 		}
 
-		//transposed, so multiply in opposite order
-		world_matrix = matrix * world_matrix;
-		world_normal_matrix = mat3(matrix) * world_normal_matrix;
+		//transpose
+		matrix = transpose(matrix);
+		world_matrix = world_matrix * matrix;
+		world_normal_matrix = world_normal_matrix * mat3(matrix);
 
 	} else {
 		//not a multimesh, instances are for multiple draw calls

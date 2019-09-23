@@ -1758,6 +1758,90 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const VS::SurfaceData &p_
 	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.blend_shapes.size() != (int)mesh->blend_shape_count);
 	ERR_FAIL_COND(mesh->blend_shape_count && p_surface.bone_aabbs.size() != mesh->bone_aabbs.size());
 
+#ifdef DEBUG_ENABLED
+	//do a validation, to catch errors first
+	{
+
+		uint32_t stride = 0;
+
+		for (int i = 0; i < VS::ARRAY_WEIGHTS; i++) {
+
+			if ((p_surface.format & (1 << i))) {
+
+				switch (i) {
+
+					case VS::ARRAY_VERTEX: {
+
+						if (p_surface.format & VS::ARRAY_FLAG_USE_2D_VERTICES) {
+							stride += sizeof(float) * 2;
+						} else {
+							stride += sizeof(float) * 3;
+						}
+
+					} break;
+					case VS::ARRAY_NORMAL: {
+
+						if (p_surface.format & VS::ARRAY_COMPRESS_NORMAL) {
+							stride += sizeof(int8_t) * 4;
+						} else {
+							stride += sizeof(float) * 4;
+						}
+
+					} break;
+					case VS::ARRAY_TANGENT: {
+
+						if (p_surface.format & VS::ARRAY_COMPRESS_TANGENT) {
+							stride += sizeof(int8_t) * 4;
+						} else {
+							stride += sizeof(float) * 4;
+						}
+
+					} break;
+					case VS::ARRAY_COLOR: {
+
+						if (p_surface.format & VS::ARRAY_COMPRESS_COLOR) {
+							stride += sizeof(int8_t) * 4;
+						} else {
+							stride += sizeof(float) * 4;
+						}
+
+					} break;
+					case VS::ARRAY_TEX_UV: {
+
+						if (p_surface.format & VS::ARRAY_COMPRESS_TEX_UV) {
+							stride += sizeof(int16_t) * 2;
+						} else {
+							stride += sizeof(float) * 2;
+						}
+
+					} break;
+					case VS::ARRAY_TEX_UV2: {
+
+						if (p_surface.format & VS::ARRAY_COMPRESS_TEX_UV2) {
+							stride += sizeof(int16_t) * 2;
+						} else {
+							stride += sizeof(float) * 2;
+						}
+
+					} break;
+					case VS::ARRAY_BONES: {
+						//assumed weights too
+
+						//unique format, internally 16 bits, exposed as single array for 32
+
+						stride += sizeof(int32_t) * 4;
+
+					} break;
+				}
+			}
+		}
+
+		int expected_size = stride * p_surface.vertex_count;
+		ERR_FAIL_COND_MSG(expected_size != p_surface.vertex_data.size(), "Size of data provided (" + itos(p_surface.vertex_data.size()) + ") does not match expected (" + itos(expected_size) + ")");
+	}
+
+#endif
+
 	Mesh::Surface *s = memnew(Mesh::Surface);
 
 	s->format = p_surface.format;
@@ -2174,7 +2258,7 @@ void RasterizerStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, V
 	multimesh->stride_cache = multimesh->custom_data_offset_cache + (p_use_custom_data ? 4 : 0);
 	multimesh->buffer_set = false;
 
-	print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == VS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
+	//print_line("allocate, elements: " + itos(p_instances) + " 2D: " + itos(p_transform_format == VS::MULTIMESH_TRANSFORM_2D) + " colors " + itos(multimesh->uses_colors) + " data " + itos(multimesh->uses_custom_data) + " stride " + itos(multimesh->stride_cache) + " total size " + itos(multimesh->stride_cache * multimesh->instances));
 	multimesh->data_cache = PoolVector<float>();
 	multimesh->aabb = AABB();
 	multimesh->aabb_dirty = false;
@@ -2182,7 +2266,7 @@ void RasterizerStorageRD::multimesh_allocate(RID p_multimesh, int p_instances, V
 
 	if (multimesh->instances) {
 
-		multimesh->buffer = RD::get_singleton()->storage_buffer_create(multimesh->instances * multimesh->stride_cache);
+		multimesh->buffer = RD::get_singleton()->storage_buffer_create(multimesh->instances * multimesh->stride_cache * 4);
 	}
 }
 
@@ -2209,7 +2293,7 @@ void RasterizerStorageRD::multimesh_set_mesh(RID p_multimesh, RID p_mesh) {
 		_multimesh_mark_all_dirty(multimesh, false, true);
 	} else if (multimesh->instances) {
 		//need to re-create AABB unfortunately, calling this has a penalty
-		{
+		if (multimesh->buffer_set) {
 			PoolVector<uint8_t> buffer = RD::get_singleton()->buffer_get_data(multimesh->buffer);
 			PoolVector<uint8_t>::Read r = buffer.read();
 			const float *data = (const float *)r.ptr();
@@ -2308,17 +2392,18 @@ void RasterizerStorageRD::_multimesh_re_create_aabb(MultiMesh *multimesh, const 
 		Transform t;
 
 		if (multimesh->xform_format == VS::MULTIMESH_TRANSFORM_3D) {
-			t.basis[0].x = data[0];
-			t.basis[0].y = data[1];
-			t.basis[0].z = data[2];
-			t.basis[1].x = data[3];
-			t.basis[1].y = data[4];
-			t.basis[1].z = data[5];
-			t.basis[2].x = data[6];
-			t.basis[2].y = data[7];
-			t.basis[2].z = data[8];
-			t.origin.x = data[9];
-			t.origin.y = data[10];
+
+			t.basis.elements[0][0] = data[0];
+			t.basis.elements[0][1] = data[1];
+			t.basis.elements[0][2] = data[2];
+			t.origin.x = data[3];
+			t.basis.elements[1][0] = data[4];
+			t.basis.elements[1][1] = data[5];
+			t.basis.elements[1][2] = data[6];
+			t.origin.y = data[7];
+			t.basis.elements[2][0] = data[8];
+			t.basis.elements[2][1] = data[9];
+			t.basis.elements[2][2] = data[10];
 			t.origin.z = data[11];
 
 		} else {
@@ -2356,17 +2441,17 @@ void RasterizerStorageRD::multimesh_instance_set_transform(RID p_multimesh, int 
 
 		float *dataptr = w.ptr() + p_index * multimesh->stride_cache;
 
-		dataptr[0] = p_transform.basis[0].x;
-		dataptr[1] = p_transform.basis[0].y;
-		dataptr[2] = p_transform.basis[0].z;
-		dataptr[3] = p_transform.basis[1].x;
-		dataptr[4] = p_transform.basis[1].y;
-		dataptr[5] = p_transform.basis[1].z;
-		dataptr[6] = p_transform.basis[2].x;
-		dataptr[7] = p_transform.basis[2].y;
-		dataptr[8] = p_transform.basis[2].z;
-		dataptr[9] = p_transform.origin.x;
-		dataptr[10] = p_transform.origin.y;
+		dataptr[0] = p_transform.basis.elements[0][0];
+		dataptr[1] = p_transform.basis.elements[0][1];
+		dataptr[2] = p_transform.basis.elements[0][2];
+		dataptr[3] = p_transform.origin.x;
+		dataptr[4] = p_transform.basis.elements[1][0];
+		dataptr[5] = p_transform.basis.elements[1][1];
+		dataptr[6] = p_transform.basis.elements[1][2];
+		dataptr[7] = p_transform.origin.y;
+		dataptr[8] = p_transform.basis.elements[2][0];
+		dataptr[9] = p_transform.basis.elements[2][1];
+		dataptr[10] = p_transform.basis.elements[2][2];
 		dataptr[11] = p_transform.origin.z;
 	}
 
@@ -2387,14 +2472,14 @@ void RasterizerStorageRD::multimesh_instance_set_transform_2d(RID p_multimesh, i
 
 		float *dataptr = w.ptr() + p_index * multimesh->stride_cache;
 
-		dataptr[0] = p_transform.elements[0].x;
-		dataptr[1] = p_transform.elements[1].x;
+		dataptr[0] = p_transform.elements[0][0];
+		dataptr[1] = p_transform.elements[1][0];
 		dataptr[2] = 0;
-		dataptr[3] = p_transform.elements[2].x;
-		dataptr[4] = p_transform.elements[0].y;
-		dataptr[5] = p_transform.elements[1].y;
+		dataptr[3] = p_transform.elements[2][0];
+		dataptr[4] = p_transform.elements[0][1];
+		dataptr[5] = p_transform.elements[1][1];
 		dataptr[6] = 0;
-		dataptr[7] = p_transform.elements[2].y;
+		dataptr[7] = p_transform.elements[2][1];
 	}
 
 	_multimesh_mark_dirty(multimesh, p_index, true);
@@ -2466,17 +2551,17 @@ Transform RasterizerStorageRD::multimesh_instance_get_transform(RID p_multimesh,
 
 		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache;
 
-		t.basis[0].x = dataptr[0];
-		t.basis[0].y = dataptr[1];
-		t.basis[0].z = dataptr[2];
-		t.basis[1].x = dataptr[3];
-		t.basis[1].y = dataptr[4];
-		t.basis[1].z = dataptr[5];
-		t.basis[2].x = dataptr[6];
-		t.basis[2].y = dataptr[7];
-		t.basis[2].z = dataptr[8];
-		t.origin.x = dataptr[9];
-		t.origin.y = dataptr[10];
+		t.basis.elements[0][0] = dataptr[0];
+		t.basis.elements[0][1] = dataptr[1];
+		t.basis.elements[0][2] = dataptr[2];
+		t.origin.x = dataptr[3];
+		t.basis.elements[1][0] = dataptr[4];
+		t.basis.elements[1][1] = dataptr[5];
+		t.basis.elements[1][2] = dataptr[6];
+		t.origin.y = dataptr[7];
+		t.basis.elements[2][0] = dataptr[8];
+		t.basis.elements[2][1] = dataptr[9];
+		t.basis.elements[2][2] = dataptr[10];
 		t.origin.z = dataptr[11];
 	}
 
@@ -2497,13 +2582,12 @@ Transform2D RasterizerStorageRD::multimesh_instance_get_transform_2d(RID p_multi
 
 		const float *dataptr = r.ptr() + p_index * multimesh->stride_cache;
 
-		t.elements[0].x = dataptr[0];
-		t.elements[1].x = dataptr[1];
-		t.elements[2].x = dataptr[3];
-
-		t.elements[0].y = dataptr[4];
-		t.elements[1].y = dataptr[5];
-		t.elements[2].y = dataptr[7];
+		t.elements[0][0] = dataptr[0];
+		t.elements[1][0] = dataptr[1];
+		t.elements[2][0] = dataptr[3];
+		t.elements[0][1] = dataptr[4];
+		t.elements[1][1] = dataptr[5];
+		t.elements[2][1] = dataptr[7];
 	}
 
 	return t;
@@ -2663,13 +2747,13 @@ void RasterizerStorageRD::_update_dirty_multimeshes() {
 
 				if (multimesh->data_cache_used_dirty_regions > 32 || multimesh->data_cache_used_dirty_regions > visible_region_count / 2) {
 					//if there too many dirty regions, or represent the majority of regions, just copy all, else transfer cost piles up too much
-					RD::get_singleton()->buffer_update(multimesh->buffer, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache), data, false);
+					RD::get_singleton()->buffer_update(multimesh->buffer, 0, MIN(visible_region_count * region_size, multimesh->instances * multimesh->stride_cache * sizeof(float)), data, false);
 				} else {
 					//not that many regions? update them all
 					for (uint32_t i = 0; i < visible_region_count; i++) {
 						if (multimesh->data_cache_dirty_regions[i]) {
 							uint64_t offset = i * region_size;
-							uint64_t size = multimesh->stride_cache * multimesh->instances;
+							uint64_t size = multimesh->stride_cache * multimesh->instances * sizeof(float);
 							RD::get_singleton()->buffer_update(multimesh->buffer, offset, MIN(region_size, size - offset), &data[i * region_size], false);
 						}
 					}
