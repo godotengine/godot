@@ -73,6 +73,8 @@ class SpriteFramesEditor : public HSplitContainer {
 
 	StringName edited_anim;
 
+	ConfirmationDialog *delete_dialog;
+
 	ConfirmationDialog *split_sheet_dialog;
 	ScrollContainer *splite_sheet_scroll;
 	TextureRect *split_sheet_preview;
@@ -98,6 +100,7 @@ class SpriteFramesEditor : public HSplitContainer {
 	void _animation_name_edited();
 	void _animation_add();
 	void _animation_remove();
+	void _animation_remove_confirmed();
 	void _animation_loop_changed();
 	void _animation_fps_changed(double p_value);
 
