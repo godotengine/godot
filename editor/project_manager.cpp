@@ -1689,7 +1689,7 @@ void ProjectList::_panel_input(const Ref<InputEvent> &p_ev, Node *p_hb) {
 
 		emit_signal(SIGNAL_SELECTION_CHANGED);
 
-		if (mb->is_doubleclick()) {
+		if (!mb->get_control() && mb->is_doubleclick()) {
 			emit_signal(SIGNAL_PROJECT_ASK_OPEN);
 		}
 	}
