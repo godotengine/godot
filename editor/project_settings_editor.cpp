@@ -1043,6 +1043,84 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 	}
 }
 
+Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+
+	TreeItem *selected = input_editor->get_selected();
+	if (!selected || selected->get_parent() != input_editor->get_root())
+		return Variant();
+
+	String name = selected->get_text(0);
+	VBoxContainer *vb = memnew(VBoxContainer);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	Label *label = memnew(Label(name));
+	hb->set_modulate(Color(1, 1, 1, 1.0f));
+	hb->add_child(label);
+	vb->add_child(hb);
+	set_drag_preview(vb);
+
+	Dictionary drag_data;
+	drag_data["type"] = "nodes";
+
+	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+
+	return drag_data;
+}
+
+bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+
+	Dictionary d = p_data;
+	if (!d.has("type") || d["type"] != "nodes")
+		return false;
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+	if (!selected || !item || item->get_parent() == selected)
+		return false;
+
+	return true;
+}
+
+void ProjectSettingsEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+	TreeItem *target = item->get_parent() == input_editor->get_root() ? item : item->get_parent();
+
+	String selected_name = "input/" + selected->get_text(0);
+	int old_order = ProjectSettings::get_singleton()->get_order(selected_name);
+	String target_name = "input/" + target->get_text(0);
+	int target_order = ProjectSettings::get_singleton()->get_order(target_name);
+
+	int order = old_order;
+	bool is_below = target_order > old_order;
+	TreeItem *iterator = is_below ? selected->get_next() : selected->get_prev();
+
+	undo_redo->create_action(TTR("Moved Input Action Event"));
+	while (iterator != target) {
+
+		String iterator_name = "input/" + iterator->get_text(0);
+		int iterator_order = ProjectSettings::get_singleton()->get_order(iterator_name);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", iterator_name, order);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", iterator_name, iterator_order);
+		order = iterator_order;
+		iterator = is_below ? iterator->get_next() : iterator->get_prev();
+	}
+
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", target_name, order);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", selected_name, target_order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", target_name, target_order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_name, old_order);
+
+	undo_redo->add_do_method(this, "_update_actions");
+	undo_redo->add_undo_method(this, "_update_actions");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
+}
+
 void ProjectSettingsEditor::_copy_to_platform(int p_which) {
 
 	String path = globals_editor->get_inspector()->get_selected_path();
@@ -1662,6 +1740,10 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &ProjectSettingsEditor::_editor_restart_close);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
+
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ProjectSettingsEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ProjectSettingsEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ProjectSettingsEditor::drop_data_fw);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
@@ -1844,6 +1926,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
 	input_editor->connect("button_pressed", this, "_action_button_pressed");
+	input_editor->set_drag_forwarding(this);
+
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
 	popup_add->connect("id_pressed", this, "_add_item");
