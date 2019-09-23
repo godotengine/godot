@@ -1713,6 +1713,7 @@ Error ResourceFormatSaverTextInstance::save(const String &p_path, const RES &p_r
 			}
 
 			if (groups.size()) {
+				groups.sort_custom<StringName::AlphCompare>();
 				String sgroups = " groups=[\n";
 				for (int j = 0; j < groups.size(); j++) {
 					sgroups += "\"" + String(groups[j]).c_escape() + "\",\n";
