@@ -1144,10 +1144,6 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 					elem_size *= sizeof(float);
 				}
 
-				if (elem_size == 6) {
-					elem_size = 8;
-				}
-
 			} break;
 			case VS::ARRAY_NORMAL: {
 
