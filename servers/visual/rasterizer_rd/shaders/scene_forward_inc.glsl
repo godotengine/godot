@@ -131,6 +131,7 @@ layout(set=0,binding=8,std140) uniform SceneData {
 //3 bits of stride
 #define INSTANCE_FLAGS_MULTIMESH_STRIDE_MASK 0x7
 
+#define INSTANCE_FLAGS_SKELETON (1 << 19)
 
 
 struct InstanceData {

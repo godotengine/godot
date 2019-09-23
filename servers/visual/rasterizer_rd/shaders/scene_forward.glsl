@@ -136,12 +136,34 @@ void main() {
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 	vec3 tangent = tangent_attrib.xyz;
 	float binormalf = tangent_attrib.a;
+	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
+
+
+	if (bool(instances.data[instance_index].flags & INSTANCE_FLAGS_SKELETON)) {
+		//multimesh, instances are for it
+
+		uvec2 bones_01 = uvec2(bone_attrib.x&0xFFFF,bone_attrib.x>>16) * 3;
+		uvec2 bones_23 = uvec2(bone_attrib.y&0xFFFF,bone_attrib.y>>16) * 3;
+		vec2 weights_01 = unpackUnorm2x16(bone_attrib.z);
+		vec2 weights_23 = unpackUnorm2x16(bone_attrib.w);
+
+		mat4 m = mat4(transforms.data[bones_01.x],transforms.data[bones_01.x+1],transforms.data[bones_01.x+2],vec4(0.0,0.0,0.0,1.0)) * weights_01.x;
+		m += mat4(transforms.data[bones_01.y],transforms.data[bones_01.y+1],transforms.data[bones_01.y+2],vec4(0.0,0.0,0.0,1.0)) * weights_01.y;
+		m += mat4(transforms.data[bones_23.x],transforms.data[bones_23.x+1],transforms.data[bones_23.x+2],vec4(0.0,0.0,0.0,1.0)) * weights_23.x;
+		m += mat4(transforms.data[bones_23.y],transforms.data[bones_23.y+1],transforms.data[bones_23.y+2],vec4(0.0,0.0,0.0,1.0)) * weights_23.y;
+
+		//reverse order because its transposed
+		vertex = (vec4(vertex,1.0) * m).xyz;
+		normal = (vec4(normal,0.0) * m).xyz;
 
 #if defined(TANGENT_USED) || defined(NORMALMAP_USED) || defined(LIGHT_ANISOTROPY_USED)
 
-	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
+		tangent = (vec4(tangent,0.0) * m).xyz;
+		binormal = (vec4(binormal,0.0) * m).xyz;
 #endif
+
+	}
 
 #if defined(UV_USED)
 	uv_interp = uv_attrib;

@@ -2010,11 +2010,104 @@ AABB RasterizerStorageRD::mesh_get_aabb(RID p_mesh, RID p_skeleton) {
 		return mesh->custom_aabb;
 	}
 
-	if (!p_skeleton.is_valid()) {
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	if (!skeleton || skeleton->size == 0) {
 		return mesh->aabb;
 	}
 
-	return mesh->aabb;
+	AABB aabb;
+
+	for (int i = 0; i < mesh->surface_count; i++) {
+
+		AABB laabb;
+		if ((mesh->surfaces[i]->format & VS::ARRAY_FORMAT_BONES) && mesh->surfaces[i]->bone_aabbs.size()) {
+
+			int bs = mesh->surfaces[i]->bone_aabbs.size();
+			const AABB *skbones = mesh->surfaces[i]->bone_aabbs.ptr();
+
+			int sbs = skeleton->size;
+			ERR_CONTINUE(bs > sbs);
+			const float *baseptr = skeleton->data.ptr();
+
+			bool first = true;
+
+			if (skeleton->use_2d) {
+				for (int j = 0; j < bs; j++) {
+
+					if (skbones[0].size == Vector3())
+						continue; //bone is unused
+
+					const float *dataptr = baseptr + j * 8;
+
+					Transform mtx;
+
+					mtx.basis.elements[0].x = dataptr[0];
+					mtx.basis.elements[1].x = dataptr[1];
+					mtx.origin.x = dataptr[3];
+
+					mtx.basis.elements[0].y = dataptr[4];
+					mtx.basis.elements[1].y = dataptr[5];
+					mtx.origin.y = dataptr[7];
+
+					AABB baabb = mtx.xform(skbones[j]);
+
+					if (first) {
+						laabb = baabb;
+						first = false;
+					} else {
+						laabb.merge_with(baabb);
+					}
+				}
+			} else {
+				for (int j = 0; j < bs; j++) {
+
+					if (skbones[0].size == Vector3())
+						continue; //bone is unused
+
+					const float *dataptr = baseptr + j * 12;
+
+					Transform mtx;
+
+					mtx.basis.elements[0][0] = dataptr[0];
+					mtx.basis.elements[0][1] = dataptr[1];
+					mtx.basis.elements[0][2] = dataptr[2];
+					mtx.origin.x = dataptr[3];
+					mtx.basis.elements[1][0] = dataptr[4];
+					mtx.basis.elements[1][1] = dataptr[5];
+					mtx.basis.elements[1][2] = dataptr[6];
+					mtx.origin.y = dataptr[7];
+					mtx.basis.elements[2][0] = dataptr[8];
+					mtx.basis.elements[2][1] = dataptr[9];
+					mtx.basis.elements[2][2] = dataptr[10];
+					mtx.origin.z = dataptr[11];
+
+					AABB baabb = mtx.xform(skbones[j]);
+					if (first) {
+						laabb = baabb;
+						first = false;
+					} else {
+						laabb.merge_with(baabb);
+					}
+				}
+			}
+
+			if (laabb.size == Vector3()) {
+				laabb = mesh->surfaces[i]->aabb;
+			}
+		} else {
+
+			laabb = mesh->surfaces[i]->aabb;
+		}
+
+		if (i == 0) {
+			aabb = laabb;
+		} else {
+			aabb.merge_with(laabb);
+		}
+	}
+
+	return aabb;
 }
 
 void RasterizerStorageRD::mesh_clear(RID p_mesh) {
@@ -2781,6 +2874,186 @@ void RasterizerStorageRD::_update_dirty_multimeshes() {
 	}
 
 	multimesh_dirty_list = nullptr;
+}
+
+/* SKELETON */
+
+/* SKELETON API */
+
+RID RasterizerStorageRD::skeleton_create() {
+
+	return skeleton_owner.make_rid(Skeleton());
+}
+
+void RasterizerStorageRD::_skeleton_make_dirty(Skeleton *skeleton) {
+
+	if (!skeleton->dirty) {
+		skeleton->dirty = true;
+		skeleton->dirty_list = skeleton_dirty_list;
+		skeleton_dirty_list = skeleton;
+	}
+}
+
+void RasterizerStorageRD::skeleton_allocate(RID p_skeleton, int p_bones, bool p_2d_skeleton) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_COND(p_bones < 0);
+
+	if (skeleton->size == p_bones && skeleton->use_2d == p_2d_skeleton)
+		return;
+
+	skeleton->size = p_bones;
+	skeleton->use_2d = p_2d_skeleton;
+	skeleton->uniform_set_3d = RID();
+
+	if (skeleton->buffer.is_valid()) {
+		RD::get_singleton()->free(skeleton->buffer);
+		skeleton->buffer = RID();
+		skeleton->data.resize(0);
+	}
+
+	if (skeleton->size) {
+
+		skeleton->data.resize(skeleton->size * (skeleton->use_2d ? 8 : 12));
+		skeleton->buffer = RD::get_singleton()->storage_buffer_create(skeleton->data.size() * sizeof(float));
+		zeromem(skeleton->data.ptrw(), skeleton->data.size() * sizeof(float));
+
+		_skeleton_make_dirty(skeleton);
+	}
+}
+int RasterizerStorageRD::skeleton_get_bone_count(RID p_skeleton) const {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND_V(!skeleton, 0);
+
+	return skeleton->size;
+}
+
+void RasterizerStorageRD::skeleton_bone_set_transform(RID p_skeleton, int p_bone, const Transform &p_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_INDEX(p_bone, skeleton->size);
+	ERR_FAIL_COND(skeleton->use_2d);
+
+	float *dataptr = skeleton->data.ptrw() + p_bone * 12;
+
+	dataptr[0] = p_transform.basis.elements[0][0];
+	dataptr[1] = p_transform.basis.elements[0][1];
+	dataptr[2] = p_transform.basis.elements[0][2];
+	dataptr[3] = p_transform.origin.x;
+	dataptr[4] = p_transform.basis.elements[1][0];
+	dataptr[5] = p_transform.basis.elements[1][1];
+	dataptr[6] = p_transform.basis.elements[1][2];
+	dataptr[7] = p_transform.origin.y;
+	dataptr[8] = p_transform.basis.elements[2][0];
+	dataptr[9] = p_transform.basis.elements[2][1];
+	dataptr[10] = p_transform.basis.elements[2][2];
+	dataptr[11] = p_transform.origin.z;
+
+	_skeleton_make_dirty(skeleton);
+}
+
+Transform RasterizerStorageRD::skeleton_bone_get_transform(RID p_skeleton, int p_bone) const {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND_V(!skeleton, Transform());
+	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform());
+	ERR_FAIL_COND_V(skeleton->use_2d, Transform());
+
+	const float *dataptr = skeleton->data.ptr() + p_bone * 12;
+
+	Transform t;
+
+	t.basis.elements[0][0] = dataptr[0];
+	t.basis.elements[0][1] = dataptr[1];
+	t.basis.elements[0][2] = dataptr[2];
+	t.origin.x = dataptr[3];
+	t.basis.elements[1][0] = dataptr[4];
+	t.basis.elements[1][1] = dataptr[5];
+	t.basis.elements[1][2] = dataptr[6];
+	t.origin.y = dataptr[7];
+	t.basis.elements[2][0] = dataptr[8];
+	t.basis.elements[2][1] = dataptr[9];
+	t.basis.elements[2][2] = dataptr[10];
+	t.origin.z = dataptr[11];
+
+	return t;
+}
+void RasterizerStorageRD::skeleton_bone_set_transform_2d(RID p_skeleton, int p_bone, const Transform2D &p_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton);
+	ERR_FAIL_INDEX(p_bone, skeleton->size);
+	ERR_FAIL_COND(!skeleton->use_2d);
+
+	float *dataptr = skeleton->data.ptrw() + p_bone * 8;
+
+	dataptr[0] = p_transform.elements[0][0];
+	dataptr[1] = p_transform.elements[1][0];
+	dataptr[2] = 0;
+	dataptr[3] = p_transform.elements[2][0];
+	dataptr[4] = p_transform.elements[0][1];
+	dataptr[5] = p_transform.elements[1][1];
+	dataptr[6] = 0;
+	dataptr[7] = p_transform.elements[2][1];
+
+	_skeleton_make_dirty(skeleton);
+}
+Transform2D RasterizerStorageRD::skeleton_bone_get_transform_2d(RID p_skeleton, int p_bone) const {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND_V(!skeleton, Transform2D());
+	ERR_FAIL_INDEX_V(p_bone, skeleton->size, Transform2D());
+	ERR_FAIL_COND_V(!skeleton->use_2d, Transform2D());
+
+	const float *dataptr = skeleton->data.ptr() + p_bone * 8;
+
+	Transform2D t;
+	t.elements[0][0] = dataptr[0];
+	t.elements[1][0] = dataptr[1];
+	t.elements[2][0] = dataptr[3];
+	t.elements[0][1] = dataptr[4];
+	t.elements[1][1] = dataptr[5];
+	t.elements[2][1] = dataptr[7];
+
+	return t;
+}
+
+void RasterizerStorageRD::skeleton_set_base_transform_2d(RID p_skeleton, const Transform2D &p_base_transform) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+
+	ERR_FAIL_COND(!skeleton->use_2d);
+
+	skeleton->base_transform_2d = p_base_transform;
+}
+
+void RasterizerStorageRD::_update_dirty_skeletons() {
+
+	while (skeleton_dirty_list) {
+
+		Skeleton *skeleton = skeleton_dirty_list;
+
+		if (skeleton->size) {
+
+			RD::get_singleton()->buffer_update(skeleton->buffer, 0, skeleton->data.size() * sizeof(float), skeleton->data.ptr(), false);
+		}
+
+		skeleton_dirty_list = skeleton->dirty_list;
+
+		skeleton->instance_dependency.instance_notify_changed(true, false);
+
+		skeleton->dirty = false;
+		skeleton->dirty_list = nullptr;
+	}
+
+	skeleton_dirty_list = nullptr;
 }
 
 /* LIGHT */
@@ -3601,6 +3874,14 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	}
 }
 
+void RasterizerStorageRD::skeleton_update_dependency(RID p_skeleton, RasterizerScene::InstanceBase *p_instance) {
+
+	Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+	ERR_FAIL_COND(!skeleton);
+
+	p_instance->update_dependency(&skeleton->instance_dependency);
+}
+
 VS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 
 	if (mesh_owner.owns(p_rid)) {
@@ -3621,6 +3902,7 @@ VS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 void RasterizerStorageRD::update_dirty_resources() {
 	_update_queued_materials();
 	_update_dirty_multimeshes();
+	_update_dirty_skeletons();
 }
 
 bool RasterizerStorageRD::has_os_feature(const String &p_feature) const {
@@ -3705,6 +3987,12 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		MultiMesh *multimesh = multimesh_owner.getornull(p_rid);
 		multimesh->instance_dependency.instance_notify_deleted(p_rid);
 		multimesh_owner.free(p_rid);
+	} else if (skeleton_owner.owns(p_rid)) {
+		_update_dirty_skeletons();
+		skeleton_allocate(p_rid, 0);
+		Skeleton *skeleton = skeleton_owner.getornull(p_rid);
+		skeleton->instance_dependency.instance_notify_deleted(p_rid);
+		skeleton_owner.free(p_rid);
 	} else if (reflection_probe_owner.owns(p_rid)) {
 		ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_rid);
 		reflection_probe->instance_dependency.instance_notify_deleted(p_rid);
