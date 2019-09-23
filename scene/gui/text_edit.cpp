@@ -2455,7 +2455,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 	if (mm.is_valid()) {
 
 		if (select_identifiers_enabled) {
-			if (mm->get_command() && mm->get_button_mask() == 0) {
+			if (!dragging_minimap && !dragging_selection && mm->get_command() && mm->get_button_mask() == 0) {
 
 				String new_word = get_word_at_pos(mm->get_position());
 				if (new_word != highlighted_word) {
@@ -2513,7 +2513,7 @@ void TextEdit::_gui_input(const Ref<InputEvent> &p_gui_input) {
 #endif
 			if (select_identifiers_enabled) {
 
-				if (k->is_pressed()) {
+				if (k->is_pressed() && !dragging_minimap && !dragging_selection) {
 
 					highlighted_word = get_word_at_pos(get_local_mouse_position());
 					update();
