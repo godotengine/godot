@@ -256,7 +256,7 @@ void AnimationPlayer::_ensure_node_caches(AnimationData *p_anim) {
 
 			Skeleton *sk = Object::cast_to<Skeleton>(child);
 			bone_idx = sk->find_bone(a->track_get_path(i).get_subname(0));
-			if (bone_idx == -1 || sk->is_bone_ignore_animation(bone_idx)) {
+			if (bone_idx == -1) {
 
 				continue;
 			}

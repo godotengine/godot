@@ -172,8 +172,8 @@ void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base, bool p_hidde
 
 	instance = VS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world()->get_scenario());
 	VS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
-	if (skeleton.is_valid())
-		VS::get_singleton()->instance_attach_skeleton(instance, skeleton);
+	if (skin_reference.is_valid())
+		VS::get_singleton()->instance_attach_skeleton(instance, skin_reference->get_skeleton());
 	if (extra_margin)
 		VS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
 	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, VS::SHADOW_CASTING_SETTING_OFF);
@@ -181,14 +181,14 @@ void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base, bool p_hidde
 	VS::get_singleton()->instance_set_layer_mask(instance, layer); //gizmos are 26
 }
 
-void EditorSpatialGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const RID &p_skeleton, const Ref<Material> &p_material) {
+void EditorSpatialGizmo::add_mesh(const Ref<ArrayMesh> &p_mesh, bool p_billboard, const Ref<SkinReference> &p_skin_reference, const Ref<Material> &p_material) {
 
 	ERR_FAIL_COND(!spatial_node);
 	Instance ins;
 
 	ins.billboard = p_billboard;
 	ins.mesh = p_mesh;
-	ins.skeleton = p_skeleton;
+	ins.skin_reference = p_skin_reference;
 	ins.material = p_material;
 	if (valid) {
 		ins.create_instance(spatial_node, hidden);
@@ -1802,7 +1802,7 @@ void SkeletonSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	}
 
 	Ref<ArrayMesh> m = surface_tool->commit();
-	p_gizmo->add_mesh(m, false, skel->get_skeleton());
+	p_gizmo->add_mesh(m, false, skel->register_skin(Ref<Skin>()));
 }
 
 ////
@@ -3725,7 +3725,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 
 		Ref<ConcavePolygonShape> cs2 = s;
 		Ref<ArrayMesh> mesh = cs2->get_debug_mesh();
-		p_gizmo->add_mesh(mesh, false, RID(), material);
+		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material);
 	}
 
 	if (Object::cast_to<RayShape>(*s)) {
@@ -3747,7 +3747,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		Ref<HeightMapShape> hms = s;
 
 		Ref<ArrayMesh> mesh = hms->get_debug_mesh();
-		p_gizmo->add_mesh(mesh, false, RID(), material);
+		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material);
 	}
 }
 

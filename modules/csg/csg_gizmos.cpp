@@ -377,7 +377,7 @@ void CSGShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 				break;
 		}
 
-		p_gizmo->add_mesh(mesh, false, RID(), solid_material);
+		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), solid_material);
 	}
 
 	if (Object::cast_to<CSGSphere>(cs)) {

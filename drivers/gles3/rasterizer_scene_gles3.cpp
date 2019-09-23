@@ -2260,11 +2260,6 @@ void RasterizerSceneGLES3::_render_list(RenderList::Element **p_elements, int p_
 
 		_set_cull(e->sort_key & RenderList::SORT_KEY_MIRROR_FLAG, e->sort_key & RenderList::SORT_KEY_CULL_DISABLED_FLAG, p_reverse_cull);
 
-		if (skeleton) {
-			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_TRANSFORM, skeleton->world_transform);
-			state.scene_shader.set_uniform(SceneShaderGLES3::SKELETON_IN_WORLD_COORDS, skeleton->use_world_transform);
-		}
-
 		state.scene_shader.set_uniform(SceneShaderGLES3::WORLD_TRANSFORM, e->instance->transform);
 
 		_render_geometry(e);

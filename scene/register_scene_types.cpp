@@ -364,6 +364,9 @@ void register_scene_types() {
 
 	/* REGISTER 3D */
 
+	ClassDB::register_class<Skin>();
+	ClassDB::register_virtual_class<SkinReference>();
+
 	ClassDB::register_class<Spatial>();
 	ClassDB::register_virtual_class<SpatialGizmo>();
 	ClassDB::register_class<Skeleton>();
