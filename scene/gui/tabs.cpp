@@ -226,12 +226,6 @@ void Tabs::_notification(int p_what) {
 			minimum_size_changed();
 			update();
 		} break;
-		case NOTIFICATION_MOUSE_EXIT: {
-			rb_hover = -1;
-			cb_hover = -1;
-			hover = -1;
-			update();
-		} break;
 		case NOTIFICATION_RESIZED: {
 			_update_cache();
 			_ensure_no_over_offset();
@@ -597,6 +591,15 @@ void Tabs::_update_cache() {
 	}
 }
 
+void Tabs::_on_mouse_exited() {
+
+	rb_hover = -1;
+	cb_hover = -1;
+	hover = -1;
+	highlight_arrow = -1;
+	update();
+}
+
 void Tabs::add_tab(const String &p_str, const Ref<Texture> &p_icon) {
 
 	Tab t;
@@ -948,6 +951,7 @@ void Tabs::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &Tabs::_gui_input);
 	ClassDB::bind_method(D_METHOD("_update_hover"), &Tabs::_update_hover);
+	ClassDB::bind_method(D_METHOD("_on_mouse_exited"), &Tabs::_on_mouse_exited);
 	ClassDB::bind_method(D_METHOD("get_tab_count"), &Tabs::get_tab_count);
 	ClassDB::bind_method(D_METHOD("set_current_tab", "tab_idx"), &Tabs::set_current_tab);
 	ClassDB::bind_method(D_METHOD("get_current_tab"), &Tabs::get_current_tab);
@@ -1024,4 +1028,6 @@ Tabs::Tabs() {
 	hover = -1;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;
+
+	connect("mouse_exited", this, "_on_mouse_exited");
 }
