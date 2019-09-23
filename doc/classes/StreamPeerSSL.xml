@@ -4,7 +4,7 @@
 		SSL stream peer.
 	</brief_description>
 	<description>
-		SSL stream peer. This object can be used to connect to SSL servers.
+		SSL stream peer. This object can be used to connect to an SSL server or accept a single SSL client connection.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/networking/ssl_certificates.html</link>
@@ -22,6 +22,7 @@
 			<argument index="3" name="chain" type="X509Certificate" default="null">
 			</argument>
 			<description>
+				Accepts a peer connection as a server using the given [code]private_key[/code] and providing the given [code]certificate[/code] to the client. You can pass the optional [code]chain[/code] parameter to provide additional CA chain information along with the certificate.
 			</description>
 		</method>
 		<method name="connect_to_stream">
