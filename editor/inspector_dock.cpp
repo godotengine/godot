@@ -408,6 +408,7 @@ void InspectorDock::update(Object *p_object) {
 		warning->hide();
 		search->set_editable(false);
 
+		editor_path->set_disabled(true);
 		editor_path->set_text("");
 		editor_path->set_tooltip("");
 		editor_path->set_icon(NULL);
@@ -420,6 +421,7 @@ void InspectorDock::update(Object *p_object) {
 
 	object_menu->set_disabled(false);
 	search->set_editable(true);
+	editor_path->set_disabled(false);
 	resource_save_button->set_disabled(!is_resource);
 
 	PopupMenu *p = object_menu->get_popup();
