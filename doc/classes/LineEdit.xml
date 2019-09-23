@@ -119,6 +119,9 @@
 		<member name="placeholder_text" type="String" setter="set_placeholder" getter="get_placeholder" default="&quot;&quot;">
 			Text shown when the [LineEdit] is empty. It is [b]not[/b] the [LineEdit]'s default value (see [member text]).
 		</member>
+		<member name="right_icon" type="Texture" setter="set_right_icon" getter="get_right_icon">
+			Sets the icon that will appear in the right end of the [LineEdit] if there's no [member text], or always, if [member clear_button_enabled] is set to [code]false[/code].
+		</member>
 		<member name="secret" type="bool" setter="set_secret" getter="is_secret" default="false">
 			If [code]true[/code], every character is replaced with the secret character (see [member secret_character]).
 		</member>
