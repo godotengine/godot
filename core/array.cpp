@@ -240,6 +240,9 @@ int Array::_clamp_index(int p_index) const {
 Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
 	Array new_arr;
 
+	if (empty()) // Don't try to slice empty arrays.
+		return new_arr;
+
 	p_begin = Array::_fix_slice_index(p_begin, size(), -1); // can't start out of range
 	p_end = Array::_fix_slice_index(p_end, size(), 0);
 
