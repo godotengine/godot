@@ -1324,12 +1324,9 @@ Vector2 KinematicBody2D::move_and_slide_with_snap(const Vector2 &p_linear_veloci
 				on_floor = true;
 				on_floor_body = col.collider_rid;
 				floor_velocity = col.collider_vel;
-				if (p_stop_on_slope) {
-					// move and collide may stray the object a bit because of pre un-stucking,
-					// so only ensure that motion happens on floor direction in this case.
-					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+				if (p_stop_on_slope && p_floor_direction.cross(col.travel) != 0) {
+					apply = false;
 				}
-
 			} else {
 				apply = false;
 			}

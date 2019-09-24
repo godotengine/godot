@@ -1262,10 +1262,8 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 				on_floor = true;
 				on_floor_body = col.collider_rid;
 				floor_velocity = col.collider_vel;
-				if (p_stop_on_slope) {
-					// move and collide may stray the object a bit because of pre un-stucking,
-					// so only ensure that motion happens on floor direction in this case.
-					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+				if (p_stop_on_slope && col.travel.cross(p_floor_direction) == Vector3(0, 0, 0)) {
+					apply = false;
 				}
 			} else {
 				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
