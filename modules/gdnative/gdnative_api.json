@@ -579,13 +579,6 @@
         ]
       },
       {
-        "name": "godot_color_gray",
-        "return_type": "godot_real",
-        "arguments": [
-          ["const godot_color *", "p_self"]
-        ]
-      },
-      {
         "name": "godot_color_inverted",
         "return_type": "godot_color",
         "arguments": [

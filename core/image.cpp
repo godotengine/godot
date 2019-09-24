@@ -1715,7 +1715,7 @@ Error Image::generate_mipmap_roughness(RoughnessChannel p_roughness_channel, con
 						roughness = c.b;
 					} break;
 					case ROUGHNESS_CHANNEL_L: {
-						roughness = c.gray();
+						roughness = c.get_v();
 					} break;
 					case ROUGHNESS_CHANNEL_A: {
 						roughness = c.a;
