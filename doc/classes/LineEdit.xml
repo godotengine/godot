@@ -128,6 +128,10 @@
 		<member name="secret_character" type="String" setter="set_secret_character" getter="get_secret_character" default="&quot;*&quot;">
 			The character to use to mask secret input (defaults to "*"). Only a single character can be used as the secret character.
 		</member>
+		<member name="selecting_enabled" type="bool" setter="set_selecting_enabled" getter="is_selecting_enabled" default="true">
+		</member>
+		<member name="shortcut_keys_enabled" type="bool" setter="set_shortcut_keys_enabled" getter="is_shortcut_keys_enabled" default="true">
+		</member>
 		<member name="text" type="String" setter="set_text" getter="get_text" default="&quot;&quot;">
 			String value of the [LineEdit].
 		</member>

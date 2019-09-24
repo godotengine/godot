@@ -254,8 +254,8 @@ void EditorFeatureProfile::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_disable_class_editor", "class_name", "disable"), &EditorFeatureProfile::set_disable_class_editor);
 	ClassDB::bind_method(D_METHOD("is_class_editor_disabled", "class_name"), &EditorFeatureProfile::is_class_editor_disabled);
 
-	ClassDB::bind_method(D_METHOD("set_disable_class_property", "class_name", "property"), &EditorFeatureProfile::set_disable_class_property);
-	ClassDB::bind_method(D_METHOD("is_class_property_disabled", "class_name"), &EditorFeatureProfile::is_class_property_disabled);
+	ClassDB::bind_method(D_METHOD("set_disable_class_property", "class_name", "property", "disable"), &EditorFeatureProfile::set_disable_class_property);
+	ClassDB::bind_method(D_METHOD("is_class_property_disabled", "class_name", "property"), &EditorFeatureProfile::is_class_property_disabled);
 
 	ClassDB::bind_method(D_METHOD("set_disable_feature", "feature", "disable"), &EditorFeatureProfile::set_disable_feature);
 	ClassDB::bind_method(D_METHOD("is_feature_disabled", "feature"), &EditorFeatureProfile::is_feature_disabled);

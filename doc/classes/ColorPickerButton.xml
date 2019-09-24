@@ -40,6 +40,10 @@
 				Emitted when the color changes.
 			</description>
 		</signal>
+		<signal name="picker_created">
+			<description>
+			</description>
+		</signal>
 		<signal name="popup_closed">
 			<description>
 			</description>

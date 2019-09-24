@@ -54,15 +54,6 @@
 				Returns the amount of bones in the skeleton.
 			</description>
 		</method>
-		<method name="get_bone_custom_pose" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<description>
-				Returns the custom pose of the specified bone. Custom pose is applied on top of the rest pose.
-			</description>
-		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -107,15 +98,6 @@
 			</argument>
 			<description>
 				Returns the rest transform for a bone [code]bone_idx[/code].
-			</description>
-		</method>
-		<method name="get_bone_transform" qualifiers="const">
-			<return type="Transform">
-			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<description>
-				Returns the combination of custom pose and pose. The returned transform is in skeleton's reference frame.
 			</description>
 		</method>
 		<method name="get_bound_child_nodes_to_bone" qualifiers="const">
@@ -171,12 +153,10 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_bone_custom_pose">
-			<return type="void">
+		<method name="register_skin">
+			<return type="SkinReference">
 			</return>
-			<argument index="0" name="bone_idx" type="int">
-			</argument>
-			<argument index="1" name="custom_pose" type="Transform">
+			<argument index="0" name="skin" type="Skin">
 			</argument>
 			<description>
 			</description>
@@ -191,22 +171,16 @@
 			<description>
 			</description>
 		</method>
-		<method name="set_bone_global_pose">
+		<method name="set_bone_global_pose_override">
 			<return type="void">
 			</return>
 			<argument index="0" name="bone_idx" type="int">
 			</argument>
 			<argument index="1" name="pose" type="Transform">
 			</argument>
-			<description>
-			</description>
-		</method>
-		<method name="set_bone_ignore_animation">
-			<return type="void">
-			</return>
-			<argument index="0" name="bone" type="int">
+			<argument index="2" name="amount" type="float">
 			</argument>
-			<argument index="1" name="ignore" type="bool">
+			<argument index="3" name="persistent" type="bool" default="false">
 			</argument>
 			<description>
 			</description>
@@ -265,10 +239,6 @@
 			</description>
 		</method>
 	</methods>
-	<members>
-		<member name="bones_in_world_transform" type="bool" setter="set_use_bones_in_world_transform" getter="is_using_bones_in_world_transform" default="false">
-		</member>
-	</members>
 	<constants>
 		<constant name="NOTIFICATION_UPDATE_SKELETON" value="50">
 		</constant>

@@ -80,6 +80,14 @@
 				Returns the number of visible lines.
 			</description>
 		</method>
+		<method name="install_effect">
+			<return type="void">
+			</return>
+			<argument index="0" name="effect" type="Variant">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="newline">
 			<return type="void">
 			</return>
@@ -94,6 +102,14 @@
 			</argument>
 			<description>
 				The assignment version of [method append_bbcode]. Clears the tag stack and inserts the new content. Returns [constant OK] if parses [code]bbcode[/code] successfully.
+			</description>
+		</method>
+		<method name="parse_expressions_for_values">
+			<return type="Dictionary">
+			</return>
+			<argument index="0" name="expressions" type="PoolStringArray">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="pop">
@@ -228,6 +244,8 @@
 		<member name="bbcode_text" type="String" setter="set_bbcode" getter="get_bbcode" default="&quot;&quot;">
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 		</member>
+		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[  ]">
+		</member>
 		<member name="meta_underlined" type="bool" setter="set_meta_underline" getter="is_meta_underlined" default="true">
 			If [code]true[/code], the label underlines meta tags such as [code][url]{text}[/url][/code].
 		</member>
@@ -319,7 +337,19 @@
 		</constant>
 		<constant name="ITEM_TABLE" value="11" enum="ItemType">
 		</constant>
-		<constant name="ITEM_META" value="12" enum="ItemType">
+		<constant name="ITEM_FADE" value="12" enum="ItemType">
+		</constant>
+		<constant name="ITEM_SHAKE" value="13" enum="ItemType">
+		</constant>
+		<constant name="ITEM_WAVE" value="14" enum="ItemType">
+		</constant>
+		<constant name="ITEM_TORNADO" value="15" enum="ItemType">
+		</constant>
+		<constant name="ITEM_RAINBOW" value="16" enum="ItemType">
+		</constant>
+		<constant name="ITEM_CUSTOMFX" value="18" enum="ItemType">
+		</constant>
+		<constant name="ITEM_META" value="17" enum="ItemType">
 		</constant>
 	</constants>
 	<theme_items>
