@@ -27,6 +27,9 @@ Files extracted from upstream source:
 - src/* apart from CMakeLists.txt and premake4.lua files
 - LICENSE.txt
 
+Upstream patches included in the `patches` directory have been applied
+on top of the 2.88 source (not included in any stable release yet).
+
 
 ## certs
 
