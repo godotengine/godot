@@ -1864,7 +1864,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			//failure
 		} else if (ins->base_type == VS::INSTANCE_LIGHT && ins->visible) {
 
-			if (ins->visible && light_cull_count < MAX_LIGHTS_CULLED) {
+			if (light_cull_count < MAX_LIGHTS_CULLED) {
 
 				InstanceLightData *light = static_cast<InstanceLightData *>(ins->base_data);
 
@@ -1881,7 +1881,7 @@ void VisualServerScene::_prepare_scene(const Transform p_cam_transform, const Ca
 			}
 		} else if (ins->base_type == VS::INSTANCE_REFLECTION_PROBE && ins->visible) {
 
-			if (ins->visible && reflection_probe_cull_count < MAX_REFLECTION_PROBES_CULLED) {
+			if (reflection_probe_cull_count < MAX_REFLECTION_PROBES_CULLED) {
 
 				InstanceReflectionProbeData *reflection_probe = static_cast<InstanceReflectionProbeData *>(ins->base_data);
 

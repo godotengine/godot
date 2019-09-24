@@ -2491,7 +2491,8 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 		} break;
 		case GDScriptParser::COMPLETION_FUNCTION: {
 			is_function = true;
-		} // fallthrough
+			FALLTHROUGH;
+		}
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 			_find_identifiers(context, is_function, options);
 		} break;
@@ -2530,7 +2531,8 @@ Error GDScriptLanguage::complete_code(const String &p_code, const String &p_base
 		} break;
 		case GDScriptParser::COMPLETION_METHOD: {
 			is_function = true;
-		} // fallthrough
+			FALLTHROUGH;
+		}
 		case GDScriptParser::COMPLETION_INDEX: {
 			const GDScriptParser::Node *node = parser.get_completion_node();
 			if (node->type != GDScriptParser::Node::TYPE_OPERATOR) {
@@ -3006,8 +3008,8 @@ static Error _lookup_symbol_from_base(const GDScriptParser::DataType &p_base, co
 							}
 						}
 					}
+					base_type = base_type.class_type->base_type;
 				}
-				base_type = base_type.class_type->base_type;
 			} break;
 			case GDScriptParser::DataType::SCRIPT:
 			case GDScriptParser::DataType::GDSCRIPT: {
@@ -3227,7 +3229,8 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		case GDScriptParser::COMPLETION_PARENT_FUNCTION:
 		case GDScriptParser::COMPLETION_FUNCTION: {
 			is_function = true;
-		} // fallthrough
+			FALLTHROUGH;
+		}
 		case GDScriptParser::COMPLETION_IDENTIFIER: {
 
 			if (!is_function) {
@@ -3358,7 +3361,8 @@ Error GDScriptLanguage::lookup_code(const String &p_code, const String &p_symbol
 		} break;
 		case GDScriptParser::COMPLETION_METHOD: {
 			is_function = true;
-		} // fallthrough
+			FALLTHROUGH;
+		}
 		case GDScriptParser::COMPLETION_INDEX: {
 			const GDScriptParser::Node *node = parser.get_completion_node();
 			if (node->type != GDScriptParser::Node::TYPE_OPERATOR) {

@@ -745,7 +745,7 @@ void GDScriptTokenizerText::_advance() {
 				}
 				INCPOS(1);
 				is_node_path = true;
-
+				FALLTHROUGH;
 			case '\'':
 			case '"': {
 
@@ -895,7 +895,7 @@ void GDScriptTokenizerText::_advance() {
 							}
 							hexa_found = true;
 						} else if (!hexa_found && GETCHAR(i) == 'e') {
-							if (hexa_found || exponent_found) {
+							if (exponent_found) {
 								_make_error("Invalid numeric constant at 'e'");
 								return;
 							}

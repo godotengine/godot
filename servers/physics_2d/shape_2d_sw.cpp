@@ -586,7 +586,7 @@ bool ConvexPolygonShape2DSW::contains_point(const Vector2 &p_point) const {
 			in = true;
 	}
 
-	return (in && !out) || (!in && out);
+	return in != out;
 }
 
 bool ConvexPolygonShape2DSW::intersect_segment(const Vector2 &p_begin, const Vector2 &p_end, Vector2 &r_point, Vector2 &r_normal) const {

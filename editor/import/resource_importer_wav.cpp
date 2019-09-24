@@ -35,6 +35,9 @@
 #include "core/os/file_access.h"
 #include "scene/resources/audio_stream_sample.h"
 
+const float TRIM_DB_LIMIT = -50;
+const int TRIM_FADE_OUT_FRAMES = 500;
+
 String ResourceImporterWAV::get_importer_name() const {
 
 	return "wav";
@@ -393,11 +396,17 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 	if (trim && !loop && format_channels > 0) {
 
 		int first = 0;
-		int last = (frames * format_channels) - 1;
+		int last = (frames / format_channels) - 1;
 		bool found = false;
-		float limit = Math::db2linear((float)-30);
-		for (int i = 0; i < data.size(); i++) {
-			float amp = Math::abs(data[i]);
+		float limit = Math::db2linear(TRIM_DB_LIMIT);
+
+		for (int i = 0; i < data.size() / format_channels; i++) {
+			float ampChannelSum = 0;
+			for (int j = 0; j < format_channels; j++) {
+				ampChannelSum += Math::abs(data[(i * format_channels) + j]);
+			}
+
+			float amp = Math::abs(ampChannelSum / (float)format_channels);
 
 			if (!found && amp > limit) {
 				first = i;
@@ -409,15 +418,20 @@ Error ResourceImporterWAV::import(const String &p_source_file, const String &p_s
 			}
 		}
 
-		first /= format_channels;
-		last /= format_channels;
-
 		if (first < last) {
-
 			Vector<float> new_data;
-			new_data.resize((last - first + 1) * format_channels);
-			for (int i = first * format_channels; i < (last + 1) * format_channels; i++) {
-				new_data.write[i - first * format_channels] = data[i];
+			new_data.resize((last - first) * format_channels);
+			for (int i = first; i < last; i++) {
+
+				float fadeOutMult = 1;
+
+				if (last - i < TRIM_FADE_OUT_FRAMES) {
+					fadeOutMult = ((float)(last - i - 1) / (float)TRIM_FADE_OUT_FRAMES);
+				}
+
+				for (int j = 0; j < format_channels; j++) {
+					new_data.write[((i - first) * format_channels) + j] = data[(i * format_channels) + j] * fadeOutMult;
+				}
 			}
 
 			data = new_data;

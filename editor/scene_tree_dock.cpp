@@ -811,10 +811,8 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			List<Node *>::Element *e = selection.front();
 			if (e) {
 				Node *node = e->get();
-				if (node) {
-					if (node && node->get_scene_inherited_state().is_valid()) {
-						scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
-					}
+				if (node && node->get_scene_inherited_state().is_valid()) {
+					scene_tree->emit_signal("open", node->get_scene_inherited_state()->get_path());
 				}
 			}
 		} break;

@@ -849,8 +849,7 @@ void ScriptEditor::_file_dialog_action(String p_file) {
 			}
 			file->close();
 			memdelete(file);
-
-			// fallthrough to open the file.
+			FALLTHROUGH;
 		}
 		case FILE_OPEN: {
 
@@ -1689,7 +1688,19 @@ void ScriptEditor::_update_script_names() {
 			Ref<Texture> icon = se->get_icon();
 			String path = se->get_edited_resource()->get_path();
 			bool built_in = !path.is_resource_file();
-			String name = built_in ? path.get_file() : se->get_name();
+			String name;
+
+			if (built_in) {
+
+				name = path.get_file();
+				String resource_name = se->get_edited_resource()->get_name();
+				if (resource_name != "") {
+					name = name.substr(0, name.find("::", 0) + 2) + resource_name;
+				}
+			} else {
+
+				name = se->get_name();
+			}
 
 			_ScriptEditorItemData sd;
 			sd.icon = icon;

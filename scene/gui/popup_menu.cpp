@@ -239,7 +239,7 @@ void PopupMenu::_gui_input(const Ref<InputEvent> &p_event) {
 
 		for (int i = search_from; i >= 0; i--) {
 
-			if (i < 0 || i >= items.size())
+			if (i >= items.size())
 				continue;
 
 			if (!items[i].separator && !items[i].disabled) {

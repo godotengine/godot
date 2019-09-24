@@ -968,6 +968,19 @@ String TranslationServer::get_locale_name(const String &p_locale) const {
 	return locale_name_map[p_locale];
 }
 
+Array TranslationServer::get_loaded_locales() const {
+	Array locales;
+	for (const Set<Ref<Translation> >::Element *E = translations.front(); E; E = E->next()) {
+
+		const Ref<Translation> &t = E->get();
+		String l = t->get_locale();
+
+		locales.push_back(l);
+	}
+
+	return locales;
+}
+
 Vector<String> TranslationServer::get_all_locales() {
 
 	Vector<String> locales;
@@ -1168,6 +1181,8 @@ void TranslationServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("remove_translation", "translation"), &TranslationServer::remove_translation);
 
 	ClassDB::bind_method(D_METHOD("clear"), &TranslationServer::clear);
+
+	ClassDB::bind_method(D_METHOD("get_loaded_locales"), &TranslationServer::get_loaded_locales);
 }
 
 void TranslationServer::load_translations() {

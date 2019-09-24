@@ -1858,7 +1858,7 @@ bool CanvasItemEditor::_gui_input_move(const Ref<InputEvent> &p_event) {
 		}
 
 		// Confirm the move (only if it was moved)
-		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT && (drag_type == DRAG_MOVE)) {
+		if (b.is_valid() && !b->is_pressed() && b->get_button_index() == BUTTON_LEFT) {
 			if (transform.affine_inverse().xform(b->get_position()) != drag_from) {
 				_commit_canvas_item_state(drag_selection, TTR("Move CanvasItem"), true);
 			}
@@ -2275,6 +2275,7 @@ void CanvasItemEditor::_gui_input_viewport(const Ref<InputEvent> &p_event) {
 			break;
 		case DRAG_PAN:
 			c = CURSOR_DRAG;
+			break;
 		default:
 			break;
 	}
@@ -2611,6 +2612,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_TOP_LEFT:
 			case DRAG_BOTTOM_LEFT:
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(node_pos_in_parent[0], Math::lerp(node_pos_in_parent[1], node_pos_in_parent[3], ratio));
 				end = start - Vector2(control->get_margin(MARGIN_LEFT), 0);
@@ -2625,6 +2627,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_TOP_RIGHT:
 			case DRAG_BOTTOM_RIGHT:
 				_draw_margin_at_position(control->get_size().width, parent_transform.xform(Vector2((node_pos_in_parent[0] + node_pos_in_parent[2]) / 2, node_pos_in_parent[3])) + Vector2(0, 5), MARGIN_BOTTOM);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(node_pos_in_parent[2], Math::lerp(node_pos_in_parent[3], node_pos_in_parent[1], ratio));
 				end = start - Vector2(control->get_margin(MARGIN_RIGHT), 0);
@@ -2639,6 +2642,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_TOP_LEFT:
 			case DRAG_TOP_RIGHT:
 				_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2)) + Vector2(5, 0), MARGIN_RIGHT);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(Math::lerp(node_pos_in_parent[0], node_pos_in_parent[2], ratio), node_pos_in_parent[1]);
 				end = start - Vector2(0, control->get_margin(MARGIN_TOP));
@@ -2653,6 +2657,7 @@ void CanvasItemEditor::_draw_control_helpers(Control *control) {
 			case DRAG_BOTTOM_LEFT:
 			case DRAG_BOTTOM_RIGHT:
 				_draw_margin_at_position(control->get_size().height, parent_transform.xform(Vector2(node_pos_in_parent[2], (node_pos_in_parent[1] + node_pos_in_parent[3]) / 2) + Vector2(5, 0)), MARGIN_RIGHT);
+				FALLTHROUGH;
 			case DRAG_MOVE:
 				start = Vector2(Math::lerp(node_pos_in_parent[2], node_pos_in_parent[0], ratio), node_pos_in_parent[3]);
 				end = start - Vector2(0, control->get_margin(MARGIN_BOTTOM));

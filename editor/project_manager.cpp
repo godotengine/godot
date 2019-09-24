@@ -1136,7 +1136,7 @@ void ProjectManager::_unhandled_input(const Ref<InputEvent> &p_ev) {
 
 					break;
 				}
-				// else fallthrough to key_down
+				FALLTHROUGH;
 			}
 			case KEY_DOWN: {
 

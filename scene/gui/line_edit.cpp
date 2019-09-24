@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "line_edit.h"
+
 #include "core/message_queue.h"
 #include "core/os/keyboard.h"
 #include "core/os/os.h"
@@ -43,7 +44,7 @@
 
 static bool _is_text_char(CharType c) {
 
-	return (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || (c >= '0' && c <= '9') || c == '_';
+	return !is_symbol(c);
 }
 
 void LineEdit::_gui_input(Ref<InputEvent> p_event) {
@@ -320,7 +321,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					// numlock disabled. fallthrough to key_left
+					FALLTHROUGH;
 				}
 				case KEY_LEFT: {
 
@@ -367,7 +368,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					// numlock disabled. fallthrough to key_right
+					FALLTHROUGH;
 				}
 				case KEY_RIGHT: {
 
@@ -474,7 +475,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					// numlock disabled. fallthrough to key_home
+					FALLTHROUGH;
 				}
 				case KEY_HOME: {
 
@@ -487,7 +488,7 @@ void LineEdit::_gui_input(Ref<InputEvent> p_event) {
 						handled = false;
 						break;
 					}
-					// numlock disabled. fallthrough to key_end
+					FALLTHROUGH;
 				}
 				case KEY_END: {
 
@@ -721,6 +722,8 @@ void LineEdit::_notification(int p_what) {
 				} else {
 					x_ofs = MAX(style->get_margin(MARGIN_LEFT), x_ofs - r_icon->get_width() - style->get_margin(MARGIN_RIGHT));
 				}
+
+				ofs_max -= r_icon->get_width();
 			}
 
 			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
@@ -917,6 +920,10 @@ void LineEdit::undo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	set_cursor_position(op.cursor_pos);
+
+	if (expand_to_text_length)
+		minimum_size_changed();
+
 	_emit_text_change();
 }
 
@@ -931,6 +938,10 @@ void LineEdit::redo() {
 	TextOperation op = undo_stack_pos->get();
 	text = op.text;
 	set_cursor_position(op.cursor_pos);
+
+	if (expand_to_text_length)
+		minimum_size_changed();
+
 	_emit_text_change();
 }
 
@@ -1158,8 +1169,10 @@ void LineEdit::set_cursor_position(int p_pos) {
 	} else if (cursor_pos > window_pos) {
 		/* Adjust window if cursor goes too much to the right */
 		int window_width = get_size().width - style->get_minimum_size().width;
-		if (right_icon.is_valid()) {
-			window_width -= right_icon->get_width();
+		bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
+		if (right_icon.is_valid() || display_clear_icon) {
+			Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
+			window_width -= r_icon->get_width();
 		}
 
 		if (window_width < 0)
