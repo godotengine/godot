@@ -281,7 +281,8 @@
 			The subdivision amount of fourth quadrant on shadow atlas.
 		</member>
 		<member name="shadow_atlas_size" type="int" setter="set_shadow_atlas_size" getter="get_shadow_atlas_size" default="0">
-			The resolution of shadow atlas. Both width and height is equal to one value.
+			The shadow atlas' resolution (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
+			[b]Note:[/b] If this is set to 0, shadows won't be visible. Since user-created viewports default to a value of 0, this value must be set above 0 manually.
 		</member>
 		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
 			The width and height of viewport.
