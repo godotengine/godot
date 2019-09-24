@@ -872,7 +872,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "tutorials")
-							break; //end of <tutorials>
+							break; // End of <tutorials>.
 					}
 				} else if (name2 == "methods") {
 
@@ -905,16 +905,18 @@ Error DocData::_load(Ref<XMLParser> parser) {
 									prop2.getter = parser->get_attribute_value("getter");
 								if (parser->has_attribute("enum"))
 									prop2.enumeration = parser->get_attribute_value("enum");
-								parser->read();
-								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									prop2.description = parser->get_node_data();
+								if (!parser->is_empty()) {
+									parser->read();
+									if (parser->get_node_type() == XMLParser::NODE_TEXT)
+										prop2.description = parser->get_node_data();
+								}
 								c.properties.push_back(prop2);
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "members")
-							break; //end of <constants>
+							break; // End of <members>.
 					}
 
 				} else if (name2 == "theme_items") {
@@ -933,16 +935,18 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								prop2.name = parser->get_attribute_value("name");
 								ERR_FAIL_COND_V(!parser->has_attribute("type"), ERR_FILE_CORRUPT);
 								prop2.type = parser->get_attribute_value("type");
-								parser->read();
-								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									prop2.description = parser->get_node_data();
+								if (!parser->is_empty()) {
+									parser->read();
+									if (parser->get_node_type() == XMLParser::NODE_TEXT)
+										prop2.description = parser->get_node_data();
+								}
 								c.theme_properties.push_back(prop2);
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "theme_items")
-							break; //end of <constants>
+							break; // End of <theme_items>.
 					}
 
 				} else if (name2 == "constants") {
@@ -963,16 +967,18 @@ Error DocData::_load(Ref<XMLParser> parser) {
 								if (parser->has_attribute("enum")) {
 									constant2.enumeration = parser->get_attribute_value("enum");
 								}
-								parser->read();
-								if (parser->get_node_type() == XMLParser::NODE_TEXT)
-									constant2.description = parser->get_node_data();
+								if (!parser->is_empty()) {
+									parser->read();
+									if (parser->get_node_type() == XMLParser::NODE_TEXT)
+										constant2.description = parser->get_node_data();
+								}
 								c.constants.push_back(constant2);
 							} else {
 								ERR_FAIL_V_MSG(ERR_FILE_CORRUPT, "Invalid tag in doc file: " + name3 + ".");
 							}
 
 						} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "constants")
-							break; //end of <constants>
+							break; // End of <constants>.
 					}
 
 				} else {
@@ -981,7 +987,7 @@ Error DocData::_load(Ref<XMLParser> parser) {
 				}
 
 			} else if (parser->get_node_type() == XMLParser::NODE_ELEMENT_END && parser->get_node_name() == "class")
-				break; //end of <asset>
+				break; // End of <class>.
 		}
 	}
 
@@ -1109,7 +1115,7 @@ Error DocData::save_classes(const String &p_default_path, const Map<String, Stri
 				const PropertyDoc &p = c.properties[i];
 
 				if (c.properties[i].overridden) {
-					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" override=\"true\"" + additional_attributes + "/>");
+					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\" override=\"true\"" + additional_attributes + " />");
 				} else {
 					_write_string(f, 2, "<member name=\"" + p.name + "\" type=\"" + p.type + "\" setter=\"" + p.setter + "\" getter=\"" + p.getter + "\"" + additional_attributes + ">");
 					_write_string(f, 3, p.description.strip_edges().xml_escape());
