@@ -915,8 +915,8 @@ void CPUParticles::_particles_process(float p_delta) {
 		}
 
 		//scale by scale
-		float base_scale = Math::lerp(parameters[PARAM_SCALE] * tex_scale, 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
-		if (base_scale == 0.0) base_scale = 0.000001;
+		float base_scale = tex_scale * Math::lerp(parameters[PARAM_SCALE], 1.0f, p.scale_rand * randomness[PARAM_SCALE]);
+		if (base_scale < 0.000001) base_scale = 0.000001;
 
 		p.transform.basis.scale(Vector3(1, 1, 1) * base_scale);
 
