@@ -677,6 +677,15 @@
 				Replaces occurrences of a case-insensitive substring with the given one inside the string.
 			</description>
 		</method>
+		<method name="repeat">
+			<return type="String">
+			</return>
+			<argument index="0" name="count" type="int">
+			</argument>
+			<description>
+				Returns original string repeated a number of times. The number of repetitions is given by the argument.
+			</description>
+		</method>
 		<method name="rfind">
 			<return type="int">
 			</return>
