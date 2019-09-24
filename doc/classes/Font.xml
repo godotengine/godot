@@ -85,11 +85,11 @@
 			</argument>
 			<argument index="4" name="size" type="int" default="-1">
 			</argument>
-			<argument index="5" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="5" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="6" name="outline_size" type="int" default="0">
 			</argument>
-			<argument index="7" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
+			<argument index="7" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)">
 			</argument>
 			<description>
 				Draw a single Unicode character [code]char[/code] into a canvas item using the font, at a given position, with [code]modulate[/code] color, and optionally kerning if [code]next[/code] is passed. [code]position[/code] specifies the baseline, not the top. To draw from the top, [i]ascent[/i] must be added to the Y axis.
@@ -113,11 +113,11 @@
 			</argument>
 			<argument index="6" name="size" type="int" default="-1">
 			</argument>
-			<argument index="7" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="7" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="8" name="outline_size" type="int" default="0">
 			</argument>
-			<argument index="9" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
+			<argument index="9" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)">
 			</argument>
 			<argument index="10" name="flags" type="int" default="51">
 			</argument>
@@ -141,11 +141,11 @@
 			</argument>
 			<argument index="5" name="size" type="int" default="-1">
 			</argument>
-			<argument index="6" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="6" name="modulate" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="7" name="outline_size" type="int" default="0">
 			</argument>
-			<argument index="8" name="outline_modulate" type="Color" default="Color( 1, 1, 1, 0 )">
+			<argument index="8" name="outline_modulate" type="Color" default="Color(1, 1, 1, 0)">
 			</argument>
 			<argument index="9" name="flags" type="int" default="3">
 			</argument>

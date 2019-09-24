@@ -84,7 +84,7 @@
 			</return>
 			<argument index="0" name="path" type="String">
 			</argument>
-			<argument index="1" name="progress" type="Array" default="[  ]">
+			<argument index="1" name="progress" type="Array" default="[]">
 			</argument>
 			<description>
 				Returns the status of a threaded loading operation started with [method load_threaded_request] for the resource at [code]path[/code]. See [enum ThreadLoadStatus] for possible return values.

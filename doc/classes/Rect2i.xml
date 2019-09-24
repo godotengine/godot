@@ -193,13 +193,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="end" type="Vector2i" setter="" getter="" default="Vector2i( 0, 0 )">
+		<member name="end" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
 			Ending corner. This is calculated as [code]position + size[/code]. Setting this value will change the size.
 		</member>
-		<member name="position" type="Vector2i" setter="" getter="" default="Vector2i( 0, 0 )">
+		<member name="position" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
 			Beginning corner. Typically has values lower than [member end].
 		</member>
-		<member name="size" type="Vector2i" setter="" getter="" default="Vector2i( 0, 0 )">
+		<member name="size" type="Vector2i" setter="" getter="" default="Vector2i(0, 0)">
 			Size from [member position] to [member end]. Typically, all components are positive.
 			If the size is negative, you can use [method abs] to fix it.
 		</member>

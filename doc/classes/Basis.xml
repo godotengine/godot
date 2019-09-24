@@ -245,28 +245,28 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="Vector3" setter="" getter="" default="Vector3( 1, 0, 0 )">
+		<member name="x" type="Vector3" setter="" getter="" default="Vector3(1, 0, 0)">
 			The basis matrix's X vector (column 0). Equivalent to array index [code]0[/code].
 		</member>
-		<member name="y" type="Vector3" setter="" getter="" default="Vector3( 0, 1, 0 )">
+		<member name="y" type="Vector3" setter="" getter="" default="Vector3(0, 1, 0)">
 			The basis matrix's Y vector (column 1). Equivalent to array index [code]1[/code].
 		</member>
-		<member name="z" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 1 )">
+		<member name="z" type="Vector3" setter="" getter="" default="Vector3(0, 0, 1)">
 			The basis matrix's Z vector (column 2). Equivalent to array index [code]2[/code].
 		</member>
 	</members>
 	<constants>
-		<constant name="IDENTITY" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+		<constant name="IDENTITY" value="Basis(1, 0, 0, 0, 1, 0, 0, 0, 1)">
 			The identity basis, with no rotation or scaling applied.
 			This is identical to calling [code]Basis()[/code] without any parameters. This constant can be used to make your code clearer, and for consistency with C#.
 		</constant>
-		<constant name="FLIP_X" value="Basis( -1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+		<constant name="FLIP_X" value="Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1)">
 			The basis that will flip something along the X axis when used in a transformation.
 		</constant>
-		<constant name="FLIP_Y" value="Basis( 1, 0, 0, 0, -1, 0, 0, 0, 1 )">
+		<constant name="FLIP_Y" value="Basis(1, 0, 0, 0, -1, 0, 0, 0, 1)">
 			The basis that will flip something along the Y axis when used in a transformation.
 		</constant>
-		<constant name="FLIP_Z" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, -1 )">
+		<constant name="FLIP_Z" value="Basis(1, 0, 0, 0, 1, 0, 0, 0, -1)">
 			The basis that will flip something along the Z axis when used in a transformation.
 		</constant>
 	</constants>

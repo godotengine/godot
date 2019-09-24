@@ -61,7 +61,7 @@
 			</argument>
 			<argument index="1" name="enable" type="bool">
 			</argument>
-			<argument index="2" name="arguments" type="Array" default="[  ]">
+			<argument index="2" name="arguments" type="Array" default="[]">
 			</argument>
 			<description>
 				Calls the [code]toggle[/code] callable of the profiler with given [code]name[/code] and [code]arguments[/code]. Enables/Disables the same profiler depending on [code]enable[/code] argument.

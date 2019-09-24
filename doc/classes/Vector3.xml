@@ -173,7 +173,7 @@
 			<return type="Vector3">
 			</return>
 			<description>
-				Returns the inverse of the vector. This is the same as [code]Vector3( 1.0 / v.x, 1.0 / v.y, 1.0 / v.z )[/code].
+				Returns the inverse of the vector. This is the same as [code]Vector3(1.0 / v.x, 1.0 / v.y, 1.0 / v.z)[/code].
 			</description>
 		</method>
 		<method name="is_equal_approx" qualifiers="const">
@@ -556,31 +556,31 @@
 		<constant name="AXIS_Z" value="2">
 			Enumerated value for the Z axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
-		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
+		<constant name="ZERO" value="Vector3(0, 0, 0)">
 			Zero vector, a vector with all components set to [code]0[/code].
 		</constant>
-		<constant name="ONE" value="Vector3( 1, 1, 1 )">
+		<constant name="ONE" value="Vector3(1, 1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
 		</constant>
-		<constant name="INF" value="Vector3( inf, inf, inf )">
+		<constant name="INF" value="Vector3(inf, inf, inf)">
 			Infinity vector, a vector with all components set to [constant @GDScript.INF].
 		</constant>
-		<constant name="LEFT" value="Vector3( -1, 0, 0 )">
+		<constant name="LEFT" value="Vector3(-1, 0, 0)">
 			Left unit vector. Represents the local direction of left, and the global direction of west.
 		</constant>
-		<constant name="RIGHT" value="Vector3( 1, 0, 0 )">
+		<constant name="RIGHT" value="Vector3(1, 0, 0)">
 			Right unit vector. Represents the local direction of right, and the global direction of east.
 		</constant>
-		<constant name="UP" value="Vector3( 0, 1, 0 )">
+		<constant name="UP" value="Vector3(0, 1, 0)">
 			Up unit vector.
 		</constant>
-		<constant name="DOWN" value="Vector3( 0, -1, 0 )">
+		<constant name="DOWN" value="Vector3(0, -1, 0)">
 			Down unit vector.
 		</constant>
-		<constant name="FORWARD" value="Vector3( 0, 0, -1 )">
+		<constant name="FORWARD" value="Vector3(0, 0, -1)">
 			Forward unit vector. Represents the local direction of forward, and the global direction of north.
 		</constant>
-		<constant name="BACK" value="Vector3( 0, 0, 1 )">
+		<constant name="BACK" value="Vector3(0, 0, 1)">
 			Back unit vector. Represents the local direction of back, and the global direction of south.
 		</constant>
 	</constants>

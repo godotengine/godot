@@ -55,13 +55,13 @@
 		<member name="adjustment_saturation" type="float" setter="set_adjustment_saturation" getter="get_adjustment_saturation" default="1.0">
 			The global color saturation value of the rendered scene (default value is 1). Effective only if [code]adjustment_enabled[/code] is [code]true[/code].
 		</member>
-		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color( 0, 0, 0, 1 )">
+		<member name="ambient_light_color" type="Color" setter="set_ambient_light_color" getter="get_ambient_light_color" default="Color(0, 0, 0, 1)">
 			The ambient light's [Color].
 		</member>
 		<member name="ambient_light_energy" type="float" setter="set_ambient_light_energy" getter="get_ambient_light_energy" default="1.0">
 			The ambient light's energy. The higher the value, the stronger the light.
 		</member>
-		<member name="ambient_light_occlusion_color" type="Color" setter="set_ao_color" getter="get_ao_color" default="Color( 0, 0, 0, 1 )">
+		<member name="ambient_light_occlusion_color" type="Color" setter="set_ao_color" getter="get_ao_color" default="Color(0, 0, 0, 1)">
 		</member>
 		<member name="ambient_light_sky_contribution" type="float" setter="set_ambient_light_sky_contribution" getter="get_ambient_light_sky_contribution" default="1.0">
 			Defines the amount of light that the sky brings on the scene. A value of 0 means that the sky's light emission has no effect on the scene illumination, thus all ambient illumination is provided by the ambient light. On the contrary, a value of 1 means that all the light that affects the scene is provided by the sky, thus the ambient light parameter has no effect on the scene.
@@ -89,7 +89,7 @@
 		<member name="background_canvas_max_layer" type="int" setter="set_canvas_max_layer" getter="get_canvas_max_layer" default="0">
 			The maximum layer ID to display. Only effective when using the [constant BG_CANVAS] background mode.
 		</member>
-		<member name="background_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color( 0, 0, 0, 1 )">
+		<member name="background_color" type="Color" setter="set_bg_color" getter="get_bg_color" default="Color(0, 0, 0, 1)">
 			The [Color] displayed for clear areas of the scene. Only effective when using the [constant BG_COLOR] background mode.
 		</member>
 		<member name="background_energy" type="float" setter="set_bg_energy" getter="get_bg_energy" default="1.0">
@@ -111,7 +111,7 @@
 		</member>
 		<member name="fog_height_density" type="float" setter="set_fog_height_density" getter="get_fog_height_density" default="0.0">
 		</member>
-		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color( 0.5, 0.6, 0.7, 1 )">
+		<member name="fog_light_color" type="Color" setter="set_fog_light_color" getter="get_fog_light_color" default="Color(0.5, 0.6, 0.7, 1)">
 		</member>
 		<member name="fog_light_energy" type="float" setter="set_fog_light_energy" getter="get_fog_light_energy" default="1.0">
 		</member>
@@ -200,7 +200,7 @@
 		</member>
 		<member name="sky_custom_fov" type="float" setter="set_sky_custom_fov" getter="get_sky_custom_fov" default="0.0">
 		</member>
-		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3( 0, 0, 0 )">
+		<member name="sky_rotation" type="Vector3" setter="set_sky_rotation" getter="get_sky_rotation" default="Vector3(0, 0, 0)">
 		</member>
 		<member name="ss_reflections_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.2">
 			The depth tolerance for screen-space reflections.
@@ -263,7 +263,7 @@
 		</member>
 		<member name="volumetric_fog_length" type="float" setter="set_volumetric_fog_length" getter="get_volumetric_fog_length" default="64.0">
 		</member>
-		<member name="volumetric_fog_light" type="Color" setter="set_volumetric_fog_light" getter="get_volumetric_fog_light" default="Color( 0, 0, 0, 1 )">
+		<member name="volumetric_fog_light" type="Color" setter="set_volumetric_fog_light" getter="get_volumetric_fog_light" default="Color(0, 0, 0, 1)">
 		</member>
 		<member name="volumetric_fog_light_energy" type="float" setter="set_volumetric_fog_light_energy" getter="get_volumetric_fog_light_energy" default="1.0">
 		</member>

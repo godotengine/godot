@@ -72,7 +72,7 @@
 		<member name="file_mode" type="int" setter="set_file_mode" getter="get_file_mode" enum="FileDialog.FileMode" default="4">
 			The dialog's open or save mode, which affects the selection behavior. See [enum FileMode].
 		</member>
-		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray(  )">
+		<member name="filters" type="PackedStringArray" setter="set_filters" getter="get_filters" default="PackedStringArray()">
 			The available file type filters. For example, this shows only [code].png[/code] and [code].gd[/code] files: [code]set_filters(PackedStringArray(["*.png ; PNG Images","*.gd ; GDScript Files"]))[/code].
 		</member>
 		<member name="mode_overrides_title" type="bool" setter="set_mode_overrides_title" getter="is_mode_overriding_title" default="true">
@@ -139,16 +139,16 @@
 		<theme_item name="file" type="Texture2D">
 			Custom icon for files.
 		</theme_item>
-		<theme_item name="file_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="file_icon_modulate" type="Color" default="Color(1, 1, 1, 1)">
 			The color modulation applied to the file icon.
 		</theme_item>
-		<theme_item name="files_disabled" type="Color" default="Color( 0, 0, 0, 0.7 )">
+		<theme_item name="files_disabled" type="Color" default="Color(0, 0, 0, 0.7)">
 			The color tint for disabled files (when the [FileDialog] is used in open folder mode).
 		</theme_item>
 		<theme_item name="folder" type="Texture2D">
 			Custom icon for folders.
 		</theme_item>
-		<theme_item name="folder_icon_modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="folder_icon_modulate" type="Color" default="Color(1, 1, 1, 1)">
 			The color modulation applied to the folder icon.
 		</theme_item>
 		<theme_item name="forward_folder" type="Texture2D">

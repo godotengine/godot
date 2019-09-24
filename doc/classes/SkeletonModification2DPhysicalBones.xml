@@ -40,7 +40,7 @@
 		<method name="start_simulation">
 			<return type="void">
 			</return>
-			<argument index="0" name="bones" type="StringName[]" default="[  ]">
+			<argument index="0" name="bones" type="StringName[]" default="[]">
 			</argument>
 			<description>
 				Tell the [PhysicalBone2D] nodes to start simulating and interacting with the physics world.
@@ -50,7 +50,7 @@
 		<method name="stop_simulation">
 			<return type="void">
 			</return>
-			<argument index="0" name="bones" type="StringName[]" default="[  ]">
+			<argument index="0" name="bones" type="StringName[]" default="[]">
 			</argument>
 			<description>
 				Tell the [PhysicalBone2D] nodes to stop simulating and interacting with the physics world.

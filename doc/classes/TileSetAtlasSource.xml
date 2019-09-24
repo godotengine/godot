@@ -12,9 +12,9 @@
 			</return>
 			<argument index="0" name="atlas_coords" type="Vector2i">
 			</argument>
-			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i( -1, -1 )">
+			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i(-1, -1)">
 			</argument>
-			<argument index="2" name="new_size" type="Vector2i" default="Vector2i( -1, -1 )">
+			<argument index="2" name="new_size" type="Vector2i" default="Vector2i(-1, -1)">
 			</argument>
 			<description>
 			</description>
@@ -40,7 +40,7 @@
 			</return>
 			<argument index="0" name="atlas_coords" type="Vector2i">
 			</argument>
-			<argument index="1" name="size" type="Vector2i" default="Vector2i( 1, 1 )">
+			<argument index="1" name="size" type="Vector2i" default="Vector2i(1, 1)">
 			</argument>
 			<description>
 			</description>
@@ -154,9 +154,9 @@
 			</return>
 			<argument index="0" name="atlas_coords" type="Vector2i">
 			</argument>
-			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i( -1, -1 )">
+			<argument index="1" name="new_atlas_coords" type="Vector2i" default="Vector2i(-1, -1)">
 			</argument>
-			<argument index="2" name="new_size" type="Vector2i" default="Vector2i( -1, -1 )">
+			<argument index="2" name="new_size" type="Vector2i" default="Vector2i(-1, -1)">
 			</argument>
 			<description>
 			</description>
@@ -193,13 +193,13 @@
 		</method>
 	</methods>
 	<members>
-		<member name="margins" type="Vector2i" setter="set_margins" getter="get_margins" default="Vector2i( 0, 0 )">
+		<member name="margins" type="Vector2i" setter="set_margins" getter="get_margins" default="Vector2i(0, 0)">
 		</member>
-		<member name="separation" type="Vector2i" setter="set_separation" getter="get_separation" default="Vector2i( 0, 0 )">
+		<member name="separation" type="Vector2i" setter="set_separation" getter="get_separation" default="Vector2i(0, 0)">
 		</member>
 		<member name="texture" type="Texture2D" setter="set_texture" getter="get_texture">
 		</member>
-		<member name="tile_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i( 16, 16 )">
+		<member name="tile_size" type="Vector2i" setter="set_texture_region_size" getter="get_texture_region_size" default="Vector2i(16, 16)">
 		</member>
 	</members>
 	<constants>

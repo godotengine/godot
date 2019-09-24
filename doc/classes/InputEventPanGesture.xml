@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="delta" type="Vector2" setter="set_delta" getter="get_delta" default="Vector2( 0, 0 )">
+		<member name="delta" type="Vector2" setter="set_delta" getter="get_delta" default="Vector2(0, 0)">
 		</member>
 	</members>
 	<constants>

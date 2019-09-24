@@ -107,7 +107,7 @@
 		<member name="infinite_inertia" type="bool" setter="set_infinite_inertia_enabled" getter="is_infinite_inertia_enabled" default="true">
 			If [code]true[/code], the body will be able to push [RigidBody2D] nodes when calling [method move_and_slide], but it also won't detect any collisions with them. If [code]false[/code], it will interact with [RigidBody2D] nodes like with [StaticBody2D].
 		</member>
-		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2( 0, 0 )">
+		<member name="linear_velocity" type="Vector2" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector2(0, 0)">
 			Current velocity vector in pixels per second, used and modified during calls to [method move_and_slide].
 		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
@@ -116,14 +116,14 @@
 		<member name="motion/sync_to_physics" type="bool" setter="set_sync_to_physics" getter="is_sync_to_physics_enabled" default="false">
 			If [code]true[/code], the body's movement will be synchronized to the physics frame. This is useful when animating movement via [AnimationPlayer], for example on moving platforms. Do [b]not[/b] use together with [method move_and_slide] or [method PhysicsBody2D.move_and_collide] functions.
 		</member>
-		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2( 0, 0 )">
+		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2(0, 0)">
 			When set to a value different from [code]Vector2(0, 0)[/code], the body is kept attached to slopes when calling [method move_and_slide].
 			As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code]Vector2(0, 0)[/code].
 		</member>
 		<member name="stop_on_slope" type="bool" setter="set_stop_on_slope_enabled" getter="is_stop_on_slope_enabled" default="false">
 			If [code]true[/code], the body will not slide on slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.
 		</member>
-		<member name="up_direction" type="Vector2" setter="set_up_direction" getter="get_up_direction" default="Vector2( 0, -1 )">
+		<member name="up_direction" type="Vector2" setter="set_up_direction" getter="get_up_direction" default="Vector2(0, -1)">
 			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector2.UP[/code]. If set to [code]Vector2(0, 0)[/code], everything is considered a wall. This is useful for topdown games.
 		</member>
 	</members>

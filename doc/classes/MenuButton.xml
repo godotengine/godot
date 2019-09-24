@@ -56,19 +56,19 @@
 		<theme_item name="font" type="Font">
 			[Font] of the [MenuButton]'s text.
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Default text [Color] of the [MenuButton].
 		</theme_item>
-		<theme_item name="font_disabled_color" type="Color" default="Color( 1, 1, 1, 0.3 )">
+		<theme_item name="font_disabled_color" type="Color" default="Color(1, 1, 1, 0.3)">
 			Text [Color] used when the [MenuButton] is disabled.
 		</theme_item>
-		<theme_item name="font_hover_color" type="Color" default="Color( 0.94, 0.94, 0.94, 1 )">
+		<theme_item name="font_hover_color" type="Color" default="Color(0.94, 0.94, 0.94, 1)">
 			Text [Color] used when the [MenuButton] is being hovered.
 		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [MenuButton].
 		</theme_item>
-		<theme_item name="font_pressed_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_pressed_color" type="Color" default="Color(1, 1, 1, 1)">
 			Text [Color] used when the [MenuButton] is being pressed.
 		</theme_item>
 		<theme_item name="font_size" type="int">

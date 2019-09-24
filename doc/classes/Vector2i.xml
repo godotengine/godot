@@ -246,22 +246,22 @@
 		<constant name="AXIS_Y" value="1">
 			Enumerated value for the Y axis.
 		</constant>
-		<constant name="ZERO" value="Vector2i( 0, 0 )">
+		<constant name="ZERO" value="Vector2i(0, 0)">
 			Zero vector, a vector with all components set to [code]0[/code].
 		</constant>
-		<constant name="ONE" value="Vector2i( 1, 1 )">
+		<constant name="ONE" value="Vector2i(1, 1)">
 			One vector, a vector with all components set to [code]1[/code].
 		</constant>
-		<constant name="LEFT" value="Vector2i( -1, 0 )">
+		<constant name="LEFT" value="Vector2i(-1, 0)">
 			Left unit vector. Represents the direction of left.
 		</constant>
-		<constant name="RIGHT" value="Vector2i( 1, 0 )">
+		<constant name="RIGHT" value="Vector2i(1, 0)">
 			Right unit vector. Represents the direction of right.
 		</constant>
-		<constant name="UP" value="Vector2i( 0, -1 )">
+		<constant name="UP" value="Vector2i(0, -1)">
 			Up unit vector. Y is down in 2D, so this vector points -Y.
 		</constant>
-		<constant name="DOWN" value="Vector2i( 0, 1 )">
+		<constant name="DOWN" value="Vector2i(0, 1)">
 			Down unit vector. Y is down in 2D, so this vector points +Y.
 		</constant>
 	</constants>

@@ -192,7 +192,7 @@
 			</return>
 			<argument index="0" name="url" type="String">
 			</argument>
-			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray(  )">
+			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()">
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
@@ -211,13 +211,13 @@
 			</return>
 			<argument index="0" name="url" type="String">
 			</argument>
-			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray(  )">
+			<argument index="1" name="custom_headers" type="PackedStringArray" default="PackedStringArray()">
 			</argument>
 			<argument index="2" name="ssl_validate_domain" type="bool" default="true">
 			</argument>
 			<argument index="3" name="method" type="int" enum="HTTPClient.Method" default="0">
 			</argument>
-			<argument index="4" name="request_data_raw" type="PackedByteArray" default="PackedByteArray(  )">
+			<argument index="4" name="request_data_raw" type="PackedByteArray" default="PackedByteArray()">
 			</argument>
 			<description>
 				Creates request on the underlying [HTTPClient] using a raw array of bytes for the request body. If there is no configuration errors, it tries to connect using [method HTTPClient.connect_to_host] and passes parameters onto [method HTTPClient.request].

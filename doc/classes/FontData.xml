@@ -61,7 +61,7 @@
 			</argument>
 			<argument index="3" name="index" type="int">
 			</argument>
-			<argument index="4" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draws single glyph into a canvas item at the position, using [code]font[/code] at the size [code]size[/code].
@@ -82,7 +82,7 @@
 			</argument>
 			<argument index="4" name="index" type="int">
 			</argument>
-			<argument index="5" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font[/code] at the size [code]size[/code]. If outline drawing is not supported, nothing is drawn.

@@ -28,7 +28,7 @@
 		<method name="resume">
 			<return type="Variant">
 			</return>
-			<argument index="0" name="args" type="Array" default="[  ]">
+			<argument index="0" name="args" type="Array" default="[]">
 			</argument>
 			<description>
 			</description>

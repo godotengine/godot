@@ -66,10 +66,10 @@
 		<member name="flip_v" type="bool" setter="set_flip_v" getter="is_flipped_v" default="false">
 			If [code]true[/code], texture is flipped vertically.
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			A color value that gets multiplied on, could be used for mood-coloring or to simulate the color of light.
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The texture's drawing offset.
 		</member>
 		<member name="opacity" type="float" setter="set_opacity" getter="get_opacity" default="1.0">

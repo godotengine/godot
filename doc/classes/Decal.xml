@@ -79,13 +79,13 @@
 		<member name="emission_energy" type="float" setter="set_emission_energy" getter="get_emission_energy" default="1.0">
 			Energy multiplier for the emission texture. This will make the decal emit light at a higher intensity.
 		</member>
-		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3( 1, 1, 1 )">
+		<member name="extents" type="Vector3" setter="set_extents" getter="get_extents" default="Vector3(1, 1, 1)">
 			Sets the size of the [AABB] used by the decal. The AABB goes from [code]-extents[/code] to [code]extents[/code].
 		</member>
 		<member name="lower_fade" type="float" setter="set_lower_fade" getter="get_lower_fade" default="0.3">
 			Sets the curve over which the decal will fade as the surface gets further from the center of the [AABB].
 		</member>
-		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+		<member name="modulate" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			Changes the [Color] of the Decal by multiplying it with this value.
 		</member>
 		<member name="normal_fade" type="float" setter="set_normal_fade" getter="get_normal_fade" default="0.0">

@@ -18,7 +18,7 @@
 		<member name="constant_angular_velocity" type="float" setter="set_constant_angular_velocity" getter="get_constant_angular_velocity" default="0.0">
 			The body's constant angular velocity. This does not rotate the body (unless [member kinematic_motion] is enabled), but affects other bodies that touch it, as if it were rotating.
 		</member>
-		<member name="constant_linear_velocity" type="Vector2" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity" default="Vector2( 0, 0 )">
+		<member name="constant_linear_velocity" type="Vector2" setter="set_constant_linear_velocity" getter="get_constant_linear_velocity" default="Vector2(0, 0)">
 			The body's constant linear velocity. This does not move the body (unless [member kinematic_motion] is enabled), but affects other bodies that touch it, as if it were moving.
 		</member>
 		<member name="kinematic_motion" type="bool" setter="set_kinematic_motion_enabled" getter="is_kinematic_motion_enabled" default="false">

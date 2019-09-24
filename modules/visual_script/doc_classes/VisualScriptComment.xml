@@ -15,7 +15,7 @@
 		<member name="description" type="String" setter="set_description" getter="get_description" default="&quot;&quot;">
 			The text inside the comment node.
 		</member>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 150, 150 )">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(150, 150)">
 			The comment node's size (in pixels).
 		</member>
 		<member name="title" type="String" setter="set_title" getter="get_title" default="&quot;Comment&quot;">

@@ -620,7 +620,7 @@
 			</argument>
 			<argument index="5" name="reflection_source" type="int" enum="RenderingServer.EnvironmentReflectionSource" default="0">
 			</argument>
-			<argument index="6" name="ao_color" type="Color" default="Color( 0, 0, 0, 1 )">
+			<argument index="6" name="ao_color" type="Color" default="Color(0, 0, 0, 1)">
 			</argument>
 			<description>
 			</description>
@@ -2725,7 +2725,7 @@
 			</return>
 			<argument index="0" name="viewport" type="RID">
 			</argument>
-			<argument index="1" name="rect" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			<argument index="1" name="rect" type="Rect2" default="Rect2(0, 0, 0, 0)">
 			</argument>
 			<argument index="2" name="screen" type="int" default="0">
 			</argument>

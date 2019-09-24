@@ -57,7 +57,7 @@
 			</argument>
 			<argument index="1" name="to" type="Vector3">
 			</argument>
-			<argument index="2" name="exclude" type="Array" default="[  ]">
+			<argument index="2" name="exclude" type="Array" default="[]">
 			</argument>
 			<argument index="3" name="collision_mask" type="int" default="2147483647">
 			</argument>

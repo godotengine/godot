@@ -203,7 +203,7 @@
 			The scale of the cell items.
 			This does not affect the size of the grid cells themselves, only the items in them. This can be used to make cell items overlap their neighbors.
 		</member>
-		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3( 2, 2, 2 )">
+		<member name="cell_size" type="Vector3" setter="set_cell_size" getter="get_cell_size" default="Vector3(2, 2, 2)">
 			The dimensions of the grid's cells.
 			This does not affect the size of the meshes. See [member cell_scale].
 		</member>

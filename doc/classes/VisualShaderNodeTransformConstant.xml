@@ -11,7 +11,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="constant" type="Transform3D" setter="set_constant" getter="get_constant" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<member name="constant" type="Transform3D" setter="set_constant" getter="get_constant" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			A [Transform3D] constant which represents the state of this node.
 		</member>
 	</members>

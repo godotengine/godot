@@ -243,9 +243,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="buffers" type="Array" setter="set_buffers" getter="get_buffers" default="[  ]">
+		<member name="buffers" type="Array" setter="set_buffers" getter="get_buffers" default="[]">
 		</member>
-		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray(  )">
+		<member name="glb_data" type="PackedByteArray" setter="set_glb_data" getter="get_glb_data" default="PackedByteArray()">
 		</member>
 		<member name="json" type="Dictionary" setter="set_json" getter="get_json" default="{}">
 		</member>
@@ -253,7 +253,7 @@
 		</member>
 		<member name="minor_version" type="int" setter="set_minor_version" getter="get_minor_version" default="0">
 		</member>
-		<member name="root_nodes" type="Array" setter="set_root_nodes" getter="get_root_nodes" default="[  ]">
+		<member name="root_nodes" type="Array" setter="set_root_nodes" getter="get_root_nodes" default="[]">
 		</member>
 		<member name="scene_name" type="String" setter="set_scene_name" getter="get_scene_name" default="&quot;&quot;">
 		</member>

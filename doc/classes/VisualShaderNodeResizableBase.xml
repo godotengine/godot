@@ -9,7 +9,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2( 0, 0 )">
+		<member name="size" type="Vector2" setter="set_size" getter="get_size" default="Vector2(0, 0)">
 			The size of the node in the visual shader graph.
 		</member>
 	</members>

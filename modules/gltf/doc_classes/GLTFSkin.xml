@@ -53,13 +53,13 @@
 	<members>
 		<member name="godot_skin" type="Skin" setter="set_godot_skin" getter="get_godot_skin">
 		</member>
-		<member name="joints" type="PackedInt32Array" setter="set_joints" getter="get_joints" default="PackedInt32Array(  )">
+		<member name="joints" type="PackedInt32Array" setter="set_joints" getter="get_joints" default="PackedInt32Array()">
 		</member>
-		<member name="joints_original" type="PackedInt32Array" setter="set_joints_original" getter="get_joints_original" default="PackedInt32Array(  )">
+		<member name="joints_original" type="PackedInt32Array" setter="set_joints_original" getter="get_joints_original" default="PackedInt32Array()">
 		</member>
-		<member name="non_joints" type="PackedInt32Array" setter="set_non_joints" getter="get_non_joints" default="PackedInt32Array(  )">
+		<member name="non_joints" type="PackedInt32Array" setter="set_non_joints" getter="get_non_joints" default="PackedInt32Array()">
 		</member>
-		<member name="roots" type="PackedInt32Array" setter="set_roots" getter="get_roots" default="PackedInt32Array(  )">
+		<member name="roots" type="PackedInt32Array" setter="set_roots" getter="get_roots" default="PackedInt32Array()">
 		</member>
 		<member name="skeleton" type="int" setter="set_skeleton" getter="get_skeleton" default="-1">
 		</member>

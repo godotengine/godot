@@ -105,7 +105,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array(  )">
+		<member name="buffer" type="PackedFloat32Array" setter="set_buffer" getter="get_buffer" default="PackedFloat32Array()">
 		</member>
 		<member name="color_array" type="PackedColorArray" setter="_set_color_array" getter="_get_color_array">
 		</member>

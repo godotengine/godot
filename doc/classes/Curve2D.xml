@@ -15,9 +15,9 @@
 			</return>
 			<argument index="0" name="position" type="Vector2">
 			</argument>
-			<argument index="1" name="in" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="1" name="in" type="Vector2" default="Vector2(0, 0)">
 			</argument>
-			<argument index="2" name="out" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="2" name="out" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<argument index="3" name="at_position" type="int" default="-1">
 			</argument>

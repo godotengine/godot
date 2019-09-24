@@ -63,9 +63,9 @@
 			</argument>
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
-			<argument index="2" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="2" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
-			<argument index="3" name="dc_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="dc_color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
@@ -78,7 +78,7 @@
 			</argument>
 			<argument index="1" name="pos" type="Vector2">
 			</argument>
-			<argument index="2" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="2" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
@@ -93,7 +93,7 @@
 			</argument>
 			<argument index="2" name="outline_size" type="int" default="1">
 			</argument>
-			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw drop cap outline into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
@@ -108,7 +108,7 @@
 			</argument>
 			<argument index="2" name="line" type="int">
 			</argument>
-			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw single line of text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
@@ -125,7 +125,7 @@
 			</argument>
 			<argument index="3" name="outline_size" type="int" default="1">
 			</argument>
-			<argument index="4" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw outline of the single line of text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
@@ -140,9 +140,9 @@
 			</argument>
 			<argument index="2" name="outline_size" type="int" default="1">
 			</argument>
-			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
-			<argument index="4" name="dc_color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="4" name="dc_color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw outlines of all lines of the text and drop cap into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the top left corner of the bounding box.
@@ -344,7 +344,7 @@
 			</argument>
 			<argument index="2" name="size" type="int">
 			</argument>
-			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)">
 			</argument>
 			<argument index="4" name="opentype_features" type="Dictionary" default="{
 }">

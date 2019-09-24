@@ -692,7 +692,7 @@
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
 		</member>
-		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[]">
 			Set additional options for BiDi override.
 		</member>
 		<member name="syntax_highlighter" type="SyntaxHighlighter" setter="set_syntax_highlighter" getter="get_syntax_highlighter">
@@ -881,16 +881,16 @@
 		</constant>
 	</constants>
 	<theme_items>
-		<theme_item name="background_color" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="background_color" type="Color" default="Color(0, 0, 0, 0)">
 			Sets the background [Color] of this [TextEdit].
 		</theme_item>
-		<theme_item name="brace_mismatch_color" type="Color" default="Color( 1, 0.2, 0.2, 1 )">
+		<theme_item name="brace_mismatch_color" type="Color" default="Color(1, 0.2, 0.2, 1)">
 		</theme_item>
-		<theme_item name="caret_background_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="caret_background_color" type="Color" default="Color(0, 0, 0, 1)">
 		</theme_item>
-		<theme_item name="caret_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="caret_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 		</theme_item>
-		<theme_item name="current_line_color" type="Color" default="Color( 0.25, 0.25, 0.26, 0.8 )">
+		<theme_item name="current_line_color" type="Color" default="Color(0.25, 0.25, 0.26, 0.8)">
 			Sets the [Color] of the breakpoints. [member breakpoint_gutter] has to be enabled.
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
@@ -898,15 +898,15 @@
 		<theme_item name="font" type="Font">
 			Sets the default [Font].
 		</theme_item>
-		<theme_item name="font_color" type="Color" default="Color( 0.88, 0.88, 0.88, 1 )">
+		<theme_item name="font_color" type="Color" default="Color(0.88, 0.88, 0.88, 1)">
 			Sets the font [Color].
 		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
 			The tint of text outline of the [TextEdit].
 		</theme_item>
-		<theme_item name="font_readonly_color" type="Color" default="Color( 0.88, 0.88, 0.88, 0.5 )">
+		<theme_item name="font_readonly_color" type="Color" default="Color(0.88, 0.88, 0.88, 0.5)">
 		</theme_item>
-		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="font_selected_color" type="Color" default="Color(0, 0, 0, 1)">
 			Sets the [Color] of the selected text. [member override_selected_font_color] has to be enabled.
 		</theme_item>
 		<theme_item name="font_size" type="int">
@@ -924,7 +924,7 @@
 		<theme_item name="read_only" type="StyleBox">
 			Sets the [StyleBox] of this [TextEdit] when [member readonly] is enabled.
 		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color( 0.49, 0.49, 0.49, 1 )">
+		<theme_item name="selection_color" type="Color" default="Color(0.49, 0.49, 0.49, 1)">
 			Sets the highlight [Color] of text selections.
 		</theme_item>
 		<theme_item name="space" type="Texture2D">
@@ -933,7 +933,7 @@
 		<theme_item name="tab" type="Texture2D">
 			Sets a custom [Texture2D] for tab text characters.
 		</theme_item>
-		<theme_item name="word_highlighted_color" type="Color" default="Color( 0.8, 0.9, 0.9, 0.15 )">
+		<theme_item name="word_highlighted_color" type="Color" default="Color(0.8, 0.9, 0.9, 0.15)">
 			Sets the highlight [Color] of multiple occurrences. [member highlight_all_occurrences] has to be enabled.
 		</theme_item>
 	</theme_items>

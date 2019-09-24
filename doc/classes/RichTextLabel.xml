@@ -24,7 +24,7 @@
 			</argument>
 			<argument index="2" name="height" type="int" default="0">
 			</argument>
-			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="4" name="inline_align" type="int" enum="VAlign" default="0">
 			</argument>
@@ -209,13 +209,13 @@
 			</argument>
 			<argument index="2" name="size" type="int">
 			</argument>
-			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2( 0, 0, 0, 0 )">
+			<argument index="3" name="dropcap_margins" type="Rect2" default="Rect2(0, 0, 0, 0)">
 			</argument>
-			<argument index="4" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="4" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<argument index="5" name="outline_size" type="int" default="0">
 			</argument>
-			<argument index="6" name="outline_color" type="Color" default="Color( 0, 0, 0, 0 )">
+			<argument index="6" name="outline_color" type="Color" default="Color(0, 0, 0, 0)">
 			</argument>
 			<description>
 				Adds a [code][dropcap][/code] tag to the tag stack. Drop cap (dropped capital) is a decorative element at the beginning of a paragraph that is larger than the rest of the text.
@@ -450,7 +450,7 @@
 			The label's text in BBCode format. Is not representative of manual modifications to the internal tag stack. Erases changes made by other methods when edited.
 			[b]Note:[/b] It is unadvised to use the [code]+=[/code] operator with [code]bbcode_text[/code] (e.g. [code]bbcode_text += "some string"[/code]) as it replaces the whole text and can cause slowdowns. Use [method append_bbcode] for adding text instead, unless you absolutely need to close a tag that was opened in an earlier method call.
 		</member>
-		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[  ]">
+		<member name="custom_effects" type="Array" setter="set_effects" getter="get_effects" default="[]">
 			The currently installed custom effects. This is an array of [RichTextEffect]s.
 			To add a custom effect, it's more convenient to use [method install_effect].
 		</member>
@@ -484,7 +484,7 @@
 		<member name="structured_text_bidi_override" type="int" setter="set_structured_text_bidi_override" getter="get_structured_text_bidi_override" enum="Control.StructuredTextParser" default="0">
 			Set BiDi algorithm override for the structured text.
 		</member>
-		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[  ]">
+		<member name="structured_text_bidi_override_options" type="Array" setter="set_structured_text_bidi_override_options" getter="get_structured_text_bidi_override_options" default="[]">
 			Set additional options for BiDi override.
 		</member>
 		<member name="tab_size" type="int" setter="set_tab_size" getter="get_tab_size" default="4">
@@ -612,19 +612,19 @@
 		<theme_item name="bold_italics_font_size" type="int">
 			The font size used for bold italics text.
 		</theme_item>
-		<theme_item name="default_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="default_color" type="Color" default="Color(1, 1, 1, 1)">
 			The default text color.
 		</theme_item>
 		<theme_item name="focus" type="StyleBox">
 			The background The background used when the [RichTextLabel] is focused.
 		</theme_item>
-		<theme_item name="font_outline_color" type="Color" default="Color( 1, 1, 1, 1 )">
+		<theme_item name="font_outline_color" type="Color" default="Color(1, 1, 1, 1)">
 			The default tint of text outline.
 		</theme_item>
-		<theme_item name="font_selected_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="font_selected_color" type="Color" default="Color(0, 0, 0, 1)">
 			The color of selected text, used when [member selection_enabled] is [code]true[/code].
 		</theme_item>
-		<theme_item name="font_shadow_color" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="font_shadow_color" type="Color" default="Color(0, 0, 0, 0)">
 			The color of the font's shadow.
 		</theme_item>
 		<theme_item name="italics_font" type="Font">
@@ -654,7 +654,7 @@
 		<theme_item name="outline_size" type="int" default="0">
 			The size of the text outline.
 		</theme_item>
-		<theme_item name="selection_color" type="Color" default="Color( 0.1, 0.1, 1, 0.8 )">
+		<theme_item name="selection_color" type="Color" default="Color(0.1, 0.1, 1, 0.8)">
 			The color of the selection box.
 		</theme_item>
 		<theme_item name="shadow_as_outline" type="int" default="0">
@@ -666,16 +666,16 @@
 		<theme_item name="shadow_offset_y" type="int" default="1">
 			The vertical offset of the font's shadow.
 		</theme_item>
-		<theme_item name="table_border" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="table_border" type="Color" default="Color(0, 0, 0, 0)">
 			The default cell border color.
 		</theme_item>
-		<theme_item name="table_even_row_bg" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="table_even_row_bg" type="Color" default="Color(0, 0, 0, 0)">
 			The default background color for even rows.
 		</theme_item>
 		<theme_item name="table_hseparation" type="int" default="3">
 			The horizontal separation of elements in a table.
 		</theme_item>
-		<theme_item name="table_odd_row_bg" type="Color" default="Color( 0, 0, 0, 0 )">
+		<theme_item name="table_odd_row_bg" type="Color" default="Color(0, 0, 0, 0)">
 			The default background color for odd rows.
 		</theme_item>
 		<theme_item name="table_vseparation" type="int" default="3">

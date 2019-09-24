@@ -196,15 +196,15 @@
 			</argument>
 			<argument index="4" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
 			</argument>
-			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray(  )">
+			<argument index="5" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()">
 			</argument>
 			<argument index="6" name="clear_depth" type="float" default="1.0">
 			</argument>
 			<argument index="7" name="clear_stencil" type="int" default="0">
 			</argument>
-			<argument index="8" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="8" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)">
 			</argument>
-			<argument index="9" name="storage_textures" type="Array" default="[  ]">
+			<argument index="9" name="storage_textures" type="Array" default="[]">
 			</argument>
 			<description>
 			</description>
@@ -214,7 +214,7 @@
 			</return>
 			<argument index="0" name="screen" type="int" default="0">
 			</argument>
-			<argument index="1" name="clear_color" type="Color" default="Color( 0, 0, 0, 1 )">
+			<argument index="1" name="clear_color" type="Color" default="Color(0, 0, 0, 1)">
 			</argument>
 			<description>
 			</description>
@@ -234,15 +234,15 @@
 			</argument>
 			<argument index="5" name="final_depth_action" type="int" enum="RenderingDevice.FinalAction">
 			</argument>
-			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray(  )">
+			<argument index="6" name="clear_color_values" type="PackedColorArray" default="PackedColorArray()">
 			</argument>
 			<argument index="7" name="clear_depth" type="float" default="1.0">
 			</argument>
 			<argument index="8" name="clear_stencil" type="int" default="0">
 			</argument>
-			<argument index="9" name="region" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="9" name="region" type="Rect2" default="Rect2i(0, 0, 0, 0)">
 			</argument>
-			<argument index="10" name="storage_textures" type="RID[]" default="[  ]">
+			<argument index="10" name="storage_textures" type="RID[]" default="[]">
 			</argument>
 			<description>
 			</description>
@@ -316,7 +316,7 @@
 			</return>
 			<argument index="0" name="draw_list" type="int">
 			</argument>
-			<argument index="1" name="rect" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="1" name="rect" type="Rect2" default="Rect2i(0, 0, 0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -488,7 +488,7 @@
 			</argument>
 			<argument index="1" name="format" type="int" enum="RenderingDevice.IndexBufferFormat">
 			</argument>
-			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray()">
 			</argument>
 			<argument index="3" name="use_restart_indices" type="bool" default="false">
 			</argument>
@@ -606,7 +606,7 @@
 			</return>
 			<argument index="0" name="size_bytes" type="int">
 			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()">
 			</argument>
 			<argument index="2" name="usage" type="int" default="0">
 			</argument>
@@ -632,7 +632,7 @@
 			</argument>
 			<argument index="1" name="format" type="int" enum="RenderingDevice.DataFormat">
 			</argument>
-			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			<argument index="2" name="data" type="PackedByteArray" default="PackedByteArray()">
 			</argument>
 			<description>
 			</description>
@@ -690,7 +690,7 @@
 			</argument>
 			<argument index="1" name="view" type="RDTextureView">
 			</argument>
-			<argument index="2" name="data" type="PackedByteArray[]" default="[  ]">
+			<argument index="2" name="data" type="PackedByteArray[]" default="[]">
 			</argument>
 			<description>
 			</description>
@@ -788,7 +788,7 @@
 			</return>
 			<argument index="0" name="size_bytes" type="int">
 			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()">
 			</argument>
 			<description>
 			</description>
@@ -818,7 +818,7 @@
 			</return>
 			<argument index="0" name="size_bytes" type="int">
 			</argument>
-			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray(  )">
+			<argument index="1" name="data" type="PackedByteArray" default="PackedByteArray()">
 			</argument>
 			<argument index="2" name="use_as_storage" type="bool" default="false">
 			</argument>

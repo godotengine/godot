@@ -45,15 +45,15 @@
 		</method>
 	</methods>
 	<members>
-		<member name="bytecode_compute" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		<member name="bytecode_compute" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
 		</member>
-		<member name="bytecode_fragment" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		<member name="bytecode_fragment" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
 		</member>
-		<member name="bytecode_tesselation_control" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		<member name="bytecode_tesselation_control" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
 		</member>
-		<member name="bytecode_tesselation_evaluation" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		<member name="bytecode_tesselation_evaluation" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
 		</member>
-		<member name="bytecode_vertex" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray(  )">
+		<member name="bytecode_vertex" type="PackedByteArray" setter="set_stage_bytecode" getter="get_stage_bytecode" default="PackedByteArray()">
 		</member>
 		<member name="compile_error_compute" type="String" setter="set_stage_compile_error" getter="get_stage_compile_error" default="&quot;&quot;">
 		</member>

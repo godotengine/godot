@@ -141,7 +141,7 @@
 		</member>
 		<member name="collision_use_scale" type="bool" setter="set_collision_use_scale" getter="is_collision_using_scale" default="false">
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			Each particle's initial color. If the [GPUParticles2D]'s [code]texture[/code] is defined, it will be multiplied by this color. To have particle display color in a [BaseMaterial3D] make sure to set [member BaseMaterial3D.vertex_color_use_as_albedo] to [code]true[/code].
 		</member>
 		<member name="color_ramp" type="Texture2D" setter="set_color_ramp" getter="get_color_ramp">
@@ -156,7 +156,7 @@
 		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Damping randomness ratio.
 		</member>
-		<member name="direction" type="Vector3" setter="set_direction" getter="get_direction" default="Vector3( 1, 0, 0 )">
+		<member name="direction" type="Vector3" setter="set_direction" getter="get_direction" default="Vector3(1, 0, 0)">
 			Unit vector specifying the particles' emission direction.
 		</member>
 		<member name="emission_box_extents" type="Vector3" setter="set_emission_box_extents" getter="get_emission_box_extents">
@@ -183,7 +183,7 @@
 		<member name="flatness" type="float" setter="set_flatness" getter="get_flatness" default="0.0">
 			Amount of [member spread] along the Y axis.
 		</member>
-		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" default="Vector3( 0, -9.8, 0 )">
+		<member name="gravity" type="Vector3" setter="set_gravity" getter="get_gravity" default="Vector3(0, -9.8, 0)">
 			Gravity applied to every particle.
 		</member>
 		<member name="hue_variation" type="float" setter="set_param" getter="get_param" default="0.0">

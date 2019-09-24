@@ -92,7 +92,7 @@
 			</return>
 			<argument index="0" name="signal" type="String">
 			</argument>
-			<argument index="1" name="arguments" type="Array" default="[  ]">
+			<argument index="1" name="arguments" type="Array" default="[]">
 			</argument>
 			<description>
 				Adds a user-defined [code]signal[/code]. Arguments are optional, but can be added as an [Array] of dictionaries, each containing [code]name: String[/code] and [code]type: int[/code] (see [enum Variant.Type]) entries.
@@ -173,7 +173,7 @@
 			</argument>
 			<argument index="1" name="callable" type="Callable">
 			</argument>
-			<argument index="2" name="binds" type="Array" default="[  ]">
+			<argument index="2" name="binds" type="Array" default="[]">
 			</argument>
 			<argument index="3" name="flags" type="int" default="0">
 			</argument>

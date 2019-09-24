@@ -13,7 +13,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color" default="Color( 0.12, 0.12, 0.13, 1 )">
+		<member name="ground_bottom_color" type="Color" setter="set_ground_bottom_color" getter="get_ground_bottom_color" default="Color(0.12, 0.12, 0.13, 1)">
 			Color of the ground at the bottom. Blends with [member ground_horizon_color].
 		</member>
 		<member name="ground_curve" type="float" setter="set_ground_curve" getter="get_ground_curve" default="0.02">
@@ -22,7 +22,7 @@
 		<member name="ground_energy" type="float" setter="set_ground_energy" getter="get_ground_energy" default="1.0">
 			Amount of energy contribution from the ground.
 		</member>
-		<member name="ground_horizon_color" type="Color" setter="set_ground_horizon_color" getter="get_ground_horizon_color" default="Color( 0.37, 0.33, 0.31, 1 )">
+		<member name="ground_horizon_color" type="Color" setter="set_ground_horizon_color" getter="get_ground_horizon_color" default="Color(0.37, 0.33, 0.31, 1)">
 			Color of the ground at the horizon. Blends with [member ground_bottom_color].
 		</member>
 		<member name="sky_curve" type="float" setter="set_sky_curve" getter="get_sky_curve" default="0.09">
@@ -31,10 +31,10 @@
 		<member name="sky_energy" type="float" setter="set_sky_energy" getter="get_sky_energy" default="1.0">
 			Amount of energy contribution from the sky.
 		</member>
-		<member name="sky_horizon_color" type="Color" setter="set_sky_horizon_color" getter="get_sky_horizon_color" default="Color( 0.55, 0.69, 0.81, 1 )">
+		<member name="sky_horizon_color" type="Color" setter="set_sky_horizon_color" getter="get_sky_horizon_color" default="Color(0.55, 0.69, 0.81, 1)">
 			Color of the sky at the horizon. Blends with [member sky_top_color].
 		</member>
-		<member name="sky_top_color" type="Color" setter="set_sky_top_color" getter="get_sky_top_color" default="Color( 0.35, 0.46, 0.71, 1 )">
+		<member name="sky_top_color" type="Color" setter="set_sky_top_color" getter="get_sky_top_color" default="Color(0.35, 0.46, 0.71, 1)">
 			Color of the sky at the top. Blends with [member sky_horizon_color].
 		</member>
 		<member name="sun_angle_max" type="float" setter="set_sun_angle_max" getter="get_sun_angle_max" default="100.0">

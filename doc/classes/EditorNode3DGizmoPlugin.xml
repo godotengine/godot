@@ -163,7 +163,7 @@
 			</argument>
 			<argument index="2" name="on_top" type="bool" default="false">
 			</argument>
-			<argument index="3" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="3" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Creates an icon material with its variants (selected and/or editable) and adds them to the internal material list. They can then be accessed with [method get_material] and used in [method EditorNode3DGizmo.add_unscaled_billboard]. Should not be overridden.

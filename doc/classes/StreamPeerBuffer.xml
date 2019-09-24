@@ -49,7 +49,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data_array" type="PackedByteArray" setter="set_data_array" getter="get_data_array" default="PackedByteArray(  )">
+		<member name="data_array" type="PackedByteArray" setter="set_data_array" getter="get_data_array" default="PackedByteArray()">
 		</member>
 	</members>
 	<constants>

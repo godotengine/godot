@@ -93,20 +93,20 @@
 		<member name="infinite_inertia" type="bool" setter="set_infinite_inertia_enabled" getter="is_infinite_inertia_enabled" default="true">
 			If [code]true[/code], the body will be able to push [RigidBody3D] nodes when calling [method move_and_slide], but it also won't detect any collisions with them. If [code]false[/code], it will interact with [RigidBody3D] nodes like with [StaticBody3D].
 		</member>
-		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3( 0, 0, 0 )">
+		<member name="linear_velocity" type="Vector3" setter="set_linear_velocity" getter="get_linear_velocity" default="Vector3(0, 0, 0)">
 			Current velocity vector (typically meters per second), used and modified during calls to [method move_and_slide].
 		</member>
 		<member name="max_slides" type="int" setter="set_max_slides" getter="get_max_slides" default="4">
 			Maximum number of times the body can change direction before it stops when calling [method move_and_slide].
 		</member>
-		<member name="snap" type="Vector3" setter="set_snap" getter="get_snap" default="Vector3( 0, 0, 0 )">
+		<member name="snap" type="Vector3" setter="set_snap" getter="get_snap" default="Vector3(0, 0, 0)">
 			When set to a value different from [code]Vector3(0, 0, 0)[/code], the body is kept attached to slopes when calling [method move_and_slide].
 			As long as the [code]snap[/code] vector is in contact with the ground, the body will remain attached to the surface. This means you must disable snap in order to jump, for example. You can do this by setting [code]snap[/code] to [code]Vector3(0, 0, 0)[/code].
 		</member>
 		<member name="stop_on_slope" type="bool" setter="set_stop_on_slope_enabled" getter="is_stop_on_slope_enabled" default="false">
 			If [code]true[/code], the body will not slide on slopes when you include gravity in [code]linear_velocity[/code] when calling [method move_and_slide] and the body is standing still.
 		</member>
-		<member name="up_direction" type="Vector3" setter="set_up_direction" getter="get_up_direction" default="Vector3( 0, 1, 0 )">
+		<member name="up_direction" type="Vector3" setter="set_up_direction" getter="get_up_direction" default="Vector3(0, 1, 0)">
 			Direction vector used to determine what is a wall and what is a floor (or a ceiling), rather than a wall, when calling [method move_and_slide]. Defaults to [code]Vector3.UP[/code]. If set to [code]Vector3(0, 0, 0)[/code], everything is considered a wall. This is useful for topdown games.
 		</member>
 	</members>

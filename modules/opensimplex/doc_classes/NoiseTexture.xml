@@ -31,7 +31,7 @@
 		<member name="noise" type="OpenSimplexNoise" setter="set_noise" getter="get_noise">
 			The [OpenSimplexNoise] instance used to generate the noise.
 		</member>
-		<member name="noise_offset" type="Vector2" setter="set_noise_offset" getter="get_noise_offset" default="Vector2( 0, 0 )">
+		<member name="noise_offset" type="Vector2" setter="set_noise_offset" getter="get_noise_offset" default="Vector2(0, 0)">
 			An offset used to specify the noise space coordinate of the top left corner of the generated noise. This value is ignored if [member seamless] is enabled.
 		</member>
 		<member name="seamless" type="bool" setter="set_seamless" getter="get_seamless" default="false">

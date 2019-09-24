@@ -106,7 +106,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="lightmap_size_hint" type="Vector2i" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2i( 0, 0 )">
+		<member name="lightmap_size_hint" type="Vector2i" setter="set_lightmap_size_hint" getter="get_lightmap_size_hint" default="Vector2i(0, 0)">
 			Sets a hint to be used for lightmap resolution.
 		</member>
 	</members>

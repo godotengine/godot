@@ -13,7 +13,7 @@
 		</member>
 		<member name="normal_texture" type="Texture2D" setter="set_normal_texture" getter="get_normal_texture">
 		</member>
-		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color( 1, 1, 1, 1 )">
+		<member name="specular_color" type="Color" setter="set_specular_color" getter="get_specular_color" default="Color(1, 1, 1, 1)">
 		</member>
 		<member name="specular_shininess" type="float" setter="set_specular_shininess" getter="get_specular_shininess" default="1.0">
 		</member>

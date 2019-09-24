@@ -165,7 +165,7 @@
 		<member name="limit_top" type="int" setter="set_limit" getter="get_limit" default="-10000000">
 			Top scroll limit in pixels. The camera stops moving when reaching this value.
 		</member>
-		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2( 0, 0 )">
+		<member name="offset" type="Vector2" setter="set_offset" getter="get_offset" default="Vector2(0, 0)">
 			The camera's offset, useful for looking around or camera shake animations.
 		</member>
 		<member name="process_callback" type="int" setter="set_process_callback" getter="get_process_callback" enum="Camera2D.Camera2DProcessCallback" default="1">
@@ -180,7 +180,7 @@
 		<member name="smoothing_speed" type="float" setter="set_follow_smoothing" getter="get_follow_smoothing" default="5.0">
 			Speed in pixels per second of the camera's smoothing effect when [member smoothing_enabled] is [code]true[/code].
 		</member>
-		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2( 1, 1 )">
+		<member name="zoom" type="Vector2" setter="set_zoom" getter="get_zoom" default="Vector2(1, 1)">
 			The camera's zoom relative to the viewport. Values larger than [code]Vector2(1, 1)[/code] zoom out and smaller values zoom in. For an example, use [code]Vector2(0.5, 0.5)[/code] for a 2× zoom-in, and [code]Vector2(4, 4)[/code] for a 4× zoom-out.
 		</member>
 	</members>

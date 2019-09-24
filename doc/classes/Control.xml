@@ -395,7 +395,7 @@
 		<method name="get_cursor_shape" qualifiers="const">
 			<return type="int" enum="Control.CursorShape">
 			</return>
-			<argument index="0" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="0" name="position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Returns the mouse cursor shape the control displays on mouse hover. See [enum CursorShape].
@@ -549,7 +549,7 @@
 		<method name="get_tooltip" qualifiers="const">
 			<return type="String">
 			</return>
-			<argument index="0" name="at_position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="0" name="at_position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Returns the tooltip, which will appear when the cursor is resting over this control. See [member hint_tooltip].
@@ -1140,13 +1140,13 @@
 		<member name="rect_global_position" type="Vector2" setter="_set_global_position" getter="get_global_position">
 			The node's global position, relative to the world (usually to the top-left corner of the window).
 		</member>
-		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2( 0, 0 )">
+		<member name="rect_min_size" type="Vector2" setter="set_custom_minimum_size" getter="get_custom_minimum_size" default="Vector2(0, 0)">
 			The minimum size of the node's bounding rectangle. If you set it to a value greater than (0, 0), the node's bounding rectangle will always have at least this size, even if its content is smaller. If it's set to (0, 0), the node sizes automatically to fit its content, be it a texture or child nodes.
 		</member>
-		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2( 0, 0 )">
+		<member name="rect_pivot_offset" type="Vector2" setter="set_pivot_offset" getter="get_pivot_offset" default="Vector2(0, 0)">
 			By default, the node's pivot is its top-left corner. When you change its [member rect_scale], it will scale around this pivot. Set this property to [member rect_size] / 2 to center the pivot in the node's rectangle.
 		</member>
-		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2( 0, 0 )">
+		<member name="rect_position" type="Vector2" setter="_set_position" getter="get_position" default="Vector2(0, 0)">
 			The node's position, relative to its parent. It corresponds to the rectangle's top-left corner. The property is not affected by [member rect_pivot_offset].
 		</member>
 		<member name="rect_rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
@@ -1155,12 +1155,12 @@
 		<member name="rect_rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
 			The node's rotation around its pivot, in degrees. See [member rect_pivot_offset] to change the pivot's position.
 		</member>
-		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
+		<member name="rect_scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
 			The node's scale, relative to its [member rect_size]. Change this property to scale the node around its [member rect_pivot_offset]. The Control's [member hint_tooltip] will also scale according to this value.
 			[b]Note:[/b] This property is mainly intended to be used for animation purposes. Text inside the Control will look pixelated or blurry when the Control is scaled. To support multiple resolutions in your project, use an appropriate viewport stretch mode as described in the [url=https://docs.godotengine.org/en/latest/tutorials/viewports/multiple_resolutions.html]documentation[/url] instead of scaling Controls individually.
 			[b]Note:[/b] If the Control node is a child of a [Container] node, the scale will be reset to [code]Vector2(1, 1)[/code] when the scene is instanced. To set the Control's scale when it's instanced, wait for one frame using [code]yield(get_tree(), "idle_frame")[/code] then set its [member rect_scale] property.
 		</member>
-		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2( 0, 0 )">
+		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" default="Vector2(0, 0)">
 			The size of the node's bounding rectangle, in pixels. [Container] nodes update this property automatically.
 		</member>
 		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" default="1">

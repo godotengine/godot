@@ -149,7 +149,7 @@
 			</argument>
 			<argument index="4" name="index" type="int">
 			</argument>
-			<argument index="5" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draws single glyph into a canvas item at the position, using [code]font[/code] at the size [code]size[/code].
@@ -171,7 +171,7 @@
 			</argument>
 			<argument index="5" name="index" type="int">
 			</argument>
-			<argument index="6" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draws single glyph outline of size [code]outline_size[/code] into a canvas item at the position, using [code]font[/code] at the size [code]size[/code].
@@ -788,7 +788,7 @@
 			</argument>
 			<argument index="4" name="clip_r" type="float" default="-1">
 			</argument>
-			<argument index="5" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="5" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw shaped text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).
@@ -809,7 +809,7 @@
 			</argument>
 			<argument index="5" name="outline_size" type="int" default="1">
 			</argument>
-			<argument index="6" name="color" type="Color" default="Color( 1, 1, 1, 1 )">
+			<argument index="6" name="color" type="Color" default="Color(1, 1, 1, 1)">
 			</argument>
 			<description>
 				Draw the outline of the shaped text into a canvas item at a given position, with [code]color[/code]. [code]pos[/code] specifies the leftmost point of the baseline (for horizontal layout) or topmost point of the baseline (for vertical layout).

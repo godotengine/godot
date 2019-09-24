@@ -67,7 +67,7 @@
 		<member name="gravity_point" type="bool" setter="set_gravity_is_point" getter="is_gravity_a_point" default="false">
 			If [code]true[/code], gravity is calculated from a point (set via [member gravity_vec]). See also [member space_override].
 		</member>
-		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector" default="Vector3( 0, -1, 0 )">
+		<member name="gravity_vec" type="Vector3" setter="set_gravity_vector" getter="get_gravity_vector" default="Vector3(0, -1, 0)">
 			The area's gravity vector (not normalized). If gravity is a point (see [member gravity_point]), this will be the point of attraction.
 		</member>
 		<member name="linear_damp" type="float" setter="set_linear_damp" getter="get_linear_damp" default="0.1">

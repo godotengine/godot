@@ -285,7 +285,7 @@
 		<member name="overlay" type="int" setter="set_overlay" getter="get_overlay" enum="GraphNode.Overlay" default="0">
 			Sets the overlay shown above the GraphNode. See [enum Overlay].
 		</member>
-		<member name="position_offset" type="Vector2" setter="set_position_offset" getter="get_position_offset" default="Vector2( 0, 0 )">
+		<member name="position_offset" type="Vector2" setter="set_position_offset" getter="get_position_offset" default="Vector2(0, 0)">
 			The offset of the GraphNode, relative to the scroll offset of the [GraphEdit].
 			[b]Note:[/b] You cannot use position offset directly, as [GraphEdit] is a [Container].
 		</member>
@@ -365,7 +365,7 @@
 		<theme_item name="close" type="Texture2D">
 			The icon for the close button, visible when [member show_close] is enabled.
 		</theme_item>
-		<theme_item name="close_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="close_color" type="Color" default="Color(0, 0, 0, 1)">
 			The color modulation applied to the close button icon.
 		</theme_item>
 		<theme_item name="close_offset" type="int" default="18">
@@ -396,7 +396,7 @@
 		<theme_item name="resizer" type="Texture2D">
 			The icon used for resizer, visible when [member resizable] is enabled.
 		</theme_item>
-		<theme_item name="resizer_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="resizer_color" type="Color" default="Color(0, 0, 0, 1)">
 			The color modulation applied to the resizer icon.
 		</theme_item>
 		<theme_item name="selectedframe" type="StyleBox">
@@ -405,7 +405,7 @@
 		<theme_item name="separation" type="int" default="1">
 			The vertical distance between ports.
 		</theme_item>
-		<theme_item name="title_color" type="Color" default="Color( 0, 0, 0, 1 )">
+		<theme_item name="title_color" type="Color" default="Color(0, 0, 0, 1)">
 			Color of the title text.
 		</theme_item>
 		<theme_item name="title_font" type="Font">
