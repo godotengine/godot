@@ -12,7 +12,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="points" type="PackedVector3Array" setter="set_points" getter="get_points" default="PackedVector3Array(  )">
+		<member name="points" type="PackedVector3Array" setter="set_points" getter="get_points" default="PackedVector3Array()">
 			The list of 3D points forming the convex polygon shape.
 		</member>
 	</members>

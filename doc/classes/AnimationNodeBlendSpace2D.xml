@@ -132,13 +132,13 @@
 		<member name="blend_mode" type="int" setter="set_blend_mode" getter="get_blend_mode" enum="AnimationNodeBlendSpace2D.BlendMode" default="0">
 			Controls the interpolation between animations. See [enum BlendMode] constants.
 		</member>
-		<member name="max_space" type="Vector2" setter="set_max_space" getter="get_max_space" default="Vector2( 1, 1 )">
+		<member name="max_space" type="Vector2" setter="set_max_space" getter="get_max_space" default="Vector2(1, 1)">
 			The blend space's X and Y axes' upper limit for the points' position. See [method add_blend_point].
 		</member>
-		<member name="min_space" type="Vector2" setter="set_min_space" getter="get_min_space" default="Vector2( -1, -1 )">
+		<member name="min_space" type="Vector2" setter="set_min_space" getter="get_min_space" default="Vector2(-1, -1)">
 			The blend space's X and Y axes' lower limit for the points' position. See [method add_blend_point].
 		</member>
-		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2( 0.1, 0.1 )">
+		<member name="snap" type="Vector2" setter="set_snap" getter="get_snap" default="Vector2(0.1, 0.1)">
 			Position increment to snap to when moving a point.
 		</member>
 		<member name="x_label" type="String" setter="set_x_label" getter="get_x_label" default="&quot;x&quot;">

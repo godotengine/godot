@@ -17,11 +17,11 @@
 			</return>
 			<argument index="0" name="url" type="String">
 			</argument>
-			<argument index="1" name="protocols" type="PackedStringArray" default="PackedStringArray(  )">
+			<argument index="1" name="protocols" type="PackedStringArray" default="PackedStringArray()">
 			</argument>
 			<argument index="2" name="gd_mp_api" type="bool" default="false">
 			</argument>
-			<argument index="3" name="custom_headers" type="PackedStringArray" default="PackedStringArray(  )">
+			<argument index="3" name="custom_headers" type="PackedStringArray" default="PackedStringArray()">
 			</argument>
 			<description>
 				Connects to the given URL requesting one of the given [code]protocols[/code] as sub-protocol. If the list empty (default), no sub-protocol will be requested.

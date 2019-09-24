@@ -45,15 +45,15 @@
 			</return>
 			<argument index="0" name="vertices" type="PackedVector3Array">
 			</argument>
-			<argument index="1" name="uvs" type="PackedVector2Array" default="PackedVector2Array(  )">
+			<argument index="1" name="uvs" type="PackedVector2Array" default="PackedVector2Array()">
 			</argument>
-			<argument index="2" name="colors" type="PackedColorArray" default="PackedColorArray(  )">
+			<argument index="2" name="colors" type="PackedColorArray" default="PackedColorArray()">
 			</argument>
-			<argument index="3" name="uv2s" type="PackedVector2Array" default="PackedVector2Array(  )">
+			<argument index="3" name="uv2s" type="PackedVector2Array" default="PackedVector2Array()">
 			</argument>
-			<argument index="4" name="normals" type="PackedVector3Array" default="PackedVector3Array(  )">
+			<argument index="4" name="normals" type="PackedVector3Array" default="PackedVector3Array()">
 			</argument>
-			<argument index="5" name="tangents" type="Array" default="[  ]">
+			<argument index="5" name="tangents" type="Array" default="[]">
 			</argument>
 			<description>
 				Inserts a triangle fan made of array data into [Mesh] being constructed.

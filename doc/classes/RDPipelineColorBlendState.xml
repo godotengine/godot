@@ -9,9 +9,9 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="attachments" type="RDPipelineColorBlendStateAttachment[]" setter="set_attachments" getter="get_attachments" default="[  ]">
+		<member name="attachments" type="RDPipelineColorBlendStateAttachment[]" setter="set_attachments" getter="get_attachments" default="[]">
 		</member>
-		<member name="blend_constant" type="Color" setter="set_blend_constant" getter="get_blend_constant" default="Color( 0, 0, 0, 1 )">
+		<member name="blend_constant" type="Color" setter="set_blend_constant" getter="get_blend_constant" default="Color(0, 0, 0, 1)">
 		</member>
 		<member name="enable_logic_op" type="bool" setter="set_enable_logic_op" getter="get_enable_logic_op" default="false">
 		</member>

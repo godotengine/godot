@@ -213,9 +213,9 @@
 			</argument>
 			<argument index="2" name="value" type="float">
 			</argument>
-			<argument index="3" name="in_handle" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="3" name="in_handle" type="Vector2" default="Vector2(0, 0)">
 			</argument>
-			<argument index="4" name="out_handle" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="4" name="out_handle" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Inserts a Bezier Track key at the given [code]time[/code] in seconds. The [code]track_idx[/code] must be the index of a Bezier Track.

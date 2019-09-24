@@ -46,7 +46,7 @@
 			</argument>
 			<argument index="1" name="flags" type="int">
 			</argument>
-			<argument index="2" name="rect" type="Rect2i" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="2" name="rect" type="Rect2i" default="Rect2i(0, 0, 0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -64,7 +64,7 @@
 			</argument>
 			<argument index="1" name="shape" type="int" enum="DisplayServer.CursorShape" default="0">
 			</argument>
-			<argument index="2" name="hotspot" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="2" name="hotspot" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 			</description>
@@ -650,7 +650,7 @@
 			</return>
 			<argument index="0" name="existing_text" type="String">
 			</argument>
-			<argument index="1" name="position" type="Rect2" default="Rect2i( 0, 0, 0, 0 )">
+			<argument index="1" name="position" type="Rect2" default="Rect2i(0, 0, 0, 0)">
 			</argument>
 			<argument index="2" name="multiline" type="bool" default="false">
 			</argument>

@@ -57,9 +57,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="joints" type="PackedInt32Array" setter="set_joints" getter="get_joints" default="PackedInt32Array(  )">
+		<member name="joints" type="PackedInt32Array" setter="set_joints" getter="get_joints" default="PackedInt32Array()">
 		</member>
-		<member name="roots" type="PackedInt32Array" setter="set_roots" getter="get_roots" default="PackedInt32Array(  )">
+		<member name="roots" type="PackedInt32Array" setter="set_roots" getter="get_roots" default="PackedInt32Array()">
 		</member>
 	</members>
 	<constants>

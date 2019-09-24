@@ -226,7 +226,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color( 0.14, 0.14, 0.14, 1 )">
+		<member name="application/boot_splash/bg_color" type="Color" setter="" getter="" default="Color(0.14, 0.14, 0.14, 1)">
 			Background color for the boot splash.
 		</member>
 		<member name="application/boot_splash/fullsize" type="bool" setter="" getter="" default="true">
@@ -461,7 +461,7 @@
 		<member name="debug/settings/visual_script/max_call_stack" type="int" setter="" getter="" default="1024">
 			Maximum call stack in visual scripting, to avoid infinite recursion.
 		</member>
-		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color( 1, 0.2, 0.1, 0.8 )">
+		<member name="debug/shapes/collision/contact_color" type="Color" setter="" getter="" default="Color(1, 0.2, 0.1, 0.8)">
 			Color of the contact points between collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
 		<member name="debug/shapes/collision/draw_2d_outlines" type="bool" setter="" getter="" default="true">
@@ -470,22 +470,22 @@
 		<member name="debug/shapes/collision/max_contacts_displayed" type="int" setter="" getter="" default="10000">
 			Maximum number of contact points between collision shapes to display when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color( 0, 0.6, 0.7, 0.42 )">
+		<member name="debug/shapes/collision/shape_color" type="Color" setter="" getter="" default="Color(0, 0.6, 0.7, 0.42)">
 			Color of the collision shapes, visible when "Visible Collision Shapes" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color( 1, 0.7, 0.1, 0.4 )">
+		<member name="debug/shapes/navigation/disabled_geometry_color" type="Color" setter="" getter="" default="Color(1, 0.7, 0.1, 0.4)">
 			Color of the disabled navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
-		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color( 0.1, 1, 0.7, 0.4 )">
+		<member name="debug/shapes/navigation/geometry_color" type="Color" setter="" getter="" default="Color(0.1, 1, 0.7, 0.4)">
 			Color of the navigation geometry, visible when "Visible Navigation" is enabled in the Debug menu.
 		</member>
 		<member name="display/mouse_cursor/custom_image" type="String" setter="" getter="" default="&quot;&quot;">
 			Custom image for the mouse cursor (limited to 256×256).
 		</member>
-		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="" default="Vector2( 0, 0 )">
+		<member name="display/mouse_cursor/custom_image_hotspot" type="Vector2" setter="" getter="" default="Vector2(0, 0)">
 			Hotspot for the custom mouse cursor image.
 		</member>
-		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2( 10, 10 )">
+		<member name="display/mouse_cursor/tooltip_position_offset" type="Vector2" setter="" getter="" default="Vector2(10, 10)">
 			Position offset for tooltips, relative to the mouse cursor's hotspot.
 		</member>
 		<member name="display/window/dpi/allow_hidpi" type="bool" setter="" getter="" default="false">
@@ -551,7 +551,7 @@
 			prime-run %command%
 			[/codeblock]
 		</member>
-		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray( &quot;gd&quot;, &quot;gdshader&quot; )">
+		<member name="editor/script/search_in_file_extensions" type="PackedStringArray" setter="" getter="" default="PackedStringArray(&quot;gd&quot;, &quot;gdshader&quot;)">
 			Text-based file extensions to include in the script editor's "Find in Files" feature. You can add e.g. [code]tscn[/code] if you wish to also parse your scene files, especially if you use built-in scripts which are serialized in the scene files.
 		</member>
 		<member name="editor/script/templates_search_path" type="String" setter="" getter="" default="&quot;res://script_templates&quot;">
@@ -1222,7 +1222,7 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="physics/2d/default_gravity_vector" type="Vector2" setter="" getter="" default="Vector2( 0, 1 )">
+		<member name="physics/2d/default_gravity_vector" type="Vector2" setter="" getter="" default="Vector2(0, 1)">
 			The default gravity direction in 2D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
 			[codeblocks]
@@ -1274,7 +1274,7 @@
 			[/csharp]
 			[/codeblocks]
 		</member>
-		<member name="physics/3d/default_gravity_vector" type="Vector3" setter="" getter="" default="Vector3( 0, -1, 0 )">
+		<member name="physics/3d/default_gravity_vector" type="Vector3" setter="" getter="" default="Vector3(0, -1, 0)">
 			The default gravity direction in 3D.
 			[b]Note:[/b] This property is only read when the project starts. To change the default gravity vector at runtime, use the following code sample:
 			[codeblocks]
@@ -1366,7 +1366,7 @@
 		<member name="rendering/driver/threads/thread_model" type="int" setter="" getter="" default="1">
 			Thread model for rendering. Rendering on a thread can vastly improve performance, but synchronizing to the main thread can cause a bit more jitter.
 		</member>
-		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color( 0.3, 0.3, 0.3, 1 )">
+		<member name="rendering/environment/defaults/default_clear_color" type="Color" setter="" getter="" default="Color(0.3, 0.3, 0.3, 1)">
 			Default background clear color. Overridable per [Viewport] using its [Environment]. See [member Environment.background_mode] and [member Environment.background_color] in particular. To change this default color programmatically, use [method RenderingServer.set_default_clear_color].
 		</member>
 		<member name="rendering/environment/defaults/default_environment" type="String" setter="" getter="" default="&quot;&quot;">

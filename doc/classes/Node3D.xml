@@ -103,7 +103,7 @@
 			</return>
 			<argument index="0" name="target" type="Vector3">
 			</argument>
-			<argument index="1" name="up" type="Vector3" default="Vector3( 0, 1, 0 )">
+			<argument index="1" name="up" type="Vector3" default="Vector3(0, 1, 0)">
 			</argument>
 			<description>
 				Rotates itself so that the local -Z axis points towards the [code]target[/code] position.
@@ -118,7 +118,7 @@
 			</argument>
 			<argument index="1" name="target" type="Vector3">
 			</argument>
-			<argument index="2" name="up" type="Vector3" default="Vector3( 0, 1, 0 )">
+			<argument index="2" name="up" type="Vector3" default="Vector3(0, 1, 0)">
 			</argument>
 			<description>
 				Moves the node to the specified [code]position[/code], and then rotates itself to point toward the [code]target[/code] as per [method look_at]. Operations take place in global space.
@@ -291,23 +291,23 @@
 		<member name="global_transform" type="Transform3D" setter="set_global_transform" getter="get_global_transform">
 			World3D space (global) [Transform3D] of this node.
 		</member>
-		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3( 0, 0, 0 )">
+		<member name="position" type="Vector3" setter="set_position" getter="get_position" default="Vector3(0, 0, 0)">
 			Local position or translation of this node relative to the parent. This is equivalent to [code]transform.origin[/code].
 		</member>
 		<member name="rotation" type="Vector3" setter="set_rotation" getter="get_rotation">
 			Rotation part of the local transformation in radians, specified in terms of YXZ-Euler angles in the format (X angle, Y angle, Z angle).
 			[b]Note:[/b] In the mathematical sense, rotation is a matrix and not a vector. The three Euler angles, which are the three independent parameters of the Euler-angle parametrization of the rotation matrix, are stored in a [Vector3] data structure not because the rotation is a vector, but only because [Vector3] exists as a convenient data-structure to store 3 floating-point numbers. Therefore, applying affine operations on the rotation "vector" is not meaningful.
 		</member>
-		<member name="rotation_degrees" type="Vector3" setter="set_rotation_degrees" getter="get_rotation_degrees" default="Vector3( 0, 0, 0 )">
+		<member name="rotation_degrees" type="Vector3" setter="set_rotation_degrees" getter="get_rotation_degrees" default="Vector3(0, 0, 0)">
 			Rotation part of the local transformation in degrees, specified in terms of YXZ-Euler angles in the format (X angle, Y angle, Z angle).
 		</member>
-		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3( 1, 1, 1 )">
+		<member name="scale" type="Vector3" setter="set_scale" getter="get_scale" default="Vector3(1, 1, 1)">
 			Scale part of the local transformation.
 		</member>
 		<member name="top_level" type="bool" setter="set_as_top_level" getter="is_set_as_top_level" default="false">
 			If [code]true[/code], the node will not inherit its transformations from its parent. Node transformations are only in global space.
 		</member>
-		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<member name="transform" type="Transform3D" setter="set_transform" getter="get_transform" default="Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0)">
 			Local space [Transform3D] of this node, with respect to the parent node.
 		</member>
 		<member name="visibility_parent" type="NodePath" setter="set_visibility_parent" getter="get_visibility_parent" default="NodePath(&quot;&quot;)">

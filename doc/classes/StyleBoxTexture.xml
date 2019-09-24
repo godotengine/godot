@@ -116,10 +116,10 @@
 			A higher value means more of the source texture is considered to be part of the top border of the 3×3 box.
 			This is also the value used as fallback for [member StyleBox.content_margin_top] if it is negative.
 		</member>
-		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color( 1, 1, 1, 1 )">
+		<member name="modulate_color" type="Color" setter="set_modulate" getter="get_modulate" default="Color(1, 1, 1, 1)">
 			Modulates the color of the texture when this style box is drawn.
 		</member>
-		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2( 0, 0, 0, 0 )">
+		<member name="region_rect" type="Rect2" setter="set_region_rect" getter="get_region_rect" default="Rect2(0, 0, 0, 0)">
 			Species a sub-region of the texture to use.
 			This is equivalent to first wrapping the texture in an [AtlasTexture] with the same region.
 		</member>

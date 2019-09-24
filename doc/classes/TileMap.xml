@@ -103,7 +103,7 @@
 			</argument>
 			<argument index="1" name="source_id" type="int" default="-1">
 			</argument>
-			<argument index="2" name="atlas_coords" type="Vector2i" default="Vector2i( -1, -1 )">
+			<argument index="2" name="atlas_coords" type="Vector2i" default="Vector2i(-1, -1)">
 			</argument>
 			<argument index="3" name="alternative_tile" type="int" default="-1">
 			</argument>

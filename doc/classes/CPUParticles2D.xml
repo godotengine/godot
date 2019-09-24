@@ -148,7 +148,7 @@
 		<member name="anim_speed_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Animation speed randomness ratio.
 		</member>
-		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color( 1, 1, 1, 1 )">
+		<member name="color" type="Color" setter="set_color" getter="get_color" default="Color(1, 1, 1, 1)">
 			Each particle's initial color. If [member texture] is defined, it will be multiplied by this color.
 		</member>
 		<member name="color_ramp" type="Gradient" setter="set_color_ramp" getter="get_color_ramp">
@@ -163,7 +163,7 @@
 		<member name="damping_random" type="float" setter="set_param_randomness" getter="get_param_randomness" default="0.0">
 			Damping randomness ratio.
 		</member>
-		<member name="direction" type="Vector2" setter="set_direction" getter="get_direction" default="Vector2( 1, 0 )">
+		<member name="direction" type="Vector2" setter="set_direction" getter="get_direction" default="Vector2(1, 0)">
 			Unit vector specifying the particles' emission direction.
 		</member>
 		<member name="draw_order" type="int" setter="set_draw_order" getter="get_draw_order" enum="CPUParticles2D.DrawOrder" default="0">
@@ -199,7 +199,7 @@
 		<member name="fract_delta" type="bool" setter="set_fractional_delta" getter="get_fractional_delta" default="true">
 			If [code]true[/code], results in fractional delta calculation which has a smoother particles display effect.
 		</member>
-		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2( 0, 980 )">
+		<member name="gravity" type="Vector2" setter="set_gravity" getter="get_gravity" default="Vector2(0, 980)">
 			Gravity applied to every particle.
 		</member>
 		<member name="hue_variation" type="float" setter="set_param" getter="get_param" default="0.0">

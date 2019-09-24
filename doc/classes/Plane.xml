@@ -204,7 +204,7 @@
 			The distance from the origin to the plane, in the direction of [member normal]. This value is typically non-negative.
 			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is [code]d[/code], while the [code](a, b, c)[/code] coordinates are represented by the [member normal] property.
 		</member>
-		<member name="normal" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
+		<member name="normal" type="Vector3" setter="" getter="" default="Vector3(0, 0, 0)">
 			The normal of the plane, which must be normalized.
 			In the scalar equation of the plane [code]ax + by + cz = d[/code], this is the vector [code](a, b, c)[/code], where [code]d[/code] is the [member d] property.
 		</member>
@@ -219,13 +219,13 @@
 		</member>
 	</members>
 	<constants>
-		<constant name="PLANE_YZ" value="Plane( 1, 0, 0, 0 )">
+		<constant name="PLANE_YZ" value="Plane(1, 0, 0, 0)">
 			A plane that extends in the Y and Z axes (normal vector points +X).
 		</constant>
-		<constant name="PLANE_XZ" value="Plane( 0, 1, 0, 0 )">
+		<constant name="PLANE_XZ" value="Plane(0, 1, 0, 0)">
 			A plane that extends in the X and Z axes (normal vector points +Y).
 		</constant>
-		<constant name="PLANE_XY" value="Plane( 0, 0, 1, 0 )">
+		<constant name="PLANE_XY" value="Plane(0, 0, 1, 0)">
 			A plane that extends in the X and Y axes (normal vector points +Z).
 		</constant>
 	</constants>

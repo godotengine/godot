@@ -131,7 +131,7 @@
 		<member name="global_transform" type="Transform2D" setter="set_global_transform" getter="get_global_transform">
 			Global [Transform2D].
 		</member>
-		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2( 0, 0 )">
+		<member name="position" type="Vector2" setter="set_position" getter="get_position" default="Vector2(0, 0)">
 			Position, relative to the node's parent.
 		</member>
 		<member name="rotation" type="float" setter="set_rotation" getter="get_rotation" default="0.0">
@@ -140,7 +140,7 @@
 		<member name="rotation_degrees" type="float" setter="set_rotation_degrees" getter="get_rotation_degrees" default="0.0">
 			Rotation in degrees, relative to the node's parent.
 		</member>
-		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2( 1, 1 )">
+		<member name="scale" type="Vector2" setter="set_scale" getter="get_scale" default="Vector2(1, 1)">
 			The node's scale. Unscaled value: [code](1, 1)[/code].
 		</member>
 		<member name="skew" type="float" setter="set_skew" getter="get_skew" default="0.0">

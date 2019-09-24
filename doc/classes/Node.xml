@@ -568,7 +568,7 @@
 			</return>
 			<argument index="0" name="method" type="StringName">
 			</argument>
-			<argument index="1" name="args" type="Array" default="[  ]">
+			<argument index="1" name="args" type="Array" default="[]">
 			</argument>
 			<argument index="2" name="parent_first" type="bool" default="false">
 			</argument>

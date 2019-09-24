@@ -39,7 +39,7 @@
 			</argument>
 			<argument index="1" name="node" type="VisualScriptNode">
 			</argument>
-			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Add a node to the VisualScript.

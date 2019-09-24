@@ -209,7 +209,7 @@
 			- ~107.51 degrees in a 16:9 viewport
 			- ~121.63 degrees in a 21:9 viewport
 		</member>
-		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset" default="Vector2( 0, 0 )">
+		<member name="frustum_offset" type="Vector2" setter="set_frustum_offset" getter="get_frustum_offset" default="Vector2(0, 0)">
 			The camera's frustum offset. This can be changed from the default to create "tilted frustum" effects such as [url=https://zdoom.org/wiki/Y-shearing]Y-shearing[/url].
 		</member>
 		<member name="h_offset" type="float" setter="set_h_offset" getter="get_h_offset" default="0.0">

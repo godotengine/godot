@@ -138,7 +138,7 @@
 		<member name="exclude_parent" type="bool" setter="set_exclude_parent_body" getter="get_exclude_parent_body" default="true">
 			If [code]true[/code], the parent node will be excluded from collision detection.
 		</member>
-		<member name="target_position" type="Vector2" setter="set_target_position" getter="get_target_position" default="Vector2( 0, 50 )">
+		<member name="target_position" type="Vector2" setter="set_target_position" getter="get_target_position" default="Vector2(0, 50)">
 			The ray's destination point, relative to the RayCast's [code]position[/code].
 		</member>
 	</members>

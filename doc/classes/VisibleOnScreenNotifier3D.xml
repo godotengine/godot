@@ -21,7 +21,7 @@
 		</method>
 	</methods>
 	<members>
-		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb" default="AABB( -1, -1, -1, 2, 2, 2 )">
+		<member name="aabb" type="AABB" setter="set_aabb" getter="get_aabb" default="AABB(-1, -1, -1, 2, 2, 2)">
 			The VisibleOnScreenNotifier3D's bounding box.
 		</member>
 	</members>

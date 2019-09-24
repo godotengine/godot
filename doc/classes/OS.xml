@@ -94,7 +94,7 @@
 			</argument>
 			<argument index="1" name="arguments" type="PackedStringArray">
 			</argument>
-			<argument index="2" name="output" type="Array" default="[  ]">
+			<argument index="2" name="output" type="Array" default="[]">
 			</argument>
 			<argument index="3" name="read_stderr" type="bool" default="false">
 			</argument>

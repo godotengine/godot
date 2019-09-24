@@ -28,7 +28,7 @@
 			</argument>
 			<argument index="1" name="node" type="AnimationNode">
 			</argument>
-			<argument index="2" name="position" type="Vector2" default="Vector2( 0, 0 )">
+			<argument index="2" name="position" type="Vector2" default="Vector2(0, 0)">
 			</argument>
 			<description>
 				Adds a new node to the graph. The [code]position[/code] is used for display in the editor.
