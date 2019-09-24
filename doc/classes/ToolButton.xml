@@ -15,7 +15,7 @@
 	<methods>
 	</methods>
 	<members>
-		<member name="flat" type="bool" setter="set_flat" getter="is_flat" override="true" default="true"/>
+		<member name="flat" type="bool" setter="set_flat" getter="is_flat" override="true" default="true" />
 	</members>
 	<constants>
 	</constants>

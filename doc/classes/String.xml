@@ -655,6 +655,15 @@
 				If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
 			</description>
 		</method>
+		<method name="repeat">
+			<return type="String">
+			</return>
+			<argument index="0" name="count" type="int">
+			</argument>
+			<description>
+				Returns original string repeated a number of times. The number of repetitions is given by the argument.
+			</description>
+		</method>
 		<method name="replace">
 			<return type="String">
 			</return>
@@ -675,15 +684,6 @@
 			</argument>
 			<description>
 				Replaces occurrences of a case-insensitive substring with the given one inside the string.
-			</description>
-		</method>
-		<method name="repeat">
-			<return type="String">
-			</return>
-			<argument index="0" name="count" type="int">
-			</argument>
-			<description>
-				Returns original string repeated a number of times. The number of repetitions is given by the argument.
 			</description>
 		</method>
 		<method name="rfind">
