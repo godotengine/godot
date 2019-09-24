@@ -820,6 +820,7 @@
 			</argument>
 			<description>
 				Sets the window title to the specified string.
+				[b]Note:[/b] This should be used sporadically. Don't set this every frame, as that will negatively affect performance on some window managers.
 			</description>
 		</method>
 		<method name="shell_open">
