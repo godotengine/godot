@@ -128,18 +128,6 @@
 				[/codeblock]
 			</description>
 		</method>
-		<method name="gray">
-			<return type="float">
-			</return>
-			<description>
-				Returns the color's grayscale representation.
-				The gray value is calculated as [code](r + g + b) / 3[/code].
-				[codeblock]
-				var c = Color(0.2, 0.45, 0.82)
-				var gray = c.gray() # A value of 0.466667
-				[/codeblock]
-			</description>
-		</method>
 		<method name="inverted">
 			<return type="Color">
 			</return>
