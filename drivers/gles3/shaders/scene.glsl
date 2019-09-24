@@ -431,7 +431,6 @@ void main() {
 			 bone_weights.w;
 
 		world_matrix = world_matrix * transpose(m);
-
 	}
 #endif
 
