@@ -863,6 +863,8 @@ void BindingsGenerator::_generate_global_constants(StringBuilder &p_output) {
 
 Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vector<String> &r_compile_items) {
 
+	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
+
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 
@@ -984,6 +986,8 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vect
 
 Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir, Vector<String> &r_compile_items) {
 
+	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
+
 	DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
 
@@ -1063,6 +1067,8 @@ Error BindingsGenerator::generate_cs_editor_project(const String &p_proj_dir, Ve
 }
 
 Error BindingsGenerator::generate_cs_api(const String &p_output_dir) {
+
+	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
 
 	String output_dir = path::abspath(path::realpath(p_output_dir));
 
@@ -1703,6 +1709,8 @@ Error BindingsGenerator::_generate_cs_method(const BindingsGenerator::TypeInterf
 
 Error BindingsGenerator::generate_glue(const String &p_output_dir) {
 
+	ERR_FAIL_COND_V(!initialized, ERR_UNCONFIGURED);
+
 	bool dir_exists = DirAccess::exists(p_output_dir);
 	ERR_FAIL_COND_V_MSG(!dir_exists, ERR_FILE_BAD_PATH, "The output directory does not exist.");
 
@@ -2151,7 +2159,7 @@ StringName BindingsGenerator::_get_float_type_name_from_meta(GodotTypeInfo::Meta
 	}
 }
 
-void BindingsGenerator::_populate_object_type_interfaces() {
+bool BindingsGenerator::_populate_object_type_interfaces() {
 
 	obj_types.clear();
 
@@ -2229,7 +2237,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 			bool valid = false;
 			iprop.index = ClassDB::get_property_index(type_cname, iprop.cname, &valid);
-			ERR_FAIL_COND(!valid);
+			ERR_FAIL_COND_V(!valid, false);
 
 			iprop.proxy_name = escape_csharp_keyword(snake_to_pascal_case(iprop.cname));
 
@@ -2293,7 +2301,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			imethod.is_vararg = m && m->is_vararg();
 
 			if (!m && !imethod.is_virtual) {
-				ERR_FAIL_COND_MSG(!virtual_method_list.find(method_info),
+				ERR_FAIL_COND_V_MSG(!virtual_method_list.find(method_info), false,
 						"Missing MethodBind for non-virtual method: '" + itype.name + "." + imethod.name + "'.");
 
 				// A virtual method without the virtual flag. This is a special case.
@@ -2310,9 +2318,9 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				// which could actually will return something different.
 				// Let's put this to notify us if that ever happens.
 				if (itype.cname != name_cache.type_Object || imethod.name != "free") {
-					ERR_PRINTS("Notification: New unexpected virtual non-overridable method found."
-							   " We only expected Object.free, but found '" +
-							   itype.name + "." + imethod.name + "'.");
+					WARN_PRINTS("Notification: New unexpected virtual non-overridable method found."
+								" We only expected Object.free, but found '" +
+								itype.name + "." + imethod.name + "'.");
 				}
 			} else if (return_info.type == Variant::INT && return_info.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 				imethod.return_type.cname = return_info.class_name;
@@ -2324,7 +2332,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 					ERR_PRINTS("Return type is reference but hint is not '" _STR(PROPERTY_HINT_RESOURCE_TYPE) "'."
 							" Are you returning a reference type by pointer? Method: '" + itype.name + "." + imethod.name + "'.");
 					/* clang-format on */
-					ERR_FAIL();
+					ERR_FAIL_V(false);
 				}
 			} else if (return_info.hint == PROPERTY_HINT_RESOURCE_TYPE) {
 				imethod.return_type.cname = return_info.hint_string;
@@ -2345,8 +2353,10 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 			for (int i = 0; i < argc; i++) {
 				PropertyInfo arginfo = method_info.arguments[i];
 
+				String orig_arg_name = arginfo.name;
+
 				ArgumentInterface iarg;
-				iarg.name = arginfo.name;
+				iarg.name = orig_arg_name;
 
 				if (arginfo.type == Variant::INT && arginfo.usage & PROPERTY_USAGE_CLASS_IS_ENUM) {
 					iarg.type.cname = arginfo.class_name;
@@ -2370,7 +2380,9 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				iarg.name = escape_csharp_keyword(snake_to_camel_case(iarg.name));
 
 				if (m && m->has_default_argument(i)) {
-					_default_argument_from_variant(m->get_default_argument(i), iarg);
+					bool defval_ok = _arg_default_value_from_variant(m->get_default_argument(i), iarg);
+					ERR_FAIL_COND_V_MSG(!defval_ok, false,
+							"Cannot determine default value for argument '" + orig_arg_name + "' of method '" + itype.name + "." + imethod.name + "'.");
 				}
 
 				imethod.add_argument(iarg);
@@ -2450,7 +2462,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 				const StringName &constant_cname = E->get();
 				String constant_name = constant_cname.operator String();
 				int *value = class_info->constant_map.getptr(constant_cname);
-				ERR_FAIL_NULL(value);
+				ERR_FAIL_NULL_V(value, false);
 				constants.erase(constant_name);
 
 				ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
@@ -2486,7 +2498,7 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 		for (const List<String>::Element *E = constants.front(); E; E = E->next()) {
 			const String &constant_name = E->get();
 			int *value = class_info->constant_map.getptr(StringName(E->get()));
-			ERR_FAIL_NULL(value);
+			ERR_FAIL_NULL_V(value, false);
 
 			ConstantInterface iconstant(constant_name, snake_to_pascal_case(constant_name, true), *value);
 
@@ -2507,9 +2519,11 @@ void BindingsGenerator::_populate_object_type_interfaces() {
 
 		class_list.pop_front();
 	}
+
+	return true;
 }
 
-void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, ArgumentInterface &r_iarg) {
+bool BindingsGenerator::_arg_default_value_from_variant(const Variant &p_val, ArgumentInterface &r_iarg) {
 
 	r_iarg.default_argument = p_val;
 
@@ -2555,15 +2569,23 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_VAL;
 			break;
 		case Variant::OBJECT:
-			if (p_val.is_zero()) {
-				r_iarg.default_argument = "null";
-				break;
-			}
-			FALLTHROUGH;
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+
+			r_iarg.default_argument = "null";
+			break;
 		case Variant::DICTIONARY:
-		case Variant::_RID:
 			r_iarg.default_argument = "new %s()";
 			r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
+			break;
+		case Variant::_RID:
+			ERR_FAIL_COND_V_MSG(r_iarg.type.cname != name_cache.type_RID, false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' cannot have a default value of type '" + String(name_cache.type_RID) + "'.");
+
+			ERR_FAIL_COND_V_MSG(!p_val.is_zero(), false,
+					"Parameter of type '" + String(r_iarg.type.cname) + "' can only have null/zero as the default value.");
+
+			r_iarg.default_argument = "null";
 			break;
 		case Variant::ARRAY:
 		case Variant::POOL_BYTE_ARRAY:
@@ -2588,6 +2610,8 @@ void BindingsGenerator::_default_argument_from_variant(const Variant &p_val, Arg
 
 	if (r_iarg.def_param_mode == ArgumentInterface::CONSTANT && r_iarg.type.cname == name_cache.type_Variant && r_iarg.default_argument != "null")
 		r_iarg.def_param_mode = ArgumentInterface::NULLABLE_REF;
+
+	return true;
 }
 
 void BindingsGenerator::_populate_builtin_type_interfaces() {
@@ -2973,13 +2997,17 @@ void BindingsGenerator::_log(const char *p_format, ...) {
 
 void BindingsGenerator::_initialize() {
 
+	initialized = false;
+
 	EditorHelp::generate_doc();
 
 	enum_types.clear();
 
 	_initialize_blacklisted_methods();
 
-	_populate_object_type_interfaces();
+	bool obj_type_ok = _populate_object_type_interfaces();
+	ERR_FAIL_COND_MSG(!obj_type_ok, "Failed to generate object type interfaces");
+
 	_populate_builtin_type_interfaces();
 
 	_populate_global_constants();
@@ -2991,6 +3019,8 @@ void BindingsGenerator::_initialize() {
 
 	for (OrderedHashMap<StringName, TypeInterface>::Element E = obj_types.front(); E; E = E.next())
 		_generate_method_icalls(E.get());
+
+	initialized = true;
 }
 
 void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) {
@@ -3050,6 +3080,11 @@ void BindingsGenerator::handle_cmdline_args(const List<String> &p_cmdline_args) 
 	if (glue_dir_path.length() || cs_dir_path.length() || cpp_dir_path.length()) {
 		BindingsGenerator bindings_generator;
 		bindings_generator.set_log_print_enabled(true);
+
+		if (!bindings_generator.initialized) {
+			ERR_PRINTS("Failed to initialize the bindings generator");
+			::exit(0);
+		}
 
 		if (glue_dir_path.length()) {
 			if (bindings_generator.generate_glue(glue_dir_path) != OK)
