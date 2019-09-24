@@ -195,7 +195,27 @@ void Area2DSW::set_monitorable(bool p_monitorable) {
 	}
 
 	monitorable = p_monitorable;
-	_set_static(!monitorable);
+
+	for (Set<Constraint2DSW *>::Element *E = constraints.front(); E; E = E->next()) {
+
+		Area2Pair2DSW *p = dynamic_cast<Area2Pair2DSW *>(E->get());
+
+		if (p && p->colliding) {
+			if (p->area_a == this && p->area_b->has_area_monitor_callback()) {
+
+				if (monitorable)
+					p->area_b->add_area_to_query(p->area_a, p->shape_a, p->shape_b);
+				else
+					p->area_b->remove_area_from_query(p->area_a, p->shape_a, p->shape_b);
+
+			} else if (p->area_b == this && p->area_a->has_area_monitor_callback()) {
+				if (monitorable)
+					p->area_a->add_area_to_query(p->area_b, p->shape_b, p->shape_a);
+				else
+					p->area_a->remove_area_from_query(p->area_b, p->shape_b, p->shape_a);
+			}
+		}
+	}
 }
 
 void Area2DSW::call_queries() {
@@ -270,8 +290,8 @@ Area2DSW::Area2DSW() :
 		CollisionObject2DSW(TYPE_AREA),
 		monitor_query_list(this),
 		moved_list(this) {
-	_set_static(true); //areas are not active by default
-	space_override_mode = PhysicsServer2D::AREA_SPACE_OVERRIDE_DISABLED;
+	_set_static(false);
+	space_override_mode = Physics2DServer::AREA_SPACE_OVERRIDE_DISABLED;
 	gravity = 9.80665;
 	gravity_vector = Vector2(0, -1);
 	gravity_is_point = false;

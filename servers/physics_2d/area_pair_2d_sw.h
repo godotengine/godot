@@ -57,6 +57,8 @@ class Area2Pair2DSW : public Constraint2DSW {
 	int shape_b;
 	bool colliding;
 
+	friend void Area2DSW::set_monitorable(bool p_monitorable);
+
 public:
 	bool setup(real_t p_step);
 	void solve(real_t p_step);
