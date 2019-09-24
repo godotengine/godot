@@ -41,6 +41,7 @@
 #include "game_center.h"
 #include "icloud.h"
 #include "in_app_store.h"
+#include "ios.h"
 #include "main/input_default.h"
 #include "servers/audio_server.h"
 #include "servers/visual/rasterizer.h"
@@ -72,6 +73,7 @@ private:
 #ifdef ICLOUD_ENABLED
 	ICloud *icloud;
 #endif
+	iOS *ios;
 
 	MainLoop *main_loop;
 
@@ -178,6 +180,7 @@ public:
 	void set_data_dir(String p_dir);
 
 	virtual String get_name() const;
+	virtual String get_model_name() const;
 
 	Error shell_open(String p_uri);
 

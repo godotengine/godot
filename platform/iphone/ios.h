@@ -42,6 +42,7 @@ class iOS : public Object {
 public:
 	static void alert(const char *p_alert, const char *p_title);
 
+	String get_model() const;
 	String get_rate_url(int p_app_id) const;
 
 	iOS();
