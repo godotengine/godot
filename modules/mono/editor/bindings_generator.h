@@ -472,6 +472,7 @@ class BindingsGenerator {
 	};
 
 	bool log_print_enabled;
+	bool initialized;
 
 	OrderedHashMap<StringName, TypeInterface> obj_types;
 
@@ -502,6 +503,7 @@ class BindingsGenerator {
 		StringName type_VarArg;
 		StringName type_Object;
 		StringName type_Reference;
+		StringName type_RID;
 		StringName type_String;
 		StringName type_at_GlobalScope;
 		StringName enum_Error;
@@ -525,6 +527,7 @@ class BindingsGenerator {
 			type_VarArg = StaticCString::create("VarArg");
 			type_Object = StaticCString::create("Object");
 			type_Reference = StaticCString::create("Reference");
+			type_RID = StaticCString::create("RID");
 			type_String = StaticCString::create("String");
 			type_at_GlobalScope = StaticCString::create("@GlobalScope");
 			enum_Error = StaticCString::create("Error");
@@ -590,9 +593,9 @@ class BindingsGenerator {
 	StringName _get_int_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 	StringName _get_float_type_name_from_meta(GodotTypeInfo::Metadata p_meta);
 
-	void _default_argument_from_variant(const Variant &p_val, ArgumentInterface &r_iarg);
+	bool _arg_default_value_from_variant(const Variant &p_val, ArgumentInterface &r_iarg);
 
-	void _populate_object_type_interfaces();
+	bool _populate_object_type_interfaces();
 	void _populate_builtin_type_interfaces();
 
 	void _populate_global_constants();
@@ -621,12 +624,15 @@ public:
 	_FORCE_INLINE_ bool is_log_print_enabled() { return log_print_enabled; }
 	_FORCE_INLINE_ void set_log_print_enabled(bool p_enabled) { log_print_enabled = p_enabled; }
 
+	_FORCE_INLINE_ bool is_initialized() { return initialized; }
+
 	static uint32_t get_version();
 
 	static void handle_cmdline_args(const List<String> &p_cmdline_args);
 
 	BindingsGenerator() :
-			log_print_enabled(true) {
+			log_print_enabled(true),
+			initialized(false) {
 		_initialize();
 	}
 };
