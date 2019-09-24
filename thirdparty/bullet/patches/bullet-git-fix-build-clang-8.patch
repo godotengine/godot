@@ -1,0 +1,36 @@
+From 7638b7c5a659dceb4e580ae87d4d60b00847ef94 Mon Sep 17 00:00:00 2001
+From: =?UTF-8?q?Emil=20Nord=C3=A9n?= <emilnorden@yahoo.se>
+Date: Sat, 4 May 2019 08:38:53 +0200
+Subject: [PATCH] fixed build on latest version of clang
+
+---
+ src/Bullet3Common/b3Vector3.h | 2 +-
+ src/LinearMath/btVector3.h    | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/src/Bullet3Common/b3Vector3.h b/src/Bullet3Common/b3Vector3.h
+index 56e6c13311..a70d68d6e1 100644
+--- a/src/Bullet3Common/b3Vector3.h
++++ b/src/Bullet3Common/b3Vector3.h
+@@ -36,7 +36,7 @@ subject to the following restrictions:
+ #pragma warning(disable : 4556)  // value of intrinsic immediate argument '4294967239' is out of range '0 - 255'
+ #endif
+ 
+-#define B3_SHUFFLE(x, y, z, w) ((w) << 6 | (z) << 4 | (y) << 2 | (x))
++#define B3_SHUFFLE(x, y, z, w) (((w) << 6 | (z) << 4 | (y) << 2 | (x)) & 0xff)
+ //#define b3_pshufd_ps( _a, _mask ) (__m128) _mm_shuffle_epi32((__m128i)(_a), (_mask) )
+ #define b3_pshufd_ps(_a, _mask) _mm_shuffle_ps((_a), (_a), (_mask))
+ #define b3_splat3_ps(_a, _i) b3_pshufd_ps((_a), B3_SHUFFLE(_i, _i, _i, 3))
+diff --git a/src/LinearMath/btVector3.h b/src/LinearMath/btVector3.h
+index 61fd8d1e46..d65ed9808d 100644
+--- a/src/LinearMath/btVector3.h
++++ b/src/LinearMath/btVector3.h
+@@ -36,7 +36,7 @@ subject to the following restrictions:
+ #pragma warning(disable : 4556)  // value of intrinsic immediate argument '4294967239' is out of range '0 - 255'
+ #endif
+ 
+-#define BT_SHUFFLE(x, y, z, w) ((w) << 6 | (z) << 4 | (y) << 2 | (x))
++#define BT_SHUFFLE(x, y, z, w) (((w) << 6 | (z) << 4 | (y) << 2 | (x)) & 0xff)
+ //#define bt_pshufd_ps( _a, _mask ) (__m128) _mm_shuffle_epi32((__m128i)(_a), (_mask) )
+ #define bt_pshufd_ps(_a, _mask) _mm_shuffle_ps((_a), (_a), (_mask))
+ #define bt_splat3_ps(_a, _i) bt_pshufd_ps((_a), BT_SHUFFLE(_i, _i, _i, 3))
