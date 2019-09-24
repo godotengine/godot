@@ -156,7 +156,6 @@ class GridMapEditor : public VBoxContainer {
 	Transform cursor_transform;
 
 	Vector3 cursor_origin;
-	Vector3 last_mouseover;
 
 	int display_mode;
 	int selected_palette;

@@ -385,8 +385,8 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	if (!p.intersects_segment(from, from + normal * settings_pick_distance->get_value(), &inters))
 		return false;
 
-	//make sure the intersection is inside the frustum planes, to avoid
-	//painting on invisible regions
+	// Make sure the intersection is inside the frustum planes, to avoid
+	// Painting on invisible regions.
 	for (int i = 0; i < planes.size(); i++) {
 
 		Plane fp = local_xform.xform(planes[i]);
@@ -397,8 +397,6 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 	int cell[3];
 	float cell_size[3] = { node->get_cell_size().x, node->get_cell_size().y, node->get_cell_size().z };
 
-	last_mouseover = Vector3(-1, -1, -1);
-
 	for (int i = 0; i < 3; i++) {
 
 		if (i == edit_axis)
@@ -407,19 +405,11 @@ bool GridMapEditor::do_input_action(Camera *p_camera, const Point2 &p_point, boo
 
 			cell[i] = inters[i] / node->get_cell_size()[i];
 			if (inters[i] < 0)
-				cell[i] -= 1; //compensate negative
+				cell[i] -= 1; // Compensate negative.
 			grid_ofs[i] = cell[i] * cell_size[i];
 		}
-
-		/*if (cell[i]<0 || cell[i]>=grid_size[i]) {
-
-			cursor_visible=false;
-			_update_cursor_transform();
-			return false;
-		}*/
 	}
 
-	last_mouseover = Vector3(cell[0], cell[1], cell[2]);
 	VS::get_singleton()->instance_set_transform(grid_instance[edit_axis], node->get_global_transform() * edit_grid_xform);
 
 	if (cursor_instance.is_valid()) {
@@ -656,7 +646,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 			if (mb->is_pressed())
 				floor->set_value(floor->get_value() + mb->get_factor());
 
-			return true; //eaten
+			return true; // Eaten.
 		} else if (mb->get_button_index() == BUTTON_WHEEL_DOWN && (mb->get_command() || mb->get_shift())) {
 			if (mb->is_pressed())
 				floor->set_value(floor->get_value() - mb->get_factor());
@@ -702,9 +692,7 @@ bool GridMapEditor::forward_spatial_input_event(Camera *p_camera, const Ref<Inpu
 			return do_input_action(p_camera, Point2(mb->get_position().x, mb->get_position().y), true);
 		} else {
 
-			if (
-					(mb->get_button_index() == BUTTON_RIGHT && input_action == INPUT_ERASE) ||
-					(mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
+			if ((mb->get_button_index() == BUTTON_RIGHT && input_action == INPUT_ERASE) || (mb->get_button_index() == BUTTON_LEFT && input_action == INPUT_PAINT)) {
 
 				if (set_items.size()) {
 					undo_redo->create_action(TTR("GridMap Paint"));
@@ -933,7 +921,7 @@ void GridMapEditor::update_palette() {
 		item++;
 	}
 
-	if (selected != -1) {
+	if (selected != -1 && mesh_library_palette->get_item_count() > 0) {
 		mesh_library_palette->select(selected);
 	}
 
@@ -945,7 +933,6 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 	node = p_gridmap;
 	VS *vs = VS::get_singleton();
 
-	last_mouseover = Vector3(-1, -1, -1);
 	input_action = INPUT_NONE;
 	selection.active = false;
 	_update_selection_transform();
@@ -981,7 +968,7 @@ void GridMapEditor::edit(GridMap *p_gridmap) {
 
 	{
 
-		//update grids
+		// Update grids.
 		indicator_mat.instance();
 		indicator_mat->set_flag(SpatialMaterial::FLAG_UNSHADED, true);
 		indicator_mat->set_feature(SpatialMaterial::FEATURE_TRANSPARENT, true);
@@ -1052,9 +1039,7 @@ void GridMapEditor::_update_clip() {
 
 void GridMapEditor::update_grid() {
 
-	grid_xform.origin.x -= 1; //force update in hackish way.. what do i care
-
-	//VS *vs = VS::get_singleton();
+	grid_xform.origin.x -= 1; // Force update in hackish way.
 
 	grid_ofs[edit_axis] = edit_floor[edit_axis] * node->get_cell_size()[edit_axis];
 
@@ -1140,7 +1125,6 @@ void GridMapEditor::_notification(int p_what) {
 				SpatialEditorPlugin *sep = Object::cast_to<SpatialEditorPlugin>(editor->get_editor_plugin_screen());
 				if (sep)
 					sep->snap_cursor_to_plane(p);
-				//editor->get_editor_plugin_screen()->call("snap_cursor_to_plane",p);
 			}
 		} break;
 
@@ -1358,7 +1342,6 @@ GridMapEditor::GridMapEditor(EditorNode *p_editor) {
 	selected_palette = -1;
 	lock_view = false;
 	cursor_rot = 0;
-	last_mouseover = Vector3(-1, -1, -1);
 
 	selection_mesh = VisualServer::get_singleton()->mesh_create();
 	paste_mesh = VisualServer::get_singleton()->mesh_create();

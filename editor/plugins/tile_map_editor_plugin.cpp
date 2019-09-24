@@ -989,7 +989,7 @@ bool TileMapEditor::forward_gui_input(const Ref<InputEvent> &p_event) {
 			if (mb->is_pressed()) {
 
 				if (Input::get_singleton()->is_key_pressed(KEY_SPACE))
-					return false; //drag
+					return false; // Drag.
 
 				if (tool == TOOL_NONE) {
 
@@ -1593,7 +1593,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 			}
 		}
 
-		int max_lines = 10000; //avoid crash if size too smal
+		int max_lines = 10000; //avoid crash if size too small
 
 		if (node->get_half_offset() != TileMap::HALF_OFFSET_Y && node->get_half_offset() != TileMap::HALF_OFFSET_NEGATIVE_Y) {
 
@@ -1645,7 +1645,7 @@ void TileMapEditor::forward_canvas_draw_over_viewport(Control *p_overlay) {
 		p_overlay->draw_colored_polygon(points, Color(0.2, 0.8, 1, 0.4));
 	}
 
-	if (mouse_over) {
+	if (mouse_over && node->get_tileset().is_valid()) {
 
 		Vector2 endpoints[4] = {
 			node->map_to_world(over_tile, true),
