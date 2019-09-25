@@ -477,6 +477,7 @@ void FileSystemDock::_navigate_to_path(const String &p_path, bool p_select_in_fa
 }
 
 void FileSystemDock::navigate_to_path(const String &p_path) {
+	file_list_search_box->clear();
 	_navigate_to_path(p_path);
 }
 
