@@ -4,6 +4,7 @@
 #include "core/rid_owner.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
+#include "servers/visual/rasterizer_rd/shaders/giprobe_lighting.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
 
 class RasterizerSceneRD : public RasterizerScene {
@@ -107,6 +108,12 @@ private:
 	};
 
 	mutable RID_Owner<ReflectionProbeInstance> reflection_probe_instance_owner;
+
+	/* GIPROBE INSTANCE */
+
+	GiprobeLightingShaderRD giprobe_lighting_shader;
+	RID giprobe_lighting_shader_version;
+	RID giprobe_lighting_shader_version_shader;
 
 	/* SHADOW ATLAS */
 
