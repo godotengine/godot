@@ -870,7 +870,7 @@ Error BindingsGenerator::generate_cs_core_project(const String &p_proj_dir, Vect
 
 	if (!DirAccess::exists(p_proj_dir)) {
 		Error err = da->make_dir_recursive(p_proj_dir);
-		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create directory '" + p_proj_dir + "'.");
 	}
 
 	da->change_dir(p_proj_dir);

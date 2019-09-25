@@ -298,7 +298,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		}
 		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot pipe stream from process running with following arguments '" + argss + "'.");
 
 		char buf[65535];
 

@@ -321,7 +321,7 @@ bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		if (!f) {
 			ret = unzGoToNextFile(pkg);
 			fc++;
-			ERR_CONTINUE_MSG(true, "Can't open file from path: " + String(to_write) + ".");
+			ERR_CONTINUE_MSG(true, "Can't open file from path '" + String(to_write) + "'.");
 		}
 
 		f->store_buffer(data.ptr(), data.size());

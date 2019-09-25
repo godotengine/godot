@@ -358,7 +358,7 @@ float BitmapFont::get_descent() const {
 
 void BitmapFont::add_texture(const Ref<Texture> &p_texture) {
 
-	ERR_FAIL_COND(p_texture.is_null());
+	ERR_FAIL_COND_MSG(p_texture.is_null(), "It's not a reference to a valid Texture object.");
 	textures.push_back(p_texture);
 }
 

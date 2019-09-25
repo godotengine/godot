@@ -241,10 +241,7 @@ PoolVector<PoolVector<Face3> > Geometry::separate_objects(PoolVector<Face3> p_ar
 
 	bool error = _connect_faces(_fcptr, len, -1);
 
-	if (error) {
-
-		ERR_FAIL_COND_V(error, PoolVector<PoolVector<Face3> >()); // Invalid geometry.
-	}
+	ERR_FAIL_COND_V_MSG(error, PoolVector<PoolVector<Face3> >(), "Invalid geometry.");
 
 	// Group connected faces in separate objects.
 

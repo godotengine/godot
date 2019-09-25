@@ -83,7 +83,7 @@ Error ResourceImporterOGGVorbis::import(const String &p_source_file, const Strin
 
 	FileAccess *f = FileAccess::open(p_source_file, FileAccess::READ);
 
-	ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+	ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot open file '" + p_source_file + "'.");
 
 	size_t len = f->get_len();
 

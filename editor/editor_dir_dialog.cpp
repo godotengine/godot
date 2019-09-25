@@ -151,7 +151,7 @@ void EditorDirDialog::_make_dir_confirm() {
 	String dir = ti->get_metadata(0);
 
 	DirAccessRef d = DirAccess::open(dir);
-	ERR_FAIL_COND(!d);
+	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + dir + "'.");
 	Error err = d->make_dir(makedirname->get_text());
 
 	if (err != OK) {

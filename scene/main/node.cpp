@@ -2171,7 +2171,7 @@ void Node::_duplicate_and_reown(Node *p_new_parent, const Map<Node *, Node *> &p
 	if (get_filename() != "") {
 
 		Ref<PackedScene> res = ResourceLoader::load(get_filename());
-		ERR_FAIL_COND(res.is_null());
+		ERR_FAIL_COND_MSG(res.is_null(), "Cannot load scene: " + get_filename());
 		node = res->instance();
 		ERR_FAIL_COND(!node);
 	} else {

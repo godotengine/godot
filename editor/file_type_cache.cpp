@@ -99,6 +99,6 @@ void FileTypeCache::save() {
 
 FileTypeCache::FileTypeCache() {
 
-	ERR_FAIL_COND(singleton);
+	ERR_FAIL_COND_MSG(singleton, "FileTypeCache singleton already exist.");
 	singleton = this;
 }

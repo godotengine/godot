@@ -90,7 +90,7 @@ Error FileAccessMemory::_open(const String &p_path, int p_mode_flags) {
 	//name = DirAccess::normalize_path(name);
 
 	Map<String, Vector<uint8_t> >::Element *E = files->find(name);
-	ERR_FAIL_COND_V(!E, ERR_FILE_NOT_FOUND);
+	ERR_FAIL_COND_V_MSG(!E, ERR_FILE_NOT_FOUND, "Can't find file '" + p_path + "'.");
 
 	data = E->get().ptrw();
 	length = E->get().size();

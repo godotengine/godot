@@ -1418,7 +1418,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			DirAccess *da = DirAccess::open(base_path);
 			Error err2 = da->make_dir(subdir_name);
 			memdelete(da);
-			ERR_FAIL_COND_V(err2 != OK && err2 != ERR_ALREADY_EXISTS, err2);
+			ERR_FAIL_COND_V_MSG(err2 != OK && err2 != ERR_ALREADY_EXISTS, err2, "Cannot make directory '" + subdir_name + "'.");
 			base_path = base_path.plus_file(subdir_name);
 		}
 	}
@@ -1514,7 +1514,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 			Ref<PackedScene> packer = memnew(PackedScene);
 			packer->pack(child);
 			err = ResourceSaver::save(path, packer); //do not take over, let the changed files reload themselves
-			ERR_FAIL_COND_V(err != OK, err);
+			ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + path + "'.");
 		}
 	}
 
@@ -1522,7 +1522,7 @@ Error ResourceImporterScene::import(const String &p_source_file, const String &p
 	packer->pack(scene);
 	print_verbose("Saving scene to: " + p_save_path + ".scn");
 	err = ResourceSaver::save(p_save_path + ".scn", packer); //do not take over, let the changed files reload themselves
-	ERR_FAIL_COND_V(err != OK, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot save scene to file '" + p_save_path + ".scn'.");
 
 	memdelete(scene);
 
@@ -1549,7 +1549,7 @@ Node *EditorSceneImporterESCN::import_scene(const String &p_path, uint32_t p_fla
 
 	Error error;
 	Ref<PackedScene> ps = ResourceFormatLoaderText::singleton->load(p_path, p_path, &error);
-	ERR_FAIL_COND_V(!ps.is_valid(), NULL);
+	ERR_FAIL_COND_V_MSG(!ps.is_valid(), NULL, "Cannot load scene as text resource from path '" + p_path + "'.");
 
 	Node *scene = ps->instance();
 	ERR_FAIL_COND_V(!scene, NULL);

@@ -2061,7 +2061,7 @@ void EditorPropertyResource::_file_selected(const String &p_path) {
 
 	RES res = ResourceLoader::load(p_path);
 
-	ERR_FAIL_COND(res.is_null());
+	ERR_FAIL_COND_MSG(res.is_null(), "Cannot load resource from path '" + p_path + "'.");
 
 	List<PropertyInfo> prop_list;
 	get_edited_object()->get_property_list(&prop_list);

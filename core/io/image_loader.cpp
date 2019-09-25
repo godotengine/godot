@@ -46,14 +46,14 @@ bool ImageFormatLoader::recognize(const String &p_extension) const {
 }
 
 Error ImageLoader::load_image(String p_file, Ref<Image> p_image, FileAccess *p_custom, bool p_force_linear, float p_scale) {
-	ERR_FAIL_COND_V(p_image.is_null(), ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(p_image.is_null(), ERR_INVALID_PARAMETER, "It's not a reference to a valid Image object.");
 
 	FileAccess *f = p_custom;
 	if (!f) {
 		Error err;
 		f = FileAccess::open(p_file, FileAccess::READ, &err);
 		if (!f) {
-			ERR_PRINTS("Error opening file: " + p_file);
+			ERR_PRINTS("Error opening file '" + p_file + "'.");
 			return err;
 		}
 	}

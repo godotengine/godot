@@ -1249,7 +1249,7 @@ public:
 		Error err = OK;
 
 		FileAccess *fa_pack = FileAccess::open(p_path, FileAccess::WRITE, &err);
-		ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
+		ERR_FAIL_COND_V_MSG(err != OK, ERR_CANT_CREATE, "Cannot create file '" + p_path + "'.");
 
 		AppxPackager packager;
 		packager.init(fa_pack);

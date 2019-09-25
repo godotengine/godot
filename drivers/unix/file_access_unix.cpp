@@ -58,7 +58,7 @@
 
 void FileAccessUnix::check_errors() const {
 
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (feof(f)) {
 
@@ -76,7 +76,7 @@ Error FileAccessUnix::_open(const String &p_path, int p_mode_flags) {
 	path = fix_path(p_path);
 	//printf("opening %ls, %i\n", path.c_str(), Memory::get_static_mem_usage());
 
-	ERR_FAIL_COND_V(f, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V_MSG(f, ERR_ALREADY_IN_USE, "File is already in use.");
 	const char *mode_string;
 
 	if (p_mode_flags == READ)
@@ -171,7 +171,7 @@ String FileAccessUnix::get_path_absolute() const {
 
 void FileAccessUnix::seek(size_t p_position) {
 
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	last_error = OK;
 	if (fseek(f, p_position, SEEK_SET))
@@ -180,7 +180,7 @@ void FileAccessUnix::seek(size_t p_position) {
 
 void FileAccessUnix::seek_end(int64_t p_position) {
 
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 
 	if (fseek(f, p_position, SEEK_END))
 		check_errors();
@@ -188,7 +188,7 @@ void FileAccessUnix::seek_end(int64_t p_position) {
 
 size_t FileAccessUnix::get_position() const {
 
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	long pos = ftell(f);
 	if (pos < 0) {
@@ -200,7 +200,7 @@ size_t FileAccessUnix::get_position() const {
 
 size_t FileAccessUnix::get_len() const {
 
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 
 	long pos = ftell(f);
 	ERR_FAIL_COND_V(pos < 0, 0);
@@ -219,7 +219,7 @@ bool FileAccessUnix::eof_reached() const {
 
 uint8_t FileAccessUnix::get_8() const {
 
-	ERR_FAIL_COND_V(!f, 0);
+	ERR_FAIL_COND_V_MSG(!f, 0, "File must be opened before use.");
 	uint8_t b;
 	if (fread(&b, 1, 1, f) == 0) {
 		check_errors();
@@ -230,7 +230,7 @@ uint8_t FileAccessUnix::get_8() const {
 
 int FileAccessUnix::get_buffer(uint8_t *p_dst, int p_length) const {
 
-	ERR_FAIL_COND_V(!f, -1);
+	ERR_FAIL_COND_V_MSG(!f, -1, "File must be opened before use.");
 	int read = fread(p_dst, 1, p_length, f);
 	check_errors();
 	return read;
@@ -243,18 +243,19 @@ Error FileAccessUnix::get_error() const {
 
 void FileAccessUnix::flush() {
 
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	fflush(f);
 }
 
 void FileAccessUnix::store_8(uint8_t p_dest) {
 
-	ERR_FAIL_COND(!f);
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	ERR_FAIL_COND(fwrite(&p_dest, 1, 1, f) != 1);
 }
 
 void FileAccessUnix::store_buffer(const uint8_t *p_src, int p_length) {
-	ERR_FAIL_COND(!f);
+
+	ERR_FAIL_COND_MSG(!f, "File must be opened before use.");
 	ERR_FAIL_COND((int)fwrite(p_src, 1, p_length, f) != p_length);
 }
 

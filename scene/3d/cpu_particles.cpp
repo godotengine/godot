@@ -53,7 +53,7 @@ void CPUParticles::set_emitting(bool p_emitting) {
 
 void CPUParticles::set_amount(int p_amount) {
 
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles must be greater than 0.");
 
 	particles.resize(p_amount);
 	{
@@ -71,7 +71,7 @@ void CPUParticles::set_amount(int p_amount) {
 }
 void CPUParticles::set_lifetime(float p_lifetime) {
 
-	ERR_FAIL_COND(p_lifetime <= 0);
+	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 }
 
@@ -1193,7 +1193,7 @@ void CPUParticles::_notification(int p_what) {
 void CPUParticles::convert_from_particles(Node *p_particles) {
 
 	Particles *particles = Object::cast_to<Particles>(p_particles);
-	ERR_FAIL_COND(!particles);
+	ERR_FAIL_COND_MSG(!particles, "Only Particles nodes can be converted to CPUParticles.");
 
 	set_emitting(particles->is_emitting());
 	set_amount(particles->get_amount());

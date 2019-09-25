@@ -282,7 +282,7 @@ void CSGShape::_update_shape() {
 	root_mesh.unref(); //byebye root mesh
 
 	CSGBrush *n = _get_brush();
-	ERR_FAIL_COND(!n);
+	ERR_FAIL_COND_MSG(!n, "Cannot get CSGBrush.");
 
 	OAHashMap<Vector3, Vector3> vec_map;
 
@@ -2415,7 +2415,7 @@ NodePath CSGPolygon::get_path_node() const {
 }
 
 void CSGPolygon::set_path_interval(float p_interval) {
-	ERR_FAIL_COND(p_interval < 0.001);
+	ERR_FAIL_COND_MSG(p_interval < 0.001, "Path interval cannot be smaller than 0.001.");
 	path_interval = p_interval;
 	_make_dirty();
 	update_gizmo();

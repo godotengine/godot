@@ -117,7 +117,7 @@ static void godot_free(voidpf opaque, voidpf address) {
 
 void ZipArchive::close_handle(unzFile p_file) const {
 
-	ERR_FAIL_COND(!p_file);
+	ERR_FAIL_COND_MSG(!p_file, "Cannot close a file if none is open.");
 	FileAccess *f = (FileAccess *)unzGetOpaque(p_file);
 	unzCloseCurrentFile(p_file);
 	unzClose(p_file);
@@ -126,11 +126,11 @@ void ZipArchive::close_handle(unzFile p_file) const {
 
 unzFile ZipArchive::get_file_handle(String p_file) const {
 
-	ERR_FAIL_COND_V(!file_exists(p_file), NULL);
+	ERR_FAIL_COND_V_MSG(!file_exists(p_file), NULL, "File '" + p_file + " doesn't exist.");
 	File file = files[p_file];
 
 	FileAccess *f = FileAccess::open(packages[file.package].filename, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, NULL);
+	ERR_FAIL_COND_V_MSG(!f, NULL, "Cannot open file '" + packages[file.package].filename + "'.");
 
 	zlib_filefunc_def io;
 	zeromem(&io, sizeof(io));

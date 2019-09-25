@@ -158,7 +158,7 @@ void ResourceSaver::get_recognized_extensions(const RES &p_resource, List<String
 
 void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver, bool p_at_front) {
 
-	ERR_FAIL_COND(p_format_saver.is_null());
+	ERR_FAIL_COND_MSG(p_format_saver.is_null(), "It's not a reference to a valid ResourceFormatSaver object.");
 	ERR_FAIL_COND(saver_count >= MAX_SAVERS);
 
 	if (p_at_front) {
@@ -174,7 +174,7 @@ void ResourceSaver::add_resource_format_saver(Ref<ResourceFormatSaver> p_format_
 
 void ResourceSaver::remove_resource_format_saver(Ref<ResourceFormatSaver> p_format_saver) {
 
-	ERR_FAIL_COND(p_format_saver.is_null());
+	ERR_FAIL_COND_MSG(p_format_saver.is_null(), "It's not a reference to a valid ResourceFormatSaver object.");
 
 	// Find saver
 	int i = 0;

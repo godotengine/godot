@@ -598,7 +598,7 @@ class EditorExportPlatformAndroid : public EditorExportPlatform {
 				String dst_path = String("lib").plus_file(abi).plus_file(p_so.path.get_file());
 				Vector<uint8_t> array = FileAccess::get_file_as_array(p_so.path);
 				Error store_err = store_in_apk(ed, dst_path, array);
-				ERR_FAIL_COND_V(store_err, store_err);
+				ERR_FAIL_COND_V_MSG(store_err, store_err, "Cannot store in apk file '" + dst_path + "'.");
 			}
 		}
 		if (!exported) {
@@ -1670,7 +1670,7 @@ public:
 
 		DirAccessRef da = DirAccess::open("res://android");
 
-		ERR_FAIL_COND(!da);
+		ERR_FAIL_COND_MSG(!da, "Cannot open directory 'res://android'.");
 		Map<String, List<String> > directory_paths;
 		Map<String, List<String> > manifest_sections;
 		Map<String, List<String> > gradle_sections;
@@ -1946,7 +1946,7 @@ public:
 			//build project if custom build is enabled
 			String sdk_path = EDITOR_GET("export/android/custom_build_sdk_path");
 
-			ERR_FAIL_COND_V(sdk_path == "", ERR_UNCONFIGURED);
+			ERR_FAIL_COND_V_MSG(sdk_path == "", ERR_UNCONFIGURED, "Android SDK path must be configured in Editor Settings at 'export/android/custom_build_sdk_path'.");
 
 			_update_custom_build_project();
 

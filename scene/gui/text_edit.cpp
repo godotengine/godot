@@ -6110,7 +6110,7 @@ bool TextEdit::is_indent_using_spaces() const {
 }
 
 void TextEdit::set_indent_size(const int p_size) {
-	ERR_FAIL_COND(p_size <= 0);
+	ERR_FAIL_COND_MSG(p_size <= 0, "Indend size must be greater than 0.");
 	indent_size = p_size;
 	text.set_indent_size(p_size);
 
