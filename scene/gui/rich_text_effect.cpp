@@ -120,3 +120,7 @@ CharFXTransform::CharFXTransform() {
 	color = Color();
 	character = 0;
 }
+
+CharFXTransform::~CharFXTransform() {
+	environment.clear();
+}

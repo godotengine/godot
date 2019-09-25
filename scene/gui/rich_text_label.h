@@ -81,7 +81,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	class Item;
+	struct Item;
 
 	struct Line {
 
@@ -103,10 +103,7 @@ private:
 		}
 	};
 
-	class Item : public Object {
-		GDCLASS(Item, Object);
-
-	public:
+	struct Item {
 		int index;
 		Item *parent;
 		ItemType type;
@@ -129,10 +126,7 @@ private:
 		virtual ~Item() { _clear_children(); }
 	};
 
-	class ItemFrame : public Item {
-		GDCLASS(ItemFrame, Item);
-
-	public:
+	struct ItemFrame : public Item {
 		int parent_line;
 		bool cell;
 		Vector<Line> lines;
@@ -147,95 +141,59 @@ private:
 		}
 	};
 
-	class ItemText : public Item {
-		GDCLASS(ItemText, Item);
-
-	public:
+	struct ItemText : public Item {
 		String text;
 		ItemText() { type = ITEM_TEXT; }
 	};
 
-	class ItemImage : public Item {
-		GDCLASS(ItemImage, Item);
-
-	public:
+	struct ItemImage : public Item {
 		Ref<Texture> image;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
-	class ItemFont : public Item {
-		GDCLASS(ItemFont, Item);
-
-	public:
+	struct ItemFont : public Item {
 		Ref<Font> font;
 		ItemFont() { type = ITEM_FONT; }
 	};
 
-	class ItemColor : public Item {
-		GDCLASS(ItemColor, Item);
-
-	public:
+	struct ItemColor : public Item {
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
 	};
 
-	class ItemUnderline : public Item {
-		GDCLASS(ItemUnderline, Item);
-
-	public:
+	struct ItemUnderline : public Item {
 		ItemUnderline() { type = ITEM_UNDERLINE; }
 	};
 
-	class ItemStrikethrough : public Item {
-		GDCLASS(ItemStrikethrough, Item);
-
-	public:
+	struct ItemStrikethrough : public Item {
 		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
 	};
 
-	class ItemMeta : public Item {
-		GDCLASS(ItemMeta, Item);
-
-	public:
+	struct ItemMeta : public Item {
 		Variant meta;
 		ItemMeta() { type = ITEM_META; }
 	};
 
-	class ItemAlign : public Item {
-		GDCLASS(ItemAlign, Item);
-
-	public:
+	struct ItemAlign : public Item {
 		Align align;
 		ItemAlign() { type = ITEM_ALIGN; }
 	};
 
-	class ItemIndent : public Item {
-		GDCLASS(ItemIndent, Item);
-
-	public:
+	struct ItemIndent : public Item {
 		int level;
 		ItemIndent() { type = ITEM_INDENT; }
 	};
 
-	class ItemList : public Item {
-		GDCLASS(ItemList, Item);
-
-	public:
+	struct ItemList : public Item {
 		ListType list_type;
 		ItemList() { type = ITEM_LIST; }
 	};
 
-	class ItemNewline : public Item {
-		GDCLASS(ItemNewline, Item);
-
-	public:
+	struct ItemNewline : public Item {
 		ItemNewline() { type = ITEM_NEWLINE; }
 	};
 
-	class ItemTable : public Item {
-		GDCLASS(ItemTable, Item);
-
-	public:
+	struct ItemTable : public Item {
 		struct Column {
 			bool expand;
 			int expand_ratio;
@@ -249,20 +207,14 @@ private:
 		ItemTable() { type = ITEM_TABLE; }
 	};
 
-	class ItemFade : public Item {
-		GDCLASS(ItemFade, Item);
-
-	public:
+	struct ItemFade : public Item {
 		int starting_index;
 		int length;
 
 		ItemFade() { type = ITEM_FADE; }
 	};
 
-	class ItemFX : public Item {
-		GDCLASS(ItemFX, Item);
-
-	public:
+	struct ItemFX : public Item {
 		float elapsed_time;
 
 		ItemFX() {
@@ -270,10 +222,7 @@ private:
 		}
 	};
 
-	class ItemShake : public ItemFX {
-		GDCLASS(ItemShake, ItemFX);
-
-	public:
+	struct ItemShake : public ItemFX {
 		int strength;
 		float rate;
 		uint64_t _current_rng;
@@ -302,10 +251,7 @@ private:
 		}
 	};
 
-	class ItemWave : public ItemFX {
-		GDCLASS(ItemWave, ItemFX);
-
-	public:
+	struct ItemWave : public ItemFX {
 		float frequency;
 		float amplitude;
 
@@ -316,10 +262,7 @@ private:
 		}
 	};
 
-	class ItemTornado : public ItemFX {
-		GDCLASS(ItemTornado, ItemFX);
-
-	public:
+	struct ItemTornado : public ItemFX {
 		float radius;
 		float frequency;
 
@@ -330,10 +273,7 @@ private:
 		}
 	};
 
-	class ItemRainbow : public ItemFX {
-		GDCLASS(ItemRainbow, ItemFX);
-
-	public:
+	struct ItemRainbow : public ItemFX {
 		float saturation;
 		float value;
 		float frequency;
@@ -346,22 +286,21 @@ private:
 		}
 	};
 
-	class ItemCustomFX : public ItemFX {
-		GDCLASS(ItemCustomFX, ItemFX);
-
-	public:
-		String identifier;
-		Dictionary environment;
+	struct ItemCustomFX : public ItemFX {
+		Ref<CharFXTransform> char_fx_transform;
+		Ref<RichTextEffect> custom_effect;
 
 		ItemCustomFX() {
-			identifier = "";
-			environment = Dictionary();
 			type = ITEM_CUSTOMFX;
+
+			char_fx_transform.instance();
 		}
 
 		virtual ~ItemCustomFX() {
 			_clear_children();
-			environment.clear();
+
+			char_fx_transform.unref();
+			custom_effect.unref();
 		}
 	};
 
@@ -440,32 +379,7 @@ private:
 	bool _find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item = NULL);
 	bool _find_layout_subitem(Item *from, Item *to);
 	bool _find_by_type(Item *p_item, ItemType p_type);
-	template <typename T>
-	T *_fetch_by_type(Item *p_item, ItemType p_type) {
-		Item *item = p_item;
-		T *result = NULL;
-		while (item) {
-			if (item->type == p_type) {
-				result = Object::cast_to<T>(item);
-				if (result)
-					return result;
-			}
-			item = item->parent;
-		}
-
-		return result;
-	};
-	template <typename T>
-	void _fetch_item_stack(Item *p_item, Vector<T *> &r_stack) {
-		Item *item = p_item;
-		while (item) {
-			T *found = Object::cast_to<T>(item);
-			if (found) {
-				r_stack.push_back(found);
-			}
-			item = item->parent;
-		}
-	}
+	void _fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack);
 
 	void _update_scroll();
 	void _update_fx(ItemFrame *p_frame, float p_delta_time);
@@ -509,7 +423,7 @@ public:
 	void push_wave(float p_frequency, float p_amplitude);
 	void push_tornado(float p_frequency, float p_radius);
 	void push_rainbow(float p_saturation, float p_value, float p_frequency);
-	void push_customfx(String p_identifier, Dictionary p_environment);
+	void push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment);
 	void set_table_column_expand(int p_column, bool p_expand, int p_ratio = 1);
 	int get_current_table_column() const;
 	void push_cell();

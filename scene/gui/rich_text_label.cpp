@@ -348,6 +348,7 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 				int it_char_start = p_char_count;
 
 				Vector<ItemFX *> fx_stack = Vector<ItemFX *>();
+				_fetch_item_fx_stack(text, fx_stack);
 				bool custom_fx_ok = true;
 
 				if (p_mode == PROCESS_DRAW) {
@@ -359,8 +360,14 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 						strikethrough = true;
 					}
 
-					fade = _fetch_by_type<ItemFade>(text, ITEM_FADE);
-					_fetch_item_stack<ItemFX>(text, fx_stack);
+					Item *fade_item = it;
+					while (fade_item) {
+						if (fade_item->type == ITEM_FADE) {
+							fade = static_cast<ItemFade *>(fade_item);
+							break;
+						}
+						fade_item = fade_item->parent;
+					}
 
 				} else if (p_mode == PROCESS_CACHE) {
 					l.char_count += text->text.length();
@@ -467,18 +474,16 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 																				 faded_visibility > 0.0f);
 
 								for (int j = 0; j < fx_stack.size(); j++) {
-									ItemCustomFX *item_custom = Object::cast_to<ItemCustomFX>(fx_stack[j]);
-									ItemShake *item_shake = Object::cast_to<ItemShake>(fx_stack[j]);
-									ItemWave *item_wave = Object::cast_to<ItemWave>(fx_stack[j]);
-									ItemTornado *item_tornado = Object::cast_to<ItemTornado>(fx_stack[j]);
-									ItemRainbow *item_rainbow = Object::cast_to<ItemRainbow>(fx_stack[j]);
+									ItemFX *item_fx = fx_stack[j];
 
-									if (item_custom && custom_fx_ok) {
-										Ref<CharFXTransform> charfx = Ref<CharFXTransform>(memnew(CharFXTransform));
-										Ref<RichTextEffect> custom_effect = _get_custom_effect_by_code(item_custom->identifier);
+									if (item_fx->type == ITEM_CUSTOMFX && custom_fx_ok) {
+										ItemCustomFX *item_custom = static_cast<ItemCustomFX *>(item_fx);
+
+										Ref<CharFXTransform> charfx = item_custom->char_fx_transform;
+										Ref<RichTextEffect> custom_effect = item_custom->custom_effect;
+
 										if (!custom_effect.is_null()) {
 											charfx->elapsed_time = item_custom->elapsed_time;
-											charfx->environment = item_custom->environment;
 											charfx->relative_index = c_item_offset;
 											charfx->absolute_index = p_char_count;
 											charfx->visibility = visible;
@@ -494,7 +499,9 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 											visible &= charfx->visibility;
 											fx_char = charfx->character;
 										}
-									} else if (item_shake) {
+									} else if (item_fx->type == ITEM_SHAKE) {
+										ItemShake *item_shake = static_cast<ItemShake *>(item_fx);
+
 										uint64_t char_current_rand = item_shake->offset_random(c_item_offset);
 										uint64_t char_previous_rand = item_shake->offset_previous_random(c_item_offset);
 										uint64_t max_rand = 2147483647;
@@ -509,14 +516,20 @@ int RichTextLabel::_process_line(ItemFrame *p_frame, const Vector2 &p_ofs, int &
 																	 Math::cos(current_offset),
 																	 n_time)) *
 													 (float)item_shake->strength / 10.0f;
-									} else if (item_wave) {
+									} else if (item_fx->type == ITEM_WAVE) {
+										ItemWave *item_wave = static_cast<ItemWave *>(item_fx);
+
 										double value = Math::sin(item_wave->frequency * item_wave->elapsed_time + ((p_ofs.x + pofs) / 50)) * (item_wave->amplitude / 10.0f);
 										fx_offset += Point2(0, 1) * value;
-									} else if (item_tornado) {
+									} else if (item_fx->type == ITEM_TORNADO) {
+										ItemTornado *item_tornado = static_cast<ItemTornado *>(item_fx);
+
 										double torn_x = Math::sin(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + pofs) / 50)) * (item_tornado->radius);
 										double torn_y = Math::cos(item_tornado->frequency * item_tornado->elapsed_time + ((p_ofs.x + pofs) / 50)) * (item_tornado->radius);
 										fx_offset += Point2(torn_x, torn_y);
-									} else if (item_rainbow) {
+									} else if (item_fx->type == ITEM_RAINBOW) {
+										ItemRainbow *item_rainbow = static_cast<ItemRainbow *>(item_fx);
+
 										fx_color = fx_color.from_hsv(item_rainbow->frequency * (item_rainbow->elapsed_time + ((p_ofs.x + pofs) / 50)),
 												item_rainbow->saturation,
 												item_rainbow->value,
@@ -884,7 +897,11 @@ void RichTextLabel::_update_scroll() {
 void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_time) {
 	Item *it = p_frame;
 	while (it) {
-		ItemFX *ifx = Object::cast_to<ItemFX>(it);
+		ItemFX *ifx = NULL;
+
+		if (it->type == ITEM_CUSTOMFX || it->type == ITEM_SHAKE || it->type == ITEM_WAVE || it->type == ITEM_TORNADO || it->type == ITEM_RAINBOW) {
+			ifx = static_cast<ItemFX *>(it);
+		}
 
 		if (!ifx) {
 			it = _get_next_item(it, true);
@@ -893,7 +910,12 @@ void RichTextLabel::_update_fx(RichTextLabel::ItemFrame *p_frame, float p_delta_
 
 		ifx->elapsed_time += p_delta_time;
 
-		ItemShake *shake = Object::cast_to<ItemShake>(it);
+		ItemShake *shake = NULL;
+
+		if (it->type == ITEM_SHAKE) {
+			shake = static_cast<ItemShake *>(it);
+		}
+
 		if (shake) {
 			bool cycle = (shake->elapsed_time > (1.0f / shake->rate));
 			if (cycle) {
@@ -982,9 +1004,6 @@ void RichTextLabel::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_INTERNAL_PROCESS: {
 			float dt = get_process_delta_time();
-
-			for (int i = 0; i < custom_effects.size(); i++) {
-			}
 
 			_update_fx(main, dt);
 			update();
@@ -1408,6 +1427,17 @@ bool RichTextLabel::_find_by_type(Item *p_item, ItemType p_type) {
 	return false;
 }
 
+void RichTextLabel::_fetch_item_fx_stack(Item *p_item, Vector<ItemFX *> &r_stack) {
+	Item *item = p_item;
+	while (item) {
+		if (item->type == ITEM_CUSTOMFX || item->type == ITEM_SHAKE || item->type == ITEM_WAVE || item->type == ITEM_TORNADO || item->type == ITEM_RAINBOW) {
+			r_stack.push_back(static_cast<ItemFX *>(item));
+		}
+
+		item = item->parent;
+	}
+}
+
 bool RichTextLabel::_find_meta(Item *p_item, Variant *r_meta, ItemMeta **r_item) {
 	Item *item = p_item;
 
@@ -1776,10 +1806,10 @@ void RichTextLabel::push_rainbow(float p_saturation, float p_value, float p_freq
 	_add_item(item, true);
 }
 
-void RichTextLabel::push_customfx(String p_identifier, Dictionary p_environment) {
+void RichTextLabel::push_customfx(Ref<RichTextEffect> p_custom_effect, Dictionary p_environment) {
 	ItemCustomFX *item = memnew(ItemCustomFX);
-	item->identifier = p_identifier;
-	item->environment = p_environment;
+	item->custom_effect = p_custom_effect;
+	item->char_fx_transform->environment = p_environment;
 	_add_item(item, true);
 }
 
@@ -2287,7 +2317,7 @@ Error RichTextLabel::append_bbcode(const String &p_bbcode) {
 				Ref<RichTextEffect> effect = _get_custom_effect_by_code(identifier);
 
 				if (!effect.is_null()) {
-					push_customfx(identifier, properties);
+					push_customfx(effect, properties);
 					pos = brk_end + 1;
 					tag_stack.push_front(identifier);
 					set_process_internal(true);
@@ -2700,17 +2730,16 @@ Size2 RichTextLabel::get_minimum_size() const {
 }
 
 Ref<RichTextEffect> RichTextLabel::_get_custom_effect_by_code(String p_bbcode_identifier) {
-	Ref<RichTextEffect> r;
 	for (int i = 0; i < custom_effects.size(); i++) {
 		if (!custom_effects[i].is_valid())
 			continue;
 
 		if (custom_effects[i]->get_bbcode() == p_bbcode_identifier) {
-			r = custom_effects[i];
+			return custom_effects[i];
 		}
 	}
 
-	return r;
+	return Ref<RichTextEffect>();
 }
 
 Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressions) {
