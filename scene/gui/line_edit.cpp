@@ -757,20 +757,17 @@ void LineEdit::_notification(int p_what) {
 					}
 				}
 
-				float icon_width = MIN(r_icon->get_width(), r_icon->get_width() * (height - (style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM))) / r_icon->get_height());
-				float icon_height = MIN(r_icon->get_height(), height - (style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM)));
-				Rect2 icon_region = Rect2(Point2(width - icon_width - style->get_margin(MARGIN_RIGHT), height / 2 - icon_height / 2), Size2(icon_width, icon_height));
-				draw_texture_rect_region(r_icon, icon_region, Rect2(Point2(), r_icon->get_size()), color_icon);
+				r_icon->draw(ci, Point2(width - r_icon->get_width() - style->get_margin(MARGIN_RIGHT), height / 2 - r_icon->get_height() / 2), color_icon);
 
 				if (align == ALIGN_CENTER) {
 					if (window_pos == 0) {
-						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - cached_text_width - icon_width - style->get_margin(MARGIN_RIGHT) * 2) / 2);
+						x_ofs = MAX(style->get_margin(MARGIN_LEFT), int(size.width - cached_text_width - r_icon->get_width() - style->get_margin(MARGIN_RIGHT) * 2) / 2);
 					}
 				} else {
-					x_ofs = MAX(style->get_margin(MARGIN_LEFT), x_ofs - icon_width - style->get_margin(MARGIN_RIGHT));
+					x_ofs = MAX(style->get_margin(MARGIN_LEFT), x_ofs - r_icon->get_width() - style->get_margin(MARGIN_RIGHT));
 				}
 
-				ofs_max -= icon_width;
+				ofs_max -= r_icon->get_width();
 			}
 
 			int caret_height = font->get_height() > y_area ? y_area : font->get_height();
@@ -1279,10 +1276,7 @@ void LineEdit::set_cursor_position(int p_pos) {
 		bool display_clear_icon = !text.empty() && is_editable() && clear_button_enabled;
 		if (right_icon.is_valid() || display_clear_icon) {
 			Ref<Texture> r_icon = display_clear_icon ? Control::get_icon("clear") : right_icon;
-
-			float icon_width = MIN(r_icon->get_width(), r_icon->get_width() * (get_size().height - (style->get_margin(MARGIN_TOP) + style->get_margin(MARGIN_BOTTOM))) / r_icon->get_height());
-
-			window_width -= icon_width;
+			window_width -= r_icon->get_width();
 		}
 
 		if (window_width < 0)
@@ -1361,21 +1355,30 @@ Size2 LineEdit::get_minimum_size() const {
 	Ref<StyleBox> style = get_stylebox("normal");
 	Ref<Font> font = get_font("font");
 
-	Size2 min = style->get_minimum_size();
-	min.height += font->get_height();
+	Size2 min_size;
 
 	// Minimum size of text.
 	int space_size = font->get_char_size(' ').x;
-	int mstext = get_constant("minimum_spaces") * space_size;
+	min_size.width = get_constant("minimum_spaces") * space_size;
 
 	if (expand_to_text_length) {
 		// Add a space because some fonts are too exact, and because cursor needs a bit more when at the end.
-		mstext = MAX(mstext, font->get_string_size(text).x + space_size);
+		min_size.width = MAX(min_size.width, font->get_string_size(text).x + space_size);
 	}
 
-	min.width += mstext;
+	min_size.height = font->get_height();
 
-	return min;
+	// Take icons into account.
+	if (!text.empty() && is_editable() && clear_button_enabled) {
+		min_size.width = MAX(min_size.width, Control::get_icon("clear")->get_width());
+		min_size.height = MAX(min_size.height, Control::get_icon("clear")->get_height());
+	}
+	if (right_icon.is_valid()) {
+		min_size.width = MAX(min_size.width, right_icon->get_width());
+		min_size.height = MAX(min_size.height, right_icon->get_height());
+	}
+
+	return style->get_minimum_size() + min_size;
 }
 
 void LineEdit::deselect() {
