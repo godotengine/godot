@@ -250,22 +250,37 @@ void SceneTreeDock::_replace_with_branch_scene(const String &p_file, Node *base)
 		return;
 	}
 
+	UndoRedo *undo_redo = editor->get_undo_redo();
+	undo_redo->create_action(TTR("Replace with Branch Scene"));
+
 	Node *parent = base->get_parent();
 	int pos = base->get_index();
-	parent->remove_child(base);
-	parent->add_child(instanced_scene);
-	parent->move_child(instanced_scene, pos);
-	instanced_scene->set_owner(edited_scene);
-	editor_selection->clear();
-	editor_selection->add_node(instanced_scene);
-	scene_tree->set_selected(instanced_scene);
+	undo_redo->add_do_method(parent, "remove_child", base);
+	undo_redo->add_undo_method(parent, "remove_child", instanced_scene);
+	undo_redo->add_do_method(parent, "add_child", instanced_scene);
+	undo_redo->add_undo_method(parent, "add_child", base);
+	undo_redo->add_do_method(parent, "move_child", instanced_scene, pos);
+	undo_redo->add_undo_method(parent, "move_child", base, pos);
 
-	// Delete the node as late as possible because before another one is selected
-	// an editor plugin could be referencing it to do something with it before
-	// switching to another (or to none); and since some steps of changing the
-	// editor state are deferred, the safest thing is to do this is as the last
-	// step of this function and also by enqueing instead of memdelete()-ing it here
-	base->queue_delete();
+	List<Node *> owned;
+	base->get_owned_by(base->get_owner(), &owned);
+	Array owners;
+	for (List<Node *>::Element *F = owned.front(); F; F = F->next()) {
+		owners.push_back(F->get());
+	}
+	undo_redo->add_do_method(instanced_scene, "set_owner", edited_scene);
+	undo_redo->add_undo_method(this, "_set_owners", edited_scene, owners);
+
+	undo_redo->add_do_method(editor_selection, "clear");
+	undo_redo->add_undo_method(editor_selection, "clear");
+	undo_redo->add_do_method(editor_selection, "add_node", instanced_scene);
+	undo_redo->add_undo_method(editor_selection, "add_node", base);
+	undo_redo->add_do_property(scene_tree, "set_selected", instanced_scene);
+	undo_redo->add_undo_property(scene_tree, "set_selected", base);
+
+	undo_redo->add_do_reference(instanced_scene);
+	undo_redo->add_undo_reference(base);
+	undo_redo->commit_action();
 }
 
 bool SceneTreeDock::_cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node) {
