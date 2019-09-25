@@ -1656,6 +1656,14 @@ Error EditorSceneImporterGLTF::_expand_skin(GLTFState &state, GLTFSkin &skin) {
 }
 
 Error EditorSceneImporterGLTF::_verify_skin(GLTFState &state, GLTFSkin &skin) {
+
+	// This may seem duplicated from expand_skins, but this is really a sanity check! (so it kinda is)
+	// In case additional interpolating logic is added to the skins, this will help ensure that you
+	// do not cause it to self implode into a fiery blaze
+
+	// We are going to re-calculate the root nodes and compare them to the ones saved in the skin,
+	// then ensure the multiple trees (if they exist) are on the same sublevel
+
 	// Grab all nodes that lay in between skin joints/nodes
 	DisjointSet<GLTFNodeIndex> disjoint_set;
 
@@ -1673,15 +1681,28 @@ Error EditorSceneImporterGLTF::_verify_skin(GLTFState &state, GLTFSkin &skin) {
 		}
 	}
 
+	Vector<GLTFNodeIndex> out_owners;
+	disjoint_set.get_representatives(out_owners);
+
 	Vector<GLTFNodeIndex> out_roots;
-	disjoint_set.get_representatives(out_roots);
+
+	for (int i = 0; i < out_owners.size(); ++i) {
+		Vector<GLTFNodeIndex> set;
+		disjoint_set.get_members(set, out_owners[i]);
+
+		const GLTFNodeIndex root = _find_highest_node(state, set);
+		ERR_FAIL_COND_V(root < 0, FAILED);
+		out_roots.push_back(root);
+	}
+
 	out_roots.sort();
 
 	ERR_FAIL_COND_V(out_roots.size() == 0, FAILED);
 
+	// Make sure the roots are the exact same (they better be)
 	ERR_FAIL_COND_V(out_roots.size() != skin.roots.size(), FAILED);
 	for (int i = 0; i < out_roots.size(); ++i) {
-		ERR_FAIL_COND_V(out_roots.size() != skin.roots.size(), FAILED);
+		ERR_FAIL_COND_V(out_roots[i] != skin.roots[i], FAILED);
 	}
 
 	// Single rooted skin? Perfectly ok!
