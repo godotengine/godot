@@ -7,7 +7,7 @@ static PermissionManager *permission_manager = NULL;
 
 void register_android_api() {
 
-	ClassDB::register_class<PermissionManager>();
+	ClassDB::register_virtual_class<PermissionManager>();
 	permission_manager = memnew(PermissionManager);
 	Engine::get_singleton()->add_singleton(Engine::Singleton("PermissionManager", permission_manager));
 }
