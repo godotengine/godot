@@ -546,7 +546,7 @@ void AnimationBezierTrackEdit::set_timeline(AnimationTimelineEdit *p_timeline) {
 }
 void AnimationBezierTrackEdit::set_editor(AnimationTrackEditor *p_editor) {
 	editor = p_editor;
-	connect("clear_selection", editor, "_clear_selection");
+	connect("clear_selection", editor, "_clear_selection", varray(false));
 }
 
 void AnimationBezierTrackEdit::_play_position_draw() {
