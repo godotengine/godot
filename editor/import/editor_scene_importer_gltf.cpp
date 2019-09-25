@@ -156,7 +156,7 @@ static Transform _arr_to_xform(const Array &p_array) {
 }
 
 String EditorSceneImporterGLTF::_sanitize_scene_name(const String &name) {
-	RegEx regex("([^a-zA-Z0-9_ ]+)");
+	RegEx regex("([^a-zA-Z0-9_ -]+)");
 	String p_name = regex.sub(name, "", true);
 	return p_name;
 }
