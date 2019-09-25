@@ -494,10 +494,10 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 
 			const Dictionary &s = d["sparse"];
 
-			ERR_FAIL_COND_V(!d.has("count"), ERR_PARSE_ERROR);
-			accessor.sparse_count = d["count"];
-			ERR_FAIL_COND_V(!d.has("indices"), ERR_PARSE_ERROR);
-			const Dictionary &si = d["indices"];
+			ERR_FAIL_COND_V(!s.has("count"), ERR_PARSE_ERROR);
+			accessor.sparse_count = s["count"];
+			ERR_FAIL_COND_V(!s.has("indices"), ERR_PARSE_ERROR);
+			const Dictionary &si = s["indices"];
 
 			ERR_FAIL_COND_V(!si.has("bufferView"), ERR_PARSE_ERROR);
 			accessor.sparse_indices_buffer_view = si["bufferView"];
@@ -508,8 +508,8 @@ Error EditorSceneImporterGLTF::_parse_accessors(GLTFState &state) {
 				accessor.sparse_indices_byte_offset = si["byteOffset"];
 			}
 
-			ERR_FAIL_COND_V(!d.has("values"), ERR_PARSE_ERROR);
-			const Dictionary &sv = d["values"];
+			ERR_FAIL_COND_V(!s.has("values"), ERR_PARSE_ERROR);
+			const Dictionary &sv = s["values"];
 
 			ERR_FAIL_COND_V(!sv.has("bufferView"), ERR_PARSE_ERROR);
 			accessor.sparse_values_buffer_view = sv["bufferView"];
