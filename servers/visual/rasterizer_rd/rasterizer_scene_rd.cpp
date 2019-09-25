@@ -1469,6 +1469,15 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 	sky_ggx_samples_realtime = GLOBAL_GET("rendering/quality/reflections/ggx_samples_realtime");
 	sky_use_cubemap_array = GLOBAL_GET("rendering/quality/reflections/texture_array_reflections");
 	//	sky_use_cubemap_array = false;
+
+	{
+		String defines = "";
+		Vector<String> versions;
+		versions.push_back("");
+		giprobe_lighting_shader.initialize(versions, defines);
+		giprobe_lighting_shader_version = giprobe_lighting_shader.version_create();
+		giprobe_lighting_shader_version_shader = giprobe_lighting_shader.version_get_shader(giprobe_lighting_shader_version, 0);
+	}
 }
 
 RasterizerSceneRD::~RasterizerSceneRD() {

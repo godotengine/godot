@@ -33,11 +33,11 @@
 #include "rasterizer_rd.h"
 #include "servers/visual/rendering_device.h"
 
-void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name) {
+void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name) {
 
 	name = p_name;
 	//split vertex and shader code (thank you, shader compiler programmers from you know what company).
-	{
+	if (p_vertex_code) {
 		String defines_tag = "\nVERSION_DEFINES";
 		String globals_tag = "\nVERTEX_SHADER_GLOBALS";
 		String material_tag = "\nMATERIAL_UNIFORMS";
@@ -79,7 +79,7 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 		}
 	}
 
-	{
+	if (p_fragment_code) {
 		String defines_tag = "\nVERSION_DEFINES";
 		String globals_tag = "\nFRAGMENT_SHADER_GLOBALS";
 		String material_tag = "\nMATERIAL_UNIFORMS";
@@ -135,6 +135,50 @@ void ShaderRD::setup(const char *p_vertex_code, const char *p_fragment_code, con
 			}
 		}
 	}
+
+	if (p_compute_code) {
+		is_compute = true;
+
+		String defines_tag = "\nVERSION_DEFINES";
+		String globals_tag = "\nCOMPUTE_SHADER_GLOBALS";
+		String material_tag = "\nMATERIAL_UNIFORMS";
+		String code_tag = "\nCOMPUTE_SHADER_CODE";
+		String code = p_compute_code;
+
+		int cpos = code.find(defines_tag);
+		if (cpos != -1) {
+			compute_codev = code.substr(0, cpos).ascii();
+			code = code.substr(cpos + defines_tag.length(), code.length());
+		}
+
+		cpos = code.find(material_tag);
+
+		if (cpos == -1) {
+			compute_code0 = code.ascii();
+		} else {
+			compute_code0 = code.substr(0, cpos).ascii();
+			code = code.substr(cpos + material_tag.length(), code.length());
+
+			cpos = code.find(globals_tag);
+
+			if (cpos == -1) {
+				compute_code1 = code.ascii();
+			} else {
+
+				compute_code1 = code.substr(0, cpos).ascii();
+				String code2 = code.substr(cpos + globals_tag.length(), code.length());
+
+				cpos = code2.find(code_tag);
+				if (cpos == -1) {
+					compute_code2 = code2.ascii();
+				} else {
+
+					compute_code2 = code2.substr(0, cpos).ascii();
+					compute_code3 = code2.substr(cpos + code_tag.length(), code2.length()).ascii();
+				}
+			}
+		}
+	}
 }
 
 RID ShaderRD::version_create() {
@@ -171,7 +215,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 	RD::ShaderStage current_stage = RD::SHADER_STAGE_VERTEX;
 	bool build_ok = true;
 
-	{
+	if (!is_compute) {
 		//vertex stage
 
 		StringBuilder builder;
@@ -211,7 +255,7 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		}
 	}
 
-	if (build_ok) {
+	if (!is_compute && build_ok) {
 		//fragment stage
 		current_stage = RD::SHADER_STAGE_FRAGMENT;
 
@@ -256,9 +300,50 @@ void ShaderRD::_compile_variant(uint32_t p_variant, Version *p_version) {
 		}
 	}
 
+	if (is_compute) {
+		//compute stage
+		current_stage = RD::SHADER_STAGE_COMPUTE;
+
+		StringBuilder builder;
+
+		builder.append(compute_codev.get_data()); // version info (if exists)
+		builder.append("\n"); //make sure defines begin at newline
+		builder.append(general_defines.get_data());
+		builder.append(variant_defines[p_variant].get_data());
+
+		for (int j = 0; j < p_version->custom_defines.size(); j++) {
+			builder.append(p_version->custom_defines[j].get_data());
+		}
+
+		builder.append(compute_code0.get_data()); //first part of compute
+
+		builder.append(p_version->uniforms.get_data()); //uniforms (same for compute and fragment)
+
+		builder.append(compute_code1.get_data()); //second part of compute
+
+		builder.append(p_version->compute_globals.get_data()); // compute globals
+
+		builder.append(compute_code2.get_data()); //third part of compute
+
+		builder.append(p_version->compute_code.get_data()); // code
+
+		builder.append(compute_code3.get_data()); //fourth of compute
+
+		current_source = builder.as_string();
+		RD::ShaderStageData stage;
+		stage.spir_v = RD::get_singleton()->shader_compile_from_source(RD::SHADER_STAGE_COMPUTE, current_source, RD::SHADER_LANGUAGE_GLSL, &error);
+		if (stage.spir_v.size() == 0) {
+			build_ok = false;
+		} else {
+
+			stage.shader_stage = RD::SHADER_STAGE_COMPUTE;
+			stages.push_back(stage);
+		}
+	}
+
 	if (!build_ok) {
 		variant_set_mutex.lock(); //properly print the errors
-		ERR_PRINTS("Error compiling " + String(current_stage == RD::SHADER_STAGE_VERTEX ? "Vertex" : "Fragment") + " shader, variant #" + itos(p_variant) + " (" + variant_defines[p_variant].get_data() + ").");
+		ERR_PRINTS("Error compiling " + String(current_stage == RD::SHADER_STAGE_COMPUTE ? "Compute " : (current_stage == RD::SHADER_STAGE_VERTEX ? "Vertex" : "Fragment")) + " shader, variant #" + itos(p_variant) + " (" + variant_defines[p_variant].get_data() + ").");
 		ERR_PRINTS(error);
 
 #ifdef DEBUG_ENABLED
@@ -319,6 +404,8 @@ void ShaderRD::_compile_version(Version *p_version) {
 
 void ShaderRD::version_set_code(RID p_version, const String &p_uniforms, const String &p_vertex_globals, const String &p_vertex_code, const String &p_fragment_globals, const String &p_fragment_light, const String &p_fragment_code, const Vector<String> &p_custom_defines) {
 
+	ERR_FAIL_COND(is_compute);
+
 	Version *version = version_owner.getornull(p_version);
 	ERR_FAIL_COND(!version);
 	version->vertex_globals = p_vertex_globals.utf8();
@@ -326,6 +413,28 @@ void ShaderRD::version_set_code(RID p_version, const String &p_uniforms, const S
 	version->fragment_light = p_fragment_light.utf8();
 	version->fragment_globals = p_fragment_globals.utf8();
 	version->fragment_code = p_fragment_code.utf8();
+	version->uniforms = p_uniforms.utf8();
+
+	version->custom_defines.clear();
+	for (int i = 0; i < p_custom_defines.size(); i++) {
+		version->custom_defines.push_back(p_custom_defines[i].utf8());
+	}
+
+	version->dirty = true;
+	if (version->initialize_needed) {
+		_compile_version(version);
+		version->initialize_needed = false;
+	}
+}
+
+void ShaderRD::version_set_compute_code(RID p_version, const String &p_uniforms, const String &p_compute_globals, const String &p_compute_code, const Vector<String> &p_custom_defines) {
+
+	ERR_FAIL_COND(!is_compute);
+
+	Version *version = version_owner.getornull(p_version);
+	ERR_FAIL_COND(!version);
+	version->compute_globals = p_compute_globals.utf8();
+	version->compute_code = p_compute_code.utf8();
 	version->uniforms = p_uniforms.utf8();
 
 	version->custom_defines.clear();
