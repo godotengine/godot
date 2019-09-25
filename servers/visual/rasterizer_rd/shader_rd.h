@@ -55,6 +55,8 @@ class ShaderRD {
 		CharString uniforms;
 		CharString vertex_globals;
 		CharString vertex_code;
+		CharString compute_globals;
+		CharString compute_code;
 		CharString fragment_light;
 		CharString fragment_globals;
 		CharString fragment_code;
@@ -89,16 +91,25 @@ class ShaderRD {
 	CharString vertex_code2;
 	CharString vertex_code3;
 
+	bool is_compute = false;
+
+	CharString compute_codev; //for version and extensions
+	CharString compute_code0;
+	CharString compute_code1;
+	CharString compute_code2;
+	CharString compute_code3;
+
 	const char *name;
 
 protected:
 	ShaderRD() {}
-	void setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_name);
+	void setup(const char *p_vertex_code, const char *p_fragment_code, const char *p_compute_code, const char *p_name);
 
 public:
 	RID version_create();
 
 	void version_set_code(RID p_version, const String &p_uniforms, const String &p_vertex_globals, const String &p_vertex_code, const String &p_fragment_globals, const String &p_fragment_light, const String &p_fragment_code, const Vector<String> &p_custom_defines);
+	void version_set_compute_code(RID p_version, const String &p_uniforms, const String &p_compute_globals, const String &p_compute_code, const Vector<String> &p_custom_defines);
 
 	_FORCE_INLINE_ RID version_get_shader(RID p_version, int p_variant) {
 		ERR_FAIL_INDEX_V(p_variant, variant_defines.size(), RID());

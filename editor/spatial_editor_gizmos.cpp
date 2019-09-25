@@ -170,8 +170,9 @@ void EditorSpatialGizmo::Instance::create_instance(Spatial *p_base, bool p_hidde
 
 	instance = VS::get_singleton()->instance_create2(mesh->get_rid(), p_base->get_world()->get_scenario());
 	VS::get_singleton()->instance_attach_object_instance_id(instance, p_base->get_instance_id());
-	if (skin_reference.is_valid())
+	if (skin_reference.is_valid()) {
 		VS::get_singleton()->instance_attach_skeleton(instance, skin_reference->get_skeleton());
+	}
 	if (extra_margin)
 		VS::get_singleton()->instance_set_extra_visibility_margin(instance, 1);
 	VS::get_singleton()->instance_geometry_set_cast_shadows_setting(instance, VS::SHADOW_CASTING_SETTING_OFF);

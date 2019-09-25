@@ -91,6 +91,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		ID_TYPE_VERTEX_FORMAT,
 		ID_TYPE_DRAW_LIST,
 		ID_TYPE_SPLIT_DRAW_LIST,
+		ID_TYPE_COMPUTE_LIST,
 		ID_TYPE_MAX,
 		ID_BASE_SHIFT = 58 //5 bits for ID types
 	};
@@ -138,8 +139,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		Vector<DataFormat> allowed_shared_formats;
 
-		VkImageLayout bound_layout; //layout used when bound to framebuffer being drawn
-		VkImageLayout unbound_layout; //layout used otherwise
+		VkImageLayout layout;
+
 		uint32_t read_aspect_mask;
 		uint32_t barrier_aspect_mask;
 		bool bound; //bound to framebffer
@@ -286,6 +287,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 			}
 		};
 
+		uint32_t storage_mask;
 		Vector<RID> texture_ids;
 
 		struct Version {
@@ -519,6 +521,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 
 		PushConstant push_constant;
 
+		bool is_compute = false;
 		int max_output;
 		Vector<Set> sets;
 		Vector<uint32_t> set_formats;
@@ -620,6 +623,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		VkDescriptorSet descriptor_set;
 		//VkPipelineLayout pipeline_layout; //not owned, inherited from shader
 		Vector<RID> attachable_textures; //used for validation
+		Vector<Texture *> mutable_sampled_textures; //used for layout change
+		Vector<Texture *> mutable_storage_textures; //used for layout change
 	};
 
 	RID_Owner<UniformSet, true> uniform_set_owner;
@@ -660,7 +665,19 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		uint32_t push_constant_stages;
 	};
 
-	RID_Owner<RenderPipeline, true> pipeline_owner;
+	RID_Owner<RenderPipeline, true> render_pipeline_owner;
+
+	struct ComputePipeline {
+
+		RID shader;
+		Vector<uint32_t> set_formats;
+		VkPipelineLayout pipeline_layout; // not owned, needed for push constants
+		VkPipeline pipeline;
+		uint32_t push_constant_size;
+		uint32_t push_constant_stages;
+	};
+
+	RID_Owner<ComputePipeline, true> compute_pipeline_owner;
 
 	/*******************/
 	/**** DRAW LIST ****/
@@ -796,6 +813,74 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
 
+	/**********************/
+	/**** COMPUTE LIST ****/
+	/**********************/
+
+	struct ComputeList {
+
+		VkCommandBuffer command_buffer; //if persistent, this is owned, otherwise it's shared with the ringbuffer
+
+		struct SetState {
+			uint32_t pipeline_expected_format;
+			uint32_t uniform_set_format;
+			VkDescriptorSet descriptor_set;
+			RID uniform_set;
+			bool bound;
+			SetState() {
+				bound = false;
+				pipeline_expected_format = 0;
+				uniform_set_format = 0;
+				descriptor_set = VK_NULL_HANDLE;
+			}
+		};
+
+		struct State {
+			Set<Texture *> textures_to_sampled_layout;
+
+			SetState sets[MAX_UNIFORM_SETS];
+			uint32_t set_count;
+			RID pipeline;
+			RID pipeline_shader;
+			VkPipelineLayout pipeline_layout;
+			uint32_t pipeline_push_constant_stages;
+
+			State() {
+				set_count = 0;
+				pipeline_layout = VK_NULL_HANDLE;
+				pipeline_push_constant_stages = 0;
+			}
+		} state;
+#ifdef DEBUG_ENABLED
+
+		struct Validation {
+			bool active; //means command buffer was not closes, so you can keep adding things
+			Vector<uint32_t> set_formats;
+			Vector<bool> set_bound;
+			Vector<RID> set_rids;
+			//last pipeline set values
+			bool pipeline_active;
+			RID pipeline_shader;
+			uint32_t invalid_set_from;
+			Vector<uint32_t> pipeline_set_formats;
+			uint32_t pipeline_push_constant_size;
+			bool pipeline_push_constant_suppplied;
+
+			Validation() {
+				active = true;
+				invalid_set_from = 0;
+
+				//pipeline state initalize
+				pipeline_active = false;
+				pipeline_push_constant_size = 0;
+				pipeline_push_constant_suppplied = false;
+			}
+		} validation;
+#endif
+	};
+
+	ComputeList *compute_list;
+
 	/**************************/
 	/**** FRAME MANAGEMENT ****/
 	/**************************/
@@ -823,7 +908,8 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		List<Shader> shaders_to_dispose_of;
 		List<VkBufferView> buffer_views_to_dispose_of;
 		List<UniformSet> uniform_sets_to_dispose_of;
-		List<RenderPipeline> pipelines_to_dispose_of;
+		List<RenderPipeline> render_pipelines_to_dispose_of;
+		List<ComputePipeline> compute_pipelines_to_dispose_of;
 
 		VkCommandPool command_pool;
 		VkCommandBuffer setup_command_buffer; //used at the begining of every frame for set-up
@@ -940,6 +1026,13 @@ public:
 	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0);
 	virtual bool render_pipeline_is_valid(RID p_pipeline);
 
+	/**************************/
+	/**** COMPUTE PIPELINE ****/
+	/**************************/
+
+	virtual RID compute_pipeline_create(RID p_shader);
+	virtual bool compute_pipeline_is_valid(RID p_pipeline);
+
 	/****************/
 	/**** SCREEN ****/
 	/****************/
@@ -969,6 +1062,17 @@ public:
 	virtual void draw_list_disable_scissor(DrawListID p_list);
 
 	virtual void draw_list_end();
+
+	/***********************/
+	/**** COMPUTE LISTS ****/
+	/***********************/
+
+	virtual ComputeListID compute_list_begin();
+	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline);
+	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index);
+	virtual void compute_list_set_push_constant(ComputeListID p_list, void *p_data, uint32_t p_data_size);
+	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
+	virtual void compute_list_end();
 
 	/**************/
 	/**** FREE ****/

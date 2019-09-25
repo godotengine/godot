@@ -778,6 +778,8 @@ public:
 
 	_FORCE_INLINE_ RID skeleton_get_3d_uniform_set(RID p_skeleton, RID p_shader, uint32_t p_set) const {
 		Skeleton *skeleton = skeleton_owner.getornull(p_skeleton);
+		ERR_FAIL_COND_V(!skeleton, RID());
+		ERR_FAIL_COND_V(skeleton->size == 0, RID());
 		if (skeleton->use_2d) {
 			return RID();
 		}

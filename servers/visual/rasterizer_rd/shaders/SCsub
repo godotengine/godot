@@ -11,4 +11,5 @@ if 'RD_GLSL' in env['BUILDERS']:
     env.RD_GLSL('sky.glsl');
     env.RD_GLSL('tonemap.glsl');
     env.RD_GLSL('copy.glsl');
+    env.RD_GLSL('giprobe_lighting.glsl');
 

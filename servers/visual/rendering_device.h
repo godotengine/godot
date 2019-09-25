@@ -882,6 +882,13 @@ public:
 	virtual RID render_pipeline_create(RID p_shader, FramebufferFormatID p_framebuffer_format, VertexFormatID p_vertex_format, RenderPrimitive p_render_primitive, const PipelineRasterizationState &p_rasterization_state, const PipelineMultisampleState &p_multisample_state, const PipelineDepthStencilState &p_depth_stencil_state, const PipelineColorBlendState &p_blend_state, int p_dynamic_state_flags = 0) = 0;
 	virtual bool render_pipeline_is_valid(RID p_pipeline) = 0;
 
+	/**************************/
+	/**** COMPUTE PIPELINE ****/
+	/**************************/
+
+	virtual RID compute_pipeline_create(RID p_shader) = 0;
+	virtual bool compute_pipeline_is_valid(RID p_pipeline) = 0;
+
 	/****************/
 	/**** SCREEN ****/
 	/****************/
@@ -929,6 +936,19 @@ public:
 	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
 
 	virtual void draw_list_end() = 0;
+
+	/***********************/
+	/**** COMPUTE LISTS ****/
+	/***********************/
+
+	typedef int64_t ComputeListID;
+
+	virtual ComputeListID compute_list_begin() = 0;
+	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline) = 0;
+	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
+	virtual void compute_list_set_push_constant(ComputeListID p_list, void *p_data, uint32_t p_data_size) = 0;
+	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
+	virtual void compute_list_end() = 0;
 
 	/***************/
 	/**** FREE! ****/
