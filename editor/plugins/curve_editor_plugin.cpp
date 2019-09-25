@@ -456,6 +456,9 @@ void CurveEditor::remove_point(int index) {
 	if (index == _selected_point)
 		set_selected_point(-1);
 
+	if (index == _hover_point)
+		set_hover_point_index(-1);
+
 	ur.commit_action();
 }
 
