@@ -82,6 +82,9 @@ CameraEditor::CameraEditor() {
 	preview->set_margin(MARGIN_TOP, 0);
 	preview->set_margin(MARGIN_BOTTOM, 10);
 	preview->connect("pressed", this, "_pressed");
+
+	panel = NULL;
+	node = NULL;
 }
 
 void CameraEditorPlugin::edit(Object *p_object) {

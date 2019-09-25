@@ -794,7 +794,7 @@ public:
 	Variant get_result() const;
 
 	JSONParseResult() :
-			error_line(-1) {}
+			error_line(-1) { error = OK; }
 };
 
 class _JSON : public Object {

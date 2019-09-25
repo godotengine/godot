@@ -2141,4 +2141,14 @@ void RasterizerCanvasGLES3::finalize() {
 }
 
 RasterizerCanvasGLES3::RasterizerCanvasGLES3() {
+	scene_render = NULL;
+	storage = NULL;
+	data.canvas_quad_array = 0;
+	data.canvas_quad_vertices = 0;
+	data.polygon_buffer = 0;
+	data.polygon_buffer_pointer_array = 0;
+	data.polygon_index_buffer = 0;
+	data.particle_quad_array = 0;
+	data.particle_quad_vertices = 0;
+	data.polygon_buffer_size = 0;
 }

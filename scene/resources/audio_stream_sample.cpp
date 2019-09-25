@@ -401,6 +401,15 @@ AudioStreamPlaybackSample::AudioStreamPlaybackSample() {
 	active = false;
 	offset = 0;
 	sign = 1;
+	for (int i = 0; i < 2; i++) {
+		ima_adpcm[i].step_index = 0;
+		ima_adpcm[i].predictor = 0;
+		ima_adpcm[i].loop_step_index = 0;
+		ima_adpcm[i].loop_predictor = 0;
+		ima_adpcm[i].last_nibble = 0;
+		ima_adpcm[i].loop_pos = 0;
+		ima_adpcm[i].window_ofs = 0;
+	}
 }
 
 /////////////////////

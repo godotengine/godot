@@ -64,6 +64,7 @@ void Separator::_notification(int p_what) {
 }
 
 Separator::Separator() {
+	orientation = HORIZONTAL;
 }
 
 Separator::~Separator() {

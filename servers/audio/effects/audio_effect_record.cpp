@@ -296,5 +296,6 @@ void AudioEffectRecord::_bind_methods() {
 }
 
 AudioEffectRecord::AudioEffectRecord() {
+	recording_active = false;
 	format = AudioStreamSample::FORMAT_16_BITS;
 }

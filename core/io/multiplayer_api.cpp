@@ -985,6 +985,8 @@ MultiplayerAPI::MultiplayerAPI() :
 	rpc_sender_id = 0;
 	root_node = NULL;
 #ifdef DEBUG_ENABLED
+	bandwidth_incoming_pointer = 0;
+	bandwidth_outgoing_pointer = 0;
 	profiling = false;
 #endif
 	clear();

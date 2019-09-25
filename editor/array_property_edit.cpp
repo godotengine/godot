@@ -313,4 +313,5 @@ ArrayPropertyEdit::ArrayPropertyEdit() {
 	subtype = Variant::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
 	subtype_hint_string = "";
+	obj = 0;
 }

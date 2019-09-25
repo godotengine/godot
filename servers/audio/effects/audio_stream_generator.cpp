@@ -205,6 +205,7 @@ void AudioStreamGeneratorPlayback::_bind_methods() {
 }
 
 AudioStreamGeneratorPlayback::AudioStreamGeneratorPlayback() {
+
 	generator = NULL;
 	skips = 0;
 	active = false;

@@ -1025,6 +1025,7 @@ Tabs::Tabs() {
 	min_width = 0;
 	scrolling_enabled = true;
 	buttons_visible = false;
+	missing_right = false;
 	hover = -1;
 	drag_to_rearrange_enabled = false;
 	tabs_rearrange_group = -1;

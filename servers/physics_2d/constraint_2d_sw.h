@@ -46,6 +46,8 @@ class Constraint2DSW : public RID_Data {
 
 protected:
 	Constraint2DSW(Body2DSW **p_body_ptr = NULL, int p_body_count = 0) {
+		island_next = NULL;
+		island_list_next = NULL;
 		_body_ptr = p_body_ptr;
 		_body_count = p_body_count;
 		island_step = 0;

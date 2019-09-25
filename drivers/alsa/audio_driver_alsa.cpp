@@ -343,6 +343,15 @@ AudioDriverALSA::AudioDriverALSA() :
 		pcm_handle(NULL),
 		device_name("Default"),
 		new_device("Default") {
+	mix_rate = 0;
+	speaker_mode = SPEAKER_MODE_STEREO;
+	buffer_frames = 0;
+	buffer_size = 0;
+	period_size = 0;
+	channels = 0;
+	active = false;
+	thread_exited = false;
+	exit_thread = false;
 }
 
 AudioDriverALSA::~AudioDriverALSA() {

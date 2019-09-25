@@ -786,7 +786,7 @@ struct CompletionItem {
 	 * an icon is chosen by the editor. The standardized set
 	 * of available values is defined in `CompletionItemKind`.
 	 */
-	int kind;
+	int kind = 0;
 
 	/**
 	 * A human-readable string with additional information
@@ -844,7 +844,7 @@ struct CompletionItem {
 	 * The format of the insert text. The format applies to both the `insertText` property
 	 * and the `newText` property of a provided `textEdit`.
 	 */
-	int insertTextFormat;
+	int insertTextFormat = 0;
 
 	/**
 	 * An edit which is applied to a document when selecting this completion. When an edit is provided the value of

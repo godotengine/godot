@@ -63,6 +63,7 @@ class PopupMenu : public Popup {
 		bool shortcut_is_disabled;
 
 		Item() {
+			id = -1;
 			checked = false;
 			checkable_type = CHECKABLE_TYPE_NONE;
 			separator = false;

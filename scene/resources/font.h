@@ -121,7 +121,9 @@ public:
 
 		Character() {
 			texture_idx = 0;
-			v_align = 0;
+			v_align = 0.0;
+			h_align = 0.0;
+			advance = 0.0;
 		}
 	};
 

@@ -186,6 +186,7 @@ private:
 			root_motion = false;
 			setup_pass = 0;
 			process_pass = 0;
+			type = Animation::TYPE_VALUE;
 			object = NULL;
 			object_id = 0;
 		}
@@ -206,6 +207,7 @@ private:
 			spatial = NULL;
 			bone_idx = -1;
 			skeleton = NULL;
+			rot_blend_accum = 0.0;
 		}
 	};
 

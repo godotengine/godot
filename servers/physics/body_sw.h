@@ -104,7 +104,10 @@ class BodySW : public CollisionObjectSW {
 		int refCount;
 		_FORCE_INLINE_ bool operator==(const AreaCMP &p_cmp) const { return area->get_self() == p_cmp.area->get_self(); }
 		_FORCE_INLINE_ bool operator<(const AreaCMP &p_cmp) const { return area->get_priority() < p_cmp.area->get_priority(); }
-		_FORCE_INLINE_ AreaCMP() {}
+		_FORCE_INLINE_ AreaCMP() {
+			area = NULL;
+			refCount = 1;
+		}
 		_FORCE_INLINE_ AreaCMP(AreaSW *p_area) {
 			area = p_area;
 			refCount = 1;
@@ -467,6 +470,7 @@ public:
 
 	virtual real_t get_step() const { return step; }
 	PhysicsDirectBodyStateSW() {
+		step = 0.0;
 		singleton = this;
 		body = NULL;
 	}

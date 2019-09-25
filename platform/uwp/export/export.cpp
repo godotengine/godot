@@ -644,7 +644,11 @@ void AppxPackager::finish() {
 	package = NULL;
 }
 
-AppxPackager::AppxPackager() {}
+AppxPackager::AppxPackager() {
+	package = NULL;
+	central_dir_offset = 0;
+	end_of_central_dir_offset = 0;
+}
 
 AppxPackager::~AppxPackager() {}
 

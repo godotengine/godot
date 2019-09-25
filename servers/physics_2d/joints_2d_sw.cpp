@@ -340,6 +340,10 @@ GrooveJoint2DSW::GrooveJoint2DSW(const Vector2 &p_a_groove1, const Vector2 &p_a_
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
+
+	jn_max = 0.0;
+	clamp = 0.0;
+	correct = false;
 }
 
 GrooveJoint2DSW::~GrooveJoint2DSW() {
@@ -450,6 +454,10 @@ DampedSpringJoint2DSW::DampedSpringJoint2DSW(const Vector2 &p_anchor_a, const Ve
 
 	A->add_constraint(this, 0);
 	B->add_constraint(this, 1);
+
+	n_mass = 0.0;
+	target_vrn = 0.0;
+	v_coef = 0.0;
 }
 
 DampedSpringJoint2DSW::~DampedSpringJoint2DSW() {

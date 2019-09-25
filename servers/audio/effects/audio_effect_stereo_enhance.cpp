@@ -152,6 +152,7 @@ void AudioEffectStereoEnhance::_bind_methods() {
 }
 
 AudioEffectStereoEnhance::AudioEffectStereoEnhance() {
+	volume_db = 0;
 	pan_pullout = 1;
 	time_pullout = 0;
 	surround = 0;

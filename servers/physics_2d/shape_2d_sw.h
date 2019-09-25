@@ -227,8 +227,14 @@ public:
 
 	DEFAULT_PROJECT_RANGE_CAST
 
-	_FORCE_INLINE_ RayShape2DSW() {}
-	_FORCE_INLINE_ RayShape2DSW(real_t p_length) { length = p_length; }
+	_FORCE_INLINE_ RayShape2DSW() {
+		length = 0.0;
+		slips_on_slope = false;
+	}
+	_FORCE_INLINE_ RayShape2DSW(real_t p_length) {
+		slips_on_slope = false;
+		length = p_length;
+	}
 };
 
 class SegmentShape2DSW : public Shape2DSW {
@@ -308,7 +314,7 @@ public:
 		r_min = d - (radius)*scale;
 		r_max = d + (radius)*scale;
 	}
-
+	CircleShape2DSW();
 	DEFAULT_PROJECT_RANGE_CAST
 };
 
@@ -424,6 +430,10 @@ public:
 		}
 
 		//ERR_FAIL_COND( r_max < r_min );
+	}
+	CapsuleShape2DSW() {
+		radius = 0.0;
+		height = 0.0;
 	}
 
 	DEFAULT_PROJECT_RANGE_CAST

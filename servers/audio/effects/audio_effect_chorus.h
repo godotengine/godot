@@ -51,6 +51,7 @@ class AudioEffectChorusInstance : public AudioEffectInstance {
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	AudioEffectChorusInstance();
 };
 
 class AudioEffectChorus : public AudioEffect {

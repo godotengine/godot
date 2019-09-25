@@ -1579,8 +1579,14 @@ PhysicsServerSW::PhysicsServerSW() {
 	active_objects = 0;
 	collision_pairs = 0;
 
+	doing_sync = true;
+	last_step = 0.001;
+	iterations = 8;
+	direct_state = NULL;
+
 	active = true;
 	flushing_queries = false;
+	stepper = NULL;
 };
 
 PhysicsServerSW::~PhysicsServerSW(){

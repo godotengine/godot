@@ -727,6 +727,7 @@ HTTPClient::HTTPClient() {
 	chunk_trailer_part = false;
 	response_num = 0;
 	ssl = false;
+	ssl_verify_host = false;
 	blocking = false;
 	handshaking = false;
 	read_chunk_size = 4096;

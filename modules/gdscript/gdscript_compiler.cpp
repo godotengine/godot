@@ -2178,4 +2178,8 @@ int GDScriptCompiler::get_error_column() const {
 }
 
 GDScriptCompiler::GDScriptCompiler() {
+	parser = NULL;
+	main_script = NULL;
+	err_line = 0;
+	err_column = 0;
 }

@@ -85,6 +85,7 @@ class Navigation : public Spatial {
 			int C_edge;
 			List<ConnectionPending>::Element *P;
 			Edge() {
+				point.key = 0;
 				C = NULL;
 				C_edge = -1;
 				P = NULL;

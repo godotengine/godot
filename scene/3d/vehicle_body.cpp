@@ -44,7 +44,7 @@ public:
 
 	real_t getDiagonal() const { return m_Adiag; }
 
-	btVehicleJacobianEntry(){};
+	btVehicleJacobianEntry() { m_Adiag = 0.0; };
 	//constraint between two different rigidbodies
 	btVehicleJacobianEntry(
 			const Basis &world2A,
@@ -365,12 +365,15 @@ VehicleWheel::VehicleWheel() {
 	steers = false;
 	engine_traction = false;
 
+	m_rpm = real_t(0.);
 	m_steering = real_t(0.);
-	//m_engineForce = real_t(0.);
+	m_engineForce = real_t(0.);
 	m_rotation = real_t(0.);
 	m_deltaRotation = real_t(0.);
 	m_brake = real_t(0.);
 	m_rollInfluence = real_t(0.1);
+	m_wheelsSuspensionForce = real_t(0.);
+	m_skidInfo = real_t(0.);
 
 	m_suspensionRestLength = 0.15;
 	m_wheelRadius = 0.5; //0.28;

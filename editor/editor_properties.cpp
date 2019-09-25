@@ -44,6 +44,7 @@ EditorPropertyNil::EditorPropertyNil() {
 	Label *label = memnew(Label);
 	label->set_text("[null]");
 	add_child(label);
+	text = NULL;
 }
 
 ///////////////////// TEXT /////////////////////////
@@ -454,6 +455,8 @@ EditorPropertyMember::EditorPropertyMember() {
 	add_child(property);
 	add_focusable(property);
 	property->connect("pressed", this, "_property_select");
+
+	hint = MEMBER_METHOD_OF_VARIANT_TYPE;
 }
 
 ///////////////////// CHECK /////////////////////////
@@ -799,6 +802,7 @@ EditorPropertyLayers::EditorPropertyLayers() {
 	layers->set_hide_on_checkable_item_selection(false);
 	layers->connect("id_pressed", this, "_menu_pressed");
 	layers->connect("popup_hide", button, "set_pressed", varray(false));
+	layer_type = LAYER_PHYSICS_2D;
 }
 
 ///////////////////// INT /////////////////////////
@@ -1120,6 +1124,7 @@ EditorPropertyEasing::EditorPropertyEasing() {
 	dragging = false;
 	flip = false;
 	full = false;
+	setting = false;
 }
 
 ///////////////////// VECTOR2 /////////////////////////

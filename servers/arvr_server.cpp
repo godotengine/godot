@@ -367,6 +367,9 @@ void ARVRServer::_mark_commit() {
 };
 
 ARVRServer::ARVRServer() {
+	last_commit_usec = 0;
+	last_process_usec = 0;
+	last_frame_usec = 0;
 	singleton = this;
 	world_scale = 1.0;
 };

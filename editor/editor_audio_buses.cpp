@@ -1396,6 +1396,7 @@ EditorAudioBuses::EditorAudioBuses() {
 	file_dialog->connect("file_selected", this, "_file_dialog_callback");
 
 	set_process(true);
+	new_layout = false;
 }
 
 void EditorAudioBuses::open_layout(const String &p_path) {

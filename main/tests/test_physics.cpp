@@ -426,6 +426,9 @@ public:
 	}
 
 	TestPhysicsMainLoop() {
+		ofs_x = 0.0;
+		ofs_y = 0.0;
+		quit = false;
 	}
 };
 

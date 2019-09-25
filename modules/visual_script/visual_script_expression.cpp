@@ -1487,6 +1487,7 @@ VisualScriptExpression::VisualScriptExpression() {
 	root = NULL;
 	nodes = NULL;
 	sequenced = false;
+	str_ofs = 0;
 }
 
 VisualScriptExpression::~VisualScriptExpression() {

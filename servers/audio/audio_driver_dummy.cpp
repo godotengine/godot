@@ -129,6 +129,13 @@ AudioDriverDummy::AudioDriverDummy() {
 
 	mutex = NULL;
 	thread = NULL;
+	samples_in = NULL;
+	buffer_frames = 0;
+	mix_rate = 0;
+	speaker_mode = SPEAKER_MODE_STEREO;
+	channels = 0;
+	active = false;
+	thread_exited = false;
 };
 
 AudioDriverDummy::~AudioDriverDummy(){

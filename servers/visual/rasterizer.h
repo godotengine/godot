@@ -128,12 +128,14 @@ public:
 
 			base_type = VS::INSTANCE_NONE;
 			cast_shadows = VS::SHADOW_CASTING_SETTING_ON;
+			mirror = false;
 			receive_shadows = true;
 			visible = true;
 			depth_layer = 0;
 			layer_mask = 1;
 			baked_light = false;
 			redraw_if_visible = false;
+			depth = 0.0;
 			lightmap_capture = NULL;
 		}
 	};
@@ -662,8 +664,10 @@ public:
 			item_shadow_mask = -1;
 			mode = VS::CANVAS_LIGHT_MODE_ADD;
 			texture_cache = NULL;
+			radius_cache = 1.0;
 			next_ptr = NULL;
 			mask_next_ptr = NULL;
+			shadows_next_ptr = NULL;
 			filter_next_ptr = NULL;
 			shadow_buffer_size = 2048;
 			shadow_gradient_length = 0;
@@ -706,7 +710,11 @@ public:
 			Color color;
 			float width;
 			bool antialiased;
-			CommandLine() { type = TYPE_LINE; }
+			CommandLine() {
+				type = TYPE_LINE;
+				width = 0;
+				antialiased = true;
+			}
 		};
 		struct CommandPolyLine : public Command {
 
@@ -752,6 +760,11 @@ public:
 			CommandNinePatch() {
 				draw_center = true;
 				type = TYPE_NINEPATCH;
+				axis_x = VS::NINE_PATCH_STRETCH;
+				axis_y = VS::NINE_PATCH_STRETCH;
+				for (int i = 0; i < 4; i++) {
+					margin[i] = 0.0;
+				}
 			}
 		};
 
@@ -786,6 +799,7 @@ public:
 			CommandPolygon() {
 				type = TYPE_POLYGON;
 				count = 0;
+				antialiased = true;
 			}
 		};
 
@@ -820,7 +834,10 @@ public:
 			Point2 pos;
 			float radius;
 			Color color;
-			CommandCircle() { type = TYPE_CIRCLE; }
+			CommandCircle() {
+				type = TYPE_CIRCLE;
+				radius = 0.0;
+			}
 		};
 
 		struct CommandTransform : public Command {

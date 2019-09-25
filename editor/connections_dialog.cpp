@@ -450,6 +450,9 @@ ConnectDialog::ConnectDialog() {
 	error->set_title(TTR("Cannot connect signal"));
 	error->get_ok()->set_text(TTR("Close"));
 	get_ok()->set_text(TTR("Connect"));
+
+	source = NULL;
+	bEditMode = false;
 }
 
 ConnectDialog::~ConnectDialog() {
@@ -1079,6 +1082,9 @@ ConnectionsDock::ConnectionsDock(EditorNode *p_editor) {
 	tree->connect("item_rmb_selected", this, "_rmb_pressed");
 
 	add_constant_override("separation", 3 * EDSCALE);
+
+	selectedNode = NULL;
+	undo_redo = NULL;
 }
 
 ConnectionsDock::~ConnectionsDock() {

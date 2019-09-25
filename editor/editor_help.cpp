@@ -1546,6 +1546,11 @@ EditorHelp::EditorHelp() {
 	scroll_locked = false;
 	select_locked = false;
 	class_desc->hide();
+
+	description_line = 0;
+	h_split = NULL;
+	search_dialog = NULL;
+	search = NULL;
 }
 
 EditorHelp::~EditorHelp() {
@@ -1651,6 +1656,9 @@ FindBar::FindBar() {
 	hide_button->set_expand(true);
 	hide_button->set_stretch_mode(TextureButton::STRETCH_KEEP_CENTERED);
 	hide_button->connect("pressed", this, "_hide_pressed");
+
+	rich_text_label = NULL;
+	results_count = 0;
 }
 
 void FindBar::popup_search() {

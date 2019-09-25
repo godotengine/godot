@@ -661,12 +661,17 @@ void ScrollBar::_bind_methods() {
 
 ScrollBar::ScrollBar(Orientation p_orientation) {
 
+	last_drag_node_time = 0.0;
+	time_since_motion = 0.0;
+	click_handled = true;
 	orientation = p_orientation;
 	highlight = HIGHLIGHT_NONE;
 	custom_step = -1;
 	drag_node = NULL;
 
 	drag.active = false;
+	drag.pos_at_click = 0.0;
+	drag.value_at_click = 0.0;
 
 	drag_node_speed = Vector2();
 	drag_node_touching = false;

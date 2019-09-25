@@ -387,6 +387,8 @@ ItemListEditor::ItemListEditor() {
 	property_editor = memnew(EditorInspector);
 	vbc->add_child(property_editor);
 	property_editor->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	tree = NULL;
 }
 
 ItemListEditor::~ItemListEditor() {

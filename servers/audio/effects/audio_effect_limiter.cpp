@@ -69,6 +69,10 @@ void AudioEffectLimiterInstance::process(const AudioFrame *p_src_frames, AudioFr
 	}
 }
 
+AudioEffectLimiterInstance::AudioEffectLimiterInstance() {
+	mix_volume_db = 0.0;
+}
+
 Ref<AudioEffectInstance> AudioEffectLimiter::instance() {
 	Ref<AudioEffectLimiterInstance> ins;
 	ins.instance();

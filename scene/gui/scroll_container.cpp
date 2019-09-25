@@ -569,4 +569,8 @@ ScrollContainer::ScrollContainer() {
 	deadzone = GLOBAL_GET("gui/common/default_scroll_deadzone");
 
 	set_clip_contents(true);
+
+	last_drag_time = 0.0;
+	time_since_motion = 0.0;
+	click_handled = false;
 };

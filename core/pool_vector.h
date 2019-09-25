@@ -62,6 +62,7 @@ struct MemoryPool {
 				pool_id(POOL_ALLOCATOR_INVALID_ID),
 				size(0),
 				free_list(NULL) {
+			refcount.init();
 		}
 	};
 

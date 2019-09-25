@@ -1723,6 +1723,8 @@ EditorFileDialog::EditorFileDialog() {
 	preview_wheel_timeout = 0;
 	preview_wheel_index = 0;
 	preview_waiting = false;
+
+	can_create_dir = false;
 }
 
 EditorFileDialog::~EditorFileDialog() {

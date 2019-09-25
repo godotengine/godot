@@ -385,6 +385,8 @@ CollisionObject::CollisionObject() {
 	capture_input_on_drag = false;
 	ray_pickable = true;
 	set_notify_transform(true);
+	area = false;
+	total_subshapes = 0;
 	//owner=
 
 	//set_transform_notify(true);

@@ -2119,4 +2119,12 @@ RasterizerCanvasGLES2::RasterizerCanvasGLES2() {
 	// Not needed (a priori) on GLES devices
 	use_nvidia_rect_workaround = false;
 #endif
+	data.canvas_quad_vertices = 0;
+	data.polygon_buffer = 0;
+	data.polygon_index_buffer = 0;
+	data.polygon_buffer_size = 0;
+	data.ninepatch_elements = 0;
+	data.ninepatch_vertices = 0;
+	scene_render = NULL;
+	storage = NULL;
 }

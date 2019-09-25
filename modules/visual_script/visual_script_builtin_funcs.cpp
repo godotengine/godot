@@ -1415,7 +1415,7 @@ VisualScriptBuiltinFunc::VisualScriptBuiltinFunc(VisualScriptBuiltinFunc::Builti
 
 VisualScriptBuiltinFunc::VisualScriptBuiltinFunc() {
 
-	func = MATH_SIN;
+	func = FUNC_MAX;
 }
 
 template <VisualScriptBuiltinFunc::BuiltinFunc func>

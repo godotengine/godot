@@ -79,7 +79,7 @@ public:
 		}
 		const T &get() const {
 			return value;
-		};
+		}
 		Element() {
 			color = RED;
 			right = NULL;
@@ -87,7 +87,7 @@ public:
 			parent = NULL;
 			_next = NULL;
 			_prev = NULL;
-		};
+		}
 	};
 
 private:

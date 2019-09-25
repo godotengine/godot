@@ -407,6 +407,7 @@ DirAccessUnix::DirAccessUnix() {
 
 	dir_stream = 0;
 	_cisdir = false;
+	_cishidden = false;
 
 	/* determine drive count */
 

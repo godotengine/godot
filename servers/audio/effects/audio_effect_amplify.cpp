@@ -44,6 +44,9 @@ void AudioEffectAmplifyInstance::process(const AudioFrame *p_src_frames, AudioFr
 	//set volume for next mix
 	mix_volume_db = volume_db;
 }
+AudioEffectAmplifyInstance::AudioEffectAmplifyInstance() {
+	mix_volume_db = 0.0;
+}
 
 Ref<AudioEffectInstance> AudioEffectAmplify::instance() {
 	Ref<AudioEffectAmplifyInstance> ins;

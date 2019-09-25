@@ -70,8 +70,10 @@ private:
 			size = 0;
 			buffer = 0;
 			feedback = 0;
+			damp = 0;
 			damp_h = 0;
 			pos = 0;
+			extra_spread_frames = 0;
 		}
 	};
 
@@ -85,6 +87,7 @@ private:
 			size = 0;
 			buffer = 0;
 			pos = 0;
+			extra_spread_frames = 0;
 		}
 	};
 

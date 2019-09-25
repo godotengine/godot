@@ -110,6 +110,9 @@ public:
 		Map<RID, CanvasData> canvas_map;
 
 		Viewport() {
+			viewport_render_direct_to_screen = true;
+			hide_canvas = false;
+			hide_scenario = false;
 			update_mode = VS::VIEWPORT_UPDATE_WHEN_VISIBLE;
 			clear_mode = VS::VIEWPORT_CLEAR_ALWAYS;
 			transparent_bg = false;

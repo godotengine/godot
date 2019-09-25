@@ -2103,6 +2103,7 @@ GDScriptWarning::Code GDScriptWarning::get_code_from_name(const String &p_name) 
 
 GDScriptLanguage::GDScriptLanguage() {
 
+	_global_array = NULL;
 	calls = 0;
 	ERR_FAIL_COND(singleton);
 	singleton = this;

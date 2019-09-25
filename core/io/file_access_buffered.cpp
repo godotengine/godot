@@ -168,7 +168,7 @@ Error FileAccessBuffered::get_error() const {
 }
 
 FileAccessBuffered::FileAccessBuffered() {
-
+	last_error = OK;
 	cache_size = DEFAULT_CACHE_SIZE;
 }
 

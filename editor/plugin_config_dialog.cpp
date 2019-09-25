@@ -248,6 +248,8 @@ PluginConfigDialog::PluginConfigDialog() {
 	active_edit = memnew(CheckBox);
 	active_edit->set_pressed(true);
 	grid->add_child(active_edit);
+
+	_edit_mode = false;
 }
 
 PluginConfigDialog::~PluginConfigDialog() {

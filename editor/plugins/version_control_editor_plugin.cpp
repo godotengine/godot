@@ -586,6 +586,13 @@ VersionControlEditorPlugin::VersionControlEditorPlugin() {
 	diff->set_v_size_flags(TextEdit::SIZE_EXPAND_FILL);
 	diff->set_selection_enabled(true);
 	diff_vbc->add_child(diff);
+
+	new_files = NULL;
+	modified_files = NULL;
+	renamed_files = NULL;
+	deleted_files = NULL;
+	typechange_files = NULL;
+	version_control_dock_button = NULL;
 }
 
 VersionControlEditorPlugin::~VersionControlEditorPlugin() {

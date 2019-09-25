@@ -55,7 +55,9 @@ RID SkinReference::get_skeleton() const {
 Ref<Skin> SkinReference::get_skin() const {
 	return skin;
 }
-
+SkinReference::SkinReference() {
+	skeleton_node = NULL;
+}
 SkinReference::~SkinReference() {
 	if (skeleton_node) {
 		skeleton_node->skin_bindings.erase(this);

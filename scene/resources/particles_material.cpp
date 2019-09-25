@@ -1280,6 +1280,8 @@ ParticlesMaterial::ParticlesMaterial() :
 
 	set_color(Color(1, 1, 1, 1));
 
+	anim_loop = false;
+
 	current_key.key = 0;
 	current_key.invalid_key = 1;
 

@@ -59,6 +59,7 @@ protected:
 public:
 	RID get_skeleton() const;
 	Ref<Skin> get_skin() const;
+	SkinReference();
 	~SkinReference();
 };
 
@@ -104,6 +105,7 @@ private:
 			disable_rest = false;
 			global_pose_override_amount = 0;
 			global_pose_override_reset = false;
+			sort_index = 0;
 #ifndef _3D_DISABLED
 			physical_bone = NULL;
 			cache_parent_physical_bone = NULL;

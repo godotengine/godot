@@ -205,6 +205,7 @@ GDScriptLanguageProtocol::GDScriptLanguageProtocol() {
 	set_scope("completionItem", text_document.ptr());
 	set_scope("workspace", workspace.ptr());
 	workspace->root = ProjectSettings::get_singleton()->get_resource_path();
+	lastest_client_id = 0;
 }
 
 GDScriptLanguageProtocol::~GDScriptLanguageProtocol() {

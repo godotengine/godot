@@ -365,6 +365,8 @@ SplitContainer::SplitContainer(bool p_vertical) {
 	should_clamp_split_offset = false;
 	middle_sep = 0;
 	vertical = p_vertical;
+	drag_from = 0;
+	drag_ofs = 0;
 	dragging = false;
 	collapsed = false;
 	dragger_visibility = DRAGGER_VISIBLE;

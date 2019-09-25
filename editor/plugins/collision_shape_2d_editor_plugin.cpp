@@ -556,6 +556,7 @@ CollisionShape2DEditor::CollisionShape2DEditor(EditorNode *p_editor) {
 	node = NULL;
 	canvas_item_editor = NULL;
 	editor = p_editor;
+	shape_type = 0;
 
 	undo_redo = p_editor->get_undo_redo();
 

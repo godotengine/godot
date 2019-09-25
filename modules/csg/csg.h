@@ -183,6 +183,8 @@ struct CSGBrushOperation {
 			int points[2];
 			Edge() {
 				outer = false;
+				points[0] = 0;
+				points[1] = 0;
 			}
 		};
 

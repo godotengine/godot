@@ -128,6 +128,7 @@ public:
 
 	SectionedInspectorFilter() {
 		edited = NULL;
+		allow_sub = false;
 	}
 };
 

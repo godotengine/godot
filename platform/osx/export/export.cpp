@@ -803,7 +803,7 @@ bool EditorExportPlatformOSX::can_export(const Ref<EditorExportPreset> &p_preset
 }
 
 EditorExportPlatformOSX::EditorExportPlatformOSX() {
-
+	version_code = 0;
 	Ref<Image> img = memnew(Image(_osx_logo));
 	logo.instance();
 	logo->create_from_image(img);

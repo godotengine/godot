@@ -523,6 +523,7 @@ BodyPair2DSW::BodyPair2DSW(Body2DSW *p_A, int p_shape_A, Body2DSW *p_B, int p_sh
 	contact_count = 0;
 	collided = false;
 	oneway_disabled = false;
+	cc = 0;
 }
 
 BodyPair2DSW::~BodyPair2DSW() {

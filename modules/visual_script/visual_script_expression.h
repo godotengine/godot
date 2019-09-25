@@ -138,7 +138,10 @@ class VisualScriptExpression : public VisualScriptNode {
 
 		Type type;
 
-		ENode() { next = NULL; }
+		ENode() {
+			next = NULL;
+			type = Type(0);
+		}
 		virtual ~ENode() {
 			if (next) {
 				memdelete(next);
@@ -161,6 +164,7 @@ class VisualScriptExpression : public VisualScriptNode {
 
 		int index;
 		InputNode() {
+			index = 0;
 			type = TYPE_INPUT;
 		}
 	};
@@ -180,7 +184,10 @@ class VisualScriptExpression : public VisualScriptNode {
 		ENode *nodes[2];
 
 		OperatorNode() {
+			op = Variant::OP_MAX;
 			type = TYPE_OPERATOR;
+			nodes[0] = NULL;
+			nodes[1] = NULL;
 		}
 	};
 
@@ -196,6 +203,8 @@ class VisualScriptExpression : public VisualScriptNode {
 		ENode *index;
 
 		IndexNode() {
+			base = NULL;
+			index = NULL;
 			type = TYPE_INDEX;
 		}
 	};
@@ -205,6 +214,7 @@ class VisualScriptExpression : public VisualScriptNode {
 		StringName name;
 
 		NamedIndexNode() {
+			base = NULL;
 			type = TYPE_NAMED_INDEX;
 		}
 	};
@@ -214,6 +224,7 @@ class VisualScriptExpression : public VisualScriptNode {
 		Vector<ENode *> arguments;
 
 		ConstructorNode() {
+			data_type = Variant::NIL;
 			type = TYPE_CONSTRUCTOR;
 		}
 	};
@@ -224,6 +235,7 @@ class VisualScriptExpression : public VisualScriptNode {
 		Vector<ENode *> arguments;
 
 		CallNode() {
+			base = NULL;
 			type = TYPE_CALL;
 		}
 	};
@@ -247,6 +259,7 @@ class VisualScriptExpression : public VisualScriptNode {
 		Vector<ENode *> arguments;
 		BuiltinFuncNode() {
 			type = TYPE_BUILTIN_FUNC;
+			func = VisualScriptBuiltinFunc::MATH_SIN;
 		}
 	};
 

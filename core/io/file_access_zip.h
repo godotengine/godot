@@ -50,7 +50,9 @@ public:
 		File() {
 
 			package = -1;
-		};
+			file_pos.num_of_file = 0;
+			file_pos.pos_in_zip_directory = 0;
+		}
 	};
 
 private:

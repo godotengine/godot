@@ -504,8 +504,13 @@ AnimationNodeStateMachinePlayback::AnimationNodeStateMachinePlayback() {
 	set_local_to_scene(true); //only one per instanced scene
 
 	playing = false;
-	len_current = 0;
+	len_total = 0.0;
+	len_current = 0.0;
+	pos_current = 0.0;
+	loops_current = 0;
 	fading_time = 0;
+	fading_pos = 0.0;
+	start_request_travel = false;
 	stop_request = false;
 }
 

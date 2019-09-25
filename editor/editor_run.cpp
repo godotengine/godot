@@ -231,4 +231,5 @@ EditorRun::EditorRun() {
 	status = STATUS_STOP;
 	debug_collisions = false;
 	debug_navigation = false;
+	pid = 0;
 }

@@ -150,8 +150,11 @@ class DynamicFontAtSize : public Reference {
 		float advance;
 
 		Character() {
+			found = false;
 			texture_idx = 0;
-			v_align = 0;
+			v_align = 0.0;
+			h_align = 0.0;
+			advance = 0.0;
 		}
 
 		static Character not_found();

@@ -151,7 +151,6 @@ Array AudioDriver::capture_get_device_list() {
 }
 
 AudioDriver::AudioDriver() {
-
 	_last_mix_time = 0;
 	_last_mix_frames = 0;
 	capture_position = 0;
@@ -159,6 +158,7 @@ AudioDriver::AudioDriver() {
 
 #ifdef DEBUG_ENABLED
 	prof_time = 0;
+	prof_ticks = 0;
 #endif
 }
 
@@ -1447,6 +1447,10 @@ AudioServer::AudioServer() {
 	mix_time = 0;
 	mix_size = 0;
 	global_rate_scale = 1;
+	buffer_size = 0;
+	mix_count = 0;
+	channel_disable_threshold_db = 0.0;
+	channel_disable_frames = 0;
 }
 
 AudioServer::~AudioServer() {

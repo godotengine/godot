@@ -458,6 +458,10 @@ MobileVRInterface::MobileVRInterface() {
 	k1 = 0.215;
 	k2 = 0.215;
 	last_ticks = 0;
+
+	mag_count = 0;
+	has_gyro = false;
+	sensor_first = false;
 };
 
 MobileVRInterface::~MobileVRInterface() {

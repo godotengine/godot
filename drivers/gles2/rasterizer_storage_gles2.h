@@ -163,6 +163,7 @@ public:
 				vertex_mem(0) {
 			render.reset();
 			render_final.reset();
+			snap.reset();
 		}
 
 	} info;
@@ -220,6 +221,7 @@ public:
 		virtual void material_changed_notify() {}
 
 		Geometry() {
+			type = GEOMETRY_INVALID;
 			last_pass = 0;
 			index = 0;
 		}
@@ -287,15 +289,20 @@ public:
 				flags(0),
 				width(0),
 				height(0),
+				depth(0),
 				alloc_width(0),
 				alloc_height(0),
 				format(Image::FORMAT_L8),
 				type(VS::TEXTURE_TYPE_2D),
 				target(0),
+				gl_format_cache(0),
+				gl_internal_format_cache(0),
+				gl_type_cache(0),
 				data_size(0),
 				total_data_size(0),
 				ignore_mipmaps(false),
 				compressed(false),
+				srgb(false),
 				mipmaps(0),
 				resize_to_po2(false),
 				active(false),
@@ -506,6 +513,35 @@ public:
 			custom_code_id = 0;
 			version = 1;
 			last_pass = 0;
+			mode = VS::SHADER_SPATIAL;
+			texture_count = 0;
+			index = 0;
+
+			canvas_item.blend_mode = 0;
+			canvas_item.light_mode = 0;
+			canvas_item.uses_screen_texture = false;
+			canvas_item.uses_screen_uv = false;
+			canvas_item.uses_time = false;
+
+			spatial.blend_mode = 0;
+			spatial.depth_draw_mode = 0;
+			spatial.cull_mode = 0;
+			spatial.uses_alpha = false;
+			spatial.uses_alpha_scissor = false;
+			spatial.unshaded = false;
+			spatial.no_depth_test = false;
+			spatial.uses_vertex = false;
+			spatial.uses_discard = false;
+			spatial.uses_sss = false;
+			spatial.uses_screen_texture = false;
+			spatial.uses_depth_texture = false;
+			spatial.uses_time = false;
+			spatial.writes_modelview_or_projection = false;
+			spatial.uses_vertex_lighting = false;
+			spatial.uses_world_coordinates = false;
+
+			uses_vertex_time = false;
+			uses_fragment_time = false;
 		}
 	};
 
@@ -556,6 +592,7 @@ public:
 			is_animated_cache = false;
 			shader = NULL;
 			line_width = 1.0;
+			index = 0;
 			last_pass = 0;
 			render_priority = 0;
 		}
@@ -649,13 +686,27 @@ public:
 
 		Surface() :
 				mesh(NULL),
+				format(0),
+				vertex_id(0),
+				index_id(0),
 				array_len(0),
 				index_array_len(0),
+				max_bone(0),
 				array_byte_size(0),
 				index_array_byte_size(0),
 				primitive(VS::PRIMITIVE_POINTS),
 				active(false),
 				total_data_size(0) {
+
+			for (int i = 0; i < VS::ARRAY_MAX; i++) {
+				attribs->enabled = false;
+				attribs->integer = false;
+				attribs->index = 0;
+				attribs->size = 0;
+				attribs->normalized = 0;
+				attribs->stride = 0;
+				attribs->offset = 0;
+			}
 		}
 	};
 
@@ -686,8 +737,10 @@ public:
 		}
 
 		Mesh() :
+				active(false),
 				blend_shape_count(0),
-				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED) {
+				blend_shape_mode(VS::BLEND_SHAPE_MODE_NORMALIZED),
+				last_pass(0) {
 		}
 	};
 
@@ -827,6 +880,7 @@ public:
 		Immediate() {
 			type = GEOMETRY_IMMEDIATE;
 			building = false;
+			mask = 0;
 		}
 	};
 
@@ -1169,7 +1223,8 @@ public:
 			RID texture;
 
 			External() :
-					fbo(0) {
+					fbo(0),
+					color(0) {
 			}
 		} external;
 

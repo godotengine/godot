@@ -138,7 +138,10 @@ private:
 
 		Vector<Input> inputs;
 
-		NodeBase() { cycletest = false; };
+		NodeBase() {
+			type = NODE_MAX;
+			cycletest = false;
+		}
 		virtual ~NodeBase() { cycletest = false; }
 	};
 
@@ -175,6 +178,8 @@ private:
 			next = NULL;
 			last_version = 0;
 			skip = false;
+			time = 0.0;
+			step = 0.0;
 		}
 	};
 
@@ -204,7 +209,10 @@ private:
 			autorestart = false;
 			autorestart_delay = 1;
 			autorestart_remaining = 0;
+			autorestart_random_delay = 0.0;
 			mix = false;
+			time = 0.0;
+			remaining = 0.0;
 			active = false;
 			start = false;
 		}
@@ -214,6 +222,7 @@ private:
 
 		float amount;
 		MixNode() {
+			amount = 0.0;
 			type = NODE_MIX;
 			inputs.resize(2);
 		}
@@ -295,6 +304,7 @@ private:
 			xfade = 0;
 			inputs.resize(1);
 			input_data.resize(1);
+			time = 0.0;
 			current = 0;
 			prev = -1;
 			prev_time = 0;

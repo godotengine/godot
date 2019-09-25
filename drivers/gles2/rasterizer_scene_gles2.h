@@ -661,6 +661,10 @@ public:
 
 		RenderList() {
 			max_elements = DEFAULT_MAX_ELEMENTS;
+			base_elements = NULL;
+			elements = NULL;
+			element_count = 0;
+			alpha_element_count = 0;
 		}
 
 		~RenderList() {

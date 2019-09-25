@@ -150,8 +150,9 @@ void ThreadPosix::make_default() {
 }
 
 ThreadPosix::ThreadPosix() {
-
 	pthread = 0;
+	user = NULL;
+	id = 0;
 }
 
 ThreadPosix::~ThreadPosix() {

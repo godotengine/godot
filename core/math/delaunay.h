@@ -39,7 +39,11 @@ public:
 
 		int points[3];
 		bool bad;
-		Triangle() { bad = false; }
+		Triangle() {
+			bad = false;
+			for (int i = 0; i < 3; i++)
+				points[i] = 0;
+		}
 		Triangle(int p_a, int p_b, int p_c) {
 			points[0] = p_a;
 			points[1] = p_b;
@@ -51,7 +55,11 @@ public:
 	struct Edge {
 		int edge[2];
 		bool bad;
-		Edge() { bad = false; }
+		Edge() {
+			bad = false;
+			for (int i = 0; i < 2; i++)
+				edge[i] = 0;
+		}
 		Edge(int p_a, int p_b) {
 			bad = false;
 			edge[0] = p_a;

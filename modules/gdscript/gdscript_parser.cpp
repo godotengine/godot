@@ -8613,7 +8613,10 @@ int GDScriptParser::get_completion_identifier_is_function() {
 }
 
 GDScriptParser::GDScriptParser() {
-
+	completion_built_in_constant = Variant::NIL;
+	completion_line = 0;
+	completion_argument = 0;
+	completion_ident_is_call = false;
 	head = NULL;
 	list = NULL;
 	tokenizer = NULL;

@@ -200,6 +200,8 @@ RootMotionView::RootMotionView() {
 	immediate = VisualServer::get_singleton()->immediate_create();
 	set_base(immediate);
 	color = Color(0.5, 0.5, 1.0);
+	use_in_game = false;
+	first = false;
 }
 
 RootMotionView::~RootMotionView() {

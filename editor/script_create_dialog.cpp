@@ -912,4 +912,9 @@ ScriptCreateDialog::ScriptCreateDialog() {
 	is_built_in = false;
 
 	is_new_script_created = true;
+
+	path_vb = NULL;
+	path_valid = false;
+	create_new = false;
+	re_check_path = false;
 }

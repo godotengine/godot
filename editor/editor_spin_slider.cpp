@@ -500,4 +500,7 @@ EditorSpinSlider::EditorSpinSlider() {
 	hide_slider = false;
 	read_only = false;
 	use_custom_label_color = false;
+	mouse_hover = false;
+	grabbing_from = 0;
+	grabbing_ratio = 0;
 }

@@ -83,6 +83,10 @@ public:
 		Metric() {
 			valid = false;
 			frame_number = 0;
+			frame_time = 0.0;
+			idle_time = 0.0;
+			physics_time = 0.0;
+			physics_frame_time = 0.0;
 		}
 	};
 

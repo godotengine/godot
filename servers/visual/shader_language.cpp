@@ -5628,6 +5628,16 @@ ShaderLanguage::ShaderLanguage() {
 
 	nodes = NULL;
 	completion_class = TAG_GLOBAL;
+	error_set = false;
+	error_line = 0;
+	char_idx = 0;
+	tk_line = 0;
+	shader = NULL;
+	completion_type = COMPLETION_NONE;
+	completion_line = 0;
+	completion_block = NULL;
+	completion_base = TYPE_VOID;
+	completion_argument = 0;
 }
 
 ShaderLanguage::~ShaderLanguage() {

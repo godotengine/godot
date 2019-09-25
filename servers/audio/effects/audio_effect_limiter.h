@@ -44,6 +44,7 @@ class AudioEffectLimiterInstance : public AudioEffectInstance {
 
 public:
 	virtual void process(const AudioFrame *p_src_frames, AudioFrame *p_dst_frames, int p_frame_count);
+	AudioEffectLimiterInstance();
 };
 
 class AudioEffectLimiter : public AudioEffect {

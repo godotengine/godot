@@ -797,6 +797,7 @@ Camera2D::Camera2D() {
 	custom_viewport = NULL;
 	custom_viewport_id = 0;
 	process_mode = CAMERA2D_PROCESS_IDLE;
+	viewport = NULL;
 
 	smoothing = 5.0;
 	zoom = Vector2(1, 1);

@@ -852,6 +852,8 @@ EditorAutoloadSettings::EditorAutoloadSettings() {
 	tree->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	add_child(tree, true);
+
+	number_of_autoloads = 0;
 }
 
 EditorAutoloadSettings::~EditorAutoloadSettings() {

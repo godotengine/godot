@@ -360,6 +360,9 @@ void AudioEffectPitchShift::_bind_methods() {
 }
 
 AudioEffectPitchShift::AudioEffectPitchShift() {
+	wet = 0.0;
+	dry = 0.0;
+	filter = false;
 	pitch_scale = 1.0;
 	oversampling = 4;
 	fft_size = FFT_SIZE_2048;

@@ -8198,4 +8198,15 @@ void RasterizerStorageGLES3::update_dirty_resources() {
 }
 
 RasterizerStorageGLES3::RasterizerStorageGLES3() {
+	canvas = NULL;
+	scene = NULL;
+	resources.white_tex = 0;
+	resources.black_tex = 0;
+	resources.normal_tex = 0;
+	resources.aniso_tex = 0;
+	resources.white_tex_3d = 0;
+	resources.white_tex_array = 0;
+	resources.quadie = 0;
+	resources.quadie_array = 0;
+	resources.transform_feedback_array = 0;
 }

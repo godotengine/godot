@@ -817,6 +817,11 @@ public:
 			max_elements = DEFAULT_MAX_ELEMENTS;
 			max_lights = DEFAULT_MAX_LIGHTS;
 			max_reflections = DEFAULT_MAX_REFLECTIONS;
+
+			base_elements = NULL;
+			elements = NULL;
+			element_count = 0;
+			alpha_element_count = 0;
 		}
 
 		~RenderList() {

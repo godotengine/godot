@@ -38,6 +38,7 @@
 SoftBodyBullet::SoftBodyBullet() :
 		CollisionObjectBullet(CollisionObjectBullet::TYPE_SOFT_BODY),
 		bt_soft_body(NULL),
+		mat0(NULL),
 		isScratched(false),
 		simulation_precision(5),
 		total_mass(1.),

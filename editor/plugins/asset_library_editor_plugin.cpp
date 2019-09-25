@@ -317,6 +317,8 @@ EditorAssetLibraryItemDescription::EditorAssetLibraryItemDescription() {
 	previews->add_child(preview_hb);
 	get_ok()->set_text(TTR("Download"));
 	get_cancel()->set_text(TTR("Close"));
+
+	asset_id = 0;
 }
 ///////////////////////////////////////////////////////////////////////////////////
 
@@ -568,6 +570,7 @@ EditorAssetLibraryItemDownload::EditorAssetLibraryItemDownload() {
 	prev_status = -1;
 
 	external_install = false;
+	asset_id = 0;
 }
 
 ////////////////////////////////////////////////////////////////////////////////
@@ -1503,6 +1506,7 @@ EditorAssetLibrary::EditorAssetLibrary(bool p_templates_only) {
 	asset_open->connect("file_selected", this, "_asset_file_selected");
 
 	asset_installer = NULL;
+	contents = NULL;
 }
 
 ///////

@@ -72,6 +72,7 @@ private:
 		bool imported;
 		bool enabled;
 		Track() {
+			type = TYPE_VALUE;
 			interpolation = INTERPOLATION_LINEAR;
 			imported = false;
 			loop_wrap = true;
@@ -84,7 +85,10 @@ private:
 
 		float transition;
 		float time; // time in secs
-		Key() { transition = 1; }
+		Key() {
+			transition = 1;
+			time = 0.0;
+		}
 	};
 
 	// transform key holds either Vector3 or Quaternion
@@ -121,6 +125,7 @@ private:
 		ValueTrack() {
 			type = TYPE_VALUE;
 			update_mode = UPDATE_CONTINUOUS;
+			update_on_seek = false;
 		}
 	};
 

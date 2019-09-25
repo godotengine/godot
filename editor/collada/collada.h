@@ -440,7 +440,10 @@ public:
 		Map<String, Material> material_map;
 		Vector<String> skeletons;
 
-		NodeGeometry() { type = TYPE_GEOMETRY; }
+		NodeGeometry() {
+			controller = false;
+			type = TYPE_GEOMETRY;
+		}
 	};
 
 	struct NodeCamera : public Node {
@@ -507,7 +510,10 @@ public:
 			Point2 out_tangent;
 			InterpolationType interp_type;
 
-			Key() { interp_type = INTERP_LINEAR; }
+			Key() {
+				time = 0.0;
+				interp_type = INTERP_LINEAR;
+			}
 		};
 
 		Vector<float> get_value_at_time(float p_time) const;
@@ -579,6 +585,7 @@ public:
 				import_flags(0),
 				unit_scale(1.0),
 				up_axis(Vector3::AXIS_Y),
+				z_up(true),
 				animation_length(0) {
 		}
 	} state;

@@ -213,6 +213,7 @@ void Range::unshare() {
 	nshared->val = shared->val;
 	nshared->step = shared->step;
 	nshared->page = shared->page;
+	nshared->exp_ratio = shared->exp_ratio;
 	nshared->allow_greater = shared->allow_greater;
 	nshared->allow_lesser = shared->allow_lesser;
 	_unref_shared();

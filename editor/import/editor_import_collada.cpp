@@ -101,11 +101,12 @@ struct ColladaImport {
 	void _pre_process_lights(Collada::Node *p_node);
 
 	ColladaImport() {
-
+		scene = NULL;
 		found_ambient = false;
 		found_directional = false;
 		force_make_tangents = false;
 		apply_mesh_xform_to_vertices = true;
+		use_mesh_builtin_materials = true;
 		bake_fps = 15;
 	}
 };

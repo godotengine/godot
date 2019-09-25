@@ -50,6 +50,8 @@ protected:
 		_body_ptr = p_body_ptr;
 		_body_count = p_body_count;
 		island_step = 0;
+		island_next = NULL;
+		island_list_next = NULL;
 		priority = 1;
 		disabled_collisions_between_bodies = true;
 	}

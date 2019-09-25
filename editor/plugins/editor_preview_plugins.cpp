@@ -460,6 +460,8 @@ EditorMaterialPreviewPlugin::EditorMaterialPreviewPlugin() {
 	arr[VS::ARRAY_TANGENT] = tangents;
 	arr[VS::ARRAY_TEX_UV] = uvs;
 	VS::get_singleton()->mesh_add_surface_from_arrays(sphere, VS::PRIMITIVE_TRIANGLES, arr);
+
+	preview_done = false;
 }
 
 EditorMaterialPreviewPlugin::~EditorMaterialPreviewPlugin() {
@@ -796,6 +798,8 @@ EditorMeshPreviewPlugin::EditorMeshPreviewPlugin() {
 	//sphere = VS::get_singleton()->mesh_create();
 	mesh_instance = VS::get_singleton()->instance_create();
 	VS::get_singleton()->instance_set_scenario(mesh_instance, scenario);
+
+	preview_done = false;
 }
 
 EditorMeshPreviewPlugin::~EditorMeshPreviewPlugin() {
@@ -906,6 +910,8 @@ EditorFontPreviewPlugin::EditorFontPreviewPlugin() {
 
 	VS::get_singleton()->viewport_attach_canvas(viewport, canvas);
 	VS::get_singleton()->canvas_item_set_parent(canvas_item, canvas);
+
+	preview_done = false;
 }
 
 EditorFontPreviewPlugin::~EditorFontPreviewPlugin() {

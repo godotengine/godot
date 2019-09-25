@@ -158,7 +158,11 @@ protected:
 				return body_shape < p_sp.body_shape;
 		}
 
-		ShapePair() {}
+		ShapePair() {
+			body_shape = 0;
+			local_shape = 0;
+			tagged = false;
+		}
 		ShapePair(int p_bs, int p_ls) {
 			body_shape = p_bs;
 			local_shape = p_ls;

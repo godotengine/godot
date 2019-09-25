@@ -470,6 +470,7 @@ BSP_Tree::operator Variant() const {
 }
 
 BSP_Tree::BSP_Tree() {
+	error_radius = 0;
 }
 
 BSP_Tree::BSP_Tree(const Variant &p_variant) {
@@ -556,6 +557,7 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
 		indices.push_back(i);
 	}
 
+	error_radius = p_error_radius;
 	ERR_FAIL_COND(aabb.has_no_area());
 
 	int top = _bsp_create_node(faces_r.ptr(), indices, planes, nodes, aabb.get_longest_axis_size() * 0.0001);
@@ -566,8 +568,6 @@ BSP_Tree::BSP_Tree(const PoolVector<Face3> &p_faces, real_t p_error_radius) {
 		planes.clear();
 		ERR_FAIL_COND(top < 0);
 	}
-
-	error_radius = p_error_radius;
 }
 
 BSP_Tree::BSP_Tree(const Vector<Node> &p_nodes, const Vector<Plane> &p_planes, const AABB &p_aabb, real_t p_error_radius) :

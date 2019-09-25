@@ -33,6 +33,10 @@
 #include "core/math/geometry.h"
 #include "core/sort_array.h"
 
+CircleShape2DSW::CircleShape2DSW() {
+	radius = 0.0;
+}
+
 void Shape2DSW::configure(const Rect2 &p_aabb) {
 	aabb = p_aabb;
 	configured = true;

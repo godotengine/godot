@@ -236,7 +236,13 @@ public:
 
 	virtual void finish() {
 	}
+	TestMainLoop();
 };
+
+TestMainLoop::TestMainLoop() {
+	ofs = 0.0;
+	quit = false;
+}
 
 MainLoop *test() {
 

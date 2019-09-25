@@ -863,6 +863,8 @@ NetworkedMultiplayerENet::NetworkedMultiplayerENet() {
 	channel_count = SYSCH_MAX;
 	transfer_channel = -1;
 	always_ordered = false;
+	peer = NULL;
+	host = NULL;
 	connection_status = CONNECTION_DISCONNECTED;
 	compression_mode = COMPRESS_NONE;
 	enet_compressor.context = this;

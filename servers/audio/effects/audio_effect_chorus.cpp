@@ -144,6 +144,13 @@ void AudioEffectChorusInstance::_process_chunk(const AudioFrame *p_src_frames, A
 
 	buffer_pos += p_frame_count;
 }
+AudioEffectChorusInstance::AudioEffectChorusInstance() {
+	buffer_pos = 0;
+	buffer_mask = 0;
+	for (int i = 0; i < 4; i++) {
+		cycles[i] = 0;
+	}
+}
 
 Ref<AudioEffectInstance> AudioEffectChorus::instance() {
 

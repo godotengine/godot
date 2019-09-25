@@ -659,6 +659,10 @@ FindReplaceBar::FindReplaceBar() {
 	hide_button->set_focus_mode(FOCUS_NONE);
 	hide_button->connect("pressed", this, "_hide_pressed");
 	hide_button->set_v_size_flags(SIZE_SHRINK_CENTER);
+
+	text_edit = NULL;
+	result_line = 0;
+	result_col = 0;
 }
 
 /*** CODE EDITOR ****/

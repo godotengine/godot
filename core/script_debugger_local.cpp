@@ -421,4 +421,9 @@ ScriptDebuggerLocal::ScriptDebuggerLocal() {
 	profiling = false;
 	idle_accum = OS::get_singleton()->get_ticks_usec();
 	options["variable_prefix"] = "";
+
+	frame_time = 0.0;
+	idle_time = 0.0;
+	physics_time = 0.0;
+	physics_frame_time = 0.0;
 }

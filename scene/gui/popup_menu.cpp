@@ -1501,6 +1501,8 @@ PopupMenu::PopupMenu() {
 	submenu_timer->set_one_shot(true);
 	submenu_timer->connect("timeout", this, "_submenu_timeout");
 	add_child(submenu_timer);
+
+	invalidated_click = false;
 }
 
 PopupMenu::~PopupMenu() {

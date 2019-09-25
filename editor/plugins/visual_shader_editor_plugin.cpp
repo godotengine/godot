@@ -3141,6 +3141,9 @@ void VisualShaderNodePortPreview::_bind_methods() {
 }
 
 VisualShaderNodePortPreview::VisualShaderNodePortPreview() {
+	type = VisualShader::TYPE_MAX;
+	node = 0;
+	port = 0;
 }
 
 //////////////////////////////////

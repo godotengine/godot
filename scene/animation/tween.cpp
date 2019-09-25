@@ -784,7 +784,9 @@ float Tween::get_speed_scale() const {
 
 bool Tween::start() {
 
-	ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Tween was not added to the SceneTree!");
+	if (!is_inside_tree()) {
+		ERR_FAIL_COND_V_MSG(!is_inside_tree(), false, "Tween was not added to the SceneTree!");
+	}
 
 	// Are there any pending updates?
 	if (pending_update != 0) {

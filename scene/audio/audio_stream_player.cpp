@@ -440,6 +440,7 @@ AudioStreamPlayer::AudioStreamPlayer() {
 	fadeout_buffer.resize(512);
 	setstop = false;
 	use_fadeout = false;
+	stop_has_priority = false;
 
 	AudioServer::get_singleton()->connect("bus_layout_changed", this, "_bus_layout_changed");
 }

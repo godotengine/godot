@@ -1328,6 +1328,7 @@ void VisualScript::_bind_methods() {
 VisualScript::VisualScript() {
 
 	base_type = "Object";
+	is_tool_script = false;
 }
 
 Set<int> VisualScript::get_output_sequence_ports_connected(const String &edited_func, int from_node) {
@@ -2244,6 +2245,9 @@ ScriptLanguage *VisualScriptInstance::get_language() {
 }
 
 VisualScriptInstance::VisualScriptInstance() {
+	owner = NULL;
+	max_input_args = 0;
+	max_output_args = 0;
 }
 
 VisualScriptInstance::~VisualScriptInstance() {

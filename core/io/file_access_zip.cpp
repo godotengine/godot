@@ -370,7 +370,8 @@ bool FileAccessZip::file_exists(const String &p_name) {
 }
 
 FileAccessZip::FileAccessZip(const String &p_path, const PackedData::PackedFile &p_file) :
-		zfile(NULL) {
+		zfile(NULL),
+		at_eof(false) {
 	_open(p_path, FileAccess::READ);
 }
 

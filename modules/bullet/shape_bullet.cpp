@@ -194,7 +194,9 @@ btCollisionShape *PlaneShapeBullet::create_bt_shape(const btVector3 &p_implicit_
 /* Sphere */
 
 SphereShapeBullet::SphereShapeBullet() :
-		ShapeBullet() {}
+		ShapeBullet() {
+	radius = 0.0;
+}
 
 void SphereShapeBullet::set_data(const Variant &p_data) {
 	setup(p_data);
@@ -247,7 +249,10 @@ btCollisionShape *BoxShapeBullet::create_bt_shape(const btVector3 &p_implicit_sc
 /* Capsule */
 
 CapsuleShapeBullet::CapsuleShapeBullet() :
-		ShapeBullet() {}
+		ShapeBullet() {
+	height = 0.0;
+	radius = 0.0;
+}
 
 void CapsuleShapeBullet::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
@@ -280,7 +285,10 @@ btCollisionShape *CapsuleShapeBullet::create_bt_shape(const btVector3 &p_implici
 /* Cylinder */
 
 CylinderShapeBullet::CylinderShapeBullet() :
-		ShapeBullet() {}
+		ShapeBullet() {
+	height = 0.0;
+	radius = 0.0;
+}
 
 void CylinderShapeBullet::set_data(const Variant &p_data) {
 	Dictionary d = p_data;
@@ -445,7 +453,12 @@ btCollisionShape *ConcavePolygonShapeBullet::create_bt_shape(const btVector3 &p_
 /* Height map shape */
 
 HeightMapShapeBullet::HeightMapShapeBullet() :
-		ShapeBullet() {}
+		ShapeBullet() {
+	width = 0;
+	depth = 0;
+	min_height = 0.0;
+	max_height = 0.0;
+}
 
 void HeightMapShapeBullet::set_data(const Variant &p_data) {
 	ERR_FAIL_COND(p_data.get_type() != Variant::DICTIONARY);

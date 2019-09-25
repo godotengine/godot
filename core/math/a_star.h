@@ -48,7 +48,15 @@ class AStar : public Reference {
 
 		Point() :
 				neighbours(4u),
-				unlinked_neighbours(4u) {}
+				unlinked_neighbours(4u) {
+			id = 0;
+			enabled = false;
+			prev_point = NULL;
+			open_pass = 0;
+			closed_pass = 0;
+			g_score = 0.0;
+			f_score = 0.0;
+		}
 
 		int id;
 		Vector3 pos;
@@ -91,12 +99,17 @@ class AStar : public Reference {
 		Point *to_point;
 
 		bool operator<(const Segment &p_s) const { return key < p_s.key; }
-		Segment() { key = 0; }
+		Segment() {
+			from_point = 0;
+			key = 0;
+			to_point = 0;
+		}
 		Segment(int p_from, int p_to) {
 			if (p_from > p_to) {
 				SWAP(p_from, p_to);
 			}
-
+			from_point = 0;
+			to_point = 0;
 			from = p_from;
 			to = p_to;
 		}

@@ -5045,6 +5045,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	snap_guides = true;
 	snap_rotation = false;
 	snap_relative = false;
+	snap_target[0] = SNAP_TARGET_NONE;
+	snap_target[1] = SNAP_TARGET_NONE;
 	snap_pixel = false;
 	snap_target[0] = SNAP_TARGET_NONE;
 	snap_target[1] = SNAP_TARGET_NONE;

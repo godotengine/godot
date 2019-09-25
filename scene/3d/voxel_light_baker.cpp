@@ -2483,4 +2483,12 @@ VoxelLightBaker::VoxelLightBaker() {
 	bake_texture_size = 128;
 	propagation = 0.85;
 	energy = 1.0;
+	cell_subdiv = 0;
+	first_leaf = 0;
+	leaf_voxel_count = 0;
+	direct_lights_baked = false;
+	cell_size = 0.0;
+	bake_quality = BAKE_QUALITY_LOW;
+	bake_mode = BAKE_MODE_CONE_TRACE;
+	max_original_cells = 0;
 }

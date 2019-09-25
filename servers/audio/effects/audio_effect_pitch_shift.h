@@ -66,6 +66,8 @@ public:
 		memset(gOutputAccum, 0, 2 * MAX_FRAME_LENGTH * sizeof(float));
 		memset(gAnaFreq, 0, MAX_FRAME_LENGTH * sizeof(float));
 		memset(gAnaMagn, 0, MAX_FRAME_LENGTH * sizeof(float));
+		memset(gSynFreq, 0, MAX_FRAME_LENGTH * sizeof(float));
+		memset(gSynMagn, 0, MAX_FRAME_LENGTH * sizeof(float));
 	}
 };
 

@@ -293,6 +293,8 @@ Slider::Slider(Orientation p_orientation) {
 	orientation = p_orientation;
 	mouse_inside = false;
 	grab.active = false;
+	grab.pos = 0;
+	grab.uvalue = 0.0;
 	ticks = 0;
 	ticks_on_borders = false;
 	custom_step = -1;

@@ -90,6 +90,11 @@ void RayShape::_bind_methods() {
 RayShape::RayShape() :
 		Shape(PhysicsServer::get_singleton()->shape_create(PhysicsServer::SHAPE_RAY)) {
 
-	set_length(1.0);
-	set_slips_on_slope(false);
+	slips_on_slope = false;
+	length = 1.0;
+
+	_update_shape();
+	notify_change_to_owners();
+	_change_notify("slips_on_slope");
+	_change_notify("length");
 }

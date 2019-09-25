@@ -288,6 +288,9 @@ MeshLibraryEditor::MeshLibraryEditor(EditorNode *p_editor) {
 	cd = memnew(ConfirmationDialog);
 	add_child(cd);
 	cd->get_ok()->connect("pressed", this, "_menu_confirm");
+
+	to_erase = 0;
+	option = 0;
 }
 
 void MeshLibraryEditorPlugin::edit(Object *p_node) {

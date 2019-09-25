@@ -1096,6 +1096,19 @@ ShaderGLES2::ShaderGLES2() {
 	version = NULL;
 	last_custom_code = 1;
 	uniforms_dirty = true;
+	uniform_count = 0;
+	texunit_pair_count = 0;
+	conditional_count = 0;
+	vertex_code_start = 0;
+	fragment_code_start = 0;
+	attribute_pair_count = 0;
+	conditional_defines = NULL;
+	uniform_names = NULL;
+	attribute_pairs = NULL;
+	texunit_pairs = NULL;
+	vertex_code = NULL;
+	fragment_code = NULL;
+	max_image_units = 0;
 }
 
 ShaderGLES2::~ShaderGLES2() {

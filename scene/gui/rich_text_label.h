@@ -98,6 +98,10 @@ private:
 		int maximum_width;
 
 		Line() {
+			height_cache = 0;
+			height_accum_cache = 0;
+			minimum_width = 0;
+			maximum_width = 0;
 			from = NULL;
 			char_count = 0;
 		}
@@ -122,7 +126,9 @@ private:
 		}
 
 		Item() {
+			index = -1;
 			parent = NULL;
+			type = ITEM_FRAME;
 			E = NULL;
 			line = 0;
 		}
@@ -140,6 +146,7 @@ private:
 		ItemFrame *parent_frame;
 
 		ItemFrame() {
+			first_invalid_line = -1;
 			type = ITEM_FRAME;
 			parent_frame = NULL;
 			cell = false;
@@ -206,7 +213,10 @@ private:
 
 	public:
 		Align align;
-		ItemAlign() { type = ITEM_ALIGN; }
+		ItemAlign() {
+			type = ITEM_ALIGN;
+			align = ALIGN_CENTER;
+		}
 	};
 
 	class ItemIndent : public Item {
@@ -214,7 +224,10 @@ private:
 
 	public:
 		int level;
-		ItemIndent() { type = ITEM_INDENT; }
+		ItemIndent() {
+			level = -1;
+			type = ITEM_INDENT;
+		}
 	};
 
 	class ItemList : public Item {
@@ -222,7 +235,10 @@ private:
 
 	public:
 		ListType list_type;
-		ItemList() { type = ITEM_LIST; }
+		ItemList() {
+			type = ITEM_LIST;
+			list_type = LIST_NUMBERS;
+		}
 	};
 
 	class ItemNewline : public Item {
@@ -246,7 +262,10 @@ private:
 
 		Vector<Column> columns;
 		int total_width;
-		ItemTable() { type = ITEM_TABLE; }
+		ItemTable() {
+			total_width = -1;
+			type = ITEM_TABLE;
+		}
 	};
 
 	class ItemFade : public Item {
@@ -256,7 +275,11 @@ private:
 		int starting_index;
 		int length;
 
-		ItemFade() { type = ITEM_FADE; }
+		ItemFade() {
+			type = ITEM_FADE;
+			starting_index = 0;
+			length = 0;
+		}
 	};
 
 	class ItemFX : public Item {
@@ -283,6 +306,7 @@ private:
 			strength = 0;
 			rate = 0.0f;
 			_current_rng = 0;
+			_previous_rng = 0;
 			type = ITEM_SHAKE;
 		}
 

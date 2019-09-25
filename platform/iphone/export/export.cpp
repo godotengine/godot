@@ -1194,7 +1194,7 @@ bool EditorExportPlatformIOS::can_export(const Ref<EditorExportPreset> &p_preset
 }
 
 EditorExportPlatformIOS::EditorExportPlatformIOS() {
-
+	version_code = 0;
 	Ref<Image> img = memnew(Image(_iphone_logo));
 	logo.instance();
 	logo->create_from_image(img);

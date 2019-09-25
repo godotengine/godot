@@ -1278,6 +1278,7 @@ void AnimationTrackEditTypeAnimation::set_node(Object *p_object) {
 }
 
 AnimationTrackEditTypeAnimation::AnimationTrackEditTypeAnimation() {
+	id = 0;
 }
 
 /////////

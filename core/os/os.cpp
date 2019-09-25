@@ -770,6 +770,7 @@ OS::OS() {
 	low_processor_usage_mode = false;
 	low_processor_usage_mode_sleep_usec = 10000;
 	_verbose_stdout = false;
+	_msec_splash = 0;
 	_no_window = false;
 	_exit_code = 0;
 	_orientation = SCREEN_LANDSCAPE;
@@ -778,6 +779,7 @@ OS::OS() {
 
 	_allow_hidpi = false;
 	_allow_layered = false;
+	_use_vsync = false;
 	_stack_bottom = (void *)(&stack_bottom);
 
 	_logger = NULL;

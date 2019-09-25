@@ -78,7 +78,10 @@ private:
 				return body_shape < p_sp.body_shape;
 		}
 
-		ShapePair() {}
+		ShapePair() {
+			area_shape = 0;
+			body_shape = 0;
+		}
 		ShapePair(int p_bs, int p_as) {
 			body_shape = p_bs;
 			area_shape = p_as;
@@ -110,7 +113,10 @@ private:
 				return area_shape < p_sp.area_shape;
 		}
 
-		AreaShapePair() {}
+		AreaShapePair() {
+			area_shape = 0;
+			self_shape = 0;
+		}
 		AreaShapePair(int p_bs, int p_as) {
 			area_shape = p_bs;
 			self_shape = p_as;

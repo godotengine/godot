@@ -5909,4 +5909,6 @@ void RasterizerStorageGLES2::update_dirty_resources() {
 
 RasterizerStorageGLES2::RasterizerStorageGLES2() {
 	RasterizerStorageGLES2::system_fbo = 0;
+	canvas = NULL;
+	scene = NULL;
 }

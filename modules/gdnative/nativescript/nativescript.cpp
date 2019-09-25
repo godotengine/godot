@@ -1029,6 +1029,7 @@ NativeScriptLanguage::NativeScriptLanguage() {
 	_thread_enter_call_name = "nativescript_thread_enter";
 	_thread_exit_call_name = "nativescript_thread_exit";
 #endif
+	lang_idx = 0;
 }
 
 NativeScriptLanguage::~NativeScriptLanguage() {

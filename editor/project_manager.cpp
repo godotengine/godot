@@ -987,7 +987,14 @@ public:
 
 		ProjectListItemControl *control;
 
-		Item() {}
+		Item() {
+			last_modified = 0;
+			favorite = false;
+			grayed = false;
+			missing = false;
+			version = 0;
+			control = NULL;
+		}
 
 		Item(const String &p_project,
 				const String &p_name,
@@ -2721,6 +2728,8 @@ void ProjectListFilter::set_filter_size(int h_size) {
 
 ProjectListFilter::ProjectListFilter() {
 
+	filter_option = NULL;
+	search_box = NULL;
 	_current_filter = FILTER_NAME;
 	has_search_box = false;
 }

@@ -453,7 +453,10 @@ CollisionObject2D::CollisionObject2D(RID p_rid, bool p_area) {
 }
 
 CollisionObject2D::CollisionObject2D() {
-
+	area = false;
+	pickable = false;
+	total_subshapes = 0;
+	only_update_transform_changes = false;
 	//owner=
 
 	set_notify_transform(true);

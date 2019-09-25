@@ -576,6 +576,8 @@ HTTPRequest::HTTPRequest() {
 	timer->connect("timeout", this, "_timeout");
 	add_child(timer);
 	timeout = 0;
+	method = HTTPClient::METHOD_GET;
+	thread_request_quit = false;
 }
 
 HTTPRequest::~HTTPRequest() {

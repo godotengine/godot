@@ -111,7 +111,7 @@ private:
 		Vector<Button> buttons;
 
 		Cell() {
-
+			custom_bg_outline = false;
 			custom_draw_obj = 0;
 			custom_button = false;
 			mode = TreeItem::CELL_MODE_STRING;

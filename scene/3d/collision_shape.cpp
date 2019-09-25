@@ -196,6 +196,7 @@ CollisionShape::CollisionShape() {
 	//indicator = VisualServer::get_singleton()->mesh_create();
 	disabled = false;
 	debug_shape = NULL;
+	debug_shape_dirty = false;
 	parent = NULL;
 	owner_id = 0;
 	set_notify_local_transform(true);

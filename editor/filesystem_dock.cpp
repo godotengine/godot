@@ -2683,6 +2683,8 @@ FileSystemDock::FileSystemDock(EditorNode *p_editor) {
 	file_list_display_mode = FILE_LIST_DISPLAY_THUMBNAILS;
 
 	always_show_folders = false;
+
+	search_icon = NULL;
 }
 
 FileSystemDock::~FileSystemDock() {

@@ -65,6 +65,7 @@ class StringName {
 			next = prev = NULL;
 			idx = 0;
 			hash = 0;
+			refcount.init();
 		}
 	};
 

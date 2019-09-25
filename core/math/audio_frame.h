@@ -137,7 +137,10 @@ struct AudioFrame {
 		l = p_v2.x;
 		r = p_v2.y;
 	}
-	_ALWAYS_INLINE_ AudioFrame() {}
+	_ALWAYS_INLINE_ AudioFrame() {
+		l = 0;
+		r = 0;
+	}
 };
 
 #endif

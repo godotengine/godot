@@ -171,6 +171,7 @@ public:
 			vertex_mem = 0;
 			render.reset();
 			render_final.reset();
+			snap.reset();
 		}
 
 	} info;
@@ -229,6 +230,7 @@ public:
 		virtual void material_changed_notify() {}
 
 		Geometry() {
+			type = GEOMETRY_INVALID;
 			last_pass = 0;
 			index = 0;
 		}
@@ -292,9 +294,16 @@ public:
 				flags(0),
 				width(0),
 				height(0),
+				depth(0),
+				alloc_width(0),
+				alloc_height(0),
+				alloc_depth(0),
 				format(Image::FORMAT_L8),
 				type(VS::TEXTURE_TYPE_2D),
 				target(GL_TEXTURE_2D),
+				gl_format_cache(0),
+				gl_internal_format_cache(0),
+				gl_type_cache(0),
 				data_size(0),
 				compressed(false),
 				srgb(false),
@@ -507,12 +516,39 @@ public:
 
 		Shader() :
 				dirty_list(this) {
-
+			mode = VS::SHADER_SPATIAL;
 			shader = NULL;
 			ubo_size = 0;
-			valid = false;
+			texture_count = 0;
 			custom_code_id = 0;
 			version = 1;
+			valid = false;
+
+			canvas_item.blend_mode = 0;
+			canvas_item.light_mode = 0;
+			canvas_item.uses_screen_texture = false;
+			canvas_item.uses_screen_uv = false;
+			canvas_item.uses_time = false;
+
+			spatial.blend_mode = 0;
+			spatial.depth_draw_mode = 0;
+			spatial.cull_mode = 0;
+			spatial.uses_alpha = false;
+			spatial.uses_alpha_scissor = false;
+			spatial.unshaded = false;
+			spatial.no_depth_test = false;
+			spatial.uses_vertex = false;
+			spatial.uses_discard = false;
+			spatial.uses_sss = false;
+			spatial.uses_screen_texture = false;
+			spatial.uses_depth_texture = false;
+			spatial.uses_time = false;
+			spatial.writes_modelview_or_projection = false;
+			spatial.uses_vertex_lighting = false;
+			spatial.uses_world_coordinates = false;
+
+			uses_vertex_time = false;
+			uses_fragment_time = false;
 		}
 	};
 
@@ -568,6 +604,7 @@ public:
 				dirty_list(this),
 				line_width(1.0),
 				render_priority(0),
+				index(0),
 				last_pass(0),
 				can_cast_shadow_cache(false),
 				is_animated_cache(false) {
@@ -673,6 +710,7 @@ public:
 				mesh(NULL),
 				format(0),
 				array_id(0),
+				instancing_array_id(0),
 				vertex_id(0),
 				index_id(0),
 				index_wireframe_id(0),
@@ -681,12 +719,22 @@ public:
 				index_wireframe_len(0),
 				array_len(0),
 				index_array_len(0),
+				max_bone(0),
 				array_byte_size(0),
 				index_array_byte_size(0),
 				primitive(VS::PRIMITIVE_POINTS),
 				active(false),
 				total_data_size(0) {
 			type = GEOMETRY_SURFACE;
+			for (int i = 0; i < VS::ARRAY_MAX; i++) {
+				attribs->enabled = false;
+				attribs->integer = false;
+				attribs->index = 0;
+				attribs->size = 0;
+				attribs->normalized = 0;
+				attribs->stride = 0;
+				attribs->offset = 0;
+			}
 		}
 
 		~Surface() {
@@ -856,6 +904,7 @@ public:
 		Immediate() {
 			type = GEOMETRY_IMMEDIATE;
 			building = false;
+			mask = 0;
 		}
 	};
 
@@ -1090,6 +1139,12 @@ public:
 		GIProbeCompression compression;
 
 		GIProbeData() {
+			width = 0;
+			height = 0;
+			depth = 0;
+			levels = 0;
+			tex_id = 0;
+			compression = GI_PROBE_UNCOMPRESSED;
 		}
 	};
 
@@ -1196,6 +1251,8 @@ public:
 				draw_order(VS::PARTICLES_DRAW_ORDER_INDEX),
 				histories_enabled(false),
 				particle_element(this),
+				phase(0.0),
+				prev_phase(0.0),
 				prev_ticks(0),
 				random_seed(0),
 				cycle_number(0),
@@ -1206,6 +1263,14 @@ public:
 				clear(true) {
 			particle_buffers[0] = 0;
 			particle_buffers[1] = 0;
+
+			particle_buffer_histories[0] = 0;
+			particle_buffer_histories[1] = 0;
+			particle_vao_histories[0] = 0;
+			particle_vao_histories[1] = 0;
+			particle_valid_histories[0] = false;
+			particle_valid_histories[1] = false;
+
 			glGenBuffers(2, particle_buffers);
 			glGenVertexArrays(2, particle_vaos);
 		}
@@ -1331,6 +1396,9 @@ public:
 						linear_depth(0) {
 					blur_fbo[0] = 0;
 					blur_fbo[1] = 0;
+
+					blur_red[0] = 0;
+					blur_red[1] = 0;
 				}
 			} ssao;
 
@@ -1343,7 +1411,8 @@ public:
 			GLuint color;
 
 			Exposure() :
-					fbo(0) {}
+					fbo(0),
+					color(0) {}
 		} exposure;
 
 		// External FBO to render our final result to (mostly used for ARVR)
@@ -1368,6 +1437,7 @@ public:
 
 		RenderTarget() :
 				fbo(0),
+				color(0),
 				depth(0),
 				last_exposure_tick(0),
 				width(0),
@@ -1383,6 +1453,13 @@ public:
 			flags[RENDER_TARGET_HDR] = true;
 			buffers.active = false;
 			buffers.effects_active = false;
+			buffers.depth = 0;
+			buffers.specular = 0;
+			buffers.diffuse = 0;
+			buffers.normal_rough = 0;
+			buffers.sss = 0;
+			buffers.effect_fbo = 0;
+			buffers.effect = 0;
 		}
 	};
 

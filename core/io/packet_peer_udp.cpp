@@ -268,6 +268,10 @@ PacketPeerUDP::PacketPeerUDP() :
 		peer_port(0),
 		blocking(true),
 		_sock(Ref<NetSocket>(NetSocket::create())) {
+	for (int i = 0; i < PACKET_BUFFER_SIZE; i++) {
+		recv_buffer[i] = 0;
+		packet_buffer[i] = 0;
+	}
 	rb.resize(16);
 }
 

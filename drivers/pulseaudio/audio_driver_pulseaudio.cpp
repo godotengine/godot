@@ -818,6 +818,12 @@ AudioDriverPulseAudio::AudioDriverPulseAudio() :
 		latency(0) {
 	samples_in.clear();
 	samples_out.clear();
+	pa_rec_map.channels = 0;
+	pa_map.channels = 0;
+	for (unsigned int i = 0; i < PA_CHANNELS_MAX; i++) {
+		pa_rec_map.map[i] = PA_CHANNEL_POSITION_MONO;
+		pa_map.map[i] = PA_CHANNEL_POSITION_MONO;
+	}
 }
 
 AudioDriverPulseAudio::~AudioDriverPulseAudio() {

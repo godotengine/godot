@@ -306,6 +306,9 @@ public:
 			buffer(stack_buffer),
 			capacity(sizeof(stack_buffer) / sizeof(char)),
 			written(0) {
+		for (int i = 0; i < 256; i++) {
+			stack_buffer[i] = '\0';
+		}
 	}
 
 	_FORCE_INLINE_ void push_back(char c) {

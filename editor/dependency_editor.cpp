@@ -657,6 +657,7 @@ DependencyErrorDialog::DependencyErrorDialog() {
 	fdep = add_button(TTR("Fix Dependencies"), true, "fixdeps");
 
 	set_title(TTR("Errors loading!"));
+	mode = MODE_SCENE;
 }
 
 //////////////////////////////////////////////////////////////////////

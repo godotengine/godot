@@ -119,4 +119,5 @@ CharFXTransform::CharFXTransform() {
 	offset = Point2();
 	color = Color();
 	character = 0;
+	elapsed_time = 0.0;
 }

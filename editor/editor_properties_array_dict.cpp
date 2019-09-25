@@ -533,6 +533,9 @@ EditorPropertyArray::EditorPropertyArray() {
 	subtype = Variant::NIL;
 	subtype_hint = PROPERTY_HINT_NONE;
 	subtype_hint_string = "";
+
+	page_hb = NULL;
+	array_type = Variant::NIL;
 }
 
 ///////////////////// DICTIONARY ///////////////////////////

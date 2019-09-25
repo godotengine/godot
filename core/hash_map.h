@@ -76,7 +76,10 @@ public:
 
 		uint32_t hash;
 		Element *next;
-		Element() { next = 0; }
+		Element() {
+			next = 0;
+			hash = 0;
+		}
 		Pair pair;
 
 	public:

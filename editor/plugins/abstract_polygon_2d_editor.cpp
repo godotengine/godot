@@ -837,6 +837,9 @@ AbstractPolygon2DEditor::AbstractPolygon2DEditor(EditorNode *p_editor, bool p_wi
 	create_resource->get_ok()->set_text(TTR("Create"));
 
 	mode = MODE_EDIT;
+
+	_polygon_editing_enabled = false;
+	panel = NULL;
 }
 
 void AbstractPolygon2DEditorPlugin::edit(Object *p_object) {

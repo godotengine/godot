@@ -85,6 +85,7 @@ private:
 			viewport = NULL;
 			reverb_bus_index = -1;
 			bus_index = -1;
+			pitch_scale = 0;
 		}
 	};
 

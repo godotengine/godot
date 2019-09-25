@@ -240,7 +240,11 @@ private:
 			return *this;
 		}
 
-		_FORCE_INLINE_ AudioNotch() {}
+		_FORCE_INLINE_ AudioNotch() {
+			relative_position = 0.0;
+			db_value = 0.0;
+			render_db_value = false;
+		}
 	};
 
 	List<AudioNotch> notches;

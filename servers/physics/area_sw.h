@@ -82,7 +82,11 @@ class AreaSW : public CollisionObjectSW {
 				return rid < p_key.rid;
 		}
 
-		_FORCE_INLINE_ BodyKey() {}
+		_FORCE_INLINE_ BodyKey() {
+			instance_id = 0;
+			body_shape = 0;
+			area_shape = 0;
+		}
 		BodyKey(BodySW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 		BodyKey(AreaSW *p_body, uint32_t p_body_shape, uint32_t p_area_shape);
 	};

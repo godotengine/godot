@@ -53,8 +53,18 @@ JoypadLinux::Joypad::Joypad() {
 	fd = -1;
 	dpad = 0;
 	devpath = "";
+	force_feedback = false;
+	ff_effect_id = 0;
+	ff_effect_timestamp = 0;
 	for (int i = 0; i < MAX_ABS; i++) {
 		abs_info[i] = NULL;
+		abs_map[i] = 0;
+
+		curr_axis[i].min = 0;
+		curr_axis[i].value = 0.0;
+	}
+	for (int i = 0; i < MAX_KEY; i++) {
+		key_map[i] = 0;
 	}
 }
 

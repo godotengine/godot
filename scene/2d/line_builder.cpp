@@ -103,6 +103,7 @@ LineBuilder::LineBuilder() {
 	begin_cap_mode = Line2D::LINE_CAP_NONE;
 	end_cap_mode = Line2D::LINE_CAP_NONE;
 	tile_aspect = 1.f;
+	texture_mode = Line2D::LINE_TEXTURE_NONE;
 
 	_interpolate_color = false;
 	_last_index[0] = 0;

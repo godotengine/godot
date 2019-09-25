@@ -186,18 +186,27 @@ public:
 
 Viewport::GUI::GUI() {
 
+	key_event_accepted = false;
+	last_mouse_focus = NULL;
+	drag_attempted = false;
+	tooltip_timer = 0;
+	tooltip_delay = 0;
+	roots_order_dirty = false;
+
 	dragging = false;
 	mouse_focus = NULL;
 	mouse_click_grabber = NULL;
 	mouse_focus_mask = 0;
 	key_focus = NULL;
 	mouse_over = NULL;
+	drag_preview = NULL;
 
 	tooltip = NULL;
 	tooltip_popup = NULL;
 	tooltip_label = NULL;
 	subwindow_visibility_dirty = false;
 	subwindow_order_dirty = false;
+	canvas_sort_index = 0;
 }
 
 /////////////////////////////////////
@@ -3243,6 +3252,7 @@ Viewport::Viewport() {
 	local_input_handled = false;
 	handle_input_locally = true;
 	physics_last_id = 0; //ensures first time there will be a check
+	filter = false;
 }
 
 Viewport::~Viewport() {

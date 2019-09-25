@@ -64,6 +64,8 @@ private:
 		bool one_way_collision;
 		float one_way_collision_margin;
 		Shape() {
+			bpid = 0;
+			shape = NULL;
 			disabled = false;
 			one_way_collision = false;
 			one_way_collision_margin = 0;
