@@ -2463,8 +2463,7 @@ void FileSystemDock::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("display_mode_changed"));
 }
 
-void FileSystemDock::clear_file_list_search_box()
-{
+void FileSystemDock::clear_file_list_search_box() {
 	file_list_search_box->clear();
 }
 
