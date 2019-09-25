@@ -3080,7 +3080,6 @@ void AnimationTrackEdit::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("insert_key", PropertyInfo(Variant::REAL, "ofs")));
 	ADD_SIGNAL(MethodInfo("select_key", PropertyInfo(Variant::INT, "index"), PropertyInfo(Variant::BOOL, "single")));
 	ADD_SIGNAL(MethodInfo("deselect_key", PropertyInfo(Variant::INT, "index")));
-	ADD_SIGNAL(MethodInfo("clear_selection"));
 	ADD_SIGNAL(MethodInfo("bezier_edit"));
 
 	ADD_SIGNAL(MethodInfo("move_selection_begin"));
@@ -4265,7 +4264,6 @@ void AnimationTrackEditor::_update_tracks() {
 		track_edit->connect("select_key", this, "_key_selected", varray(i), CONNECT_DEFERRED);
 		track_edit->connect("deselect_key", this, "_key_deselected", varray(i), CONNECT_DEFERRED);
 		track_edit->connect("bezier_edit", this, "_bezier_edit", varray(i), CONNECT_DEFERRED);
-		track_edit->connect("clear_selection", this, "_clear_selection");
 		track_edit->connect("move_selection_begin", this, "_move_selection_begin");
 		track_edit->connect("move_selection", this, "_move_selection");
 		track_edit->connect("move_selection_commit", this, "_move_selection_commit");
