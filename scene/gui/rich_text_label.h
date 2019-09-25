@@ -81,7 +81,7 @@ protected:
 	static void _bind_methods();
 
 private:
-	class Item;
+	struct Item;
 
 	struct Line {
 
@@ -103,10 +103,8 @@ private:
 		}
 	};
 
-	class Item : public Object {
-		GDCLASS(Item, Object);
+	struct Item : public Object {
 
-	public:
 		int index;
 		Item *parent;
 		ItemType type;
@@ -129,10 +127,8 @@ private:
 		virtual ~Item() { _clear_children(); }
 	};
 
-	class ItemFrame : public Item {
-		GDCLASS(ItemFrame, Item);
+	struct ItemFrame : public Item {
 
-	public:
 		int parent_line;
 		bool cell;
 		Vector<Line> lines;
@@ -147,95 +143,71 @@ private:
 		}
 	};
 
-	class ItemText : public Item {
-		GDCLASS(ItemText, Item);
+	struct ItemText : public Item {
 
-	public:
 		String text;
 		ItemText() { type = ITEM_TEXT; }
 	};
 
-	class ItemImage : public Item {
-		GDCLASS(ItemImage, Item);
+	struct ItemImage : public Item {
 
-	public:
 		Ref<Texture> image;
 		ItemImage() { type = ITEM_IMAGE; }
 	};
 
-	class ItemFont : public Item {
-		GDCLASS(ItemFont, Item);
+	struct ItemFont : public Item {
 
-	public:
 		Ref<Font> font;
 		ItemFont() { type = ITEM_FONT; }
 	};
 
-	class ItemColor : public Item {
-		GDCLASS(ItemColor, Item);
+	struct ItemColor : public Item {
 
-	public:
 		Color color;
 		ItemColor() { type = ITEM_COLOR; }
 	};
 
-	class ItemUnderline : public Item {
-		GDCLASS(ItemUnderline, Item);
+	struct ItemUnderline : public Item {
 
-	public:
 		ItemUnderline() { type = ITEM_UNDERLINE; }
 	};
 
-	class ItemStrikethrough : public Item {
-		GDCLASS(ItemStrikethrough, Item);
+	struct ItemStrikethrough : public Item {
 
-	public:
 		ItemStrikethrough() { type = ITEM_STRIKETHROUGH; }
 	};
 
-	class ItemMeta : public Item {
-		GDCLASS(ItemMeta, Item);
+	struct ItemMeta : public Item {
 
-	public:
 		Variant meta;
 		ItemMeta() { type = ITEM_META; }
 	};
 
-	class ItemAlign : public Item {
-		GDCLASS(ItemAlign, Item);
+	struct ItemAlign : public Item {
 
-	public:
 		Align align;
 		ItemAlign() { type = ITEM_ALIGN; }
 	};
 
-	class ItemIndent : public Item {
-		GDCLASS(ItemIndent, Item);
+	struct ItemIndent : public Item {
 
-	public:
 		int level;
 		ItemIndent() { type = ITEM_INDENT; }
 	};
 
-	class ItemList : public Item {
-		GDCLASS(ItemList, Item);
+	struct ItemList : public Item {
 
-	public:
 		ListType list_type;
 		ItemList() { type = ITEM_LIST; }
 	};
 
-	class ItemNewline : public Item {
-		GDCLASS(ItemNewline, Item);
+	struct ItemNewline : public Item {
 
-	public:
 		ItemNewline() { type = ITEM_NEWLINE; }
 	};
 
-	class ItemTable : public Item {
-		GDCLASS(ItemTable, Item);
+	struct ItemTable : public Item {
 
-	public:
 		struct Column {
 			bool expand;
 			int expand_ratio;
@@ -249,20 +221,14 @@ private:
 		ItemTable() { type = ITEM_TABLE; }
 	};
 
-	class ItemFade : public Item {
-		GDCLASS(ItemFade, Item);
-
-	public:
+	struct ItemFade : public Item {
 		int starting_index;
 		int length;
 
 		ItemFade() { type = ITEM_FADE; }
 	};
 
-	class ItemFX : public Item {
-		GDCLASS(ItemFX, Item);
-
-	public:
+	struct ItemFX : public Item {
 		float elapsed_time;
 
 		ItemFX() {
@@ -270,10 +236,7 @@ private:
 		}
 	};
 
-	class ItemShake : public ItemFX {
-		GDCLASS(ItemShake, ItemFX);
-
-	public:
+	struct ItemShake : public ItemFX {
 		int strength;
 		float rate;
 		uint64_t _current_rng;
@@ -302,10 +265,7 @@ private:
 		}
 	};
 
-	class ItemWave : public ItemFX {
-		GDCLASS(ItemWave, ItemFX);
-
-	public:
+	struct ItemWave : public ItemFX {
 		float frequency;
 		float amplitude;
 
@@ -316,10 +276,7 @@ private:
 		}
 	};
 
-	class ItemTornado : public ItemFX {
-		GDCLASS(ItemTornado, ItemFX);
-
-	public:
+	struct ItemTornado : public ItemFX {
 		float radius;
 		float frequency;
 
@@ -330,10 +287,7 @@ private:
 		}
 	};
 
-	class ItemRainbow : public ItemFX {
-		GDCLASS(ItemRainbow, ItemFX);
-
-	public:
+	struct ItemRainbow : public ItemFX {
 		float saturation;
 		float value;
 		float frequency;
@@ -346,10 +300,7 @@ private:
 		}
 	};
 
-	class ItemCustomFX : public ItemFX {
-		GDCLASS(ItemCustomFX, ItemFX);
-
-	public:
+	struct ItemCustomFX : public ItemFX {
 		String identifier;
 		Dictionary environment;
 
