@@ -793,13 +793,13 @@ void EditorSettings::create() {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/._sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path: " + exe_path + "/._sc_");
+			ERR_PRINTS("Can't load config from path '" + exe_path + "/._sc_'.");
 		}
 	} else if (d->file_exists(exe_path + "/_sc_")) {
 		self_contained = true;
 		Error err = extra_config->load(exe_path + "/_sc_");
 		if (err != OK) {
-			ERR_PRINTS("Can't load config from path: " + exe_path + "/_sc_");
+			ERR_PRINTS("Can't load config from path '" + exe_path + "/_sc_'.");
 		}
 	}
 	memdelete(d);
@@ -1235,10 +1235,10 @@ void EditorSettings::set_project_metadata(const String &p_section, const String 
 	String path = get_project_settings_dir().plus_file("project_metadata.cfg");
 	Error err;
 	err = cf->load(path);
-	ERR_FAIL_COND(err != OK && err != ERR_FILE_NOT_FOUND);
+	ERR_FAIL_COND_MSG(err != OK && err != ERR_FILE_NOT_FOUND, "Cannot load editor settings from file '" + path + "'.");
 	cf->set_value(p_section, p_key, p_data);
 	err = cf->save(path);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot save editor settings to file '" + path + "'.");
 }
 
 Variant EditorSettings::get_project_metadata(const String &p_section, const String &p_key, Variant p_default) const {

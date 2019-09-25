@@ -104,7 +104,7 @@ void GDMonoLog::_delete_old_log_files(const String &p_logs_dir) {
 	ERR_FAIL_COND(!da);
 
 	Error err = da->change_dir(p_logs_dir);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot change directory to '" + p_logs_dir + "'.");
 
 	ERR_FAIL_COND(da->list_dir_begin() != OK);
 

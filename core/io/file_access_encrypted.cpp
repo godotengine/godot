@@ -41,7 +41,7 @@
 
 Error FileAccessEncrypted::open_and_parse(FileAccess *p_base, const Vector<uint8_t> &p_key, Mode p_mode) {
 
-	ERR_FAIL_COND_V(file != NULL, ERR_ALREADY_IN_USE);
+	ERR_FAIL_COND_V_MSG(file != NULL, ERR_ALREADY_IN_USE, "Can't open file while another file from path '" + file->get_path_absolute() + "' is open.");
 	ERR_FAIL_COND_V(p_key.size() != 32, ERR_INVALID_PARAMETER);
 
 	pos = 0;
@@ -205,7 +205,7 @@ bool FileAccessEncrypted::eof_reached() const {
 
 uint8_t FileAccessEncrypted::get_8() const {
 
-	ERR_FAIL_COND_V(writing, 0);
+	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 	if (pos >= data.size()) {
 		eofed = true;
 		return 0;
@@ -217,7 +217,7 @@ uint8_t FileAccessEncrypted::get_8() const {
 }
 int FileAccessEncrypted::get_buffer(uint8_t *p_dst, int p_length) const {
 
-	ERR_FAIL_COND_V(writing, 0);
+	ERR_FAIL_COND_V_MSG(writing, 0, "File has not been opened in read mode.");
 
 	int to_copy = MIN(p_length, data.size() - pos);
 	for (int i = 0; i < to_copy; i++) {
@@ -239,7 +239,7 @@ Error FileAccessEncrypted::get_error() const {
 
 void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	if (pos < data.size()) {
 
@@ -259,14 +259,14 @@ void FileAccessEncrypted::store_buffer(const uint8_t *p_src, int p_length) {
 }
 
 void FileAccessEncrypted::flush() {
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	// encrypted files keep data in memory till close()
 }
 
 void FileAccessEncrypted::store_8(uint8_t p_dest) {
 
-	ERR_FAIL_COND(!writing);
+	ERR_FAIL_COND_MSG(!writing, "File has not been opened in read mode.");
 
 	if (pos < data.size()) {
 		data.write[pos] = p_dest;

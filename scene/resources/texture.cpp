@@ -175,7 +175,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 	img.instance();
 	Error err = ImageLoader::load_image(path, img);
 
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot load image from path '" + path + "'.");
 
 	VisualServer::get_singleton()->texture_set_data(texture, img);
 
@@ -2355,7 +2355,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 	}
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, RES());
+	ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot open file '" + p_path + "'.");
 
 	uint8_t header[5] = { 0, 0, 0, 0, 0 };
 	f->get_buffer(header, 4);
@@ -2372,7 +2372,7 @@ RES ResourceFormatLoaderTextureLayered::load(const String &p_path, const String 
 		}
 	} else {
 
-		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture file format: " + String((const char *)header) + ".");
+		ERR_FAIL_V_MSG(RES(), "Unrecognized layered texture file format '" + String((const char *)header) + "'.");
 	}
 
 	int tw = f->get_32();

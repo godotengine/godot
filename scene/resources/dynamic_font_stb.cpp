@@ -480,7 +480,7 @@ RES ResourceFormatLoaderDynamicFont::load(const String &p_path, const String &p_
 		*r_error = ERR_FILE_CANT_OPEN;
 
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, RES());
+	ERR_FAIL_COND_V_MSG(!f, RES(), "Cannot load font from file '" + p_path + "'.");
 
 	PoolVector<uint8_t> data;
 

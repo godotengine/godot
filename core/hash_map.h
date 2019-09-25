@@ -112,7 +112,7 @@ private:
 
 	void erase_hash_table() {
 
-		ERR_FAIL_COND(elements);
+		ERR_FAIL_COND_MSG(elements, "Cannot erase hash table if there are still elements inside.");
 
 		memdelete_arr(hash_table);
 		hash_table = 0;

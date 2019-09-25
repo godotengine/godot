@@ -1670,14 +1670,14 @@ Error EditorSceneImporterGLTF::_parse_animations(GLTFState &state) {
 					track->weight_tracks.write[k] = cf;
 				}
 			} else {
-				WARN_PRINTS("Invalid path: " + path);
+				WARN_PRINTS("Invalid path '" + path + "'.");
 			}
 		}
 
 		state.animations.push_back(animation);
 	}
 
-	print_verbose("glTF: Total animations: " + itos(state.animations.size()));
+	print_verbose("glTF: Total animations '" + itos(state.animations.size()) + "'.");
 
 	return OK;
 }

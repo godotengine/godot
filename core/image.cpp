@@ -885,10 +885,10 @@ void Image::resize(int p_width, int p_height, Interpolation p_interpolation) {
 
 	bool mipmap_aware = p_interpolation == INTERPOLATE_TRILINEAR /* || p_interpolation == INTERPOLATE_TRICUBIC */;
 
-	ERR_FAIL_COND(p_width <= 0);
-	ERR_FAIL_COND(p_height <= 0);
-	ERR_FAIL_COND(p_width > MAX_WIDTH);
-	ERR_FAIL_COND(p_height > MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_width <= 0, "Image width cannot be greater than 0.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "Image height cannot be greater than 0.");
+	ERR_FAIL_COND_MSG(p_width > MAX_WIDTH, "Image width cannot be greater than " + itos(MAX_WIDTH) + ".");
+	ERR_FAIL_COND_MSG(p_height > MAX_HEIGHT, "Image height cannot be greater than " + itos(MAX_HEIGHT) + ".");
 
 	if (p_width == width && p_height == height)
 		return;
@@ -1096,12 +1096,12 @@ void Image::crop_from_point(int p_x, int p_y, int p_width, int p_height) {
 
 	ERR_FAIL_COND_MSG(!_can_modify(format), "Cannot crop in compressed or custom image formats.");
 
-	ERR_FAIL_COND(p_x < 0);
-	ERR_FAIL_COND(p_y < 0);
-	ERR_FAIL_COND(p_width <= 0);
-	ERR_FAIL_COND(p_height <= 0);
-	ERR_FAIL_COND(p_x + p_width > MAX_WIDTH);
-	ERR_FAIL_COND(p_y + p_height > MAX_HEIGHT);
+	ERR_FAIL_COND_MSG(p_x < 0, "Start x position cannot be smaller than 0.");
+	ERR_FAIL_COND_MSG(p_y < 0, "Start y position cannot be smaller than 0.");
+	ERR_FAIL_COND_MSG(p_width <= 0, "Width of image must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_height <= 0, "Height of image must be greater than 0.");
+	ERR_FAIL_COND_MSG(p_x + p_width > MAX_WIDTH, "End x position cannot be greater than " + itos(MAX_WIDTH) + ".");
+	ERR_FAIL_COND_MSG(p_y + p_height > MAX_HEIGHT, "End y position cannot be greater than " + itos(MAX_HEIGHT) + ".");
 
 	/* to save memory, cropping should be done in-place, however, since this function
 	   will most likely either not be used much, or in critical areas, for now it won't, because
@@ -2055,7 +2055,7 @@ Ref<Image> Image::get_rect(const Rect2 &p_area) const {
 
 void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
 
-	ERR_FAIL_COND(p_src.is_null());
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2105,16 +2105,16 @@ void Image::blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Po
 
 void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
 
-	ERR_FAIL_COND(p_src.is_null());
-	ERR_FAIL_COND(p_mask.is_null());
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
 	ERR_FAIL_COND(dsize == 0);
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(maskdsize == 0);
-	ERR_FAIL_COND(p_src->width != p_mask->width);
-	ERR_FAIL_COND(p_src->height != p_mask->height);
+	ERR_FAIL_COND_MSG(p_src->width != p_mask->width, "Source image width is different from mask width.");
+	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);
@@ -2168,7 +2168,7 @@ void Image::blit_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, co
 
 void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest) {
 
-	ERR_FAIL_COND(p_src.is_null());
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	ERR_FAIL_COND(dsize == 0);
@@ -2218,16 +2218,16 @@ void Image::blend_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const P
 
 void Image::blend_rect_mask(const Ref<Image> &p_src, const Ref<Image> &p_mask, const Rect2 &p_src_rect, const Point2 &p_dest) {
 
-	ERR_FAIL_COND(p_src.is_null());
-	ERR_FAIL_COND(p_mask.is_null());
+	ERR_FAIL_COND_MSG(p_src.is_null(), "It's not a reference to a valid Image object.");
+	ERR_FAIL_COND_MSG(p_mask.is_null(), "It's not a reference to a valid Image object.");
 	int dsize = data.size();
 	int srcdsize = p_src->data.size();
 	int maskdsize = p_mask->data.size();
 	ERR_FAIL_COND(dsize == 0);
 	ERR_FAIL_COND(srcdsize == 0);
 	ERR_FAIL_COND(maskdsize == 0);
-	ERR_FAIL_COND(p_src->width != p_mask->width);
-	ERR_FAIL_COND(p_src->height != p_mask->height);
+	ERR_FAIL_COND_MSG(p_src->width != p_mask->width, "Source image width is different from mask width.");
+	ERR_FAIL_COND_MSG(p_src->height != p_mask->height, "Source image height is different from mask height.");
 	ERR_FAIL_COND(format != p_src->format);
 
 	Rect2i clipped_src_rect = Rect2i(0, 0, p_src->width, p_src->height).clip(p_src_rect);

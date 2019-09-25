@@ -321,7 +321,7 @@ FileAccessPack::FileAccessPack(const String &p_path, const PackedData::PackedFil
 		pf(p_file),
 		f(FileAccess::open(pf.pack, FileAccess::READ)) {
 
-	ERR_FAIL_COND_MSG(!f, "Can't open pack-referenced file: " + String(pf.pack) + ".");
+	ERR_FAIL_COND_MSG(!f, "Can't open pack-referenced file '" + String(pf.pack) + "'.");
 
 	f->seek(pf.offset);
 	pos = 0;

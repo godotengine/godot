@@ -55,7 +55,7 @@ Error CryptoKeyMbedTLS::load(String p_path) {
 
 	PoolByteArray out;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	int flen = f->get_len();
 	out.resize(flen + 1);
@@ -69,14 +69,14 @@ Error CryptoKeyMbedTLS::load(String p_path) {
 	int ret = mbedtls_pk_parse_key(&pkey, out.read().ptr(), out.size(), NULL, 0);
 	// We MUST zeroize the memory for safety!
 	mbedtls_platform_zeroize(out.write().ptr(), out.size());
-	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing private key: " + itos(ret));
+	ERR_FAIL_COND_V_MSG(ret, FAILED, "Error parsing private key '" + itos(ret) + "'.");
 
 	return OK;
 }
 
 Error CryptoKeyMbedTLS::save(String p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save CryptoKeyMbedTLS file '" + p_path + "'.");
 
 	unsigned char w[16000];
 	memset(w, 0, sizeof(w));
@@ -85,7 +85,7 @@ Error CryptoKeyMbedTLS::save(String p_path) {
 	if (ret != 0) {
 		memdelete(f);
 		memset(w, 0, sizeof(w)); // Zeroize anything we might have written.
-		ERR_FAIL_V_MSG(FAILED, "Error writing key: " + itos(ret));
+		ERR_FAIL_V_MSG(FAILED, "Error writing key '" + itos(ret) + "'.");
 	}
 
 	size_t len = strlen((char *)w);
@@ -104,7 +104,7 @@ Error X509CertificateMbedTLS::load(String p_path) {
 
 	PoolByteArray out;
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ);
-	ERR_FAIL_COND_V(!f, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot open X509CertificateMbedTLS file '" + p_path + "'.");
 
 	int flen = f->get_len();
 	out.resize(flen + 1);
@@ -131,7 +131,7 @@ Error X509CertificateMbedTLS::load_from_memory(const uint8_t *p_buffer, int p_le
 
 Error X509CertificateMbedTLS::save(String p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE);
-	ERR_FAIL_COND_V(!f, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V_MSG(!f, ERR_INVALID_PARAMETER, "Cannot save X509CertificateMbedTLS file '" + p_path + "'.");
 
 	mbedtls_x509_crt *crt = &cert;
 	while (crt) {
@@ -140,7 +140,7 @@ Error X509CertificateMbedTLS::save(String p_path) {
 		int ret = mbedtls_pem_write_buffer(PEM_BEGIN_CRT, PEM_END_CRT, cert.raw.p, cert.raw.len, w, sizeof(w), &wrote);
 		if (ret != 0 || wrote == 0) {
 			memdelete(f);
-			ERR_FAIL_V_MSG(FAILED, "Error writing certificate: " + itos(ret));
+			ERR_FAIL_V_MSG(FAILED, "Error writing certificate '" + itos(ret) + "'.");
 		}
 
 		f->store_buffer(w, wrote - 1); // don't write the string terminator

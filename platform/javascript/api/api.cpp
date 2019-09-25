@@ -55,7 +55,7 @@ JavaScript *JavaScript::get_singleton() {
 
 JavaScript::JavaScript() {
 
-	ERR_FAIL_COND(singleton != NULL);
+	ERR_FAIL_COND_MSG(singleton != NULL, "JavaScript singleton already exist.");
 	singleton = this;
 }
 

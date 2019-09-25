@@ -498,7 +498,7 @@ uint64_t FileAccess::get_modified_time(const String &p_file) {
 		return 0;
 
 	FileAccess *fa = create_for_path(p_file);
-	ERR_FAIL_COND_V(!fa, 0);
+	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	uint64_t mt = fa->_get_modified_time(p_file);
 	memdelete(fa);
@@ -511,7 +511,7 @@ uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 		return 0;
 
 	FileAccess *fa = create_for_path(p_file);
-	ERR_FAIL_COND_V(!fa, 0);
+	ERR_FAIL_COND_V_MSG(!fa, 0, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	uint32_t mt = fa->_get_unix_permissions(p_file);
 	memdelete(fa);
@@ -521,7 +521,7 @@ uint32_t FileAccess::get_unix_permissions(const String &p_file) {
 Error FileAccess::set_unix_permissions(const String &p_file, uint32_t p_permissions) {
 
 	FileAccess *fa = create_for_path(p_file);
-	ERR_FAIL_COND_V(!fa, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(!fa, ERR_CANT_CREATE, "Cannot create FileAccess for path '" + p_file + "'.");
 
 	Error err = fa->_set_unix_permissions(p_file, p_permissions);
 	memdelete(fa);
@@ -599,7 +599,7 @@ Vector<uint8_t> FileAccess::get_file_as_array(const String &p_path, Error *r_err
 		if (r_error) { // if error requested, do not throw error
 			return Vector<uint8_t>();
 		}
-		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path: " + String(p_path) + ".");
+		ERR_FAIL_V_MSG(Vector<uint8_t>(), "Can't open file from path '" + String(p_path) + "'.");
 	}
 	Vector<uint8_t> data;
 	data.resize(f->get_len());
@@ -619,7 +619,7 @@ String FileAccess::get_file_as_string(const String &p_path, Error *r_error) {
 		if (r_error) {
 			return String();
 		}
-		ERR_FAIL_V_MSG(String(), "Can't get file as string from path: " + String(p_path) + ".");
+		ERR_FAIL_V_MSG(String(), "Can't get file as string from path '" + String(p_path) + "'.");
 	}
 
 	String ret;

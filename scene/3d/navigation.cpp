@@ -230,7 +230,7 @@ void Navigation::navmesh_set_transform(int p_id, const Transform &p_xform) {
 }
 void Navigation::navmesh_remove(int p_id) {
 
-	ERR_FAIL_COND(!navmesh_map.has(p_id));
+	ERR_FAIL_COND_MSG(!navmesh_map.has(p_id), "Trying to remove nonexisting navmesh with id: " + itos(p_id));
 	_navmesh_unlink(p_id);
 	navmesh_map.erase(p_id);
 }
