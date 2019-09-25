@@ -122,7 +122,7 @@ void AnimationPlayerEditor::_notification(int p_what) {
 			stop->set_icon(get_icon("Stop", "EditorIcons"));
 
 			onion_toggle->set_icon(get_icon("Onion", "EditorIcons"));
-			onion_skinning->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+			onion_skinning->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
 
 			pin->set_icon(get_icon("Pin", "EditorIcons"));
 

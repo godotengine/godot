@@ -3662,7 +3662,7 @@ void CanvasItemEditor::_notification(int p_what) {
 		scale_button->set_icon(get_icon("ToolScale", "EditorIcons"));
 		rotate_button->set_icon(get_icon("ToolRotate", "EditorIcons"));
 		snap_button->set_icon(get_icon("Snap", "EditorIcons"));
-		snap_config_menu->set_icon(get_icon("GuiMiniTabMenu", "EditorIcons"));
+		snap_config_menu->set_icon(get_icon("GuiTabMenu", "EditorIcons"));
 		skeleton_menu->set_icon(get_icon("Bone", "EditorIcons"));
 		pan_button->set_icon(get_icon("ToolPan", "EditorIcons"));
 		ruler_button->set_icon(get_icon("Ruler", "EditorIcons"));
