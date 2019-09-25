@@ -2213,6 +2213,7 @@ void EditorPropertyResource::_menu_option(int p_which) {
 			RES res = get_edited_object()->get(get_edited_property());
 
 			FileSystemDock *file_system_dock = EditorNode::get_singleton()->get_filesystem_dock();
+			file_system_dock->clear_file_list_search_box();
 			file_system_dock->navigate_to_path(res->get_path());
 			// Ensure that the FileSystem dock is visible.
 			TabContainer *tab_container = (TabContainer *)file_system_dock->get_parent_control();

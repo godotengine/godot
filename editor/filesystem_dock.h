@@ -303,6 +303,8 @@ public:
 	void set_file_list_display_mode(FileListDisplayMode p_mode);
 	FileListDisplayMode get_file_list_display_mode() { return file_list_display_mode; };
 
+	void clear_file_list_search_box();
+
 	FileSystemDock(EditorNode *p_editor);
 	~FileSystemDock();
 };
