@@ -804,60 +804,102 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 
 	} else if (p_msg == "error") {
 
+		// Should have at least two elements, error array and stack items count.
+		ERR_FAIL_COND_MSG(p_data.size() < 2, "Malformed error message from script debugger.");
+
+		// Error or warning data.
 		Array err = p_data[0];
+		ERR_FAIL_COND_MSG(err.size() < 10, "Malformed error message from script debugger.");
 
-		Array vals;
-		vals.push_back(err[0]);
-		vals.push_back(err[1]);
-		vals.push_back(err[2]);
-		vals.push_back(err[3]);
-
-		bool warning = err[9];
+		// Format time.
+		Array time_vals;
+		time_vals.push_back(err[0]);
+		time_vals.push_back(err[1]);
+		time_vals.push_back(err[2]);
+		time_vals.push_back(err[3]);
 		bool e;
-		String time = String("%d:%02d:%02d:%04d").sprintf(vals, &e);
-		String txt = err[8].is_zero() ? String(err[7]) : String(err[8]);
+		String time = String("%d:%02d:%02d:%04d").sprintf(time_vals, &e);
 
+		// Rest of the error data.
+		String method = err[4];
+		String source_file = err[5];
+		String source_line = err[6];
+		String error_cond = err[7];
+		String error_msg = err[8];
+		bool is_warning = err[9];
+		bool has_method = !method.empty();
+		bool has_error_msg = !error_msg.empty();
+		bool source_is_project_file = source_file.begins_with("res://");
+
+		// Metadata to highlight error line in scripts.
+		Array source_meta;
+		source_meta.push_back(source_file);
+		source_meta.push_back(source_line);
+
+		// Create error tree to display above error or warning details.
 		TreeItem *r = error_tree->get_root();
 		if (!r) {
 			r = error_tree->create_item();
 		}
 
+		// Also provide the relevant details as tooltip to quickly check without
+		// uncollapsing the tree.
+		String tooltip = is_warning ? TTR("Warning:") : TTR("Error:");
+
 		TreeItem *error = error_tree->create_item(r);
 		error->set_collapsed(true);
 
-		error->set_icon(0, get_icon(warning ? "Warning" : "Error", "EditorIcons"));
+		error->set_icon(0, get_icon(is_warning ? "Warning" : "Error", "EditorIcons"));
 		error->set_text(0, time);
 		error->set_text_align(0, TreeItem::ALIGN_LEFT);
 
-		error->set_text(1, txt);
+		String error_title;
+		// Include method name, when given, in error title.
+		if (has_method)
+			error_title += method + ": ";
+		// If we have a (custom) error message, use it as title, and add a C++ Error
+		// item with the original error condition.
+		error_title += error_msg.empty() ? error_cond : error_msg;
+		error->set_text(1, error_title);
+		tooltip += " " + error_title + "\n";
 
-		String source(err[5]);
-		bool source_is_project_file = source.begins_with("res://");
-		if (source_is_project_file)
-			txt = source.get_file() + ":" + String(err[6]);
-		else
-			txt = source + ":" + String(err[6]);
-
-		String method = err[4];
-		if (method.length() > 0)
-			txt += " @ " + method + "()";
-
-		TreeItem *c_info = error_tree->create_item(error);
-		c_info->set_text(0, "<" + TTR(source_is_project_file ? "Source" : "C Source") + ">");
-		c_info->set_text(1, txt);
-		c_info->set_text_align(0, TreeItem::ALIGN_LEFT);
-
-		if (source_is_project_file) {
-			Array meta;
-			meta.push_back(source);
-			meta.push_back(err[6]);
-			error->set_metadata(0, meta);
-			c_info->set_metadata(0, meta);
+		if (has_error_msg) {
+			// Add item for C++ error condition.
+			TreeItem *cpp_cond = error_tree->create_item(error);
+			cpp_cond->set_text(0, "<" + TTR("C++ Error") + ">");
+			cpp_cond->set_text(1, error_cond);
+			cpp_cond->set_text_align(0, TreeItem::ALIGN_LEFT);
+			tooltip += TTR("C++ Error:") + " " + error_cond + "\n";
+			if (source_is_project_file)
+				cpp_cond->set_metadata(0, source_meta);
 		}
 
-		int scc = p_data[1];
+		// Source of the error.
+		String source_txt = (source_is_project_file ? source_file.get_file() : source_file) + ":" + source_line;
+		if (has_method)
+			source_txt += " @ " + method + "()";
 
-		for (int i = 0; i < scc; i += 3) {
+		TreeItem *cpp_source = error_tree->create_item(error);
+		cpp_source->set_text(0, "<" + (source_is_project_file ? TTR("Source") : TTR("C++ Source")) + ">");
+		cpp_source->set_text(1, source_txt);
+		cpp_source->set_text_align(0, TreeItem::ALIGN_LEFT);
+		tooltip += (source_is_project_file ? TTR("Source:") : TTR("C++ Source:")) + " " + source_txt + "\n";
+
+		// Set metadata to highlight error line in scripts.
+		if (source_is_project_file) {
+			error->set_metadata(0, source_meta);
+			cpp_source->set_metadata(0, source_meta);
+		}
+
+		error->set_tooltip(0, tooltip);
+		error->set_tooltip(1, tooltip);
+
+		// Format stack trace.
+		// stack_items_count is the number of elements to parse, with 3 items per frame
+		// of the stack trace (script, method, line).
+		int stack_items_count = p_data[1];
+
+		for (int i = 0; i < stack_items_count; i += 3) {
 			String script = p_data[2 + i];
 			String method2 = p_data[3 + i];
 			int line = p_data[4 + i];
@@ -876,7 +918,7 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			stack_trace->set_text(1, script.get_file() + ":" + itos(line) + " @ " + method2 + "()");
 		}
 
-		if (warning)
+		if (is_warning)
 			warning_count++;
 		else
 			error_count++;
