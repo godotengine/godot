@@ -119,26 +119,29 @@ void gdmono_debug_init() {
 
 	mono_debug_init(MONO_DEBUG_FORMAT_MONO);
 
+	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
+
+#ifdef TOOLS_ENABLED
 	int da_port = GLOBAL_DEF("mono/debugger_agent/port", 23685);
 	bool da_suspend = GLOBAL_DEF("mono/debugger_agent/wait_for_debugger", false);
 	int da_timeout = GLOBAL_DEF("mono/debugger_agent/wait_timeout", 3000);
 
-	CharString da_args = OS::get_singleton()->get_environment("GODOT_MONO_DEBUGGER_AGENT").utf8();
-
-#ifdef TOOLS_ENABLED
 	if (Engine::get_singleton()->is_editor_hint() ||
 			ProjectSettings::get_singleton()->get_resource_path().empty() ||
 			Main::is_project_manager()) {
 		if (da_args.size() == 0)
 			return;
 	}
-#endif
 
 	if (da_args.length() == 0) {
 		da_args = String("--debugger-agent=transport=dt_socket,address=127.0.0.1:" + itos(da_port) +
 						 ",embedding=1,server=y,suspend=" + (da_suspend ? "y,timeout=" + itos(da_timeout) : "n"))
 						  .utf8();
 	}
+#else
+	if (da_args.length() == 0)
+		return; // Exported games don't use the project settings to setup the debugger agent
+#endif
 
 	// --debugger-agent=help
 	const char *options[] = {
