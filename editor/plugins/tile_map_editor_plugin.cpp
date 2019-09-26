@@ -71,8 +71,8 @@ void TileMapEditor::_notification(int p_what) {
 			picker_button->set_icon(get_icon("ColorPick", "EditorIcons"));
 			select_button->set_icon(get_icon("ActionCopy", "EditorIcons"));
 
-			rotate_left_button->set_icon(get_icon("Rotate270", "EditorIcons"));
-			rotate_right_button->set_icon(get_icon("Rotate90", "EditorIcons"));
+			rotate_left_button->set_icon(get_icon("RotateLeft", "EditorIcons"));
+			rotate_right_button->set_icon(get_icon("RotateRight", "EditorIcons"));
 			flip_horizontal_button->set_icon(get_icon("MirrorX", "EditorIcons"));
 			flip_vertical_button->set_icon(get_icon("MirrorY", "EditorIcons"));
 			clear_transform_button->set_icon(get_icon("Clear", "EditorIcons"));
