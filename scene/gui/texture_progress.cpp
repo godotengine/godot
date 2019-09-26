@@ -344,6 +344,9 @@ void TextureProgress::_notification(int p_what) {
 						case FILL_CLOCKWISE:
 						case FILL_COUNTER_CLOCKWISE:
 						case FILL_CLOCKWISE_AND_COUNTER_CLOCKWISE: {
+							if (nine_patch_stretch)
+								s = get_size();
+
 							float val = get_as_ratio() * rad_max_degrees / 360;
 							if (val == 1) {
 								Rect2 region = Rect2(Point2(), s);
@@ -384,7 +387,13 @@ void TextureProgress::_notification(int p_what) {
 								draw_polygon(points, colors, uvs, progress);
 							}
 							if (Engine::get_singleton()->is_editor_hint()) {
-								Point2 p = progress->get_size();
+								Point2 p;
+
+								if (nine_patch_stretch)
+									p = get_size();
+								else
+									p = progress->get_size();
+
 								p.x *= get_relative_center().x;
 								p.y *= get_relative_center().y;
 								p = p.floor();
