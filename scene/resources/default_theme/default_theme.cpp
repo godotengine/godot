@@ -763,7 +763,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_color("folder_icon_modulate", "FileDialog", Color(1, 1, 1));
 	theme->set_color("files_disabled", "FileDialog", Color(0, 0, 0, 0.7));
 
-	// colorPicker
+	// ColorPicker
 
 	theme->set_constant("margin", "ColorPicker", 4 * scale);
 	theme->set_constant("sv_width", "ColorPicker", 256 * scale);
@@ -776,6 +776,7 @@ void fill_default_theme(Ref<Theme> &theme, const Ref<Font> &default_font, const 
 	theme->set_icon("color_hue", "ColorPicker", make_icon(color_picker_hue_png));
 	theme->set_icon("color_sample", "ColorPicker", make_icon(color_picker_sample_png));
 	theme->set_icon("preset_bg", "ColorPicker", make_icon(mini_checkerboard_png));
+	theme->set_icon("overbright_indicator", "ColorPicker", make_icon(overbright_indicator_png));
 
 	theme->set_icon("bg", "ColorPickerButton", make_icon(mini_checkerboard_png));
 
