@@ -71,6 +71,35 @@ msgstr "無效參數類型: '%s'"
 msgid "On call to '%s':"
 msgstr "調用“%s”時："
 
+#: core/ustring.cpp
+msgid "B"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "KiB"
+msgstr ""
+
+#: core/ustring.cpp
+#, fuzzy
+msgid "MiB"
+msgstr "混合"
+
+#: core/ustring.cpp
+msgid "GiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "TiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "PiB"
+msgstr ""
+
+#: core/ustring.cpp
+msgid "EiB"
+msgstr ""
+
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
 msgstr "释放"
@@ -509,6 +538,11 @@ msgid "Select None"
 msgstr "選擇模式"
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
+msgid "Select an AnimationPlayer node to create and edit animations."
+msgstr "從場景樹中選擇一個 AnimationPlayer 來編輯動畫。"
+
+#: editor/animation_track_editor.cpp
 msgid "Only show tracks from nodes selected in tree."
 msgstr "僅顯示樹中所選節點的軌跡。"
 
@@ -845,7 +879,8 @@ msgstr "無法連接訊號"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/script_editor_plugin.cpp
-#: editor/plugins/sprite_frames_editor_plugin.cpp editor/project_export.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp editor/project_export.cpp
 #: editor/project_settings_editor.cpp editor/property_editor.cpp
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
@@ -947,7 +982,8 @@ msgstr "搜尋:"
 msgid "Matches:"
 msgstr "符合條件:"
 
-#: editor/create_dialog.cpp editor/plugin_config_dialog.cpp
+#: editor/create_dialog.cpp editor/editor_plugin_settings.cpp
+#: editor/plugin_config_dialog.cpp
 #: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp editor/property_selector.cpp
 #: modules/visual_script/visual_script_property_selector.cpp
@@ -1273,7 +1309,8 @@ msgid "Delete Bus Effect"
 msgstr "刪除 Bus 效果"
 
 #: editor/editor_audio_buses.cpp
-msgid "Audio Bus, Drag and Drop to rearrange."
+#, fuzzy
+msgid "Drag & drop to rearrange."
 msgstr "Audio Bus。拖放以重新排列。"
 
 #: editor/editor_audio_buses.cpp
@@ -1478,6 +1515,7 @@ msgid "Add AutoLoad"
 msgstr "新增 AutoLoad"
 
 #: editor/editor_autoload_settings.cpp editor/editor_file_dialog.cpp
+#: editor/editor_plugin_settings.cpp
 #: editor/plugins/animation_tree_editor_plugin.cpp scene/gui/file_dialog.cpp
 msgid "Path:"
 msgstr "路徑:"
@@ -1727,6 +1765,7 @@ msgstr "當前："
 
 #: editor/editor_feature_profile.cpp
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "New"
 msgstr "新增"
 
@@ -1807,6 +1846,7 @@ msgid "New Folder..."
 msgstr "新增資料夾..."
 
 #: editor/editor_file_dialog.cpp
+#: editor/plugins/version_control_editor_plugin.cpp
 msgid "Refresh"
 msgstr "重新整理"
 
@@ -1971,7 +2011,8 @@ msgid "Inherited by:"
 msgstr "繼承："
 
 #: editor/editor_help.cpp
-msgid "Brief Description:"
+#, fuzzy
+msgid "Brief Description"
 msgstr "簡要說明："
 
 #: editor/editor_help.cpp
@@ -1979,16 +2020,7 @@ msgid "Properties"
 msgstr "性質"
 
 #: editor/editor_help.cpp
-msgid "Properties:"
-msgstr "效能："
-
-#: editor/editor_help.cpp
 msgid "Methods"
-msgstr "方法"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Methods:"
 msgstr "方法"
 
 #: editor/editor_help.cpp
@@ -1997,21 +2029,8 @@ msgid "Theme Properties"
 msgstr "過濾檔案..."
 
 #: editor/editor_help.cpp
-#, fuzzy
-msgid "Theme Properties:"
-msgstr "過濾檔案..."
-
-#: editor/editor_help.cpp modules/visual_script/visual_script_editor.cpp
-msgid "Signals:"
-msgstr "訊號:"
-
-#: editor/editor_help.cpp
 msgid "Enumerations"
 msgstr "枚舉"
-
-#: editor/editor_help.cpp
-msgid "Enumerations:"
-msgstr "枚舉："
 
 #: editor/editor_help.cpp
 msgid "enum  "
@@ -2022,21 +2041,13 @@ msgid "Constants"
 msgstr "定數"
 
 #: editor/editor_help.cpp
-msgid "Constants:"
-msgstr "定數:"
-
-#: editor/editor_help.cpp
 #, fuzzy
 msgid "Class Description"
 msgstr "描述:"
 
 #: editor/editor_help.cpp
 #, fuzzy
-msgid "Class Description:"
-msgstr "描述:"
-
-#: editor/editor_help.cpp
-msgid "Online Tutorials:"
+msgid "Online Tutorials"
 msgstr "線上教學:"
 
 #: editor/editor_help.cpp
@@ -2054,11 +2065,6 @@ msgid "Property Descriptions"
 msgstr "Property 說明:"
 
 #: editor/editor_help.cpp
-#, fuzzy
-msgid "Property Descriptions:"
-msgstr "Property 說明:"
-
-#: editor/editor_help.cpp
 msgid ""
 "There is currently no description for this property. Please help us by "
 "[color=$color][url=$url]contributing one[/url][/color]!"
@@ -2069,11 +2075,6 @@ msgstr ""
 #: editor/editor_help.cpp
 #, fuzzy
 msgid "Method Descriptions"
-msgstr "Method 說明:"
-
-#: editor/editor_help.cpp
-#, fuzzy
-msgid "Method Descriptions:"
 msgstr "Method 說明:"
 
 #: editor/editor_help.cpp
@@ -2152,8 +2153,8 @@ msgstr "輸出:"
 msgid "Copy Selection"
 msgstr "複製選擇"
 
-#: editor/editor_log.cpp editor/editor_profiler.cpp
-#: editor/editor_properties.cpp
+#: editor/editor_log.cpp editor/editor_network_profiler.cpp
+#: editor/editor_profiler.cpp editor/editor_properties.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 #: editor/property_editor.cpp editor/scene_tree_dock.cpp
 #: editor/script_editor_debugger.cpp
@@ -2166,6 +2167,50 @@ msgstr "清除"
 #, fuzzy
 msgid "Clear Output"
 msgstr "輸出:"
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+#: editor/editor_profiler.cpp
+msgid "Stop"
+msgstr "停止"
+
+#: editor/editor_network_profiler.cpp editor/editor_profiler.cpp
+#: editor/plugins/animation_state_machine_editor.cpp editor/rename_dialog.cpp
+msgid "Start"
+msgstr "開始"
+
+#: editor/editor_network_profiler.cpp
+msgid "%s/s"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+#, fuzzy
+msgid "Down"
+msgstr "下載"
+
+#: editor/editor_network_profiler.cpp
+msgid "Up"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp editor/editor_node.cpp
+#, fuzzy
+msgid "Node"
+msgstr "節點"
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Incoming RSET"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RPC"
+msgstr ""
+
+#: editor/editor_network_profiler.cpp
+msgid "Outgoing RSET"
+msgstr ""
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
@@ -2741,6 +2786,19 @@ msgstr "專案"
 msgid "Project Settings..."
 msgstr "專案設定"
 
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Version Control"
+msgstr "版本："
+
+#: editor/editor_node.cpp editor/plugins/version_control_editor_plugin.cpp
+msgid "Set Up Version Control"
+msgstr ""
+
+#: editor/editor_node.cpp
+msgid "Shut Down Version Control"
+msgstr ""
+
 #: editor/editor_node.cpp
 #, fuzzy
 msgid "Export..."
@@ -2957,10 +3015,6 @@ msgstr "暫停場景"
 msgid "Stop the scene."
 msgstr "停止此場景."
 
-#: editor/editor_node.cpp editor/editor_profiler.cpp
-msgid "Stop"
-msgstr "停止"
-
 #: editor/editor_node.cpp
 msgid "Play the edited scene."
 msgstr "運行編輯過的場景。"
@@ -3015,11 +3069,6 @@ msgid "Inspector"
 msgstr "屬性面板"
 
 #: editor/editor_node.cpp
-#, fuzzy
-msgid "Node"
-msgstr "節點"
-
-#: editor/editor_node.cpp
 msgid "Expand Bottom Panel"
 msgstr "展開底部面板"
 
@@ -3042,15 +3091,21 @@ msgstr "管理輸出模板"
 
 #: editor/editor_node.cpp
 msgid ""
-"This will install the Android project for custom builds.\n"
-"Note that, in order to use it, it needs to be enabled per export preset."
+"This will set up your project for custom Android builds by installing the "
+"source template to \"res://android/build\".\n"
+"You can then apply modifications and build your own custom APK on export "
+"(adding modules, changing the AndroidManifest.xml, etc.).\n"
+"Note that in order to make custom builds instead of using pre-built APKs, "
+"the \"Use Custom Build\" option should be enabled in the Android export "
+"preset."
 msgstr ""
 
 #: editor/editor_node.cpp
 msgid ""
-"Android build template is already installed and it won't be overwritten.\n"
-"Remove the \"build\" directory manually before attempting this operation "
-"again."
+"The Android build template is already installed in this project and it won't "
+"be overwritten.\n"
+"Remove the \"res://android/build\" directory manually before attempting this "
+"operation again."
 msgstr ""
 
 #: editor/editor_node.cpp
@@ -3113,6 +3168,11 @@ msgstr "開啟下一個編輯器"
 msgid "Open the previous Editor"
 msgstr "開啟上一個編輯器"
 
+#: editor/editor_path.cpp
+#, fuzzy
+msgid "No sub-resources found."
+msgstr "未指定表面源。"
+
 #: editor/editor_plugin.cpp
 msgid "Creating Mesh Previews"
 msgstr "創建網格預覽"
@@ -3120,6 +3180,11 @@ msgstr "創建網格預覽"
 #: editor/editor_plugin.cpp
 msgid "Thumbnail..."
 msgstr "縮圖…"
+
+#: editor/editor_plugin_settings.cpp
+#, fuzzy
+msgid "Main Script:"
+msgstr "開啟最近存取"
 
 #: editor/editor_plugin_settings.cpp
 msgid "Edit Plugin"
@@ -3149,11 +3214,6 @@ msgstr "狀態："
 #: editor/editor_plugin_settings.cpp
 msgid "Edit:"
 msgstr "編輯："
-
-#: editor/editor_profiler.cpp editor/plugins/animation_state_machine_editor.cpp
-#: editor/rename_dialog.cpp
-msgid "Start"
-msgstr "開始"
 
 #: editor/editor_profiler.cpp
 msgid "Measure:"
@@ -3989,9 +4049,10 @@ msgstr " 資料夾"
 msgid "Import As:"
 msgstr "導入為:"
 
-#: editor/import_dock.cpp editor/property_editor.cpp
-msgid "Preset..."
-msgstr "預設。。。"
+#: editor/import_dock.cpp
+#, fuzzy
+msgid "Preset"
+msgstr "預設"
 
 #: editor/import_dock.cpp
 msgid "Reimport"
@@ -4451,6 +4512,7 @@ msgid "Change Animation Name:"
 msgstr "更改動畫名稱:"
 
 #: editor/plugins/animation_player_editor_plugin.cpp
+#: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Delete Animation?"
 msgstr "刪除動畫？"
 
@@ -5036,11 +5098,6 @@ msgid "Sort:"
 msgstr "排序:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
-msgid "Reverse sorting."
-msgstr "正在請求…"
-
-#: editor/plugins/asset_library_editor_plugin.cpp
 #: editor/project_settings_editor.cpp
 msgid "Category:"
 msgstr "類別:"
@@ -5320,6 +5377,11 @@ msgstr "點擊以更改物件的旋轉樞軸。"
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Pan Mode"
 msgstr "平移模式"
+
+#: editor/plugins/canvas_item_editor_plugin.cpp
+#, fuzzy
+msgid "Ruler Mode"
+msgstr "縮放模式"
 
 #: editor/plugins/canvas_item_editor_plugin.cpp
 msgid "Toggle snapping."
@@ -6418,7 +6480,7 @@ msgstr ""
 
 #: editor/plugins/resource_preloader_editor_plugin.cpp
 #: editor/plugins/theme_editor_plugin.cpp editor/project_settings_editor.cpp
-#: editor/scene_tree_editor.cpp
+#: editor/scene_tree_editor.cpp editor/script_editor_debugger.cpp
 msgid "Type:"
 msgstr ""
 
@@ -6637,12 +6699,12 @@ msgid "Toggle Scripts Panel"
 msgstr "\"切換腳本\" 面板"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
-msgid "Step Over"
-msgstr "跨過"
-
-#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Step Into"
 msgstr "步入"
+
+#: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
+msgid "Step Over"
+msgstr "跨過"
 
 #: editor/plugins/script_editor_plugin.cpp editor/script_editor_debugger.cpp
 msgid "Break"
@@ -6727,7 +6789,7 @@ msgstr "清除最近開啟的場景"
 msgid "Connections to method:"
 msgstr "連接到節點:"
 
-#: editor/plugins/script_text_editor.cpp
+#: editor/plugins/script_text_editor.cpp editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Source"
 msgstr "資源"
@@ -7540,6 +7602,11 @@ msgstr "(空)"
 
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 #, fuzzy
+msgid "Move Frame"
+msgstr "粘貼幀"
+
+#: editor/plugins/sprite_frames_editor_plugin.cpp
+#, fuzzy
 msgid "Animations:"
 msgstr "動畫："
 
@@ -7874,6 +7941,15 @@ msgid "Enable Priority"
 msgstr "編輯磁貼優先級"
 
 #: editor/plugins/tile_map_editor_plugin.cpp
+#, fuzzy
+msgid "Filter tiles"
+msgstr "篩選檔案..."
+
+#: editor/plugins/tile_map_editor_plugin.cpp
+msgid "Give a TileSet resource to this TileMap to use its tiles."
+msgstr ""
+
+#: editor/plugins/tile_map_editor_plugin.cpp
 msgid "Paint Tile"
 msgstr "繪製磁貼"
 
@@ -8019,6 +8095,11 @@ msgstr "啟用吸附和顯示網格 (可通過屬性面板配置)。"
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "Display Tile Names (Hold Alt Key)"
 msgstr "顯示磁貼名稱 (按住 ALT 鍵)"
+
+#: editor/plugins/tile_set_editor_plugin.cpp
+msgid ""
+"Add or select a texture on the left panel to edit the tiles bound to it."
+msgstr ""
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 #, fuzzy
@@ -8187,6 +8268,109 @@ msgstr "無法更改此屬性。"
 
 #: editor/plugins/tile_set_editor_plugin.cpp
 msgid "TileSet"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No VCS addons are available."
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp editor/rename_dialog.cpp
+msgid "Error"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No commit message was provided"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No files added to stage"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit"
+msgstr "社區"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "VCS Addon is not initialized"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Version Control System"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Initialize"
+msgstr "首字母大寫"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Staging area"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Detect new changes"
+msgstr "創建新矩形。"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Changes"
+msgstr "更換"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Modified"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Renamed"
+msgstr "重命名"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Deleted"
+msgstr "刪除"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Typechange"
+msgstr "更換"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage Selected"
+msgstr "縮放所選"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Stage All"
+msgstr "全部保存"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Add a commit message"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#, fuzzy
+msgid "Commit Changes"
+msgstr "同步腳本的變更"
+
+#: editor/plugins/version_control_editor_plugin.cpp
+#: modules/gdnative/gdnative_library_singleton_editor.cpp
+msgid "Status"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "View file diffs before committing them to the latest version"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "No file diff is active"
+msgstr ""
+
+#: editor/plugins/version_control_editor_plugin.cpp
+msgid "Detect changes in file diff"
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -8441,6 +8625,11 @@ msgstr ""
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
 "Returns an associated vector if the provided boolean value is true or false."
+msgstr ""
+
+#: editor/plugins/visual_shader_editor_plugin.cpp
+msgid ""
+"Returns an associated scalar if the provided boolean value is true or false."
 msgstr ""
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
@@ -9676,6 +9865,11 @@ msgid "Settings saved OK."
 msgstr ""
 
 #: editor/project_settings_editor.cpp
+#, fuzzy
+msgid "Moved Input Action Event"
+msgstr "所有的選擇"
+
+#: editor/project_settings_editor.cpp
 msgid "Override for Feature"
 msgstr ""
 
@@ -9816,6 +10010,10 @@ msgstr ""
 #: editor/project_settings_editor.cpp
 msgid "Plugins"
 msgstr "挿件"
+
+#: editor/property_editor.cpp
+msgid "Preset..."
+msgstr "預設。。。"
 
 #: editor/property_editor.cpp
 msgid "Zero"
@@ -9990,10 +10188,6 @@ msgstr "轉換成..."
 msgid "Reset"
 msgstr "重設縮放大小"
 
-#: editor/rename_dialog.cpp
-msgid "Error"
-msgstr ""
-
 #: editor/reparent_dialog.cpp editor/scene_tree_dock.cpp
 msgid "Reparent Node"
 msgstr ""
@@ -10049,6 +10243,10 @@ msgid "Instance Scene(s)"
 msgstr ""
 
 #: editor/scene_tree_dock.cpp
+msgid "Replace with Branch Scene"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
 msgid "Instance Child Scene"
 msgstr ""
 
@@ -10090,8 +10288,22 @@ msgid "Make node as Root"
 msgstr "儲存場景"
 
 #: editor/scene_tree_dock.cpp
-msgid "Delete Node(s)?"
+#, fuzzy
+msgid "Delete %d nodes?"
+msgstr "刪除"
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete the root node \"%s\"?"
 msgstr ""
+
+#: editor/scene_tree_dock.cpp
+msgid "Delete node \"%s\" and its children?"
+msgstr ""
+
+#: editor/scene_tree_dock.cpp
+#, fuzzy
+msgid "Delete node \"%s\"?"
+msgstr "刪除"
 
 #: editor/scene_tree_dock.cpp
 msgid "Can not perform with the root node."
@@ -10502,11 +10714,42 @@ msgid "Bytes:"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Stack Trace"
-msgstr ""
+#, fuzzy
+msgid "Warning:"
+msgstr "警告"
 
 #: editor/script_editor_debugger.cpp
-msgid "Pick one or more items from the list to display the graph."
+#, fuzzy
+msgid "Error:"
+msgstr "錯誤！"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Error"
+msgstr "連接..."
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Error:"
+msgstr "連接..."
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Source"
+msgstr "資源"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Source:"
+msgstr "資源"
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "C++ Source:"
+msgstr "資源"
+
+#: editor/script_editor_debugger.cpp
+msgid "Stack Trace"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
@@ -10514,13 +10757,19 @@ msgid "Errors"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
-msgid "Child Process Connected"
-msgstr ""
+#, fuzzy
+msgid "Child process connected."
+msgstr "斷線"
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
 msgid "Copy Error"
 msgstr "連接..."
+
+#: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Skip Breakpoints"
+msgstr "刪除"
 
 #: editor/script_editor_debugger.cpp
 msgid "Inspect Previous Instance"
@@ -10539,6 +10788,11 @@ msgid "Profiler"
 msgstr ""
 
 #: editor/script_editor_debugger.cpp
+#, fuzzy
+msgid "Network Profiler"
+msgstr "輸出專案"
+
+#: editor/script_editor_debugger.cpp
 msgid "Monitor"
 msgstr ""
 
@@ -10550,6 +10804,10 @@ msgstr "數值"
 #, fuzzy
 msgid "Monitors"
 msgstr "監看畫面"
+
+#: editor/script_editor_debugger.cpp
+msgid "Pick one or more items from the list to display the graph."
+msgstr ""
 
 #: editor/script_editor_debugger.cpp
 #, fuzzy
@@ -10763,15 +11021,15 @@ msgid "Library"
 msgstr ""
 
 #: modules/gdnative/gdnative_library_singleton_editor.cpp
-msgid "Status"
-msgstr ""
-
-#: modules/gdnative/gdnative_library_singleton_editor.cpp
 msgid "Libraries: "
 msgstr ""
 
 #: modules/gdnative/register_types.cpp
 msgid "GDNative"
+msgstr ""
+
+#: modules/gdscript/gdscript_functions.cpp
+msgid "Expected a string of length 1 (a character)."
 msgstr ""
 
 #: modules/gdscript/gdscript_functions.cpp
@@ -10943,6 +11201,15 @@ msgstr "專案設定"
 msgid "Pick Distance:"
 msgstr ""
 
+#: modules/gridmap/grid_map_editor_plugin.cpp
+#, fuzzy
+msgid "Filter meshes"
+msgstr "過濾檔案..."
+
+#: modules/gridmap/grid_map_editor_plugin.cpp
+msgid "Give a MeshLibrary resource to this GridMap to use its meshes."
+msgstr ""
+
 #: modules/mono/csharp_script.cpp
 msgid "Class name can't be a reserved keyword"
 msgstr ""
@@ -11082,6 +11349,10 @@ msgstr ""
 #, fuzzy
 msgid "Create a new variable."
 msgstr "創建新矩形。"
+
+#: modules/visual_script/visual_script_editor.cpp
+msgid "Signals:"
+msgstr "訊號:"
 
 #: modules/visual_script/visual_script_editor.cpp
 #, fuzzy
@@ -11245,6 +11516,10 @@ msgid "Editing Signal:"
 msgstr ""
 
 #: modules/visual_script/visual_script_editor.cpp
+msgid "Make Tool:"
+msgstr ""
+
+#: modules/visual_script/visual_script_editor.cpp
 msgid "Base Type:"
 msgstr ""
 
@@ -11394,7 +11669,8 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid ""
-"Android project is not installed for compiling. Install from Editor menu."
+"Android build template not installed in the project. Install it from the "
+"Project menu."
 msgstr ""
 
 #: platform/android/export/export.cpp
@@ -12076,6 +12352,39 @@ msgstr ""
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
 msgstr ""
+
+#~ msgid "Properties:"
+#~ msgstr "效能："
+
+#, fuzzy
+#~ msgid "Methods:"
+#~ msgstr "方法"
+
+#, fuzzy
+#~ msgid "Theme Properties:"
+#~ msgstr "過濾檔案..."
+
+#~ msgid "Enumerations:"
+#~ msgstr "枚舉："
+
+#~ msgid "Constants:"
+#~ msgstr "定數:"
+
+#, fuzzy
+#~ msgid "Class Description:"
+#~ msgstr "描述:"
+
+#, fuzzy
+#~ msgid "Property Descriptions:"
+#~ msgstr "Property 說明:"
+
+#, fuzzy
+#~ msgid "Method Descriptions:"
+#~ msgstr "Method 說明:"
+
+#, fuzzy
+#~ msgid "Reverse sorting."
+#~ msgstr "正在請求…"
 
 #~ msgid "No Matches"
 #~ msgstr "無符合條件"
