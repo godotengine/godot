@@ -108,8 +108,8 @@ public:
 };
 
 /*
-Signal automatically called by parent dialog.
-*/
+ * Signal automatically called by parent dialog.
+ */
 void ConnectDialog::ok_pressed() {
 
 	if (dst_method->get_text() == "") {
@@ -134,8 +134,8 @@ void ConnectDialog::_cancel_pressed() {
 }
 
 /*
-Called each time a target node is selected within the target node tree.
-*/
+ * Called each time a target node is selected within the target node tree.
+ */
 void ConnectDialog::_tree_node_selected() {
 
 	Node *current = tree->get_selected();
@@ -148,8 +148,8 @@ void ConnectDialog::_tree_node_selected() {
 }
 
 /*
-Adds a new parameter bind to connection.
-*/
+ * Adds a new parameter bind to connection.
+ */
 void ConnectDialog::_add_bind() {
 
 	if (cdbinds->params.size() >= VARIANT_ARG_MAX)
@@ -184,8 +184,8 @@ void ConnectDialog::_add_bind() {
 }
 
 /*
-Remove parameter bind from connection.
-*/
+ * Remove parameter bind from connection.
+ */
 void ConnectDialog::_remove_bind() {
 
 	String st = bind_editor->get_selected_path();
@@ -265,18 +265,18 @@ bool ConnectDialog::get_oneshot() const {
 }
 
 /*
-Returns true if ConnectDialog is being used to edit an existing connection.
-*/
+ * Returns true if ConnectDialog is being used to edit an existing connection.
+ */
 bool ConnectDialog::is_editing() const {
 
 	return bEditMode;
 }
 
 /*
-Initialize ConnectDialog and populate fields with expected data.
-If creating a connection from scratch, sensible defaults are used.
-If editing an existing connection, previous data is retained.
-*/
+ * Initialize ConnectDialog and populate fields with expected data.
+ * If creating a connection from scratch, sensible defaults are used.
+ * If editing an existing connection, previous data is retained.
+ */
 void ConnectDialog::init(Connection c, bool bEdit) {
 
 	source = static_cast<Node *>(c.source);
@@ -482,9 +482,9 @@ struct _ConnectionsDockMethodInfoSort {
 };
 
 /*
-Post-ConnectDialog callback for creating/editing connections.
-Creates or edits connections based on state of the ConnectDialog when "Connect" is pressed.
-*/
+ * Post-ConnectDialog callback for creating/editing connections.
+ * Creates or edits connections based on state of the ConnectDialog when "Connect" is pressed.
+ */
 void ConnectionsDock::_make_or_edit_connection() {
 
 	TreeItem *it = tree->get_selected();
@@ -552,8 +552,8 @@ void ConnectionsDock::_make_or_edit_connection() {
 }
 
 /*
-Creates single connection w/ undo-redo functionality.
-*/
+ * Creates single connection w/ undo-redo functionality.
+ */
 void ConnectionsDock::_connect(Connection cToMake) {
 
 	Node *source = static_cast<Node *>(cToMake.source);
@@ -575,8 +575,8 @@ void ConnectionsDock::_connect(Connection cToMake) {
 }
 
 /*
-Break single connection w/ undo-redo functionality.
-*/
+ * Break single connection w/ undo-redo functionality.
+ */
 void ConnectionsDock::_disconnect(TreeItem &item) {
 
 	Connection c = item.get_metadata(0);
@@ -595,9 +595,9 @@ void ConnectionsDock::_disconnect(TreeItem &item) {
 }
 
 /*
-Break all connections of currently selected signal.
-Can undo-redo as a single action.
-*/
+ * Break all connections of currently selected signal.
+ * Can undo-redo as a single action.
+ */
 void ConnectionsDock::_disconnect_all() {
 
 	TreeItem *item = tree->get_selected();
@@ -659,8 +659,8 @@ bool ConnectionsDock::_is_item_signal(TreeItem &item) {
 }
 
 /*
-Open connection dialog with TreeItem data to CREATE a brand-new connection.
-*/
+ * Open connection dialog with TreeItem data to CREATE a brand-new connection.
+ */
 void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 
 	String signal = item.get_metadata(0).operator Dictionary()["name"];
@@ -700,8 +700,8 @@ void ConnectionsDock::_open_connection_dialog(TreeItem &item) {
 }
 
 /*
-Open connection dialog with Connection data to EDIT an existing connection.
-*/
+ * Open connection dialog with Connection data to EDIT an existing connection.
+ */
 void ConnectionsDock::_open_connection_dialog(Connection cToEdit) {
 
 	Node *src = static_cast<Node *>(cToEdit.source);
@@ -715,8 +715,8 @@ void ConnectionsDock::_open_connection_dialog(Connection cToEdit) {
 }
 
 /*
-Open slot method location in script editor.
-*/
+ * Open slot method location in script editor.
+ */
 void ConnectionsDock::_go_to_script(TreeItem &item) {
 
 	if (_is_item_signal(item))
@@ -914,7 +914,6 @@ void ConnectionsDock::update_tree() {
 			String signaldesc = "(";
 			PoolStringArray argnames;
 			if (mi.arguments.size()) {
-				signaldesc += " ";
 				for (int i = 0; i < mi.arguments.size(); i++) {
 
 					PropertyInfo &pi = mi.arguments[i];
@@ -927,10 +926,9 @@ void ConnectionsDock::update_tree() {
 					} else if (pi.type != Variant::NIL) {
 						tname = Variant::get_type_name(pi.type);
 					}
-					signaldesc += tname + " " + (pi.name == "" ? String("arg " + itos(i)) : pi.name);
+					signaldesc += (pi.name == "" ? String("arg " + itos(i)) : pi.name) + ": " + tname;
 					argnames.push_back(pi.name + ":" + tname);
 				}
-				signaldesc += " ";
 			}
 			signaldesc += ")";
 
@@ -1000,14 +998,14 @@ void ConnectionsDock::update_tree() {
 					path += " (oneshot)";
 				if (c.binds.size()) {
 
-					path += " binds( ";
+					path += " binds(";
 					for (int i = 0; i < c.binds.size(); i++) {
 
 						if (i > 0)
 							path += ", ";
 						path += c.binds[i].operator String();
 					}
-					path += " )";
+					path += ")";
 				}
 
 				TreeItem *item2 = tree->create_item(item);
