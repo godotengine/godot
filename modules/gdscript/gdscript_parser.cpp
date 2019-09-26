@@ -2783,12 +2783,12 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 
 				tokenizer->advance();
 				int var_line = tokenizer->get_token_line();
+				StringName n = tokenizer->get_token_literal();
 				if (!tokenizer->is_token_literal(0, true)) {
 
-					_set_error("Expected an identifier for the local variable name.");
+					_set_error("Invalid variable identifier \"" + String(n) + "\".");
 					return;
 				}
-				StringName n = tokenizer->get_token_literal();
 				tokenizer->advance();
 				if (current_function) {
 					for (int i = 0; i < current_function->arguments.size(); i++) {
