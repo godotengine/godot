@@ -764,7 +764,9 @@ bool GDMono::_try_load_api_assemblies() {
 
 void GDMono::_load_api_assemblies() {
 
-	if (!_try_load_api_assemblies()) {
+	bool api_assemblies_loaded = _try_load_api_assemblies();
+
+	if (!api_assemblies_loaded) {
 #ifdef TOOLS_ENABLED
 		// The API assemblies are out of sync. Fine, try one more time, but this time
 		// update them from the prebuilt assemblies directory before trying to load them.
@@ -785,28 +787,30 @@ void GDMono::_load_api_assemblies() {
 		CRASH_COND_MSG(domain_load_err != OK, "Mono: Failed to load scripts domain.");
 
 		// 4. Try loading the updated assemblies
-		if (!_try_load_api_assemblies()) {
-			// welp... too bad
-
-			if (_are_api_assemblies_out_of_sync()) {
-				if (core_api_assembly_out_of_sync) {
-					ERR_PRINT("The assembly '" CORE_API_ASSEMBLY_NAME "' is out of sync.");
-				} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
-					ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed.");
-				}
-
-				if (editor_api_assembly_out_of_sync) {
-					ERR_PRINT("The assembly '" EDITOR_API_ASSEMBLY_NAME "' is out of sync.");
-				}
-
-				CRASH_NOW();
-			} else {
-				CRASH_NOW_MSG("Failed to load one of the API assemblies.");
-			}
-		}
-#else
-		CRASH_NOW_MSG("Failed to load one of the API assemblies.");
+		api_assemblies_loaded = _try_load_api_assemblies();
 #endif
+	}
+
+	if (!api_assemblies_loaded) {
+		// welp... too bad
+
+		if (_are_api_assemblies_out_of_sync()) {
+			if (core_api_assembly_out_of_sync) {
+				ERR_PRINT("The assembly '" CORE_API_ASSEMBLY_NAME "' is out of sync.");
+			} else if (!GDMonoUtils::mono_cache.godot_api_cache_updated) {
+				ERR_PRINT("The loaded assembly '" CORE_API_ASSEMBLY_NAME "' is in sync, but the cache update failed.");
+			}
+
+#ifdef TOOLS_ENABLED
+			if (editor_api_assembly_out_of_sync) {
+				ERR_PRINT("The assembly '" EDITOR_API_ASSEMBLY_NAME "' is out of sync.");
+			}
+#endif
+
+			CRASH_NOW();
+		} else {
+			CRASH_NOW_MSG("Failed to load one of the API assemblies.");
+		}
 	}
 }
 
