@@ -59,6 +59,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		EDIT_COPY_NODES,
 		EDIT_CUT_NODES,
 		EDIT_PASTE_NODES,
+		EDIT_INSERT_COMMENT
 	};
 
 	enum PortAction {
@@ -196,6 +197,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 
 	void _node_moved(Vector2 p_from, Vector2 p_to, int p_id);
 	void _remove_node(int p_id);
+	void _node_double_clicked(int p_id);
 	void _graph_connected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot);
 	void _graph_disconnected(const String &p_from, int p_from_slot, const String &p_to, int p_to_slot);
 	void _graph_connect_to_empty(const String &p_from, int p_from_slot, const Vector2 &p_release_pos);
@@ -218,6 +220,8 @@ class VisualScriptEditor : public ScriptEditorBase {
 	void _members_gui_input(const Ref<InputEvent> &p_event);
 	void _on_nodes_delete();
 	void _on_nodes_duplicate();
+
+	Rect2 get_rect_around(List<int> &nodes);
 
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;

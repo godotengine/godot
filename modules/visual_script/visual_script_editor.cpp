@@ -541,6 +541,7 @@ void VisualScriptEditor::_update_graph(int p_only_id) {
 		gnode->set_name(itos(E->get()));
 		gnode->connect("dragged", this, "_node_moved", varray(E->get()));
 		gnode->connect("close_request", this, "_remove_node", varray(E->get()), CONNECT_DEFERRED);
+		gnode->connect("double_clicked", this, "_node_double_clicked", varray(E->get()));
 
 		if (E->get() != script->get_function_node_id(edited_func)) {
 			//function can't be erased
@@ -2346,6 +2347,49 @@ void VisualScriptEditor::_remove_node(int p_id) {
 	undo_redo->commit_action();
 }
 
+void VisualScriptEditor::_node_double_clicked(int p_id) {
+
+	GraphNode *com_node = Object::cast_to<GraphNode>(graph->get_node(itos(p_id)));
+	if (com_node->is_comment()) {
+		Rect2 old_com_rect = com_node->get_rect();
+		old_com_rect.position = script->get_node_position(edited_func, p_id);
+
+		List<int> nodes_inside;
+
+		List<int> nodes;
+		script->get_node_list(edited_func, &nodes);
+		for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+			int id = E->get();
+			Vector2 node_pos = script->get_node_position(edited_func, id);
+			GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(itos(id)));
+			if (id != p_id && (old_com_rect.has_point(node_pos) || old_com_rect.has_point(node_pos + gn->get_rect().get_size()))) {
+				nodes_inside.push_back(id);
+			}
+		}
+
+		if (nodes_inside.size() > 0) {
+			Rect2 new_com_rect = get_rect_around(nodes_inside);
+
+			/*undo_redo->create_action(TTR("Update Comment Node's Size"));
+			undo_redo->add_do_method(this, "_move_node", edited_func, p_id, new_com_rect.position);
+			undo_redo->add_undo_method(this, "_move_node", edited_func, p_id, old_com_rect.position);
+
+			undo_redo->add_do_method(this, "resize_comment", edited_func, p_id, new_com_rect.size);
+			undo_redo->add_undo_method(this, "resize_comment", edited_func, p_id, old_com_rect.size);
+			undo_redo->commit_action();*/
+
+			// ugly, but it works
+			// TODO make resize_comment into function and call it here and in _comment_node_resized
+
+			undo_redo->create_action(TTR("Move Comment Node"));
+			_node_moved(old_com_rect.position, new_com_rect.position * EDSCALE, p_id);
+			undo_redo->commit_action();
+
+			_comment_node_resized(new_com_rect.size * EDSCALE, p_id);
+		}
+	}
+}
+
 void VisualScriptEditor::_node_ports_changed(const String &p_func, int p_id) {
 
 	if (p_func != String(edited_func))
@@ -3304,7 +3348,67 @@ void VisualScriptEditor::_menu_option(int p_what) {
 				}
 			}
 		} break;
+		case EDIT_INSERT_COMMENT: {
+			List<int> selected_nodes;
+
+			List<int> nodes;
+			script->get_node_list(edited_func, &nodes);
+			for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+				int id = E->get();
+				GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(itos(id)));
+				if (gn && gn->is_selected()) {
+					selected_nodes.push_back(id);
+				}
+			}
+
+			if (selected_nodes.size() > 0) {
+				Rect2 comment_size = get_rect_around(selected_nodes);
+
+				undo_redo->create_action(TTR("Insert Comment Node"));
+
+				Ref<VisualScriptComment> com_node = VisualScriptLanguage::singleton->create_node_from_name("data/comment");
+				com_node->set_size(comment_size.get_size());
+
+				int new_id = script->get_available_id() + 1;
+
+				undo_redo->add_do_method(script.ptr(), "add_node", edited_func, new_id, com_node, comment_size.get_position());
+				undo_redo->add_undo_method(script.ptr(), "remove_node", edited_func, new_id);
+
+				undo_redo->add_do_method(this, "_update_graph");
+				undo_redo->add_undo_method(this, "_update_graph");
+
+				undo_redo->commit_action();
+			}
+		};
 	}
+}
+
+Rect2 VisualScriptEditor::get_rect_around(List<int> &nodes) {
+	Vector2 left_upper_pos = Vector2(INFINITY, INFINITY);
+	Vector2 right_lower_pos = Vector2(-INFINITY, -INFINITY);
+
+	for (List<int>::Element *E = nodes.front(); E; E = E->next()) {
+		GraphNode *gn = Object::cast_to<GraphNode>(graph->get_node(itos(E->get())));
+		if (gn) {
+			Vector2 gn_pos = script->get_node_position(edited_func, E->get());
+			Size2 gn_size = gn->get_rect().get_size() / EDSCALE;
+
+			if (gn_pos.x < left_upper_pos.x) {
+				left_upper_pos.x = gn_pos.x;
+			}
+			if (gn_pos.y < left_upper_pos.y) {
+				left_upper_pos.y = gn_pos.y;
+			}
+			if (right_lower_pos.x < (gn_pos.x + gn_size.x)) {
+				right_lower_pos.x = gn_pos.x + gn_size.x;
+			}
+			if (right_lower_pos.y < (gn_pos.y + gn_size.y)) {
+				right_lower_pos.y = gn_pos.y + gn_size.y;
+			}
+		}
+	}
+
+	return Rect2(left_upper_pos - Vector2(10, 50), right_lower_pos - left_upper_pos + Vector2(20, 60));
 }
 
 void VisualScriptEditor::_member_rmb_selected(const Vector2 &p_pos) {
@@ -3459,6 +3563,7 @@ void VisualScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_begin_node_move", &VisualScriptEditor::_begin_node_move);
 	ClassDB::bind_method("_end_node_move", &VisualScriptEditor::_end_node_move);
 	ClassDB::bind_method("_remove_node", &VisualScriptEditor::_remove_node);
+	ClassDB::bind_method("_node_double_clicked", &VisualScriptEditor::_node_double_clicked);
 	ClassDB::bind_method("_update_graph", &VisualScriptEditor::_update_graph, DEFVAL(-1));
 	ClassDB::bind_method("_node_ports_changed", &VisualScriptEditor::_node_ports_changed);
 	ClassDB::bind_method("_available_node_doubleclicked", &VisualScriptEditor::_available_node_doubleclicked);
@@ -3524,6 +3629,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/copy_nodes"), EDIT_COPY_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/cut_nodes"), EDIT_CUT_NODES);
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/paste_nodes"), EDIT_PASTE_NODES);
+	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/insert_comment"), EDIT_INSERT_COMMENT);
 
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
@@ -3725,6 +3831,7 @@ static void register_editor_callback() {
 	ED_SHORTCUT("visual_script_editor/cut_nodes", TTR("Cut Nodes"), KEY_MASK_CMD + KEY_X);
 	ED_SHORTCUT("visual_script_editor/paste_nodes", TTR("Paste Nodes"), KEY_MASK_CMD + KEY_V);
 	ED_SHORTCUT("visual_script_editor/edit_member", TTR("Edit Member"), KEY_MASK_CMD + KEY_E);
+	ED_SHORTCUT("visual_script_editor/insert_comment", TTR("Insert Comment"), KEY_MASK_CMD + KEY_K);
 }
 
 void VisualScriptEditor::register_editor() {
