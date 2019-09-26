@@ -532,7 +532,7 @@ public:
 
 	virtual bool request_permission(const String &p_name) { return true; }
 	virtual bool request_permission_with_index(int p_index) { return true; }
-	virtual bool request_permissions(const PoolIntArray &p_permissions) { return true; };
+	virtual bool request_permissions(const PoolIntArray &p_permissions) { return true; }
 	virtual bool check_permission(int p_index) { return false; }
 
 	virtual void process_and_drop_events() {}
