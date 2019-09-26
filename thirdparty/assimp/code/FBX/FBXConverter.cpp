@@ -210,8 +210,7 @@ namespace Assimp {
 
                         aiMatrix4x4 new_abs_transform = parent_transform;
 
-                        std::string unique_name = MakeUniqueNodeName(model, parent);
-
+                        std::string unique_name = FixNodeName(model->Name());
                         // even though there is only a single input node, the design of
                         // assimp (or rather: the complicated transformation chain that
                         // is employed by fbx) means that we may need multiple aiNode's
