@@ -5,11 +5,12 @@
 # Scott Starkey <yekrats@gmail.com>, 2019.
 # AlexHoratio <yukithetupper@gmail.com>, 2019.
 # Teashrock <kajitsu22@gmail.com>, 2019.
+# Brandon Dyer <brandondyer64@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
-"PO-Revision-Date: 2019-08-29 13:34+0000\n"
-"Last-Translator: Teashrock <kajitsu22@gmail.com>\n"
+"PO-Revision-Date: 2019-09-15 20:01+0000\n"
+"Last-Translator: Brandon Dyer <brandondyer64@gmail.com>\n"
 "Language-Team: Esperanto <https://hosted.weblate.org/projects/godot-engine/"
 "godot/eo/>\n"
 "Language: eo\n"
@@ -59,7 +60,7 @@ msgstr "En voko al '%s':"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
-msgstr "Libera"
+msgstr "Senkosta"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
@@ -734,7 +735,7 @@ msgstr "Konektu al skripto:"
 
 #: editor/connections_dialog.cpp
 msgid "From Signal:"
-msgstr ""
+msgstr "De Signalo:"
 
 #: editor/connections_dialog.cpp
 msgid "Scene does not contain any script."
@@ -777,6 +778,7 @@ msgstr "Diferita"
 msgid ""
 "Defers the signal, storing it in a queue and only firing it at idle time."
 msgstr ""
+"Prokrastas la signalon, memoras ĝin en atendovico kaj nur pafas atende."
 
 #: editor/connections_dialog.cpp
 msgid "Oneshot"
@@ -802,11 +804,11 @@ msgstr "Ne povas konekti signalo"
 #: editor/run_settings_dialog.cpp editor/settings_config_dialog.cpp
 #: modules/visual_script/visual_script_editor.cpp
 msgid "Close"
-msgstr "Fermiĝu"
+msgstr "Fermiĝi"
 
 #: editor/connections_dialog.cpp
 msgid "Connect"
-msgstr "Konektu"
+msgstr "Konekti"
 
 #: editor/connections_dialog.cpp
 msgid "Signal:"
@@ -814,24 +816,24 @@ msgstr "Signalo:"
 
 #: editor/connections_dialog.cpp
 msgid "Connect '%s' to '%s'"
-msgstr "Konektu '%s' al '%s'"
+msgstr "Konekti '%s' al '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect '%s' from '%s'"
-msgstr "Malkonektu '%s' de '%s'"
+msgstr "Malkonekti '%s' de '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect all from signal: '%s'"
-msgstr "Malkonektu ĉiuj de signalo: '%s'"
+msgstr "Malkonekti ĉiuj de signalo: '%s'"
 
 #: editor/connections_dialog.cpp
 msgid "Connect..."
-msgstr ""
+msgstr "Konekti..."
 
 #: editor/connections_dialog.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "Disconnect"
-msgstr "Malkonektu"
+msgstr "Malkonekti"
 
 #: editor/connections_dialog.cpp
 msgid "Connect a Signal to a Method"
@@ -839,7 +841,7 @@ msgstr "Konektu la signalo al metodo"
 
 #: editor/connections_dialog.cpp
 msgid "Edit Connection:"
-msgstr ""
+msgstr "Redakti Konekton:"
 
 #: editor/connections_dialog.cpp
 msgid "Are you sure you want to remove all connections from the \"%s\" signal?"
@@ -855,11 +857,11 @@ msgstr ""
 
 #: editor/connections_dialog.cpp
 msgid "Disconnect All"
-msgstr "Malkonektu ĉiuj"
+msgstr "Malkonektigi ĉiun"
 
 #: editor/connections_dialog.cpp
 msgid "Edit..."
-msgstr "Redaktu..."
+msgstr "Redakti..."
 
 #: editor/connections_dialog.cpp
 msgid "Go To Method"
@@ -937,7 +939,7 @@ msgstr "Rimedo"
 #: editor/dependency_editor.cpp editor/editor_autoload_settings.cpp
 #: editor/project_settings_editor.cpp editor/script_create_dialog.cpp
 msgid "Path"
-msgstr "Pado"
+msgstr "Vojo"
 
 #: editor/dependency_editor.cpp
 msgid "Dependencies:"

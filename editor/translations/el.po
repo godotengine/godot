@@ -4,12 +4,13 @@
 # This file is distributed under the same license as the Godot source code.
 # George Tsiamasiotis <gtsiam@windowslive.com>, 2017-2018, 2019.
 # Georgios Katsanakis <geo.elgeo@gmail.com>, 2019.
+# Overloaded <manoschool@yahoo.gr>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-21 15:57+0000\n"
-"Last-Translator: George Tsiamasiotis <gtsiam@windowslive.com>\n"
+"PO-Revision-Date: 2019-09-07 13:51+0000\n"
+"Last-Translator: Overloaded <manoschool@yahoo.gr>\n"
 "Language-Team: Greek <https://hosted.weblate.org/projects/godot-engine/godot/"
 "el/>\n"
 "Language: el\n"
@@ -1117,12 +1118,10 @@ msgid "License"
 msgstr "Άδεια"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid "Third-party Licenses"
-msgstr "Άδεια τρίτων ομάδων"
+msgstr "Άδειες τρίτων κατασκευαστών"
 
 #: editor/editor_about.cpp
-#, fuzzy
 msgid ""
 "Godot Engine relies on a number of third-party free and open source "
 "libraries, all compatible with the terms of its MIT license. The following "
@@ -1130,10 +1129,10 @@ msgid ""
 "respective copyright statements and license terms."
 msgstr ""
 "Η μηχανή Godot βασίζεται σε μια σειρά από δωρεάν και ανοιχτού κώδικα "
-"βιβλιοθήκες τρίτων ομάδων, όλες συμβατές με τους όρους της άδειας MIT. "
-"Ακολουθεί μία εκτενής λίστα με όλα τα σχετικά συστατικά της μηχανής μαζί με "
-"όλες τις αντοίστοιχες δηλώσεις προστασίας πνευματικών δικαιωμάτων και τους "
-"όρους των αδειών τους."
+"βιβλιοθήκες τρίτων κατασκευαστών, όλες συμβατές με τους όρους της άδειας "
+"MIT. Ακολουθεί μία εκτενής λίστα με όλα τα σχετικά συστατικά της μηχανής "
+"μαζί με όλες τις αντοίστοιχες δηλώσεις προστασίας πνευματικών δικαιωμάτων "
+"και τους όρους των αδειών τους."
 
 #: editor/editor_about.cpp
 msgid "All Components"
@@ -2047,9 +2046,8 @@ msgid "Clear Output"
 msgstr "Εκκαθάριση εξόδου"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
-#, fuzzy
 msgid "New Window"
-msgstr "Παράθυρο"
+msgstr "Νέο Παράθυρο"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
@@ -2384,9 +2382,8 @@ msgid "Close Scene"
 msgstr "Κλείσιμο σκηνής"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Reopen Closed Scene"
-msgstr "Κλείσιμο σκηνής"
+msgstr "Άνοιγμα Εκ Νέου Κλειστής Σκηνής"
 
 #: editor/editor_node.cpp
 msgid "Unable to enable addon plugin at: '%s' parsing of config failed."
@@ -2509,9 +2506,8 @@ msgid "Close Tab"
 msgstr "Κλείσιμο καρτέλας"
 
 #: editor/editor_node.cpp
-#, fuzzy
 msgid "Undo Close Tab"
-msgstr "Κλείσιμο καρτέλας"
+msgstr "Αναίρεση Κλεισίματος Καρτέλας"
 
 #: editor/editor_node.cpp editor/plugins/script_editor_plugin.cpp
 msgid "Close Other Tabs"
@@ -3290,7 +3286,6 @@ msgid "Import From Node:"
 msgstr "Εισαγωγή σκηνής από κόμβο:"
 
 #: editor/export_template_manager.cpp
-#, fuzzy
 msgid "Redownload"
 msgstr "Εκ νέου λήψη"
 
@@ -3308,8 +3303,11 @@ msgid "Download"
 msgstr "Λήψη"
 
 #: editor/export_template_manager.cpp
+#, fuzzy
 msgid "Official export templates aren't available for development builds."
 msgstr ""
+"Τα επίσημα πρότυπα εξαγωγής δεν είναι διαθέσιμα για τις εκδόσεις που "
+"βρίσκονται ακόμα σε εξέλιξη"
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3778,7 +3776,7 @@ msgstr "Κόμβοι σε ομάδα"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "Οι άδειες ομάδες θα διαγράφονται αυτομάτως."
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -4785,7 +4783,7 @@ msgstr "Δεν ήταν δυνατή η αποθήκευση θέματος σε
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr ""
+msgstr "Σφάλμα κατά την εγγραφή."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -5834,8 +5832,9 @@ msgid "Generation Time (sec):"
 msgstr "Χρόνος  παραγωγής (sec):"
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "The geometry's faces don't contain any area."
-msgstr ""
+msgstr "Οι όψεις της γεωμετρίας δεν περιέχουν καμία περιοχή."
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
@@ -5843,8 +5842,9 @@ msgid "The geometry doesn't contain any faces."
 msgstr "Ο κόμβος δεν περιέχει γεωμετρία (Επιφάνειες)."
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "\"%s\" doesn't inherit from Spatial."
-msgstr ""
+msgstr "Το \"%s\" δεν κληρονομείται από το Spatial."
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
@@ -9147,7 +9147,7 @@ msgstr "Εισαγωγή υπαρκτού έργου"
 
 #: editor/project_manager.cpp
 msgid "Error: Project is missing on the filesystem."
-msgstr ""
+msgstr "Σφάλμα: Το έργο λείπει από το σύστημα αρχείων."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
@@ -10755,8 +10755,9 @@ msgid "End of inner exception stack trace"
 msgstr "Τέλος ιχνηλάτησης στοίβας εσωτερικής εξαίρεσης"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
+#, fuzzy
 msgid "Bake NavMesh"
-msgstr ""
+msgstr "Ψήσιμο NavMesh (πλέγματος πλοήγησης)"
 
 #: modules/recast/navigation_mesh_editor_plugin.cpp
 msgid "Clear the navigation mesh."
@@ -11167,47 +11168,62 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Package name is missing."
-msgstr ""
+msgstr "Το όνομα του πακέτου λείπει."
 
 #: platform/android/export/export.cpp
 msgid "Package segments must be of non-zero length."
-msgstr ""
+msgstr "Τα τμήματα του πακέτου πρέπει να έχουν μη μηδενικό μήκος."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "The character '%s' is not allowed in Android application package names."
 msgstr ""
+"Ο χαρακτήρας '%s' δεν επιτρέπεται στα ονόματα των πακέτων εφαρμογών Android."
 
 #: platform/android/export/export.cpp
 msgid "A digit cannot be the first character in a package segment."
 msgstr ""
+"Ένα ψηφίο δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα πακέτου."
 
 #: platform/android/export/export.cpp
 msgid "The character '%s' cannot be the first character in a package segment."
 msgstr ""
+"Ο χαρακτήρας '%s' δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
+"πακέτου."
 
 #: platform/android/export/export.cpp
 msgid "The package must have at least one '.' separator."
-msgstr ""
+msgstr "Το πακέτο πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
 
 #: platform/android/export/export.cpp
 msgid "ADB executable not configured in the Editor Settings."
 msgstr ""
+"Το εκτελέσιμο αρχείο ADB δεν έχει ρυθμιστεί στις Ρυθμίσεις Επεξεργαστή."
 
 #: platform/android/export/export.cpp
 msgid "OpenJDK jarsigner not configured in the Editor Settings."
-msgstr ""
+msgstr "Το OpenJDK jarsigner δεν έχει ρυθμιστεί στις Ρυθμίσεις Επεξεργαστή."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Debug keystore not configured in the Editor Settings nor in the preset."
 msgstr ""
+"Το Debug keystore δεν έχει ρυθμιστεί στις Ρυθμίσεις Επεξεργαστή ή στην "
+"προεπιλεγμένη ρύθμιση."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Custom build requires a valid Android SDK path in Editor Settings."
 msgstr ""
+"Η προσαρμοσμένη κατασκευή απαιτεί μια έγκυρη διαδρομή για το Android SDK "
+"στις Ρυθμίσεις Επεξεργαστή."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Invalid Android SDK path for custom build in Editor Settings."
 msgstr ""
+"Μη έγκυρη διαδρομή Android SDK για προσαρμοσμένη κατασκευή στις Ρυθμίσεις "
+"Επεξεργαστή."
 
 #: platform/android/export/export.cpp
 msgid ""
@@ -11216,7 +11232,7 @@ msgstr ""
 
 #: platform/android/export/export.cpp
 msgid "Invalid public key for APK expansion."
-msgstr ""
+msgstr "Μη έγκυρο δημόσιο κλειδί (public key) για επέκταση APK."
 
 #: platform/android/export/export.cpp
 #, fuzzy
@@ -11238,26 +11254,32 @@ msgid ""
 msgstr ""
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Building Android Project (gradle)"
-msgstr ""
+msgstr "Κατασκευή Έργου Android (gradle)"
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid ""
 "Building of Android project failed, check output for the error.\n"
 "Alternatively visit docs.godotengine.org for Android build documentation."
 msgstr ""
+"Η κατασκευή του έργου Android απέτυχε, ελέγξτε την έξοδο για το σφάλμα.\n"
+"Εναλλακτικά, επισκεφτείτε τη σελίδα docs.godotengine.org για το εγχειρίδιο "
+"πάνω στο θέμα της κατασκευής για Android."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "No build apk generated at: "
-msgstr ""
+msgstr "Δεν παράχθηκε κατασκευή apk στο: "
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier is missing."
-msgstr ""
+msgstr "Το αναγνωριστικό λείπει."
 
 #: platform/iphone/export/export.cpp
 msgid "Identifier segments must be of non-zero length."
-msgstr ""
+msgstr "Τα τμήματα του αναγνωριστικού πρέπει να έχουν μη μηδενικό μήκος."
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -11267,19 +11289,26 @@ msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικ�
 #: platform/iphone/export/export.cpp
 msgid "A digit cannot be the first character in a Identifier segment."
 msgstr ""
+"Ένα ψηφίο δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
+"αναγνωριστικού."
 
 #: platform/iphone/export/export.cpp
 msgid ""
 "The character '%s' cannot be the first character in a Identifier segment."
 msgstr ""
+"Ο χαρακτήρας '%s' δεν μπορεί να είναι ο πρώτος χαρακτήρας σε ένα τμήμα "
+"αναγνωριστικού."
 
 #: platform/iphone/export/export.cpp
 msgid "The Identifier must have at least one '.' separator."
-msgstr ""
+msgstr "Το αναγνωριστικό πρέπει να έχει τουλάχιστον έναν '.' διαχωριστή."
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "App Store Team ID not specified - cannot configure the project."
 msgstr ""
+"Το ομαδικό αναγνωριστικό (Team ID)  App Store δεν έχει καθοριστεί - δεν "
+"είναι δυνατή η διαμόρφωση του έργου."
 
 #: platform/iphone/export/export.cpp
 #, fuzzy
@@ -11287,8 +11316,9 @@ msgid "Invalid Identifier:"
 msgstr "Το όνομα δεν είναι έγκυρο αναγνωριστικό:"
 
 #: platform/iphone/export/export.cpp
+#, fuzzy
 msgid "Required icon is not specified in the preset."
-msgstr ""
+msgstr "Το απαιτούμενο εικονίδιο δεν έχει καθοριστεί στην προεπιλογή."
 
 #: platform/javascript/export/export.cpp
 msgid "Run in Browser"
@@ -11670,6 +11700,8 @@ msgid ""
 "Plane shapes don't work well and will be removed in future versions. Please "
 "don't use them."
 msgstr ""
+"Τα επίπεδα σχήματα δεν λειτουργούν καλά και θα αφαιρεθούν σε μελλοντικές "
+"εκδόσεις. Παρακαλώ μην τα χρησιμοποιήσετε."
 
 #: scene/3d/cpu_particles.cpp
 #, fuzzy
@@ -11688,14 +11720,20 @@ msgid "Plotting Meshes"
 msgstr "Τοποθέτηση πλεγμάτων"
 
 #: scene/3d/gi_probe.cpp
+#, fuzzy
 msgid ""
 "GIProbes are not supported by the GLES2 video driver.\n"
 "Use a BakedLightmap instead."
 msgstr ""
+"Ται GIProbes δεν υποστηρίζονται από το πρόγραμμα οδήγησης οθόνης GLES2.\n"
+"Χρησιμοποιήστε ένα BakedLightmap αντ 'αυτού."
 
 #: scene/3d/light.cpp
+#, fuzzy
 msgid "A SpotLight with an angle wider than 90 degrees cannot cast shadows."
 msgstr ""
+"Ένα SpotLight (προβολέας) με γωνία ευρύτερη από 90 μοίρες δεν μπορεί να "
+"δημιουργεί σκιές."
 
 #: scene/3d/navigation_mesh.cpp
 msgid "A NavigationMesh resource must be set or created for this node to work."
@@ -11762,7 +11800,7 @@ msgstr ""
 
 #: scene/3d/soft_body.cpp
 msgid "This body will be ignored until you set a mesh."
-msgstr ""
+msgstr "Το σώμα αυτό δε θα ληφθεί υπόψιν μέχρι να ορίσετε ένα πλέγμα (mesh)."
 
 #: scene/3d/soft_body.cpp
 #, fuzzy
@@ -11823,8 +11861,9 @@ msgid "Animation not found: '%s'"
 msgstr "Εργαλεία κινήσεων"
 
 #: scene/animation/animation_tree.cpp
+#, fuzzy
 msgid "In node '%s', invalid animation: '%s'."
-msgstr ""
+msgstr "Στον κόμβο '%s', μη έγκυρο animation: '%s'."
 
 #: scene/animation/animation_tree.cpp
 #, fuzzy
@@ -11859,14 +11898,15 @@ msgstr "Το δέντρο κίνησης δεν είναι έγκυρο."
 #: scene/animation/animation_tree_player.cpp
 msgid "This node has been deprecated. Use AnimationTree instead."
 msgstr ""
+"Αυτός ο κόμβος έχει καταργηθεί. Χρησιμοποιήστε το AnimationTree αντ 'αυτού."
 
 #: scene/gui/color_picker.cpp
 msgid "Pick a color from the screen."
-msgstr ""
+msgstr "Διαλέξτε ένα χρώμα από την οθόνη."
 
 #: scene/gui/color_picker.cpp
 msgid "HSV"
-msgstr ""
+msgstr "HSV"
 
 #: scene/gui/color_picker.cpp
 #, fuzzy
@@ -11991,7 +12031,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Οι σταθερές δεν μπορούν να τροποποιηθούν."
 
 #~ msgid "No Matches"
 #~ msgstr "Δεν υπάρχουν αντιστοιχίες"

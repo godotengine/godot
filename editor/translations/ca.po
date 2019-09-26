@@ -12,7 +12,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-04 14:23+0000\n"
+"PO-Revision-Date: 2019-09-11 03:10+0000\n"
 "Last-Translator: roger <616steam@gmail.com>\n"
 "Language-Team: Catalan <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ca/>\n"
@@ -21,7 +21,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.8-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -1803,9 +1803,8 @@ msgid "Go to parent folder."
 msgstr "Anar al directori pare."
 
 #: editor/editor_file_dialog.cpp scene/gui/file_dialog.cpp
-#, fuzzy
 msgid "Refresh files."
-msgstr "Actualitzar Fitxers"
+msgstr "Actualitzar fitxers."
 
 #: editor/editor_file_dialog.cpp
 msgid "(Un)favorite current folder."
@@ -2056,7 +2055,7 @@ msgstr "Buida la Sortida"
 
 #: editor/editor_node.cpp editor/project_manager.cpp
 msgid "New Window"
-msgstr ""
+msgstr "Nova finestra"
 
 #: editor/editor_node.cpp
 msgid "Project export failed with error code %d."
@@ -3301,6 +3300,8 @@ msgstr "Baixa"
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
 msgstr ""
+"Les plantilles oficials d'exportació no estan disponibles per a les versions "
+"de desenvolupament."
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3763,7 +3764,7 @@ msgstr "Nodes del Grup"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "Els grups buits s'eliminaran automàticament."
 
 #: editor/groups_editor.cpp
 #, fuzzy
@@ -4774,7 +4775,7 @@ msgstr "No es pot desar el Tema:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr ""
+msgstr "Error d'escriptura."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -4886,7 +4887,6 @@ msgid "Sort:"
 msgstr "Ordena:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
-#, fuzzy
 msgid "Reverse sorting."
 msgstr "Ordenació inversa."
 
@@ -5847,7 +5847,7 @@ msgstr "Temps de generació (s):"
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "The geometry's faces don't contain any area."
-msgstr ""
+msgstr "Les cares de la geometria no contenen cap àrea."
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
@@ -5855,8 +5855,9 @@ msgid "The geometry doesn't contain any faces."
 msgstr "El Node no conté cap geometria (cares)."
 
 #: editor/plugins/particles_editor_plugin.cpp
+#, fuzzy
 msgid "\"%s\" doesn't inherit from Spatial."
-msgstr ""
+msgstr "\"% s\" no hereta de Spatial."
 
 #: editor/plugins/particles_editor_plugin.cpp
 #, fuzzy
@@ -6629,7 +6630,7 @@ msgstr "Ressaltador de sintaxi"
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
 msgid "Go To"
-msgstr ""
+msgstr "Anar a"
 
 #: editor/plugins/script_text_editor.cpp
 #: editor/plugins/shader_editor_plugin.cpp editor/plugins/text_editor.cpp
@@ -7062,8 +7063,9 @@ msgid "Snap Nodes To Floor"
 msgstr "Ajustar Nodes al Terra"
 
 #: editor/plugins/spatial_editor_plugin.cpp
+#, fuzzy
 msgid "Couldn't find a solid floor to snap the selection to."
-msgstr ""
+msgstr "No ha pogut trobar un terra sòlid per ajustar la selecció."
 
 #: editor/plugins/spatial_editor_plugin.cpp
 msgid ""
@@ -8024,7 +8026,7 @@ msgstr "Conjunt de rajoles"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "(GLES3 only)"
-msgstr ""
+msgstr "(Només GLES3)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -8232,15 +8234,15 @@ msgstr "Retorna l'invers de l'arrel quadrada del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Equal (==)"
-msgstr ""
+msgstr "Igual (= =)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than (>)"
-msgstr ""
+msgstr "Major Que (>)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Greater Than or Equal (>=)"
-msgstr ""
+msgstr "Major o Igual Que (>=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8251,28 +8253,34 @@ msgstr ""
 "o menors."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Returns the boolean result of the comparison between INF and a scalar "
 "parameter."
 msgstr ""
+"Retorna el resultat booleà de la comparació entre un paràmetre INF i un "
+"escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Returns the boolean result of the comparison between NaN and a scalar "
 "parameter."
 msgstr ""
+"Retorna el resultat booleà de la comparació entre NaN i un paràmetre escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than (<)"
-msgstr ""
+msgstr "Menor Que (<)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Less Than or Equal (<=)"
-msgstr ""
+msgstr "Menor o Igual Que (<=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid "Not Equal (!=)"
-msgstr ""
+msgstr "No Igual (!=)"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid ""
@@ -8286,10 +8294,13 @@ msgid "Returns the boolean result of the comparison between two parameters."
 msgstr "Retorna la tangent del paràmetre."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
+#, fuzzy
 msgid ""
 "Returns the boolean result of the comparison between INF (or NaN) and a "
 "scalar parameter."
 msgstr ""
+"Retorna el resultat booleà de la comparació entre INF (o NaN) i un paràmetre "
+"escalar."
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 #, fuzzy
@@ -9227,8 +9238,9 @@ msgid "Missing Project"
 msgstr "Importa un Projecte existent"
 
 #: editor/project_manager.cpp
+#, fuzzy
 msgid "Error: Project is missing on the filesystem."
-msgstr ""
+msgstr "Error: falta el projecte al sistema de fitxers."
 
 #: editor/project_manager.cpp
 msgid "Can't open project at '%s'."
@@ -9987,8 +9999,11 @@ msgid "Duplicate Node(s)"
 msgstr "Duplica els Nodes"
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid "Can't reparent nodes in inherited scenes, order of nodes can't change."
 msgstr ""
+"No es poden re-emparentar els nodes en escenes heretades, l'ordre de nodes "
+"no pot canviar."
 
 #: editor/scene_tree_dock.cpp
 msgid "Node must belong to the edited scene to become root."
@@ -10021,10 +10036,13 @@ msgid "Save New Scene As..."
 msgstr "Anomena i Desa la Nova Escena..."
 
 #: editor/scene_tree_dock.cpp
+#, fuzzy
 msgid ""
 "Disabling \"editable_instance\" will cause all properties of the node to be "
 "reverted to their default."
 msgstr ""
+"Deshabilitar \"editable_instance\" provocarà que totes les propietats del "
+"node tornin al seu valor per defecte."
 
 #: editor/scene_tree_dock.cpp
 msgid "Editable Children"
@@ -11348,8 +11366,9 @@ msgstr ""
 "'Projecte'."
 
 #: platform/android/export/export.cpp
+#, fuzzy
 msgid "Building Android Project (gradle)"
-msgstr ""
+msgstr "Construint Projecte Android (gradle)"
 
 #: platform/android/export/export.cpp
 #, fuzzy

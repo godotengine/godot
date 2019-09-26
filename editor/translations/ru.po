@@ -55,12 +55,13 @@
 # knightpp <kotteam99@gmail.com>, 2019.
 # Константин Рин <email.to.rean@gmail.com>, 2019.
 # Maxim Samburskiy <alpacones@outlook.com>, 2019.
+# Dima Koshel <form.eater@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-29 13:35+0000\n"
-"Last-Translator: Константин Рин <email.to.rean@gmail.com>\n"
+"PO-Revision-Date: 2019-09-19 05:27+0000\n"
+"Last-Translator: Александр <ol-vin@mail.ru>\n"
 "Language-Team: Russian <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ru/>\n"
 "Language: ru\n"
@@ -496,6 +497,7 @@ msgstr ""
 "один трек."
 
 #: editor/animation_track_editor.cpp
+#, fuzzy
 msgid ""
 "This animation belongs to an imported scene, so changes to imported tracks "
 "will not be saved.\n"
@@ -507,6 +509,16 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Эта анимация относится к импортированной сцене, поэтому изменения в "
+"импортированных дорожках не сохраняются.\n"
+"\n"
+"Чтобы включить возможность добавления пользовательских дорожек, перейдите к "
+"настройкам импорта сцены и установите следующие параметры\n"
+"\"Анимация > Хранение(Animation > Storage)\" в меню \"Файлы(Files)\", "
+"выберите \"Анимация > Сохранять пользовательские дорожки(Animation > Keep "
+"Custom Tracks)\", а затем импортируйте заново.\n"
+"Кроме того, можно использовать предустановку импорта, которая импортирует "
+"анимацию для разделения файлов."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
@@ -1463,7 +1475,7 @@ msgstr "Имя Узла:"
 #: editor/editor_autoload_settings.cpp editor/editor_help_search.cpp
 #: editor/editor_profiler.cpp editor/settings_config_dialog.cpp
 msgid "Name"
-msgstr "Имя"
+msgstr "Название"
 
 #: editor/editor_autoload_settings.cpp
 msgid "Singleton"
@@ -1715,7 +1727,6 @@ msgid "Class Options"
 msgstr "Описание класса"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "New profile name:"
 msgstr "Новое имя:"
 
@@ -1725,9 +1736,8 @@ msgid "Erase Profile"
 msgstr "Стереть область"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Import Profile(s)"
-msgstr "Импортированный проект"
+msgstr "Импортировать проект"
 
 #: editor/editor_feature_profile.cpp
 #, fuzzy
@@ -1905,6 +1915,8 @@ msgid ""
 "There are multiple importers for different types pointing to file %s, import "
 "aborted"
 msgstr ""
+"Множество импортируемых объектов разного типа указывают на файл %s, импорт "
+"прерван"
 
 #: editor/editor_file_system.cpp
 msgid "(Re)Importing Assets"
@@ -3010,13 +3022,19 @@ msgid ""
 "This will install the Android project for custom builds.\n"
 "Note that, in order to use it, it needs to be enabled per export preset."
 msgstr ""
+"Данный процесс установит Android проект для пользовательских сборок.\n"
+"Обратите внимание, что для его работы, необходимо включить его в каждом "
+"пресете экспорта."
 
 #: editor/editor_node.cpp
+#, fuzzy
 msgid ""
 "Android build template is already installed and it won't be overwritten.\n"
 "Remove the \"build\" directory manually before attempting this operation "
 "again."
 msgstr ""
+"Шаблон сборки Android уже установлен и не будет перезаписан.\n"
+"Перед повторной попыткой удалите каталог \"build\" вручную."
 
 #: editor/editor_node.cpp
 msgid "Import Templates From ZIP File"
@@ -3355,7 +3373,7 @@ msgstr "Загрузка"
 
 #: editor/export_template_manager.cpp
 msgid "Official export templates aren't available for development builds."
-msgstr ""
+msgstr "Официальные шаблоны экспорта недоступны для рабочих сборок."
 
 #: editor/export_template_manager.cpp
 msgid "(Missing)"
@@ -3736,10 +3754,13 @@ msgid "Filters:"
 msgstr "Фильтры:"
 
 #: editor/find_in_files.cpp
+#, fuzzy
 msgid ""
 "Include the files with the following extensions. Add or remove them in "
 "ProjectSettings."
 msgstr ""
+"Включает в себя файлы с указанными расширениями. Добавьте или удалите их в "
+"ProjectSettings."
 
 #: editor/find_in_files.cpp editor/plugins/script_editor_plugin.cpp
 #: editor/plugins/script_text_editor.cpp
@@ -3820,7 +3841,7 @@ msgstr "Узлы в Группе"
 
 #: editor/groups_editor.cpp
 msgid "Empty groups will be automatically removed."
-msgstr ""
+msgstr "Пустые группы будут автоматически удалены."
 
 #: editor/groups_editor.cpp
 msgid "Group Editor"
@@ -4826,7 +4847,7 @@ msgstr "Невозможно сохранить тему в файл:"
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Write error."
-msgstr ""
+msgstr "Ошибка записи."
 
 #: editor/plugins/asset_library_editor_plugin.cpp
 msgid "Request failed, too many redirects"
@@ -5659,7 +5680,7 @@ msgstr "Создать вогнутую форму"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Failed creating shapes!"
-msgstr ""
+msgstr "Не удалось создать форму!"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Convex Shape(s)"
@@ -5901,14 +5922,12 @@ msgid "\"%s\" doesn't inherit from Spatial."
 msgstr ""
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "\"%s\" doesn't contain geometry."
-msgstr "Узел не содержит геометрии."
+msgstr "\"%s\" не содержит геометрии."
 
 #: editor/plugins/particles_editor_plugin.cpp
-#, fuzzy
 msgid "\"%s\" doesn't contain face geometry."
-msgstr "Узел не содержит геометрии."
+msgstr "\"%s\" не содержит геометрии с гранями."
 
 #: editor/plugins/particles_editor_plugin.cpp
 msgid "Create Emitter"

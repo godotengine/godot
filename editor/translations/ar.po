@@ -34,8 +34,8 @@ msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-15 10:23+0000\n"
-"Last-Translator: Rachid Graphicos <graphicos1d@gmail.com>\n"
+"PO-Revision-Date: 2019-09-07 13:51+0000\n"
+"Last-Translator: Omar Aglan <omar.aglan91@yahoo.com>\n"
 "Language-Team: Arabic <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ar/>\n"
 "Language: ar\n"
@@ -44,12 +44,12 @@ msgstr ""
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=6; plural=n==0 ? 0 : n==1 ? 1 : n==2 ? 2 : n%100>=3 "
 "&& n%100<=10 ? 3 : n%100>=11 ? 4 : 5;\n"
-"X-Generator: Weblate 3.8\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "نوع برهان خاطئ للتحويل()، إستخدم ثابت TYPE_*."
+msgstr "نوع برهان خاطئ خاص بconvert()، إستخدم ثوابت TYPE_*."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -102,7 +102,6 @@ msgid "Time:"
 msgstr "الوقت:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
 msgstr "القيمة:"
 
@@ -403,9 +402,8 @@ msgstr ""
 "-الصوت الجاري للأعب ثلاثي الأبعاد"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Animation tracks can only point to AnimationPlayer nodes."
-msgstr "مسارات الحركة يمكنها فقط أن تشير إلى عقدة مشغّل الحركة AnimationPlayer"
+msgstr "مسارات الحركة يمكنها فقط أن تشير إلى عقد مشغّل الحركة."
 
 #: editor/animation_track_editor.cpp
 msgid "An animation player can't animate itself, only other players."
@@ -585,9 +583,8 @@ msgid "Pick the node that will be animated:"
 msgstr "إختار العقدة التي سوف يتم تحريكها:"
 
 #: editor/animation_track_editor.cpp
-#, fuzzy
 msgid "Use Bezier Curves"
-msgstr "إستعمل خطوط أو منحنيات Bezier"
+msgstr "إستعمل منحنيات بيزية"
 
 #: editor/animation_track_editor.cpp
 msgid "Anim. Optimizer"
@@ -1583,9 +1580,8 @@ msgid "Script Editor"
 msgstr "فتح مُعدل الكود"
 
 #: editor/editor_feature_profile.cpp
-#, fuzzy
 msgid "Asset Library"
-msgstr "فتح مكتبة الأصول"
+msgstr "مكتبة الأصول"
 
 #: editor/editor_feature_profile.cpp
 msgid "Scene Tree Editing"
@@ -1953,9 +1949,8 @@ msgid "Methods:"
 msgstr "قائمة الطرق"
 
 #: editor/editor_help.cpp
-#, fuzzy
 msgid "Theme Properties"
-msgstr "خصائص النمط"
+msgstr "خصائص الثمة"
 
 #: editor/editor_help.cpp
 #, fuzzy
@@ -2083,9 +2078,8 @@ msgid "Member Type"
 msgstr "نوع العضو"
 
 #: editor/editor_help_search.cpp
-#, fuzzy
 msgid "Class"
-msgstr "صنف:"
+msgstr "الصنف"
 
 #: editor/editor_inspector.cpp editor/project_settings_editor.cpp
 msgid "Property:"
@@ -4731,7 +4725,7 @@ msgstr "تحول"
 #: editor/plugins/animation_tree_editor_plugin.cpp
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "AnimationTree"
-msgstr "شجرة الحركة"
+msgstr "مسارات  التحريك"
 
 #: editor/plugins/animation_tree_player_editor_plugin.cpp
 msgid "New name:"
@@ -5802,9 +5796,8 @@ msgid "Create Outline"
 msgstr "أنشئ الحد"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
-#, fuzzy
 msgid "Mesh"
-msgstr "شبكة"
+msgstr "مجسم"
 
 #: editor/plugins/mesh_instance_editor_plugin.cpp
 msgid "Create Trimesh Static Body"
@@ -6976,9 +6969,8 @@ msgid "Create physical bones"
 msgstr "أنشئ ميش التنقل"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
-#, fuzzy
 msgid "Skeleton"
-msgstr "الفردية"
+msgstr "الهيكل"
 
 #: editor/plugins/skeleton_editor_plugin.cpp
 #, fuzzy
@@ -8217,9 +8209,8 @@ msgid "Scalar"
 msgstr "تكبير/تصغير:"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
-#, fuzzy
 msgid "Vector"
-msgstr "مُراقب"
+msgstr "متجه"
 
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Boolean"
@@ -9733,9 +9724,8 @@ msgid "Action:"
 msgstr ""
 
 #: editor/project_settings_editor.cpp
-#, fuzzy
 msgid "Action"
-msgstr "عملية التحريك"
+msgstr "الفعل"
 
 #: editor/project_settings_editor.cpp
 msgid "Deadzone"

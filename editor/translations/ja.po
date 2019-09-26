@@ -26,12 +26,13 @@
 # Takuya Watanabe <watanabe@zblog.sakura.ne.jp>, 2019.
 # Sodium11 <Sodium11.for.gitserver@gmail.com>, 2019.
 # leela <53352@protonmail.com>, 2019.
+# Tarou Yamada <mizuningyou@yahoo.co.jp>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-08-29 13:35+0000\n"
-"Last-Translator: leela <53352@protonmail.com>\n"
+"PO-Revision-Date: 2019-09-26 11:50+0000\n"
+"Last-Translator: Tarou Yamada <mizuningyou@yahoo.co.jp>\n"
 "Language-Team: Japanese <https://hosted.weblate.org/projects/godot-engine/"
 "godot/ja/>\n"
 "Language: ja\n"
@@ -5464,7 +5465,7 @@ msgstr "生成したポイントの数:"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Mask"
-msgstr "発光(Emission)マスク"
+msgstr "放出マスク"
 
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
@@ -5474,7 +5475,7 @@ msgstr "ピクセルからキャプチャ"
 #: editor/plugins/cpu_particles_2d_editor_plugin.cpp
 #: editor/plugins/particles_2d_editor_plugin.cpp
 msgid "Emission Colors"
-msgstr "発光(Emission)色"
+msgstr "放出時の色"
 
 #: editor/plugins/cpu_particles_editor_plugin.cpp
 msgid "CPUParticles"
@@ -7111,7 +7112,7 @@ msgstr "フリールックの切り替え"
 #: editor/plugins/spatial_editor_plugin.cpp
 #: editor/plugins/visual_shader_editor_plugin.cpp
 msgid "Transform"
-msgstr "変換"
+msgstr "変形"
 
 #: editor/plugins/spatial_editor_plugin.cpp
 #, fuzzy
@@ -9272,12 +9273,11 @@ msgstr ""
 "プロジェクトフォルダの内容は変更されません。"
 
 #: editor/project_manager.cpp
-#, fuzzy
 msgid ""
 "Remove all missing projects from the list?\n"
 "The project folders' contents won't be modified."
 msgstr ""
-"%d プロジェクトを一覧から削除しますか?\n"
+"見つからないすべてのプロジェクトを一覧から削除しますか?\n"
 "プロジェクトフォルダの内容は変更されません。"
 
 #: editor/project_manager.cpp

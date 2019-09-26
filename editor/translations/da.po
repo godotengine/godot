@@ -12,12 +12,13 @@
 # Jonathan B. Jørgensen <pizzaernam@gmail.com>, 2018.
 # Peter G. Laursen <GhostReven@gmail.com>, 2018.
 # Rémi Verschelde <akien@godotengine.org>, 2019.
+# Mads K. Bredager <mbredager@gmail.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2019-01-13 15:06+0000\n"
-"Last-Translator: Rémi Verschelde <akien@godotengine.org>\n"
+"PO-Revision-Date: 2019-09-07 13:51+0000\n"
+"Last-Translator: Mads K. Bredager <mbredager@gmail.com>\n"
 "Language-Team: Danish <https://hosted.weblate.org/projects/godot-engine/"
 "godot/da/>\n"
 "Language: da\n"
@@ -25,7 +26,7 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 "Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Weblate 3.4-dev\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
@@ -84,7 +85,7 @@ msgstr "Tid:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Value:"
-msgstr ""
+msgstr "Værdi:"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Insert Key Here"
@@ -104,9 +105,8 @@ msgid "Add Bezier Point"
 msgstr "Tilføj punkt"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Move Bezier Points"
-msgstr "Fjern punkt"
+msgstr "Flyt punkt"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Duplicate Keys"
@@ -169,7 +169,7 @@ msgstr "Ændre Animation Navn:"
 #: editor/animation_track_editor.cpp
 #: editor/plugins/sprite_frames_editor_plugin.cpp
 msgid "Change Animation Loop"
-msgstr ""
+msgstr "Redigér animationsløkke"
 
 #: editor/animation_track_editor.cpp
 msgid "Property Track"
@@ -257,7 +257,7 @@ msgstr "Tid (s): "
 
 #: editor/animation_track_editor.cpp
 msgid "Toggle Track Enabled"
-msgstr ""
+msgstr "Skift bane slået til"
 
 #: editor/animation_track_editor.cpp
 msgid "Continuous"
@@ -477,10 +477,20 @@ msgid ""
 "Alternatively, use an import preset that imports animations to separate "
 "files."
 msgstr ""
+"Animationen hører til en importeret scene, og ændringer til importerede spor "
+"vil ikke blive gemt.\n"
+"\n"
+"For at slå muligheden for at tilføje brugerdefinerede spor til, naviger til "
+"scenens importerings-\n"
+"muligheder og sæt \"Animation > Lager\" til \"Filer\", slå \"animation > "
+"Behold brugerdefinerede\n"
+"spor\" til, og importer igen.\n"
+"Alternativt, brug en import forudindstilling, der importerer animationer til "
+"separate filer."
 
 #: editor/animation_track_editor.cpp
 msgid "Warning: Editing imported animation"
-msgstr ""
+msgstr "Advarsel: Redigerer importeret animation"
 
 #: editor/animation_track_editor.cpp editor/plugins/script_text_editor.cpp
 #: scene/gui/line_edit.cpp scene/gui/text_edit.cpp
@@ -511,11 +521,11 @@ msgstr "Animation trin værdi."
 
 #: editor/animation_track_editor.cpp
 msgid "Seconds"
-msgstr ""
+msgstr "Sekunder"
 
 #: editor/animation_track_editor.cpp
 msgid "FPS"
-msgstr ""
+msgstr "FPS"
 
 #: editor/animation_track_editor.cpp editor/editor_properties.cpp
 #: editor/plugins/polygon_2d_editor_plugin.cpp
@@ -642,11 +652,11 @@ msgstr "Lydklip:"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip Start Offset"
-msgstr ""
+msgstr "Forskyd lydsporets start"
 
 #: editor/animation_track_editor_plugins.cpp
 msgid "Change Audio Track Clip End Offset"
-msgstr ""
+msgstr "Forskyd lydsporets slutning"
 
 #: editor/array_property_edit.cpp
 msgid "Resize Array"
@@ -724,7 +734,7 @@ msgstr "Nulstil Zoom"
 
 #: editor/code_editor.cpp
 msgid "Warnings"
-msgstr ""
+msgstr "Advarsler"
 
 #: editor/code_editor.cpp
 msgid "Line and column numbers."
@@ -12046,7 +12056,7 @@ msgstr ""
 
 #: servers/visual/shader_language.cpp
 msgid "Constants cannot be modified."
-msgstr ""
+msgstr "Konstanter kan ikke ændres."
 
 #~ msgid ""
 #~ "Can't open file_type_cache.cch for writing, not saving file type cache!"

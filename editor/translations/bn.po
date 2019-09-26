@@ -2,30 +2,29 @@
 # Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.
 # Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)
 # This file is distributed under the same license as the Godot source code.
-#
 # Abu Md. Maruf Sarker <maruf.webdev@gmail.com>, 2016-2017.
 # Abdullah Zubair <abdullahzubair109@gmail.com>, 2017.
 # Tahmid Karim <tahmidk15@gmail.com>, 2016.
-#
+# Tawhid H. <Tawhidk757@yahoo.com>, 2019.
 msgid ""
 msgstr ""
 "Project-Id-Version: Godot Engine editor\n"
 "POT-Creation-Date: \n"
-"PO-Revision-Date: 2018-12-13 14:38+0100\n"
-"Last-Translator: Abdullah Zubair <abdullahzubair109@gmail.com>\n"
+"PO-Revision-Date: 2019-09-26 11:50+0000\n"
+"Last-Translator: Tawhid H. <Tawhidk757@yahoo.com>\n"
 "Language-Team: Bengali <https://hosted.weblate.org/projects/godot-engine/"
 "godot/bn/>\n"
 "Language: bn\n"
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
-"Plural-Forms: nplurals=2; plural=n != 1;\n"
-"X-Generator: Poedit 2.2\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Weblate 3.9-dev\n"
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/visual_script/visual_script_builtin_funcs.cpp
 msgid "Invalid type argument to convert(), use TYPE_* constants."
-msgstr "অগ্রহণযোগ্য মান/আর্গুমেন্ট convert()-এ গিয়েছে, TYPE_* ধ্রুবক ব্যবহার করুন।"
+msgstr "অবৈধ প্রকার রূপান্তর করার যুক্তি(),use TYPE_* constants."
 
 #: core/math/expression.cpp modules/gdscript/gdscript_functions.cpp
 #: modules/mono/glue/gd_glue.cpp
@@ -35,11 +34,12 @@ msgstr "বিন্যাস জানার জন্য যথেষ্ট �
 
 #: core/math/expression.cpp
 msgid "Invalid input %i (not passed) in expression"
-msgstr ""
+msgstr "অবৈধ ইনপুট %i (পাস করা হয়নি) প্রকাশে"
 
 #: core/math/expression.cpp
+#, fuzzy
 msgid "self can't be used because instance is null (not passed)"
-msgstr ""
+msgstr "স্ব ব্যবহার করা যাবে না কারণ উদাহরণটি হলো  null(উত্তীর্ণ হয়নি)"
 
 #: core/math/expression.cpp
 #, fuzzy
@@ -53,16 +53,16 @@ msgstr "%s নোডে সূচক/ইনডেক্স মানের অ�
 
 #: core/math/expression.cpp
 msgid "Invalid named index '%s' for base type %s"
-msgstr ""
+msgstr "অবৈধ নামকরণ সূচক I '%s' for ভিত্তি type %s"
 
 #: core/math/expression.cpp
 #, fuzzy
 msgid "Invalid arguments to construct '%s'"
-msgstr ": অগ্রহনযোগ্য মান/আর্গুমেন্ট-এর ধরণ: "
+msgstr ": অগ্রহনযোগ্য মান/আর্গুমেন্ট-এর ধরণ:"
 
 #: core/math/expression.cpp
 msgid "On call to '%s':"
-msgstr ""
+msgstr "কল করুন '%s'"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Free"
@@ -70,7 +70,7 @@ msgstr "মুক্ত করে দিন"
 
 #: editor/animation_bezier_editor.cpp
 msgid "Balanced"
-msgstr ""
+msgstr "স্থির"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -82,9 +82,8 @@ msgid "Time:"
 msgstr "সময়:"
 
 #: editor/animation_bezier_editor.cpp
-#, fuzzy
 msgid "Value:"
-msgstr "মান"
+msgstr "মান:"
 
 #: editor/animation_bezier_editor.cpp
 #, fuzzy
@@ -112,8 +111,9 @@ msgid "Move Bezier Points"
 msgstr "বিন্দু সরান"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
+#, fuzzy
 msgid "Anim Duplicate Keys"
-msgstr "অ্যানিমেশন (Anim) কি ডুপ্লিকেট করুন"
+msgstr "অ্যানিমেশন (Anim) ডুপ্লিকেট করুন কি"
 
 #: editor/animation_bezier_editor.cpp editor/animation_track_editor.cpp
 msgid "Anim Delete Keys"
