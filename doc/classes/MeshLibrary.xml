@@ -4,7 +4,7 @@
 		Library of meshes.
 	</brief_description>
 	<description>
-		Library of meshes. Contains a list of [Mesh] resources, each with name and ID. This resource is used in [GridMap].
+		A library of meshes. Contains a list of [Mesh] resources, each with a name and ID. This resource is used in [GridMap].
 	</description>
 	<tutorials>
 	</tutorials>
@@ -13,7 +13,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Clear the library.
+				Clears the library.
 			</description>
 		</method>
 		<method name="create_item">
@@ -22,7 +22,7 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
-				Create a new item in the library, supplied an id.
+				Create a new item in the library, supplied as an ID.
 			</description>
 		</method>
 		<method name="find_item_by_name" qualifiers="const">
@@ -80,6 +80,8 @@
 			<argument index="0" name="id" type="int">
 			</argument>
 			<description>
+				Returns a generated item preview (a 3D rendering in isometric perspective).
+				[b]Note:[/b] Since item previews are only generated in an editor context, this function will return an empty [Texture] in a running project.
 			</description>
 		</method>
 		<method name="get_item_shapes" qualifiers="const">
@@ -94,7 +96,7 @@
 			<return type="int">
 			</return>
 			<description>
-				Gets an unused id for a new item.
+				Gets an unused ID for a new item.
 			</description>
 		</method>
 		<method name="remove_item">
@@ -114,7 +116,7 @@
 			<argument index="1" name="mesh" type="Mesh">
 			</argument>
 			<description>
-				Sets the mesh of the item.
+				Sets the item's mesh.
 			</description>
 		</method>
 		<method name="set_item_name">
@@ -125,7 +127,7 @@
 			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
-				Sets the name of the item.
+				Sets the item's name.
 			</description>
 		</method>
 		<method name="set_item_navmesh">
