@@ -423,10 +423,12 @@ void ScriptEditorDebugger::_scene_tree_request() {
 int ScriptEditorDebugger::_update_scene_tree(TreeItem *parent, const Array &nodes, int current_index) {
 	String filter = EditorNode::get_singleton()->get_scene_tree_dock()->get_filter();
 	String item_text = nodes[current_index + 1];
+	String item_type = nodes[current_index + 2];
 	bool keep = filter.is_subsequence_ofi(item_text);
 
 	TreeItem *item = inspect_scene_tree->create_item(parent);
 	item->set_text(0, item_text);
+	item->set_tooltip(0, TTR("Type:") + " " + item_type);
 	ObjectID id = ObjectID(nodes[current_index + 3]);
 	Ref<Texture> icon = EditorNode::get_singleton()->get_class_icon(nodes[current_index + 2], "");
 	if (icon.is_valid()) {
