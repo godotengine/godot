@@ -245,6 +245,9 @@ void Skeleton::_notification(int p_what) {
 						if (b.enabled) {
 
 							Transform pose = b.pose;
+							if (b.custom_pose_enable) {
+								pose = b.custom_pose * pose;
+							}
 							if (b.parent >= 0) {
 
 								b.pose_global = bonesptr[b.parent].pose_global * pose;
@@ -267,7 +270,9 @@ void Skeleton::_notification(int p_what) {
 						if (b.enabled) {
 
 							Transform pose = b.pose;
-
+							if (b.custom_pose_enable) {
+								pose = b.custom_pose * pose;
+							}
 							if (b.parent >= 0) {
 
 								b.pose_global = bonesptr[b.parent].pose_global * (b.rest * pose);
@@ -531,6 +536,23 @@ Transform Skeleton::get_bone_pose(int p_bone) const {
 
 	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
 	return bones[p_bone].pose;
+}
+
+void Skeleton::set_bone_custom_pose(int p_bone, const Transform &p_custom_pose) {
+
+	ERR_FAIL_INDEX(p_bone, bones.size());
+	//ERR_FAIL_COND( !is_inside_scene() );
+
+	bones.write[p_bone].custom_pose_enable = (p_custom_pose != Transform());
+	bones.write[p_bone].custom_pose = p_custom_pose;
+
+	_make_dirty();
+}
+
+Transform Skeleton::get_bone_custom_pose(int p_bone) const {
+
+	ERR_FAIL_INDEX_V(p_bone, bones.size(), Transform());
+	return bones[p_bone].custom_pose;
 }
 
 void Skeleton::_make_dirty() {
@@ -807,6 +829,9 @@ void Skeleton::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_bone_global_pose_override", "bone_idx", "pose", "amount", "persistent"), &Skeleton::set_bone_global_pose_override, DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("get_bone_global_pose", "bone_idx"), &Skeleton::get_bone_global_pose);
+
+	ClassDB::bind_method(D_METHOD("get_bone_custom_pose", "bone_idx"), &Skeleton::get_bone_custom_pose);
+	ClassDB::bind_method(D_METHOD("set_bone_custom_pose", "bone_idx", "custom_pose"), &Skeleton::set_bone_custom_pose);
 
 #ifndef _3D_DISABLED
 
