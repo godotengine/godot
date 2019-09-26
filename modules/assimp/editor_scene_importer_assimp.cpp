@@ -410,7 +410,6 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 
 			// flat node map parent lookup tool
 			state.flat_node_map.insert(element_assimp_node, spatial);
-			state.node_map.insert(node_name, spatial);
 
 			Map<const aiNode *, Spatial *>::Element *parent_lookup = state.flat_node_map.find(parent_assimp_node);
 
@@ -498,6 +497,10 @@ EditorSceneImporterAssimp::_generate_scene(const String &p_path, aiScene *scene,
 						mesh->add_child(element->get());
 						element->get()->set_owner(state.root);
 					}
+
+					// update mesh in list so that each mesh node is available
+					// this makes the templaate unavailable which is the desired behaviour
+					state.flat_node_map[assimp_node] = mesh;
 
 					cleanup_template_nodes.push_back(mesh_template);
 
@@ -626,6 +629,20 @@ void EditorSceneImporterAssimp::_insert_animation_track(
 	}
 }
 
+// I really do not like this but need to figure out a better way of removing it later.
+Node *EditorSceneImporterAssimp::get_node_by_name(ImportState &state, String name) {
+	for (Map<const aiNode *, Spatial *>::Element *key_value_pair = state.flat_node_map.front(); key_value_pair; key_value_pair = key_value_pair->next()) {
+		const aiNode *assimp_node = key_value_pair->key();
+		Spatial *node = key_value_pair->value();
+
+		String node_name = AssimpUtils::get_assimp_string(assimp_node->mName);
+		if (name == node_name && node) {
+			return node;
+		}
+	}
+	return NULL;
+}
+
 // animation tracks are per bone
 
 void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_animation_index, int p_bake_fps) {
@@ -687,16 +704,14 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 			continue; //do not bother
 		}
 
-		aiBone* bone = get_bone_from_stack(state, track->mNodeName);
+		aiBone *bone = get_bone_from_stack(state, track->mNodeName);
 		Skeleton *skeleton = NULL;
 		NodePath node_path;
-		
-		if(bone)
-		{
-			Map<const aiBone*, Skeleton*>::Element *element = state.bone_skeleton_lookup.find(bone);
 
-			if(element)
-			{
+		if (bone) {
+			Map<const aiBone *, Skeleton *>::Element *element = state.bone_skeleton_lookup.find(bone);
+
+			if (element) {
 				skeleton = element->value();
 			}
 
@@ -704,24 +719,19 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 
 			String path = state.root->get_path_to(skeleton);
 			path += ":" + node_name;
-		 	node_path = path;
-		}
-		else
-		{
+			node_path = path;
+		} else {
 			// not a bone
 			// note this is flaky it uses node names which is unreliable
-			ERR_CONTINUE(!state.node_map.has(node_name));
-			Map<String, Node*>::Element *match = state.node_map.find(node_name);
-			if(match)
-			{
-				Node* node = match->value();
-				node_path = state.root->get_path_to(node);
-			}
-			ERR_CONTINUE_MSG(!match, "error failed to match after node_name lookup");
-			
+			Node *allocated_node = get_node_by_name(state, node_name);
+			ERR_CONTINUE(!allocated_node);
+
+			node_path = state.root->get_path_to(allocated_node);
 		}
 
-		_insert_animation_track(state, anim, i, p_bake_fps, animation, ticks_per_second, skeleton, node_path, node_name);
+		if (node_path != NodePath()) {
+			_insert_animation_track(state, anim, i, p_bake_fps, animation, ticks_per_second, skeleton, node_path, node_name);
+		}
 	}
 
 	//blend shape tracks
@@ -735,10 +745,9 @@ void EditorSceneImporterAssimp::_import_animation(ImportState &state, int p_anim
 
 		ERR_CONTINUE(prop_name.split("*").size() != 2);
 
-		ERR_CONTINUE(!state.node_map.has(mesh_name));
-
-		const MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(state.node_map[mesh_name]);
-
+		Node *item = get_node_by_name(state, mesh_name);
+		ERR_CONTINUE_MSG(!item, "failed to look up node by name");
+		const MeshInstance *mesh_instance = Object::cast_to<MeshInstance>(item);
 		ERR_CONTINUE(mesh_instance == NULL);
 
 		String base_path = state.root->get_path_to(mesh_instance);
