@@ -115,6 +115,11 @@ Comment: Open Asset Import Library (assimp)
 Copyright: 2006-2016, assimp team
 License: BSD-3-clause
 
+Files: ./thirdparty/basis_universal/
+Comment: Basis Universal
+Copyright: 2019, Binomial LLC.
+License: Apache-2.0
+
 Files: ./thirdparty/bullet/
 Comment: Bullet Continuous Collision Detection and Physics Library
 Copyright: 2003-2013, Erwin Coumans
