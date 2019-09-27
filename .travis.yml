@@ -9,7 +9,7 @@ stages:
 
 env:
   global:
-    - SCONS_CACHE=$HOME/.scons_cache
+    - SCONS_CACHE=$HOME/.scons_cache/$TRAVIS_BRANCH
     - SCONS_CACHE_LIMIT=1024
     - OPTIONS="debug_symbols=no verbose=yes progress=no builtin_libpng=yes"
     - secure: "uch9QszCgsl1qVbuzY41P7S2hWL2IiNFV4SbAYRCdi0oJ9MIu+pVyrQdpf3+jG4rH6j4Rffl+sN17Zz4dIDDioFL1JwqyCqyCyswR8uACC0Rr8gr4Mi3+HIRbv+2s2P4cIQq41JM8FJe84k9jLEMGCGh69w+ibCWoWs74CokYVA="
