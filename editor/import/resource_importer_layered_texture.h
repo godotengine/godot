@@ -1,3 +1,4 @@
+#if 0
 /*************************************************************************/
 /*  resource_importer_layered_texture.h                                  */
 /*************************************************************************/
@@ -33,6 +34,7 @@
 
 #include "core/image.h"
 #include "core/io/resource_importer.h"
+
 
 class StreamTexture;
 
@@ -95,3 +97,5 @@ public:
 	~ResourceImporterLayeredTexture();
 };
 #endif // RESOURCE_IMPORTER_LAYERED_TEXTURE_H
+
+#endif

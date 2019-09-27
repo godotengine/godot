@@ -33,6 +33,7 @@
 
 #include "core/io/resource_loader.h"
 #include "core/math/rect2.h"
+#include "core/os/file_access.h"
 #include "core/os/mutex.h"
 #include "core/os/rw_lock.h"
 #include "core/os/thread_safe.h"
@@ -139,7 +140,12 @@ public:
 	enum DataFormat {
 		DATA_FORMAT_IMAGE,
 		DATA_FORMAT_LOSSLESS,
-		DATA_FORMAT_LOSSY
+		DATA_FORMAT_LOSSY,
+		DATA_FORMAT_BASIS_UNIVERSAL,
+	};
+
+	enum {
+		FORMAT_VERSION = 1
 	};
 
 	enum FormatBits {
@@ -155,7 +161,7 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit = 0);
 	String path_to_file;
 	mutable RID texture;
 	Image::Format format;
@@ -173,6 +179,8 @@ protected:
 	void _validate_property(PropertyInfo &property) const;
 
 public:
+	static Ref<Image> load_image_from_file(FileAccess *p_file, int p_size_limit);
+
 	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture> &);
 	typedef void (*TextureFormatRoughnessRequestCallback)(const Ref<StreamTexture> &, const String &p_normal_path, VS::TextureDetectRoughnessChannel p_roughness_channel);
 
