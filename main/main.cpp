@@ -56,7 +56,6 @@
 #include "main/performance.h"
 #include "main/splash.gen.h"
 #include "main/splash_editor.gen.h"
-#include "main/tests/test_main.h"
 #include "modules/register_module_types.h"
 #include "platform/register_platform_apis.h"
 #include "scene/main/scene_tree.h"
@@ -68,6 +67,10 @@
 #include "servers/physics_2d_server.h"
 #include "servers/physics_server.h"
 #include "servers/register_server_types.h"
+
+#ifdef TESTS_ENABLED
+#include "main/tests/test_main.h"
+#endif
 
 #ifdef TOOLS_ENABLED
 #include "editor/doc/doc_data.h"
@@ -289,6 +292,8 @@ void Main::print_help(const char *p_binary) {
 #ifdef DEBUG_METHODS_ENABLED
 	OS::get_singleton()->print("  --gdnative-generate-json-api     Generate JSON dump of the Godot API for GDNative bindings.\n");
 #endif
+#endif
+#ifdef TESTS_ENABLED
 	OS::get_singleton()->print("  --test <test>                    Run a unit test (");
 	const char **test_names = tests_get_names();
 	const char *comma = "";
@@ -299,6 +304,7 @@ void Main::print_help(const char *p_binary) {
 	}
 	OS::get_singleton()->print(").\n");
 #endif
+	OS::get_singleton()->print("\n");
 }
 
 /* Engine initialization
@@ -1349,8 +1355,10 @@ bool Main::start() {
 			bool parsed_pair = true;
 			if (args[i] == "-s" || args[i] == "--script") {
 				script = args[i + 1];
+#ifdef TESTS_ENABLED
 			} else if (args[i] == "--test") {
 				test = args[i + 1];
+#endif
 #ifdef TOOLS_ENABLED
 			} else if (args[i] == "--doctool") {
 				doc_tool = args[i + 1];
@@ -1457,13 +1465,12 @@ bool Main::start() {
 	};
 
 	if (test != "") {
-#ifdef TOOLS_ENABLED
+#ifdef TESTS_ENABLED
 		main_loop = test_main(test, args);
 
 		if (!main_loop)
 			return false;
 #endif
-
 	} else if (script != "") {
 
 		Ref<Script> script_res = ResourceLoader::load(script);
@@ -1792,7 +1799,11 @@ bool Main::start() {
 		}
 
 #ifdef TOOLS_ENABLED
-		if (project_manager || (script == "" && test == "" && game_path == "" && !editor)) {
+		bool no_input = script == "" && game_path == "" && !editor;
+#ifdef TESTS_ENABLED
+		no_input = no_input && test == "";
+#endif
+		if (project_manager || no_input) {
 
 			Engine::get_singleton()->set_editor_hint(true);
 			ProjectManager *pmanager = memnew(ProjectManager);

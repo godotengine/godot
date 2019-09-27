@@ -111,6 +111,7 @@ opts.Add('platform', "Target platform (%s)" % ('|'.join(platform_list), ), '')
 opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'release_debug', 'release')))
 opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
+opts.Add(BoolVariable('tests', "Build the unit tests", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
 opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise epsilon (useful to debug the engine)', False))
 
@@ -467,6 +468,8 @@ if selected_platform in platform_list:
         env.Append(CPPDEFINES=['PTRCALL_ENABLED'])
     if env['tools']:
         env.Append(CPPDEFINES=['TOOLS_ENABLED'])
+    if env['tests']:
+        env.Append(CPPDEFINES=['TESTS_ENABLED'])
     if env['disable_3d']:
         if env['tools']:
             print("Build option 'disable_3d=yes' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
