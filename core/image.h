@@ -72,7 +72,7 @@ public:
 		FORMAT_RGB8,
 		FORMAT_RGBA8,
 		FORMAT_RGBA4444,
-		FORMAT_RGBA5551,
+		FORMAT_RGB565,
 		FORMAT_RF, //float
 		FORMAT_RGF,
 		FORMAT_RGBF,
@@ -102,6 +102,8 @@ public:
 		FORMAT_ETC2_RGB8,
 		FORMAT_ETC2_RGBA8,
 		FORMAT_ETC2_RGB8A1,
+		FORMAT_ETC2_RA_AS_RG, //used to make basis universal happy
+		FORMAT_DXT5_RA_AS_RG, //used to make basis universal happy
 		FORMAT_MAX
 	};
 
@@ -117,25 +119,27 @@ public:
 		/* INTERPOLATE GAUSS */
 	};
 
-	enum CompressSource {
-		COMPRESS_SOURCE_GENERIC,
-		COMPRESS_SOURCE_SRGB,
-		COMPRESS_SOURCE_NORMAL,
-		COMPRESS_SOURCE_LAYERED,
+	//this is used for compression
+	enum UsedChannels {
+		USED_CHANNELS_L,
+		USED_CHANNELS_LA,
+		USED_CHANNELS_R,
+		USED_CHANNELS_RG,
+		USED_CHANNELS_RGB,
+		USED_CHANNELS_RGBA,
 	};
-
 	//some functions provided by something else
 
 	static ImageMemLoadFunc _png_mem_loader_func;
 	static ImageMemLoadFunc _jpg_mem_loader_func;
 	static ImageMemLoadFunc _webp_mem_loader_func;
 
-	static void (*_image_compress_bc_func)(Image *, float, CompressSource p_source);
-	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, CompressSource p_source);
+	static void (*_image_compress_bc_func)(Image *, float, UsedChannels p_channels);
+	static void (*_image_compress_bptc_func)(Image *, float p_lossy_quality, UsedChannels p_channels);
 	static void (*_image_compress_pvrtc2_func)(Image *);
 	static void (*_image_compress_pvrtc4_func)(Image *);
 	static void (*_image_compress_etc1_func)(Image *, float);
-	static void (*_image_compress_etc2_func)(Image *, float, CompressSource p_source);
+	static void (*_image_compress_etc2_func)(Image *, float, UsedChannels p_channels);
 
 	static void (*_image_decompress_pvrtc)(Image *);
 	static void (*_image_decompress_bc)(Image *);
@@ -147,6 +151,8 @@ public:
 	static Ref<Image> (*lossy_unpacker)(const PoolVector<uint8_t> &p_buffer);
 	static PoolVector<uint8_t> (*lossless_packer)(const Ref<Image> &p_image);
 	static Ref<Image> (*lossless_unpacker)(const PoolVector<uint8_t> &p_buffer);
+	static PoolVector<uint8_t> (*basis_universal_packer)(const Ref<Image> &p_image, UsedChannels p_channels);
+	static Ref<Image> (*basis_universal_unpacker)(const PoolVector<uint8_t> &p_buffer);
 
 	PoolVector<uint8_t>::Write write_lock;
 
@@ -292,6 +298,7 @@ public:
 	static int get_image_required_mipmaps(int p_width, int p_height, Format p_format);
 	static Size2i get_image_mipmap_size(int p_width, int p_height, Format p_format, int p_mipmap);
 	static int get_image_mipmap_offset(int p_width, int p_height, Format p_format, int p_mipmap);
+	static int get_image_mipmap_offset_and_dimensions(int p_width, int p_height, Format p_format, int p_mipmap, int &r_w, int &r_h);
 
 	enum CompressMode {
 		COMPRESS_S3TC,
@@ -301,8 +308,14 @@ public:
 		COMPRESS_ETC2,
 		COMPRESS_BPTC
 	};
+	enum CompressSource {
+		COMPRESS_SOURCE_GENERIC,
+		COMPRESS_SOURCE_SRGB,
+		COMPRESS_SOURCE_NORMAL
+	};
 
-	Error compress(CompressMode p_mode = COMPRESS_S3TC, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);
+	Error compress(CompressMode p_mode, CompressSource p_source = COMPRESS_SOURCE_GENERIC, float p_lossy_quality = 0.7);
+	Error compress_from_channels(CompressMode p_mode, UsedChannels p_channels, float p_lossy_quality = 0.7);
 	Error decompress();
 	bool is_compressed() const;
 
@@ -311,6 +324,7 @@ public:
 	void srgb_to_linear();
 	void normalmap_to_xy();
 	Ref<Image> rgbe_to_srgb();
+	Ref<Image> get_image_from_mipmap(int p_mipamp) const;
 	void bumpmap_to_normalmap(float bump_scale = 1.0);
 
 	void blit_rect(const Ref<Image> &p_src, const Rect2 &p_src_rect, const Point2 &p_dest);
@@ -322,13 +336,16 @@ public:
 	Rect2 get_used_rect() const;
 	Ref<Image> get_rect(const Rect2 &p_area) const;
 
-	static void set_compress_bc_func(void (*p_compress_func)(Image *, float, CompressSource));
-	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, CompressSource));
+	static void set_compress_bc_func(void (*p_compress_func)(Image *, float, UsedChannels));
+	static void set_compress_bptc_func(void (*p_compress_func)(Image *, float, UsedChannels));
 	static String get_format_name(Format p_format);
 
 	Error load_png_from_buffer(const PoolVector<uint8_t> &p_array);
 	Error load_jpg_from_buffer(const PoolVector<uint8_t> &p_array);
 	Error load_webp_from_buffer(const PoolVector<uint8_t> &p_array);
+
+	void convert_rg_to_ra_rgba8();
+	void convert_ra_rgba8_to_rg();
 
 	Image(const uint8_t *p_mem_png_jpg, int p_len = -1);
 	Image(const char **p_xpm);
@@ -338,17 +355,7 @@ public:
 	void lock();
 	void unlock();
 
-	//this is used for compression
-	enum DetectChannels {
-		DETECTED_L,
-		DETECTED_LA,
-		DETECTED_R,
-		DETECTED_RG,
-		DETECTED_RGB,
-		DETECTED_RGBA,
-	};
-
-	DetectChannels get_detected_channels();
+	UsedChannels detect_used_channels(CompressSource p_source = COMPRESS_SOURCE_GENERIC);
 	void optimize_channels();
 
 	Color get_pixelv(const Point2 &p_src) const;
@@ -372,6 +379,7 @@ VARIANT_ENUM_CAST(Image::Format)
 VARIANT_ENUM_CAST(Image::Interpolation)
 VARIANT_ENUM_CAST(Image::CompressMode)
 VARIANT_ENUM_CAST(Image::CompressSource)
+VARIANT_ENUM_CAST(Image::UsedChannels)
 VARIANT_ENUM_CAST(Image::AlphaMode)
 
 #endif
