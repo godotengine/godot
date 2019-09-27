@@ -81,7 +81,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 		MEMBER_SIGNAL
 	};
 
-	VSplitContainer *left_vsplit;
+	VBoxContainer *members_section;
 	MenuButton *edit_menu;
 
 	Ref<VisualScript> script;

@@ -2672,7 +2672,7 @@ void VisualScriptEditor::_toggle_tool_script() {
 
 void VisualScriptEditor::clear_edit_menu() {
 	memdelete(edit_menu);
-	memdelete(left_vsplit);
+	memdelete(members_section);
 }
 
 void VisualScriptEditor::_change_base_type_callback() {
@@ -3951,7 +3951,7 @@ void VisualScriptEditor::_notification(int p_what) {
 			_update_graph();
 		}
 	} else if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
-		left_vsplit->set_visible(is_visible_in_tree());
+		members_section->set_visible(is_visible_in_tree());
 	}
 }
 
@@ -4691,26 +4691,21 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("visual_script_editor/refresh_nodes"), REFRESH_GRAPH);
 	edit_menu->get_popup()->connect("id_pressed", this, "_menu_option");
 
-	left_vsplit = memnew(VSplitContainer);
-	ScriptEditor::get_singleton()->get_left_list_split()->call_deferred("add_child", left_vsplit); //add but wait until done settig up this
-	left_vsplit->set_v_size_flags(SIZE_EXPAND_FILL);
-	left_vsplit->set_stretch_ratio(2);
-	left_vsplit->hide();
-
-	VBoxContainer *left_vb = memnew(VBoxContainer);
-	left_vsplit->add_child(left_vb);
-	left_vb->set_v_size_flags(SIZE_EXPAND_FILL);
-	//left_vb->set_custom_minimum_size(Size2(230, 1) * EDSCALE);
+	members_section = memnew(VBoxContainer);
+	// Add but wait until done setting up this.
+	ScriptEditor::get_singleton()->get_left_list_split()->call_deferred("add_child", members_section);
+	members_section->set_v_size_flags(SIZE_EXPAND_FILL);
 
 	CheckButton *tool_script_check = memnew(CheckButton);
 	tool_script_check->set_text(TTR("Make Tool:"));
-	left_vb->add_child(tool_script_check);
+	members_section->add_child(tool_script_check);
 	tool_script_check->connect("pressed", this, "_toggle_tool_script");
 
 	///       Members        ///
 
 	members = memnew(Tree);
-	left_vb->add_margin_child(TTR("Members:"), members, true);
+	members_section->add_margin_child(TTR("Members:"), members, true);
+	members->set_custom_minimum_size(Size2(0, 50 * EDSCALE));
 	members->set_hide_root(true);
 	members->connect("button_pressed", this, "_member_button");
 	members->connect("item_edited", this, "_member_edited");
@@ -4734,10 +4729,6 @@ VisualScriptEditor::VisualScriptEditor() {
 	function_name_box->set_expand_to_text_length(true);
 	add_child(function_name_edit);
 
-	VBoxContainer *left_vb2 = memnew(VBoxContainer);
-	left_vsplit->add_child(left_vb2);
-	left_vb2->set_v_size_flags(SIZE_EXPAND_FILL);
-
 	///       Actual Graph          ///
 
 	graph = memnew(GraphEdit);
@@ -4754,7 +4745,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph->hide();
 	graph->connect("scroll_offset_changed", this, "_graph_ofs_changed");
 
-	/// Add Buttons to Top Bar / Zoom bar
+	/// Add Buttons to Top Bar/Zoom bar.
 	HBoxContainer *graph_hbc = graph->get_zoom_hbox();
 
 	Label *base_lbl = memnew(Label);
@@ -4775,7 +4766,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	graph_hbc->add_child(fn_btn);
 	fn_btn->connect("pressed", this, "_create_function_dialog");
 
-	// Add Function Dialog
+	// Add Function Dialog.
 	VBoxContainer *function_vb = memnew(VBoxContainer);
 	function_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 
@@ -4793,7 +4784,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	func_name_box->connect("focus_entered", this, "_deselect_input_names");
 	func_name_hbox->add_child(func_name_box);
 
-	// add minor setting for function if needed, here!
+	// Add minor setting for function if needed, here!
 
 	function_vb->add_child(memnew(HSeparator));
 
@@ -4837,7 +4828,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	hint_text_timer->connect("timeout", this, "_hide_timer");
 	add_child(hint_text_timer);
 
-	//allowed casts (connections)
+	// Allowed casts (connections).
 	for (int i = 0; i < Variant::VARIANT_MAX; i++) {
 		graph->add_valid_connection_type(Variant::NIL, i);
 		graph->add_valid_connection_type(i, Variant::NIL);
@@ -4877,7 +4868,7 @@ VisualScriptEditor::VisualScriptEditor() {
 	edit_variable_edit->edit(variable_editor);
 
 	select_base_type = memnew(CreateDialog);
-	select_base_type->set_base_type("Object"); //anything goes
+	select_base_type->set_base_type("Object"); // Anything goes.
 	select_base_type->connect("create", this, "_change_base_type_callback");
 	add_child(select_base_type);
 
@@ -4910,7 +4901,7 @@ VisualScriptEditor::VisualScriptEditor() {
 
 VisualScriptEditor::~VisualScriptEditor() {
 
-	undo_redo->clear_history(); //avoid crashes
+	undo_redo->clear_history(); // Avoid crashes.
 	memdelete(signal_editor);
 	memdelete(variable_editor);
 }
@@ -4948,7 +4939,7 @@ static void register_editor_callback() {
 
 void VisualScriptEditor::register_editor() {
 
-	//too early to register stuff here, request a callback
+	// Too early to register stuff here, request a callback.
 	EditorNode::add_plugin_init_callback(register_editor_callback);
 }
 
