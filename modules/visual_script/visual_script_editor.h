@@ -89,6 +89,7 @@ class VisualScriptEditor : public ScriptEditorBase {
 	Button *base_type_select;
 
 	LineEdit *func_name_box;
+	ScrollContainer *func_input_scroll;
 	VBoxContainer *func_input_vbox;
 	ConfirmationDialog *function_create_dialog;
 
