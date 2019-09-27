@@ -41,7 +41,7 @@
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
-				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerSSL.acccept_stream].
+				Generates an RSA [CryptoKey] that can be used for creating self-signed certificates and passed to [method StreamPeerSSL.accept_stream].
 			</description>
 		</method>
 		<method name="generate_self_signed_certificate">

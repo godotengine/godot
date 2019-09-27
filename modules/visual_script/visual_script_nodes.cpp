@@ -700,15 +700,15 @@ VisualScriptLists::VisualScriptLists() {
 }
 
 void VisualScriptLists::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("add_input_data_port"), &VisualScriptLists::add_input_data_port);
-	ClassDB::bind_method(D_METHOD("set_input_data_port_name"), &VisualScriptLists::set_input_data_port_name);
-	ClassDB::bind_method(D_METHOD("set_input_data_port_type"), &VisualScriptLists::set_input_data_port_type);
-	ClassDB::bind_method(D_METHOD("remove_input_data_port"), &VisualScriptLists::remove_input_data_port);
+	ClassDB::bind_method(D_METHOD("add_input_data_port", "type", "name", "index"), &VisualScriptLists::add_input_data_port);
+	ClassDB::bind_method(D_METHOD("set_input_data_port_name", "index", "name"), &VisualScriptLists::set_input_data_port_name);
+	ClassDB::bind_method(D_METHOD("set_input_data_port_type", "index", "type"), &VisualScriptLists::set_input_data_port_type);
+	ClassDB::bind_method(D_METHOD("remove_input_data_port", "index"), &VisualScriptLists::remove_input_data_port);
 
-	ClassDB::bind_method(D_METHOD("add_output_data_port"), &VisualScriptLists::add_output_data_port);
-	ClassDB::bind_method(D_METHOD("set_output_data_port_name"), &VisualScriptLists::set_output_data_port_name);
-	ClassDB::bind_method(D_METHOD("set_output_data_port_type"), &VisualScriptLists::set_output_data_port_type);
-	ClassDB::bind_method(D_METHOD("remove_output_data_port"), &VisualScriptLists::remove_output_data_port);
+	ClassDB::bind_method(D_METHOD("add_output_data_port", "type", "name", "index"), &VisualScriptLists::add_output_data_port);
+	ClassDB::bind_method(D_METHOD("set_output_data_port_name", "index", "name"), &VisualScriptLists::set_output_data_port_name);
+	ClassDB::bind_method(D_METHOD("set_output_data_port_type", "index", "type"), &VisualScriptLists::set_output_data_port_type);
+	ClassDB::bind_method(D_METHOD("remove_output_data_port", "index"), &VisualScriptLists::remove_output_data_port);
 }
 
 //////////////////////////////////////////

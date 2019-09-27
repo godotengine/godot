@@ -89,8 +89,10 @@
 			</return>
 			<argument index="0" name="column" type="int">
 			</argument>
+			<argument index="1" name="button_idx" type="int">
+			</argument>
 			<description>
-				Returns the tooltip for the button in column [code]column[/code].
+				Returns the tooltip string for the button at index [code]button_idx[/code] in column [code]column[/code].
 			</description>
 		</method>
 		<method name="get_cell_mode" qualifiers="const">

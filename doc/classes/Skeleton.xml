@@ -54,6 +54,15 @@
 				Returns the amount of bones in the skeleton.
 			</description>
 		</method>
+		<method name="get_bone_custom_pose" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<description>
+				Returns the custom pose of the specified bone. Custom pose is applied on top of the rest pose.
+			</description>
+		</method>
 		<method name="get_bone_global_pose" qualifiers="const">
 			<return type="Transform">
 			</return>
@@ -157,6 +166,16 @@
 			<return type="SkinReference">
 			</return>
 			<argument index="0" name="skin" type="Skin">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bone_custom_pose">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone_idx" type="int">
+			</argument>
+			<argument index="1" name="custom_pose" type="Transform">
 			</argument>
 			<description>
 			</description>

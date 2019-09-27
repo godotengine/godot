@@ -800,7 +800,7 @@ void TreeItem::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("add_button", "column", "button", "button_idx", "disabled", "tooltip"), &TreeItem::add_button, DEFVAL(-1), DEFVAL(false), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_button_count", "column"), &TreeItem::get_button_count);
-	ClassDB::bind_method(D_METHOD("get_button_tooltip", "column"), &TreeItem::get_button_tooltip);
+	ClassDB::bind_method(D_METHOD("get_button_tooltip", "column", "button_idx"), &TreeItem::get_button_tooltip);
 	ClassDB::bind_method(D_METHOD("get_button", "column", "button_idx"), &TreeItem::get_button);
 	ClassDB::bind_method(D_METHOD("set_button", "column", "button_idx", "button"), &TreeItem::set_button);
 	ClassDB::bind_method(D_METHOD("erase_button", "column", "button_idx"), &TreeItem::erase_button);

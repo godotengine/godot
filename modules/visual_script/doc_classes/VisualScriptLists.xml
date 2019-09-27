@@ -12,11 +12,11 @@
 		<method name="add_input_data_port">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_type" type="int" enum="Variant.Type">
+			<argument index="0" name="type" type="int" enum="Variant.Type">
 			</argument>
-			<argument index="1" name="p_name" type="String">
+			<argument index="1" name="name" type="String">
 			</argument>
-			<argument index="2" name="p_index" type="int">
+			<argument index="2" name="index" type="int">
 			</argument>
 			<description>
 			</description>
@@ -24,11 +24,11 @@
 		<method name="add_output_data_port">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_type" type="int" enum="Variant.Type">
+			<argument index="0" name="type" type="int" enum="Variant.Type">
 			</argument>
-			<argument index="1" name="p_name" type="String">
+			<argument index="1" name="name" type="String">
 			</argument>
-			<argument index="2" name="p_index" type="int">
+			<argument index="2" name="index" type="int">
 			</argument>
 			<description>
 			</description>
@@ -36,7 +36,7 @@
 		<method name="remove_input_data_port">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_index" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 			</description>
@@ -44,7 +44,7 @@
 		<method name="remove_output_data_port">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_index" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
 			<description>
 			</description>
@@ -52,9 +52,9 @@
 		<method name="set_input_data_port_name">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_index" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="p_name" type="String">
+			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -62,9 +62,9 @@
 		<method name="set_input_data_port_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_index" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="p_type" type="int" enum="Variant.Type">
+			<argument index="1" name="type" type="int" enum="Variant.Type">
 			</argument>
 			<description>
 			</description>
@@ -72,9 +72,9 @@
 		<method name="set_output_data_port_name">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_index" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="p_name" type="String">
+			<argument index="1" name="name" type="String">
 			</argument>
 			<description>
 			</description>
@@ -82,9 +82,9 @@
 		<method name="set_output_data_port_type">
 			<return type="void">
 			</return>
-			<argument index="0" name="p_index" type="int">
+			<argument index="0" name="index" type="int">
 			</argument>
-			<argument index="1" name="p_type" type="int" enum="Variant.Type">
+			<argument index="1" name="type" type="int" enum="Variant.Type">
 			</argument>
 			<description>
 			</description>
