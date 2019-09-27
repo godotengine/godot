@@ -1,15 +1,15 @@
 #include "scene/resources/texture.h"
 
 #ifdef TOOLS_ENABLED
-#include "thirdparty/basis_universal/basisu_comp.h"
+#include <basisu_comp.h>
 #endif
 
-#include "thirdparty/basis_universal/transcoder/basisu.h"
+#include <transcoder/basisu_transcoder.h>
 
 #if 0
-class TextureBU : public Texture {
+class TextureBasisU : public Texture {
 
-	GDCLASS(TextureBU, Texture);
+	GDCLASS(TextureBasisU, Texture);
 	RES_BASE_EXTENSION("butex");
 
 	RID texture;
@@ -34,13 +34,13 @@ public:
 
 	Error import(const Ref<Image> &p_img);
 
-	void set_bu_data(const PoolVector<uint8_t>& p_data);
+	void set_basisu_data(const PoolVector<uint8_t>& p_data);
 
-	PoolVector<uint8_t> get_bu_data() const;
+	PoolVector<uint8_t> get_basisu_data() const;
 	String get_img_path() const;
 
-	TextureBU();
-	~TextureBU();
+	TextureBasisU();
+	~TextureBasisU();
 
 };
 
