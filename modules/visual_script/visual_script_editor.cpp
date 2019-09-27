@@ -1350,7 +1350,7 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 			return; //or crash because it will become invalid
 		}
 	} else if (ti->get_parent() == root->get_children()) {
-		selected = ti->get_metadata(0);
+		selected = ti->get_text(0);
 		function_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
 		function_name_edit->popup();
 	}
