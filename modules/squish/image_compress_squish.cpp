@@ -50,7 +50,7 @@ void image_decompress_squish(Image *p_image) {
 		squish_flags = squish::kDxt1;
 	} else if (p_image->get_format() == Image::FORMAT_DXT3) {
 		squish_flags = squish::kDxt3;
-	} else if (p_image->get_format() == Image::FORMAT_DXT5) {
+	} else if (p_image->get_format() == Image::FORMAT_DXT5 || p_image->get_format() == Image::FORMAT_DXT5_RA_AS_RG) {
 		squish_flags = squish::kDxt5;
 	} else if (p_image->get_format() == Image::FORMAT_RGTC_R) {
 		squish_flags = squish::kBc4;
@@ -71,9 +71,13 @@ void image_decompress_squish(Image *p_image) {
 	}
 
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
+
+	if (p_image->get_format() == Image::FORMAT_DXT5_RA_AS_RG) {
+		p_image->convert_ra_rgba8_to_rg();
+	}
 }
 
-void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
+void image_compress_squish(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
 
 	if (p_image->get_format() >= Image::FORMAT_DXT1)
 		return; //do not compress, already compressed
@@ -92,75 +96,35 @@ void image_compress_squish(Image *p_image, float p_lossy_quality, Image::Compres
 
 		Image::Format target_format = Image::FORMAT_RGBA8;
 
-		Image::DetectChannels dc = p_image->get_detected_channels();
-
-		if (p_source == Image::COMPRESS_SOURCE_LAYERED) {
-			//keep what comes in
-			switch (p_image->get_format()) {
-				case Image::FORMAT_L8: {
-					dc = Image::DETECTED_L;
-				} break;
-				case Image::FORMAT_LA8: {
-					dc = Image::DETECTED_LA;
-				} break;
-				case Image::FORMAT_R8: {
-					dc = Image::DETECTED_R;
-				} break;
-				case Image::FORMAT_RG8: {
-					dc = Image::DETECTED_RG;
-				} break;
-				case Image::FORMAT_RGB8: {
-					dc = Image::DETECTED_RGB;
-				} break;
-				case Image::FORMAT_RGBA8:
-				case Image::FORMAT_RGBA4444:
-				case Image::FORMAT_RGBA5551: {
-					dc = Image::DETECTED_RGBA;
-				} break;
-				default: {
-				}
-			}
-		}
-
 		p_image->convert(Image::FORMAT_RGBA8); //still uses RGBA to convert
 
-		if (p_source == Image::COMPRESS_SOURCE_SRGB && (dc == Image::DETECTED_R || dc == Image::DETECTED_RG)) {
-			//R and RG do not support SRGB
-			dc = Image::DETECTED_RGB;
-		}
-
-		if (p_source == Image::COMPRESS_SOURCE_NORMAL) {
-			//R and RG do not support SRGB
-			dc = Image::DETECTED_RG;
-		}
-
-		switch (dc) {
-			case Image::DETECTED_L: {
+		switch (p_channels) {
+			case Image::USED_CHANNELS_L: {
 
 				target_format = Image::FORMAT_DXT1;
 				squish_comp |= squish::kDxt1;
 			} break;
-			case Image::DETECTED_LA: {
+			case Image::USED_CHANNELS_LA: {
 
 				target_format = Image::FORMAT_DXT5;
 				squish_comp |= squish::kDxt5;
 			} break;
-			case Image::DETECTED_R: {
+			case Image::USED_CHANNELS_R: {
 
 				target_format = Image::FORMAT_RGTC_R;
 				squish_comp |= squish::kBc4;
 			} break;
-			case Image::DETECTED_RG: {
+			case Image::USED_CHANNELS_RG: {
 
 				target_format = Image::FORMAT_RGTC_RG;
 				squish_comp |= squish::kBc5;
 			} break;
-			case Image::DETECTED_RGB: {
+			case Image::USED_CHANNELS_RGB: {
 
 				target_format = Image::FORMAT_DXT1;
 				squish_comp |= squish::kDxt1;
 			} break;
-			case Image::DETECTED_RGBA: {
+			case Image::USED_CHANNELS_RGBA: {
 
 				//TODO, should convert both, then measure which one does a better job
 				target_format = Image::FORMAT_DXT5;

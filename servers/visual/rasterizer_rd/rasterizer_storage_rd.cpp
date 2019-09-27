@@ -98,14 +98,11 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
-		case Image::FORMAT_RGBA5551: {
-			r_format.format = RD::DATA_FORMAT_A1R5G5B5_UNORM_PACK16;
-#ifndef _MSC_VER
-#warning TODO needs something in Texture to convert to this format internally
-#endif
-			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+		case Image::FORMAT_RGB565: {
+			r_format.format = RD::DATA_FORMAT_B5G6R5_UNORM_PACK16;
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_G;
-			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_R;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
 		case Image::FORMAT_RF: {
@@ -500,6 +497,40 @@ Ref<Image> RasterizerStorageRD::_validate_texture_format(const Ref<Image> &p_ima
 			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_B;
 			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_A;
 		} break;
+		case Image::FORMAT_ETC2_RA_AS_RG: {
+
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_ETC2_R8G8B8A8_UNORM_BLOCK;
+				r_format.format_srgb = RD::DATA_FORMAT_ETC2_R8G8B8A8_SRGB_BLOCK;
+			} else {
+				//not supported, reconvert
+				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				image->decompress();
+				image->convert(Image::FORMAT_RGBA8);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+		case Image::FORMAT_DXT5_RA_AS_RG: {
+			if (RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC3_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_CAN_UPDATE_BIT)) {
+				r_format.format = RD::DATA_FORMAT_BC3_UNORM_BLOCK;
+				r_format.format_srgb = RD::DATA_FORMAT_BC3_SRGB_BLOCK;
+			} else {
+				//not supported, reconvert
+				r_format.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+				r_format.format_srgb = RD::DATA_FORMAT_R8G8B8A8_SRGB;
+				image->decompress();
+				image->convert(Image::FORMAT_RGBA8);
+			}
+			r_format.swizzle_r = RD::TEXTURE_SWIZZLE_R;
+			r_format.swizzle_g = RD::TEXTURE_SWIZZLE_A;
+			r_format.swizzle_b = RD::TEXTURE_SWIZZLE_ZERO;
+			r_format.swizzle_a = RD::TEXTURE_SWIZZLE_ONE;
+		} break;
+
 		default: {
 		}
 	}
@@ -3906,6 +3937,10 @@ void RasterizerStorageRD::update_dirty_resources() {
 }
 
 bool RasterizerStorageRD::has_os_feature(const String &p_feature) const {
+
+	if (p_feature == "rgtc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC5_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
+		return true;
+	}
 
 	if (p_feature == "s3tc" && RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_BC1_RGB_UNORM_BLOCK, RD::TEXTURE_USAGE_SAMPLING_BIT)) {
 		return true;

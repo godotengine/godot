@@ -136,7 +136,7 @@ static void _digest_job_queue(void *p_job_queue) {
 	}
 }
 
-void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
+void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::UsedChannels p_channels) {
 
 	if (p_image->get_format() >= Image::FORMAT_BPTC_RGBA)
 		return; //do not compress, already compressed
@@ -167,7 +167,7 @@ void image_compress_cvtt(Image *p_image, float p_lossy_quality, Image::CompressS
 
 	flags |= cvtt::Flags::BC7_RespectPunchThrough;
 
-	if (p_source == Image::COMPRESS_SOURCE_NORMAL) {
+	if (p_channels == Image::USED_CHANNELS_RG) { //guessing this is a normalmap
 		flags |= cvtt::Flags::Uniform;
 	}
 

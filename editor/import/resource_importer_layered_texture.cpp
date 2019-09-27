@@ -38,6 +38,7 @@
 #include "editor/editor_node.h"
 #include "scene/resources/texture.h"
 
+#if 0
 String ResourceImporterLayeredTexture::get_importer_name() const {
 
 	switch (mode) {
@@ -312,8 +313,8 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 			encode_bptc = true;
 
 			if (no_bptc_if_rgb) {
-				Image::DetectChannels channels = image->get_detected_channels();
-				if (channels != Image::DETECTED_LA && channels != Image::DETECTED_RGBA) {
+				Image::UsedChannels channels = image->detect_used_channels();
+				if (channels != Image::USED_CHANNELS_LA && channels != Image::USED_CHANNELS_RGBA) {
 					encode_bptc = false;
 				}
 			}
@@ -447,3 +448,4 @@ ResourceImporterLayeredTexture::ResourceImporterLayeredTexture() {
 
 ResourceImporterLayeredTexture::~ResourceImporterLayeredTexture() {
 }
+#endif
