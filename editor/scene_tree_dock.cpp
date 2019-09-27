@@ -910,16 +910,22 @@ void SceneTreeDock::_tool_selected(int p_tool, bool p_confirm_override) {
 			if (e) {
 				Node *node = e->get();
 				if (node) {
+					bool editable = EditorNode::get_singleton()->get_edited_scene()->is_editable_instance(node);
 					bool placeholder = node->get_scene_instance_load_placeholder();
+
+					// Fire confirmation dialog when children are editable.
+					if (editable && !placeholder) {
+						placeholder_editable_instance_remove_dialog->set_text(TTR("Enabling \"Load As Placeholder\" will disable \"Editable Children\" and cause all properties of the node to be reverted to their default."));
+						placeholder_editable_instance_remove_dialog->popup_centered_minsize();
+						break;
+					}
+
 					placeholder = !placeholder;
-					int editable_item_idx = menu->get_item_idx_from_text(TTR("Editable Children"));
-					int placeholder_item_idx = menu->get_item_idx_from_text(TTR("Load As Placeholder"));
+
 					if (placeholder)
 						EditorNode::get_singleton()->get_edited_scene()->set_editable_instance(node, false);
 
 					node->set_scene_instance_load_placeholder(placeholder);
-					menu->set_item_checked(editable_item_idx, false);
-					menu->set_item_checked(placeholder_item_idx, placeholder);
 					scene_tree->update_tree();
 				}
 			}
@@ -1788,6 +1794,25 @@ void SceneTreeDock::_toggle_editable_children_from_selection() {
 
 	if (e) {
 		_toggle_editable_children(e->get());
+	}
+}
+
+void SceneTreeDock::_toggle_placeholder_from_selection() {
+
+	List<Node *> selection = editor_selection->get_selected_node_list();
+	List<Node *>::Element *e = selection.front();
+
+	if (e) {
+		Node *node = e->get();
+		if (node) {
+			_toggle_editable_children(node);
+
+			bool placeholder = node->get_scene_instance_load_placeholder();
+			placeholder = !placeholder;
+
+			node->set_scene_instance_load_placeholder(placeholder);
+			scene_tree->update_tree();
+		}
 	}
 }
 
@@ -2728,6 +2753,7 @@ void SceneTreeDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_nodes_drag_begin"), &SceneTreeDock::_nodes_drag_begin);
 	ClassDB::bind_method(D_METHOD("_delete_confirm"), &SceneTreeDock::_delete_confirm);
 	ClassDB::bind_method(D_METHOD("_toggle_editable_children_from_selection"), &SceneTreeDock::_toggle_editable_children_from_selection);
+	ClassDB::bind_method(D_METHOD("_toggle_placeholder_from_selection"), &SceneTreeDock::_toggle_placeholder_from_selection);
 	ClassDB::bind_method(D_METHOD("_node_prerenamed"), &SceneTreeDock::_node_prerenamed);
 	ClassDB::bind_method(D_METHOD("_import_subscene"), &SceneTreeDock::_import_subscene);
 	ClassDB::bind_method(D_METHOD("_selection_changed"), &SceneTreeDock::_selection_changed);
@@ -2900,6 +2926,10 @@ SceneTreeDock::SceneTreeDock(EditorNode *p_editor, Node *p_scene_root, EditorSel
 	editable_instance_remove_dialog = memnew(ConfirmationDialog);
 	add_child(editable_instance_remove_dialog);
 	editable_instance_remove_dialog->connect("confirmed", this, "_toggle_editable_children_from_selection");
+
+	placeholder_editable_instance_remove_dialog = memnew(ConfirmationDialog);
+	add_child(placeholder_editable_instance_remove_dialog);
+	placeholder_editable_instance_remove_dialog->connect("confirmed", this, "_toggle_placeholder_from_selection");
 
 	import_subscene_dialog = memnew(EditorSubScene);
 	add_child(import_subscene_dialog);
