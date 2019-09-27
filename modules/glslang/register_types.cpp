@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "register_types.h"
+
 #include "servers/visual/rendering_device.h"
 
-#include "thirdparty/glslang/SPIRV/GlslangToSpv.h"
-#include "thirdparty/glslang/glslang/Include/Types.h"
-#include "thirdparty/glslang/glslang/Public/ShaderLang.h"
+#include <SPIRV/GlslangToSpv.h>
+#include <glslang/Include/Types.h>
+#include <glslang/Public/ShaderLang.h>
 
 static const TBuiltInResource default_builtin_resource = {
 	/*maxLights*/ 32,
@@ -145,7 +146,7 @@ static PoolVector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_s
 
 	PoolVector<uint8_t> ret;
 
-	ERR_FAIL_COND_V(p_language==RenderingDevice::SHADER_LANGUAGE_HLSL,ret);
+	ERR_FAIL_COND_V(p_language == RenderingDevice::SHADER_LANGUAGE_HLSL, ret);
 
 	EShLanguage stages[RenderingDevice::SHADER_STAGE_MAX] = {
 		EShLangVertex,
@@ -174,7 +175,7 @@ static PoolVector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_s
 	const int DefaultVersion = 100;
 	std::string pre_processed_code;
 
-		//preprocess
+	//preprocess
 	if (!shader.preprocess(&default_builtin_resource, DefaultVersion, ENoProfile, false, false, messages, &pre_processed_code, includer)) {
 
 		if (r_error) {
@@ -216,17 +217,15 @@ static PoolVector<uint8_t> _compile_shader_glsl(RenderingDevice::ShaderStage p_s
 		return ret;
 	}
 
-
 	std::vector<uint32_t> SpirV;
 	spv::SpvBuildLogger logger;
 	glslang::SpvOptions spvOptions;
 	glslang::GlslangToSpv(*program.getIntermediate(stages[p_stage]), SpirV, &logger, &spvOptions);
 
-
 	ret.resize(SpirV.size() * sizeof(uint32_t));
 	{
 		PoolVector<uint8_t>::Write w = ret.write();
-		copymem(w.ptr(),&SpirV[0],SpirV.size()*sizeof(uint32_t));
+		copymem(w.ptr(), &SpirV[0], SpirV.size() * sizeof(uint32_t));
 	}
 
 	return ret;
