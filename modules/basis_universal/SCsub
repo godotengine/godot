@@ -1,38 +1,43 @@
 #!/usr/bin/env python
-import string
 
 Import('env')
 Import('env_modules')
 
 env_bu = env_modules.Clone()
-env_bu.Append(CPPPATH=["#thirdparty/basis_universal", "#thirdparty/basis_universal/transcoder"])
+
+# Thirdparty source files
+# Not unbundled so far since not widespread as shared library
+thirdparty_dir = "#thirdparty/basis_universal/"
+tool_sources = [
+	"basisu_astc_decomp.cpp",
+	"basisu_backend.cpp",
+	"basisu_basis_file.cpp",
+	"basisu_comp.cpp",
+	"basisu_enc.cpp",
+	"basisu_etc.cpp",
+	"basisu_frontend.cpp",
+	"basisu_global_selector_palette_helpers.cpp",
+	"basisu_gpu_texture.cpp",
+	"basisu_pvrtc1_4.cpp",
+	"basisu_resample_filters.cpp",
+	"basisu_resampler.cpp",
+	"basisu_ssim.cpp",
+	"basisu_tool.cpp",
+	"lodepng.cpp",
+]
+tool_sources = [thirdparty_dir + file for file in tool_sources]
+transcoder_sources = [thirdparty_dir + "transcoder/basisu_transcoder.cpp"]
+
+env_bu.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "transcoder"])
 
 if env['target'] == "debug":
 	env_bu.Append(CPPFLAGS=["-DBASISU_DEVEL_MESSAGES=1", "-DBASISD_ENABLE_DEBUG_FLAGS=1"])
 
-tool_sources = string.split("""
-	#thirdparty/basis_universal/basisu_astc_decomp.cpp
-	#thirdparty/basis_universal/basisu_backend.cpp
-	#thirdparty/basis_universal/basisu_basis_file.cpp
-	#thirdparty/basis_universal/basisu_comp.cpp
-	#thirdparty/basis_universal/basisu_enc.cpp
-	#thirdparty/basis_universal/basisu_etc.cpp
-	#thirdparty/basis_universal/basisu_frontend.cpp
-	#thirdparty/basis_universal/basisu_global_selector_palette_helpers.cpp
-	#thirdparty/basis_universal/basisu_gpu_texture.cpp
-	#thirdparty/basis_universal/basisu_pvrtc1_4.cpp
-	#thirdparty/basis_universal/basisu_resample_filters.cpp
-	#thirdparty/basis_universal/basisu_resampler.cpp
-	#thirdparty/basis_universal/basisu_ssim.cpp
-	#thirdparty/basis_universal/basisu_tool.cpp
-	#thirdparty/basis_universal/lodepng.cpp
-	""")
-
-transcoder_sources = ["#thirdparty/basis_universal/transcoder/basisu_transcoder.cpp"]
-
+env_thirdparty = env_bu.Clone()
+env_thirdparty.disable_warnings()
 if env['tools']:
-	env_bu.add_source_files(env.modules_sources, tool_sources)
+    env_thirdparty.add_source_files(env.modules_sources, tool_sources)
+env_thirdparty.add_source_files(env.modules_sources, transcoder_sources)
 
-env_bu.add_source_files(env.modules_sources, transcoder_sources)
-
+# Godot source files
 env_bu.add_source_files(env.modules_sources, "*.cpp")
