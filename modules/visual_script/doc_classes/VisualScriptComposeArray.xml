@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualScriptComposeArray" inherits="VisualScriptLists" category="Core" version="3.2">
+	<brief_description>
+		A Visual Script Node used to create array from a list of items.
+	</brief_description>
+	<description>
+		A Visual Script Node used to compose array from the list of elements provided with custom in-graph UI hard coded in the VisualScript Editor.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<constants>
+	</constants>
+</class>

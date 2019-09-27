@@ -2552,7 +2552,9 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 					} else {
 						Rect2 rect = get_selected()->get_meta("__focus_rect");
 						if (rect.has_point(Point2(b->get_position().x, b->get_position().y))) {
-							edit_selected();
+							if (!edit_selected()) {
+								emit_signal("item_double_clicked");
+							}
 						} else {
 							emit_signal("item_double_clicked");
 						}
