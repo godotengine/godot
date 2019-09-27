@@ -1,57 +1,57 @@
-#include "texture_bu.h"
+#include "texture_basisu.h"
 #if 0
 #include "core/os/os.h"
 
 #ifdef TOOLS_ENABLED
-#include "basisu_comp.h"
+#include <basisu_comp.h>
 #endif
 
-#include "transcoder/basisu.h"
+#include <transcoder/basisu_transcoder.h>
 
-void TextureBU::_bind_methods() {
+void TextureBasisU::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("set_bu_data", "data"), &TextureBU::set_bu_data);
-	ClassDB::bind_method(D_METHOD("get_bu_data"), &TextureBU::get_data);
-	ClassDB::bind_method(D_METHOD("import"), &TextureBU::import);
+	ClassDB::bind_method(D_METHOD("set_basisu_data", "data"), &TextureBasisU::set_basisu_data);
+	ClassDB::bind_method(D_METHOD("get_basisu_data"), &TextureBasisU::get_data);
+	ClassDB::bind_method(D_METHOD("import"), &TextureBasisU::import);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "bu_data"), "set_bu_data", "get_bu_data");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "basisu_data"), "set_basisu_data", "get_basisu_data");
 
 };
 
-int TextureBU::get_width() const {
+int TextureBasisU::get_width() const {
 
 	return tex_size.x;
 };
 
-int TextureBU::get_height() const {
+int TextureBasisU::get_height() const {
 
 	return tex_size.y;
 };
 
-RID TextureBU::get_rid() const {
+RID TextureBasisU::get_rid() const {
 
 	return texture;
 };
 
 
-bool TextureBU::has_alpha() const {
+bool TextureBasisU::has_alpha() const {
 
 	return false;
 };
 
-void TextureBU::set_flags(uint32_t p_flags) {
+void TextureBasisU::set_flags(uint32_t p_flags) {
 
 	flags = p_flags;
 	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
 };
 
-uint32_t TextureBU::get_flags() const {
+uint32_t TextureBasisU::get_flags() const {
 
 	return flags;
 };
 
 
-void TextureBU::set_bu_data(const PoolVector<uint8_t>& p_data) {
+void TextureBasisU::set_basisu_data(const PoolVector<uint8_t>& p_data) {
 
 #ifdef TOOLS_ENABLED
 	data = p_data;
@@ -118,7 +118,7 @@ void TextureBU::set_bu_data(const PoolVector<uint8_t>& p_data) {
 	VisualServer::get_singleton()->texture_set_data(texture, img);
 };
 
-Error TextureBU::import(const Ref<Image>& p_img) {
+Error TextureBasisU::import(const Ref<Image>& p_img) {
 
 #ifdef TOOLS_ENABLED
 
@@ -173,7 +173,7 @@ Error TextureBU::import(const Ref<Image>& p_img) {
 		};
 	};
 
-	set_bu_data(budata);
+	set_basisu_data(budata);
 
 	return OK;
 #else
@@ -183,19 +183,19 @@ Error TextureBU::import(const Ref<Image>& p_img) {
 };
 
 
-PoolVector<uint8_t> TextureBU::get_bu_data() const {
+PoolVector<uint8_t> TextureBasisU::get_basisu_data() const {
 
 	return data;
 };
 
-TextureBU::TextureBU() {
+TextureBasisU::TextureBasisU() {
 
 	flags = FLAGS_DEFAULT;
 	texture = VisualServer::get_singleton()->texture_create();
 };
 
 
-TextureBU::~TextureBU() {
+TextureBasisU::~TextureBasisU() {
 
 	VisualServer::get_singleton()->free(texture);
 };

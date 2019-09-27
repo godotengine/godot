@@ -3,7 +3,7 @@
 Import('env')
 Import('env_modules')
 
-env_bu = env_modules.Clone()
+env_basisu = env_modules.Clone()
 
 # Thirdparty source files
 # Not unbundled so far since not widespread as shared library
@@ -28,16 +28,16 @@ tool_sources = [
 tool_sources = [thirdparty_dir + file for file in tool_sources]
 transcoder_sources = [thirdparty_dir + "transcoder/basisu_transcoder.cpp"]
 
-env_bu.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "transcoder"])
+env_basisu.Append(CPPPATH=[thirdparty_dir, thirdparty_dir + "transcoder"])
 
 if env['target'] == "debug":
-	env_bu.Append(CPPFLAGS=["-DBASISU_DEVEL_MESSAGES=1", "-DBASISD_ENABLE_DEBUG_FLAGS=1"])
+	env_basisu.Append(CPPFLAGS=["-DBASISU_DEVEL_MESSAGES=1", "-DBASISD_ENABLE_DEBUG_FLAGS=1"])
 
-env_thirdparty = env_bu.Clone()
+env_thirdparty = env_basisu.Clone()
 env_thirdparty.disable_warnings()
 if env['tools']:
     env_thirdparty.add_source_files(env.modules_sources, tool_sources)
 env_thirdparty.add_source_files(env.modules_sources, transcoder_sources)
 
 # Godot source files
-env_bu.add_source_files(env.modules_sources, "*.cpp")
+env_basisu.add_source_files(env.modules_sources, "*.cpp")

@@ -1,15 +1,14 @@
 #include "register_types.h"
 
 #include "core/os/os.h"
-#include "texture_bu.h"
+#include "servers/visual_server.h"
+#include "texture_basisu.h"
 
 #ifdef TOOLS_ENABLED
-#include "thirdparty/basis_universal/basisu_comp.h"
+#include <basisu_comp.h>
 #endif
 
-#include "thirdparty/basis_universal/transcoder/basisu.h"
-
-#include "servers/visual_server.h"
+#include <transcoder/basisu_transcoder.h>
 
 enum BasisDecompressFormat {
 	BASIS_DECOMPRESS_RG,
@@ -250,7 +249,7 @@ void register_basis_universal_types() {
 	Image::basis_universal_packer = basis_universal_packer;
 #endif
 	Image::basis_universal_unpacker = basis_universal_unpacker;
-	//	ClassDB::register_class<TextureBU>();
+	//ClassDB::register_class<TextureBasisU>();
 }
 
 void unregister_basis_universal_types() {
