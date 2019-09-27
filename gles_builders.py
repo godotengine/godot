@@ -586,6 +586,7 @@ def include_file_in_rd_header(filename, header_data, depth):
 
     return header_data
 
+
 def build_rd_header(filename):
     header_data = RDHeaderStruct()
     include_file_in_rd_header(filename, header_data, 0)
@@ -605,52 +606,47 @@ def build_rd_header(filename):
     fd.write("#define " + out_file_ifdef + "_RD\n")
 
     out_file_class = out_file_base.replace(".glsl.gen.h", "").title().replace("_", "").replace(".", "") + "ShaderRD"
-    fd.write("\n\n")
-    fd.write("#include \"servers/visual/rasterizer_rd/shader_rd.h\"\n\n\n")
+    fd.write("\n")
+    fd.write("#include \"servers/visual/rasterizer_rd/shader_rd.h\"\n\n")
     fd.write("class " + out_file_class + " : public ShaderRD {\n\n")
     fd.write("public:\n\n")
 
-
-    fd.write("\t"+out_file_class+"() {\n\n")
+    fd.write("\t" + out_file_class + "() {\n\n")
 
     if (len(header_data.compute_lines)):
 
-        fd.write("\t\tstatic const char _compute_code[]={\n")
+        fd.write("\t\tstatic const char _compute_code[] = {\n")
         for x in header_data.compute_lines:
             for c in x:
                 fd.write(str(ord(c)) + ",")
-
             fd.write(str(ord('\n')) + ",")
-
         fd.write("\t\t0};\n\n")
-        fd.write("\t\tsetup(nullptr,nullptr,_compute_code,\""+out_file_class+"\");\n")
+
+        fd.write("\t\tsetup(nullptr, nullptr, _compute_code, \"" + out_file_class + "\");\n")
         fd.write("\t}\n")
 
     else:
 
-        fd.write("\t\tstatic const char _vertex_code[]={\n")
+        fd.write("\t\tstatic const char _vertex_code[] = {\n")
         for x in header_data.vertex_lines:
             for c in x:
                 fd.write(str(ord(c)) + ",")
-    
             fd.write(str(ord('\n')) + ",")
         fd.write("\t\t0};\n\n")
     
         fd.write("\t\tstatic const char _fragment_code[]={\n")
         for x in header_data.fragment_lines:
             for c in x:
-               fd.write(str(ord(c)) + ",")
-    
+                fd.write(str(ord(c)) + ",")
             fd.write(str(ord('\n')) + ",")
-    
         fd.write("\t\t0};\n\n")
-        fd.write("\t\tsetup(_vertex_code,_fragment_code,nullptr,\""+out_file_class+"\");\n")
-        fd.write("\t}\n")
 
+        fd.write("\t\tsetup(_vertex_code, _fragment_code, nullptr, \"" + out_file_class + "\");\n")
+        fd.write("\t}\n")
 
     fd.write("};\n\n")
 
-    fd.write("#endif\n\n")
+    fd.write("#endif\n")
     fd.close()
 
 
