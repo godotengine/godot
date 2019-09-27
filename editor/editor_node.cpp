@@ -5555,7 +5555,7 @@ EditorNode::EditorNode() {
 		import_texture.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_texture);
 
-		Ref<ResourceImporterLayeredTexture> import_cubemap;
+		/*		Ref<ResourceImporterLayeredTexture> import_cubemap;
 		import_cubemap.instance();
 		import_cubemap->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP);
 		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap);
@@ -5569,7 +5569,7 @@ EditorNode::EditorNode() {
 		import_cubemap_array.instance();
 		import_cubemap_array->set_mode(ResourceImporterLayeredTexture::MODE_CUBEMAP_ARRAY);
 		ResourceFormatImporter::get_singleton()->add_importer(import_cubemap_array);
-
+*/
 		Ref<ResourceImporterImage> import_image;
 		import_image.instance();
 		ResourceFormatImporter::get_singleton()->add_importer(import_image);

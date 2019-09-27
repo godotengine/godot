@@ -36,18 +36,18 @@
 #include "core/os/os.h"
 #include "core/print_string.h"
 
-static Image::Format _get_etc2_mode(Image::DetectChannels format) {
+static Image::Format _get_etc2_mode(Image::UsedChannels format) {
 	switch (format) {
-		case Image::DETECTED_R:
+		case Image::USED_CHANNELS_R:
 			return Image::FORMAT_ETC2_R11;
 
-		case Image::DETECTED_RG:
+		case Image::USED_CHANNELS_RG:
 			return Image::FORMAT_ETC2_RG11;
 
-		case Image::DETECTED_RGB:
+		case Image::USED_CHANNELS_RGB:
 			return Image::FORMAT_ETC2_RGB8;
 
-		case Image::DETECTED_RGBA:
+		case Image::USED_CHANNELS_RGBA:
 			return Image::FORMAT_ETC2_RGBA8;
 
 		// TODO: would be nice if we could use FORMAT_ETC2_RGB8A1 for FORMAT_RGBA5551
@@ -88,47 +88,8 @@ static Etc::Image::Format _image_format_to_etc2comp_format(Image::Format format)
 	}
 }
 
-static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_format, Image::CompressSource p_source) {
+static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_format, Image::UsedChannels p_channels) {
 	Image::Format img_format = p_img->get_format();
-	Image::DetectChannels detected_channels = p_img->get_detected_channels();
-
-	if (p_source == Image::COMPRESS_SOURCE_LAYERED) {
-		//keep what comes in
-		switch (p_img->get_format()) {
-			case Image::FORMAT_L8: {
-				detected_channels = Image::DETECTED_L;
-			} break;
-			case Image::FORMAT_LA8: {
-				detected_channels = Image::DETECTED_LA;
-			} break;
-			case Image::FORMAT_R8: {
-				detected_channels = Image::DETECTED_R;
-			} break;
-			case Image::FORMAT_RG8: {
-				detected_channels = Image::DETECTED_RG;
-			} break;
-			case Image::FORMAT_RGB8: {
-				detected_channels = Image::DETECTED_RGB;
-			} break;
-			case Image::FORMAT_RGBA8:
-			case Image::FORMAT_RGBA4444:
-			case Image::FORMAT_RGBA5551: {
-				detected_channels = Image::DETECTED_RGBA;
-			} break;
-			default: {
-			}
-		}
-	}
-
-	if (p_source == Image::COMPRESS_SOURCE_SRGB && (detected_channels == Image::DETECTED_R || detected_channels == Image::DETECTED_RG)) {
-		//R and RG do not support SRGB
-		detected_channels = Image::DETECTED_RGB;
-	}
-
-	if (p_source == Image::COMPRESS_SOURCE_NORMAL) {
-		//use RG channels only for normal
-		detected_channels = Image::DETECTED_RG;
-	}
 
 	if (img_format >= Image::FORMAT_DXT1) {
 		return; //do not compress, already compressed
@@ -141,7 +102,7 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 
 	uint32_t imgw = p_img->get_width(), imgh = p_img->get_height();
 
-	Image::Format etc_format = force_etc1_format ? Image::FORMAT_ETC : _get_etc2_mode(detected_channels);
+	Image::Format etc_format = force_etc1_format ? Image::FORMAT_ETC : _get_etc2_mode(p_channels);
 
 	Ref<Image> img = p_img->duplicate();
 
@@ -228,11 +189,11 @@ static void _compress_etc(Image *p_img, float p_lossy_quality, bool force_etc1_f
 }
 
 static void _compress_etc1(Image *p_img, float p_lossy_quality) {
-	_compress_etc(p_img, p_lossy_quality, true, Image::COMPRESS_SOURCE_GENERIC);
+	_compress_etc(p_img, p_lossy_quality, true, Image::USED_CHANNELS_RGB);
 }
 
-static void _compress_etc2(Image *p_img, float p_lossy_quality, Image::CompressSource p_source) {
-	_compress_etc(p_img, p_lossy_quality, false, p_source);
+static void _compress_etc2(Image *p_img, float p_lossy_quality, Image::UsedChannels p_channels) {
+	_compress_etc(p_img, p_lossy_quality, false, p_channels);
 }
 
 void _register_etc_compress_func() {

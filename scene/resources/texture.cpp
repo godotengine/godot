@@ -347,6 +347,145 @@ ImageTexture::~ImageTexture() {
 
 //////////////////////////////////////////
 
+Ref<Image> StreamTexture::load_image_from_file(FileAccess *f, int p_size_limit) {
+
+	uint32_t data_format = f->get_32();
+	uint32_t w = f->get_16();
+	uint32_t h = f->get_16();
+	uint32_t mipmaps = f->get_32();
+	Image::Format format = Image::Format(f->get_32());
+
+	print_line("format: " + itos(data_format) + " size " + Size2i(w, h) + " mipmaps: " + itos(mipmaps));
+	if (data_format == DATA_FORMAT_LOSSLESS || data_format == DATA_FORMAT_LOSSY || data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+		//look for a PNG or WEBP file inside
+
+		int sw = w;
+		int sh = h;
+
+		//mipmaps need to be read independently, they will be later combined
+		Vector<Ref<Image> > mipmap_images;
+		int total_size = 0;
+
+		bool first = true;
+
+		for (uint32_t i = 0; i < mipmaps + 1; i++) {
+
+			uint32_t size = f->get_32();
+
+			if (p_size_limit > 0 && i < (mipmaps - 1) && (sw > p_size_limit || sh > p_size_limit)) {
+				//can't load this due to size limit
+				sw = MAX(sw >> 1, 1);
+				sh = MAX(sh >> 1, 1);
+				f->seek(f->get_position() + size);
+				continue;
+			}
+
+			PoolVector<uint8_t> pv;
+			pv.resize(size);
+			{
+				PoolVector<uint8_t>::Write wr = pv.write();
+				f->get_buffer(wr.ptr(), size);
+			}
+
+			Ref<Image> img;
+			if (data_format == DATA_FORMAT_BASIS_UNIVERSAL) {
+				img = Image::basis_universal_unpacker(pv);
+			} else if (data_format == DATA_FORMAT_LOSSLESS) {
+				img = Image::lossless_unpacker(pv);
+			} else {
+				img = Image::lossy_unpacker(pv);
+			}
+
+			if (img.is_null() || img->empty()) {
+				memdelete(f);
+				ERR_FAIL_COND_V(img.is_null() || img->empty(), Ref<Image>());
+			}
+
+			if (first) {
+				//format will actually be the format of the first image,
+				//as it may have changed on compression
+				format = img->get_format();
+				first = false;
+			} else if (img->get_format() != format) {
+				img->convert(format); //all needs to be the same format
+			}
+
+			total_size += img->get_data().size();
+
+			mipmap_images.push_back(img);
+
+			sw = MAX(sw >> 1, 1);
+			sh = MAX(sh >> 1, 1);
+		}
+
+		//print_line("mipmap read total: " + itos(mipmap_images.size()));
+
+		Ref<Image> image;
+		image.instance();
+
+		if (mipmap_images.size() == 1) {
+			//only one image (which will most likely be the case anyway for this format)
+			image = mipmap_images[0];
+			return image;
+
+		} else {
+			//rarer use case, but needs to be supported
+			PoolVector<uint8_t> img_data;
+			img_data.resize(total_size);
+
+			{
+				PoolVector<uint8_t>::Write wr = img_data.write();
+
+				int ofs = 0;
+				for (int i = 0; i < mipmap_images.size(); i++) {
+
+					PoolVector<uint8_t> id = mipmap_images[i]->get_data();
+					int len = id.size();
+					PoolVector<uint8_t>::Read r = id.read();
+					copymem(&wr[ofs], r.ptr(), len);
+					ofs += len;
+				}
+			}
+
+			image->create(w, h, true, mipmap_images[0]->get_format(), img_data);
+			return image;
+		}
+
+	} else if (data_format == DATA_FORMAT_IMAGE) {
+
+		int size = Image::get_image_data_size(w, h, format, mipmaps ? true : false);
+
+		for (uint32_t i = 0; i < mipmaps + 1; i++) {
+			int tw, th;
+			int ofs = Image::get_image_mipmap_offset_and_dimensions(w, h, format, i, tw, th);
+
+			if (p_size_limit > 0 && i < mipmaps && (p_size_limit > tw || p_size_limit > th)) {
+				if (ofs) {
+					f->seek(f->get_position() + ofs);
+				}
+				continue; //oops, size limit enforced, go to next
+			}
+
+			PoolVector<uint8_t> data;
+			data.resize(size - ofs);
+
+			{
+				PoolVector<uint8_t>::Write wr = data.write();
+				f->get_buffer(wr.ptr(), data.size());
+			}
+
+			Ref<Image> image;
+			image.instance();
+
+			image->create(tw, th, mipmaps - i ? true : false, format, data);
+
+			return image;
+		}
+	}
+
+	return Ref<Image>();
+}
+
 void StreamTexture::set_path(const String &p_path, bool p_take_over) {
 
 	if (texture.is_valid()) {
@@ -389,7 +528,7 @@ Image::Format StreamTexture::get_format() const {
 	return format;
 }
 
-Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int p_size_limit) {
+Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, Ref<Image> &image, bool &r_request_3d, bool &r_request_normal, bool &r_request_roughness, int &mipmap_limit, int p_size_limit) {
 
 	alpha_cache.unref();
 
@@ -400,18 +539,29 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 
 	uint8_t header[4];
 	f->get_buffer(header, 4);
-	if (header[0] != 'G' || header[1] != 'D' || header[2] != 'S' || header[3] != 'T') {
+	if (header[0] != 'G' || header[1] != 'S' || header[2] != 'T' || header[3] != '2') {
 		memdelete(f);
-		ERR_FAIL_COND_V(header[0] != 'G' || header[1] != 'D' || header[2] != 'S' || header[3] != 'T', ERR_FILE_CORRUPT);
+		ERR_EXPLAIN("Stream texture file is corrupt (Bad header).")
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
 	}
 
-	tw = f->get_16();
-	tw_custom = f->get_16();
-	th = f->get_16();
-	th_custom = f->get_16();
+	uint32_t version = f->get_32();
 
-	f->get_32(); //texture flags (ignore, no longer supported)
+	if (version > FORMAT_VERSION) {
+		memdelete(f);
+		ERR_EXPLAIN("Stream texture file is too new.")
+		ERR_FAIL_V(ERR_FILE_CORRUPT);
+	}
+	tw_custom = f->get_32();
+	th_custom = f->get_32();
 	uint32_t df = f->get_32(); //data format
+
+	//skip reserved
+	mipmap_limit = int(f->get_32());
+	//reserved
+	f->get_32();
+	f->get_32();
+	f->get_32();
 
 #ifdef TOOLS_ENABLED
 
@@ -430,166 +580,13 @@ Error StreamTexture::_load_data(const String &p_path, int &tw, int &th, int &tw_
 		p_size_limit = 0;
 	}
 
-	if (df & FORMAT_BIT_LOSSLESS || df & FORMAT_BIT_LOSSY) {
-		//look for a PNG or WEBP file inside
+	image = load_image_from_file(f, p_size_limit);
 
-		int sw = tw;
-		int sh = th;
-
-		uint32_t mipmaps = f->get_32();
-		uint32_t size = f->get_32();
-
-		//print_line("mipmaps: " + itos(mipmaps));
-
-		while (mipmaps > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
-
-			f->seek(f->get_position() + size);
-			mipmaps = f->get_32();
-			size = f->get_32();
-
-			sw = MAX(sw >> 1, 1);
-			sh = MAX(sh >> 1, 1);
-			mipmaps--;
-		}
-
-		//mipmaps need to be read independently, they will be later combined
-		Vector<Ref<Image> > mipmap_images;
-		int total_size = 0;
-
-		for (uint32_t i = 0; i < mipmaps; i++) {
-
-			if (i) {
-				size = f->get_32();
-			}
-
-			PoolVector<uint8_t> pv;
-			pv.resize(size);
-			{
-				PoolVector<uint8_t>::Write w = pv.write();
-				f->get_buffer(w.ptr(), size);
-			}
-
-			Ref<Image> img;
-			if (df & FORMAT_BIT_LOSSLESS) {
-				img = Image::lossless_unpacker(pv);
-			} else {
-				img = Image::lossy_unpacker(pv);
-			}
-
-			if (img.is_null() || img->empty()) {
-				memdelete(f);
-				ERR_FAIL_COND_V(img.is_null() || img->empty(), ERR_FILE_CORRUPT);
-			}
-
-			total_size += img->get_data().size();
-
-			mipmap_images.push_back(img);
-		}
-
-		//print_line("mipmap read total: " + itos(mipmap_images.size()));
-
-		memdelete(f); //no longer needed
-
-		if (mipmap_images.size() == 1) {
-
-			image = mipmap_images[0];
-			return OK;
-
-		} else {
-			PoolVector<uint8_t> img_data;
-			img_data.resize(total_size);
-
-			{
-				PoolVector<uint8_t>::Write w = img_data.write();
-
-				int ofs = 0;
-				for (int i = 0; i < mipmap_images.size(); i++) {
-
-					PoolVector<uint8_t> id = mipmap_images[i]->get_data();
-					int len = id.size();
-					PoolVector<uint8_t>::Read r = id.read();
-					copymem(&w[ofs], r.ptr(), len);
-					ofs += len;
-				}
-			}
-
-			image->create(sw, sh, true, mipmap_images[0]->get_format(), img_data);
-			return OK;
-		}
-
-	} else {
-
-		//look for regular format
-		Image::Format format = (Image::Format)(df & FORMAT_MASK_IMAGE_FORMAT);
-		bool mipmaps = df & FORMAT_BIT_HAS_MIPMAPS;
-
-		if (!mipmaps) {
-			int size = Image::get_image_data_size(tw, th, format, false);
-
-			PoolVector<uint8_t> img_data;
-			img_data.resize(size);
-
-			{
-				PoolVector<uint8_t>::Write w = img_data.write();
-				f->get_buffer(w.ptr(), size);
-			}
-
-			memdelete(f);
-
-			image->create(tw, th, false, format, img_data);
-			return OK;
-		} else {
-
-			int sw = tw;
-			int sh = th;
-
-			int mipmaps2 = Image::get_image_required_mipmaps(tw, th, format);
-			int total_size = Image::get_image_data_size(tw, th, format, true);
-			int idx = 0;
-
-			while (mipmaps2 > 1 && p_size_limit > 0 && (sw > p_size_limit || sh > p_size_limit)) {
-
-				sw = MAX(sw >> 1, 1);
-				sh = MAX(sh >> 1, 1);
-				mipmaps2--;
-				idx++;
-			}
-
-			int ofs = Image::get_image_mipmap_offset(tw, th, format, idx);
-
-			if (total_size - ofs <= 0) {
-				memdelete(f);
-				ERR_FAIL_V(ERR_FILE_CORRUPT);
-			}
-
-			f->seek(f->get_position() + ofs);
-
-			PoolVector<uint8_t> img_data;
-			img_data.resize(total_size - ofs);
-
-			{
-				PoolVector<uint8_t>::Write w = img_data.write();
-				int bytes = f->get_buffer(w.ptr(), total_size - ofs);
-				//print_line("requested read: " + itos(total_size - ofs) + " but got: " + itos(bytes));
-
-				memdelete(f);
-
-				int expected = total_size - ofs;
-				if (bytes < expected) {
-					//this is a compatibility workaround for older format, which saved less mipmaps2. It is still recommended the image is reimported.
-					zeromem(w.ptr() + bytes, (expected - bytes));
-				} else if (bytes != expected) {
-					ERR_FAIL_V(ERR_FILE_CORRUPT);
-				}
-			}
-
-			image->create(sw, sh, true, format, img_data);
-
-			return OK;
-		}
+	if (image.is_null() || image->empty()) {
+		return ERR_CANT_OPEN;
 	}
 
-	ERR_FAIL_V(ERR_BUG); //unreachable
+	return OK;
 }
 
 Error StreamTexture::load(const String &p_path) {
@@ -601,8 +598,9 @@ Error StreamTexture::load(const String &p_path) {
 	bool request_3d;
 	bool request_normal;
 	bool request_roughness;
+	int mipmap_limit;
 
-	Error err = _load_data(p_path, lw, lh, lwc, lhc, image, request_3d, request_normal, request_roughness);
+	Error err = _load_data(p_path, lw, lh, lwc, lhc, image, request_3d, request_normal, request_roughness, mipmap_limit);
 	if (err)
 		return err;
 

@@ -172,7 +172,7 @@ Ref<Image> RasterizerStorageGLES2::_get_gl_image_and_format(const Ref<Image> &p_
 			r_gl_type = GL_UNSIGNED_SHORT_4_4_4_4;
 
 		} break;
-		case Image::FORMAT_RGBA5551: {
+		case Image::FORMAT_RGB565: {
 
 			r_gl_internal_format = GL_RGB5_A1;
 			r_gl_format = GL_RGBA;
