@@ -57,11 +57,12 @@ static PoolVector<uint8_t> basis_universal_packer(const Ref<Image> &p_image, Ima
 		params.m_max_endpoint_clusters = 512;
 		params.m_max_selector_clusters = 512;
 		params.m_multithreading = true;
-		params.m_no_hybrid_sel_cb = true; //fixme, default on this causes crashes
+		//params.m_no_hybrid_sel_cb = true; //fixme, default on this causes crashes //seems fixed?
 		params.m_pSel_codebook = sel_codebook;
-		params.m_quality_level = 0;
+		//params.m_quality_level = 0;
 		//params.m_disable_hierarchical_endpoint_codebooks = true;
 		//params.m_no_selector_rdo = true;
+		params.m_no_auto_global_sel_pal = true;
 
 		basisu::job_pool jpool(OS::get_singleton()->get_processor_count());
 		params.m_pJob_pool = &jpool;
