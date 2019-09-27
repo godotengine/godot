@@ -28,6 +28,19 @@ They are marked with `// -- GODOT start --` and `// -- GODOT end --`
 comments.
 
 
+## basis_universal
+
+- Upstream: https://github.com/BinomialLLC/basis_universal
+- Version: git (6afb2fc, 2019)
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- `.cpp` and `.h` files in root folder
+- `.cpp`, `.h` and `.inc` files in `transcoder/`, keeping folder structure
+- `LICENSE`
+
+
 ## bullet
 
 - Upstream: https://github.com/bulletphysics/bullet3
