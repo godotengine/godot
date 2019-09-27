@@ -151,6 +151,7 @@ protected:
 	static GDMono *singleton;
 
 public:
+#ifdef DEBUG_METHODS_ENABLED
 	uint64_t get_api_core_hash() {
 		if (api_core_hash == 0)
 			api_core_hash = ClassDB::get_api_hash(ClassDB::API_CORE);
@@ -162,7 +163,8 @@ public:
 			api_editor_hash = ClassDB::get_api_hash(ClassDB::API_EDITOR);
 		return api_editor_hash;
 	}
-#endif
+#endif // TOOLS_ENABLED
+#endif // DEBUG_METHODS_ENABLED
 
 #ifdef TOOLS_ENABLED
 	bool copy_prebuilt_api_assembly(APIAssembly::Type p_api_type, const String &p_config);
