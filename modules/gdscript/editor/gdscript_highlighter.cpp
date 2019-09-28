@@ -247,7 +247,7 @@ Map<int, TextEdit::HighlighterInfo> GDScriptSyntaxHighlighter::_get_line_syntax_
 				in_function_args = false;
 			}
 
-			if (expect_type && prev_is_char) {
+			if (expect_type && (prev_is_char || str[j] == '=')) {
 				expect_type = false;
 			}
 
