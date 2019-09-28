@@ -30,7 +30,7 @@
 
 #include "bindings_generator.h"
 
-#ifdef DEBUG_METHODS_ENABLED
+#if defined(DEBUG_METHODS_ENABLED) && defined(TOOLS_ENABLED)
 
 #include "core/engine.h"
 #include "core/global_constants.h"
