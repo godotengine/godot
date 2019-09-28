@@ -1078,7 +1078,7 @@ bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Varian
 
 	TreeItem *selected = input_editor->get_selected();
 	TreeItem *item = input_editor->get_item_at_position(p_point);
-	if (!selected || !item || item->get_parent() == selected)
+	if (!selected || !item || item == selected || item->get_parent() == selected)
 		return false;
 
 	return true;
