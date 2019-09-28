@@ -271,6 +271,8 @@ public:
 	virtual Error kill(const ProcessID &p_pid) = 0;
 	virtual int get_process_id() const;
 	virtual void vibrate_handheld(int p_duration_ms = 500);
+	virtual void iOS_haptic_selection();
+	virtual void iOS_haptic_impact(int feedback_style);
 
 	virtual Error shell_open(String p_uri);
 	virtual Error set_cwd(const String &p_cwd);
