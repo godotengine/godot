@@ -608,8 +608,10 @@ def rstize_text(text, state):  # type: (str, State) -> str
             break
 
         pre_text = text[:pos]
+        indent_level = 0
         while text[pos + 1] == '\t':
             pos += 1
+            indent_level += 1
         post_text = text[pos + 1:]
 
         # Handle codeblocks
@@ -632,6 +634,9 @@ def rstize_text(text, state):  # type: (str, State) -> str
                 to_skip = 0
                 while code_pos + to_skip + 1 < len(code_text) and code_text[code_pos + to_skip + 1] == '\t':
                     to_skip += 1
+
+                if to_skip > indent_level:
+                    print_error("Four spaces should be used for indentation within [codeblock], file: {}".format(state.current_class), state)
 
                 if len(code_text[code_pos + to_skip + 1:]) == 0:
                     code_text = code_text[:code_pos] + "\n"
