@@ -2785,8 +2785,7 @@ void GDScriptParser::_parse_block(BlockNode *p_block, bool p_static) {
 				int var_line = tokenizer->get_token_line();
 				StringName n = tokenizer->get_token_literal();
 				if (!tokenizer->is_token_literal(0, true)) {
-
-					_set_error("Invalid variable identifier \"" + String(n) + "\".");
+					_set_error("Cannot use reserved keyword \"" + String(n) + "\" for the local variable name.");
 					return;
 				}
 				tokenizer->advance();
