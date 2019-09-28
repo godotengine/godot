@@ -101,6 +101,8 @@ public:
 	virtual void start_joy_vibration(int p_device, float p_weak_magnitude, float p_strong_magnitude, float p_duration = 0) = 0;
 	virtual void stop_joy_vibration(int p_device) = 0;
 	virtual void vibrate_handheld(int p_duration_ms = 500) = 0;
+	virtual void iOS_haptic_selection() = 0;
+	virtual void iOS_haptic_impact(int feedback_style = 0) = 0;
 
 	virtual Point2 get_mouse_position() const = 0;
 	virtual Point2 get_last_mouse_speed() const = 0;

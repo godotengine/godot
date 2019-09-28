@@ -191,6 +191,16 @@ void OS::vibrate_handheld(int p_duration_ms) {
 	WARN_PRINTS("vibrate_handheld() only works with Android and iOS");
 }
 
+void OS::iOS_haptic_selection() {
+
+	WARN_PRINTS("iOS_haptic_selection() only works with iOS");
+}
+
+void OS::iOS_haptic_impact(int feedback_style) {
+
+	WARN_PRINTS("iOS_haptic_impact() only works with Android and iOS");
+}
+
 bool OS::is_stdout_verbose() const {
 
 	return _verbose_stdout;

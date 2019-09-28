@@ -38,6 +38,7 @@
 
 #import "GameController/GameController.h"
 #import <AudioToolbox/AudioServices.h>
+#import <UIKit/UIKit.h>
 
 #define kFilteringFactor 0.1
 #define kRenderingFrequency 60
@@ -65,6 +66,24 @@ void _set_keep_screen_on(bool p_enabled) {
 void _vibrate() {
 	AudioServicesPlaySystemSound(kSystemSoundID_Vibrate);
 };
+
+UISelectionFeedbackGenerator* selectionGenerator = [UISelectionFeedbackGenerator new];
+NSArray<UIImpactFeedbackGenerator*>* impactGenerator = @[
+             [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight],
+             [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium],
+             [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy],
+			 [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleSoft],
+			 [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleRigid]
+        ];
+
+void _iOS_haptic_selection() {
+	[selectionGenerator selectionChanged];
+};
+
+void _iOS_haptic_impact(int feedback_style) {
+	[impactGenerator[(int) feedback_style] impactOccured];
+};
+
 
 @implementation AppDelegate
 

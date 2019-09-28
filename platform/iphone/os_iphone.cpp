@@ -471,6 +471,8 @@ extern void _hide_keyboard();
 extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
 extern void _vibrate();
+extern void _iOS_haptic_selection();
+extern void _iOS_haptic_impact(int feedback_style);
 
 void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 	_show_keyboard(p_existing_text);
@@ -589,6 +591,14 @@ void OSIPhone::native_video_stop() {
 void OSIPhone::vibrate_handheld(int p_duration_ms) {
 	// iOS does not support duration for vibration
 	_vibrate();
+}
+
+void OSIPhone::iOS_haptic_selection() {
+	_iOS_haptic_selection();
+}
+
+void OSIPhone::iOS_haptic_impact(int feedback_style) {
+	_iOS_haptic_impact(feedback_style);
 }
 
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {

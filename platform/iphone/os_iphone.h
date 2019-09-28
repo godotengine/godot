@@ -196,6 +196,8 @@ public:
 	virtual void native_video_focus_out();
 	virtual void native_video_stop();
 	virtual void vibrate_handheld(int p_duration_ms = 500);
+	virtual void iOS_haptic_selection();
+	virtual void iOS_haptic_impact(int feedback_style = 0);
 
 	virtual bool _check_internal_feature_support(const String &p_feature);
 	OSIPhone(int width, int height, String p_data_dir);

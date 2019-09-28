@@ -476,6 +476,14 @@ void InputDefault::vibrate_handheld(int p_duration_ms) {
 	OS::get_singleton()->vibrate_handheld(p_duration_ms);
 }
 
+void InputDefault::iOS_haptic_selection() {
+	OS::get_singleton()->iOS_haptic_selection();
+}
+
+void InputDefault::iOS_haptic_impact(int feedback_style) {
+	OS::get_singleton()->iOS_haptic_impact(feedback_style);
+}
+
 void InputDefault::set_gravity(const Vector3 &p_gravity) {
 
 	_THREAD_SAFE_METHOD_

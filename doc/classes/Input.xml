@@ -384,6 +384,23 @@
 				[b]Note:[/b] It needs VIBRATE permission for Android at export settings. iOS does not support duration.
 			</description>
 		</method>
+		<method name="iOS_haptic_selection">
+			<return type="void">
+			</return>
+			<description>
+				HapticFeedback for iOS devices.
+			</description>
+		</method>
+		<method name="iOS_haptic_impact">
+			<return type="void">
+			</return>
+			<argument index="0" name="feedback_style" type="int" default="0">
+			</argument>
+			<description>
+				HapticFeedback for iOS devices.
+				[b]Note:[/b] 0 = light, 1 = medium, 2 = heavy, 3 = rigid, 4 = soft.
+			</description>
+		</method>
 		<method name="warp_mouse_position">
 			<return type="void">
 			</return>
