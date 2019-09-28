@@ -226,7 +226,7 @@ void GDScript::get_script_method_list(List<MethodInfo> *p_list) const {
 
 	const GDScript *current = this;
 	while (current) {
-		for (const Map<StringName, GDScriptFunction *>::Element *E = member_functions.front(); E; E = E->next()) {
+		for (const Map<StringName, GDScriptFunction *>::Element *E = current->member_functions.front(); E; E = E->next()) {
 			GDScriptFunction *func = E->get();
 			MethodInfo mi;
 			mi.name = E->key();

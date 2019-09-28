@@ -909,11 +909,6 @@ void CPUParticles::_update_particle_data_buffer() {
 		PoolVector<Particle>::Read r = particles.read();
 		float *ptr = w.ptr();
 
-		Transform un_transform;
-		if (!local_coords) {
-			un_transform = get_global_transform().affine_inverse();
-		}
-
 		if (draw_order != DRAW_ORDER_INDEX) {
 			ow = particle_order.write();
 			order = ow.ptr();
@@ -931,7 +926,12 @@ void CPUParticles::_update_particle_data_buffer() {
 					Vector3 dir = c->get_global_transform().basis.get_axis(2); //far away to close
 
 					if (local_coords) {
-						dir = un_transform.basis.xform(dir).normalized();
+
+						// will look different from Particles in editor as this is based on the camera in the scenetree
+						// and not the editor camera
+						dir = inv_emission_transform.xform(dir).normalized();
+					} else {
+						dir = dir.normalized();
 					}
 
 					SortArray<int, SortAxis> sorter;
@@ -949,7 +949,7 @@ void CPUParticles::_update_particle_data_buffer() {
 			Transform t = r[idx].transform;
 
 			if (!local_coords) {
-				t = un_transform * t;
+				t = inv_emission_transform * t;
 			}
 
 			if (r[idx].active) {
@@ -1112,6 +1112,46 @@ void CPUParticles::_notification(int p_what) {
 
 		if (processed) {
 			_update_particle_data_buffer();
+		}
+	}
+
+	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
+
+		inv_emission_transform = get_global_transform().affine_inverse();
+
+		if (!local_coords) {
+
+			int pc = particles.size();
+
+			PoolVector<float>::Write w = particle_data.write();
+			PoolVector<Particle>::Read r = particles.read();
+			float *ptr = w.ptr();
+
+			for (int i = 0; i < pc; i++) {
+
+				Transform t = inv_emission_transform * r[i].transform;
+
+				if (r[i].active) {
+					ptr[0] = t.basis.elements[0][0];
+					ptr[1] = t.basis.elements[0][1];
+					ptr[2] = t.basis.elements[0][2];
+					ptr[3] = t.origin.x;
+					ptr[4] = t.basis.elements[1][0];
+					ptr[5] = t.basis.elements[1][1];
+					ptr[6] = t.basis.elements[1][2];
+					ptr[7] = t.origin.y;
+					ptr[8] = t.basis.elements[2][0];
+					ptr[9] = t.basis.elements[2][1];
+					ptr[10] = t.basis.elements[2][2];
+					ptr[11] = t.origin.z;
+				} else {
+					zeromem(ptr, sizeof(float) * 12);
+				}
+
+				ptr += 17;
+			}
+
+			can_update = true;
 		}
 	}
 }
@@ -1390,6 +1430,8 @@ CPUParticles::CPUParticles() {
 	frame_remainder = 0;
 	cycle = 0;
 	redraw = false;
+
+	set_notify_transform(true);
 
 	multimesh = VisualServer::get_singleton()->multimesh_create();
 	set_base(multimesh);

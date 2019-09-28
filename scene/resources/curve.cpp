@@ -782,7 +782,8 @@ Vector2 Curve2D::interpolate_baked(float p_offset, bool p_cubic) const {
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
 	} else if (idx == bpc - 2) {
-		frac /= Math::fmod(baked_max_ofs, bake_interval);
+		if (frac > 0)
+			frac /= Math::fmod(baked_max_ofs, bake_interval);
 	} else {
 		frac /= bake_interval;
 	}
@@ -1352,7 +1353,8 @@ Vector3 Curve3D::interpolate_baked(float p_offset, bool p_cubic) const {
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
 	} else if (idx == bpc - 2) {
-		frac /= Math::fmod(baked_max_ofs, bake_interval);
+		if (frac > 0)
+			frac /= Math::fmod(baked_max_ofs, bake_interval);
 	} else {
 		frac /= bake_interval;
 	}
@@ -1396,7 +1398,8 @@ float Curve3D::interpolate_baked_tilt(float p_offset) const {
 	if (idx >= bpc - 1) {
 		return r[bpc - 1];
 	} else if (idx == bpc - 2) {
-		frac /= Math::fmod(baked_max_ofs, bake_interval);
+		if (frac > 0)
+			frac /= Math::fmod(baked_max_ofs, bake_interval);
 	} else {
 		frac /= bake_interval;
 	}

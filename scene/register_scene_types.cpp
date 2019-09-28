@@ -762,7 +762,11 @@ void unregister_scene_types() {
 	ResourceLoader::remove_resource_format_loader(resource_loader_bmfont);
 	resource_loader_bmfont.unref();
 
+	//SpatialMaterial is not initialised when 3D is disabled, so it shouldn't be cleaned up either
+#ifndef _3D_DISABLED
 	SpatialMaterial::finish_shaders();
+#endif // _3D_DISABLED
+
 	ParticlesMaterial::finish_shaders();
 	CanvasItemMaterial::finish_shaders();
 	SceneStringNames::free();
