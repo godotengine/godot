@@ -36,20 +36,18 @@ void GridContainer::_notification(int p_what) {
 
 		case NOTIFICATION_SORT_CHILDREN: {
 
-			int valid_controls_index;
-
-			Map<int, int> col_minw; // max of min_width  of all controls in each col (indexed by col)
-			Map<int, int> row_minh; // max of min_height of all controls in each row (indexed by row)
-			Set<int> col_expanded; // columns which have the SIZE_EXPAND flag set
-			Set<int> row_expanded; // rows which have the SIZE_EXPAND flag set
+			Map<int, int> col_minw; // Max of min_width  of all controls in each col (indexed by col).
+			Map<int, int> row_minh; // Max of min_height of all controls in each row (indexed by row).
+			Set<int> col_expanded; // Columns which have the SIZE_EXPAND flag set.
+			Set<int> row_expanded; // Rows which have the SIZE_EXPAND flag set.
 
 			int hsep = get_constant("hseparation");
 			int vsep = get_constant("vseparation");
 			int max_col = MIN(get_child_count(), columns);
 			int max_row = get_child_count() / columns;
 
-			// Compute the per-column/per-row data
-			valid_controls_index = 0;
+			// Compute the per-column/per-row data.
+			int valid_controls_index = 0;
 			for (int i = 0; i < get_child_count(); i++) {
 				Control *c = Object::cast_to<Control>(get_child(i));
 				if (!c || !c->is_visible_in_tree())
@@ -77,7 +75,12 @@ void GridContainer::_notification(int p_what) {
 				}
 			}
 
-			// Evaluate the remaining space for expanded columns/rows
+			// Consider all empty columns expanded.
+			for (int i = valid_controls_index; i < columns; i++) {
+				col_expanded.insert(i);
+			}
+
+			// Evaluate the remaining space for expanded columns/rows.
 			Size2 remaining_space = get_size();
 			for (Map<int, int>::Element *E = col_minw.front(); E; E = E->next()) {
 				if (!col_expanded.has(E->key()))
@@ -93,7 +96,7 @@ void GridContainer::_notification(int p_what) {
 
 			bool can_fit = false;
 			while (!can_fit && col_expanded.size() > 0) {
-				// Check if all minwidth constraints are ok if we use the remaining space
+				// Check if all minwidth constraints are OK if we use the remaining space.
 				can_fit = true;
 				int max_index = col_expanded.front()->get();
 				for (Set<int>::Element *E = col_expanded.front(); E; E = E->next()) {
@@ -105,7 +108,7 @@ void GridContainer::_notification(int p_what) {
 					}
 				}
 
-				// If not, the column with maximum minwidth is not expanded
+				// If not, the column with maximum minwidth is not expanded.
 				if (!can_fit) {
 					col_expanded.erase(max_index);
 					remaining_space.width -= col_minw[max_index];
@@ -114,7 +117,7 @@ void GridContainer::_notification(int p_what) {
 
 			can_fit = false;
 			while (!can_fit && row_expanded.size() > 0) {
-				// Check if all minwidth constraints are ok if we use the remaining space
+				// Check if all minheight constraints are OK if we use the remaining space.
 				can_fit = true;
 				int max_index = row_expanded.front()->get();
 				for (Set<int>::Element *E = row_expanded.front(); E; E = E->next()) {
@@ -126,14 +129,14 @@ void GridContainer::_notification(int p_what) {
 					}
 				}
 
-				// If not, the row with maximum minwidth is not expanded
+				// If not, the row with maximum minheight is not expanded.
 				if (!can_fit) {
 					row_expanded.erase(max_index);
 					remaining_space.height -= row_minh[max_index];
 				}
 			}
 
-			// Finally, fit the nodes
+			// Finally, fit the nodes.
 			int col_expand = col_expanded.size() > 0 ? remaining_space.width / col_expanded.size() : 0;
 			int row_expand = row_expanded.size() > 0 ? remaining_space.height / row_expanded.size() : 0;
 
@@ -152,11 +155,11 @@ void GridContainer::_notification(int p_what) {
 				if (col == 0) {
 					col_ofs = 0;
 					if (row > 0)
-						row_ofs += ((row_expanded.has(row - 1)) ? row_expand : row_minh[row - 1]) + vsep;
+						row_ofs += (row_expanded.has(row - 1) ? row_expand : row_minh[row - 1]) + vsep;
 				}
 
 				Point2 p(col_ofs, row_ofs);
-				Size2 s((col_expanded.has(col)) ? col_expand : col_minw[col], (row_expanded.has(row)) ? row_expand : row_minh[row]);
+				Size2 s(col_expanded.has(col) ? col_expand : col_minw[col], row_expanded.has(row) ? row_expand : row_minh[row]);
 
 				fit_child_in_rect(c, Rect2(p, s));
 
