@@ -30,14 +30,18 @@
 
 #include "video_stream_theora.h"
 
+#include "core/hash_map.h"
+#include "core/list.h"
 #include "core/os/os.h"
 #include "core/project_settings.h"
 
 #include "thirdparty/misc/yuv2rgb.h"
 
+#include <float.h>
+
 int VideoStreamPlaybackTheora::buffer_data() {
 
-	char *buffer = ogg_sync_buffer(&oy, 4096);
+	char *buffer = ogg_sync_buffer(&oy, BUFFERSIZE);
 
 #ifdef THEORA_USE_THREAD_STREAMING
 
@@ -45,7 +49,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 
 	do {
 		thread_sem->post();
-		read = MIN(ring_buffer.data_left(), 4096);
+		read = MIN(ring_buffer.data_left(), BUFFERSIZE);
 		if (read) {
 			ring_buffer.read((uint8_t *)buffer, read);
 			ogg_sync_wrote(&oy, read);
@@ -59,7 +63,7 @@ int VideoStreamPlaybackTheora::buffer_data() {
 
 #else
 
-	int bytes = file->get_buffer((uint8_t *)buffer, 4096);
+	int bytes = file->get_buffer((uint8_t *)buffer, BUFFERSIZE);
 	ogg_sync_wrote(&oy, bytes);
 	return (bytes);
 
@@ -618,9 +622,198 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 	return get_time();
 };
 
-void VideoStreamPlaybackTheora::seek(float p_time){
+void VideoStreamPlaybackTheora::seek(float p_time) {
 
-	// no
+	struct _page_info {
+		size_t block_number;
+		double_t time;
+		ogg_int64_t granulepos;
+	};
+	//https://xiph.org/oggz/doc/group__basics.html
+
+	float true_time = p_time - AudioServer::get_singleton()->get_output_latency() - delay_compensation;
+	p_time = fmax(0, true_time);
+
+	size_t buffer_size = (size_t)BUFFERSIZE; //Cast BUFFERSIZE
+	size_t end_file = file->get_len();
+	size_t start_file = 0;
+	size_t number_of_blocks = (end_file - start_file) / buffer_size + ((end_file - start_file) % buffer_size ? 1 : 0);
+
+	ogg_packet op;
+	size_t left = 0;
+	size_t right = number_of_blocks;
+
+	struct _page_info left_page = { .time = 0, .block_number = 0, .granulepos = 0 };
+	struct _page_info mid_page = { .time = 0, .block_number = 0, .granulepos = 0 };
+	struct _page_info right_page = { .time = DBL_MAX, .block_number = 0x7FFFFFFFFFFFFFFF, .granulepos = 0x7FFFFFFFFFFFFFFF };
+	HashMap<ogg_int64_t, _page_info> page_info_table;
+	HashMap<int, double> block_time;
+
+	//Binary Search by finding the proper begin page
+	while (left <= right) {
+		//Seek to block
+		size_t mid_block = left + (right - left) / 2;
+		int block = mid_block;
+
+		if (block_time.has(block)) {
+			//Check whether this block has been visited
+			break;
+		}
+
+		//clear the sync state
+		ogg_sync_reset(&oy);
+		file->seek(block * buffer_size);
+		buffer_data();
+
+		bool next_midpoint = true;
+		while (true) {
+			//keep syncing until a page is found. Buffer is only 4k while ogg pages can be up to 65k in size
+			int ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
+			if (ogg_page_sync_state == -1) {
+				//Give up when the file advances past the right boundary
+				if (buffer_data() == 0) {
+					right = mid_block;
+					break;
+				} else {
+					//increment block size we buffered the next block
+					block++;
+				}
+			} else {
+				if (ogg_page_sync_state == 0) {
+					//Check if I reached the end of the file
+					if (buffer_data() == 0) {
+						right = mid_block;
+						break;
+					} else {
+						block++;
+					}
+				} else {
+					//Only pages with a end packet have granulepos. Check the stream
+					if (ogg_page_packets(&og) > 0 && ogg_page_serialno(&og) == to.serialno) {
+						next_midpoint = false;
+						break;
+					}
+				}
+			}
+		}
+		if (next_midpoint)
+			continue;
+
+		ogg_int64_t granulepos = ogg_page_granulepos(&og);
+		ogg_int64_t page_number = ogg_page_pageno(&og);
+		struct _page_info pg_info = { .time = th_granule_time(td, granulepos), .block_number = mid_block, .granulepos = granulepos };
+		page_info_table.set(page_number, pg_info);
+		block_time.set(mid_block, pg_info.time);
+		mid_page = pg_info;
+
+		//I can finally implement the binary search comparisons
+		if (abs(p_time - pg_info.time) < .001) {
+			//The video managed to be equal
+			right_page = pg_info;
+			break;
+		}
+		if (pg_info.time > p_time) {
+			if (pg_info.granulepos < right_page.granulepos)
+				right_page = pg_info;
+			right = mid_block;
+		} else {
+			if (pg_info.granulepos > left_page.granulepos)
+				left_page = pg_info;
+			left = mid_block;
+		}
+	}
+	//print_line(rtos(th_granule_time(td,mid_page.granulepos)) + " " + rtos(mid_page.time));
+	//Now I have to find the closest lower keyframe
+	int current_block = mid_page.block_number;
+	//I have the midblock, check if is worthwhile process
+	if (mid_page.time > p_time || ogg_page_continued(&og)) {
+		current_block--;
+	}
+	/*
+	ogg_stream_reset(&to);
+	ogg_stream_reset(&vo);
+	ogg_sync_reset(&oy);
+	file->seek(current_block * buffer_size);
+	while(buffer_data() > 0) {
+		while(ogg_sync_pageout(&oy, &og) > 0) {
+			queue_page(&og);
+			print_line("page: " + itos(ogg_page_pageno(&og)) + "block num: " + itos(current_block));
+			while(ogg_stream_packetout(&to, &op) > 0) {
+				print_line(itos(th_packet_iskeyframe(&op)) + " grand "  + itos(op.granulepos));
+			}
+		}
+		current_block++;
+	}*/
+	// Backtrack to find the keyframe
+	// Keyframes seem to reside on their own page
+	while (current_block >= 0) {
+		ogg_stream_reset(&to);
+		ogg_stream_reset(&vo);
+		ogg_sync_reset(&oy);
+		file->seek(current_block * buffer_size);
+		buffer_data();
+		int ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
+		if (ogg_page_sync_state == -1) {
+			ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
+		}
+		while (ogg_page_sync_state == 0) {
+			buffer_data();
+			ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
+		}
+		if (ogg_page_sync_state == 1) {
+			if (ogg_page_packets(&og) == 1) {
+				queue_page(&og);
+				ogg_stream_packetpeek(&to, &op); //Just attempt it
+				while (ogg_stream_packetpeek(&to, &op) == 0) {
+					if (ogg_sync_pageout(&oy, &og) > 0) {
+						queue_page(&og);
+					} else {
+						buffer_data();
+					}
+				}
+			}
+		}
+		if (th_packet_iskeyframe(&op)) {
+			if (videobuf_time < p_time) {
+				break;
+			}
+		}
+		current_block--;
+	}
+	ogg_packet audio_op;
+	vorbis_synthesis_restart(&vd);
+	//decode video until the proper time is found
+	th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level, sizeof(pp_level));
+	while (videobuf_time <= p_time) {
+		queue_page(&og);
+		while (ogg_stream_packetout(&to, &op) > 0) {
+			ogg_int64_t videobuf_granulepos;
+			th_decode_packetin(td, &op, &videobuf_granulepos);
+			videobuf_time = th_granule_time(td, videobuf_granulepos);
+			if (op.granulepos > 0)
+				th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
+			th_ycbcr_buffer yuv;
+			th_decode_ycbcr_out(td, yuv); //dump frames
+		}
+		//Needed to calculate the time without extra memory allocation
+
+		//We have to clear the vorbis buffer
+		ogg_int64_t total_packets = ogg_page_packets(&og); //Trick to figure out the time
+		while (ogg_stream_packetout(&vo, &audio_op) > 0) {
+			double music_time = vorbis_granule_time(&vd, ogg_page_granulepos(&og) + ogg_page_packets(&og) - total_packets--);
+			if (music_time > p_time) {
+				if (vorbis_synthesis(&vb, &audio_op) == 0) { /* test for success! */
+					vorbis_synthesis_blockin(&vd, &vb);
+				}
+			}
+		}
+		int ogg_sync_state = ogg_sync_pageout(&oy, &og);
+		while (ogg_sync_state < 1) {
+			buffer_data();
+			ogg_sync_state = ogg_sync_pageout(&oy, &og);
+		}
+	}
+	time = p_time;
 };
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {

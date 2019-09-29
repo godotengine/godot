@@ -50,6 +50,7 @@ class VideoStreamPlaybackTheora : public VideoStreamPlayback {
 
 	enum {
 		MAX_FRAMES = 4,
+		BUFFERSIZE = 4096,
 	};
 
 	//Image frames[MAX_FRAMES];
