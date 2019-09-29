@@ -1480,9 +1480,9 @@ void EditorInspector::update_tree() {
 	String group_base;
 	VBoxContainer *category_vbox = NULL;
 
-	List<PropertyInfo>
-			plist;
+	List<PropertyInfo> plist;
 	object->get_property_list(&plist, true);
+	_update_script_class_properties(*object, plist);
 
 	HashMap<String, VBoxContainer *> item_path;
 	Map<VBoxContainer *, EditorInspectorSection *> section_map;
@@ -1538,7 +1538,28 @@ void EditorInspector::update_tree() {
 			category_vbox = NULL; //reset
 
 			String type = p.name;
-			category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
+			if (!ClassDB::class_exists(type) && !ScriptServer::is_global_class(type) && p.hint_string.length() && FileAccess::exists(p.hint_string)) {
+				Ref<Script> s = ResourceLoader::load(p.hint_string, "Script");
+				String base_type;
+				if (s.is_valid()) {
+					base_type = s->get_instance_base_type();
+				}
+				while (s.is_valid()) {
+					StringName name = EditorNode::get_editor_data().script_class_get_name(s->get_path());
+					String icon_path = EditorNode::get_editor_data().script_class_get_icon_path(name);
+					if (name != StringName() && icon_path.length()) {
+						category->icon = ResourceLoader::load(icon_path, "Texture");
+						break;
+					}
+					s = s->get_base_script();
+				}
+				if (category->icon.is_null() && has_icon(base_type, "EditorIcons")) {
+					category->icon = get_icon(base_type, "EditorIcons");
+				}
+			}
+			if (category->icon.is_null()) {
+				category->icon = EditorNode::get_singleton()->get_class_icon(type, "Object");
+			}
 			category->label = type;
 
 			category->bg_color = get_color("prop_category", "Editor");
@@ -2310,6 +2331,83 @@ String EditorInspector::get_object_class() const {
 void EditorInspector::_feature_profile_changed() {
 
 	update_tree();
+}
+
+void EditorInspector::_update_script_class_properties(const Object &p_object, List<PropertyInfo> &r_list) const {
+	Ref<Script> script = p_object.get_script();
+	if (script.is_null()) {
+		return;
+	}
+
+	List<StringName> classes;
+	Map<StringName, String> paths;
+
+	// NodeC -> NodeB -> NodeA
+	while (script.is_valid()) {
+		String n = EditorNode::get_editor_data().script_class_get_name(script->get_path());
+		if (n.length()) {
+			classes.push_front(n);
+		} else {
+			n = script->get_path().get_file();
+			classes.push_front(n);
+		}
+		paths[n] = script->get_path();
+		script = script->get_base_script();
+	}
+
+	if (classes.empty()) {
+		return;
+	}
+
+	// Script Variables -> to insert: NodeC..B..A -> bottom (insert_here)
+	List<PropertyInfo>::Element *script_variables = NULL;
+	List<PropertyInfo>::Element *bottom = NULL;
+	List<PropertyInfo>::Element *insert_here = NULL;
+	for (List<PropertyInfo>::Element *E = r_list.front(); E; E = E->next()) {
+		PropertyInfo &pi = E->get();
+		if (pi.name != "Script Variables") {
+			continue;
+		}
+		script_variables = E;
+		bottom = r_list.insert_after(script_variables, PropertyInfo());
+		insert_here = bottom;
+		break;
+	}
+
+	Set<StringName> added;
+	for (List<StringName>::Element *E = classes.front(); E; E = E->next()) {
+		StringName name = E->get();
+		String path = paths[name];
+		Ref<Script> s = ResourceLoader::load(path, "Script");
+		List<PropertyInfo> props;
+		s->get_script_property_list(&props);
+
+		// Script Variables -> NodeA -> bottom (insert_here)
+		List<PropertyInfo>::Element *category = r_list.insert_before(insert_here, PropertyInfo(Variant::NIL, name, PROPERTY_HINT_NONE, path, PROPERTY_USAGE_CATEGORY));
+
+		// Script Variables -> NodeA -> A props... -> bottom (insert_here)
+		for (List<PropertyInfo>::Element *P = props.front(); P; P = P->next()) {
+			PropertyInfo &pi = P->get();
+			if (added.has(pi.name)) {
+				continue;
+			}
+			added.insert(pi.name);
+
+			r_list.insert_before(insert_here, pi);
+		}
+
+		// Script Variables -> NodeA (insert_here) -> A props... -> bottom
+		insert_here = category;
+	}
+
+	// NodeC -> C props... -> NodeB..C..
+	r_list.erase(script_variables);
+	List<PropertyInfo>::Element *to_delete = bottom->next();
+	while (to_delete && !(to_delete->get().usage & PROPERTY_USAGE_CATEGORY)) {
+		r_list.erase(to_delete);
+		to_delete = bottom->next();
+	}
+	r_list.erase(bottom);
 }
 
 void EditorInspector::_bind_methods() {
