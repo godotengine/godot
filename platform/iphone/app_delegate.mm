@@ -72,16 +72,24 @@ NSArray<UIImpactFeedbackGenerator*>* impactGenerator = @[
              [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleLight],
              [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleMedium],
              [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleHeavy],
-			 [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleSoft],
-			 [[UIImpactFeedbackGenerator alloc] initWithStyle:UIImpactFeedbackStyleRigid]
         ];
-
+		
 void _iOS_haptic_selection() {
 	[selectionGenerator selectionChanged];
 };
 
 void _iOS_haptic_impact(int feedback_style) {
-	[impactGenerator[(int) feedback_style] impactOccured];
+	UIImpactFeedbackGenerator *hap = [[UIImpactFeedbackGenerator alloc] init];
+    
+    [hap prepare];
+    
+    if(feedback_style == 0) [hap initWithStyle:UIImpactFeedbackStyleLight];
+
+    else if(feedback_style == 1) [hap initWithStyle:UIImpactFeedbackStyleMedium];
+
+    else if(feedback_style == 2) [hap initWithStyle:UIImpactFeedbackStyleHeavy];
+    
+    [hap impactOccurred];
 };
 
 
