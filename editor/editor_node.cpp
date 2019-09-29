@@ -3780,8 +3780,6 @@ Ref<Texture2D> EditorNode::get_class_icon(const String &p_class, const String &p
 		if (icon.is_null()) {
 			icon = gui_base->get_theme_icon(ScriptServer::get_global_class_base(name), "EditorIcons");
 		}
-
-		return icon;
 	}
 
 	const Map<String, Vector<EditorData::CustomType>> &p_map = EditorNode::get_editor_data().get_custom_types();
