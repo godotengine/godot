@@ -224,6 +224,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	Color keyword_color = EDITOR_GET("text_editor/highlighting/keyword_color");
 	Color basetype_color = EDITOR_GET("text_editor/highlighting/base_type_color");
 	Color type_color = EDITOR_GET("text_editor/highlighting/engine_type_color");
+	Color usertype_color = EDITOR_GET("text_editor/highlighting/user_type_color");
 	Color comment_color = EDITOR_GET("text_editor/highlighting/comment_color");
 	Color string_color = EDITOR_GET("text_editor/highlighting/string_color");
 
@@ -262,6 +263,7 @@ void ScriptTextEditor::_load_theme_settings() {
 	colors_cache.keyword_color = keyword_color;
 	colors_cache.basetype_color = basetype_color;
 	colors_cache.type_color = type_color;
+	colors_cache.usertype_color = usertype_color;
 	colors_cache.comment_color = comment_color;
 	colors_cache.string_color = string_color;
 
@@ -324,6 +326,29 @@ void ScriptTextEditor::_set_theme_for_script() {
 		text_edit->add_keyword_color(n, colors_cache.type_color);
 	}
 	_update_member_keywords();
+
+	//colorize user types
+	List<StringName> global_classes;
+	ScriptServer::get_global_class_list(&global_classes);
+
+	for (List<StringName>::Element *E = global_classes.front(); E; E = E->next()) {
+
+		text_edit->add_keyword_color(E->get(), colors_cache.usertype_color);
+	}
+
+	//colorize singleton autoloads (as types, just as engine singletons are)
+	List<PropertyInfo> props;
+	ProjectSettings::get_singleton()->get_property_list(&props);
+	for (List<PropertyInfo>::Element *E = props.front(); E; E = E->next()) {
+		String s = E->get().name;
+		if (!s.begins_with("autoload/")) {
+			continue;
+		}
+		String path = ProjectSettings::get_singleton()->get(s);
+		if (path.begins_with("*")) {
+			text_edit->add_keyword_color(s.get_slice("/", 1), colors_cache.usertype_color);
+		}
+	}
 
 	//colorize comments
 	List<String> comments;
