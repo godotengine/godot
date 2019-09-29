@@ -271,6 +271,7 @@ void VisualScriptPropertySelector::_update_search() {
 			get_visual_node_names("flow_control/type_cast", Set<String>(), found, root, search_box);
 			get_visual_node_names("functions/built_in/print", Set<String>(), found, root, search_box);
 			get_visual_node_names("functions/by_type/" + Variant::get_type_name(type), Set<String>(), found, root, search_box);
+			get_visual_node_names("functions/deconstruct/" + Variant::get_type_name(type), Set<String>(), found, root, search_box);
 			get_visual_node_names("operators/compare/", Set<String>(), found, root, search_box);
 			if (type == Variant::INT) {
 				get_visual_node_names("operators/bitwise/", Set<String>(), found, root, search_box);
@@ -324,7 +325,7 @@ void VisualScriptPropertySelector::create_visualscript_item(const String &name, 
 	}
 }
 
-void VisualScriptPropertySelector::get_visual_node_names(const String &root_filter, const Set<String> &filter, bool &found, TreeItem *const root, LineEdit *const search_box) {
+void VisualScriptPropertySelector::get_visual_node_names(const String &root_filter, const Set<String> &p_modifiers, bool &found, TreeItem *const root, LineEdit *const search_box) {
 	Map<String, TreeItem *> path_cache;
 
 	List<String> fnodes;
@@ -335,27 +336,34 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 			continue;
 		}
 		Vector<String> path = E->get().split("/");
-		bool is_filter = false;
-		for (Set<String>::Element *F = filter.front(); F; F = F->next()) {
-			if (path.size() >= 2 && path[1].findn(F->get()) != -1) {
-				is_filter = true;
+
+		// check if the name has the filter
+		bool in_filter = false;
+		Vector<String> tx_filters = search_box->get_text().split(" ");
+		for (int i = 0; i < tx_filters.size(); i++) {
+			if (tx_filters[i] == "") {
+				in_filter = true;
+			} else {
+				in_filter = false;
+			}
+			if (E->get().findn(tx_filters[i]) != -1) {
+				in_filter = true;
 				break;
 			}
 		}
-		if (is_filter) {
+		if (!in_filter) {
 			continue;
 		}
 
-		Vector<String> tx_filters = search_box->get_text().split(" ");
-		for (int i = 0; i < tx_filters.size(); i++) {
-			if (tx_filters[i] != String() && E->get().findn(tx_filters[i]) == -1) {
-				is_filter = true;
-				break;
-			}
+		bool in_modifier = false | p_modifiers.empty();
+		for (Set<String>::Element *F = p_modifiers.front(); F && in_modifier; F = F->next()) {
+			if (E->get().findn(F->get()) != -1)
+				in_modifier = true;
 		}
-		if (is_filter) {
+		if (!in_modifier) {
 			continue;
 		}
+
 		TreeItem *item = search_options->create_item(root);
 		Ref<VisualScriptNode> vnode = VisualScriptLanguage::singleton->create_node_from_name(E->get());
 		Ref<VisualScriptOperator> vnode_operator = vnode;
@@ -375,6 +383,10 @@ void VisualScriptPropertySelector::get_visual_node_names(const String &root_filt
 		Ref<VisualScriptConstructor> vnode_constructor = vnode;
 		if (vnode_constructor.is_valid()) {
 			type_name = "Construct ";
+		}
+		Ref<VisualScriptDeconstruct> vnode_deconstruct = vnode;
+		if (vnode_deconstruct.is_valid()) {
+			type_name = "Deconstruct ";
 		}
 		Vector<String> desc = path[path.size() - 1].replace("(", " ").replace(")", " ").replace(",", " ").split(" ");
 		for (int i = 0; i < desc.size(); i++) {
