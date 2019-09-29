@@ -546,14 +546,14 @@ void VisualShaderEditor::_update_graph() {
 				HBoxContainer *hb2 = memnew(HBoxContainer);
 
 				Button *add_input_btn = memnew(Button);
-				add_input_btn->set_text(TTR("Add input +"));
+				add_input_btn->set_text(TTR("Add Input"));
 				add_input_btn->connect("pressed", this, "_add_input_port", varray(nodes[n_i], group_node->get_free_input_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "input" + itos(group_node->get_free_input_port_id())), CONNECT_DEFERRED);
 				hb2->add_child(add_input_btn);
 
 				hb2->add_spacer();
 
 				Button *add_output_btn = memnew(Button);
-				add_output_btn->set_text(TTR("Add output +"));
+				add_output_btn->set_text(TTR("Add Output"));
 				add_output_btn->connect("pressed", this, "_add_output_port", varray(nodes[n_i], group_node->get_free_output_port_id(), VisualShaderNode::PORT_TYPE_VECTOR, "output" + itos(group_node->get_free_output_port_id())), CONNECT_DEFERRED);
 				hb2->add_child(add_output_btn);
 
