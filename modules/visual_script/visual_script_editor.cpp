@@ -1353,6 +1353,8 @@ void VisualScriptEditor::_member_button(Object *p_item, int p_column, int p_butt
 		selected = ti->get_text(0);
 		function_name_edit->set_position(Input::get_singleton()->get_mouse_position() - Vector2(60, -10));
 		function_name_edit->popup();
+		function_name_box->set_text(selected);
+		function_name_box->select_all();
 	}
 }
 
@@ -1757,8 +1759,7 @@ void VisualScriptEditor::_members_gui_input(const Ref<InputEvent> &p_event) {
 	Ref<InputEventMouseButton> btn = p_event;
 	if (btn.is_valid() && btn->is_doubleclick()) {
 		TreeItem *ti = members->get_selected();
-		ERR_FAIL_COND(!ti);
-		if (ti->get_parent() == members->get_root()->get_children()) // to check if it's a function
+		if (ti && ti->get_parent() == members->get_root()->get_children()) // to check if it's a function
 			_center_on_node(ti->get_metadata(0), script->get_function_node_id(ti->get_metadata(0)));
 	}
 }
@@ -4541,6 +4542,8 @@ void VisualScriptEditor::_member_option(int p_option) {
 			} else if (p_option == MEMBER_EDIT) {
 				selected = members->get_selected()->get_text(0);
 				function_name_edit->popup();
+				function_name_box->set_text(selected);
+				function_name_box->select_all();
 			}
 		} break;
 		case MEMBER_VARIABLE: {
