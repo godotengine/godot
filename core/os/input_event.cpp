@@ -185,12 +185,47 @@ bool InputEventWithModifiers::get_command() const {
 	return command;
 }
 
+void InputEventWithModifiers::set_action_pressed_on_modifier(bool p_enabled) {
+
+	action_pressed_on_modifier = p_enabled;
+}
+
+bool InputEventWithModifiers::is_action_pressed_on_modifier() const {
+	if (has_modifiers()) return true;
+	return action_pressed_on_modifier;
+}
+
 void InputEventWithModifiers::set_modifiers_from_event(const InputEventWithModifiers *event) {
 
 	set_alt(event->get_alt());
 	set_shift(event->get_shift());
 	set_control(event->get_control());
 	set_metakey(event->get_metakey());
+}
+
+String InputEventWithModifiers::as_text() const {
+
+	String kc = "";
+
+	if (get_control()) {
+		kc += "+";
+		kc += find_keycode_name(KEY_CONTROL);
+	}
+	if (get_shift()) {
+		kc += "+";
+		kc += find_keycode_name(KEY_SHIFT);
+	}
+	if (get_alt()) {
+		kc += "+";
+		kc += find_keycode_name(KEY_ALT);
+	}
+	if (get_metakey()) {
+		kc += "+";
+		kc += find_keycode_name(KEY_META);
+	}
+
+	kc.erase(0, 1);
+	return kc;
 }
 
 void InputEventWithModifiers::_bind_methods() {
@@ -210,11 +245,16 @@ void InputEventWithModifiers::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_command", "enable"), &InputEventWithModifiers::set_command);
 	ClassDB::bind_method(D_METHOD("get_command"), &InputEventWithModifiers::get_command);
 
+	ClassDB::bind_method(D_METHOD("set_action_pressed_on_modifier", "enable"), &InputEventWithModifiers::set_action_pressed_on_modifier);
+	ClassDB::bind_method(D_METHOD("is_action_pressed_on_modifier"), &InputEventWithModifiers::is_action_pressed_on_modifier);
+
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "alt"), "set_alt", "get_alt");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "shift"), "set_shift", "get_shift");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "control"), "set_control", "get_control");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "meta"), "set_metakey", "get_metakey");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "command"), "set_command", "get_command");
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "action_pressed_on_modifier"), "set_action_pressed_on_modifier", "is_action_pressed_on_modifier");
 }
 
 InputEventWithModifiers::InputEventWithModifiers() {
@@ -223,6 +263,7 @@ InputEventWithModifiers::InputEventWithModifiers() {
 	shift = false;
 	control = false;
 	meta = false;
+	action_pressed_on_modifier = true;
 }
 
 //////////////////////////////////
@@ -285,19 +326,16 @@ String InputEventKey::as_text() const {
 	if (kc == String())
 		return kc;
 
-	if (get_metakey()) {
-		kc = find_keycode_name(KEY_META) + ("+" + kc);
+	if (has_modifiers()) {
+		kc = InputEventWithModifiers::as_text() + "+" + kc;
 	}
-	if (get_alt()) {
-		kc = find_keycode_name(KEY_ALT) + ("+" + kc);
-	}
-	if (get_shift()) {
-		kc = find_keycode_name(KEY_SHIFT) + ("+" + kc);
-	}
-	if (get_control()) {
-		kc = find_keycode_name(KEY_CONTROL) + ("+" + kc);
-	}
+
 	return kc;
+}
+
+bool InputEventWithModifiers::has_modifiers() const {
+
+	return get_control() || get_alt() || get_shift() || get_metakey();
 }
 
 bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
@@ -308,8 +346,14 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 
 	uint32_t code = get_scancode_with_modifiers();
 	uint32_t event_code = key->get_scancode_with_modifiers();
+	bool match = true;
 
-	bool match = get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
+	// this = action (only 'this' has is_action_pressed_on_modifier flag)
+	// key = pressed key
+	if (!is_action_pressed_on_modifier()) {
+		match = !key->has_modifiers(); // only activate action with modifers.
+	}
+	match = match && get_scancode() == key->get_scancode() && (!key->is_pressed() || (code & event_code) == code);
 	if (match) {
 		if (p_pressed != NULL)
 			*p_pressed = key->is_pressed();
@@ -340,6 +384,7 @@ void InputEventKey::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_unicode", "unicode"), &InputEventKey::set_unicode);
 	ClassDB::bind_method(D_METHOD("get_unicode"), &InputEventKey::get_unicode);
+	ClassDB::bind_method(D_METHOD("has_modifiers"), &InputEventWithModifiers::has_modifiers);
 
 	ClassDB::bind_method(D_METHOD("set_echo", "echo"), &InputEventKey::set_echo);
 
