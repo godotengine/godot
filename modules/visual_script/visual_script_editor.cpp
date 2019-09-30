@@ -3915,6 +3915,8 @@ void VisualScriptEditor::_notification(int p_what) {
 				return;
 			}
 
+			edit_variable_edit->add_style_override("bg", get_stylebox("bg", "Tree"));
+			edit_signal_edit->add_style_override("bg", get_stylebox("bg", "Tree"));
 			func_input_scroll->add_style_override("bg", get_stylebox("bg", "Tree"));
 
 			Ref<Theme> tm = EditorNode::get_singleton()->get_theme_base()->get_theme();
