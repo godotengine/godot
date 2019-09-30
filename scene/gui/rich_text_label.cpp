@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "rich_text_label.h"
+#include "modules/modules_enabled.gen.h"
 
 #include "core/math/math_defs.h"
 #include "core/os/keyboard.h"
@@ -2727,6 +2728,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 
 		Vector<String> values = parts[1].split(",", false);
 
+#ifdef MODULE_REGEX_ENABLED
 		RegEx color = RegEx();
 		color.compile("^#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})$");
 		RegEx nodepath = RegEx();
@@ -2760,6 +2762,7 @@ Dictionary RichTextLabel::parse_expressions_for_values(Vector<String> p_expressi
 				a.append(values[j]);
 			}
 		}
+#endif
 
 		if (values.size() > 1) {
 			d[key] = a;

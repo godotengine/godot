@@ -235,6 +235,14 @@ def win32_spawn(sh, escape, cmd, args, spawnenv):
 def disable_module(self):
     self.disabled_modules.append(self.current_module)
 
+def generate_modules_enabled(target = None, source = None, env = None):
+    with open(target[0].path, 'w') as f:
+        for x in env.module_list:
+            if (x in env.disabled_modules):
+                continue
+            
+            f.write('#define %s\n' % ("MODULE_" + x.upper() + "_ENABLED"))
+
 def use_windows_spawn_fix(self, platform=None):
 
     if (os.name != "nt"):
