@@ -1213,9 +1213,14 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	editing_port = p_port;
 }
 
-void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
+void VisualShaderEditor::_add_texture_node(const String &p_path) {
+	VisualShaderNodeTexture *texture = (VisualShaderNodeTexture *)_add_node(texture_node_option_idx, -1);
+	texture->set_texture(ResourceLoader::load(p_path));
+}
 
-	ERR_FAIL_INDEX(p_idx, add_options.size());
+VisualShaderNode *VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
+
+	ERR_FAIL_INDEX_V(p_idx, add_options.size(), NULL);
 
 	Ref<VisualShaderNode> vsnode;
 
@@ -1223,7 +1228,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
 	if (!is_custom && add_options[p_idx].type != String()) {
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(add_options[p_idx].type));
-		ERR_FAIL_COND(!vsn);
+		ERR_FAIL_COND_V(!vsn, NULL);
 
 		VisualShaderNodeScalarConstant *constant = Object::cast_to<VisualShaderNodeScalarConstant>(vsn);
 
@@ -1309,10 +1314,10 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 
 		vsnode = Ref<VisualShaderNode>(vsn);
 	} else {
-		ERR_FAIL_COND(add_options[p_idx].script.is_null());
+		ERR_FAIL_COND_V(add_options[p_idx].script.is_null(), NULL);
 		String base_type = add_options[p_idx].script->get_instance_base_type();
 		VisualShaderNode *vsn = Object::cast_to<VisualShaderNode>(ClassDB::instance(base_type));
-		ERR_FAIL_COND(!vsn);
+		ERR_FAIL_COND_V(!vsn, NULL);
 		vsnode = Ref<VisualShaderNode>(vsn);
 		vsnode->set_script(add_options[p_idx].script.get_ref_ptr());
 	}
@@ -1367,6 +1372,7 @@ void VisualShaderEditor::_add_node(int p_idx, int p_op_idx) {
 	undo_redo->add_do_method(this, "_update_graph");
 	undo_redo->add_undo_method(this, "_update_graph");
 	undo_redo->commit_action();
+	return vsnode.ptr();
 }
 
 void VisualShaderEditor::_node_dragged(const Vector2 &p_from, const Vector2 &p_to, int p_node) {
@@ -2038,6 +2044,9 @@ bool VisualShaderEditor::can_drop_data_fw(const Point2 &p_point, const Variant &
 		if (d.has("id")) {
 			return true;
 		}
+		if (d.has("files")) {
+			return true;
+		}
 	}
 
 	return false;
@@ -2054,6 +2063,20 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 			saved_node_pos = p_point;
 			saved_node_pos_dirty = true;
 			_add_node(idx, add_options[idx].sub_func);
+		} else if (d.has("files")) {
+			if (d["files"].get_type() == Variant::POOL_STRING_ARRAY) {
+
+				PoolStringArray arr = d["files"];
+				for (int i = 0; i < arr.size(); i++) {
+
+					String type = ResourceLoader::get_resource_type(arr[i]);
+					if (ClassDB::get_parent_class(type) == "Texture") {
+						saved_node_pos = p_point + Vector2(0, i * 210 * EDSCALE);
+						saved_node_pos_dirty = true;
+						_add_texture_node(arr[i]);
+					}
+				}
+			}
 		}
 	}
 }
@@ -2558,6 +2581,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	// TEXTURES
 
 	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	texture_node_option_idx = add_options.size();
 	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
 
 	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));

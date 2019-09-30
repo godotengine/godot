@@ -148,11 +148,13 @@ class VisualShaderEditor : public VBoxContainer {
 	};
 
 	Vector<AddOption> add_options;
+	int texture_node_option_idx;
 	List<String> keyword_list;
 
 	void _draw_color_over_button(Object *obj, Color p_color);
 
-	void _add_node(int p_idx, int p_op_idx = -1);
+	void _add_texture_node(const String &p_path);
+	VisualShaderNode *_add_node(int p_idx, int p_op_idx = -1);
 	void _update_custom_nodes();
 	void _update_options_menu();
 
