@@ -167,6 +167,7 @@
 			</argument>
 			<description>
 				Returns a constructed [ArrayMesh] from current information passed in. If an existing [ArrayMesh] is passed in as an argument, will add an extra surface to the existing [ArrayMesh].
+				Default flag is [constant Mesh.ARRAY_COMPRESS_DEFAULT]. See [code]Mesh.ARRAY_COMPRESS_*[/code] constants for other flags.
 			</description>
 		</method>
 		<method name="commit_to_arrays">
