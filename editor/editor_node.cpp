@@ -4891,7 +4891,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 	}
 
 	int max_rows = 6;
-	int num_rows = p_paths.size() > max_rows ? max_rows - 1 : p_paths.size(); //Don't waste a row to say "1 more file" - list it instead.
+	int num_rows = p_paths.size() > max_rows ? max_rows - 1 : p_paths.size(); // Don't waste a row to say "1 more file" - list it instead.
 	VBoxContainer *vbox = memnew(VBoxContainer);
 	for (int i = 0; i < num_rows; i++) {
 		HBoxContainer *hbox = memnew(HBoxContainer);
@@ -4905,6 +4905,7 @@ Variant EditorNode::drag_files_and_dirs(const Vector<String> &p_paths, Control *
 			label->set_text(p_paths[i].get_file());
 			icon->set_texture(gui_base->get_icon("File", "EditorIcons"));
 		}
+		icon->set_stretch_mode(TextureRect::STRETCH_KEEP_CENTERED);
 		icon->set_size(Size2(16, 16));
 		hbox->add_child(icon);
 		hbox->add_child(label);
