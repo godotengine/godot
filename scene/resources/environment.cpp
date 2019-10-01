@@ -354,10 +354,6 @@ void Environment::_validate_property(PropertyInfo &property) const {
 		"tonemap_",
 		"ss_reflections_",
 		"ssao_",
-		"dof_blur_far_",
-		"dof_blur_near_",
-		"glow_",
-		"adjustment_",
 		NULL
 
 	};
@@ -1378,6 +1374,11 @@ Environment::Environment() :
 	glow_hdr_luminance_cap = 12.0;
 	glow_hdr_bleed_scale = 2.0;
 	glow_bicubic_upscale = false;
+	if (VisualServer::get_singleton()->is_low_end()) {
+		glow_hdr_bleed_threshold = 0.9;
+		glow_intensity = 1.5;
+		glow_strength = 1.3;
+	}
 
 	dof_blur_far_enabled = false;
 	dof_blur_far_distance = 10;
