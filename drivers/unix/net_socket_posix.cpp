@@ -30,6 +30,7 @@
 
 #include "net_socket_posix.h"
 
+#ifndef UNIX_SOCKET_UNAVAILABLE
 #if defined(UNIX_ENABLED)
 
 #include <errno.h>
@@ -691,3 +692,4 @@ Error NetSocketPosix::join_multicast_group(const IP_Address &p_multi_address, St
 Error NetSocketPosix::leave_multicast_group(const IP_Address &p_multi_address, String p_if_name) {
 	return _change_multicast_group(p_multi_address, p_if_name, false);
 }
+#endif
