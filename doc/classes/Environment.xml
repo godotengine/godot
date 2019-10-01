@@ -177,6 +177,7 @@
 			Enables fog's light transmission. If enabled, lets reflections light to be transmitted by the fog.
 		</member>
 		<member name="glow_bicubic_upscale" type="bool" setter="set_glow_bicubic_upscale" getter="is_glow_bicubic_upscale_enabled" default="false">
+			Smooths out blockiness created by sampling higher levels.
 		</member>
 		<member name="glow_blend_mode" type="int" setter="set_glow_blend_mode" getter="get_glow_blend_mode" enum="Environment.GlowBlendMode" default="2">
 			Glow blending mode.
@@ -193,10 +194,10 @@
 			Bleed scale of the HDR glow.
 		</member>
 		<member name="glow_hdr_threshold" type="float" setter="set_glow_hdr_bleed_threshold" getter="get_glow_hdr_bleed_threshold" default="1.0">
-			Bleed threshold of the HDR glow.
+			Bleed threshold of the HDR glow. In GLES2, this needs to be below 1.0 in order for glow to be visible, a default value of 0.9 works well.
 		</member>
 		<member name="glow_intensity" type="float" setter="set_glow_intensity" getter="get_glow_intensity" default="0.8">
-			Glow intensity.
+			Glow intensity. In GLES2, this should be increased to 1.5 by default to compensate for not using HDR.
 		</member>
 		<member name="glow_levels/1" type="bool" setter="set_glow_level" getter="is_glow_level_enabled" default="false">
 			First level of glow (most local).
@@ -220,7 +221,7 @@
 			Seventh level of glow (most global).
 		</member>
 		<member name="glow_strength" type="float" setter="set_glow_strength" getter="get_glow_strength" default="1.0">
-			Glow strength.
+			Glow strength. In GLES2, this should be increased to 1.3 by default to compensate for not using HDR.
 		</member>
 		<member name="ss_reflections_depth_tolerance" type="float" setter="set_ssr_depth_tolerance" getter="get_ssr_depth_tolerance" default="0.2">
 		</member>
