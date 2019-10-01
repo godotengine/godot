@@ -199,7 +199,8 @@ public:
 		SOURCE_SCREEN,
 		SOURCE_2D_TEXTURE,
 		SOURCE_2D_NORMAL,
-		SOURCE_DEPTH
+		SOURCE_DEPTH,
+		SOURCE_PORT,
 	};
 
 	enum TextureType {

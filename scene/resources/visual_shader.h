@@ -184,7 +184,8 @@ public:
 		PORT_TYPE_VECTOR,
 		PORT_TYPE_BOOLEAN,
 		PORT_TYPE_TRANSFORM,
-		PORT_TYPE_ICON_COLOR // just a hint for node tree icons, do not use it as actual port type !
+		PORT_TYPE_SAMPLER,
+		PORT_TYPE_MAX,
 	};
 
 	virtual String get_caption() const = 0;

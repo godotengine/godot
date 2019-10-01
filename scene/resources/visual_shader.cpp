@@ -122,7 +122,8 @@ void VisualShaderNode::_bind_methods() {
 	BIND_ENUM_CONSTANT(PORT_TYPE_VECTOR);
 	BIND_ENUM_CONSTANT(PORT_TYPE_BOOLEAN);
 	BIND_ENUM_CONSTANT(PORT_TYPE_TRANSFORM);
-	BIND_ENUM_CONSTANT(PORT_TYPE_ICON_COLOR);
+	BIND_ENUM_CONSTANT(PORT_TYPE_SAMPLER);
+	BIND_ENUM_CONSTANT(PORT_TYPE_MAX);
 }
 
 VisualShaderNode::VisualShaderNode() {
@@ -1058,7 +1059,15 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 			String src_var = "n_out" + itos(from_node) + "p" + itos(from_port);
 
-			if (in_type == out_type) {
+			if (in_type == VisualShaderNode::PORT_TYPE_SAMPLER && out_type == VisualShaderNode::PORT_TYPE_SAMPLER) {
+
+				VisualShaderNodeUniform *uniform = (VisualShaderNodeUniform *)graph[type].nodes[from_node].node.ptr();
+				if (uniform) {
+					inputs[i] = uniform->get_uniform_name();
+				} else {
+					inputs[i] = "";
+				}
+			} else if (in_type == out_type) {
 				inputs[i] = src_var;
 			} else if (in_type == VisualShaderNode::PORT_TYPE_SCALAR && out_type == VisualShaderNode::PORT_TYPE_VECTOR) {
 				inputs[i] = "dot(" + src_var + ",vec3(0.333333,0.333333,0.333333))";
@@ -2207,7 +2216,7 @@ void VisualShaderNodeGroupBase::clear_output_ports() {
 void VisualShaderNodeGroupBase::set_input_port_type(int p_id, int p_type) {
 
 	ERR_FAIL_COND(!has_input_port(p_id));
-	ERR_FAIL_COND(p_type < 0 || p_type > PORT_TYPE_TRANSFORM);
+	ERR_FAIL_COND(p_type < 0 || p_type >= PORT_TYPE_MAX);
 
 	if (input_ports[p_id].type == p_type)
 		return;
@@ -2273,7 +2282,7 @@ String VisualShaderNodeGroupBase::get_input_port_name(int p_id) const {
 void VisualShaderNodeGroupBase::set_output_port_type(int p_id, int p_type) {
 
 	ERR_FAIL_COND(!has_output_port(p_id));
-	ERR_FAIL_COND(p_type < 0 || p_type > PORT_TYPE_TRANSFORM);
+	ERR_FAIL_COND(p_type < 0 || p_type >= PORT_TYPE_MAX);
 
 	if (output_ports[p_id].type == p_type)
 		return;
