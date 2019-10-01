@@ -97,6 +97,8 @@
 		</theme_item>
 		<theme_item name="margin" type="int" default="4">
 		</theme_item>
+		<theme_item name="overbright_indicator" type="Texture">
+		</theme_item>
 		<theme_item name="preset_bg" type="Texture">
 		</theme_item>
 		<theme_item name="screen_picker" type="Texture">
