@@ -561,6 +561,8 @@ bool SceneTree::idle(float p_time) {
 		E = N;
 	}
 
+	flush_transform_notifications(); //additional transforms after timers update
+
 	_call_idle_callbacks();
 
 #ifdef TOOLS_ENABLED
