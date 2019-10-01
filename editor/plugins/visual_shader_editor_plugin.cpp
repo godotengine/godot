@@ -359,8 +359,8 @@ void VisualShaderEditor::_update_options_menu() {
 					case VisualShaderNode::PORT_TYPE_TRANSFORM:
 						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Transform", "EditorIcons"));
 						break;
-					case VisualShaderNode::PORT_TYPE_ICON_COLOR:
-						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("Color", "EditorIcons"));
+					case VisualShaderNode::PORT_TYPE_SAMPLER:
+						item->set_icon(0, EditorNode::get_singleton()->get_gui_base()->get_icon("ImageTexture", "EditorIcons"));
 						break;
 					default:
 						break;
@@ -437,11 +437,12 @@ void VisualShaderEditor::_update_graph() {
 		}
 	}
 
-	static const Color type_color[4] = {
+	static const Color type_color[5] = {
 		Color(0.38, 0.85, 0.96), // scalar
 		Color(0.84, 0.49, 0.93), // vector
 		Color(0.55, 0.65, 0.94), // boolean
-		Color(0.96, 0.66, 0.43) // transform
+		Color(0.96, 0.66, 0.43), // transform
+		Color(1.0, 1.0, 0.0) // sampler
 	};
 
 	List<VisualShader::Connection> connections;
@@ -640,6 +641,7 @@ void VisualShaderEditor::_update_graph() {
 						type_box->add_item(TTR("Vector"));
 						type_box->add_item(TTR("Boolean"));
 						type_box->add_item(TTR("Transform"));
+						type_box->add_item(TTR("Sampler"));
 						type_box->select(group_node->get_input_port_type(i));
 						type_box->set_custom_minimum_size(Size2(100 * EDSCALE, 0));
 						type_box->connect("item_selected", this, "_change_input_port_type", varray(nodes[n_i], i), CONNECT_DEFERRED);
@@ -704,7 +706,7 @@ void VisualShaderEditor::_update_graph() {
 				}
 			}
 
-			if (valid_right && edit_type->get_selected() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM) {
+			if (valid_right && edit_type->get_selected() == VisualShader::TYPE_FRAGMENT && port_right != VisualShaderNode::PORT_TYPE_TRANSFORM && port_right != VisualShaderNode::PORT_TYPE_SAMPLER) {
 				TextureButton *preview = memnew(TextureButton);
 				preview->set_toggle_mode(true);
 				preview->set_normal_texture(get_icon("GuiVisibilityHidden", "EditorIcons"));
@@ -731,15 +733,19 @@ void VisualShaderEditor::_update_graph() {
 			node->set_slot(i + port_offset, valid_left, port_left, type_color[port_left], valid_right, port_right, type_color[port_right]);
 		}
 
-		if (vsnode->get_output_port_for_preview() >= 0 && vsnode->get_output_port_type(vsnode->get_output_port_for_preview()) != VisualShaderNode::PORT_TYPE_TRANSFORM) {
-			offset = memnew(Control);
-			offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
-			node->add_child(offset);
+		if (vsnode->get_output_port_for_preview() >= 0) {
+			int port_type = vsnode->get_output_port_type(vsnode->get_output_port_for_preview());
 
-			VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
-			port_preview->setup(visual_shader, type, nodes[n_i], vsnode->get_output_port_for_preview());
-			port_preview->set_h_size_flags(SIZE_SHRINK_CENTER);
-			node->add_child(port_preview);
+			if (port_type != VisualShaderNode::PORT_TYPE_TRANSFORM && port_type != VisualShaderNode::PORT_TYPE_SAMPLER) {
+				offset = memnew(Control);
+				offset->set_custom_minimum_size(Size2(0, 5 * EDSCALE));
+				node->add_child(offset);
+
+				VisualShaderNodePortPreview *port_preview = memnew(VisualShaderNodePortPreview);
+				port_preview->setup(visual_shader, type, nodes[n_i], vsnode->get_output_port_for_preview());
+				port_preview->set_h_size_flags(SIZE_SHRINK_CENTER);
+				node->add_child(port_preview);
+			}
 		}
 
 		offset = memnew(Control);
@@ -2214,6 +2220,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_BOOLEAN);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_TRANSFORM);
+	graph->add_valid_right_disconnect_type(VisualShaderNode::PORT_TYPE_SAMPLER);
 	//graph->add_valid_left_disconnect_type(0);
 	graph->set_v_size_flags(SIZE_EXPAND_FILL);
 	graph->connect("connection_request", this, "_connection_request", varray(), CONNECT_DEFERRED);
@@ -2237,6 +2244,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_BOOLEAN, VisualShaderNode::PORT_TYPE_VECTOR);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_BOOLEAN, VisualShaderNode::PORT_TYPE_BOOLEAN);
 	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_TRANSFORM, VisualShaderNode::PORT_TYPE_TRANSFORM);
+	graph->add_valid_connection_type(VisualShaderNode::PORT_TYPE_SAMPLER, VisualShaderNode::PORT_TYPE_SAMPLER);
 
 	VSeparator *vs = memnew(VSeparator);
 	graph->get_zoom_hbox()->add_child(vs);
@@ -2373,8 +2381,8 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("Screen", "Color", "Operators", "VisualShaderNodeColorOp", TTR("Screen operator."), VisualShaderNodeColorOp::OP_SCREEN, VisualShaderNode::PORT_TYPE_VECTOR));
 	add_options.push_back(AddOption("SoftLight", "Color", "Operators", "VisualShaderNodeColorOp", TTR("SoftLight operator."), VisualShaderNodeColorOp::OP_SOFT_LIGHT, VisualShaderNode::PORT_TYPE_VECTOR));
 
-	add_options.push_back(AddOption("ColorConstant", "Color", "Variables", "VisualShaderNodeColorConstant", TTR("Color constant."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
-	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("ColorConstant", "Color", "Variables", "VisualShaderNodeColorConstant", TTR("Color constant."), -1, -1));
+	add_options.push_back(AddOption("ColorUniform", "Color", "Variables", "VisualShaderNodeColorUniform", TTR("Color uniform."), -1, -1));
 
 	// CONDITIONAL
 
@@ -2580,13 +2588,13 @@ VisualShaderEditor::VisualShaderEditor() {
 
 	// TEXTURES
 
-	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("CubeMap", "Textures", "Functions", "VisualShaderNodeCubeMap", TTR("Perform the cubic texture lookup."), -1, -1));
 	texture_node_option_idx = add_options.size();
-	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
+	add_options.push_back(AddOption("Texture", "Textures", "Functions", "VisualShaderNodeTexture", TTR("Perform the texture lookup."), -1, -1));
 
-	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
-	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR));
-	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, VisualShaderNode::PORT_TYPE_ICON_COLOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
+	add_options.push_back(AddOption("CubeMapUniform", "Textures", "Variables", "VisualShaderNodeCubeMapUniform", TTR("Cubic texture uniform lookup."), -1, -1));
+	add_options.push_back(AddOption("TextureUniform", "Textures", "Variables", "VisualShaderNodeTextureUniform", TTR("2D texture uniform lookup."), -1, -1));
+	add_options.push_back(AddOption("TextureUniformTriplanar", "Textures", "Variables", "VisualShaderNodeTextureUniformTriplanar", TTR("2D texture uniform lookup with triplanar."), -1, -1, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, Shader::MODE_SPATIAL));
 
 	// TRANSFORM
 
