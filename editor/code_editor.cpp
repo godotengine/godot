@@ -456,10 +456,10 @@ void FindReplaceBar::_show_search(bool p_focus_replace, bool p_show_only) {
 
 void FindReplaceBar::popup_search(bool p_show_only) {
 
-	if (!is_visible())
-		replace_text->hide();
+	replace_text->hide();
 	hbc_button_replace->hide();
 	hbc_option_replace->hide();
+
 	_show_search(false, p_show_only);
 }
 
