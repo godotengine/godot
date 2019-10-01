@@ -53,7 +53,7 @@ Size2 Tabs::get_minimum_size() const {
 				ms.width += get_constant("hseparation");
 		}
 
-		ms.width += Math::ceil(font->get_string_size(tabs[i].text).width);
+		ms.width += Math::ceil(font->get_string_size(tabs[i].xl_text).width);
 
 		if (tabs[i].disabled)
 			ms.width += tab_disabled->get_minimum_size().width;
@@ -223,6 +223,9 @@ void Tabs::_notification(int p_what) {
 	switch (p_what) {
 
 		case NOTIFICATION_TRANSLATION_CHANGED: {
+			for (int i = 0; i < tabs.size(); ++i) {
+				tabs.write[i].xl_text = tr(tabs[i].text);
+			}
 			minimum_size_changed();
 			update();
 		} break;
@@ -318,7 +321,7 @@ void Tabs::_notification(int p_what) {
 						w += icon->get_width() + get_constant("hseparation");
 				}
 
-				font->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent()), tabs[i].text, col, tabs[i].size_text);
+				font->draw(ci, Point2i(w, sb->get_margin(MARGIN_TOP) + ((sb_rect.size.y - sb_ms.y) - font->get_height()) / 2 + font->get_ascent()), tabs[i].xl_text, col, tabs[i].size_text);
 
 				w += tabs[i].size_text;
 
@@ -435,6 +438,7 @@ void Tabs::set_tab_title(int p_tab, const String &p_title) {
 
 	ERR_FAIL_INDEX(p_tab, tabs.size());
 	tabs.write[p_tab].text = p_title;
+	tabs.write[p_tab].xl_text = tr(p_title);
 	update();
 	minimum_size_changed();
 }
@@ -543,7 +547,7 @@ void Tabs::_update_cache() {
 	for (int i = 0; i < tabs.size(); i++) {
 		tabs.write[i].ofs_cache = mw;
 		tabs.write[i].size_cache = get_tab_width(i);
-		tabs.write[i].size_text = Math::ceil(font->get_string_size(tabs[i].text).width);
+		tabs.write[i].size_text = Math::ceil(font->get_string_size(tabs[i].xl_text).width);
 		mw += tabs[i].size_cache;
 		if (tabs[i].size_cache <= min_width || i == current) {
 			size_fixed += tabs[i].size_cache;
@@ -604,6 +608,7 @@ void Tabs::add_tab(const String &p_str, const Ref<Texture> &p_icon) {
 
 	Tab t;
 	t.text = p_str;
+	t.xl_text = tr(p_str);
 	t.icon = p_icon;
 	t.disabled = false;
 	t.ofs_cache = 0;
@@ -659,7 +664,7 @@ Variant Tabs::get_drag_data(const Point2 &p_point) {
 		tf->set_texture(tabs[tab_over].icon);
 		drag_preview->add_child(tf);
 	}
-	Label *label = memnew(Label(tabs[tab_over].text));
+	Label *label = memnew(Label(tabs[tab_over].xl_text));
 	drag_preview->add_child(label);
 	if (!tabs[tab_over].right_button.is_null()) {
 		TextureRect *tf = memnew(TextureRect);
@@ -808,7 +813,7 @@ int Tabs::get_tab_width(int p_idx) const {
 			x += get_constant("hseparation");
 	}
 
-	x += Math::ceil(font->get_string_size(tabs[p_idx].text).width);
+	x += Math::ceil(font->get_string_size(tabs[p_idx].xl_text).width);
 
 	if (tabs[p_idx].disabled)
 		x += tab_disabled->get_minimum_size().width;
