@@ -363,7 +363,7 @@ namespace Godot
 
         public bool Equals(Quat other)
         {
-            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
+            return x == other.x && y == other.y && z == other.z && w == other.w;
         }
 
         public bool IsEqualApprox(Quat other)

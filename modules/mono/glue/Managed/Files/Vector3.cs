@@ -513,7 +513,7 @@ namespace Godot
 
         public bool Equals(Vector3 other)
         {
-            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
+            return x == other.x && y == other.y && z == other.z;
         }
 
         public bool IsEqualApprox(Vector3 other)

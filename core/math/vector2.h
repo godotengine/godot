@@ -223,11 +223,11 @@ _FORCE_INLINE_ Vector2 Vector2::operator-() const {
 
 _FORCE_INLINE_ bool Vector2::operator==(const Vector2 &p_vec2) const {
 
-	return Math::is_equal_approx(x, p_vec2.x) && Math::is_equal_approx(y, p_vec2.y);
+	return x == p_vec2.x && y == p_vec2.y;
 }
 _FORCE_INLINE_ bool Vector2::operator!=(const Vector2 &p_vec2) const {
 
-	return !Math::is_equal_approx(x, p_vec2.x) || !Math::is_equal_approx(y, p_vec2.y);
+	return x != p_vec2.x || y != p_vec2.y;
 }
 
 Vector2 Vector2::linear_interpolate(const Vector2 &p_b, real_t p_t) const {

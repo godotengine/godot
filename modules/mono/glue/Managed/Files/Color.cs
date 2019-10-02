@@ -661,7 +661,7 @@ namespace Godot
 
         public bool Equals(Color other)
         {
-            return Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) && Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
+            return r == other.r && g == other.g && b == other.b && a == other.a;
         }
 
         public bool IsEqualApprox(Color other)
