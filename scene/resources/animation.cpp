@@ -2870,9 +2870,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		const Vector3 &v1 = t1.value.loc;
 		const Vector3 &v2 = t2.value.loc;
 
-		if (v0 == v2) {
+		if (v0.is_equal_approx(v2)) {
 			//0 and 2 are close, let's see if 1 is close
-			if (v0 != v1) {
+			if (!v0.is_equal_approx(v1)) {
 				//not close, not optimizable
 				return false;
 			}
@@ -2909,9 +2909,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 
 		//localize both to rotation from q0
 
-		if (Math::is_zero_approx((q0 - q2).length())) {
+		if (q0.is_equal_approx(q2)) {
 
-			if (!Math::is_zero_approx((q0 - q1).length()))
+			if (!q0.is_equal_approx(q1))
 				return false;
 
 		} else {
@@ -2959,9 +2959,9 @@ bool Animation::_transform_track_optimize_key(const TKey<TransformKey> &t0, cons
 		const Vector3 &v1 = t1.value.scale;
 		const Vector3 &v2 = t2.value.scale;
 
-		if (v0 == v2) {
+		if (v0.is_equal_approx(v2)) {
 			//0 and 2 are close, let's see if 1 is close
-			if (v0 != v1) {
+			if (!v0.is_equal_approx(v1)) {
 				//not close, not optimizable
 				return false;
 			}
