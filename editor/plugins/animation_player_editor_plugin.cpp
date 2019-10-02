@@ -1077,10 +1077,14 @@ void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag)
 
 	if (!is_visible_in_tree())
 		return;
+
 	if (!player)
 		return;
 
 	if (player->is_playing())
+		return;
+
+	if (!player->has_animation(player->get_assigned_animation()))
 		return;
 
 	Ref<Animation> anim = player->get_animation(player->get_assigned_animation());
