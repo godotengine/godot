@@ -202,9 +202,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 	if (err != OK)
 		ERR_PRINT("Shaderlang complete failed");
 
-	if (calltip != "") {
-		get_text_edit()->set_code_hint(calltip);
-	}
+	get_text_edit()->set_code_hint(calltip);
 }
 
 void ShaderTextEditor::_validate_script() {
