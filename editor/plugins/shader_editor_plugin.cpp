@@ -198,9 +198,7 @@ void ShaderTextEditor::_code_complete_script(const String &p_code, List<ScriptCo
 	ShaderLanguage sl;
 	String calltip;
 
-	Error err = sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
-	if (err != OK)
-		ERR_PRINT("Shaderlang complete failed");
+	sl.complete(p_code, ShaderTypes::get_singleton()->get_functions(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_modes(VisualServer::ShaderMode(shader->get_mode())), ShaderTypes::get_singleton()->get_types(), r_options, calltip);
 
 	get_text_edit()->set_code_hint(calltip);
 }

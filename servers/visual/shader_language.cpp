@@ -5348,9 +5348,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 	nodes = NULL;
 
 	shader = alloc_node<ShaderNode>();
-	Error err = _parse_shader(p_functions, p_render_modes, p_shader_types);
-	if (err != OK)
-		ERR_PRINT("Failed to parse shader");
+	_parse_shader(p_functions, p_render_modes, p_shader_types);
 
 	switch (completion_type) {
 
