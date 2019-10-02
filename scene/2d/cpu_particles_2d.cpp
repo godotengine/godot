@@ -166,10 +166,20 @@ void CPUParticles2D::_update_mesh_texture() {
 	vertices.push_back(-tex_size * 0.5 + Vector2(tex_size.x, tex_size.y));
 	vertices.push_back(-tex_size * 0.5 + Vector2(0, tex_size.y));
 	PoolVector<Vector2> uvs;
-	uvs.push_back(Vector2(0, 0));
-	uvs.push_back(Vector2(1, 0));
-	uvs.push_back(Vector2(1, 1));
-	uvs.push_back(Vector2(0, 1));
+	AtlasTexture *at = Object::cast_to<AtlasTexture>(*texture);
+	if (!at) {
+		uvs.push_back(Vector2(0, 0));
+		uvs.push_back(Vector2(1, 0));
+		uvs.push_back(Vector2(1, 1));
+		uvs.push_back(Vector2(0, 1));
+	} else {
+		Rect2 region_rect = at->get_region();
+		Size2 atlas_size = at->get_atlas()->get_size();
+		uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, region_rect.position.y / atlas_size.y));
+		uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, region_rect.position.y / atlas_size.y));
+		uvs.push_back(Vector2((region_rect.position.x + region_rect.size.x) / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
+		uvs.push_back(Vector2(region_rect.position.x / atlas_size.x, (region_rect.position.y + region_rect.size.y) / atlas_size.y));
+	}
 	PoolVector<Color> colors;
 	colors.push_back(Color(1, 1, 1, 1));
 	colors.push_back(Color(1, 1, 1, 1));
