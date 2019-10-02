@@ -350,8 +350,8 @@ void AnimationNodeOneShot::_bind_methods() {
 	ADD_GROUP("", "");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "sync"), "set_use_sync", "is_using_sync");
 
-	BIND_ENUM_CONSTANT(MIX_MODE_BLEND)
-	BIND_ENUM_CONSTANT(MIX_MODE_ADD)
+	BIND_ENUM_CONSTANT(MIX_MODE_BLEND);
+	BIND_ENUM_CONSTANT(MIX_MODE_ADD);
 }
 
 AnimationNodeOneShot::AnimationNodeOneShot() {

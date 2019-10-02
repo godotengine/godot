@@ -47,11 +47,11 @@ void JSONRPC::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("make_notification", "method", "params"), &JSONRPC::make_notification);
 	ClassDB::bind_method(D_METHOD("make_response_error", "code", "message", "id"), &JSONRPC::make_response_error, DEFVAL(Variant()));
 
-	BIND_ENUM_CONSTANT(PARSE_ERROR)
-	BIND_ENUM_CONSTANT(INVALID_REQUEST)
-	BIND_ENUM_CONSTANT(METHOD_NOT_FOUND)
-	BIND_ENUM_CONSTANT(INVALID_PARAMS)
-	BIND_ENUM_CONSTANT(INTERNAL_ERROR)
+	BIND_ENUM_CONSTANT(PARSE_ERROR);
+	BIND_ENUM_CONSTANT(INVALID_REQUEST);
+	BIND_ENUM_CONSTANT(METHOD_NOT_FOUND);
+	BIND_ENUM_CONSTANT(INVALID_PARAMS);
+	BIND_ENUM_CONSTANT(INTERNAL_ERROR);
 }
 
 Dictionary JSONRPC::make_response_error(int p_code, const String &p_message, const Variant &p_id) const {
