@@ -1411,9 +1411,6 @@ String EditorFileSystem::_get_global_script_class(const String &p_type, const St
 }
 
 void EditorFileSystem::_scan_script_classes(EditorFileSystemDirectory *p_dir) {
-	if (p_dir->parent && p_dir->parent->name == "addons" && !EditorNode::get_singleton()->is_addon_plugin_enabled(p_dir->name)) {
-		return;
-	}
 	int filecount = p_dir->files.size();
 	const EditorFileSystemDirectory::FileInfo *const *files = p_dir->files.ptr();
 	for (int i = 0; i < filecount; i++) {
