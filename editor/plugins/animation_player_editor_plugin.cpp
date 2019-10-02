@@ -304,6 +304,7 @@ void AnimationPlayerEditor::_animation_selected(int p_which) {
 
 	AnimationPlayerEditor::singleton->get_track_editor()->update_keying();
 	EditorNode::get_singleton()->update_keying();
+	_animation_key_editor_seek(timeline_position, false);
 }
 
 void AnimationPlayerEditor::_animation_new() {
@@ -1072,6 +1073,8 @@ void AnimationPlayerEditor::_animation_key_editor_anim_len_changed(float p_len) 
 
 void AnimationPlayerEditor::_animation_key_editor_seek(float p_pos, bool p_drag) {
 
+	timeline_position = p_pos;
+
 	if (!is_visible_in_tree())
 		return;
 	if (!player)
@@ -1753,6 +1756,7 @@ AnimationPlayerEditor::AnimationPlayerEditor(EditorNode *p_editor, AnimationPlay
 
 	renaming = false;
 	last_active = false;
+	timeline_position = 0;
 
 	set_process_unhandled_key_input(true);
 
