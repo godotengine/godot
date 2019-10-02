@@ -3509,6 +3509,11 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 
 	_render_render_list(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, cam_transform, p_cam_projection, p_shadow_atlas, env, env_radiance_tex, 0.0, 0.0, reverse_cull, true, false);
 
+	if (p_reflection_probe.is_valid()) {
+		// Rendering to a probe so no need for post_processing
+		return;
+	}
+
 	//post process
 	_post_process(env, p_cam_projection);
 
