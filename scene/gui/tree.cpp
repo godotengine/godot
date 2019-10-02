@@ -2677,11 +2677,21 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 			} break;
 			case BUTTON_WHEEL_UP: {
 
+				double prev_value = v_scroll->get_value();
 				v_scroll->set_value(v_scroll->get_value() - v_scroll->get_page() * b->get_factor() / 8);
+				if (v_scroll->get_value() != prev_value) {
+					accept_event();
+				}
+
 			} break;
 			case BUTTON_WHEEL_DOWN: {
 
+				double prev_value = v_scroll->get_value();
 				v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * b->get_factor() / 8);
+				if (v_scroll->get_value() != prev_value) {
+					accept_event();
+				}
+
 			} break;
 		}
 	}
@@ -2689,7 +2699,11 @@ void Tree::_gui_input(Ref<InputEvent> p_event) {
 	Ref<InputEventPanGesture> pan_gesture = p_event;
 	if (pan_gesture.is_valid()) {
 
+		double prev_value = v_scroll->get_value();
 		v_scroll->set_value(v_scroll->get_value() + v_scroll->get_page() * pan_gesture->get_delta().y / 8);
+		if (v_scroll->get_value() != prev_value) {
+			accept_event();
+		}
 	}
 }
 
