@@ -1974,6 +1974,7 @@ void OS_OSX::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 	} else {
 		// Reset to default system cursor
 		cursors[p_shape] = NULL;
+		cursors_cache.erase(p_shape);
 
 		CursorShape c = cursor_shape;
 		cursor_shape = CURSOR_MAX;

@@ -2992,6 +2992,7 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		if (img[p_shape]) {
 			cursors[p_shape] = XcursorImageLoadCursor(x11_display, img[p_shape]);
 		}
+		cursors_cache.erase(p_shape);
 
 		CursorShape c = current_cursor;
 		current_cursor = CURSOR_MAX;
