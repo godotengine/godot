@@ -3191,7 +3191,12 @@ void CanvasItemEditor::_draw_axis() {
 
 		Color area_axis_color = EditorSettings::get_singleton()->get("editors/2d/viewport_border_color");
 
-		Size2 screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		Size2 screen_size;
+		if ((int)ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_width") > 0 && (int)ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_height") > 0) {
+			screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_width"), ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_height"));
+		} else {
+			screen_size = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+		}
 
 		Vector2 screen_endpoints[4] = {
 			transform.xform(Vector2(0, 0)),
@@ -3835,7 +3840,12 @@ void CanvasItemEditor::_update_scrollbars() {
 	h_scroll->set_end(Point2(size.width - vmin.width, size.height));
 
 	// Get the visible frame
-	Size2 screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+	Size2 screen_rect;
+	if ((int)ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_width") > 0 && (int)ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_height") > 0) {
+		screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_width"), ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_height"));
+	} else {
+		screen_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+	}
 	Rect2 local_rect = Rect2(Point2(), viewport->get_size() - Size2(vmin.width, hmin.height));
 
 	_queue_update_bone_list();

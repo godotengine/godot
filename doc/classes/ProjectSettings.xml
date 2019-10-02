@@ -399,6 +399,14 @@
 		<member name="display/window/size/borderless" type="bool" setter="" getter="" default="false">
 			Force the window to be borderless.
 		</member>
+		<member name="display/window/size/canvas_editor_height" type="int" setter="" getter="" default="0">
+			Overrides the canvas editor's viewport height with this instead of the window height.
+			Useful when the game's resolution is bigger than the initial window size.
+		</member>
+		<member name="display/window/size/canvas_editor_width" type="int" setter="" getter="" default="0">
+			Overrides the canvas editor's viewport width with this instead of the window width.
+			Useful when the game's resolution is bigger than the initial window size.
+		</member>
 		<member name="display/window/size/fullscreen" type="bool" setter="" getter="" default="false">
 			Sets the window to full screen when it starts.
 		</member>

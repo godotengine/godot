@@ -298,7 +298,13 @@ void EditorNode::_notification(int p_what) {
 
 			editor_selection->update();
 
-			scene_root->set_size_override(true, Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height")));
+			Size2 override_rect;
+			if ((int)ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_width") > 0 && (int)ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_height") > 0) {
+				override_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_width"), ProjectSettings::get_singleton()->get("display/window/size/canvas_editor_height"));
+			} else {
+				override_rect = Size2(ProjectSettings::get_singleton()->get("display/window/size/width"), ProjectSettings::get_singleton()->get("display/window/size/height"));
+			}
+			scene_root->set_size_override(true, override_rect);
 
 			ResourceImporterTexture::get_singleton()->update_imports();
 		} break;

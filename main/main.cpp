@@ -974,6 +974,10 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_width", PropertyInfo(Variant::INT, "display/window/size/test_width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
 	GLOBAL_DEF("display/window/size/test_height", 0);
 	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/test_height", PropertyInfo(Variant::INT, "display/window/size/test_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/canvas_editor_width", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/canvas_editor_width", PropertyInfo(Variant::INT, "display/window/size/canvas_editor_width", PROPERTY_HINT_RANGE, "0,7680,or_greater")); // 8K resolution
+	GLOBAL_DEF("display/window/size/canvas_editor_height", 0);
+	ProjectSettings::get_singleton()->set_custom_property_info("display/window/size/canvas_editor_height", PropertyInfo(Variant::INT, "display/window/size/canvas_editor_height", PROPERTY_HINT_RANGE, "0,4320,or_greater")); // 8K resolution
 
 	if (use_custom_res) {
 
