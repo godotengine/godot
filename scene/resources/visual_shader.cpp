@@ -1148,12 +1148,16 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 		global_code += vsnode->generate_global(get_mode(), type, node);
 
-		if (!r_classes.has(vsnode->get_class_name())) {
+		String class_name = vsnode->get_class_name();
+		if (class_name == "VisualShaderNodeCustom") {
+			class_name = vsnode->get_script_instance()->get_script()->get_language()->get_global_class_name(vsnode->get_script_instance()->get_script()->get_path());
+		}
+		if (!r_classes.has(class_name)) {
 			global_code_per_node += vsnode->generate_global_per_node(get_mode(), type, node);
 			for (int i = 0; i < TYPE_MAX; i++) {
 				global_code_per_func[Type(i)] += vsnode->generate_global_per_func(get_mode(), Type(i), node);
 			}
-			r_classes.insert(vsnode->get_class_name());
+			r_classes.insert(class_name);
 		}
 	}
 
