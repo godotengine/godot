@@ -166,8 +166,14 @@ class SpatialEditorViewport : public Control {
 		VIEW_DISPLAY_WIREFRAME,
 		VIEW_DISPLAY_OVERDRAW,
 		VIEW_DISPLAY_SHADELESS,
+		VIEW_DISPLAY_LIGHTING,
+		VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
+		VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO,
+		VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING,
 		VIEW_LOCK_ROTATION,
-		VIEW_CINEMATIC_PREVIEW
+		VIEW_CINEMATIC_PREVIEW,
+		VIEW_MAX
 	};
 
 public:
@@ -204,6 +210,7 @@ private:
 	ViewportContainer *viewport_container;
 
 	MenuButton *view_menu;
+	PopupMenu *display_submenu;
 
 	Control *surface;
 	Viewport *viewport;

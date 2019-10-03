@@ -412,7 +412,8 @@ public:
 
 	enum TextureSliceType {
 		TEXTURE_SLICE_2D,
-		TEXTURE_SLICE_CUBEMAP
+		TEXTURE_SLICE_CUBEMAP,
+		TEXTURE_SLICE_3D,
 	};
 
 	virtual RID texture_create_shared_from_slice(const TextureView &p_view, RID p_with_texture, uint32_t p_layer, uint32_t p_mipmap, TextureSliceType p_slice_type = TEXTURE_SLICE_2D) = 0;
@@ -425,6 +426,8 @@ public:
 	virtual bool texture_is_valid(RID p_texture) = 0;
 
 	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false) = 0;
+	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw = false) = 0;
+
 	/*********************/
 	/**** FRAMEBUFFER ****/
 	/*********************/
@@ -903,15 +906,13 @@ public:
 
 	enum InitialAction {
 		INITIAL_ACTION_CLEAR, //start rendering and clear the framebuffer (supply params)
-		INITIAL_ACTION_KEEP_COLOR, //start rendering, but keep attached color texture contents (depth will be cleared)
-		INITIAL_ACTION_KEEP_COLOR_AND_DEPTH, //start rendering, but keep attached color and depth texture contents (depth will be cleared)
+		INITIAL_ACTION_KEEP, //start rendering, but keep attached color texture contents (depth will be cleared)
 		INITIAL_ACTION_CONTINUE, //continue rendering (framebuffer must have been left in "continue" state as final action prevously)
 		INITIAL_ACTION_MAX
 	};
 
 	enum FinalAction {
-		FINAL_ACTION_READ_COLOR_AND_DEPTH, //will no longer render to it, allows attached textures to be read again, but depth buffer contents will be dropped (Can't be read from)
-		FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, //will no longer render to it, allows attached textures to be read again
+		FINAL_ACTION_READ, //will no longer render to it, allows attached textures to be read again, but depth buffer contents will be dropped (Can't be read from)
 		FINAL_ACTION_DISCARD, // discard contents after rendering
 		FINAL_ACTION_CONTINUE, //will continue rendering later, attached textures can't be read until re-bound with "finish"
 		FINAL_ACTION_MAX
@@ -920,8 +921,8 @@ public:
 	typedef int64_t DrawListID;
 
 	virtual DrawListID draw_list_begin_for_screen(int p_screen = 0, const Color &p_clear_color = Color()) = 0;
-	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), const Rect2 &p_region = Rect2()) = 0;
-	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), const Rect2 &p_region = Rect2()) = 0;
+	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2()) = 0;
+	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2()) = 0;
 
 	virtual void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline) = 0;
 	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
@@ -930,7 +931,7 @@ public:
 	virtual void draw_list_set_line_width(DrawListID p_list, float p_width) = 0;
 	virtual void draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size) = 0;
 
-	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1) = 0;
+	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0) = 0;
 
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect) = 0;
 	virtual void draw_list_disable_scissor(DrawListID p_list) = 0;
@@ -948,6 +949,8 @@ public:
 	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index) = 0;
 	virtual void compute_list_set_push_constant(ComputeListID p_list, void *p_data, uint32_t p_data_size) = 0;
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups) = 0;
+	virtual void compute_list_add_barrier(ComputeListID p_list) = 0;
+
 	virtual void compute_list_end() = 0;
 
 	/***************/
