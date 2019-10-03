@@ -1528,7 +1528,7 @@ void ProjectSettingsEditor::_update_translations() {
 	bool is_short_list_when_show_all_selected = filter_mode == SHOW_ALL_LOCALES && translation_filter_treeitems.size() < s;
 	bool is_full_list_when_show_only_selected = filter_mode == SHOW_ONLY_SELECTED_LOCALES && translation_filter_treeitems.size() == s;
 	bool should_recreate_locales_list = is_short_list_when_show_all_selected || is_full_list_when_show_only_selected;
-	
+
 	if (!translation_locales_list_created || should_recreate_locales_list) {
 
 		translation_locales_list_created = true;
