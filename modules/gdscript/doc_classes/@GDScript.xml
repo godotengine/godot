@@ -590,10 +590,10 @@
 				extends Sprite
 				var elapsed = 0.0
 				func _process(delta):
-					var min_angle = deg2rad(0.0)
-					var max_angle = deg2rad(90.0)
-					rotation = lerp_angle(min_angle, max_angle, elapsed)
-					elapsed += delta
+				    var min_angle = deg2rad(0.0)
+				    var max_angle = deg2rad(90.0)
+				    rotation = lerp_angle(min_angle, max_angle, elapsed)
+				    elapsed += delta
 				[/codeblock]
 			</description>
 		</method>

@@ -69,7 +69,7 @@
 				[codeblock]
 				{
 				    "content-length": 12,
-					"Content-Type": "application/json; charset=UTF-8",
+				    "Content-Type": "application/json; charset=UTF-8",
 				}
 				[/codeblock]
 			</description>
