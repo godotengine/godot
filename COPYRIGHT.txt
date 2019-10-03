@@ -298,12 +298,6 @@ Comment: SMAZ
 Copyright: 2006-2009, Salvatore Sanfilippo
 License: BSD-3-clause
 
-Files: ./thirdparty/misc/stb_truetype.h
- ./thirdparty/misc/stb_vorbis.c
-Comment: stb libraries
-Copyright: 2007-2019, Sean Barrett
-License: public-domain
-
 Files: ./thirdparty/misc/triangulator.cpp
  ./thirdparty/misc/triangulator.h
 Comment: PolyPartition
