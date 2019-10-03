@@ -1875,7 +1875,7 @@ public:
 								new_file += "<!--CHUNK_" + text + "_BEGIN-->\n";
 
 								if (!found) {
-									ERR_PRINTS("No end marker found in AndroidManifest.conf for chunk: " + text);
+									ERR_PRINTS("No end marker found in AndroidManifest.xml for chunk: " + text);
 									f->seek(pos);
 								} else {
 									//add chunk lines
@@ -1894,7 +1894,7 @@ public:
 							String last_tag = "android:icon=\"@drawable/icon\"";
 							int last_tag_pos = l.find(last_tag);
 							if (last_tag_pos == -1) {
-								WARN_PRINTS("No adding of application tags because could not find last tag for <application: " + last_tag);
+								ERR_PRINTS("Not adding application attributes as the expected tag was not found in '<application': " + last_tag);
 								new_file += l + "\n";
 							} else {
 								String base = l.substr(0, last_tag_pos + last_tag.length());
@@ -1980,9 +1980,9 @@ public:
 				return ERR_CANT_CREATE;
 			}
 			if (p_debug) {
-				src_apk = build_path.plus_file("build/outputs/apk/debug/build-debug-unsigned.apk");
+				src_apk = build_path.plus_file("build/outputs/apk/debug/android_debug.apk");
 			} else {
-				src_apk = build_path.plus_file("build/outputs/apk/release/build-release-unsigned.apk");
+				src_apk = build_path.plus_file("build/outputs/apk/release/android_release.apk");
 			}
 
 			if (!FileAccess::exists(src_apk)) {
