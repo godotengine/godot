@@ -1255,7 +1255,7 @@ String ResourceFormatLoaderBinary::get_resource_type(const String &p_path) const
 	ria->res_path = ria->local_path;
 	//ria->set_local_path( Globals::get_singleton()->localize_path(p_path) );
 	String r = ria->recognize(f);
-	return r;
+	return ClassDB::get_compatibility_remapped_class(r);
 }
 
 ///////////////////////////////////////////////////////////

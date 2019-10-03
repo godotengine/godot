@@ -316,6 +316,7 @@ public:
 	GIProbeGizmoPlugin();
 };
 
+#if 0
 class BakedIndirectLightGizmoPlugin : public EditorSpatialGizmoPlugin {
 
 	GDCLASS(BakedIndirectLightGizmoPlugin, EditorSpatialGizmoPlugin);
@@ -333,7 +334,7 @@ public:
 
 	BakedIndirectLightGizmoPlugin();
 };
-
+#endif
 class CollisionShapeSpatialGizmoPlugin : public EditorSpatialGizmoPlugin {
 
 	GDCLASS(CollisionShapeSpatialGizmoPlugin, EditorSpatialGizmoPlugin);

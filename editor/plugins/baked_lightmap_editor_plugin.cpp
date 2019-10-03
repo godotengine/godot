@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#if 0
 #include "baked_lightmap_editor_plugin.h"
 
 void BakedLightmapEditorPlugin::_bake() {
@@ -124,3 +125,4 @@ BakedLightmapEditorPlugin::BakedLightmapEditorPlugin(EditorNode *p_node) {
 
 BakedLightmapEditorPlugin::~BakedLightmapEditorPlugin() {
 }
+#endif
