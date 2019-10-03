@@ -4684,46 +4684,7 @@ Error RenderingDeviceVulkan::buffer_update(RID p_buffer, uint32_t p_offset, uint
 	}
 
 	_buffer_memory_barrier(buffer->buffer, p_offset, p_size, VK_PIPELINE_STAGE_TRANSFER_BIT, dst_stage_mask, VK_ACCESS_TRANSFER_WRITE_BIT, dst_access, p_sync_with_draw);
-#if 0
-	if (p_sync_with_draw) {
-		VkMemoryBarrier memoryBarrier;
 
-		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
-		memoryBarrier.pNext = NULL;
-		memoryBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
-									  VK_ACCESS_INDEX_READ_BIT |
-									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
-									  VK_ACCESS_UNIFORM_READ_BIT |
-									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_SHADER_READ_BIT |
-									  VK_ACCESS_SHADER_WRITE_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_TRANSFER_READ_BIT |
-									  VK_ACCESS_TRANSFER_WRITE_BIT |
-									  VK_ACCESS_HOST_READ_BIT |
-									  VK_ACCESS_HOST_WRITE_BIT;
-		memoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
-									  VK_ACCESS_INDEX_READ_BIT |
-									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
-									  VK_ACCESS_UNIFORM_READ_BIT |
-									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_SHADER_READ_BIT |
-									  VK_ACCESS_SHADER_WRITE_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
-									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
-									  VK_ACCESS_TRANSFER_READ_BIT |
-									  VK_ACCESS_TRANSFER_WRITE_BIT |
-									  VK_ACCESS_HOST_READ_BIT |
-									  VK_ACCESS_HOST_WRITE_BIT;
-
-		vkCmdPipelineBarrier(p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &memoryBarrier, 0, NULL, 0, NULL);
-	}
-#endif
 	return err;
 }
 
@@ -6902,6 +6863,44 @@ void RenderingDeviceVulkan::capture_timestamp(const String &p_name, bool p_sync_
 
 	ERR_FAIL_COND(frames[frame].timestamp_count >= max_timestamp_query_elements);
 
+	{
+		VkMemoryBarrier memoryBarrier;
+
+		memoryBarrier.sType = VK_STRUCTURE_TYPE_MEMORY_BARRIER;
+		memoryBarrier.pNext = NULL;
+		memoryBarrier.srcAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
+									  VK_ACCESS_INDEX_READ_BIT |
+									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+									  VK_ACCESS_UNIFORM_READ_BIT |
+									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_SHADER_READ_BIT |
+									  VK_ACCESS_SHADER_WRITE_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_TRANSFER_READ_BIT |
+									  VK_ACCESS_TRANSFER_WRITE_BIT |
+									  VK_ACCESS_HOST_READ_BIT |
+									  VK_ACCESS_HOST_WRITE_BIT;
+		memoryBarrier.dstAccessMask = VK_ACCESS_INDIRECT_COMMAND_READ_BIT |
+									  VK_ACCESS_INDEX_READ_BIT |
+									  VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT |
+									  VK_ACCESS_UNIFORM_READ_BIT |
+									  VK_ACCESS_INPUT_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_SHADER_READ_BIT |
+									  VK_ACCESS_SHADER_WRITE_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_COLOR_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_READ_BIT |
+									  VK_ACCESS_DEPTH_STENCIL_ATTACHMENT_WRITE_BIT |
+									  VK_ACCESS_TRANSFER_READ_BIT |
+									  VK_ACCESS_TRANSFER_WRITE_BIT |
+									  VK_ACCESS_HOST_READ_BIT |
+									  VK_ACCESS_HOST_WRITE_BIT;
+
+		vkCmdPipelineBarrier(p_sync_to_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, VK_PIPELINE_STAGE_ALL_COMMANDS_BIT, 0, 1, &memoryBarrier, 0, NULL, 0, NULL);
+	}
 	vkCmdWriteTimestamp(p_sync_to_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer, VK_PIPELINE_STAGE_BOTTOM_OF_PIPE_BIT, frames[frame].timestamp_pool, frames[frame].timestamp_count);
 	frames[frame].timestamp_names[frames[frame].timestamp_count] = p_name;
 	frames[frame].timestamp_cpu_values[frames[frame].timestamp_count] = OS::get_singleton()->get_ticks_usec();
@@ -6918,7 +6917,7 @@ uint64_t RenderingDeviceVulkan::get_captured_timestamps_frame() const {
 
 uint64_t RenderingDeviceVulkan::get_captured_timestamp_gpu_time(uint32_t p_index) const {
 	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
-	return frames[frame].timestamp_result_values[p_index];
+	return frames[frame].timestamp_result_values[p_index] * limits.timestampPeriod;
 }
 uint64_t RenderingDeviceVulkan::get_captured_timestamp_cpu_time(uint32_t p_index) const {
 	ERR_FAIL_INDEX_V(p_index, frames[frame].timestamp_result_count, 0);
