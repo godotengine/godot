@@ -1331,7 +1331,7 @@ void RasterizerCanvasRD::_render_items(RID p_to_render_target, int p_item_count,
 
 	RD::FramebufferFormatID fb_format = RD::get_singleton()->framebuffer_get_format(framebuffer);
 
-	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP_COLOR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
+	RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(framebuffer, clear ? RD::INITIAL_ACTION_CLEAR : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
 
 	if (p_screen_uniform_set.is_valid()) {
 		RD::get_singleton()->draw_list_bind_uniform_set(draw_list, p_screen_uniform_set, 3);
@@ -1637,7 +1637,7 @@ void RasterizerCanvasRD::light_update_shadow(RID p_rid, const Transform2D &p_lig
 
 		Vector<Color> cc;
 		cc.push_back(Color(p_far, p_far, p_far, 1.0));
-		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(cl->shadow.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, cc, Rect2i((cl->shadow.size / 4) * i, 0, (cl->shadow.size / 4), 1));
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(cl->shadow.fb, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_DISCARD, cc, 1.0, 0, Rect2i((cl->shadow.size / 4) * i, 0, (cl->shadow.size / 4), 1));
 
 		CameraMatrix projection;
 		{

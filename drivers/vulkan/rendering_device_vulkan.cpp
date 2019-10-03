@@ -1984,6 +1984,12 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		ERR_EXPLAIN("Can only create a cubemap slice from a cubemap or cubemap array mipmap");
 		ERR_FAIL_V(RID());
 	}
+
+	if (p_slice_type == TEXTURE_SLICE_3D && src_texture->type != TEXTURE_TYPE_3D) {
+		ERR_EXPLAIN("Can only create a 3D slice from a 3D texture");
+		ERR_FAIL_V(RID());
+	}
+
 	//create view
 
 	ERR_FAIL_INDEX_V(p_mipmap, src_texture->mipmaps, RID());
@@ -2010,7 +2016,7 @@ RID RenderingDeviceVulkan::texture_create_shared_from_slice(const TextureView &p
 		VK_IMAGE_VIEW_TYPE_2D,
 	};
 
-	image_view_create_info.viewType = p_slice_type == TEXTURE_SLICE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : view_types[texture.type];
+	image_view_create_info.viewType = p_slice_type == TEXTURE_SLICE_CUBEMAP ? VK_IMAGE_VIEW_TYPE_CUBE : (p_slice_type == TEXTURE_SLICE_3D ? VK_IMAGE_VIEW_TYPE_3D : view_types[texture.type]);
 	if (p_view.format_override == DATA_FORMAT_MAX || p_view.format_override == texture.format) {
 		image_view_create_info.format = vulkan_formats[texture.format];
 	} else {
@@ -2739,6 +2745,98 @@ Error RenderingDeviceVulkan::texture_copy(RID p_from_texture, RID p_to_texture, 
 	return OK;
 }
 
+Error RenderingDeviceVulkan::texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw) {
+
+	Texture *src_tex = texture_owner.getornull(p_texture);
+	ERR_FAIL_COND_V(!src_tex, ERR_INVALID_PARAMETER);
+
+	if (p_sync_with_draw && src_tex->bound) {
+		ERR_EXPLAIN("Source texture can't be cleared while a render pass that uses it is being created. Ensure render pass is finalized (and that it was created with RENDER_PASS_CONTENTS_FINISH) to unbind this texture.");
+		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+	}
+
+	ERR_FAIL_COND_V(p_layers == 0, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_mipmaps == 0, ERR_INVALID_PARAMETER);
+
+	if (!(src_tex->usage_flags & TEXTURE_USAGE_CAN_COPY_TO_BIT)) {
+		ERR_EXPLAIN("Source texture requires the TEXTURE_USAGE_CAN_COPY_TO_BIT in order to be cleared.");
+		ERR_FAIL_V(ERR_INVALID_PARAMETER);
+	}
+
+	uint32_t src_layer_count = src_tex->layers;
+	if (src_tex->type == TEXTURE_TYPE_CUBE || src_tex->type == TEXTURE_TYPE_CUBE_ARRAY) {
+		src_layer_count *= 6;
+	}
+
+	ERR_FAIL_COND_V(p_base_mipmap + p_mipmaps > src_tex->mipmaps, ERR_INVALID_PARAMETER);
+	ERR_FAIL_COND_V(p_base_layer + p_layers > src_layer_count, ERR_INVALID_PARAMETER);
+
+	VkCommandBuffer command_buffer = p_sync_with_draw ? frames[frame].draw_command_buffer : frames[frame].setup_command_buffer;
+
+	VkImageLayout layout = src_tex->layout;
+
+	if (src_tex->layout != VK_IMAGE_LAYOUT_GENERAL) { //storage may be in general state
+		VkImageMemoryBarrier image_memory_barrier;
+		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		image_memory_barrier.pNext = NULL;
+		image_memory_barrier.srcAccessMask = 0;
+		image_memory_barrier.dstAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		image_memory_barrier.oldLayout = src_tex->layout;
+		image_memory_barrier.newLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+
+		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.image = src_tex->image;
+		image_memory_barrier.subresourceRange.aspectMask = src_tex->read_aspect_mask;
+		image_memory_barrier.subresourceRange.baseMipLevel = p_base_mipmap;
+		image_memory_barrier.subresourceRange.levelCount = p_mipmaps;
+		image_memory_barrier.subresourceRange.baseArrayLayer = p_base_layer;
+		image_memory_barrier.subresourceRange.layerCount = p_layers;
+
+		layout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TOP_OF_PIPE_BIT, VK_PIPELINE_STAGE_TRANSFER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+	}
+
+	VkClearColorValue clear_color;
+	clear_color.float32[0] = p_color.r;
+	clear_color.float32[1] = p_color.g;
+	clear_color.float32[2] = p_color.b;
+	clear_color.float32[3] = p_color.a;
+
+	VkImageSubresourceRange range;
+	range.aspectMask = src_tex->read_aspect_mask;
+	range.baseArrayLayer = p_base_layer;
+	range.layerCount = p_layers;
+	range.baseMipLevel = p_base_mipmap;
+	range.levelCount = p_mipmaps;
+
+	vkCmdClearColorImage(command_buffer, src_tex->image, layout, &clear_color, 1, &range);
+
+	if (src_tex->layout != VK_IMAGE_LAYOUT_GENERAL) { //storage may be in general state
+
+		VkImageMemoryBarrier image_memory_barrier;
+		image_memory_barrier.sType = VK_STRUCTURE_TYPE_IMAGE_MEMORY_BARRIER;
+		image_memory_barrier.pNext = NULL;
+		image_memory_barrier.srcAccessMask = VK_ACCESS_TRANSFER_WRITE_BIT;
+		image_memory_barrier.dstAccessMask = VK_ACCESS_SHADER_READ_BIT;
+		image_memory_barrier.oldLayout = VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL;
+		image_memory_barrier.newLayout = src_tex->layout;
+
+		image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
+		image_memory_barrier.image = src_tex->image;
+		image_memory_barrier.subresourceRange.aspectMask = src_tex->read_aspect_mask;
+		image_memory_barrier.subresourceRange.baseMipLevel = p_base_mipmap;
+		image_memory_barrier.subresourceRange.levelCount = p_mipmaps;
+		image_memory_barrier.subresourceRange.baseArrayLayer = p_base_layer;
+		image_memory_barrier.subresourceRange.layerCount = p_layers;
+
+		vkCmdPipelineBarrier(command_buffer, VK_PIPELINE_STAGE_TRANSFER_BIT, VK_PIPELINE_STAGE_VERTEX_SHADER_BIT | VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, 0, 0, NULL, 0, NULL, 1, &image_memory_barrier);
+	}
+
+	return OK;
+}
+
 bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_format, uint32_t p_usage) const {
 	ERR_FAIL_INDEX_V(p_format, DATA_FORMAT_MAX, false);
 
@@ -2782,7 +2880,7 @@ bool RenderingDeviceVulkan::texture_is_format_supported_for_usage(DataFormat p_f
 /**** ATTACHMENT ****/
 /********************/
 
-VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_action, FinalAction p_final_action, int *r_color_attachment_count) {
+VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, int *r_color_attachment_count) {
 
 	Vector<VkAttachmentDescription> attachments;
 	Vector<VkAttachmentReference> color_references;
@@ -2804,17 +2902,18 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			ERR_FAIL_V(VK_NULL_HANDLE);
 		}
 
+		bool is_depth_stencil = p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
 		bool is_sampled = p_format[i].usage_flags & TEXTURE_USAGE_SAMPLING_BIT;
 		bool is_storage = p_format[i].usage_flags & TEXTURE_USAGE_STORAGE_BIT;
 
-		switch (p_initial_action) {
+		switch (is_depth_stencil ? p_initial_depth_action : p_initial_color_action) {
 
 			case INITIAL_ACTION_CLEAR: {
 				description.loadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 				description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
 				description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 			} break;
-			case INITIAL_ACTION_KEEP_COLOR: {
+			case INITIAL_ACTION_KEEP: {
 				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
 					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
@@ -2828,22 +2927,6 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 				}
-			} break;
-			case INITIAL_ACTION_KEEP_COLOR_AND_DEPTH: {
-
-				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_LOAD;
-					description.initialLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_CLEAR;
-				} else {
-					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-				}
-
 			} break;
 			case INITIAL_ACTION_CONTINUE: {
 				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
@@ -2865,8 +2948,8 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 			}
 		}
 
-		switch (p_final_action) {
-			case FINAL_ACTION_READ_COLOR_AND_DEPTH: {
+		switch (is_depth_stencil ? p_final_depth_action : p_final_color_action) {
+			case FINAL_ACTION_READ: {
 
 				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
@@ -2882,59 +2965,42 @@ VkRenderPass RenderingDeviceVulkan::_render_pass_create(const Vector<AttachmentF
 					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
 					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 				}
-				break;
-				case FINAL_ACTION_READ_COLOR_DISCARD_DEPTH: {
-					if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-					} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+			} break;
+			case FINAL_ACTION_DISCARD: {
+				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+					description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
+				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 
-						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-					} else {
-						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					}
-				} break;
-				case FINAL_ACTION_DISCARD: {
-					if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL);
-					} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-
-						description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
-					} else {
-						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					}
-				} break;
-				case FINAL_ACTION_CONTINUE: {
-					if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
-						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
-						description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
-					} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-
-						description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
-						description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
-						description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
-					} else {
-						description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
-						description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
-					}
-
-				} break;
-				default: {
-					ERR_FAIL_V(VK_NULL_HANDLE); //should never reach here
+					description.storeOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					description.finalLayout = is_sampled ? VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL : (is_storage ? VK_IMAGE_LAYOUT_GENERAL : VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL);
+				} else {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
 				}
+			} break;
+			case FINAL_ACTION_CONTINUE: {
+				if (p_format[i].usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_DONT_CARE;
+					description.finalLayout = VK_IMAGE_LAYOUT_COLOR_ATTACHMENT_OPTIMAL;
+				} else if (p_format[i].usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+
+					description.storeOp = VK_ATTACHMENT_STORE_OP_STORE;
+					description.stencilStoreOp = VK_ATTACHMENT_STORE_OP_STORE;
+					description.finalLayout = VK_IMAGE_LAYOUT_DEPTH_STENCIL_ATTACHMENT_OPTIMAL;
+				} else {
+					description.loadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.stencilLoadOp = VK_ATTACHMENT_LOAD_OP_DONT_CARE;
+					description.initialLayout = VK_IMAGE_LAYOUT_UNDEFINED; //don't care what is there
+				}
+
+			} break;
+			default: {
+				ERR_FAIL_V(VK_NULL_HANDLE); //should never reach here
 			}
 		}
 
@@ -3015,7 +3081,7 @@ RenderingDevice::FramebufferFormatID RenderingDeviceVulkan::framebuffer_format_c
 	}
 
 	int color_references;
-	VkRenderPass render_pass = _render_pass_create(p_format, INITIAL_ACTION_CLEAR, FINAL_ACTION_DISCARD, &color_references); //actions don't matter for this use case
+	VkRenderPass render_pass = _render_pass_create(p_format, INITIAL_ACTION_CLEAR, FINAL_ACTION_DISCARD, INITIAL_ACTION_CLEAR, FINAL_ACTION_DISCARD, &color_references); //actions don't matter for this use case
 
 	if (render_pass == VK_NULL_HANDLE) { //was likely invalid
 		return INVALID_ID;
@@ -5456,17 +5522,19 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin_for_screen(in
 	return ID_TYPE_DRAW_LIST;
 }
 
-Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass) {
+Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass) {
 
 	Framebuffer::VersionKey vk;
-	vk.initial_action = p_initial_action;
-	vk.final_action = p_final_action;
+	vk.initial_color_action = p_initial_color_action;
+	vk.final_color_action = p_final_color_action;
+	vk.initial_depth_action = p_initial_depth_action;
+	vk.final_depth_action = p_final_depth_action;
 
 	if (!p_framebuffer->framebuffers.has(vk)) {
 		//need to create this version
 		Framebuffer::Version version;
 
-		version.render_pass = _render_pass_create(framebuffer_formats[p_framebuffer->format_id].E->key().attachments, p_initial_action, p_final_action);
+		version.render_pass = _render_pass_create(framebuffer_formats[p_framebuffer->format_id].E->key().attachments, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action);
 
 		VkFramebufferCreateInfo framebuffer_create_info;
 		framebuffer_create_info.sType = VK_STRUCTURE_TYPE_FRAMEBUFFER_CREATE_INFO;
@@ -5499,7 +5567,7 @@ Error RenderingDeviceVulkan::_draw_list_setup_framebuffer(Framebuffer *p_framebu
 	return OK;
 }
 
-Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents) {
+Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents) {
 
 	VkRenderPassBeginInfo render_pass_begin;
 	render_pass_begin.sType = VK_STRUCTURE_TYPE_RENDER_PASS_BEGIN_INFO;
@@ -5513,12 +5581,15 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	render_pass_begin.renderArea.offset.y = viewport_offset.y;
 
 	Vector<VkClearValue> clear_values;
-	if (p_initial_action == INITIAL_ACTION_CLEAR) {
+	clear_values.resize(framebuffer->texture_ids.size());
+
+	{
 		int color_index = 0;
 		for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 			Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
 			VkClearValue clear_value;
-			if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+
+			if (color_index < p_clear_colors.size() && texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 				ERR_FAIL_INDEX_V(color_index, p_clear_colors.size(), ERR_BUG); //a bug
 				Color clear_color = p_clear_colors[color_index];
 				clear_value.color.float32[0] = clear_color.r;
@@ -5527,15 +5598,15 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 				clear_value.color.float32[3] = clear_color.a;
 				color_index++;
 			} else if (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
-				clear_value.depthStencil.depth = 1.0;
-				clear_value.depthStencil.stencil = 0;
+				clear_value.depthStencil.depth = p_clear_depth;
+				clear_value.depthStencil.stencil = p_clear_stencil;
 			} else {
 				clear_value.color.float32[0] = 0;
 				clear_value.color.float32[1] = 0;
 				clear_value.color.float32[2] = 0;
 				clear_value.color.float32[3] = 0;
 			}
-			clear_values.push_back(clear_value);
+			clear_values.write[i] = clear_value;
 		}
 	}
 
@@ -5546,7 +5617,9 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 
 	//mark textures as bound
 	draw_list_bound_textures.clear();
-	draw_list_unbind_textures = p_final_action != FINAL_ACTION_CONTINUE;
+	draw_list_unbind_color_textures = p_final_color_action != FINAL_ACTION_CONTINUE;
+	draw_list_unbind_depth_textures = p_final_depth_action != FINAL_ACTION_CONTINUE;
+
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 		Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
 		texture->bound = true;
@@ -5556,13 +5629,13 @@ Error RenderingDeviceVulkan::_draw_list_render_pass_begin(Framebuffer *framebuff
 	return OK;
 }
 
-void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, const Vector<Color> &p_clear_colors) {
+void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil) {
 	Vector<VkClearAttachment> clear_attachments;
 	int color_index = 0;
 	for (int i = 0; i < framebuffer->texture_ids.size(); i++) {
 		Texture *texture = texture_owner.getornull(framebuffer->texture_ids[i]);
 		VkClearAttachment clear_at;
-		if (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
+		if (p_clear_color && texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT) {
 			ERR_FAIL_INDEX(color_index, p_clear_colors.size()); //a bug
 			Color clear_color = p_clear_colors[color_index];
 			clear_at.clearValue.color.float32[0] = clear_color.r;
@@ -5571,10 +5644,10 @@ void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, 
 			clear_at.clearValue.color.float32[3] = clear_color.a;
 			clear_at.colorAttachment = color_index++;
 			clear_at.aspectMask = VK_IMAGE_ASPECT_COLOR_BIT;
-		} else if (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
+		} else if (p_clear_depth && texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) {
 
-			clear_at.clearValue.depthStencil.depth = 1.0;
-			clear_at.clearValue.depthStencil.stencil = 0;
+			clear_at.clearValue.depthStencil.depth = p_depth;
+			clear_at.clearValue.depthStencil.stencil = p_stencil;
 			clear_at.colorAttachment = 0;
 			clear_at.aspectMask = VK_IMAGE_ASPECT_DEPTH_BIT;
 			if (format_has_stencil(texture->format)) {
@@ -5597,7 +5670,7 @@ void RenderingDeviceVulkan::_draw_list_insert_clear_region(DrawList *draw_list, 
 	vkCmdClearAttachments(draw_list->command_buffer, clear_attachments.size(), clear_attachments.ptr(), 1, &cr);
 }
 
-RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, const Rect2 &p_region) {
+RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -5616,7 +5689,8 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
-	bool needs_clear_region = false;
+	bool needs_clear_color = false;
+	bool needs_clear_depth = false;
 
 	if (p_region != Rect2() && p_region != Rect2(Vector2(), viewport_size)) { //check custom region
 		Rect2i viewport(viewport_offset, viewport_size);
@@ -5631,17 +5705,21 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 		viewport_offset = regioni.position;
 		viewport_size = regioni.size;
 
-		if (p_initial_action == INITIAL_ACTION_CLEAR) {
-			p_initial_action = INITIAL_ACTION_KEEP_COLOR_AND_DEPTH;
-			needs_clear_region = true;
+		if (p_initial_color_action == INITIAL_ACTION_CLEAR) {
+			needs_clear_color = true;
+			p_initial_color_action = INITIAL_ACTION_KEEP;
+		}
+		if (p_initial_depth_action == INITIAL_ACTION_CLEAR) {
+			needs_clear_depth = true;
+			p_initial_depth_action = INITIAL_ACTION_KEEP;
 		}
 	}
 
-	if (p_initial_action == INITIAL_ACTION_CLEAR) { //check clear values
+	if (p_initial_color_action == INITIAL_ACTION_CLEAR) { //check clear values
 
 		int color_attachments = framebuffer_formats[framebuffer->format_id].color_attachments;
-		if (p_clear_colors.size() != color_attachments) {
-			ERR_EXPLAIN("Clear color values supplied (" + itos(p_clear_colors.size()) + ") differ from the amount required for framebuffer (" + itos(color_attachments) + ").");
+		if (p_clear_color_values.size() != color_attachments) {
+			ERR_EXPLAIN("Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer (" + itos(color_attachments) + ").");
 			ERR_FAIL_V(INVALID_ID);
 		}
 	}
@@ -5649,11 +5727,11 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	VkFramebuffer vkframebuffer;
 	VkRenderPass render_pass;
 
-	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_action, p_final_action, &vkframebuffer, &render_pass);
+	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &vkframebuffer, &render_pass);
 	ERR_FAIL_COND_V(err != OK, INVALID_ID);
 
 	VkCommandBuffer command_buffer = frames[frame].draw_command_buffer;
-	err = _draw_list_render_pass_begin(framebuffer, p_initial_action, p_final_action, p_clear_colors, viewport_offset, viewport_size, vkframebuffer, render_pass, command_buffer, VK_SUBPASS_CONTENTS_INLINE);
+	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, command_buffer, VK_SUBPASS_CONTENTS_INLINE);
 
 	if (err != OK) {
 		return INVALID_ID;
@@ -5667,8 +5745,8 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	draw_list_count = 0;
 	draw_list_split = false;
 
-	if (needs_clear_region) {
-		_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, p_clear_colors);
+	if (needs_clear_color || needs_clear_depth) {
+		_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
 	}
 
 	VkViewport viewport;
@@ -5693,7 +5771,7 @@ RenderingDevice::DrawListID RenderingDeviceVulkan::draw_list_begin(RID p_framebu
 	return ID_TYPE_DRAW_LIST;
 }
 
-Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, const Rect2 &p_region) {
+Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values, float p_clear_depth, uint32_t p_clear_stencil, const Rect2 &p_region) {
 
 	_THREAD_SAFE_METHOD_
 
@@ -5705,7 +5783,8 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 	Point2i viewport_offset;
 	Point2i viewport_size = framebuffer->size;
 
-	bool needs_clear_region = false;
+	bool needs_clear_color = false;
+	bool needs_clear_depth = false;
 
 	if (p_region != Rect2() && p_region != Rect2(Vector2(), viewport_size)) { //check custom region
 		Rect2i viewport(viewport_offset, viewport_size);
@@ -5720,17 +5799,21 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 		viewport_offset = regioni.position;
 		viewport_size = regioni.size;
 
-		if (p_initial_action == INITIAL_ACTION_CLEAR) {
-			p_initial_action = INITIAL_ACTION_KEEP_COLOR_AND_DEPTH;
-			needs_clear_region = true;
+		if (p_initial_color_action == INITIAL_ACTION_CLEAR) {
+			needs_clear_color = true;
+			p_initial_color_action = INITIAL_ACTION_KEEP;
+		}
+		if (p_initial_depth_action == INITIAL_ACTION_CLEAR) {
+			needs_clear_depth = true;
+			p_initial_depth_action = INITIAL_ACTION_KEEP;
 		}
 	}
 
-	if (p_initial_action == INITIAL_ACTION_CLEAR) { //check clear values
+	if (p_initial_color_action == INITIAL_ACTION_CLEAR) { //check clear values
 
 		int color_attachments = framebuffer_formats[framebuffer->format_id].color_attachments;
-		if (p_clear_colors.size() != color_attachments) {
-			ERR_EXPLAIN("Clear color values supplied (" + itos(p_clear_colors.size()) + ") differ from the amount required for framebuffer (" + itos(color_attachments) + ").");
+		if (p_clear_color_values.size() != color_attachments) {
+			ERR_EXPLAIN("Clear color values supplied (" + itos(p_clear_color_values.size()) + ") differ from the amount required for framebuffer (" + itos(color_attachments) + ").");
 			ERR_FAIL_V(ERR_INVALID_PARAMETER);
 		}
 	}
@@ -5772,11 +5855,11 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 	VkFramebuffer vkframebuffer;
 	VkRenderPass render_pass;
 
-	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_action, p_final_action, &vkframebuffer, &render_pass);
+	Error err = _draw_list_setup_framebuffer(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, &vkframebuffer, &render_pass);
 	ERR_FAIL_COND_V(err != OK, ERR_CANT_CREATE);
 
 	VkCommandBuffer frame_command_buffer = frames[frame].draw_command_buffer;
-	err = _draw_list_render_pass_begin(framebuffer, p_initial_action, p_final_action, p_clear_colors, viewport_offset, viewport_size, vkframebuffer, render_pass, frame_command_buffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
+	err = _draw_list_render_pass_begin(framebuffer, p_initial_color_action, p_final_color_action, p_initial_depth_action, p_final_depth_action, p_clear_color_values, p_clear_depth, p_clear_stencil, viewport_offset, viewport_size, vkframebuffer, render_pass, frame_command_buffer, VK_SUBPASS_CONTENTS_SECONDARY_COMMAND_BUFFERS);
 
 	if (err != OK) {
 		return ERR_CANT_CREATE;
@@ -5825,8 +5908,9 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 #ifdef DEBUG_ENABLED
 		draw_list[i].validation.framebuffer_format = framebuffer->format_id;
 #endif
-		if (i == 0 && needs_clear_region) {
-			_draw_list_insert_clear_region(&draw_list[i], framebuffer, viewport_offset, viewport_size, p_clear_colors);
+
+		if (i == 0 && (needs_clear_color || needs_clear_depth)) {
+			_draw_list_insert_clear_region(draw_list, framebuffer, viewport_offset, viewport_size, needs_clear_color, p_clear_color_values, needs_clear_depth, p_clear_depth, p_clear_stencil);
 		}
 
 		VkViewport viewport;
@@ -5855,6 +5939,7 @@ Error RenderingDeviceVulkan::draw_list_begin_split(RID p_framebuffer, uint32_t p
 }
 
 RenderingDeviceVulkan::DrawList *RenderingDeviceVulkan::_get_draw_list_ptr(DrawListID p_id) {
+
 	if (p_id < 0) {
 		return NULL;
 	}
@@ -6096,7 +6181,7 @@ void RenderingDeviceVulkan::draw_list_set_push_constant(DrawListID p_list, void 
 #endif
 }
 
-void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances) {
+void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances, uint32_t p_procedural_vertices) {
 
 	DrawList *dl = _get_draw_list_ptr(p_list);
 	ERR_FAIL_COND(!dl);
@@ -6175,6 +6260,11 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 	if (p_use_indices) {
 
 #ifdef DEBUG_ENABLED
+
+		if (p_procedural_vertices > 0) {
+			ERR_EXPLAINC("Procedural vertices can't be used together with indices.");
+			ERR_FAIL();
+		}
 		if (!dl->validation.index_array_size) {
 			ERR_EXPLAINC("Draw command requested indices, but no index buffer was set.");
 			ERR_FAIL();
@@ -6207,13 +6297,27 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 #endif
 		vkCmdDrawIndexed(dl->command_buffer, to_draw, p_instances, dl->validation.index_array_offset, 0, 0);
 	} else {
+
+		uint32_t to_draw;
+
+		if (p_procedural_vertices > 0) {
 #ifdef DEBUG_ENABLED
-		if (dl->validation.pipeline_vertex_format == INVALID_ID) {
-			ERR_EXPLAINC("Draw command lacks indices, but pipeline format does not use vertices.");
-			ERR_FAIL();
-		}
+			if (dl->validation.pipeline_vertex_format != INVALID_ID) {
+				ERR_EXPLAINC("Procedural vertices requested, but pipeline expects a vertex array.");
+				ERR_FAIL();
+			}
 #endif
-		uint32_t to_draw = dl->validation.vertex_array_size;
+			to_draw = p_procedural_vertices;
+		} else {
+
+#ifdef DEBUG_ENABLED
+			if (dl->validation.pipeline_vertex_format == INVALID_ID) {
+				ERR_EXPLAINC("Draw command lacks indices, but pipeline format does not use vertices.");
+				ERR_FAIL();
+			}
+#endif
+			to_draw = dl->validation.vertex_array_size;
+		}
 
 #ifdef DEBUG_ENABLED
 		if (to_draw < dl->validation.pipeline_primitive_minimum) {
@@ -6226,6 +6330,7 @@ void RenderingDeviceVulkan::draw_list_draw(DrawListID p_list, bool p_use_indices
 			ERR_FAIL();
 		}
 #endif
+
 		vkCmdDraw(dl->command_buffer, to_draw, p_instances, 0, 0);
 	}
 }
@@ -6305,13 +6410,17 @@ void RenderingDeviceVulkan::draw_list_end() {
 		draw_list = NULL;
 	}
 
-	if (draw_list_unbind_textures) {
-		for (int i = 0; i < draw_list_bound_textures.size(); i++) {
-			Texture *texture = texture_owner.getornull(draw_list_bound_textures[i]);
-			ERR_CONTINUE(!texture); //wtf
+	for (int i = 0; i < draw_list_bound_textures.size(); i++) {
+		Texture *texture = texture_owner.getornull(draw_list_bound_textures[i]);
+		ERR_CONTINUE(!texture); //wtf
+		if (draw_list_unbind_color_textures && (texture->usage_flags & TEXTURE_USAGE_COLOR_ATTACHMENT_BIT)) {
+			texture->bound = false;
+		}
+		if (draw_list_unbind_depth_textures && (texture->usage_flags & TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT)) {
 			texture->bound = false;
 		}
 	}
+
 	draw_list_bound_textures.clear();
 
 	// To ensure proper synchronization, we must make sure rendering is done before:
@@ -6480,7 +6589,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 			image_memory_barrier.srcQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.dstQueueFamilyIndex = VK_QUEUE_FAMILY_IGNORED;
 			image_memory_barrier.image = textures_to_storage[i]->image;
-			image_memory_barrier.subresourceRange.aspectMask = textures_to_sampled[i]->read_aspect_mask;
+			image_memory_barrier.subresourceRange.aspectMask = textures_to_storage[i]->read_aspect_mask;
 			image_memory_barrier.subresourceRange.baseMipLevel = 0;
 			image_memory_barrier.subresourceRange.levelCount = textures_to_storage[i]->mipmaps;
 			image_memory_barrier.subresourceRange.baseArrayLayer = 0;
@@ -6511,6 +6620,7 @@ void RenderingDeviceVulkan::compute_list_bind_uniform_set(ComputeListID p_list, 
 	}
 #endif
 }
+
 void RenderingDeviceVulkan::compute_list_set_push_constant(ComputeListID p_list, void *p_data, uint32_t p_data_size) {
 	ERR_FAIL_COND(p_list != ID_TYPE_COMPUTE_LIST);
 	ERR_FAIL_COND(!compute_list);
@@ -6542,6 +6652,11 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 	ComputeList *cl = compute_list;
 
 #ifdef DEBUG_ENABLED
+
+	ERR_FAIL_COND(p_x_groups > limits.maxComputeWorkGroupCount[0]);
+	ERR_FAIL_COND(p_y_groups > limits.maxComputeWorkGroupCount[1]);
+	ERR_FAIL_COND(p_z_groups > limits.maxComputeWorkGroupCount[2]);
+
 	if (!cl->validation.active) {
 		ERR_EXPLAIN("Submitted Compute Lists can no longer be modified.");
 		ERR_FAIL();
@@ -6597,6 +6712,11 @@ void RenderingDeviceVulkan::compute_list_dispatch(ComputeListID p_list, uint32_t
 
 	vkCmdDispatch(cl->command_buffer, p_x_groups, p_y_groups, p_z_groups);
 }
+
+void RenderingDeviceVulkan::compute_list_add_barrier(ComputeListID p_list) {
+	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_ACCESS_SHADER_READ_BIT, true);
+}
+
 void RenderingDeviceVulkan::compute_list_end() {
 	ERR_FAIL_COND(!compute_list);
 
@@ -6625,6 +6745,9 @@ void RenderingDeviceVulkan::compute_list_end() {
 	}
 
 	memdelete(compute_list);
+	compute_list = NULL;
+
+	_memory_barrier(VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT, VK_PIPELINE_STAGE_VERTEX_INPUT_BIT | VK_PIPELINE_STAGE_TRANSFER_BIT, VK_ACCESS_SHADER_WRITE_BIT, VK_PIPELINE_STAGE_COMPUTE_SHADER_BIT | VK_ACCESS_INDEX_READ_BIT | VK_ACCESS_VERTEX_ATTRIBUTE_READ_BIT | VK_ACCESS_TRANSFER_READ_BIT, true);
 }
 
 #if 0

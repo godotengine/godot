@@ -9,22 +9,7 @@ layout(push_constant, binding = 0, std430) uniform DrawCall {
 
 
 
-/* Set 0 Scene data, screen and sources (changes the least) */
-
-layout(set=0,binding=1) uniform texture2D depth_buffer;
-layout(set=0,binding=2) uniform texture2D color_buffer;
-layout(set=0,binding=3) uniform texture2D normal_buffer;
-layout(set=0,binding=4) uniform texture2D roughness_limit;
-
-#ifdef USE_RADIANCE_CUBEMAP_ARRAY
-
-layout(set = 0, binding = 5) uniform textureCubeArray radiance_cubemap;
-
-#else
-
-layout(set = 0, binding = 5) uniform textureCube radiance_cubemap;
-
-#endif
+/* Set 0 Scene data that never changes, ever */
 
 
 #define SAMPLER_NEAREST_CLAMP 0
@@ -40,11 +25,11 @@ layout(set = 0, binding = 5) uniform textureCube radiance_cubemap;
 #define SAMPLER_NEAREST_WITH_MIMPAMPS_ANISOTROPIC_REPEAT 10
 #define SAMPLER_LINEAR_WITH_MIPMAPS_ANISOTROPIC_REPEAT 11
 
-layout(set = 0, binding = 6) uniform sampler material_samplers[12];
+layout(set = 0, binding = 1) uniform sampler material_samplers[12];
 
-layout(set = 0, binding = 7) uniform sampler shadow_sampler;
+layout(set = 0, binding = 2) uniform sampler shadow_sampler;
 
-layout(set=0,binding=8,std140) uniform SceneData {
+layout(set=0,binding=3,std140) uniform SceneData {
 
 	mat4 projection_matrix;
 	mat4 inv_projection_matrix;
@@ -149,27 +134,9 @@ struct InstanceData {
 };
 
 
-layout(set=0,binding=9,std430)  buffer Instances {
+layout(set=0,binding=4,std430)  buffer Instances {
     InstanceData data[];
 } instances;
-
-struct ReflectionData {
-
-	vec3 box_extents;
-	float index;
-	vec3 box_offset;
-	uint mask;
-	vec4 params; // intensity, 0, interior , boxproject
-	vec4 ambient; // ambient color, energy
-	mat4 local_matrix; // up to here for spot and omni, rest is for directional
-	// notes: for ambientblend, use distance to edge to blend between already existing global environment
-};
-
-layout(set=0,binding=10,std140) uniform ReflectionProbeData {
-	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
-} reflections;
-
-layout(set=0,binding=11) uniform textureCubeArray reflection_atlas;
 
 struct LightData { //this structure needs to be 128 bits
 
@@ -185,11 +152,25 @@ struct LightData { //this structure needs to be 128 bits
 	mat4 shadow_matrix;
 };
 
-layout(set=0,binding=12,std140) uniform Lights {
+layout(set=0,binding=5,std140) uniform Lights {
 	LightData data[MAX_LIGHT_DATA_STRUCTS];
 } lights;
 
-layout(set=0,binding=13) uniform texture2D shadow_atlas;
+struct ReflectionData {
+
+	vec3 box_extents;
+	float index;
+	vec3 box_offset;
+	uint mask;
+	vec4 params; // intensity, 0, interior , boxproject
+	vec4 ambient; // ambient color, energy
+	mat4 local_matrix; // up to here for spot and omni, rest is for directional
+	// notes: for ambientblend, use distance to edge to blend between already existing global environment
+};
+
+layout(set=0,binding=6,std140) uniform ReflectionProbeData {
+	ReflectionData data[MAX_REFLECTION_DATA_STRUCTS];
+} reflections;
 
 struct DirectionalLightData {
 
@@ -211,51 +192,65 @@ struct DirectionalLightData {
 
 };
 
-layout(set=0,binding=14,std140) uniform DirectionalLights {
+layout(set=0,binding=7,std140) uniform DirectionalLights {
 	DirectionalLightData data[MAX_DIRECTIONAL_LIGHT_DATA_STRUCTS];
 } directional_lights;
 
-layout(set=0,binding=15) uniform texture2D directional_shadow_atlas;
+struct GIProbeData {
+	mat4 xform;
+	vec3 bounds;
+	float dynamic_range;
 
-/*
-layout(set=0,binding=15,std430)  buffer Skeletons {
-    vec4 data[];
-} skeletons;
-*/
+	float bias;
+	float normal_bias;
+	bool blend_ambient;
+	uint texture_slot;
 
-/* Set 1 Instancing (Multimesh) */
+	float anisotropy_strength;
+	uint pad0;
+	uint pad1;
+	uint pad2;
+};
 
-//layout(set = 1, binding = 0) uniform textureBuffer multimesh_transforms;
+layout(set=0,binding=8,std140) uniform GIProbes {
+	GIProbeData data[MAX_GI_PROBES];
+} gi_probes;
 
-layout(set=1,binding=0,std430) buffer Transforms {
-    vec4 data[];
-} transforms;
+layout(set=0,binding=9) uniform texture3D gi_probe_textures[MAX_GI_PROBE_TEXTURES];
 
 
-/* Set 2 Instancing (Multimesh) data */
+/* Set 1, Scene data that changes per render pass */
 
-#if 0
+
+layout(set=1,binding=0) uniform texture2D depth_buffer;
+layout(set=1,binding=1) uniform texture2D color_buffer;
+layout(set=1,binding=2) uniform texture2D normal_buffer;
+layout(set=1,binding=3) uniform texture2D roughness_limit;
 
 #ifdef USE_RADIANCE_CUBEMAP_ARRAY
 
-layout(set = 3, binding = 2) uniform textureCubeArray reflection_probes[MAX_REFLECTION_PROBES];
+layout(set = 1, binding = 4) uniform textureCubeArray radiance_cubemap;
 
 #else
 
-layout(set = 3, binding = 2) uniform textureCube reflection_probes[MAX_REFLECTION_PROBES];
+layout(set = 1, binding = 4) uniform textureCube radiance_cubemap;
 
 #endif
 
 
-#ifdef USE_VOXEL_CONE_TRACING
+layout(set=1,binding=5) uniform textureCubeArray reflection_atlas;
 
-layout(set = 3, binding = 4) uniform texture3D gi_probe[2];
+layout(set=1,binding=6) uniform texture2D shadow_atlas;
 
-#ifdef USE_ANISOTROPIC_VOXEL_CONE_TRACING
-layout(set = 3, binding = 5) uniform texture3D gi_probe_aniso_pos[2];
-layout(set = 3, binding = 6) uniform texture3D gi_probe_aniso_neg[2];
-#endif
+layout(set=1,binding=7) uniform texture2D directional_shadow_atlas;
 
 
-#endif
-#endif
+/* Set 2 Skeleton & Instancing (Multimesh) */
+
+layout(set=2,binding=0,std430) buffer Transforms {
+    vec4 data[];
+} transforms;
+
+/* Set 3 User Material */
+
+

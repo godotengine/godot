@@ -724,8 +724,9 @@ String ResourceLoader::get_resource_type(const String &p_path) {
 	for (int i = 0; i < loader_count; i++) {
 
 		String result = loader[i]->get_resource_type(local_path);
-		if (result != "")
+		if (result != "") {
 			return result;
+		}
 	}
 
 	return "";

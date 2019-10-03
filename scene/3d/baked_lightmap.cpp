@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#if 0
 #include "baked_lightmap.h"
 #include "core/io/config_file.h"
 #include "core/io/resource_saver.h"
@@ -368,7 +369,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	Ref<BakedLightmapData> new_light_data;
 	new_light_data.instance();
 
-	VoxelLightBaker baker;
+	Voxelizer baker;
 
 	int bake_subdiv;
 	int capture_subdiv;
@@ -413,7 +414,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	}
 
 	pmc = 0;
-	baker.begin_bake_light(VoxelLightBaker::BakeQuality(bake_quality), VoxelLightBaker::BakeMode(bake_mode), propagation, energy);
+	baker.begin_bake_light(Voxelizer::BakeQuality(bake_quality), Voxelizer::BakeMode(bake_mode), propagation, energy);
 
 	for (List<PlotLight>::Element *E = light_list.front(); E; E = E->next()) {
 
@@ -465,7 +466,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		used_mesh_names.insert(mesh_name);
 
 		pmc++;
-		VoxelLightBaker::LightMapData lm;
+		Voxelizer::LightMapData lm;
 
 		Error err;
 		if (bake_step_function) {
@@ -626,7 +627,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 
 	if (p_create_visual_debug) {
 		MultiMeshInstance *mmi = memnew(MultiMeshInstance);
-		mmi->set_multimesh(baker.create_debug_multimesh(VoxelLightBaker::DEBUG_LIGHT));
+		mmi->set_multimesh(baker.create_debug_multimesh(Voxelizer::DEBUG_LIGHT));
 		add_child(mmi);
 #ifdef TOOLS_ENABLED
 		if (get_tree()->get_edited_scene_root() == this) {
@@ -860,3 +861,4 @@ BakedLightmap::BakedLightmap() {
 	image_path = ".";
 	set_disable_scale(true);
 }
+#endif
