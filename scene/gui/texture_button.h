@@ -61,6 +61,9 @@ private:
 	Rect2 _position_rect;
 	bool _tile;
 
+	bool hflip;
+	bool vflip;
+
 protected:
 	virtual Size2 get_minimum_size() const;
 	virtual bool has_point(const Point2 &p_point) const;
@@ -87,6 +90,12 @@ public:
 
 	void set_stretch_mode(StretchMode p_stretch_mode);
 	StretchMode get_stretch_mode() const;
+
+	void set_flip_h(bool p_flip);
+	bool is_flipped_h() const;
+
+	void set_flip_v(bool p_flip);
+	bool is_flipped_v() const;
 
 	TextureButton();
 };
