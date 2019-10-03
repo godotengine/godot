@@ -2996,6 +2996,8 @@ void OS_X11::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, c
 		CursorShape c = current_cursor;
 		current_cursor = CURSOR_MAX;
 		set_cursor_shape(c);
+
+		cursors_cache.erase(p_shape);
 	}
 }
 
