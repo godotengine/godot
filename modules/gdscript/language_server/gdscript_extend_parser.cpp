@@ -345,13 +345,13 @@ String ExtendGDScriptParser::marked_documentation(const String &p_bbcode) {
 		if (block_start != -1) {
 			code_block_indent = block_start;
 			in_code_block = true;
-			line = "'''gdscript\n";
+			line = "\n";
 		} else if (in_code_block) {
 			line = "\t" + line.substr(code_block_indent, line.length());
 		}
 
 		if (in_code_block && line.find("[/codeblock]") != -1) {
-			line = "'''\n\n";
+			line = "\n";
 			in_code_block = false;
 		}
 
