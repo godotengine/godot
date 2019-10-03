@@ -1070,6 +1070,76 @@ void Variant::evaluate(const Operator &p_op, const Variant &p_a,
 					// e.g. "frog %s %d" % ["fish", 12]
 					const Array *args = reinterpret_cast<const Array *>(p_b._data._mem);
 					result = format->sprintf(*args, &error);
+				} else if (p_b.type == POOL_INT_ARRAY) {
+					// e.g. "frog %d %d" % PoolIntArray([11, 12])
+					const PoolIntArray *pool_arr = reinterpret_cast<const PoolVector<int> *>(p_b._data._mem);
+					PoolIntArray::Read r = pool_arr->read();
+					Array args;
+					args.resize(pool_arr->size());
+					for (int i = 0; i < pool_arr->size(); i++) {
+						args[i] = r[i];
+					}
+					result = format->sprintf(args, &error);
+				} else if (p_b.type == POOL_BYTE_ARRAY) {
+					// e.g. "frog %c %c" % PoolByteArray([2, 1])
+					const PoolByteArray *pool_arr = reinterpret_cast<const PoolVector<uint8_t> *>(p_b._data._mem);
+					PoolByteArray::Read r = pool_arr->read();
+					Array args;
+					args.resize(pool_arr->size());
+					for (int i = 0; i < pool_arr->size(); i++) {
+						args[i] = r[i];
+					}
+					result = format->sprintf(args, &error);
+				} else if (p_b.type == POOL_STRING_ARRAY) {
+					// e.g. "frog %s %s" % PoolStringArray(["fish", "12"])
+					const PoolStringArray *pool_arr = reinterpret_cast<const PoolVector<String> *>(p_b._data._mem);
+					PoolStringArray::Read r = pool_arr->read();
+					Array args;
+					args.resize(pool_arr->size());
+					for (int i = 0; i < pool_arr->size(); i++) {
+						args[i] = r[i];
+					}
+					result = format->sprintf(args, &error);
+				} else if (p_b.type == POOL_REAL_ARRAY) {
+					// e.g. "frog %f %f" % PoolRealArray([1.1, 12.0])
+					const PoolRealArray *pool_arr = reinterpret_cast<const PoolVector<real_t> *>(p_b._data._mem);
+					PoolRealArray::Read r = pool_arr->read();
+					Array args;
+					args.resize(pool_arr->size());
+					for (int i = 0; i < pool_arr->size(); i++) {
+						args[i] = r[i];
+					}
+					result = format->sprintf(args, &error);
+				} else if (p_b.type == POOL_VECTOR2_ARRAY) {
+					// e.g. "frog %s %s" % PoolVector2Array([Vector2(0, 1), Vector2(0, -1)])
+					const PoolVector2Array *pool_arr = reinterpret_cast<const PoolVector<Vector2> *>(p_b._data._mem);
+					PoolVector2Array::Read r = pool_arr->read();
+					Array args;
+					args.resize(pool_arr->size());
+					for (int i = 0; i < pool_arr->size(); i++) {
+						args[i] = r[i];
+					}
+					result = format->sprintf(args, &error);
+				} else if (p_b.type == POOL_VECTOR3_ARRAY) {
+					// e.g. "frog %s %s" % PoolVector3Array([Vector3(0, 0, 1), Vector3(0, 0, -1)])
+					const PoolVector3Array *pool_arr = reinterpret_cast<const PoolVector<Vector3> *>(p_b._data._mem);
+					PoolVector3Array::Read r = pool_arr->read();
+					Array args;
+					args.resize(pool_arr->size());
+					for (int i = 0; i < pool_arr->size(); i++) {
+						args[i] = r[i];
+					}
+					result = format->sprintf(args, &error);
+				} else if (p_b.type == POOL_COLOR_ARRAY) {
+					// e.g. "frog %s %s" % PoolColorArray([Color.blue, Color.black])
+					const PoolColorArray *pool_arr = reinterpret_cast<const PoolVector<Color> *>(p_b._data._mem);
+					PoolColorArray::Read r = pool_arr->read();
+					Array args;
+					args.resize(pool_arr->size());
+					for (int i = 0; i < pool_arr->size(); i++) {
+						args[i] = r[i];
+					}
+					result = format->sprintf(args, &error);
 				} else {
 					// e.g. "frog %d" % 12
 					Array args;
