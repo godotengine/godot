@@ -728,6 +728,10 @@ void ScriptEditorDebugger::_parse_message(const String &p_msg, const Array &p_da
 			}
 
 			variables->add_property("Members/" + n, v, h, hs);
+
+			if (n == "self") {
+				_scene_tree_property_select_object(v);
+			}
 		}
 
 		ofs += mcount * 2;
