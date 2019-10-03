@@ -1558,7 +1558,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 	}
 
 	gi_probe->last_probe_version = storage->gi_probe_get_version(gi_probe->probe);
-	print_line("update GI");
 }
 
 void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, float p_alpha) {
@@ -1651,8 +1650,8 @@ void RasterizerSceneRD::gi_probe_slots_make_not_dirty() {
 	gi_probe_slots_dirty = false;
 }
 
-bool RasterizerSceneRD::gi_probe_is_high_quality() const {
-	return gi_probe_use_6_cones;
+RasterizerSceneRD::GIProbeQuality RasterizerSceneRD::gi_probe_get_quality() const {
+	return gi_probe_quality;
 }
 
 ////////////////////////////////
@@ -1958,7 +1957,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		gi_probe_lights_uniform = RD::get_singleton()->uniform_buffer_create(gi_probe_max_lights * sizeof(GIProbeLight));
 
 		gi_probe_use_anisotropy = GLOBAL_GET("rendering/quality/gi_probes/anisotropic");
-		gi_probe_use_6_cones = GLOBAL_GET("rendering/quality/gi_probes/high_quality");
+		gi_probe_quality = GIProbeQuality(CLAMP(int(GLOBAL_GET("rendering/quality/gi_probes/quality")), 0, 2));
 
 		if (textures_per_stage <= 16) {
 			gi_probe_slots.resize(2); //thats all you can get

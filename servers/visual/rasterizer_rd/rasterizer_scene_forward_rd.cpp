@@ -1864,8 +1864,6 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 		}
 	}
 
-	RENDER_TIMESTAMP("Render Opaque Pass");
-
 	_setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), radiance_cubemap, p_shadow_atlas, p_reflection_atlas);
 
 	render_list.sort_by_key(false);
@@ -1878,11 +1876,13 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	bool depth_pre_pass = depth_framebuffer.is_valid();
 	if (depth_pre_pass) { //depth pre pass
+		RENDER_TIMESTAMP("Render Depth Pre-Pass");
 
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(depth_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_CONTINUE, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_CONTINUE);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(depth_framebuffer), render_list.elements, render_list.element_count, false, PASS_MODE_DEPTH, render_buffer == nullptr);
 		RD::get_singleton()->draw_list_end();
 	}
+	RENDER_TIMESTAMP("Render Opaque Pass");
 
 	{
 		bool will_continue = (can_continue || draw_sky || debug_giprobes);
@@ -2363,9 +2363,13 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 				slot_count *= 3;
 				defines += "\n#define GI_PROBE_USE_ANISOTROPY\n";
 			}
-			if (gi_probe_is_high_quality()) {
+
+			if (gi_probe_get_quality() == GIPROBE_QUALITY_ULTRA_LOW) {
+				defines += "\n#define GI_PROBE_LOW_QUALITY\n";
+			} else if (gi_probe_get_quality() == GIPROBE_QUALITY_HIGH) {
 				defines += "\n#define GI_PROBE_HIGH_QUALITY\n";
 			}
+
 			defines += "\n#define MAX_GI_PROBE_TEXTURES " + itos(slot_count) + "\n";
 
 			uint32_t giprobe_buffer_size;
