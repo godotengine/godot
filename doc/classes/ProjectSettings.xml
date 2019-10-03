@@ -403,19 +403,19 @@
 			Sets the window to full screen when it starts.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
-			Sets the main window height. On desktop, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use also as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
 		</member>
 		<member name="display/window/size/test_height" type="int" setter="" getter="" default="0">
-			If greater than zero, uses a different height for the window when running from the editor. The main use for this is to test with stretch modes.
+			If greater than zero, overrides the window height when running the game. Useful for testing stretch modes.
 		</member>
 		<member name="display/window/size/test_width" type="int" setter="" getter="" default="0">
-			If greater than zero, uses a different width for the window when running from the editor. The main use for this is to test with stretch modes.
+			If greater than zero, overrides the window width when running the game. Useful for testing stretch modes.
 		</member>
 		<member name="display/window/size/width" type="int" setter="" getter="" default="1024">
-			Sets the main window width. On desktop platforms, this is the default window size. Stretch mode settings use this also as a reference when enabled.
+			Sets the game's main viewport width. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/vsync/use_vsync" type="bool" setter="" getter="" default="true">
 			If [code]true[/code], enables vertical synchronization. This eliminates tearing that may appear in moving scenes, at the cost of higher input latency and stuttering at lower framerates. If [code]false[/code], vertical synchronization will be disabled, however, many platforms will enforce it regardless (such as mobile platforms and HTML5).
