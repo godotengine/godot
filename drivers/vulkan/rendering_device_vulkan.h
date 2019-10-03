@@ -259,7 +259,7 @@ class RenderingDeviceVulkan : public RenderingDevice {
 		}
 	};
 
-	VkRenderPass _render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_action, FinalAction p_final_action, int *r_color_attachment_count = NULL);
+	VkRenderPass _render_pass_create(const Vector<AttachmentFormat> &p_format, InitialAction p_initial_action, FinalAction p_final_action, InitialAction p_initial_depth_action, FinalAction p_final_depthcolor_action, int *r_color_attachment_count = NULL);
 
 	// This is a cache and it's never freed, it ensures
 	// IDs for a given format are always unique.
@@ -276,13 +276,23 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	struct Framebuffer {
 		FramebufferFormatID format_id;
 		struct VersionKey {
-			InitialAction initial_action;
-			FinalAction final_action;
+			InitialAction initial_color_action;
+			FinalAction final_color_action;
+			InitialAction initial_depth_action;
+			FinalAction final_depth_action;
 			bool operator<(const VersionKey &p_key) const {
-				if (initial_action == p_key.initial_action) {
-					return final_action < p_key.final_action;
+				if (initial_color_action == p_key.initial_color_action) {
+					if (final_color_action == p_key.final_color_action) {
+						if (initial_depth_action == p_key.initial_depth_action) {
+							return final_depth_action < p_key.final_depth_action;
+						} else {
+							return initial_depth_action < p_key.initial_depth_action;
+						}
+					} else {
+						return final_color_action < p_key.final_color_action;
+					}
 				} else {
-					return initial_action < p_key.initial_action;
+					return initial_color_action < p_key.initial_color_action;
 				}
 			}
 		};
@@ -806,11 +816,12 @@ class RenderingDeviceVulkan : public RenderingDevice {
 	uint32_t draw_list_count;
 	bool draw_list_split;
 	Vector<RID> draw_list_bound_textures;
-	bool draw_list_unbind_textures;
+	bool draw_list_unbind_color_textures;
+	bool draw_list_unbind_depth_textures;
 
-	void _draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, const Vector<Color> &p_clear_colors);
-	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass);
-	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents);
+	void _draw_list_insert_clear_region(DrawList *draw_list, Framebuffer *framebuffer, Point2i viewport_offset, Point2i viewport_size, bool p_clear_color, const Vector<Color> &p_clear_colors, bool p_clear_depth, float p_depth, uint32_t p_stencil);
+	Error _draw_list_setup_framebuffer(Framebuffer *p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, VkFramebuffer *r_framebuffer, VkRenderPass *r_render_pass);
+	Error _draw_list_render_pass_begin(Framebuffer *framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_colors, float p_clear_depth, uint32_t p_clear_stencil, Point2i viewport_offset, Point2i viewport_size, VkFramebuffer vkframebuffer, VkRenderPass render_pass, VkCommandBuffer command_buffer, VkSubpassContents subpass_contents);
 	_FORCE_INLINE_ DrawList *_get_draw_list_ptr(DrawListID p_id);
 
 	/**********************/
@@ -966,6 +977,7 @@ public:
 	virtual bool texture_is_valid(RID p_texture);
 
 	virtual Error texture_copy(RID p_from_texture, RID p_to_texture, const Vector3 &p_from, const Vector3 &p_to, const Vector3 &p_size, uint32_t p_src_mipmap, uint32_t p_dst_mipmap, uint32_t p_src_layer, uint32_t p_dst_layer, bool p_sync_with_draw = false);
+	virtual Error texture_clear(RID p_texture, const Color &p_color, uint32_t p_base_mipmap, uint32_t p_mipmaps, uint32_t p_base_layer, uint32_t p_layers, bool p_sync_with_draw = false);
 
 	/*********************/
 	/**** FRAMEBUFFER ****/
@@ -1046,8 +1058,9 @@ public:
 	/********************/
 
 	virtual DrawListID draw_list_begin_for_screen(int p_screen = 0, const Color &p_clear_color = Color());
-	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors = Vector<Color>(), const Rect2 &p_region = Rect2());
-	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_action, FinalAction p_final_action, const Vector<Color> &p_clear_colors = Vector<Color>(), const Rect2 &p_region = Rect2());
+
+	virtual DrawListID draw_list_begin(RID p_framebuffer, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
+	virtual Error draw_list_begin_split(RID p_framebuffer, uint32_t p_splits, DrawListID *r_split_ids, InitialAction p_initial_color_action, FinalAction p_final_color_action, InitialAction p_initial_depth_action, FinalAction p_final_depth_action, const Vector<Color> &p_clear_color_values = Vector<Color>(), float p_clear_depth = 1.0, uint32_t p_clear_stencil = 0, const Rect2 &p_region = Rect2());
 
 	virtual void draw_list_bind_render_pipeline(DrawListID p_list, RID p_render_pipeline);
 	virtual void draw_list_bind_uniform_set(DrawListID p_list, RID p_uniform_set, uint32_t p_index);
@@ -1056,7 +1069,7 @@ public:
 	virtual void draw_list_set_line_width(DrawListID p_list, float p_width);
 	virtual void draw_list_set_push_constant(DrawListID p_list, void *p_data, uint32_t p_data_size);
 
-	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1);
+	virtual void draw_list_draw(DrawListID p_list, bool p_use_indices, uint32_t p_instances = 1, uint32_t p_procedural_vertices = 0);
 
 	virtual void draw_list_enable_scissor(DrawListID p_list, const Rect2 &p_rect);
 	virtual void draw_list_disable_scissor(DrawListID p_list);
@@ -1071,6 +1084,8 @@ public:
 	virtual void compute_list_bind_compute_pipeline(ComputeListID p_list, RID p_compute_pipeline);
 	virtual void compute_list_bind_uniform_set(ComputeListID p_list, RID p_uniform_set, uint32_t p_index);
 	virtual void compute_list_set_push_constant(ComputeListID p_list, void *p_data, uint32_t p_data_size);
+	virtual void compute_list_add_barrier(ComputeListID p_list);
+
 	virtual void compute_list_dispatch(ComputeListID p_list, uint32_t p_x_groups, uint32_t p_y_groups, uint32_t p_z_groups);
 	virtual void compute_list_end();
 

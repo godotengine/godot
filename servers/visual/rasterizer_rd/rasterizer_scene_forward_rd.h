@@ -188,6 +188,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		//for rendering, may be MSAAd
 		RID color;
 		RID depth;
+		RID depth_fb;
 		RID color_fb;
 		RID color_only_fb;
 		int width, height;
@@ -204,7 +205,9 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 	RID shadow_sampler;
 	RID render_base_uniform_set;
-	void _setup_render_base_uniform_set(RID p_depth_buffer, RID p_color_buffer, RID p_normal_buffer, RID p_roughness_limit_buffer, RID p_radiance_cubemap, RID p_shadow_atlas, RID p_reflection_atlas);
+	RID render_pass_uniform_set;
+	void _update_render_base_uniform_set();
+	void _setup_render_pass_uniform_set(RID p_depth_buffer, RID p_color_buffer, RID p_normal_buffer, RID p_roughness_limit_buffer, RID p_radiance_cubemap, RID p_shadow_atlas, RID p_reflection_atlas);
 
 	/* Scene State UBO */
 
@@ -245,6 +248,20 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		float fade_to;
 		float shadow_split_offsets[4];
 		float shadow_matrices[4][16];
+	};
+
+	struct GIProbeData {
+		float xform[16];
+		float bounds[3];
+		float dynamic_range;
+
+		float bias;
+		float normal_bias;
+		uint32_t blend_ambient;
+		uint32_t texture_slot;
+
+		float anisotropy_strength;
+		uint32_t pad[3];
 	};
 
 	enum {
@@ -314,6 +331,11 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		uint32_t max_reflections;
 		RID reflection_buffer;
 		uint32_t max_reflection_probes_per_instance;
+
+		GIProbeData *gi_probes;
+		uint32_t max_gi_probes;
+		RID gi_probe_buffer;
+		uint32_t max_gi_probe_probes_per_instance;
 
 		LightData *lights;
 		uint32_t max_lights;
@@ -498,6 +520,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 	void _setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
+	void _setup_gi_probes(RID *p_gi_probe_probe_cull_result, int p_gi_probe_probe_cull_count, const Transform &p_camera_transform);
 
 	void _fill_instances(RenderList::Element **p_elements, int p_element_count);
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi);
@@ -508,13 +531,15 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 
 	void _draw_sky(RD::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_fb_format, RID p_environment, const CameraMatrix &p_projection, const Transform &p_transform, float p_alpha);
 
+	VS::ViewportDebugDraw debug_draw = VS::VIEWPORT_DEBUG_DRAW_DISABLED;
+
 protected:
-	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip);
 
 public:
 	virtual void set_time(double p_time);
-	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw) {}
+	virtual void set_debug_draw_mode(VS::ViewportDebugDraw p_debug_draw);
 
 	virtual bool free(RID p_rid);
 

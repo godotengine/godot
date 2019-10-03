@@ -2759,43 +2759,60 @@ void SpatialEditorViewport::_menu_option(int p_option) {
 			view_menu->get_popup()->set_item_checked(idx, !current);
 
 		} break;
-		case VIEW_DISPLAY_NORMAL: {
+		case VIEW_DISPLAY_NORMAL:
+		case VIEW_DISPLAY_WIREFRAME:
+		case VIEW_DISPLAY_OVERDRAW:
+		case VIEW_DISPLAY_SHADELESS:
+		case VIEW_DISPLAY_LIGHTING:
+		case VIEW_DISPLAY_DEBUG_SHADOW_ATLAS:
+		case VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS:
+		case VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO:
+		case VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING: {
 
-			viewport->set_debug_draw(Viewport::DEBUG_DRAW_DISABLED);
+			static const int display_options[] = {
+				VIEW_DISPLAY_NORMAL,
+				VIEW_DISPLAY_WIREFRAME,
+				VIEW_DISPLAY_OVERDRAW,
+				VIEW_DISPLAY_SHADELESS,
+				VIEW_DISPLAY_LIGHTING,
+				VIEW_DISPLAY_DEBUG_SHADOW_ATLAS,
+				VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS,
+				VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO,
+				VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING,
+				VIEW_MAX
+			};
+			static const Viewport::DebugDraw debug_draw_modes[] = {
+				Viewport::DEBUG_DRAW_DISABLED,
+				Viewport::DEBUG_DRAW_WIREFRAME,
+				Viewport::DEBUG_DRAW_OVERDRAW,
+				Viewport::DEBUG_DRAW_UNSHADED,
+				Viewport::DEBUG_DRAW_LIGHTING,
+				Viewport::DEBUG_DRAW_WIREFRAME,
+				Viewport::DEBUG_DRAW_SHADOW_ATLAS,
+				Viewport::DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
+				Viewport::DEBUG_DRAW_GI_PROBE_LIGHTING,
+				Viewport::DEBUG_DRAW_GI_PROBE_ALBEDO
+			};
 
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), false);
-		} break;
-		case VIEW_DISPLAY_WIREFRAME: {
+			int idx = 0;
 
-			viewport->set_debug_draw(Viewport::DEBUG_DRAW_WIREFRAME);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), true);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), false);
+			while (display_options[idx] != VIEW_MAX) {
 
-		} break;
-		case VIEW_DISPLAY_OVERDRAW: {
+				int id = display_options[idx];
+				int item_idx = view_menu->get_popup()->get_item_index(id);
+				if (item_idx != -1) {
+					view_menu->get_popup()->set_item_checked(item_idx, id == p_option);
+				}
+				item_idx = display_submenu->get_item_index(id);
+				if (item_idx != -1) {
+					display_submenu->set_item_checked(item_idx, id == p_option);
+				}
 
-			viewport->set_debug_draw(Viewport::DEBUG_DRAW_OVERDRAW);
-			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_OVERDRAW);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), true);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), false);
-
-		} break;
-		case VIEW_DISPLAY_SHADELESS: {
-
-			viewport->set_debug_draw(Viewport::DEBUG_DRAW_UNSHADED);
-			VisualServer::get_singleton()->scenario_set_debug(get_tree()->get_root()->get_world()->get_scenario(), VisualServer::SCENARIO_DEBUG_SHADELESS);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_WIREFRAME), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_OVERDRAW), false);
-			view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_SHADELESS), true);
-
+				if (id == p_option) {
+					viewport->set_debug_draw(debug_draw_modes[idx]);
+				}
+				idx++;
+			}
 		} break;
 	}
 }
@@ -3590,6 +3607,9 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	vbox->add_child(view_menu);
 	view_menu->set_h_size_flags(0);
 
+	display_submenu = memnew(PopupMenu);
+	view_menu->get_popup()->add_child(display_submenu);
+
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/top_view"), VIEW_TOP);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/bottom_view"), VIEW_BOTTOM);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/left_view"), VIEW_LEFT);
@@ -3608,6 +3628,13 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_overdraw", TTR("Display Overdraw")), VIEW_DISPLAY_OVERDRAW);
 	view_menu->get_popup()->add_radio_check_shortcut(ED_SHORTCUT("spatial_editor/view_display_unshaded", TTR("Display Unshaded")), VIEW_DISPLAY_SHADELESS);
 	view_menu->get_popup()->set_item_checked(view_menu->get_popup()->get_item_index(VIEW_DISPLAY_NORMAL), true);
+	display_submenu->add_radio_check_item(TTR("Shadow Atlas"), VIEW_DISPLAY_DEBUG_SHADOW_ATLAS);
+	display_submenu->add_radio_check_item(TTR("Directional Shadow"), VIEW_DISPLAY_DEBUG_DIRECTIONAL_SHADOW_ATLAS);
+	display_submenu->add_separator();
+	display_submenu->add_radio_check_item(TTR("GIProbe Lighting"), VIEW_DISPLAY_DEBUG_GIPROBE_LIGHTING);
+	display_submenu->add_radio_check_item(TTR("GIProbe Albedo"), VIEW_DISPLAY_DEBUG_GIPROBE_ALBEDO);
+	display_submenu->set_name("display_advanced");
+	view_menu->get_popup()->add_submenu_item(TTR("Display Advanced..."), "display_advanced");
 	view_menu->get_popup()->add_separator();
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_environment", TTR("View Environment")), VIEW_ENVIRONMENT);
 	view_menu->get_popup()->add_check_shortcut(ED_SHORTCUT("spatial_editor/view_gizmos", TTR("View Gizmos")), VIEW_GIZMOS);
@@ -3630,7 +3657,7 @@ SpatialEditorViewport::SpatialEditorViewport(SpatialEditor *p_spatial_editor, Ed
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_transform_with_view"), VIEW_ALIGN_TRANSFORM_WITH_VIEW);
 	view_menu->get_popup()->add_shortcut(ED_GET_SHORTCUT("spatial_editor/align_rotation_with_view"), VIEW_ALIGN_ROTATION_WITH_VIEW);
 	view_menu->get_popup()->connect("id_pressed", this, "_menu_option");
-
+	display_submenu->connect("id_pressed", this, "_menu_option");
 	view_menu->set_disable_shortcuts(true);
 
 	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
@@ -5587,7 +5614,7 @@ void SpatialEditor::_register_all_gizmos() {
 	add_gizmo_plugin(Ref<CPUParticlesGizmoPlugin>(memnew(CPUParticlesGizmoPlugin)));
 	add_gizmo_plugin(Ref<ReflectionProbeGizmoPlugin>(memnew(ReflectionProbeGizmoPlugin)));
 	add_gizmo_plugin(Ref<GIProbeGizmoPlugin>(memnew(GIProbeGizmoPlugin)));
-	add_gizmo_plugin(Ref<BakedIndirectLightGizmoPlugin>(memnew(BakedIndirectLightGizmoPlugin)));
+	//	add_gizmo_plugin(Ref<BakedIndirectLightGizmoPlugin>(memnew(BakedIndirectLightGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionShapeSpatialGizmoPlugin>(memnew(CollisionShapeSpatialGizmoPlugin)));
 	add_gizmo_plugin(Ref<CollisionPolygonSpatialGizmoPlugin>(memnew(CollisionPolygonSpatialGizmoPlugin)));
 	add_gizmo_plugin(Ref<NavigationMeshSpatialGizmoPlugin>(memnew(NavigationMeshSpatialGizmoPlugin)));

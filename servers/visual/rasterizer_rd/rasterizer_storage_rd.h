@@ -401,6 +401,42 @@ private:
 
 	mutable RID_Owner<ReflectionProbe> reflection_probe_owner;
 
+	/* GI PROBE */
+
+	struct GIProbe {
+
+		RID octree_buffer;
+		RID data_buffer;
+
+		uint32_t octree_buffer_size = 0;
+		uint32_t data_buffer_size = 0;
+
+		PoolVector<int> level_counts;
+
+		int cell_count = 0;
+
+		Transform to_cell_xform;
+		AABB bounds;
+		Vector3i octree_size;
+
+		float dynamic_range = 4.0;
+		float energy = 1.0;
+		float bias = 1.4;
+		float normal_bias = 0.0;
+		float propagation = 0.7;
+		bool interior = false;
+		bool use_two_bounces = false;
+
+		float anisotropy_strength = 0.5;
+
+		uint32_t version = 1;
+		uint32_t data_version = 1;
+
+		RasterizerScene::InstanceDependency instance_dependency;
+	};
+
+	mutable RID_Owner<GIProbe> gi_probe_owner;
+
 	/* RENDER TARGET */
 
 	struct RenderTarget {
@@ -922,49 +958,46 @@ public:
 
 	/* GI PROBE API */
 
-	RID gi_probe_create() { return RID(); }
+	RID gi_probe_create();
 
-	void gi_probe_set_bounds(RID p_probe, const AABB &p_bounds) {}
-	AABB gi_probe_get_bounds(RID p_probe) const { return AABB(); }
+	void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<int> &p_level_counts);
 
-	void gi_probe_set_cell_size(RID p_probe, float p_range) {}
-	float gi_probe_get_cell_size(RID p_probe) const { return 0.0; }
+	AABB gi_probe_get_bounds(RID p_gi_probe) const;
+	Vector3i gi_probe_get_octree_size(RID p_gi_probe) const;
+	PoolVector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const;
+	PoolVector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const;
+	PoolVector<int> gi_probe_get_level_counts(RID p_gi_probe) const;
+	Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const;
 
-	void gi_probe_set_to_cell_xform(RID p_probe, const Transform &p_xform) {}
-	Transform gi_probe_get_to_cell_xform(RID p_probe) const { return Transform(); }
+	void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range);
+	float gi_probe_get_dynamic_range(RID p_gi_probe) const;
 
-	void gi_probe_set_dynamic_data(RID p_probe, const PoolVector<int> &p_data) {}
-	PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const {
-		PoolVector<int> p;
-		return p;
-	}
+	void gi_probe_set_propagation(RID p_gi_probe, float p_range);
+	float gi_probe_get_propagation(RID p_gi_probe) const;
 
-	void gi_probe_set_dynamic_range(RID p_probe, int p_range) {}
-	int gi_probe_get_dynamic_range(RID p_probe) const { return 0; }
+	void gi_probe_set_energy(RID p_gi_probe, float p_energy);
+	float gi_probe_get_energy(RID p_gi_probe) const;
 
-	void gi_probe_set_energy(RID p_probe, float p_range) {}
-	float gi_probe_get_energy(RID p_probe) const { return 0.0; }
+	void gi_probe_set_bias(RID p_gi_probe, float p_bias);
+	float gi_probe_get_bias(RID p_gi_probe) const;
 
-	void gi_probe_set_bias(RID p_probe, float p_range) {}
-	float gi_probe_get_bias(RID p_probe) const { return 0.0; }
+	void gi_probe_set_normal_bias(RID p_gi_probe, float p_range);
+	float gi_probe_get_normal_bias(RID p_gi_probe) const;
 
-	void gi_probe_set_normal_bias(RID p_probe, float p_range) {}
-	float gi_probe_get_normal_bias(RID p_probe) const { return 0.0; }
+	void gi_probe_set_interior(RID p_gi_probe, bool p_enable);
+	bool gi_probe_is_interior(RID p_gi_probe) const;
 
-	void gi_probe_set_propagation(RID p_probe, float p_range) {}
-	float gi_probe_get_propagation(RID p_probe) const { return 0.0; }
+	void gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable);
+	bool gi_probe_is_using_two_bounces(RID p_gi_probe) const;
 
-	void gi_probe_set_interior(RID p_probe, bool p_enable) {}
-	bool gi_probe_is_interior(RID p_probe) const { return false; }
+	void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength);
+	float gi_probe_get_anisotropy_strength(RID p_gi_probe) const;
 
-	void gi_probe_set_compress(RID p_probe, bool p_enable) {}
-	bool gi_probe_is_compressed(RID p_probe) const { return false; }
+	uint32_t gi_probe_get_version(RID p_probe);
+	uint32_t gi_probe_get_data_version(RID p_probe);
 
-	uint32_t gi_probe_get_version(RID p_probe) { return 0; }
-
-	GIProbeCompression gi_probe_get_dynamic_data_get_preferred_compression() const { return GI_PROBE_UNCOMPRESSED; }
-	RID gi_probe_dynamic_data_create(int p_width, int p_height, int p_depth, GIProbeCompression p_compression) { return RID(); }
-	void gi_probe_dynamic_data_update(RID p_gi_probe_data, int p_depth_slice, int p_slice_count, int p_mipmap, const void *p_data) {}
+	RID gi_probe_get_octree_buffer(RID p_gi_probe) const;
+	RID gi_probe_get_data_buffer(RID p_gi_probe) const;
 
 	/* LIGHTMAP CAPTURE */
 

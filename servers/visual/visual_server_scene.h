@@ -48,6 +48,7 @@ public:
 		MAX_INSTANCE_CULL = 65536,
 		MAX_LIGHTS_CULLED = 4096,
 		MAX_REFLECTION_PROBES_CULLED = 4096,
+		MAX_GI_PROBES_CULLED = 4096,
 		MAX_ROOM_CULL = 32,
 		MAX_EXTERIOR_PORTALS = 128,
 	};
@@ -324,77 +325,16 @@ public:
 			Transform transform;
 			Color color;
 			float energy;
+			float bake_energy;
 			float radius;
 			float attenuation;
 			float spot_angle;
 			float spot_attenuation;
-			bool visible;
-
-			bool operator==(const LightCache &p_cache) {
-
-				return (type == p_cache.type &&
-						transform == p_cache.transform &&
-						color == p_cache.color &&
-						energy == p_cache.energy &&
-						radius == p_cache.radius &&
-						attenuation == p_cache.attenuation &&
-						spot_angle == p_cache.spot_angle &&
-						spot_attenuation == p_cache.spot_attenuation &&
-						visible == p_cache.visible);
-			}
-
-			bool operator!=(const LightCache &p_cache) {
-
-				return !operator==(p_cache);
-			}
-
-			LightCache() {
-
-				type = VS::LIGHT_DIRECTIONAL;
-				energy = 1.0;
-				radius = 1.0;
-				attenuation = 1.0;
-				spot_angle = 1.0;
-				spot_attenuation = 1.0;
-				visible = true;
-			}
+			bool has_shadow;
 		};
 
-		struct LocalData {
-			uint16_t pos[3];
-			uint16_t energy[3]; //using 0..1024 for float range 0..1. integer is needed for deterministic add/remove of lights
-		};
-
-		struct CompBlockS3TC {
-			uint32_t offset; //offset in mipmap
-			uint32_t source_count; //sources
-			uint32_t sources[16]; //id for each source
-			uint8_t alpha[8]; //alpha block is pre-computed
-		};
-
-		struct Dynamic {
-
-			Map<RID, LightCache> light_cache;
-			Map<RID, LightCache> light_cache_changes;
-			PoolVector<int> light_data;
-			PoolVector<LocalData> local_data;
-			Vector<Vector<uint32_t> > level_cell_lists;
-			RID probe_data;
-			bool enabled;
-			int bake_dynamic_range;
-			RasterizerStorage::GIProbeCompression compression;
-
-			Vector<PoolVector<uint8_t> > mipmaps_3d;
-			Vector<PoolVector<CompBlockS3TC> > mipmaps_s3tc; //for s3tc
-
-			int updating_stage;
-			float propagate;
-
-			int grid_size[3];
-
-			Transform light_to_cell_xform;
-
-		} dynamic;
+		Vector<LightCache> light_cache;
+		Vector<RID> light_instances;
 
 		RID probe_instance;
 
@@ -407,7 +347,6 @@ public:
 				update_element(this) {
 			invalid = true;
 			base_version = 0;
-			dynamic.updating_stage = GI_UPDATE_STAGE_CHECK;
 		}
 	};
 
@@ -436,6 +375,8 @@ public:
 	int directional_light_count;
 	RID reflection_probe_instance_cull_result[MAX_REFLECTION_PROBES_CULLED];
 	int reflection_probe_cull_count;
+	RID gi_probe_instance_cull_result[MAX_GI_PROBES_CULLED];
+	int gi_probe_cull_count;
 
 	RID_PtrOwner<Instance> instance_owner;
 
@@ -477,6 +418,7 @@ public:
 
 	_FORCE_INLINE_ bool _light_instance_update_shadow(Instance *p_instance, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_shadow_atlas, Scenario *p_scenario);
 
+	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
 	void _prepare_scene(const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, uint32_t p_visible_layers, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, bool p_using_shadows = true);
 	void _render_scene(RID p_render_buffers, const Transform p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_orthogonal, RID p_force_environment, RID p_scenario, RID p_shadow_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	void render_empty_scene(RID p_render_buffers, RID p_scenario, RID p_shadow_atlas);
@@ -484,52 +426,6 @@ public:
 	void render_camera(RID p_render_buffers, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void render_camera(RID p_render_buffers, Ref<ARVRInterface> &p_interface, ARVRInterface::Eyes p_eye, RID p_camera, RID p_scenario, Size2 p_viewport_size, RID p_shadow_atlas);
 	void update_dirty_instances();
-
-	//probes
-	struct GIProbeDataHeader {
-
-		uint32_t version;
-		uint32_t cell_subdiv;
-		uint32_t width;
-		uint32_t height;
-		uint32_t depth;
-		uint32_t cell_count;
-		uint32_t leaf_cell_count;
-	};
-
-	struct GIProbeDataCell {
-
-		uint32_t children[8];
-		uint32_t albedo;
-		uint32_t emission;
-		uint32_t normal;
-		uint32_t level_alpha;
-	};
-
-	enum {
-		GI_UPDATE_STAGE_CHECK,
-		GI_UPDATE_STAGE_LIGHTING,
-		GI_UPDATE_STAGE_UPLOADING,
-	};
-
-	void _gi_probe_bake_thread();
-	static void _gi_probe_bake_threads(void *);
-
-	volatile bool probe_bake_thread_exit;
-	Thread *probe_bake_thread;
-	SemaphoreOld *probe_bake_sem;
-	Mutex *probe_bake_mutex;
-	List<Instance *> probe_bake_list;
-
-	bool _render_reflection_probe_step(Instance *p_instance, int p_step);
-	void _gi_probe_fill_local_data(int p_idx, int p_level, int p_x, int p_y, int p_z, const GIProbeDataCell *p_cell, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data, Vector<uint32_t> *prev_cell);
-
-	_FORCE_INLINE_ uint32_t _gi_bake_find_cell(const GIProbeDataCell *cells, int x, int y, int z, int p_cell_subdiv);
-	void _bake_gi_downscale_light(int p_idx, int p_level, const GIProbeDataCell *p_cells, const GIProbeDataHeader *p_header, InstanceGIProbeData::LocalData *p_local_data, float p_propagate);
-	void _bake_gi_probe_light(const GIProbeDataHeader *header, const GIProbeDataCell *cells, InstanceGIProbeData::LocalData *local_data, const uint32_t *leaves, int p_leaf_count, const InstanceGIProbeData::LightCache &light_cache, int p_sign);
-	void _bake_gi_probe(Instance *p_gi_probe);
-	bool _check_gi_probe(Instance *p_gi_probe);
-	void _setup_gi_probe(Instance *p_instance);
 
 	void render_probes();
 
