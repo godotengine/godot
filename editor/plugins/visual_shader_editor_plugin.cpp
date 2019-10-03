@@ -88,7 +88,6 @@ void VisualShaderEditor::edit(VisualShader *p_visual_shader) {
 	} else {
 		if (changed) { // to avoid tree collapse
 			_clear_buffer();
-			_update_custom_nodes();
 			_update_options_menu();
 			_update_preview();
 		}
@@ -178,7 +177,7 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 	return (p_mode == -1 || (p_mode & current_mode) != 0);
 }
 
-void VisualShaderEditor::_update_custom_nodes() {
+void VisualShaderEditor::update_custom_nodes() {
 	clear_custom_types();
 	List<StringName> class_list;
 	ScriptServer::get_global_class_list(&class_list);
@@ -228,6 +227,7 @@ void VisualShaderEditor::_update_custom_nodes() {
 			add_custom_type(name, script, description, return_icon_type, category, sub_category);
 		}
 	}
+	_update_options_menu();
 }
 
 String VisualShaderEditor::_get_description(int p_idx) {
@@ -1219,6 +1219,23 @@ void VisualShaderEditor::_edit_port_default_input(Object *p_button, int p_node, 
 	editing_port = p_port;
 }
 
+void VisualShaderEditor::_add_custom_node(const String &p_path) {
+
+	int idx = -1;
+
+	for (int i = custom_node_option_idx; i < add_options.size(); i++) {
+		if (add_options[i].script.is_valid()) {
+			if (add_options[i].script->get_path() == p_path) {
+				idx = i;
+				break;
+			}
+		}
+	}
+	if (idx != -1) {
+		_add_node(idx);
+	}
+}
+
 void VisualShaderEditor::_add_texture_node(const String &p_path) {
 	VisualShaderNodeTexture *texture = (VisualShaderNodeTexture *)_add_node(texture_node_option_idx, -1);
 	texture->set_texture(ResourceLoader::load(p_path));
@@ -2072,14 +2089,24 @@ void VisualShaderEditor::drop_data_fw(const Point2 &p_point, const Variant &p_da
 		} else if (d.has("files")) {
 			if (d["files"].get_type() == Variant::POOL_STRING_ARRAY) {
 
+				int j = 0;
 				PoolStringArray arr = d["files"];
 				for (int i = 0; i < arr.size(); i++) {
 
 					String type = ResourceLoader::get_resource_type(arr[i]);
-					if (ClassDB::get_parent_class(type) == "Texture") {
-						saved_node_pos = p_point + Vector2(0, i * 210 * EDSCALE);
+					if (type == "GDScript") {
+						Ref<Script> script = ResourceLoader::load(arr[i]);
+						if (script->get_instance_base_type() == "VisualShaderNodeCustom") {
+							saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
+							saved_node_pos_dirty = true;
+							_add_custom_node(arr[i]);
+							j++;
+						}
+					} else if (ClassDB::get_parent_class(type) == "Texture") {
+						saved_node_pos = p_point + Vector2(0, j * 210 * EDSCALE);
 						saved_node_pos_dirty = true;
 						_add_texture_node(arr[i]);
+						j++;
 					}
 				}
 			}
@@ -2698,6 +2725,7 @@ VisualShaderEditor::VisualShaderEditor() {
 	add_options.push_back(AddOption("DdYS", "Special", "Derivative", "VisualShaderNodeScalarDerivativeFunc", TTR("(Fragment/Light mode only) (Scalar) Derivative in 'y' using local differencing."), VisualShaderNodeScalarDerivativeFunc::FUNC_Y, VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
 	add_options.push_back(AddOption("Sum", "Special", "Derivative", "VisualShaderNodeVectorDerivativeFunc", TTR("(Fragment/Light mode only) (Vector) Sum of absolute derivative in 'x' and 'y'."), VisualShaderNodeVectorDerivativeFunc::FUNC_SUM, VisualShaderNode::PORT_TYPE_VECTOR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
 	add_options.push_back(AddOption("SumS", "Special", "Derivative", "VisualShaderNodeScalarDerivativeFunc", TTR("(Fragment/Light mode only) (Scalar) Sum of absolute derivative in 'x' and 'y'."), VisualShaderNodeScalarDerivativeFunc::FUNC_SUM, VisualShaderNode::PORT_TYPE_SCALAR, VisualShader::TYPE_FRAGMENT | VisualShader::TYPE_LIGHT, -1, -1, true));
+	custom_node_option_idx = add_options.size();
 
 	/////////////////////////////////////////////////////////////////////
 
@@ -2739,6 +2767,7 @@ void VisualShaderEditorPlugin::make_visible(bool p_visible) {
 		//editor->animation_panel_make_visible(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(visual_shader_editor);
+		visual_shader_editor->update_custom_nodes();
 		visual_shader_editor->set_process_input(true);
 		//visual_shader_editor->set_process(true);
 	} else {
