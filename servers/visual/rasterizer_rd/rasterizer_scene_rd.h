@@ -9,6 +9,13 @@
 #include "servers/visual/rendering_device.h"
 
 class RasterizerSceneRD : public RasterizerScene {
+public:
+	enum GIProbeQuality {
+		GIPROBE_QUALITY_ULTRA_LOW,
+		GIPROBE_QUALITY_MEDIUM,
+		GIPROBE_QUALITY_HIGH,
+	};
+
 protected:
 	struct RenderBufferData {
 
@@ -182,7 +189,7 @@ private:
 	RID gi_probe_lights_uniform;
 
 	bool gi_probe_use_anisotropy = false;
-	bool gi_probe_use_6_cones = false;
+	GIProbeQuality gi_probe_quality = GIPROBE_QUALITY_MEDIUM;
 	bool gi_probe_slots_dirty = true;
 	Vector<RID> gi_probe_slots;
 
@@ -709,7 +716,7 @@ public:
 	_FORCE_INLINE_ bool gi_probe_is_anisotropic() const {
 		return gi_probe_use_anisotropy;
 	}
-	bool gi_probe_is_high_quality() const;
+	GIProbeQuality gi_probe_get_quality() const;
 
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);

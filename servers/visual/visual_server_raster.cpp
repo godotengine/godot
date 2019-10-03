@@ -103,7 +103,7 @@ void VisualServerRaster::draw(bool p_swap_buffers, double frame_step) {
 
 	VSG::rasterizer->begin_frame(frame_step);
 
-	VSG::storage->capture_timestamps_begin();
+	TIMESTAMP_BEGIN()
 
 	VSG::scene_render->update(); //update scenes stuff before updating instances
 

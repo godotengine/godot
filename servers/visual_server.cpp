@@ -2301,7 +2301,8 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/reflection_atlas/reflection_count", 64);
 
 	GLOBAL_DEF("rendering/quality/gi_probes/anisotropic", false);
-	GLOBAL_DEF("rendering/quality/gi_probes/high_quality", false);
+	GLOBAL_DEF("rendering/quality/gi_probes/quality", 1);
+	ProjectSettings::get_singleton()->set_custom_property_info("rendering/quality/gi_probes/quality", PropertyInfo(Variant::INT, "rendering/quality/gi_probes/quality", PROPERTY_HINT_ENUM, "Ultra-Low (1 cone),Medium (4 cones), High (6 cones)"));
 
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading", false);
 	GLOBAL_DEF("rendering/quality/shading/force_vertex_shading.mobile", true);
