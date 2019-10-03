@@ -59,7 +59,7 @@ public:
 	Dictionary resolve(const Dictionary &p_params);
 	Array foldingRange(const Dictionary &p_params);
 	Array codeLens(const Dictionary &p_params);
-	Variant documentLink(const Dictionary &p_params);
+	Array documentLink(const Dictionary &p_params);
 	Array colorPresentation(const Dictionary &p_params);
 	Variant hover(const Dictionary &p_params);
 	Array definition(const Dictionary &p_params);

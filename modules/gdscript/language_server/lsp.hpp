@@ -199,6 +199,41 @@ struct TextDocumentPositionParams {
 	}
 };
 
+struct DocumentLinkParams {
+	/**
+	 * The document to provide document links for.
+	 */
+	TextDocumentIdentifier textDocument;
+
+	_FORCE_INLINE_ void load(const Dictionary &p_params) {
+		textDocument.load(p_params["textDocument"]);
+	}
+};
+
+/**
+ * A document link is a range in a text document that links to an internal or external resource, like another
+ * text document or a web site.
+ */
+struct DocumentLink {
+
+	/**
+	 * The range this link applies to.
+	 */
+	Range range;
+
+	/**
+	 * The uri this link points to. If missing a resolve request is sent later.
+	 */
+	DocumentUri target;
+
+	Dictionary to_json() const {
+		Dictionary dict;
+		dict["range"] = range.to_json();
+		dict["target"] = target;
+		return dict;
+	}
+};
+
 /**
  * A textual edit applicable to a text document.
  */
