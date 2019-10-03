@@ -3003,7 +3003,7 @@ void GIProbeGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 }
 
 ////
-
+#if 0
 BakedIndirectLightGizmoPlugin::BakedIndirectLightGizmoPlugin() {
 	Color gizmo_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/baked_indirect_light", Color(0.5, 0.6, 1));
 
@@ -3132,7 +3132,7 @@ void BakedIndirectLightGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 	p_gizmo->add_unscaled_billboard(icon, 0.05);
 	p_gizmo->add_handles(handles, get_material("handles"));
 }
-
+#endif
 ////
 
 CollisionShapeSpatialGizmoPlugin::CollisionShapeSpatialGizmoPlugin() {

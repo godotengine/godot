@@ -32,6 +32,7 @@
 #define VECTOR3_H
 
 #include "core/math/math_funcs.h"
+#include "core/math/vector3i.h"
 #include "core/ustring.h"
 
 class Basis;
@@ -147,6 +148,15 @@ struct Vector3 {
 	_FORCE_INLINE_ bool operator>=(const Vector3 &p_v) const;
 
 	operator String() const;
+	_FORCE_INLINE_ operator Vector3i() const {
+		return Vector3i(x, y, z);
+	}
+
+	_FORCE_INLINE_ Vector3(const Vector3i &p_ivec) {
+		x = p_ivec.x;
+		y = p_ivec.y;
+		z = p_ivec.z;
+	}
 
 	_FORCE_INLINE_ Vector3(real_t p_x, real_t p_y, real_t p_z) {
 		x = p_x;

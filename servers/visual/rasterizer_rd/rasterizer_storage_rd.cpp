@@ -987,6 +987,7 @@ void RasterizerStorageRD::shader_set_data_request_function(ShaderType p_shader_t
 /* COMMON MATERIAL API */
 
 RID RasterizerStorageRD::material_create() {
+
 	Material material;
 	material.data = NULL;
 	material.shader = NULL;
@@ -1924,7 +1925,7 @@ void RasterizerStorageRD::mesh_add_surface(RID p_mesh, const VS::SurfaceData &p_
 		mesh->aabb.merge_with(p_surface.aabb);
 	}
 
-	s->material = p_mesh;
+	s->material = p_surface.material;
 
 	mesh->surfaces = (Mesh::Surface **)memrealloc(mesh->surfaces, sizeof(Mesh::Surface *) * (mesh->surface_count + 1));
 	mesh->surfaces[mesh->surface_count] = s;
@@ -1995,6 +1996,8 @@ VS::SurfaceData RasterizerStorageRD::mesh_get_surface(RID p_mesh, int p_surface)
 	sd.vertex_data = RD::get_singleton()->buffer_get_data(s.vertex_buffer);
 	sd.vertex_count = s.vertex_count;
 	sd.index_count = s.index_count;
+	sd.primitive = s.primitive;
+
 	if (sd.index_count) {
 		sd.index_data = RD::get_singleton()->buffer_get_data(s.index_buffer);
 	}
@@ -3544,6 +3547,253 @@ float RasterizerStorageRD::reflection_probe_get_interior_ambient_probe_contribut
 	return reflection_probe->interior_ambient_probe_contrib;
 }
 
+RID RasterizerStorageRD::gi_probe_create() {
+
+	return gi_probe_owner.make_rid(GIProbe());
+}
+
+void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<int> &p_level_counts) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	bool data_version_changed = false;
+
+	if (gi_probe->octree_buffer_size != p_octree_cells.size() || gi_probe->data_buffer_size != p_data_cells.size()) {
+		//buffer size changed, clear if needed
+		if (gi_probe->octree_buffer.is_valid()) {
+			RD::get_singleton()->free(gi_probe->octree_buffer);
+			RD::get_singleton()->free(gi_probe->data_buffer);
+
+			gi_probe->octree_buffer = RID();
+			gi_probe->data_buffer = RID();
+			gi_probe->octree_buffer_size = 0;
+			gi_probe->data_buffer_size = 0;
+			gi_probe->cell_count = 0;
+		}
+
+		data_version_changed = true;
+
+	} else if (gi_probe->octree_buffer_size) {
+		//they are the same and size did not change..
+		//update
+
+		PoolVector<uint8_t>::Read rc = p_octree_cells.read();
+		PoolVector<uint8_t>::Read rd = p_data_cells.read();
+
+		RD::get_singleton()->buffer_update(gi_probe->octree_buffer, 0, gi_probe->octree_buffer_size, rc.ptr());
+		RD::get_singleton()->buffer_update(gi_probe->data_buffer, 0, gi_probe->data_buffer_size, rd.ptr());
+	}
+
+	if (gi_probe->level_counts.size() != p_level_counts.size()) {
+		data_version_changed = true;
+	} else {
+		for (int i = 0; i < p_level_counts.size(); i++) {
+			if (gi_probe->level_counts[i] != p_level_counts[i]) {
+				data_version_changed = true;
+				break;
+			}
+		}
+	}
+
+	gi_probe->to_cell_xform = p_to_cell_xform;
+	gi_probe->bounds = p_aabb;
+	gi_probe->octree_size = p_octree_size;
+	gi_probe->level_counts = p_level_counts;
+
+	if (p_octree_cells.size() && gi_probe->octree_buffer.is_null()) {
+		ERR_FAIL_COND(p_octree_cells.size() % 32 != 0); //cells size must be a multiple of 32
+
+		uint32_t cell_count = p_octree_cells.size() / 32;
+
+		ERR_FAIL_COND(p_data_cells.size() != cell_count * 16); //see that data size matches
+
+		gi_probe->cell_count = cell_count;
+		gi_probe->octree_buffer = RD::get_singleton()->storage_buffer_create(p_octree_cells.size(), p_octree_cells);
+		gi_probe->octree_buffer_size = p_octree_cells.size();
+		gi_probe->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells);
+		gi_probe->data_buffer_size = p_data_cells.size();
+		data_version_changed = true;
+	}
+
+	gi_probe->version++;
+	if (data_version_changed) {
+		gi_probe->data_version++;
+	}
+	gi_probe->instance_dependency.instance_notify_changed(true, false);
+}
+
+AABB RasterizerStorageRD::gi_probe_get_bounds(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, AABB());
+
+	return gi_probe->bounds;
+}
+
+Vector3i RasterizerStorageRD::gi_probe_get_octree_size(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, Vector3i());
+	return gi_probe->octree_size;
+}
+PoolVector<uint8_t> RasterizerStorageRD::gi_probe_get_octree_cells(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, PoolVector<uint8_t>());
+
+	if (gi_probe->octree_buffer.is_valid()) {
+		return RD::get_singleton()->buffer_get_data(gi_probe->octree_buffer);
+	}
+	return PoolVector<uint8_t>();
+}
+PoolVector<uint8_t> RasterizerStorageRD::gi_probe_get_data_cells(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, PoolVector<uint8_t>());
+
+	if (gi_probe->data_buffer.is_valid()) {
+		return RD::get_singleton()->buffer_get_data(gi_probe->data_buffer);
+	}
+	return PoolVector<uint8_t>();
+}
+PoolVector<int> RasterizerStorageRD::gi_probe_get_level_counts(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, PoolVector<int>());
+
+	return gi_probe->level_counts;
+}
+Transform RasterizerStorageRD::gi_probe_get_to_cell_xform(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, Transform());
+
+	return gi_probe->to_cell_xform;
+}
+
+void RasterizerStorageRD::gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->dynamic_range = p_range;
+	gi_probe->version++;
+}
+float RasterizerStorageRD::gi_probe_get_dynamic_range(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+
+	return gi_probe->dynamic_range;
+}
+
+void RasterizerStorageRD::gi_probe_set_propagation(RID p_gi_probe, float p_range) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->propagation = p_range;
+	gi_probe->version++;
+}
+float RasterizerStorageRD::gi_probe_get_propagation(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->propagation;
+}
+
+void RasterizerStorageRD::gi_probe_set_energy(RID p_gi_probe, float p_energy) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->energy = p_energy;
+}
+float RasterizerStorageRD::gi_probe_get_energy(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->energy;
+}
+
+void RasterizerStorageRD::gi_probe_set_bias(RID p_gi_probe, float p_bias) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->bias = p_bias;
+}
+float RasterizerStorageRD::gi_probe_get_bias(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->bias;
+}
+
+void RasterizerStorageRD::gi_probe_set_normal_bias(RID p_gi_probe, float p_normal_bias) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->normal_bias = p_normal_bias;
+}
+float RasterizerStorageRD::gi_probe_get_normal_bias(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->normal_bias;
+}
+
+void RasterizerStorageRD::gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) {
+
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->anisotropy_strength = p_strength;
+}
+
+float RasterizerStorageRD::gi_probe_get_anisotropy_strength(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->anisotropy_strength;
+}
+
+void RasterizerStorageRD::gi_probe_set_interior(RID p_gi_probe, bool p_enable) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->interior = p_enable;
+}
+
+void RasterizerStorageRD::gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND(!gi_probe);
+
+	gi_probe->use_two_bounces = p_enable;
+	gi_probe->version++;
+}
+
+bool RasterizerStorageRD::gi_probe_is_using_two_bounces(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, false);
+	return gi_probe->use_two_bounces;
+}
+
+bool RasterizerStorageRD::gi_probe_is_interior(RID p_gi_probe) const {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->interior;
+}
+
+uint32_t RasterizerStorageRD::gi_probe_get_version(RID p_gi_probe) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->version;
+}
+
+uint32_t RasterizerStorageRD::gi_probe_get_data_version(RID p_gi_probe) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, 0);
+	return gi_probe->data_version;
+}
+
+RID RasterizerStorageRD::gi_probe_get_octree_buffer(RID p_gi_probe) const {
+
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, RID());
+	return gi_probe->octree_buffer;
+}
+RID RasterizerStorageRD::gi_probe_get_data_buffer(RID p_gi_probe) const {
+
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, RID());
+	return gi_probe->data_buffer;
+}
+
 /* RENDER TARGET API */
 
 void RasterizerStorageRD::_clear_render_target(RenderTarget *rt) {
@@ -3821,7 +4071,7 @@ void RasterizerStorageRD::render_target_do_clear_request(RID p_render_target) {
 	}
 	Vector<Color> clear_colors;
 	clear_colors.push_back(rt->clear_color);
-	RD::get_singleton()->draw_list_begin(rt->framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ_COLOR_DISCARD_DEPTH, clear_colors);
+	RD::get_singleton()->draw_list_begin(rt->framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_DISCARD, clear_colors);
 	RD::get_singleton()->draw_list_end();
 	rt->clear_requested = false;
 }
@@ -3899,6 +4149,9 @@ void RasterizerStorageRD::base_update_dependency(RID p_base, RasterizerScene::In
 	} else if (reflection_probe_owner.owns(p_base)) {
 		ReflectionProbe *rp = reflection_probe_owner.getornull(p_base);
 		p_instance->update_dependency(&rp->instance_dependency);
+	} else if (gi_probe_owner.owns(p_base)) {
+		GIProbe *gip = gi_probe_owner.getornull(p_base);
+		p_instance->update_dependency(&gip->instance_dependency);
 	} else if (light_owner.owns(p_base)) {
 		Light *l = light_owner.getornull(p_base);
 		p_instance->update_dependency(&l->instance_dependency);
@@ -3923,6 +4176,9 @@ VS::InstanceType RasterizerStorageRD::get_base_type(RID p_rid) const {
 	}
 	if (reflection_probe_owner.owns(p_rid)) {
 		return VS::INSTANCE_REFLECTION_PROBE;
+	}
+	if (gi_probe_owner.owns(p_rid)) {
+		return VS::INSTANCE_GI_PROBE;
 	}
 	if (light_owner.owns(p_rid)) {
 		return VS::INSTANCE_LIGHT;
@@ -4032,6 +4288,11 @@ bool RasterizerStorageRD::free(RID p_rid) {
 		ReflectionProbe *reflection_probe = reflection_probe_owner.getornull(p_rid);
 		reflection_probe->instance_dependency.instance_notify_deleted(p_rid);
 		reflection_probe_owner.free(p_rid);
+	} else if (gi_probe_owner.owns(p_rid)) {
+		gi_probe_allocate(p_rid, Transform(), AABB(), Vector3i(), PoolVector<uint8_t>(), PoolVector<uint8_t>(), PoolVector<int>()); //deallocate
+		GIProbe *gi_probe = gi_probe_owner.getornull(p_rid);
+		gi_probe->instance_dependency.instance_notify_deleted(p_rid);
+		gi_probe_owner.free(p_rid);
 
 	} else if (light_owner.owns(p_rid)) {
 

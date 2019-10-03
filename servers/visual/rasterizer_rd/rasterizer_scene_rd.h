@@ -4,7 +4,8 @@
 #include "core/rid_owner.h"
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/rasterizer_rd/rasterizer_storage_rd.h"
-#include "servers/visual/rasterizer_rd/shaders/giprobe_lighting.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/giprobe.glsl.gen.h"
+#include "servers/visual/rasterizer_rd/shaders/giprobe_debug.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
 
 class RasterizerSceneRD : public RasterizerScene {
@@ -16,8 +17,10 @@ protected:
 	};
 	virtual RenderBufferData *_create_render_buffer_data() = 0;
 
-	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
+	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip) = 0;
+
+	virtual void _debug_giprobe(RID p_gi_probe, RenderingDevice::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, float p_alpha);
 
 private:
 	int roughness_layers;
@@ -76,6 +79,7 @@ private:
 
 		RID reflection;
 		RID depth_buffer;
+		RID depth_fb;
 
 		struct Reflection {
 			RID owner;
@@ -111,9 +115,110 @@ private:
 
 	/* GIPROBE INSTANCE */
 
-	GiprobeLightingShaderRD giprobe_lighting_shader;
+	struct GIProbeLight {
+
+		uint32_t type;
+		float energy;
+		float radius;
+		float attenuation;
+
+		float color[3];
+		float spot_angle_radians;
+
+		float position[3];
+		float spot_attenuation;
+
+		float direction[3];
+		uint32_t has_shadow;
+	};
+
+	struct GIProbePushConstant {
+
+		int32_t limits[3];
+		uint32_t stack_size;
+
+		float emission_scale;
+		float propagation;
+		float dynamic_range;
+		uint32_t light_count;
+
+		uint32_t cell_offset;
+		uint32_t cell_count;
+		float aniso_strength;
+		uint32_t pad;
+	};
+
+	struct GIProbeInstance {
+
+		RID probe;
+		RID texture;
+		RID anisotropy[2]; //only if anisotropy is used
+		RID write_buffer;
+
+		struct Mipmap {
+			RID texture;
+			RID anisotropy[2]; //only if anisotropy is used
+			RID uniform_set;
+			RID second_bounce_uniform_set;
+			RID write_uniform_set;
+			uint32_t level;
+			uint32_t cell_offset;
+			uint32_t cell_count;
+		};
+		Vector<Mipmap> mipmaps;
+
+		int slot = -1;
+		uint32_t last_probe_version = 0;
+		uint32_t last_probe_data_version = 0;
+
+		uint64_t last_pass = 0;
+		uint32_t render_index = 0;
+
+		Transform transform;
+	};
+
+	GIProbeLight *gi_probe_lights;
+	uint32_t gi_probe_max_lights;
+	RID gi_probe_lights_uniform;
+
+	bool gi_probe_use_anisotropy = false;
+	bool gi_probe_use_6_cones = false;
+	bool gi_probe_slots_dirty = true;
+	Vector<RID> gi_probe_slots;
+
+	enum {
+		GI_PROBE_SHADER_VERSION_COMPUTE_LIGHT,
+		GI_PROBE_SHADER_VERSION_COMPUTE_SECOND_BOUNCE,
+		GI_PROBE_SHADER_VERSION_COMPUTE_MIPMAP,
+		GI_PROBE_SHADER_VERSION_WRITE_TEXTURE,
+		GI_PROBE_SHADER_VERSION_MAX
+	};
+	GiprobeShaderRD giprobe_shader;
 	RID giprobe_lighting_shader_version;
-	RID giprobe_lighting_shader_version_shader;
+	RID giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_MAX];
+	RID giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_MAX];
+
+	mutable RID_Owner<GIProbeInstance> gi_probe_instance_owner;
+
+	enum {
+		GI_PROBE_DEBUG_COLOR,
+		GI_PROBE_DEBUG_LIGHT,
+		GI_PROBE_DEBUG_MAX
+	};
+
+	struct GIProbeDebugPushConstant {
+		float projection[16];
+		uint32_t cell_offset;
+		float dynamic_range;
+		float alpha;
+		uint32_t level;
+	};
+
+	GiprobeDebugShaderRD giprobe_debug_shader;
+	RID giprobe_debug_shader_version;
+	RID giprobe_debug_shader_version_shaders[GI_PROBE_DEBUG_MAX];
+	RenderPipelineVertexFormatCacheRD giprobe_debug_shader_version_pipelines[GI_PROBE_DEBUG_MAX];
+	RID giprobe_debug_uniform_set;
 
 	/* SHADOW ATLAS */
 
@@ -497,6 +602,7 @@ public:
 
 	uint32_t reflection_probe_instance_get_resolution(RID p_instance);
 	RID reflection_probe_instance_get_framebuffer(RID p_instance, int p_index);
+	RID reflection_probe_instance_get_depth_framebuffer(RID p_instance, int p_index);
 
 	_FORCE_INLINE_ RID reflection_probe_instance_get_probe(RID p_instance) {
 		ReflectionProbeInstance *rpi = reflection_probe_instance_owner.getornull(p_instance);
@@ -545,15 +651,70 @@ public:
 		return rpi->atlas_index;
 	}
 
-	RID gi_probe_instance_create() { return RID(); }
-	void gi_probe_instance_set_light_data(RID p_probe, RID p_base, RID p_data) {}
-	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) {}
-	void gi_probe_instance_set_bounds(RID p_probe, const Vector3 &p_bounds) {}
+	RID gi_probe_instance_create(RID p_base);
+	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
+	bool gi_probe_needs_update(RID p_probe) const;
+	void gi_probe_update(RID p_probe, const Vector<RID> &p_light_instances);
+	_FORCE_INLINE_ uint32_t gi_probe_instance_get_slot(RID p_probe) {
+		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		return gi_probe->slot;
+	}
+	_FORCE_INLINE_ RID gi_probe_instance_get_base_probe(RID p_probe) {
+		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		return gi_probe->probe;
+	}
+	_FORCE_INLINE_ Transform gi_probe_instance_get_transform_to_cell(RID p_probe) {
+		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		return storage->gi_probe_get_to_cell_xform(gi_probe->probe) * gi_probe->transform.affine_inverse();
+	}
+
+	_FORCE_INLINE_ RID gi_probe_instance_get_texture(RID p_probe) {
+		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		return gi_probe->texture;
+	}
+	_FORCE_INLINE_ RID gi_probe_instance_get_aniso_texture(RID p_probe, int p_index) {
+		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
+		return gi_probe->anisotropy[p_index];
+	}
+
+	_FORCE_INLINE_ void gi_probe_instance_set_render_index(RID p_instance, uint32_t p_render_index) {
+		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND(!gi_probe);
+		gi_probe->render_index = p_render_index;
+	}
+
+	_FORCE_INLINE_ uint32_t gi_probe_instance_get_render_index(RID p_instance) {
+		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND_V(!gi_probe, 0);
+
+		return gi_probe->render_index;
+	}
+
+	_FORCE_INLINE_ void gi_probe_instance_set_render_pass(RID p_instance, uint32_t p_render_pass) {
+		GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND(!g_probe);
+		g_probe->last_pass = p_render_pass;
+	}
+
+	_FORCE_INLINE_ uint32_t gi_probe_instance_get_render_pass(RID p_instance) {
+		GIProbeInstance *g_probe = gi_probe_instance_owner.getornull(p_instance);
+		ERR_FAIL_COND_V(!g_probe, 0);
+
+		return g_probe->last_pass;
+	}
+
+	const Vector<RID> &gi_probe_get_slots() const;
+	bool gi_probe_slots_are_dirty() const;
+	void gi_probe_slots_make_not_dirty();
+	_FORCE_INLINE_ bool gi_probe_is_anisotropic() const {
+		return gi_probe_use_anisotropy;
+	}
+	bool gi_probe_is_high_quality() const;
 
 	RID render_buffers_create();
 	void render_buffers_configure(RID p_render_buffers, RID p_render_target, int p_width, int p_height, VS::ViewportMSAA p_msaa);
 
-	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
+	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 
 	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
 

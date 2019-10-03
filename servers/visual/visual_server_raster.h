@@ -344,17 +344,20 @@ public:
 
 	BIND0R(RID, gi_probe_create)
 
-	BIND2(gi_probe_set_bounds, RID, const AABB &)
+	BIND7(gi_probe_allocate, RID, const Transform &, const AABB &, const Vector3i &, const PoolVector<uint8_t> &, const PoolVector<uint8_t> &, const PoolVector<int> &)
+
 	BIND1RC(AABB, gi_probe_get_bounds, RID)
-
-	BIND2(gi_probe_set_cell_size, RID, float)
-	BIND1RC(float, gi_probe_get_cell_size, RID)
-
-	BIND2(gi_probe_set_to_cell_xform, RID, const Transform &)
+	BIND1RC(Vector3i, gi_probe_get_octree_size, RID)
+	BIND1RC(PoolVector<uint8_t>, gi_probe_get_octree_cells, RID)
+	BIND1RC(PoolVector<uint8_t>, gi_probe_get_data_cells, RID)
+	BIND1RC(PoolVector<int>, gi_probe_get_level_counts, RID)
 	BIND1RC(Transform, gi_probe_get_to_cell_xform, RID)
 
-	BIND2(gi_probe_set_dynamic_range, RID, int)
-	BIND1RC(int, gi_probe_get_dynamic_range, RID)
+	BIND2(gi_probe_set_dynamic_range, RID, float)
+	BIND1RC(float, gi_probe_get_dynamic_range, RID)
+
+	BIND2(gi_probe_set_propagation, RID, float)
+	BIND1RC(float, gi_probe_get_propagation, RID)
 
 	BIND2(gi_probe_set_energy, RID, float)
 	BIND1RC(float, gi_probe_get_energy, RID)
@@ -365,17 +368,14 @@ public:
 	BIND2(gi_probe_set_normal_bias, RID, float)
 	BIND1RC(float, gi_probe_get_normal_bias, RID)
 
-	BIND2(gi_probe_set_propagation, RID, float)
-	BIND1RC(float, gi_probe_get_propagation, RID)
-
 	BIND2(gi_probe_set_interior, RID, bool)
 	BIND1RC(bool, gi_probe_is_interior, RID)
 
-	BIND2(gi_probe_set_compress, RID, bool)
-	BIND1RC(bool, gi_probe_is_compressed, RID)
+	BIND2(gi_probe_set_use_two_bounces, RID, bool)
+	BIND1RC(bool, gi_probe_is_using_two_bounces, RID)
 
-	BIND2(gi_probe_set_dynamic_data, RID, const PoolVector<int> &)
-	BIND1RC(PoolVector<int>, gi_probe_get_dynamic_data, RID)
+	BIND2(gi_probe_set_anisotropy_strength, RID, float)
+	BIND1RC(float, gi_probe_get_anisotropy_strength, RID)
 
 	/* LIGHTMAP CAPTURE */
 
