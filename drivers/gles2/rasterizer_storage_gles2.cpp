@@ -4887,7 +4887,6 @@ void RasterizerStorageGLES2::_render_target_allocate(RenderTarget *rt) {
 				}
 
 				glClearColor(1.0, 0.0, 1.0, 0.0);
-				glViewport(0, 0, rt->mip_maps[i].sizes[j].width, rt->mip_maps[i].sizes[j].height);
 				glClear(GL_COLOR_BUFFER_BIT);
 				if (used_depth) {
 					glClearDepth(1.0);
