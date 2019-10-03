@@ -665,6 +665,15 @@ void VisualShaderEditor::_update_graph() {
 						label->set_text(name_left);
 						label->add_style_override("normal", label_style); //more compact
 						hb->add_child(label);
+
+						if (vsnode->get_input_port_default_hint(i) != "" && !port_left_used) {
+
+							Label *hint_label = memnew(Label);
+							hint_label->set_text("[" + vsnode->get_input_port_default_hint(i) + "]");
+							hint_label->add_color_override("font_color", get_color("font_color_readonly", "TextEdit"));
+							hint_label->add_style_override("normal", label_style);
+							hb->add_child(hint_label);
+						}
 					}
 				}
 

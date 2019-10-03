@@ -227,6 +227,8 @@ public:
 	virtual PortType get_output_port_type(int p_port) const;
 	virtual String get_output_port_name(int p_port) const;
 
+	virtual String get_input_port_default_hint(int p_port) const;
+
 	virtual Vector<VisualShader::DefaultTextureParam> get_default_texture_parameters(VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
@@ -1423,6 +1425,7 @@ public:
 	virtual int get_input_port_count() const;
 	virtual PortType get_input_port_type(int p_port) const;
 	virtual String get_input_port_name(int p_port) const;
+	virtual String get_input_port_default_hint(int p_port) const;
 
 	virtual int get_output_port_count() const;
 	virtual PortType get_output_port_type(int p_port) const;
@@ -1456,6 +1459,8 @@ public:
 	virtual int get_input_port_count() const;
 	virtual PortType get_input_port_type(int p_port) const;
 	virtual String get_input_port_name(int p_port) const;
+
+	virtual String get_input_port_default_hint(int p_port) const;
 
 	virtual String generate_global_per_node(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_global_per_func(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;

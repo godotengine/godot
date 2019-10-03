@@ -408,6 +408,13 @@ String VisualShaderNodeTexture::get_output_port_name(int p_port) const {
 	return p_port == 0 ? "rgb" : "alpha";
 }
 
+String VisualShaderNodeTexture::get_input_port_default_hint(int p_port) const {
+	if (p_port == 0) {
+		return "UV.xy";
+	}
+	return "";
+}
+
 static String make_unique_id(VisualShader::Type p_type, int p_id, const String &p_name) {
 
 	static const char *typepf[VisualShader::TYPE_MAX] = { "vtx", "frg", "lgt" };
@@ -444,10 +451,9 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 	if (source == SOURCE_TEXTURE) {
 		String id = make_unique_id(p_type, p_id, "tex");
 		String code;
-		if (p_input_vars[0] == String()) { //none bound, do nothing
+		if (p_input_vars[0] == String()) { // Use UV by default.
 
-			code += "\tvec4 " + id + "_read = vec4(0.0);\n";
-
+			code += "\tvec4 " + id + "_read = texture( " + id + " , UV.xy );\n";
 		} else if (p_input_vars[1] == String()) {
 			//no lod
 			code += "\tvec4 " + id + "_read = texture( " + id + " , " + p_input_vars[0] + ".xy );\n";
@@ -466,9 +472,9 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 		if (id == String()) {
 			code += "\tvec4 " + id + "_tex_read = vec4(0.0);\n";
 		} else {
-			if (p_input_vars[0] == String()) { //none bound, do nothing
+			if (p_input_vars[0] == String()) { // Use UV by default.
 
-				code += "\tvec4 " + id + "_tex_read = vec4(0.0);\n";
+				code += "\tvec4 " + id + "_tex_read = texture( " + id + " , UV.xy );\n";
 
 			} else if (p_input_vars[1] == String()) {
 				//no lod
@@ -486,9 +492,9 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 	if (source == SOURCE_SCREEN && (p_mode == Shader::MODE_SPATIAL || p_mode == Shader::MODE_CANVAS_ITEM) && p_type == VisualShader::TYPE_FRAGMENT) {
 
 		String code = "\t{\n";
-		if (p_input_vars[0] == String() || p_for_preview) { //none bound, do nothing
+		if (p_input_vars[0] == String() || p_for_preview) { // Use UV by default.
 
-			code += "\t\tvec4 _tex_read = vec4(0.0);\n";
+			code += "\t\tvec4 _tex_read = textureLod( SCREEN_TEXTURE , UV.xy, 0.0 );\n";
 
 		} else if (p_input_vars[1] == String()) {
 			//no lod
@@ -506,9 +512,9 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 	if (source == SOURCE_2D_TEXTURE && p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
 
 		String code = "\t{\n";
-		if (p_input_vars[0] == String()) { //none bound, do nothing
+		if (p_input_vars[0] == String()) { // Use UV by default.
 
-			code += "\t\tvec4 _tex_read = vec4(0.0);\n";
+			code += "\t\tvec4 _tex_read = texture( TEXTURE , UV.xy );\n";
 
 		} else if (p_input_vars[1] == String()) {
 			//no lod
@@ -526,9 +532,9 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 	if (source == SOURCE_2D_NORMAL && p_mode == Shader::MODE_CANVAS_ITEM && p_type == VisualShader::TYPE_FRAGMENT) {
 
 		String code = "\t{\n";
-		if (p_input_vars[0] == String()) { //none bound, do nothing
+		if (p_input_vars[0] == String()) { // Use UV by default.
 
-			code += "\t\tvec4 _tex_read = vec4(0.0);\n";
+			code += "\t\tvec4 _tex_read = texture( NORMAL_TEXTURE , UV.xy );\n";
 
 		} else if (p_input_vars[1] == String()) {
 			//no lod
@@ -556,9 +562,9 @@ String VisualShaderNodeTexture::generate_code(Shader::Mode p_mode, VisualShader:
 	if (source == SOURCE_DEPTH && p_mode == Shader::MODE_SPATIAL && p_type == VisualShader::TYPE_FRAGMENT) {
 
 		String code = "\t{\n";
-		if (p_input_vars[0] == String()) { //none bound, do nothing
+		if (p_input_vars[0] == String()) { // Use UV by default.
 
-			code += "\t\tfloat _depth = 0.0;\n";
+			code += "\t\tfloat _depth = texture( DEPTH_TEXTURE , UV.xy ).r;\n";
 
 		} else if (p_input_vars[1] == String()) {
 			//no lod
@@ -3128,9 +3134,9 @@ String VisualShaderNodeTextureUniform::generate_code(Shader::Mode p_mode, Visual
 
 	String id = get_uniform_name();
 	String code = "\t{\n";
-	if (p_input_vars[0] == String()) { //none bound, do nothing
+	if (p_input_vars[0] == String()) { // Use UV by default.
 
-		code += "\t\tvec4 n_tex_read = vec4(0.0);\n";
+		code += "\t\tvec4 n_tex_read = texture( " + id + " , UV.xy );\n";
 	} else if (p_input_vars[1] == String()) {
 		//no lod
 		code += "\t\tvec4 n_tex_read = texture( " + id + " , " + p_input_vars[0] + ".xy );\n";
@@ -3187,6 +3193,13 @@ void VisualShaderNodeTextureUniform::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_WHITE);
 	BIND_ENUM_CONSTANT(COLOR_DEFAULT_BLACK);
+}
+
+String VisualShaderNodeTextureUniform::get_input_port_default_hint(int p_port) const {
+	if (p_port == 0) {
+		return "UV.xy";
+	}
+	return "";
 }
 
 VisualShaderNodeTextureUniform::VisualShaderNodeTextureUniform() {
@@ -3281,6 +3294,15 @@ String VisualShaderNodeTextureUniformTriplanar::generate_code(Shader::Mode p_mod
 	code += "\t}\n";
 
 	return code;
+}
+
+String VisualShaderNodeTextureUniformTriplanar::get_input_port_default_hint(int p_port) const {
+	if (p_port == 0) {
+		return "default";
+	} else if (p_port == 1) {
+		return "default";
+	}
+	return "";
 }
 
 VisualShaderNodeTextureUniformTriplanar::VisualShaderNodeTextureUniformTriplanar() {
