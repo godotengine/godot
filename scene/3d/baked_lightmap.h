@@ -28,6 +28,7 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#if 0
 #ifndef BAKED_INDIRECT_LIGHT_H
 #define BAKED_INDIRECT_LIGHT_H
 
@@ -211,4 +212,5 @@ VARIANT_ENUM_CAST(BakedLightmap::BakeQuality);
 VARIANT_ENUM_CAST(BakedLightmap::BakeMode);
 VARIANT_ENUM_CAST(BakedLightmap::BakeError);
 
+#endif
 #endif // BAKED_INDIRECT_LIGHT_H

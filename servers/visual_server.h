@@ -465,38 +465,38 @@ public:
 
 	virtual RID gi_probe_create() = 0;
 
-	virtual void gi_probe_set_bounds(RID p_probe, const AABB &p_bounds) = 0;
-	virtual AABB gi_probe_get_bounds(RID p_probe) const = 0;
+	virtual void gi_probe_allocate(RID p_gi_probe, const Transform &p_to_cell_xform, const AABB &p_aabb, const Vector3i &p_octree_size, const PoolVector<uint8_t> &p_octree_cells, const PoolVector<uint8_t> &p_data_cells, const PoolVector<int> &p_level_counts) = 0;
 
-	virtual void gi_probe_set_cell_size(RID p_probe, float p_range) = 0;
-	virtual float gi_probe_get_cell_size(RID p_probe) const = 0;
+	virtual AABB gi_probe_get_bounds(RID p_gi_probe) const = 0;
+	virtual Vector3i gi_probe_get_octree_size(RID p_gi_probe) const = 0;
+	virtual PoolVector<uint8_t> gi_probe_get_octree_cells(RID p_gi_probe) const = 0;
+	virtual PoolVector<uint8_t> gi_probe_get_data_cells(RID p_gi_probe) const = 0;
+	virtual PoolVector<int> gi_probe_get_level_counts(RID p_gi_probe) const = 0;
+	virtual Transform gi_probe_get_to_cell_xform(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_to_cell_xform(RID p_probe, const Transform &p_xform) = 0;
-	virtual Transform gi_probe_get_to_cell_xform(RID p_probe) const = 0;
+	virtual void gi_probe_set_dynamic_range(RID p_gi_probe, float p_range) = 0;
+	virtual float gi_probe_get_dynamic_range(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_dynamic_data(RID p_probe, const PoolVector<int> &p_data) = 0;
-	virtual PoolVector<int> gi_probe_get_dynamic_data(RID p_probe) const = 0;
+	virtual void gi_probe_set_propagation(RID p_gi_probe, float p_range) = 0;
+	virtual float gi_probe_get_propagation(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_dynamic_range(RID p_probe, int p_range) = 0;
-	virtual int gi_probe_get_dynamic_range(RID p_probe) const = 0;
+	virtual void gi_probe_set_energy(RID p_gi_probe, float p_energy) = 0;
+	virtual float gi_probe_get_energy(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_energy(RID p_probe, float p_range) = 0;
-	virtual float gi_probe_get_energy(RID p_probe) const = 0;
+	virtual void gi_probe_set_bias(RID p_gi_probe, float p_bias) = 0;
+	virtual float gi_probe_get_bias(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_bias(RID p_probe, float p_range) = 0;
-	virtual float gi_probe_get_bias(RID p_probe) const = 0;
+	virtual void gi_probe_set_normal_bias(RID p_gi_probe, float p_range) = 0;
+	virtual float gi_probe_get_normal_bias(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_normal_bias(RID p_probe, float p_range) = 0;
-	virtual float gi_probe_get_normal_bias(RID p_probe) const = 0;
+	virtual void gi_probe_set_interior(RID p_gi_probe, bool p_enable) = 0;
+	virtual bool gi_probe_is_interior(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_propagation(RID p_probe, float p_range) = 0;
-	virtual float gi_probe_get_propagation(RID p_probe) const = 0;
+	virtual void gi_probe_set_use_two_bounces(RID p_gi_probe, bool p_enable) = 0;
+	virtual bool gi_probe_is_using_two_bounces(RID p_gi_probe) const = 0;
 
-	virtual void gi_probe_set_interior(RID p_probe, bool p_enable) = 0;
-	virtual bool gi_probe_is_interior(RID p_probe) const = 0;
-
-	virtual void gi_probe_set_compress(RID p_probe, bool p_enable) = 0;
-	virtual bool gi_probe_is_compressed(RID p_probe) const = 0;
+	virtual void gi_probe_set_anisotropy_strength(RID p_gi_probe, float p_strength) = 0;
+	virtual float gi_probe_get_anisotropy_strength(RID p_gi_probe) const = 0;
 
 	/* LIGHTMAP CAPTURE */
 
@@ -650,7 +650,10 @@ public:
 		VIEWPORT_DEBUG_DRAW_LIGHTING,
 		VIEWPORT_DEBUG_DRAW_OVERDRAW,
 		VIEWPORT_DEBUG_DRAW_WIREFRAME,
-		VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS
+		VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO,
+		VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING,
+		VIEWPORT_DEBUG_DRAW_SHADOW_ATLAS,
+		VIEWPORT_DEBUG_DRAW_DIRECTIONAL_SHADOW_ATLAS,
 
 	};
 

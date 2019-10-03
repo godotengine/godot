@@ -53,6 +53,11 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 			strstr(pCallbackData->pMessage, "can result in undefined behavior if this memory is used by the device") != NULL) {
 		return VK_FALSE;
 	}
+	// This needs to be ignored because Validator is wrong here
+	if (strstr(pCallbackData->pMessage, "SPIR-V module not valid: Pointer operand") != NULL &&
+			strstr(pCallbackData->pMessage, "must be a memory object") != NULL) {
+		return VK_FALSE;
+	}
 
 	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
 		strcat(prefix, "VERBOSE : ");

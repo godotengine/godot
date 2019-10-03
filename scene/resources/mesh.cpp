@@ -904,6 +904,8 @@ Array ArrayMesh::_get_surfaces() const {
 
 		ret.push_back(data);
 	}
+	print_line("Saving surfaces: " + itos(ret.size()));
+
 	return ret;
 }
 
@@ -983,7 +985,15 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 		if (d.has("2d")) {
 			_2d = d["2d"];
 		}
-
+		/*
+		print_line("format: " + itos(surface.format));
+		print_line("aabb: " + surface.aabb);
+		print_line("array size: " + itos(surface.vertex_data.size()));
+		print_line("vertex count: " + itos(surface.vertex_count));
+		print_line("index size: " + itos(surface.index_data.size()));
+		print_line("index count: " + itos(surface.index_count));
+		print_line("primitive: " + itos(surface.primitive));
+*/
 		surface_data.push_back(surface);
 		surface_materials.push_back(material);
 		surface_names.push_back(name);
@@ -999,6 +1009,7 @@ void ArrayMesh::_set_surfaces(const Array &p_surfaces) {
 	} else {
 		// if mesh does not exist (first time this is loaded, most likely),
 		// we can create it with a single call, which is a lot more efficient and thread friendly
+		print_line("create mesh from surfaces: " + itos(surface_data.size()));
 		mesh = VS::get_singleton()->mesh_create_from_surfaces(surface_data);
 		VS::get_singleton()->mesh_set_blend_shape_mode(mesh, (VS::BlendShapeMode)blend_shape_mode);
 	}
@@ -1144,6 +1155,14 @@ void ArrayMesh::add_surface_from_arrays(PrimitiveType p_primitive, const Array &
 	Error err = VS::get_singleton()->mesh_create_surface_data_from_arrays(&surface, (VisualServer::PrimitiveType)p_primitive, p_arrays, p_blend_shapes, p_lods, p_flags);
 	ERR_FAIL_COND(err != OK);
 
+	/*	print_line("format: " + itos(surface.format));
+	print_line("aabb: " + surface.aabb);
+	print_line("array size: " + itos(surface.vertex_data.size()));
+	print_line("vertex count: " + itos(surface.vertex_count));
+	print_line("index size: " + itos(surface.index_data.size()));
+	print_line("index count: " + itos(surface.index_count));
+	print_line("primitive: " + itos(surface.primitive));
+*/
 	add_surface(surface.format, PrimitiveType(surface.primitive), surface.vertex_data, surface.vertex_count, surface.index_data, surface.index_count, surface.aabb, surface.blend_shapes, surface.bone_aabbs, surface.lods);
 }
 
@@ -1570,8 +1589,8 @@ void ArrayMesh::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_surfaces", "surfaces"), &ArrayMesh::_set_surfaces);
 	ClassDB::bind_method(D_METHOD("_get_surfaces"), &ArrayMesh::_get_surfaces);
 
-	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_INTERNAL), "_set_surfaces", "_get_surfaces");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative", PROPERTY_USAGE_NOEDITOR), "set_blend_shape_mode", "get_blend_shape_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "_surfaces", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "_set_surfaces", "_get_surfaces");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "blend_shape_mode", PROPERTY_HINT_ENUM, "Normalized,Relative"), "set_blend_shape_mode", "get_blend_shape_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "custom_aabb", PROPERTY_HINT_NONE, ""), "set_custom_aabb", "get_custom_aabb");
 
 	BIND_CONSTANT(NO_INDEX_ARRAY);
