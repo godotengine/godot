@@ -103,6 +103,10 @@ String VisualShaderNode::get_warning(Shader::Mode p_mode, VisualShader::Type p_t
 	return String();
 }
 
+String VisualShaderNode::get_input_port_default_hint(int p_port) const {
+	return "";
+}
+
 void VisualShaderNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_output_port_for_preview", "port"), &VisualShaderNode::set_output_port_for_preview);
