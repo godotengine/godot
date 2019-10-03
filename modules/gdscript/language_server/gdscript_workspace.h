@@ -53,7 +53,6 @@ protected:
 	ExtendGDScriptParser *get_parse_successed_script(const String &p_path);
 	ExtendGDScriptParser *get_parse_result(const String &p_path);
 
-	void strip_flat_symbols(const String &p_branch);
 	void list_script_files(const String &p_root_dir, List<String> &r_files);
 
 public:
@@ -82,6 +81,7 @@ public:
 	const lsp::DocumentSymbol *resolve_symbol(const lsp::TextDocumentPositionParams &p_doc_pos, const String &p_symbol_name = "", bool p_func_requred = false);
 	void resolve_related_symbols(const lsp::TextDocumentPositionParams &p_doc_pos, List<const lsp::DocumentSymbol *> &r_list);
 
+	void resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list);
 	Dictionary generate_script_api(const String &p_path);
 
 	GDScriptWorkspace();

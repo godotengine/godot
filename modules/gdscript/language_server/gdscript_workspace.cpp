@@ -475,6 +475,15 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 	}
 }
 
+void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list) {
+	if (const ExtendGDScriptParser *parser = get_parse_successed_script(get_file_path(p_uri))) {
+		const List<lsp::DocumentLink> &links = parser->get_document_links();
+		for (const List<lsp::DocumentLink>::Element *E = links.front(); E; E = E->next()) {
+			r_list.push_back(E->get());
+		}
+	}
+}
+
 Dictionary GDScriptWorkspace::generate_script_api(const String &p_path) {
 	Dictionary api;
 	if (const ExtendGDScriptParser *parser = get_parse_successed_script(p_path)) {
