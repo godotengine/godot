@@ -110,6 +110,9 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 	instances.insert(instance->owner);
 	GDScriptLanguage::singleton->lock.unlock();
 
+	if (p_argcount < 0) {
+		return instance;
+	}
 	initializer->call(instance, p_args, p_argcount, r_error);
 
 	if (r_error.error != Variant::CallError::CALL_OK) {
@@ -123,9 +126,8 @@ GDScriptInstance *GDScript::_create_instance(const Variant **p_args, int p_argco
 		GDScriptLanguage::singleton->lock.unlock();
 #endif
 
-		ERR_FAIL_COND_V(r_error.error != Variant::CallError::CALL_OK, nullptr); //error constructing
+		ERR_FAIL_V_MSG(nullptr, "Error constructing a GDScriptInstance.");
 	}
-
 	//@TODO make thread safe
 	return instance;
 }
