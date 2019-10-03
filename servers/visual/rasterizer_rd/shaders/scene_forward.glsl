@@ -887,7 +887,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 normal,float roughness
 		reflection_accum += reflection;
 	}
 
-#ifndef USE_LIGHTMAP
+#if !defined(USE_LIGHTMAP) && !defined(USE_VOXEL_CONE_TRACING)
 	if (reflections.data[ref_index].ambient.a > 0.0) { //compute ambient using skybox
 
 		vec3 local_amb_vec = (reflections.data[ref_index].local_matrix * vec4(normal, 0.0)).xyz;
@@ -915,7 +915,7 @@ void reflection_process(uint ref_index, vec3 vertex, vec3 normal,float roughness
 		ambient_out.rgb *= ambient_out.a;
 		ambient_accum += ambient_out;
 	}
-#endif //USE_LIGHTMAP
+#endif //USE_LIGHTMAP or VCT
 }
 
 #ifdef USE_VOXEL_CONE_TRACING
@@ -1103,6 +1103,7 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 	vec3 cell_size = 1.0 / gi_probes.data[index].bounds;
 
 	//radiance
+
 #ifdef GI_PROBE_HIGH_QUALITY
 
 #define MAX_CONE_DIRS 6
@@ -1116,7 +1117,17 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 
 	float cone_weights[MAX_CONE_DIRS] = float[](0.25, 0.15, 0.15, 0.15, 0.15, 0.15);
 	float cone_angle_tan = 0.577;
-#else
+
+#elif defined(GI_PROBE_LOW_QUALITY)
+
+#define MAX_CONE_DIRS 1
+
+	vec3 cone_dirs[MAX_CONE_DIRS] = vec3[](
+			vec3(0.0, 0.0, 1.0));
+
+	float cone_weights[MAX_CONE_DIRS] = float[](1.0);
+	float cone_angle_tan = 4; //~76 degrees
+#else // MEDIUM QUALITY
 
 #define MAX_CONE_DIRS 4
 
@@ -1136,7 +1147,7 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 
 		vec3 dir = normalize((gi_probes.data[index].xform * vec4(normal_xform * cone_dirs[i], 0.0)).xyz);
 
-#ifdef GI_PROBE_HIGH_QUALITY
+#if defined(GI_PROBE_HIGH_QUALITY) || defined(GI_PROBE_LOW_QUALITY)
 
 #ifdef GI_PROBE_USE_ANISOTROPY
 		vec4 cone_light = voxel_cone_trace_anisotropic(gi_probe_textures[gi_probes.data[index].texture_slot],gi_probe_textures[gi_probes.data[index].texture_slot+1],gi_probe_textures[gi_probes.data[index].texture_slot+2],normalize(mix(dir,normal,gi_probes.data[index].anisotropy_strength)),cell_size, position, dir, cone_angle_tan, max_distance, gi_probes.data[index].bias);
@@ -1164,7 +1175,7 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 	out_diff += vec4(light * blend, blend);
 
 	//irradiance
-
+#ifndef GI_PROBE_LOW_QUALITY
 	vec4 irr_light = voxel_cone_trace(gi_probe_textures[gi_probes.data[index].texture_slot], cell_size, position, ref_vec, tan(roughness * 0.5 * M_PI * 0.99), max_distance, gi_probes.data[index].bias);
 	if (gi_probes.data[index].blend_ambient) {
 		irr_light.rgb = mix(environment,irr_light.rgb, min(1.0, irr_light.a / 0.95));
@@ -1173,6 +1184,7 @@ void gi_probe_compute(uint index, vec3 position, vec3 normal,vec3 ref_vec, mat3 
 	//irr_light=vec3(0.0);
 
 	out_spec += vec4(irr_light.rgb * blend, blend);
+#endif
 }
 
 #endif //USE_VOXEL_CONE_TRACING

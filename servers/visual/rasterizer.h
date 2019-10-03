@@ -629,6 +629,11 @@ public:
 	Color get_default_clear_color() const {
 		return default_clear_color;
 	}
+#define TIMESTAMP_BEGIN()                                                                 \
+	{                                                                                     \
+		if (VSG::storage->capturing_timestamps) VSG::storage->capture_timestamps_begin(); \
+	}
+
 #define RENDER_TIMESTAMP(m_text)                                                         \
 	{                                                                                    \
 		if (VSG::storage->capturing_timestamps) VSG::storage->capture_timestamp(m_text); \
