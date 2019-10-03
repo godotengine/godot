@@ -34,6 +34,9 @@
 
 StringBuilder &StringBuilder::append(const String &p_string) {
 
+	if (p_string == String())
+		return *this;
+
 	strings.push_back(p_string);
 	appended_strings.push_back(-1);
 
