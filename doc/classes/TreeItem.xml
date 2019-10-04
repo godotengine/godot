@@ -585,6 +585,15 @@
 				Sets the given column's tooltip text.
 			</description>
 		</method>
+		<method name="call_recursive" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
+			</description>
+		</method>
 	</methods>
 	<members>
 		<member name="collapsed" type="bool" setter="set_collapsed" getter="is_collapsed">
