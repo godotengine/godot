@@ -969,7 +969,17 @@ void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_env
 	//time global variables
 	scene_state.ubo.time = time;
 
-	if (is_environment(p_environment)) {
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+
+		scene_state.ubo.use_ambient_light = true;
+		scene_state.ubo.ambient_light_color_energy[0] = 1;
+		scene_state.ubo.ambient_light_color_energy[1] = 1;
+		scene_state.ubo.ambient_light_color_energy[2] = 1;
+		scene_state.ubo.ambient_light_color_energy[3] = 1.0;
+		scene_state.ubo.use_ambient_cubemap = false;
+		scene_state.ubo.use_reflection_cubemap = false;
+
+	} else if (is_environment(p_environment)) {
 
 		VS::EnvironmentBG env_bg = environment_get_background(p_environment);
 		VS::EnvironmentAmbientSource ambient_src = environment_get_ambient_light_ambient_source(p_environment);
@@ -1155,11 +1165,19 @@ void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_env
 
 void RasterizerSceneForwardRD::_add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index) {
 
-	RID m_src = p_instance->material_override.is_valid() ? p_instance->material_override : p_material;
+	RID m_src;
 
-	/*if (state.debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
-		m_src = default_overdraw_material;
-	}*/
+	m_src = p_instance->material_override.is_valid() ? p_instance->material_override : p_material;
+
+	if (unlikely(debug_draw != VS::VIEWPORT_DEBUG_DRAW_DISABLED)) {
+		if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+			m_src = overdraw_material;
+		} else if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_WIREFRAME) {
+			m_src = wireframe_material;
+		} else if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_LIGHTING) {
+			m_src = default_material;
+		}
+	}
 
 	MaterialData *material = NULL;
 
@@ -1756,6 +1774,12 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	RENDER_TIMESTAMP("Setup 3D Scene");
 
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_UNSHADED) {
+		p_light_cull_count = 0;
+		p_reflection_probe_cull_count = 0;
+		p_gi_probe_cull_count = 0;
+	}
+
 	_update_render_base_uniform_set();
 
 	bool using_shadows = true;
@@ -1824,7 +1848,9 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	Color clear_color;
 	bool keep_color = false;
 
-	if (is_environment(p_environment)) {
+	if (debug_draw == VS::VIEWPORT_DEBUG_DRAW_OVERDRAW) {
+		clear_color = Color(0, 0, 0, 1); //in overdraw mode, BG should always be black
+	} else if (is_environment(p_environment)) {
 		VS::EnvironmentBG bg_mode = environment_get_background(p_environment);
 		float bg_energy = environment_get_bg_energy(p_environment);
 		switch (bg_mode) {
@@ -2566,6 +2592,19 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 
 		MaterialData *md = (MaterialData *)storage->material_get_data(default_material, RasterizerStorageRD::SHADER_TYPE_3D);
 		default_shader_rd = shader.scene_shader.version_get_shader(md->shader_data->version, SHADER_VERSION_COLOR_PASS);
+	}
+
+	{
+
+		overdraw_material_shader = storage->shader_create();
+		storage->shader_set_code(overdraw_material_shader, "shader_type spatial;\nrender_mode blend_add,unshaded;\n void fragment() { ALBEDO=vec3(0.4,0.8,0.8); ALPHA=0.2; }");
+		overdraw_material = storage->material_create();
+		storage->material_set_shader(overdraw_material, overdraw_material_shader);
+
+		wireframe_material_shader = storage->shader_create();
+		storage->shader_set_code(wireframe_material_shader, "shader_type spatial;\nrender_mode wireframe,unshaded;\n void fragment() { ALBEDO=vec3(0.0,0.0,0.0); }");
+		wireframe_material = storage->material_create();
+		storage->material_set_shader(wireframe_material, wireframe_material_shader);
 	}
 
 	{
