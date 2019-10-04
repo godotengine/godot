@@ -2172,7 +2172,7 @@ void SpatialEditorViewport::_notification(int p_what) {
 
 			VisualInstance *vi = Object::cast_to<VisualInstance>(sp);
 
-			se->aabb = vi ? vi->get_aabb() : AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4));
+			se->aabb = vi ? vi->get_aabb() : _calculate_spatial_bounds(sp, AABB(Vector3(-0.2, -0.2, -0.2), Vector3(0.4, 0.4, 0.4)));
 
 			Transform t = sp->get_global_gizmo_transform();
 			t.translate(se->aabb.position);
