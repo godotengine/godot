@@ -137,6 +137,7 @@ class VisualShaderEditor : public VBoxContainer {
 			category = p_category;
 			sub_category = p_sub_category;
 			description = p_description;
+			sub_func = 0;
 			sub_func_str = p_sub_func;
 			return_type = p_return_type;
 			mode = p_mode;

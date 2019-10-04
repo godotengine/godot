@@ -2053,7 +2053,7 @@ Variant VisualShaderEditor::get_drag_data_fw(const Point2 &p_point, Control *p_f
 
 		Dictionary d;
 		d["id"] = id;
-		if (op.sub_func_str != "") {
+		if (op.sub_func == -1) {
 			d["sub_func"] = op.sub_func_str;
 		} else {
 			d["sub_func"] = op.sub_func;
