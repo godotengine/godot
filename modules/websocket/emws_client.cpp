@@ -193,12 +193,12 @@ void EMWSClient::disconnect_from_host(int p_code, String p_reason) {
 
 IP_Address EMWSClient::get_connected_host() const {
 
-	return IP_Address();
+	ERR_FAIL_V_MSG(IP_Address(), "Not supported in HTML5 export.");
 };
 
 uint16_t EMWSClient::get_connected_port() const {
 
-	return 1025;
+	ERR_FAIL_V_MSG(0, "Not supported in HTML5 export.");
 };
 
 int EMWSClient::get_max_packet_size() const {

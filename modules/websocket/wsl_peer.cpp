@@ -208,7 +208,6 @@ void WSLPeer::make_context(PeerData *p_data, unsigned int p_in_buf_size, unsigne
 	_data = p_data;
 	_data->peer = this;
 	_data->valid = true;
-	_connection = Ref<StreamPeer>(_data->conn);
 
 	if (_data->is_server)
 		wslay_event_context_server_init(&(_data->ctx), &wsl_callbacks, _data);
@@ -302,18 +301,16 @@ void WSLPeer::close(int p_code, String p_reason) {
 
 IP_Address WSLPeer::get_connected_host() const {
 
-	ERR_FAIL_COND_V(!is_connected_to_host(), IP_Address());
+	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), IP_Address());
 
-	IP_Address ip;
-	return ip;
+	return _data->tcp->get_connected_host();
 }
 
 uint16_t WSLPeer::get_connected_port() const {
 
-	ERR_FAIL_COND_V(!is_connected_to_host(), 0);
+	ERR_FAIL_COND_V(!is_connected_to_host() || _data->tcp.is_null(), 0);
 
-	uint16_t port = 0;
-	return port;
+	return _data->tcp->get_connected_port();
 }
 
 void WSLPeer::invalidate() {

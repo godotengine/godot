@@ -52,6 +52,7 @@ private:
 		bool _parse_request(const PoolStringArray p_protocols);
 
 	public:
+		Ref<StreamPeerTCP> tcp;
 		Ref<StreamPeer> connection;
 
 		int time;

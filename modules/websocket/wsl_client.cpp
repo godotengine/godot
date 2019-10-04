@@ -86,6 +86,7 @@ void WSLClient::_do_handshake() {
 				WSLPeer::PeerData *data = memnew(struct WSLPeer::PeerData);
 				data->obj = this;
 				data->conn = _connection;
+				data->tcp = _tcp;
 				data->is_server = false;
 				data->id = 1;
 				_peer->make_context(data, _in_buf_size, _in_pkt_size, _out_buf_size, _out_pkt_size);
@@ -305,12 +306,14 @@ void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 
 IP_Address WSLClient::get_connected_host() const {
 
-	return IP_Address();
+	ERR_FAIL_COND_V(!_peer->is_connected_to_host(), IP_Address());
+	return _peer->get_connected_host();
 }
 
 uint16_t WSLClient::get_connected_port() const {
 
-	return 1025;
+	ERR_FAIL_COND_V(!_peer->is_connected_to_host(), 0);
+	return _peer->get_connected_port();
 }
 
 Error WSLClient::set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) {

@@ -134,6 +134,8 @@ void WebSocketClient::_on_error() {
 void WebSocketClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "protocols", "gd_mp_api"), &WebSocketClient::connect_to_url, DEFVAL(PoolVector<String>()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("disconnect_from_host", "code", "reason"), &WebSocketClient::disconnect_from_host, DEFVAL(1000), DEFVAL(""));
+	ClassDB::bind_method(D_METHOD("get_connected_host"), &WebSocketClient::get_connected_host);
+	ClassDB::bind_method(D_METHOD("get_connected_port"), &WebSocketClient::get_connected_port);
 	ClassDB::bind_method(D_METHOD("set_verify_ssl_enabled", "enabled"), &WebSocketClient::set_verify_ssl_enabled);
 	ClassDB::bind_method(D_METHOD("is_verify_ssl_enabled"), &WebSocketClient::is_verify_ssl_enabled);
 

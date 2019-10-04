@@ -185,6 +185,7 @@ void WSLServer::poll() {
 		WSLPeer::PeerData *data = memnew(struct WSLPeer::PeerData);
 		data->obj = this;
 		data->conn = ppeer->connection;
+		data->tcp = ppeer->tcp;
 		data->is_server = true;
 		data->id = id;
 
@@ -204,12 +205,13 @@ void WSLServer::poll() {
 		return;
 
 	while (_server->is_connection_available()) {
-		Ref<StreamPeer> conn = _server->take_connection();
+		Ref<StreamPeerTCP> conn = _server->take_connection();
 		if (is_refusing_new_connections())
 			continue; // Conn will go out-of-scope and be closed.
 
 		Ref<PendingPeer> peer = memnew(PendingPeer);
 		peer->connection = conn;
+		peer->tcp = conn;
 		peer->time = OS::get_singleton()->get_ticks_msec();
 		_pending.push_back(peer);
 	}
