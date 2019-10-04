@@ -475,6 +475,24 @@ void GDScriptWorkspace::resolve_related_symbols(const lsp::TextDocumentPositionP
 	}
 }
 
+const lsp::DocumentSymbol *GDScriptWorkspace::resolve_native_symbol(const lsp::NativeSymbolInspectParams &p_params) {
+
+	if (Map<StringName, lsp::DocumentSymbol>::Element *E = native_symbols.find(p_params.native_class)) {
+		const lsp::DocumentSymbol &symbol = E->get();
+		if (p_params.symbol_name.empty() || p_params.symbol_name == symbol.name) {
+			return &symbol;
+		}
+
+		for (int i = 0; i < symbol.children.size(); ++i) {
+			if (symbol.children[i].name == p_params.symbol_name) {
+				return &(symbol.children[i]);
+			}
+		}
+	}
+
+	return NULL;
+}
+
 void GDScriptWorkspace::resolve_document_links(const String &p_uri, List<lsp::DocumentLink> &r_list) {
 	if (const ExtendGDScriptParser *parser = get_parse_successed_script(get_file_path(p_uri))) {
 		const List<lsp::DocumentLink> &links = parser->get_document_links();

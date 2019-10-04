@@ -153,9 +153,10 @@ Error GDScriptLanguageProtocol::start(int p_port) {
 }
 
 void GDScriptLanguageProtocol::stop() {
-	const int *ptr = NULL;
-	while (ptr = clients.next(ptr)) {
+	const int *ptr = clients.next(NULL);
+	while (ptr) {
 		clients.get(*ptr)->close();
+		ptr = clients.next(ptr);
 	}
 	server->stop();
 	clients.clear();

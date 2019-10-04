@@ -1134,7 +1134,7 @@ struct DocumentSymbol {
 	 */
 	Vector<DocumentSymbol> children;
 
-	_FORCE_INLINE_ Dictionary to_json(bool with_doc = false) const {
+	Dictionary to_json(bool with_doc = false) const {
 		Dictionary dict;
 		dict["name"] = name;
 		dict["detail"] = detail;
@@ -1230,6 +1230,17 @@ struct DocumentSymbol {
 		}
 
 		return item;
+	}
+};
+
+struct NativeSymbolInspectParams {
+
+	String native_class;
+	String symbol_name;
+
+	void load(const Dictionary &p_params) {
+		native_class = p_params["native_class"];
+		symbol_name = p_params["symbol_name"];
 	}
 };
 
