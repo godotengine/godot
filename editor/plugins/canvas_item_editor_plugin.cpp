@@ -5135,6 +5135,8 @@ CanvasItemEditor::CanvasItemEditor(EditorNode *p_editor) {
 	warning_child_of_container = memnew(Label);
 	warning_child_of_container->hide();
 	warning_child_of_container->set_text(TTR("Warning: Children of a container get their position and size determined only by their parent."));
+	warning_child_of_container->add_color_override("font_color", EditorNode::get_singleton()->get_gui_base()->get_color("warning_color", "Editor"));
+	warning_child_of_container->add_font_override("font", EditorNode::get_singleton()->get_gui_base()->get_font("main", "EditorFonts"));
 	add_control_to_info_overlay(warning_child_of_container);
 
 	h_scroll = memnew(HScrollBar);
