@@ -3288,9 +3288,7 @@ String String::simplify_path() const {
 
 static int _humanize_digits(int p_num) {
 
-	if (p_num < 10)
-		return 2;
-	else if (p_num < 100)
+	if (p_num < 100)
 		return 2;
 	else if (p_num < 1024)
 		return 1;
