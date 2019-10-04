@@ -501,6 +501,10 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 	double time;
 	RID default_shader;
 	RID default_material;
+	RID overdraw_material_shader;
+	RID overdraw_material;
+	RID wireframe_material_shader;
+	RID wireframe_material;
 	RID default_shader_rd;
 
 	RID default_vec4_xform_buffer;
