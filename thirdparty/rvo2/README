@@ -1,0 +1,18 @@
+RVO2 Library is an easy-to-use C++ implementation of the optimal reciprocal
+collision avoidance (ORCA) formulation <http://gamma.cs.unc.edu/ORCA/> for
+multi-agent simulation. RVO2 Library automatically uses parallelism for
+computing the motion of the agents on machines with multiple processors and a
+compiler supporting OpenMP <http://www.openmp.org/>.
+
+Please send all bug reports to <geom@cs.unc.edu>.
+
+The authors may be contacted via:
+
+Jur van den Berg, Stephen J. Guy, Jamie Snape, Ming C. Lin, Dinesh Manocha
+Dept. of Computer Science
+201 S. Columbia St.
+Frederick P. Brooks, Jr. Computer Science Bldg.
+Chapel Hill, N.C. 27599-3175
+United States of America
+
+<http://gamma.cs.unc.edu/RVO2/>

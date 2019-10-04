@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionAvoidance2D" inherits="Node2D" category="Core" version="3.2">
+	<brief_description>
+		Helps CollisionAvoidanceActor2D actors move around without colliding into each other or into other obstacles.
+	</brief_description>
+	<description>
+		This module implements Reciprical Collision Avoidance using the library RVO2: http://gamma.cs.unc.edu/RVO2/
+        This module does not add pathfinding.  Pathfinding determines the path an actor needs to take to reach it's goal.  Collision avoidance will help the actor avoid moving (or static) obstacles along its way.
+        You can add actors by placing CollisionAvoidanceActor2D as a subnode.  You can add obstacles by calling add_obstacle.
+        Each tick you should call `navigate_actors()`. otherwise, actors will be unable to identify nearby actors.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_obstacle">
+			<return type="int">
+			</return>
+			<argument index="0" name="points" type="PoolVector2Array">
+			</argument>
+			<description>
+				Add an obstacle for actors to avoid.  The points should be given in clockwise order.
+			</description>
+		</method>
+		<method name="move_obstacle">
+			<return type="void">
+			</return>
+			<argument index="0" name="obstacle_id" type="int">
+			</argument>
+			<argument index="1" name="points" type="PoolVector2Array">
+			</argument>
+			<description>
+				This is equivalent to calling remove_obstacle() then add_obstacle(), except the id remains the same.
+                Moving obstacles each tick will likely slow your game down, as it requires a full recalculation of all obstacles.
+			</description>
+		</method>
+		<method name="navigate_actors">
+			<return type="void">
+			</return>
+			<description>
+				Generates the information needed for actors to navigate around other actors.  This should be called in `_process()` each tick.
+			</description>
+		</method>
+		<method name="remove_bounds">
+			<return type="void">
+			</return>
+			<description>
+				Removes the bounds.
+			</description>
+		</method>
+		<method name="remove_obstacle">
+			<return type="void">
+			</return>
+			<argument index="0" name="obstacle_id" type="int">
+			</argument>
+			<description>
+				Removes an obstacle from the scene.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="bounds" type="Rect2" setter="set_bounds" getter="get_bounds" default="Rect2( 0, 0, 0, 0 )">
+			The rectangular bounds all actors should stay within.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>

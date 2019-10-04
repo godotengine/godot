@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CollisionAvoidanceActor2D" inherits="Node2D" category="Core" version="3.2">
+	<brief_description>
+		This actor will attempt to avoid collisions with other CollisionAvoidanceActor2D actors.
+	</brief_description>
+	<description>
+		To use this, ensure it is a child of a CollisionAvoidance2D node. 
+        Each tick, calculate_velocity() should be called to calculate the velocity that will avoid its neighbors
+        An actor's shape is determined by it's radius, not by other collision objects.  Other collision objects are intended for physics collision, not collision avoidance.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="calculate_velocity">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="preferred_velocity" type="Vector2">
+			</argument>
+			<argument index="1" name="delta" type="float">
+			</argument>
+			<description>
+				Returns the velocity that will avoid other CollisionAvoidanceActor2D and obstacles.   
+                This velocity will be as close as possible to preferred_velocity, but it can be anywhere between 0 and max_speed and in any direction.
+                This velocity should still be multipled by delta when moving an actor in the current tick.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="max_neighbors" type="int" setter="set_max_neighbors" getter="get_max_neighbors" default="20">
+			The maximum number of neighbors for each actor to consider.  
+            Setting max_neighbors, neighbor_search_distance, and neighbor_time_horizon to be too low causes more collisions.
+            Setting max_neighbors, neighbor_search_distance, and neighbor_time_horizon to be too high causes actors to slow down or freeze, and may cause game lag.
+		</member>
+		<member name="max_speed" type="float" setter="set_max_speed" getter="get_max_speed" default="100">
+			The maximum speed an actor can move.  
+            If this has the same magnitude as the preferred_velocity, actors are more likely to get stuck as they can only slow down to avoid collision.
+		</member>
+		<member name="neighbor_search_distance" type="float" setter="set_neighbor_search_distance" getter="get_neighbor_search_distance" default="200">
+			The distance to search for other actors.
+		</member>
+		<member name="neighbor_time_horizon" type="float" setter="set_neighbor_time_horizon" getter="get_neighbor_time_horizon" default="10">
+			How far into the future to predict each neighbor's path (in relation to their own path).
+		</member>
+		<member name="obstacle_time_horizon" type="float" setter="set_obstacle_time_horizon" getter="get_obstacle_time_horizon" default="30">
+			How far into the future to predict the actor's collision with obstacles.  The bigger this number is, the sooner it can respond to obstacles, but limits the actor's movement.
+		</member>
+		<member name="radius" type="float" setter="set_radius" getter="get_radius" default="5">
+			The radius of the actor.
+		</member>
+	</members>
+	<constants>
+	</constants>
+</class>
