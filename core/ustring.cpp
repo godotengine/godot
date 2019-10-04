@@ -3298,7 +3298,7 @@ static int _humanize_digits(int p_num) {
 		return 0;
 }
 
-String String::humanize_size(size_t p_size) {
+String String::humanize_size(uint64_t p_size) {
 
 	uint64_t _div = 1;
 	Vector<String> prefixes;
