@@ -982,10 +982,13 @@ Error Main::setup(const char *execpath, int argc, char *argv[], bool p_second_ph
 			video_mode.height = GLOBAL_GET("display/window/size/height");
 
 			if (globals->has_setting("display/window/size/test_width") && globals->has_setting("display/window/size/test_height")) {
+
 				int tw = globals->get("display/window/size/test_width");
-				int th = globals->get("display/window/size/test_height");
-				if (tw > 0 && th > 0) {
+				if (tw > 0) {
 					video_mode.width = tw;
+				}
+				int th = globals->get("display/window/size/test_height");
+				if (th > 0) {
 					video_mode.height = th;
 				}
 			}
