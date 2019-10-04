@@ -132,10 +132,12 @@ void EditorExportPlatformOSX::get_export_options(List<ExportOption> *r_options) 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "display/high_res"), false));
 
 #ifdef OSX_ENABLED
-	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/enable"), false));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/identity", PROPERTY_HINT_PLACEHOLDER_TEXT, "Type: Name (ID)"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/timestamp"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "codesign/hardened_runtime"), true));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "codesign/entitlements", PROPERTY_HINT_GLOBAL_FILE, "*.plist"), ""));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::POOL_STRING_ARRAY, "codesign/custom_options"), PoolStringArray()));
 #endif
 
 	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
@@ -375,16 +377,27 @@ Error EditorExportPlatformOSX::_code_sign(const Ref<EditorExportPreset> &p_prese
 		args.push_back("--entitlements");
 		args.push_back(p_preset->get("codesign/entitlements"));
 	}
+
+	PoolStringArray user_args = p_preset->get("codesign/custom_options");
+	for (int i = 0; i < user_args.size(); i++) {
+		String user_arg = user_args[i].strip_edges();
+		if (!user_arg.empty()) {
+			args.push_back(user_arg);
+		}
+	}
+
 	args.push_back("-s");
 	args.push_back(p_preset->get("codesign/identity"));
+
 	args.push_back("-v"); /* provide some more feedback */
+
 	args.push_back(p_path);
 
 	String str;
 	Error err = OS::get_singleton()->execute("codesign", args, true, NULL, &str, NULL, true);
 	ERR_FAIL_COND_V(err != OK, err);
 
-	print_line("codesign: " + str);
+	print_line("codesign (" + p_path + "): " + str);
 	if (str.find("no identity found") != -1) {
 		EditorNode::add_io_error("codesign: no identity found");
 		return FAILED;
@@ -663,20 +676,20 @@ Error EditorExportPlatformOSX::export_project(const Ref<EditorExportPreset> &p_p
 			err = save_pack(p_preset, pack_path, &shared_objects);
 
 			// see if we can code sign our new package
-			String identity = p_preset->get("codesign/identity");
+			bool sign_enabled = p_preset->get("codesign/enable");
 
 			if (err == OK) {
 				DirAccess *da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 				for (int i = 0; i < shared_objects.size(); i++) {
 					err = da->copy(shared_objects[i].path, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
-					if (err == OK && identity != "") {
+					if (err == OK && sign_enabled) {
 						err = _code_sign(p_preset, tmp_app_path_name + "/Contents/Frameworks/" + shared_objects[i].path.get_file());
 					}
 				}
 				memdelete(da);
 			}
 
-			if (err == OK && identity != "") {
+			if (err == OK && sign_enabled) {
 				if (ep.step("Code signing bundle", 2)) {
 					return ERR_SKIP;
 				}
