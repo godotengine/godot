@@ -437,6 +437,20 @@
 				[/codeblock]
 			</description>
 		</method>
+		<method name="humanize_size">
+			<return type="String">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+				Converts [code]size[/code] represented as number of bytes to human-readable format using internationalized set of data size units, namely: B, KiB, MiB, GiB, TiB, PiB, EiB. Note that the next smallest unit is picked automatically to hold at most 1024 units.
+				[codeblock]
+				var bytes = 133790307
+				var size = String.humanize_size(bytes)
+				print(size) # prints "127.5 MiB"
+				[/codeblock]
+			</description>
+		</method>
 		<method name="insert">
 			<return type="String">
 			</return>
