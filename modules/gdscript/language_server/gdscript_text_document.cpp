@@ -335,31 +335,35 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
 		if (file_checker->file_exists(path)) {
 			arr.push_back(location.to_json());
-		} else if (!symbol->native_class.empty() && GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
-			String id;
-			switch (symbol->kind) {
-				case lsp::SymbolKind::Class:
-					id = "class_name:" + symbol->name;
-					break;
-				case lsp::SymbolKind::Constant:
-					id = "class_constant:" + symbol->native_class + ":" + symbol->name;
-					break;
-				case lsp::SymbolKind::Property:
-				case lsp::SymbolKind::Variable:
-					id = "class_property:" + symbol->native_class + ":" + symbol->name;
-					break;
-				case lsp::SymbolKind::Enum:
-					id = "class_enum:" + symbol->native_class + ":" + symbol->name;
-					break;
-				case lsp::SymbolKind::Method:
-				case lsp::SymbolKind::Function:
-					id = "class_method:" + symbol->native_class + ":" + symbol->name;
-					break;
-				default:
-					id = "class_global:" + symbol->native_class + ":" + symbol->name;
-					break;
+		} else if (!symbol->native_class.empty()) {
+			if (GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
+				String id;
+				switch (symbol->kind) {
+					case lsp::SymbolKind::Class:
+						id = "class_name:" + symbol->name;
+						break;
+					case lsp::SymbolKind::Constant:
+						id = "class_constant:" + symbol->native_class + ":" + symbol->name;
+						break;
+					case lsp::SymbolKind::Property:
+					case lsp::SymbolKind::Variable:
+						id = "class_property:" + symbol->native_class + ":" + symbol->name;
+						break;
+					case lsp::SymbolKind::Enum:
+						id = "class_enum:" + symbol->native_class + ":" + symbol->name;
+						break;
+					case lsp::SymbolKind::Method:
+					case lsp::SymbolKind::Function:
+						id = "class_method:" + symbol->native_class + ":" + symbol->name;
+						break;
+					default:
+						id = "class_global:" + symbol->native_class + ":" + symbol->name;
+						break;
+				}
+				call_deferred("show_native_symbol_in_editor", id);
+			} else {
+				GDScriptLanguageProtocol::get_singleton()->notify_client("gdscript/show_native_symbol", symbol->to_json(true));
 			}
-			call_deferred("show_native_symbol_in_editor", id);
 		}
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 
