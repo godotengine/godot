@@ -454,6 +454,24 @@ Files extracted from upstream source:
 - License.txt
 
 
+## rvo2
+
+- Upstream: http://gamma.cs.unc.edu/RVO2/
+- version: 2.0.2
+- License: Apache 2.0
+
+Files extracted from upstream source:
+
+- All .cpp and .h files in the `src/` folder except for RVOSimulator.cpp and RVOSimulator.h
+- LICENSE
+- README
+
+Important: Some files have Godot-made changes.  Specifically:
+
+- Agent, Obstacle, and KdTree have been made public
+- All references to RVOSimulator have been refactored out (introducing new method parameters)
+- `Line` class has been moved from RVOSimulator.h to Definitions.h 
+
 ## squish
 
 - Upstream: https://sourceforge.net/projects/libsquish
