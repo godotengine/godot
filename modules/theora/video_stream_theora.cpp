@@ -752,28 +752,41 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 		ogg_sync_reset(&oy);
 		file->seek(current_block * buffer_size);
 		buffer_data();
-		int ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
-		if (ogg_page_sync_state == -1) {
-			ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
-		}
-		while (ogg_page_sync_state == 0) {
-			buffer_data();
-			ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
-		}
-		if (ogg_page_sync_state == 1) {
-			if (ogg_page_packets(&og) == 1) {
-				queue_page(&og);
-				ogg_stream_packetpeek(&to, &op); //Just attempt it
-				while (ogg_stream_packetpeek(&to, &op) == 0) {
-					if (ogg_sync_pageout(&oy, &og) > 0) {
-						queue_page(&og);
-					} else {
-						buffer_data();
+		bool seeked_file = false;
+		while (!seeked_file) {
+			int ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
+			if (ogg_page_sync_state == -1) {
+				ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
+			}
+			while (ogg_page_sync_state == 0) {
+				buffer_data();
+				seeked_file = true;
+				ogg_page_sync_state = ogg_sync_pageout(&oy, &og);
+			}
+			if (ogg_page_sync_state == 1) {
+				//Only queue pages with a single packet
+				if (ogg_page_packets(&og) == 1) {
+					queue_page(&og);
+					ogg_stream_packetpeek(&to, &op); //Just attempt it
+					while (ogg_stream_packetpeek(&to, &op) == 0) {
+						if (ogg_sync_pageout(&oy, &og) > 0) {
+							queue_page(&og);
+						} else {
+							buffer_data();
+						}
 					}
+					if (th_packet_iskeyframe(&op)) {
+						videobuf_time = th_granule_time(td, op.granulepos);
+						if (videobuf_time < p_time) {
+							break;
+						}
+					} else
+						ogg_stream_packetout(&to, &op);
 				}
 			}
 		}
 		if (th_packet_iskeyframe(&op)) {
+			videobuf_time = th_granule_time(td, op.granulepos);
 			if (videobuf_time < p_time) {
 				break;
 			}
@@ -801,7 +814,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 		ogg_int64_t total_packets = ogg_page_packets(&og); //Trick to figure out the time
 		while (ogg_stream_packetout(&vo, &audio_op) > 0) {
 			double music_time = vorbis_granule_time(&vd, ogg_page_granulepos(&og) + ogg_page_packets(&og) - total_packets--);
-			if (music_time > p_time) {
+			if (music_time > videobuf_time) {
 				if (vorbis_synthesis(&vb, &audio_op) == 0) { /* test for success! */
 					vorbis_synthesis_blockin(&vd, &vb);
 				}
@@ -813,7 +826,7 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 			ogg_sync_state = ogg_sync_pageout(&oy, &og);
 		}
 	}
-	time = p_time;
+	time = videobuf_time;
 };
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
