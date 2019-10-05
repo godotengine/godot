@@ -85,9 +85,14 @@ void main() {
 
 	uvec3 posu = uvec3(cell_data.data[cell_index].position&0x7FF,(cell_data.data[cell_index].position>>11)&0x3FF,cell_data.data[cell_index].position>>21);
 
+#ifdef MODE_DEBUG_EMISSION
+	color_interp.xyz = vec3(uvec3(cell_data.data[cell_index].emission & 0x1ff,(cell_data.data[cell_index].emission >> 9) & 0x1ff,(cell_data.data[cell_index].emission >> 18) & 0x1ff)) * pow(2.0, float(cell_data.data[cell_index].emission >> 27) - 15.0 - 9.0);
+#endif
+
 #ifdef MODE_DEBUG_COLOR
 	color_interp.xyz = unpackUnorm4x8(cell_data.data[cell_index].albedo).xyz;
 #endif
+
 #ifdef MODE_DEBUG_LIGHT
 
 #ifdef USE_ANISOTROPY

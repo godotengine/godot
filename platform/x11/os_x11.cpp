@@ -836,7 +836,6 @@ void OS_X11::finalize() {
 
 		if (context_gles2)
 			memdelete(context_gles2);
-
 	}
 #endif
 #if defined(VULKAN_ENABLED)
@@ -3104,11 +3103,12 @@ void OS_X11::swap_buffers() {
 		context_gles2->swap_buffers();
 	}
 #endif
+	/* not needed for now
 #if defined(VULKAN_ENABLED)
 	if (video_driver_index == VIDEO_DRIVER_VULKAN) {
 		context_vulkan->swap_buffers();
 	}
-#endif
+#endif*/
 }
 
 void OS_X11::alert(const String &p_alert, const String &p_title) {
