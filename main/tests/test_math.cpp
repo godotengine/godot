@@ -618,8 +618,8 @@ MainLoop *test() {
 	print_line("minus: " + (Vector3(1, 2, 3) - Vector3(Vector3(4, 5, 7))));
 	print_line("mul: " + (Vector3(1, 2, 3) * Vector3(Vector3(4, 5, 7))));
 	print_line("div: " + (Vector3(1, 2, 3) / Vector3(Vector3(4, 5, 7))));
-	print_line("mul scalar: " + (Vector3(1, 2, 3) * 2));
-	print_line("premul scalar: " + (2 * Vector3(1, 2, 3)));
+	print_line("mul scalar: " + (Vector3(1, 2, 3) * 2.0));
+	print_line("premul scalar: " + (2.0 * Vector3(1, 2, 3)));
 	print_line("div scalar: " + (Vector3(1, 2, 3) / 3.0));
 	print_line("length: " + rtos(Vector3(1, 2, 3).length()));
 	print_line("length squared: " + rtos(Vector3(1, 2, 3).length_squared()));
