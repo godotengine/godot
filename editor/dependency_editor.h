@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -63,7 +63,6 @@ class DependencyEditor : public AcceptDialog {
 
 protected:
 	static void _bind_methods();
-	void _notification(int p_what);
 
 public:
 	void edit(const String &p_path);
@@ -125,6 +124,8 @@ class DependencyRemoveDialog : public ConfirmationDialog {
 	void _build_removed_dependency_tree(const Vector<RemovedDependency> &p_removed);
 
 	void ok_pressed();
+
+	static void _bind_methods();
 
 public:
 	void show(const Vector<String> &p_folders, const Vector<String> &p_files);

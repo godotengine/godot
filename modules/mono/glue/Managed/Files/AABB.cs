@@ -5,6 +5,7 @@
 // file: core/variant_call.cpp
 // commit: 5ad9be4c24e9d7dc5672fdc42cea896622fe5685
 using System;
+using System.Runtime.InteropServices;
 #if REAL_T_IS_DOUBLE
 using real_t = System.Double;
 #else
@@ -13,6 +14,8 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
     public struct AABB : IEquatable<AABB>
     {
         private Vector3 _position;
@@ -407,12 +410,27 @@ namespace Godot
 
             return new AABB(min, max - min);
         }
-        
-        // Constructors 
+
+        // Constructors
         public AABB(Vector3 position, Vector3 size)
         {
             _position = position;
             _size = size;
+        }
+        public AABB(Vector3 position, real_t width, real_t height, real_t depth)
+        {
+            _position = position;
+            _size = new Vector3(width, height, depth);
+        }
+        public AABB(real_t x, real_t y, real_t z, Vector3 size)
+        {
+            _position = new Vector3(x, y, z);
+            _size = size;
+        }
+        public AABB(real_t x, real_t y, real_t z, real_t width, real_t height, real_t depth)
+        {
+            _position = new Vector3(x, y, z);
+            _size = new Vector3(width, height, depth);
         }
 
         public static bool operator ==(AABB left, AABB right)

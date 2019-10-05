@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -77,7 +77,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost);
+	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost);
 
 	EditorAssetLibraryItem();
 };
@@ -91,7 +91,6 @@ class EditorAssetLibraryItemDescription : public ConfirmationDialog {
 	ScrollContainer *previews;
 	HBoxContainer *preview_hb;
 	PanelContainer *previews_bg;
-	PanelContainer *desc_bg;
 
 	struct Preview {
 		int id;
@@ -120,7 +119,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, int p_rating, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash);
+	void configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost, int p_version, const String &p_version_string, const String &p_description, const String &p_download_url, const String &p_browse_url, const String &p_sha256_hash);
 	void add_preview(int p_id, bool p_video, const String &p_url);
 
 	String get_title() { return title; }
@@ -186,13 +185,12 @@ class EditorAssetLibrary : public PanelContainer {
 	PanelContainer *library_scroll_bg;
 	ScrollContainer *library_scroll;
 	VBoxContainer *library_vb;
+	Label *library_loading;
 	LineEdit *filter;
 	OptionButton *categories;
 	OptionButton *repository;
 	OptionButton *sort;
-	ToolButton *reverse;
 	Button *search;
-	ProgressBar *load_status;
 	HBoxContainer *error_hb;
 	TextureRect *error_tr;
 	Label *error_label;
@@ -207,6 +205,7 @@ class EditorAssetLibrary : public PanelContainer {
 	HTTPRequest *request;
 
 	bool templates_only;
+	bool initial_loading;
 
 	enum Support {
 		SUPPORT_OFFICIAL,
@@ -216,11 +215,12 @@ class EditorAssetLibrary : public PanelContainer {
 	};
 
 	enum SortOrder {
-		SORT_RATING,
-		SORT_DOWNLOADS,
-		SORT_NAME,
-		SORT_COST,
 		SORT_UPDATED,
+		SORT_UPDATED_REVERSE,
+		SORT_NAME,
+		SORT_NAME_REVERSE,
+		SORT_COST,
+		SORT_COST_REVERSE,
 		SORT_MAX
 	};
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,8 @@
 #include "editor_node.h"
 
 class ImportDockParameters : public Object {
-	GDCLASS(ImportDockParameters, Object)
+	GDCLASS(ImportDockParameters, Object);
+
 public:
 	Map<StringName, Variant> values;
 	List<PropertyInfo> properties;
@@ -131,6 +132,7 @@ void ImportDock::set_edit_path(const String &p_path) {
 	params->paths.push_back(p_path);
 	import->set_disabled(false);
 	import_as->set_disabled(false);
+	preset->set_disabled(false);
 
 	imported->set_text(p_path.get_file());
 }
@@ -286,6 +288,7 @@ void ImportDock::set_edit_multiple_paths(const Vector<String> &p_paths) {
 	params->paths = p_paths;
 	import->set_disabled(false);
 	import_as->set_disabled(false);
+	preset->set_disabled(false);
 
 	imported->set_text(itos(p_paths.size()) + TTR(" Files"));
 }
@@ -366,10 +369,68 @@ void ImportDock::clear() {
 	import->set_disabled(true);
 	import_as->clear();
 	import_as->set_disabled(true);
+	preset->set_disabled(true);
 	params->values.clear();
 	params->properties.clear();
 	params->update();
 	preset->get_popup()->clear();
+}
+
+static bool _find_owners(EditorFileSystemDirectory *efsd, const String &p_path) {
+
+	if (!efsd)
+		return false;
+
+	for (int i = 0; i < efsd->get_subdir_count(); i++) {
+
+		if (_find_owners(efsd->get_subdir(i), p_path)) {
+			return true;
+		}
+	}
+
+	for (int i = 0; i < efsd->get_file_count(); i++) {
+
+		Vector<String> deps = efsd->get_file_deps(i);
+		if (deps.find(p_path) != -1)
+			return true;
+	}
+
+	return false;
+}
+void ImportDock::_reimport_attempt() {
+
+	bool need_restart = false;
+	bool used_in_resources = false;
+	for (int i = 0; i < params->paths.size(); i++) {
+		Ref<ConfigFile> config;
+		config.instance();
+		Error err = config->load(params->paths[i] + ".import");
+		ERR_CONTINUE(err != OK);
+
+		String imported_with = config->get_value("remap", "importer");
+		if (imported_with != params->importer->get_importer_name()) {
+			need_restart = true;
+			if (_find_owners(EditorFileSystem::get_singleton()->get_filesystem(), params->paths[i])) {
+				used_in_resources = true;
+			}
+		}
+	}
+
+	if (need_restart) {
+		label_warning->set_visible(used_in_resources);
+		reimport_confirm->popup_centered_minsize();
+		return;
+	}
+
+	_reimport();
+}
+
+void ImportDock::_reimport_and_restart() {
+
+	EditorNode::get_singleton()->save_all_scenes();
+	EditorResourcePreview::get_singleton()->stop(); //don't try to re-create previews after import
+	_reimport();
+	EditorNode::get_singleton()->restart_editor();
 }
 
 void ImportDock::_reimport() {
@@ -381,6 +442,8 @@ void ImportDock::_reimport() {
 		Error err = config->load(params->paths[i] + ".import");
 		ERR_CONTINUE(err != OK);
 
+		String importer_name = params->importer->get_importer_name();
+
 		if (params->checking) {
 			//update only what edited (checkboxes)
 			for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
@@ -390,12 +453,25 @@ void ImportDock::_reimport() {
 			}
 		} else {
 			//override entirely
-			config->set_value("remap", "importer", params->importer->get_importer_name());
+			config->set_value("remap", "importer", importer_name);
 			config->erase_section("params");
 
 			for (List<PropertyInfo>::Element *E = params->properties.front(); E; E = E->next()) {
 				config->set_value("params", E->get().name, params->values[E->get().name]);
 			}
+		}
+
+		//handle group file
+		Ref<ResourceImporter> importer = ResourceFormatImporter::get_singleton()->get_importer_by_name(importer_name);
+		ERR_CONTINUE(!importer.is_valid());
+		String group_file_property = importer->get_option_group_file();
+		if (group_file_property != String()) {
+			//can import from a group (as in, atlas)
+			ERR_CONTINUE(!params->values.has(group_file_property));
+			String group_file = params->values[group_file_property];
+			config->set_value("remap", "group_file", group_file);
+		} else {
+			config->set_value("remap", "group_file", Variant()); //clear group file if unused
 		}
 
 		config->save(params->paths[i] + ".import");
@@ -416,6 +492,7 @@ void ImportDock::_notification(int p_what) {
 		case NOTIFICATION_ENTER_TREE: {
 
 			import_opts->edit(params);
+			label_warning->add_color_override("font_color", get_color("warning_color", "Editor"));
 		} break;
 	}
 }
@@ -433,6 +510,8 @@ void ImportDock::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_preset_selected"), &ImportDock::_preset_selected);
 	ClassDB::bind_method(D_METHOD("_importer_selected"), &ImportDock::_importer_selected);
 	ClassDB::bind_method(D_METHOD("_property_toggled"), &ImportDock::_property_toggled);
+	ClassDB::bind_method(D_METHOD("_reimport_and_restart"), &ImportDock::_reimport_and_restart);
+	ClassDB::bind_method(D_METHOD("_reimport_attempt"), &ImportDock::_reimport_attempt);
 }
 
 void ImportDock::initialize_import_options() const {
@@ -452,11 +531,13 @@ ImportDock::ImportDock() {
 	HBoxContainer *hb = memnew(HBoxContainer);
 	add_margin_child(TTR("Import As:"), hb);
 	import_as = memnew(OptionButton);
+	import_as->set_disabled(true);
 	import_as->connect("item_selected", this, "_importer_selected");
 	hb->add_child(import_as);
 	import_as->set_h_size_flags(SIZE_EXPAND_FILL);
 	preset = memnew(MenuButton);
-	preset->set_text(TTR("Preset..."));
+	preset->set_text(TTR("Preset"));
+	preset->set_disabled(true);
 	preset->get_popup()->connect("index_pressed", this, "_preset_selected");
 	hb->add_child(preset);
 
@@ -469,10 +550,22 @@ ImportDock::ImportDock() {
 	add_child(hb);
 	import = memnew(Button);
 	import->set_text(TTR("Reimport"));
-	import->connect("pressed", this, "_reimport");
+	import->set_disabled(true);
+	import->connect("pressed", this, "_reimport_attempt");
 	hb->add_spacer();
 	hb->add_child(import);
 	hb->add_spacer();
+
+	reimport_confirm = memnew(ConfirmationDialog);
+	reimport_confirm->get_ok()->set_text(TTR("Save scenes, re-import and restart"));
+	add_child(reimport_confirm);
+	reimport_confirm->connect("confirmed", this, "_reimport_and_restart");
+
+	VBoxContainer *vbc_confirm = memnew(VBoxContainer());
+	vbc_confirm->add_child(memnew(Label(TTR("Changing the type of an imported file requires editor restart."))));
+	label_warning = memnew(Label(TTR("WARNING: Assets exist that use this resource, they may stop loading properly.")));
+	vbc_confirm->add_child(label_warning);
+	reimport_confirm->add_child(vbc_confirm);
 
 	params = memnew(ImportDockParameters);
 }

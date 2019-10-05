@@ -1,39 +1,38 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftconfig.h                                                             */
-/*                                                                         */
-/*    ANSI-specific configuration file (specification only).               */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftconfig.h
+ *
+ *   ANSI-specific configuration file (specification only).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This header file contains a number of macro definitions that are used */
-  /* by the rest of the engine.  Most of the macros here are automatically */
-  /* determined at compile time, and you should not need to change it to   */
-  /* port FreeType, except to compile the library with a non-ANSI          */
-  /* compiler.                                                             */
-  /*                                                                       */
-  /* Note however that if some specific modifications are needed, we       */
-  /* advise you to place a modified copy in your build directory.          */
-  /*                                                                       */
-  /* The build directory is usually `builds/<system>', and contains        */
-  /* system-specific files that are always included first when building    */
-  /* the library.                                                          */
-  /*                                                                       */
-  /* This ANSI version should stay in `include/config/'.                   */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This header file contains a number of macro definitions that are used by
+   * the rest of the engine.  Most of the macros here are automatically
+   * determined at compile time, and you should not need to change it to port
+   * FreeType, except to compile the library with a non-ANSI compiler.
+   *
+   * Note however that if some specific modifications are needed, we advise
+   * you to place a modified copy in your build directory.
+   *
+   * The build directory is usually `builds/<system>`, and contains
+   * system-specific files that are always included first when building the
+   * library.
+   *
+   * This ANSI version should stay in `include/config/`.
+   *
+   */
 
 #ifndef FTCONFIG_H_
 #define FTCONFIG_H_
@@ -46,32 +45,32 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*               PLATFORM-SPECIFIC CONFIGURATION MACROS                  */
-  /*                                                                       */
-  /* These macros can be toggled to suit a specific system.  The current   */
-  /* ones are defaults used to compile FreeType in an ANSI C environment   */
-  /* (16bit compilers are also supported).  Copy this file to your own     */
-  /* `builds/<system>' directory, and edit it to port the engine.          */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *              PLATFORM-SPECIFIC CONFIGURATION MACROS
+   *
+   * These macros can be toggled to suit a specific system.  The current ones
+   * are defaults used to compile FreeType in an ANSI C environment (16bit
+   * compilers are also supported).  Copy this file to your own
+   * `builds/<system>` directory, and edit it to port the engine.
+   *
+   */
 
 
-  /* There are systems (like the Texas Instruments 'C54x) where a `char' */
-  /* has 16 bits.  ANSI C says that sizeof(char) is always 1.  Since an  */
-  /* `int' has 16 bits also for this system, sizeof(int) gives 1 which   */
-  /* is probably unexpected.                                             */
-  /*                                                                     */
-  /* `CHAR_BIT' (defined in limits.h) gives the number of bits in a      */
-  /* `char' type.                                                        */
+  /* There are systems (like the Texas Instruments 'C54x) where a `char`  */
+  /* has 16~bits.  ANSI~C says that `sizeof(char)` is always~1.  Since an */
+  /* `int` has 16~bits also for this system, `sizeof(int)` gives~1 which  */
+  /* is probably unexpected.                                              */
+  /*                                                                      */
+  /* `CHAR_BIT` (defined in `limits.h`) gives the number of bits in a     */
+  /* `char` type.                                                         */
 
 #ifndef FT_CHAR_BIT
 #define FT_CHAR_BIT  CHAR_BIT
 #endif
 
 
-  /* The size of an `int' type.  */
+  /* The size of an `int` type. */
 #if                                 FT_UINT_MAX == 0xFFFFUL
 #define FT_SIZEOF_INT  ( 16 / FT_CHAR_BIT )
 #elif                               FT_UINT_MAX == 0xFFFFFFFFUL
@@ -82,7 +81,7 @@ FT_BEGIN_HEADER
 #error "Unsupported size of `int' type!"
 #endif
 
-  /* The size of a `long' type.  A five-byte `long' (as used e.g. on the */
+  /* The size of a `long` type.  A five-byte `long` (as used e.g. on the */
   /* DM642) is recognized but avoided.                                   */
 #if                                  FT_ULONG_MAX == 0xFFFFFFFFUL
 #define FT_SIZEOF_LONG  ( 32 / FT_CHAR_BIT )
@@ -95,35 +94,35 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /* FT_UNUSED is a macro used to indicate that a given parameter is not  */
-  /* used -- this is only used to get rid of unpleasant compiler warnings */
+  /* `FT_UNUSED` indicates that a given parameter is not used --   */
+  /* this is only used to get rid of unpleasant compiler warnings. */
 #ifndef FT_UNUSED
 #define FT_UNUSED( arg )  ( (arg) = (arg) )
 #endif
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*                     AUTOMATIC CONFIGURATION MACROS                    */
-  /*                                                                       */
-  /* These macros are computed from the ones defined above.  Don't touch   */
-  /* their definition, unless you know precisely what you are doing.  No   */
-  /* porter should need to mess with them.                                 */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   *                    AUTOMATIC CONFIGURATION MACROS
+   *
+   * These macros are computed from the ones defined above.  Don't touch
+   * their definition, unless you know precisely what you are doing.  No
+   * porter should need to mess with them.
+   *
+   */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Mac support                                                           */
-  /*                                                                       */
-  /*   This is the only necessary change, so it is defined here instead    */
-  /*   providing a new configuration file.                                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * Mac support
+   *
+   *   This is the only necessary change, so it is defined here instead
+   *   providing a new configuration file.
+   */
 #if defined( __APPLE__ ) || ( defined( __MWERKS__ ) && defined( macintosh ) )
-  /* no Carbon frameworks for 64bit 10.4.x */
-  /* AvailabilityMacros.h is available since Mac OS X 10.2,        */
-  /* so guess the system version by maximum errno before inclusion */
+  /* No Carbon frameworks for 64bit 10.4.x.                         */
+  /* `AvailabilityMacros.h` is available since Mac OS X 10.2,       */
+  /* so guess the system version by maximum errno before inclusion. */
 #include <errno.h>
 #ifdef ECANCELED /* defined since 10.2 */
 #include "AvailabilityMacros.h"
@@ -143,7 +142,7 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /* Fix compiler warning with sgi compiler */
+  /* Fix compiler warning with sgi compiler. */
 #if defined( __sgi ) && !defined( __GNUC__ )
 #if defined( _COMPILER_VERSION ) && ( _COMPILER_VERSION >= 730 )
 #pragma set woff 3505
@@ -151,33 +150,33 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Section>                                                             */
-  /*    basic_types                                                        */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * @section:
+   *   basic_types
+   *
+   */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_Int16                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A typedef for a 16bit signed integer type.                         */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   FT_Int16
+   *
+   * @description:
+   *   A typedef for a 16bit signed integer type.
+   */
   typedef signed short  FT_Int16;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_UInt16                                                          */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A typedef for a 16bit unsigned integer type.                       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   FT_UInt16
+   *
+   * @description:
+   *   A typedef for a 16bit unsigned integer type.
+   */
   typedef unsigned short  FT_UInt16;
 
   /* */
@@ -186,50 +185,50 @@ FT_BEGIN_HEADER
   /* this #if 0 ... #endif clause is for documentation purposes */
 #if 0
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_Int32                                                           */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A typedef for a 32bit signed integer type.  The size depends on    */
-  /*    the configuration.                                                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   FT_Int32
+   *
+   * @description:
+   *   A typedef for a 32bit signed integer type.  The size depends on the
+   *   configuration.
+   */
   typedef signed XXX  FT_Int32;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_UInt32                                                          */
-  /*                                                                       */
-  /*    A typedef for a 32bit unsigned integer type.  The size depends on  */
-  /*    the configuration.                                                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   FT_UInt32
+   *
+   *   A typedef for a 32bit unsigned integer type.  The size depends on the
+   *   configuration.
+   */
   typedef unsigned XXX  FT_UInt32;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_Int64                                                           */
-  /*                                                                       */
-  /*    A typedef for a 64bit signed integer type.  The size depends on    */
-  /*    the configuration.  Only defined if there is real 64bit support;   */
-  /*    otherwise, it gets emulated with a structure (if necessary).       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   FT_Int64
+   *
+   *   A typedef for a 64bit signed integer type.  The size depends on the
+   *   configuration.  Only defined if there is real 64bit support;
+   *   otherwise, it gets emulated with a structure (if necessary).
+   */
   typedef signed XXX  FT_Int64;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Type>                                                                */
-  /*    FT_UInt64                                                          */
-  /*                                                                       */
-  /*    A typedef for a 64bit unsigned integer type.  The size depends on  */
-  /*    the configuration.  Only defined if there is real 64bit support;   */
-  /*    otherwise, it gets emulated with a structure (if necessary).       */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @type:
+   *   FT_UInt64
+   *
+   *   A typedef for a 64bit unsigned integer type.  The size depends on the
+   *   configuration.  Only defined if there is real 64bit support;
+   *   otherwise, it gets emulated with a structure (if necessary).
+   */
   typedef unsigned XXX  FT_UInt64;
 
   /* */
@@ -251,7 +250,7 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /* look up an integer type that is at least 32 bits */
+  /* look up an integer type that is at least 32~bits */
 #if FT_SIZEOF_INT >= ( 32 / FT_CHAR_BIT )
 
   typedef int            FT_Fast;
@@ -265,22 +264,22 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /* determine whether we have a 64-bit int type for platforms without */
-  /* Autoconf                                                          */
+  /* determine whether we have a 64-bit `int` type for platforms without */
+  /* Autoconf                                                            */
 #if FT_SIZEOF_LONG == ( 64 / FT_CHAR_BIT )
 
-  /* FT_LONG64 must be defined if a 64-bit type is available */
+  /* `FT_LONG64` must be defined if a 64-bit type is available */
 #define FT_LONG64
 #define FT_INT64   long
 #define FT_UINT64  unsigned long
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* A 64-bit data type may create compilation problems if you compile     */
-  /* in strict ANSI mode.  To avoid them, we disable other 64-bit data     */
-  /* types if __STDC__ is defined.  You can however ignore this rule       */
-  /* by defining the FT_CONFIG_OPTION_FORCE_INT64 configuration macro.     */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * A 64-bit data type may create compilation problems if you compile in
+   * strict ANSI mode.  To avoid them, we disable other 64-bit data types if
+   * `__STDC__` is defined.  You can however ignore this rule by defining the
+   * `FT_CONFIG_OPTION_FORCE_INT64` configuration macro.
+   */
 #elif !defined( __STDC__ ) || defined( FT_CONFIG_OPTION_FORCE_INT64 )
 
 #if defined( __STDC_VERSION__ ) && __STDC_VERSION__ >= 199901L
@@ -289,19 +288,19 @@ FT_BEGIN_HEADER
 #define FT_INT64   long long int
 #define FT_UINT64  unsigned long long int
 
-#elif defined( _MSC_VER ) && _MSC_VER >= 900  /* Visual C++ (and Intel C++) */
+#elif defined( _MSC_VER ) && _MSC_VER >= 900 /* Visual C++ (and Intel C++) */
 
-  /* this compiler provides the __int64 type */
+  /* this compiler provides the `__int64` type */
 #define FT_LONG64
 #define FT_INT64   __int64
 #define FT_UINT64  unsigned __int64
 
 #elif defined( __BORLANDC__ )  /* Borland C++ */
 
-  /* XXXX: We should probably check the value of __BORLANDC__ in order */
-  /*       to test the compiler version.                               */
+  /* XXXX: We should probably check the value of `__BORLANDC__` in order */
+  /*       to test the compiler version.                                 */
 
-  /* this compiler provides the __int64 type */
+  /* this compiler provides the `__int64` type */
 #define FT_LONG64
 #define FT_INT64   __int64
 #define FT_UINT64  unsigned __int64
@@ -318,7 +317,7 @@ FT_BEGIN_HEADER
 
 #elif defined( __GNUC__ )
 
-  /* GCC provides the `long long' type */
+  /* GCC provides the `long long` type */
 #define FT_LONG64
 #define FT_INT64   long long int
 #define FT_UINT64  unsigned long long int
@@ -342,11 +341,11 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* miscellaneous                                                         */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * miscellaneous
+   *
+   */
 
 
 #define FT_BEGIN_STMNT  do {
@@ -354,7 +353,7 @@ FT_BEGIN_HEADER
 #define FT_DUMMY_STMNT  FT_BEGIN_STMNT FT_END_STMNT
 
 
-  /* typeof condition taken from gnulib's `intprops.h' header file */
+  /* `typeof` condition taken from gnulib's `intprops.h` header file */
 #if ( ( defined( __GNUC__ ) && __GNUC__ >= 2 )                       || \
       ( defined( __IBMC__ ) && __IBMC__ >= 1210 &&                      \
         defined( __IBM__TYPEOF__ ) )                                 || \
@@ -365,14 +364,14 @@ FT_BEGIN_HEADER
 #endif
 
 
-  /* Use FT_LOCAL and FT_LOCAL_DEF to declare and define, respectively, */
-  /* a function that gets used only within the scope of a module.       */
-  /* Normally, both the header and source code files for such a         */
-  /* function are within a single module directory.                     */
-  /*                                                                    */
-  /* Intra-module arrays should be tagged with FT_LOCAL_ARRAY and       */
-  /* FT_LOCAL_ARRAY_DEF.                                                */
-  /*                                                                    */
+  /* Use `FT_LOCAL` and `FT_LOCAL_DEF` to declare and define,            */
+  /* respectively, a function that gets used only within the scope of a  */
+  /* module.  Normally, both the header and source code files for such a */
+  /* function are within a single module directory.                      */
+  /*                                                                     */
+  /* Intra-module arrays should be tagged with `FT_LOCAL_ARRAY` and      */
+  /* `FT_LOCAL_ARRAY_DEF`.                                               */
+  /*                                                                     */
 #ifdef FT_MAKE_OPTION_SINGLE_OBJECT
 
 #define FT_LOCAL( x )      static  x
@@ -394,12 +393,12 @@ FT_BEGIN_HEADER
 #define FT_LOCAL_ARRAY_DEF( x )  const  x
 
 
-  /* Use FT_BASE and FT_BASE_DEF to declare and define, respectively, */
-  /* functions that are used in more than a single module.  In the    */
-  /* current setup this implies that the declaration is in a header   */
-  /* file in the `include/freetype/internal' directory, and the       */
-  /* function body is in a file in `src/base'.                        */
-  /*                                                                  */
+  /* Use `FT_BASE` and `FT_BASE_DEF` to declare and define, respectively, */
+  /* functions that are used in more than a single module.  In the        */
+  /* current setup this implies that the declaration is in a header file  */
+  /* in the `include/freetype/internal` directory, and the function body  */
+  /* is in a file in `src/base`.                                          */
+  /*                                                                      */
 #ifndef FT_BASE
 
 #ifdef __cplusplus
@@ -422,45 +421,50 @@ FT_BEGIN_HEADER
 #endif /* !FT_BASE_DEF */
 
 
-  /*   When compiling FreeType as a DLL or DSO with hidden visibility      */
-  /*   some systems/compilers need a special attribute in front OR after   */
-  /*   the return type of function declarations.                           */
-  /*                                                                       */
-  /*   Two macros are used within the FreeType source code to define       */
-  /*   exported library functions: FT_EXPORT and FT_EXPORT_DEF.            */
-  /*                                                                       */
-  /*     FT_EXPORT( return_type )                                          */
-  /*                                                                       */
-  /*       is used in a function declaration, as in                        */
-  /*                                                                       */
-  /*         FT_EXPORT( FT_Error )                                         */
-  /*         FT_Init_FreeType( FT_Library*  alibrary );                    */
-  /*                                                                       */
-  /*                                                                       */
-  /*     FT_EXPORT_DEF( return_type )                                      */
-  /*                                                                       */
-  /*       is used in a function definition, as in                         */
-  /*                                                                       */
-  /*         FT_EXPORT_DEF( FT_Error )                                     */
-  /*         FT_Init_FreeType( FT_Library*  alibrary )                     */
-  /*         {                                                             */
-  /*           ... some code ...                                           */
-  /*           return FT_Err_Ok;                                           */
-  /*         }                                                             */
-  /*                                                                       */
-  /*   You can provide your own implementation of FT_EXPORT and            */
-  /*   FT_EXPORT_DEF here if you want.                                     */
-  /*                                                                       */
-  /*   To export a variable, use FT_EXPORT_VAR.                            */
-  /*                                                                       */
+  /* When compiling FreeType as a DLL or DSO with hidden visibility    */
+  /* some systems/compilers need a special attribute in front OR after */
+  /* the return type of function declarations.                         */
+  /*                                                                   */
+  /* Two macros are used within the FreeType source code to define     */
+  /* exported library functions: `FT_EXPORT` and `FT_EXPORT_DEF`.      */
+  /*                                                                   */
+  /* - `FT_EXPORT( return_type )`                                      */
+  /*                                                                   */
+  /*   is used in a function declaration, as in                        */
+  /*                                                                   */
+  /*   ```                                                             */
+  /*     FT_EXPORT( FT_Error )                                         */
+  /*     FT_Init_FreeType( FT_Library*  alibrary );                    */
+  /*   ```                                                             */
+  /*                                                                   */
+  /* - `FT_EXPORT_DEF( return_type )`                                  */
+  /*                                                                   */
+  /*   is used in a function definition, as in                         */
+  /*                                                                   */
+  /*   ```                                                             */
+  /*     FT_EXPORT_DEF( FT_Error )                                     */
+  /*     FT_Init_FreeType( FT_Library*  alibrary )                     */
+  /*     {                                                             */
+  /*       ... some code ...                                           */
+  /*       return FT_Err_Ok;                                           */
+  /*     }                                                             */
+  /*   ```                                                             */
+  /*                                                                   */
+  /* You can provide your own implementation of `FT_EXPORT` and        */
+  /* `FT_EXPORT_DEF` here if you want.                                 */
+  /*                                                                   */
+  /* To export a variable, use `FT_EXPORT_VAR`.                        */
+  /*                                                                   */
 #ifndef FT_EXPORT
 
 #ifdef FT2_BUILD_LIBRARY
 
-#if defined( _WIN32 ) && ( defined( _DLL ) || defined( DLL_EXPORT ) )
+#if defined( _WIN32 ) && defined( DLL_EXPORT )
 #define FT_EXPORT( x )  __declspec( dllexport )  x
 #elif defined( __GNUC__ ) && __GNUC__ >= 4
 #define FT_EXPORT( x )  __attribute__(( visibility( "default" ) ))  x
+#elif defined( __SUNPRO_C ) && __SUNPRO_C >= 0x550
+#define FT_EXPORT( x )  __global  x
 #elif defined( __cplusplus )
 #define FT_EXPORT( x )  extern "C"  x
 #else
@@ -469,7 +473,7 @@ FT_BEGIN_HEADER
 
 #else
 
-#if defined( FT2_DLLIMPORT )
+#if defined( _WIN32 ) && defined( DLL_IMPORT )
 #define FT_EXPORT( x )  __declspec( dllimport )  x
 #elif defined( __cplusplus )
 #define FT_EXPORT( x )  extern "C"  x
@@ -508,7 +512,7 @@ FT_BEGIN_HEADER
   /* C++ compiler and with 16bit compilers.                          */
   /*                                                                 */
 
-  /* This is special.  Within C++, you must specify `extern "C"' for */
+  /* This is special.  Within C++, you must specify `extern "C"` for */
   /* functions which are used via function pointers, and you also    */
   /* must do that for structures which contain function pointers to  */
   /* assure C linkage -- it's not possible to have (local) anonymous */
@@ -531,7 +535,7 @@ FT_BEGIN_HEADER
   /*                                                                 */
   /*                                                                 */
   /* Some 16bit compilers have to redefine these macros to insert    */
-  /* the infamous `_cdecl' or `__fastcall' declarations.             */
+  /* the infamous `_cdecl` or `__fastcall` declarations.             */
   /*                                                                 */
 #ifndef FT_CALLBACK_DEF
 #ifdef __cplusplus

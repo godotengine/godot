@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,8 +34,16 @@
 #include "scene/animation/animation_tree.h"
 
 class AnimationNodeBlendSpace2D : public AnimationRootNode {
-	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode)
+	GDCLASS(AnimationNodeBlendSpace2D, AnimationRootNode);
 
+public:
+	enum BlendMode {
+		BLEND_MODE_INTERPOLATED,
+		BLEND_MODE_DISCRETE,
+		BLEND_MODE_DISCRETE_CARRY,
+	};
+
+protected:
 	enum {
 		MAX_BLEND_POINTS = 64
 	};
@@ -56,11 +64,14 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	Vector<BlendTriangle> triangles;
 
 	StringName blend_position;
+	StringName closest;
+	StringName length_internal;
 	Vector2 max_space;
 	Vector2 min_space;
 	Vector2 snap;
 	String x_label;
 	String y_label;
+	BlendMode blend_mode;
 
 	void _add_blend_point(int p_index, const Ref<AnimationRootNode> &p_node);
 	void _set_triangles(const Vector<int> &p_triangles);
@@ -72,6 +83,7 @@ class AnimationNodeBlendSpace2D : public AnimationRootNode {
 	bool trianges_dirty;
 
 	void _update_triangles();
+	void _queue_auto_triangles();
 
 	void _tree_changed();
 
@@ -122,10 +134,15 @@ public:
 	void set_auto_triangles(bool p_enable);
 	bool get_auto_triangles() const;
 
+	void set_blend_mode(BlendMode p_blend_mode);
+	BlendMode get_blend_mode() const;
+
 	virtual Ref<AnimationNode> get_child_by_name(const StringName &p_name);
 
 	AnimationNodeBlendSpace2D();
 	~AnimationNodeBlendSpace2D();
 };
+
+VARIANT_ENUM_CAST(AnimationNodeBlendSpace2D::BlendMode)
 
 #endif // ANIMATION_BLEND_SPACE_2D_H

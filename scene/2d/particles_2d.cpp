@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,6 +30,7 @@
 
 #include "particles_2d.h"
 
+#include "core/os/os.h"
 #include "scene/resources/particles_material.h"
 #include "scene/scene_string_names.h"
 
@@ -40,17 +41,23 @@
 void Particles2D::set_emitting(bool p_emitting) {
 
 	VS::get_singleton()->particles_set_emitting(particles, p_emitting);
+
+	if (p_emitting && one_shot) {
+		set_process_internal(true);
+	} else if (!p_emitting) {
+		set_process_internal(false);
+	}
 }
 
 void Particles2D::set_amount(int p_amount) {
 
-	ERR_FAIL_COND(p_amount < 1);
+	ERR_FAIL_COND_MSG(p_amount < 1, "Amount of particles cannot be smaller than 1.");
 	amount = p_amount;
 	VS::get_singleton()->particles_set_amount(particles, amount);
 }
 void Particles2D::set_lifetime(float p_lifetime) {
 
-	ERR_FAIL_COND(p_lifetime <= 0);
+	ERR_FAIL_COND_MSG(p_lifetime <= 0, "Particles lifetime must be greater than 0.");
 	lifetime = p_lifetime;
 	VS::get_singleton()->particles_set_lifetime(particles, lifetime);
 }
@@ -59,8 +66,16 @@ void Particles2D::set_one_shot(bool p_enable) {
 
 	one_shot = p_enable;
 	VS::get_singleton()->particles_set_one_shot(particles, one_shot);
-	if (!one_shot && is_emitting())
-		VisualServer::get_singleton()->particles_restart(particles);
+
+	if (is_emitting()) {
+
+		set_process_internal(true);
+		if (!one_shot)
+			VisualServer::get_singleton()->particles_restart(particles);
+	}
+
+	if (!one_shot)
+		set_process_internal(false);
 }
 void Particles2D::set_pre_process_time(float p_time) {
 
@@ -213,12 +228,30 @@ bool Particles2D::get_fractional_delta() const {
 
 String Particles2D::get_configuration_warning() const {
 
+	if (OS::get_singleton()->get_current_video_driver() == OS::VIDEO_DRIVER_GLES2) {
+		return TTR("GPU-based particles are not supported by the GLES2 video driver.\nUse the CPUParticles2D node instead. You can use the \"Convert to CPUParticles\" option for this purpose.");
+	}
+
 	String warnings;
 
 	if (process_material.is_null()) {
 		if (warnings != String())
 			warnings += "\n";
 		warnings += "- " + TTR("A material to process the particles is not assigned, so no behavior is imprinted.");
+	} else {
+
+		CanvasItemMaterial *mat = Object::cast_to<CanvasItemMaterial>(get_material().ptr());
+
+		if (get_material().is_null() || (mat && !mat->get_particles_animation())) {
+			const ParticlesMaterial *process = Object::cast_to<ParticlesMaterial>(process_material.ptr());
+			if (process &&
+					(process->get_param(ParticlesMaterial::PARAM_ANIM_SPEED) != 0.0 || process->get_param(ParticlesMaterial::PARAM_ANIM_OFFSET) != 0.0 ||
+							process->get_param_texture(ParticlesMaterial::PARAM_ANIM_SPEED).is_valid() || process->get_param_texture(ParticlesMaterial::PARAM_ANIM_OFFSET).is_valid())) {
+				if (warnings != String())
+					warnings += "\n";
+				warnings += "- " + TTR("Particles2D animation requires the usage of a CanvasItemMaterial with \"Particles Animation\" enabled.");
+			}
+		}
 	}
 
 	return warnings;
@@ -259,6 +292,7 @@ void Particles2D::_validate_property(PropertyInfo &property) const {
 
 void Particles2D::restart() {
 	VS::get_singleton()->particles_restart(particles);
+	VS::get_singleton()->particles_set_emitting(particles, true);
 }
 
 void Particles2D::_notification(int p_what) {
@@ -293,6 +327,14 @@ void Particles2D::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_TRANSFORM_CHANGED) {
 		_update_particle_emission_transform();
+	}
+
+	if (p_what == NOTIFICATION_INTERNAL_PROCESS) {
+
+		if (one_shot && !is_emitting()) {
+			_change_notify();
+			set_process_internal(false);
+		}
 	}
 }
 
@@ -368,6 +410,7 @@ Particles2D::Particles2D() {
 
 	particles = VS::get_singleton()->particles_create();
 
+	one_shot = false; // Needed so that set_emitting doesn't access uninitialized values
 	set_emitting(true);
 	set_one_shot(false);
 	set_amount(8);

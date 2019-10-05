@@ -14,9 +14,19 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// 2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
+    /// </summary>
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector2 : IEquatable<Vector2>
     {
+        public enum Axis
+        {
+            X = 0,
+            Y
+        }
+
         public real_t x;
         public real_t y;
 
@@ -52,11 +62,15 @@ namespace Godot
 
         internal void Normalize()
         {
-            real_t length = x * x + y * y;
+            real_t lengthsq = LengthSquared();
 
-            if (length != 0f)
+            if (lengthsq == 0)
             {
-                length = Mathf.Sqrt(length);
+                x = y = 0f;
+            }
+            else
+            {
+                real_t length = Mathf.Sqrt(lengthsq);
                 x /= length;
                 y /= length;
             }
@@ -84,7 +98,7 @@ namespace Godot
 
         public real_t AngleToPoint(Vector2 to)
         {
-            return Mathf.Atan2(x - to.x, y - to.y);
+            return Mathf.Atan2(y - to.y, x - to.x);
         }
 
         public real_t Aspect()
@@ -132,6 +146,11 @@ namespace Godot
                                 (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3);
         }
 
+        public Vector2 DirectionTo(Vector2 b)
+        {
+            return new Vector2(b.x - x, b.y - y).Normalized();
+        }
+
         public real_t DistanceSquaredTo(Vector2 to)
         {
             return (x - to.x) * (x - to.x) + (y - to.y) * (y - to.y);
@@ -177,11 +196,35 @@ namespace Godot
             return res;
         }
 
+        public Vector2 MoveToward(Vector2 to, real_t delta)
+        {
+            var v = this;
+            var vd = to - v;
+            var len = vd.Length();
+            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
+        }
+
         public Vector2 Normalized()
         {
-            var result = this;
-            result.Normalize();
-            return result;
+            var v = this;
+            v.Normalize();
+            return v;
+        }
+
+        public Vector2 PosMod(real_t mod)
+        {
+            Vector2 v;
+            v.x = Mathf.PosMod(x, mod);
+            v.y = Mathf.PosMod(y, mod);
+            return v;
+        }
+
+        public Vector2 PosMod(Vector2 modv)
+        {
+            Vector2 v;
+            v.x = Mathf.PosMod(x, modv.x);
+            v.y = Mathf.PosMod(y, modv.y);
+            return v;
         }
 
         public Vector2 Project(Vector2 onNormal)
@@ -205,17 +248,27 @@ namespace Godot
             return new Vector2(Mathf.Round(x), Mathf.Round(y));
         }
 
+        [Obsolete("Set is deprecated. Use the Vector2(" + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y)
         {
             this.x = x;
             this.y = y;
         }
+        [Obsolete("Set is deprecated. Use the Vector2(" + nameof(Vector2) + ") constructor instead.", error: true)]
         public void Set(Vector2 v)
         {
             x = v.x;
             y = v.y;
         }
-        
+
+        public Vector2 Sign()
+        {
+            Vector2 v;
+            v.x = Mathf.Sign(x);
+            v.y = Mathf.Sign(y);
+            return v;
+        }
+
         public Vector2 Slerp(Vector2 b, real_t t)
         {
             real_t theta = AngleTo(b);
@@ -242,10 +295,10 @@ namespace Godot
         private static readonly Vector2 _one = new Vector2(1, 1);
         private static readonly Vector2 _negOne = new Vector2(-1, -1);
         private static readonly Vector2 _inf = new Vector2(Mathf.Inf, Mathf.Inf);
-      
+
         private static readonly Vector2 _up = new Vector2(0, -1);
         private static readonly Vector2 _down = new Vector2(0, 1);
-        private static readonly Vector2 _right  = new Vector2(1, 0);
+        private static readonly Vector2 _right = new Vector2(1, 0);
         private static readonly Vector2 _left = new Vector2(-1, 0);
 
         public static Vector2 Zero { get { return _zero; } }
@@ -326,6 +379,20 @@ namespace Godot
             return left;
         }
 
+        public static Vector2 operator %(Vector2 vec, real_t divisor)
+        {
+            vec.x %= divisor;
+            vec.y %= divisor;
+            return vec;
+        }
+
+        public static Vector2 operator %(Vector2 vec, Vector2 divisorv)
+        {
+            vec.x %= divisorv.x;
+            vec.y %= divisorv.y;
+            return vec;
+        }
+
         public static bool operator ==(Vector2 left, Vector2 right)
         {
             return left.Equals(right);
@@ -338,7 +405,7 @@ namespace Godot
 
         public static bool operator <(Vector2 left, Vector2 right)
         {
-            if (left.x.Equals(right.x))
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
                 return left.y < right.y;
             }
@@ -348,7 +415,7 @@ namespace Godot
 
         public static bool operator >(Vector2 left, Vector2 right)
         {
-            if (left.x.Equals(right.x))
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
                 return left.y > right.y;
             }
@@ -358,7 +425,7 @@ namespace Godot
 
         public static bool operator <=(Vector2 left, Vector2 right)
         {
-            if (left.x.Equals(right.x))
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
                 return left.y <= right.y;
             }
@@ -368,7 +435,7 @@ namespace Godot
 
         public static bool operator >=(Vector2 left, Vector2 right)
         {
-            if (left.x.Equals(right.x))
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
                 return left.y >= right.y;
             }
@@ -388,7 +455,7 @@ namespace Godot
 
         public bool Equals(Vector2 other)
         {
-            return x == other.x && y == other.y;
+            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y);
         }
 
         public override int GetHashCode()

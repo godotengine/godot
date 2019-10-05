@@ -1,9 +1,9 @@
 
 /* filter_neon.S - NEON optimised filter functions
  *
+ * Copyright (c) 2018 Cosmin Truta
  * Copyright (c) 2014,2017 Glenn Randers-Pehrson
  * Written by Mans Rullgard, 2011.
- * Last changed in libpng 1.6.31 [July 27, 2017]
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer

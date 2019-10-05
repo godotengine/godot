@@ -44,8 +44,10 @@ public:
 	{
 		return m_numSamples;
 	}
-	bool getPCMF(WebMFrame &frame, float *buffer, int &numOutSamples);
 	bool getPCMS16(WebMFrame &frame, short *buffer, int &numOutSamples);
+// -- GODOT begin --
+	bool getPCMF(WebMFrame &frame, float *buffer, int &numOutSamples);
+// -- GODOT end --
 
 private:
 	bool openVorbis(const WebMDemuxer &demuxer);

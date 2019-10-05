@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,10 +67,8 @@ Error connect_signal_awaiter(Object *p_source, const String &p_signal, Object *p
 Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
 
 #ifdef DEBUG_ENABLED
-	if (conn_target_id && !ObjectDB::get_instance(conn_target_id)) {
-		ERR_EXPLAIN("Resumed after await, but class instance is gone");
-		ERR_FAIL_V(Variant());
-	}
+	ERR_FAIL_COND_V_MSG(conn_target_id && !ObjectDB::get_instance(conn_target_id), Variant(),
+			"Resumed after await, but class instance is gone.");
 #endif
 
 	if (p_argcount < 1) {
@@ -91,18 +89,16 @@ Variant SignalAwaiterHandle::_signal_callback(const Variant **p_args, int p_argc
 	set_completed(true);
 
 	int signal_argc = p_argcount - 1;
-	MonoArray *signal_args = mono_array_new(SCRIPTS_DOMAIN, CACHED_CLASS_RAW(MonoObject), signal_argc);
+	MonoArray *signal_args = mono_array_new(mono_domain_get(), CACHED_CLASS_RAW(MonoObject), signal_argc);
 
 	for (int i = 0; i < signal_argc; i++) {
 		MonoObject *boxed = GDMonoMarshal::variant_to_mono_object(*p_args[i]);
-		mono_array_set(signal_args, MonoObject *, i, boxed);
+		mono_array_setref(signal_args, i, boxed);
 	}
-
-	GDMonoUtils::SignalAwaiter_SignalCallback thunk = CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback);
 
 	MonoException *exc = NULL;
 	GD_MONO_BEGIN_RUNTIME_INVOKE;
-	thunk(get_target(), signal_args, (MonoObject **)&exc);
+	invoke_method_thunk(CACHED_METHOD_THUNK(SignalAwaiter, SignalCallback), get_target(), signal_args, &exc);
 	GD_MONO_END_RUNTIME_INVOKE;
 
 	if (exc) {
@@ -129,14 +125,12 @@ SignalAwaiterHandle::SignalAwaiterHandle(MonoObject *p_managed) :
 SignalAwaiterHandle::~SignalAwaiterHandle() {
 
 	if (!completed) {
-		GDMonoUtils::SignalAwaiter_FailureCallback thunk = CACHED_METHOD_THUNK(SignalAwaiter, FailureCallback);
-
 		MonoObject *awaiter = get_target();
 
 		if (awaiter) {
 			MonoException *exc = NULL;
 			GD_MONO_BEGIN_RUNTIME_INVOKE;
-			thunk(awaiter, (MonoObject **)&exc);
+			invoke_method_thunk(CACHED_METHOD_THUNK(SignalAwaiter, FailureCallback), awaiter, &exc);
 			GD_MONO_END_RUNTIME_INVOKE;
 
 			if (exc) {

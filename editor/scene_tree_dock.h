@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -60,6 +60,7 @@ class SceneTreeDock : public VBoxContainer {
 
 		TOOL_NEW,
 		TOOL_INSTANCE,
+		TOOL_EXPAND_COLLAPSE,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
@@ -69,6 +70,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_REPARENT_TO_NEW_NODE,
 		TOOL_MAKE_ROOT,
 		TOOL_NEW_SCENE_FROM,
 		TOOL_MERGE_FROM_SCENE,
@@ -116,6 +118,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
+	void _node_collapsed(Object *p_obj);
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
@@ -124,6 +127,7 @@ class SceneTreeDock : public VBoxContainer {
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
 	ConfirmationDialog *editable_instance_remove_dialog;
+	ConfirmationDialog *placeholder_editable_instance_remove_dialog;
 
 	ReparentDialog *reparent_dialog;
 	EditorQuickOpen *quick_open;
@@ -140,6 +144,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool first_enter;
 
 	void _create();
+	void _do_create(Node *p_parent);
 	Node *scene_root;
 	Node *edited_scene;
 	EditorNode *editor;
@@ -151,6 +156,9 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
+
+	bool _is_collapsed_recursive(TreeItem *p_item) const;
+	void _set_collapsed_recursive(TreeItem *p_item, bool p_collapsed);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
@@ -165,14 +173,19 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_open_request(const Ref<Script> &p_script);
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _track_inherit(const String &p_target_scene_path, Node *p_desired_node);
 
 	void _node_selected();
 	void _node_renamed();
 	void _script_created(Ref<Script> p_script);
+	void _script_creation_closed();
 
 	void _delete_confirm();
 
-	void _toggle_editable_children();
+	void _toggle_editable_children_from_selection();
+	void _toggle_editable_children(Node *p_node);
+
+	void _toggle_placeholder_from_selection();
 
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
@@ -187,6 +200,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool _validate_no_foreign();
 	void _selection_changed();
 	void _update_script_button();
+	Node *_get_selection_group_tail(Node *p_node, List<Node *> p_list);
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath> > *p_renames);
 
@@ -211,6 +225,11 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _update_create_root_dialog();
 	void _favorite_root_selected(const String &p_class);
+
+	void _feature_profile_changed();
+
+	bool profile_allow_editing;
+	bool profile_allow_script_editing;
 
 protected:
 	void _notification(int p_what);
@@ -238,7 +257,7 @@ public:
 	void show_tab_buttons();
 	void hide_tab_buttons();
 
-	void replace_node(Node *p_node, Node *p_by_node);
+	void replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
 
 	void open_script_dialog(Node *p_for_node);
 

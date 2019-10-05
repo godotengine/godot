@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -244,14 +244,14 @@ void Label::_notification(int p_what) {
 							CharType n = xl_text[i + pos + 1];
 							if (uppercase) {
 								c = String::char_uppercase(c);
-								n = String::char_uppercase(c);
+								n = String::char_uppercase(n);
 							}
 
-							float move = font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow, false);
+							float move = drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + shadow_ofs, c, n, font_color_shadow);
 							if (use_outline) {
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow, false);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, false);
-								font->draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow, false);
+								drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, shadow_ofs.y), c, n, font_color_shadow);
+								drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
+								drawer.draw_char(ci, Point2(x_ofs_shadow, y_ofs) + Vector2(-shadow_ofs.x, -shadow_ofs.y), c, n, font_color_shadow);
 							}
 							x_ofs_shadow += move;
 							chars_total_shadow++;
@@ -265,7 +265,7 @@ void Label::_notification(int p_what) {
 						CharType n = xl_text[i + pos + 1];
 						if (uppercase) {
 							c = String::char_uppercase(c);
-							n = String::char_uppercase(c);
+							n = String::char_uppercase(n);
 						}
 
 						x_ofs += drawer.draw_char(ci, Point2(x_ofs, y_ofs), c, n, font_color);
@@ -393,9 +393,9 @@ void Label::regenerate_word_cache() {
 
 	WordCache *last = NULL;
 
-	for (int i = 0; i < xl_text.size() + 1; i++) {
+	for (int i = 0; i <= xl_text.length(); i++) {
 
-		CharType current = i < xl_text.length() ? xl_text[i] : ' '; //always a space at the end, so the algo works
+		CharType current = i < xl_text.length() ? xl_text[i] : L' '; //always a space at the end, so the algo works
 
 		if (uppercase)
 			current = String::char_uppercase(current);
@@ -429,12 +429,11 @@ void Label::regenerate_word_cache() {
 
 			if (current == '\n') {
 				insert_newline = true;
-			} else {
+			} else if (current != ' ') {
 				total_char_cache++;
 			}
 
 			if (i < xl_text.length() && xl_text[i] == ' ') {
-				total_char_cache--; // do not count spaces
 				if (line_width > 0 || last == NULL || last->char_pos != WordCache::CHAR_WRAPLINE) {
 					space_count++;
 					line_width += space_width;
@@ -471,7 +470,6 @@ void Label::regenerate_word_cache() {
 					wc->word_len = i - word_pos;
 					wc->space_count = space_count;
 					current_word_size = char_width;
-					space_count = 0;
 					word_pos = i;
 				}
 			}

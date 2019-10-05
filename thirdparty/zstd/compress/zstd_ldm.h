@@ -21,7 +21,7 @@ extern "C" {
 *  Long distance matching
 ***************************************/
 
-#define ZSTD_LDM_DEFAULT_WINDOW_LOG ZSTD_WINDOWLOG_DEFAULTMAX
+#define ZSTD_LDM_DEFAULT_WINDOW_LOG ZSTD_WINDOWLOG_LIMIT_DEFAULT
 
 /**
  * ZSTD_ldm_generateSequences():
@@ -61,9 +61,7 @@ size_t ZSTD_ldm_generateSequences(
  */
 size_t ZSTD_ldm_blockCompress(rawSeqStore_t* rawSeqStore,
             ZSTD_matchState_t* ms, seqStore_t* seqStore, U32 rep[ZSTD_REP_NUM],
-            ZSTD_compressionParameters const* cParams,
-            void const* src, size_t srcSize,
-            int const extDict);
+            void const* src, size_t srcSize);
 
 /**
  * ZSTD_ldm_skipSequences():
@@ -88,12 +86,8 @@ size_t ZSTD_ldm_getTableSize(ldmParams_t params);
  */
 size_t ZSTD_ldm_getMaxNbSeq(ldmParams_t params, size_t maxChunkSize);
 
-/** ZSTD_ldm_getTableSize() :
- *  Return prime8bytes^(minMatchLength-1) */
-U64 ZSTD_ldm_getHashPower(U32 minMatchLength);
-
 /** ZSTD_ldm_adjustParameters() :
- *  If the params->hashEveryLog is not set, set it to its default value based on
+ *  If the params->hashRateLog is not set, set it to its default value based on
  *  windowLog and params->hashLog.
  *
  *  Ensures that params->bucketSizeLog is <= params->hashLog (setting it to

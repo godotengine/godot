@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -85,7 +85,7 @@ public:
 	_FORCE_INLINE_ Ref<Texture> get_frame(const StringName &p_anim, int p_idx) const {
 
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND_V(!E, Ref<Texture>());
+		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
 		if (p_idx >= E->get().frames.size())
 			return Ref<Texture>();
@@ -96,7 +96,7 @@ public:
 	_FORCE_INLINE_ Ref<Texture> get_normal_frame(const StringName &p_anim, int p_idx) const {
 
 		const Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND_V(!E, Ref<Texture>());
+		ERR_FAIL_COND_V_MSG(!E, Ref<Texture>(), "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND_V(p_idx < 0, Ref<Texture>());
 
 		const Map<StringName, Anim>::Element *EN = animations.find(E->get().normal_name);
@@ -109,7 +109,7 @@ public:
 
 	void set_frame(const StringName &p_anim, int p_idx, const Ref<Texture> &p_frame) {
 		Map<StringName, Anim>::Element *E = animations.find(p_anim);
-		ERR_FAIL_COND(!E);
+		ERR_FAIL_COND_MSG(!E, "Animation '" + String(p_anim) + "' doesn't exist.");
 		ERR_FAIL_COND(p_idx < 0);
 		if (p_idx >= E->get().frames.size())
 			return;
@@ -128,6 +128,7 @@ class AnimatedSprite : public Node2D {
 
 	Ref<SpriteFrames> frames;
 	bool playing;
+	bool backwards;
 	StringName animation;
 	int frame;
 	float speed_scale;
@@ -169,7 +170,7 @@ public:
 	void set_sprite_frames(const Ref<SpriteFrames> &p_frames);
 	Ref<SpriteFrames> get_sprite_frames() const;
 
-	void play(const StringName &p_animation = StringName());
+	void play(const StringName &p_animation = StringName(), const bool p_backwards = false);
 	void stop();
 	bool is_playing() const;
 

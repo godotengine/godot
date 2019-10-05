@@ -44,9 +44,9 @@ namespace Godot
             return (real_t)Math.Atan(s);
         }
 
-        public static real_t Atan2(real_t x, real_t y)
+        public static real_t Atan2(real_t y, real_t x)
         {
-            return (real_t)Math.Atan2(x, y);
+            return (real_t)Math.Atan2(y, x);
         }
 
         public static Vector2 Cartesian2Polar(real_t x, real_t y)
@@ -79,14 +79,27 @@ namespace Godot
             return (real_t)Math.Cosh(s);
         }
 
-        public static int Decimals(real_t step)
+        public static int StepDecimals(real_t step)
         {
-            return Decimals((decimal)step);
-        }
-
-        public static int Decimals(decimal step)
-        {
-            return BitConverter.GetBytes(decimal.GetBits(step)[3])[2];
+            double[] sd = new double[] {
+                0.9999,
+                0.09999,
+                0.009999,
+                0.0009999,
+                0.00009999,
+                0.000009999,
+                0.0000009999,
+                0.00000009999,
+                0.000000009999,
+            };
+            double abs = Mathf.Abs(step);
+            double decs = abs - (int)abs; // Strip away integer part
+            for (int i = 0; i < sd.Length; i++) {
+                if (decs >= sd[i]) {
+                    return i;
+                }
+            }
+            return 0;
         }
 
         public static real_t Deg2Rad(real_t deg)
@@ -143,6 +156,20 @@ namespace Godot
            return (weight - from) / (to - from);
         }
 
+        public static bool IsEqualApprox(real_t a, real_t b)
+        {
+            // Check for exact equality first, required to handle "infinity" values.
+            if (a == b) {
+                return true;
+            }
+            // Then check for approximate equality.
+            real_t tolerance = Epsilon * Abs(a);
+            if (tolerance < Epsilon) {
+                tolerance = Epsilon;
+            }
+            return Abs(a - b) < tolerance;
+        }
+
         public static bool IsInf(real_t s)
         {
            return real_t.IsInfinity(s);
@@ -153,9 +180,20 @@ namespace Godot
            return real_t.IsNaN(s);
         }
 
+        public static bool IsZeroApprox(real_t s)
+        {
+            return Abs(s) < Epsilon;
+        }
+
         public static real_t Lerp(real_t from, real_t to, real_t weight)
         {
             return from + (to - from) * weight;
+        }
+
+        public static real_t LerpAngle(real_t from, real_t to, real_t weight) {
+            real_t difference = (to - from) % Mathf.Tau;
+            real_t distance = ((2 * difference) % Mathf.Tau) - difference;
+            return from + distance * weight;
         }
 
         public static real_t Log(real_t s)
@@ -183,6 +221,11 @@ namespace Godot
             return a < b ? a : b;
         }
 
+        public static real_t MoveToward(real_t from, real_t to, real_t delta)
+        {
+            return Abs(to - from) <= delta ? to : from + Sign(to - from) * delta;
+        }
+
         public static int NearestPo2(int value)
         {
             value--;
@@ -206,7 +249,7 @@ namespace Godot
         public static real_t PosMod(real_t a, real_t b)
         {
             real_t c = a % b;
-            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            if ((c < 0 && b > 0) || (c > 0 && b < 0))
             {
                 c += b;
             }
@@ -219,7 +262,7 @@ namespace Godot
         public static int PosMod(int a, int b)
         {
             int c = a % b;
-            if ((c < 0 && b > 0) || (c > 0 && b < 0)) 
+            if ((c < 0 && b > 0) || (c > 0 && b < 0))
             {
                 c += b;
             }
@@ -261,6 +304,16 @@ namespace Godot
             return (real_t)Math.Sinh(s);
         }
 
+        public static real_t SmoothStep(real_t from, real_t to, real_t weight)
+        {
+            if (IsEqualApprox(from, to))
+            {
+                return from;
+            }
+            real_t x = Clamp((weight - from) / (to - from), (real_t)0.0, (real_t)1.0);
+            return x * x * (3 - 2 * x);
+        }
+
         public static real_t Sqrt(real_t s)
         {
             return (real_t)Math.Sqrt(s);
@@ -288,14 +341,14 @@ namespace Godot
 
         public static int Wrap(int value, int min, int max)
         {
-            int rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
+            int range = max - min;
+            return range == 0 ? min : min + ((value - min) % range + range) % range;
         }
 
         public static real_t Wrap(real_t value, real_t min, real_t max)
         {
-            real_t rng = max - min;
-            return min + ((value - min) % rng + rng) % rng;
+            real_t range = max - min;
+            return IsZeroApprox(range) ? min : min + ((value - min) % range + range) % range;
         }
     }
 }

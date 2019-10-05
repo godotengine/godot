@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,6 +109,7 @@ public:
 
 		void set_transform(const Transform &p_transform);
 		void set_transform(const btTransform &p_transform);
+		btTransform get_adjusted_transform() const;
 
 		void claim_bt_shape(const btVector3 &body_scale);
 	};
@@ -224,7 +225,7 @@ public:
 
 	_FORCE_INLINE_ btCollisionShape *get_main_shape() const { return mainShape; }
 
-	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform());
+	void add_shape(ShapeBullet *p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	void set_shape(int p_index, ShapeBullet *p_shape);
 
 	int get_shape_count() const;

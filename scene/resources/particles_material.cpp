@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "particles_material.h"
 
 Mutex *ParticlesMaterial::material_mutex = NULL;
-SelfList<ParticlesMaterial>::List ParticlesMaterial::dirty_materials;
+SelfList<ParticlesMaterial>::List *ParticlesMaterial::dirty_materials = NULL;
 Map<ParticlesMaterial::MaterialKey, ParticlesMaterial::ShaderData> ParticlesMaterial::shader_map;
 ParticlesMaterial::ShaderNames *ParticlesMaterial::shader_names = NULL;
 
@@ -41,8 +41,11 @@ void ParticlesMaterial::init_shaders() {
 	material_mutex = Mutex::create();
 #endif
 
+	dirty_materials = memnew(SelfList<ParticlesMaterial>::List);
+
 	shader_names = memnew(ShaderNames);
 
+	shader_names->direction = "direction";
 	shader_names->spread = "spread";
 	shader_names->flatness = "flatness";
 	shader_names->initial_linear_velocity = "initial_linear_velocity";
@@ -98,6 +101,8 @@ void ParticlesMaterial::init_shaders() {
 	shader_names->trail_color_modifier = "trail_color_modifier";
 
 	shader_names->gravity = "gravity";
+
+	shader_names->lifetime_randomness = "lifetime_randomness";
 }
 
 void ParticlesMaterial::finish_shaders() {
@@ -106,12 +111,15 @@ void ParticlesMaterial::finish_shaders() {
 	memdelete(material_mutex);
 #endif
 
+	memdelete(dirty_materials);
+	dirty_materials = NULL;
+
 	memdelete(shader_names);
 }
 
 void ParticlesMaterial::_update_shader() {
 
-	dirty_materials.remove(&element);
+	dirty_materials->remove(&element);
 
 	MaterialKey mk = _compute_key();
 	if (mk.key == current_key.key)
@@ -139,6 +147,7 @@ void ParticlesMaterial::_update_shader() {
 
 	String code = "shader_type particles;\n";
 
+	code += "uniform vec3 direction;\n";
 	code += "uniform float spread;\n";
 	code += "uniform float flatness;\n";
 	code += "uniform float initial_linear_velocity;\n";
@@ -166,6 +175,7 @@ void ParticlesMaterial::_update_shader() {
 	code += "uniform float hue_variation_random;\n";
 	code += "uniform float anim_speed_random;\n";
 	code += "uniform float anim_offset_random;\n";
+	code += "uniform float lifetime_randomness;\n";
 
 	switch (emission_shape) {
 		case EMISSION_SHAPE_POINT: {
@@ -179,7 +189,8 @@ void ParticlesMaterial::_update_shader() {
 		} break;
 		case EMISSION_SHAPE_DIRECTED_POINTS: {
 			code += "uniform sampler2D emission_texture_normal : hint_black;\n";
-		} //fallthrough
+			FALLTHROUGH;
+		}
 		case EMISSION_SHAPE_POINTS: {
 			code += "uniform sampler2D emission_texture_points : hint_black;\n";
 			code += "uniform int emission_texture_point_count;\n";
@@ -277,7 +288,11 @@ void ParticlesMaterial::_update_shader() {
 		code += "	ivec2 emission_tex_size = textureSize(emission_texture_points, 0);\n";
 		code += "	ivec2 emission_tex_ofs = ivec2(point % emission_tex_size.x, point / emission_tex_size.x);\n";
 	}
-	code += "	if (RESTART) {\n";
+	code += "	bool restart = false;\n";
+	code += "	if (CUSTOM.y > CUSTOM.w) {\n";
+	code += "		restart = true;\n";
+	code += "	}\n\n";
+	code += "	if (RESTART || restart) {\n";
 
 	if (tex_parameters[PARAM_INITIAL_LINEAR_VELOCITY].is_valid())
 		code += "		float tex_linear_velocity = textureLod(linear_velocity_texture, vec2(0.0, 0.0), 0.0).r;\n";
@@ -298,25 +313,26 @@ void ParticlesMaterial::_update_shader() {
 
 	if (flags[FLAG_DISABLE_Z]) {
 
-		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "		float angle1_rad = atan(direction.y, direction.x) + rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
 		code += "		vec3 rot = vec3(cos(angle1_rad), sin(angle1_rad), 0.0);\n";
 		code += "		VELOCITY = rot * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 
 	} else {
 		//initiate velocity spread in 3D
-		code += "		float angle1_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
-		code += "		float angle2_rad = rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
-		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0, cos(angle1_rad));\n";
-		code += "		vec3 direction_yz = vec3(0, sin(angle2_rad), cos(angle2_rad));\n";
+		code += "		float angle1_rad = atan(direction.x, direction.z) + rand_from_seed_m1_p1(alt_seed) * spread_rad;\n";
+		code += "		float angle2_rad = atan(direction.y, abs(direction.z)) + rand_from_seed_m1_p1(alt_seed) * spread_rad * (1.0 - flatness);\n";
+		code += "		vec3 direction_xz = vec3(sin(angle1_rad), 0.0, cos(angle1_rad));\n";
+		code += "		vec3 direction_yz = vec3(0.0, sin(angle2_rad), cos(angle2_rad));\n";
 		code += "		direction_yz.z = direction_yz.z / max(0.0001,sqrt(abs(direction_yz.z))); // better uniform distribution\n";
-		code += "		vec3 direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
-		code += "		direction = normalize(direction);\n";
-		code += "		VELOCITY = direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
+		code += "		vec3 vec_direction = vec3(direction_xz.x * direction_yz.z, direction_yz.y, direction_xz.z * direction_yz.z);\n";
+		code += "		vec_direction = normalize(vec_direction);\n";
+		code += "		VELOCITY = vec_direction * initial_linear_velocity * mix(1.0, rand_from_seed(alt_seed), initial_linear_velocity_random);\n";
 	}
 
 	code += "		float base_angle = (initial_angle + tex_angle) * mix(1.0, angle_rand, initial_angle_random);\n";
 	code += "		CUSTOM.x = base_angle * degree_to_rad;\n"; // angle
 	code += "		CUSTOM.y = 0.0;\n"; // phase
+	code += "		CUSTOM.w = LIFETIME * (1.0 - lifetime_randomness * rand_from_seed(alt_seed));\n";
 	code += "		CUSTOM.z = (anim_offset + tex_anim_offset) * mix(1.0, anim_offset_rand, anim_offset_random);\n"; // animation offset (0-1)
 
 	switch (emission_shape) {
@@ -324,7 +340,10 @@ void ParticlesMaterial::_update_shader() {
 			//do none
 		} break;
 		case EMISSION_SHAPE_SPHERE: {
-			code += "		TRANSFORM[3].xyz = normalize(vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0)) * emission_sphere_radius;\n";
+			code += "		float s = rand_from_seed(alt_seed) * 2.0 - 1.0;\n";
+			code += "		float t = rand_from_seed(alt_seed) * 2.0 * pi;\n";
+			code += "		float radius = emission_sphere_radius * sqrt(1.0 - s * s);\n";
+			code += "		TRANSFORM[3].xyz = vec3(radius * cos(t), radius * sin(t), emission_sphere_radius * s);\n";
 		} break;
 		case EMISSION_SHAPE_BOX: {
 			code += "		TRANSFORM[3].xyz = vec3(rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0, rand_from_seed(alt_seed) * 2.0 - 1.0) * emission_box_extents;\n";
@@ -342,7 +361,7 @@ void ParticlesMaterial::_update_shader() {
 					code += "		VELOCITY.xy = rotm * VELOCITY.xy;\n";
 				} else {
 					code += "		vec3 normal = texelFetch(emission_texture_normal, emission_tex_ofs, 0).xyz;\n";
-					code += "		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0, 1.0, 0.0);\n";
+					code += "		vec3 v0 = abs(normal.z) < 0.999 ? vec3(0.0, 0.0, 1.0) : vec3(0.0, 1.0, 0.0);\n";
 					code += "		vec3 tangent = normalize(cross(v0, normal));\n";
 					code += "		vec3 bitangent = normalize(cross(tangent, normal));\n";
 					code += "		VELOCITY = mat3(tangent, bitangent, normal) * VELOCITY;\n";
@@ -548,8 +567,8 @@ void ParticlesMaterial::_update_shader() {
 		}
 	}
 	//scale by scale
-	code += "	float base_scale = mix(scale * tex_scale, 1.0, scale_random * scale_rand);\n";
-	code += "	if (base_scale == 0.0) {\n";
+	code += "	float base_scale = tex_scale * mix(scale, 1.0, scale_random * scale_rand);\n";
+	code += "	if (base_scale < 0.000001) {\n";
 	code += "		base_scale = 0.000001;\n";
 	code += "	}\n";
 	if (trail_size_modifier.is_valid()) {
@@ -565,6 +584,9 @@ void ParticlesMaterial::_update_shader() {
 		code += "	VELOCITY.z = 0.0;\n";
 		code += "	TRANSFORM[3].z = 0.0;\n";
 	}
+	code += "	if (CUSTOM.y > CUSTOM.w) {";
+	code += "		ACTIVE = false;\n";
+	code += "	}\n";
 	code += "}\n";
 	code += "\n";
 
@@ -584,9 +606,9 @@ void ParticlesMaterial::flush_changes() {
 	if (material_mutex)
 		material_mutex->lock();
 
-	while (dirty_materials.first()) {
+	while (dirty_materials->first()) {
 
-		dirty_materials.first()->self()->_update_shader();
+		dirty_materials->first()->self()->_update_shader();
 	}
 
 	if (material_mutex)
@@ -599,7 +621,7 @@ void ParticlesMaterial::_queue_shader_change() {
 		material_mutex->lock();
 
 	if (!element.in_list()) {
-		dirty_materials.add(&element);
+		dirty_materials->add(&element);
 	}
 
 	if (material_mutex)
@@ -619,6 +641,17 @@ bool ParticlesMaterial::_is_shader_dirty() const {
 		material_mutex->unlock();
 
 	return dirty;
+}
+
+void ParticlesMaterial::set_direction(Vector3 p_direction) {
+
+	direction = p_direction;
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->direction, direction);
+}
+
+Vector3 ParticlesMaterial::get_direction() const {
+
+	return direction;
 }
 
 void ParticlesMaterial::set_spread(float p_spread) {
@@ -797,12 +830,7 @@ void ParticlesMaterial::set_param_texture(Parameter p_param, const Ref<Texture> 
 		} break;
 		case PARAM_SCALE: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->scale_texture, p_texture);
-
-			Ref<CurveTexture> curve_tex = p_texture;
-			if (curve_tex.is_valid()) {
-				curve_tex->ensure_default_setup();
-			}
-
+			_adjust_curve_range(p_texture, 0, 1);
 		} break;
 		case PARAM_HUE_VARIATION: {
 			VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->hue_variation_texture, p_texture);
@@ -997,6 +1025,17 @@ Vector3 ParticlesMaterial::get_gravity() const {
 	return gravity;
 }
 
+void ParticlesMaterial::set_lifetime_randomness(float p_lifetime) {
+
+	lifetime_randomness = p_lifetime;
+	VisualServer::get_singleton()->material_set_param(_get_material(), shader_names->lifetime_randomness, lifetime_randomness);
+}
+
+float ParticlesMaterial::get_lifetime_randomness() const {
+
+	return lifetime_randomness;
+}
+
 RID ParticlesMaterial::get_shader_rid() const {
 
 	ERR_FAIL_COND_V(!shader_map.has(current_key), RID());
@@ -1040,6 +1079,9 @@ Shader::Mode ParticlesMaterial::get_shader_mode() const {
 }
 
 void ParticlesMaterial::_bind_methods() {
+
+	ClassDB::bind_method(D_METHOD("set_direction", "degrees"), &ParticlesMaterial::set_direction);
+	ClassDB::bind_method(D_METHOD("get_direction"), &ParticlesMaterial::get_direction);
 
 	ClassDB::bind_method(D_METHOD("set_spread", "degrees"), &ParticlesMaterial::set_spread);
 	ClassDB::bind_method(D_METHOD("get_spread"), &ParticlesMaterial::get_spread);
@@ -1098,6 +1140,11 @@ void ParticlesMaterial::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_gravity"), &ParticlesMaterial::get_gravity);
 	ClassDB::bind_method(D_METHOD("set_gravity", "accel_vec"), &ParticlesMaterial::set_gravity);
 
+	ClassDB::bind_method(D_METHOD("set_lifetime_randomness", "randomness"), &ParticlesMaterial::set_lifetime_randomness);
+	ClassDB::bind_method(D_METHOD("get_lifetime_randomness"), &ParticlesMaterial::get_lifetime_randomness);
+
+	ADD_GROUP("Time", "");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "lifetime_randomness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_lifetime_randomness", "get_lifetime_randomness");
 	ADD_GROUP("Trail", "trail_");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "trail_divisor", PROPERTY_HINT_RANGE, "1,1000000,1"), "set_trail_divisor", "get_trail_divisor");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trail_size_modifier", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_trail_size_modifier", "get_trail_size_modifier");
@@ -1114,7 +1161,8 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_align_y"), "set_flag", "get_flag", FLAG_ALIGN_Y_TO_VELOCITY);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_rotate_y"), "set_flag", "get_flag", FLAG_ROTATE_Y);
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "flag_disable_z"), "set_flag", "get_flag", FLAG_DISABLE_Z);
-	ADD_GROUP("Spread", "");
+	ADD_GROUP("Direction", "");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "direction"), "set_direction", "get_direction");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "spread", PROPERTY_HINT_RANGE, "0,180,0.01"), "set_spread", "get_spread");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "flatness", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_flatness", "get_flatness");
 	ADD_GROUP("Gravity", "");
@@ -1159,7 +1207,7 @@ void ParticlesMaterial::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "color_ramp", PROPERTY_HINT_RESOURCE_TYPE, "GradientTexture"), "set_color_ramp", "get_color_ramp");
 
 	ADD_GROUP("Hue Variation", "hue_");
-	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "hue_variation", PROPERTY_HINT_RANGE, "-1,1,0.1"), "set_param", "get_param", PARAM_HUE_VARIATION);
+	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "hue_variation", PROPERTY_HINT_RANGE, "-1,1,0.01"), "set_param", "get_param", PARAM_HUE_VARIATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::REAL, "hue_variation_random", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_param_randomness", "get_param_randomness", PARAM_HUE_VARIATION);
 	ADD_PROPERTYI(PropertyInfo(Variant::OBJECT, "hue_variation_curve", PROPERTY_HINT_RESOURCE_TYPE, "CurveTexture"), "set_param_texture", "get_param_texture", PARAM_HUE_VARIATION);
 	ADD_GROUP("Animation", "anim_");
@@ -1186,6 +1234,7 @@ void ParticlesMaterial::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(FLAG_ALIGN_Y_TO_VELOCITY);
 	BIND_ENUM_CONSTANT(FLAG_ROTATE_Y);
+	BIND_ENUM_CONSTANT(FLAG_DISABLE_Z);
 	BIND_ENUM_CONSTANT(FLAG_MAX);
 
 	BIND_ENUM_CONSTANT(EMISSION_SHAPE_POINT);
@@ -1198,9 +1247,11 @@ void ParticlesMaterial::_bind_methods() {
 ParticlesMaterial::ParticlesMaterial() :
 		element(this) {
 
+	set_direction(Vector3(1, 0, 0));
 	set_spread(45);
 	set_flatness(0);
 	set_param(PARAM_INITIAL_LINEAR_VELOCITY, 0);
+	set_param(PARAM_ANGULAR_VELOCITY, 0);
 	set_param(PARAM_ORBIT_VELOCITY, 0);
 	set_param(PARAM_LINEAR_ACCEL, 0);
 	set_param(PARAM_RADIAL_ACCEL, 0);
@@ -1216,6 +1267,7 @@ ParticlesMaterial::ParticlesMaterial() :
 	set_emission_box_extents(Vector3(1, 1, 1));
 	set_trail_divisor(1);
 	set_gravity(Vector3(0, -9.8, 0));
+	set_lifetime_randomness(0);
 	emission_point_count = 1;
 
 	for (int i = 0; i < PARAM_MAX; i++) {

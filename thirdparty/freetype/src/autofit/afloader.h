@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afloader.h                                                             */
-/*                                                                         */
-/*    Auto-fitter glyph loading routines (specification).                  */
-/*                                                                         */
-/*  Copyright 2003-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afloader.h
+ *
+ *   Auto-fitter glyph loading routines (specification).
+ *
+ * Copyright (C) 2003-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef AFLOADER_H_
@@ -27,11 +27,11 @@
 FT_BEGIN_HEADER
 
   /*
-   *  The autofitter module's (global) data structure to communicate with
-   *  actual fonts.  If necessary, `local' data like the current face, the
-   *  current face's auto-hint data, or the current glyph's parameters
-   *  relevant to auto-hinting are `swapped in'.  Cf. functions like
-   *  `af_loader_reset' and `af_loader_load_g'.
+   * The autofitter module's (global) data structure to communicate with
+   * actual fonts.  If necessary, `local' data like the current face, the
+   * current face's auto-hint data, or the current glyph's parameters
+   * relevant to auto-hinting are `swapped in'.  Cf. functions like
+   * `af_loader_reset' and `af_loader_load_g'.
    */
 
   typedef struct  AF_LoaderRec_

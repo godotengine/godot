@@ -368,16 +368,21 @@ static SLJIT_INLINE sljit_s32 emit_single_op(struct sljit_compiler *compiler, sl
 		SLJIT_ASSERT(!(flags & SRC2_IMM));
 
 		if (GET_FLAG_TYPE(op) != SLJIT_MUL_OVERFLOW) {
-#if (defined SLJIT_MIPS_R1 && SLJIT_MIPS_R1)
+#if (defined SLJIT_MIPS_R1 && SLJIT_MIPS_R1) || (defined SLJIT_MIPS_R6 && SLJIT_MIPS_R6)
 			return push_inst(compiler, MUL | S(src1) | T(src2) | D(dst), DR(dst));
-#else
+#else /* !SLJIT_MIPS_R1 && !SLJIT_MIPS_R6 */
 			FAIL_IF(push_inst(compiler, MULT | S(src1) | T(src2), MOVABLE_INS));
 			return push_inst(compiler, MFLO | D(dst), DR(dst));
-#endif
+#endif /* SLJIT_MIPS_R1 || SLJIT_MIPS_R6 */
 		}
+#if (defined SLJIT_MIPS_R6 && SLJIT_MIPS_R6)
+		FAIL_IF(push_inst(compiler, MUL | S(src1) | T(src2) | D(dst), DR(dst)));
+		FAIL_IF(push_inst(compiler, MUH | S(src1) | T(src2) | DA(EQUAL_FLAG), EQUAL_FLAG));
+#else /* !SLJIT_MIPS_R6 */
 		FAIL_IF(push_inst(compiler, MULT | S(src1) | T(src2), MOVABLE_INS));
 		FAIL_IF(push_inst(compiler, MFHI | DA(EQUAL_FLAG), EQUAL_FLAG));
 		FAIL_IF(push_inst(compiler, MFLO | D(dst), DR(dst)));
+#endif /* SLJIT_MIPS_R6 */
 		FAIL_IF(push_inst(compiler, SRA | T(dst) | DA(OTHER_FLAG) | SH_IMM(31), OTHER_FLAG));
 		return push_inst(compiler, SUBU | SA(EQUAL_FLAG) | TA(OTHER_FLAG) | DA(OTHER_FLAG), OTHER_FLAG);
 
@@ -448,7 +453,7 @@ static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_t
 	sljit_ins ins = NOP;
 	sljit_u8 offsets[4];
 
-	SLJIT_ASSERT(reg_map[TMP_REG3] == 4 && freg_map[TMP_FREG1] == 12);
+	SLJIT_ASSERT(reg_map[TMP_REG1] == 4 && freg_map[TMP_FREG1] == 12);
 
 	arg_types >>= SLJIT_DEF_SHIFT;
 
@@ -516,7 +521,7 @@ static sljit_s32 call_with_args(struct sljit_compiler *compiler, sljit_s32 arg_t
 			else if (arg_count != word_arg_count)
 				ins = ADDU | S(word_arg_count) | TA(0) | DA(4 + (offsets[arg_count - 1] >> 2));
 			else if (arg_count == 1)
-				ins = ADDU | S(SLJIT_R0) | TA(0) | D(TMP_REG3);
+				ins = ADDU | S(SLJIT_R0) | TA(0) | DA(4);
 
 			arg_count--;
 			word_arg_count--;

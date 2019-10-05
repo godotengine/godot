@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VScrollBar" inherits="ScrollBar" category="Core" version="3.1">
+<class name="VScrollBar" inherits="ScrollBar" category="Core" version="3.2">
 	<brief_description>
 		Vertical version of [ScrollBar], which goes from left (min) to right (max).
 	</brief_description>
@@ -7,10 +7,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
+	<members>
+		<member name="size_flags_horizontal" type="int" setter="set_h_size_flags" getter="get_h_size_flags" override="true" default="0" />
+		<member name="size_flags_vertical" type="int" setter="set_v_size_flags" getter="get_v_size_flags" override="true" default="1" />
+	</members>
 	<constants>
 	</constants>
 	<theme_items>

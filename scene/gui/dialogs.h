@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,6 @@
 #include "scene/gui/panel.h"
 #include "scene/gui/popup.h"
 #include "scene/gui/texture_button.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class WindowDialog : public Popup {
 
@@ -56,6 +53,7 @@ class WindowDialog : public Popup {
 
 	TextureButton *close_button;
 	String title;
+	String xl_title;
 	int drag_type;
 	Point2 drag_offset;
 	Point2 drag_offset_far;
@@ -144,6 +142,9 @@ public:
 
 	void set_text(String p_text);
 	String get_text() const;
+
+	void set_autowrap(bool p_autowrap);
+	bool has_autowrap();
 
 	AcceptDialog();
 	~AcceptDialog();

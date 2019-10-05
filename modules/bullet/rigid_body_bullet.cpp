@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -268,6 +268,7 @@ RigidBodyBullet::RigidBodyBullet() :
 		can_integrate_forces(false),
 		maxCollisionsDetection(0),
 		collisionsCount(0),
+		prev_collision_count(0),
 		maxAreasWhereIam(10),
 		areaWhereIamCount(0),
 		countGravityPointSpaces(0),
@@ -293,6 +294,9 @@ RigidBodyBullet::RigidBodyBullet() :
 		areasWhereIam.write[i] = NULL;
 	}
 	btBody->setSleepingThresholds(0.2, 0.2);
+
+	prev_collision_traces = &collision_traces_1;
+	curr_collision_traces = &collision_traces_2;
 }
 
 RigidBodyBullet::~RigidBodyBullet() {
@@ -410,7 +414,14 @@ void RigidBodyBullet::on_collision_filters_change() {
 }
 
 void RigidBodyBullet::on_collision_checker_start() {
+
+	prev_collision_count = collisionsCount;
 	collisionsCount = 0;
+
+	// Swap array
+	Vector<RigidBodyBullet *> *s = prev_collision_traces;
+	prev_collision_traces = curr_collision_traces;
+	curr_collision_traces = s;
 }
 
 void RigidBodyBullet::on_collision_checker_end() {
@@ -433,8 +444,18 @@ bool RigidBodyBullet::add_collision_object(RigidBodyBullet *p_otherObject, const
 	cd.other_object_shape = p_other_shape_index;
 	cd.local_shape = p_local_shape_index;
 
+	curr_collision_traces->write[collisionsCount] = p_otherObject;
+
 	++collisionsCount;
 	return true;
+}
+
+bool RigidBodyBullet::was_colliding(RigidBodyBullet *p_other_object) {
+	for (int i = prev_collision_count - 1; 0 <= i; --i) {
+		if ((*prev_collision_traces)[i] == p_other_object)
+			return true;
+	}
+	return false;
 }
 
 void RigidBodyBullet::assert_no_constraints() {
@@ -576,6 +597,8 @@ void RigidBodyBullet::set_state(PhysicsServer::BodyState p_state, const Variant 
 			if (!can_sleep) {
 				// Can't sleep
 				btBody->forceActivationState(DISABLE_DEACTIVATION);
+			} else {
+				btBody->forceActivationState(ACTIVE_TAG);
 			}
 			break;
 	}
@@ -705,12 +728,12 @@ bool RigidBodyBullet::is_axis_locked(PhysicsServer::BodyAxis p_axis) const {
 
 void RigidBodyBullet::reload_axis_lock() {
 
-	btBody->setLinearFactor(btVector3(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_X), !is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Y), !is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Z)));
+	btBody->setLinearFactor(btVector3(float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_X)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Y)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_LINEAR_Z))));
 	if (PhysicsServer::BODY_MODE_CHARACTER == mode) {
 		/// When character angular is always locked
 		btBody->setAngularFactor(btVector3(0., 0., 0.));
 	} else {
-		btBody->setAngularFactor(btVector3(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_X), !is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Y), !is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Z)));
+		btBody->setAngularFactor(btVector3(float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_X)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Y)), float(!is_axis_locked(PhysicsServer::BODY_AXIS_ANGULAR_Z))));
 	}
 }
 
@@ -718,22 +741,20 @@ void RigidBodyBullet::set_continuous_collision_detection(bool p_enable) {
 	if (p_enable) {
 		// This threshold enable CCD if the object moves more than
 		// 1 meter in one simulation frame
-		btBody->setCcdMotionThreshold(0.1);
+		btBody->setCcdMotionThreshold(1e-7);
 
 		/// Calculate using the rule writte below the CCD swept sphere radius
 		///     CCD works on an embedded sphere of radius, make sure this radius
 		///     is embedded inside the convex objects, preferably smaller:
 		///     for an object of dimensions 1 meter, try 0.2
-		btScalar radius;
+		btScalar radius(1.0);
 		if (btBody->getCollisionShape()) {
 			btVector3 center;
 			btBody->getCollisionShape()->getBoundingSphere(center, radius);
-		} else {
-			radius = 0;
 		}
 		btBody->setCcdSweptSphereRadius(radius * 0.2);
 	} else {
-		btBody->setCcdMotionThreshold(0.);
+		btBody->setCcdMotionThreshold(10000.0);
 		btBody->setCcdSweptSphereRadius(0.);
 	}
 }
@@ -776,6 +797,9 @@ void RigidBodyBullet::set_transform__bullet(const btTransform &p_global_transfor
 			btBody->setLinearVelocity((p_global_transform.getOrigin() - btBody->getWorldTransform().getOrigin()) / space->get_delta_time());
 		// The kinematic use MotionState class
 		godotMotionState->moveBody(p_global_transform);
+	} else {
+		// Is necesasry to avoid wrong location on the rendering side on the next frame
+		godotMotionState->setWorldTransform(p_global_transform);
 	}
 	CollisionObjectBullet::set_transform__bullet(p_global_transform);
 }
@@ -797,14 +821,18 @@ void RigidBodyBullet::reload_shapes() {
 	const btScalar mass = invMass == 0 ? 0 : 1 / invMass;
 
 	if (mainShape) {
-		btVector3 inertia;
-		mainShape->calculateLocalInertia(mass, inertia);
+		// inertia initialised zero here because some of bullet's collision
+		// shapes incorrectly do not set the vector in calculateLocalIntertia.
+		// Arbitrary zero is preferable to undefined behaviour.
+		btVector3 inertia(0, 0, 0);
+		if (EMPTY_SHAPE_PROXYTYPE != mainShape->getShapeType()) // Necessary to avoid assertion of the empty shape
+			mainShape->calculateLocalInertia(mass, inertia);
 		btBody->setMassProps(mass, inertia);
 	}
 	btBody->updateInertiaTensor();
 
 	reload_kinematic_shapes();
-
+	set_continuous_collision_detection(btBody->getCcdMotionThreshold() < 9998.0);
 	reload_body();
 }
 
@@ -838,7 +866,7 @@ void RigidBodyBullet::on_enter_area(AreaBullet *p_area) {
 
 	if (p_area->is_spOv_gravityPoint()) {
 		++countGravityPointSpaces;
-		assert(0 < countGravityPointSpaces);
+		ERR_FAIL_COND(countGravityPointSpaces <= 0);
 	}
 }
 
@@ -860,7 +888,7 @@ void RigidBodyBullet::on_exit_area(AreaBullet *p_area) {
 	if (wasTheAreaFound) {
 		if (p_area->is_spOv_gravityPoint()) {
 			--countGravityPointSpaces;
-			assert(0 <= countGravityPointSpaces);
+			ERR_FAIL_COND(countGravityPointSpaces < 0);
 		}
 
 		--areaWhereIamCount;

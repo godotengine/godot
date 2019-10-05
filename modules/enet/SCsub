@@ -21,8 +21,8 @@ if env['builtin_enet']:
     ]
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_enet.Append(CPPPATH=[thirdparty_dir])
-    env_enet.Append(CPPFLAGS=["-DGODOT_ENET"])
+    env_enet.Prepend(CPPPATH=[thirdparty_dir])
+    env_enet.Append(CPPDEFINES=["GODOT_ENET"])
 
     env_thirdparty = env_enet.Clone()
     env_thirdparty.disable_warnings()

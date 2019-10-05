@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -249,6 +249,11 @@ void ClassDB::set_current_api(APIType p_api) {
 	current_api = p_api;
 }
 
+ClassDB::APIType ClassDB::get_current_api() {
+
+	return current_api;
+}
+
 HashMap<StringName, ClassDB::ClassInfo> ClassDB::classes;
 HashMap<StringName, StringName> ClassDB::resource_base_extensions;
 HashMap<StringName, StringName> ClassDB::compat_classes;
@@ -307,6 +312,19 @@ void ClassDB::get_inheriters_from_class(const StringName &p_class, List<StringNa
 	}
 }
 
+void ClassDB::get_direct_inheriters_from_class(const StringName &p_class, List<StringName> *p_classes) {
+
+	OBJTYPE_RLOCK;
+
+	const StringName *k = NULL;
+
+	while ((k = classes.next(k))) {
+
+		if (*k != p_class && get_parent_class(*k) == p_class)
+			p_classes->push_back(*k);
+	}
+}
+
 StringName ClassDB::get_parent_class_nocheck(const StringName &p_class) {
 
 	OBJTYPE_RLOCK;
@@ -322,7 +340,7 @@ StringName ClassDB::get_parent_class(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V(!ti, StringName());
+	ERR_FAIL_COND_V_MSG(!ti, StringName(), "Cannot get class '" + String(p_class) + "'.");
 	return ti->inherits;
 }
 
@@ -332,7 +350,7 @@ ClassDB::APIType ClassDB::get_api_type(const StringName &p_class) {
 
 	ClassInfo *ti = classes.getptr(p_class);
 
-	ERR_FAIL_COND_V(!ti, API_NONE);
+	ERR_FAIL_COND_V_MSG(!ti, API_NONE, "Cannot get class '" + String(p_class) + "'.");
 	return ti->api;
 }
 
@@ -357,7 +375,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 
 		ClassInfo *t = classes.getptr(E->get());
-		ERR_FAIL_COND_V(!t, 0);
+		ERR_FAIL_COND_V_MSG(!t, 0, "Cannot get class '" + String(E->get()) + "'.");
 		if (t->api != p_api || !t->exposed)
 			continue;
 		hash = hash_djb2_one_64(t->name.hash(), hash);
@@ -462,6 +480,7 @@ uint64_t ClassDB::get_api_hash(APIType p_api) {
 			for (List<StringName>::Element *F = snames.front(); F; F = F->next()) {
 
 				PropertySetGet *psg = t->property_setget.getptr(F->get());
+				ERR_FAIL_COND_V(!psg, 0);
 
 				hash = hash_djb2_one_64(F->get().hash(), hash);
 				hash = hash_djb2_one_64(psg->setter.hash(), hash);
@@ -509,8 +528,8 @@ Object *ClassDB::instance(const StringName &p_class) {
 				ti = classes.getptr(compat_classes[p_class]);
 			}
 		}
-		ERR_FAIL_COND_V(!ti, NULL);
-		ERR_FAIL_COND_V(ti->disabled, NULL);
+		ERR_FAIL_COND_V_MSG(!ti, NULL, "Cannot get class '" + String(p_class) + "'.");
+		ERR_FAIL_COND_V_MSG(ti->disabled, NULL, "Class '" + String(p_class) + "' is disabled.");
 		ERR_FAIL_COND_V(!ti->creation_func, NULL);
 	}
 #ifdef TOOLS_ENABLED
@@ -526,7 +545,12 @@ bool ClassDB::can_instance(const StringName &p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V(!ti, false);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
+#ifdef TOOLS_ENABLED
+	if (ti->api == API_EDITOR && !Engine::get_singleton()->is_editor_hint()) {
+		return false;
+	}
+#endif
 	return (!ti->disabled && ti->creation_func != NULL);
 }
 
@@ -534,9 +558,9 @@ void ClassDB::_add_class2(const StringName &p_class, const StringName &p_inherit
 
 	OBJTYPE_WLOCK;
 
-	StringName name = p_class;
+	const StringName &name = p_class;
 
-	ERR_FAIL_COND(classes.has(name));
+	ERR_FAIL_COND_MSG(classes.has(name), "Class '" + String(p_class) + "' already exists.");
 
 	classes[name] = ClassInfo();
 	ClassInfo &ti = classes[name];
@@ -648,10 +672,8 @@ void ClassDB::bind_integer_constant(const StringName &p_class, const StringName 
 	OBJTYPE_WLOCK;
 
 	ClassInfo *type = classes.getptr(p_class);
-	if (!type) {
 
-		ERR_FAIL_COND(!type);
-	}
+	ERR_FAIL_COND(!type);
 
 	if (type->constant_map.has(p_name)) {
 
@@ -814,10 +836,7 @@ void ClassDB::add_signal(StringName p_class, const MethodInfo &p_signal) {
 #ifdef DEBUG_METHODS_ENABLED
 	ClassInfo *check = type;
 	while (check) {
-		if (check->signal_map.has(sname)) {
-			ERR_EXPLAIN("Type " + String(p_class) + " already has signal: " + String(sname));
-			ERR_FAIL();
-		}
+		ERR_FAIL_COND_MSG(check->signal_map.has(sname), "Class '" + String(p_class) + "' already has signal '" + String(sname) + "'.");
 		check = check->inherits_ptr;
 	}
 #endif
@@ -902,16 +921,11 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	if (p_setter) {
 		mb_set = get_method(p_class, p_setter);
 #ifdef DEBUG_METHODS_ENABLED
-		if (!mb_set) {
-			ERR_EXPLAIN("Invalid Setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name);
-			ERR_FAIL_COND(!mb_set);
-		} else {
-			int exp_args = 1 + (p_index >= 0 ? 1 : 0);
-			if (mb_set->get_argument_count() != exp_args) {
-				ERR_EXPLAIN("Invalid Function for Setter: " + p_class + "::" + p_setter + " for property: " + p_pinfo.name);
-				ERR_FAIL();
-			}
-		}
+
+		ERR_FAIL_COND_MSG(!mb_set, "Invalid setter '" + p_class + "::" + p_setter + "' for property '" + p_pinfo.name + "'.");
+
+		int exp_args = 1 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG(mb_set->get_argument_count() != exp_args, "Invalid function for setter '" + p_class + "::" + p_setter + " for property '" + p_pinfo.name + "'.");
 #endif
 	}
 
@@ -921,26 +935,15 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 		mb_get = get_method(p_class, p_getter);
 #ifdef DEBUG_METHODS_ENABLED
 
-		if (!mb_get) {
-			ERR_EXPLAIN("Invalid Getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name);
-			ERR_FAIL_COND(!mb_get);
-		} else {
+		ERR_FAIL_COND_MSG(!mb_get, "Invalid getter '" + p_class + "::" + p_getter + "' for property '" + p_pinfo.name + "'.");
 
-			int exp_args = 0 + (p_index >= 0 ? 1 : 0);
-			if (mb_get->get_argument_count() != exp_args) {
-				ERR_EXPLAIN("Invalid Function for Getter: " + p_class + "::" + p_getter + " for property: " + p_pinfo.name);
-				ERR_FAIL();
-			}
-		}
+		int exp_args = 0 + (p_index >= 0 ? 1 : 0);
+		ERR_FAIL_COND_MSG(mb_get->get_argument_count() != exp_args, "Invalid function for getter '" + p_class + "::" + p_getter + "' for property: '" + p_pinfo.name + "'.");
 #endif
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
-
-	if (type->property_setget.has(p_pinfo.name)) {
-		ERR_EXPLAIN("Object already has property: " + p_class);
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(type->property_setget.has(p_pinfo.name), "Object '" + p_class + "' already has property '" + p_pinfo.name + "'.");
 #endif
 
 	OBJTYPE_WLOCK
@@ -963,6 +966,13 @@ void ClassDB::add_property(StringName p_class, const PropertyInfo &p_pinfo, cons
 	psg.type = p_pinfo.type;
 
 	type->property_setget[p_pinfo.name] = psg;
+}
+
+void ClassDB::set_property_default_value(StringName p_class, const StringName &p_name, const Variant &p_default) {
+	if (!default_values.has(p_class)) {
+		default_values[p_class] = HashMap<StringName, Variant>();
+	}
+	default_values[p_class][p_name] = p_default;
 }
 
 void ClassDB::get_property_list(StringName p_class, List<PropertyInfo> *p_list, bool p_no_inheritance, const Object *p_validator) {
@@ -1121,7 +1131,7 @@ Variant::Type ClassDB::get_property_type(const StringName &p_class, const String
 	return Variant::NIL;
 }
 
-StringName ClassDB::get_property_setter(StringName p_class, const StringName p_property) {
+StringName ClassDB::get_property_setter(StringName p_class, const StringName &p_property) {
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -1138,7 +1148,7 @@ StringName ClassDB::get_property_setter(StringName p_class, const StringName p_p
 	return StringName();
 }
 
-StringName ClassDB::get_property_getter(StringName p_class, const StringName p_property) {
+StringName ClassDB::get_property_getter(StringName p_class, const StringName &p_property) {
 
 	ClassInfo *type = classes.getptr(p_class);
 	ClassInfo *check = type;
@@ -1212,32 +1222,26 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 
 #ifdef DEBUG_ENABLED
 
-	if (has_method(instance_type, mdname)) {
-		ERR_EXPLAIN("Class " + String(instance_type) + " already has a method " + String(mdname));
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(has_method(instance_type, mdname), NULL, "Class " + String(instance_type) + " already has a method " + String(mdname) + ".");
 #endif
 
 	ClassInfo *type = classes.getptr(instance_type);
 	if (!type) {
-		ERR_PRINTS("Couldn't bind method '" + mdname + "' for instance: " + instance_type);
 		memdelete(p_bind);
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V_MSG(NULL, "Couldn't bind method '" + mdname + "' for instance '" + instance_type + "'.");
 	}
 
 	if (type->method_map.has(mdname)) {
 		memdelete(p_bind);
 		// overloading not supported
-		ERR_EXPLAIN("Method already bound: " + instance_type + "::" + mdname);
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V_MSG(NULL, "Method already bound '" + instance_type + "::" + mdname + "'.");
 	}
 
 #ifdef DEBUG_METHODS_ENABLED
 
 	if (method_name.args.size() > p_bind->get_argument_count()) {
 		memdelete(p_bind);
-		ERR_EXPLAIN("Method definition provides more arguments than the method actually has: " + instance_type + "::" + mdname);
-		ERR_FAIL_V(NULL);
+		ERR_FAIL_V_MSG(NULL, "Method definition provides more arguments than the method actually has '" + instance_type + "::" + mdname + "'.");
 	}
 
 	p_bind->set_argument_names(method_name.args);
@@ -1261,7 +1265,7 @@ MethodBind *ClassDB::bind_methodfi(uint32_t p_flags, MethodBind *p_bind, const c
 }
 
 void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_method, bool p_virtual) {
-	ERR_FAIL_COND(!classes.has(p_class));
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 
 	OBJTYPE_WLOCK;
 
@@ -1276,7 +1280,7 @@ void ClassDB::add_virtual_method(const StringName &p_class, const MethodInfo &p_
 
 void ClassDB::get_virtual_methods(const StringName &p_class, List<MethodInfo> *p_methods, bool p_no_inheritance) {
 
-	ERR_FAIL_COND(!classes.has(p_class));
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 
 #ifdef DEBUG_METHODS_ENABLED
 
@@ -1300,7 +1304,7 @@ void ClassDB::set_class_enabled(StringName p_class, bool p_enable) {
 
 	OBJTYPE_WLOCK;
 
-	ERR_FAIL_COND(!classes.has(p_class));
+	ERR_FAIL_COND_MSG(!classes.has(p_class), "Request for nonexistent class '" + p_class + "'.");
 	classes[p_class].disabled = !p_enable;
 }
 
@@ -1315,7 +1319,7 @@ bool ClassDB::is_class_enabled(StringName p_class) {
 		}
 	}
 
-	ERR_FAIL_COND_V(!ti, false);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return !ti->disabled;
 }
 
@@ -1324,7 +1328,7 @@ bool ClassDB::is_class_exposed(StringName p_class) {
 	OBJTYPE_RLOCK;
 
 	ClassInfo *ti = classes.getptr(p_class);
-	ERR_FAIL_COND_V(!ti, false);
+	ERR_FAIL_COND_V_MSG(!ti, false, "Cannot get class '" + String(p_class) + "'.");
 	return ti->exposed;
 }
 
@@ -1368,37 +1372,60 @@ void ClassDB::get_extensions_for_type(const StringName &p_class, List<String> *p
 }
 
 HashMap<StringName, HashMap<StringName, Variant> > ClassDB::default_values;
+Set<StringName> ClassDB::default_values_cached;
 
-Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property) {
+Variant ClassDB::class_get_default_property_value(const StringName &p_class, const StringName &p_property, bool *r_valid) {
 
-	if (!default_values.has(p_class)) {
+	if (!default_values_cached.has(p_class)) {
 
-		default_values[p_class] = HashMap<StringName, Variant>();
+		if (!default_values.has(p_class)) {
+			default_values[p_class] = HashMap<StringName, Variant>();
+		}
 
-		if (ClassDB::can_instance(p_class)) {
+		Object *c = NULL;
+		bool cleanup_c = false;
 
-			Object *c = ClassDB::instance(p_class);
+		if (Engine::get_singleton()->has_singleton(p_class)) {
+			c = Engine::get_singleton()->get_singleton_object(p_class);
+			cleanup_c = false;
+		} else if (ClassDB::can_instance(p_class)) {
+			c = ClassDB::instance(p_class);
+			cleanup_c = true;
+		}
+
+		if (c) {
+
 			List<PropertyInfo> plist;
 			c->get_property_list(&plist);
 			for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
 				if (E->get().usage & (PROPERTY_USAGE_STORAGE | PROPERTY_USAGE_EDITOR)) {
 
-					Variant v = c->get(E->get().name);
-					default_values[p_class][E->get().name] = v;
+					if (!default_values[p_class].has(E->get().name)) {
+						Variant v = c->get(E->get().name);
+						default_values[p_class][E->get().name] = v;
+					}
 				}
 			}
-			memdelete(c);
+
+			if (cleanup_c) {
+				memdelete(c);
+			}
 		}
+
+		default_values_cached.insert(p_class);
 	}
 
 	if (!default_values.has(p_class)) {
+		if (r_valid != NULL) *r_valid = false;
 		return Variant();
 	}
 
 	if (!default_values[p_class].has(p_property)) {
+		if (r_valid != NULL) *r_valid = false;
 		return Variant();
 	}
 
+	if (r_valid != NULL) *r_valid = true;
 	return default_values[p_class][p_property];
 }
 
@@ -1407,6 +1434,12 @@ RWLock *ClassDB::lock = NULL;
 void ClassDB::init() {
 
 	lock = RWLock::create();
+}
+
+void ClassDB::cleanup_defaults() {
+
+	default_values.clear();
+	default_values_cached.clear();
 }
 
 void ClassDB::cleanup() {
@@ -1428,7 +1461,6 @@ void ClassDB::cleanup() {
 	classes.clear();
 	resource_base_extensions.clear();
 	compat_classes.clear();
-	default_values.clear();
 
 	memdelete(lock);
 }

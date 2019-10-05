@@ -1,0 +1,17 @@
+diff --git a/thirdparty/wslay/includes/wslay/wslay.h b/thirdparty/wslay/includes/wslay/wslay.h
+index 2fde81a4e..9c751b05b 100644
+--- a/thirdparty/wslay/includes/wslay/wslay.h
++++ b/thirdparty/wslay/includes/wslay/wslay.h
+@@ -33,6 +33,12 @@ extern "C" {
+ #include <stdlib.h>
+ #include <sys/types.h>
+ 
++/* GODOT ADDITTION */
++#if defined(_MSC_VER)
++#include <BaseTsd.h>
++typedef SSIZE_T ssize_t;
++#endif
++/* GODOT END */
+ 
+ /*
+  * wslay/wslayver.h is generated from wslay/wslayver.h.in by

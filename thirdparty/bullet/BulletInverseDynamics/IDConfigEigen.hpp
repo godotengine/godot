@@ -15,7 +15,8 @@ typedef float idScalar;
 // template <typename T>
 // using idArray = std::vector<T>;
 template <typename T>
-struct idArray {
+struct idArray
+{
 	typedef std::vector<T> type;
 };
 typedef std::vector<int>::size_type idArrayIdx;

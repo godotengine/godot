@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,10 +41,6 @@
 #include "scene/main/node.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class EditorNode;
 class Spatial;
 class Camera;
@@ -53,13 +49,15 @@ class EditorExport;
 class EditorSettings;
 class EditorImportPlugin;
 class EditorExportPlugin;
+class EditorSpatialGizmoPlugin;
 class EditorResourcePreview;
 class EditorFileSystem;
 class EditorToolAddons;
 class ScriptEditor;
 
 class EditorInterface : public Node {
-	GDCLASS(EditorInterface, Node)
+	GDCLASS(EditorInterface, Node);
+
 protected:
 	static void _bind_methods();
 	static EditorInterface *singleton;
@@ -80,12 +78,13 @@ public:
 
 	void select_file(const String &p_file);
 	String get_selected_path() const;
+	String get_current_path() const;
 
 	void inspect_object(Object *p_obj, const String &p_for_property = String());
 
 	EditorSelection *get_selection();
 	//EditorImportExport *get_import_export();
-	EditorSettings *get_editor_settings();
+	Ref<EditorSettings> get_editor_settings();
 	EditorResourcePreview *get_resource_previewer();
 	EditorFileSystem *get_resource_file_system();
 
@@ -94,10 +93,15 @@ public:
 	void set_plugin_enabled(const String &p_plugin, bool p_enabled);
 	bool is_plugin_enabled(const String &p_plugin) const;
 
+	EditorInspector *get_inspector() const;
+
 	Error save_scene();
 	void save_scene_as(const String &p_scene, bool p_with_preview = true);
 
-	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, int p_preview_size);
+	Vector<Ref<Texture> > make_mesh_previews(const Vector<Ref<Mesh> > &p_meshes, Vector<Transform> *p_transforms, int p_preview_size);
+
+	void set_main_screen_editor(const String &p_name);
+	void set_distraction_free_mode(bool p_enter);
 
 	EditorInterface();
 };
@@ -114,7 +118,6 @@ class EditorPlugin : public Node {
 	bool force_draw_over_forwarding_enabled;
 
 	String last_main_screen_name;
-	String _dir_cache;
 
 protected:
 	static void _bind_methods();
@@ -134,7 +137,9 @@ public:
 		CONTAINER_CANVAS_EDITOR_SIDE_LEFT,
 		CONTAINER_CANVAS_EDITOR_SIDE_RIGHT,
 		CONTAINER_CANVAS_EDITOR_BOTTOM,
-		CONTAINER_PROPERTY_EDITOR_BOTTOM
+		CONTAINER_PROPERTY_EDITOR_BOTTOM,
+		CONTAINER_PROJECT_SETTING_TAB_LEFT,
+		CONTAINER_PROJECT_SETTING_TAB_RIGHT,
 	};
 
 	enum DockSlot {
@@ -219,6 +224,9 @@ public:
 	void add_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 	void remove_export_plugin(const Ref<EditorExportPlugin> &p_exporter);
 
+	void add_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
+	void remove_spatial_gizmo_plugin(const Ref<EditorSpatialGizmoPlugin> &p_gizmo_plugin);
+
 	void add_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 	void remove_inspector_plugin(const Ref<EditorInspectorPlugin> &p_plugin);
 
@@ -228,9 +236,8 @@ public:
 	void add_autoload_singleton(const String &p_name, const String &p_path);
 	void remove_autoload_singleton(const String &p_name);
 
-	void set_dir_cache(const String &p_dir) { _dir_cache = p_dir; }
-	String get_dir_cache() { return _dir_cache; }
-	Ref<ConfigFile> get_config();
+	void enable_plugin();
+	void disable_plugin();
 
 	EditorPlugin();
 	virtual ~EditorPlugin();

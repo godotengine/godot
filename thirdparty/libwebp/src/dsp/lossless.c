@@ -23,8 +23,6 @@
 #include "src/dsp/lossless.h"
 #include "src/dsp/lossless_common.h"
 
-#define MAX_DIFF_COST (1e30f)
-
 //------------------------------------------------------------------------------
 // Image transforms.
 

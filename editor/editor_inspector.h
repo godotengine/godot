@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,9 +37,19 @@
 
 class UndoRedo;
 
+class EditorPropertyRevert {
+public:
+	static bool may_node_be_in_instance(Node *p_node);
+	static bool get_instanced_node_original_property(Node *p_node, const StringName &p_prop, Variant &value);
+	static bool is_node_property_different(Node *p_node, const Variant &p_current, const Variant &p_orig);
+
+	static bool can_property_revert(Object *p_object, const StringName &p_property);
+};
+
 class EditorProperty : public Container {
 
-	GDCLASS(EditorProperty, Container)
+	GDCLASS(EditorProperty, Container);
+
 private:
 	String label;
 	int text_size;
@@ -70,7 +80,6 @@ private:
 	bool use_folding;
 	bool draw_top_bg;
 
-	bool _might_be_in_instance();
 	bool _is_property_different(const Variant &p_current, const Variant &p_orig);
 	bool _get_instanced_node_original_property(const StringName &p_prop, Variant &value);
 	void _focusable_focused(int p_index);
@@ -94,6 +103,8 @@ protected:
 	void _gui_input(const Ref<InputEvent> &p_event);
 
 public:
+	void emit_changed(const StringName &p_property, const Variant &p_value, const StringName &p_field = StringName(), bool p_changing = false);
+
 	virtual Size2 get_minimum_size() const;
 
 	void set_label(const String &p_label);
@@ -128,7 +139,7 @@ public:
 	bool is_selected() const;
 
 	void set_label_reference(Control *p_control);
-	void set_bottom_editor(Control *p_editor);
+	void set_bottom_editor(Control *p_control);
 
 	void set_use_folding(bool p_use_folding);
 	bool is_using_folding() const;
@@ -157,7 +168,7 @@ public:
 };
 
 class EditorInspectorPlugin : public Reference {
-	GDCLASS(EditorInspectorPlugin, Reference)
+	GDCLASS(EditorInspectorPlugin, Reference);
 
 	friend class EditorInspector;
 	struct AddedEditor {
@@ -271,8 +282,7 @@ class EditorInspector : public ScrollContainer {
 	bool update_all_pending;
 	bool read_only;
 	bool keying;
-	bool use_sub_inspector_bg;
-	bool auto_unfold_edited;
+	bool sub_inspector;
 
 	float refresh_countdown;
 	bool update_tree_pending;
@@ -292,8 +302,8 @@ class EditorInspector : public ScrollContainer {
 
 	void _edit_set(const String &p_name, const Variant &p_value, bool p_refresh_all, const String &p_changed_field);
 
-	void _property_changed(const String &p_path, const Variant &p_value, bool changing = false);
-	void _property_changed_update_all(const String &p_path, const Variant &p_value);
+	void _property_changed(const String &p_path, const Variant &p_value, const String &p_name = "", bool changing = false);
+	void _property_changed_update_all(const String &p_path, const Variant &p_value, const String &p_name = "", bool p_changing = false);
 	void _multiple_properties_changed(Vector<String> p_paths, Array p_values);
 	void _property_keyed(const String &p_path, bool p_advance);
 	void _property_keyed_with_value(const String &p_path, const Variant &p_value, bool p_advance);
@@ -307,12 +317,16 @@ class EditorInspector : public ScrollContainer {
 	void _node_removed(Node *p_node);
 
 	void _changed_callback(Object *p_changed, const char *p_prop);
-	void _edit_request_change(Object *p_changed, const String &p_prop);
+	void _edit_request_change(Object *p_object, const String &p_prop);
 
 	void _filter_changed(const String &p_text);
 	void _parse_added_editors(VBoxContainer *current_vbox, Ref<EditorInspectorPlugin> ped);
 
 	void _vscroll_changed(double);
+
+	void _feature_profile_changed();
+
+	bool _is_property_disabled_by_feature_profile(const StringName &p_property);
 
 protected:
 	static void _bind_methods();
@@ -366,8 +380,7 @@ public:
 	void set_object_class(const String &p_class);
 	String get_object_class() const;
 
-	void set_use_sub_inspector_bg(bool p_enable);
-	void set_auto_unfold_edited(bool p_enable);
+	void set_sub_inspector(bool p_enable);
 
 	EditorInspector();
 };

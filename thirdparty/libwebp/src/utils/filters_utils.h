@@ -29,4 +29,4 @@ WEBP_FILTER_TYPE WebPEstimateBestFilter(const uint8_t* data,
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_UTILS_FILTERS_UTILS_H_ */
+#endif  // WEBP_UTILS_FILTERS_UTILS_H_

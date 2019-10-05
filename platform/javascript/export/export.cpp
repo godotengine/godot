@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,7 +40,7 @@
 
 class EditorExportPlatformJavaScript : public EditorExportPlatform {
 
-	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform)
+	GDCLASS(EditorExportPlatformJavaScript, EditorExportPlatform);
 
 	Ref<ImageTexture> logo;
 	Ref<ImageTexture> run_icon;
@@ -104,22 +104,27 @@ void EditorExportPlatformJavaScript::_fix_html(Vector<uint8_t> &p_html, const Re
 
 void EditorExportPlatformJavaScript::get_preset_features(const Ref<EditorExportPreset> &p_preset, List<String> *r_features) {
 
-	if (p_preset->get("texture_format/s3tc")) {
+	if (p_preset->get("vram_texture_compression/for_desktop")) {
 		r_features->push_back("s3tc");
 	}
-	if (p_preset->get("texture_format/etc")) {
-		r_features->push_back("etc");
-	}
-	if (p_preset->get("texture_format/etc2")) {
-		r_features->push_back("etc2");
+
+	if (p_preset->get("vram_texture_compression/for_mobile")) {
+		String driver = ProjectSettings::get_singleton()->get("rendering/quality/driver/driver_name");
+		if (driver == "GLES2") {
+			r_features->push_back("etc");
+		} else if (driver == "GLES3") {
+			r_features->push_back("etc2");
+			if (ProjectSettings::get_singleton()->get("rendering/quality/driver/fallback_to_gles2")) {
+				r_features->push_back("etc");
+			}
+		}
 	}
 }
 
 void EditorExportPlatformJavaScript::get_export_options(List<ExportOption> *r_options) {
 
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/s3tc"), true));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc"), false));
-	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "texture_format/etc2"), true));
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_desktop"), true)); // S3TC
+	r_options->push_back(ExportOption(PropertyInfo(Variant::BOOL, "vram_texture_compression/for_mobile"), false)); // ETC or ETC2, depending on renderer
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/custom_html_shell", PROPERTY_HINT_FILE, "*.html"), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "html/head_include", PROPERTY_HINT_MULTILINE_TEXT), ""));
 	r_options->push_back(ExportOption(PropertyInfo(Variant::STRING, "custom_template/release", PROPERTY_HINT_GLOBAL_FILE, "*.zip"), ""));
@@ -155,7 +160,7 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		if (FileAccess::exists(p_preset->get("custom_template/debug"))) {
 			valid = true;
 		} else {
-			err += "Custom debug template not found.\n";
+			err += TTR("Custom debug template not found.") + "\n";
 		}
 	}
 
@@ -163,14 +168,23 @@ bool EditorExportPlatformJavaScript::can_export(const Ref<EditorExportPreset> &p
 		if (FileAccess::exists(p_preset->get("custom_template/release"))) {
 			valid = true;
 		} else {
-			err += "Custom release template not found.\n";
+			err += TTR("Custom release template not found.") + "\n";
+		}
+	}
+
+	r_missing_templates = !valid;
+
+	if (p_preset->get("vram_texture_compression/for_mobile")) {
+		String etc_error = test_etc2();
+		if (etc_error != String()) {
+			valid = false;
+			err += etc_error;
 		}
 	}
 
 	if (!err.empty())
 		r_error = err;
 
-	r_missing_templates = !valid;
 	return valid;
 }
 
@@ -198,6 +212,10 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_DEBUG);
 		else
 			template_path = find_export_template(EXPORT_TEMPLATE_WEBASSEMBLY_RELEASE);
+	}
+
+	if (!DirAccess::exists(p_path.get_base_dir())) {
+		return ERR_FILE_BAD_PATH;
 	}
 
 	if (template_path != String() && !FileAccess::exists(template_path)) {
@@ -344,12 +362,21 @@ int EditorExportPlatformJavaScript::get_device_count() const {
 
 Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
 
-	String path = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_export.html");
+	String basepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_js_export");
+	String path = basepath + ".html";
 	Error err = export_project(p_preset, true, path, p_debug_flags);
-	if (err) {
+	if (err != OK) {
+		// Export generates several files, clean them up on failure.
+		DirAccess::remove_file_or_error(basepath + ".html");
+		DirAccess::remove_file_or_error(basepath + ".js");
+		DirAccess::remove_file_or_error(basepath + ".pck");
+		DirAccess::remove_file_or_error(basepath + ".png");
+		DirAccess::remove_file_or_error(basepath + ".wasm");
 		return err;
 	}
-	OS::get_singleton()->shell_open(path);
+	OS::get_singleton()->shell_open(String("file://") + path);
+	// FIXME: Find out how to clean up export files after running the successfully
+	// exported game. Might not be trivial.
 	return OK;
 }
 

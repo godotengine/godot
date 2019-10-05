@@ -84,4 +84,4 @@ typedef enum {
 // overflow a uint32_t.
 #define MAX_CHUNK_PAYLOAD (~0U - CHUNK_HEADER_SIZE - 1)
 
-#endif  /* WEBP_WEBP_FORMAT_CONSTANTS_H_ */
+#endif  // WEBP_WEBP_FORMAT_CONSTANTS_H_

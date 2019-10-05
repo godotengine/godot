@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,21 +38,11 @@
 #include "scene/resources/style_box.h"
 #include "scene/resources/texture.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 class Theme : public Resource {
 
 	GDCLASS(Theme, Resource);
 	RES_BASE_EXTENSION("theme");
 
-	static Ref<Theme> default_theme;
-
-	//keep a reference count to font, so each time the font changes, we emit theme changed too
-	Map<Ref<Font>, int> font_refcount;
-
-	void _ref_font(Ref<Font> p_sc);
-	void _unref_font(Ref<Font> p_sc);
 	void _emit_theme_changed();
 
 	HashMap<StringName, HashMap<StringName, Ref<Texture> > > icon_map;
@@ -67,6 +57,8 @@ protected:
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
 
+	static Ref<Theme> project_default_theme;
+	static Ref<Theme> default_theme;
 	static Ref<Texture> default_icon;
 	static Ref<StyleBox> default_style;
 	static Ref<Font> default_font;
@@ -143,6 +135,9 @@ public:
 	static Ref<Theme> get_default();
 	static void set_default(const Ref<Theme> &p_default);
 
+	static Ref<Theme> get_project_default();
+	static void set_project_default(const Ref<Theme> &p_project_default);
+
 	static void set_default_icon(const Ref<Texture> &p_icon);
 	static void set_default_style(const Ref<StyleBox> &p_style);
 	static void set_default_font(const Ref<Font> &p_font);
@@ -190,17 +185,11 @@ public:
 	void get_type_list(List<StringName> *p_list) const;
 
 	void copy_default_theme();
+	void copy_theme(const Ref<Theme> &p_other);
+	void clear();
 
 	Theme();
 	~Theme();
-};
-
-class ResourceFormatLoaderTheme : public ResourceFormatLoader {
-public:
-	virtual RES load(const String &p_path, const String &p_original_path = "", Error *r_error = NULL);
-	virtual void get_recognized_extensions(List<String> *p_extensions) const;
-	virtual bool handles_type(const String &p_type) const;
-	virtual String get_resource_type(const String &p_path) const;
 };
 
 #endif

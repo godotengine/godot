@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -94,15 +94,15 @@ void VideoStreamPlaybackTheora::video_write(void) {
 
 		if (px_fmt == TH_PF_444) {
 
-			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2, 0);
+			yuv444_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 
 		} else if (px_fmt == TH_PF_422) {
 
-			yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2, 0);
+			yuv422_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 
 		} else if (px_fmt == TH_PF_420) {
 
-			yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[2].data, (uint8_t *)yuv[1].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2, 0);
+			yuv420_2_rgb8888((uint8_t *)dst, (uint8_t *)yuv[0].data, (uint8_t *)yuv[1].data, (uint8_t *)yuv[2].data, size.x, size.y, yuv[0].stride, yuv[1].stride, size.x << 2);
 		};
 
 		format = Image::FORMAT_RGBA8;
@@ -175,7 +175,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		memdelete(file);
 	}
 	file = FileAccess::open(p_file, FileAccess::READ);
-	ERR_FAIL_COND(!file);
+	ERR_FAIL_COND_MSG(!file, "Cannot open file '" + p_file + "'.");
 
 #ifdef THEORA_USE_THREAD_STREAMING
 	thread_exit = false;
@@ -296,8 +296,8 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 		if (ogg_sync_pageout(&oy, &og) > 0) {
 			queue_page(&og); /* demux into the appropriate stream */
 		} else {
-			int ret = buffer_data(); /* someone needs more data */
-			if (ret == 0) {
+			int ret2 = buffer_data(); /* someone needs more data */
+			if (ret2 == 0) {
 				fprintf(stderr, "End of file while searching for codec headers.\n");
 				clear();
 				return;
@@ -365,7 +365,7 @@ void VideoStreamPlaybackTheora::set_file(const String &p_file) {
 
 float VideoStreamPlaybackTheora::get_time() const {
 
-	return time - AudioServer::get_singleton()->get_output_delay() - delay_compensation; //-((get_total())/(float)vi.rate);
+	return time - AudioServer::get_singleton()->get_output_latency() - delay_compensation; //-((get_total())/(float)vi.rate);
 };
 
 Ref<Texture> VideoStreamPlaybackTheora::get_texture() {
@@ -499,7 +499,6 @@ void VideoStreamPlaybackTheora::update(float p_delta) {
 						/*If we are too slow, reduce the pp level.*/
 						pp_inc = pp_level > 0 ? -1 : 0;
 					}
-				} else {
 				}
 
 			} else {

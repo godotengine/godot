@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,6 +34,7 @@ void TCP_Server::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("listen", "port", "bind_address"), &TCP_Server::listen, DEFVAL("*"));
 	ClassDB::bind_method(D_METHOD("is_connection_available"), &TCP_Server::is_connection_available);
+	ClassDB::bind_method(D_METHOD("is_listening"), &TCP_Server::is_listening);
 	ClassDB::bind_method(D_METHOD("take_connection"), &TCP_Server::take_connection);
 	ClassDB::bind_method(D_METHOD("stop"), &TCP_Server::stop);
 }
@@ -75,6 +76,12 @@ Error TCP_Server::listen(uint16_t p_port, const IP_Address &p_bind_address) {
 	return OK;
 }
 
+bool TCP_Server::is_listening() const {
+	ERR_FAIL_COND_V(!_sock.is_valid(), false);
+
+	return _sock->is_open();
+}
+
 bool TCP_Server::is_connection_available() const {
 
 	ERR_FAIL_COND_V(!_sock.is_valid(), false);
@@ -83,11 +90,7 @@ bool TCP_Server::is_connection_available() const {
 		return false;
 
 	Error err = _sock->poll(NetSocket::POLL_TYPE_IN, 0);
-	if (err != OK) {
-		return false;
-	}
-
-	return true;
+	return (err == OK);
 }
 
 Ref<StreamPeerTCP> TCP_Server::take_connection() {
@@ -116,9 +119,8 @@ void TCP_Server::stop() {
 	}
 }
 
-TCP_Server::TCP_Server() {
-
-	_sock = Ref<NetSocket>(NetSocket::create());
+TCP_Server::TCP_Server() :
+		_sock(Ref<NetSocket>(NetSocket::create())) {
 }
 
 TCP_Server::~TCP_Server() {

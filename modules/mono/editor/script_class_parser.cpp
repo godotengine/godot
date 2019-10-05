@@ -1,3 +1,33 @@
+/*************************************************************************/
+/*  script_class_parser.cpp                                              */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "script_class_parser.h"
 
 #include "core/map.h"
@@ -132,8 +162,8 @@ ScriptClassParser::Token ScriptClassParser::get_token() {
 						error = true;
 						return TK_ERROR;
 					} else if (code[idx] == begin_str) {
-						if (verbatim && code[idx + 1] == '"') { // `""` is verbatim string's `\"`
-							idx += 2; // skip next `"` as well
+						if (verbatim && code[idx + 1] == '"') { // '""' is verbatim string's '\"'
+							idx += 2; // skip next '"' as well
 							continue;
 						}
 
@@ -236,6 +266,20 @@ Error ScriptClassParser::_skip_generic_type_params() {
 
 		if (tk == TK_IDENTIFIER) {
 			tk = get_token();
+			// Type specifications can end with "?" to denote nullable types, such as IList<int?>
+			if (tk == TK_SYMBOL) {
+				tk = get_token();
+				if (value.operator String() != "?") {
+					error_str = "Expected " + get_token_name(TK_IDENTIFIER) + ", found unexpected symbol '" + value + "'";
+					error = true;
+					return ERR_PARSE_ERROR;
+				}
+				if (tk != TK_OP_GREATER && tk != TK_COMMA) {
+					error_str = "Nullable type symbol '?' is only allowed after an identifier, but found " + get_token_name(tk) + " next.";
+					error = true;
+					return ERR_PARSE_ERROR;
+				}
+			}
 
 			if (tk == TK_PERIOD) {
 				while (true) {
@@ -259,6 +303,8 @@ Error ScriptClassParser::_skip_generic_type_params() {
 				if (err)
 					return err;
 				continue;
+			} else if (tk == TK_OP_GREATER) {
+				return OK;
 			} else if (tk != TK_COMMA) {
 				error_str = "Unexpected token: " + get_token_name(tk);
 				error = true;
@@ -290,6 +336,15 @@ Error ScriptClassParser::_parse_type_full_name(String &r_full_name) {
 
 	r_full_name += String(value);
 
+	if (code[idx] == '<') {
+		idx++;
+
+		// We don't mind if the base is generic, but we skip it any ways since this information is not needed
+		Error err = _skip_generic_type_params();
+		if (err)
+			return err;
+	}
+
 	if (code[idx] != '.') // We only want to take the next token if it's a period
 		return OK;
 
@@ -312,25 +367,94 @@ Error ScriptClassParser::_parse_class_base(Vector<String> &r_base) {
 
 	Token tk = get_token();
 
-	if (tk == TK_OP_LESS) {
-		// We don't add it to the base list if it's generic
-		Error err = _skip_generic_type_params();
+	if (tk == TK_COMMA) {
+		err = _parse_class_base(r_base);
 		if (err)
 			return err;
-	} else if (tk == TK_COMMA) {
-		Error err = _parse_class_base(r_base);
-		if (err)
+	} else if (tk == TK_IDENTIFIER && String(value) == "where") {
+		err = _parse_type_constraints();
+		if (err) {
 			return err;
-		r_base.push_back(name);
+		}
+
+		// An open curly bracket was parsed by _parse_type_constraints, so we can exit
 	} else if (tk == TK_CURLY_BRACKET_OPEN) {
-		r_base.push_back(name);
+		// we are finished when we hit the open curly bracket
 	} else {
 		error_str = "Unexpected token: " + get_token_name(tk);
 		error = true;
 		return ERR_PARSE_ERROR;
 	}
 
+	r_base.push_back(name);
+
 	return OK;
+}
+
+Error ScriptClassParser::_parse_type_constraints() {
+	Token tk = get_token();
+	if (tk != TK_IDENTIFIER) {
+		error_str = "Unexpected token: " + get_token_name(tk);
+		error = true;
+		return ERR_PARSE_ERROR;
+	}
+
+	tk = get_token();
+	if (tk != TK_COLON) {
+		error_str = "Unexpected token: " + get_token_name(tk);
+		error = true;
+		return ERR_PARSE_ERROR;
+	}
+
+	while (true) {
+		tk = get_token();
+		if (tk == TK_IDENTIFIER) {
+			if (String(value) == "where") {
+				return _parse_type_constraints();
+			}
+
+			tk = get_token();
+			if (tk == TK_PERIOD) {
+				while (true) {
+					tk = get_token();
+
+					if (tk != TK_IDENTIFIER) {
+						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + ", found: " + get_token_name(tk);
+						error = true;
+						return ERR_PARSE_ERROR;
+					}
+
+					tk = get_token();
+
+					if (tk != TK_PERIOD)
+						break;
+				}
+			}
+		}
+
+		if (tk == TK_COMMA) {
+			continue;
+		} else if (tk == TK_IDENTIFIER && String(value) == "where") {
+			return _parse_type_constraints();
+		} else if (tk == TK_SYMBOL && String(value) == "(") {
+			tk = get_token();
+			if (tk != TK_SYMBOL || String(value) != ")") {
+				error_str = "Unexpected token: " + get_token_name(tk);
+				error = true;
+				return ERR_PARSE_ERROR;
+			}
+		} else if (tk == TK_OP_LESS) {
+			Error err = _skip_generic_type_params();
+			if (err)
+				return err;
+		} else if (tk == TK_CURLY_BRACKET_OPEN) {
+			return OK;
+		} else {
+			error_str = "Unexpected token: " + get_token_name(tk);
+			error = true;
+			return ERR_PARSE_ERROR;
+		}
+	}
 }
 
 Error ScriptClassParser::_parse_namespace_name(String &r_name, int &r_curly_stack) {
@@ -425,6 +549,16 @@ Error ScriptClassParser::parse(const String &p_code) {
 						Error err = _skip_generic_type_params();
 						if (err)
 							return err;
+					} else if (tk == TK_IDENTIFIER && String(value) == "where") {
+						Error err = _parse_type_constraints();
+						if (err) {
+							return err;
+						}
+
+						// An open curly bracket was parsed by _parse_type_constraints, so we can exit
+						curly_stack++;
+						type_curly_stack++;
+						break;
 					} else {
 						error_str = "Unexpected token: " + get_token_name(tk);
 						error = true;
@@ -444,7 +578,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 					if (full_name.length())
 						full_name += ".";
 					full_name += class_decl.name;
-					OS::get_singleton()->print(String("Ignoring generic class declaration: " + class_decl.name).utf8());
+					OS::get_singleton()->print("Ignoring generic class declaration: %s\n", class_decl.name.utf8().get_data());
 				}
 			}
 		} else if (tk == TK_IDENTIFIER && String(value) == "struct") {
@@ -456,7 +590,7 @@ Error ScriptClassParser::parse(const String &p_code) {
 					name = String(value);
 				} else if (tk == TK_CURLY_BRACKET_OPEN) {
 					if (name.empty()) {
-						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + " after keyword `struct`, found " + get_token_name(TK_CURLY_BRACKET_OPEN);
+						error_str = "Expected " + get_token_name(TK_IDENTIFIER) + " after keyword 'struct', found " + get_token_name(TK_CURLY_BRACKET_OPEN);
 						error = true;
 						return ERR_PARSE_ERROR;
 					}
@@ -523,12 +657,12 @@ Error ScriptClassParser::parse_file(const String &p_filepath) {
 	String source;
 
 	Error ferr = read_all_file_utf8(p_filepath, source);
-	if (ferr != OK) {
-		if (ferr == ERR_INVALID_DATA) {
-			ERR_EXPLAIN("File '" + p_filepath + "' contains invalid unicode (utf-8), so it was not loaded. Please ensure that scripts are saved in valid utf-8 unicode.");
-		}
-		ERR_FAIL_V(ferr);
-	}
+
+	ERR_FAIL_COND_V_MSG(ferr != OK, ferr,
+			ferr == ERR_INVALID_DATA ?
+					"File '" + p_filepath + "' contains invalid unicode (UTF-8), so it was not loaded."
+											" Please ensure that scripts are saved in valid UTF-8 unicode." :
+					"Failed to read file: '" + p_filepath + "'.");
 
 	return parse(source);
 }

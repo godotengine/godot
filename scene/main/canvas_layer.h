@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,8 +55,12 @@ class CanvasLayer : public Node {
 
 	int sort_index;
 
+	bool follow_viewport;
+	float follow_viewport_scale;
+
 	void _update_xform();
 	void _update_locrotscale();
+	void _update_follow_viewport(bool p_force_exit = false);
 
 protected:
 	void _notification(int p_what);
@@ -90,6 +94,12 @@ public:
 
 	void reset_sort_index();
 	int get_sort_index();
+
+	void set_follow_viewport(bool p_enable);
+	bool is_following_viewport() const;
+
+	void set_follow_viewport_scale(float p_ratio);
+	float get_follow_viewport_scale() const;
 
 	RID get_canvas() const;
 

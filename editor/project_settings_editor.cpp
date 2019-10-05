@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -42,18 +42,18 @@
 ProjectSettingsEditor *ProjectSettingsEditor::singleton = NULL;
 
 static const char *_button_names[JOY_BUTTON_MAX] = {
-	"PS Cross, XBox A, Nintendo B",
-	"PS Circle, XBox B, Nintendo A",
-	"PS Square, XBox X, Nintendo Y",
-	"PS Triangle, XBox Y, Nintendo X",
+	"DualShock Cross, Xbox A, Nintendo B",
+	"DualShock Circle, Xbox B, Nintendo A",
+	"DualShock Square, Xbox X, Nintendo Y",
+	"DualShock Triangle, Xbox Y, Nintendo X",
 	"L, L1",
 	"R, R1",
 	"L2",
 	"R2",
 	"L3",
 	"R3",
-	"Select, Nintendo -",
-	"Start, Nintendo +",
+	"Select, DualShock Share, Nintendo -",
+	"Start, DualShock Options, Nintendo +",
 	"D-Pad Up",
 	"D-Pad Down",
 	"D-Pad Left",
@@ -111,14 +111,13 @@ void ProjectSettingsEditor::_notification(int p_what) {
 			restart_close_button->set_icon(get_icon("Close", "EditorIcons"));
 			restart_container->add_style_override("panel", get_stylebox("bg", "Tree"));
 			restart_icon->set_texture(get_icon("StatusWarning", "EditorIcons"));
-			restart_label->add_color_override("font_color", get_color("error_color", "Editor"));
+			restart_label->add_color_override("font_color", get_color("warning_color", "Editor"));
 
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
-			EditorSettings::get_singleton()->set("interface/dialogs/project_settings_bounds", get_rect());
+			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", get_rect());
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
-
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_right_icon(get_icon("Search", "EditorIcons"));
 			search_box->set_clear_button_enabled(true);
@@ -182,7 +181,7 @@ void ProjectSettingsEditor::_action_edited() {
 			ti->set_text(0, old_name);
 			add_at = "input/" + old_name;
 
-			message->set_text(vformat(TTR("Action '%s' already exists!"), new_name));
+			message->set_text(vformat(TTR("An action with the name '%s' already exists."), new_name));
 			message->popup_centered(Size2(300, 100) * EDSCALE);
 			return;
 		}
@@ -258,7 +257,7 @@ void ProjectSettingsEditor::_device_input_add() {
 			Ref<InputEventJoypadMotion> jm;
 			jm.instance();
 			jm->set_axis(device_index->get_selected() >> 1);
-			jm->set_axis_value(device_index->get_selected() & 1 ? 1 : -1);
+			jm->set_axis_value((device_index->get_selected() & 1) ? 1 : -1);
 			jm->set_device(_get_current_device());
 
 			for (int i = 0; i < events.size(); i++) {
@@ -295,7 +294,8 @@ void ProjectSettingsEditor::_device_input_add() {
 			ie = jb;
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	if (idx < 0 || idx >= events.size()) {
@@ -483,7 +483,7 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			for (int i = 0; i < JOY_AXIS_MAX * 2; i++) {
 
 				String desc = _axis_names[i];
-				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + (i & 1 ? "+" : "-") + desc);
+				device_index->add_item(TTR("Axis") + " " + itos(i / 2) + " " + ((i & 1) ? "+" : "-") + desc);
 			}
 			device_input->popup_centered_minsize(Size2(350, 95) * EDSCALE);
 
@@ -520,7 +520,8 @@ void ProjectSettingsEditor::_add_item(int p_item, Ref<InputEvent> p_exiting_even
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -704,7 +705,7 @@ void ProjectSettingsEditor::_update_actions() {
 		item->add_button(2, get_icon("Add", "EditorIcons"), 1, false, TTR("Add Event"));
 		if (!ProjectSettings::get_singleton()->get_input_presets().find(pi.name)) {
 			item->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
-			item->set_editable(2, true);
+			item->set_editable(0, true);
 		}
 
 		for (int i = 0; i < events.size(); i++) {
@@ -713,7 +714,7 @@ void ProjectSettingsEditor::_update_actions() {
 			if (event.is_null())
 				continue;
 
-			TreeItem *action = input_editor->create_item(item);
+			TreeItem *action2 = input_editor->create_item(item);
 
 			Ref<InputEventKey> k = event;
 			if (k.is_valid()) {
@@ -728,8 +729,8 @@ void ProjectSettingsEditor::_update_actions() {
 				if (k->get_control())
 					str = TTR("Control+") + str;
 
-				action->set_text(0, str);
-				action->set_icon(0, get_icon("Keyboard", "EditorIcons"));
+				action2->set_text(0, str);
+				action2->set_icon(0, get_icon("Keyboard", "EditorIcons"));
 			}
 
 			Ref<InputEventJoypadButton> jb = event;
@@ -742,8 +743,8 @@ void ProjectSettingsEditor::_update_actions() {
 				else
 					str += ".";
 
-				action->set_text(0, str);
-				action->set_icon(0, get_icon("JoyButton", "EditorIcons"));
+				action2->set_text(0, str);
+				action2->set_icon(0, get_icon("JoyButton", "EditorIcons"));
 			}
 
 			Ref<InputEventMouseButton> mb = event;
@@ -759,8 +760,8 @@ void ProjectSettingsEditor::_update_actions() {
 					default: str += TTR("Button") + " " + itos(mb->get_button_index()) + ".";
 				}
 
-				action->set_text(0, str);
-				action->set_icon(0, get_icon("Mouse", "EditorIcons"));
+				action2->set_text(0, str);
+				action2->set_icon(0, get_icon("Mouse", "EditorIcons"));
 			}
 
 			Ref<InputEventJoypadMotion> jm = event;
@@ -771,14 +772,14 @@ void ProjectSettingsEditor::_update_actions() {
 				int n = 2 * ax + (jm->get_axis_value() < 0 ? 0 : 1);
 				String desc = _axis_names[n];
 				String str = _get_device_string(jm->get_device()) + ", " + TTR("Axis") + " " + itos(ax) + " " + (jm->get_axis_value() < 0 ? "-" : "+") + desc + ".";
-				action->set_text(0, str);
-				action->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
+				action2->set_text(0, str);
+				action2->set_icon(0, get_icon("JoyAxis", "EditorIcons"));
 			}
-			action->set_metadata(0, i);
-			action->set_meta("__input", event);
+			action2->set_metadata(0, i);
+			action2->set_meta("__input", event);
 
-			action->add_button(2, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
-			action->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
+			action2->add_button(2, get_icon("Edit", "EditorIcons"), 3, false, TTR("Edit"));
+			action2->add_button(2, get_icon("Remove", "EditorIcons"), 2, false, TTR("Remove"));
 		}
 	}
 
@@ -788,18 +789,13 @@ void ProjectSettingsEditor::_update_actions() {
 void ProjectSettingsEditor::popup_project_settings() {
 
 	// Restore valid window bounds or pop up at default size.
-	if (EditorSettings::get_singleton()->has_setting("interface/dialogs/project_settings_bounds")) {
-		popup(EditorSettings::get_singleton()->get("interface/dialogs/project_settings_bounds"));
+	Rect2 saved_size = EditorSettings::get_singleton()->get_project_metadata("dialog_bounds", "project_settings", Rect2());
+	if (saved_size != Rect2()) {
+		popup(saved_size);
 	} else {
-
-		Size2 popup_size = Size2(900, 700) * editor_get_scale();
-		Size2 window_size = get_viewport_rect().size;
-
-		popup_size.x = MIN(window_size.x * 0.8, popup_size.x);
-		popup_size.y = MIN(window_size.y * 0.8, popup_size.y);
-
-		popup_centered(popup_size);
+		popup_centered_clamped(Size2(900, 700) * EDSCALE, 0.8);
 	}
+
 	globals_editor->update_category_list();
 	_update_translations();
 	autoload_settings->update_autoload();
@@ -812,7 +808,7 @@ void ProjectSettingsEditor::update_plugins() {
 
 void ProjectSettingsEditor::_item_selected(const String &p_path) {
 
-	String selected_path = p_path;
+	const String &selected_path = p_path;
 	if (selected_path == String())
 		return;
 	category->set_text(globals_editor->get_current_section());
@@ -925,7 +921,7 @@ void ProjectSettingsEditor::_action_check(String p_action) {
 		}
 		if (ProjectSettings::get_singleton()->has_setting("input/" + p_action)) {
 
-			action_add_error->set_text(TTR("Already existing"));
+			action_add_error->set_text(vformat(TTR("An action with the name '%s' already exists."), p_action));
 			action_add_error->show();
 			action_add->set_disabled(true);
 			return;
@@ -969,8 +965,6 @@ void ProjectSettingsEditor::_action_add() {
 	while (r->get_next())
 		r = r->get_next();
 
-	if (!r)
-		return;
 	r->select(0);
 	input_editor->ensure_cursor_is_visible();
 	action_add_error->hide();
@@ -1013,8 +1007,12 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 	presets.insert("pvrtc");
 	presets.insert("debug");
 	presets.insert("release");
+	presets.insert("editor");
+	presets.insert("standalone");
 	presets.insert("32");
 	presets.insert("64");
+	// Not available as an export platform yet, so it needs to be added manually
+	presets.insert("Server");
 
 	for (int i = 0; i < EditorExport::get_singleton()->get_export_platform_count(); i++) {
 		List<String> p;
@@ -1034,8 +1032,8 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 
 		String custom = EditorExport::get_singleton()->get_export_preset(i)->get_custom_features();
 		Vector<String> custom_list = custom.split(",");
-		for (int i = 0; i < custom_list.size(); i++) {
-			String f = custom_list[i].strip_edges();
+		for (int j = 0; j < custom_list.size(); j++) {
+			String f = custom_list[j].strip_edges();
 			if (f != String()) {
 				presets.insert(f);
 			}
@@ -1047,6 +1045,84 @@ void ProjectSettingsEditor::_copy_to_platform_about_to_show() {
 	for (Set<String>::Element *E = presets.front(); E; E = E->next()) {
 		popup_copy_to_feature->get_popup()->add_item(E->get(), id++);
 	}
+}
+
+Variant ProjectSettingsEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
+
+	TreeItem *selected = input_editor->get_selected();
+	if (!selected || selected->get_parent() != input_editor->get_root())
+		return Variant();
+
+	String name = selected->get_text(0);
+	VBoxContainer *vb = memnew(VBoxContainer);
+	HBoxContainer *hb = memnew(HBoxContainer);
+	Label *label = memnew(Label(name));
+	hb->set_modulate(Color(1, 1, 1, 1.0f));
+	hb->add_child(label);
+	vb->add_child(hb);
+	set_drag_preview(vb);
+
+	Dictionary drag_data;
+	drag_data["type"] = "nodes";
+
+	input_editor->set_drop_mode_flags(Tree::DROP_MODE_INBETWEEN);
+
+	return drag_data;
+}
+
+bool ProjectSettingsEditor::can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const {
+
+	Dictionary d = p_data;
+	if (!d.has("type") || d["type"] != "nodes")
+		return false;
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+	if (!selected || !item || item == selected || item->get_parent() == selected)
+		return false;
+
+	return true;
+}
+
+void ProjectSettingsEditor::drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) {
+
+	if (!can_drop_data_fw(p_point, p_data, p_from))
+		return;
+
+	TreeItem *selected = input_editor->get_selected();
+	TreeItem *item = input_editor->get_item_at_position(p_point);
+	TreeItem *target = item->get_parent() == input_editor->get_root() ? item : item->get_parent();
+
+	String selected_name = "input/" + selected->get_text(0);
+	int old_order = ProjectSettings::get_singleton()->get_order(selected_name);
+	String target_name = "input/" + target->get_text(0);
+	int target_order = ProjectSettings::get_singleton()->get_order(target_name);
+
+	int order = old_order;
+	bool is_below = target_order > old_order;
+	TreeItem *iterator = is_below ? selected->get_next() : selected->get_prev();
+
+	undo_redo->create_action(TTR("Moved Input Action Event"));
+	while (iterator != target) {
+
+		String iterator_name = "input/" + iterator->get_text(0);
+		int iterator_order = ProjectSettings::get_singleton()->get_order(iterator_name);
+		undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", iterator_name, order);
+		undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", iterator_name, iterator_order);
+		order = iterator_order;
+		iterator = is_below ? iterator->get_next() : iterator->get_prev();
+	}
+
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", target_name, order);
+	undo_redo->add_do_method(ProjectSettings::get_singleton(), "set_order", selected_name, target_order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", target_name, target_order);
+	undo_redo->add_undo_method(ProjectSettings::get_singleton(), "set_order", selected_name, old_order);
+
+	undo_redo->add_do_method(this, "_update_actions");
+	undo_redo->add_undo_method(this, "_update_actions");
+	undo_redo->add_do_method(this, "_settings_changed");
+	undo_redo->add_undo_method(this, "_settings_changed");
+	undo_redo->commit_action();
 }
 
 void ProjectSettingsEditor::_copy_to_platform(int p_which) {
@@ -1233,7 +1309,7 @@ void ProjectSettingsEditor::_translation_res_option_changed() {
 	ERR_FAIL_COND(!remaps.has(key));
 	PoolStringArray r = remaps[key];
 	ERR_FAIL_INDEX(idx, r.size());
-	if (translation_locales_idxs_remap.size() > 0) {
+	if (translation_locales_idxs_remap.size() > which) {
 		r.set(idx, path + ":" + langs[translation_locales_idxs_remap[which]]);
 	} else {
 		r.set(idx, path + ":" + langs[which]);
@@ -1316,7 +1392,7 @@ void ProjectSettingsEditor::_translation_res_option_delete(Object *p_item, int p
 void ProjectSettingsEditor::_translation_filter_option_changed() {
 
 	int sel_id = translation_locale_filter_mode->get_selected_id();
-	TreeItem *t = translation_filter->get_selected();
+	TreeItem *t = translation_filter->get_edited();
 	String locale = t->get_tooltip(0);
 	bool checked = t->is_checked(0);
 
@@ -1543,10 +1619,10 @@ void ProjectSettingsEditor::_update_translations() {
 				PoolStringArray selected = remaps[keys[i]];
 				for (int j = 0; j < selected.size(); j++) {
 
-					String s = selected[j];
-					int qp = s.find_last(":");
-					String path = s.substr(0, qp);
-					String locale = s.substr(qp + 1, s.length());
+					String s2 = selected[j];
+					int qp = s2.find_last(":");
+					String path = s2.substr(0, qp);
+					String locale = s2.substr(qp + 1, s2.length());
 
 					TreeItem *t2 = translation_remap_options->create_item(root2);
 					t2->set_editable(0, false);
@@ -1590,6 +1666,7 @@ void ProjectSettingsEditor::_toggle_search_bar(bool p_pressed) {
 		search_box->select_all();
 	} else {
 
+		search_box->clear();
 		search_bar->hide();
 		add_prop_bar->show();
 	}
@@ -1606,7 +1683,8 @@ TabContainer *ProjectSettingsEditor::get_tabs() {
 }
 
 void ProjectSettingsEditor::_editor_restart() {
-	EditorNode::get_singleton()->save_all_scenes_and_restart();
+	EditorNode::get_singleton()->save_all_scenes();
+	EditorNode::get_singleton()->restart_editor();
 }
 
 void ProjectSettingsEditor::_editor_restart_request() {
@@ -1666,6 +1744,10 @@ void ProjectSettingsEditor::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_editor_restart_close"), &ProjectSettingsEditor::_editor_restart_close);
 
 	ClassDB::bind_method(D_METHOD("get_tabs"), &ProjectSettingsEditor::get_tabs);
+
+	ClassDB::bind_method(D_METHOD("get_drag_data_fw"), &ProjectSettingsEditor::get_drag_data_fw);
+	ClassDB::bind_method(D_METHOD("can_drop_data_fw"), &ProjectSettingsEditor::can_drop_data_fw);
+	ClassDB::bind_method(D_METHOD("drop_data_fw"), &ProjectSettingsEditor::drop_data_fw);
 }
 
 ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
@@ -1678,6 +1760,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 
 	tab_container = memnew(TabContainer);
 	tab_container->set_tab_align(TabContainer::ALIGN_LEFT);
+	tab_container->set_use_hidden_tabs_for_min_size(true);
 	add_child(tab_container);
 
 	VBoxContainer *props_base = memnew(VBoxContainer);
@@ -1782,7 +1865,7 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	restart_icon->set_v_size_flags(SIZE_SHRINK_CENTER);
 	restart_hb->add_child(restart_icon);
 	restart_label = memnew(Label);
-	restart_label->set_text(TTR("Editor must be restarted for changes to take effect"));
+	restart_label->set_text(TTR("The editor must be restarted for changes to take effect."));
 	restart_hb->add_child(restart_label);
 	restart_hb->add_spacer();
 	Button *restart_button = memnew(Button);
@@ -1847,6 +1930,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	input_editor->connect("item_activated", this, "_action_activated");
 	input_editor->connect("cell_selected", this, "_action_selected");
 	input_editor->connect("button_pressed", this, "_action_button_pressed");
+	input_editor->set_drag_forwarding(this);
+
 	popup_add = memnew(PopupMenu);
 	add_child(popup_add);
 	popup_add->connect("id_pressed", this, "_add_item");
@@ -2000,8 +2085,8 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 		tvb->add_child(tmc);
 
 		translation_locale_filter_mode = memnew(OptionButton);
-		translation_locale_filter_mode->add_item(TTR("Show all locales"), SHOW_ALL_LOCALES);
-		translation_locale_filter_mode->add_item(TTR("Show only selected locales"), SHOW_ONLY_SELECTED_LOCALES);
+		translation_locale_filter_mode->add_item(TTR("Show All Locales"), SHOW_ALL_LOCALES);
+		translation_locale_filter_mode->add_item(TTR("Show Selected Locales Only"), SHOW_ONLY_SELECTED_LOCALES);
 		translation_locale_filter_mode->select(0);
 		tmc->add_margin_child(TTR("Filter mode:"), translation_locale_filter_mode);
 		translation_locale_filter_mode->connect("item_selected", this, "_translation_filter_mode_changed");

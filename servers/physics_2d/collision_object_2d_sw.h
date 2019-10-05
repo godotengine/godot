@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -62,9 +62,11 @@ private:
 		Variant metadata;
 		bool disabled;
 		bool one_way_collision;
+		float one_way_collision_margin;
 		Shape() {
 			disabled = false;
 			one_way_collision = false;
+			one_way_collision_margin = 0;
 		}
 	};
 
@@ -75,6 +77,8 @@ private:
 	uint32_t collision_mask;
 	uint32_t collision_layer;
 	bool _static;
+
+	SelfList<CollisionObject2DSW> pending_shape_update_list;
 
 	void _update_shapes();
 
@@ -109,12 +113,16 @@ public:
 	void _shape_changed();
 
 	_FORCE_INLINE_ Type get_type() const { return type; }
-	void add_shape(Shape2DSW *p_shape, const Transform2D &p_transform = Transform2D());
+	void add_shape(Shape2DSW *p_shape, const Transform2D &p_transform = Transform2D(), bool p_disabled = false);
 	void set_shape(int p_index, Shape2DSW *p_shape);
 	void set_shape_transform(int p_index, const Transform2D &p_transform);
 	void set_shape_metadata(int p_index, const Variant &p_metadata);
 
 	_FORCE_INLINE_ int get_shape_count() const { return shapes.size(); }
+	_FORCE_INLINE_ bool is_shape_disabled(int p_index) const {
+		CRASH_BAD_INDEX(p_index, shapes.size());
+		return shapes[p_index].disabled;
+	}
 	_FORCE_INLINE_ Shape2DSW *get_shape(int p_index) const {
 		CRASH_BAD_INDEX(p_index, shapes.size());
 		return shapes[p_index].shape;
@@ -146,13 +154,19 @@ public:
 		return shapes[p_idx].disabled;
 	}
 
-	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision) {
+	_FORCE_INLINE_ void set_shape_as_one_way_collision(int p_idx, bool p_one_way_collision, float p_margin) {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		shapes.write[p_idx].one_way_collision = p_one_way_collision;
+		shapes.write[p_idx].one_way_collision_margin = p_margin;
 	}
 	_FORCE_INLINE_ bool is_shape_set_as_one_way_collision(int p_idx) const {
 		CRASH_BAD_INDEX(p_idx, shapes.size());
 		return shapes[p_idx].one_way_collision;
+	}
+
+	_FORCE_INLINE_ float get_shape_one_way_collision_margin(int p_idx) const {
+		CRASH_BAD_INDEX(p_idx, shapes.size());
+		return shapes[p_idx].one_way_collision_margin;
 	}
 
 	void set_collision_mask(uint32_t p_mask) { collision_mask = p_mask; }

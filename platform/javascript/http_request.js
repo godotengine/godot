@@ -5,7 +5,7 @@
 /*                           GODOT ENGINE                                */
 /*                    http://www.godotengine.org                         */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -82,7 +82,7 @@ var GodotHTTPRequest = {
 
 	godot_xhr_send_string: function(xhrId, strPtr) {
 		if (!strPtr) {
-			console.warn("Failed to send string per XHR: null pointer");
+			err("Failed to send string per XHR: null pointer");
 			return;
 		}
 		GodotHTTPRequest.requests[xhrId].send(UTF8ToString(strPtr));
@@ -90,11 +90,11 @@ var GodotHTTPRequest = {
 
 	godot_xhr_send_data: function(xhrId, ptr, len) {
 		if (!ptr) {
-			console.warn("Failed to send data per XHR: null pointer");
+			err("Failed to send data per XHR: null pointer");
 			return;
 		}
 		if (len < 0) {
-			console.warn("Failed to send data per XHR: buffer length less than 0");
+			err("Failed to send data per XHR: buffer length less than 0");
 			return;
 		}
 		GodotHTTPRequest.requests[xhrId].send(HEAPU8.subarray(ptr, ptr + len));

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="MeshInstance" inherits="GeometryInstance" category="Core" version="3.1">
+<class name="MeshInstance" inherits="GeometryInstance" category="Core" version="3.2">
 	<brief_description>
 		Node that instances meshes into a scenario.
 	</brief_description>
@@ -8,8 +8,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="create_convex_collision">
 			<return type="void">
@@ -45,6 +43,7 @@
 			<return type="int">
 			</return>
 			<description>
+				Returns the number of surface materials.
 			</description>
 		</method>
 		<method name="set_surface_material">
@@ -63,8 +62,10 @@
 		<member name="mesh" type="Mesh" setter="set_mesh" getter="get_mesh">
 			The [Mesh] resource for the instance.
 		</member>
-		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path">
+		<member name="skeleton" type="NodePath" setter="set_skeleton_path" getter="get_skeleton_path" default="NodePath(&quot;..&quot;)">
 			[NodePath] to the [Skeleton] associated with the instance.
+		</member>
+		<member name="skin" type="Skin" setter="set_skin" getter="get_skin">
 		</member>
 	</members>
 	<constants>

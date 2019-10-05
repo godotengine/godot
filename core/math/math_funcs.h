@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,6 +32,7 @@
 #define MATH_FUNCS_H
 
 #include "core/math/math_defs.h"
+#include "core/math/random_pcg.h"
 #include "core/typedefs.h"
 
 #include "thirdparty/misc/pcg.h"
@@ -41,7 +42,7 @@
 
 class Math {
 
-	static pcg32_random_t default_pcg;
+	static RandomPCG default_rand;
 
 public:
 	Math() {} // useless to instance
@@ -59,6 +60,12 @@ public:
 
 	static _ALWAYS_INLINE_ double sinh(double p_x) { return ::sinh(p_x); }
 	static _ALWAYS_INLINE_ float sinh(float p_x) { return ::sinhf(p_x); }
+
+	static _ALWAYS_INLINE_ float sinc(float p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
+	static _ALWAYS_INLINE_ double sinc(double p_x) { return p_x == 0 ? 1 : ::sin(p_x) / p_x; }
+
+	static _ALWAYS_INLINE_ float sincn(float p_x) { return sinc(Math_PI * p_x); }
+	static _ALWAYS_INLINE_ double sincn(double p_x) { return sinc(Math_PI * p_x); }
 
 	static _ALWAYS_INLINE_ double cosh(double p_x) { return ::cosh(p_x); }
 	static _ALWAYS_INLINE_ float cosh(float p_x) { return ::coshf(p_x); }
@@ -191,6 +198,13 @@ public:
 		value += 0.0;
 		return value;
 	}
+	static _ALWAYS_INLINE_ int posmod(int p_x, int p_y) {
+		int value = p_x % p_y;
+		if ((value < 0 && p_y > 0) || (value > 0 && p_y < 0)) {
+			value += p_y;
+		}
+		return value;
+	}
 
 	static _ALWAYS_INLINE_ double deg2rad(double p_y) { return p_y * Math_PI / 180.0; }
 	static _ALWAYS_INLINE_ float deg2rad(float p_y) { return p_y * Math_PI / 180.0; }
@@ -201,11 +215,35 @@ public:
 	static _ALWAYS_INLINE_ double lerp(double p_from, double p_to, double p_weight) { return p_from + (p_to - p_from) * p_weight; }
 	static _ALWAYS_INLINE_ float lerp(float p_from, float p_to, float p_weight) { return p_from + (p_to - p_from) * p_weight; }
 
+	static _ALWAYS_INLINE_ double lerp_angle(double p_from, double p_to, double p_weight) {
+		double difference = fmod(p_to - p_from, Math_TAU);
+		double distance = fmod(2.0 * difference, Math_TAU) - difference;
+		return p_from + distance * p_weight;
+	}
+	static _ALWAYS_INLINE_ float lerp_angle(float p_from, float p_to, float p_weight) {
+		float difference = fmod(p_to - p_from, (float)Math_TAU);
+		float distance = fmod(2.0f * difference, (float)Math_TAU) - difference;
+		return p_from + distance * p_weight;
+	}
+
 	static _ALWAYS_INLINE_ double inverse_lerp(double p_from, double p_to, double p_value) { return (p_value - p_from) / (p_to - p_from); }
 	static _ALWAYS_INLINE_ float inverse_lerp(float p_from, float p_to, float p_value) { return (p_value - p_from) / (p_to - p_from); }
 
 	static _ALWAYS_INLINE_ double range_lerp(double p_value, double p_istart, double p_istop, double p_ostart, double p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
 	static _ALWAYS_INLINE_ float range_lerp(float p_value, float p_istart, float p_istop, float p_ostart, float p_ostop) { return Math::lerp(p_ostart, p_ostop, Math::inverse_lerp(p_istart, p_istop, p_value)); }
+
+	static _ALWAYS_INLINE_ double smoothstep(double p_from, double p_to, double p_weight) {
+		if (is_equal_approx(p_from, p_to)) return p_from;
+		double x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0, 1.0);
+		return x * x * (3.0 - 2.0 * x);
+	}
+	static _ALWAYS_INLINE_ float smoothstep(float p_from, float p_to, float p_weight) {
+		if (is_equal_approx(p_from, p_to)) return p_from;
+		float x = CLAMP((p_weight - p_from) / (p_to - p_from), 0.0f, 1.0f);
+		return x * x * (3.0f - 2.0f * x);
+	}
+	static _ALWAYS_INLINE_ double move_toward(double p_from, double p_to, double p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
+	static _ALWAYS_INLINE_ float move_toward(float p_from, float p_to, float p_delta) { return abs(p_to - p_from) <= p_delta ? p_to : p_from + SGN(p_to - p_from) * p_delta; }
 
 	static _ALWAYS_INLINE_ double linear2db(double p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
 	static _ALWAYS_INLINE_ float linear2db(float p_linear) { return Math::log(p_linear) * 8.6858896380650365530225783783321; }
@@ -216,22 +254,23 @@ public:
 	static _ALWAYS_INLINE_ double round(double p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 	static _ALWAYS_INLINE_ float round(float p_val) { return (p_val >= 0) ? Math::floor(p_val + 0.5) : -Math::floor(-p_val + 0.5); }
 
-	static _ALWAYS_INLINE_ int wrapi(int value, int min, int max) {
-		int rng = max - min;
-		return min + ((((value - min) % rng) + rng) % rng);
+	static _ALWAYS_INLINE_ int64_t wrapi(int64_t value, int64_t min, int64_t max) {
+		int64_t range = max - min;
+		return range == 0 ? min : min + ((((value - min) % range) + range) % range);
 	}
 	static _ALWAYS_INLINE_ double wrapf(double value, double min, double max) {
-		double rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		double range = max - min;
+		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
 	}
 	static _ALWAYS_INLINE_ float wrapf(float value, float min, float max) {
-		float rng = max - min;
-		return value - (rng * Math::floor((value - min) / rng));
+		float range = max - min;
+		return is_zero_approx(range) ? min : value - (range * Math::floor((value - min) / range));
 	}
 
 	// double only, as these functions are mainly used by the editor and not performance-critical,
 	static double ease(double p_x, double p_c);
 	static int step_decimals(double p_step);
+	static int range_step_decimals(double p_step);
 	static double stepify(double p_value, double p_step);
 	static double dectime(double p_value, double p_amount, double p_step);
 
@@ -241,20 +280,49 @@ public:
 	static void randomize();
 	static uint32_t rand_from_seed(uint64_t *seed);
 	static uint32_t rand();
-	static _ALWAYS_INLINE_ double randf() { return (double)rand() / (double)Math::RANDOM_MAX; }
-	static _ALWAYS_INLINE_ float randd() { return (float)rand() / (float)Math::RANDOM_MAX; }
+	static _ALWAYS_INLINE_ double randd() { return (double)rand() / (double)Math::RANDOM_MAX; }
+	static _ALWAYS_INLINE_ float randf() { return (float)rand() / (float)Math::RANDOM_MAX; }
 
 	static double random(double from, double to);
 	static float random(float from, float to);
 	static real_t random(int from, int to) { return (real_t)random((real_t)from, (real_t)to); }
 
-	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
-		// TODO: Comparing floats for approximate-equality is non-trivial.
-		// Using epsilon should cover the typical cases in Godot (where a == b is used to compare two reals), such as matrix and vector comparison operators.
-		// A proper implementation in terms of ULPs should eventually replace the contents of this function.
-		// See https://randomascii.wordpress.com/2012/02/25/comparing-floating-point-numbers-2012-edition/ for details.
+	static _ALWAYS_INLINE_ bool is_equal_approx_ratio(real_t a, real_t b, real_t epsilon = CMP_EPSILON, real_t min_epsilon = CMP_EPSILON) {
+		// this is an approximate way to check that numbers are close, as a ratio of their average size
+		// helps compare approximate numbers that may be very big or very small
+		real_t diff = abs(a - b);
+		if (diff == 0.0 || diff < min_epsilon) {
+			return true;
+		}
+		real_t avg_size = (abs(a) + abs(b)) / 2.0;
+		diff /= avg_size;
+		return diff < epsilon;
+	}
 
-		return abs(a - b) < CMP_EPSILON;
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
+		real_t tolerance = CMP_EPSILON * abs(a);
+		if (tolerance < CMP_EPSILON) {
+			tolerance = CMP_EPSILON;
+		}
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_equal_approx(real_t a, real_t b, real_t tolerance) {
+		// Check for exact equality first, required to handle "infinity" values.
+		if (a == b) {
+			return true;
+		}
+		// Then check for approximate equality.
+		return abs(a - b) < tolerance;
+	}
+
+	static _ALWAYS_INLINE_ bool is_zero_approx(real_t s) {
+		return abs(s) < CMP_EPSILON;
 	}
 
 	static _ALWAYS_INLINE_ float absf(float g) {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -97,6 +97,7 @@ class GDScript : public Script {
 	Ref<GDScript> base_cache;
 	Set<ObjectID> inheriters_cache;
 	bool source_changed_cache;
+	bool placeholder_fallback_enabled;
 	void _update_exports_values(Map<StringName, Variant> &values, List<PropertyInfo> &propnames);
 
 #endif
@@ -141,7 +142,7 @@ protected:
 	static void _bind_methods();
 
 public:
-	bool is_valid() const { return valid; }
+	virtual bool is_valid() const { return valid; }
 
 	const Map<StringName, Ref<GDScript> > &get_subclasses() const { return subclasses; }
 	const Map<StringName, Variant> &get_constants() const { return constants; }
@@ -209,6 +210,10 @@ public:
 	virtual void get_constants(Map<StringName, Variant> *p_constants);
 	virtual void get_members(Set<StringName> *p_members);
 
+#ifdef TOOLS_ENABLED
+	virtual bool is_placeholder_fallback_enabled() const { return placeholder_fallback_enabled; }
+#endif
+
 	GDScript();
 	~GDScript();
 };
@@ -246,6 +251,7 @@ public:
 	Variant debug_get_member_by_index(int p_idx) const { return members[p_idx]; }
 
 	virtual void notification(int p_notification);
+	String to_string(bool *r_valid);
 
 	virtual Ref<Script> get_script() const;
 
@@ -268,6 +274,7 @@ struct GDScriptWarning {
 		UNASSIGNED_VARIABLE, // Variable used but never assigned
 		UNASSIGNED_VARIABLE_OP_ASSIGN, // Variable never assigned but used in an assignment operation (+=, *=, etc)
 		UNUSED_VARIABLE, // Local variable is declared but never used
+		SHADOWED_VARIABLE, // Variable name shadowed by other variable
 		UNUSED_CLASS_VARIABLE, // Class variable is declared but never used in the file
 		UNUSED_ARGUMENT, // Function argument is never used
 		UNREACHABLE_CODE, // Code after a return statement
@@ -401,9 +408,10 @@ public:
 		csi.resize(_debug_call_stack_pos);
 		for (int i = 0; i < _debug_call_stack_pos; i++) {
 			csi.write[_debug_call_stack_pos - i - 1].line = _call_stack[i].line ? *_call_stack[i].line : 0;
-			if (_call_stack[i].function)
+			if (_call_stack[i].function) {
 				csi.write[_debug_call_stack_pos - i - 1].func = _call_stack[i].function->get_name();
-			csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+				csi.write[_debug_call_stack_pos - i - 1].file = _call_stack[i].function->get_script()->get_path();
+			}
 		}
 		return csi;
 	}
@@ -439,6 +447,7 @@ public:
 	virtual void get_reserved_words(List<String> *p_words) const;
 	virtual void get_comment_delimiters(List<String> *p_delimiters) const;
 	virtual void get_string_delimiters(List<String> *p_delimiters) const;
+	virtual String _get_processed_template(const String &p_template, const String &p_base_class_name) const;
 	virtual Ref<Script> get_template(const String &p_class_name, const String &p_base_class_name) const;
 	virtual bool is_using_templates();
 	virtual void make_template(const String &p_class_name, const String &p_base_class_name, Ref<Script> &p_script);
@@ -449,9 +458,9 @@ public:
 	virtual bool can_inherit_from_file() { return true; }
 	virtual int find_function(const String &p_function, const String &p_code) const;
 	virtual String make_function(const String &p_class, const String &p_name, const PoolStringArray &p_args) const;
-	virtual Error complete_code(const String &p_code, const String &p_base_path, Object *p_owner, List<String> *r_options, bool &r_forced, String &r_call_hint);
+	virtual Error complete_code(const String &p_code, const String &p_path, Object *p_owner, List<ScriptCodeCompletionOption> *r_options, bool &r_forced, String &r_call_hint);
 #ifdef TOOLS_ENABLED
-	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_base_path, Object *p_owner, LookupResult &r_result);
+	virtual Error lookup_code(const String &p_code, const String &p_symbol, const String &p_path, Object *p_owner, LookupResult &r_result);
 #endif
 	virtual String _get_indentation() const;
 	virtual void auto_indent_code(String &p_code, int p_from_line, int p_to_line) const;
@@ -505,6 +514,7 @@ public:
 	virtual void get_recognized_extensions(List<String> *p_extensions) const;
 	virtual bool handles_type(const String &p_type) const;
 	virtual String get_resource_type(const String &p_path) const;
+	virtual void get_dependencies(const String &p_path, List<String> *p_dependencies, bool p_add_types = false);
 };
 
 class ResourceFormatSaverGDScript : public ResourceFormatSaver {

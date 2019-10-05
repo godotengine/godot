@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -55,16 +55,23 @@ void Camera::_update_camera_mode() {
 		case PROJECTION_ORTHOGONAL: {
 			set_orthogonal(size, near, far);
 		} break;
+		case PROJECTION_FRUSTUM: {
+			set_frustum(size, frustum_offset, near, far);
+		} break;
 	}
 }
 
 void Camera::_validate_property(PropertyInfo &p_property) const {
 	if (p_property.name == "fov") {
-		if (mode == PROJECTION_ORTHOGONAL) {
+		if (mode != PROJECTION_PERSPECTIVE) {
 			p_property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	} else if (p_property.name == "size") {
-		if (mode == PROJECTION_PERSPECTIVE) {
+		if (mode != PROJECTION_ORTHOGONAL && mode != PROJECTION_FRUSTUM) {
+			p_property.usage = PROPERTY_USAGE_NOEDITOR;
+		}
+	} else if (p_property.name == "frustum_offset") {
+		if (mode != PROJECTION_FRUSTUM) {
 			p_property.usage = PROPERTY_USAGE_NOEDITOR;
 		}
 	}
@@ -99,9 +106,15 @@ void Camera::_notification(int p_what) {
 
 		case NOTIFICATION_ENTER_WORLD: {
 
-			bool first_camera = get_viewport()->_camera_add(this);
-			if (!get_tree()->is_node_being_edited(this) && (current || first_camera))
-				make_current();
+			// Needs to track the Viewport  because it's needed on NOTIFICATION_EXIT_WORLD
+			// and Spatial will handle it first, including clearing its reference to the Viewport,
+			// therefore making it impossible to subclasses to access it
+			viewport = get_viewport();
+			ERR_FAIL_COND(!viewport);
+
+			bool first_camera = viewport->_camera_add(this);
+			if (current || first_camera)
+				viewport->_camera_set(this);
 
 		} break;
 		case NOTIFICATION_TRANSFORM_CHANGED: {
@@ -123,17 +136,20 @@ void Camera::_notification(int p_what) {
 				}
 			}
 
-			get_viewport()->_camera_remove(this);
+			if (viewport) {
+				viewport->_camera_remove(this);
+				viewport = NULL;
+			}
 
 		} break;
 		case NOTIFICATION_BECAME_CURRENT: {
-			if (get_world().is_valid()) {
-				get_world()->_register_camera(this);
+			if (viewport) {
+				viewport->find_world()->_register_camera(this);
 			}
 		} break;
 		case NOTIFICATION_LOST_CURRENT: {
-			if (get_world().is_valid()) {
-				get_world()->_remove_camera(this);
+			if (viewport) {
+				viewport->find_world()->_remove_camera(this);
 			}
 		} break;
 	}
@@ -177,8 +193,24 @@ void Camera::set_orthogonal(float p_size, float p_z_near, float p_z_far) {
 	update_gizmo();
 }
 
+void Camera::set_frustum(float p_size, Vector2 p_offset, float p_z_near, float p_z_far) {
+	if (!force_change && size == p_size && frustum_offset == p_offset && p_z_near == near && p_z_far == far && mode == PROJECTION_FRUSTUM)
+		return;
+
+	size = p_size;
+	frustum_offset = p_offset;
+
+	near = p_z_near;
+	far = p_z_far;
+	mode = PROJECTION_FRUSTUM;
+	force_change = false;
+
+	VisualServer::get_singleton()->camera_set_frustum(camera, size, frustum_offset, near, far);
+	update_gizmo();
+}
+
 void Camera::set_projection(Camera::Projection p_mode) {
-	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL) {
+	if (p_mode == PROJECTION_PERSPECTIVE || p_mode == PROJECTION_ORTHOGONAL || p_mode == PROJECTION_FRUSTUM) {
 		mode = p_mode;
 		_update_camera_mode();
 		_change_notify();
@@ -232,8 +264,6 @@ bool Camera::is_current() const {
 		return get_viewport()->get_camera() == this;
 	} else
 		return current;
-
-	return false;
 }
 
 bool Camera::_can_gizmo_scale() const {
@@ -249,10 +279,7 @@ Vector3 Camera::project_ray_normal(const Point2 &p_pos) const {
 
 Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
@@ -274,10 +301,7 @@ Vector3 Camera::project_local_ray_normal(const Point2 &p_pos) const {
 
 Vector3 Camera::project_ray_origin(const Point2 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_camera_rect_size();
 	Vector2 cpos = get_viewport()->get_camera_coords(p_pos);
@@ -315,10 +339,7 @@ bool Camera::is_position_behind(const Vector3 &p_pos) const {
 }
 
 Vector<Vector3> Camera::get_near_plane_points() const {
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector<Vector3>());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector<Vector3>(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -342,10 +363,7 @@ Vector<Vector3> Camera::get_near_plane_points() const {
 
 Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector2());
-	}
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector2(), "Camera is not inside scene.");
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
 
@@ -368,11 +386,12 @@ Point2 Camera::unproject_position(const Vector3 &p_pos) const {
 	return res;
 }
 
-Vector3 Camera::project_position(const Point2 &p_point) const {
+Vector3 Camera::project_position(const Point2 &p_point, float p_z_depth) const {
 
-	if (!is_inside_tree()) {
-		ERR_EXPLAIN("Camera is not inside scene.");
-		ERR_FAIL_COND_V(!is_inside_tree(), Vector3());
+	ERR_FAIL_COND_V_MSG(!is_inside_tree(), Vector3(), "Camera is not inside scene.");
+
+	if (p_z_depth == 0) {
+		return get_global_transform().origin;
 	}
 
 	Size2 viewport_size = get_viewport()->get_visible_rect().size;
@@ -392,7 +411,7 @@ Vector3 Camera::project_position(const Point2 &p_point) const {
 	point.y = (1.0 - (p_point.y / viewport_size.y)) * 2.0 - 1.0;
 	point *= vp_size;
 
-	Vector3 p(point.x, point.y, -near);
+	Vector3 p(point.x, point.y, -p_z_depth);
 
 	return get_camera_transform().xform(p);
 }
@@ -449,7 +468,9 @@ void Camera::set_doppler_tracking(DopplerTracking p_tracking) {
 	doppler_tracking = p_tracking;
 	if (p_tracking != DOPPLER_TRACKING_DISABLED) {
 		velocity_tracker->set_track_physics_step(doppler_tracking == DOPPLER_TRACKING_PHYSICS_STEP);
-		velocity_tracker->reset(get_global_transform().origin);
+		if (is_inside_tree()) {
+			velocity_tracker->reset(get_global_transform().origin);
+		}
 	}
 	_update_camera_mode();
 }
@@ -465,19 +486,22 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("project_ray_origin", "screen_point"), &Camera::project_ray_origin);
 	ClassDB::bind_method(D_METHOD("unproject_position", "world_point"), &Camera::unproject_position);
 	ClassDB::bind_method(D_METHOD("is_position_behind", "world_point"), &Camera::is_position_behind);
-	ClassDB::bind_method(D_METHOD("project_position", "screen_point"), &Camera::project_position);
+	ClassDB::bind_method(D_METHOD("project_position", "screen_point", "z_depth"), &Camera::project_position, DEFVAL(0));
 	ClassDB::bind_method(D_METHOD("set_perspective", "fov", "z_near", "z_far"), &Camera::set_perspective);
 	ClassDB::bind_method(D_METHOD("set_orthogonal", "size", "z_near", "z_far"), &Camera::set_orthogonal);
+	ClassDB::bind_method(D_METHOD("set_frustum", "size", "offset", "z_near", "z_far"), &Camera::set_frustum);
 	ClassDB::bind_method(D_METHOD("make_current"), &Camera::make_current);
 	ClassDB::bind_method(D_METHOD("clear_current", "enable_next"), &Camera::clear_current, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_current"), &Camera::set_current);
 	ClassDB::bind_method(D_METHOD("is_current"), &Camera::is_current);
 	ClassDB::bind_method(D_METHOD("get_camera_transform"), &Camera::get_camera_transform);
 	ClassDB::bind_method(D_METHOD("get_fov"), &Camera::get_fov);
+	ClassDB::bind_method(D_METHOD("get_frustum_offset"), &Camera::get_frustum_offset);
 	ClassDB::bind_method(D_METHOD("get_size"), &Camera::get_size);
 	ClassDB::bind_method(D_METHOD("get_zfar"), &Camera::get_zfar);
 	ClassDB::bind_method(D_METHOD("get_znear"), &Camera::get_znear);
 	ClassDB::bind_method(D_METHOD("set_fov"), &Camera::set_fov);
+	ClassDB::bind_method(D_METHOD("set_frustum_offset"), &Camera::set_frustum_offset);
 	ClassDB::bind_method(D_METHOD("set_size"), &Camera::set_size);
 	ClassDB::bind_method(D_METHOD("set_zfar"), &Camera::set_zfar);
 	ClassDB::bind_method(D_METHOD("set_znear"), &Camera::set_znear);
@@ -495,6 +519,8 @@ void Camera::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_keep_aspect_mode"), &Camera::get_keep_aspect_mode);
 	ClassDB::bind_method(D_METHOD("set_doppler_tracking", "mode"), &Camera::set_doppler_tracking);
 	ClassDB::bind_method(D_METHOD("get_doppler_tracking"), &Camera::get_doppler_tracking);
+	ClassDB::bind_method(D_METHOD("get_frustum"), &Camera::get_frustum);
+	ClassDB::bind_method(D_METHOD("get_camera_rid"), &Camera::get_camera);
 
 	ClassDB::bind_method(D_METHOD("set_cull_mask_bit", "layer", "enable"), &Camera::set_cull_mask_bit);
 	ClassDB::bind_method(D_METHOD("get_cull_mask_bit", "layer"), &Camera::get_cull_mask_bit);
@@ -507,22 +533,24 @@ void Camera::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "h_offset"), "set_h_offset", "get_h_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "v_offset"), "set_v_offset", "get_v_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "doppler_tracking", PROPERTY_HINT_ENUM, "Disabled,Idle,Physics"), "set_doppler_tracking", "get_doppler_tracking");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal"), "set_projection", "get_projection");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "projection", PROPERTY_HINT_ENUM, "Perspective,Orthogonal,Frustum"), "set_projection", "get_projection");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "current"), "set_current", "is_current");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "fov", PROPERTY_HINT_RANGE, "1,179,0.1"), "set_fov", "get_fov");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "size", PROPERTY_HINT_RANGE, "0.1,16384,0.01"), "set_size", "get_size");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "frustum_offset"), "set_frustum_offset", "get_frustum_offset");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "near", PROPERTY_HINT_EXP_RANGE, "0.01,8192,0.01,or_greater"), "set_znear", "get_znear");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "far", PROPERTY_HINT_EXP_RANGE, "0.1,8192,0.1,or_greater"), "set_zfar", "get_zfar");
 
 	BIND_ENUM_CONSTANT(PROJECTION_PERSPECTIVE);
 	BIND_ENUM_CONSTANT(PROJECTION_ORTHOGONAL);
+	BIND_ENUM_CONSTANT(PROJECTION_FRUSTUM);
 
 	BIND_ENUM_CONSTANT(KEEP_WIDTH);
 	BIND_ENUM_CONSTANT(KEEP_HEIGHT);
 
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED)
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP)
-	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP)
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_DISABLED);
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_IDLE_STEP);
+	BIND_ENUM_CONSTANT(DOPPLER_TRACKING_PHYSICS_STEP);
 }
 
 float Camera::get_fov() const {
@@ -538,6 +566,10 @@ float Camera::get_size() const {
 float Camera::get_znear() const {
 
 	return near;
+}
+
+Vector2 Camera::get_frustum_offset() const {
+	return frustum_offset;
 }
 
 float Camera::get_zfar() const {
@@ -564,6 +596,11 @@ void Camera::set_size(float p_size) {
 
 void Camera::set_znear(float p_znear) {
 	near = p_znear;
+	_update_camera_mode();
+}
+
+void Camera::set_frustum_offset(Vector2 p_offset) {
+	frustum_offset = p_offset;
 	_update_camera_mode();
 }
 
@@ -645,9 +682,11 @@ Camera::Camera() {
 	camera = VisualServer::get_singleton()->camera_create();
 	size = 1;
 	fov = 0;
+	frustum_offset = Vector2();
 	near = 0;
 	far = 0;
 	current = false;
+	viewport = NULL;
 	force_change = false;
 	mode = PROJECTION_PERSPECTIVE;
 	set_perspective(70.0, 0.05, 100.0);
@@ -681,8 +720,9 @@ void ClippedCamera::set_process_mode(ProcessMode p_mode) {
 	if (process_mode == p_mode) {
 		return;
 	}
-	set_process_internal(p_mode == CLIP_PROCESS_IDLE);
-	set_physics_process_internal(p_mode == CLIP_PROCESS_PHYSICS);
+	process_mode = p_mode;
+	set_process_internal(process_mode == CLIP_PROCESS_IDLE);
+	set_physics_process_internal(process_mode == CLIP_PROCESS_PHYSICS);
 }
 ClippedCamera::ProcessMode ClippedCamera::get_process_mode() const {
 	return process_mode;
@@ -745,7 +785,7 @@ void ClippedCamera::_notification(int p_what) {
 
 		float csafe, cunsafe;
 		if (dspace->cast_motion(pyramid_shape, xf, cam_pos - ray_from, margin, csafe, cunsafe, exclude, collision_mask, clip_to_bodies, clip_to_areas)) {
-			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from).normalized() * csafe);
+			clip_offset = cam_pos.distance_to(ray_from + (cam_pos - ray_from) * csafe);
 		}
 
 		_update_camera();
@@ -814,6 +854,11 @@ void ClippedCamera::clear_exceptions() {
 	exclude.clear();
 }
 
+float ClippedCamera::get_clip_offset() const {
+
+	return clip_offset;
+}
+
 void ClippedCamera::set_clip_to_areas(bool p_clip) {
 
 	clip_to_areas = p_clip;
@@ -856,6 +901,8 @@ void ClippedCamera::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_clip_to_areas", "enable"), &ClippedCamera::set_clip_to_areas);
 	ClassDB::bind_method(D_METHOD("is_clip_to_areas_enabled"), &ClippedCamera::is_clip_to_areas_enabled);
+
+	ClassDB::bind_method(D_METHOD("get_clip_offset"), &ClippedCamera::get_clip_offset);
 
 	ClassDB::bind_method(D_METHOD("set_clip_to_bodies", "enable"), &ClippedCamera::set_clip_to_bodies);
 	ClassDB::bind_method(D_METHOD("is_clip_to_bodies_enabled"), &ClippedCamera::is_clip_to_bodies_enabled);

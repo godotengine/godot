@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -49,7 +49,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 #define SET_FROM_ARRAY(m_type)                                                                   \
 	{                                                                                            \
 		MonoArray *managed = GDMonoMarshal::m_type##_to_mono_array(p_value.operator ::m_type()); \
-		mono_field_set_value(p_object, mono_field, &managed);                                    \
+		mono_field_set_value(p_object, mono_field, managed);                                     \
 	}
 
 	switch (type.type_encoding) {
@@ -219,16 +219,14 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 						break;
 					}
 					default: {
-						ERR_EXPLAIN(String() + "Attempted to convert Variant to a managed enum value of unmarshallable base type.");
-						ERR_FAIL();
+						ERR_FAIL_MSG("Attempted to convert Variant to a managed enum value of unmarshallable base type.");
 					}
 				}
 
 				break;
 			}
 
-			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + tclass->get_name());
-			ERR_FAIL();
+			ERR_FAIL_MSG("Attempted to set the value of a field of unmarshallable type: '" + tclass->get_name() + "'.");
 		} break;
 
 		case MONO_TYPE_ARRAY:
@@ -275,8 +273,7 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
-			ERR_EXPLAIN(String() + "Attempted to convert Variant to a managed array of unmarshallable element type.");
-			ERR_FAIL();
+			ERR_FAIL_MSG("Attempted to convert Variant to a managed array of unmarshallable element type.");
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -313,8 +310,45 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 				break;
 			}
 
-			ERR_EXPLAIN(String() + "Attempted to set the value of a field of unmarshallable type: " + type_class->get_name());
-			ERR_FAIL();
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
+
+			MonoReflectionType *key_reftype, *value_reftype;
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(),
+						GDMonoUtils::Marshal::make_generic_dictionary_type(key_reftype, value_reftype));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), CACHED_CLASS(Dictionary));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			MonoReflectionType *elem_reftype;
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(),
+						GDMonoUtils::Marshal::make_generic_array_type(elem_reftype));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				if (GDMonoUtils::tools_godot_api_check()) {
+					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				} else {
+					MonoObject *managed = (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_value.operator Array());
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				}
+			}
+
+			ERR_FAIL_MSG("Attempted to set the value of a field of unmarshallable type: '" + type_class->get_name() + "'.");
 		} break;
 
 		case MONO_TYPE_OBJECT: {
@@ -418,35 +452,59 @@ void GDMonoField::set_value_from_variant(MonoObject *p_object, const Variant &p_
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type.type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type.type_class->get_mono_type());
 
-			MonoException *exc = NULL;
-
-			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_dict) {
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), type.type_class);
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}
 
-			exc = NULL;
-
-			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_array) {
+			if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
 				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), type.type_class);
 				mono_field_set_value(p_object, mono_field, managed);
 				break;
 			}
+
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			MonoReflectionType *key_reftype, *value_reftype;
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(),
+						GDMonoUtils::Marshal::make_generic_dictionary_type(key_reftype, value_reftype));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Dictionary(), CACHED_CLASS(Dictionary));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			MonoReflectionType *elem_reftype;
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+				MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(),
+						GDMonoUtils::Marshal::make_generic_array_type(elem_reftype));
+				mono_field_set_value(p_object, mono_field, managed);
+				break;
+			}
+
+			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				if (GDMonoUtils::tools_godot_api_check()) {
+					MonoObject *managed = GDMonoUtils::create_managed_from(p_value.operator Array(), CACHED_CLASS(Array));
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				} else {
+					MonoObject *managed = (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_value.operator Array());
+					mono_field_set_value(p_object, mono_field, managed);
+					break;
+				}
+			}
 		} break;
 
 		default: {
-			ERR_PRINTS(String() + "Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding));
+			ERR_PRINTS("Attempted to set the value of a field of unexpected type encoding: " + itos(type.type_encoding) + ".");
 		} break;
 	}
 
@@ -505,20 +563,20 @@ bool GDMonoField::is_static() {
 	return mono_field_get_flags(mono_field) & MONO_FIELD_ATTR_STATIC;
 }
 
-GDMonoClassMember::Visibility GDMonoField::get_visibility() {
+IMonoClassMember::Visibility GDMonoField::get_visibility() {
 	switch (mono_field_get_flags(mono_field) & MONO_FIELD_ATTR_FIELD_ACCESS_MASK) {
 		case MONO_FIELD_ATTR_PRIVATE:
-			return GDMonoClassMember::PRIVATE;
+			return IMonoClassMember::PRIVATE;
 		case MONO_FIELD_ATTR_FAM_AND_ASSEM:
-			return GDMonoClassMember::PROTECTED_AND_INTERNAL;
+			return IMonoClassMember::PROTECTED_AND_INTERNAL;
 		case MONO_FIELD_ATTR_ASSEMBLY:
-			return GDMonoClassMember::INTERNAL;
+			return IMonoClassMember::INTERNAL;
 		case MONO_FIELD_ATTR_FAMILY:
-			return GDMonoClassMember::PROTECTED;
+			return IMonoClassMember::PROTECTED;
 		case MONO_FIELD_ATTR_PUBLIC:
-			return GDMonoClassMember::PUBLIC;
+			return IMonoClassMember::PUBLIC;
 		default:
-			ERR_FAIL_V(GDMonoClassMember::PRIVATE);
+			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
 }
 

@@ -117,7 +117,12 @@ void main() {
 #ifdef USE_INSTANCING
 	mat4 extra_matrix_instance = extra_matrix * transpose(mat4(instance_xform0, instance_xform1, instance_xform2, vec4(0.0, 0.0, 0.0, 1.0)));
 	color *= instance_color;
+
+#ifdef USE_INSTANCE_CUSTOM
 	vec4 instance_custom = instance_custom_data;
+#else
+	vec4 instance_custom = vec4(0.0);
+#endif
 
 #else
 	mat4 extra_matrix_instance = extra_matrix;
@@ -138,8 +143,15 @@ void main() {
 	highp vec4 outvec = vec4(vertex, 0.0, 1.0);
 #endif
 
+#ifdef USE_PARTICLES
+	//scale by texture size
+	outvec.xy /= color_texpixel_size;
+#endif
+
 #define extra_matrix extra_matrix_instance
 
+	//for compatibility with the fragment shader we need to use uv here
+	vec2 uv = uv_interp;
 	{
 		/* clang-format off */
 
@@ -147,6 +159,8 @@ VERTEX_SHADER_CODE
 
 		/* clang-format on */
 	}
+
+	uv_interp = uv;
 
 #ifdef USE_NINEPATCH
 
@@ -164,6 +178,9 @@ VERTEX_SHADER_CODE
 
 #ifdef USE_PIXEL_SNAP
 	outvec.xy = floor(outvec + 0.5).xy;
+	// precision issue on some hardware creates artifacts within texture
+	// offset uv by a small amount to avoid
+	uv_interp += 1e-5;
 #endif
 
 #ifdef USE_SKELETON
@@ -328,6 +345,7 @@ void light_compute(
 		inout vec4 light_color,
 		vec2 light_uv,
 		inout vec4 shadow_color,
+		inout vec2 shadow_vec,
 		vec3 normal,
 		vec2 uv,
 #if defined(SCREEN_UV_USED)
@@ -472,6 +490,7 @@ void main() {
 
 #if defined(NORMALMAP_USED)
 		vec3 normal_map = vec3(0.0, 0.0, 1.0);
+		normal_used = true;
 #endif
 
 		/* clang-format off */
@@ -485,7 +504,7 @@ FRAGMENT_SHADER_CODE
 #endif
 	}
 #ifdef DEBUG_ENCODED_32
-	highp float enc32 = dot(color, highp vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1));
+	highp float enc32 = dot(color, highp vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1.0));
 	color = vec4(vec3(enc32), 1.0);
 #endif
 
@@ -494,6 +513,7 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_LIGHTING
 
 	vec2 light_vec = transformed_light_uv;
+	vec2 shadow_vec = transformed_light_uv;
 
 	if (normal_used) {
 		normal.xy = mat2(local_rot.xy, local_rot.zw) * normal.xy;
@@ -521,6 +541,7 @@ FRAGMENT_SHADER_CODE
 				real_light_color,
 				light_uv,
 				real_light_shadow_color,
+				shadow_vec,
 				normal,
 				uv,
 #if defined(SCREEN_UV_USED)
@@ -539,8 +560,16 @@ FRAGMENT_SHADER_CODE
 		color *= light;
 
 #ifdef USE_SHADOWS
-		light_vec = light_uv_interp.zw; //for shadows
-		float angle_to_light = -atan(light_vec.x, light_vec.y);
+#ifdef SHADOW_VEC_USED
+		mat3 inverse_light_matrix = mat3(light_matrix);
+		inverse_light_matrix[0] = normalize(inverse_light_matrix[0]);
+		inverse_light_matrix[1] = normalize(inverse_light_matrix[1]);
+		inverse_light_matrix[2] = normalize(inverse_light_matrix[2]);
+		shadow_vec = (mat3(inverse_light_matrix) * vec3(shadow_vec, 0.0)).xy;
+#else
+		shadow_vec = light_uv_interp.zw;
+#endif
+		float angle_to_light = -atan(shadow_vec.x, shadow_vec.y);
 		float PI = 3.14159265358979323846264;
 		/*int i = int(mod(floor((angle_to_light+7.0*PI/6.0)/(4.0*PI/6.0))+1.0, 3.0)); // +1 pq os indices estao em ordem 2,0,1 nos arrays
 		float ang*/
@@ -551,18 +580,18 @@ FRAGMENT_SHADER_CODE
 		vec2 point;
 		float sh;
 		if (abs_angle < 45.0 * PI / 180.0) {
-			point = light_vec;
+			point = shadow_vec;
 			sh = 0.0 + (1.0 / 8.0);
 		} else if (abs_angle > 135.0 * PI / 180.0) {
-			point = -light_vec;
+			point = -shadow_vec;
 			sh = 0.5 + (1.0 / 8.0);
 		} else if (angle_to_light > 0.0) {
 
-			point = vec2(light_vec.y, -light_vec.x);
+			point = vec2(shadow_vec.y, -shadow_vec.x);
 			sh = 0.25 + (1.0 / 8.0);
 		} else {
 
-			point = vec2(-light_vec.y, light_vec.x);
+			point = vec2(-shadow_vec.y, shadow_vec.x);
 			sh = 0.75 + (1.0 / 8.0);
 		}
 
@@ -576,7 +605,7 @@ FRAGMENT_SHADER_CODE
 
 #ifdef USE_RGBA_SHADOWS
 
-#define SHADOW_DEPTH(m_tex, m_uv) dot(texture((m_tex), (m_uv)), vec4(1.0 / (256.0 * 256.0 * 256.0), 1.0 / (256.0 * 256.0), 1.0 / 256.0, 1))
+#define SHADOW_DEPTH(m_tex, m_uv) dot(texture((m_tex), (m_uv)), vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0))
 
 #else
 

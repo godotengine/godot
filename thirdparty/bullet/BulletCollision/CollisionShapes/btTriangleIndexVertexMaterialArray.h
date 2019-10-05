@@ -20,26 +20,26 @@ subject to the following restrictions:
 
 #include "btTriangleIndexVertexArray.h"
 
-
-ATTRIBUTE_ALIGNED16( struct)	btMaterialProperties
+ATTRIBUTE_ALIGNED16(struct)
+btMaterialProperties
 {
-    ///m_materialBase ==========> 2 btScalar values make up one material, friction then restitution
-    int m_numMaterials;
-    const unsigned char * m_materialBase;
-    int m_materialStride;
-    PHY_ScalarType m_materialType;
-    ///m_numTriangles <=========== This exists in the btIndexedMesh object for the same subpart, but since we're
-    ///                           padding the structure, it can be reproduced at no real cost
-    ///m_triangleMaterials =====> 1 integer value makes up one entry
-    ///                           eg: m_triangleMaterials[1] = 5; // This will set triangle 2 to use material 5
-    int m_numTriangles; 
-    const unsigned char * m_triangleMaterialsBase;
-    int m_triangleMaterialStride;
-    ///m_triangleType <========== Automatically set in addMaterialProperties
-    PHY_ScalarType m_triangleType;
+	///m_materialBase ==========> 2 btScalar values make up one material, friction then restitution
+	int m_numMaterials;
+	const unsigned char* m_materialBase;
+	int m_materialStride;
+	PHY_ScalarType m_materialType;
+	///m_numTriangles <=========== This exists in the btIndexedMesh object for the same subpart, but since we're
+	///                           padding the structure, it can be reproduced at no real cost
+	///m_triangleMaterials =====> 1 integer value makes up one entry
+	///                           eg: m_triangleMaterials[1] = 5; // This will set triangle 2 to use material 5
+	int m_numTriangles;
+	const unsigned char* m_triangleMaterialsBase;
+	int m_triangleMaterialStride;
+	///m_triangleType <========== Automatically set in addMaterialProperties
+	PHY_ScalarType m_triangleType;
 };
 
-typedef btAlignedObjectArray<btMaterialProperties>	MaterialArray;
+typedef btAlignedObjectArray<btMaterialProperties> MaterialArray;
 
 ///Teh btTriangleIndexVertexMaterialArray is built on TriangleIndexVertexArray
 ///The addition of a material array allows for the utilization of the partID and
@@ -47,38 +47,37 @@ typedef btAlignedObjectArray<btMaterialProperties>	MaterialArray;
 ///TriangleIndexVertexArray, no duplicate is made of the material data, so it
 ///is the users responsibility to maintain the array during the lifetime of the
 ///TriangleIndexVertexMaterialArray.
-ATTRIBUTE_ALIGNED16(class) btTriangleIndexVertexMaterialArray : public btTriangleIndexVertexArray
+ATTRIBUTE_ALIGNED16(class)
+btTriangleIndexVertexMaterialArray : public btTriangleIndexVertexArray
 {
 protected:
-    MaterialArray       m_materials;
-		
+	MaterialArray m_materials;
+
 public:
 	BT_DECLARE_ALIGNED_ALLOCATOR();
 
-    btTriangleIndexVertexMaterialArray()
+	btTriangleIndexVertexMaterialArray()
 	{
 	}
 
-    btTriangleIndexVertexMaterialArray(int numTriangles,int* triangleIndexBase,int triangleIndexStride,
-        int numVertices,btScalar* vertexBase,int vertexStride,
-        int numMaterials, unsigned char* materialBase, int materialStride,
-        int* triangleMaterialsBase, int materialIndexStride);
+	btTriangleIndexVertexMaterialArray(int numTriangles, int* triangleIndexBase, int triangleIndexStride,
+									   int numVertices, btScalar* vertexBase, int vertexStride,
+									   int numMaterials, unsigned char* materialBase, int materialStride,
+									   int* triangleMaterialsBase, int materialIndexStride);
 
-    virtual ~btTriangleIndexVertexMaterialArray() {}
+	virtual ~btTriangleIndexVertexMaterialArray() {}
 
-    void	addMaterialProperties(const btMaterialProperties& mat, PHY_ScalarType triangleType = PHY_INTEGER)
-    {
-        m_materials.push_back(mat);
-        m_materials[m_materials.size()-1].m_triangleType = triangleType;
-    }
+	void addMaterialProperties(const btMaterialProperties& mat, PHY_ScalarType triangleType = PHY_INTEGER)
+	{
+		m_materials.push_back(mat);
+		m_materials[m_materials.size() - 1].m_triangleType = triangleType;
+	}
 
-    virtual void getLockedMaterialBase(unsigned char **materialBase, int& numMaterials, PHY_ScalarType& materialType, int& materialStride,
-        unsigned char ** triangleMaterialBase, int& numTriangles, int& triangleMaterialStride, PHY_ScalarType& triangleType ,int subpart = 0);
+	virtual void getLockedMaterialBase(unsigned char** materialBase, int& numMaterials, PHY_ScalarType& materialType, int& materialStride,
+									   unsigned char** triangleMaterialBase, int& numTriangles, int& triangleMaterialStride, PHY_ScalarType& triangleType, int subpart = 0);
 
-    virtual void getLockedReadOnlyMaterialBase(const unsigned char **materialBase, int& numMaterials, PHY_ScalarType& materialType, int& materialStride,
-        const unsigned char ** triangleMaterialBase, int& numTriangles, int& triangleMaterialStride, PHY_ScalarType& triangleType, int subpart = 0);
+	virtual void getLockedReadOnlyMaterialBase(const unsigned char** materialBase, int& numMaterials, PHY_ScalarType& materialType, int& materialStride,
+											   const unsigned char** triangleMaterialBase, int& numTriangles, int& triangleMaterialStride, PHY_ScalarType& triangleType, int subpart = 0);
+};
 
-}
-;
-
-#endif //BT_MULTIMATERIAL_TRIANGLE_INDEX_VERTEX_ARRAY_H
+#endif  //BT_MULTIMATERIAL_TRIANGLE_INDEX_VERTEX_ARRAY_H

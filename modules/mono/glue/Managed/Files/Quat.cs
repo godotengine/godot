@@ -8,6 +8,7 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Quat : IEquatable<Quat>
     {
@@ -95,6 +96,7 @@ namespace Godot
             return this / Length;
         }
 
+        [Obsolete("Set is deprecated. Use the Quat(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y, real_t z, real_t w)
         {
             this.x = x;
@@ -103,16 +105,19 @@ namespace Godot
             this.w = w;
         }
 
+        [Obsolete("Set is deprecated. Use the Quat(" + nameof(Quat) + ") constructor instead.", error: true)]
         public void Set(Quat q)
         {
             this = q;
         }
 
+        [Obsolete("SetAxisAngle is deprecated. Use the Quat(" + nameof(Vector3) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void SetAxisAngle(Vector3 axis, real_t angle)
         {
             this = new Quat(axis, angle);
         }
 
+        [Obsolete("SetEuler is deprecated. Use the Quat(" + nameof(Vector3) + ") constructor instead.", error: true)]
         public void SetEuler(Vector3 eulerYXZ)
         {
             this = new Quat(eulerYXZ);
@@ -123,22 +128,23 @@ namespace Godot
             // Calculate cosine
             real_t cosom = x * b.x + y * b.y + z * b.z + w * b.w;
 
-            var to1 = new real_t[4];
+            var to1 = new Quat();
 
             // Adjust signs if necessary
             if (cosom < 0.0)
             {
-                cosom = -cosom; to1[0] = -b.x;
-                to1[1] = -b.y;
-                to1[2] = -b.z;
-                to1[3] = -b.w;
+                cosom = -cosom;
+                to1.x = -b.x;
+                to1.y = -b.y;
+                to1.z = -b.z;
+                to1.w = -b.w;
             }
             else
             {
-                to1[0] = b.x;
-                to1[1] = b.y;
-                to1[2] = b.z;
-                to1[3] = b.w;
+                to1.x = b.x;
+                to1.y = b.y;
+                to1.z = b.z;
+                to1.w = b.w;
             }
 
             real_t sinom, scale0, scale1;
@@ -162,10 +168,10 @@ namespace Godot
             // Calculate final values
             return new Quat
             (
-                scale0 * x + scale1 * to1[0],
-                scale0 * y + scale1 * to1[1],
-                scale0 * z + scale1 * to1[2],
-                scale0 * w + scale1 * to1[3]
+                scale0 * x + scale1 * to1.x,
+                scale0 * y + scale1 * to1.y,
+                scale0 * z + scale1 * to1.z,
+                scale0 * w + scale1 * to1.w
             );
         }
 
@@ -202,7 +208,7 @@ namespace Godot
         // Static Readonly Properties
         public static Quat Identity { get; } = new Quat(0f, 0f, 0f, 1f);
 
-        // Constructors 
+        // Constructors
         public Quat(real_t x, real_t y, real_t z, real_t w)
         {
             this.x = x;
@@ -228,9 +234,9 @@ namespace Godot
 
         public Quat(Vector3 eulerYXZ)
         {
-            real_t half_a1 = eulerYXZ.y * (real_t)0.5;
-            real_t half_a2 = eulerYXZ.x * (real_t)0.5;
-            real_t half_a3 = eulerYXZ.z * (real_t)0.5;
+            real_t half_a1 = eulerYXZ.y * 0.5f;
+            real_t half_a2 = eulerYXZ.x * 0.5f;
+            real_t half_a3 = eulerYXZ.z * 0.5f;
 
             // R = Y(a1).X(a2).Z(a3) convention for Euler angles.
             // Conversion to quaternion as listed in https://ntrs.nasa.gov/archive/nasa/casi.ntrs.nasa.gov/19770024290.pdf (page A-6)
@@ -245,7 +251,7 @@ namespace Godot
 
             x = sin_a1 * cos_a2 * sin_a3 + cos_a1 * sin_a2 * cos_a3;
             y = sin_a1 * cos_a2 * cos_a3 - cos_a1 * sin_a2 * sin_a3;
-            z = -sin_a1 * sin_a2 * cos_a3 + cos_a1 * cos_a2 * sin_a3;
+            z = cos_a1 * cos_a2 * sin_a3 - sin_a1 * sin_a2 * cos_a3;
             w = sin_a1 * sin_a2 * sin_a3 + cos_a1 * cos_a2 * cos_a3;
         }
 
@@ -347,9 +353,9 @@ namespace Godot
 
         public override bool Equals(object obj)
         {
-            if (obj is Vector2)
+            if (obj is Quat)
             {
-                return Equals((Vector2)obj);
+                return Equals((Quat)obj);
             }
 
             return false;
@@ -357,7 +363,7 @@ namespace Godot
 
         public bool Equals(Quat other)
         {
-            return x == other.x && y == other.y && z == other.z && w == other.w;
+            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z) && Mathf.IsEqualApprox(w, other.w);
         }
 
         public override int GetHashCode()

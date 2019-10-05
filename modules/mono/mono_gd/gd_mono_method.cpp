@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,26 +68,34 @@ void GDMonoMethod::_update_signature(MonoMethodSignature *p_method_sig) {
 
 		param_types.push_back(param_type);
 	}
+
+	// clear the cache
+	method_info_fetched = false;
+	method_info = MethodInfo();
+}
+
+GDMonoClass *GDMonoMethod::get_enclosing_class() const {
+	return GDMono::get_singleton()->get_class(mono_method_get_class(mono_method));
 }
 
 bool GDMonoMethod::is_static() {
 	return mono_method_get_flags(mono_method, NULL) & MONO_METHOD_ATTR_STATIC;
 }
 
-GDMonoClassMember::Visibility GDMonoMethod::get_visibility() {
+IMonoClassMember::Visibility GDMonoMethod::get_visibility() {
 	switch (mono_method_get_flags(mono_method, NULL) & MONO_METHOD_ATTR_ACCESS_MASK) {
 		case MONO_METHOD_ATTR_PRIVATE:
-			return GDMonoClassMember::PRIVATE;
+			return IMonoClassMember::PRIVATE;
 		case MONO_METHOD_ATTR_FAM_AND_ASSEM:
-			return GDMonoClassMember::PROTECTED_AND_INTERNAL;
+			return IMonoClassMember::PROTECTED_AND_INTERNAL;
 		case MONO_METHOD_ATTR_ASSEM:
-			return GDMonoClassMember::INTERNAL;
+			return IMonoClassMember::INTERNAL;
 		case MONO_METHOD_ATTR_FAMILY:
-			return GDMonoClassMember::PROTECTED;
+			return IMonoClassMember::PROTECTED;
 		case MONO_METHOD_ATTR_PUBLIC:
-			return GDMonoClassMember::PUBLIC;
+			return IMonoClassMember::PUBLIC;
 		default:
-			ERR_FAIL_V(GDMonoClassMember::PRIVATE);
+			ERR_FAIL_V(IMonoClassMember::PRIVATE);
 	}
 }
 
@@ -101,7 +109,7 @@ MonoObject *GDMonoMethod::invoke(MonoObject *p_object, const Variant **p_params,
 
 		for (int i = 0; i < params_count; i++) {
 			MonoObject *boxed_param = GDMonoMarshal::variant_to_mono_object(p_params[i], param_types[i]);
-			mono_array_set(params, MonoObject *, i, boxed_param);
+			mono_array_setref(params, i, boxed_param);
 		}
 
 		MonoException *exc = NULL;
@@ -246,10 +254,33 @@ void GDMonoMethod::get_parameter_types(Vector<ManagedType> &types) const {
 	}
 }
 
+const MethodInfo &GDMonoMethod::get_method_info() {
+
+	if (!method_info_fetched) {
+		method_info.name = name;
+		method_info.return_val = PropertyInfo(GDMonoMarshal::managed_to_variant_type(return_type), "");
+
+		Vector<StringName> names;
+		get_parameter_names(names);
+
+		for (int i = 0; i < params_count; ++i) {
+			method_info.arguments.push_back(PropertyInfo(GDMonoMarshal::managed_to_variant_type(param_types[i]), names[i]));
+		}
+
+		// TODO: default arguments
+
+		method_info_fetched = true;
+	}
+
+	return method_info;
+}
+
 GDMonoMethod::GDMonoMethod(StringName p_name, MonoMethod *p_method) {
 	name = p_name;
 
 	mono_method = p_method;
+
+	method_info_fetched = false;
 
 	attrs_fetched = false;
 	attributes = NULL;

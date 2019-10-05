@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,9 +34,6 @@
 #include "core/map.h"
 #include "core/resource.h"
 #include "scene/resources/texture.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Font : public Resource {
 
@@ -53,6 +50,7 @@ public:
 
 	virtual Size2 get_char_size(CharType p_char, CharType p_next = 0) const = 0;
 	Size2 get_string_size(const String &p_string) const;
+	Size2 get_wordwrap_string_size(const String &p_string, float p_width) const;
 
 	virtual bool is_distance_field_hint() const = 0;
 

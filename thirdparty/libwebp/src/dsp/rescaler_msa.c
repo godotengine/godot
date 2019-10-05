@@ -22,6 +22,7 @@
 
 #define ROUNDER (WEBP_RESCALER_ONE >> 1)
 #define MULT_FIX(x, y) (((uint64_t)(x) * (y) + ROUNDER) >> WEBP_RESCALER_RFIX)
+#define MULT_FIX_FLOOR(x, y) (((uint64_t)(x) * (y)) >> WEBP_RESCALER_RFIX)
 
 #define CALC_MULT_FIX_16(in0, in1, in2, in3, scale, shift, dst) do {  \
   v4u32 tmp0, tmp1, tmp2, tmp3;                                       \
@@ -262,6 +263,7 @@ static void RescalerExportRowExpand_MIPSdspR2(WebPRescaler* const wrk) {
   }
 }
 
+#if 0  // disabled for now. TODO(skal): make match the C-code
 static WEBP_INLINE void ExportRowShrink_0(const uint32_t* frow, uint32_t* irow,
                                           uint8_t* dst, int length,
                                           const uint32_t yscale,
@@ -341,7 +343,7 @@ static WEBP_INLINE void ExportRowShrink_0(const uint32_t* frow, uint32_t* irow,
     }
     for (x_out = 0; x_out < length; ++x_out) {
       const uint32_t frac = (uint32_t)MULT_FIX(frow[x_out], yscale);
-      const int v = (int)MULT_FIX(irow[x_out] - frac, wrk->fxy_scale);
+      const int v = (int)MULT_FIX_FLOOR(irow[x_out] - frac, wrk->fxy_scale);
       assert(v >= 0 && v <= 255);
       dst[x_out] = v;
       irow[x_out] = frac;
@@ -426,6 +428,7 @@ static void RescalerExportRowShrink_MIPSdspR2(WebPRescaler* const wrk) {
     ExportRowShrink_1(irow, dst, x_out_max, wrk);
   }
 }
+#endif  // 0
 
 //------------------------------------------------------------------------------
 // Entry point
@@ -434,7 +437,7 @@ extern void WebPRescalerDspInitMSA(void);
 
 WEBP_TSAN_IGNORE_FUNCTION void WebPRescalerDspInitMSA(void) {
   WebPRescalerExportRowExpand = RescalerExportRowExpand_MIPSdspR2;
-  WebPRescalerExportRowShrink = RescalerExportRowShrink_MIPSdspR2;
+//  WebPRescalerExportRowShrink = RescalerExportRowShrink_MIPSdspR2;
 }
 
 #else     // !WEBP_USE_MSA

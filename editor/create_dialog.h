@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,13 +38,10 @@
 #include "scene/gui/label.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class CreateDialog : public ConfirmationDialog {
 
-	GDCLASS(CreateDialog, ConfirmationDialog)
+	GDCLASS(CreateDialog, ConfirmationDialog);
 
 	Vector<String> favorite_list;
 	Tree *favorites;
@@ -53,6 +50,7 @@ class CreateDialog : public ConfirmationDialog {
 	Button *favorite;
 	LineEdit *search_box;
 	Tree *search_options;
+	HashMap<String, TreeItem *> search_options_types;
 	bool is_replace_mode;
 	String base_type;
 	String preferred_search_result_type;
@@ -82,9 +80,14 @@ class CreateDialog : public ConfirmationDialog {
 
 	void add_type(const String &p_type, HashMap<String, TreeItem *> &p_types, TreeItem *p_root, TreeItem **to_select);
 
+	void select_type(const String &p_type);
+
 	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+
+	bool _is_class_disabled_by_feature_profile(const StringName &p_class);
+	bool _is_type_prefered(const String &type);
 
 protected:
 	void _notification(int p_what);
@@ -102,7 +105,7 @@ public:
 	void set_preferred_search_result_type(const String &p_preferred_type);
 	String get_preferred_search_result_type();
 
-	void popup_create(bool p_dont_clear, bool p_replace_mode = false);
+	void popup_create(bool p_dont_clear, bool p_replace_mode = false, const String &p_select_type = "Node");
 
 	CreateDialog();
 };

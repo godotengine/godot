@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,7 @@ Adapted from corresponding SDL 2.0 code.
 	CFDictionaryGetValueIfPresent(dict, CFSTR(k), (const void **)v)
 
 /* Note that AC power sources also include a laptop battery it is charging. */
-void power_osx::checkps(CFDictionaryRef dict, bool *have_ac, bool *have_battery, bool *charging) {
+void PowerOSX::checkps(CFDictionaryRef dict, bool *have_ac, bool *have_battery, bool *charging) {
 	CFStringRef strval; /* don't CFRelease() this. */
 	CFBooleanRef bval;
 	CFNumberRef numval;
@@ -169,7 +169,7 @@ void power_osx::checkps(CFDictionaryRef dict, bool *have_ac, bool *have_battery,
 #undef STRMATCH
 
 //  CODE CHUNK IMPORTED FROM SDL 2.0
-bool power_osx::GetPowerInfo_MacOSX() {
+bool PowerOSX::GetPowerInfo_MacOSX() {
 	CFTypeRef blob = IOPSCopyPowerSourcesInfo();
 
 	nsecs_left = -1;
@@ -211,14 +211,14 @@ bool power_osx::GetPowerInfo_MacOSX() {
 	return true; /* always the definitive answer on Mac OS X. */
 }
 
-bool power_osx::UpdatePowerInfo() {
+bool PowerOSX::UpdatePowerInfo() {
 	if (GetPowerInfo_MacOSX()) {
 		return true;
 	}
 	return false;
 }
 
-OS::PowerState power_osx::get_power_state() {
+OS::PowerState PowerOSX::get_power_state() {
 	if (UpdatePowerInfo()) {
 		return power_state;
 	} else {
@@ -226,7 +226,7 @@ OS::PowerState power_osx::get_power_state() {
 	}
 }
 
-int power_osx::get_power_seconds_left() {
+int PowerOSX::get_power_seconds_left() {
 	if (UpdatePowerInfo()) {
 		return nsecs_left;
 	} else {
@@ -234,7 +234,7 @@ int power_osx::get_power_seconds_left() {
 	}
 }
 
-int power_osx::get_power_percent_left() {
+int PowerOSX::get_power_percent_left() {
 	if (UpdatePowerInfo()) {
 		return percent_left;
 	} else {
@@ -242,11 +242,11 @@ int power_osx::get_power_percent_left() {
 	}
 }
 
-power_osx::power_osx() :
+PowerOSX::PowerOSX() :
 		nsecs_left(-1),
 		percent_left(-1),
 		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
-power_osx::~power_osx() {
+PowerOSX::~PowerOSX() {
 }

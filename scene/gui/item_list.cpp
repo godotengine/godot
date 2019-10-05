@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -470,6 +470,8 @@ Size2 ItemList::Item::get_icon_size() const {
 
 void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
+	double prev_scroll = scroll_bar->get_value();
+
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (defer_select_single >= 0 && mm.is_valid()) {
 		defer_select_single = -1;
@@ -715,9 +717,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_cancel")) {
 			search_string = "";
-		} else if (p_event->is_action("ui_select")) {
+		} else if (p_event->is_action("ui_select") && select_mode == SELECT_MULTI) {
 
-			if (select_mode == SELECT_MULTI && current >= 0 && current < items.size()) {
+			if (current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
 					select(current, false);
 					emit_signal("multi_selected", current, true);
@@ -747,9 +749,21 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					search_string = "";
 				}
 
-				search_string += String::chr(k->get_unicode());
-				for (int i = 0; i < items.size(); i++) {
-					if (items[i].text.begins_with(search_string)) {
+				if (String::chr(k->get_unicode()) != search_string)
+					search_string += String::chr(k->get_unicode());
+
+				for (int i = current + 1; i <= items.size(); i++) {
+					if (i == items.size()) {
+						if (current == 0 || current == -1)
+							break;
+						else
+							i = 0;
+					}
+
+					if (i == current)
+						break;
+
+					if (items[i].text.findn(search_string) == 0) {
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
@@ -767,6 +781,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * pan_gesture->get_delta().y / 8);
 	}
+
+	if (scroll_bar->get_value() != prev_scroll)
+		accept_event(); //accept event if scroll changed
 }
 
 void ItemList::ensure_current_is_visible() {
@@ -1094,7 +1111,7 @@ void ItemList::_notification(int p_what) {
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 
-				// If the icon is transposed, we have to swith the size so that it is drawn correctly
+				// If the icon is transposed, we have to switch the size so that it is drawn correctly
 				if (items[i].icon_transposed) {
 					Size2 size_tmp = draw_rect.size;
 					draw_rect.size.x = size_tmp.y;
@@ -1114,13 +1131,13 @@ void ItemList::_notification(int p_what) {
 
 				int max_len = -1;
 
-				Vector2 size = font->get_string_size(items[i].text);
+				Vector2 size2 = font->get_string_size(items[i].text);
 				if (fixed_column_width)
 					max_len = fixed_column_width;
 				else if (same_column_width)
 					max_len = items[i].rect_cache.size.x;
 				else
-					max_len = size.x;
+					max_len = size2.x;
 
 				Color modulate = items[i].selected ? font_color_selected : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
 				if (items[i].disabled)
@@ -1170,12 +1187,12 @@ void ItemList::_notification(int p_what) {
 				} else {
 
 					if (fixed_column_width > 0)
-						size.x = MIN(size.x, fixed_column_width);
+						size2.x = MIN(size2.x, fixed_column_width);
 
 					if (icon_mode == ICON_MODE_TOP) {
-						text_ofs.x += (items[i].rect_cache.size.width - size.x) / 2;
+						text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
 					} else {
-						text_ofs.y += (items[i].rect_cache.size.height - size.y) / 2;
+						text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
 					}
 
 					text_ofs.y += font->get_ascent();
@@ -1243,7 +1260,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
-			rc.size.width = get_size().width; //not right but works
+			rc.size.width = get_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
 		}
 
 		if (rc.has_point(pos)) {

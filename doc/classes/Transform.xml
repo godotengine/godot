@@ -1,17 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Transform" category="Built-In Types" version="3.1">
+<class name="Transform" category="Built-In Types" version="3.2">
 	<brief_description>
-		3D Transformation. 3x4 matrix.
+		3D transformation (3×4 matrix).
 	</brief_description>
 	<description>
-		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [Basis] "basis" and an [Vector3] "origin". It is similar to a 3x4 matrix.
+		Represents one or many transformations in 3D space such as translation, rotation, or scaling. It consists of a [member basis] and an [member origin]. It is similar to a 3×4 matrix.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Transform">
 			<return type="Transform">
@@ -146,7 +144,7 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Transforms the given [Vector3], [Plane], or [AABB] by this transform.
+				Transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -155,26 +153,30 @@
 			<argument index="0" name="v" type="Variant">
 			</argument>
 			<description>
-				Inverse-transforms the given [Vector3], [Plane], or [AABB] by this transform.
+				Inverse-transforms the given [Vector3], [Plane], [AABB], or [PoolVector3Array] by this transform.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="basis" type="Basis" setter="" getter="">
+		<member name="basis" type="Basis" setter="" getter="" default="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
 			The basis is a matrix containing 3 [Vector3] as its columns: X axis, Y axis, and Z axis. These vectors can be interpreted as the basis vectors of local coordinate system traveling with the object.
 		</member>
-		<member name="origin" type="Vector3" setter="" getter="">
+		<member name="origin" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 0 )">
 			The translation offset of the transform.
 		</member>
 	</members>
 	<constants>
 		<constant name="IDENTITY" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with no translation, rotation or scaling applied. When applied to other data structures, [constant IDENTITY] performs no transformation.
 		</constant>
 		<constant name="FLIP_X" value="Transform( -1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the YZ plane.
 		</constant>
-		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<constant name="FLIP_Y" value="Transform( 1, 0, 0, 0, -1, 0, 0, 0, 1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XZ plane.
 		</constant>
-		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+		<constant name="FLIP_Z" value="Transform( 1, 0, 0, 0, 1, 0, 0, 0, -1, 0, 0, 0 )">
+			[Transform] with mirroring applied perpendicular to the XY plane.
 		</constant>
 	</constants>
 </class>

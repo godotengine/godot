@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -436,8 +436,6 @@ Error VariantParser::_parse_enginecfg(Stream *p_stream, Vector<String> &strings,
 			line++;
 		}
 	}
-
-	return OK;
 }
 
 template <class T>
@@ -728,7 +726,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 			bool at_key = true;
 			String key;
-			Token token;
+			Token token2;
 			bool need_comma = false;
 
 			while (true) {
@@ -740,11 +738,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 				if (at_key) {
 
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, token2, line, r_err_str);
 					if (err != OK)
 						return err;
 
-					if (token.type == TK_PARENTHESIS_CLOSE) {
+					if (token2.type == TK_PARENTHESIS_CLOSE) {
 						Reference *reference = Object::cast_to<Reference>(obj);
 						if (reference) {
 							value = REF(reference);
@@ -756,7 +754,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 
 					if (need_comma) {
 
-						if (token.type != TK_COMMA) {
+						if (token2.type != TK_COMMA) {
 
 							r_err_str = "Expected '}' or ','";
 							return ERR_PARSE_ERROR;
@@ -766,18 +764,18 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 						}
 					}
 
-					if (token.type != TK_STRING) {
+					if (token2.type != TK_STRING) {
 						r_err_str = "Expected property name as string";
 						return ERR_PARSE_ERROR;
 					}
 
-					key = token.value;
+					key = token2.value;
 
-					err = get_token(p_stream, token, line, r_err_str);
+					err = get_token(p_stream, token2, line, r_err_str);
 
 					if (err != OK)
 						return err;
-					if (token.type != TK_COLON) {
+					if (token2.type != TK_COLON) {
 
 						r_err_str = "Expected ':'";
 						return ERR_PARSE_ERROR;
@@ -785,12 +783,12 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					at_key = false;
 				} else {
 
-					Error err = get_token(p_stream, token, line, r_err_str);
+					Error err = get_token(p_stream, token2, line, r_err_str);
 					if (err != OK)
 						return err;
 
 					Variant v;
-					err = parse_value(token, v, p_stream, line, r_err_str, p_res_parser);
+					err = parse_value(token2, v, p_stream, line, r_err_str, p_res_parser);
 					if (err)
 						return err;
 					obj->set(key, v);
@@ -798,8 +796,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					at_key = true;
 				}
 			}
-
-			return OK;
 
 		} else if (id == "Resource" || id == "SubResource" || id == "ExtResource") {
 
@@ -864,8 +860,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 			}
-
-			return OK;
 #ifndef DISABLE_DEPRECATED
 		} else if (id == "InputEvent") {
 
@@ -882,11 +876,11 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 				return ERR_PARSE_ERROR;
 			}
 
-			String id = token.value;
+			String id2 = token.value;
 
 			Ref<InputEvent> ie;
 
-			if (id == "NONE") {
+			if (id2 == "NONE") {
 
 				get_token(p_stream, token, line, r_err_str);
 
@@ -895,7 +889,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "KEY") {
+			} else if (id2 == "KEY") {
 
 				Ref<InputEventKey> key;
 				key.instance();
@@ -954,7 +948,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "MBUTTON") {
+			} else if (id2 == "MBUTTON") {
 
 				Ref<InputEventMouseButton> mb;
 				mb.instance();
@@ -980,7 +974,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "JBUTTON") {
+			} else if (id2 == "JBUTTON") {
 
 				Ref<InputEventJoypadButton> jb;
 				jb.instance();
@@ -1006,7 +1000,7 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 					return ERR_PARSE_ERROR;
 				}
 
-			} else if (id == "JAXIS") {
+			} else if (id2 == "JAXIS") {
 
 				Ref<InputEventJoypadMotion> jm;
 				jm.instance();
@@ -1256,8 +1250,6 @@ Error VariantParser::parse_value(Token &token, Variant &value, Stream *p_stream,
 		r_err_str = "Expected value, got " + String(tk_name[token.type]) + ".";
 		return ERR_PARSE_ERROR;
 	}
-
-	return ERR_PARSE_ERROR;
 }
 
 Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
@@ -1301,8 +1293,6 @@ Error VariantParser::_parse_array(Array &array, Stream *p_stream, int &line, Str
 		array.push_back(v);
 		need_comma = true;
 	}
-
-	return OK;
 }
 
 Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int &line, String &r_err_str, ResourceParser *p_res_parser) {
@@ -1372,8 +1362,6 @@ Error VariantParser::_parse_dictionary(Dictionary &object, Stream *p_stream, int
 			at_key = true;
 		}
 	}
-
-	return OK;
 }
 
 Error VariantParser::_parse_tag(Token &token, Stream *p_stream, int &line, String &r_err_str, Tag &r_tag, ResourceParser *p_res_parser, bool p_simple_tag) {
@@ -1534,7 +1522,7 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 					return err;
 				if (tk.type != TK_STRING) {
 					r_err_str = "Error reading quoted string";
-					return err;
+					return ERR_INVALID_DATA;
 				}
 
 				what = tk.value;
@@ -1542,20 +1530,19 @@ Error VariantParser::parse_tag_assign_eof(Stream *p_stream, int &line, String &r
 			} else if (c != '=') {
 				what += String::chr(c);
 			} else {
+				if (p_stream->is_utf8()) {
+					what.parse_utf8(what.ascii(true).get_data());
+				}
 				r_assign = what;
 				Token token;
 				get_token(p_stream, token, line, r_err_str);
 				Error err = parse_value(token, r_value, p_stream, line, r_err_str, p_res_parser);
-				if (err) {
-				}
 				return err;
 			}
 		} else if (c == '\n') {
 			line++;
 		}
 	}
-
-	return OK;
 }
 
 Error VariantParser::parse(Stream *p_stream, Variant &r_ret, String &r_err_str, int &r_err_line, ResourceParser *p_res_parser) {
@@ -1597,7 +1584,7 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 		} break;
 		case Variant::INT: {
 
-			p_store_string_func(p_store_string_ud, itos(p_variant.operator int()));
+			p_store_string_func(p_store_string_ud, itos(p_variant.operator int64_t()));
 		} break;
 		case Variant::REAL: {
 
@@ -1948,7 +1935,8 @@ Error VariantWriter::write(const Variant &p_variant, StoreStringFunc p_store_str
 			p_store_string_func(p_store_string_ud, " )");
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	return OK;

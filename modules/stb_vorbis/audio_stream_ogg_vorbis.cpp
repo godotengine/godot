@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -188,7 +188,7 @@ void AudioStreamOGGVorbis::set_data(const PoolVector<uint8_t> &p_data) {
 		ogg_stream = stb_vorbis_open_memory((const unsigned char *)src_datar.ptr(), src_data_len, &error, &ogg_alloc);
 
 		if (!ogg_stream && error == VORBIS_outofmem) {
-			w = PoolVector<char>::Write();
+			w.release();
 			alloc_try *= 2;
 		} else {
 
@@ -273,6 +273,7 @@ void AudioStreamOGGVorbis::_bind_methods() {
 AudioStreamOGGVorbis::AudioStreamOGGVorbis() {
 
 	data = NULL;
+	data_len = 0;
 	length = 0;
 	sample_rate = 1;
 	channels = 1;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ class VisualScriptNodeInstance;
 class VisualScript;
 
 class VisualScriptNode : public Resource {
-	GDCLASS(VisualScriptNode, Resource)
+	GDCLASS(VisualScriptNode, Resource);
 
 	friend class VisualScript;
 
@@ -52,10 +52,8 @@ class VisualScriptNode : public Resource {
 	Array _get_default_input_values() const;
 
 	void validate_input_default_values();
-	void _update_input_ports();
 
 protected:
-	void _notification(int p_what);
 	void ports_changed_notify();
 	static void _bind_methods();
 
@@ -167,7 +165,7 @@ public:
 
 class VisualScript : public Script {
 
-	GDCLASS(VisualScript, Script)
+	GDCLASS(VisualScript, Script);
 
 	RES_BASE_EXTENSION("vs");
 
@@ -241,6 +239,7 @@ private:
 		PropertyInfo info;
 		Variant default_value;
 		bool _export;
+		// add getter & setter options here
 	};
 
 	Map<StringName, Function> functions;
@@ -248,6 +247,8 @@ private:
 	Map<StringName, Vector<Argument> > custom_signals;
 
 	Map<Object *, VisualScriptInstance *> instances;
+
+	bool is_tool_script;
 
 #ifdef TOOLS_ENABLED
 	Set<PlaceHolderScriptInstance *> placeholders;
@@ -267,6 +268,8 @@ protected:
 	static void _bind_methods();
 
 public:
+	// TODO: Remove it in future when breaking changes are acceptable
+	StringName get_default_func() const;
 	void add_function(const StringName &p_name);
 	bool has_function(const StringName &p_name) const;
 	void remove_function(const StringName &p_name);
@@ -275,6 +278,7 @@ public:
 	Vector2 get_function_scroll(const StringName &p_name) const;
 	void get_function_list(List<StringName> *r_functions) const;
 	int get_function_node_id(const StringName &p_name) const;
+	void set_tool_enabled(bool p_enabled);
 
 	void add_node(const StringName &p_func, int p_id, const Ref<VisualScriptNode> &p_node, const Point2 &p_pos = Point2());
 	void remove_node(const StringName &p_func, int p_id);
@@ -341,6 +345,7 @@ public:
 	virtual Error reload(bool p_keep_state = false);
 
 	virtual bool is_tool() const;
+	virtual bool is_valid() const;
 
 	virtual ScriptLanguage *get_language() const;
 
@@ -405,6 +410,7 @@ public:
 	virtual bool has_method(const StringName &p_method) const;
 	virtual Variant call(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 	virtual void notification(int p_notification);
+	String to_string(bool *r_valid);
 
 	bool set_variable(const StringName &p_variable, const Variant &p_value) {
 

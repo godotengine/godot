@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Script" inherits="Resource" category="Core" version="3.1">
+<class name="Script" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		A class stored as a resource.
 	</brief_description>
@@ -10,8 +10,6 @@
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/getting_started/step_by_step/scripting.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="can_instance" qualifiers="const">
 			<return type="bool">
@@ -32,6 +30,38 @@
 			</return>
 			<description>
 				Returns the script's base type.
+			</description>
+		</method>
+		<method name="get_property_default_value">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_constant_map">
+			<return type="Dictionary">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_method_list">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_property_list">
+			<return type="Array">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_script_signal_list">
+			<return type="Array">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="has_script_signal" qualifiers="const">

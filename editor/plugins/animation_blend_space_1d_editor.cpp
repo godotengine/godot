@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -72,7 +72,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 				ap->get_animation_list(&names);
 
 				for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
-					animations_menu->add_icon_item(get_icon("Animation", "Editoricons"), E->get());
+					animations_menu->add_icon_item(get_icon("Animation", "EditorIcons"), E->get());
 					animations_to_add.push_back(E->get());
 				}
 			}
@@ -94,7 +94,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			menu->add_item(TTR("Paste"), MENU_PASTE);
 		}
 		menu->add_separator();
-		menu->add_item(TTR("Load.."), MENU_LOAD_FILE);
+		menu->add_item(TTR("Load..."), MENU_LOAD_FILE);
 
 		menu->set_global_position(blend_space_draw->get_global_transform().xform(mb->get_position()));
 		menu->popup();
@@ -142,7 +142,7 @@ void AnimationNodeBlendSpace1DEditor::_blend_space_gui_input(const Ref<InputEven
 			}
 
 			updating = true;
-			undo_redo->create_action("Move Node Point");
+			undo_redo->create_action(TTR("Move Node Point"));
 			undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, point);
 			undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
 			undo_redo->add_do_method(this, "_update_space");
@@ -325,7 +325,7 @@ void AnimationNodeBlendSpace1DEditor::_config_changed(double) {
 		return;
 
 	updating = true;
-	undo_redo->create_action("Change BlendSpace1D Limits");
+	undo_redo->create_action(TTR("Change BlendSpace1D Limits"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_max_space", max_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_max_space", blend_space->get_max_space());
 	undo_redo->add_do_method(blend_space.ptr(), "set_min_space", min_value->get_value());
@@ -345,7 +345,7 @@ void AnimationNodeBlendSpace1DEditor::_labels_changed(String) {
 		return;
 
 	updating = true;
-	undo_redo->create_action("Change BlendSpace1D Labels", UndoRedo::MERGE_ENDS);
+	undo_redo->create_action(TTR("Change BlendSpace1D Labels"), UndoRedo::MERGE_ENDS);
 	undo_redo->add_do_method(blend_space.ptr(), "set_value_label", label_value->get_text());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_value_label", blend_space->get_value_label());
 	undo_redo->add_do_method(this, "_update_space");
@@ -401,7 +401,7 @@ void AnimationNodeBlendSpace1DEditor::_add_menu_type(int p_index) {
 	}
 
 	updating = true;
-	undo_redo->create_action("Add Node Point");
+	undo_redo->create_action(TTR("Add Node Point"));
 	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", node, add_point_pos);
 	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
 	undo_redo->add_do_method(this, "_update_space");
@@ -419,7 +419,7 @@ void AnimationNodeBlendSpace1DEditor::_add_animation_type(int p_index) {
 	anim->set_animation(animations_to_add[p_index]);
 
 	updating = true;
-	undo_redo->create_action("Add Animation Point");
+	undo_redo->create_action(TTR("Add Animation Point"));
 	undo_redo->add_do_method(blend_space.ptr(), "add_blend_point", anim, add_point_pos);
 	undo_redo->add_undo_method(blend_space.ptr(), "remove_blend_point", blend_space->get_blend_point_count());
 	undo_redo->add_do_method(this, "_update_space");
@@ -489,7 +489,7 @@ void AnimationNodeBlendSpace1DEditor::_erase_selected() {
 	if (selected_point != -1) {
 		updating = true;
 
-		undo_redo->create_action("Remove BlendSpace1D Point");
+		undo_redo->create_action(TTR("Remove BlendSpace1D Point"));
 		undo_redo->add_do_method(blend_space.ptr(), "remove_blend_point", selected_point);
 		undo_redo->add_undo_method(blend_space.ptr(), "add_blend_point", blend_space->get_blend_point_node(selected_point), blend_space->get_blend_point_position(selected_point), selected_point);
 		undo_redo->add_do_method(this, "_update_space");
@@ -507,7 +507,7 @@ void AnimationNodeBlendSpace1DEditor::_edit_point_pos(double) {
 		return;
 
 	updating = true;
-	undo_redo->create_action("Move BlendSpace1D Node Point");
+	undo_redo->create_action(TTR("Move BlendSpace1D Node Point"));
 	undo_redo->add_do_method(blend_space.ptr(), "set_blend_point_position", selected_point, edit_value->get_value());
 	undo_redo->add_undo_method(blend_space.ptr(), "set_blend_point_position", selected_point, blend_space->get_blend_point_position(selected_point));
 	undo_redo->add_do_method(this, "_update_space");
@@ -650,6 +650,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	snap->set_toggle_mode(true);
 	top_hb->add_child(snap);
 	snap->set_pressed(true);
+	snap->set_tooltip(TTR("Enable snap and show grid."));
 	snap->connect("pressed", this, "_snap_toggled");
 
 	snap_value = memnew(SpinBox);
@@ -734,7 +735,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	error_panel->add_child(error_label);
 	error_label->set_text("hmmm");
 
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	menu = memnew(PopupMenu);
 	add_child(menu);
@@ -750,7 +751,7 @@ AnimationNodeBlendSpace1DEditor::AnimationNodeBlendSpace1DEditor() {
 	open_file->set_title(TTR("Open Animation Node"));
 	open_file->set_mode(EditorFileDialog::MODE_OPEN_FILE);
 	open_file->connect("file_selected", this, "_file_opened");
-	undo_redo = EditorNode::get_singleton()->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	selected_point = -1;
 	dragging_selected = false;

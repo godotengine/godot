@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -113,6 +113,7 @@ public:
 class ResourceFormatSaverBinaryInstance {
 
 	String local_path;
+	String path;
 
 	bool relative_paths;
 	bool bundle_resources;
@@ -122,6 +123,14 @@ class ResourceFormatSaverBinaryInstance {
 	FileAccess *f;
 	String magic;
 	Set<RES> resource_set;
+
+	struct NonPersistentKey { //for resource properties generated on the fly
+		RES base;
+		StringName property;
+		bool operator<(const NonPersistentKey &p_key) const { return base == p_key.base ? property < p_key.property : base < p_key.base; }
+	};
+
+	Map<NonPersistentKey, RES> non_persistent_map;
 	Map<StringName, int> string_map;
 	Vector<StringName> strings;
 
@@ -152,7 +161,6 @@ public:
 };
 
 class ResourceFormatSaverBinary : public ResourceFormatSaver {
-
 public:
 	static ResourceFormatSaverBinary *singleton;
 	virtual Error save(const String &p_path, const RES &p_resource, uint32_t p_flags = 0);

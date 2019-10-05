@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector3" category="Built-In Types" version="3.1">
+<class name="Vector3" category="Built-In Types" version="3.2">
 	<brief_description>
-		Vector class, which performs basic 3D vector math operations.
+		Vector used for 3D math.
 	</brief_description>
 	<description>
-		Vector3 is one of the core classes of the engine, and includes several built-in helper functions to perform basic vector math operations.
+		3-element structure that can be used to represent positions in 3D space or any other pair of numeric values.
 	</description>
 	<tutorials>
 		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Vector3">
 			<return type="Vector3">
@@ -79,6 +77,15 @@
 			</argument>
 			<description>
 				Performs a cubic interpolation between vectors [code]pre_a[/code], [code]a[/code], [code]b[/code], [code]post_b[/code] ([code]a[/code] is current), by the given amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="direction_to">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="b" type="Vector3">
+			</argument>
+			<description>
+				Returns the normalized vector pointing from this vector to [code]b[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -168,6 +175,17 @@
 				Returns the axis of the vector's smallest value. See [code]AXIS_*[/code] constants.
 			</description>
 		</method>
+		<method name="move_toward">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="to" type="Vector3">
+			</argument>
+			<argument index="1" name="delta" type="float">
+			</argument>
+			<description>
+				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
+			</description>
+		</method>
 		<method name="normalized">
 			<return type="Vector3">
 			</return>
@@ -182,6 +200,24 @@
 			</argument>
 			<description>
 				Returns the outer product with [code]b[/code].
+			</description>
+		</method>
+		<method name="posmod">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="mod" type="float">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]mod[/code].
+			</description>
+		</method>
+		<method name="posmodv">
+			<return type="Vector3">
+			</return>
+			<argument index="0" name="modv" type="Vector3">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]modv[/code]'s components.
 			</description>
 		</method>
 		<method name="project">
@@ -220,6 +256,13 @@
 				Returns the vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
 			</description>
 		</method>
+		<method name="sign">
+			<return type="Vector3">
+			</return>
+			<description>
+				Returns the vector with each component set to one or negative one, depending on the signs of the components.
+			</description>
+		</method>
 		<method name="slerp">
 			<return type="Vector3">
 			</return>
@@ -228,8 +271,8 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
-				Both vectors need to be normalized.
+				Returns the result of spherical linear interpolation between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+				[b]Note:[/b] Both vectors must be normalized.
 			</description>
 		</method>
 		<method name="slide">
@@ -247,7 +290,7 @@
 			<argument index="0" name="by" type="Vector3">
 			</argument>
 			<description>
-				Returns a copy of the vector, snapped to the lowest neared multiple.
+				Returns a copy of the vector snapped to the lowest neared multiple.
 			</description>
 		</method>
 		<method name="to_diagonal_matrix">
@@ -259,14 +302,14 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float" setter="" getter="">
-			The vector's x component. Also accessible by using the index position [code][0][/code].
+		<member name="x" type="float" setter="" getter="" default="0.0">
+			The vector's X component. Also accessible by using the index position [code][0][/code].
 		</member>
-		<member name="y" type="float" setter="" getter="">
-			The vector's y component. Also accessible by using the index position [code][1][/code].
+		<member name="y" type="float" setter="" getter="" default="0.0">
+			The vector's Y component. Also accessible by using the index position [code][1][/code].
 		</member>
-		<member name="z" type="float" setter="" getter="">
-			The vector's z component. Also accessible by using the index position [code][2][/code].
+		<member name="z" type="float" setter="" getter="" default="0.0">
+			The vector's Z component. Also accessible by using the index position [code][2][/code].
 		</member>
 	</members>
 	<constants>
@@ -274,10 +317,10 @@
 			Enumerated value for the X axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="AXIS_Y" value="1">
-			Enumerated value for the Y axis.
+			Enumerated value for the Y axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="AXIS_Z" value="2">
-			Enumerated value for the Z axis.
+			Enumerated value for the Z axis. Returned by [method max_axis] and [method min_axis].
 		</constant>
 		<constant name="ZERO" value="Vector3( 0, 0, 0 )">
 			Zero vector.
@@ -286,7 +329,7 @@
 			One vector.
 		</constant>
 		<constant name="INF" value="Vector3( inf, inf, inf )">
-			Infinite vector.
+			Infinity vector.
 		</constant>
 		<constant name="LEFT" value="Vector3( -1, 0, 0 )">
 			Left unit vector.

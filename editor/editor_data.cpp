@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -481,7 +481,7 @@ EditorPlugin *EditorData::get_editor_plugin(int p_idx) {
 
 void EditorData::add_custom_type(const String &p_type, const String &p_inherits, const Ref<Script> &p_script, const Ref<Texture> &p_icon) {
 
-	ERR_FAIL_COND(p_script.is_null());
+	ERR_FAIL_COND_MSG(p_script.is_null(), "It's not a reference to a valid Script object.");
 	CustomType ct;
 	ct.name = p_type;
 	ct.icon = p_icon;
@@ -499,7 +499,6 @@ Object *EditorData::instance_custom_type(const String &p_type, const String &p_i
 
 		for (int i = 0; i < get_custom_types()[p_inherits].size(); i++) {
 			if (get_custom_types()[p_inherits][i].name == p_type) {
-				Ref<Texture> icon = get_custom_types()[p_inherits][i].icon;
 				Ref<Script> script = get_custom_types()[p_inherits][i].script;
 
 				Object *ob = ClassDB::instance(p_inherits);
@@ -508,8 +507,6 @@ Object *EditorData::instance_custom_type(const String &p_type, const String &p_i
 					ob->call("set_name", p_type);
 				}
 				ob->set_script(script.get_ref_ptr());
-				if (icon.is_valid())
-					ob->set_meta("_editor_icon", icon);
 				return ob;
 			}
 		}
@@ -540,6 +537,7 @@ int EditorData::add_edited_scene(int p_at_pos) {
 		p_at_pos = edited_scene.size();
 	EditedScene es;
 	es.root = NULL;
+	es.path = String();
 	es.history_current = -1;
 	es.version = 0;
 	es.live_edit_root = NodePath(String("/root"));
@@ -560,6 +558,7 @@ void EditorData::move_edited_scene_index(int p_idx, int p_to_idx) {
 	ERR_FAIL_INDEX(p_to_idx, edited_scene.size());
 	SWAP(edited_scene.write[p_idx], edited_scene.write[p_to_idx]);
 }
+
 void EditorData::remove_scene(int p_idx) {
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
 	if (edited_scene[p_idx].root) {
@@ -655,6 +654,8 @@ bool EditorData::check_and_update_scene(int p_idx) {
 
 		memdelete(edited_scene[p_idx].root);
 		edited_scene.write[p_idx].root = new_scene;
+		if (new_scene->get_filename() != "")
+			edited_scene.write[p_idx].path = new_scene->get_filename();
 		edited_scene.write[p_idx].selection = new_selection;
 
 		return true;
@@ -686,6 +687,12 @@ void EditorData::set_edited_scene_root(Node *p_root) {
 
 	ERR_FAIL_INDEX(current_edited_scene, edited_scene.size());
 	edited_scene.write[current_edited_scene].root = p_root;
+	if (p_root) {
+		if (p_root->get_filename() != "")
+			edited_scene.write[current_edited_scene].path = p_root->get_filename();
+		else
+			p_root->set_filename(edited_scene[current_edited_scene].path);
+	}
 }
 
 int EditorData::get_edited_scene_count() const {
@@ -775,6 +782,7 @@ String EditorData::get_scene_title(int p_idx) const {
 void EditorData::set_scene_path(int p_idx, const String &p_path) {
 
 	ERR_FAIL_INDEX(p_idx, edited_scene.size());
+	edited_scene.write[p_idx].path = p_path;
 
 	if (!edited_scene[p_idx].root)
 		return;
@@ -785,9 +793,14 @@ String EditorData::get_scene_path(int p_idx) const {
 
 	ERR_FAIL_INDEX_V(p_idx, edited_scene.size(), String());
 
-	if (!edited_scene[p_idx].root)
-		return "";
-	return edited_scene[p_idx].root->get_filename();
+	if (edited_scene[p_idx].root) {
+		if (edited_scene[p_idx].root->get_filename() == "")
+			edited_scene[p_idx].root->set_filename(edited_scene[p_idx].path);
+		else
+			return edited_scene[p_idx].root->get_filename();
+	}
+
+	return edited_scene[p_idx].path;
 }
 
 void EditorData::set_edited_scene_live_edit_root(const NodePath &p_root) {
@@ -857,11 +870,16 @@ bool EditorData::script_class_is_parent(const String &p_class, const String &p_i
 	if (!ScriptServer::is_global_class(p_class))
 		return false;
 	String base = script_class_get_base(p_class);
+	Ref<Script> script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class), "Script");
+	Ref<Script> base_script = script->get_base_script();
+
 	while (p_inherits != base) {
 		if (ClassDB::class_exists(base)) {
 			return ClassDB::is_parent_class(base, p_inherits);
 		} else if (ScriptServer::is_global_class(base)) {
 			base = script_class_get_base(base);
+		} else if (base_script.is_valid()) {
+			return ClassDB::is_parent_class(base_script->get_instance_base_type(), p_inherits);
 		} else {
 			return false;
 		}
@@ -890,7 +908,7 @@ StringName EditorData::script_class_get_base(const String &p_class) const {
 
 Object *EditorData::script_class_instance(const String &p_class) {
 	if (ScriptServer::is_global_class(p_class)) {
-		Object *obj = ClassDB::instance(ScriptServer::get_global_class_base(p_class));
+		Object *obj = ClassDB::instance(ScriptServer::get_global_class_native_base(p_class));
 		if (obj) {
 			RES script = ResourceLoader::load(ScriptServer::get_global_class_path(p_class));
 			if (script.is_valid())
@@ -946,16 +964,18 @@ void EditorData::script_class_save_icon_paths() {
 void EditorData::script_class_load_icon_paths() {
 	script_class_clear_icon_paths();
 
-	Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
-	List<Variant> keys;
-	d.get_key_list(&keys);
+	if (ProjectSettings::get_singleton()->has_setting("_global_script_class_icons")) {
+		Dictionary d = ProjectSettings::get_singleton()->get("_global_script_class_icons");
+		List<Variant> keys;
+		d.get_key_list(&keys);
 
-	for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
-		String name = E->get().operator String();
-		_script_class_icon_paths[name] = d[name];
+		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			String name = E->get().operator String();
+			_script_class_icon_paths[name] = d[name];
 
-		String path = ScriptServer::get_global_class_path(name);
-		script_class_set_name(path, name);
+			String path = ScriptServer::get_global_class_path(name);
+			script_class_set_name(path, name);
+		}
 	}
 }
 

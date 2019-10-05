@@ -44,6 +44,7 @@ typedef struct {
   double literal_cost_;      // Cached values of dominant entropy costs:
   double red_cost_;          // literal, red & blue.
   double blue_cost_;
+  uint8_t is_used_[5];       // 5 for literal, red, blue, alpha, distance
 } VP8LHistogram;
 
 // Collection of histograms with fixed capacity, allocated as one
@@ -67,7 +68,9 @@ void VP8LHistogramCreate(VP8LHistogram* const p,
 int VP8LGetHistogramSize(int palette_code_bits);
 
 // Set the palette_code_bits and reset the stats.
-void VP8LHistogramInit(VP8LHistogram* const p, int palette_code_bits);
+// If init_arrays is true, the arrays are also filled with 0's.
+void VP8LHistogramInit(VP8LHistogram* const p, int palette_code_bits,
+                       int init_arrays);
 
 // Collect all the references into a histogram (without reset)
 void VP8LHistogramStoreRefs(const VP8LBackwardRefs* const refs,
@@ -82,6 +85,9 @@ void VP8LFreeHistogramSet(VP8LHistogramSet* const histo);
 // Allocate an array of pointer to histograms, allocated and initialized
 // using 'cache_bits'. Return NULL in case of memory error.
 VP8LHistogramSet* VP8LAllocateHistogramSet(int size, int cache_bits);
+
+// Set the histograms in set to 0.
+void VP8LHistogramSetClear(VP8LHistogramSet* const set);
 
 // Allocate and initialize histogram object with specified 'cache_bits'.
 // Returns NULL in case of memory error.
@@ -113,7 +119,7 @@ double VP8LBitsEntropy(const uint32_t* const array, int n);
 
 // Estimate how many bits the combined entropy of literals and distance
 // approximately maps to.
-double VP8LHistogramEstimateBits(const VP8LHistogram* const p);
+double VP8LHistogramEstimateBits(VP8LHistogram* const p);
 
 #ifdef __cplusplus
 }

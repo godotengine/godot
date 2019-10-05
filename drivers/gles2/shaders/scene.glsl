@@ -2,6 +2,7 @@
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
@@ -9,7 +10,9 @@ precision highp float;
 precision highp int;
 #endif
 
+/* clang-format on */
 #include "stdlib.glsl"
+/* clang-format off */
 
 #define SHADER_IS_SRGB true
 
@@ -84,7 +87,7 @@ uniform highp mat4 world_transform;
 
 uniform highp float time;
 
-uniform float normal_mult;
+uniform highp vec2 viewport_size;
 
 #ifdef RENDER_DEPTH
 uniform float light_bias;
@@ -94,6 +97,10 @@ uniform float light_normal_bias;
 //
 // varyings
 //
+
+#if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
+varying highp vec4 position_interp;
+#endif
 
 varying highp vec3 vertex_interp;
 varying vec3 normal_interp;
@@ -157,6 +164,7 @@ varying highp vec3 specular_interp;
 
 // general for all lights
 uniform highp vec4 light_color;
+uniform highp vec4 shadow_color;
 uniform highp float light_specular;
 
 // directional
@@ -247,12 +255,12 @@ void light_compute(
 		float cLdotH = max(dot(L, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float blinn = pow(cNdotH, shininess);
-		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
+		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
 		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 #endif
 
 		SRGB_APPROX(specular_brdf_NL)
-		specular_interp += specular_brdf_NL * light_color * attenuation;
+		specular_interp += specular_brdf_NL * light_color * attenuation * (1.0 / M_PI);
 	}
 }
 
@@ -330,11 +338,10 @@ void main() {
 
 #endif
 
-	vec3 normal = normal_attrib * normal_mult;
+	vec3 normal = normal_attrib;
 
 #if defined(ENABLE_TANGENT_INTERP) || defined(ENABLE_NORMALMAP)
 	vec3 tangent = tangent_attrib.xyz;
-	tangent *= normal_mult;
 	float binormalf = tangent_attrib.a;
 	vec3 binormal = normalize(cross(normal, tangent) * binormalf);
 #endif
@@ -352,6 +359,10 @@ void main() {
 
 #if defined(ENABLE_UV2_INTERP) || defined(USE_LIGHTMAP)
 	uv2_interp = uv2_attrib;
+#endif
+
+#if defined(OVERRIDE_POSITION)
+	highp vec4 position;
 #endif
 
 #if !defined(SKIP_TRANSFORM_USED) && defined(VERTEX_WORLD_COORDS_USED)
@@ -395,7 +406,8 @@ void main() {
 
 #endif
 
-	world_matrix = bone_transform * world_matrix;
+	world_matrix = world_matrix * bone_transform;
+
 #endif
 
 #ifdef USE_INSTANCING
@@ -405,9 +417,12 @@ void main() {
 
 #endif
 
+	mat4 local_projection_matrix = projection_matrix;
+
 	mat4 modelview = camera_inverse_matrix * world_matrix;
 	float roughness = 1.0;
 
+#define projection_matrix local_projection_matrix
 #define world_transform world_matrix
 
 	{
@@ -626,7 +641,7 @@ VERTEX_SHADER_CODE
 
 		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
-		fog_amount = pow(fog_z, fog_depth_curve);
+		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;
 	}
 #endif
 
@@ -641,24 +656,52 @@ VERTEX_SHADER_CODE
 #endif //fog
 
 #endif //use vertex lighting
+
+#if defined(OVERRIDE_POSITION)
+	gl_Position = position;
+#else
 	gl_Position = projection_matrix * vec4(vertex_interp, 1.0);
+#endif
+
+#if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
+	position_interp = gl_Position;
+#endif
 }
 
 /* clang-format off */
 [fragment]
-#extension GL_ARB_shader_texture_lod : enable
 
-#ifndef GL_ARB_shader_texture_lod
-#define texture2DLod(img, coord, lod) texture2D(img, coord)
-#define textureCubeLod(img, coord, lod) textureCube(img, coord)
+// texture2DLodEXT and textureCubeLodEXT are fragment shader specific.
+// Do not copy these defines in the vertex section.
+#ifndef USE_GLES_OVER_GL
+#ifdef GL_EXT_shader_texture_lod
+#extension GL_EXT_shader_texture_lod : enable
+#define texture2DLod(img, coord, lod) texture2DLodEXT(img, coord, lod)
+#define textureCubeLod(img, coord, lod) textureCubeLodEXT(img, coord, lod)
+#endif
+#endif // !USE_GLES_OVER_GL
+
+#ifdef GL_ARB_shader_texture_lod
+#extension GL_ARB_shader_texture_lod : enable
+#endif
+
+#if !defined(GL_EXT_shader_texture_lod) && !defined(GL_ARB_shader_texture_lod)
+#define texture2DLod(img, coord, lod) texture2D(img, coord, lod)
+#define textureCubeLod(img, coord, lod) textureCube(img, coord, lod)
 #endif
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
-precision mediump float;
+#if defined(USE_HIGHP_PRECISION)
+precision highp float;
 precision highp int;
+#else
+precision mediump float;
+precision mediump int;
+#endif
 #endif
 
 #include "stdlib.glsl"
@@ -680,6 +723,8 @@ uniform highp mat4 world_transform;
 
 uniform highp float time;
 
+uniform highp vec2 viewport_size;
+
 #if defined(SCREEN_UV_USED)
 uniform vec2 screen_pixel_size;
 #endif
@@ -689,6 +734,9 @@ uniform vec2 screen_pixel_size;
 
 #if defined(SCREEN_TEXTURE_USED)
 uniform highp sampler2D screen_texture; //texunit:-4
+#endif
+#if defined(DEPTH_TEXTURE_USED)
+uniform highp sampler2D depth_texture; //texunit:-4
 #endif
 
 #ifdef USE_REFLECTION_PROBE1
@@ -859,6 +907,7 @@ uniform mat4 radiance_inverse_xform;
 
 #endif
 
+uniform vec4 bg_color;
 uniform float bg_energy;
 
 uniform float ambient_sky_contribution;
@@ -866,6 +915,8 @@ uniform vec4 ambient_color;
 uniform float ambient_energy;
 
 #ifdef USE_LIGHTING
+
+uniform highp vec4 shadow_color;
 
 #ifdef USE_VERTEX_LIGHTING
 
@@ -879,6 +930,7 @@ uniform highp vec3 light_direction; //may be used by fog, so leave here
 //done in fragment
 // general for all lights
 uniform highp vec4 light_color;
+
 uniform highp float light_specular;
 
 // directional
@@ -934,6 +986,10 @@ uniform vec4 light_clamp;
 //
 // varyings
 //
+
+#if defined(RENDER_DEPTH) && defined(USE_RGBA_SHADOWS)
+varying highp vec4 position_interp;
+#endif
 
 varying highp vec3 vertex_interp;
 varying vec3 normal_interp;
@@ -1012,9 +1068,7 @@ float G_GGX_2cos(float cos_theta_m, float alpha) {
 // This approximates G_GGX_2cos(cos_theta_l, alpha) * G_GGX_2cos(cos_theta_v, alpha)
 // See Filament docs, Specular G section.
 float V_GGX(float cos_theta_l, float cos_theta_v, float alpha) {
-	float v = cos_theta_l * (cos_theta_v * (1.0 - alpha) + alpha);
-	float l = cos_theta_v * (cos_theta_l * (1.0 - alpha) + alpha);
-	return 0.5 / (v + l);
+	return 0.5 / mix(2.0 * cos_theta_l * cos_theta_v, cos_theta_l + cos_theta_v, alpha);
 }
 
 float D_GGX(float cos_theta_m, float alpha) {
@@ -1090,7 +1144,8 @@ void light_compute(
 		float clearcoat_gloss,
 		float anisotropy,
 		inout vec3 diffuse_light,
-		inout vec3 specular_light) {
+		inout vec3 specular_light,
+		inout float alpha) {
 
 //this makes lights behave closer to linear, but then addition of lights looks bad
 //better left disabled
@@ -1124,7 +1179,19 @@ LIGHT_SHADER_CODE
 	float NdotL = dot(N, L);
 	float cNdotL = max(NdotL, 0.0); // clamped NdotL
 	float NdotV = dot(N, V);
-	float cNdotV = max(NdotV, 0.0);
+	float cNdotV = max(abs(NdotV), 1e-6);
+
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+	vec3 H = normalize(V + L);
+#endif
+
+#if defined(SPECULAR_BLINN) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+	float cNdotH = max(dot(N, H), 0.0);
+#endif
+
+#if defined(DIFFUSE_BURLEY) || defined(SPECULAR_SCHLICK_GGX) || defined(LIGHT_USE_CLEARCOAT)
+	float cLdotH = max(dot(L, H), 0.0);
+#endif
 
 	if (metallic < 1.0) {
 #if defined(DIFFUSE_OREN_NAYAR)
@@ -1160,13 +1227,9 @@ LIGHT_SHADER_CODE
 #elif defined(DIFFUSE_BURLEY)
 
 		{
-
-			vec3 H = normalize(V + L);
-			float cLdotH = max(0.0, dot(L, H));
-
-			float FD90 = 0.5 + 2.0 * cLdotH * cLdotH * roughness;
-			float FdV = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotV);
-			float FdL = 1.0 + (FD90 - 1.0) * SchlickFresnel(cNdotL);
+			float FD90_minus_1 = 2.0 * cLdotH * cLdotH * roughness - 0.5;
+			float FdV = 1.0 + FD90_minus_1 * SchlickFresnel(cNdotV);
+			float FdL = 1.0 + FD90_minus_1 * SchlickFresnel(cNdotL);
 			diffuse_brdf_NL = (1.0 / M_PI) * FdV * FdL * cNdotL;
 			/*
 			float energyBias = mix(roughness, 0.0, 0.5);
@@ -1209,13 +1272,9 @@ LIGHT_SHADER_CODE
 #if defined(SPECULAR_BLINN)
 
 		//normalized blinn
-		vec3 H = normalize(V + L);
-		float cNdotH = max(dot(N, H), 0.0);
-		float cVdotH = max(dot(V, H), 0.0);
-		float cLdotH = max(dot(L, H), 0.0);
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float blinn = pow(cNdotH, shininess);
-		blinn *= (shininess + 8.0) / (8.0 * 3.141592654);
+		blinn *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
 		specular_brdf_NL = (blinn) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_PHONG)
@@ -1224,7 +1283,7 @@ LIGHT_SHADER_CODE
 		float cRdotV = max(0.0, dot(R, V));
 		float shininess = exp2(15.0 * (1.0 - roughness) + 1.0) * 0.25;
 		float phong = pow(cRdotV, shininess);
-		phong *= (shininess + 8.0) / (8.0 * 3.141592654);
+		phong *= (shininess + 8.0) * (1.0 / (8.0 * M_PI));
 		specular_brdf_NL = (phong) / max(4.0 * cNdotV * cNdotL, 0.75);
 
 #elif defined(SPECULAR_TOON)
@@ -1240,27 +1299,22 @@ LIGHT_SHADER_CODE
 #elif defined(SPECULAR_SCHLICK_GGX)
 		// shlick+ggx as default
 
-		vec3 H = normalize(V + L);
-
-		float cNdotH = max(dot(N, H), 0.0);
-		float cLdotH = max(dot(L, H), 0.0);
-
 #if defined(LIGHT_USE_ANISOTROPY)
-		float alpha = roughness * roughness;
+		float alpha_ggx = roughness * roughness;
 		float aspect = sqrt(1.0 - anisotropy * 0.9);
-		float ax = alpha / aspect;
-		float ay = alpha * aspect;
+		float ax = alpha_ggx / aspect;
+		float ay = alpha_ggx * aspect;
 		float XdotH = dot(T, H);
 		float YdotH = dot(B, H);
 		float D = D_GGX_anisotropic(cNdotH, ax, ay, XdotH, YdotH, cNdotH);
 		//float G = G_GGX_anisotropic_2cos(cNdotL, ax, ay, XdotH, YdotH) * G_GGX_anisotropic_2cos(cNdotV, ax, ay, XdotH, YdotH);
-		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL))
+		float G = V_GGX_anisotropic(ax, ay, dot(T, V), dot(T, L), dot(B, V), dot(B, L), cNdotV, cNdotL);
 
 #else
-		float alpha = roughness * roughness;
-		float D = D_GGX(cNdotH, alpha);
-		//float G = G_GGX_2cos(cNdotL, alpha) * G_GGX_2cos(cNdotV, alpha);
-		float G = V_GGX(cNdotL, cNdotV, alpha);
+		float alpha_ggx = roughness * roughness;
+		float D = D_GGX(cNdotH, alpha_ggx);
+		//float G = G_GGX_2cos(cNdotL, alpha_ggx) * G_GGX_2cos(cNdotV, alpha_ggx);
+		float G = V_GGX(cNdotL, cNdotV, alpha_ggx);
 #endif
 		// F
 		vec3 f0 = F0(metallic, specular, diffuse_color);
@@ -1275,26 +1329,24 @@ LIGHT_SHADER_CODE
 		specular_light += specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 
 #if defined(LIGHT_USE_CLEARCOAT)
-		if (clearcoat_gloss > 0.0) {
-#if !defined(SPECULAR_SCHLICK_GGX) && !defined(SPECULAR_BLINN)
-			vec3 H = normalize(V + L);
-#endif
+
 #if !defined(SPECULAR_SCHLICK_GGX)
-			float cNdotH = max(dot(N, H), 0.0);
-			float cLdotH = max(dot(L, H), 0.0);
-			float cLdotH5 = SchlickFresnel(cLdotH);
+		float cLdotH5 = SchlickFresnel(cLdotH);
 #endif
-			float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
-			float Fr = mix(.04, 1.0, cLdotH5);
-			//float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
-			float Gr = V_GGX(cNdotL, cNdotV, 0.25);
+		float Dr = GTR1(cNdotH, mix(.1, .001, clearcoat_gloss));
+		float Fr = mix(.04, 1.0, cLdotH5);
+		//float Gr = G_GGX_2cos(cNdotL, .25) * G_GGX_2cos(cNdotV, .25);
+		float Gr = V_GGX(cNdotL, cNdotV, 0.25);
 
-			float clearcoat_specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
+		float clearcoat_specular_brdf_NL = 0.25 * clearcoat * Gr * Fr * Dr * cNdotL;
 
-			specular_light += clearcoat_specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
-		}
+		specular_light += clearcoat_specular_brdf_NL * light_color * specular_blob_intensity * attenuation;
 #endif
 	}
+
+#ifdef USE_SHADOW_TO_OPACITY
+	alpha = min(alpha, clamp(1.0 - length(attenuation), 0.0, 1.0));
+#endif
 
 #endif //defined(USE_LIGHT_SHADER_CODE)
 }
@@ -1304,8 +1356,18 @@ LIGHT_SHADER_CODE
 
 #ifdef USE_SHADOW
 
-#define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, texture2D(p_shadow, p_pos).r)
-#define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, texture2DProj(p_shadow, p_pos).r)
+#ifdef USE_RGBA_SHADOWS
+
+#define SHADOW_DEPTH(m_val) dot(m_val, vec4(1.0 / (255.0 * 255.0 * 255.0), 1.0 / (255.0 * 255.0), 1.0 / 255.0, 1.0))
+
+#else
+
+#define SHADOW_DEPTH(m_val) (m_val).r
+
+#endif
+
+#define SAMPLE_SHADOW_TEXEL(p_shadow, p_pos, p_depth) step(p_depth, SHADOW_DEPTH(texture2D(p_shadow, p_pos)))
+#define SAMPLE_SHADOW_TEXEL_PROJ(p_shadow, p_pos) step(p_pos.z, SHADOW_DEPTH(texture2DProj(p_shadow, p_pos)))
 
 float sample_shadow(highp sampler2D shadow, highp vec4 spos) {
 
@@ -1392,6 +1454,7 @@ void main() {
 		discard;
 #endif
 	highp vec3 vertex = vertex_interp;
+	vec3 view = -normalize(vertex_interp);
 	vec3 albedo = vec3(1.0);
 	vec3 transmission = vec3(0.0);
 	float metallic = 0.0;
@@ -1405,6 +1468,9 @@ void main() {
 	float anisotropy = 0.0;
 	vec2 anisotropy_flow = vec2(1.0, 0.0);
 	float sss_strength = 0.0; //unused
+	// gl_FragDepth is not available in GLES2, so writing to DEPTH is not converted to gl_FragDepth by Godot compiler resulting in a
+	// compile error because DEPTH is not a variable.
+	float m_DEPTH = 0.0;
 
 	float alpha = 1.0;
 	float side = 1.0;
@@ -1465,16 +1531,31 @@ FRAGMENT_SHADER_CODE
 	vec3 diffuse_light = vec3(0.0, 0.0, 0.0);
 	vec3 ambient_light = vec3(0.0, 0.0, 0.0);
 
-	vec3 eye_position = -normalize(vertex_interp);
+	vec3 eye_position = view;
+
+#if !defined(USE_SHADOW_TO_OPACITY)
 
 #if defined(ALPHA_SCISSOR_USED)
 	if (alpha < alpha_scissor) {
 		discard;
 	}
-#endif
+#endif // ALPHA_SCISSOR_USED
+
+#ifdef USE_DEPTH_PREPASS
+	if (alpha < 0.1) {
+		discard;
+	}
+#endif // USE_DEPTH_PREPASS
+
+#endif // !USE_SHADOW_TO_OPACITY
 
 #ifdef BASE_PASS
 	//none
+
+#ifdef AMBIENT_LIGHT_DISABLED
+	ambient_light = vec3(0.0, 0.0, 0.0);
+#else
+
 #ifdef USE_RADIANCE_MAP
 
 	vec3 ref_vec = reflect(-eye_position, N);
@@ -1483,7 +1564,6 @@ FRAGMENT_SHADER_CODE
 	ref_vec.z *= -1.0;
 
 	specular_light = textureCubeLod(radiance_map, ref_vec, roughness * RADIANCE_MAX_LOD).xyz * bg_energy;
-
 	{
 		vec3 ambient_dir = normalize((radiance_inverse_xform * vec4(normal, 0.0)).xyz);
 		vec3 env_ambient = textureCubeLod(radiance_map, ambient_dir, RADIANCE_MAX_LOD).xyz * bg_energy;
@@ -1494,9 +1574,11 @@ FRAGMENT_SHADER_CODE
 #else
 
 	ambient_light = ambient_color.rgb;
+	specular_light = bg_color.rgb * bg_energy;
 
 #endif
 
+#endif // AMBIENT_LIGHT_DISABLED
 	ambient_light *= ambient_energy;
 
 #if defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
@@ -1552,6 +1634,31 @@ FRAGMENT_SHADER_CODE
 
 #endif // defined(USE_REFLECTION_PROBE1) || defined(USE_REFLECTION_PROBE2)
 
+	// environment BRDF approximation
+
+	{
+
+#if defined(DIFFUSE_TOON)
+		//simplify for toon, as
+		specular_light *= specular * metallic * albedo * 2.0;
+#else
+
+		// scales the specular reflections, needs to be be computed before lighting happens,
+		// but after environment and reflection probes are added
+		//TODO: this curve is not really designed for gammaspace, should be adjusted
+		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+		vec4 r = roughness * c0 + c1;
+		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
+		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+
+		vec3 f0 = F0(metallic, specular, albedo);
+		specular_light *= env.x * f0 + env.y;
+
+#endif
+	}
+
 #ifdef USE_LIGHTMAP
 	//ambient light will come entirely from lightmap is lightmap is used
 	ambient_light = texture2D(lightmap, uv2_interp).rgb * lightmap_energy;
@@ -1560,14 +1667,14 @@ FRAGMENT_SHADER_CODE
 #ifdef USE_LIGHTMAP_CAPTURE
 	{
 		vec3 cone_dirs[12] = vec3[](
-				vec3(0, 0, 1),
-				vec3(0.866025, 0, 0.5),
+				vec3(0.0, 0.0, 1.0),
+				vec3(0.866025, 0.0, 0.5),
 				vec3(0.267617, 0.823639, 0.5),
 				vec3(-0.700629, 0.509037, 0.5),
 				vec3(-0.700629, -0.509037, 0.5),
 				vec3(0.267617, -0.823639, 0.5),
-				vec3(0, 0, -1),
-				vec3(0.866025, 0, -0.5),
+				vec3(0.0, 0.0, -1.0),
+				vec3(0.866025, 0.0, -0.5),
 				vec3(0.267617, 0.823639, -0.5),
 				vec3(-0.700629, 0.509037, -0.5),
 				vec3(-0.700629, -0.509037, -0.5),
@@ -1623,6 +1730,8 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#if !defined(SHADOWS_DISABLED)
+
 #ifdef USE_SHADOW
 	{
 		highp vec4 splane = shadow_coord;
@@ -1649,9 +1758,11 @@ FRAGMENT_SHADER_CODE
 
 		float shadow = sample_shadow(light_shadow_atlas, splane);
 
-		light_att *= shadow;
+		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
 	}
 #endif
+
+#endif //SHADOWS_DISABLED
 
 #endif //type omni
 
@@ -1662,6 +1773,8 @@ FRAGMENT_SHADER_CODE
 	L = normalize(light_vec);
 #endif
 	float depth_z = -vertex.z;
+
+#if !defined(SHADOWS_DISABLED)
 
 #ifdef USE_SHADOW
 
@@ -1726,7 +1839,7 @@ FRAGMENT_SHADER_CODE
 			shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
 		}
 #endif
-		light_att *= shadow_att;
+		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
 	}
 
 #endif //LIGHT_USE_PSSM4
@@ -1767,14 +1880,14 @@ FRAGMENT_SHADER_CODE
 			shadow_att = mix(shadow_att, shadow_att2, pssm_blend);
 		}
 #endif
-		light_att *= shadow_att;
+		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow_att);
 	}
 
 #endif //LIGHT_USE_PSSM2
 
 #if !defined(LIGHT_USE_PSSM4) && !defined(LIGHT_USE_PSSM2)
 
-	light_att *= sample_shadow(light_directional_shadow, shadow_coord);
+	light_att *= mix(shadow_color.rgb, vec3(1.0), sample_shadow(light_directional_shadow, shadow_coord));
 #endif //orthogonal
 
 #else //fragment version of pssm
@@ -1874,12 +1987,14 @@ FRAGMENT_SHADER_CODE
 			}
 #endif
 
-			light_att *= shadow;
+			light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
 		}
 	}
 #endif //use vertex lighting
 
 #endif //use shadow
+
+#endif // SHADOWS_DISABLED
 
 #endif
 
@@ -1917,15 +2032,18 @@ FRAGMENT_SHADER_CODE
 
 #endif
 
+#if !defined(SHADOWS_DISABLED)
+
 #ifdef USE_SHADOW
 	{
 		highp vec4 splane = shadow_coord;
-		splane.xyz /= splane.w;
 
 		float shadow = sample_shadow(light_shadow_atlas, splane);
-		light_att *= shadow;
+		light_att *= mix(shadow_color.rgb, vec3(1.0), shadow);
 	}
 #endif
+
+#endif // SHADOWS_DISABLED
 
 #endif // LIGHT_MODE_SPOT
 
@@ -1934,6 +2052,17 @@ FRAGMENT_SHADER_CODE
 
 	specular_light += specular_interp * specular_blob_intensity * light_att;
 	diffuse_light += diffuse_interp * albedo * light_att;
+
+	// Same as above, needed for VERTEX_LIGHTING or else lights are too bright
+	const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
+	const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
+	vec4 r = roughness * c0 + c1;
+	float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
+	float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
+	vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
+
+	vec3 f0 = F0(metallic, specular, albedo);
+	specular_light *= env.x * f0 + env.y;
 
 #else
 	//fragment lighting
@@ -1957,12 +2086,31 @@ FRAGMENT_SHADER_CODE
 			clearcoat_gloss,
 			anisotropy,
 			diffuse_light,
-			specular_light);
+			specular_light,
+			alpha);
 
 #endif //vertex lighting
 
 #endif //USE_LIGHTING
 	//compute and merge
+
+#ifdef USE_SHADOW_TO_OPACITY
+
+	alpha = min(alpha, clamp(length(ambient_light), 0.0, 1.0));
+
+#if defined(ALPHA_SCISSOR_USED)
+	if (alpha < alpha_scissor) {
+		discard;
+	}
+#endif // ALPHA_SCISSOR_USED
+
+#ifdef USE_DEPTH_PREPASS
+	if (alpha < 0.1) {
+		discard;
+	}
+#endif // USE_DEPTH_PREPASS
+
+#endif // !USE_SHADOW_TO_OPACITY
 
 #ifndef RENDER_DEPTH
 
@@ -1983,27 +2131,6 @@ FRAGMENT_SHADER_CODE
 	diffuse_light *= 1.0 - metallic;
 	ambient_light *= 1.0 - metallic;
 
-	// environment BRDF approximation
-
-	{
-
-#if defined(DIFFUSE_TOON)
-		//simplify for toon, as
-		specular_light *= specular * metallic * albedo * 2.0;
-#else
-		//TODO: this curve is not really designed for gammaspace, should be adjusted
-		const vec4 c0 = vec4(-1.0, -0.0275, -0.572, 0.022);
-		const vec4 c1 = vec4(1.0, 0.0425, 1.04, -0.04);
-		vec4 r = roughness * c0 + c1;
-		float ndotv = clamp(dot(normal, eye_position), 0.0, 1.0);
-		float a004 = min(r.x * r.x, exp2(-9.28 * ndotv)) * r.x + r.y;
-		vec2 env = vec2(-1.04, 1.04) * a004 + r.zw;
-
-		vec3 f0 = F0(metallic, specular, albedo);
-		specular_light *= env.x * f0 + env.y;
-#endif
-	}
-
 	gl_FragColor = vec4(ambient_light + diffuse_light + specular_light, alpha);
 
 	//add emission if in base pass
@@ -2012,14 +2139,17 @@ FRAGMENT_SHADER_CODE
 #endif
 	// gl_FragColor = vec4(normal, 1.0);
 
-#endif //unshaded
-
 //apply fog
 #if defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
 #if defined(USE_VERTEX_LIGHTING)
 
+#if defined(BASE_PASS)
 	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_interp.rgb, fog_interp.a);
+#else
+	gl_FragColor.rgb *= (1.0 - fog_interp.a);
+#endif // BASE_PASS
+
 #else //pixel based fog
 	float fog_amount = 0.0;
 
@@ -2036,7 +2166,7 @@ FRAGMENT_SHADER_CODE
 
 		float fog_z = smoothstep(fog_depth_begin, fog_max_distance, length(vertex));
 
-		fog_amount = pow(fog_z, fog_depth_curve);
+		fog_amount = pow(fog_z, fog_depth_curve) * fog_color_base.a;
 
 		if (fog_transmit_enabled) {
 			vec3 total_light = gl_FragColor.rgb;
@@ -2053,11 +2183,27 @@ FRAGMENT_SHADER_CODE
 	}
 #endif
 
+#if defined(BASE_PASS)
 	gl_FragColor.rgb = mix(gl_FragColor.rgb, fog_color, fog_amount);
+#else
+	gl_FragColor.rgb *= (1.0 - fog_amount);
+#endif // BASE_PASS
 
 #endif //use vertex lit
 
 #endif // defined(FOG_DEPTH_ENABLED) || defined(FOG_HEIGHT_ENABLED)
 
-#endif // not RENDER_DEPTH
+#endif //unshaded
+
+#else // not RENDER_DEPTH
+//depth render
+#ifdef USE_RGBA_SHADOWS
+
+	highp float depth = ((position_interp.z / position_interp.w) + 1.0) * 0.5 + 0.0; // bias
+	highp vec4 comp = fract(depth * vec4(255.0 * 255.0 * 255.0, 255.0 * 255.0, 255.0, 1.0));
+	comp -= comp.xxyz * vec4(0.0, 1.0 / 255.0, 1.0 / 255.0, 1.0 / 255.0);
+	gl_FragColor = comp;
+
+#endif
+#endif
 }

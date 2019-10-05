@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,8 +43,6 @@
 #include "scene/gui/line_edit.h"
 #include "scene/gui/progress_bar.h"
 #include "scene/gui/tree.h"
-
-#define ROOT_PREFIX "res://"
 
 const char *FindInFiles::SIGNAL_RESULT_FOUND = "result_found";
 const char *FindInFiles::SIGNAL_FINISHED = "finished";
@@ -89,7 +87,6 @@ static bool find_next(const String &line, String pattern, int from, bool match_c
 
 //--------------------------------------------------------------------------------
 FindInFiles::FindInFiles() {
-	_root_prefix = ROOT_PREFIX;
 	_searching = false;
 	_whole_words = true;
 	_match_case = true;
@@ -182,7 +179,7 @@ void FindInFiles::_iterate() {
 			_current_dir = _current_dir.plus_file(folder_name);
 
 			PoolStringArray sub_dirs;
-			_scan_dir(_root_prefix + _current_dir, sub_dirs);
+			_scan_dir("res://" + _current_dir, sub_dirs);
 
 			_folders_stack.push_back(sub_dirs);
 
@@ -224,8 +221,8 @@ float FindInFiles::get_progress() const {
 
 void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
-	DirAccess *dir = DirAccess::open(path);
-	if (dir == NULL) {
+	DirAccessRef dir = DirAccess::open(path);
+	if (!dir) {
 		print_verbose("Cannot open directory! " + path);
 		return;
 	}
@@ -256,8 +253,8 @@ void FindInFiles::_scan_dir(String path, PoolStringArray &out_folders) {
 
 void FindInFiles::_scan_file(String fpath) {
 
-	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
-	if (f == NULL) {
+	FileAccessRef f = FileAccess::open(fpath, FileAccess::READ);
+	if (!f) {
 		print_verbose(String("Cannot open file ") + fpath);
 		return;
 	}
@@ -324,7 +321,7 @@ FindInFilesDialog::FindInFilesDialog() {
 	_search_text_line_edit->connect("text_entered", this, "_on_search_text_entered");
 	gc->add_child(_search_text_line_edit);
 
-	gc->add_child(memnew(Control)); // Space to mantain the grid aligned.
+	gc->add_child(memnew(Control)); // Space to maintain the grid aligned.
 
 	{
 		HBoxContainer *hbc = memnew(HBoxContainer);
@@ -348,7 +345,7 @@ FindInFilesDialog::FindInFilesDialog() {
 		HBoxContainer *hbc = memnew(HBoxContainer);
 
 		Label *prefix_label = memnew(Label);
-		prefix_label->set_text(ROOT_PREFIX);
+		prefix_label->set_text("res://");
 		hbc->add_child(prefix_label);
 
 		_folder_line_edit = memnew(LineEdit);
@@ -370,26 +367,11 @@ FindInFilesDialog::FindInFilesDialog() {
 
 	Label *filter_label = memnew(Label);
 	filter_label->set_text(TTR("Filters:"));
+	filter_label->set_tooltip(TTR("Include the files with the following extensions. Add or remove them in ProjectSettings."));
 	gc->add_child(filter_label);
 
-	{
-		HBoxContainer *hbc = memnew(HBoxContainer);
-
-		Vector<String> exts;
-		exts.push_back("gd");
-		if (Engine::get_singleton()->has_singleton("GodotSharp"))
-			exts.push_back("cs");
-
-		for (int i = 0; i < exts.size(); ++i) {
-			CheckBox *cb = memnew(CheckBox);
-			cb->set_text(exts[i]);
-			cb->set_pressed(true);
-			hbc->add_child(cb);
-			_filters.push_back(cb);
-		}
-
-		gc->add_child(hbc);
-	}
+	_filters_container = memnew(HBoxContainer);
+	gc->add_child(_filters_container);
 
 	_find_button = add_button(TTR("Find..."), false, "find");
 	_find_button->set_disabled(true);
@@ -425,11 +407,12 @@ String FindInFilesDialog::get_folder() const {
 }
 
 Set<String> FindInFilesDialog::get_filter() const {
+	// could check the _filters_preferences but it might not have been generated yet.
 	Set<String> filters;
-	for (int i = 0; i < _filters.size(); ++i) {
-		CheckBox *cb = _filters[i];
+	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
+		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
 		if (cb->is_pressed()) {
-			filters.insert(_filters[i]->get_text());
+			filters.insert(cb->get_text());
 		}
 	}
 	return filters;
@@ -441,6 +424,20 @@ void FindInFilesDialog::_notification(int p_what) {
 			// Doesn't work more than once if not deferred...
 			_search_text_line_edit->call_deferred("grab_focus");
 			_search_text_line_edit->select_all();
+			// Extensions might have changed in the meantime, we clean them and instance them again.
+			for (int i = 0; i < _filters_container->get_child_count(); i++) {
+				_filters_container->get_child(i)->queue_delete();
+			}
+			Array exts = ProjectSettings::get_singleton()->get("editor/search_in_file_extensions");
+			for (int i = 0; i < exts.size(); ++i) {
+				CheckBox *cb = memnew(CheckBox);
+				cb->set_text(exts[i]);
+				if (!_filters_preferences.has(exts[i])) {
+					_filters_preferences[exts[i]] = true;
+				}
+				cb->set_pressed(_filters_preferences[exts[i]]);
+				_filters_container->add_child(cb);
+			}
 		}
 	}
 }
@@ -450,6 +447,10 @@ void FindInFilesDialog::_on_folder_button_pressed() {
 }
 
 void FindInFilesDialog::custom_action(const String &p_action) {
+	for (int i = 0; i < _filters_container->get_child_count(); ++i) {
+		CheckBox *cb = (CheckBox *)_filters_container->get_child(i);
+		_filters_preferences[cb->get_text()] = cb->is_pressed();
+	}
 	if (p_action == "find") {
 		emit_signal(SIGNAL_FIND_REQUESTED);
 		hide();
@@ -523,6 +524,7 @@ FindInFilesPanel::FindInFilesPanel() {
 
 		_progress_bar = memnew(ProgressBar);
 		_progress_bar->set_h_size_flags(SIZE_EXPAND_FILL);
+		_progress_bar->set_v_size_flags(SIZE_SHRINK_CENTER);
 		hbc->add_child(_progress_bar);
 		set_progress_visible(false);
 
@@ -545,6 +547,7 @@ FindInFilesPanel::FindInFilesPanel() {
 	_results_display->connect("item_edited", this, "_on_item_edited");
 	_results_display->set_hide_root(true);
 	_results_display->set_select_mode(Tree::SELECT_ROW);
+	_results_display->set_allow_rmb_select(true);
 	_results_display->create_item(); // Root
 	vbc->add_child(_results_display);
 
@@ -752,7 +755,6 @@ void FindInFilesPanel::_on_replace_text_changed(String text) {
 void FindInFilesPanel::_on_replace_all_clicked() {
 
 	String replace_text = get_replace_text();
-	ERR_FAIL_COND(replace_text.empty());
 
 	PoolStringArray modified_files;
 
@@ -767,9 +769,9 @@ void FindInFilesPanel::_on_replace_all_clicked() {
 			if (!item->is_checked(0))
 				continue;
 
-			Map<TreeItem *, Result>::Element *E = _result_items.find(item);
-			ERR_FAIL_COND(E == NULL);
-			locations.push_back(E->value());
+			Map<TreeItem *, Result>::Element *F = _result_items.find(item);
+			ERR_FAIL_COND(F == NULL);
+			locations.push_back(F->value());
 		}
 
 		if (locations.size() != 0) {
@@ -827,7 +829,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	// however that means either losing changes or losing replaces.
 
 	FileAccess *f = FileAccess::open(fpath, FileAccess::READ);
-	ERR_FAIL_COND(f == NULL);
+	ERR_FAIL_COND_MSG(f == NULL, "Cannot open file from path '" + fpath + "'.");
 
 	String buffer;
 	int current_line = 1;
@@ -874,7 +876,7 @@ void FindInFilesPanel::apply_replaces_in_file(String fpath, const Vector<Result>
 	// Now the modified contents are in the buffer, rewrite the file with our changes
 
 	Error err = f->reopen(fpath, FileAccess::WRITE);
-	ERR_FAIL_COND(err != OK);
+	ERR_FAIL_COND_MSG(err != OK, "Cannot create file in path '" + fpath + "'.");
 
 	f->store_string(buffer);
 
@@ -888,7 +890,7 @@ String FindInFilesPanel::get_replace_text() {
 void FindInFilesPanel::update_replace_buttons() {
 
 	String text = get_replace_text();
-	bool disabled = text.empty() || _finder->is_searching();
+	bool disabled = _finder->is_searching();
 
 	_replace_all_button->set_disabled(disabled);
 }

@@ -9,10 +9,10 @@ if env['builtin_pcre2']:
     jit_blacklist = ['javascript', 'uwp']
 
     thirdparty_dir = '#thirdparty/pcre2/src/'
-    thirdparty_flags = ['-DPCRE2_STATIC', '-DHAVE_CONFIG_H']
+    thirdparty_flags = ['PCRE2_STATIC', 'HAVE_CONFIG_H']
 
     if 'platform' in env and env['platform'] not in jit_blacklist:
-        thirdparty_flags.append('-DSUPPORT_JIT')
+        thirdparty_flags.append('SUPPORT_JIT')
 
     thirdparty_sources = [
         "pcre2_auto_possess.c",
@@ -33,6 +33,7 @@ if env['builtin_pcre2']:
         "pcre2_newline.c",
         "pcre2_ord2utf.c",
         "pcre2_pattern_info.c",
+        "pcre2_script_run.c",
         "pcre2_serialize.c",
         "pcre2_string_utils.c",
         "pcre2_study.c",
@@ -46,18 +47,18 @@ if env['builtin_pcre2']:
 
     thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-    env_regex.Append(CPPPATH=[thirdparty_dir])
-    env_regex.Append(CPPFLAGS=thirdparty_flags)
+    env_regex.Prepend(CPPPATH=[thirdparty_dir])
+    env_regex.Append(CPPDEFINES=thirdparty_flags)
 
     def pcre2_builtin(width):
         env_pcre2 = env_regex.Clone()
         env_pcre2.disable_warnings()
         env_pcre2["OBJSUFFIX"] = "_" + width + env_pcre2["OBJSUFFIX"]
         env_pcre2.add_source_files(env.modules_sources, thirdparty_sources)
-        env_pcre2.Append(CPPFLAGS=["-DPCRE2_CODE_UNIT_WIDTH=" + width])
+        env_pcre2.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", width)])
 
     pcre2_builtin("16")
     pcre2_builtin("32")
 
-env_regex.Append(CPPFLAGS=["-DPCRE2_CODE_UNIT_WIDTH=0"])
+env_regex.Append(CPPDEFINES=[("PCRE2_CODE_UNIT_WIDTH", 0)])
 env_regex.add_source_files(env.modules_sources, "*.cpp")

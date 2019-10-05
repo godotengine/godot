@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,10 +35,6 @@
 
 #include <stddef.h>
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 #ifndef PAD_ALIGN
 #define PAD_ALIGN 16 //must always be greater than this at much
 #endif
@@ -66,7 +62,7 @@ public:
 class DefaultAllocator {
 public:
 	_FORCE_INLINE_ static void *alloc(size_t p_memory) { return Memory::alloc_static(p_memory, false); }
-	_FORCE_INLINE_ static void free(void *p_ptr) { return Memory::free_static(p_ptr, false); }
+	_FORCE_INLINE_ static void free(void *p_ptr) { Memory::free_static(p_ptr, false); }
 };
 
 void *operator new(size_t p_size, const char *p_description); ///< operator new that takes a description and uses MemoryStaticPool
@@ -116,7 +112,9 @@ void memdelete(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	if (!__has_trivial_destructor(T))
+		p_class->~T();
+
 	Memory::free_static(p_class, false);
 }
 
@@ -125,7 +123,9 @@ void memdelete_allocator(T *p_class) {
 
 	if (!predelete_handler(p_class))
 		return; // doesn't want to be deleted
-	p_class->~T();
+	if (!__has_trivial_destructor(T))
+		p_class->~T();
+
 	A::free(p_class);
 }
 
@@ -150,11 +150,13 @@ T *memnew_arr_template(size_t p_elements, const char *p_descr = "") {
 	ERR_FAIL_COND_V(!mem, failptr);
 	*(mem - 1) = p_elements;
 
-	T *elems = (T *)mem;
+	if (!__has_trivial_constructor(T)) {
+		T *elems = (T *)mem;
 
-	/* call operator new */
-	for (size_t i = 0; i < p_elements; i++) {
-		new (&elems[i], sizeof(T), p_descr) T;
+		/* call operator new */
+		for (size_t i = 0; i < p_elements; i++) {
+			new (&elems[i], sizeof(T), p_descr) T;
+		}
 	}
 
 	return (T *)mem;
@@ -177,12 +179,14 @@ void memdelete_arr(T *p_class) {
 
 	uint64_t *ptr = (uint64_t *)p_class;
 
-	uint64_t elem_count = *(ptr - 1);
+	if (!__has_trivial_destructor(T)) {
+		uint64_t elem_count = *(ptr - 1);
 
-	for (uint64_t i = 0; i < elem_count; i++) {
+		for (uint64_t i = 0; i < elem_count; i++) {
+			p_class[i].~T();
+		}
+	}
 
-		p_class[i].~T();
-	};
 	Memory::free_static(ptr, true);
 }
 

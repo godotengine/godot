@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,6 +92,9 @@ void AudioStreamPlayer2D::_mix_audio() {
 		int cc = AudioServer::get_singleton()->get_channel_count();
 
 		if (cc == 1) {
+			if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, 0))
+				continue; //may have been removed
+
 			AudioFrame *target = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, 0);
 
 			for (int j = 0; j < buffer_size; j++) {
@@ -102,10 +105,19 @@ void AudioStreamPlayer2D::_mix_audio() {
 
 		} else {
 			AudioFrame *targets[4];
+			bool valid = true;
 
 			for (int k = 0; k < cc; k++) {
+				if (!AudioServer::get_singleton()->thread_has_channel_mix_buffer(current.bus_index, k)) {
+					valid = false; //may have been removed
+					break;
+				}
+
 				targets[k] = AudioServer::get_singleton()->thread_get_channel_mix_buffer(current.bus_index, k);
 			}
+
+			if (!valid)
+				continue;
 
 			for (int j = 0; j < buffer_size; j++) {
 
@@ -311,6 +323,7 @@ void AudioStreamPlayer2D::play(float p_from_pos) {
 	}
 
 	if (stream_playback.is_valid()) {
+		active = true;
 		setplay = p_from_pos;
 		output_ready = false;
 		set_physics_process_internal(true);
@@ -444,14 +457,18 @@ void AudioStreamPlayer2D::set_stream_paused(bool p_pause) {
 
 	if (p_pause != stream_paused) {
 		stream_paused = p_pause;
-		stream_paused_fade_in = p_pause ? false : true;
-		stream_paused_fade_out = p_pause ? true : false;
+		stream_paused_fade_in = !p_pause;
+		stream_paused_fade_out = p_pause;
 	}
 }
 
 bool AudioStreamPlayer2D::get_stream_paused() const {
 
 	return stream_paused;
+}
+
+Ref<AudioStreamPlayback> AudioStreamPlayer2D::get_stream_playback() {
+	return stream_playback;
 }
 
 void AudioStreamPlayer2D::_bind_methods() {
@@ -492,6 +509,8 @@ void AudioStreamPlayer2D::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_stream_paused", "pause"), &AudioStreamPlayer2D::set_stream_paused);
 	ClassDB::bind_method(D_METHOD("get_stream_paused"), &AudioStreamPlayer2D::get_stream_paused);
+
+	ClassDB::bind_method(D_METHOD("get_stream_playback"), &AudioStreamPlayer2D::get_stream_playback);
 
 	ClassDB::bind_method(D_METHOD("_bus_layout_changed"), &AudioStreamPlayer2D::_bus_layout_changed);
 

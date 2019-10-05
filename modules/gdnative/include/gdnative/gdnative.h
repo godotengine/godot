@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -67,7 +67,7 @@ extern "C" {
 ////// Error
 
 typedef enum {
-	GODOT_OK,
+	GODOT_OK, // (0)
 	GODOT_FAILED, ///< Generic fail error
 	GODOT_ERR_UNAVAILABLE, ///< What is requested is unsupported/unavailable
 	GODOT_ERR_UNCONFIGURED, ///< The object being used hasn't been properly set up yet
@@ -97,12 +97,12 @@ typedef enum {
 	GODOT_ERR_CONNECTION_ERROR,
 	GODOT_ERR_CANT_ACQUIRE_RESOURCE,
 	GODOT_ERR_CANT_FORK,
-	GODOT_ERR_INVALID_DATA, ///< Data passed is invalid	(30)
+	GODOT_ERR_INVALID_DATA, ///< Data passed is invalid (30)
 	GODOT_ERR_INVALID_PARAMETER, ///< Parameter passed is invalid
 	GODOT_ERR_ALREADY_EXISTS, ///< When adding, item already exists
 	GODOT_ERR_DOES_NOT_EXIST, ///< When retrieving/erasing, it item does not exist
 	GODOT_ERR_DATABASE_CANT_READ, ///< database is full
-	GODOT_ERR_DATABASE_CANT_WRITE, ///< database is full	(35)
+	GODOT_ERR_DATABASE_CANT_WRITE, ///< database is full (35)
 	GODOT_ERR_COMPILATION_FAILED,
 	GODOT_ERR_METHOD_NOT_FOUND,
 	GODOT_ERR_LINK_FAILED,

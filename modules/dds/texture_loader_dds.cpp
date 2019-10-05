@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,6 +31,8 @@
 #include "texture_loader_dds.h"
 #include "core/os/file_access.h"
 
+#define PF_FOURCC(s) ((uint32_t)(((s)[3] << 24U) | ((s)[2] << 16U) | ((s)[1] << 8U) | ((s)[0])))
+
 enum {
 	DDS_MAGIC = 0x20534444,
 	DDSD_CAPS = 0x00000001,
@@ -51,6 +53,7 @@ enum DDSFormat {
 	DDS_DXT5,
 	DDS_ATI1,
 	DDS_ATI2,
+	DDS_A2XY,
 	DDS_BGRA8,
 	DDS_BGR8,
 	DDS_RGBA8, //flipped in dds
@@ -74,9 +77,12 @@ struct DDSFormatInfo {
 };
 
 static const DDSFormatInfo dds_format_info[DDS_MAX] = {
-	{ "DXT1", true, false, 4, 8, Image::FORMAT_DXT1 },
-	{ "DXT3", true, false, 4, 16, Image::FORMAT_DXT3 },
-	{ "DXT5", true, false, 4, 16, Image::FORMAT_DXT5 },
+	{ "DXT1/BC1", true, false, 4, 8, Image::FORMAT_DXT1 },
+	{ "DXT3/BC2", true, false, 4, 16, Image::FORMAT_DXT3 },
+	{ "DXT5/BC3", true, false, 4, 16, Image::FORMAT_DXT5 },
+	{ "ATI1/BC4", true, false, 4, 8, Image::FORMAT_RGTC_R },
+	{ "ATI2/3DC/BC5", true, false, 4, 16, Image::FORMAT_RGTC_RG },
+	{ "A2XY/DXN/BC5", true, false, 4, 16, Image::FORMAT_RGTC_RG },
 	{ "BGRA8", false, false, 1, 4, Image::FORMAT_RGBA8 },
 	{ "BGR8", false, false, 1, 3, Image::FORMAT_RGB8 },
 	{ "RGBA8", false, false, 1, 4, Image::FORMAT_RGBA8 },
@@ -102,8 +108,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	if (r_error)
 		*r_error = ERR_FILE_CORRUPT;
 
-	ERR_EXPLAIN("Unable to open DDS texture file: " + p_path);
-	ERR_FAIL_COND_V(err != OK, RES());
+	ERR_FAIL_COND_V_MSG(err != OK, RES(), "Unable to open DDS texture file '" + p_path + "'.");
 
 	uint32_t magic = f->get_32();
 	uint32_t hsize = f->get_32();
@@ -122,8 +127,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	if (magic != DDS_MAGIC || hsize != 124 || !(flags & DDSD_PIXELFORMAT) || !(flags & DDSD_CAPS)) {
 
-		ERR_EXPLAIN("Invalid or Unsupported DDS texture file: " + p_path);
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Invalid or unsupported DDS texture file '" + p_path + "'.");
 	}
 
 	/* uint32_t format_size = */ f->get_32();
@@ -158,22 +162,25 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 	DDSFormat dds_format;
 
-	if (format_flags & DDPF_FOURCC && format_fourcc == 0x31545844) { //'1TXD'
+	if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("DXT1")) {
 
 		dds_format = DDS_DXT1;
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x33545844) { //'3TXD'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("DXT3")) {
 
 		dds_format = DDS_DXT3;
 
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x35545844) { //'5TXD'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("DXT5")) {
 
 		dds_format = DDS_DXT5;
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x31495441) { //'1ITA'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("ATI1")) {
 
 		dds_format = DDS_ATI1;
-	} else if (format_flags & DDPF_FOURCC && format_fourcc == 0x32495441) { //'2ITA'
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("ATI2")) {
 
 		dds_format = DDS_ATI2;
+	} else if (format_flags & DDPF_FOURCC && format_fourcc == PF_FOURCC("A2XY")) {
+
+		dds_format = DDS_A2XY;
 
 	} else if (format_flags & DDPF_RGB && format_flags & DDPF_ALPHAPIXELS && format_rgb_bits == 32 && format_red_mask == 0xff0000 && format_green_mask == 0xff00 && format_blue_mask == 0xff && format_alpha_mask == 0xff000000) {
 
@@ -209,9 +216,7 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 	} else {
 
 		printf("unrecognized fourcc %x format_flags: %x - rgbbits %i - red_mask %x green mask %x blue mask %x alpha mask %x\n", format_fourcc, format_flags, format_rgb_bits, format_red_mask, format_green_mask, format_blue_mask, format_alpha_mask);
-		ERR_EXPLAIN("Unrecognized or Unsupported color layout in DDS: " + p_path);
-
-		ERR_FAIL_V(RES());
+		ERR_FAIL_V_MSG(RES(), "Unrecognized or unsupported color layout in DDS '" + p_path + "'.");
 	}
 
 	if (!(flags & DDSD_MIPMAPCOUNT))
@@ -242,7 +247,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 		src_data.resize(size);
 		PoolVector<uint8_t>::Write wb = src_data.write();
 		f->get_buffer(wb.ptr(), size);
-		wb = PoolVector<uint8_t>::Write();
 
 	} else if (info.palette) {
 
@@ -263,14 +267,14 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 				colsize = 4;
 		}
 
-		int w = width;
-		int h = height;
+		int w2 = width;
+		int h2 = height;
 
 		for (uint32_t i = 1; i < mipmaps; i++) {
 
-			w = (w + 1) >> 1;
-			h = (h + 1) >> 1;
-			size += w * h * info.block_size;
+			w2 = (w2 + 1) >> 1;
+			h2 = (h2 + 1) >> 1;
+			size += w2 * h2 * info.block_size;
 		}
 
 		src_data.resize(size + 256 * colsize);
@@ -287,8 +291,6 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 			if (colsize == 4)
 				wb[dst_ofs + 3] = palette[src_ofs + 3];
 		}
-
-		wb = PoolVector<uint8_t>::Write();
 	} else {
 		//uncompressed generic...
 
@@ -432,10 +434,9 @@ RES ResourceFormatDDS::load(const String &p_path, const String &p_original_path,
 
 			} break;
 
-			default: {}
+			default: {
+			}
 		}
-
-		wb = PoolVector<uint8_t>::Write();
 	}
 
 	Ref<Image> img = memnew(Image(width, height, mipmaps - 1, info.format, src_data));

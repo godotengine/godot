@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,7 @@ StreamPeerGDNative::StreamPeerGDNative() {
 StreamPeerGDNative::~StreamPeerGDNative() {
 }
 
-void StreamPeerGDNative::set_native_stream_peer(godot_net_stream_peer *p_interface) {
+void StreamPeerGDNative::set_native_stream_peer(const godot_net_stream_peer *p_interface) {
 	interface = p_interface;
 }
 
@@ -51,7 +51,7 @@ Error StreamPeerGDNative::put_data(const uint8_t *p_data, int p_bytes) {
 
 Error StreamPeerGDNative::put_partial_data(const uint8_t *p_data, int p_bytes, int &r_sent) {
 	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
-	return (Error)(interface->put_partial_data(interface->data, p_data, p_bytes, r_sent));
+	return (Error)(interface->put_partial_data(interface->data, p_data, p_bytes, &r_sent));
 }
 
 Error StreamPeerGDNative::get_data(uint8_t *p_buffer, int p_bytes) {
@@ -61,7 +61,7 @@ Error StreamPeerGDNative::get_data(uint8_t *p_buffer, int p_bytes) {
 
 Error StreamPeerGDNative::get_partial_data(uint8_t *p_buffer, int p_bytes, int &r_received) {
 	ERR_FAIL_COND_V(interface == NULL, ERR_UNCONFIGURED);
-	return (Error)(interface->get_partial_data(interface->data, p_buffer, p_bytes, r_received));
+	return (Error)(interface->get_partial_data(interface->data, p_buffer, p_bytes, &r_received));
 }
 
 int StreamPeerGDNative::get_available_bytes() const {
@@ -71,7 +71,7 @@ int StreamPeerGDNative::get_available_bytes() const {
 
 extern "C" {
 
-void GDAPI godot_net_bind_stream_peer(godot_object *p_obj, godot_net_stream_peer *p_interface) {
+void GDAPI godot_net_bind_stream_peer(godot_object *p_obj, const godot_net_stream_peer *p_interface) {
 	((StreamPeerGDNative *)p_obj)->set_native_stream_peer(p_interface);
 }
 }

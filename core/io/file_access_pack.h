@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -102,13 +102,13 @@ private:
 
 public:
 	void add_pack_source(PackSource *p_source);
-	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src); // for PackSource
+	void add_path(const String &pkg_path, const String &path, uint64_t ofs, uint64_t size, const uint8_t *p_md5, PackSource *p_src, bool p_replace_files); // for PackSource
 
 	void set_disabled(bool p_disabled) { disabled = p_disabled; }
 	_FORCE_INLINE_ bool is_disabled() const { return disabled; }
 
 	static PackedData *get_singleton() { return singleton; }
-	Error add_pack(const String &p_path);
+	Error add_pack(const String &p_path, bool p_replace_files);
 
 	_FORCE_INLINE_ FileAccess *try_open_path(const String &p_path);
 	_FORCE_INLINE_ bool has_path(const String &p_path);
@@ -120,7 +120,7 @@ public:
 class PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path) = 0;
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files) = 0;
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file) = 0;
 	virtual ~PackSource() {}
 };
@@ -128,7 +128,7 @@ public:
 class PackedSourcePCK : public PackSource {
 
 public:
-	virtual bool try_open_pack(const String &p_path);
+	virtual bool try_open_pack(const String &p_path, bool p_replace_files);
 	virtual FileAccess *get_file(const String &p_path, PackedData::PackedFile *p_file);
 };
 
@@ -142,6 +142,8 @@ class FileAccessPack : public FileAccess {
 	FileAccess *f;
 	virtual Error _open(const String &p_path, int p_mode_flags);
 	virtual uint64_t _get_modified_time(const String &p_file) { return 0; }
+	virtual uint32_t _get_unix_permissions(const String &p_file) { return 0; }
+	virtual Error _set_unix_permissions(const String &p_file, uint32_t p_permissions) { return FAILED; }
 
 public:
 	virtual void close();
@@ -220,6 +222,8 @@ public:
 	virtual Error remove(String p_name);
 
 	size_t get_space_left();
+
+	virtual String get_filesystem_type() const;
 
 	DirAccessPack();
 	~DirAccessPack();

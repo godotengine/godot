@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -39,7 +39,7 @@ void EditorPropertyRootMotion::_confirmed() {
 		return;
 
 	NodePath path = ti->get_metadata(0);
-	emit_signal("property_changed", get_edited_property(), path);
+	emit_changed(get_edited_property(), path);
 	update_property();
 	filter_dialog->hide(); //may come from activated
 }
@@ -131,7 +131,7 @@ void EditorPropertyRootMotion::_node_assign() {
 			Skeleton *skeleton = Object::cast_to<Skeleton>(node);
 			if (skeleton && skeleton->find_bone(concat) != -1) {
 				//path in skeleton
-				String bone = concat;
+				const String &bone = concat;
 				int idx = skeleton->find_bone(bone);
 				List<String> bone_path;
 				while (idx != -1) {
@@ -195,7 +195,7 @@ void EditorPropertyRootMotion::_node_assign() {
 
 void EditorPropertyRootMotion::_node_clear() {
 
-	emit_signal("property_changed", get_edited_property(), NodePath());
+	emit_changed(get_edited_property(), NodePath());
 	update_property();
 }
 
@@ -206,7 +206,7 @@ void EditorPropertyRootMotion::update_property() {
 	assign->set_tooltip(p);
 	if (p == NodePath()) {
 		assign->set_icon(Ref<Texture>());
-		assign->set_text(TTR("Assign.."));
+		assign->set_text(TTR("Assign..."));
 		assign->set_flat(false);
 		return;
 	}

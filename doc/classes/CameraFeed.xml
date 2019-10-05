@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CameraFeed" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+		A camera feed gives you access to a single physical camera attached to your device.
+	</brief_description>
+	<description>
+		A camera feed gives you access to a single physical camera attached to your device. When enabled, Godot will start capturing frames from the camera which can then be used.
+		[b]Note:[/b] Many cameras will return YCbCr images which are split into two textures and need to be combined in a shader. Godot does this automatically for you if you set the environment to show the camera image in the background.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="get_id" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Gets the unique ID for this feed.
+			</description>
+		</method>
+		<method name="get_name" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Gets the camera's name.
+			</description>
+		</method>
+		<method name="get_position" qualifiers="const">
+			<return type="int" enum="CameraFeed.FeedPosition">
+			</return>
+			<description>
+				Position of camera on the device.
+			</description>
+		</method>
+	</methods>
+	<members>
+		<member name="feed_is_active" type="bool" setter="set_active" getter="is_active" default="false">
+		</member>
+		<member name="feed_transform" type="Transform2D" setter="set_transform" getter="get_transform" default="Transform2D( 1, 0, 0, -1, 0, 1 )">
+		</member>
+	</members>
+	<constants>
+		<constant name="FEED_NOIMAGE" value="0" enum="FeedDataType">
+			No image set for the feed.
+		</constant>
+		<constant name="FEED_RGB" value="1" enum="FeedDataType">
+			Feed supplies RGB images.
+		</constant>
+		<constant name="FEED_YCBCR" value="2" enum="FeedDataType">
+			Feed supplies YCbCr images that need to be converted to RGB.
+		</constant>
+		<constant name="FEED_YCBCR_SEP" value="3" enum="FeedDataType">
+			Feed supplies separate Y and CbCr images that need to be combined and converted to RGB.
+		</constant>
+		<constant name="FEED_UNSPECIFIED" value="0" enum="FeedPosition">
+			Unspecified position.
+		</constant>
+		<constant name="FEED_FRONT" value="1" enum="FeedPosition">
+			Camera is mounted at the front of the device.
+		</constant>
+		<constant name="FEED_BACK" value="2" enum="FeedPosition">
+			Camera is mounted at the back of the device.
+		</constant>
+	</constants>
+</class>

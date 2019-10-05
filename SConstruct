@@ -2,11 +2,12 @@
 
 EnsureSConsVersion(0, 98, 1)
 
-import string
-import os
-import os.path
+# System
 import glob
+import os
 import sys
+
+# Local
 import methods
 import gles_builders
 from platform_methods import run_in_subprocess
@@ -21,22 +22,19 @@ active_platforms = []
 active_platform_ids = []
 platform_exporters = []
 platform_apis = []
-global_defaults = []
 
 for x in sorted(glob.glob("platform/*")):
     if (not os.path.isdir(x) or not os.path.exists(x + "/detect.py")):
         continue
     tmppath = "./" + x
 
-    sys.path.append(tmppath)
+    sys.path.insert(0, tmppath)
     import detect
 
     if (os.path.exists(x + "/export/export.cpp")):
         platform_exporters.append(x[9:])
     if (os.path.exists(x + "/api/api.cpp")):
         platform_apis.append(x[9:])
-    if (os.path.exists(x + "/globals/global_defaults.cpp")):
-        global_defaults.append(x[9:])
     if (detect.is_active()):
         active_platforms.append(detect.get_name())
         active_platform_ids.append(x)
@@ -68,21 +66,6 @@ if 'TERM' in os.environ:
     env_base['ENV']['TERM'] = os.environ['TERM']
 env_base.AppendENVPath('PATH', os.getenv('PATH'))
 env_base.AppendENVPath('PKG_CONFIG_PATH', os.getenv('PKG_CONFIG_PATH'))
-env_base.global_defaults = global_defaults
-env_base.android_maven_repos = []
-env_base.android_flat_dirs = []
-env_base.android_dependencies = []
-env_base.android_gradle_plugins = []
-env_base.android_gradle_classpath = []
-env_base.android_java_dirs = []
-env_base.android_res_dirs = []
-env_base.android_asset_dirs = []
-env_base.android_aidl_dirs = []
-env_base.android_jni_dirs = []
-env_base.android_default_config = []
-env_base.android_manifest_chunk = ""
-env_base.android_permission_chunk = ""
-env_base.android_appattributes_chunk = ""
 env_base.disabled_modules = []
 env_base.use_ptrcall = False
 env_base.split_drivers = False
@@ -90,27 +73,6 @@ env_base.split_modules = False
 env_base.module_version_string = ""
 env_base.msvc = False
 
-# To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
-# http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
-env_base.Decider('MD5-timestamp')
-# Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
-# http://scons.org/doc/production/HTML/scons-user/ch06s04.html
-env_base.SetOption('implicit_cache', 1)
-
-env_base.__class__.android_add_maven_repository = methods.android_add_maven_repository
-env_base.__class__.android_add_flat_dir = methods.android_add_flat_dir
-env_base.__class__.android_add_dependency = methods.android_add_dependency
-env_base.__class__.android_add_java_dir = methods.android_add_java_dir
-env_base.__class__.android_add_res_dir = methods.android_add_res_dir
-env_base.__class__.android_add_asset_dir = methods.android_add_asset_dir
-env_base.__class__.android_add_aidl_dir = methods.android_add_aidl_dir
-env_base.__class__.android_add_jni_dir = methods.android_add_jni_dir
-env_base.__class__.android_add_default_config = methods.android_add_default_config
-env_base.__class__.android_add_to_manifest = methods.android_add_to_manifest
-env_base.__class__.android_add_to_permissions = methods.android_add_to_permissions
-env_base.__class__.android_add_to_attributes = methods.android_add_to_attributes
-env_base.__class__.android_add_gradle_plugin = methods.android_add_gradle_plugin
-env_base.__class__.android_add_gradle_classpath = methods.android_add_gradle_classpath
 env_base.__class__.disable_module = methods.disable_module
 
 env_base.__class__.add_module_version_string = methods.add_module_version_string
@@ -134,7 +96,6 @@ customs = ['custom.py']
 
 profile = ARGUMENTS.get("profile", False)
 if profile:
-    import os.path
     if os.path.isfile(profile):
         customs.append(profile)
     elif os.path.isfile(profile + ".py"):
@@ -151,6 +112,7 @@ opts.Add(EnumVariable('target', "Compilation target", 'debug', ('debug', 'releas
 opts.Add(EnumVariable('optimize', "Optimization type", 'speed', ('speed', 'size')))
 opts.Add(BoolVariable('tools', "Build the tools (a.k.a. the Godot editor)", True))
 opts.Add(BoolVariable('use_lto', 'Use link-time optimization', False))
+opts.Add(BoolVariable('use_precise_math_checks', 'Math checks use very precise epsilon (useful to debug the engine)', False))
 
 # Components
 opts.Add(BoolVariable('deprecated', "Enable deprecated features", True))
@@ -163,12 +125,12 @@ opts.Add(BoolVariable('verbose', "Enable verbose output for the compilation", Fa
 opts.Add(BoolVariable('progress', "Show a progress indicator during compilation", True))
 opts.Add(EnumVariable('warnings', "Set the level of warnings emitted during compilation", 'all', ('extra', 'all', 'moderate', 'no')))
 opts.Add(BoolVariable('werror', "Treat compiler warnings as errors. Depends on the level of warnings set with 'warnings'", False))
-opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=all", False))
+opts.Add(BoolVariable('dev', "If yes, alias for verbose=yes warnings=extra werror=yes", False))
 opts.Add('extra_suffix', "Custom extra suffix added to the base filename of all generated binary files", '')
 opts.Add(BoolVariable('vsproj', "Generate a Visual Studio solution", False))
 opts.Add(EnumVariable('macports_clang', "Build using Clang from MacPorts", 'no', ('no', '5.0', 'devel')))
 opts.Add(BoolVariable('disable_3d', "Disable 3D nodes for a smaller executable", False))
-opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced 3D GUI nodes and behaviors", False))
+opts.Add(BoolVariable('disable_advanced_gui', "Disable advanced GUI nodes and behaviors", False))
 opts.Add(BoolVariable('no_editor_splash', "Don't use the custom splash screen for the editor", False))
 opts.Add('system_certs_path', "Use this path as SSL certificates default for editor (for package maintainers)", '')
 
@@ -183,14 +145,13 @@ opts.Add(BoolVariable('builtin_libtheora', "Use the built-in libtheora library",
 opts.Add(BoolVariable('builtin_libvorbis', "Use the built-in libvorbis library", True))
 opts.Add(BoolVariable('builtin_libvpx', "Use the built-in libvpx library", True))
 opts.Add(BoolVariable('builtin_libwebp', "Use the built-in libwebp library", True))
-opts.Add(BoolVariable('builtin_libwebsockets', "Use the built-in libwebsockets library", True))
+opts.Add(BoolVariable('builtin_wslay', "Use the built-in wslay library", True))
 opts.Add(BoolVariable('builtin_mbedtls', "Use the built-in mbedTLS library", True))
 opts.Add(BoolVariable('builtin_miniupnpc', "Use the built-in miniupnpc library", True))
 opts.Add(BoolVariable('builtin_opus', "Use the built-in Opus library", True))
-opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library)", True))
+opts.Add(BoolVariable('builtin_pcre2', "Use the built-in PCRE2 library", True))
 opts.Add(BoolVariable('builtin_recast', "Use the built-in Recast library", True))
 opts.Add(BoolVariable('builtin_squish', "Use the built-in squish library", True))
-opts.Add(BoolVariable('builtin_thekla_atlas', "Use the built-in thekla_altas library", True))
 opts.Add(BoolVariable('builtin_xatlas', "Use the built-in xatlas library", True))
 opts.Add(BoolVariable('builtin_zlib', "Use the built-in zlib library", True))
 opts.Add(BoolVariable('builtin_zstd', "Use the built-in Zstd library", True))
@@ -200,8 +161,8 @@ opts.Add("CXX", "C++ compiler")
 opts.Add("CC", "C compiler")
 opts.Add("LINK", "Linker")
 opts.Add("CCFLAGS", "Custom flags for both the C and C++ compilers")
-opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("CFLAGS", "Custom flags for the C compiler")
+opts.Add("CXXFLAGS", "Custom flags for the C++ compiler")
 opts.Add("LINKFLAGS", "Custom flags for the linker")
 
 # add platform specific options
@@ -214,7 +175,7 @@ for k in platform_opts.keys():
 for x in module_list:
     module_enabled = True
     tmppath = "./modules/" + x
-    sys.path.append(tmppath)
+    sys.path.insert(0, tmppath)
     import config
     enabled_attr = getattr(config, "is_enabled", None)
     if (callable(enabled_attr) and not config.is_enabled()):
@@ -228,14 +189,27 @@ Help(opts.GenerateHelpText(env_base))  # generate help
 
 # add default include paths
 
-env_base.Append(CPPPATH=['#editor', '#'])
+env_base.Prepend(CPPPATH=['#', '#editor'])
 
 # configure ENV for platform
 env_base.platform_exporters = platform_exporters
 env_base.platform_apis = platform_apis
 
+if (env_base["use_precise_math_checks"]):
+    env_base.Append(CPPDEFINES=['PRECISE_MATH_CHECKS'])
+
 if (env_base['target'] == 'debug'):
     env_base.Append(CPPDEFINES=['DEBUG_MEMORY_ALLOC','DISABLE_FORCED_INLINE'])
+
+    # The two options below speed up incremental builds, but reduce the certainty that all files
+    # will properly be rebuilt. As such, we only enable them for debug (dev) builds, not release.
+
+    # To decide whether to rebuild a file, use the MD5 sum only if the timestamp has changed.
+    # http://scons.org/doc/production/HTML/scons-user/ch06.html#idm139837621851792
+    env_base.Decider('MD5-timestamp')
+    # Use cached implicit dependencies by default. Can be overridden by specifying `--implicit-deps-changed` in the command line.
+    # http://scons.org/doc/production/HTML/scons-user/ch06s04.html
+    env_base.SetOption('implicit_cache', 1)
 
 if (env_base['no_editor_splash']):
     env_base.Append(CPPDEFINES=['NO_EDITOR_SPLASH'])
@@ -252,10 +226,27 @@ if env_base['platform'] != "":
 elif env_base['p'] != "":
     selected_platform = env_base['p']
     env_base["platform"] = selected_platform
+else:
+    # Missing `platform` argument, try to detect platform automatically
+    if sys.platform.startswith('linux'):
+        selected_platform = 'x11'
+    elif sys.platform == 'darwin':
+        selected_platform = 'osx'
+    elif sys.platform == 'win32':
+        selected_platform = 'windows'
+    else:
+        print("Could not detect platform automatically. Supported platforms:")
+        for x in platform_list:
+            print("\t" + x)
+        print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform != "":
+        print("Automatically detected platform: " + selected_platform)
+        env_base["platform"] = selected_platform
 
 if selected_platform in platform_list:
-
-    sys.path.append("./platform/" + selected_platform)
+    tmppath = "./platform/" + selected_platform
+    sys.path.insert(0, tmppath)
     import detect
     if "create" in dir(detect):
         env = detect.create(env_base)
@@ -263,8 +254,9 @@ if selected_platform in platform_list:
         env = env_base.Clone()
 
     if env['dev']:
-        env["warnings"] = "all"
         env['verbose'] = True
+        env['warnings'] = "extra"
+        env['werror'] = True
 
     if env['vsproj']:
         env.vs_incs = []
@@ -297,17 +289,18 @@ if selected_platform in platform_list:
 
     CCFLAGS = env.get('CCFLAGS', '')
     env['CCFLAGS'] = ''
-
     env.Append(CCFLAGS=str(CCFLAGS).split())
 
     CFLAGS = env.get('CFLAGS', '')
     env['CFLAGS'] = ''
-
     env.Append(CFLAGS=str(CFLAGS).split())
+
+    CXXFLAGS = env.get('CXXFLAGS', '')
+    env['CXXFLAGS'] = ''
+    env.Append(CXXFLAGS=str(CXXFLAGS).split())
 
     LINKFLAGS = env.get('LINKFLAGS', '')
     env['LINKFLAGS'] = ''
-
     env.Append(LINKFLAGS=str(LINKFLAGS).split())
 
     flag_list = platform_flags[selected_platform]
@@ -317,6 +310,10 @@ if selected_platform in platform_list:
 
     # must happen after the flags, so when flags are used by configure, stuff happens (ie, ssl on x11)
     detect.configure(env)
+
+    # Enable C++11 support
+    if not env.msvc:
+        env.Append(CXXFLAGS=['-std=c++11'])
 
     # Configure compiler warnings
     if env.msvc:
@@ -334,14 +331,35 @@ if selected_platform in platform_list:
         env.Append(CCFLAGS=['/EHsc'])
         if (env["werror"]):
             env.Append(CCFLAGS=['/WX'])
+        # Force to use Unicode encoding
+        env.Append(MSVC_FLAGS=['/utf8'])
     else: # Rest of the world
-        disable_nonessential_warnings = ['-Wno-sign-compare']
+        shadow_local_warning = []
+        all_plus_warnings = ['-Wwrite-strings']
+
+        if methods.using_gcc(env):
+            version = methods.get_compiler_version(env)
+            if version != None and version[0] >= '7':
+                shadow_local_warning = ['-Wshadow-local']
+
         if (env["warnings"] == 'extra'):
-            env.Append(CCFLAGS=['-Wall', '-Wextra'])
+            # Note: enable -Wimplicit-fallthrough for Clang (already part of -Wextra for GCC)
+            # once we switch to C++11 or later (necessary for our FALLTHROUGH macro).
+            env.Append(CCFLAGS=['-Wall', '-Wextra', '-Wno-unused-parameter']
+                + all_plus_warnings + shadow_local_warning)
+            env.Append(CXXFLAGS=['-Wctor-dtor-privacy', '-Wnon-virtual-dtor'])
+            if methods.using_gcc(env):
+                env.Append(CCFLAGS=['-Walloc-zero',
+                    '-Wduplicated-branches', '-Wduplicated-cond',
+                    '-Wstringop-overflow=4', '-Wlogical-op'])
+                env.Append(CXXFLAGS=['-Wnoexcept', '-Wplacement-new=1'])
+                version = methods.get_compiler_version(env)
+                if version != None and version[0] >= '9':
+                    env.Append(CCFLAGS=['-Wattribute-alias=2'])
         elif (env["warnings"] == 'all'):
-            env.Append(CCFLAGS=['-Wall'] + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall'] + shadow_local_warning)
         elif (env["warnings"] == 'moderate'):
-            env.Append(CCFLAGS=['-Wall', '-Wno-unused'] + disable_nonessential_warnings)
+            env.Append(CCFLAGS=['-Wall', '-Wno-unused']  + shadow_local_warning)
         else: # 'no'
             env.Append(CCFLAGS=['-w'])
         if (env["werror"]):
@@ -381,17 +399,18 @@ if selected_platform in platform_list:
 
     suffix += env.extra_suffix
 
-    sys.path.remove("./platform/" + selected_platform)
+    sys.path.remove(tmppath)
     sys.modules.pop('detect')
 
     env.module_list = []
+    env.module_icons_paths = []
     env.doc_class_path = {}
 
     for x in module_list:
         if not env['module_' + x + '_enabled']:
             continue
         tmppath = "./modules/" + x
-        sys.path.append(tmppath)
+        sys.path.insert(0, tmppath)
         env.current_module = x
         import config
         # can_build changed number of arguments between 3.0 (1) and 3.1 (2),
@@ -407,13 +426,22 @@ if selected_platform in platform_list:
         if (can_build):
             config.configure(env)
             env.module_list.append(x)
+
+            # Get doc classes paths (if present)
             try:
-                 doc_classes = config.get_doc_classes()
-                 doc_path = config.get_doc_path()
-                 for c in doc_classes:
-                     env.doc_class_path[c] = "modules/" + x + "/" + doc_path
+                doc_classes = config.get_doc_classes()
+                doc_path = config.get_doc_path()
+                for c in doc_classes:
+                    env.doc_class_path[c] = "modules/" + x + "/" + doc_path
             except:
                 pass
+            # Get icon paths (if present)
+            try:
+                icons_path = config.get_icons_path()
+                env.module_icons_paths.append("modules/" + x + "/" + icons_path)
+            except:
+                # Default path for module icons
+                env.module_icons_paths.append("modules/" + x + "/" + "icons")
 
         sys.path.remove(tmppath)
         sys.modules.pop('config')
@@ -425,8 +453,13 @@ if selected_platform in platform_list:
     # (SH)LIBSUFFIX will be used for our own built libraries
     # LIBSUFFIXES contains LIBSUFFIX and SHLIBSUFFIX by default,
     # so we need to append the default suffixes to keep the ability
-    # to link against thirdparty libraries (.a, .so, .dll, etc.).
-    env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
+    # to link against thirdparty libraries (.a, .so, .lib, etc.).
+    if os.name == "nt":
+        # On Windows, only static libraries and import libraries can be
+        # statically linked - both using .lib extension
+        env["LIBSUFFIXES"] += [env["LIBSUFFIX"]]
+    else:
+        env["LIBSUFFIXES"] += [env["LIBSUFFIX"], env["SHLIBSUFFIX"]]
     env["LIBSUFFIX"] = suffix + env["LIBSUFFIX"]
     env["SHLIBSUFFIX"] = suffix + env["SHLIBSUFFIX"]
 
@@ -450,6 +483,13 @@ if selected_platform in platform_list:
             env.Append(CPPDEFINES=['ADVANCED_GUI_DISABLED'])
     if env['minizip']:
         env.Append(CPPDEFINES=['MINIZIP_ENABLED'])
+
+    editor_module_list = ['regex']
+    for x in editor_module_list:
+        if not env['module_' + x + '_enabled']:
+            if env['tools']:
+                print("Build option 'module_" + x + "_enabled=no' cannot be used with 'tools=yes' (editor), only with 'tools=no' (export template).")
+                sys.exit(255)
 
     if not env['verbose']:
         methods.no_verbose(sys, env)
@@ -492,13 +532,23 @@ if selected_platform in platform_list:
             if (conf.CheckCHeader(header[0])):
                 env.AppendUnique(CPPDEFINES=[header[1]])
 
-else:
+elif selected_platform != "":
+    if selected_platform == "list":
+        print("The following platforms are available:\n")
+    else:
+        print('Invalid target platform "' + selected_platform + '".')
+        print("The following platforms were detected:\n")
 
-    print("No valid target platform selected.")
-    print("The following platforms were detected:")
     for x in platform_list:
         print("\t" + x)
-    print("\nPlease run SCons again with the argument: platform=<string>")
+
+    print("\nPlease run SCons again and select a valid platform: platform=<string>")
+
+    if selected_platform == "list":
+        # Exit early to suppress the rest of the built-in SCons messages
+        sys.exit(0)
+    else:
+        sys.exit(255)
 
 # The following only makes sense when the env is defined, and assumes it is
 if 'env' in locals():
@@ -562,7 +612,7 @@ if 'env' in locals():
             # (filename, size, weight).
             current_time = time.time()
             file_stat = [(x[0], x[1][0], (current_time - x[1][1])) for x in file_stat]
-            # Sort by the most resently accessed files (most sensible to keep) first
+            # Sort by the most recently accessed files (most sensible to keep) first
             file_stat.sort(key=lambda x: x[2])
             # Search for the first entry where the storage limit is
             # reached

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -155,6 +155,12 @@ uint32_t PrimitiveMesh::surface_get_format(int p_idx) const {
 
 Mesh::PrimitiveType PrimitiveMesh::surface_get_primitive_type(int p_idx) const {
 	return primitive_type;
+}
+
+void PrimitiveMesh::surface_set_material(int p_idx, const Ref<Material> &p_material) {
+	ERR_FAIL_INDEX(p_idx, 1);
+
+	set_material(p_material);
 }
 
 Ref<Material> PrimitiveMesh::surface_get_material(int p_idx) const {
@@ -306,7 +312,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * radius * w, y * radius * w, z);
 			points.push_back(p + Vector3(0.0, 0.0, 0.5 * mid_height));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(y, -x, 0.0, -1.0)
+			ADD_TANGENT(-y, x, 0.0, 1.0)
 			uvs.push_back(Vector2(u, v * onethird));
 			point++;
 
@@ -345,7 +351,7 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * radius, y * radius, z);
 			points.push_back(p);
 			normals.push_back(Vector3(x, y, 0.0));
-			ADD_TANGENT(y, -x, 0.0, -1.0)
+			ADD_TANGENT(-y, x, 0.0, 1.0)
 			uvs.push_back(Vector2(u, onethird + (v * onethird)));
 			point++;
 
@@ -376,17 +382,17 @@ void CapsuleMesh::_create_mesh_array(Array &p_arr) const {
 		z = radius * cos(0.5 * Math_PI * v);
 
 		for (i = 0; i <= radial_segments; i++) {
-			float u = i;
-			u /= radial_segments;
+			float u2 = i;
+			u2 /= radial_segments;
 
-			x = sin(u * (Math_PI * 2.0));
-			y = -cos(u * (Math_PI * 2.0));
+			x = sin(u2 * (Math_PI * 2.0));
+			y = -cos(u2 * (Math_PI * 2.0));
 
 			Vector3 p = Vector3(x * radius * w, y * radius * w, z);
 			points.push_back(p + Vector3(0.0, 0.0, -0.5 * mid_height));
 			normals.push_back(p.normalized());
-			ADD_TANGENT(y, -x, 0.0, -1.0)
-			uvs.push_back(Vector2(u, twothirds + ((v - 1.0) * onethird)));
+			ADD_TANGENT(-y, x, 0.0, 1.0)
+			uvs.push_back(Vector2(u2, twothirds + ((v - 1.0) * onethird)));
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -514,14 +520,14 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 			// front
 			points.push_back(Vector3(x, -y, -start_pos.z)); // double negative on the Z!
 			normals.push_back(Vector3(0.0, 0.0, 1.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(u, v));
 			point++;
 
 			// back
 			points.push_back(Vector3(-x, -y, start_pos.z));
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, v));
 			point++;
 
@@ -568,14 +574,14 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 			// right
 			points.push_back(Vector3(-start_pos.x, -y, -z));
 			normals.push_back(Vector3(1.0, 0.0, 0.0));
-			ADD_TANGENT(0.0, 0.0, 1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, v));
 			point++;
 
 			// left
 			points.push_back(Vector3(start_pos.x, -y, z));
 			normals.push_back(Vector3(-1.0, 0.0, 0.0));
-			ADD_TANGENT(0.0, 0.0, -1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, 1.0, 1.0);
 			uvs.push_back(Vector2(u, 0.5 + v));
 			point++;
 
@@ -622,14 +628,14 @@ void CubeMesh::_create_mesh_array(Array &p_arr) const {
 			// top
 			points.push_back(Vector3(-x, -start_pos.y, -z));
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, 0.5 + v));
 			point++;
 
 			// bottom
 			points.push_back(Vector3(x, start_pos.y, -z));
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
 			point++;
 
@@ -737,8 +743,6 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 	int i, j, prevrow, thisrow, point;
 	float x, y, z, u, v, radius;
 
-	radius = bottom_radius > top_radius ? bottom_radius : top_radius;
-
 	PoolVector<Vector3> points;
 	PoolVector<Vector3> normals;
 	PoolVector<float> tangents;
@@ -773,7 +777,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * radius, y, z * radius);
 			points.push_back(p);
 			normals.push_back(Vector3(x, 0.0, z));
-			ADD_TANGENT(-z, 0.0, x, -1.0)
+			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v * 0.5));
 			point++;
 
@@ -835,7 +839,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 		thisrow = point;
 		points.push_back(Vector3(0.0, y, 0.0));
 		normals.push_back(Vector3(0.0, -1.0, 0.0));
-		ADD_TANGENT(-1.0, 0.0, 0.0, -1.0)
+		ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 		uvs.push_back(Vector2(0.75, 0.75));
 		point++;
 
@@ -852,7 +856,7 @@ void CylinderMesh::_create_mesh_array(Array &p_arr) const {
 			Vector3 p = Vector3(x * bottom_radius, y, z * bottom_radius);
 			points.push_back(p);
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0)
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0)
 			uvs.push_back(Vector2(u, v));
 			point++;
 
@@ -982,8 +986,8 @@ void PlaneMesh::_create_mesh_array(Array &p_arr) const {
 
 			points.push_back(Vector3(-x, 0.0, -z));
 			normals.push_back(Vector3(0.0, 1.0, 0.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
-			uvs.push_back(Vector2(u, v));
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
+			uvs.push_back(Vector2(1.0 - u, 1.0 - v)); /* 1.0 - uv to match orientation with Quad */
 			point++;
 
 			if (i > 0 && j > 0) {
@@ -1108,14 +1112,14 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			/* front */
 			points.push_back(Vector3(start_x + x, -y, -start_pos.z)); // double negative on the Z!
 			normals.push_back(Vector3(0.0, 0.0, 1.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(offset_front + u, v));
 			point++;
 
 			/* back */
 			points.push_back(Vector3(start_x + scaled_size_x - x, -y, start_pos.z));
 			normals.push_back(Vector3(0.0, 0.0, -1.0));
-			ADD_TANGENT(1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(-1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + offset_back + u, v));
 			point++;
 
@@ -1187,14 +1191,14 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			/* right */
 			points.push_back(Vector3(right, -y, -z));
 			normals.push_back(normal_right);
-			ADD_TANGENT(0.0, 0.0, 1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, -1.0, 1.0);
 			uvs.push_back(Vector2(onethird + u, v));
 			point++;
 
 			/* left */
 			points.push_back(Vector3(left, -y, z));
 			normals.push_back(normal_left);
-			ADD_TANGENT(0.0, 0.0, -1.0, -1.0);
+			ADD_TANGENT(0.0, 0.0, 1.0, 1.0);
 			uvs.push_back(Vector2(u, 0.5 + v));
 			point++;
 
@@ -1241,7 +1245,7 @@ void PrismMesh::_create_mesh_array(Array &p_arr) const {
 			/* bottom */
 			points.push_back(Vector3(x, start_pos.y, -z));
 			normals.push_back(Vector3(0.0, -1.0, 0.0));
-			ADD_TANGENT(-1.0, 0.0, 0.0, -1.0);
+			ADD_TANGENT(1.0, 0.0, 0.0, 1.0);
 			uvs.push_back(Vector2(twothirds + u, 0.5 + v));
 			point++;
 
@@ -1468,7 +1472,7 @@ void SphereMesh::_create_mesh_array(Array &p_arr) const {
 				points.push_back(p);
 				normals.push_back(p.normalized());
 			};
-			ADD_TANGENT(-z, 0.0, x, -1.0)
+			ADD_TANGENT(z, 0.0, -x, 1.0)
 			uvs.push_back(Vector2(u, v));
 			point++;
 
@@ -1567,4 +1571,20 @@ SphereMesh::SphereMesh() {
 	radial_segments = 64;
 	rings = 32;
 	is_hemisphere = false;
+}
+
+/**
+  PointMesh
+*/
+
+void PointMesh::_create_mesh_array(Array &p_arr) const {
+	PoolVector<Vector3> faces;
+	faces.resize(1);
+	faces.set(0, Vector3(0.0, 0.0, 0.0));
+
+	p_arr[VS::ARRAY_VERTEX] = faces;
+}
+
+PointMesh::PointMesh() {
+	primitive_type = PRIMITIVE_POINTS;
 }

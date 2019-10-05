@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,14 @@
 
 #include "editor/editor_file_dialog.h"
 #include "editor/editor_settings.h"
-#include "scene/gui/check_button.h"
+#include "scene/gui/check_box.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/grid_container.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/panel_container.h"
+
+class CreateDialog;
 
 class ScriptCreateDialog : public ConfirmationDialog {
 	GDCLASS(ScriptCreateDialog, ConfirmationDialog);
@@ -49,14 +51,17 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	PanelContainer *status_panel;
 	LineEdit *parent_name;
 	Button *parent_browse_button;
+	Button *parent_search_button;
 	OptionButton *language_menu;
 	OptionButton *template_menu;
 	LineEdit *file_path;
 	Button *path_button;
 	EditorFileDialog *file_browse;
-	CheckButton *internal;
+	CheckBox *internal;
+	Label *internal_label;
 	VBoxContainer *path_vb;
 	AcceptDialog *alert;
+	CreateDialog *select_class;
 	bool path_valid;
 	bool create_new;
 	bool is_browsing_parent;
@@ -71,21 +76,45 @@ class ScriptCreateDialog : public ConfirmationDialog {
 	bool is_built_in;
 	bool built_in_enabled;
 	int current_language;
+	int default_language;
 	bool re_check_path;
-	String script_template;
-	Vector<String> template_list;
 
+	enum ScriptOrigin {
+		SCRIPT_ORIGIN_PROJECT,
+		SCRIPT_ORIGIN_EDITOR,
+	};
+	struct ScriptTemplateInfo {
+		int id;
+		ScriptOrigin origin;
+		String dir;
+		String name;
+		String extension;
+	};
+
+	String script_template;
+	Vector<ScriptTemplateInfo> template_list;
+	Map<String, Vector<int> > template_overrides; // name : indices
+
+	void _update_script_templates(const String &p_extension);
+
+	String base_type;
+
+	void _path_hbox_sorted();
 	bool _can_be_built_in();
 	void _path_changed(const String &p_path = String());
 	void _path_entered(const String &p_path = String());
 	void _lang_changed(int l = 0);
 	void _built_in_pressed();
-	bool _validate(const String &p_string);
+	bool _validate_parent(const String &p_string);
+	bool _validate_class(const String &p_string);
+	String _validate_path(const String &p_path, bool p_file_must_exist);
 	void _class_name_changed(const String &p_name);
 	void _parent_name_changed(const String &p_parent);
 	void _template_changed(int p_template = 0);
 	void _browse_path(bool browse_parent, bool p_save);
 	void _file_selected(const String &p_file);
+	void _create();
+	void _browse_class_in_tree();
 	virtual void ok_pressed();
 	void _create_new();
 	void _load_exist();
@@ -99,6 +128,7 @@ protected:
 
 public:
 	void config(const String &p_base_name, const String &p_base_path, bool p_built_in_enabled = true);
+	void set_inheritance_base_type(const String &p_base);
 	ScriptCreateDialog();
 };
 

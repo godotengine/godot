@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -274,6 +274,7 @@ public:
 		SPACE_PARAM_BODY_TIME_TO_SLEEP,
 		SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO,
 		SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS,
+		SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH
 	};
 
 	virtual void space_set_param(RID p_space, SpaceParameter p_param, real_t p_value) = 0;
@@ -319,7 +320,7 @@ public:
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) = 0;
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const = 0;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform()) = 0;
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) = 0;
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape) = 0;
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform) = 0;
 
@@ -332,7 +333,7 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) = 0;
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID) = 0;
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id) = 0;
 	virtual ObjectID area_get_object_instance_id(RID p_area) const = 0;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value) = 0;
@@ -371,7 +372,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode) = 0;
 	virtual BodyMode body_get_mode(RID p_body) const = 0;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform()) = 0;
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false) = 0;
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape) = 0;
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform) = 0;
 
@@ -384,7 +385,7 @@ public:
 
 	virtual void body_set_shape_disabled(RID p_body, int p_shape_idx, bool p_disabled) = 0;
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID) = 0;
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id) = 0;
 	virtual uint32_t body_get_object_instance_id(RID p_body) const = 0;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable) = 0;
@@ -492,6 +493,11 @@ public:
 		RID collider;
 		int collider_shape;
 		Variant collider_metadata;
+		MotionResult() {
+			collision_local_shape = 0;
+			collider_id = 0;
+			collider_shape = 0;
+		}
 	};
 
 	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true) = 0;
@@ -697,6 +703,9 @@ public:
 		G6DOF_JOINT_LINEAR_DAMPING,
 		G6DOF_JOINT_LINEAR_MOTOR_TARGET_VELOCITY,
 		G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT,
+		G6DOF_JOINT_LINEAR_SPRING_STIFFNESS,
+		G6DOF_JOINT_LINEAR_SPRING_DAMPING,
+		G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT,
 		G6DOF_JOINT_ANGULAR_LOWER_LIMIT,
 		G6DOF_JOINT_ANGULAR_UPPER_LIMIT,
 		G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS,
@@ -706,6 +715,9 @@ public:
 		G6DOF_JOINT_ANGULAR_ERP,
 		G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY,
 		G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT,
+		G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS,
+		G6DOF_JOINT_ANGULAR_SPRING_DAMPING,
+		G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT,
 		G6DOF_JOINT_MAX
 	};
 
@@ -713,6 +725,8 @@ public:
 
 		G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT,
 		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT,
+		G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING,
+		G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING,
 		G6DOF_JOINT_FLAG_ENABLE_MOTOR,
 		G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR,
 		G6DOF_JOINT_FLAG_MAX
@@ -725,6 +739,9 @@ public:
 
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable) = 0;
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag) = 0;
+
+	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) = 0;
+	virtual int generic_6dof_joint_get_precision(RID p_joint) = 0;
 
 	/* QUERY API */
 
@@ -743,6 +760,8 @@ public:
 	virtual void sync() = 0;
 	virtual void flush_queries() = 0;
 	virtual void finish() = 0;
+
+	virtual bool is_flushing_queries() const = 0;
 
 	enum ProcessInfo {
 
@@ -775,6 +794,12 @@ class PhysicsServerManager {
 		ClassInfo(const ClassInfo &p_ci) :
 				name(p_ci.name),
 				create_callback(p_ci.create_callback) {}
+
+		ClassInfo operator=(const ClassInfo &p_ci) {
+			name = p_ci.name;
+			create_callback = p_ci.create_callback;
+			return *this;
+		}
 	};
 
 	static Vector<ClassInfo> physics_servers;

@@ -205,6 +205,14 @@ void mbedtls_x509write_csr_set_md_alg( mbedtls_x509write_csr *ctx, mbedtls_md_ty
  * \param key_usage key usage flags to set
  *
  * \return          0 if successful, or MBEDTLS_ERR_X509_ALLOC_FAILED
+ *
+ * \note            The <code>decipherOnly</code> flag from the Key Usage
+ *                  extension is represented by bit 8 (i.e.
+ *                  <code>0x8000</code>), which cannot typically be represented
+ *                  in an unsigned char. Therefore, the flag
+ *                  <code>decipherOnly</code> (i.e.
+ *                  #MBEDTLS_X509_KU_DECIPHER_ONLY) cannot be set using this
+ *                  function.
  */
 int mbedtls_x509write_csr_set_key_usage( mbedtls_x509write_csr *ctx, unsigned char key_usage );
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,6 +35,27 @@
 void PacketPeerUDP::set_blocking_mode(bool p_enable) {
 
 	blocking = p_enable;
+}
+
+Error PacketPeerUDP::join_multicast_group(IP_Address p_multi_address, String p_if_name) {
+
+	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!p_multi_address.is_valid(), ERR_INVALID_PARAMETER);
+
+	if (!_sock->is_open()) {
+		IP::Type ip_type = p_multi_address.is_ipv4() ? IP::TYPE_IPV4 : IP::TYPE_IPV6;
+		Error err = _sock->open(NetSocket::TYPE_UDP, ip_type);
+		ERR_FAIL_COND_V(err != OK, err);
+		_sock->set_blocking_enabled(false);
+	}
+	return _sock->join_multicast_group(p_multi_address, p_if_name);
+}
+
+Error PacketPeerUDP::leave_multicast_group(IP_Address p_multi_address, String p_if_name) {
+
+	ERR_FAIL_COND_V(!_sock.is_valid(), ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V(!_sock->is_open(), ERR_UNCONFIGURED);
+	return _sock->leave_multicast_group(p_multi_address, p_if_name);
 }
 
 String PacketPeerUDP::_get_packet_ip() const {
@@ -237,15 +258,16 @@ void PacketPeerUDP::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_packet_ip"), &PacketPeerUDP::_get_packet_ip);
 	ClassDB::bind_method(D_METHOD("get_packet_port"), &PacketPeerUDP::get_packet_port);
 	ClassDB::bind_method(D_METHOD("set_dest_address", "host", "port"), &PacketPeerUDP::_set_dest_address);
+	ClassDB::bind_method(D_METHOD("join_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::join_multicast_group);
+	ClassDB::bind_method(D_METHOD("leave_multicast_group", "multicast_address", "interface_name"), &PacketPeerUDP::leave_multicast_group);
 }
 
-PacketPeerUDP::PacketPeerUDP() {
-
-	_sock = Ref<NetSocket>(NetSocket::create());
-	blocking = true;
-	packet_port = 0;
-	queue_count = 0;
-	peer_port = 0;
+PacketPeerUDP::PacketPeerUDP() :
+		packet_port(0),
+		queue_count(0),
+		peer_port(0),
+		blocking(true),
+		_sock(Ref<NetSocket>(NetSocket::create())) {
 	rb.resize(16);
 }
 

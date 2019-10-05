@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -95,6 +95,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 	Vector3 ray_from = p_camera->project_ray_origin(p_point);
 	Vector3 ray_dir = p_camera->project_ray_normal(p_point);
 
+	// Setting curve point positions
 	if (p_idx < c->get_point_count()) {
 
 		Plane p(gt.xform(original), p_camera->get_transform().basis.get_axis(2));
@@ -126,6 +127,7 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 
 	Vector3 inters;
 
+	// Setting curve in/out positions
 	if (p.intersects_ray(ray_from, ray_dir, &inters)) {
 
 		if (!PathEditorPlugin::singleton->is_handle_clicked()) {
@@ -135,9 +137,13 @@ void PathSpatialGizmo::set_handle(int p_idx, Camera *p_camera, const Point2 &p_p
 		}
 
 		Vector3 local = gi.xform(inters) - base;
+		if (SpatialEditor::get_singleton()->is_snap_enabled()) {
+			float snap = SpatialEditor::get_singleton()->get_translate_snap();
+			local.snap(Vector3(snap, snap, snap));
+		}
+
 		if (t == 0) {
 			c->set_point_in(idx, local);
-
 			if (PathEditorPlugin::singleton->mirror_angle_enabled())
 				c->set_point_out(idx, PathEditorPlugin::singleton->mirror_length_enabled() ? -local : (-local.normalized() * orig_out_length));
 		} else {
@@ -563,7 +569,7 @@ PathEditorPlugin::PathEditorPlugin(EditorNode *p_node) {
 
 	Ref<PathSpatialGizmoPlugin> gizmo_plugin;
 	gizmo_plugin.instance();
-	SpatialEditor::get_singleton()->register_gizmo_plugin(gizmo_plugin);
+	SpatialEditor::get_singleton()->add_gizmo_plugin(gizmo_plugin);
 
 	sep = memnew(VSeparator);
 	sep->hide();
@@ -638,11 +644,14 @@ String PathSpatialGizmoPlugin::get_name() const {
 	return "Path";
 }
 
+int PathSpatialGizmoPlugin::get_priority() const {
+	return -1;
+}
+
 PathSpatialGizmoPlugin::PathSpatialGizmoPlugin() {
 
 	Color path_color = EDITOR_DEF("editors/3d_gizmos/gizmo_colors/path", Color(0.5, 0.5, 1.0, 0.8));
 	create_material("path_material", path_color);
-	path_color.a = 0.4;
-	create_material("path_thin_material", path_color);
+	create_material("path_thin_material", Color(0.5, 0.5, 0.5));
 	create_handle_material("handles");
 }

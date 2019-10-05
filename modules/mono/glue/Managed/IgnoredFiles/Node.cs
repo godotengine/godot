@@ -15,9 +15,10 @@ namespace Godot
             throw new NotImplementedException();
         }
 
-        public Node GetOwner()
+        public Node Owner
         {
-            throw new NotImplementedException();
+            get => throw new NotImplementedException();
+            set => throw new NotImplementedException();
         }
 
         public Node GetParent()

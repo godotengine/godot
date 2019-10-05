@@ -8,6 +8,7 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Transform : IEquatable<Transform>
     {
@@ -33,7 +34,7 @@ namespace Godot
             Vector3 destinationLocation = transform.origin;
 
             var interpolated = new Transform();
-            interpolated.basis.SetQuantScale(sourceRotation.Slerp(destinationRotation, c).Normalized(), sourceScale.LinearInterpolate(destinationScale, c));
+            interpolated.basis.SetQuatScale(sourceRotation.Slerp(destinationRotation, c).Normalized(), sourceScale.LinearInterpolate(destinationScale, c));
             interpolated.origin = sourceLocation.LinearInterpolate(destinationLocation, c);
 
             return interpolated;
@@ -71,21 +72,21 @@ namespace Godot
         {
             // Make rotation matrix
             // Z vector
-            Vector3 zAxis = eye - target;
+            Vector3 column2 = eye - target;
 
-            zAxis.Normalize();
+            column2.Normalize();
 
-            Vector3 yAxis = up;
+            Vector3 column1 = up;
 
-            Vector3 xAxis = yAxis.Cross(zAxis);
+            Vector3 column0 = column1.Cross(column2);
 
             // Recompute Y = Z cross X
-            yAxis = zAxis.Cross(xAxis);
+            column1 = column2.Cross(column0);
 
-            xAxis.Normalize();
-            yAxis.Normalize();
+            column0.Normalize();
+            column1.Normalize();
 
-            basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);
+            basis = new Basis(column0, column1, column2);
 
             origin = eye;
         }
@@ -94,9 +95,9 @@ namespace Godot
         {
             return new Transform(basis, new Vector3
             (
-                origin[0] += basis[0].Dot(ofs),
-                origin[1] += basis[1].Dot(ofs),
-                origin[2] += basis[2].Dot(ofs)
+                origin[0] += basis.Row0.Dot(ofs),
+                origin[1] += basis.Row1.Dot(ofs),
+                origin[2] += basis.Row2.Dot(ofs)
             ));
         }
 
@@ -104,9 +105,9 @@ namespace Godot
         {
             return new Vector3
             (
-                basis[0].Dot(v) + origin.x,
-                basis[1].Dot(v) + origin.y,
-                basis[2].Dot(v) + origin.z
+                basis.Row0.Dot(v) + origin.x,
+                basis.Row1.Dot(v) + origin.y,
+                basis.Row2.Dot(v) + origin.z
             );
         }
 
@@ -116,27 +117,27 @@ namespace Godot
 
             return new Vector3
             (
-                basis[0, 0] * vInv.x + basis[1, 0] * vInv.y + basis[2, 0] * vInv.z,
-                basis[0, 1] * vInv.x + basis[1, 1] * vInv.y + basis[2, 1] * vInv.z,
-                basis[0, 2] * vInv.x + basis[1, 2] * vInv.y + basis[2, 2] * vInv.z
+                basis.Row0[0] * vInv.x + basis.Row1[0] * vInv.y + basis.Row2[0] * vInv.z,
+                basis.Row0[1] * vInv.x + basis.Row1[1] * vInv.y + basis.Row2[1] * vInv.z,
+                basis.Row0[2] * vInv.x + basis.Row1[2] * vInv.y + basis.Row2[2] * vInv.z
             );
         }
 
         // Constants
         private static readonly Transform _identity = new Transform(Basis.Identity, Vector3.Zero);
-        private static readonly Transform _flipX = new Transform(new Basis(new Vector3(-1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, 1)), Vector3.Zero);
-        private static readonly Transform _flipY = new Transform(new Basis(new Vector3(1, 0, 0), new Vector3(0, -1, 0), new Vector3(0, 0, 1)), Vector3.Zero);
-        private static readonly Transform _flipZ = new Transform(new Basis(new Vector3(1, 0, 0), new Vector3(0, 1, 0), new Vector3(0, 0, -1)), Vector3.Zero);
+        private static readonly Transform _flipX = new Transform(new Basis(-1, 0, 0, 0, 1, 0, 0, 0, 1), Vector3.Zero);
+        private static readonly Transform _flipY = new Transform(new Basis(1, 0, 0, 0, -1, 0, 0, 0, 1), Vector3.Zero);
+        private static readonly Transform _flipZ = new Transform(new Basis(1, 0, 0, 0, 1, 0, 0, 0, -1), Vector3.Zero);
 
         public static Transform Identity { get { return _identity; } }
         public static Transform FlipX { get { return _flipX; } }
         public static Transform FlipY { get { return _flipY; } }
         public static Transform FlipZ { get { return _flipZ; } }
 
-        // Constructors 
-        public Transform(Vector3 xAxis, Vector3 yAxis, Vector3 zAxis, Vector3 origin)
+        // Constructors
+        public Transform(Vector3 column0, Vector3 column1, Vector3 column2, Vector3 origin)
         {
-            basis = Basis.CreateFromAxes(xAxis, yAxis, zAxis);
+            basis = new Basis(column0, column1, column2);
             this.origin = origin;
         }
 

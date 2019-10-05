@@ -8,12 +8,13 @@
 #include "../IDConfig.hpp"
 #include "../MultiBodyTree.hpp"
 
-namespace btInverseDynamics {
-
+namespace btInverseDynamics
+{
 /// Structure for for rigid body mass properties, connectivity and kinematic state
 /// all vectors and matrices are in body-fixed frame, if not indicated otherwise.
 /// The body-fixed frame is located in the joint connecting the body to its parent.
-struct RigidBody {
+struct RigidBody
+{
 	ID_DECLARE_ALIGNED_ALLOCATOR();
 	// 1 Inertial properties
 	/// Mass
@@ -112,31 +113,33 @@ struct RigidBody {
 	mat33 m_body_subtree_I_body;
 
 #if (defined BT_ID_HAVE_MAT3X) && (defined BT_ID_WITH_JACOBIANS)
-    /// translational jacobian in body-fixed frame d(m_body_vel)/du
-    mat3x m_body_Jac_T;
-    /// rotationsl jacobian in body-fixed frame d(m_body_ang_vel)/du
-    mat3x m_body_Jac_R;
-    /// components of linear acceleration depending on u
-    /// (same as is d(m_Jac_T)/dt*u)
-    vec3 m_body_dot_Jac_T_u;
-    /// components of angular acceleration depending on u
-    /// (same as is d(m_Jac_T)/dt*u)
-    vec3 m_body_dot_Jac_R_u;
+	/// translational jacobian in body-fixed frame d(m_body_vel)/du
+	mat3x m_body_Jac_T;
+	/// rotationsl jacobian in body-fixed frame d(m_body_ang_vel)/du
+	mat3x m_body_Jac_R;
+	/// components of linear acceleration depending on u
+	/// (same as is d(m_Jac_T)/dt*u)
+	vec3 m_body_dot_Jac_T_u;
+	/// components of angular acceleration depending on u
+	/// (same as is d(m_Jac_T)/dt*u)
+	vec3 m_body_dot_Jac_R_u;
 #endif
 };
 
 /// The MBS implements a tree structured multibody system
-class MultiBodyTree::MultiBodyImpl {
+class MultiBodyTree::MultiBodyImpl
+{
 	friend class MultiBodyTree;
 
 public:
 	ID_DECLARE_ALIGNED_ALLOCATOR();
 
-        enum KinUpdateType {
-            POSITION_ONLY,
-            POSITION_VELOCITY,
-            POSITION_VELOCITY_ACCELERATION
-        };
+	enum KinUpdateType
+	{
+		POSITION_ONLY,
+		POSITION_VELOCITY,
+		POSITION_VELOCITY_ACCELERATION
+	};
 
 	/// constructor
 	/// @param num_bodies the number of bodies in the system
@@ -150,24 +153,24 @@ public:
 	int calculateMassMatrix(const vecx& q, const bool update_kinematics,
 							const bool initialize_matrix, const bool set_lower_triangular_matrix,
 							matxx* mass_matrix);
-    	/// calculate kinematics (vector quantities)
-        /// Depending on type, update positions only, positions & velocities, or positions, velocities
-        /// and accelerations.
-        int calculateKinematics(const vecx& q, const vecx& u, const vecx& dot_u, const KinUpdateType type);
+	/// calculate kinematics (vector quantities)
+	/// Depending on type, update positions only, positions & velocities, or positions, velocities
+	/// and accelerations.
+	int calculateKinematics(const vecx& q, const vecx& u, const vecx& dot_u, const KinUpdateType type);
 #if (defined BT_ID_HAVE_MAT3X) && (defined BT_ID_WITH_JACOBIANS)
-    	/// calculate jacobians and (if type == POSITION_VELOCITY), also velocity-dependent accelration terms.
-    int calculateJacobians(const vecx& q, const vecx& u, const KinUpdateType type);
-    /// \copydoc MultiBodyTree::getBodyDotJacobianTransU
-    int getBodyDotJacobianTransU(const int body_index, vec3* world_dot_jac_trans_u) const ;
-    /// \copydoc MultiBodyTree::getBodyDotJacobianRotU
-    int getBodyDotJacobianRotU(const int body_index, vec3* world_dot_jac_rot_u) const;
-    /// \copydoc MultiBodyTree::getBodyJacobianTrans
-    int getBodyJacobianTrans(const int body_index, mat3x* world_jac_trans) const ;
-    /// \copydoc MultiBodyTree::getBodyJacobianRot
-    int getBodyJacobianRot(const int body_index, mat3x* world_jac_rot) const;
-    /// Add relative Jacobian component from motion relative to parent body
-    /// @param body the body to add the Jacobian component for
-    void addRelativeJacobianComponent(RigidBody&body);
+	/// calculate jacobians and (if type == POSITION_VELOCITY), also velocity-dependent accelration terms.
+	int calculateJacobians(const vecx& q, const vecx& u, const KinUpdateType type);
+	/// \copydoc MultiBodyTree::getBodyDotJacobianTransU
+	int getBodyDotJacobianTransU(const int body_index, vec3* world_dot_jac_trans_u) const;
+	/// \copydoc MultiBodyTree::getBodyDotJacobianRotU
+	int getBodyDotJacobianRotU(const int body_index, vec3* world_dot_jac_rot_u) const;
+	/// \copydoc MultiBodyTree::getBodyJacobianTrans
+	int getBodyJacobianTrans(const int body_index, mat3x* world_jac_trans) const;
+	/// \copydoc MultiBodyTree::getBodyJacobianRot
+	int getBodyJacobianRot(const int body_index, mat3x* world_jac_rot) const;
+	/// Add relative Jacobian component from motion relative to parent body
+	/// @param body the body to add the Jacobian component for
+	void addRelativeJacobianComponent(RigidBody& body);
 #endif
 	/// generate additional index sets from the parent_index array
 	/// @return -1 on error, 0 on success
@@ -190,12 +193,12 @@ public:
 	int getJointType(const int body_index, JointType* joint_type) const;
 	/// \copydoc MultiBodyTree::getJointTypeStr
 	int getJointTypeStr(const int body_index, const char** joint_type) const;
-        /// \copydoc MultiBodyTree::getParentRParentBodyRef
-        int getParentRParentBodyRef(const int body_index, vec3* r) const;
-        /// \copydoc MultiBodyTree::getBodyTParentRef
-        int getBodyTParentRef(const int body_index, mat33* T) const;
-        /// \copydoc MultiBodyTree::getBodyAxisOfMotion
-        int getBodyAxisOfMotion(const int body_index, vec3* axis) const;
+	/// \copydoc MultiBodyTree::getParentRParentBodyRef
+	int getParentRParentBodyRef(const int body_index, vec3* r) const;
+	/// \copydoc MultiBodyTree::getBodyTParentRef
+	int getBodyTParentRef(const int body_index, mat33* T) const;
+	/// \copydoc MultiBodyTree::getBodyAxisOfMotion
+	int getBodyAxisOfMotion(const int body_index, vec3* axis) const;
 	/// \copydoc MultiBodyTree:getDoFOffset
 	int getDoFOffset(const int body_index, int* q_index) const;
 	/// \copydoc MultiBodyTree::getBodyOrigin
@@ -271,13 +274,15 @@ private:
 	idArray<int>::type m_body_prismatic_list;
 	// Indices of floating joints
 	idArray<int>::type m_body_floating_list;
+	// Indices of spherical joints
+	idArray<int>::type m_body_spherical_list;
 	// a user-provided integer
 	idArray<int>::type m_user_int;
 	// a user-provided pointer
 	idArray<void*>::type m_user_ptr;
 #if (defined BT_ID_HAVE_MAT3X) && (defined BT_ID_WITH_JACOBIANS)
-        mat3x m_m3x;
+	mat3x m_m3x;
 #endif
 };
-}
+}  // namespace btInverseDynamics
 #endif

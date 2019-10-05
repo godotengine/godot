@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,13 @@
 #ifndef FIND_IN_FILES_H
 #define FIND_IN_FILES_H
 
+#include "core/hash_map.h"
 #include "scene/gui/dialogs.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
-	GDCLASS(FindInFiles, Node)
+	GDCLASS(FindInFiles, Node);
+
 public:
 	static const char *SIGNAL_RESULT_FOUND;
 	static const char *SIGNAL_FINISHED;
@@ -73,7 +75,6 @@ private:
 	// Config
 	String _pattern;
 	Set<String> _extension_filter;
-	String _root_prefix;
 	String _root_dir;
 	bool _whole_words;
 	bool _match_case;
@@ -89,10 +90,12 @@ private:
 class LineEdit;
 class CheckBox;
 class FileDialog;
+class HBoxContainer;
 
 // Prompts search parameters
 class FindInFilesDialog : public AcceptDialog {
-	GDCLASS(FindInFilesDialog, AcceptDialog)
+	GDCLASS(FindInFilesDialog, AcceptDialog);
+
 public:
 	static const char *SIGNAL_FIND_REQUESTED;
 	static const char *SIGNAL_REPLACE_REQUESTED;
@@ -121,12 +124,13 @@ private:
 
 	LineEdit *_search_text_line_edit;
 	LineEdit *_folder_line_edit;
-	Vector<CheckBox *> _filters;
 	CheckBox *_match_case_checkbox;
 	CheckBox *_whole_words_checkbox;
 	Button *_find_button;
 	Button *_replace_button;
 	FileDialog *_folder_dialog;
+	HBoxContainer *_filters_container;
+	HashMap<String, bool> _filters_preferences;
 };
 
 class Button;
@@ -136,7 +140,8 @@ class ProgressBar;
 
 // Display search results
 class FindInFilesPanel : public Control {
-	GDCLASS(FindInFilesPanel, Control)
+	GDCLASS(FindInFilesPanel, Control);
+
 public:
 	static const char *SIGNAL_RESULT_SELECTED;
 	static const char *SIGNAL_FILES_MODIFIED;

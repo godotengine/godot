@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -158,7 +158,9 @@ void Area2D::_body_inout(int p_status, const RID &p_body, int p_instance, int p_
 
 	Map<ObjectID, BodyState>::Element *E = body_map.find(objid);
 
-	ERR_FAIL_COND(!body_in && !E);
+	if (!body_in && !E) {
+		return; //does not exist because it was likely removed from the tree
+	}
 
 	locked = true;
 
@@ -259,8 +261,9 @@ void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_
 
 	Map<ObjectID, AreaState>::Element *E = area_map.find(objid);
 
-	ERR_FAIL_COND(!area_in && !E);
-
+	if (!area_in && !E) {
+		return; //likely removed from the tree
+	}
 	locked = true;
 
 	if (area_in) {
@@ -318,10 +321,7 @@ void Area2D::_area_inout(int p_status, const RID &p_area, int p_instance, int p_
 
 void Area2D::_clear_monitoring() {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
-	}
-	ERR_FAIL_COND(locked);
+	ERR_FAIL_COND_MSG(locked, "This function can't be used during the in/out signal.");
 
 	{
 		Map<ObjectID, BodyState> bmcopy = body_map;
@@ -398,10 +398,7 @@ void Area2D::set_monitoring(bool p_enable) {
 
 	if (p_enable == monitoring)
 		return;
-	if (locked) {
-		ERR_EXPLAIN("Function blocked during in/out signal. Use call_deferred(\"set_monitoring\",true/false)");
-	}
-	ERR_FAIL_COND(locked);
+	ERR_FAIL_COND_MSG(locked, "Function blocked during in/out signal. Use set_deferred(\"monitoring\", true/false).");
 
 	monitoring = p_enable;
 
@@ -424,10 +421,7 @@ bool Area2D::is_monitoring() const {
 
 void Area2D::set_monitorable(bool p_enable) {
 
-	if (locked) {
-		ERR_EXPLAIN("This function can't be used during the in/out signal.");
-	}
-	ERR_FAIL_COND(locked);
+	ERR_FAIL_COND_MSG(locked || (is_inside_tree() && Physics2DServer::get_singleton()->is_flushing_queries()), "Function blocked during in/out signal. Use set_deferred(\"monitorable\", true/false).");
 
 	if (p_enable == monitorable)
 		return;
@@ -444,7 +438,7 @@ bool Area2D::is_monitorable() const {
 
 Array Area2D::get_overlapping_bodies() const {
 
-	ERR_FAIL_COND_V(!monitoring, Array());
+	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
 	Array ret;
 	ret.resize(body_map.size());
 	int idx = 0;
@@ -462,7 +456,7 @@ Array Area2D::get_overlapping_bodies() const {
 
 Array Area2D::get_overlapping_areas() const {
 
-	ERR_FAIL_COND_V(!monitoring, Array());
+	ERR_FAIL_COND_V_MSG(!monitoring, Array(), "Can't find overlapping bodies when monitoring is off.");
 	Array ret;
 	ret.resize(area_map.size());
 	int idx = 0;
@@ -654,10 +648,10 @@ void Area2D::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_body_inout"), &Area2D::_body_inout);
 	ClassDB::bind_method(D_METHOD("_area_inout"), &Area2D::_area_inout);
 
-	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsBody2D"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "area_shape")));
-	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsBody2D"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "area_shape")));
-	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsBody2D")));
-	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "PhysicsBody2D")));
+	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "area_shape")));
+	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "area_shape")));
+	ADD_SIGNAL(MethodInfo("body_entered", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
+	ADD_SIGNAL(MethodInfo("body_exited", PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node")));
 
 	ADD_SIGNAL(MethodInfo("area_shape_entered", PropertyInfo(Variant::INT, "area_id"), PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area2D"), PropertyInfo(Variant::INT, "area_shape"), PropertyInfo(Variant::INT, "self_shape")));
 	ADD_SIGNAL(MethodInfo("area_shape_exited", PropertyInfo(Variant::INT, "area_id"), PropertyInfo(Variant::OBJECT, "area", PROPERTY_HINT_RESOURCE_TYPE, "Area2D"), PropertyInfo(Variant::INT, "area_shape"), PropertyInfo(Variant::INT, "self_shape")));
@@ -669,8 +663,8 @@ void Area2D::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity_distance_scale", PROPERTY_HINT_EXP_RANGE, "0,1024,0.001,or_greater"), "set_gravity_distance_scale", "get_gravity_distance_scale");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "gravity_vec"), "set_gravity_vector", "get_gravity_vector");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "gravity", PROPERTY_HINT_RANGE, "-1024,1024,0.001"), "set_gravity", "get_gravity");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_linear_damp", "get_linear_damp");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.01,or_greater"), "set_angular_damp", "get_angular_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damp", PROPERTY_HINT_RANGE, "0,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "priority", PROPERTY_HINT_RANGE, "0,128,1"), "set_priority", "get_priority");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitoring"), "set_monitoring", "is_monitoring");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "monitorable"), "set_monitorable", "is_monitorable");

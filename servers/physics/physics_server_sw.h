@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -50,6 +50,8 @@ class PhysicsServerSW : public PhysicsServer {
 	int island_count;
 	int active_objects;
 	int collision_pairs;
+
+	bool flushing_queries;
 
 	StepSW *stepper;
 	Set<const SpaceSW *> active_spaces;
@@ -117,7 +119,7 @@ public:
 	virtual void area_set_space(RID p_area, RID p_space);
 	virtual RID area_get_space(RID p_area) const;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform());
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape);
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform);
 
@@ -130,7 +132,7 @@ public:
 
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled);
 
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
 	virtual void area_set_param(RID p_area, AreaParameter p_param, const Variant &p_value);
@@ -161,7 +163,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
 	virtual BodyMode body_get_mode(RID p_body) const;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform());
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape);
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform);
 
@@ -174,7 +176,7 @@ public:
 	virtual void body_remove_shape(RID p_body, int p_shape_idx);
 	virtual void body_clear_shapes(RID p_body);
 
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);
@@ -346,6 +348,9 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis, G6DOFJointAxisFlag p_flag);
 
+	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision) {}
+	virtual int generic_6dof_joint_get_precision(RID p_joint) { return 0; }
+
 	virtual JointType joint_get_type(RID p_joint) const;
 
 	virtual void joint_set_solver_priority(RID p_joint, int p_priority);
@@ -364,6 +369,8 @@ public:
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	virtual bool is_flushing_queries() const { return flushing_queries; }
 
 	int get_process_info(ProcessInfo p_info);
 

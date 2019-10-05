@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,8 +43,6 @@ String DirAccess::_get_root_path() const {
 		case ACCESS_USERDATA: return OS::get_singleton()->get_user_data_dir();
 		default: return "";
 	}
-
-	return "";
 }
 String DirAccess::_get_root_string() const {
 
@@ -54,8 +52,6 @@ String DirAccess::_get_root_string() const {
 		case ACCESS_USERDATA: return "user://";
 		default: return "";
 	}
-
-	return "";
 }
 
 int DirAccess::get_current_drive() {
@@ -183,14 +179,6 @@ Error DirAccess::make_dir_recursive(String p_dir) {
 	return OK;
 }
 
-String DirAccess::get_next(bool *p_is_dir) {
-
-	String next = get_next();
-	if (p_is_dir)
-		*p_is_dir = current_is_dir();
-	return next;
-}
-
 String DirAccess::fix_path(String p_path) const {
 
 	switch (_access_type) {
@@ -256,7 +244,7 @@ DirAccess *DirAccess::open(const String &p_path, Error *r_error) {
 
 	DirAccess *da = create_for_path(p_path);
 
-	ERR_FAIL_COND_V(!da, NULL);
+	ERR_FAIL_COND_V_MSG(!da, NULL, "Cannot create DirAccess for path '" + p_path + "'.");
 	Error err = da->change_dir(p_path);
 	if (r_error)
 		*r_error = err;
@@ -330,7 +318,7 @@ Error DirAccess::copy(String p_from, String p_to, int p_chmod_flags) {
 
 	if (err == OK && p_chmod_flags != -1) {
 		fdst->close();
-		err = fdst->_chmod(p_to, p_chmod_flags);
+		err = FileAccess::set_unix_permissions(p_to, p_chmod_flags);
 		// If running on a platform with no chmod support (i.e., Windows), don't fail
 		if (err == ERR_UNAVAILABLE)
 			err = OK;
@@ -349,9 +337,9 @@ class DirChanger {
 	String original_dir;
 
 public:
-	DirChanger(DirAccess *p_da, String p_dir) {
-		da = p_da;
-		original_dir = p_da->get_current_dir();
+	DirChanger(DirAccess *p_da, String p_dir) :
+			da(p_da),
+			original_dir(p_da->get_current_dir()) {
 		p_da->change_dir(p_dir);
 	}
 
@@ -373,12 +361,12 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 			if (current_is_dir())
 				dirs.push_back(n);
 			else {
-				String rel_path = n;
+				const String &rel_path = n;
 				if (!n.is_rel_path()) {
 					list_dir_end();
 					return ERR_BUG;
 				}
-				Error err = copy(get_current_dir() + "/" + n, p_to + rel_path, p_chmod_flags);
+				Error err = copy(get_current_dir().plus_file(n), p_to + rel_path, p_chmod_flags);
 				if (err) {
 					list_dir_end();
 					return err;
@@ -396,43 +384,44 @@ Error DirAccess::_copy_dir(DirAccess *p_target_da, String p_to, int p_chmod_flag
 		String target_dir = p_to + rel_path;
 		if (!p_target_da->dir_exists(target_dir)) {
 			Error err = p_target_da->make_dir(target_dir);
-			ERR_FAIL_COND_V(err, err);
+			ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + target_dir + "'.");
 		}
 
 		Error err = change_dir(E->get());
-		ERR_FAIL_COND_V(err, err);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot change current directory to '" + E->get() + "'.");
+
 		err = _copy_dir(p_target_da, p_to + rel_path + "/", p_chmod_flags);
 		if (err) {
 			change_dir("..");
-			ERR_PRINT("Failed to copy recursively");
-			return err;
+			ERR_FAIL_V_MSG(err, "Failed to copy recursively.");
 		}
 		err = change_dir("..");
-		if (err) {
-			ERR_PRINT("Failed to go back");
-			return err;
-		}
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Failed to go back.");
 	}
 
 	return OK;
 }
 
 Error DirAccess::copy_dir(String p_from, String p_to, int p_chmod_flags) {
-	ERR_FAIL_COND_V(!dir_exists(p_from), ERR_FILE_NOT_FOUND);
+	ERR_FAIL_COND_V_MSG(!dir_exists(p_from), ERR_FILE_NOT_FOUND, "Source directory doesn't exist.");
 
 	DirAccess *target_da = DirAccess::create_for_path(p_to);
-	ERR_FAIL_COND_V(!target_da, ERR_CANT_CREATE);
+	ERR_FAIL_COND_V_MSG(!target_da, ERR_CANT_CREATE, "Cannot create DirAccess for path '" + p_to + "'.");
 
 	if (!target_da->dir_exists(p_to)) {
 		Error err = target_da->make_dir_recursive(p_to);
 		if (err) {
 			memdelete(target_da);
 		}
-		ERR_FAIL_COND_V(err, err);
+		ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot create directory '" + p_to + "'.");
+	}
+
+	if (!p_to.ends_with("/")) {
+		p_to = p_to + "/";
 	}
 
 	DirChanger dir_changer(this, p_from);
-	Error err = _copy_dir(target_da, p_to + "/", p_chmod_flags);
+	Error err = _copy_dir(target_da, p_to, p_chmod_flags);
 	memdelete(target_da);
 
 	return err;

@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PhysicsServer" inherits="Object" category="Core" version="3.1">
+<class name="PhysicsServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
-		Server interface for low level physics access.
+		Server interface for low-level physics access.
 	</brief_description>
 	<description>
-		Everything related to physics in 3D.
+		PhysicsServer is the server responsible for all 3D physics. It can create many kinds of physics objects, but does not insert them on the node tree.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="area_add_shape">
 			<return type="void">
@@ -19,6 +17,8 @@
 			<argument index="1" name="shape" type="RID">
 			</argument>
 			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
 			<description>
 				Adds a shape to the area, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
@@ -68,7 +68,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.AreaParameter">
 			</argument>
 			<description>
-				Returns an area parameter value. A list of available parameters is on the AREA_PARAM_* constants.
+				Returns an area parameter value. A list of available parameters is on the [code]AREA_PARAM_*[/code] constants.
 			</description>
 		</method>
 		<method name="area_get_shape" qualifiers="const">
@@ -135,7 +135,7 @@
 			<argument index="0" name="area" type="RID">
 			</argument>
 			<description>
-				If [code]true[/code] area collides with rays.
+				If [code]true[/code], area collides with rays.
 			</description>
 		</method>
 		<method name="area_remove_shape">
@@ -221,7 +221,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets the value for an area parameter. A list of available parameters is on the AREA_PARAM_* constants.
+				Sets the value for an area parameter. A list of available parameters is on the [code]AREA_PARAM_*[/code] constants.
 			</description>
 		</method>
 		<method name="area_set_ray_pickable">
@@ -246,6 +246,18 @@
 			</argument>
 			<description>
 				Substitutes a given area shape by another. The old shape is selected by its index, the new one by its [RID].
+			</description>
+		</method>
+		<method name="area_set_shape_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="area" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="area_set_shape_transform">
@@ -280,7 +292,7 @@
 			<argument index="1" name="mode" type="int" enum="PhysicsServer.AreaSpaceOverrideMode">
 			</argument>
 			<description>
-				Sets the space override mode for the area. The modes are described in the constants AREA_SPACE_OVERRIDE_*.
+				Sets the space override mode for the area. The modes are described in the constants [code]AREA_SPACE_OVERRIDE_*[/code].
 			</description>
 		</method>
 		<method name="area_set_transform">
@@ -335,6 +347,8 @@
 			<argument index="1" name="shape" type="RID">
 			</argument>
 			<argument index="2" name="transform" type="Transform" default="Transform( 1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0, 0 )">
+			</argument>
+			<argument index="3" name="disabled" type="bool" default="false">
 			</argument>
 			<description>
 				Adds a shape to the body, along with a transform matrix. Shapes are usually referenced by their index, so you should track which shape has a given index.
@@ -486,7 +500,7 @@
 			<argument index="1" name="param" type="int" enum="PhysicsServer.BodyParameter">
 			</argument>
 			<description>
-				Returns the value of a body parameter. A list of available parameters is on the BODY_PARAM_* constants.
+				Returns the value of a body parameter. A list of available parameters is on the [code]BODY_PARAM_*[/code] constants.
 			</description>
 		</method>
 		<method name="body_get_shape" qualifiers="const">
@@ -556,7 +570,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				If [code]true[/code] the continuous collision detection mode is enabled.
+				If [code]true[/code], the continuous collision detection mode is enabled.
 			</description>
 		</method>
 		<method name="body_is_omitting_force_integration" qualifiers="const">
@@ -574,7 +588,7 @@
 			<argument index="0" name="body" type="RID">
 			</argument>
 			<description>
-				If [code]true[/code] the body can be detected by rays
+				If [code]true[/code], the body can be detected by rays.
 			</description>
 		</method>
 		<method name="body_remove_collision_exception">
@@ -653,7 +667,7 @@
 			<argument index="1" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the continuous collision detection mode is enabled.
+				If [code]true[/code], the continuous collision detection mode is enabled.
 				Continuous collision detection tries to predict where a moving body will collide, instead of moving it and correcting its movement if it collided.
 			</description>
 		</method>
@@ -725,7 +739,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets a body parameter. A list of available parameters is on the BODY_PARAM_* constants.
+				Sets a body parameter. A list of available parameters is on the [code]BODY_PARAM_*[/code] constants.
 			</description>
 		</method>
 		<method name="body_set_ray_pickable">
@@ -752,6 +766,18 @@
 				Substitutes a given body shape by another. The old shape is selected by its index, the new one by its [RID].
 			</description>
 		</method>
+		<method name="body_set_shape_disabled">
+			<return type="void">
+			</return>
+			<argument index="0" name="body" type="RID">
+			</argument>
+			<argument index="1" name="shape_idx" type="int">
+			</argument>
+			<argument index="2" name="disabled" type="bool">
+			</argument>
+			<description>
+			</description>
+		</method>
 		<method name="body_set_shape_transform">
 			<return type="void">
 			</return>
@@ -773,7 +799,7 @@
 			<argument index="1" name="space" type="RID">
 			</argument>
 			<description>
-				Assigns a space to the body (see [method create_space]).
+				Assigns a space to the body (see [method space_create]).
 			</description>
 		</method>
 		<method name="body_set_state">
@@ -884,7 +910,7 @@
 			<argument index="0" name="process_info" type="int" enum="PhysicsServer.ProcessInfo">
 			</argument>
 			<description>
-				Returns an Info defined by the [ProcessInfo] input given.
+				Returns an Info defined by the [enum ProcessInfo] input given.
 			</description>
 		</method>
 		<method name="hinge_joint_get_flag" qualifiers="const">
@@ -1118,7 +1144,7 @@
 			<argument index="0" name="type" type="int" enum="PhysicsServer.ShapeType">
 			</argument>
 			<description>
-				Creates a shape of type SHAPE_*. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
+				Creates a shape of type [code]SHAPE_*[/code]. Does not assign it to a body or an area. To do so, you must use [method area_set_shape] or [method body_set_shape].
 			</description>
 		</method>
 		<method name="shape_get_data" qualifiers="const">
@@ -1136,7 +1162,7 @@
 			<argument index="0" name="shape" type="RID">
 			</argument>
 			<description>
-				Returns the type of shape (see SHAPE_* constants).
+				Returns the type of shape (see [code]SHAPE_*[/code] constants).
 			</description>
 		</method>
 		<method name="shape_set_data">
@@ -1231,7 +1257,7 @@
 			<argument index="2" name="value" type="float">
 			</argument>
 			<description>
-				Sets the value for a space parameter. A list of available parameters is on the SPACE_PARAM_* constants.
+				Sets the value for a space parameter. A list of available parameters is on the [code]SPACE_PARAM_*[/code] constants.
 			</description>
 		</method>
 	</methods>
@@ -1286,16 +1312,16 @@
 			Maximum acceleration for the motor.
 		</constant>
 		<constant name="HINGE_JOINT_FLAG_USE_LIMIT" value="0" enum="HingeJointFlag">
-			If [code]true[/code] the Hinge has a maximum and a minimum rotation.
+			If [code]true[/code], the Hinge has a maximum and a minimum rotation.
 		</constant>
 		<constant name="HINGE_JOINT_FLAG_ENABLE_MOTOR" value="1" enum="HingeJointFlag">
-			If [code]true[/code] a motor turns the Hinge
+			If [code]true[/code], a motor turns the Hinge
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_UPPER" value="0" enum="SliderJointParam">
-			The maximum difference between the pivot points on their x-axis before damping happens.
+			The maximum difference between the pivot points on their X axis before damping happens.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_LOWER" value="1" enum="SliderJointParam">
-			The minimum difference between the pivot points on their x-axis before damping happens.
+			The minimum difference between the pivot points on their X axis before damping happens.
 		</constant>
 		<constant name="SLIDER_JOINT_LINEAR_LIMIT_SOFTNESS" value="2" enum="SliderJointParam">
 			A factor applied to the movement across the slider axis once the limits get surpassed. The lower, the slower the movement.
@@ -1358,13 +1384,13 @@
 			The amount of damping of the rotation across axes orthogonal to the slider.
 		</constant>
 		<constant name="SLIDER_JOINT_MAX" value="22" enum="SliderJointParam">
-			End flag of SLIDER_JOINT_* constants, used internally.
+			Represents the size of the [enum SliderJointParam] enum.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_SWING_SPAN" value="0" enum="ConeTwistJointParam">
 			Swing is rotation from side to side, around the axis perpendicular to the twist axis.
 			The swing span defines, how much rotation will not get corrected allong the swing axis.
 			Could be defined as looseness in the [ConeTwistJoint].
-			If below 0.05, this behaviour is locked. Default value: [code]PI/4[/code].
+			If below 0.05, this behavior is locked.
 		</constant>
 		<constant name="CONE_TWIST_JOINT_TWIST_SPAN" value="1" enum="ConeTwistJointParam">
 			Twist is the rotation around the twist axis, this value defined how far the joint can twist.
@@ -1401,31 +1427,31 @@
 		<constant name="G6DOF_JOINT_LINEAR_MOTOR_FORCE_LIMIT" value="6" enum="G6DOFJointAxisParam">
 			The maximum force that the linear motor can apply while trying to reach the target velocity.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="7" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_LOWER_LIMIT" value="10" enum="G6DOFJointAxisParam">
 			The minimum rotation in negative direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="8" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_UPPER_LIMIT" value="11" enum="G6DOFJointAxisParam">
 			The minimum rotation in positive direction to break loose and rotate around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="9" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_LIMIT_SOFTNESS" value="12" enum="G6DOFJointAxisParam">
 			A factor that gets multiplied onto all rotations across the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="10" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_DAMPING" value="13" enum="G6DOFJointAxisParam">
 			The amount of rotational damping across the axes. The lower, the more dampening occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="11" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_RESTITUTION" value="14" enum="G6DOFJointAxisParam">
 			The amount of rotational restitution across the axes. The lower, the more restitution occurs.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="12" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_FORCE_LIMIT" value="15" enum="G6DOFJointAxisParam">
 			The maximum amount of force that can occur, when rotating around the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="13" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_ERP" value="16" enum="G6DOFJointAxisParam">
 			When correcting the crossing of limits in rotation across the axes, this error tolerance factor defines how much the correction gets slowed down. The lower, the slower.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="14" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_TARGET_VELOCITY" value="17" enum="G6DOFJointAxisParam">
 			Target speed for the motor at the axes.
 		</constant>
-		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="15" enum="G6DOFJointAxisParam">
+		<constant name="G6DOF_JOINT_ANGULAR_MOTOR_FORCE_LIMIT" value="18" enum="G6DOFJointAxisParam">
 			Maximum acceleration for the motor at the axes.
 		</constant>
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_LIMIT" value="0" enum="G6DOFJointAxisFlag">
@@ -1434,10 +1460,10 @@
 		<constant name="G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT" value="1" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is rotational motion possible.
 		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="2" enum="G6DOFJointAxisFlag">
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_MOTOR" value="4" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is a rotational motor across these axes.
 		</constant>
-		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="3" enum="G6DOFJointAxisFlag">
+		<constant name="G6DOF_JOINT_FLAG_ENABLE_LINEAR_MOTOR" value="5" enum="G6DOFJointAxisFlag">
 			If [code]set[/code] there is a linear motor on this axis that targets a specific velocity.
 		</constant>
 		<constant name="SHAPE_PLANE" value="0" enum="ShapeType">
@@ -1540,7 +1566,7 @@
 			Constant to set/get a body's angular dampening factor.
 		</constant>
 		<constant name="BODY_PARAM_MAX" value="6" enum="BodyParameter">
-			This is the last ID for body parameters. Any attempt to set this property is ignored. Any attempt to get it returns 0.
+			Represents the size of the [enum BodyParameter] enum.
 		</constant>
 		<constant name="BODY_STATE_TRANSFORM" value="0" enum="BodyState">
 			Constant to set/get the current transform matrix of the body.
@@ -1594,6 +1620,8 @@
 		</constant>
 		<constant name="SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS" value="7" enum="SpaceParameter">
 			Constant to set/get the default solver bias for all physics constraints. A solver bias is a factor controlling how much two objects "rebound", after violating a constraint, to avoid leaving them in that state because of numerical imprecision.
+		</constant>
+		<constant name="SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH" value="8" enum="SpaceParameter">
 		</constant>
 		<constant name="BODY_AXIS_LINEAR_X" value="1" enum="BodyAxis">
 		</constant>

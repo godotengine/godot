@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "config_file.h"
 
-#include "core/os/file_access.h"
+#include "core/io/file_access_encrypted.h"
 #include "core/os/keyboard.h"
 #include "core/variant_parser.h"
 
@@ -86,10 +86,7 @@ void ConfigFile::set_value(const String &p_section, const String &p_key, const V
 Variant ConfigFile::get_value(const String &p_section, const String &p_key, Variant p_default) const {
 
 	if (!values.has(p_section) || !values[p_section].has(p_key)) {
-		if (p_default.get_type() == Variant::NIL) {
-			ERR_EXPLAIN("Couldn't find the given section/key and no default was given");
-			ERR_FAIL_V(p_default);
-		}
+		ERR_FAIL_COND_V_MSG(p_default.get_type() == Variant::NIL, p_default, "Couldn't find the given section/key and no default was given.");
 		return p_default;
 	}
 	return values[p_section][p_key];
@@ -114,7 +111,7 @@ void ConfigFile::get_sections(List<String> *r_sections) const {
 }
 void ConfigFile::get_section_keys(const String &p_section, List<String> *r_keys) const {
 
-	ERR_FAIL_COND(!values.has(p_section));
+	ERR_FAIL_COND_MSG(!values.has(p_section), "Cannont get keys from nonexistent section '" + p_section + "'.");
 
 	for (OrderedHashMap<String, Variant>::ConstElement E = values[p_section].front(); E; E = E.next()) {
 		r_keys->push_back(E.key());
@@ -136,6 +133,48 @@ Error ConfigFile::save(const String &p_path) {
 			memdelete(file);
 		return err;
 	}
+
+	return _internal_save(file);
+}
+
+Error ConfigFile::save_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_WRITE_AES256);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+	return _internal_save(fae);
+}
+
+Error ConfigFile::save_encrypted_pass(const String &p_path, const String &p_pass) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::WRITE, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_WRITE_AES256);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+
+	return _internal_save(fae);
+}
+
+Error ConfigFile::_internal_save(FileAccess *file) {
 
 	for (OrderedHashMap<String, OrderedHashMap<String, Variant> >::Element E = values.front(); E; E = E.next()) {
 
@@ -162,7 +201,49 @@ Error ConfigFile::load(const String &p_path) {
 	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
 
 	if (!f)
-		return ERR_CANT_OPEN;
+		return err;
+
+	return _internal_load(p_path, f);
+}
+
+Error ConfigFile::load_encrypted(const String &p_path, const Vector<uint8_t> &p_key) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse(f, p_key, FileAccessEncrypted::MODE_READ);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+	return _internal_load(p_path, fae);
+}
+
+Error ConfigFile::load_encrypted_pass(const String &p_path, const String &p_pass) {
+
+	Error err;
+	FileAccess *f = FileAccess::open(p_path, FileAccess::READ, &err);
+
+	if (err)
+		return err;
+
+	FileAccessEncrypted *fae = memnew(FileAccessEncrypted);
+	err = fae->open_and_parse_password(f, p_pass, FileAccessEncrypted::MODE_READ);
+	if (err) {
+		memdelete(fae);
+		memdelete(f);
+		return err;
+	}
+
+	return _internal_load(p_path, fae);
+}
+
+Error ConfigFile::_internal_load(const String &p_path, FileAccess *f) {
 
 	VariantParser::StreamFile stream;
 	stream.f = f;
@@ -182,12 +263,12 @@ Error ConfigFile::load(const String &p_path) {
 		next_tag.fields.clear();
 		next_tag.name = String();
 
-		err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
+		Error err = VariantParser::parse_tag_assign_eof(&stream, lines, error_text, next_tag, assign, value, NULL, true);
 		if (err == ERR_FILE_EOF) {
 			memdelete(f);
 			return OK;
 		} else if (err != OK) {
-			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text);
+			ERR_PRINTS("ConfgFile::load - " + p_path + ":" + itos(lines) + " error: " + error_text + ".");
 			memdelete(f);
 			return err;
 		}
@@ -198,10 +279,6 @@ Error ConfigFile::load(const String &p_path) {
 			section = next_tag.name;
 		}
 	}
-
-	memdelete(f);
-
-	return OK;
 }
 
 void ConfigFile::_bind_methods() {
@@ -219,6 +296,12 @@ void ConfigFile::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("load", "path"), &ConfigFile::load);
 	ClassDB::bind_method(D_METHOD("save", "path"), &ConfigFile::save);
+
+	ClassDB::bind_method(D_METHOD("load_encrypted", "path", "key"), &ConfigFile::load_encrypted);
+	ClassDB::bind_method(D_METHOD("load_encrypted_pass", "path", "pass"), &ConfigFile::load_encrypted_pass);
+
+	ClassDB::bind_method(D_METHOD("save_encrypted", "path", "key"), &ConfigFile::save_encrypted);
+	ClassDB::bind_method(D_METHOD("save_encrypted_pass", "path", "pass"), &ConfigFile::save_encrypted_pass);
 }
 
 ConfigFile::ConfigFile() {

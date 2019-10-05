@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="String" category="Built-In Types" version="3.1">
+<class name="String" category="Built-In Types" version="3.2">
 	<brief_description>
 		Built-in string class.
 	</brief_description>
@@ -7,9 +7,8 @@
 		This is the built-in string class (and the one used by GDScript). It supports Unicode and provides all necessary means for string handling. Strings are reference counted and use a copy-on-write approach, so passing them around is cheap in resources.
 	</description>
 	<tutorials>
+		<link>https://docs.godotengine.org/en/latest/getting_started/scripting/gdscript/gdscript_format_string.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="String">
 			<return type="String">
@@ -261,7 +260,7 @@
 			<return type="String">
 			</return>
 			<description>
-				Changes the case of some letters. Replaces underscores with spaces, converts all letters to lowercase, then capitalizes first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code] it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
+				Changes the case of some letters. Replaces underscores with spaces, converts all letters to lowercase, then capitalizes first and every letter following the space character. For [code]capitalize camelCase mixed_with_underscores[/code], it will return [code]Capitalize Camelcase Mixed With Underscores[/code].
 			</description>
 		</method>
 		<method name="casecmp_to">
@@ -273,11 +272,37 @@
 				Performs a case-sensitive comparison to another string. Returns [code]-1[/code] if less than, [code]+1[/code] if greater than, or [code]0[/code] if equal.
 			</description>
 		</method>
+		<method name="count">
+			<return type="int">
+			</return>
+			<argument index="0" name="what" type="String">
+			</argument>
+			<argument index="1" name="from" type="int" default="0">
+			</argument>
+			<argument index="2" name="to" type="int" default="0">
+			</argument>
+			<description>
+				Returns the number of occurrences of substring [code]what[/code] between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
+			</description>
+		</method>
+		<method name="countn">
+			<return type="int">
+			</return>
+			<argument index="0" name="what" type="String">
+			</argument>
+			<argument index="1" name="from" type="int" default="0">
+			</argument>
+			<argument index="2" name="to" type="int" default="0">
+			</argument>
+			<description>
+				Returns the number of occurrences of substring [code]what[/code] (ignoring case) between [code]from[/code] and [code]to[/code] positions. If [code]from[/code] and [code]to[/code] equals 0 the whole string will be used. If only [code]to[/code] equals 0 the remained substring will be used.
+			</description>
+		</method>
 		<method name="dedent">
 			<return type="String">
 			</return>
 			<description>
-				Removes indentation from string.
+				Returns a copy of the string with indentation (leading tabs and spaces) removed.
 			</description>
 		</method>
 		<method name="empty">
@@ -386,7 +411,44 @@
 			<return type="int">
 			</return>
 			<description>
-				Converts a string containing a hexadecimal number into an integer.
+				Converts a string containing a hexadecimal number into an integer. Hexadecimal strings are expected to be prefixed with "[code]0x[/code]" otherwise [code]0[/code] is returned.
+				[codeblock]
+				print("0xff".hex_to_int()) # Print "255"
+				[/codeblock]
+			</description>
+		</method>
+		<method name="http_escape">
+			<return type="String">
+			</return>
+			<description>
+				Escapes (encodes) a string to URL friendly format. Also referred to as 'URL encode'.
+				[codeblock]
+				print("https://example.org/?escaped=" + "Godot Engine:'docs'".http_escape())
+				[/codeblock]
+			</description>
+		</method>
+		<method name="http_unescape">
+			<return type="String">
+			</return>
+			<description>
+				Unescapes (decodes) a string in URL encoded format. Also referred to as 'URL decode'.
+				[codeblock]
+				print("https://example.org/?escaped=" + "Godot%20Engine%3A%27docs%27".http_unescape())
+				[/codeblock]
+			</description>
+		</method>
+		<method name="humanize_size">
+			<return type="String">
+			</return>
+			<argument index="0" name="size" type="int">
+			</argument>
+			<description>
+				Converts [code]size[/code] represented as number of bytes to human-readable format using internationalized set of data size units, namely: B, KiB, MiB, GiB, TiB, PiB, EiB. Note that the next smallest unit is picked automatically to hold at most 1024 units.
+				[codeblock]
+				var bytes = 133790307
+				var size = String.humanize_size(bytes)
+				print(size) # prints "127.5 MiB"
+				[/codeblock]
 			</description>
 		</method>
 		<method name="insert">
@@ -432,6 +494,14 @@
 				Returns [code]true[/code] if this string is a subsequence of the given string, without considering case.
 			</description>
 		</method>
+		<method name="is_valid_filename">
+			<return type="bool">
+			</return>
+			<description>
+				Returns [code]true[/code] if this string is free from characters that aren't allowed in file names, those being:
+				[code]: / \ ? * " | % &lt; &gt;[/code]
+			</description>
+		</method>
 		<method name="is_valid_float">
 			<return type="bool">
 			</return>
@@ -439,18 +509,27 @@
 				Returns [code]true[/code] if this string contains a valid float.
 			</description>
 		</method>
+		<method name="is_valid_hex_number">
+			<return type="bool">
+			</return>
+			<argument index="0" name="with_prefix" type="bool" default="False">
+			</argument>
+			<description>
+				Returns [code]true[/code] if this string contains a valid hexadecimal number. If [code]with_prefix[/code] is [code]true[/code], then a validity of the hexadecimal number is determined by [code]0x[/code] prefix, for instance: [code]0xDEADC0DE[/code].
+			</description>
+		</method>
 		<method name="is_valid_html_color">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string contains a valid color in HTML notation.
+				Returns [code]true[/code] if this string contains a valid color in hexadecimal HTML notation. Other HTML notations such as named colors or [code]hsl()[/code] colors aren't considered valid by this method and will return [code]false[/code].
 			</description>
 		</method>
 		<method name="is_valid_identifier">
 			<return type="bool">
 			</return>
 			<description>
-				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores (_) and the first character may not be a digit.
+				Returns [code]true[/code] if this string is a valid identifier. A valid identifier may contain only letters, digits and underscores ([code]_[/code]) and the first character may not be a digit.
 			</description>
 		</method>
 		<method name="is_valid_integer">
@@ -505,7 +584,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple expression match, where '*' matches zero or more arbitrary characters and '?' matches any single character except '.'.
+				Does a simple case-sensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
 		<method name="matchn">
@@ -514,7 +593,7 @@
 			<argument index="0" name="expr" type="String">
 			</argument>
 			<description>
-				Does a simple case insensitive expression match, using ? and * wildcards (see [method match]).
+				Does a simple case-insensitive expression match, where [code]"*"[/code] matches zero or more arbitrary characters and [code]"?"[/code] matches any single character except a period ([code]"."[/code]).
 			</description>
 		</method>
 		<method name="md5_buffer">
@@ -590,6 +669,15 @@
 				If the string is a path, this concatenates [code]file[/code] at the end of the string as a subpath. E.g. [code]"this/is".plus_file("path") == "this/is/path"[/code].
 			</description>
 		</method>
+		<method name="repeat">
+			<return type="String">
+			</return>
+			<argument index="0" name="count" type="int">
+			</argument>
+			<description>
+				Returns original string repeated a number of times. The number of repetitions is given by the argument.
+			</description>
+		</method>
 		<method name="replace">
 			<return type="String">
 			</return>
@@ -598,7 +686,7 @@
 			<argument index="1" name="forwhat" type="String">
 			</argument>
 			<description>
-				Replaces occurrences of a substring with the given one inside the string.
+				Replaces occurrences of a case-sensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="replacen">
@@ -609,7 +697,7 @@
 			<argument index="1" name="forwhat" type="String">
 			</argument>
 			<description>
-				Replaces occurrences of a substring with the given one inside the string. Ignores case.
+				Replaces occurrences of a case-insensitive substring with the given one inside the string.
 			</description>
 		</method>
 		<method name="rfind">
@@ -620,7 +708,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a search for a substring, but starts from the end of the string instead of the beginning.
+				Performs a case-sensitive search for a substring, but starts from the end of the string instead of the beginning.
 			</description>
 		</method>
 		<method name="rfindn">
@@ -631,7 +719,7 @@
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
 			<description>
-				Performs a search for a substring, but starts from the end of the string instead of the beginning. Ignores case.
+				Performs a case-insensitive search for a substring, but starts from the end of the string instead of the beginning.
 			</description>
 		</method>
 		<method name="right">
@@ -646,16 +734,17 @@
 		<method name="rsplit">
 			<return type="PoolStringArray">
 			</return>
-			<argument index="0" name="divisor" type="String">
+			<argument index="0" name="delimiter" type="String">
 			</argument>
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a [code]divisor[/code] string and returns an array of the substrings, starting from right.
-				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
-				If [code]maxsplit[/code] is specified, then it is number of splits to do, default is 0 which splits all the items.
+				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings, starting from right.
+				The splits in the returned array are sorted in the same order as the original string, from left to right.
+				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the right up to [code]maxsplit[/code]. The default value of 0 means that all items are split, thus giving the same result as [method split].
+				For example, [code]"One,Two,Three,Four"[/code] will return [code]["Three","Four"][/code] if split by [code]","[/code] with a [code]maxsplit[/code] value of 2.
 			</description>
 		</method>
 		<method name="rstrip">
@@ -665,6 +754,20 @@
 			</argument>
 			<description>
 				Returns a copy of the string with characters removed from the right.
+			</description>
+		</method>
+		<method name="sha1_buffer">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Returns the SHA-1 hash of the string as an array of bytes.
+			</description>
+		</method>
+		<method name="sha1_text">
+			<return type="String">
+			</return>
+			<description>
+				Returns the SHA-1 hash of the string as a string.
 			</description>
 		</method>
 		<method name="sha256_buffer">
@@ -693,28 +796,28 @@
 		<method name="split">
 			<return type="PoolStringArray">
 			</return>
-			<argument index="0" name="divisor" type="String">
+			<argument index="0" name="delimiter" type="String">
 			</argument>
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
 			<argument index="2" name="maxsplit" type="int" default="0">
 			</argument>
 			<description>
-				Splits the string by a divisor string and returns an array of the substrings.
-				[b]Example:[/b] "One,Two,Three" will return ["One","Two","Three"] if split by ",".
-				If [code]maxsplit[/code] is given, at most maxsplit number of splits occur, and the remainder of the string is returned as the final element of the list (thus, the list will have at most maxsplit+1 elements)
+				Splits the string by a [code]delimiter[/code] string and returns an array of the substrings.
+				If [code]maxsplit[/code] is specified, it defines the number of splits to do from the left up to [code]maxsplit[/code]. The default value of 0 means that all items are split.
+				For example, [code]"One,Two,Three"[/code] will return [code]["One","Two"][/code] if split by [code]","[/code] with a [code]maxsplit[/code] value of 2.
 			</description>
 		</method>
 		<method name="split_floats">
 			<return type="PoolRealArray">
 			</return>
-			<argument index="0" name="divisor" type="String">
+			<argument index="0" name="delimiter" type="String">
 			</argument>
 			<argument index="1" name="allow_empty" type="bool" default="True">
 			</argument>
 			<description>
-				Splits the string in floats by using a divisor string and returns an array of the substrings.
-				[b]Example:[/b] "1,2.5,3" will return [1,2.5,3] if split by ",".
+				Splits the string in floats by using a delimiter string and returns an array of the substrings.
+				For example, [code]"1,2.5,3"[/code] will return [code][1,2.5,3][/code] if split by [code]","[/code].
 			</description>
 		</method>
 		<method name="strip_edges">
@@ -725,7 +828,14 @@
 			<argument index="1" name="right" type="bool" default="True">
 			</argument>
 			<description>
-				Returns a copy of the string stripped of any non-printable character at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
+				Returns a copy of the string stripped of any non-printable character (including tabulations, spaces and line breaks) at the beginning and the end. The optional arguments are used to toggle stripping on the left and right edges respectively.
+			</description>
+		</method>
+		<method name="strip_escapes">
+			<return type="String">
+			</return>
+			<description>
+				Returns a copy of the string stripped of any escape character. These include all non-printable control characters of the first page of the ASCII table (&lt; 32), such as tabulation ([code]\t[/code] in C) and newline ([code]\n[/code] and [code]\r[/code]) characters, but not spaces.
 			</description>
 		</method>
 		<method name="substr">
@@ -733,17 +843,17 @@
 			</return>
 			<argument index="0" name="from" type="int">
 			</argument>
-			<argument index="1" name="len" type="int">
+			<argument index="1" name="len" type="int" default="-1">
 			</argument>
 			<description>
-				Returns part of the string from the position [code]from[/code] with length [code]len[/code].
+				Returns part of the string from the position [code]from[/code] with length [code]len[/code]. Argument [code]len[/code] is optional and using -1 will return remaining characters from given position.
 			</description>
 		</method>
 		<method name="to_ascii">
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is sped up in comparison to to_utf8() with the assumption that all the characters the String contains are only ASCII characters.
+				Converts the String (which is a character array) to [PoolByteArray] (which is an array of bytes). The conversion is faster compared to [method to_utf8], as this method assumes that all the characters in the String are ASCII characters.
 			</description>
 		</method>
 		<method name="to_float">
@@ -778,7 +888,7 @@
 			<return type="PoolByteArray">
 			</return>
 			<description>
-				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than to_ascii(), but supports all UTF-8 characters. Therefore, you should prefer this function over to_ascii().
+				Converts the String (which is an array of characters) to [PoolByteArray] (which is an array of bytes). The conversion is a bit slower than [method to_ascii], but supports all UTF-8 characters. Therefore, you should prefer this function over [method to_ascii].
 			</description>
 		</method>
 		<method name="trim_prefix">

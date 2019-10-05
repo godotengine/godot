@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -80,8 +80,7 @@ void Timer::_notification(int p_what) {
 }
 
 void Timer::set_wait_time(float p_time) {
-	ERR_EXPLAIN("time should be greater than zero.");
-	ERR_FAIL_COND(p_time <= 0);
+	ERR_FAIL_COND_MSG(p_time <= 0, "Time should be greater than zero.");
 	wait_time = p_time;
 }
 float Timer::get_wait_time() const {
@@ -108,6 +107,9 @@ bool Timer::has_autostart() const {
 }
 
 void Timer::start(float p_time) {
+
+	ERR_FAIL_COND_MSG(!is_inside_tree(), "Timer was not added to the SceneTree!");
+
 	if (p_time > 0) {
 		set_wait_time(p_time);
 	}

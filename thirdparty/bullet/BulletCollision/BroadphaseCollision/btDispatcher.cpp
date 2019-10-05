@@ -17,6 +17,4 @@ subject to the following restrictions:
 
 btDispatcher::~btDispatcher()
 {
-
 }
-

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -343,7 +343,7 @@ RID VisualServer::get_white_texture() {
 #define SMALL_VEC2 Vector2(0.00001, 0.00001)
 #define SMALL_VEC3 Vector3(0.00001, 0.00001, 0.00001)
 
-Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> r_bone_aabb) {
+Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_t *p_offsets, uint32_t p_stride, PoolVector<uint8_t> &r_vertex_array, int p_vertex_array_len, PoolVector<uint8_t> &r_index_array, int p_index_array_len, AABB &r_aabb, Vector<AABB> &r_bone_aabb) {
 
 	PoolVector<uint8_t>::Write vw = r_vertex_array.write();
 
@@ -776,7 +776,7 @@ Error VisualServer::_surface_set_data(Array p_arrays, uint32_t p_format, uint32_
 						continue; //break;
 					ERR_FAIL_INDEX_V(idx, total_bones, ERR_INVALID_DATA);
 
-					if (bptr->size.x < 0) {
+					if (bptr[idx].size.x < 0) {
 						//first
 						bptr[idx] = AABB(v, SMALL_VEC3);
 						any_valid = true;
@@ -917,7 +917,7 @@ uint32_t VisualServer::mesh_surface_make_offsets_from_format(uint32_t p_format, 
 				}
 				r_offsets[i] = elem_size;
 				continue;
-			} break;
+			}
 			default: {
 				ERR_FAIL_V(0);
 			}
@@ -953,15 +953,12 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 			switch (var.get_type()) {
 				case Variant::POOL_VECTOR2_ARRAY: {
 					PoolVector<Vector2> v2 = var;
-					array_len = v2.size();
 				} break;
 				case Variant::POOL_VECTOR3_ARRAY: {
 					PoolVector<Vector3> v3 = var;
-					array_len = v3.size();
 				} break;
 				default: {
 					Array v = var;
-					array_len = v.size();
 				} break;
 			}
 
@@ -1121,7 +1118,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 				}
 				offsets[i] = elem_size;
 				continue;
-			} break;
+			}
 			default: {
 				ERR_FAIL();
 			}
@@ -1148,11 +1145,7 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 	Vector<AABB> bone_aabb;
 
 	Error err = _surface_set_data(p_arrays, format, offsets, total_elem_size, vertex_array, array_len, index_array, index_array_len, aabb, bone_aabb);
-
-	if (err) {
-		ERR_EXPLAIN("Invalid array format for surface");
-		ERR_FAIL_COND(err != OK);
-	}
+	ERR_FAIL_COND_MSG(err, "Invalid array format for surface.");
 
 	Vector<PoolVector<uint8_t> > blend_shape_data;
 
@@ -1163,12 +1156,9 @@ void VisualServer::mesh_add_surface_from_arrays(RID p_mesh, PrimitiveType p_prim
 		PoolVector<uint8_t> noindex;
 
 		AABB laabb;
-		Error err = _surface_set_data(p_blend_shapes[i], format & ~ARRAY_FORMAT_INDEX, offsets, total_elem_size, vertex_array_shape, array_len, noindex, 0, laabb, bone_aabb);
+		Error err2 = _surface_set_data(p_blend_shapes[i], format & ~ARRAY_FORMAT_INDEX, offsets, total_elem_size, vertex_array_shape, array_len, noindex, 0, laabb, bone_aabb);
 		aabb.merge_with(laabb);
-		if (err) {
-			ERR_EXPLAIN("Invalid blend shape array format for surface");
-			ERR_FAIL_COND(err != OK);
-		}
+		ERR_FAIL_COND_MSG(err2 != OK, "Invalid blend shape array format for surface.");
 
 		blend_shape_data.push_back(vertex_array_shape);
 	}
@@ -1289,7 +1279,7 @@ Array VisualServer::_get_array_from_surface(uint32_t p_format, PoolVector<uint8_
 				}
 				offsets[i] = elem_size;
 				continue;
-			} break;
+			}
 			default: {
 				ERR_FAIL_V(Array());
 			}
@@ -1676,6 +1666,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("texture_set_path", "texture", "path"), &VisualServer::texture_set_path);
 	ClassDB::bind_method(D_METHOD("texture_get_path", "texture"), &VisualServer::texture_get_path);
 	ClassDB::bind_method(D_METHOD("texture_set_shrink_all_x2_on_set_data", "shrink"), &VisualServer::texture_set_shrink_all_x2_on_set_data);
+	ClassDB::bind_method(D_METHOD("texture_bind", "texture", "number"), &VisualServer::texture_bind);
 
 	ClassDB::bind_method(D_METHOD("texture_debug_usage"), &VisualServer::_texture_debug_usage_bind);
 	ClassDB::bind_method(D_METHOD("textures_keep_original", "enable"), &VisualServer::textures_keep_original);
@@ -1780,6 +1771,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("light_set_negative", "light", "enable"), &VisualServer::light_set_negative);
 	ClassDB::bind_method(D_METHOD("light_set_cull_mask", "light", "mask"), &VisualServer::light_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("light_set_reverse_cull_face_mode", "light", "enabled"), &VisualServer::light_set_reverse_cull_face_mode);
+	ClassDB::bind_method(D_METHOD("light_set_use_gi", "light", "enabled"), &VisualServer::light_set_use_gi);
 
 	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_mode", "light", "mode"), &VisualServer::light_omni_set_shadow_mode);
 	ClassDB::bind_method(D_METHOD("light_omni_set_shadow_detail", "light", "detail"), &VisualServer::light_omni_set_shadow_detail);
@@ -1863,6 +1855,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("camera_create"), &VisualServer::camera_create);
 	ClassDB::bind_method(D_METHOD("camera_set_perspective", "camera", "fovy_degrees", "z_near", "z_far"), &VisualServer::camera_set_perspective);
 	ClassDB::bind_method(D_METHOD("camera_set_orthogonal", "camera", "size", "z_near", "z_far"), &VisualServer::camera_set_orthogonal);
+	ClassDB::bind_method(D_METHOD("camera_set_frustum", "camera", "size", "offset", "z_near", "z_far"), &VisualServer::camera_set_frustum);
 	ClassDB::bind_method(D_METHOD("camera_set_transform", "camera", "transform"), &VisualServer::camera_set_transform);
 	ClassDB::bind_method(D_METHOD("camera_set_cull_mask", "camera", "layers"), &VisualServer::camera_set_cull_mask);
 	ClassDB::bind_method(D_METHOD("camera_set_environment", "camera", "env"), &VisualServer::camera_set_environment);
@@ -1874,6 +1867,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("viewport_set_active", "viewport", "active"), &VisualServer::viewport_set_active);
 	ClassDB::bind_method(D_METHOD("viewport_set_parent_viewport", "viewport", "parent_viewport"), &VisualServer::viewport_set_parent_viewport);
 	ClassDB::bind_method(D_METHOD("viewport_attach_to_screen", "viewport", "rect", "screen"), &VisualServer::viewport_attach_to_screen, DEFVAL(Rect2()), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("viewport_set_render_direct_to_screen", "viewport", "enabled"), &VisualServer::viewport_set_render_direct_to_screen);
 	ClassDB::bind_method(D_METHOD("viewport_detach", "viewport"), &VisualServer::viewport_detach);
 	ClassDB::bind_method(D_METHOD("viewport_set_update_mode", "viewport", "update_mode"), &VisualServer::viewport_set_update_mode);
 	ClassDB::bind_method(D_METHOD("viewport_set_vflip", "viewport", "enabled"), &VisualServer::viewport_set_vflip);
@@ -1903,25 +1897,28 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("environment_set_background", "env", "bg"), &VisualServer::environment_set_background);
 	ClassDB::bind_method(D_METHOD("environment_set_sky", "env", "sky"), &VisualServer::environment_set_sky);
 	ClassDB::bind_method(D_METHOD("environment_set_sky_custom_fov", "env", "scale"), &VisualServer::environment_set_sky_custom_fov);
+	ClassDB::bind_method(D_METHOD("environment_set_sky_orientation", "env", "orientation"), &VisualServer::environment_set_sky_orientation);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_color", "env", "color"), &VisualServer::environment_set_bg_color);
 	ClassDB::bind_method(D_METHOD("environment_set_bg_energy", "env", "energy"), &VisualServer::environment_set_bg_energy);
 	ClassDB::bind_method(D_METHOD("environment_set_canvas_max_layer", "env", "max_layer"), &VisualServer::environment_set_canvas_max_layer);
 	ClassDB::bind_method(D_METHOD("environment_set_ambient_light", "env", "color", "energy", "sky_contibution"), &VisualServer::environment_set_ambient_light, DEFVAL(1.0), DEFVAL(0.0));
 	ClassDB::bind_method(D_METHOD("environment_set_dof_blur_near", "env", "enable", "distance", "transition", "far_amount", "quality"), &VisualServer::environment_set_dof_blur_near);
 	ClassDB::bind_method(D_METHOD("environment_set_dof_blur_far", "env", "enable", "distance", "transition", "far_amount", "quality"), &VisualServer::environment_set_dof_blur_far);
-	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "bicubic_upscale"), &VisualServer::environment_set_glow);
+	ClassDB::bind_method(D_METHOD("environment_set_glow", "env", "enable", "level_flags", "intensity", "strength", "bloom_threshold", "blend_mode", "hdr_bleed_threshold", "hdr_bleed_scale", "hdr_luminance_cap", "bicubic_upscale"), &VisualServer::environment_set_glow);
 	ClassDB::bind_method(D_METHOD("environment_set_tonemap", "env", "tone_mapper", "exposure", "white", "auto_exposure", "min_luminance", "max_luminance", "auto_exp_speed", "auto_exp_grey"), &VisualServer::environment_set_tonemap);
 	ClassDB::bind_method(D_METHOD("environment_set_adjustment", "env", "enable", "brightness", "contrast", "saturation", "ramp"), &VisualServer::environment_set_adjustment);
 	ClassDB::bind_method(D_METHOD("environment_set_ssr", "env", "enable", "max_steps", "fade_in", "fade_out", "depth_tolerance", "roughness"), &VisualServer::environment_set_ssr);
 	ClassDB::bind_method(D_METHOD("environment_set_ssao", "env", "enable", "radius", "intensity", "radius2", "intensity2", "bias", "light_affect", "ao_channel_affect", "color", "quality", "blur", "bilateral_sharpness"), &VisualServer::environment_set_ssao);
 	ClassDB::bind_method(D_METHOD("environment_set_fog", "env", "enable", "color", "sun_color", "sun_amount"), &VisualServer::environment_set_fog);
-	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "enable", "depth_begin", "depth_curve", "transmit", "transmit_curve"), &VisualServer::environment_set_fog_depth);
+
+	ClassDB::bind_method(D_METHOD("environment_set_fog_depth", "env", "enable", "depth_begin", "depth_end", "depth_curve", "transmit", "transmit_curve"), &VisualServer::environment_set_fog_depth);
+
 	ClassDB::bind_method(D_METHOD("environment_set_fog_height", "env", "enable", "min_height", "max_height", "height_curve"), &VisualServer::environment_set_fog_height);
 
 	ClassDB::bind_method(D_METHOD("scenario_create"), &VisualServer::scenario_create);
 	ClassDB::bind_method(D_METHOD("scenario_set_debug", "scenario", "debug_mode"), &VisualServer::scenario_set_debug);
 	ClassDB::bind_method(D_METHOD("scenario_set_environment", "scenario", "environment"), &VisualServer::scenario_set_environment);
-	ClassDB::bind_method(D_METHOD("scenario_set_reflection_atlas_size", "scenario", "p_size", "subdiv"), &VisualServer::scenario_set_reflection_atlas_size);
+	ClassDB::bind_method(D_METHOD("scenario_set_reflection_atlas_size", "scenario", "size", "subdiv"), &VisualServer::scenario_set_reflection_atlas_size);
 	ClassDB::bind_method(D_METHOD("scenario_set_fallback_environment", "scenario", "environment"), &VisualServer::scenario_set_fallback_environment);
 
 #ifndef _3D_DISABLED
@@ -1976,7 +1973,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("canvas_item_add_primitive", "item", "points", "colors", "uvs", "texture", "width", "normal_map"), &VisualServer::canvas_item_add_primitive, DEFVAL(1.0), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_polygon", "item", "points", "colors", "uvs", "texture", "normal_map", "antialiased"), &VisualServer::canvas_item_add_polygon, DEFVAL(Vector<Point2>()), DEFVAL(RID()), DEFVAL(RID()), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_triangle_array", "item", "indices", "points", "colors", "uvs", "bones", "weights", "texture", "count", "normal_map"), &VisualServer::canvas_item_add_triangle_array, DEFVAL(Vector<Point2>()), DEFVAL(Vector<int>()), DEFVAL(Vector<float>()), DEFVAL(RID()), DEFVAL(-1), DEFVAL(RID()));
-	ClassDB::bind_method(D_METHOD("canvas_item_add_mesh", "item", "mesh", "texture", "normal_map"), &VisualServer::canvas_item_add_mesh, DEFVAL(RID()));
+	ClassDB::bind_method(D_METHOD("canvas_item_add_mesh", "item", "mesh", "transform", "modulate", "texture", "normal_map"), &VisualServer::canvas_item_add_mesh, DEFVAL(Transform2D()), DEFVAL(Color(1, 1, 1)), DEFVAL(RID()), DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_multimesh", "item", "mesh", "texture", "normal_map"), &VisualServer::canvas_item_add_multimesh, DEFVAL(RID()));
 	ClassDB::bind_method(D_METHOD("canvas_item_add_particles", "item", "particles", "texture", "normal_map"), &VisualServer::canvas_item_add_particles);
 	ClassDB::bind_method(D_METHOD("canvas_item_add_set_transform", "item", "transform"), &VisualServer::canvas_item_add_set_transform);
@@ -2041,7 +2038,7 @@ void VisualServer::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_test_texture"), &VisualServer::get_test_texture);
 	ClassDB::bind_method(D_METHOD("get_white_texture"), &VisualServer::get_white_texture);
 
-	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale"), &VisualServer::set_boot_image);
+	ClassDB::bind_method(D_METHOD("set_boot_image", "image", "color", "scale", "use_filter"), &VisualServer::set_boot_image, DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("set_default_clear_color", "color"), &VisualServer::set_default_clear_color);
 
 	ClassDB::bind_method(D_METHOD("has_feature", "feature"), &VisualServer::has_feature);
@@ -2257,6 +2254,9 @@ void VisualServer::_bind_methods() {
 	BIND_ENUM_CONSTANT(MULTIMESH_COLOR_NONE);
 	BIND_ENUM_CONSTANT(MULTIMESH_COLOR_8BIT);
 	BIND_ENUM_CONSTANT(MULTIMESH_COLOR_FLOAT);
+	BIND_ENUM_CONSTANT(MULTIMESH_CUSTOM_DATA_NONE);
+	BIND_ENUM_CONSTANT(MULTIMESH_CUSTOM_DATA_8BIT);
+	BIND_ENUM_CONSTANT(MULTIMESH_CUSTOM_DATA_FLOAT);
 
 	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ONCE);
 	BIND_ENUM_CONSTANT(REFLECTION_PROBE_UPDATE_ALWAYS);
@@ -2362,11 +2362,11 @@ VisualServer::VisualServer() {
 	//ERR_FAIL_COND(singleton);
 	singleton = this;
 
-	GLOBAL_DEF("rendering/vram_compression/import_bptc", false);
-	GLOBAL_DEF("rendering/vram_compression/import_s3tc", true);
-	GLOBAL_DEF("rendering/vram_compression/import_etc", false);
-	GLOBAL_DEF("rendering/vram_compression/import_etc2", true);
-	GLOBAL_DEF("rendering/vram_compression/import_pvrtc", false);
+	GLOBAL_DEF_RST("rendering/vram_compression/import_bptc", false);
+	GLOBAL_DEF_RST("rendering/vram_compression/import_s3tc", true);
+	GLOBAL_DEF_RST("rendering/vram_compression/import_etc", false);
+	GLOBAL_DEF_RST("rendering/vram_compression/import_etc2", true);
+	GLOBAL_DEF_RST("rendering/vram_compression/import_pvrtc", false);
 
 	GLOBAL_DEF("rendering/quality/directional_shadow/size", 4096);
 	GLOBAL_DEF("rendering/quality/directional_shadow/size.mobile", 2048);
@@ -2400,7 +2400,9 @@ VisualServer::VisualServer() {
 	GLOBAL_DEF("rendering/quality/shading/force_blinn_over_ggx.mobile", true);
 
 	GLOBAL_DEF("rendering/quality/depth_prepass/enable", true);
-	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno");
+	GLOBAL_DEF("rendering/quality/depth_prepass/disable_for_vendors", "PowerVR,Mali,Adreno,Apple");
+
+	GLOBAL_DEF("rendering/quality/filters/use_nearest_mipmap_filter", false);
 }
 
 VisualServer::~VisualServer() {

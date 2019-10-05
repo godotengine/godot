@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,7 +32,7 @@
 
 #include "core/core_string_names.h"
 #include "core/engine.h"
-#include "navigation2d.h"
+#include "navigation_2d.h"
 
 #include "thirdparty/misc/triangulator.h"
 
@@ -271,7 +271,7 @@ void NavigationPolygon::make_polygons_from_outlines() {
 
 		struct Polygon p;
 
-		for (int i = 0; i < tp.GetNumPoints(); i++) {
+		for (int64_t i = 0; i < tp.GetNumPoints(); i++) {
 
 			Map<Vector2, int>::Element *E = points.find(tp[i]);
 			if (!E) {
@@ -312,7 +312,7 @@ void NavigationPolygon::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_set_outlines", "outlines"), &NavigationPolygon::_set_outlines);
 	ClassDB::bind_method(D_METHOD("_get_outlines"), &NavigationPolygon::_get_outlines);
 
-	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR3_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
+	ADD_PROPERTY(PropertyInfo(Variant::POOL_VECTOR2_ARRAY, "vertices", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "set_vertices", "get_vertices");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "polygons", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_polygons", "_get_polygons");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "outlines", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_outlines", "_get_outlines");
 }
@@ -349,8 +349,6 @@ void NavigationPolygonInstance::set_enabled(bool p_enabled) {
 
 	if (Engine::get_singleton()->is_editor_hint() || get_tree()->is_debugging_navigation_hint())
 		update();
-
-	//update_gizmo();
 }
 
 bool NavigationPolygonInstance::is_enabled() const {
@@ -461,26 +459,28 @@ void NavigationPolygonInstance::_notification(int p_what) {
 
 void NavigationPolygonInstance::set_navigation_polygon(const Ref<NavigationPolygon> &p_navpoly) {
 
-	if (p_navpoly == navpoly)
+	if (p_navpoly == navpoly) {
 		return;
+	}
 
 	if (navigation && nav_id != -1) {
 		navigation->navpoly_remove(nav_id);
 		nav_id = -1;
 	}
+
 	if (navpoly.is_valid()) {
 		navpoly->disconnect(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
 	}
 	navpoly = p_navpoly;
-
 	if (navpoly.is_valid()) {
 		navpoly->connect(CoreStringNames::get_singleton()->changed, this, "_navpoly_changed");
 	}
+	_navpoly_changed();
 
 	if (navigation && navpoly.is_valid() && enabled) {
 		nav_id = navigation->navpoly_add(navpoly, get_relative_transform_to_parent(navigation), this);
 	}
-	//update_gizmo();
+
 	_change_notify("navpoly");
 	update_configuration_warning();
 }

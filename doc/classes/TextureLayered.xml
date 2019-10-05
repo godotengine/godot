@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="TextureLayered" inherits="Resource" category="Core" version="3.1">
+<class name="TextureLayered" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="create">
 			<return type="void">
@@ -85,9 +83,9 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;depth&quot;: 0,&quot;flags&quot;: 4,&quot;format&quot;: 37,&quot;height&quot;: 0,&quot;layers&quot;: [  ],&quot;width&quot;: 0}">
 		</member>
-		<member name="flags" type="int" setter="set_flags" getter="get_flags">
+		<member name="flags" type="int" setter="set_flags" getter="get_flags" default="4">
 		</member>
 	</members>
 	<constants>

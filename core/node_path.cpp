@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -357,7 +357,7 @@ NodePath::NodePath(const String &p_path) {
 	String path = p_path;
 	Vector<StringName> subpath;
 
-	int absolute = (path[0] == '/') ? 1 : 0;
+	bool absolute = (path[0] == '/');
 	bool last_is_slash = true;
 	bool has_slashes = false;
 	int slices = 0;
@@ -375,8 +375,7 @@ NodePath::NodePath(const String &p_path) {
 				if (str == "") {
 					if (path[i] == 0) continue; // Allow end-of-path :
 
-					ERR_EXPLAIN("Invalid NodePath: " + p_path);
-					ERR_FAIL();
+					ERR_FAIL_MSG("Invalid NodePath '" + p_path + "'.");
 				}
 				subpath.push_back(str);
 
@@ -387,7 +386,7 @@ NodePath::NodePath(const String &p_path) {
 		path = path.substr(0, subpath_pos);
 	}
 
-	for (int i = absolute; i < path.length(); i++) {
+	for (int i = (int)absolute; i < path.length(); i++) {
 
 		if (path[i] == '/') {
 
@@ -407,7 +406,7 @@ NodePath::NodePath(const String &p_path) {
 
 	data = memnew(Data);
 	data->refcount.init();
-	data->absolute = absolute ? true : false;
+	data->absolute = absolute;
 	data->has_slashes = has_slashes;
 	data->subpath = subpath;
 	data->hash_cache_valid = false;
@@ -416,10 +415,10 @@ NodePath::NodePath(const String &p_path) {
 		return;
 	data->path.resize(slices);
 	last_is_slash = true;
-	int from = absolute;
+	int from = (int)absolute;
 	int slice = 0;
 
-	for (int i = absolute; i < path.length() + 1; i++) {
+	for (int i = (int)absolute; i < path.length() + 1; i++) {
 
 		if (path[i] == '/' || path[i] == 0) {
 

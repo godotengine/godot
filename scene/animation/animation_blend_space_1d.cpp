@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -110,7 +110,7 @@ void AnimationNodeBlendSpace1D::add_blend_point(const Ref<AnimationRootNode> &p_
 	if (p_at_index == -1 || p_at_index == blend_points_used) {
 		p_at_index = blend_points_used;
 	} else {
-		for (int i = blend_points_used - 1; i > p_at_index; i++) {
+		for (int i = blend_points_used - 1; i > p_at_index; i--) {
 			blend_points[i] = blend_points[i - 1];
 		}
 	}
@@ -266,7 +266,7 @@ float AnimationNodeBlendSpace1D::process(float p_time, bool p_seek) {
 
 	// fill in weights
 
-	if (point_lower == -1) {
+	if (point_lower == -1 && point_higher != -1) {
 		// we are on the left side, no other point to the left
 		// we just play the next point.
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -177,23 +177,24 @@ struct SafeRefCount {
 public:
 	// destroy() is called when weak_count_ drops to zero.
 
-	_ALWAYS_INLINE_ bool ref() { //true on success
+	_ALWAYS_INLINE_ bool ref() { // true on success
 
 		return atomic_conditional_increment(&count) != 0;
 	}
 
-	_ALWAYS_INLINE_ uint32_t refval() { //true on success
+	_ALWAYS_INLINE_ uint32_t refval() { // none-zero on success
 
 		return atomic_conditional_increment(&count);
 	}
 
 	_ALWAYS_INLINE_ bool unref() { // true if must be disposed of
 
-		if (atomic_decrement(&count) == 0) {
-			return true;
-		}
+		return atomic_decrement(&count) == 0;
+	}
 
-		return false;
+	_ALWAYS_INLINE_ uint32_t unrefval() { // 0 if must be disposed of
+
+		return atomic_decrement(&count);
 	}
 
 	_ALWAYS_INLINE_ uint32_t get() const { // nothrow

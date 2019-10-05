@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  svpscmap.h                                                             */
-/*                                                                         */
-/*    The FreeType PostScript charmap service (specification).             */
-/*                                                                         */
-/*  Copyright 2003-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * svpscmap.h
+ *
+ *   The FreeType PostScript charmap service (specification).
+ *
+ * Copyright (C) 2003-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef SVPSCMAP_H_
@@ -29,27 +29,26 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  Adobe glyph name to unicode value.
+   * Adobe glyph name to unicode value.
    */
   typedef FT_UInt32
   (*PS_Unicode_ValueFunc)( const char*  glyph_name );
 
   /*
-   *  Macintosh name id to glyph name.  NULL if invalid index.
+   * Macintosh name id to glyph name.  `NULL` if invalid index.
    */
   typedef const char*
   (*PS_Macintosh_NameFunc)( FT_UInt  name_index );
 
   /*
-   *  Adobe standard string ID to glyph name.  NULL if invalid index.
+   * Adobe standard string ID to glyph name.  `NULL` if invalid index.
    */
   typedef const char*
   (*PS_Adobe_Std_StringsFunc)( FT_UInt  string_index );
 
 
   /*
-   *  Simple unicode -> glyph index charmap built from font glyph names
-   *  table.
+   * Simple unicode -> glyph index charmap built from font glyph names table.
    */
   typedef struct  PS_UniMap_
   {
@@ -71,16 +70,16 @@ FT_BEGIN_HEADER
 
 
   /*
-   *  A function which returns a glyph name for a given index.  Returns
-   *  NULL if invalid index.
+   * A function which returns a glyph name for a given index.  Returns
+   * `NULL` if invalid index.
    */
   typedef const char*
   (*PS_GetGlyphNameFunc)( FT_Pointer  data,
                           FT_UInt     string_index );
 
   /*
-   *  A function used to release the glyph name returned by
-   *  PS_GetGlyphNameFunc, when needed
+   * A function used to release the glyph name returned by
+   * PS_GetGlyphNameFunc, when needed
    */
   typedef void
   (*PS_FreeGlyphNameFunc)( FT_Pointer  data,
@@ -118,8 +117,6 @@ FT_BEGIN_HEADER
   };
 
 
-#ifndef FT_CONFIG_OPTION_PIC
-
 #define FT_DEFINE_SERVICE_PSCMAPSREC( class_,                               \
                                       unicode_value_,                       \
                                       unicodes_init_,                       \
@@ -135,35 +132,6 @@ FT_BEGIN_HEADER
     unicodes_char_index_, unicodes_char_next_, macintosh_name_,             \
     adobe_std_strings_, adobe_std_encoding_, adobe_expert_encoding_         \
   };
-
-#else /* FT_CONFIG_OPTION_PIC */
-
-#define FT_DEFINE_SERVICE_PSCMAPSREC( class_,                               \
-                                      unicode_value_,                       \
-                                      unicodes_init_,                       \
-                                      unicodes_char_index_,                 \
-                                      unicodes_char_next_,                  \
-                                      macintosh_name_,                      \
-                                      adobe_std_strings_,                   \
-                                      adobe_std_encoding_,                  \
-                                      adobe_expert_encoding_ )              \
-  void                                                                      \
-  FT_Init_Class_ ## class_( FT_Library              library,                \
-                            FT_Service_PsCMapsRec*  clazz )                 \
-  {                                                                         \
-    FT_UNUSED( library );                                                   \
-                                                                            \
-    clazz->unicode_value         = unicode_value_;                          \
-    clazz->unicodes_init         = unicodes_init_;                          \
-    clazz->unicodes_char_index   = unicodes_char_index_;                    \
-    clazz->unicodes_char_next    = unicodes_char_next_;                     \
-    clazz->macintosh_name        = macintosh_name_;                         \
-    clazz->adobe_std_strings     = adobe_std_strings_;                      \
-    clazz->adobe_std_encoding    = adobe_std_encoding_;                     \
-    clazz->adobe_expert_encoding = adobe_expert_encoding_;                  \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
 
   /* */
 

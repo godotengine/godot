@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="VisualShaderNodeBooleanConstant" inherits="VisualShaderNode" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+	</methods>
+	<members>
+		<member name="constant" type="bool" setter="set_constant" getter="get_constant" default="false">
+		</member>
+		<member name="default_input_values" type="Array" setter="_set_default_input_values" getter="_get_default_input_values" override="true" default="[  ]" />
+	</members>
+	<constants>
+	</constants>
+</class>

@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="VisualServer" inherits="Object" category="Core" version="3.1">
+<class name="VisualServer" inherits="Object" category="Core" version="3.2">
 	<brief_description>
 		Server for anything visible.
 	</brief_description>
@@ -9,8 +9,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="black_bars_set_images">
 			<return type="void">
@@ -64,6 +62,22 @@
 			<argument index="0" name="camera" type="RID">
 			</argument>
 			<argument index="1" name="env" type="RID">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="camera_set_frustum">
+			<return type="void">
+			</return>
+			<argument index="0" name="camera" type="RID">
+			</argument>
+			<argument index="1" name="size" type="float">
+			</argument>
+			<argument index="2" name="offset" type="Vector2">
+			</argument>
+			<argument index="3" name="z_near" type="float">
+			</argument>
+			<argument index="4" name="z_far" type="float">
 			</argument>
 			<description>
 			</description>
@@ -175,12 +189,15 @@
 			</argument>
 			<argument index="1" name="mesh" type="RID">
 			</argument>
-			<argument index="2" name="texture" type="RID">
+			<argument index="2" name="transform" type="Transform2D" default="Transform2D( 1, 0, 0, 1, 0, 0 )">
 			</argument>
-			<argument index="3" name="normal_map" type="RID">
+			<argument index="3" name="modulate" type="Color" default="Color( 1, 1, 1, 1 )">
+			</argument>
+			<argument index="4" name="texture" type="RID">
+			</argument>
+			<argument index="5" name="normal_map" type="RID">
 			</argument>
 			<description>
-				Adds a [Mesh] to the [CanvasItem]'s draw commands. Only affects its aabb at the moment.
 			</description>
 		</method>
 		<method name="canvas_item_add_multimesh">
@@ -240,7 +257,7 @@
 			<argument index="3" name="normal_map" type="RID">
 			</argument>
 			<description>
-				Adds a particles system to the [CanvasItem]'s draw commands.
+				Adds a particle system to the [CanvasItem]'s draw commands.
 			</description>
 		</method>
 		<method name="canvas_item_add_polygon">
@@ -589,7 +606,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If this is enabled, the z-index of the parent will be added to the children's z-index.
+				If this is enabled, the Z index of the parent will be added to the children's Z index.
 			</description>
 		</method>
 		<method name="canvas_item_set_z_index">
@@ -600,7 +617,7 @@
 			<argument index="1" name="z_index" type="int">
 			</argument>
 			<description>
-				Sets the [CanvasItem]'s z-index, i.e. its draw order (lower indexes are drawn first).
+				Sets the [CanvasItem]'s Z index, i.e. its draw order (lower indexes are drawn first).
 			</description>
 		</method>
 		<method name="canvas_light_attach_to_canvas">
@@ -658,7 +675,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
-				The light mask. See [LightOccluder2D] for more information on light masks
+				The light mask. See [LightOccluder2D] for more information on light masks.
 			</description>
 		</method>
 		<method name="canvas_light_occluder_set_polygon">
@@ -735,7 +752,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
-				The light mask. See [LightOccluder2D] for more information on light masks
+				The light mask. See [LightOccluder2D] for more information on light masks.
 			</description>
 		</method>
 		<method name="canvas_light_set_item_shadow_cull_mask">
@@ -746,7 +763,7 @@
 			<argument index="1" name="mask" type="int">
 			</argument>
 			<description>
-				The shadow mask. binary about which layers this canvas light affects which canvas item's shadows. See [LightOccluder2D] for more information on light masks.
+				The binary mask used to determine which layers this canvas light's shadows affects. See [LightOccluder2D] for more information on light masks.
 			</description>
 		</method>
 		<method name="canvas_light_set_layer_range">
@@ -770,7 +787,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasLightMode">
 			</argument>
 			<description>
-				The mode of the light, see CANVAS_LIGHT_MODE_* constants.
+				The mode of the light, see [code]CANVAS_LIGHT_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="canvas_light_set_scale">
@@ -824,7 +841,7 @@
 			<argument index="1" name="filter" type="int" enum="VisualServer.CanvasLightShadowFilter">
 			</argument>
 			<description>
-				Sets the canvas light's shadow's filter, see CANVAS_LIGHT_SHADOW_FILTER_* constants.
+				Sets the canvas light's shadow's filter, see [code]CANVAS_LIGHT_SHADOW_FILTER_*[/code] constants.
 			</description>
 		</method>
 		<method name="canvas_light_set_shadow_gradient_length">
@@ -846,7 +863,7 @@
 			<argument index="1" name="smooth" type="float">
 			</argument>
 			<description>
-				Smoothens the shadow. The lower, the more smooth.
+				Smoothens the shadow. The lower, the smoother.
 			</description>
 		</method>
 		<method name="canvas_light_set_texture">
@@ -907,7 +924,7 @@
 			<argument index="1" name="mode" type="int" enum="VisualServer.CanvasOccluderPolygonCullMode">
 			</argument>
 			<description>
-				Sets an occluder polygons cull mode. See CANVAS_OCCLUDER_POLYGON_CULL_MODE_* constants.
+				Sets an occluder polygons cull mode. See [code]CANVAS_OCCLUDER_POLYGON_CULL_MODE_*[/code] constants.
 			</description>
 		</method>
 		<method name="canvas_occluder_polygon_set_shape">
@@ -1113,11 +1130,13 @@
 			</argument>
 			<argument index="2" name="depth_begin" type="float">
 			</argument>
-			<argument index="3" name="depth_curve" type="float">
+			<argument index="3" name="depth_end" type="float">
 			</argument>
-			<argument index="4" name="transmit" type="bool">
+			<argument index="4" name="depth_curve" type="float">
 			</argument>
-			<argument index="5" name="transmit_curve" type="float">
+			<argument index="5" name="transmit" type="bool">
+			</argument>
+			<argument index="6" name="transmit_curve" type="float">
 			</argument>
 			<description>
 			</description>
@@ -1159,7 +1178,9 @@
 			</argument>
 			<argument index="8" name="hdr_bleed_scale" type="float">
 			</argument>
-			<argument index="9" name="bicubic_upscale" type="bool">
+			<argument index="9" name="hdr_luminance_cap" type="float">
+			</argument>
+			<argument index="10" name="bicubic_upscale" type="bool">
 			</argument>
 			<description>
 			</description>
@@ -1180,6 +1201,16 @@
 			<argument index="0" name="env" type="RID">
 			</argument>
 			<argument index="1" name="scale" type="float">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="environment_set_sky_orientation">
+			<return type="void">
+			</return>
+			<argument index="0" name="env" type="RID">
+			</argument>
+			<argument index="1" name="orientation" type="Basis">
 			</argument>
 			<description>
 			</description>
@@ -1299,7 +1330,7 @@
 			<argument index="0" name="info" type="int" enum="VisualServer.RenderInfo">
 			</argument>
 			<description>
-				Returns a certain information, see RENDER_INFO_* for options.
+				Returns a certain information, see [code]RENDER_INFO_*[/code] for options.
 			</description>
 		</method>
 		<method name="get_test_cube">
@@ -1920,6 +1951,8 @@
 			<argument index="2" name="scenario" type="RID">
 			</argument>
 			<description>
+				Returns an array of object IDs intersecting with the provided 3D ray. Only visual 3D nodes are considered, such as [MeshInstance] or [DirectionalLight]. Use [method @GDScript.instance_from_id] to obtain the actual nodes. A scenario RID must be provided, which is available in the [World] you want to query.
+				[b]Warning:[/b] This function is primarily intended for editor usage. For in-game use cases, prefer physics collision.
 			</description>
 		</method>
 		<method name="light_directional_set_blend_splits">
@@ -2052,6 +2085,17 @@
 			<argument index="1" name="color" type="Color">
 			</argument>
 			<description>
+			</description>
+		</method>
+		<method name="light_set_use_gi">
+			<return type="void">
+			</return>
+			<argument index="0" name="light" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				Sets whether GI probes capture light information from this light.
 			</description>
 		</method>
 		<method name="lightmap_capture_create">
@@ -2208,7 +2252,7 @@
 			<argument index="1" name="width" type="float">
 			</argument>
 			<description>
-				Sets a materials line width.
+				Sets a material's line width.
 			</description>
 		</method>
 		<method name="material_set_next_pass">
@@ -2219,7 +2263,7 @@
 			<argument index="1" name="next_material" type="RID">
 			</argument>
 			<description>
-				Sets an objects next material.
+				Sets an object's next material.
 			</description>
 		</method>
 		<method name="material_set_param">
@@ -2232,7 +2276,7 @@
 			<argument index="2" name="value" type="Variant">
 			</argument>
 			<description>
-				Sets a materials parameter.
+				Sets a material's parameter.
 			</description>
 		</method>
 		<method name="material_set_render_priority">
@@ -2271,7 +2315,7 @@
 			<argument index="4" name="compress_format" type="int" default="97280">
 			</argument>
 			<description>
-				Adds a surface generated from the Arrays to a mesh. See PRIMITIVE_TYPE_* constants for types.
+				Adds a surface generated from the Arrays to a mesh. See [code]PRIMITIVE_TYPE_*[/code] constants for types.
 			</description>
 		</method>
 		<method name="mesh_clear">
@@ -2433,7 +2477,7 @@
 			<argument index="1" name="surface" type="int">
 			</argument>
 			<description>
-				Returns a mesh's surface's arrays for blend shapes
+				Returns a mesh's surface's arrays for blend shapes.
 			</description>
 		</method>
 		<method name="mesh_surface_get_format" qualifiers="const">
@@ -3054,8 +3098,8 @@
 			<argument index="2" name="userdata" type="Variant">
 			</argument>
 			<description>
-				Schedules a callback to the corresponding named 'method' on 'where' after a frame has been drawn.
-				The callback method must use only 1 argument which will be called with 'userdata'.
+				Schedules a callback to the corresponding named [code]method[/code] on [code]where[/code] after a frame has been drawn.
+				The callback method must use only 1 argument which will be called with [code]userdata[/code].
 			</description>
 		</method>
 		<method name="scenario_create">
@@ -3099,7 +3143,7 @@
 			</return>
 			<argument index="0" name="scenario" type="RID">
 			</argument>
-			<argument index="1" name="p_size" type="int">
+			<argument index="1" name="size" type="int">
 			</argument>
 			<argument index="2" name="subdiv" type="int">
 			</argument>
@@ -3115,8 +3159,10 @@
 			</argument>
 			<argument index="2" name="scale" type="bool">
 			</argument>
+			<argument index="3" name="use_filter" type="bool" default="true">
+			</argument>
 			<description>
-				Sets a boot image. The color defines the background color and if scale is [code]true[/code] the image will be scaled to fit the screen size.
+				Sets a boot image. The color defines the background color. If [code]scale[/code] is [code]true[/code], the image will be scaled to fit the screen size. If [code]use_filter[/code] is [code]true[/code], the image will be scaled with linear interpolation. If [code]use_filter[/code] is [code]false[/code], the image will be scaled with nearest-neighbor interpolation.
 			</description>
 		</method>
 		<method name="set_debug_generate_wireframes">
@@ -3317,6 +3363,17 @@
 			<description>
 			</description>
 		</method>
+		<method name="texture_bind">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="RID">
+			</argument>
+			<argument index="1" name="number" type="int">
+			</argument>
+			<description>
+				Binds the texture to a texture slot.
+			</description>
+		</method>
 		<method name="texture_create">
 			<return type="RID">
 			</return>
@@ -3470,7 +3527,7 @@
 			<argument index="1" name="flags" type="int">
 			</argument>
 			<description>
-				Sets the texture's flags. See [enum TextureFlags] for options
+				Sets the texture's flags. See [enum TextureFlags] for options.
 			</description>
 		</method>
 		<method name="texture_set_path">
@@ -3490,7 +3547,7 @@
 			<argument index="0" name="shrink" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] sets internal processes to shrink all image data to half the size.
+				If [code]true[/code], sets internal processes to shrink all image data to half the size.
 			</description>
 		</method>
 		<method name="texture_set_size_override">
@@ -3513,7 +3570,7 @@
 			<argument index="0" name="enable" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the image will be stored in the texture's images array if overwritten.
+				If [code]true[/code], the image will be stored in the texture's images array if overwritten.
 			</description>
 		</method>
 		<method name="viewport_attach_camera">
@@ -3548,7 +3605,14 @@
 			<argument index="2" name="screen" type="int" default="0">
 			</argument>
 			<description>
-				Attaches a viewport to a screen.
+				Copies viewport to a region of the screen specified by [code]rect[/code]. If Viewport.[member Viewport.render_direct_to_screen] is [code]true[/code], then viewport does not use a framebuffer and the contents of the viewport are rendered directly to screen. However, note that the root viewport is drawn last, therefore it will draw over the screen. Accordingly, you must set the root viewport to an area that does not cover the area that you have attached this viewport to.
+				For example, you can set the root viewport to not render at all with the following code:
+				[codeblock]
+				func _ready():
+				    get_viewport().set_attach_to_screen_rect(Rect2())
+				    $Viewport.set_attach_to_screen_rect(Rect2(0, 0, 600, 600))
+				[/codeblock]
+				Using this can result in significant optimization, especially on lower-end devices. However, it comes at the cost of having to manage your viewports manually. For a further optimization see, [method viewport_set_render_direct_to_screen].
 			</description>
 		</method>
 		<method name="viewport_create">
@@ -3575,7 +3639,7 @@
 			<argument index="1" name="info" type="int" enum="VisualServer.ViewportRenderInfo">
 			</argument>
 			<description>
-				Returns a viewport's render info. for options see VIEWPORT_RENDER_INFO* constants.
+				Returns a viewport's render information. For options, see the [code]VIEWPORT_RENDER_INFO*[/code] constants.
 			</description>
 		</method>
 		<method name="viewport_get_texture" qualifiers="const">
@@ -3606,7 +3670,7 @@
 			<argument index="1" name="active" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] sets the viewport active, else sets it inactive.
+				If [code]true[/code], sets the viewport active, else sets it inactive.
 			</description>
 		</method>
 		<method name="viewport_set_canvas_stacking">
@@ -3646,7 +3710,7 @@
 			<argument index="1" name="clear_mode" type="int" enum="VisualServer.ViewportClearMode">
 			</argument>
 			<description>
-				Sets the clear mode of a viewport. See VIEWPORT_CLEAR_MODE_* constants for options.
+				Sets the clear mode of a viewport. See [enum ViewportClearMode] for options.
 			</description>
 		</method>
 		<method name="viewport_set_debug_draw">
@@ -3657,7 +3721,7 @@
 			<argument index="1" name="draw" type="int" enum="VisualServer.ViewportDebugDraw">
 			</argument>
 			<description>
-				Sets the debug draw mode of a viewport. See VIEWPORT_DEBUG_DRAW_* constants for options.
+				Sets the debug draw mode of a viewport. See [enum ViewportDebugDraw] for options.
 			</description>
 		</method>
 		<method name="viewport_set_disable_3d">
@@ -3668,7 +3732,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] a viewport's 3D rendering is disabled.
+				If [code]true[/code], a viewport's 3D rendering is disabled.
 			</description>
 		</method>
 		<method name="viewport_set_disable_environment">
@@ -3679,7 +3743,7 @@
 			<argument index="1" name="disabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] rendering of a viewport's environment is disabled.
+				If [code]true[/code], rendering of a viewport's environment is disabled.
 			</description>
 		</method>
 		<method name="viewport_set_global_canvas_transform">
@@ -3701,7 +3765,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport renders to hdr.
+				If [code]true[/code], the viewport renders to hdr.
 			</description>
 		</method>
 		<method name="viewport_set_hide_canvas">
@@ -3712,7 +3776,7 @@
 			<argument index="1" name="hidden" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport's canvas is not rendered.
+				If [code]true[/code], the viewport's canvas is not rendered.
 			</description>
 		</method>
 		<method name="viewport_set_hide_scenario">
@@ -3733,7 +3797,7 @@
 			<argument index="1" name="msaa" type="int" enum="VisualServer.ViewportMSAA">
 			</argument>
 			<description>
-				Sets the anti-aliasing mode. see [enum ViewportMSAA] for options.
+				Sets the anti-aliasing mode. See [enum ViewportMSAA] for options.
 			</description>
 		</method>
 		<method name="viewport_set_parent_viewport">
@@ -3745,6 +3809,17 @@
 			</argument>
 			<description>
 				Sets the viewport's parent to another viewport.
+			</description>
+		</method>
+		<method name="viewport_set_render_direct_to_screen">
+			<return type="void">
+			</return>
+			<argument index="0" name="viewport" type="RID">
+			</argument>
+			<argument index="1" name="enabled" type="bool">
+			</argument>
+			<description>
+				If [code]true[/code], render the contents of the viewport directly to screen. This allows a low-level optimization where you can skip drawing a viewport to the root viewport. While this optimization can result in a significant increase in speed (especially on older devices), it comes at a cost of usability. When this is enabled, you cannot read from the viewport or from the [code]SCREEN_TEXTURE[/code]. You also lose the benefit of certain window settings, such as the various stretch modes. Another consequence to be aware of is that in 2D the rendering happens in window coordinates, so if you have a viewport that is double the size of the window, and you set this, then only the portion that fits within the window will be drawn, no automatic scaling is possible, even if your game scene is significantly larger than the window size.
 			</description>
 		</method>
 		<method name="viewport_set_scenario">
@@ -3780,7 +3855,7 @@
 			<argument index="1" name="size" type="int">
 			</argument>
 			<description>
-				Sets the size of the shadow atlas's images.
+				Sets the size of the shadow atlas's images (used for omni and spot lights). The value will be rounded up to the nearest power of 2.
 			</description>
 		</method>
 		<method name="viewport_set_size">
@@ -3804,7 +3879,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport renders its background as transparent.
+				If [code]true[/code], the viewport renders its background as transparent.
 			</description>
 		</method>
 		<method name="viewport_set_update_mode">
@@ -3837,7 +3912,7 @@
 			<argument index="1" name="use_arvr" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
+				If [code]true[/code], the viewport uses augmented or virtual reality technologies. See [ARVRInterface].
 			</description>
 		</method>
 		<method name="viewport_set_vflip">
@@ -3848,7 +3923,7 @@
 			<argument index="1" name="enabled" type="bool">
 			</argument>
 			<description>
-				If [code]true[/code] the viewport's rendering is flipped vertically.
+				If [code]true[/code], the viewport's rendering is flipped vertically.
 			</description>
 		</method>
 	</methods>
@@ -3911,29 +3986,29 @@
 		<constant name="TEXTURE_TYPE_3D" value="3" enum="TextureType">
 		</constant>
 		<constant name="TEXTURE_FLAG_MIPMAPS" value="1" enum="TextureFlags">
-			Generate mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
+			Generates mipmaps, which are smaller versions of the same texture to use when zoomed out, keeping the aspect ratio.
 		</constant>
 		<constant name="TEXTURE_FLAG_REPEAT" value="2" enum="TextureFlags">
-			Repeat (instead of clamp to edge).
+			Repeats the texture (instead of clamp to edge).
 		</constant>
 		<constant name="TEXTURE_FLAG_FILTER" value="4" enum="TextureFlags">
-			Turn on magnifying filter, to enable smooth zooming in of the texture.
+			Uses a magnifying filter, to enable smooth zooming in of the texture.
 		</constant>
 		<constant name="TEXTURE_FLAG_ANISOTROPIC_FILTER" value="8" enum="TextureFlags">
-			Anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
-			More effective on planes often shown going to the horrizon as those textures (Walls or Ground for example) get squashed in the viewport to different aspect ratios and regular mipmaps keep the aspect ratio so they don't optimize storage that well in those cases.
+			Uses anisotropic mipmap filtering. Generates smaller versions of the same texture with different aspect ratios.
+			This results in better-looking textures when viewed from oblique angles.
 		</constant>
 		<constant name="TEXTURE_FLAG_CONVERT_TO_LINEAR" value="16" enum="TextureFlags">
-			Converts texture to SRGB color space.
+			Converts the texture to the sRGB color space.
 		</constant>
 		<constant name="TEXTURE_FLAG_MIRRORED_REPEAT" value="32" enum="TextureFlags">
-			Repeat texture with alternate sections mirrored.
+			Repeats the texture with alternate sections mirrored.
 		</constant>
 		<constant name="TEXTURE_FLAG_USED_FOR_STREAMING" value="2048" enum="TextureFlags">
 			Texture is a video surface.
 		</constant>
 		<constant name="TEXTURE_FLAGS_DEFAULT" value="7" enum="TextureFlags">
-			Default flags. Generate mipmaps, repeat, and filter are enabled.
+			Default flags. [constant TEXTURE_FLAG_MIPMAPS], [constant TEXTURE_FLAG_REPEAT] and [constant TEXTURE_FLAG_FILTER] are enabled.
 		</constant>
 		<constant name="SHADER_SPATIAL" value="0" enum="ShaderMode">
 			Shader is a 3D shader.
@@ -3945,7 +4020,7 @@
 			Shader is a particle shader.
 		</constant>
 		<constant name="SHADER_MAX" value="3" enum="ShaderMode">
-			Marks maximum of the shader types array. used internally.
+			Represents the size of the [enum ShaderMode] enum.
 		</constant>
 		<constant name="ARRAY_VERTEX" value="0" enum="ArrayType">
 			Array is a vertex array.
@@ -3960,10 +4035,10 @@
 			Array is a color array.
 		</constant>
 		<constant name="ARRAY_TEX_UV" value="4" enum="ArrayType">
-			Array is a uv coordinates array.
+			Array is an UV coordinates array.
 		</constant>
 		<constant name="ARRAY_TEX_UV2" value="5" enum="ArrayType">
-			Array is a uv coordinates array for the second uv coordinates.
+			Array is an UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_BONES" value="6" enum="ArrayType">
 			Array contains bone information.
@@ -3975,7 +4050,7 @@
 			Array is index array.
 		</constant>
 		<constant name="ARRAY_MAX" value="9" enum="ArrayType">
-			Marks the maximum of the array types. Used internally.
+			Represents the size of the [enum ArrayType] enum.
 		</constant>
 		<constant name="ARRAY_FORMAT_VERTEX" value="1" enum="ArrayFormat">
 			Flag used to mark a vertex array.
@@ -3990,10 +4065,10 @@
 			Flag used to mark a color array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV" value="16" enum="ArrayFormat">
-			Flag used to mark a uv coordinates array.
+			Flag used to mark an UV coordinates array.
 		</constant>
 		<constant name="ARRAY_FORMAT_TEX_UV2" value="32" enum="ArrayFormat">
-			Flag used to mark a uv coordinates array for the second uv coordinates.
+			Flag used to mark an UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_FORMAT_BONES" value="64" enum="ArrayFormat">
 			Flag used to mark a bone information array.
@@ -4002,7 +4077,7 @@
 			Flag used to mark a weights array.
 		</constant>
 		<constant name="ARRAY_FORMAT_INDEX" value="256" enum="ArrayFormat">
-			Flag used to mark a index array.
+			Flag used to mark an index array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_VERTEX" value="512" enum="ArrayFormat">
 			Flag used to mark a compressed (half float) vertex array.
@@ -4017,10 +4092,10 @@
 			Flag used to mark a compressed (half float) color array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV" value="8192" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) uv coordinates array.
+			Flag used to mark a compressed (half float) UV coordinates array.
 		</constant>
 		<constant name="ARRAY_COMPRESS_TEX_UV2" value="16384" enum="ArrayFormat">
-			Flag used to mark a compressed (half float) uv coordinates array for the second uv coordinates.
+			Flag used to mark a compressed (half float) UV coordinates array for the second UV coordinates.
 		</constant>
 		<constant name="ARRAY_COMPRESS_BONES" value="32768" enum="ArrayFormat">
 		</constant>
@@ -4033,10 +4108,10 @@
 			Flag used to mark that the array contains 2D vertices.
 		</constant>
 		<constant name="ARRAY_FLAG_USE_16_BIT_BONES" value="524288" enum="ArrayFormat">
-			Flag used to mark that the array uses 16 bit bones instead of 8 bit.
+			Flag used to mark that the array uses 16-bit bones instead of 8-bit.
 		</constant>
 		<constant name="ARRAY_COMPRESS_DEFAULT" value="97280" enum="ArrayFormat">
-			Used to set flags ARRAY_COMPRESS_VERTEX, ARRAY_COMPRESS_NORMAL, ARRAY_COMPRESS_TANGENT, ARRAY_COMPRESS_COLOR, ARRAY_COMPRESS_TEX_UV, ARRAY_COMPRESS_TEX_UV2 and ARRAY_COMPRESS_WEIGHTS quickly.
+			Used to set flags [constant ARRAY_COMPRESS_VERTEX], [constant ARRAY_COMPRESS_NORMAL], [constant ARRAY_COMPRESS_TANGENT], [constant ARRAY_COMPRESS_COLOR], [constant ARRAY_COMPRESS_TEX_UV], [constant ARRAY_COMPRESS_TEX_UV2] and [constant ARRAY_COMPRESS_WEIGHTS] quickly.
 		</constant>
 		<constant name="PRIMITIVE_POINTS" value="0" enum="PrimitiveType">
 			Primitive to draw consists of points.
@@ -4060,7 +4135,7 @@
 			Primitive to draw consists of a triangle strip (the last 2 vertices are always combined with the first to make a triangle).
 		</constant>
 		<constant name="PRIMITIVE_MAX" value="7" enum="PrimitiveType">
-			Marks the primitive types endpoint. used internally.
+			Represents the size of the [enum PrimitiveType] enum.
 		</constant>
 		<constant name="BLEND_SHAPE_MODE_NORMALIZED" value="0" enum="BlendShapeMode">
 		</constant>
@@ -4070,10 +4145,10 @@
 			Is a directional (sun) light.
 		</constant>
 		<constant name="LIGHT_OMNI" value="1" enum="LightType">
-			is an omni light.
+			Is an omni light.
 		</constant>
 		<constant name="LIGHT_SPOT" value="2" enum="LightType">
-			is an spot light.
+			Is a spot light.
 		</constant>
 		<constant name="LIGHT_PARAM_ENERGY" value="0" enum="LightParam">
 			The light's energy.
@@ -4111,7 +4186,7 @@
 		<constant name="LIGHT_PARAM_SHADOW_BIAS_SPLIT_SCALE" value="14" enum="LightParam">
 		</constant>
 		<constant name="LIGHT_PARAM_MAX" value="15" enum="LightParam">
-			The light parameters endpoint. Used internally.
+			Represents the size of the [enum LightParam] enum.
 		</constant>
 		<constant name="LIGHT_OMNI_SHADOW_DUAL_PARABOLOID" value="0" enum="LightOmniShadowMode">
 		</constant>
@@ -4146,22 +4221,22 @@
 			The viewport is never cleared before drawing.
 		</constant>
 		<constant name="VIEWPORT_CLEAR_ONLY_NEXT_FRAME" value="2" enum="ViewportClearMode">
-			The viewport is cleared once, then the clear mode is set to [VIEWPORT_CLEAR_NEVER].
+			The viewport is cleared once, then the clear mode is set to [constant VIEWPORT_CLEAR_NEVER].
 		</constant>
 		<constant name="VIEWPORT_MSAA_DISABLED" value="0" enum="ViewportMSAA">
 			Multisample antialiasing is disabled.
 		</constant>
 		<constant name="VIEWPORT_MSAA_2X" value="1" enum="ViewportMSAA">
-			Multisample antialiasing is set to 2X.
+			Multisample antialiasing is set to 2×.
 		</constant>
 		<constant name="VIEWPORT_MSAA_4X" value="2" enum="ViewportMSAA">
-			Multisample antialiasing is set to 4X.
+			Multisample antialiasing is set to 4×.
 		</constant>
 		<constant name="VIEWPORT_MSAA_8X" value="3" enum="ViewportMSAA">
-			Multisample antialiasing is set to 8X.
+			Multisample antialiasing is set to 8×.
 		</constant>
 		<constant name="VIEWPORT_MSAA_16X" value="4" enum="ViewportMSAA">
-			Multisample antialiasing is set to 16X.
+			Multisample antialiasing is set to 16×.
 		</constant>
 		<constant name="VIEWPORT_USAGE_2D" value="0" enum="ViewportUsage">
 			The Viewport does not render 3D but samples.
@@ -4188,7 +4263,7 @@
 		<constant name="VIEWPORT_RENDER_INFO_DRAW_CALLS_IN_FRAME" value="5" enum="ViewportRenderInfo">
 		</constant>
 		<constant name="VIEWPORT_RENDER_INFO_MAX" value="6" enum="ViewportRenderInfo">
-			Marks end of VIEWPORT_RENDER_INFO* constants. Used internally.
+			Represents the size of the [enum ViewportRenderInfo] enum.
 		</constant>
 		<constant name="VIEWPORT_DEBUG_DRAW_DISABLED" value="0" enum="ViewportDebugDraw">
 			Debug draw is disabled. Default setting.
@@ -4235,7 +4310,7 @@
 		<constant name="INSTANCE_LIGHTMAP_CAPTURE" value="8" enum="InstanceType">
 		</constant>
 		<constant name="INSTANCE_MAX" value="9" enum="InstanceType">
-			The max value for INSTANCE_* constants, used internally.
+			Represents the size of the [enum InstanceType] enum.
 		</constant>
 		<constant name="INSTANCE_GEOMETRY_MASK" value="30" enum="InstanceType">
 			A combination of the flags of geometry instances (mesh, multimesh, immediate and particles).
@@ -4245,6 +4320,7 @@
 		<constant name="INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE" value="1" enum="InstanceFlags">
 		</constant>
 		<constant name="INSTANCE_FLAG_MAX" value="2" enum="InstanceFlags">
+			Represents the size of the [enum InstanceFlags] enum.
 		</constant>
 		<constant name="SHADOW_CASTING_SETTING_OFF" value="0" enum="ShadowCastingSetting">
 		</constant>
@@ -4315,9 +4391,10 @@
 			The amount of draw calls in frame.
 		</constant>
 		<constant name="INFO_USAGE_VIDEO_MEM_TOTAL" value="6" enum="RenderInfo">
+			Unimplemented in the GLES2 and GLES3 rendering backends, always returns 0.
 		</constant>
 		<constant name="INFO_VIDEO_MEM_USED" value="7" enum="RenderInfo">
-			The amount of vertex memory and texture memory used.
+			The amount of video memory used, i.e. texture and vertex memory combined.
 		</constant>
 		<constant name="INFO_TEXTURE_MEM_USED" value="8" enum="RenderInfo">
 			The amount of texture memory used.
@@ -4338,6 +4415,12 @@
 		<constant name="MULTIMESH_COLOR_8BIT" value="1" enum="MultimeshColorFormat">
 		</constant>
 		<constant name="MULTIMESH_COLOR_FLOAT" value="2" enum="MultimeshColorFormat">
+		</constant>
+		<constant name="MULTIMESH_CUSTOM_DATA_NONE" value="0" enum="MultimeshCustomDataFormat">
+		</constant>
+		<constant name="MULTIMESH_CUSTOM_DATA_8BIT" value="1" enum="MultimeshCustomDataFormat">
+		</constant>
+		<constant name="MULTIMESH_CUSTOM_DATA_FLOAT" value="2" enum="MultimeshCustomDataFormat">
 		</constant>
 		<constant name="REFLECTION_PROBE_UPDATE_ONCE" value="0" enum="ReflectionProbeUpdateMode">
 		</constant>
@@ -4361,7 +4444,8 @@
 		</constant>
 		<constant name="ENV_BG_KEEP" value="5" enum="EnvironmentBG">
 		</constant>
-		<constant name="ENV_BG_MAX" value="6" enum="EnvironmentBG">
+		<constant name="ENV_BG_MAX" value="7" enum="EnvironmentBG">
+			Represents the size of the [enum EnvironmentBG] enum.
 		</constant>
 		<constant name="ENV_DOF_BLUR_QUALITY_LOW" value="0" enum="EnvironmentDOFBlurQuality">
 		</constant>

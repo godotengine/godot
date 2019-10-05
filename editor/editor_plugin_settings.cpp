@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,49 +92,63 @@ void EditorPluginSettings::update_plugins() {
 		cf.instance();
 		String path = "res://addons/" + plugins[i] + "/plugin.cfg";
 
-		Error err = cf->load(path);
+		Error err2 = cf->load(path);
 
-		if (err != OK) {
+		if (err2 != OK) {
 			WARN_PRINTS("Can't load plugin config: " + path);
-		} else if (!cf->has_section_key("plugin", "name")) {
-			WARN_PRINTS("Plugin misses plugin/name: " + path);
-		} else if (!cf->has_section_key("plugin", "author")) {
-			WARN_PRINTS("Plugin misses plugin/author: " + path);
-		} else if (!cf->has_section_key("plugin", "version")) {
-			WARN_PRINTS("Plugin misses plugin/version: " + path);
-		} else if (!cf->has_section_key("plugin", "description")) {
-			WARN_PRINTS("Plugin misses plugin/description: " + path);
-		} else if (!cf->has_section_key("plugin", "script")) {
-			WARN_PRINTS("Plugin misses plugin/script: " + path);
 		} else {
+			bool key_missing = false;
 
-			String d = plugins[i];
-			String name = cf->get_value("plugin", "name");
-			String author = cf->get_value("plugin", "author");
-			String version = cf->get_value("plugin", "version");
-			String description = cf->get_value("plugin", "description");
-			String script = cf->get_value("plugin", "script");
+			if (!cf->has_section_key("plugin", "name")) {
+				WARN_PRINTS("Plugin config misses \"plugin/name\" key: " + path);
+				key_missing = true;
+			}
+			if (!cf->has_section_key("plugin", "author")) {
+				WARN_PRINTS("Plugin config misses \"plugin/author\" key: " + path);
+				key_missing = true;
+			}
+			if (!cf->has_section_key("plugin", "version")) {
+				WARN_PRINTS("Plugin config misses \"plugin/version\" key: " + path);
+				key_missing = true;
+			}
+			if (!cf->has_section_key("plugin", "description")) {
+				WARN_PRINTS("Plugin config misses \"plugin/description\" key: " + path);
+				key_missing = true;
+			}
+			if (!cf->has_section_key("plugin", "script")) {
+				WARN_PRINTS("Plugin config misses \"plugin/script\" key: " + path);
+				key_missing = true;
+			}
 
-			TreeItem *item = plugin_list->create_item(root);
-			item->set_text(0, name);
-			item->set_tooltip(0, "Name: " + name + "\nPath: " + path + "\nMain Script: " + script + "\nDescription: " + description);
-			item->set_metadata(0, d);
-			item->set_text(1, version);
-			item->set_metadata(1, script);
-			item->set_text(2, author);
-			item->set_metadata(2, description);
-			item->set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
-			item->set_range_config(3, 0, 1, 1);
-			item->set_text(3, "Inactive,Active");
-			item->set_editable(3, true);
-			item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
+			if (!key_missing) {
+				String d2 = plugins[i];
+				String name = cf->get_value("plugin", "name");
+				String author = cf->get_value("plugin", "author");
+				String version = cf->get_value("plugin", "version");
+				String description = cf->get_value("plugin", "description");
+				String script = cf->get_value("plugin", "script");
 
-			if (EditorNode::get_singleton()->is_addon_plugin_enabled(d)) {
-				item->set_custom_color(3, get_color("success_color", "Editor"));
-				item->set_range(3, 1);
-			} else {
-				item->set_custom_color(3, get_color("disabled_font_color", "Editor"));
-				item->set_range(3, 0);
+				TreeItem *item = plugin_list->create_item(root);
+				item->set_text(0, name);
+				item->set_tooltip(0, TTR("Name:") + " " + name + "\n" + TTR("Path:") + " " + path + "\n" + TTR("Main Script:") + " " + script + "\n" + TTR("Description:") + " " + description);
+				item->set_metadata(0, d2);
+				item->set_text(1, version);
+				item->set_metadata(1, script);
+				item->set_text(2, author);
+				item->set_metadata(2, description);
+				item->set_cell_mode(3, TreeItem::CELL_MODE_RANGE);
+				item->set_range_config(3, 0, 1, 1);
+				item->set_text(3, "Inactive,Active");
+				item->set_editable(3, true);
+				item->add_button(4, get_icon("Edit", "EditorIcons"), BUTTON_PLUGIN_EDIT, false, TTR("Edit Plugin"));
+
+				if (EditorNode::get_singleton()->is_addon_plugin_enabled(d2)) {
+					item->set_custom_color(3, get_color("success_color", "Editor"));
+					item->set_range(3, 1);
+				} else {
+					item->set_custom_color(3, get_color("disabled_font_color", "Editor"));
+					item->set_range(3, 0);
+				}
 			}
 		}
 	}
@@ -152,7 +166,7 @@ void EditorPluginSettings::_plugin_activity_changed() {
 	bool active = ti->get_range(3);
 	String name = ti->get_metadata(0);
 
-	EditorNode::get_singleton()->set_addon_plugin_enabled(name, active);
+	EditorNode::get_singleton()->set_addon_plugin_enabled(name, active, true);
 
 	bool is_active = EditorNode::get_singleton()->is_addon_plugin_enabled(name);
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,21 +31,21 @@
 #ifndef TILE_SET_EDITOR_PLUGIN_H
 #define TILE_SET_EDITOR_PLUGIN_H
 
-#include "editor/editor_name_dialog.h"
 #include "editor/editor_node.h"
 #include "scene/2d/sprite.h"
+#include "scene/resources/concave_polygon_shape_2d.h"
 #include "scene/resources/convex_polygon_shape_2d.h"
 #include "scene/resources/tile_set.h"
 
 #define WORKSPACE_MARGIN Vector2(10, 10)
 class TilesetEditorContext;
 
-class TileSetEditor : public Control {
+class TileSetEditor : public HSplitContainer {
 
 	friend class TileSetEditorPlugin;
 	friend class TilesetEditorContext;
 
-	GDCLASS(TileSetEditor, Control)
+	GDCLASS(TileSetEditor, HSplitContainer);
 
 	enum TextureToolButtons {
 		TOOL_TILESET_ADD_TEXTURE,
@@ -71,15 +71,20 @@ class TileSetEditor : public Control {
 		EDITMODE_BITMASK,
 		EDITMODE_PRIORITY,
 		EDITMODE_ICON,
+		EDITMODE_Z_INDEX,
 		EDITMODE_MAX
 	};
 
 	enum TileSetTools {
+		SELECT_PREVIOUS,
+		SELECT_NEXT,
 		TOOL_SELECT,
 		BITMASK_COPY,
 		BITMASK_PASTE,
 		BITMASK_CLEAR,
 		SHAPE_NEW_POLYGON,
+		SHAPE_NEW_RECTANGLE,
+		SHAPE_TOGGLE_TYPE,
 		SHAPE_DELETE,
 		SHAPE_KEEP_INSIDE_TILE,
 		TOOL_GRID_SNAP,
@@ -90,9 +95,16 @@ class TileSetEditor : public Control {
 		TOOL_MAX
 	};
 
+	struct SubtileData {
+		Array collisions;
+		Ref<OccluderPolygon2D> occlusion_shape;
+		Ref<NavigationPolygon> navigation_shape;
+	};
+
 	Ref<TileSet> tileset;
 	TilesetEditorContext *helper;
 	EditorNode *editor;
+	UndoRedo *undo_redo;
 
 	ConfirmationDialog *cd;
 	AcceptDialog *err_dialog;
@@ -106,25 +118,27 @@ class TileSetEditor : public Control {
 
 	bool creating_shape;
 	int dragging_point;
-	float tile_names_opacity;
+	bool tile_names_visible;
 	Vector2 region_from;
 	Rect2 edited_region;
 	bool draw_edited_region;
 	Vector2 edited_shape_coord;
 	PoolVector2Array current_shape;
-	Map<Vector2, uint16_t> bitmask_map_copy;
+	Map<Vector2i, SubtileData> current_tile_data;
+	Map<Vector2, uint32_t> bitmask_map_copy;
 
 	Vector2 snap_step;
 	Vector2 snap_offset;
 	Vector2 snap_separation;
 
-	Ref<ConvexPolygonShape2D> edited_collision_shape;
+	Ref<Shape2D> edited_collision_shape;
 	Ref<OccluderPolygon2D> edited_occlusion_shape;
 	Ref<NavigationPolygon> edited_navigation_shape;
 
 	int current_item_index;
 	Sprite *preview;
 	ScrollContainer *scroll;
+	Label *empty_message;
 	Control *workspace_container;
 	bool draw_handles;
 	Control *workspace_overlay;
@@ -134,9 +148,12 @@ class TileSetEditor : public Control {
 	HSeparator *separator_editmode;
 	HBoxContainer *toolbar;
 	ToolButton *tools[TOOL_MAX];
+	VSeparator *separator_shape_toggle;
+	VSeparator *separator_bitmask;
 	VSeparator *separator_delete;
 	VSeparator *separator_grid;
 	SpinBox *spin_priority;
+	SpinBox *spin_z_index;
 	WorkspaceMode workspace_mode;
 	EditMode edit_mode;
 	int current_tile;
@@ -148,10 +165,20 @@ class TileSetEditor : public Control {
 	void update_texture_list();
 	void update_texture_list_icon();
 
+	void add_texture(Ref<Texture> p_texture);
+	void remove_texture(Ref<Texture> p_texture);
+
 	Ref<Texture> get_current_texture();
 
 	static void _import_node(Node *p_node, Ref<TileSet> p_library);
 	static void _import_scene(Node *p_scene, Ref<TileSet> p_library, bool p_merge);
+	void _undo_redo_import_scene(Node *p_scene, bool p_merge);
+
+	bool _is_drop_valid(const Dictionary &p_drag_data, const Dictionary &p_item_data) const;
+	Variant get_drag_data_fw(const Point2 &p_point, Control *p_from);
+	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
+	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
+	void _file_load_request(const PoolVector<String> &p_path, int p_at_pos = -1);
 
 protected:
 	static void _bind_methods();
@@ -177,14 +204,33 @@ private:
 	void _on_workspace_input(const Ref<InputEvent> &p_ie);
 	void _on_tool_clicked(int p_tool);
 	void _on_priority_changed(float val);
+	void _on_z_index_changed(float val);
 	void _on_grid_snap_toggled(bool p_val);
+	Vector<Vector2> _get_collision_shape_points(const Ref<Shape2D> &p_shape);
+	Vector<Vector2> _get_edited_shape_points();
+	void _set_edited_shape_points(const Vector<Vector2> &points);
+	void _update_tile_data();
+	void _update_toggle_shape_button();
+	void _select_next_tile();
+	void _select_previous_tile();
+	Array _get_tiles_in_current_texture(bool sorted = false);
+	bool _sort_tiles(Variant p_a, Variant p_b);
+	void _select_next_subtile();
+	void _select_previous_subtile();
+	void _select_next_shape();
+	void _select_previous_shape();
+	void _set_edited_collision_shape(const Ref<Shape2D> &p_shape);
 	void _set_snap_step(Vector2 p_val);
 	void _set_snap_off(Vector2 p_val);
 	void _set_snap_sep(Vector2 p_val);
 
+	void _validate_current_tile_id();
+	void _select_edited_shape_coord();
+	void _undo_tile_removal(int p_id);
+
 	void _zoom_in();
 	void _zoom_out();
-	void _reset_zoom();
+	void _zoom_reset();
 
 	void draw_highlight_current_tile();
 	void draw_highlight_subtile(Vector2 coord, const Vector<Vector2> &other_highlighted = Vector<Vector2>());
@@ -196,6 +242,7 @@ private:
 	void select_coord(const Vector2 &coord);
 	Vector2 snap_point(const Vector2 &point);
 	void update_workspace_tile_mode();
+	void update_workspace_minsize();
 	void update_edited_region(const Vector2 &end_point);
 
 	int get_current_tile() const;
@@ -212,6 +259,7 @@ class TilesetEditorContext : public Object {
 	bool snap_options_visible;
 
 public:
+	bool _hide_script_from_inspector() { return true; }
 	void set_tileset(const Ref<TileSet> &p_tileset);
 
 private:
@@ -221,6 +269,7 @@ protected:
 	bool _set(const StringName &p_name, const Variant &p_value);
 	bool _get(const StringName &p_name, Variant &r_ret) const;
 	void _get_property_list(List<PropertyInfo> *p_list) const;
+	static void _bind_methods();
 
 public:
 	TilesetEditorContext(TileSetEditor *p_tileset_editor);
@@ -240,6 +289,8 @@ public:
 	virtual void edit(Object *p_node);
 	virtual bool handles(Object *p_node) const;
 	virtual void make_visible(bool p_visible);
+	void set_state(const Dictionary &p_state);
+	Dictionary get_state() const;
 
 	TileSetEditorPlugin(EditorNode *p_node);
 };

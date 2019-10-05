@@ -163,7 +163,7 @@ vec2 Hammersley(uint i, uint N) {
 
 #else
 
-#define SAMPLE_COUNT 512u
+#define SAMPLE_COUNT 1024u
 
 #endif
 

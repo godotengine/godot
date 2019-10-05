@@ -14,6 +14,10 @@ using real_t = System.Single;
 
 namespace Godot
 {
+    /// <summary>
+    /// 3-element structure that can be used to represent positions in 3D space or any other pair of numeric values.
+    /// </summary>
+    [Serializable]
     [StructLayout(LayoutKind.Sequential)]
     public struct Vector3 : IEquatable<Vector3>
     {
@@ -65,14 +69,15 @@ namespace Godot
 
         internal void Normalize()
         {
-            real_t length = Length();
+            real_t lengthsq = LengthSquared();
 
-            if (length == 0f)
+            if (lengthsq == 0)
             {
                 x = y = z = 0f;
             }
             else
             {
+                real_t length = Mathf.Sqrt(lengthsq);
                 x /= length;
                 y /= length;
                 z /= length;
@@ -124,6 +129,11 @@ namespace Godot
                         (2.0f * p0 - 5.0f * p1 + 4f * p2 - p3) * t2 +
                         (-p0 + 3.0f * p1 - 3.0f * p2 + p3) * t3
                     );
+        }
+
+        public Vector3 DirectionTo(Vector3 b)
+        {
+            return new Vector3(b.x - x, b.y - y, b.z - z).Normalized();
         }
 
         public real_t DistanceSquaredTo(Vector3 b)
@@ -184,6 +194,14 @@ namespace Godot
             );
         }
 
+        public Vector3 MoveToward(Vector3 to, real_t delta)
+        {
+            var v = this;
+            var vd = to - v;
+            var len = vd.Length();
+            return len <= delta || len < Mathf.Epsilon ? to : v + vd / len * delta;
+        }
+
         public Axis MaxAxis()
         {
             return x < y ? (y < z ? Axis.Z : Axis.Y) : (x < z ? Axis.Z : Axis.X);
@@ -204,10 +222,28 @@ namespace Godot
         public Basis Outer(Vector3 b)
         {
             return new Basis(
-                new Vector3(x * b.x, x * b.y, x * b.z),
-                new Vector3(y * b.x, y * b.y, y * b.z),
-                new Vector3(z * b.x, z * b.y, z * b.z)
+                x * b.x, x * b.y, x * b.z,
+                y * b.x, y * b.y, y * b.z,
+                z * b.x, z * b.y, z * b.z
             );
+        }
+
+        public Vector3 PosMod(real_t mod)
+        {
+            Vector3 v;
+            v.x = Mathf.PosMod(x, mod);
+            v.y = Mathf.PosMod(y, mod);
+            v.z = Mathf.PosMod(z, mod);
+            return v;
+        }
+
+        public Vector3 PosMod(Vector3 modv)
+        {
+            Vector3 v;
+            v.x = Mathf.PosMod(x, modv.x);
+            v.y = Mathf.PosMod(y, modv.y);
+            v.z = Mathf.PosMod(z, modv.z);
+            return v;
         }
 
         public Vector3 Project(Vector3 onNormal)
@@ -234,17 +270,28 @@ namespace Godot
             return new Basis(axis, phi).Xform(this);
         }
 
+        [Obsolete("Set is deprecated. Use the Vector3(" + nameof(real_t) + ", " + nameof(real_t) + ", " + nameof(real_t) + ") constructor instead.", error: true)]
         public void Set(real_t x, real_t y, real_t z)
         {
             this.x = x;
             this.y = y;
             this.z = z;
         }
+        [Obsolete("Set is deprecated. Use the Vector3(" + nameof(Vector3) + ") constructor instead.", error: true)]
         public void Set(Vector3 v)
         {
             x = v.x;
             y = v.y;
             z = v.z;
+        }
+
+        public Vector3 Sign()
+        {
+            Vector3 v;
+            v.x = Mathf.Sign(x);
+            v.y = Mathf.Sign(y);
+            v.z = Mathf.Sign(z);
+            return v;
         }
 
         public Vector3 Slerp(Vector3 b, real_t t)
@@ -276,13 +323,13 @@ namespace Godot
                 0f, 0f, z
             );
         }
-        
+
         // Constants
         private static readonly Vector3 _zero = new Vector3(0, 0, 0);
         private static readonly Vector3 _one = new Vector3(1, 1, 1);
         private static readonly Vector3 _negOne = new Vector3(-1, -1, -1);
         private static readonly Vector3 _inf = new Vector3(Mathf.Inf, Mathf.Inf, Mathf.Inf);
-    
+
         private static readonly Vector3 _up = new Vector3(0, 1, 0);
         private static readonly Vector3 _down = new Vector3(0, -1, 0);
         private static readonly Vector3 _right = new Vector3(1, 0, 0);
@@ -294,7 +341,7 @@ namespace Godot
         public static Vector3 One { get { return _one; } }
         public static Vector3 NegOne { get { return _negOne; } }
         public static Vector3 Inf { get { return _inf; } }
-        
+
         public static Vector3 Up { get { return _up; } }
         public static Vector3 Down { get { return _down; } }
         public static Vector3 Right { get { return _right; } }
@@ -380,6 +427,22 @@ namespace Godot
             return left;
         }
 
+        public static Vector3 operator %(Vector3 vec, real_t divisor)
+        {
+            vec.x %= divisor;
+            vec.y %= divisor;
+            vec.z %= divisor;
+            return vec;
+        }
+
+        public static Vector3 operator %(Vector3 vec, Vector3 divisorv)
+        {
+            vec.x %= divisorv.x;
+            vec.y %= divisorv.y;
+            vec.z %= divisorv.z;
+            return vec;
+        }
+
         public static bool operator ==(Vector3 left, Vector3 right)
         {
             return left.Equals(right);
@@ -392,9 +455,9 @@ namespace Godot
 
         public static bool operator <(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z < right.z;
                 return left.y < right.y;
             }
@@ -404,9 +467,9 @@ namespace Godot
 
         public static bool operator >(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z > right.z;
                 return left.y > right.y;
             }
@@ -416,9 +479,9 @@ namespace Godot
 
         public static bool operator <=(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z <= right.z;
                 return left.y < right.y;
             }
@@ -428,9 +491,9 @@ namespace Godot
 
         public static bool operator >=(Vector3 left, Vector3 right)
         {
-            if (left.x == right.x)
+            if (Mathf.IsEqualApprox(left.x, right.x))
             {
-                if (left.y == right.y)
+                if (Mathf.IsEqualApprox(left.y, right.y))
                     return left.z >= right.z;
                 return left.y > right.y;
             }
@@ -450,7 +513,7 @@ namespace Godot
 
         public bool Equals(Vector3 other)
         {
-            return x == other.x && y == other.y && z == other.z;
+            return Mathf.IsEqualApprox(x, other.x) && Mathf.IsEqualApprox(y, other.y) && Mathf.IsEqualApprox(z, other.z);
         }
 
         public override int GetHashCode()

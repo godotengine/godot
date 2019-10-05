@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -109,7 +109,7 @@ void ItemListPlugin::_get_property_list(List<PropertyInfo> *p_list) const {
 		int flags = get_flags();
 
 		if (flags & FLAG_CHECKABLE) {
-			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
+			p_list->push_back(PropertyInfo(Variant::INT, base + "checkable", PROPERTY_HINT_ENUM, "No,As checkbox,As radio button"));
 			p_list->push_back(PropertyInfo(Variant::BOOL, base + "checked"));
 		}
 
@@ -265,6 +265,9 @@ void ItemListEditor::_notification(int p_notification) {
 
 		add_button->set_icon(get_icon("Add", "EditorIcons"));
 		del_button->set_icon(get_icon("Remove", "EditorIcons"));
+	} else if (p_notification == NOTIFICATION_READY) {
+
+		get_tree()->connect("node_removed", this, "_node_removed");
 	}
 }
 
@@ -341,6 +344,7 @@ bool ItemListEditor::handles(Object *p_object) const {
 
 void ItemListEditor::_bind_methods() {
 
+	ClassDB::bind_method("_node_removed", &ItemListEditor::_node_removed);
 	ClassDB::bind_method("_edit_items", &ItemListEditor::_edit_items);
 	ClassDB::bind_method("_add_button", &ItemListEditor::_add_pressed);
 	ClassDB::bind_method("_delete_button", &ItemListEditor::_delete_pressed);
@@ -349,6 +353,7 @@ void ItemListEditor::_bind_methods() {
 ItemListEditor::ItemListEditor() {
 
 	selected_idx = -1;
+	item_list = NULL;
 
 	toolbar_button = memnew(ToolButton);
 	toolbar_button->set_text(TTR("Items"));

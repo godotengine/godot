@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -41,7 +41,8 @@ class AnimationPlayer;
 class AnimationTree;
 
 class AnimationNode : public Resource {
-	GDCLASS(AnimationNode, Resource)
+	GDCLASS(AnimationNode, Resource);
+
 public:
 	enum FilterAction {
 		FILTER_IGNORE,
@@ -155,13 +156,15 @@ VARIANT_ENUM_CAST(AnimationNode::FilterAction)
 
 //root node does not allow inputs
 class AnimationRootNode : public AnimationNode {
-	GDCLASS(AnimationRootNode, AnimationNode)
+	GDCLASS(AnimationRootNode, AnimationNode);
+
 public:
 	AnimationRootNode() {}
 };
 
 class AnimationTree : public Node {
-	GDCLASS(AnimationTree, Node)
+	GDCLASS(AnimationTree, Node);
+
 public:
 	enum AnimationProcessMode {
 		ANIMATION_PROCESS_PHYSICS,

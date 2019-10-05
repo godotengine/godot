@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -129,10 +129,7 @@ void PhysicsBody::add_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->body_add_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -140,10 +137,7 @@ void PhysicsBody::remove_collision_exception_with(Node *p_node) {
 
 	ERR_FAIL_NULL(p_node);
 	CollisionObject *collision_object = Object::cast_to<CollisionObject>(p_node);
-	if (!collision_object) {
-		ERR_EXPLAIN("Collision exception only works between two CollisionObject");
-	}
-	ERR_FAIL_COND(!collision_object);
+	ERR_FAIL_COND_MSG(!collision_object, "Collision exception only works between two CollisionObject.");
 	PhysicsServer::get_singleton()->body_remove_collision_exception(get_rid(), collision_object->get_rid());
 }
 
@@ -188,14 +182,13 @@ PhysicsBody::PhysicsBody(PhysicsServer::BodyMode p_mode) :
 #ifndef DISABLE_DEPRECATED
 void StaticBody::set_friction(real_t p_friction) {
 
-	if (p_friction == 1.0) { // default value, don't create an override for that
+	if (p_friction == 1.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
+	ERR_FAIL_COND_MSG(p_friction < 0 || p_friction > 1, "Friction must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -206,8 +199,7 @@ void StaticBody::set_friction(real_t p_friction) {
 
 real_t StaticBody::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -218,14 +210,13 @@ real_t StaticBody::get_friction() const {
 
 void StaticBody::set_bounce(real_t p_bounce) {
 
-	if (p_bounce == 0.0) { // default value, don't create an override for that
+	if (p_bounce == 0.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
-	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
+	ERR_FAIL_COND_MSG(p_bounce < 0 || p_bounce > 1, "Bounce must be between 0 and 1.");
 
 	if (physics_material_override.is_null()) {
 		physics_material_override.instance();
@@ -236,8 +227,7 @@ void StaticBody::set_bounce(real_t p_bounce) {
 
 real_t StaticBody::get_bounce() const {
 
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 0;
@@ -632,12 +622,11 @@ real_t RigidBody::get_weight() const {
 #ifndef DISABLE_DEPRECATED
 void RigidBody::set_friction(real_t p_friction) {
 
-	if (p_friction == 1.0) { // default value, don't create an override for that
+	if (p_friction == 1.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method set_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_friction < 0 || p_friction > 1);
 
@@ -649,8 +638,7 @@ void RigidBody::set_friction(real_t p_friction) {
 }
 real_t RigidBody::get_friction() const {
 
-	ERR_EXPLAIN("The method get_friction has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method get_friction has been deprecated and will be removed in the future, use physics material instead.");
 
 	if (physics_material_override.is_null()) {
 		return 1;
@@ -661,12 +649,11 @@ real_t RigidBody::get_friction() const {
 
 void RigidBody::set_bounce(real_t p_bounce) {
 
-	if (p_bounce == 0.0) { // default value, don't create an override for that
+	if (p_bounce == 0.0 && physics_material_override.is_null()) { // default value, don't create an override for that
 		return;
 	}
 
-	ERR_EXPLAIN("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method set_bounce has been deprecated and will be removed in the future, use physics material instead.");
 
 	ERR_FAIL_COND(p_bounce < 0 || p_bounce > 1);
 
@@ -677,8 +664,7 @@ void RigidBody::set_bounce(real_t p_bounce) {
 	physics_material_override->set_bounce(p_bounce);
 }
 real_t RigidBody::get_bounce() const {
-	ERR_EXPLAIN("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.")
-	WARN_DEPRECATED
+	WARN_DEPRECATED_MSG("The method get_bounce has been deprecated and will be removed in the future, use physics material instead.");
 	if (physics_material_override.is_null()) {
 		return 0;
 	}
@@ -867,10 +853,7 @@ void RigidBody::set_contact_monitor(bool p_enabled) {
 
 	if (!p_enabled) {
 
-		if (contact_monitor->locked) {
-			ERR_EXPLAIN("Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\",false) instead");
-		}
-		ERR_FAIL_COND(contact_monitor->locked);
+		ERR_FAIL_COND_MSG(contact_monitor->locked, "Can't disable contact monitoring during in/out callback. Use call_deferred(\"set_contact_monitor\", false) instead.");
 
 		for (Map<ObjectID, BodyState>::Element *E = contact_monitor->body_map.front(); E; E = E->next()) {
 
@@ -934,7 +917,7 @@ String RigidBody::get_configuration_warning() const {
 
 	if ((get_mode() == MODE_RIGID || get_mode() == MODE_CHARACTER) && (ABS(t.basis.get_axis(0).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(1).length() - 1.0) > 0.05 || ABS(t.basis.get_axis(2).length() - 1.0) > 0.05)) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
 		warning += TTR("Size changes to RigidBody (in character or rigid modes) will be overridden by the physics engine when running.\nChange the size in children collision shapes instead.");
 	}
@@ -1044,10 +1027,10 @@ void RigidBody::_bind_methods() {
 	ADD_PROPERTYI(PropertyInfo(Variant::BOOL, "axis_lock_angular_z"), "set_axis_lock", "get_axis_lock", PhysicsServer::BODY_AXIS_ANGULAR_Z);
 	ADD_GROUP("Linear", "linear_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "linear_velocity"), "set_linear_velocity", "get_linear_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damp", PROPERTY_HINT_RANGE, "-1,128,0.01"), "set_linear_damp", "get_linear_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "linear_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_linear_damp", "get_linear_damp");
 	ADD_GROUP("Angular", "angular_");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "angular_velocity"), "set_angular_velocity", "get_angular_velocity");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damp", PROPERTY_HINT_RANGE, "-1,128,0.01"), "set_angular_damp", "get_angular_damp");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "angular_damp", PROPERTY_HINT_RANGE, "-1,100,0.001,or_greater"), "set_angular_damp", "get_angular_damp");
 
 	ADD_SIGNAL(MethodInfo("body_shape_entered", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
 	ADD_SIGNAL(MethodInfo("body_shape_exited", PropertyInfo(Variant::INT, "body_id"), PropertyInfo(Variant::OBJECT, "body", PROPERTY_HINT_RESOURCE_TYPE, "Node"), PropertyInfo(Variant::INT, "body_shape"), PropertyInfo(Variant::INT, "local_shape")));
@@ -1104,10 +1087,10 @@ void RigidBody::_reload_physics_characteristics() {
 //////////////////////////////////////////////////////
 //////////////////////////
 
-Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_test_only) {
+Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_infinite_inertia, bool p_exclude_raycast_shapes, bool p_test_only) {
 
 	Collision col;
-	if (move_and_collide(p_motion, p_infinite_inertia, col, p_test_only)) {
+	if (move_and_collide(p_motion, p_infinite_inertia, col, p_exclude_raycast_shapes, p_test_only)) {
 		if (motion_cache.is_null()) {
 			motion_cache.instance();
 			motion_cache->owner = this;
@@ -1121,11 +1104,11 @@ Ref<KinematicCollision> KinematicBody::_move(const Vector3 &p_motion, bool p_inf
 	return Ref<KinematicCollision>();
 }
 
-bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_test_only) {
+bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_inertia, Collision &r_collision, bool p_exclude_raycast_shapes, bool p_test_only) {
 
 	Transform gt = get_global_transform();
 	PhysicsServer::MotionResult result;
-	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result);
+	bool colliding = PhysicsServer::get_singleton()->body_test_motion(get_rid(), gt, p_motion, p_infinite_inertia, &result, p_exclude_raycast_shapes);
 
 	if (colliding) {
 		r_collision.collider_metadata = result.collider_metadata;
@@ -1154,7 +1137,7 @@ bool KinematicBody::move_and_collide(const Vector3 &p_motion, bool p_infinite_in
 	return colliding;
 }
 
-//so, if you pass 45 as limit, avoid numerical precision erros when angle is 45.
+//so, if you pass 45 as limit, avoid numerical precision errors when angle is 45.
 #define FLOOR_ANGLE_THRESHOLD 0.01
 
 Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
@@ -1167,7 +1150,8 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 		}
 	}
 
-	Vector3 motion = (floor_velocity + lv) * get_physics_process_delta_time();
+	// Hack in order to work with calling from _process as well as from _physics_process; calling from thread is risky
+	Vector3 motion = (floor_velocity + lv) * (Engine::get_singleton()->is_in_physics_frame() ? get_physics_process_delta_time() : get_process_delta_time());
 
 	on_floor = false;
 	on_ceiling = false;
@@ -1180,19 +1164,16 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	while (p_max_slides) {
 
 		Collision collision;
-
 		bool found_collision = false;
 
-		int test_type = 0;
-
-		do {
+		for (int i = 0; i < 2; ++i) {
 			bool collided;
-			if (test_type == 0) { //collide
+			if (i == 0) { //collide
 				collided = move_and_collide(motion, p_infinite_inertia, collision);
 				if (!collided) {
 					motion = Vector3(); //clear because no collision happened and motion completed
 				}
-			} else {
+			} else { //separate raycasts (if any)
 				collided = separate_raycast_shapes(p_infinite_inertia, collision);
 				if (collided) {
 					collision.remainder = motion; //keep
@@ -1202,9 +1183,6 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 
 			if (collided) {
 				found_collision = true;
-			}
-
-			if (collided) {
 
 				colliders.push_back(collision);
 				motion = collision.remainder;
@@ -1214,14 +1192,14 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					//all is a wall
 					on_wall = true;
 				} else {
-					if (collision.normal.dot(p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //floor
+					if (Math::acos(collision.normal.dot(p_floor_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //floor
 
 						on_floor = true;
 						on_floor_body = collision.collider_rid;
 						floor_velocity = collision.collider_vel;
 
 						if (p_stop_on_slope) {
-							if (Vector3() == lv_n + p_floor_direction) {
+							if ((lv_n + p_floor_direction).length() < 0.01 && collision.travel.length() < 1) {
 								Transform gt = get_global_transform();
 								gt.origin -= collision.travel;
 								set_global_transform(gt);
@@ -1231,7 +1209,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 
 						is_on_slope = true;
 
-					} else if (collision.normal.dot(-p_floor_direction) >= Math::cos(p_floor_max_angle + FLOOR_ANGLE_THRESHOLD)) { //ceiling
+					} else if (Math::acos(collision.normal.dot(-p_floor_direction)) <= p_floor_max_angle + FLOOR_ANGLE_THRESHOLD) { //ceiling
 						on_ceiling = true;
 					} else {
 						on_wall = true;
@@ -1247,15 +1225,13 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 					lv = lv.slide(n);
 				}
 
-				for (int i = 0; i < 3; i++) {
-					if (locked_axis & (1 << i)) {
-						lv[i] = 0;
+				for (int j = 0; j < 3; j++) {
+					if (locked_axis & (1 << j)) {
+						lv[j] = 0;
 					}
 				}
 			}
-
-			++test_type;
-		} while (!p_stop_on_slope && test_type < 2);
+		}
 
 		if (!found_collision || motion == Vector3())
 			break;
@@ -1266,7 +1242,7 @@ Vector3 KinematicBody::move_and_slide(const Vector3 &p_linear_velocity, const Ve
 	return lv;
 }
 
-Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_infinite_inertia, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle) {
+Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity, const Vector3 &p_snap, const Vector3 &p_floor_direction, bool p_stop_on_slope, int p_max_slides, float p_floor_max_angle, bool p_infinite_inertia) {
 
 	bool was_on_floor = on_floor;
 
@@ -1278,14 +1254,27 @@ Vector3 KinematicBody::move_and_slide_with_snap(const Vector3 &p_linear_velocity
 	Collision col;
 	Transform gt = get_global_transform();
 
-	if (move_and_collide(p_snap, p_infinite_inertia, col, true)) {
-		gt.origin += col.travel;
-		if (p_floor_direction != Vector3() && Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
-			on_floor = true;
-			on_floor_body = col.collider_rid;
-			floor_velocity = col.collider_vel;
+	if (move_and_collide(p_snap, p_infinite_inertia, col, false, true)) {
+
+		bool apply = true;
+		if (p_floor_direction != Vector3()) {
+			if (Math::acos(p_floor_direction.normalized().dot(col.normal)) < p_floor_max_angle) {
+				on_floor = true;
+				on_floor_body = col.collider_rid;
+				floor_velocity = col.collider_vel;
+				if (p_stop_on_slope) {
+					// move and collide may stray the object a bit because of pre un-stucking,
+					// so only ensure that motion happens on floor direction in this case.
+					col.travel = p_floor_direction * p_floor_direction.dot(col.travel);
+				}
+			} else {
+				apply = false; //snapped with floor direction, but did not snap to a floor, do not snap.
+			}
 		}
-		set_global_transform(gt);
+		if (apply) {
+			gt.origin += col.travel;
+			set_global_transform(gt);
+		}
 	}
 
 	return ret;
@@ -1398,13 +1387,25 @@ Ref<KinematicCollision> KinematicBody::_get_slide_collision(int p_bounce) {
 	return slide_colliders[p_bounce];
 }
 
+void KinematicBody::_notification(int p_what) {
+	if (p_what == NOTIFICATION_ENTER_TREE) {
+		// Reset move_and_slide() data.
+		on_floor = false;
+		on_floor_body = RID();
+		on_ceiling = false;
+		on_wall = false;
+		colliders.clear();
+		floor_velocity = Vector3();
+	}
+}
+
 void KinematicBody::_bind_methods() {
 
-	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "test_only"), &KinematicBody::_move, DEFVAL(true), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("move_and_collide", "rel_vec", "infinite_inertia", "exclude_raycast_shapes", "test_only"), &KinematicBody::_move, DEFVAL(true), DEFVAL(true), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("move_and_slide", "linear_velocity", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
-	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "infinite_inertia", "stop_on_slope", "max_bounces", "floor_max_angle"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(true), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)));
+	ClassDB::bind_method(D_METHOD("move_and_slide_with_snap", "linear_velocity", "snap", "floor_normal", "stop_on_slope", "max_slides", "floor_max_angle", "infinite_inertia"), &KinematicBody::move_and_slide_with_snap, DEFVAL(Vector3(0, 0, 0)), DEFVAL(false), DEFVAL(4), DEFVAL(Math::deg2rad((float)45)), DEFVAL(true));
 
-	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody::test_move);
+	ClassDB::bind_method(D_METHOD("test_move", "from", "rel_vec", "infinite_inertia"), &KinematicBody::test_move, DEFVAL(true));
 
 	ClassDB::bind_method(D_METHOD("is_on_floor"), &KinematicBody::is_on_floor);
 	ClassDB::bind_method(D_METHOD("is_on_ceiling"), &KinematicBody::is_on_ceiling);
@@ -1464,7 +1465,7 @@ Vector3 KinematicCollision::get_remainder() const {
 	return collision.remainder;
 }
 Object *KinematicCollision::get_local_shape() const {
-	ERR_FAIL_COND_V(!owner, NULL);
+	if (!owner) return NULL;
 	uint32_t ownerid = owner->shape_find_owner(collision.local_shape);
 	return owner->shape_owner_get_owner(ownerid);
 }
@@ -1906,6 +1907,26 @@ bool PhysicalBone::SixDOFJointData::_set(const StringName &p_name, const Variant
 		if (j.is_valid())
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS, axis_data[axis].linear_limit_softness);
 
+	} else if ("linear_spring_enabled" == var_name) {
+		axis_data[axis].linear_spring_enabled = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING, axis_data[axis].linear_spring_enabled);
+
+	} else if ("linear_spring_stiffness" == var_name) {
+		axis_data[axis].linear_spring_stiffness = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_STIFFNESS, axis_data[axis].linear_spring_stiffness);
+
+	} else if ("linear_spring_damping" == var_name) {
+		axis_data[axis].linear_spring_damping = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_DAMPING, axis_data[axis].linear_spring_damping);
+
+	} else if ("linear_equilibrium_point" == var_name) {
+		axis_data[axis].linear_equilibrium_point = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT, axis_data[axis].linear_equilibrium_point);
+
 	} else if ("linear_restitution" == var_name) {
 		axis_data[axis].linear_restitution = p_value;
 		if (j.is_valid())
@@ -1951,6 +1972,26 @@ bool PhysicalBone::SixDOFJointData::_set(const StringName &p_name, const Variant
 		if (j.is_valid())
 			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_ERP, axis_data[axis].erp);
 
+	} else if ("angular_spring_enabled" == var_name) {
+		axis_data[axis].angular_spring_enabled = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(j, axis, PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING, axis_data[axis].angular_spring_enabled);
+
+	} else if ("angular_spring_stiffness" == var_name) {
+		axis_data[axis].angular_spring_stiffness = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS, axis_data[axis].angular_spring_stiffness);
+
+	} else if ("angular_spring_damping" == var_name) {
+		axis_data[axis].angular_spring_damping = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_DAMPING, axis_data[axis].angular_spring_damping);
+
+	} else if ("angular_equilibrium_point" == var_name) {
+		axis_data[axis].angular_equilibrium_point = p_value;
+		if (j.is_valid())
+			PhysicsServer::get_singleton()->generic_6dof_joint_set_param(j, axis, PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, axis_data[axis].angular_equilibrium_point);
+
 	} else {
 		return false;
 	}
@@ -1989,6 +2030,14 @@ bool PhysicalBone::SixDOFJointData::_get(const StringName &p_name, Variant &r_re
 		r_ret = axis_data[axis].linear_limit_lower;
 	} else if ("linear_limit_softness" == var_name) {
 		r_ret = axis_data[axis].linear_limit_softness;
+	} else if ("linear_spring_enabled" == var_name) {
+		r_ret = axis_data[axis].linear_spring_enabled;
+	} else if ("linear_spring_stiffness" == var_name) {
+		r_ret = axis_data[axis].linear_spring_stiffness;
+	} else if ("linear_spring_damping" == var_name) {
+		r_ret = axis_data[axis].linear_spring_damping;
+	} else if ("linear_equilibrium_point" == var_name) {
+		r_ret = axis_data[axis].linear_equilibrium_point;
 	} else if ("linear_restitution" == var_name) {
 		r_ret = axis_data[axis].linear_restitution;
 	} else if ("linear_damping" == var_name) {
@@ -2007,6 +2056,14 @@ bool PhysicalBone::SixDOFJointData::_get(const StringName &p_name, Variant &r_re
 		r_ret = axis_data[axis].angular_damping;
 	} else if ("erp" == var_name) {
 		r_ret = axis_data[axis].erp;
+	} else if ("angular_spring_enabled" == var_name) {
+		r_ret = axis_data[axis].angular_spring_enabled;
+	} else if ("angular_spring_stiffness" == var_name) {
+		r_ret = axis_data[axis].angular_spring_stiffness;
+	} else if ("angular_spring_damping" == var_name) {
+		r_ret = axis_data[axis].angular_spring_damping;
+	} else if ("angular_equilibrium_point" == var_name) {
+		r_ret = axis_data[axis].angular_equilibrium_point;
 	} else {
 		return false;
 	}
@@ -2021,6 +2078,10 @@ void PhysicalBone::SixDOFJointData::_get_property_list(List<PropertyInfo> *p_lis
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_limit_upper"));
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_limit_lower"));
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_limit_softness", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/linear_spring_enabled"));
+		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_spring_stiffness"));
+		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_spring_damping"));
+		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_equilibrium_point"));
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/linear_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/angular_limit_enabled"));
@@ -2030,6 +2091,10 @@ void PhysicalBone::SixDOFJointData::_get_property_list(List<PropertyInfo> *p_lis
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_restitution", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_damping", PROPERTY_HINT_RANGE, "0.01,16,0.01"));
 		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/erp"));
+		p_list->push_back(PropertyInfo(Variant::BOOL, "joint_constraints/" + axis_names[i] + "/angular_spring_enabled"));
+		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_spring_stiffness"));
+		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_spring_damping"));
+		p_list->push_back(PropertyInfo(Variant::REAL, "joint_constraints/" + axis_names[i] + "/angular_equilibrium_point"));
 	}
 }
 
@@ -2117,7 +2182,7 @@ void PhysicalBone::_notification(int p_what) {
 
 void PhysicalBone::_direct_state_changed(Object *p_state) {
 
-	if (!simulate_physics) {
+	if (!simulate_physics || !_internal_simulate_physics) {
 		return;
 	}
 
@@ -2140,7 +2205,7 @@ void PhysicalBone::_direct_state_changed(Object *p_state) {
 	// Update skeleton
 	if (parent_skeleton) {
 		if (-1 != bone_id) {
-			parent_skeleton->set_bone_global_pose(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse));
+			parent_skeleton->set_bone_global_pose_override(bone_id, parent_skeleton->get_global_transform().affine_inverse() * (global_transform * body_offset_inverse), 1.0, true);
 		}
 	}
 }
@@ -2293,6 +2358,10 @@ void PhysicalBone::_reload_joint() {
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_UPPER_LIMIT, g6dofjd->axis_data[axis].linear_limit_upper);
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_LOWER_LIMIT, g6dofjd->axis_data[axis].linear_limit_lower);
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_LIMIT_SOFTNESS, g6dofjd->axis_data[axis].linear_limit_softness);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_LINEAR_SPRING, g6dofjd->axis_data[axis].linear_spring_enabled);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_STIFFNESS, g6dofjd->axis_data[axis].linear_spring_stiffness);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_DAMPING, g6dofjd->axis_data[axis].linear_spring_damping);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_SPRING_EQUILIBRIUM_POINT, g6dofjd->axis_data[axis].linear_equilibrium_point);
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_RESTITUTION, g6dofjd->axis_data[axis].linear_restitution);
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_LINEAR_DAMPING, g6dofjd->axis_data[axis].linear_damping);
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_LIMIT, g6dofjd->axis_data[axis].angular_limit_enabled);
@@ -2302,6 +2371,10 @@ void PhysicalBone::_reload_joint() {
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_ANGULAR_RESTITUTION, g6dofjd->axis_data[axis].angular_restitution);
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_ANGULAR_DAMPING, g6dofjd->axis_data[axis].angular_damping);
 				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_ANGULAR_ERP, g6dofjd->axis_data[axis].erp);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_flag(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_FLAG_ENABLE_ANGULAR_SPRING, g6dofjd->axis_data[axis].angular_spring_enabled);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_STIFFNESS, g6dofjd->axis_data[axis].angular_spring_stiffness);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_DAMPING, g6dofjd->axis_data[axis].angular_spring_damping);
+				PhysicsServer::get_singleton()->generic_6dof_joint_set_param(joint, static_cast<Vector3::Axis>(axis), PhysicsServer::G6DOF_JOINT_ANGULAR_SPRING_EQUILIBRIUM_POINT, g6dofjd->axis_data[axis].angular_equilibrium_point);
 			}
 
 		} break;
@@ -2643,7 +2716,6 @@ void PhysicalBone::_start_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), get_collision_layer());
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), get_collision_mask());
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), this, "_direct_state_changed");
-	parent_skeleton->set_bone_ignore_animation(bone_id, true);
 	_internal_simulate_physics = true;
 }
 
@@ -2655,6 +2727,6 @@ void PhysicalBone::_stop_physics_simulation() {
 	PhysicsServer::get_singleton()->body_set_collision_layer(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_collision_mask(get_rid(), 0);
 	PhysicsServer::get_singleton()->body_set_force_integration_callback(get_rid(), NULL, "");
-	parent_skeleton->set_bone_ignore_animation(bone_id, false);
+	parent_skeleton->set_bone_global_pose_override(bone_id, Transform(), 0.0, false);
 	_internal_simulate_physics = false;
 }

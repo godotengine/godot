@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,7 +38,7 @@
 void BackgroundProgress::_add_task(const String &p_task, const String &p_label, int p_steps) {
 
 	_THREAD_SAFE_METHOD_
-	ERR_FAIL_COND(tasks.has(p_task));
+	ERR_FAIL_COND_MSG(tasks.has(p_task), "Task '" + p_task + "' already exists.");
 	BackgroundProgress::Task t;
 	t.hb = memnew(HBoxContainer);
 	Label *l = memnew(Label);
@@ -161,12 +161,18 @@ void ProgressDialog::_popup() {
 	main->set_margin(MARGIN_TOP, style->get_margin(MARGIN_TOP));
 	main->set_margin(MARGIN_BOTTOM, -style->get_margin(MARGIN_BOTTOM));
 
+	raise();
 	popup_centered(ms);
 }
 
 void ProgressDialog::add_task(const String &p_task, const String &p_label, int p_steps, bool p_can_cancel) {
 
-	ERR_FAIL_COND(tasks.has(p_task));
+	if (MessageQueue::get_singleton()->is_flushing()) {
+		ERR_PRINT("Do not use progress dialog (task) while flushing the message queue or using call_deferred()!");
+		return;
+	}
+
+	ERR_FAIL_COND_MSG(tasks.has(p_task), "Task '" + p_task + "' already exists.");
 	ProgressDialog::Task t;
 	t.vb = memnew(VBoxContainer);
 	VBoxContainer *vb2 = memnew(VBoxContainer);
@@ -215,6 +221,7 @@ bool ProgressDialog::task_step(const String &p_task, const String &p_state, int 
 	if (cancel_hb->is_visible()) {
 		OS::get_singleton()->force_process_input();
 	}
+
 	Main::iteration(); // this will not work on a lot of platforms, so it's only meant for the editor
 	return cancelled;
 }

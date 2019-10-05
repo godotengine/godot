@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,7 +33,7 @@
 */
 
 #include "core/io/ip.h"
-#include "core/io/packet_peer_udp.h"
+#include "core/io/net_socket.h"
 #include "core/os/os.h"
 
 // This must be last for windows to compile (tested with MinGW)
@@ -90,6 +90,15 @@ int enet_address_get_host(const ENetAddress *address, char *name, size_t nameLen
 	return -1;
 }
 
+ENetSocket enet_socket_create(ENetSocketType type) {
+
+	NetSocket *socket = NetSocket::create();
+	IP::Type ip_type = IP::TYPE_ANY;
+	socket->open(NetSocket::TYPE_UDP, ip_type);
+
+	return socket;
+}
+
 int enet_socket_bind(ENetSocket socket, const ENetAddress *address) {
 
 	IP_Address ip;
@@ -99,23 +108,15 @@ int enet_socket_bind(ENetSocket socket, const ENetAddress *address) {
 		ip.set_ipv6(address->host);
 	}
 
-	PacketPeerUDP *sock = (PacketPeerUDP *)socket;
-	if (sock->listen(address->port, ip) != OK) {
+	NetSocket *sock = (NetSocket *)socket;
+	if (sock->bind(ip, address->port) != OK) {
 		return -1;
 	}
 	return 0;
 }
 
-ENetSocket enet_socket_create(ENetSocketType type) {
-
-	PacketPeerUDP *socket = memnew(PacketPeerUDP);
-	socket->set_blocking_mode(false);
-
-	return socket;
-}
-
 void enet_socket_destroy(ENetSocket socket) {
-	PacketPeerUDP *sock = (PacketPeerUDP *)socket;
+	NetSocket *sock = (NetSocket *)socket;
 	sock->close();
 	memdelete(sock);
 }
@@ -124,13 +125,12 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 
 	ERR_FAIL_COND_V(address == NULL, -1);
 
-	PacketPeerUDP *sock = (PacketPeerUDP *)socket;
+	NetSocket *sock = (NetSocket *)socket;
 	IP_Address dest;
 	Error err;
 	size_t i = 0;
 
 	dest.set_ipv6(address->host);
-	sock->set_dest_address(dest, address->port);
 
 	// Create a single packet.
 	PoolVector<uint8_t> out;
@@ -148,7 +148,8 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 		pos += buffers[i].dataLength;
 	}
 
-	err = sock->put_packet((const uint8_t *)&w[0], size);
+	int sent = 0;
+	err = sock->sendto((const uint8_t *)&w[0], size, sent, dest, address->port);
 	if (err != OK) {
 
 		if (err == ERR_BUSY) { // Blocking call
@@ -159,32 +160,36 @@ int enet_socket_send(ENetSocket socket, const ENetAddress *address, const ENetBu
 		return -1;
 	}
 
-	return size;
+	return sent;
 }
 
 int enet_socket_receive(ENetSocket socket, ENetAddress *address, ENetBuffer *buffers, size_t bufferCount) {
 
 	ERR_FAIL_COND_V(bufferCount != 1, -1);
 
-	PacketPeerUDP *sock = (PacketPeerUDP *)socket;
+	NetSocket *sock = (NetSocket *)socket;
 
-	int pc = sock->get_available_packet_count();
-	if (pc < 1) {
-		return pc;
-	}
+	Error ret = sock->poll(NetSocket::POLL_TYPE_IN, 0);
 
-	const uint8_t *buffer;
-	int buffer_size;
-	Error err = sock->get_packet(&buffer, buffer_size);
-	if (err)
+	if (ret == ERR_BUSY)
+		return 0;
+
+	if (ret != OK)
 		return -1;
 
-	copymem(buffers[0].data, buffer, buffer_size);
+	int read;
+	IP_Address ip;
 
-	enet_address_set_ip(address, sock->get_packet_address().get_ipv6(), 16);
-	address->port = sock->get_packet_port();
+	Error err = sock->recvfrom((uint8_t *)buffers[0].data, buffers[0].dataLength, read, ip, address->port);
+	if (err == ERR_BUSY)
+		return 0;
 
-	return buffer_size;
+	if (err != OK)
+		return -1;
+
+	enet_address_set_ip(address, ip.get_ipv6(), 16);
+
+	return read;
 }
 
 // Not implemented
@@ -209,6 +214,46 @@ int enet_socket_listen(ENetSocket socket, int backlog) {
 }
 
 int enet_socket_set_option(ENetSocket socket, ENetSocketOption option, int value) {
+
+	NetSocket *sock = (NetSocket *)socket;
+
+	switch (option) {
+		case ENET_SOCKOPT_NONBLOCK: {
+			sock->set_blocking_enabled(value ? false : true);
+			return 0;
+		} break;
+
+		case ENET_SOCKOPT_BROADCAST: {
+			sock->set_broadcasting_enabled(value ? true : false);
+			return 0;
+		} break;
+
+		case ENET_SOCKOPT_REUSEADDR: {
+			sock->set_reuse_address_enabled(value ? true : false);
+			return 0;
+		} break;
+
+		case ENET_SOCKOPT_RCVBUF: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_SNDBUF: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_RCVTIMEO: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_SNDTIMEO: {
+			return -1;
+		} break;
+
+		case ENET_SOCKOPT_NODELAY: {
+			sock->set_tcp_no_delay_enabled(value ? true : false);
+			return 0;
+		} break;
+	}
 
 	return -1;
 }

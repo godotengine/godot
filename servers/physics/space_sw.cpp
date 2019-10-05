@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -118,7 +118,7 @@ bool PhysicsDirectSpaceStateSW::intersect_ray(const Vector3 &p_from, const Vecto
 		if (!_can_collide_with(space->intersection_query_results[i], p_collision_mask, p_collide_with_bodies, p_collide_with_areas))
 			continue;
 
-		if (p_pick_ray && !(static_cast<CollisionObjectSW *>(space->intersection_query_results[i])->is_ray_pickable()))
+		if (p_pick_ray && !(space->intersection_query_results[i]->is_ray_pickable()))
 			continue;
 
 		if (p_exclude.has(space->intersection_query_results[i]->get_self()))
@@ -277,7 +277,7 @@ bool PhysicsDirectSpaceStateSW::cast_motion(const RID &p_shape, const Transform 
 		real_t hi = 1;
 		Vector3 mnormal = p_motion.normalized();
 
-		for (int i = 0; i < 8; i++) { //steps should be customizable..
+		for (int j = 0; j < 8; j++) { //steps should be customizable..
 
 			real_t ofs = (low + hi) * 0.5;
 
@@ -348,13 +348,9 @@ bool PhysicsDirectSpaceStateSW::collide_shape(RID p_shape, const Transform &p_sh
 	cbk.max = p_result_max;
 	cbk.amount = 0;
 	cbk.ptr = r_results;
-	CollisionSolverSW::CallbackResult cbkres = NULL;
+	CollisionSolverSW::CallbackResult cbkres = PhysicsServerSW::_shape_col_cbk;
 
-	PhysicsServerSW::CollCbkData *cbkptr = NULL;
-	if (p_result_max > 0) {
-		cbkptr = &cbk;
-		cbkres = PhysicsServerSW::_shape_col_cbk;
-	}
+	PhysicsServerSW::CollCbkData *cbkptr = &cbk;
 
 	for (int i = 0; i < amount; i++) {
 
@@ -387,6 +383,7 @@ struct _RestCallbackData {
 	Vector3 best_contact;
 	Vector3 best_normal;
 	real_t best_len;
+	real_t min_allowed_depth;
 };
 
 static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B, void *p_userdata) {
@@ -395,6 +392,8 @@ static void _rest_cbk_result(const Vector3 &p_point_A, const Vector3 &p_point_B,
 
 	Vector3 contact_rel = p_point_B - p_point_A;
 	real_t len = contact_rel.length();
+	if (len < rd->min_allowed_depth)
+		return;
 	if (len <= rd->best_len)
 		return;
 
@@ -418,6 +417,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 	rcd.best_len = 0;
 	rcd.best_object = NULL;
 	rcd.best_shape = 0;
+	rcd.min_allowed_depth = space->test_motion_min_contact_depth;
 
 	for (int i = 0; i < amount; i++) {
 
@@ -437,7 +437,7 @@ bool PhysicsDirectSpaceStateSW::rest_info(RID p_shape, const Transform &p_shape_
 			continue;
 	}
 
-	if (rcd.best_len == 0)
+	if (rcd.best_len == 0 || !rcd.best_object)
 		return false;
 
 	r_info->collider_id = rcd.best_object->get_instance_id();
@@ -593,7 +593,6 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 			bool collided = false;
 
 			int amount = _cull_aabb_for_body(p_body, body_aabb);
-			int ray_index = 0;
 
 			for (int j = 0; j < p_body->get_shape_count(); j++) {
 				if (p_body->is_shape_set_as_disabled(j))
@@ -627,7 +626,19 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 							collided = true;
 						}
 
-						if (ray_index < p_result_max) {
+						int ray_index = -1; //reuse shape
+						for (int k = 0; k < rays_found; k++) {
+							if (r_results[k].collision_local_shape == j) {
+								ray_index = k;
+							}
+						}
+
+						if (ray_index == -1 && rays_found < p_result_max) {
+							ray_index = rays_found;
+							rays_found++;
+						}
+
+						if (ray_index != -1) {
 							PhysicsServer::SeparationResult &result = r_results[ray_index];
 
 							for (int k = 0; k < cbk.amount; k++) {
@@ -642,9 +653,10 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 									result.collision_depth = depth;
 									result.collision_point = b;
 									result.collision_normal = (b - a).normalized();
-									result.collision_local_shape = shape_idx;
+									result.collision_local_shape = j;
 									result.collider = col_obj->get_self();
 									result.collider_id = col_obj->get_instance_id();
+									result.collider_shape = shape_idx;
 									//result.collider_metadata = col_obj->get_shape_metadata(shape_idx);
 									if (col_obj->get_type() == CollisionObjectSW::TYPE_BODY) {
 										BodySW *body = (BodySW *)col_obj;
@@ -658,11 +670,7 @@ int SpaceSW::test_body_ray_separation(BodySW *p_body, const Transform &p_transfo
 						}
 					}
 				}
-
-				ray_index++;
 			}
-
-			rays_found = MAX(ray_index, rays_found);
 
 			if (!collided || recover_motion == Vector3()) {
 				break;
@@ -717,6 +725,11 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 	}
 
 	if (!shapes_found) {
+		if (r_result) {
+			*r_result = PhysicsServer::MotionResult();
+			r_result->motion = p_motion;
+		}
+
 		return false;
 	}
 
@@ -855,7 +868,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 				real_t hi = 1;
 				Vector3 mnormal = p_motion.normalized();
 
-				for (int i = 0; i < 8; i++) { //steps should be customizable..
+				for (int k = 0; k < 8; k++) { //steps should be customizable..
 
 					real_t ofs = (low + hi) * 0.5;
 
@@ -924,6 +937,7 @@ bool SpaceSW::test_body_motion(BodySW *p_body, const Transform &p_from, const Ve
 		rcd.best_len = 0;
 		rcd.best_object = NULL;
 		rcd.best_shape = 0;
+		rcd.min_allowed_depth = test_motion_min_contact_depth;
 
 		Transform body_shape_xform = ugt * p_body->get_shape_transform(best_shape);
 		ShapeSW *body_shape = p_body->get_shape(best_shape);
@@ -1148,6 +1162,7 @@ void SpaceSW::set_param(PhysicsServer::SpaceParameter p_param, real_t p_value) {
 		case PhysicsServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: body_time_to_sleep = p_value; break;
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: body_angular_velocity_damp_ratio = p_value; break;
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: constraint_bias = p_value; break;
+		case PhysicsServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: test_motion_min_contact_depth = p_value; break;
 	}
 }
 
@@ -1163,6 +1178,7 @@ real_t SpaceSW::get_param(PhysicsServer::SpaceParameter p_param) const {
 		case PhysicsServer::SPACE_PARAM_BODY_TIME_TO_SLEEP: return body_time_to_sleep;
 		case PhysicsServer::SPACE_PARAM_BODY_ANGULAR_VELOCITY_DAMP_RATIO: return body_angular_velocity_damp_ratio;
 		case PhysicsServer::SPACE_PARAM_CONSTRAINT_DEFAULT_BIAS: return constraint_bias;
+		case PhysicsServer::SPACE_PARAM_TEST_MOTION_MIN_CONTACT_DEPTH: return test_motion_min_contact_depth;
 	}
 	return 0;
 }
@@ -1198,6 +1214,7 @@ SpaceSW::SpaceSW() {
 	contact_recycle_radius = 0.01;
 	contact_max_separation = 0.05;
 	contact_max_allowed_penetration = 0.01;
+	test_motion_min_contact_depth = 0.00001;
 
 	constraint_bias = 0.01;
 	body_linear_velocity_sleep_threshold = GLOBAL_DEF("physics/3d/sleep_threshold_linear", 0.1);

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -68,39 +68,39 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
-			GDMonoClass *tclass = p_type.type_class;
+			GDMonoClass *vtclass = p_type.type_class;
 
-			if (tclass == CACHED_CLASS(Vector2))
+			if (vtclass == CACHED_CLASS(Vector2))
 				return Variant::VECTOR2;
 
-			if (tclass == CACHED_CLASS(Rect2))
+			if (vtclass == CACHED_CLASS(Rect2))
 				return Variant::RECT2;
 
-			if (tclass == CACHED_CLASS(Transform2D))
+			if (vtclass == CACHED_CLASS(Transform2D))
 				return Variant::TRANSFORM2D;
 
-			if (tclass == CACHED_CLASS(Vector3))
+			if (vtclass == CACHED_CLASS(Vector3))
 				return Variant::VECTOR3;
 
-			if (tclass == CACHED_CLASS(Basis))
+			if (vtclass == CACHED_CLASS(Basis))
 				return Variant::BASIS;
 
-			if (tclass == CACHED_CLASS(Quat))
+			if (vtclass == CACHED_CLASS(Quat))
 				return Variant::QUAT;
 
-			if (tclass == CACHED_CLASS(Transform))
+			if (vtclass == CACHED_CLASS(Transform))
 				return Variant::TRANSFORM;
 
-			if (tclass == CACHED_CLASS(AABB))
+			if (vtclass == CACHED_CLASS(AABB))
 				return Variant::AABB;
 
-			if (tclass == CACHED_CLASS(Color))
+			if (vtclass == CACHED_CLASS(Color))
 				return Variant::COLOR;
 
-			if (tclass == CACHED_CLASS(Plane))
+			if (vtclass == CACHED_CLASS(Plane))
 				return Variant::PLANE;
 
-			if (mono_class_is_enum(tclass->get_mono_ptr()))
+			if (mono_class_is_enum(vtclass->get_mono_ptr()))
 				return Variant::INT;
 		} break;
 
@@ -156,26 +156,52 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 			if (CACHED_CLASS(Array) == type_class) {
 				return Variant::ARRAY;
 			}
-		} break;
 
-		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
 
-			MonoException *exc = NULL;
-			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
 
-			if (is_dict) {
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
 				return Variant::DICTIONARY;
 			}
 
-			exc = NULL;
-			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				return Variant::DICTIONARY;
+			}
 
-			if (is_array) {
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
+				return Variant::ARRAY;
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				return Variant::ARRAY;
+			}
+		} break;
+
+		case MONO_TYPE_GENERICINST: {
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
+				return Variant::DICTIONARY;
+			}
+
+			if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
+				return Variant::ARRAY;
+			}
+
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype))
+				return Variant::DICTIONARY;
+
+			if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				return Variant::DICTIONARY;
+			}
+
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype))
+				return Variant::ARRAY;
+
+			if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
 				return Variant::ARRAY;
 			}
 		} break;
@@ -188,12 +214,72 @@ Variant::Type managed_to_variant_type(const ManagedType &p_type) {
 	return Variant::NIL;
 }
 
+bool try_get_array_element_type(const ManagedType &p_array_type, ManagedType &r_elem_type) {
+	switch (p_array_type.type_encoding) {
+		case MONO_TYPE_GENERICINST: {
+			MonoReflectionType *array_reftype = mono_type_get_object(mono_domain_get(), p_array_type.type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::type_is_generic_array(array_reftype)) {
+				MonoReflectionType *elem_reftype;
+
+				GDMonoUtils::Marshal::array_get_element_type(array_reftype, &elem_reftype);
+
+				r_elem_type = ManagedType::from_reftype(elem_reftype);
+				return true;
+			}
+
+			MonoReflectionType *elem_reftype;
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(array_reftype, &elem_reftype)) {
+				r_elem_type = ManagedType::from_reftype(elem_reftype);
+				return true;
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return false;
+}
+
+bool try_get_dictionary_key_value_types(const ManagedType &p_dictionary_type, ManagedType &r_key_type, ManagedType &r_value_type) {
+	switch (p_dictionary_type.type_encoding) {
+		case MONO_TYPE_GENERICINST: {
+			MonoReflectionType *dict_reftype = mono_type_get_object(mono_domain_get(), p_dictionary_type.type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(dict_reftype)) {
+				MonoReflectionType *key_reftype;
+				MonoReflectionType *value_reftype;
+
+				GDMonoUtils::Marshal::dictionary_get_key_value_types(dict_reftype, &key_reftype, &value_reftype);
+
+				r_key_type = ManagedType::from_reftype(key_reftype);
+				r_value_type = ManagedType::from_reftype(value_reftype);
+				return true;
+			}
+
+			MonoReflectionType *key_reftype, *value_reftype;
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(dict_reftype, &key_reftype, &value_reftype)) {
+				r_key_type = ManagedType::from_reftype(key_reftype);
+				r_value_type = ManagedType::from_reftype(value_reftype);
+				return true;
+			}
+		} break;
+		default: {
+		} break;
+	}
+
+	return false;
+}
+
 String mono_to_utf8_string(MonoString *p_mono_string) {
 	MonoError error;
 	char *utf8 = mono_string_to_utf8_checked(p_mono_string, &error);
 
-	ERR_EXPLAIN("Conversion of MonoString to UTF8 failed.");
-	ERR_FAIL_COND_V(!mono_error_ok(&error), String());
+	if (!mono_error_ok(&error)) {
+		ERR_PRINTS(String() + "Failed to convert MonoString* to UTF-8: '" + mono_error_get_message(&error) + "'.");
+		mono_error_cleanup(&error);
+		return String();
+	}
 
 	String ret = String::utf8(utf8);
 
@@ -213,7 +299,7 @@ String mono_to_utf16_string(MonoString *p_mono_string) {
 	ret.set(len, 0);
 
 	CharType *src = (CharType *)mono_string_chars(p_mono_string);
-	CharType *dst = &(ret.operator[](0));
+	CharType *dst = ret.ptrw();
 
 	for (int i = 0; i < len; i++) {
 		dst[i] = src[i];
@@ -291,60 +377,60 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
-			GDMonoClass *tclass = p_type.type_class;
+			GDMonoClass *vtclass = p_type.type_class;
 
-			if (tclass == CACHED_CLASS(Vector2)) {
+			if (vtclass == CACHED_CLASS(Vector2)) {
 				GDMonoMarshal::M_Vector2 from = MARSHALLED_OUT(Vector2, p_var->operator ::Vector2());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector2), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Rect2)) {
+			if (vtclass == CACHED_CLASS(Rect2)) {
 				GDMonoMarshal::M_Rect2 from = MARSHALLED_OUT(Rect2, p_var->operator ::Rect2());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Rect2), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Transform2D)) {
+			if (vtclass == CACHED_CLASS(Transform2D)) {
 				GDMonoMarshal::M_Transform2D from = MARSHALLED_OUT(Transform2D, p_var->operator ::Transform2D());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform2D), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Vector3)) {
+			if (vtclass == CACHED_CLASS(Vector3)) {
 				GDMonoMarshal::M_Vector3 from = MARSHALLED_OUT(Vector3, p_var->operator ::Vector3());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Vector3), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Basis)) {
+			if (vtclass == CACHED_CLASS(Basis)) {
 				GDMonoMarshal::M_Basis from = MARSHALLED_OUT(Basis, p_var->operator ::Basis());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Basis), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Quat)) {
+			if (vtclass == CACHED_CLASS(Quat)) {
 				GDMonoMarshal::M_Quat from = MARSHALLED_OUT(Quat, p_var->operator ::Quat());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Quat), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Transform)) {
+			if (vtclass == CACHED_CLASS(Transform)) {
 				GDMonoMarshal::M_Transform from = MARSHALLED_OUT(Transform, p_var->operator ::Transform());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Transform), &from);
 			}
 
-			if (tclass == CACHED_CLASS(AABB)) {
+			if (vtclass == CACHED_CLASS(AABB)) {
 				GDMonoMarshal::M_AABB from = MARSHALLED_OUT(AABB, p_var->operator ::AABB());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(AABB), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Color)) {
+			if (vtclass == CACHED_CLASS(Color)) {
 				GDMonoMarshal::M_Color from = MARSHALLED_OUT(Color, p_var->operator ::Color());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Color), &from);
 			}
 
-			if (tclass == CACHED_CLASS(Plane)) {
+			if (vtclass == CACHED_CLASS(Plane)) {
 				GDMonoMarshal::M_Plane from = MARSHALLED_OUT(Plane, p_var->operator ::Plane());
 				return mono_value_box(mono_domain_get(), CACHED_CLASS_RAW(Plane), &from);
 			}
 
-			if (mono_class_is_enum(tclass->get_mono_ptr())) {
-				MonoType *enum_basetype = mono_class_enum_basetype(tclass->get_mono_ptr());
+			if (mono_class_is_enum(vtclass->get_mono_ptr())) {
+				MonoType *enum_basetype = mono_class_enum_basetype(vtclass->get_mono_ptr());
 				MonoClass *enum_baseclass = mono_class_from_mono_type(enum_basetype);
 				switch (mono_type_get_type(enum_basetype)) {
 					case MONO_TYPE_BOOLEAN: {
@@ -388,8 +474,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 						return BOX_ENUM(enum_baseclass, val);
 					}
 					default: {
-						ERR_EXPLAIN(String() + "Attempted to convert Variant to a managed enum value of unmarshallable base type.");
-						ERR_FAIL_V(NULL);
+						ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to a managed enum value of unmarshallable base type.");
 					}
 				}
 			}
@@ -423,8 +508,7 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
 				return (MonoObject *)PoolColorArray_to_mono_array(p_var->operator PoolColorArray());
 
-			ERR_EXPLAIN(String() + "Attempted to convert Variant to a managed array of unmarshallable element type.");
-			ERR_FAIL_V(NULL);
+			ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to a managed array of unmarshallable element type.");
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -449,6 +533,34 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 
 			if (CACHED_CLASS(Array) == type_class) {
 				return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
+			}
+
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
+
+			MonoReflectionType *key_reftype, *value_reftype;
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+				return GDMonoUtils::create_managed_from(p_var->operator Dictionary(),
+						GDMonoUtils::Marshal::make_generic_dictionary_type(key_reftype, value_reftype));
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
+			}
+
+			MonoReflectionType *elem_reftype;
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+				return GDMonoUtils::create_managed_from(p_var->operator Array(),
+						GDMonoUtils::Marshal::make_generic_array_type(elem_reftype));
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				if (GDMonoUtils::tools_godot_api_check()) {
+					return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
+				} else {
+					return (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_var->operator Array());
+				}
 			}
 		} break;
 		case MONO_TYPE_OBJECT: {
@@ -542,47 +654,56 @@ MonoObject *variant_to_mono_object(const Variant *p_var, const ManagedType &p_ty
 			}
 			break;
 			case MONO_TYPE_GENERICINST: {
-				MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, p_type.type_class->get_mono_type());
+				MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), p_type.type_class->get_mono_type());
 
-				MonoException *exc = NULL;
-				GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-				MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-				if (is_dict) {
+				if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), p_type.type_class);
 				}
 
-				exc = NULL;
-				GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-				MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-				if (is_array) {
+				if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
 					return GDMonoUtils::create_managed_from(p_var->operator Array(), p_type.type_class);
+				}
+
+				// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+				MonoReflectionType *key_reftype, *value_reftype;
+				if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype, &key_reftype, &value_reftype)) {
+					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(),
+							GDMonoUtils::Marshal::make_generic_dictionary_type(key_reftype, value_reftype));
+				}
+
+				if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+					return GDMonoUtils::create_managed_from(p_var->operator Dictionary(), CACHED_CLASS(Dictionary));
+				}
+
+				MonoReflectionType *elem_reftype;
+				if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype, &elem_reftype)) {
+					return GDMonoUtils::create_managed_from(p_var->operator Array(),
+							GDMonoUtils::Marshal::make_generic_array_type(elem_reftype));
+				}
+
+				if (p_type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+					if (GDMonoUtils::tools_godot_api_check()) {
+						return GDMonoUtils::create_managed_from(p_var->operator Array(), CACHED_CLASS(Array));
+					} else {
+						return (MonoObject *)GDMonoMarshal::Array_to_mono_array(p_var->operator Array());
+					}
 				}
 			} break;
 		} break;
 	}
 
-	ERR_EXPLAIN(String() + "Attempted to convert Variant to an unmarshallable managed type. Name: \'" +
-				p_type.type_class->get_name() + "\' Encoding: " + itos(p_type.type_encoding));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Attempted to convert Variant to an unmarshallable managed type. Name: '" +
+								 p_type.type_class->get_name() + "' Encoding: " + itos(p_type.type_encoding) + ".");
 }
 
 Variant mono_object_to_variant(MonoObject *p_obj) {
 	if (!p_obj)
 		return Variant();
 
-	GDMonoClass *tclass = GDMono::get_singleton()->get_class(mono_object_get_class(p_obj));
-	ERR_FAIL_COND_V(!tclass, Variant());
+	ManagedType type = ManagedType::from_class(mono_object_get_class(p_obj));
 
-	MonoType *raw_type = tclass->get_mono_type();
-
-	ManagedType type;
-
-	type.type_encoding = mono_type_get_type(raw_type);
-	type.type_class = tclass;
+	ERR_FAIL_COND_V(!type.type_class, Variant());
 
 	switch (type.type_encoding) {
 		case MONO_TYPE_BOOLEAN:
@@ -621,39 +742,39 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 		} break;
 
 		case MONO_TYPE_VALUETYPE: {
-			GDMonoClass *tclass = type.type_class;
+			GDMonoClass *vtclass = type.type_class;
 
-			if (tclass == CACHED_CLASS(Vector2))
+			if (vtclass == CACHED_CLASS(Vector2))
 				return MARSHALLED_IN(Vector2, (GDMonoMarshal::M_Vector2 *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Rect2))
+			if (vtclass == CACHED_CLASS(Rect2))
 				return MARSHALLED_IN(Rect2, (GDMonoMarshal::M_Rect2 *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Transform2D))
+			if (vtclass == CACHED_CLASS(Transform2D))
 				return MARSHALLED_IN(Transform2D, (GDMonoMarshal::M_Transform2D *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Vector3))
+			if (vtclass == CACHED_CLASS(Vector3))
 				return MARSHALLED_IN(Vector3, (GDMonoMarshal::M_Vector3 *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Basis))
+			if (vtclass == CACHED_CLASS(Basis))
 				return MARSHALLED_IN(Basis, (GDMonoMarshal::M_Basis *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Quat))
+			if (vtclass == CACHED_CLASS(Quat))
 				return MARSHALLED_IN(Quat, (GDMonoMarshal::M_Quat *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Transform))
+			if (vtclass == CACHED_CLASS(Transform))
 				return MARSHALLED_IN(Transform, (GDMonoMarshal::M_Transform *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(AABB))
+			if (vtclass == CACHED_CLASS(AABB))
 				return MARSHALLED_IN(AABB, (GDMonoMarshal::M_AABB *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Color))
+			if (vtclass == CACHED_CLASS(Color))
 				return MARSHALLED_IN(Color, (GDMonoMarshal::M_Color *)mono_object_unbox(p_obj));
 
-			if (tclass == CACHED_CLASS(Plane))
+			if (vtclass == CACHED_CLASS(Plane))
 				return MARSHALLED_IN(Plane, (GDMonoMarshal::M_Plane *)mono_object_unbox(p_obj));
 
-			if (mono_class_is_enum(tclass->get_mono_ptr()))
+			if (mono_class_is_enum(vtclass->get_mono_ptr()))
 				return unbox<int32_t>(p_obj);
 		} break;
 
@@ -685,8 +806,7 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			if (array_type->eklass == CACHED_CLASS_RAW(Color))
 				return mono_array_to_PoolColorArray((MonoArray *)p_obj);
 
-			ERR_EXPLAIN(String() + "Attempted to convert a managed array of unmarshallable element type to Variant.");
-			ERR_FAIL_V(Variant());
+			ERR_FAIL_V_MSG(Variant(), "Attempted to convert a managed array of unmarshallable element type to Variant.");
 		} break;
 
 		case MONO_TYPE_CLASS: {
@@ -695,7 +815,11 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 			// GodotObject
 			if (CACHED_CLASS(GodotObject)->is_assignable_from(type_class)) {
 				Object *ptr = unbox<Object *>(CACHED_FIELD(GodotObject, ptr)->get_value(p_obj));
-				return ptr ? Variant(ptr) : Variant();
+				if (ptr != NULL) {
+					Reference *ref = Object::cast_to<Reference>(ptr);
+					return ref ? Variant(Ref<Reference>(ref)) : Variant(ptr);
+				}
+				return Variant();
 			}
 
 			if (CACHED_CLASS(NodePath) == type_class) {
@@ -710,55 +834,78 @@ Variant mono_object_to_variant(MonoObject *p_obj) {
 
 			if (CACHED_CLASS(Array) == type_class) {
 				MonoException *exc = NULL;
-				GDMonoUtils::Array_GetPtr get_ptr = CACHED_METHOD_THUNK(Array, GetPtr);
-				Array *ptr = get_ptr(p_obj, (MonoObject **)&exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				Array *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Array, GetPtr), p_obj, &exc);
+				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
 			}
 
 			if (CACHED_CLASS(Dictionary) == type_class) {
 				MonoException *exc = NULL;
-				GDMonoUtils::Dictionary_GetPtr get_ptr = CACHED_METHOD_THUNK(Dictionary, GetPtr);
-				Dictionary *ptr = get_ptr(p_obj, (MonoObject **)&exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				Dictionary *ptr = invoke_method_thunk(CACHED_METHOD_THUNK(Dictionary, GetPtr), p_obj, &exc);
+				UNHANDLED_EXCEPTION(exc);
 				return ptr ? Variant(*ptr) : Variant();
+			}
+
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type_class->get_mono_type());
+
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::generic_idictionary_to_dictionary(p_obj);
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				return GDMonoUtils::Marshal::idictionary_to_dictionary(p_obj);
+			}
+
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
+			}
+
+			if (type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 		} break;
 
 		case MONO_TYPE_GENERICINST: {
-			MonoReflectionType *reftype = mono_type_get_object(SCRIPTS_DOMAIN, type.type_class->get_mono_type());
+			MonoReflectionType *reftype = mono_type_get_object(mono_domain_get(), type.type_class->get_mono_type());
 
-			MonoException *exc = NULL;
-
-			GDMonoUtils::IsDictionaryGenericType type_is_dict = CACHED_METHOD_THUNK(MarshalUtils, IsDictionaryGenericType);
-			MonoBoolean is_dict = type_is_dict((MonoObject *)reftype, (MonoObject **)&exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_dict) {
+			if (GDMonoUtils::Marshal::type_is_generic_dictionary(reftype)) {
 				MonoException *exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				UNHANDLED_EXCEPTION(exc);
 				return *unbox<Dictionary *>(ret);
 			}
 
-			exc = NULL;
-
-			GDMonoUtils::IsArrayGenericType type_is_array = CACHED_METHOD_THUNK(MarshalUtils, IsArrayGenericType);
-			MonoBoolean is_array = type_is_array((MonoObject *)reftype, (MonoObject **)&exc);
-			UNLIKELY_UNHANDLED_EXCEPTION(exc);
-
-			if (is_array) {
+			if (GDMonoUtils::Marshal::type_is_generic_array(reftype)) {
 				MonoException *exc = NULL;
 				MonoObject *ret = type.type_class->get_method("GetPtr")->invoke(p_obj, &exc);
-				UNLIKELY_UNHANDLED_EXCEPTION(exc);
+				UNHANDLED_EXCEPTION(exc);
 				return *unbox<Array *>(ret);
+			}
+
+			// The order in which we check the following interfaces is very important (dictionaries and generics first)
+
+			if (GDMonoUtils::Marshal::generic_idictionary_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::generic_idictionary_to_dictionary(p_obj);
+			}
+
+			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IDictionary))) {
+				return GDMonoUtils::Marshal::idictionary_to_dictionary(p_obj);
+			}
+
+			if (GDMonoUtils::Marshal::generic_ienumerable_is_assignable_from(reftype)) {
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
+			}
+
+			if (type.type_class->implements_interface(CACHED_CLASS(System_Collections_IEnumerable))) {
+				return GDMonoUtils::Marshal::enumerable_to_array(p_obj);
 			}
 		} break;
 	}
 
-	ERR_EXPLAIN(String() + "Attempted to convert an unmarshallable managed type to Variant. Name: \'" +
-				type.type_class->get_name() + "\' Encoding: " + itos(type.type_encoding));
-	ERR_FAIL_V(Variant());
+	ERR_FAIL_V_MSG(Variant(), "Attempted to convert an unmarshallable managed type to Variant. Name: '" +
+									  type.type_class->get_name() + "' Encoding: " + itos(type.type_encoding) + ".");
 }
 
 MonoArray *Array_to_mono_array(const Array &p_array) {
@@ -875,7 +1022,7 @@ MonoArray *PoolStringArray_to_mono_array(const PoolStringArray &p_array) {
 
 	for (int i = 0; i < p_array.size(); i++) {
 		MonoString *boxed = mono_string_from_godot(r[i]);
-		mono_array_set(ret, MonoString *, i, boxed);
+		mono_array_setref(ret, i, boxed);
 	}
 
 	return ret;
@@ -980,4 +1127,5 @@ PoolVector3Array mono_array_to_PoolVector3Array(MonoArray *p_array) {
 
 	return ret;
 }
+
 } // namespace GDMonoMarshal

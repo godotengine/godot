@@ -1,7 +1,10 @@
 using System;
+using System.Runtime.InteropServices;
 
 namespace Godot
 {
+    [Serializable]
+    [StructLayout(LayoutKind.Sequential)]
     public struct Color : IEquatable<Color>
     {
         public float r;
@@ -13,7 +16,11 @@ namespace Godot
         {
             get
             {
-                return (int)(r * 255.0f);
+                return (int)Math.Round(r * 255.0f);
+            }
+            set
+            {
+                r = value / 255.0f;
             }
         }
 
@@ -21,7 +28,11 @@ namespace Godot
         {
             get
             {
-                return (int)(g * 255.0f);
+                return (int)Math.Round(g * 255.0f);
+            }
+            set
+            {
+                g = value / 255.0f;
             }
         }
 
@@ -29,7 +40,11 @@ namespace Godot
         {
             get
             {
-                return (int)(b * 255.0f);
+                return (int)Math.Round(b * 255.0f);
+            }
+            set
+            {
+                b = value / 255.0f;
             }
         }
 
@@ -37,7 +52,11 @@ namespace Godot
         {
             get
             {
-                return (int)(a * 255.0f);
+                return (int)Math.Round(a * 255.0f);
+            }
+            set
+            {
+                a = value / 255.0f;
             }
         }
 
@@ -71,7 +90,7 @@ namespace Godot
             }
             set
             {
-                this = FromHsv(value, s, v);
+                this = FromHsv(value, s, v, a);
             }
         }
 
@@ -88,7 +107,7 @@ namespace Godot
             }
             set
             {
-                this = FromHsv(h, value, v);
+                this = FromHsv(h, value, v, a);
             }
         }
 
@@ -100,21 +119,30 @@ namespace Godot
             }
             set
             {
-                this = FromHsv(h, s, value);
+                this = FromHsv(h, s, value, a);
             }
         }
 
-        private static readonly Color black = new Color(0f, 0f, 0f);
-
-        public Color Black
+        public static Color ColorN(string name, float alpha = 1f)
         {
-            get
+            name = name.Replace(" ", String.Empty);
+            name = name.Replace("-", String.Empty);
+            name = name.Replace("_", String.Empty);
+            name = name.Replace("'", String.Empty);
+            name = name.Replace(".", String.Empty);
+            name = name.ToLower();
+
+            if (!Colors.namedColors.ContainsKey(name))
             {
-                return black;
+                throw new ArgumentOutOfRangeException($"Invalid Color Name: {name}");
             }
+
+            Color color = Colors.namedColors[name];
+            color.a = alpha;
+            return color;
         }
 
-        public float this [int index]
+        public float this[int index]
         {
             get
             {
@@ -154,10 +182,10 @@ namespace Godot
             }
         }
 
-        public static void ToHsv(Color color, out float hue, out float saturation, out float value)
+        public void ToHsv(out float hue, out float saturation, out float value)
         {
-            int max = Mathf.Max(color.r8, Mathf.Max(color.g8, color.b8));
-            int min = Mathf.Min(color.r8, Mathf.Min(color.g8, color.b8));
+            float max = (float)Mathf.Max(r, Mathf.Max(g, b));
+            float min = (float)Mathf.Min(r, Mathf.Min(g, b));
 
             float delta = max - min;
 
@@ -167,12 +195,12 @@ namespace Godot
             }
             else
             {
-                if (color.r == max)
-                    hue = (color.g - color.b) / delta; // Between yellow & magenta
-                else if (color.g == max)
-                    hue = 2 + (color.b - color.r) / delta; // Between cyan & yellow
+                if (r == max)
+                    hue = (g - b) / delta; // Between yellow & magenta
+                else if (g == max)
+                    hue = 2 + (b - r) / delta; // Between cyan & yellow
                 else
-                    hue = 4 + (color.r - color.g) / delta; // Between magenta & cyan
+                    hue = 4 + (r - g) / delta; // Between magenta & cyan
 
                 hue /= 6.0f;
 
@@ -181,7 +209,7 @@ namespace Godot
             }
 
             saturation = max == 0 ? 0 : 1f - 1f * min / max;
-            value = max / 255f;
+            value = max;
         }
 
         public static Color FromHsv(float hue, float saturation, float value, float alpha = 1.0f)
@@ -245,7 +273,8 @@ namespace Godot
             return new Color(
                 (r + 0.5f) % 1.0f,
                 (g + 0.5f) % 1.0f,
-                (b + 0.5f) % 1.0f
+                (b + 0.5f) % 1.0f,
+                a
             );
         }
 
@@ -263,7 +292,8 @@ namespace Godot
             return new Color(
                 1.0f - r,
                 1.0f - g,
-                1.0f - b
+                1.0f - b,
+                a
             );
         }
 
@@ -366,7 +396,7 @@ namespace Godot
             return c;
         }
 
-        public string ToHtml(bool include_alpha = true)
+        public string ToHtml(bool includeAlpha = true)
         {
             var txt = string.Empty;
 
@@ -374,12 +404,12 @@ namespace Godot
             txt += ToHex32(g);
             txt += ToHex32(b);
 
-            if (include_alpha)
+            if (includeAlpha)
                 txt = ToHex32(a) + txt;
 
             return txt;
         }
-        
+
         // Constructors 
         public Color(float r, float g, float b, float a = 1.0f)
         {
@@ -456,13 +486,13 @@ namespace Godot
 
             for (int i = 0; i < 2; i++)
             {
-                char[] c = { (char)0, (char)0 };
+                char c;
                 int lv = v & 0xF;
 
                 if (lv < 10)
-                    c[0] = (char)('0' + lv);
+                    c = (char)('0' + lv);
                 else
-                    c[0] = (char)('a' + lv - 10);
+                    c = (char)('a' + lv - 10);
 
                 v >>= 4;
                 ret = c + ret;
@@ -481,12 +511,17 @@ namespace Godot
 
             bool alpha;
 
-            if (color.Length == 8)
-                alpha = true;
-            else if (color.Length == 6)
-                alpha = false;
-            else
-                return false;
+            switch (color.Length)
+            {
+                case 8:
+                    alpha = true;
+                    break;
+                case 6:
+                    alpha = false;
+                    break;
+                default:
+                    return false;
+            }
 
             if (alpha)
             {
@@ -582,11 +617,11 @@ namespace Godot
 
         public static bool operator <(Color left, Color right)
         {
-            if (left.r == right.r)
+            if (Mathf.IsEqualApprox(left.r, right.r))
             {
-                if (left.g == right.g)
+                if (Mathf.IsEqualApprox(left.g, right.g))
                 {
-                    if (left.b == right.b)
+                    if (Mathf.IsEqualApprox(left.b, right.b))
                         return left.a < right.a;
                     return left.b < right.b;
                 }
@@ -599,11 +634,11 @@ namespace Godot
 
         public static bool operator >(Color left, Color right)
         {
-            if (left.r == right.r)
+            if (Mathf.IsEqualApprox(left.r, right.r))
             {
-                if (left.g == right.g)
+                if (Mathf.IsEqualApprox(left.g, right.g))
                 {
-                    if (left.b == right.b)
+                    if (Mathf.IsEqualApprox(left.b, right.b))
                         return left.a > right.a;
                     return left.b > right.b;
                 }
@@ -626,7 +661,7 @@ namespace Godot
 
         public bool Equals(Color other)
         {
-            return r == other.r && g == other.g && b == other.b && a == other.a;
+            return Mathf.IsEqualApprox(r, other.r) && Mathf.IsEqualApprox(g, other.g) && Mathf.IsEqualApprox(b, other.b) && Mathf.IsEqualApprox(a, other.a);
         }
 
         public override int GetHashCode()

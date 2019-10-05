@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="PanoramaSky" inherits="Sky" category="Core" version="3.1">
+<class name="PanoramaSky" inherits="Sky" category="Core" version="3.2">
 	<brief_description>
 		A type of [Sky] used to draw a background texture.
 	</brief_description>
 	<description>
-		A resource referenced in an [Environment] that is used to draw a background. The Panorama sky functions similar to skyboxes in other engines except it uses a equirectangular sky map instead of a cube map.
+		A resource referenced in an [Environment] that is used to draw a background. The Panorama sky functions similar to skyboxes in other engines, except it uses an equirectangular sky map instead of a cube map.
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 	</methods>
 	<members>

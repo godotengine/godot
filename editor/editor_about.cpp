@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -131,12 +131,12 @@ EditorAbout::EditorAbout() {
 
 	String hash = String(VERSION_HASH);
 	if (hash.length() != 0)
-		hash = "." + hash.left(7);
+		hash = "." + hash.left(9);
 
 	Label *about_text = memnew(Label);
 	about_text->set_v_size_flags(Control::SIZE_SHRINK_CENTER);
 	about_text->set_text(VERSION_FULL_NAME + hash +
-						 String::utf8("\n\xc2\xa9 2007-2018 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2018 ") +
+						 String::utf8("\n\xc2\xa9 2007-2019 Juan Linietsky, Ariel Manzur.\n\xc2\xa9 2014-2019 ") +
 						 TTR("Godot Engine contributors") + "\n");
 	hbc->add_child(about_text);
 
@@ -181,14 +181,14 @@ EditorAbout::EditorAbout() {
 	// Thirdparty License
 
 	VBoxContainer *license_thirdparty = memnew(VBoxContainer);
-	license_thirdparty->set_name(TTR("Thirdparty License"));
+	license_thirdparty->set_name(TTR("Third-party Licenses"));
 	license_thirdparty->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tc->add_child(license_thirdparty);
 
 	Label *tpl_label = memnew(Label);
 	tpl_label->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	tpl_label->set_autowrap(true);
-	tpl_label->set_text(TTR("Godot Engine relies on a number of thirdparty free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such thirdparty components with their respective copyright statements and license terms."));
+	tpl_label->set_text(TTR("Godot Engine relies on a number of third-party free and open source libraries, all compatible with the terms of its MIT license. The following is an exhaustive list of all such third-party components with their respective copyright statements and license terms."));
 	tpl_label->set_size(Size2(630, 1) * EDSCALE);
 	license_thirdparty->add_child(tpl_label);
 
@@ -209,7 +209,6 @@ EditorAbout::EditorAbout() {
 	TreeItem *tpl_ti_lc = _tpl_tree->create_item(root);
 	tpl_ti_lc->set_text(0, TTR("Licenses"));
 	tpl_ti_lc->set_selectable(0, false);
-	int read_idx = 0;
 	String long_text = "";
 	for (int component_index = 0; component_index < COPYRIGHT_INFO_COUNT; component_index++) {
 
@@ -234,7 +233,6 @@ EditorAbout::EditorAbout() {
 			String license = "\n    License: " + String(part.license) + "\n";
 			text += license;
 			long_text += license + "\n";
-			read_idx++;
 		}
 		ti->set_metadata(0, text);
 	}

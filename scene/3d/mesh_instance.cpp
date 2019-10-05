@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -96,7 +96,7 @@ void MeshInstance::_get_property_list(List<PropertyInfo> *p_list) const {
 	ls.sort();
 
 	for (List<String>::Element *E = ls.front(); E; E = E->next()) {
-		p_list->push_back(PropertyInfo(Variant::REAL, E->get(), PROPERTY_HINT_RANGE, "0,1,0.01"));
+		p_list->push_back(PropertyInfo(Variant::REAL, E->get(), PROPERTY_HINT_RANGE, "0,1,0.00001"));
 	}
 
 	if (mesh.is_valid()) {
@@ -138,6 +138,8 @@ void MeshInstance::set_mesh(const Ref<Mesh> &p_mesh) {
 		set_base(RID());
 	}
 
+	update_gizmo();
+
 	_change_notify();
 }
 Ref<Mesh> MeshInstance::get_mesh() const {
@@ -147,12 +149,38 @@ Ref<Mesh> MeshInstance::get_mesh() const {
 
 void MeshInstance::_resolve_skeleton_path() {
 
-	if (skeleton_path.is_empty())
-		return;
+	Ref<SkinReference> new_skin_reference;
 
-	Skeleton *skeleton = Object::cast_to<Skeleton>(get_node(skeleton_path));
-	if (skeleton)
-		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), skeleton->get_skeleton());
+	if (!skeleton_path.is_empty()) {
+		Skeleton *skeleton = Object::cast_to<Skeleton>(get_node(skeleton_path));
+		if (skeleton) {
+			new_skin_reference = skeleton->register_skin(skin);
+			if (skin.is_null()) {
+				//a skin was created for us
+				skin = new_skin_reference->get_skin();
+				_change_notify();
+			}
+		}
+	}
+
+	skin_ref = new_skin_reference;
+
+	if (skin_ref.is_valid()) {
+		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), skin_ref->get_skeleton());
+	} else {
+		VisualServer::get_singleton()->instance_attach_skeleton(get_instance(), RID());
+	}
+}
+
+void MeshInstance::set_skin(const Ref<Skin> &p_skin) {
+	skin = p_skin;
+	if (!is_inside_tree())
+		return;
+	_resolve_skeleton_path();
+}
+
+Ref<Skin> MeshInstance::get_skin() const {
+	return skin;
 }
 
 void MeshInstance::set_skeleton_path(const NodePath &p_skeleton) {
@@ -363,6 +391,8 @@ void MeshInstance::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_mesh"), &MeshInstance::get_mesh);
 	ClassDB::bind_method(D_METHOD("set_skeleton_path", "skeleton_path"), &MeshInstance::set_skeleton_path);
 	ClassDB::bind_method(D_METHOD("get_skeleton_path"), &MeshInstance::get_skeleton_path);
+	ClassDB::bind_method(D_METHOD("set_skin", "skin"), &MeshInstance::set_skin);
+	ClassDB::bind_method(D_METHOD("get_skin"), &MeshInstance::get_skin);
 
 	ClassDB::bind_method(D_METHOD("get_surface_material_count"), &MeshInstance::get_surface_material_count);
 	ClassDB::bind_method(D_METHOD("set_surface_material", "surface", "material"), &MeshInstance::set_surface_material);
@@ -378,6 +408,7 @@ void MeshInstance::_bind_methods() {
 	ClassDB::set_method_flags("MeshInstance", "create_debug_tangents", METHOD_FLAGS_DEFAULT | METHOD_FLAG_EDITOR);
 
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "mesh", PROPERTY_HINT_RESOURCE_TYPE, "Mesh"), "set_mesh", "get_mesh");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "skin", PROPERTY_HINT_RESOURCE_TYPE, "Skin"), "set_skin", "get_skin");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "skeleton", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "Skeleton"), "set_skeleton_path", "get_skeleton_path");
 }
 

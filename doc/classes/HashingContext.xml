@@ -1,0 +1,71 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="HashingContext" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+		Context to compute cryptographic hashes over multiple iterations.
+	</brief_description>
+	<description>
+		The HashingContext class provides an interface for computing cryptographic hashes over multiple iterations. This is useful for example when computing hashes of big files (so you don't have to load them all in memory), network streams, and data streams in general (so you don't have to hold buffers).
+		The [enum HashType] enum shows the supported hashing algorithms.
+		[codeblock]
+		const CHUNK_SIZE = 1024
+
+		func hash_file(path):
+		    var ctx = HashingContext.new()
+		    var file = File.new()
+		    # Start a SHA-256 context.
+		    ctx.start(HashingContext.HASH_SHA256)
+		    # Check that file exists.
+		    if not file.file_exists(path):
+		        return
+		    # Open the file to hash.
+		    file.open(path, File.READ)
+		    # Update the context after reading each chunk.
+		    while not file.eof_reached():
+		        ctx.update(file.get_buffer(CHUNK_SIZE))
+		    # Get the computed hash.
+		    var res = ctx.finish()
+		    # Print the result as hex string and array.
+		    printt(res.hex_encode(), Array(res))
+		[/codeblock]
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="finish">
+			<return type="PoolByteArray">
+			</return>
+			<description>
+				Closes the current context, and return the computed hash.
+			</description>
+		</method>
+		<method name="start">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="type" type="int" enum="HashingContext.HashType">
+			</argument>
+			<description>
+				Starts a new hash computation of the given [code]type[/code] (e.g. [constant HASH_SHA256] to start computation of a SHA-256).
+			</description>
+		</method>
+		<method name="update">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="chunk" type="PoolByteArray">
+			</argument>
+			<description>
+				Updates the computation with the given [code]chunk[/code] of data.
+			</description>
+		</method>
+	</methods>
+	<constants>
+		<constant name="HASH_MD5" value="0" enum="HashType">
+			Hashing algorithm: MD5.
+		</constant>
+		<constant name="HASH_SHA1" value="1" enum="HashType">
+			Hashing algorithm: SHA-1.
+		</constant>
+		<constant name="HASH_SHA256" value="2" enum="HashType">
+			Hashing algorithm: SHA-256.
+		</constant>
+	</constants>
+</class>

@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="CryptoKey" inherits="Resource" category="Core" version="3.2">
+	<brief_description>
+		A cryptographic key (RSA).
+	</brief_description>
+	<description>
+		The CryptoKey class represents a cryptographic key. Keys can be loaded and saved like any other [Resource].
+		They can be used to generate a self-signed [X509Certificate] via [method Crypto.generate_self_signed_certificate] and as private key in [method StreamPeerSSL.accept_stream] along with the appropriate certificate.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Loads a key from [code]path[/code] ("*.key" file).
+			</description>
+		</method>
+		<method name="save">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<description>
+				Saves a key to the given [code]path[/code] (should be a "*.key" file).
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

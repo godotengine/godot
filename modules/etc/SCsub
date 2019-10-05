@@ -27,16 +27,7 @@ thirdparty_sources = [
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
 
-env_etc.Append(CPPPATH=[thirdparty_dir])
-
-# upstream uses c++11
-if not env.msvc:
-	env_etc.Append(CCFLAGS="-std=c++11")
-
-# -ffast-math seems to be incompatible with etc2comp on recent versions of
-# GCC and Clang
-if '-ffast-math' in env_etc['CCFLAGS']:
-	env_etc['CCFLAGS'].remove('-ffast-math')
+env_etc.Prepend(CPPPATH=[thirdparty_dir])
 
 env_thirdparty = env_etc.Clone()
 env_thirdparty.disable_warnings()

@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftccmap.c                                                              */
-/*                                                                         */
-/*    FreeType CharMap cache (body)                                        */
-/*                                                                         */
-/*  Copyright 2000-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftccmap.c
+ *
+ *   FreeType CharMap cache (body)
+ *
+ * Copyright (C) 2000-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -28,21 +28,21 @@
 #include "ftcerror.h"
 
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_cache
+#define FT_COMPONENT  cache
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Each FTC_CMapNode contains a simple array to map a range of character */
-  /* codes to equivalent glyph indices.                                    */
-  /*                                                                       */
-  /* For now, the implementation is very basic: Each node maps a range of  */
-  /* 128 consecutive character codes to their corresponding glyph indices. */
-  /*                                                                       */
-  /* We could do more complex things, but I don't think it is really very  */
-  /* useful.                                                               */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Each FTC_CMapNode contains a simple array to map a range of character
+   * codes to equivalent glyph indices.
+   *
+   * For now, the implementation is very basic: Each node maps a range of
+   * 128 consecutive character codes to their corresponding glyph indices.
+   *
+   * We could do more complex things, but I don't think it is really very
+   * useful.
+   *
+   */
 
 
   /* number of glyph indices / character code per node */

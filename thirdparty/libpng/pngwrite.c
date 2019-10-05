@@ -1,10 +1,10 @@
 
 /* pngwrite.c - general routines to write a PNG file
  *
- * Last changed in libpng 1.6.35 [July 15, 2018]
+ * Copyright (c) 2018-2019 Cosmin Truta
  * Copyright (c) 1998-2002,2004,2006-2018 Glenn Randers-Pehrson
- * (Version 0.96 Copyright (c) 1996, 1997 Andreas Dilger)
- * (Version 0.88 Copyright (c) 1995, 1996 Guy Eric Schalnat, Group 42, Inc.)
+ * Copyright (c) 1996-1997 Andreas Dilger
+ * Copyright (c) 1995-1996 Guy Eric Schalnat, Group 42, Inc.
  *
  * This code is released under the libpng license.
  * For conditions of distribution and use, see the disclaimer
@@ -128,6 +128,10 @@ png_write_info_before_PLTE(png_structrp png_ptr, png_const_inforp info_ptr)
        * the application continues writing the PNG.  So check the 'invalid'
        * flag here too.
        */
+#ifdef PNG_WRITE_APNG_SUPPORTED
+      if (info_ptr->valid & PNG_INFO_acTL)
+         png_write_acTL(png_ptr, info_ptr->num_frames, info_ptr->num_plays);
+#endif
 #ifdef PNG_GAMMA_SUPPORTED
 #  ifdef PNG_WRITE_gAMA_SUPPORTED
       if ((info_ptr->colorspace.flags & PNG_COLORSPACE_INVALID) == 0 &&
@@ -370,6 +374,11 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
       png_benign_error(png_ptr, "Wrote palette index exceeding num_palette");
 #endif
 
+#ifdef PNG_WRITE_APNG_SUPPORTED
+   if (png_ptr->num_frames_written != png_ptr->num_frames_to_write)
+      png_error(png_ptr, "Not enough frames written");
+#endif
+
    /* See if user wants us to write information chunks */
    if (info_ptr != NULL)
    {
@@ -469,7 +478,7 @@ png_write_end(png_structrp png_ptr, png_inforp info_ptr)
 
 #ifdef PNG_CONVERT_tIME_SUPPORTED
 void PNGAPI
-png_convert_from_struct_tm(png_timep ptime, PNG_CONST struct tm * ttime)
+png_convert_from_struct_tm(png_timep ptime, const struct tm * ttime)
 {
    png_debug(1, "in png_convert_from_struct_tm");
 
@@ -1461,6 +1470,43 @@ png_write_png(png_structrp png_ptr, png_inforp info_ptr,
 }
 #endif
 
+#ifdef PNG_WRITE_APNG_SUPPORTED
+void PNGAPI
+png_write_frame_head(png_structp png_ptr, png_infop info_ptr,
+    png_bytepp row_pointers, png_uint_32 width, png_uint_32 height,
+    png_uint_32 x_offset, png_uint_32 y_offset,
+    png_uint_16 delay_num, png_uint_16 delay_den, png_byte dispose_op,
+    png_byte blend_op)
+{
+    png_debug(1, "in png_write_frame_head");
+
+    /* there is a chance this has been set after png_write_info was called,
+    * so it would be set but not written. is there a way to be sure? */
+    if (!(info_ptr->valid & PNG_INFO_acTL))
+        png_error(png_ptr, "png_write_frame_head(): acTL not set");
+
+    png_write_reset(png_ptr);
+
+    png_write_reinit(png_ptr, info_ptr, width, height);
+
+    if ( !(png_ptr->num_frames_written == 0 &&
+           (png_ptr->apng_flags & PNG_FIRST_FRAME_HIDDEN) ) )
+        png_write_fcTL(png_ptr, width, height, x_offset, y_offset,
+                       delay_num, delay_den, dispose_op, blend_op);
+
+    PNG_UNUSED(row_pointers)
+}
+
+void PNGAPI
+png_write_frame_tail(png_structp png_ptr, png_infop info_ptr)
+{
+    png_debug(1, "in png_write_frame_tail");
+
+    png_ptr->num_frames_written++;
+
+    PNG_UNUSED(info_ptr)
+}
+#endif /* PNG_WRITE_APNG_SUPPORTED */
 
 #ifdef PNG_SIMPLIFIED_WRITE_SUPPORTED
 /* Initialize the write structure - general purpose utility. */
@@ -1536,7 +1582,7 @@ png_write_image_16bit(png_voidp argument)
        display->first_row);
    png_uint_16p output_row = png_voidcast(png_uint_16p, display->local_row);
    png_uint_16p row_end;
-   const unsigned int channels = (image->format & PNG_FORMAT_FLAG_COLOR) != 0 ?
+   unsigned int channels = (image->format & PNG_FORMAT_FLAG_COLOR) != 0 ?
        3 : 1;
    int aindex = 0;
    png_uint_32 y = image->height;
@@ -1573,7 +1619,7 @@ png_write_image_16bit(png_voidp argument)
 
       while (out_ptr < row_end)
       {
-         const png_uint_16 alpha = in_ptr[aindex];
+         png_uint_16 alpha = in_ptr[aindex];
          png_uint_32 reciprocal = 0;
          int c;
 
@@ -1695,7 +1741,7 @@ png_write_image_8bit(png_voidp argument)
        display->first_row);
    png_bytep output_row = png_voidcast(png_bytep, display->local_row);
    png_uint_32 y = image->height;
-   const unsigned int channels = (image->format & PNG_FORMAT_FLAG_COLOR) != 0 ?
+   unsigned int channels = (image->format & PNG_FORMAT_FLAG_COLOR) != 0 ?
        3 : 1;
 
    if ((image->format & PNG_FORMAT_FLAG_ALPHA) != 0)
@@ -1783,25 +1829,25 @@ png_write_image_8bit(png_voidp argument)
 static void
 png_image_set_PLTE(png_image_write_control *display)
 {
-   const png_imagep image = display->image;
+   png_imagep image = display->image;
    const void *cmap = display->colormap;
-   const int entries = image->colormap_entries > 256 ? 256 :
+   int entries = image->colormap_entries > 256 ? 256 :
        (int)image->colormap_entries;
 
    /* NOTE: the caller must check for cmap != NULL and entries != 0 */
-   const png_uint_32 format = image->format;
-   const unsigned int channels = PNG_IMAGE_SAMPLE_CHANNELS(format);
+   png_uint_32 format = image->format;
+   unsigned int channels = PNG_IMAGE_SAMPLE_CHANNELS(format);
 
 #   if defined(PNG_FORMAT_BGR_SUPPORTED) &&\
       defined(PNG_SIMPLIFIED_WRITE_AFIRST_SUPPORTED)
-      const int afirst = (format & PNG_FORMAT_FLAG_AFIRST) != 0 &&
+      int afirst = (format & PNG_FORMAT_FLAG_AFIRST) != 0 &&
           (format & PNG_FORMAT_FLAG_ALPHA) != 0;
 #   else
 #     define afirst 0
 #   endif
 
 #   ifdef PNG_FORMAT_BGR_SUPPORTED
-      const int bgr = (format & PNG_FORMAT_FLAG_BGR) != 0 ? 2 : 0;
+      int bgr = (format & PNG_FORMAT_FLAG_BGR) != 0 ? 2 : 0;
 #   else
 #     define bgr 0
 #   endif
@@ -1951,12 +1997,12 @@ png_image_write_main(png_voidp argument)
     * and total image size to ensure that they are within the system limits.
     */
    {
-      const unsigned int channels = PNG_IMAGE_PIXEL_CHANNELS(image->format);
+      unsigned int channels = PNG_IMAGE_PIXEL_CHANNELS(image->format);
 
       if (image->width <= 0x7fffffffU/channels) /* no overflow */
       {
          png_uint_32 check;
-         const png_uint_32 png_row_stride = image->width * channels;
+         png_uint_32 png_row_stride = image->width * channels;
 
          if (display->row_stride == 0)
             display->row_stride = (png_int_32)/*SAFE*/png_row_stride;
@@ -2052,7 +2098,7 @@ png_image_write_main(png_voidp argument)
     */
    if (write_16bit != 0)
    {
-      PNG_CONST png_uint_16 le = 0x0001;
+      png_uint_16 le = 0x0001;
 
       if ((*(png_const_bytep) & le) != 0)
          png_set_swap(png_ptr);
@@ -2166,7 +2212,7 @@ image_memory_write)(png_structp png_ptr, png_bytep/*const*/ data, size_t size)
 {
    png_image_write_control *display = png_voidcast(png_image_write_control*,
        png_ptr->io_ptr/*backdoor: png_get_io_ptr(png_ptr)*/);
-   const png_alloc_size_t ob = display->output_bytes;
+   png_alloc_size_t ob = display->output_bytes;
 
    /* Check for overflow; this should never happen: */
    if (size <= ((png_alloc_size_t)-1) - ob)

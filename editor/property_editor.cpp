@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -310,7 +310,8 @@ void CustomPropertyEditor::_menu_option(int p_which) {
 			}
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -613,7 +614,7 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						type = Variant::Type(i);
 					}
 				}
-				if (type)
+				if (type != Variant::NIL)
 					property_select->select_method_from_basic_type(type, v);
 				updating = false;
 				return false;
@@ -858,6 +859,13 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 				add_child(color_picker);
 				color_picker->hide();
 				color_picker->connect("color_changed", this, "_color_changed");
+
+				// get default color picker mode from editor settings
+				int default_color_mode = EDITOR_GET("interface/inspector/default_color_picker_mode");
+				if (default_color_mode == 1)
+					color_picker->set_hsv_mode(true);
+				else if (default_color_mode == 2)
+					color_picker->set_raw_mode(true);
 			}
 
 			color_picker->show();
@@ -905,8 +913,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					List<StringName> inheritors;
 					ClassDB::get_inheriters_from_class(base.strip_edges(), &inheritors);
 
-					for (int i = 0; i < custom_resources.size(); i++) {
-						inheritors.push_back(custom_resources[i].name);
+					for (int j = 0; j < custom_resources.size(); j++) {
+						inheritors.push_back(custom_resources[j].name);
 					}
 
 					List<StringName>::Element *E = inheritors.front();
@@ -915,17 +923,17 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 						E = E->next();
 					}
 
-					for (Set<String>::Element *E = valid_inheritors.front(); E; E = E->next()) {
-						String t = E->get();
+					for (Set<String>::Element *j = valid_inheritors.front(); j; j = j->next()) {
+						const String &t = j->get();
 
 						bool is_custom_resource = false;
 						Ref<Texture> icon;
 						if (!custom_resources.empty()) {
-							for (int i = 0; i < custom_resources.size(); i++) {
-								if (custom_resources[i].name == t) {
+							for (int k = 0; k < custom_resources.size(); k++) {
+								if (custom_resources[k].name == t) {
 									is_custom_resource = true;
-									if (custom_resources[i].icon.is_valid())
-										icon = custom_resources[i].icon;
+									if (custom_resources[k].icon.is_valid())
+										icon = custom_resources[k].icon;
 									break;
 								}
 							}
@@ -970,7 +978,6 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 					menu->add_separator();
 					menu->add_item(TTR("Show in FileSystem"), OBJ_MENU_SHOW_IN_FILE_SYSTEM);
 				}
-			} else {
 			}
 
 			RES cb = EditorSettings::get_singleton()->get_resource_clipboard();
@@ -1049,7 +1056,8 @@ bool CustomPropertyEditor::edit(Object *p_owner, const String &p_name, Variant::
 		case Variant::POOL_COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -1091,7 +1099,8 @@ void CustomPropertyEditor::_file_selected(String p_file) {
 			emit_signal("variant_changed");
 			hide();
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1432,7 +1441,8 @@ void CustomPropertyEditor::_action_pressed(int p_which) {
 
 		} break;
 
-		default: {};
+		default: {
+		};
 	}
 }
 
@@ -1699,7 +1709,8 @@ void CustomPropertyEditor::_modified(String p_string) {
 		case Variant::POOL_COLOR_ARRAY: {
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 
 	updating = false;
@@ -1753,7 +1764,8 @@ void CustomPropertyEditor::_focus_enter() {
 				}
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -1774,7 +1786,8 @@ void CustomPropertyEditor::_focus_exit() {
 				value_editor[i]->select(0, 0);
 			}
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 

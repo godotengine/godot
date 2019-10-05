@@ -4,11 +4,11 @@ Import('env')
 
 files = [
     'thread_uwp.cpp',
-    '#platform/windows/key_mapping_win.cpp',
+    '#platform/windows/key_mapping_windows.cpp',
     '#platform/windows/windows_terminal_logger.cpp',
     'joypad_uwp.cpp',
     'power_uwp.cpp',
-    'gl_context_egl.cpp',
+    'context_egl_uwp.cpp',
     'app.cpp',
     'os_uwp.cpp',
 ]

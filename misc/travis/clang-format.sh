@@ -1,6 +1,6 @@
 #!/bin/sh
 
-CLANG_FORMAT=clang-format-6.0
+CLANG_FORMAT=clang-format-8
 
 if [ "$TRAVIS_PULL_REQUEST" != "false" ]; then
     # Check the whole commit range against $TRAVIS_BRANCH, the base merge branch
@@ -11,7 +11,7 @@ else
     RANGE=HEAD
 fi
 
-FILES=$(git diff-tree --no-commit-id --name-only -r $RANGE | grep -v thirdparty/ | grep -E "\.(c|h|cpp|hpp|cc|hh|cxx|m|mm|inc|java|glsl)$")
+FILES=$(git diff-tree --no-commit-id --name-only -r $RANGE | grep -v thirdparty/ | grep -v platform/android/java/lib/src/com/ | grep -E "\.(c|h|cpp|hpp|cc|hh|cxx|m|mm|inc|java|glsl)$")
 echo "Checking files:\n$FILES"
 
 # create a random filename to store our generated patch

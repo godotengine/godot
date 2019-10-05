@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,10 +38,11 @@
 #include "editor/editor_about.h"
 #include "editor/editor_data.h"
 #include "editor/editor_export.h"
+#include "editor/editor_feature_profile.h"
 #include "editor/editor_folding.h"
 #include "editor/editor_inspector.h"
+#include "editor/editor_layouts_dialog.h"
 #include "editor/editor_log.h"
-#include "editor/editor_name_dialog.h"
 #include "editor/editor_plugin.h"
 #include "editor/editor_resource_preview.h"
 #include "editor/editor_run.h"
@@ -85,10 +86,6 @@
 #include "scene/gui/tree.h"
 #include "scene/gui/viewport_container.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 typedef void (*EditorNodeInitCallback)();
 typedef void (*EditorPluginInitializeCallback)();
 typedef bool (*EditorBuildCallback)();
@@ -112,6 +109,16 @@ public:
 		DOCK_SLOT_MAX
 	};
 
+	struct ExecuteThreadArgs {
+		String path;
+		List<String> args;
+		String output;
+		Thread *execute_output_thread;
+		Mutex *execute_output_mutex;
+		int exitcode;
+		volatile bool done;
+	};
+
 private:
 	enum {
 		HISTORY_SIZE = 64
@@ -130,14 +137,20 @@ private:
 		FILE_IMPORT_SUBSCENE,
 		FILE_EXPORT_PROJECT,
 		FILE_EXPORT_MESH_LIBRARY,
+		FILE_INSTALL_ANDROID_SOURCE,
+		FILE_EXPLORE_ANDROID_BUILD_TEMPLATES,
 		FILE_EXPORT_TILESET,
 		FILE_SAVE_OPTIMIZED,
 		FILE_OPEN_RECENT,
 		FILE_OPEN_OLD_SCENE,
+		FILE_QUICK_OPEN,
 		FILE_QUICK_OPEN_SCENE,
 		FILE_QUICK_OPEN_SCRIPT,
 		FILE_OPEN_PREV,
 		FILE_CLOSE,
+		FILE_CLOSE_OTHERS,
+		FILE_CLOSE_RIGHT,
+		FILE_CLOSE_ALL,
 		FILE_CLOSE_ALL_AND_QUIT,
 		FILE_CLOSE_ALL_AND_RUN_PROJECT_MANAGER,
 		FILE_QUIT,
@@ -165,6 +178,10 @@ private:
 		RUN_DEBUG_NAVIGATION,
 		RUN_DEPLOY_REMOTE_DEBUG,
 		RUN_RELOAD_SCRIPTS,
+		RUN_VCS_SETTINGS,
+		RUN_VCS_SHUT_DOWN,
+		SETTINGS_UPDATE_CONTINUOUSLY,
+		SETTINGS_UPDATE_WHEN_CHANGED,
 		SETTINGS_UPDATE_ALWAYS,
 		SETTINGS_UPDATE_CHANGES,
 		SETTINGS_UPDATE_SPINNER_HIDE,
@@ -175,12 +192,16 @@ private:
 		SETTINGS_EDITOR_DATA_FOLDER,
 		SETTINGS_EDITOR_CONFIG_FOLDER,
 		SETTINGS_MANAGE_EXPORT_TEMPLATES,
+		SETTINGS_MANAGE_FEATURE_PROFILES,
 		SETTINGS_PICK_MAIN_SCENE,
+		SETTINGS_TOGGLE_CONSOLE,
 		SETTINGS_TOGGLE_FULLSCREEN,
 		SETTINGS_HELP,
 		SCENE_TAB_CLOSE,
 
-		HELP_CLASSES,
+		EDITOR_SCREENSHOT,
+		EDITOR_OPEN_SCREENSHOT,
+
 		HELP_SEARCH,
 		HELP_DOCS,
 		HELP_QA,
@@ -189,6 +210,9 @@ private:
 		HELP_ABOUT,
 
 		SET_VIDEO_DRIVER_SAVE_AND_RESTART,
+
+		GLOBAL_NEW_WINDOW,
+		GLOBAL_SCENE,
 
 		IMPORT_PLUGIN_BASE = 100,
 
@@ -201,7 +225,6 @@ private:
 	Control *theme_base;
 	Control *gui_base;
 	VBoxContainer *main_vbox;
-	PanelContainer *play_button_panel;
 	OptionButton *video_driver;
 
 	ConfirmationDialog *video_restart_dialog;
@@ -244,7 +267,6 @@ private:
 	Control *vp_base;
 	PaneDrag *pd;
 
-	CenterContainer *play_cc;
 	HBoxContainer *menu_hb;
 	Control *viewport;
 	MenuButton *file_menu;
@@ -256,7 +278,6 @@ private:
 	ToolButton *export_button;
 	ToolButton *prev_scene;
 	ToolButton *play_button;
-	MenuButton *native_play_button;
 	ToolButton *pause_button;
 	ToolButton *stop_button;
 	ToolButton *run_settings_button;
@@ -265,10 +286,15 @@ private:
 	ToolButton *search_button;
 	TextureProgress *audio_vu;
 
+	Timer *screenshot_timer;
+
 	PluginConfigDialog *plugin_config_dialog;
 
 	RichTextLabel *load_errors;
 	AcceptDialog *load_error_dialog;
+
+	RichTextLabel *execute_outputs;
+	AcceptDialog *execute_output_dialog;
 
 	Ref<Theme> theme;
 
@@ -291,21 +317,27 @@ private:
 	int overridden_default_layout;
 	Ref<ConfigFile> default_layout;
 	PopupMenu *editor_layouts;
-	EditorNameDialog *layout_dialog;
+	EditorLayoutsDialog *layout_dialog;
+
+	ConfirmationDialog *custom_build_manage_templates;
+	ConfirmationDialog *install_android_build_template;
+	ConfirmationDialog *remove_android_build_template;
 
 	EditorSettingsDialog *settings_config_dialog;
 	RunSettingsDialog *run_settings_dialog;
 	ProjectSettingsEditor *project_settings;
+	PopupMenu *vcs_actions_menu;
 	EditorFileDialog *file;
 	ExportTemplateManager *export_template_manager;
+	EditorFeatureProfileManager *feature_profile_manager;
 	EditorFileDialog *file_templates;
 	EditorFileDialog *file_export;
 	EditorFileDialog *file_export_lib;
 	EditorFileDialog *file_script;
-	CheckButton *file_export_lib_merge;
+	CheckBox *file_export_lib_merge;
 	LineEdit *file_export_password;
 	String current_path;
-	MenuButton *update_menu;
+	MenuButton *update_spinner;
 
 	String defer_load_scene;
 	String defer_export;
@@ -356,6 +388,7 @@ private:
 	EditorExport *editor_export;
 
 	Object *current;
+	Ref<Resource> saving_resource;
 
 	bool _playing_edited;
 	String run_custom_filename;
@@ -370,9 +403,9 @@ private:
 
 	bool waiting_for_sources_changed;
 
-	uint32_t circle_step_msec;
-	uint64_t circle_step_frame;
-	int circle_step;
+	uint32_t update_spinner_step_msec;
+	uint64_t update_spinner_step_frame;
+	int update_spinner_step;
 
 	Vector<EditorPlugin *> editor_plugins;
 	EditorPlugin *editor_plugin_screen;
@@ -402,6 +435,7 @@ private:
 	HBoxContainer *bottom_panel_hb;
 	HBoxContainer *bottom_panel_hb_editors;
 	VBoxContainer *bottom_panel_vb;
+	Label *version_label;
 	ToolButton *bottom_panel_raise;
 
 	void _bottom_panel_raise_toggled(bool);
@@ -424,8 +458,15 @@ private:
 	void _menu_option(int p_option);
 	void _menu_confirm_current();
 	void _menu_option_confirm(int p_option, bool p_confirmed);
+
+	void _request_screenshot();
+	void _screenshot(bool p_use_utc = false);
+	void _save_screenshot(NodePath p_path);
+
 	void _tool_menu_option(int p_idx);
 	void _update_debug_options();
+	void _update_file_menu_opened();
+	void _update_file_menu_closed();
 
 	void _on_plugin_ready(Object *p_script, const String &p_activate_name);
 
@@ -441,18 +482,22 @@ private:
 	void _get_scene_metadata(const String &p_file);
 	void _update_title();
 	void _update_scene_tabs();
+	void _version_control_menu_option(int p_idx);
 	void _close_messages();
 	void _show_messages();
 	void _vp_resized();
 
+	int _save_external_resources();
+
+	bool _validate_scene_recursive(const String &p_filename, Node *p_node);
 	void _save_scene(String p_file, int idx = -1);
 	void _save_all_scenes();
 	int _next_unsaved_scene(bool p_valid_filename, int p_start = 0);
 	void _discard_changes(const String &p_str = String());
 
+	void _inherit_request(String p_file);
 	void _instance_request(const Vector<String> &p_files);
 
-	void _hide_top_editors();
 	void _display_top_editors(bool p_display);
 	void _set_top_editors(Vector<EditorPlugin *> p_editor_plugins_over);
 	void _set_editing_top_editors(Object *p_current_object);
@@ -468,8 +513,12 @@ private:
 	void _add_to_recent_scenes(const String &p_scene);
 	void _update_recent_scenes();
 	void _open_recent_scene(int p_idx);
+	void _global_menu_action(const Variant &p_id, const Variant &p_meta);
 	void _dropped_files(const Vector<String> &p_files, int p_screen);
+	void _add_dropped_files_recursive(const Vector<String> &p_files, String to_path);
 	String _recent_scene;
+
+	void _exit_editor();
 
 	bool convert_old;
 
@@ -497,8 +546,8 @@ private:
 	static void _editor_file_dialog_unregister(EditorFileDialog *p_dialog);
 
 	void _cleanup_scene();
-	void _remove_edited_scene();
-	void _remove_scene(int index);
+	void _remove_edited_scene(bool p_change_tab = true);
+	void _remove_scene(int index, bool p_change_tab = true);
 	bool _find_and_save_resource(RES p_res, Map<RES, bool> &processed, int32_t flags);
 	bool _find_and_save_edited_subresources(Object *obj, Map<RES, bool> &processed, int32_t flags);
 	void _save_edited_subresources(Node *scene, Map<RES, bool> &processed, int32_t flags);
@@ -524,6 +573,8 @@ private:
 
 	} export_defer;
 
+	bool disable_progress_dialog;
+
 	static EditorNode *singleton;
 
 	static Vector<EditorNodeInitCallback> _init_callbacks;
@@ -538,7 +589,7 @@ private:
 	void _dock_split_dragged(int ofs);
 	void _dock_popup_exit();
 	void _scene_tab_changed(int p_tab);
-	void _scene_tab_closed(int p_tab);
+	void _scene_tab_closed(int p_tab, int option = SCENE_TAB_CLOSE);
 	void _scene_tab_hover(int p_tab);
 	void _scene_tab_exit();
 	void _scene_tab_input(const Ref<InputEvent> &p_input);
@@ -588,14 +639,9 @@ private:
 	static int build_callback_count;
 	static EditorBuildCallback build_callbacks[MAX_BUILD_CALLBACKS];
 
-	bool _dimming;
-	float _dim_time;
-	Timer *_dim_timer;
-
-	void _start_dimming(bool p_dimming);
-	void _dim_timeout();
-
 	void _license_tree_selected();
+
+	void _update_update_spinner();
 
 	Vector<Ref<EditorResourceConversionPlugin> > resource_conversion_plugins;
 
@@ -605,9 +651,21 @@ private:
 	static void _resource_saved(RES p_resource, const String &p_path);
 	static void _resource_loaded(RES p_resource, const String &p_path);
 
+	void _resources_changed(const PoolVector<String> &p_resources);
+
+	void _feature_profile_changed();
+	bool _is_class_editor_disabled_by_feature_profile(const StringName &p_class);
+
 protected:
 	void _notification(int p_what);
+
 	static void _bind_methods();
+
+protected:
+	friend class FileSystemDock;
+
+	int get_current_tab();
+	void set_current_tab(int p_tab);
 
 public:
 	bool call_build();
@@ -634,8 +692,8 @@ public:
 
 	ProjectSettingsEditor *get_project_settings() { return project_settings; }
 
-	static void add_editor_plugin(EditorPlugin *p_editor);
-	static void remove_editor_plugin(EditorPlugin *p_editor);
+	static void add_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
+	static void remove_editor_plugin(EditorPlugin *p_editor, bool p_config_changed = false);
 
 	void new_inherited_scene() { _menu_option_confirm(FILE_NEW_INHERITED_SCENE, false); }
 
@@ -648,7 +706,7 @@ public:
 	void add_control_to_dock(DockSlot p_slot, Control *p_control);
 	void remove_control_from_dock(Control *p_control);
 
-	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled);
+	void set_addon_plugin_enabled(const String &p_addon, bool p_enabled, bool p_config_changed = false);
 	bool is_addon_plugin_enabled(const String &p_addon) const;
 
 	void edit_node(Node *p_node);
@@ -669,7 +727,11 @@ public:
 
 	void push_item(Object *p_object, const String &p_property = "", bool p_inspector_only = false);
 	void edit_item(Object *p_object);
+	void edit_item_resource(RES p_resource);
 	bool item_has_editor(Object *p_object);
+	void hide_top_editors();
+
+	void select_editor_by_name(const String &p_name);
 
 	void open_request(const String &p_path);
 
@@ -686,6 +748,7 @@ public:
 
 	void fix_dependencies(const String &p_for_file);
 	void clear_scene() { _cleanup_scene(); }
+	int new_scene();
 	Error load_scene(const String &p_scene, bool p_ignore_broken_deps = false, bool p_set_inherited = false, bool p_clear_errors = true, bool p_force_open_imported = false);
 	Error load_resource(const String &p_resource, bool p_ignore_broken_deps = false);
 
@@ -718,11 +781,15 @@ public:
 	void stop_child_process();
 
 	Ref<Theme> get_editor_theme() const { return theme; }
+	Ref<Script> get_object_custom_type_base(const Object *p_object) const;
+	StringName get_object_custom_type_name(const Object *p_object) const;
 	Ref<Texture> get_object_icon(const Object *p_object, const String &p_fallback = "Object") const;
 	Ref<Texture> get_class_icon(const String &p_class, const String &p_fallback = "Object") const;
 
 	void show_accept(const String &p_text, const String &p_title);
 	void show_warning(const String &p_text, const String &p_title = "Warning!");
+
+	void _copy_warning(const String &p_str);
 
 	Error export_preset(const String &p_preset, const String &p_path, bool p_debug, const String &p_password, bool p_quit_after = false);
 
@@ -777,13 +844,18 @@ public:
 	void add_tool_submenu_item(const String &p_name, PopupMenu *p_submenu);
 	void remove_tool_menu_item(const String &p_name);
 
-	void save_all_scenes_and_restart();
+	void save_all_scenes();
+	void save_scene_list(Vector<String> p_scene_filenames);
+	void restart_editor();
 
-	void dim_editor(bool p_dimming);
+	void dim_editor(bool p_dimming, bool p_force_dim = false);
 
 	void edit_current() { _edit_current(); };
 
 	void update_keying() const { inspector_dock->update_keying(); };
+	bool has_scenes_in_session();
+
+	int execute_and_show_output(const String &p_title, const String &p_path, const List<String> &p_arguments, bool p_close_on_ok = true, bool p_close_on_errors = false);
 
 	EditorNode();
 	~EditorNode();
@@ -795,6 +867,11 @@ public:
 
 	static void add_init_callback(EditorNodeInitCallback p_callback) { _init_callbacks.push_back(p_callback); }
 	static void add_build_callback(EditorBuildCallback p_callback);
+
+	bool ensure_main_scene(bool p_from_native);
+
+	void run_play();
+	void run_stop();
 };
 
 struct EditorProgress {
@@ -830,6 +907,7 @@ public:
 	void forward_spatial_draw_over_viewport(Control *p_overlay);
 	void forward_spatial_force_draw_over_viewport(Control *p_overlay);
 	void add_plugin(EditorPlugin *p_plugin);
+	void remove_plugin(EditorPlugin *p_plugin);
 	void clear();
 	bool empty();
 

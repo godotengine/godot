@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,6 @@
 #include "core/object.h"
 #include "core/os/thread_safe.h"
 #include "core/set.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class ProjectSettings : public Object {
 
@@ -97,25 +93,29 @@ protected:
 
 	static ProjectSettings *singleton;
 
-	Error _load_settings_text(const String p_path);
-	Error _load_settings_binary(const String p_path);
-	Error _load_settings_text_or_binary(const String p_text_path, const String p_bin_path);
+	Error _load_settings_text(const String &p_path);
+	Error _load_settings_binary(const String &p_path);
+	Error _load_settings_text_or_binary(const String &p_text_path, const String &p_bin_path);
 
 	Error _save_settings_text(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 	Error _save_settings_binary(const String &p_file, const Map<String, List<String> > &props, const CustomMap &p_custom = CustomMap(), const String &p_custom_features = String());
 
 	Error _save_custom_bnd(const String &p_file);
 
-	void _convert_to_last_version();
+	void _convert_to_last_version(int p_from_version);
 
-	bool _load_resource_pack(const String &p_pack);
+	bool _load_resource_pack(const String &p_pack, bool p_replace_files = true);
 
 	void _add_property_info_bind(const Dictionary &p_info);
+
+	Error _setup(const String &p_path, const String &p_main_pack, bool p_upwards = false);
 
 protected:
 	static void _bind_methods();
 
 public:
+	static const int CONFIG_VERSION = 4;
+
 	void set_setting(const String &p_setting, const Variant &p_value);
 	Variant get_setting(const String &p_setting) const;
 
@@ -149,8 +149,6 @@ public:
 	List<String> get_input_presets() const { return input_presets; }
 
 	void set_disable_feature_overrides(bool p_disable);
-
-	void register_global_defaults();
 
 	bool is_using_datapack() const;
 

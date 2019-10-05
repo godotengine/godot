@@ -24,6 +24,12 @@
 #ifndef MBEDTLS_SSL_COOKIE_H
 #define MBEDTLS_SSL_COOKIE_H
 
+#if !defined(MBEDTLS_CONFIG_FILE)
+#include "config.h"
+#else
+#include MBEDTLS_CONFIG_FILE
+#endif
+
 #include "ssl.h"
 
 #if defined(MBEDTLS_THREADING_C)
@@ -50,7 +56,7 @@ extern "C" {
 /**
  * \brief          Context for the default cookie functions.
  */
-typedef struct
+typedef struct mbedtls_ssl_cookie_ctx
 {
     mbedtls_md_context_t    hmac_ctx;   /*!< context for the HMAC portion   */
 #if !defined(MBEDTLS_HAVE_TIME)

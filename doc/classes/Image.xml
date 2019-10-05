@@ -1,15 +1,13 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Image" inherits="Resource" category="Core" version="3.1">
+<class name="Image" inherits="Resource" category="Core" version="3.2">
 	<brief_description>
 		Image datatype.
 	</brief_description>
 	<description>
-		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [code]Image[/code] is 16384 pixels.
+		Native image datatype. Contains image data, which can be converted to a [Texture], and several functions to interact with it. The maximum width and height for an [Image] are [constant MAX_WIDTH] and [constant MAX_HEIGHT].
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="blend_rect">
 			<return type="void">
@@ -125,7 +123,7 @@
 			<argument index="3" name="format" type="int" enum="Image.Format">
 			</argument>
 			<description>
-				Creates an empty image of given size and format. See [code]FORMAT_*[/code] constants. If [code]use_mipmaps[/code] is true then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
+				Creates an empty image of given size and format. See [code]FORMAT_*[/code] constants. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="create_from_data">
@@ -142,7 +140,7 @@
 			<argument index="4" name="data" type="PoolByteArray">
 			</argument>
 			<description>
-				Creates a new image of given size and format. See [code]FORMAT_*[/code] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is true then generate mipmaps for this image. See the [code]generate_mipmaps[/code] method.
+				Creates a new image of given size and format. See [code]FORMAT_*[/code] constants. Fills the image with the given raw data. If [code]use_mipmaps[/code] is [code]true[/code] then generate mipmaps for this image. See the [method generate_mipmaps].
 			</description>
 		</method>
 		<method name="crop">
@@ -227,7 +225,7 @@
 			<return type="int" enum="Image.Format">
 			</return>
 			<description>
-				Returns the image’s format. See [code]FORMAT_*[/code] constants.
+				Returns the image's format. See [code]FORMAT_*[/code] constants.
 			</description>
 		</method>
 		<method name="get_height" qualifiers="const">
@@ -254,7 +252,7 @@
 			<argument index="1" name="y" type="int">
 			</argument>
 			<description>
-				Returns the color of the pixel at [code](x, y)[/code] if the image is locked. If the image is unlocked it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code].
+				Returns the color of the pixel at [code](x, y)[/code] if the image is locked. If the image is unlocked, it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code]. This is the same as [method get_pixelv], but two integer arguments instead of a Vector2 argument.
 			</description>
 		</method>
 		<method name="get_pixelv" qualifiers="const">
@@ -263,6 +261,7 @@
 			<argument index="0" name="src" type="Vector2">
 			</argument>
 			<description>
+				Returns the color of the pixel at [code]src[/code] if the image is locked. If the image is unlocked, it always returns a [Color] with the value [code](0, 0, 0, 1.0)[/code]. This is the same as [method get_pixel], but with a Vector2 argument instead of two integer arguments.
 			</description>
 		</method>
 		<method name="get_rect" qualifiers="const">
@@ -363,7 +362,7 @@
 			<return type="void">
 			</return>
 			<description>
-				Locks the data for writing access.
+				Locks the data for reading and writing access. Sends an error to the console if the image is not locked when reading or writing a pixel.
 			</description>
 		</method>
 		<method name="normalmap_to_xy">
@@ -406,6 +405,17 @@
 			<return type="Image">
 			</return>
 			<description>
+			</description>
+		</method>
+		<method name="save_exr" qualifiers="const">
+			<return type="int" enum="Error">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="grayscale" type="bool" default="false">
+			</argument>
+			<description>
+				Saves the image as an EXR file to [code]path[/code]. If grayscale is true and the image has only one channel, it will be saved explicitly as monochrome rather than one red channel. This function will return [constant ERR_UNAVAILABLE]  if Godot was compiled without the TinyEXR module.
 			</description>
 		</method>
 		<method name="save_png" qualifiers="const">
@@ -471,133 +481,157 @@
 		</method>
 	</methods>
 	<members>
-		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data">
+		<member name="data" type="Dictionary" setter="_set_data" getter="_get_data" default="{&quot;data&quot;: PoolByteArray(  ),&quot;format&quot;: &quot;Lum8&quot;,&quot;height&quot;: 0,&quot;mipmaps&quot;: false,&quot;width&quot;: 0}">
 			Holds all of the image's color data in a given format. See [code]FORMAT_*[/code] constants.
 		</member>
 	</members>
 	<constants>
+		<constant name="MAX_WIDTH" value="16384">
+			The maximal width allowed for [Image] resources.
+		</constant>
+		<constant name="MAX_HEIGHT" value="16384">
+			The maximal height allowed for [Image] resources.
+		</constant>
 		<constant name="FORMAT_L8" value="0" enum="Format">
 		</constant>
 		<constant name="FORMAT_LA8" value="1" enum="Format">
 		</constant>
 		<constant name="FORMAT_R8" value="2" enum="Format">
-			OpenGL texture format RED with a single component and a bitdepth of 8.
+			OpenGL texture format [code]RED[/code] with a single component and a bitdepth of 8.
 		</constant>
 		<constant name="FORMAT_RG8" value="3" enum="Format">
-			OpenGL texture format RG with two components and a bitdepth of 8 for each.
+			OpenGL texture format [code]RG[/code] with two components and a bitdepth of 8 for each.
 		</constant>
 		<constant name="FORMAT_RGB8" value="4" enum="Format">
-			OpenGL texture format RGB with three components, each with a bitdepth of 8. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			OpenGL texture format [code]RGB[/code] with three components, each with a bitdepth of 8.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGBA8" value="5" enum="Format">
-			OpenGL texture format RGBA with four components, each with a bitdepth of 8. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 8.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGBA4444" value="6" enum="Format">
-			OpenGL texture format RGBA with four components, each with a bitdepth of 4.
+			OpenGL texture format [code]RGBA[/code] with four components, each with a bitdepth of 4.
 		</constant>
 		<constant name="FORMAT_RGBA5551" value="7" enum="Format">
-			OpenGL texture format GL_RGB5_A1 where 5 bits of depth for each component of RGB and one bit for alpha.
+			OpenGL texture format [code]GL_RGB5_A1[/code] where 5 bits of depth for each component of RGB and one bit for alpha.
 		</constant>
 		<constant name="FORMAT_RF" value="8" enum="Format">
-			OpenGL texture format GL_R32F where there's one component, a 32-bit floating-point value.
+			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 32-bit floating-point value.
 		</constant>
 		<constant name="FORMAT_RGF" value="9" enum="Format">
-			OpenGL texture format GL_RG32F where there are two components, each a 32-bit floating-point values.
+			OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RGBF" value="10" enum="Format">
-			OpenGL texture format GL_RGB32F where there are three components, each a 32-bit floating-point values.
+			OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RGBAF" value="11" enum="Format">
-			OpenGL texture format GL_RGBA32F where there are four components, each a 32-bit floating-point values.
+			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 32-bit floating-point values.
 		</constant>
 		<constant name="FORMAT_RH" value="12" enum="Format">
-			OpenGL texture format GL_R32F where there's one component, a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_R32F[/code] where there's one component, a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGH" value="13" enum="Format">
-			OpenGL texture format GL_RG32F where there's two components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RG32F[/code] where there are two components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBH" value="14" enum="Format">
-			OpenGL texture format GL_RGB32F where there's three components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGB32F[/code] where there are three components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBAH" value="15" enum="Format">
-			OpenGL texture format GL_RGBA32F where there's four components, each a 16-bit "half-precision" floating-point value.
+			OpenGL texture format [code]GL_RGBA32F[/code] where there are four components, each a 16-bit "half-precision" floating-point value.
 		</constant>
 		<constant name="FORMAT_RGBE9995" value="16" enum="Format">
-			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single exponent.
+			A special OpenGL texture format where the three color components have 9 bits of precision and all three share a single 5-bit exponent.
 		</constant>
 		<constant name="FORMAT_DXT1" value="17" enum="Format">
-			The S3TC texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha. More information can be found at https://www.khronos.org/opengl/wiki/S3_Texture_Compression. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 1, and is the smallest variation of S3TC, only providing 1 bit of alpha and color data being premultiplied with alpha.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_DXT3" value="18" enum="Format">
-			The S3TC texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format that uses Block Compression 2, and color data is interpreted as not having been premultiplied by alpha. Well suited for images with sharp alpha transitions between translucent and opaque areas.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_DXT5" value="19" enum="Format">
-			The S3TC texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparency gradients than DXT3. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			The [url=https://en.wikipedia.org/wiki/S3_Texture_Compression]S3TC[/url] texture format also known as Block Compression 3 or BC3 that contains 64 bits of alpha channel data followed by 64 bits of DXT1-encoded color data. Color data is not premultiplied by alpha, same as DXT3. DXT5 generally produces superior results for transparent gradients compared to DXT3.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_RGTC_R" value="20" enum="Format">
-			Texture format that uses Red Green Texture Compression, normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel. More information can be found here https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression.
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red channel data using the same compression algorithm that DXT5 uses for the alpha channel.
 		</constant>
 		<constant name="FORMAT_RGTC_RG" value="21" enum="Format">
-			Texture format that uses Red Green Texture Compression, normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/Red_Green_Texture_Compression]Red Green Texture Compression[/url], normalizing the red and green channel data using the same compression algorithm that DXT5 uses for the alpha channel.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBA" value="22" enum="Format">
-			Texture format that uses BPTC compression with unsigned normalized RGBA components. More information can be found at https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned normalized RGBA components.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBF" value="23" enum="Format">
-			Texture format that uses BPTC compression with signed floating-point RGB components.
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with signed floating-point RGB components.
 		</constant>
 		<constant name="FORMAT_BPTC_RGBFU" value="24" enum="Format">
-			Texture format that uses BPTC compression with unsigned floating-point RGB components.
+			Texture format that uses [url=https://www.khronos.org/opengl/wiki/BPTC_Texture_Compression]BPTC[/url] compression with unsigned floating-point RGB components.
 		</constant>
 		<constant name="FORMAT_PVRTC2" value="25" enum="Format">
-			Texture format used on PowerVR-supported mobile platforms, uses 2 bit color depth with no alpha. More information on PVRTC can be found here https://en.wikipedia.org/wiki/PVRTC. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			Texture format used on PowerVR-supported mobile platforms, uses 2-bit color depth with no alpha. More information can be found [url=https://en.wikipedia.org/wiki/PVRTC]here[/url].
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_PVRTC2A" value="26" enum="Format">
-			Same as PVRTC2, but with an alpha component.
+			Same as [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC2[/url], but with an alpha component.
 		</constant>
 		<constant name="FORMAT_PVRTC4" value="27" enum="Format">
-			Similar to PVRTC2, but with 4 bit color depth and no alpha.
+			Similar to [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC2[/url], but with 4-bit color depth and no alpha.
 		</constant>
 		<constant name="FORMAT_PVRTC4A" value="28" enum="Format">
-			Same as PVRTC4, but with an alpha component.
+			Same as [url=https://en.wikipedia.org/wiki/PVRTC]PVRTC4[/url], but with an alpha component.
 		</constant>
 		<constant name="FORMAT_ETC" value="29" enum="Format">
-			Ericsson Texture Compression format, also referred to as 'ETC1', and is part of the OpenGL ES graphics standard. An overview of the format is given at https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC1]Ericsson Texture Compression format 1[/url], also referred to as "ETC1", and is part of the OpenGL ES graphics standard. This format cannot store an alpha channel.
 		</constant>
 		<constant name="FORMAT_ETC2_R11" value="30" enum="Format">
-			Ericsson Texture Compression format 2 variant R11_EAC, which provides one channel of unsigned data.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]R11_EAC[/code] variant), which provides one channel of unsigned data.
 		</constant>
 		<constant name="FORMAT_ETC2_R11S" value="31" enum="Format">
-			Ericsson Texture Compression format 2 variant SIGNED_R11_EAC, which provides one channel of signed data.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_R11_EAC[/code] variant), which provides one channel of signed data.
 		</constant>
 		<constant name="FORMAT_ETC2_RG11" value="32" enum="Format">
-			Ericsson Texture Compression format 2 variant RG11_EAC, which provides two channels of unsigned data.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RG11_EAC[/code] variant), which provides two channels of unsigned data.
 		</constant>
 		<constant name="FORMAT_ETC2_RG11S" value="33" enum="Format">
-			Ericsson Texture Compression format 2 variant SIGNED_RG11_EAC, which provides two channels of signed data.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]SIGNED_RG11_EAC[/code] variant), which provides two channels of signed data.
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8" value="34" enum="Format">
-			Ericsson Texture Compression format 2 variant RGB8, which is a followup of ETC1 and compresses RGB888 data. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8[/code] variant), which is a follow-up of ETC1 and compresses RGB888 data.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RGBA8" value="35" enum="Format">
-			Ericsson Texture Compression format 2 variant RGBA8, which compresses RGBA8888 data with full alpha support. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGBA8[/code]variant), which compresses RGBA8888 data with full alpha support.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_ETC2_RGB8A1" value="36" enum="Format">
-			Ericsson Texture Compression format 2 variant RGB8_PUNCHTHROUGH_ALPHA1, which compresses RGBA data to make alpha either fully transparent or fully opaque. Note that when creating an [ImageTexture], an sRGB to linear color space conversion is performed.
+			[url=https://en.wikipedia.org/wiki/Ericsson_Texture_Compression#ETC2_and_EAC]Ericsson Texture Compression format 2[/url] ([code]RGB8_PUNCHTHROUGH_ALPHA1[/code] variant), which compresses RGBA data to make alpha either fully transparent or fully opaque.
+			[b]Note:[/b] When creating an [ImageTexture], an sRGB to linear color space conversion is performed.
 		</constant>
 		<constant name="FORMAT_MAX" value="37" enum="Format">
+			Represents the size of the [enum Format] enum.
 		</constant>
 		<constant name="INTERPOLATE_NEAREST" value="0" enum="Interpolation">
+			Performs nearest-neighbor interpolation. If the image is resized, it will be pixelated.
 		</constant>
 		<constant name="INTERPOLATE_BILINEAR" value="1" enum="Interpolation">
+			Performs bilinear interpolation. If the image is resized, it will be blurry. This mode is faster than [constant INTERPOLATE_CUBIC], but it results in lower quality.
 		</constant>
 		<constant name="INTERPOLATE_CUBIC" value="2" enum="Interpolation">
+			Performs cubic interpolation. If the image is resized, it will be blurry. This mode often gives better results compared to [constant INTERPOLATE_BILINEAR], at the cost of being slower.
 		</constant>
 		<constant name="INTERPOLATE_TRILINEAR" value="3" enum="Interpolation">
-			Performs bilinear separately on the two most suited mipmap levels, then linearly interpolates between them.
-			It's slower than [code]INTERPOLATE_BILINEAR[/code], but produces higher quality results, with much less aliasing artifacts.
-			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image. (Note that if you intend to scale multiple copies of the original image, it's better to call [code]generate_mipmaps[/code] on it in advance, to avoid wasting processing power in generating them again and again.)
+			Performs bilinear separately on the two most-suited mipmap levels, then linearly interpolates between them.
+			It's slower than [constant INTERPOLATE_BILINEAR], but produces higher-quality results with much less aliasing artifacts.
+			If the image does not have mipmaps, they will be generated and used internally, but no mipmaps will be generated on the resulting image.
+			[b]Note:[/b] If you intend to scale multiple copies of the original image, it's better to call [method generate_mipmaps]] on it in advance, to avoid wasting processing power in generating them again and again.
 			On the other hand, if the image already has mipmaps, they will be used, and a new set will be generated for the resulting image.
+		</constant>
+		<constant name="INTERPOLATE_LANCZOS" value="4" enum="Interpolation">
+			Performs Lanczos interpolation. This is the slowest image resizing mode, but it typically gives the best results, especially when downscalng images.
 		</constant>
 		<constant name="ALPHA_NONE" value="0" enum="AlphaMode">
 		</constant>

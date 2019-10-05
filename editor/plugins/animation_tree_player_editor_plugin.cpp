@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  animation_tree_editor_plugin.cpp                                     */
+/*  animation_tree_player_editor_plugin.cpp                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -200,7 +200,8 @@ void AnimationTreePlayerEditor::_edit_dialog_changed() {
 			if (anim_tree->transition_node_get_current(edited_node) != edit_option->get_selected())
 				anim_tree->transition_node_set_current(edited_node, edit_option->get_selected());
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
@@ -457,7 +458,8 @@ void AnimationTreePlayerEditor::_popup_edit_dialog() {
 				edit_dialog->set_size(Size2(150, 100));
 
 			} break;
-			default: {}
+			default: {
+			}
 		}
 	}
 
@@ -509,9 +511,7 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 	font->draw_halign(ci, ofs + ascofs, HALIGN_CENTER, w, p_node, font_color);
 	ofs.y += h;
 
-	int count = 2; // title and name
 	int inputs = anim_tree->node_get_input_count(p_node);
-	count += inputs ? inputs : 1;
 
 	float icon_h_ofs = Math::floor((font->get_height() - slot_icon->get_height()) / 2.0) + 1;
 
@@ -555,7 +555,8 @@ void AnimationTreePlayerEditor::_draw_node(const StringName &p_node) {
 						text += "->";
 
 					break;
-				default: {}
+				default: {
+				}
 			}
 			font->draw(ci, ofs + ascofs + Point2(3, 0), text, font_color);
 
@@ -615,7 +616,7 @@ AnimationTreePlayerEditor::ClickType AnimationTreePlayerEditor::_locate_click(co
 
 	for (const List<StringName>::Element *E = order.back(); E; E = E->prev()) {
 
-		StringName node = E->get();
+		const StringName &node = E->get();
 
 		AnimationTreePlayer::NodeType type = anim_tree->node_get_type(node);
 
@@ -740,7 +741,8 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						//open editor
 						//_node_edit_property(click_node);
 					} break;
-					default: {}
+					default: {
+					}
 				}
 			}
 			if (mb->get_button_index() == 2) {
@@ -817,7 +819,8 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 						anim_tree->node_set_position(click_node, new_pos);
 
 					} break;
-					default: {}
+					default: {
+					}
 				}
 
 				click_type = CLICK_NONE;
@@ -835,7 +838,7 @@ void AnimationTreePlayerEditor::_gui_input(Ref<InputEvent> p_event) {
 			click_motion = Point2(mm->get_position().x, mm->get_position().y);
 			update();
 		}
-		if ((mm->get_button_mask() & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE))) {
+		if (mm->get_button_mask() & 4 || Input::get_singleton()->is_key_pressed(KEY_SPACE)) {
 
 			h_scroll->set_value(h_scroll->get_value() - mm->get_relative().x);
 			v_scroll->set_value(v_scroll->get_value() - mm->get_relative().y);

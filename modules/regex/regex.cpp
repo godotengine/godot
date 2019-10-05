@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -178,13 +178,17 @@ void RegEx::clear() {
 
 	if (sizeof(CharType) == 2) {
 
-		if (code)
+		if (code) {
 			pcre2_code_free_16((pcre2_code_16 *)code);
+			code = NULL;
+		}
 
 	} else {
 
-		if (code)
+		if (code) {
 			pcre2_code_free_32((pcre2_code_32 *)code);
+			code = NULL;
+		}
 	}
 }
 

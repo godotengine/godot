@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -130,8 +130,7 @@ void InspectorDock::_menu_option(int p_option) {
 				ERR_FAIL_INDEX(idx, methods.size());
 				String name = methods[idx].name;
 
-				if (current)
-					current->call(name);
+				current->call(name);
 			}
 		}
 	}
@@ -170,7 +169,7 @@ void InspectorDock::_save_resource(bool save_as) const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
 
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
+	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
 	RES current_res = RES(Object::cast_to<Resource>(current_obj));
 
@@ -184,7 +183,7 @@ void InspectorDock::_unref_resource() const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
 
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
+	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
 	RES current_res = RES(Object::cast_to<Resource>(current_obj));
 	current_res->set_path("");
@@ -195,7 +194,7 @@ void InspectorDock::_copy_resource() const {
 	uint32_t current = EditorNode::get_singleton()->get_editor_history()->get_current();
 	Object *current_obj = current > 0 ? ObjectDB::get_instance(current) : NULL;
 
-	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj))
+	ERR_FAIL_COND(!Object::cast_to<Resource>(current_obj));
 
 	RES current_res = RES(Object::cast_to<Resource>(current_obj));
 
@@ -254,13 +253,11 @@ void InspectorDock::_prepare_history() {
 			text = obj->get_class();
 		}
 
-		if (i == editor_history->get_history_pos()) {
+		if (i == editor_history->get_history_pos() && current) {
 			text = "[" + text + "]";
 		}
 		history_menu->get_popup()->add_icon_item(icon, text, i);
 	}
-
-	editor_path->update_path();
 }
 
 void InspectorDock::_select_history(int p_idx) const {
@@ -297,7 +294,7 @@ void InspectorDock::_edit_forward() {
 }
 void InspectorDock::_edit_back() {
 	EditorHistory *editor_history = EditorNode::get_singleton()->get_editor_history();
-	if (editor_history->previous() || editor_history->get_path_size() == 1)
+	if ((current && editor_history->previous()) || editor_history->get_path_size() == 1)
 		editor->edit_current();
 }
 
@@ -334,6 +331,7 @@ void InspectorDock::_notification(int p_what) {
 			set_theme(editor->get_gui_base()->get_theme());
 			resource_new_button->set_icon(get_icon("New", "EditorIcons"));
 			resource_load_button->set_icon(get_icon("Load", "EditorIcons"));
+			resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
 			backward_button->set_icon(get_icon("Back", "EditorIcons"));
 			forward_button->set_icon(get_icon("Forward", "EditorIcons"));
 			history_menu->set_icon(get_icon("History", "EditorIcons"));
@@ -408,6 +406,11 @@ void InspectorDock::update(Object *p_object) {
 		warning->hide();
 		search->set_editable(false);
 
+		editor_path->set_disabled(true);
+		editor_path->set_text("");
+		editor_path->set_tooltip("");
+		editor_path->set_icon(NULL);
+
 		return;
 	}
 
@@ -416,6 +419,8 @@ void InspectorDock::update(Object *p_object) {
 
 	object_menu->set_disabled(false);
 	search->set_editable(true);
+	editor_path->set_disabled(false);
+	resource_save_button->set_disabled(!is_resource);
 
 	PopupMenu *p = object_menu->get_popup();
 
@@ -515,6 +520,16 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	resource_load_button->connect("pressed", this, "_open_resource_selector");
 	resource_load_button->set_focus_mode(Control::FOCUS_NONE);
 
+	resource_save_button = memnew(MenuButton);
+	resource_save_button->set_tooltip(TTR("Save the currently edited resource."));
+	resource_save_button->set_icon(get_icon("Save", "EditorIcons"));
+	general_options_hb->add_child(resource_save_button);
+	resource_save_button->get_popup()->add_item(TTR("Save"), RESOURCE_SAVE);
+	resource_save_button->get_popup()->add_item(TTR("Save As..."), RESOURCE_SAVE_AS);
+	resource_save_button->get_popup()->connect("id_pressed", this, "_menu_option");
+	resource_save_button->set_focus_mode(Control::FOCUS_NONE);
+	resource_save_button->set_disabled(true);
+
 	general_options_hb->add_spacer();
 
 	backward_button = memnew(ToolButton);
@@ -593,7 +608,6 @@ InspectorDock::InspectorDock(EditorNode *p_editor, EditorData &p_editor_data) {
 	inspector->set_undo_redo(&editor_data->get_undo_redo());
 
 	inspector->set_use_filter(true); // TODO: check me
-	inspector->set_auto_unfold_edited(bool(EDITOR_GET("interface/inspector/auto_unfold_edited")));
 
 	inspector->connect("resource_selected", this, "_resource_selected");
 	inspector->connect("property_keyed", this, "_property_keyed");

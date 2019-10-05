@@ -2,6 +2,7 @@
 [vertex]
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
@@ -25,11 +26,17 @@ void main() {
 [fragment]
 
 #ifdef USE_GLES_OVER_GL
+#define lowp
 #define mediump
 #define highp
 #else
+#if defined(USE_HIGHP_PRECISION)
+precision highp float;
+precision highp int;
+#else
 precision mediump float;
 precision mediump int;
+#endif
 #endif
 
 uniform highp samplerCube source_cube; //texunit:0

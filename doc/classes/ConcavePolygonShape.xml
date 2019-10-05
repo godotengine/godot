@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ConcavePolygonShape" inherits="Shape" category="Core" version="3.1">
+<class name="ConcavePolygonShape" inherits="Shape" category="Core" version="3.2">
 	<brief_description>
 		Concave polygon shape.
 	</brief_description>
@@ -8,14 +8,12 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_faces" qualifiers="const">
 			<return type="PoolVector3Array">
 			</return>
 			<description>
-				Return the faces (an array of triangles).
+				Returns the faces (an array of triangles).
 			</description>
 		</method>
 		<method name="set_faces">
@@ -24,7 +22,7 @@
 			<argument index="0" name="faces" type="PoolVector3Array">
 			</argument>
 			<description>
-				Set the faces (an array of triangles).
+				Sets the faces (an array of triangles).
 			</description>
 		</method>
 	</methods>

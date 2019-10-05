@@ -1,26 +1,26 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1errors.h                                                             */
-/*                                                                         */
-/*    Type 1 error codes (specification only).                             */
-/*                                                                         */
-/*  Copyright 2001-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1errors.h
+ *
+ *   Type 1 error codes (specification only).
+ *
+ * Copyright (C) 2001-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* This file is used to define the Type 1 error enumeration constants.   */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This file is used to define the Type 1 error enumeration constants.
+   *
+   */
 
 #ifndef T1ERRORS_H_
 #define T1ERRORS_H_

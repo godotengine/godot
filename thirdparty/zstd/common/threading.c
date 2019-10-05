@@ -14,8 +14,8 @@
  * This file will hold wrapper for systems, which do not support pthreads
  */
 
-/* create fake symbol to avoid empty trnaslation unit warning */
-int g_ZSTD_threading_useles_symbol;
+/* create fake symbol to avoid empty translation unit warning */
+int g_ZSTD_threading_useless_symbol;
 
 #if defined(ZSTD_MULTITHREAD) && defined(_WIN32)
 

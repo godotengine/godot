@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,7 +37,8 @@ EditorRun::Status EditorRun::get_status() const {
 
 	return status;
 }
-Error EditorRun::run(const String &p_scene, const String p_custom_args, const List<String> &p_breakpoints) {
+
+Error EditorRun::run(const String &p_scene, const String &p_custom_args, const List<String> &p_breakpoints, const bool &p_skip_breakpoints) {
 
 	List<String> args;
 
@@ -50,10 +51,8 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		args.push_back(resource_path.replace(" ", "%20"));
 	}
 
-	if (true) {
-		args.push_back("--remote-debug");
-		args.push_back(remote_host + ":" + String::num(remote_port));
-	}
+	args.push_back("--remote-debug");
+	args.push_back(remote_host + ":" + String::num(remote_port));
 
 	args.push_back("--allow_focus_steal_pid");
 	args.push_back(itos(OS::get_singleton()->get_process_id()));
@@ -162,6 +161,10 @@ Error EditorRun::run(const String &p_scene, const String p_custom_args, const Li
 		}
 
 		args.push_back(bpoints);
+	}
+
+	if (p_skip_breakpoints) {
+		args.push_back("--skip-breakpoints");
 	}
 
 	if (p_scene != "") {
