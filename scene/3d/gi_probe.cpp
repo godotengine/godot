@@ -413,6 +413,7 @@ void GIProbe::bake(Node *p_from_node, bool p_create_visual_debug) {
 		probe_data->allocate(baker.get_to_cell_space_xform(), AABB(-extents, extents * 2.0), baker.get_giprobe_octree_size(), baker.get_giprobe_octree_cells(), baker.get_giprobe_data_cells(), baker.get_giprobe_level_cell_count());
 
 		set_probe_data(probe_data);
+		probe_data->set_edited(true); //so it gets saved
 	}
 
 	if (bake_end_function) {

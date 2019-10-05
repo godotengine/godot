@@ -84,12 +84,10 @@ void RasterizerRD::begin_frame(double frame_step) {
 
 void RasterizerRD::end_frame(bool p_swap_buffers) {
 
-	RD::get_singleton()->finalize_frame();
 #ifndef _MSC_VER
-#warning not swapping buffers likely not an option for now, find another way
+#warning TODO: likely passa bool to swap buffers to avoid display?
 #endif
-	OS::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
-	RD::get_singleton()->advance_frame(); //advance frame here, so any new call happens on new frame
+	RD::get_singleton()->swap_buffers(); //probably should pass some bool to avoid display?
 }
 
 void RasterizerRD::initialize() {

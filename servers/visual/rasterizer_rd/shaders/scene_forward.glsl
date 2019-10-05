@@ -326,9 +326,9 @@ layout(location =8) in float dp_clip;
 
 //defines to keep compatibility with vertex
 
-#define world_matrix instances.data[instance_index].transform;
-#define world_normal_matrix instances.data[instance_index].normal_transform;
-#define projection_matrix scene_data.projection_matrix;
+#define world_matrix instances.data[instance_index].transform
+#define world_normal_matrix instances.data[instance_index].normal_transform
+#define projection_matrix scene_data.projection_matrix
 
 #ifdef USE_MATERIAL_UNIFORMS
 layout(set = 3, binding = 0, std140) uniform MaterialUniforms {
