@@ -214,6 +214,9 @@ Engine *Engine::get_singleton() {
 	return singleton;
 }
 
+bool Engine::is_abort_on_gpu_errors_enabled() const {
+	return abort_on_gpu_errors;
+}
 Engine::Engine() {
 
 	singleton = this;
@@ -232,4 +235,5 @@ Engine::Engine() {
 	_frame_ticks = 0;
 	_frame_step = 0;
 	editor_hint = false;
+	abort_on_gpu_errors = false;
 }

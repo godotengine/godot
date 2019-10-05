@@ -1439,6 +1439,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 		}
 
 		gi_probe->last_probe_data_version = data_version;
+		gi_probe_slots_dirty = true;
 	}
 
 	// UDPDATE TIME
@@ -1510,6 +1511,8 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
 
 		int passes = storage->gi_probe_is_using_two_bounces(gi_probe->probe) ? 2 : 1;
+		int wg_size = 64;
+		int wg_limit_x = RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X);
 
 		for (int pass = 0; pass < passes; pass++) {
 
@@ -1532,9 +1535,14 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 				push_constant.cell_offset = gi_probe->mipmaps[i].cell_offset;
 				push_constant.cell_count = gi_probe->mipmaps[i].cell_count;
 
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
-
-				RD::get_singleton()->compute_list_dispatch(compute_list, (gi_probe->mipmaps[i].cell_count - 1) / 64 + 1, 1, 1);
+				int wg_todo = (gi_probe->mipmaps[i].cell_count - 1) / wg_size + 1;
+				while (wg_todo) {
+					int wg_count = MIN(wg_todo, wg_limit_x);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
+					RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
+					wg_todo -= wg_count;
+					push_constant.cell_offset += wg_count * wg_size;
+				}
 			}
 
 			RD::get_singleton()->compute_list_add_barrier(compute_list); //wait til previous step is done
@@ -1548,9 +1556,14 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 				push_constant.cell_offset = gi_probe->mipmaps[i].cell_offset;
 				push_constant.cell_count = gi_probe->mipmaps[i].cell_count;
 
-				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
-
-				RD::get_singleton()->compute_list_dispatch(compute_list, (gi_probe->mipmaps[i].cell_count - 1) / 64 + 1, 1, 1);
+				int wg_todo = (gi_probe->mipmaps[i].cell_count - 1) / wg_size + 1;
+				while (wg_todo) {
+					int wg_count = MIN(wg_todo, wg_limit_x);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
+					RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
+					wg_todo -= wg_count;
+					push_constant.cell_offset += wg_count * wg_size;
+				}
 			}
 		}
 
@@ -1560,7 +1573,7 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 	gi_probe->last_probe_version = storage->gi_probe_get_version(gi_probe->probe);
 }
 
-void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, float p_alpha) {
+void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha) {
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND(!gi_probe);
 
@@ -1631,7 +1644,7 @@ void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_lis
 	}
 
 	giprobe_debug_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_debug_shader_version_shaders[0], 0);
-	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, giprobe_debug_shader_version_pipelines[p_lighting ? GI_PROBE_DEBUG_LIGHT : GI_PROBE_DEBUG_COLOR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, giprobe_debug_shader_version_pipelines[p_emission ? GI_PROBE_DEBUG_EMISSION : p_lighting ? GI_PROBE_DEBUG_LIGHT : GI_PROBE_DEBUG_COLOR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, giprobe_debug_uniform_set, 0);
 	RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(GIProbeDebugPushConstant));
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, cell_count, 36);
@@ -2007,6 +2020,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		Vector<String> versions;
 		versions.push_back("\n#define MODE_DEBUG_COLOR\n");
 		versions.push_back("\n#define MODE_DEBUG_LIGHT\n");
+		versions.push_back("\n#define MODE_DEBUG_EMISSION\n");
 
 		giprobe_debug_shader.initialize(versions, defines);
 		giprobe_debug_shader_version = giprobe_debug_shader.version_create();

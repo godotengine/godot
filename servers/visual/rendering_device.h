@@ -1002,14 +1002,23 @@ public:
 		LIMIT_MAX_VERTEX_INPUT_BINDINGS,
 		LIMIT_MAX_VERTEX_INPUT_BINDING_STRIDE,
 		LIMIT_MIN_UNIFORM_BUFFER_OFFSET_ALIGNMENT,
+		LIMIT_MAX_COMPUTE_SHARED_MEMORY_SIZE,
+		LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X,
+		LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Y,
+		LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_Z,
+		LIMIT_MAX_COMPUTE_WORKGROUP_INVOCATIONS,
+		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_X,
+		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Y,
+		LIMIT_MAX_COMPUTE_WORKGROUP_SIZE_Z,
 	};
 
 	virtual int limit_get(Limit p_limit) = 0;
 
 	//methods below not exposed, used by RenderingDeviceRD
 	virtual void prepare_screen_for_drawing() = 0;
-	virtual void finalize_frame() = 0;
-	virtual void advance_frame() = 0;
+
+	virtual void swap_buffers() = 0;
+
 	virtual uint32_t get_frame_delay() const = 0;
 
 	static RenderingDevice *get_singleton();

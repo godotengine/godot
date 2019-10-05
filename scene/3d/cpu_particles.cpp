@@ -1144,7 +1144,7 @@ void CPUParticles::_update_render_thread() {
 	update_mutex->lock();
 #endif
 	if (can_update) {
-		VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+		//VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 		can_update = false; //wait for next time
 	}
 

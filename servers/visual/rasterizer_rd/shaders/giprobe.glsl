@@ -248,7 +248,7 @@ void main() {
 
 	vec3 pos = vec3(posu) + vec3(0.5);
 
-	vec3 emission = vec3(ivec3(cell_data.data[cell_index].emission&0x3FF,(cell_data.data[cell_index].emission>>10)&0x7FF,cell_data.data[cell_index].emission>>21)) * params.emission_scale;
+	vec3 emission = vec3(uvec3(cell_data.data[cell_index].emission & 0x1ff,(cell_data.data[cell_index].emission >> 9) & 0x1ff,(cell_data.data[cell_index].emission >> 18) & 0x1ff)) * pow(2.0, float(cell_data.data[cell_index].emission >> 27) - 15.0 - 9.0);
 	vec4 normal = unpackSnorm4x8(cell_data.data[cell_index].normal);
 
 #ifdef MODE_ANISOTROPIC
@@ -271,8 +271,8 @@ void main() {
 		float distance = length(light_dir);
 		light_dir=normalize(light_dir);
 
-		if (length(normal.xyz) > 0.2 && dot(normal.xyz,light_dir)>=0) {
-			continue; //not facing the light
+		if (attenuation < 0.01 || (length(normal.xyz) > 0.2 && dot(normal.xyz,light_dir)>=0)) {
+			continue; //not facing the light, or attenuation is near zero
 		}
 
 		if (lights.data[i].has_shadow) {
@@ -299,11 +299,11 @@ void main() {
 #ifdef MODE_ANISOTROPIC
 		for(uint j=0;j<6;j++) {
 
-			accum[j]+=max(0.0,dot(accum_dirs[j],-light_dir))*light+emission;
+			accum[j]+=max(0.0,dot(accum_dirs[j],-light_dir))*light;
 		}
 #else
 		if (length(normal.xyz) > 0.2) {
-			accum+=max(0.0,dot(normal.xyz,-light_dir))*light+emission;
+			accum+=max(0.0,dot(normal.xyz,-light_dir))*light;
 		} else {
 			//all directions
 			accum+=light+emission;
@@ -314,14 +314,14 @@ void main() {
 
 #ifdef MODE_ANISOTROPIC
 
-	outputs.data[cell_index*6+0]=vec4(accum[0],0.0);
-	outputs.data[cell_index*6+1]=vec4(accum[1],0.0);
-	outputs.data[cell_index*6+2]=vec4(accum[2],0.0);
-	outputs.data[cell_index*6+3]=vec4(accum[3],0.0);
-	outputs.data[cell_index*6+4]=vec4(accum[4],0.0);
-	outputs.data[cell_index*6+5]=vec4(accum[5],0.0);
+	outputs.data[cell_index*6+0]=vec4(accum[0] + emission,0.0);
+	outputs.data[cell_index*6+1]=vec4(accum[1] + emission,0.0);
+	outputs.data[cell_index*6+2]=vec4(accum[2] + emission,0.0);
+	outputs.data[cell_index*6+3]=vec4(accum[3] + emission,0.0);
+	outputs.data[cell_index*6+4]=vec4(accum[4] + emission,0.0);
+	outputs.data[cell_index*6+5]=vec4(accum[5] + emission,0.0);
 #else
-	outputs.data[cell_index]=vec4(accum,0.0);
+	outputs.data[cell_index]=vec4(accum + emission,0.0);
 
 #endif
 
@@ -420,7 +420,7 @@ void main() {
 				}
 
 			}
-			color *= cone_weights[i] * params.dynamic_range; //restore range
+			color *= cone_weights[i] * vec4(albedo.rgb,1.0) * params.dynamic_range; //restore range
 #ifdef MODE_ANISOTROPIC
 			for(uint j=0;j<6;j++) {
 
