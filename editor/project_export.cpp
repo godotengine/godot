@@ -1149,11 +1149,15 @@ ProjectExportDialog::ProjectExportDialog() {
 	include_files->connect("item_edited", this, "_tree_changed");
 
 	include_filters = memnew(LineEdit);
-	resources_vb->add_margin_child(TTR("Filters to export non-resource files (comma separated, e.g: *.json, *.txt)"), include_filters);
+	resources_vb->add_margin_child(
+			TTR("Filters to export non-resource files/folders\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
+			include_filters);
 	include_filters->connect("text_changed", this, "_filter_changed");
 
 	exclude_filters = memnew(LineEdit);
-	resources_vb->add_margin_child(TTR("Filters to exclude files from project (comma separated, e.g: *.json, *.txt)"), exclude_filters);
+	resources_vb->add_margin_child(
+			TTR("Filters to exclude files/folders from project\n(comma-separated, e.g: *.json, *.txt, docs/*)"),
+			exclude_filters);
 	exclude_filters->connect("text_changed", this, "_filter_changed");
 
 	VBoxContainer *patch_vb = memnew(VBoxContainer);
