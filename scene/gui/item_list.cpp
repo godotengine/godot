@@ -430,6 +430,7 @@ ItemList::SelectMode ItemList::get_select_mode() const {
 
 void ItemList::set_icon_mode(IconMode p_mode) {
 
+	ERR_FAIL_INDEX((int)p_mode, 2);
 	icon_mode = p_mode;
 	update();
 	shape_changed = true;
