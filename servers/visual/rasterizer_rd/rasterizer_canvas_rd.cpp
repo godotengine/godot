@@ -517,9 +517,8 @@ void RasterizerCanvasRD::_render_item(RD::DrawListID p_draw_list, const Item *p_
 	push_constant.color_texture_pixel_size[0] = 0;
 	push_constant.color_texture_pixel_size[1] = 0;
 
+	push_constant.pad[0] = 0;
 	push_constant.pad[1] = 0;
-	push_constant.pad[2] = 0;
-	push_constant.pad[3] = 0;
 
 	push_constant.lights[0] = 0;
 	push_constant.lights[1] = 0;
