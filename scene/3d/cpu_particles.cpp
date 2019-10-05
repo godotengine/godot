@@ -72,7 +72,7 @@ void CPUParticles::set_amount(int p_amount) {
 		}
 	}
 
-	particle_data.resize((12 + 4 + 1) * p_amount);
+	particle_data.resize((12 + 4 + 4) * p_amount);
 	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_3D, true, true);
 
 	particle_order.resize(p_amount);
@@ -1093,18 +1093,18 @@ void CPUParticles::_update_particle_data_buffer() {
 			}
 
 			Color c = r[idx].color;
-			uint8_t *data8 = (uint8_t *)&ptr[12];
-			data8[0] = CLAMP(c.r * 255.0, 0, 255);
-			data8[1] = CLAMP(c.g * 255.0, 0, 255);
-			data8[2] = CLAMP(c.b * 255.0, 0, 255);
-			data8[3] = CLAMP(c.a * 255.0, 0, 255);
 
-			ptr[13] = r[idx].custom[0];
-			ptr[14] = r[idx].custom[1];
-			ptr[15] = r[idx].custom[2];
-			ptr[16] = r[idx].custom[3];
+			ptr[12] = c.r;
+			ptr[13] = c.g;
+			ptr[14] = c.b;
+			ptr[15] = c.a;
 
-			ptr += 17;
+			ptr[16] = r[idx].custom[0];
+			ptr[17] = r[idx].custom[1];
+			ptr[18] = r[idx].custom[2];
+			ptr[19] = r[idx].custom[3];
+
+			ptr += 20;
 		}
 
 		can_update = true;
@@ -1144,7 +1144,7 @@ void CPUParticles::_update_render_thread() {
 	update_mutex->lock();
 #endif
 	if (can_update) {
-		//VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
+		VS::get_singleton()->multimesh_set_buffer(multimesh, particle_data);
 		can_update = false; //wait for next time
 	}
 
@@ -1210,7 +1210,7 @@ void CPUParticles::_notification(int p_what) {
 					zeromem(ptr, sizeof(float) * 12);
 				}
 
-				ptr += 17;
+				ptr += 20;
 			}
 
 			can_update = true;
