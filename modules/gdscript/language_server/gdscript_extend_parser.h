@@ -75,11 +75,6 @@ class ExtendGDScriptParser : public GDScriptParser {
 
 	Array member_completions;
 
-	String parse_documentation_as_markdown(int p_line, bool p_docs_down = false);
-
-public:
-	static String marked_documentation(const String &p_bbcode);
-
 public:
 	_FORCE_INLINE_ const String &get_path() const { return path; }
 	_FORCE_INLINE_ const Vector<String> &get_lines() const { return lines; }

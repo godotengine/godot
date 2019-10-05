@@ -39,6 +39,7 @@
 void GDScriptTextDocument::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("didOpen"), &GDScriptTextDocument::didOpen);
 	ClassDB::bind_method(D_METHOD("didChange"), &GDScriptTextDocument::didChange);
+	ClassDB::bind_method(D_METHOD("nativeSymbol"), &GDScriptTextDocument::nativeSymbol);
 	ClassDB::bind_method(D_METHOD("documentSymbol"), &GDScriptTextDocument::documentSymbol);
 	ClassDB::bind_method(D_METHOD("completion"), &GDScriptTextDocument::completion);
 	ClassDB::bind_method(D_METHOD("resolve"), &GDScriptTextDocument::resolve);
@@ -75,6 +76,11 @@ lsp::TextDocumentItem GDScriptTextDocument::load_document_item(const Variant &p_
 	return doc;
 }
 
+void GDScriptTextDocument::notify_client_show_symbol(const lsp::DocumentSymbol *symbol) {
+	ERR_FAIL_NULL(symbol);
+	GDScriptLanguageProtocol::get_singleton()->notify_client("gdscript/show_native_symbol", symbol->to_json(true));
+}
+
 void GDScriptTextDocument::initialize() {
 
 	if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
@@ -100,6 +106,21 @@ void GDScriptTextDocument::initialize() {
 			class_ptr = native_members.next(class_ptr);
 		}
 	}
+}
+
+Variant GDScriptTextDocument::nativeSymbol(const Dictionary &p_params) {
+
+	Variant ret;
+
+	lsp::NativeSymbolInspectParams params;
+	params.load(p_params);
+
+	if (const lsp::DocumentSymbol *symbol = GDScriptLanguageProtocol::get_singleton()->get_workspace()->resolve_native_symbol(params)) {
+		ret = symbol->to_json(true);
+		notify_client_show_symbol(symbol);
+	}
+
+	return ret;
 }
 
 Array GDScriptTextDocument::documentSymbol(const Dictionary &p_params) {
@@ -335,31 +356,35 @@ Array GDScriptTextDocument::definition(const Dictionary &p_params) {
 		const String &path = GDScriptLanguageProtocol::get_singleton()->get_workspace()->get_file_path(symbol->uri);
 		if (file_checker->file_exists(path)) {
 			arr.push_back(location.to_json());
-		} else if (!symbol->native_class.empty() && GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
-			String id;
-			switch (symbol->kind) {
-				case lsp::SymbolKind::Class:
-					id = "class_name:" + symbol->name;
-					break;
-				case lsp::SymbolKind::Constant:
-					id = "class_constant:" + symbol->native_class + ":" + symbol->name;
-					break;
-				case lsp::SymbolKind::Property:
-				case lsp::SymbolKind::Variable:
-					id = "class_property:" + symbol->native_class + ":" + symbol->name;
-					break;
-				case lsp::SymbolKind::Enum:
-					id = "class_enum:" + symbol->native_class + ":" + symbol->name;
-					break;
-				case lsp::SymbolKind::Method:
-				case lsp::SymbolKind::Function:
-					id = "class_method:" + symbol->native_class + ":" + symbol->name;
-					break;
-				default:
-					id = "class_global:" + symbol->native_class + ":" + symbol->name;
-					break;
+		} else if (!symbol->native_class.empty()) {
+			if (GDScriptLanguageProtocol::get_singleton()->is_goto_native_symbols_enabled()) {
+				String id;
+				switch (symbol->kind) {
+					case lsp::SymbolKind::Class:
+						id = "class_name:" + symbol->name;
+						break;
+					case lsp::SymbolKind::Constant:
+						id = "class_constant:" + symbol->native_class + ":" + symbol->name;
+						break;
+					case lsp::SymbolKind::Property:
+					case lsp::SymbolKind::Variable:
+						id = "class_property:" + symbol->native_class + ":" + symbol->name;
+						break;
+					case lsp::SymbolKind::Enum:
+						id = "class_enum:" + symbol->native_class + ":" + symbol->name;
+						break;
+					case lsp::SymbolKind::Method:
+					case lsp::SymbolKind::Function:
+						id = "class_method:" + symbol->native_class + ":" + symbol->name;
+						break;
+					default:
+						id = "class_global:" + symbol->native_class + ":" + symbol->name;
+						break;
+				}
+				call_deferred("show_native_symbol_in_editor", id);
+			} else {
+				notify_client_show_symbol(symbol);
 			}
-			call_deferred("show_native_symbol_in_editor", id);
 		}
 	} else if (GDScriptLanguageProtocol::get_singleton()->is_smart_resolve_enabled()) {
 
