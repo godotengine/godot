@@ -37,6 +37,9 @@ namespace lsp {
 
 typedef String DocumentUri;
 
+/** Format BBCode documentation from DocData to markdown */
+static String marked_documentation(const String &p_bbcode);
+
 /**
  * Text documents are identified using a URI. On the protocol level, URIs are passed as strings.
  */
@@ -281,6 +284,9 @@ struct Command {
 		return dict;
 	}
 };
+
+// Use namespace instead of enumeration to follow the LSP specifications
+// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
 
 namespace TextDocumentSyncKind {
 /**
@@ -592,6 +598,7 @@ struct TextDocumentContentChangeEvent {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
 namespace DiagnosticSeverity {
 /**
 	 * Reports an error.
@@ -692,6 +699,7 @@ struct Diagnostic {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
 /**
  * Describes the content type that a client supports in various
  * result literals like `Hover`, `ParameterInfo` or `CompletionItem`.
@@ -756,6 +764,9 @@ struct MarkupContent {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
+// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
+// And here C++ compilers are unhappy with our enumeration name like Color, File, Reference etc.
 /**
  * The kind of a completion entry.
  */
@@ -787,6 +798,7 @@ static const int Operator = 24;
 static const int TypeParameter = 25;
 }; // namespace CompletionItemKind
 
+// Use namespace instead of enumeration to follow the LSP specifications
 /**
  * Defines whether the insert text in a completion item should be interpreted as
  * plain text or a snippet.
@@ -979,6 +991,9 @@ struct CompletionList {
 	Vector<CompletionItem> items;
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
+// lsp::EnumName::EnumValue is OK but lsp::EnumValue is not
+// And here C++ compilers are unhappy with our enumeration name like String, Array, Object etc
 /**
  * A symbol kind.
  */
@@ -1181,7 +1196,7 @@ struct DocumentSymbol {
 			markdown.value = "\t" + detail + "\n\n";
 		}
 		if (documentation.length()) {
-			markdown.value += documentation + "\n\n";
+			markdown.value += marked_documentation(documentation) + "\n\n";
 		}
 		if (script_path.length()) {
 			markdown.value += "Defined in [" + script_path + "](" + uri + ")";
@@ -1304,6 +1319,7 @@ struct FoldingRange {
 	}
 };
 
+// Use namespace instead of enumeration to follow the LSP specifications
 /**
  * How a completion was triggered
  */
@@ -1550,6 +1566,61 @@ struct InitializeResult {
 		return dict;
 	}
 };
+
+/** Format BBCode documentation from DocData to markdown */
+static String marked_documentation(const String &p_bbcode) {
+
+	String markdown = p_bbcode.strip_edges();
+
+	Vector<String> lines = markdown.split("\n");
+	bool in_code_block = false;
+	int code_block_indent = -1;
+
+	markdown = "";
+	for (int i = 0; i < lines.size(); i++) {
+		String line = lines[i];
+		int block_start = line.find("[codeblock]");
+		if (block_start != -1) {
+			code_block_indent = block_start;
+			in_code_block = true;
+			line = "\n";
+		} else if (in_code_block) {
+			line = "\t" + line.substr(code_block_indent, line.length());
+		}
+
+		if (in_code_block && line.find("[/codeblock]") != -1) {
+			line = "\n";
+			in_code_block = false;
+		}
+
+		if (!in_code_block) {
+			line = line.strip_edges();
+			line = line.replace("[code]", "`");
+			line = line.replace("[/code]", "`");
+			line = line.replace("[i]", "*");
+			line = line.replace("[/i]", "*");
+			line = line.replace("[b]", "**");
+			line = line.replace("[/b]", "**");
+			line = line.replace("[u]", "__");
+			line = line.replace("[/u]", "__");
+			line = line.replace("[method ", "`");
+			line = line.replace("[member ", "`");
+			line = line.replace("[signal ", "`");
+			line = line.replace("[enum ", "`");
+			line = line.replace("[constant ", "`");
+			line = line.replace("[", "`");
+			line = line.replace("]", "`");
+		}
+
+		if (!in_code_block && i < lines.size() - 1) {
+			line += "\n\n";
+		} else if (i < lines.size() - 1) {
+			line += "\n";
+		}
+		markdown += line;
+	}
+	return markdown;
+}
 
 } // namespace lsp
 
