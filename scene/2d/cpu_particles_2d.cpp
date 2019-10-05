@@ -55,7 +55,7 @@ void CPUParticles2D::set_amount(int p_amount) {
 		}
 	}
 
-	particle_data.resize((8 + 4 + 1) * p_amount);
+	particle_data.resize((8 + 4 + 4) * p_amount);
 	VS::get_singleton()->multimesh_allocate(multimesh, p_amount, VS::MULTIMESH_TRANSFORM_2D, true, true);
 
 	particle_order.resize(p_amount);
@@ -932,18 +932,18 @@ void CPUParticles2D::_update_particle_data_buffer() {
 			}
 
 			Color c = r[idx].color;
-			uint8_t *data8 = (uint8_t *)&ptr[8];
-			data8[0] = CLAMP(c.r * 255.0, 0, 255);
-			data8[1] = CLAMP(c.g * 255.0, 0, 255);
-			data8[2] = CLAMP(c.b * 255.0, 0, 255);
-			data8[3] = CLAMP(c.a * 255.0, 0, 255);
 
-			ptr[9] = r[idx].custom[0];
-			ptr[10] = r[idx].custom[1];
-			ptr[11] = r[idx].custom[2];
-			ptr[12] = r[idx].custom[3];
+			ptr[8] = c.r;
+			ptr[9] = c.g;
+			ptr[10] = c.b;
+			ptr[11] = c.a;
 
-			ptr += 13;
+			ptr[12] = r[idx].custom[0];
+			ptr[13] = r[idx].custom[1];
+			ptr[14] = r[idx].custom[2];
+			ptr[15] = r[idx].custom[3];
+
+			ptr += 16;
 		}
 	}
 
@@ -1115,7 +1115,7 @@ void CPUParticles2D::_notification(int p_what) {
 					zeromem(ptr, sizeof(float) * 8);
 				}
 
-				ptr += 13;
+				ptr += 16;
 			}
 		}
 	}
