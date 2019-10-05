@@ -1899,7 +1899,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	_fill_instances(render_list.elements, render_list.element_count);
 
 	bool can_continue = true; //unless the middle buffers are needed
-	bool debug_giprobes = debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING;
+	bool debug_giprobes = debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
 	bool using_separate_specular = false;
 
 	bool depth_pre_pass = depth_framebuffer.is_valid();
@@ -1930,7 +1930,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 		CameraMatrix cm = (dc * p_cam_projection) * CameraMatrix(p_cam_transform.affine_inverse());
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(opaque_framebuffer, RD::INITIAL_ACTION_CONTINUE, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CONTINUE, will_continue ? RD::FINAL_ACTION_CONTINUE : RD::FINAL_ACTION_READ);
 		for (int i = 0; i < p_gi_probe_cull_count; i++) {
-			_debug_giprobe(p_gi_probe_cull_result[i], draw_list, opaque_framebuffer, cm, debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, 1.0);
+			_debug_giprobe(p_gi_probe_cull_result[i], draw_list, opaque_framebuffer, cm, debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING, debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION, 1.0);
 		}
 		RD::get_singleton()->draw_list_end();
 	}
@@ -2204,10 +2204,15 @@ void RasterizerSceneForwardRD::_update_render_base_uniform_set() {
 			} else {
 				u.ids.resize(slot_count);
 			}
+
+			print_line("updating slots, probe count: " + itos(slot_count));
 			for (int i = 0; i < slot_count; i++) {
 
 				RID probe = gi_probe_get_slots()[i];
 
+				if (probe.is_valid()) {
+					print_line("probe valid: " + itos(i));
+				}
 				if (gi_probe_is_anisotropic()) {
 					if (probe.is_null()) {
 						RID empty_tex = storage->texture_rd_get_default(RasterizerStorageRD::DEFAULT_RD_TEXTURE_3D_WHITE);

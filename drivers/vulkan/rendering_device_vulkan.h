@@ -1116,8 +1116,7 @@ public:
 	void initialize(VulkanContext *p_context);
 	void finalize();
 
-	virtual void finalize_frame();
-	virtual void advance_frame();
+	virtual void swap_buffers();
 
 	virtual uint32_t get_frame_delay() const;
 

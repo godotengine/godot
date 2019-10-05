@@ -345,7 +345,11 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			case VS::INSTANCE_LIGHT: {
 
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-
+#ifdef DEBUG_ENABLED
+				if (light->geometries.size()) {
+					ERR_PRINT("BUG, indexing did not unpair geometries from light.");
+				}
+#endif
 				if (instance->scenario && light->D) {
 					instance->scenario->directional_lights.erase(light->D);
 					light->D = NULL;
@@ -371,7 +375,16 @@ void VisualServerScene::instance_set_base(RID p_instance, RID p_base) {
 			case VS::INSTANCE_GI_PROBE: {
 
 				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
-
+#ifdef DEBUG_ENABLED
+				if (gi_probe->geometries.size()) {
+					ERR_PRINT("BUG, indexing did not unpair geometries from GIProbe.");
+				}
+#endif
+#ifdef DEBUG_ENABLED
+				if (gi_probe->lights.size()) {
+					ERR_PRINT("BUG, indexing did not unpair lights from GIProbe.");
+				}
+#endif
 				if (gi_probe->update_element.in_list()) {
 					gi_probe_update_list.remove(&gi_probe->update_element);
 				}
@@ -490,7 +503,11 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 			case VS::INSTANCE_LIGHT: {
 
 				InstanceLightData *light = static_cast<InstanceLightData *>(instance->base_data);
-
+#ifdef DEBUG_ENABLED
+				if (light->geometries.size()) {
+					ERR_PRINT("BUG, indexing did not unpair geometries from light.");
+				}
+#endif
 				if (light->D) {
 					instance->scenario->directional_lights.erase(light->D);
 					light->D = NULL;
@@ -504,6 +521,18 @@ void VisualServerScene::instance_set_scenario(RID p_instance, RID p_scenario) {
 			case VS::INSTANCE_GI_PROBE: {
 
 				InstanceGIProbeData *gi_probe = static_cast<InstanceGIProbeData *>(instance->base_data);
+
+#ifdef DEBUG_ENABLED
+				if (gi_probe->geometries.size()) {
+					ERR_PRINT("BUG, indexing did not unpair geometries from GIProbe.");
+				}
+#endif
+#ifdef DEBUG_ENABLED
+				if (gi_probe->lights.size()) {
+					ERR_PRINT("BUG, indexing did not unpair lights from GIProbe.");
+				}
+#endif
+
 				if (gi_probe->update_element.in_list()) {
 					gi_probe_update_list.remove(&gi_probe->update_element);
 				}

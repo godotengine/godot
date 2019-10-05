@@ -29,6 +29,7 @@
 /*************************************************************************/
 
 #include "vulkan_context.h"
+#include "core/engine.h"
 #include "core/print_string.h"
 #include "core/project_settings.h"
 #include "core/version.h"
@@ -36,6 +37,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define VULKAN_DEBUG(m_text) print_line(m_text)
 #define APP_SHORT_NAME "GodotEngine"
@@ -121,7 +123,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 
 	free(message);
 
-	//	abort();
+	if (Engine::get_singleton()->is_abort_on_gpu_errors_enabled()) {
+		abort();
+	}
 	// Don't bail out, but keep going.
 	return false;
 }
