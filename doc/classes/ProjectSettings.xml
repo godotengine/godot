@@ -403,7 +403,7 @@
 			Sets the window to full screen when it starts.
 		</member>
 		<member name="display/window/size/height" type="int" setter="" getter="" default="600">
-			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use also as a reference when enabled.
+			Sets the game's main viewport height. On desktop platforms, this is the default window size. Stretch mode settings also use this as a reference when enabled.
 		</member>
 		<member name="display/window/size/resizable" type="bool" setter="" getter="" default="true">
 			Allows the window to be resizable by default.
