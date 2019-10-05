@@ -680,11 +680,22 @@ void VisualServerCanvas::canvas_item_add_texture_rect_region(RID p_item, const R
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_FLIP_H;
 		rect->rect.size.x = -rect->rect.size.x;
 	}
+	if (p_src_rect.size.x < 0) {
+
+		rect->flags ^= RasterizerCanvas::CANVAS_RECT_FLIP_H;
+		rect->source.size.x = -rect->source.size.x;
+	}
 	if (p_rect.size.y < 0) {
 
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_FLIP_V;
 		rect->rect.size.y = -rect->rect.size.y;
 	}
+	if (p_src_rect.size.y < 0) {
+
+		rect->flags ^= RasterizerCanvas::CANVAS_RECT_FLIP_V;
+		rect->source.size.y = -rect->source.size.y;
+	}
+
 	if (p_transpose) {
 		rect->flags |= RasterizerCanvas::CANVAS_RECT_TRANSPOSE;
 		SWAP(rect->rect.size.x, rect->rect.size.y);
