@@ -1050,6 +1050,7 @@ void TileMap::update_dirty_bitmask() {
 
 void TileMap::fix_invalid_tiles() {
 
+	ERR_FAIL_COND_MSG(tile_set.is_null(), "Cannot fix invalid tiles if Tileset is not open.");
 	for (Map<PosKey, Cell>::Element *E = tile_map.front(); E; E = E->next()) {
 
 		if (!tile_set->has_tile(get_cell(E->key().x, E->key().y))) {
