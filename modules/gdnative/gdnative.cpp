@@ -339,7 +339,7 @@ bool GDNative::initialize() {
 	if (err || !library_init) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
-		ERR_PRINT("Failed to obtain godot_gdnative_init symbol");
+		ERR_PRINTS("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
 		return false;
 	}
 
