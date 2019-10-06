@@ -4005,6 +4005,11 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 									return ERR_PARSE_ERROR;
 								}
 
+								if (node->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+									_set_error("Expected constant expression");
+									return ERR_PARSE_ERROR;
+								}
+
 								if (var.type != n->get_datatype()) {
 									_set_error("Invalid assignment of '" + get_datatype_name(n->get_datatype()) + "' to '" + get_datatype_name(var.type) + "'");
 									return ERR_PARSE_ERROR;
@@ -4065,7 +4070,10 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 					Node *n = _parse_and_reduce_expression(p_block, p_builtin_types);
 					if (!n)
 						return ERR_PARSE_ERROR;
-
+					if (node->is_const && n->type == Node::TYPE_OPERATOR && ((OperatorNode *)n)->op == OP_CALL) {
+						_set_error("Expected constant expression after '='");
+						return ERR_PARSE_ERROR;
+					}
 					decl.initializer = n;
 
 					if (var.type != n->get_datatype()) {
