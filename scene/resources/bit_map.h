@@ -67,6 +67,7 @@ public:
 	void resize(const Size2 &p_new_size);
 
 	void grow_mask(int p_pixels, const Rect2 &p_rect);
+	void shrink_mask(int p_pixels, const Rect2 &p_rect);
 
 	void blit(const Vector2 &p_pos, const Ref<BitMap> &p_bitmap);
 	Ref<Image> convert_to_image() const;
