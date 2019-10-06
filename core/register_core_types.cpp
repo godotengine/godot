@@ -39,6 +39,7 @@
 #include "core/engine.h"
 #include "core/func_ref.h"
 #include "core/input_map.h"
+#include "core/io/animated_image_loader.h"
 #include "core/io/config_file.h"
 #include "core/io/http_client.h"
 #include "core/io/image_loader.h"
@@ -71,6 +72,7 @@ static Ref<ResourceFormatSaverBinary> resource_saver_binary;
 static Ref<ResourceFormatLoaderBinary> resource_loader_binary;
 static Ref<ResourceFormatImporter> resource_format_importer;
 static Ref<ResourceFormatLoaderImage> resource_format_image;
+static Ref<ResourceFormatLoaderAnimatedImage> resource_format_animated_image;
 static Ref<TranslationLoaderPO> resource_format_po;
 static Ref<ResourceFormatSaverCrypto> resource_format_saver_crypto;
 static Ref<ResourceFormatLoaderCrypto> resource_format_loader_crypto;
@@ -124,6 +126,9 @@ void register_core_types() {
 	resource_format_image.instance();
 	ResourceLoader::add_resource_format_loader(resource_format_image);
 
+	resource_format_animated_image.instance();
+	ResourceLoader::add_resource_format_loader(resource_format_animated_image);
+
 	ClassDB::register_class<Object>();
 
 	ClassDB::register_virtual_class<Script>();
@@ -132,6 +137,7 @@ void register_core_types() {
 	ClassDB::register_class<WeakRef>();
 	ClassDB::register_class<Resource>();
 	ClassDB::register_class<Image>();
+	ClassDB::register_class<AnimatedImage>();
 
 	ClassDB::register_virtual_class<InputEvent>();
 	ClassDB::register_virtual_class<InputEventWithModifiers>();
@@ -275,6 +281,9 @@ void unregister_core_types() {
 	memdelete(_json);
 
 	memdelete(_geometry);
+
+	ResourceLoader::remove_resource_format_loader(resource_format_animated_image);
+	resource_format_animated_image.unref();
 
 	ResourceLoader::remove_resource_format_loader(resource_format_image);
 	resource_format_image.unref();

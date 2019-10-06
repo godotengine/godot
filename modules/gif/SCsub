@@ -1,0 +1,26 @@
+#!/usr/bin/env python
+
+Import('env')
+Import('env_modules')
+
+env_gif = env_modules.Clone()
+
+# Thirdparty source files
+thirdparty_dir = "#thirdparty/giflib/"
+thirdparty_sources = [
+    "gif_err.c",
+    "dgif_lib.c",
+    "gifalloc.c",
+    "gif_hash.c",
+    "openbsd-reallocarray.c"
+]
+thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
+
+env_gif.Prepend(CPPPATH=[thirdparty_dir])
+
+env_thirdparty = env_gif.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.modules_sources, thirdparty_sources)
+
+# Godot's own source files
+env_gif.add_source_files(env.modules_sources, "*.cpp")

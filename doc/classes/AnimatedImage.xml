@@ -1,0 +1,135 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="AnimatedImage" inherits="Reference" category="Core" version="3.2">
+	<brief_description>
+		Loads and converts animated images.
+	</brief_description>
+	<description>
+		[AnimatedImage] can load the frames of a GIF and store each of them as an [Image] and a delay. The data can then be used to generate an [AnimatedTexture] or a [SpriteFrames]. The params [code]max_frames[/code] of some methods can limit the number of generated frames.
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="load_from_file">
+			<return type="Array">
+			</return>
+			<argument index="0" name="path" type="String">
+			</argument>
+			<argument index="1" name="max_frames" type="int" default="0">
+			</argument>
+			<description>
+				Loads the data from a file located at [code]path[/code].
+			</description>
+		</method>
+		<method name="load_from_buffer">
+			<return type="Array">
+			</return>
+			<argument index="0" name="data" type="PoolByteArray">
+			</argument>
+			<argument index="1" name="max_frames" type="int" default="0">
+			</argument>
+			<description>
+				Loads the data from a [PoolByteArray] buffer.
+			</description>
+		</method>
+		<method name="to_animated_texture">
+			<return type="AnimatedTexture">
+			</return>
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<argument index="1" name="max_frames" type="int" default="0">
+			</argument>
+			<description>
+				Generates an [AnimatedTexture] from the loaded data.
+			</description>
+		</method>
+		<method name="to_sprite_frames">
+			<return type="SpriteFrames">
+			</return>
+			<argument index="0" name="flags" type="int">
+			</argument>
+			<argument index="1" name="max_frames" type="int" default="0">
+			</argument>
+			<description>
+				Generates a [SpriteFrames] from the loaded data.
+			</description>
+		</method>
+		<method name="add_frame">
+			<return type="void">
+			</return>
+			<argument index="0" name="image" type="Image">
+			</argument>
+			<argument index="1" name="delay" type="float">
+			</argument>
+			<argument index="2" name="idx" type="int" default="-1">
+			</argument>
+			<description>
+				Adds a new frame.
+			</description>
+		</method>
+		<method name="remove_frame">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Removes the frame [code]idx[/code].
+			</description>
+		</method>
+		<method name="set_image">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="image" type="Image">
+			</argument>
+			<description>
+				Sets the [Image] of frame [code]idx[/code].
+			</description>
+		</method>
+		<method name="get_image">
+			<return type="Image">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the [Image] of frame [code]idx[/code].
+			</description>
+		</method>
+		<method name="set_delay">
+			<return type="void">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<argument index="1" name="delay" type="float">
+			</argument>
+			<description>
+				Sets the delay in seconds of frame [code]idx[/code].
+			</description>
+		</method>
+		<method name="get_delay">
+			<return type="float">
+			</return>
+			<argument index="0" name="idx" type="int">
+			</argument>
+			<description>
+				Returns the delay of frame [code]idx[/code].
+			</description>
+		</method>
+		<method name="get_frames">
+			<return type="int">
+			</return>
+			<description>
+				Returns the number of loaded frames.
+			</description>
+		</method>
+		<method name="clear">
+			<return type="void">
+			</return>
+			<description>
+				Removes all the loaded frames.
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

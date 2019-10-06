@@ -151,6 +151,7 @@ class AnimatedSprite : public Node2D {
 	Rect2 _get_rect() const;
 
 protected:
+	void _changed_callback(Object *p_changed, const char *p_prop);
 	static void _bind_methods();
 	void _notification(int p_what);
 	virtual void _validate_property(PropertyInfo &property) const;
@@ -194,9 +195,6 @@ public:
 
 	void set_flip_v(bool p_flip);
 	bool is_flipped_v() const;
-
-	void set_modulate(const Color &p_color);
-	Color get_modulate() const;
 
 	virtual String get_configuration_warning() const;
 	AnimatedSprite();

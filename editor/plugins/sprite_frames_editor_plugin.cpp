@@ -718,7 +718,11 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 	if (frames == p_frames)
 		return;
 
+	if (frames)
+		frames->remove_change_receptor(this);
 	frames = p_frames;
+	if (frames)
+		frames->add_change_receptor(this);
 
 	if (p_frames) {
 
@@ -739,6 +743,12 @@ void SpriteFramesEditor::edit(SpriteFrames *p_frames) {
 
 		hide();
 	}
+}
+
+void SpriteFramesEditor::_changed_callback(Object *p_changed, const char *p_prop) {
+
+	if (frames && frames == p_changed)
+		call_deferred("_update_library");
 }
 
 Variant SpriteFramesEditor::get_drag_data_fw(const Point2 &p_point, Control *p_from) {
@@ -890,6 +900,8 @@ void SpriteFramesEditor::_bind_methods() {
 }
 
 SpriteFramesEditor::SpriteFramesEditor() {
+
+	frames = NULL;
 
 	VBoxContainer *vbc_animlist = memnew(VBoxContainer);
 	add_child(vbc_animlist);

@@ -469,10 +469,10 @@ void AnimatedSprite::_notification(int p_what) {
 void AnimatedSprite::set_sprite_frames(const Ref<SpriteFrames> &p_frames) {
 
 	if (frames.is_valid())
-		frames->disconnect("changed", this, "_res_changed");
+		frames->remove_change_receptor(this);
 	frames = p_frames;
 	if (frames.is_valid())
-		frames->connect("changed", this, "_res_changed");
+		frames->add_change_receptor(this);
 
 	if (!frames.is_valid()) {
 		frame = 0;
@@ -666,6 +666,12 @@ String AnimatedSprite::get_configuration_warning() const {
 	}
 
 	return String();
+}
+
+void AnimatedSprite::_changed_callback(Object *p_changed, const char *p_prop) {
+
+	if (frames.is_valid() && frames.ptr() == p_changed)
+		call_deferred("_res_changed");
 }
 
 void AnimatedSprite::_bind_methods() {

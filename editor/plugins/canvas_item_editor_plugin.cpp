@@ -5533,7 +5533,8 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 		ERR_FAIL_COND(res.is_null());
 		Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
-		if (texture != NULL || scene != NULL) {
+		Ref<SpriteFrames> sprite_frames = Ref<SpriteFrames>(Object::cast_to<SpriteFrames>(*res));
+		if (texture != NULL || scene != NULL || sprite_frames != NULL) {
 			if (texture != NULL) {
 				Sprite *sprite = memnew(Sprite);
 				sprite->set_texture(texture);
@@ -5541,12 +5542,20 @@ void CanvasItemEditorViewport::_create_preview(const Vector<String> &files) cons
 				preview_node->add_child(sprite);
 				label->show();
 				label_desc->show();
-			} else {
+			} else if (scene != NULL) {
 				if (scene.is_valid()) {
 					Node *instance = scene->instance();
 					if (instance) {
 						preview_node->add_child(instance);
 					}
+				}
+			} else {
+				if (sprite_frames.is_valid()) {
+					AnimatedSprite *animated_sprite = memnew(AnimatedSprite);
+					animated_sprite->set_modulate(Color(1, 1, 1, 0.7f));
+					animated_sprite->set_sprite_frames(sprite_frames);
+					animated_sprite->play();
+					preview_node->add_child(animated_sprite);
 				}
 			}
 			add_preview = true;
@@ -5649,6 +5658,41 @@ void CanvasItemEditorViewport::_create_nodes(Node *parent, Node *child, String &
 	editor_data->get_undo_redo().add_do_method(child, "set_global_position", target_position);
 }
 
+void CanvasItemEditorViewport::_create_animated_sprite(Node *parent, const Ref<SpriteFrames> &sprite_frames, String &path, const Point2 &p_point) {
+
+	AnimatedSprite *animated_sprite = memnew(AnimatedSprite);
+	animated_sprite->set_name(path.get_file().get_basename());
+	animated_sprite->set_sprite_frames(sprite_frames);
+	animated_sprite->play();
+
+	if (parent) {
+		editor_data->get_undo_redo().add_do_method(parent, "add_child", animated_sprite);
+		editor_data->get_undo_redo().add_do_method(animated_sprite, "set_owner", editor->get_edited_scene());
+		editor_data->get_undo_redo().add_do_reference(animated_sprite);
+		editor_data->get_undo_redo().add_undo_method(parent, "remove_child", animated_sprite);
+	} else { // if we haven't parent, lets try to make a child as a parent.
+		editor_data->get_undo_redo().add_do_method(editor, "set_edited_scene", animated_sprite);
+		editor_data->get_undo_redo().add_do_method(animated_sprite, "set_owner", editor->get_edited_scene());
+		editor_data->get_undo_redo().add_do_reference(animated_sprite);
+		editor_data->get_undo_redo().add_undo_method(editor, "set_edited_scene", (Object *)NULL);
+	}
+
+	if (parent) {
+		String new_name = parent->validate_child_name(animated_sprite);
+		ScriptEditorDebugger *sed = ScriptEditor::get_singleton()->get_debugger();
+		editor_data->get_undo_redo().add_do_method(sed, "live_debug_create_node", editor->get_edited_scene()->get_path_to(parent), animated_sprite->get_class(), new_name);
+		editor_data->get_undo_redo().add_undo_method(sed, "live_debug_remove_node", NodePath(String(editor->get_edited_scene()->get_path_to(parent)) + "/" + new_name));
+	}
+
+	// Compute the global position
+	Transform2D xform = canvas_item_editor->get_canvas_transform();
+	Point2 target_position = xform.affine_inverse().xform(p_point);
+
+	// there's nothing to be used as source position so snapping will work as absolute if enabled
+	target_position = canvas_item_editor->snap_point(target_position);
+	editor_data->get_undo_redo().add_do_method(animated_sprite, "set_global_position", target_position);
+}
+
 bool CanvasItemEditorViewport::_create_instance(Node *parent, String &path, const Point2 &p_point) {
 	Ref<PackedScene> sdata = ResourceLoader::load(path);
 	if (!sdata.is_valid()) { // invalid scene
@@ -5711,6 +5755,8 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 			continue;
 		}
 		Ref<PackedScene> scene = Ref<PackedScene>(Object::cast_to<PackedScene>(*res));
+		Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
+		Ref<SpriteFrames> sprite_frames = Ref<SpriteFrames>(Object::cast_to<SpriteFrames>(*res));
 		if (scene != NULL && scene.is_valid()) {
 			if (!target_node) {
 				// Without root node act the same as "Load Inherited Scene"
@@ -5724,27 +5770,26 @@ void CanvasItemEditorViewport::_perform_drop_data() {
 					error_files.push_back(path);
 				}
 			}
-		} else {
-			Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
-			if (texture != NULL && texture.is_valid()) {
-				Node *child;
-				if (default_type == "Light2D")
-					child = memnew(Light2D);
-				else if (default_type == "Particles2D")
-					child = memnew(Particles2D);
-				else if (default_type == "Polygon2D")
-					child = memnew(Polygon2D);
-				else if (default_type == "TouchScreenButton")
-					child = memnew(TouchScreenButton);
-				else if (default_type == "TextureRect")
-					child = memnew(TextureRect);
-				else if (default_type == "NinePatchRect")
-					child = memnew(NinePatchRect);
-				else
-					child = memnew(Sprite); // default
+		} else if (texture != NULL && texture.is_valid()) {
+			Node *child;
+			if (default_type == "Light2D")
+				child = memnew(Light2D);
+			else if (default_type == "Particles2D")
+				child = memnew(Particles2D);
+			else if (default_type == "Polygon2D")
+				child = memnew(Polygon2D);
+			else if (default_type == "TouchScreenButton")
+				child = memnew(TouchScreenButton);
+			else if (default_type == "TextureRect")
+				child = memnew(TextureRect);
+			else if (default_type == "NinePatchRect")
+				child = memnew(NinePatchRect);
+			else
+				child = memnew(Sprite); // default
 
-				_create_nodes(target_node, child, path, drop_pos);
-			}
+			_create_nodes(target_node, child, path, drop_pos);
+		} else if (sprite_frames != NULL && sprite_frames.is_valid()) {
+			_create_animated_sprite(target_node, sprite_frames, path, drop_pos);
 		}
 	}
 
@@ -5787,11 +5832,16 @@ bool CanvasItemEditorViewport::can_drop_data(const Point2 &p_point, const Varian
 						   type == "GradientTexture" ||
 						   type == "StreamTexture" ||
 						   type == "AtlasTexture" ||
-						   type == "LargeTexture") {
+						   type == "LargeTexture" ||
+						   type == "AnimatedTexture") {
 					Ref<Texture> texture = Ref<Texture>(Object::cast_to<Texture>(*res));
 					if (!texture.is_valid()) {
 						continue;
 					}
+				} else if (type == "SpriteFrames") {
+					Ref<SpriteFrames> sprite_frames = Ref<SpriteFrames>(Object::cast_to<SpriteFrames>(*res));
+					if (!sprite_frames.is_valid())
+						continue;
 				} else {
 					continue;
 				}
