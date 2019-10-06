@@ -298,7 +298,7 @@ void ExtendGDScriptParser::parse_function_symbol(const GDScriptParser::FunctionN
 	const int line = LINE_NUMBER_TO_INDEX(p_func->line);
 	r_symbol.range.start.line = line;
 	r_symbol.range.start.character = p_func->column;
-	r_symbol.range.end.line = MAX(p_func->body->end_line - 2, p_func->body->line);
+	r_symbol.range.end.line = MAX(p_func->body->end_line - 2, r_symbol.range.start.line);
 	r_symbol.range.end.character = lines[r_symbol.range.end.line].length();
 	r_symbol.selectionRange.start.line = r_symbol.range.start.line;
 	r_symbol.documentation = parse_documentation(line);
