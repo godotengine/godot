@@ -1951,6 +1951,8 @@ void Control::add_constant_override(const StringName &p_name, int p_constant) {
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
 
+	ERR_FAIL_INDEX(static_cast<int>(p_focus_mode), 3);
+
 	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus())
 		release_focus();
 
