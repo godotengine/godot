@@ -120,6 +120,15 @@
 				Returns the custom background color of column [code]column[/code].
 			</description>
 		</method>
+		<method name="get_custom_color" qualifiers="const">
+			<return type="Color">
+			</return>
+			<argument index="0" name="column" type="int">
+			</argument>
+			<description>
+				Returns the custom color of column [code]column[/code].
+			</description>
+		</method>
 		<method name="get_expand_right" qualifiers="const">
 			<return type="bool">
 			</return>
