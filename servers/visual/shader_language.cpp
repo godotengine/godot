@@ -3842,9 +3842,12 @@ Error ShaderLanguage::_parse_block(BlockNode *p_block, const Map<StringName, Bui
 				}
 
 				StringName name = tk.text;
-				if (_find_identifier(p_block, p_builtin_types, name)) {
-					_set_error("Redefinition of '" + String(name) + "'");
-					return ERR_PARSE_ERROR;
+				ShaderLanguage::IdentifierType itype;
+				if (_find_identifier(p_block, p_builtin_types, name, (ShaderLanguage::DataType *)0, &itype)) {
+					if (itype != IDENTIFIER_FUNCTION) {
+						_set_error("Redefinition of '" + String(name) + "'");
+						return ERR_PARSE_ERROR;
+					}
 				}
 
 				BlockNode::Variable var;
@@ -5121,9 +5124,12 @@ Error ShaderLanguage::_parse_shader(const Map<StringName, FunctionInfo> &p_funct
 
 					pname = tk.text;
 
-					if (_find_identifier(func_node->body, builtin_types, pname)) {
-						_set_error("Redefinition of '" + String(pname) + "'");
-						return ERR_PARSE_ERROR;
+					ShaderLanguage::IdentifierType itype;
+					if (_find_identifier(func_node->body, builtin_types, pname, (ShaderLanguage::DataType *)0, &itype)) {
+						if (itype != IDENTIFIER_FUNCTION) {
+							_set_error("Redefinition of '" + String(pname) + "'");
+							return ERR_PARSE_ERROR;
+						}
 					}
 					FunctionNode::Argument arg;
 					arg.type = ptype;
