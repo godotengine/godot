@@ -59,6 +59,8 @@ GodotJavaWrapper::GodotJavaWrapper(JNIEnv *p_env, jobject p_godot_instance) {
 	_get_clipboard = p_env->GetMethodID(cls, "getClipboard", "()Ljava/lang/String;");
 	_set_clipboard = p_env->GetMethodID(cls, "setClipboard", "(Ljava/lang/String;)V");
 	_request_permission = p_env->GetMethodID(cls, "requestPermission", "(Ljava/lang/String;)Z");
+	_request_permissions = p_env->GetMethodID(cls, "requestPermissions", "()Z");
+	_get_granted_permissions = p_env->GetMethodID(cls, "getGrantedPermissions", "()[Ljava/lang/String;");
 	_init_input_devices = p_env->GetMethodID(cls, "initInputDevices", "()V");
 	_get_surface = p_env->GetMethodID(cls, "getSurface", "()Landroid/view/Surface;");
 	_is_activity_resumed = p_env->GetMethodID(cls, "isActivityResumed", "()Z");
@@ -197,6 +199,34 @@ bool GodotJavaWrapper::request_permission(const String &p_name) {
 	} else {
 		return false;
 	}
+}
+
+bool GodotJavaWrapper::request_permissions() {
+	if (_request_permissions) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		return env->CallBooleanMethod(godot_instance, _request_permissions);
+	} else {
+		return false;
+	}
+}
+
+Vector<String> GodotJavaWrapper::get_granted_permissions() const {
+	Vector<String> permissions_list;
+	if (_get_granted_permissions) {
+		JNIEnv *env = ThreadAndroid::get_env();
+		jobject permissions_object = env->CallObjectMethod(godot_instance, _get_granted_permissions);
+		jobjectArray *arr = reinterpret_cast<jobjectArray *>(&permissions_object);
+
+		int i = 0;
+		jsize len = env->GetArrayLength(*arr);
+		for (i = 0; i < len; i++) {
+			jstring jstr = (jstring)env->GetObjectArrayElement(*arr, i);
+			String str = jstring_to_string(jstr, env);
+			permissions_list.push_back(str);
+			env->DeleteLocalRef(jstr);
+		}
+	}
+	return permissions_list;
 }
 
 void GodotJavaWrapper::init_input_devices() {
