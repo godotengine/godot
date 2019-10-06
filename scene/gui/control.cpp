@@ -1412,6 +1412,9 @@ void Control::_size_changed() {
 }
 
 void Control::set_anchor(Margin p_margin, float p_anchor, bool p_keep_margin, bool p_push_opposite_anchor) {
+
+	ERR_FAIL_INDEX((int)p_margin, 4);
+
 	Rect2 parent_rect = get_parent_anchorable_rect();
 	float parent_range = (p_margin == MARGIN_LEFT || p_margin == MARGIN_RIGHT) ? parent_rect.size.x : parent_rect.size.y;
 	float previous_margin_pos = data.margin[p_margin] + data.anchor[p_margin] * parent_range;
@@ -1456,6 +1459,9 @@ void Control::set_anchor_and_margin(Margin p_margin, float p_anchor, float p_pos
 }
 
 void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margins) {
+
+	ERR_FAIL_INDEX((int)p_preset, 16);
+
 	//Left
 	switch (p_preset) {
 		case PRESET_TOP_LEFT:
@@ -1570,6 +1576,10 @@ void Control::set_anchors_preset(LayoutPreset p_preset, bool p_keep_margins) {
 }
 
 void Control::set_margins_preset(LayoutPreset p_preset, LayoutPresetMode p_resize_mode, int p_margin) {
+
+	ERR_FAIL_INDEX((int)p_preset, 16);
+	ERR_FAIL_INDEX((int)p_resize_mode, 4);
+
 	// Calculate the size if the node is not resized
 	Size2 min_size = get_minimum_size();
 	Size2 new_size = get_size();
@@ -1704,6 +1714,8 @@ void Control::set_anchors_and_margins_preset(LayoutPreset p_preset, LayoutPreset
 
 float Control::get_anchor(Margin p_margin) const {
 
+	ERR_FAIL_INDEX_V(int(p_margin), 4, 0.0);
+
 	return data.anchor[p_margin];
 }
 
@@ -1719,6 +1731,8 @@ void Control::_change_notify_margins() {
 }
 
 void Control::set_margin(Margin p_margin, float p_value) {
+
+	ERR_FAIL_INDEX((int)p_margin, 4);
 
 	data.margin[p_margin] = p_value;
 	_size_changed();
@@ -1739,6 +1753,8 @@ void Control::set_end(const Size2 &p_point) {
 }
 
 float Control::get_margin(Margin p_margin) const {
+
+	ERR_FAIL_INDEX_V((int)p_margin, 4, 0);
 
 	return data.margin[p_margin];
 }
@@ -1950,6 +1966,8 @@ void Control::add_constant_override(const StringName &p_name, int p_constant) {
 }
 
 void Control::set_focus_mode(FocusMode p_focus_mode) {
+
+	ERR_FAIL_INDEX((int)p_focus_mode, 3);
 
 	if (is_inside_tree() && p_focus_mode == FOCUS_NONE && data.focus_mode != FOCUS_NONE && has_focus())
 		release_focus();
@@ -2298,6 +2316,8 @@ Control *Control::make_custom_tooltip(const String &p_text) const {
 
 void Control::set_default_cursor_shape(CursorShape p_shape) {
 
+	ERR_FAIL_INDEX(int(p_shape), CURSOR_MAX);
+
 	data.default_cursor = p_shape;
 }
 
@@ -2357,6 +2377,8 @@ NodePath Control::get_focus_previous() const {
 #define MAX_NEIGHBOUR_SEARCH_COUNT 512
 
 Control *Control::_get_focus_neighbour(Margin p_margin, int p_count) {
+
+	ERR_FAIL_INDEX_V((int)p_margin, 4, NULL);
 
 	if (p_count >= MAX_NEIGHBOUR_SEARCH_COUNT)
 		return NULL;
@@ -2760,6 +2782,8 @@ bool Control::is_clipping_contents() {
 
 void Control::set_h_grow_direction(GrowDirection p_direction) {
 
+	ERR_FAIL_INDEX((int)p_direction, 3);
+
 	data.h_grow = p_direction;
 	_size_changed();
 }
@@ -2770,6 +2794,8 @@ Control::GrowDirection Control::get_h_grow_direction() const {
 }
 
 void Control::set_v_grow_direction(GrowDirection p_direction) {
+
+	ERR_FAIL_INDEX((int)p_direction, 3);
 
 	data.v_grow = p_direction;
 	_size_changed();
