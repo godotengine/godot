@@ -5757,7 +5757,8 @@ void RasterizerStorageGLES2::initialize() {
 	config.multisample_supported = config.extensions.has("GL_EXT_framebuffer_multisample") || config.extensions.has("GL_EXT_multisampled_render_to_texture") || config.extensions.has("GL_APPLE_framebuffer_multisample");
 
 #ifdef GLES_OVER_GL
-	config.render_to_mipmap_supported = true;
+	//TODO: causes huge problems with desktop video drivers. Making false for now, needs to be true to render SCREEN_TEXTURE mipmaps
+	config.render_to_mipmap_supported = false;
 #else
 	//check if mipmaps can be used for SCREEN_TEXTURE and Glow on Mobile and web platforms
 	config.render_to_mipmap_supported = config.extensions.has("GL_OES_fbo_render_mipmap") && config.extensions.has("GL_EXT_texture_lod");
