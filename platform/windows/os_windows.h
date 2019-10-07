@@ -217,7 +217,7 @@ public:
 
 	void set_mouse_mode(MouseMode p_mode);
 	MouseMode get_mouse_mode() const;
-
+	virtual bool is_debugger_present();
 	virtual void warp_mouse_position(const Point2 &p_to);
 	virtual Point2 get_mouse_position() const;
 	void update_real_mouse_position();

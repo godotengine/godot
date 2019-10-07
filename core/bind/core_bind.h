@@ -150,6 +150,8 @@ public:
 
 	Point2 get_mouse_position() const;
 	void set_window_title(const String &p_title);
+	bool is_debugger_present();
+	
 	int get_mouse_button_state() const;
 
 	void set_clipboard(const String &p_text);

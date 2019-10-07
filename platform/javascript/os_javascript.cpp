@@ -1166,6 +1166,7 @@ void OS_JavaScript::set_window_title(const String &p_title) {
 	/* clang-format on */
 }
 
+
 void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
 
 	ERR_FAIL_COND(p_icon.is_null());

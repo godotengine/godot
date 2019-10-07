@@ -960,6 +960,7 @@ void OS_X11::set_window_title(const String &p_title) {
 	XChangeProperty(x11_display, x11_window, _net_wm_name, utf8_string, 8, PropModeReplace, (unsigned char *)p_title.utf8().get_data(), p_title.utf8().length());
 }
 
+
 void OS_X11::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 

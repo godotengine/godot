@@ -150,7 +150,6 @@ public:
 	virtual Point2 get_mouse_position() const;
 	virtual int get_mouse_button_state() const;
 	virtual void set_window_title(const String &p_title);
-
 	virtual void alert(const String &p_alert, const String &p_title = "ALERT!");
 
 	virtual Error open_dynamic_library(const String p_path, void *&p_library_handle, bool p_also_set_library_path = false);

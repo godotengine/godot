@@ -2044,6 +2044,7 @@ void OS_OSX::set_window_title(const String &p_title) {
 	[window_object setTitle:[NSString stringWithUTF8String:p_title.utf8().get_data()]];
 }
 
+
 void OS_OSX::set_native_icon(const String &p_filename) {
 
 	FileAccess *f = FileAccess::open(p_filename, FileAccess::READ);

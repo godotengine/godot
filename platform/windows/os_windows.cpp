@@ -1648,6 +1648,13 @@ void OS_Windows::set_window_title(const String &p_title) {
 	SetWindowTextW(hWnd, p_title.c_str());
 }
 
+bool OS_Windows::is_debugger_present() {
+	if (IsDebuggerPresent()) {
+		return true;
+	}
+	return false;
+}
+
 void OS_Windows::set_video_mode(const VideoMode &p_video_mode, int p_screen) {
 }
 
