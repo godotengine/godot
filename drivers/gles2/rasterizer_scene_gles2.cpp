@@ -3297,6 +3297,12 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 		reflection_probe_count = 0;
 	}
 
+	if (env && env->bg_mode == VS::ENV_BG_CANVAS) {
+		// If using canvas background, copy 2d to screen copy texture
+		// TODO: When GLES2 renders to current_rt->mip_maps[], this copy will no longer be needed
+		_copy_texture_to_buffer(storage->frame.current_rt->color, storage->frame.current_rt->copy_screen_effect.fbo);
+	}
+
 	// render list stuff
 
 	render_list.clear();
@@ -3433,8 +3439,11 @@ void RasterizerSceneGLES2::render_scene(const Transform &p_cam_transform, const 
 					clear_color = Color(0.0, 1.0, 0.0, 1.0);
 				}
 			} break;
+			case VS::ENV_BG_CANVAS: {
+				// use screen copy as background
+				_copy_texture_to_buffer(storage->frame.current_rt->copy_screen_effect.color, current_fb);
+			} break;
 			default: {
-				// FIXME: implement other background modes
 			} break;
 		}
 	}
