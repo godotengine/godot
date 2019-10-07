@@ -738,7 +738,7 @@ VisualScriptSwitch::VisualScriptSwitch() {
 
 int VisualScriptTypeCast::get_output_sequence_port_count() const {
 
-	return 2;
+	return 3;
 }
 
 bool VisualScriptTypeCast::has_input_sequence_port() const {
@@ -757,7 +757,7 @@ int VisualScriptTypeCast::get_output_value_port_count() const {
 
 String VisualScriptTypeCast::get_output_sequence_port_text(int p_port) const {
 
-	return p_port == 0 ? "yes" : "no";
+	return p_port == 0 ? "yes" : p_port == 1 ? "no" : "done";
 }
 
 PropertyInfo VisualScriptTypeCast::get_input_value_port_info(int p_idx) const {
@@ -838,6 +838,9 @@ public:
 
 	virtual int step(const Variant **p_inputs, Variant **p_outputs, StartMode p_start_mode, Variant *p_working_mem, Variant::CallError &r_error, String &r_error_str) {
 
+		if (p_start_mode == START_MODE_CONTINUE_SEQUENCE)
+			return 2;
+
 		Object *obj = *p_inputs[0];
 
 		*p_outputs[0] = Variant();
@@ -845,45 +848,45 @@ public:
 		if (!obj) {
 			r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 			r_error_str = "Instance is null";
-			return 0;
+			return 0 | STEP_FLAG_PUSH_STACK_BIT;
 		}
 
 		if (script != String()) {
 
 			Ref<Script> obj_script = obj->get_script();
 			if (!obj_script.is_valid()) {
-				return 1; //well, definitely not the script because object we got has no script.
+				return 1 | STEP_FLAG_PUSH_STACK_BIT; //well, definitely not the script because object we got has no script.
 			}
 
 			if (!ResourceCache::has(script)) {
 				//if the script is not in use by anyone, we can safely assume whathever we got is not casting to it.
-				return 1;
+				return 1 | STEP_FLAG_PUSH_STACK_BIT;
 			}
 			Ref<Script> cast_script = Ref<Resource>(ResourceCache::get(script));
 			if (!cast_script.is_valid()) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_METHOD;
 				r_error_str = "Script path is not a script: " + script;
-				return 1;
+				return 1 | STEP_FLAG_PUSH_STACK_BIT;
 			}
 
 			while (obj_script.is_valid()) {
 
 				if (cast_script == obj_script) {
 					*p_outputs[0] = *p_inputs[0]; //copy
-					return 0; // it is the script, yey
+					return 0 | STEP_FLAG_PUSH_STACK_BIT; // it is the script, yey
 				}
 
 				obj_script = obj_script->get_base_script();
 			}
 
-			return 1; //not found sorry
+			return 1 | STEP_FLAG_PUSH_STACK_BIT; //not found sorry
 		}
 
 		if (ClassDB::is_parent_class(obj->get_class_name(), base_type)) {
 			*p_outputs[0] = *p_inputs[0]; //copy
-			return 0;
+			return 0 | STEP_FLAG_PUSH_STACK_BIT;
 		} else
-			return 1;
+			return 1 | STEP_FLAG_PUSH_STACK_BIT;
 	}
 };
 
