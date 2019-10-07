@@ -35,6 +35,7 @@
 #include "core/project_settings.h"
 
 WSLServer::PendingPeer::PendingPeer() {
+	use_ssl = false;
 	time = 0;
 	has_request = false;
 	response_sent = 0;
@@ -100,6 +101,16 @@ bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
 	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT)
 		return ERR_TIMEOUT;
+	if (use_ssl) {
+		Ref<StreamPeerSSL> ssl = static_cast<Ref<StreamPeerSSL> >(connection);
+		if (ssl.is_null())
+			return FAILED;
+		ssl->poll();
+		if (ssl->get_status() == StreamPeerSSL::STATUS_HANDSHAKING)
+			return ERR_BUSY;
+		else if (ssl->get_status() != StreamPeerSSL::STATUS_CONNECTED)
+			return FAILED;
+	}
 	if (!has_request) {
 		int read = 0;
 		while (true) {
@@ -210,7 +221,15 @@ void WSLServer::poll() {
 			continue; // Conn will go out-of-scope and be closed.
 
 		Ref<PendingPeer> peer = memnew(PendingPeer);
-		peer->connection = conn;
+		if (private_key.is_valid() && ssl_cert.is_valid()) {
+			Ref<StreamPeerSSL> ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
+			ssl->set_blocking_handshake_enabled(false);
+			ssl->accept_stream(conn, private_key, ssl_cert, ca_chain);
+			peer->connection = ssl;
+			peer->use_ssl = true;
+		} else {
+			peer->connection = conn;
+		}
 		peer->tcp = conn;
 		peer->time = OS::get_singleton()->get_ticks_msec();
 		_pending.push_back(peer);

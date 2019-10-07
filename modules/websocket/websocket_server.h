@@ -31,6 +31,7 @@
 #ifndef WEBSOCKET_H
 #define WEBSOCKET_H
 
+#include "core/crypto/crypto.h"
 #include "core/reference.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
@@ -42,6 +43,10 @@ class WebSocketServer : public WebSocketMultiplayerPeer {
 
 protected:
 	static void _bind_methods();
+
+	Ref<CryptoKey> private_key;
+	Ref<X509Certificate> ssl_cert;
+	Ref<X509Certificate> ca_chain;
 
 public:
 	virtual void poll() = 0;
@@ -61,6 +66,15 @@ public:
 	void _on_connect(int32_t p_peer_id, String p_protocol);
 	void _on_disconnect(int32_t p_peer_id, bool p_was_clean);
 	void _on_close_request(int32_t p_peer_id, int p_code, String p_reason);
+
+	Ref<CryptoKey> get_private_key() const;
+	void set_private_key(Ref<CryptoKey> p_key);
+
+	Ref<X509Certificate> get_ssl_certificate() const;
+	void set_ssl_certificate(Ref<X509Certificate> p_cert);
+
+	Ref<X509Certificate> get_ca_chain() const;
+	void set_ca_chain(Ref<X509Certificate> p_ca_chain);
 
 	virtual Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets) = 0;
 
