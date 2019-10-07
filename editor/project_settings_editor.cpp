@@ -74,6 +74,26 @@ static const char *_axis_names[JOY_AXIS_MAX * 2] = {
 	"", " (R2)"
 };
 
+void ProjectSettingsEditor::_unhandled_input(const Ref<InputEvent> &p_event) {
+
+	const Ref<InputEventKey> k = p_event;
+
+	if (k.is_valid() && is_window_modal_on_top() && k->is_pressed()) {
+
+		if (k->get_scancode_with_modifiers() == (KEY_MASK_CMD | KEY_F)) {
+			if (search_button->is_pressed()) {
+				search_box->grab_focus();
+				search_box->select_all();
+			} else {
+				// This toggles the search bar display while giving the button its "pressed" appearance
+				search_button->set_pressed(true);
+			}
+
+			accept_event();
+		}
+	}
+}
+
 void ProjectSettingsEditor::_notification(int p_what) {
 
 	switch (p_what) {
@@ -116,6 +136,7 @@ void ProjectSettingsEditor::_notification(int p_what) {
 		} break;
 		case NOTIFICATION_POPUP_HIDE: {
 			EditorSettings::get_singleton()->set_project_metadata("dialog_bounds", "project_settings", get_rect());
+			set_process_unhandled_input(false);
 		} break;
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			search_button->set_icon(get_icon("Search", "EditorIcons"));
@@ -800,6 +821,7 @@ void ProjectSettingsEditor::popup_project_settings() {
 	_update_translations();
 	autoload_settings->update_autoload();
 	plugin_settings->update_plugins();
+	set_process_unhandled_input(true);
 }
 
 void ProjectSettingsEditor::update_plugins() {
@@ -1697,6 +1719,7 @@ void ProjectSettingsEditor::_editor_restart_close() {
 
 void ProjectSettingsEditor::_bind_methods() {
 
+	ClassDB::bind_method(D_METHOD("_unhandled_input"), &ProjectSettingsEditor::_unhandled_input);
 	ClassDB::bind_method(D_METHOD("_item_selected"), &ProjectSettingsEditor::_item_selected);
 	ClassDB::bind_method(D_METHOD("_item_add"), &ProjectSettingsEditor::_item_add);
 	ClassDB::bind_method(D_METHOD("_item_adds"), &ProjectSettingsEditor::_item_adds);

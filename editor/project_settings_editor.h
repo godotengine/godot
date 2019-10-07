@@ -178,6 +178,7 @@ class ProjectSettingsEditor : public AcceptDialog {
 	void _editor_restart_close();
 
 protected:
+	void _unhandled_input(const Ref<InputEvent> &p_event);
 	void _notification(int p_what);
 	static void _bind_methods();
 
