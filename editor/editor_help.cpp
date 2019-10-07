@@ -1107,37 +1107,47 @@ void EditorHelp::_update_doc() {
 		class_desc->add_newline();
 		class_desc->add_newline();
 
-		for (int i = 0; i < methods.size(); i++) {
+		for (int pass = 0; pass < 2; pass++) {
+			Vector<DocData::MethodDoc> methods_filtered;
 
-			class_desc->push_font(doc_code_font);
-			_add_method(methods[i], false);
-			class_desc->pop();
-
-			class_desc->add_newline();
-			class_desc->add_newline();
-
-			class_desc->push_color(text_color);
-			class_desc->push_font(doc_font);
-			class_desc->push_indent(1);
-			if (methods[i].description.strip_edges() != String()) {
-				_add_text(methods[i].description);
-			} else {
-				class_desc->add_image(get_icon("Error", "EditorIcons"));
-				class_desc->add_text(" ");
-				class_desc->push_color(comment_color);
-				class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
-				class_desc->pop();
+			for (int i = 0; i < methods.size(); i++) {
+				const String &q = methods[i].qualifiers;
+				if ((pass == 0 && q.find("virtual") != -1) || (pass == 1 && q.find("virtual") == -1)) {
+					methods_filtered.push_back(methods[i]);
+				}
 			}
 
-			class_desc->pop();
-			class_desc->pop();
-			class_desc->pop();
-			class_desc->add_newline();
-			class_desc->add_newline();
-			class_desc->add_newline();
+			for (int i = 0; i < methods_filtered.size(); i++) {
+
+				class_desc->push_font(doc_code_font);
+				_add_method(methods_filtered[i], false);
+				class_desc->pop();
+
+				class_desc->add_newline();
+				class_desc->add_newline();
+
+				class_desc->push_color(text_color);
+				class_desc->push_font(doc_font);
+				class_desc->push_indent(1);
+				if (methods_filtered[i].description.strip_edges() != String()) {
+					_add_text(methods_filtered[i].description);
+				} else {
+					class_desc->add_image(get_icon("Error", "EditorIcons"));
+					class_desc->add_text(" ");
+					class_desc->push_color(comment_color);
+					class_desc->append_bbcode(TTR("There is currently no description for this method. Please help us by [color=$color][url=$url]contributing one[/url][/color]!").replace("$url", CONTRIBUTE_URL).replace("$color", link_color_text));
+					class_desc->pop();
+				}
+
+				class_desc->pop();
+				class_desc->pop();
+				class_desc->pop();
+				class_desc->add_newline();
+				class_desc->add_newline();
+				class_desc->add_newline();
+			}
 		}
 	}
-
 	scroll_locked = false;
 }
 
