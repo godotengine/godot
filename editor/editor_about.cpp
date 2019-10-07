@@ -141,7 +141,7 @@ EditorAbout::EditorAbout() {
 	hbc->add_child(about_text);
 
 	TabContainer *tc = memnew(TabContainer);
-	tc->set_custom_minimum_size(Size2(630, 240) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(950, 400) * EDSCALE);
 	tc->set_v_size_flags(Control::SIZE_EXPAND_FILL);
 	vbc->add_child(tc);
 
