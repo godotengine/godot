@@ -72,7 +72,7 @@ class SnapDialog : public ConfirmationDialog {
 
 public:
 	SnapDialog() {
-		const int SPIN_BOX_GRID_RANGE = 256;
+		const int SPIN_BOX_GRID_RANGE = 16384;
 		const int SPIN_BOX_ROTATION_RANGE = 360;
 		Label *label;
 		VBoxContainer *container;
@@ -96,6 +96,8 @@ public:
 		grid_offset_x = memnew(SpinBox);
 		grid_offset_x->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_offset_x->set_max(SPIN_BOX_GRID_RANGE);
+		grid_offset_x->set_allow_lesser(true);
+		grid_offset_x->set_allow_greater(true);
 		grid_offset_x->set_suffix("px");
 		grid_offset_x->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_offset_x);
@@ -103,6 +105,8 @@ public:
 		grid_offset_y = memnew(SpinBox);
 		grid_offset_y->set_min(-SPIN_BOX_GRID_RANGE);
 		grid_offset_y->set_max(SPIN_BOX_GRID_RANGE);
+		grid_offset_y->set_allow_lesser(true);
+		grid_offset_y->set_allow_greater(true);
 		grid_offset_y->set_suffix("px");
 		grid_offset_y->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_offset_y);
@@ -115,6 +119,7 @@ public:
 		grid_step_x = memnew(SpinBox);
 		grid_step_x->set_min(0.01);
 		grid_step_x->set_max(SPIN_BOX_GRID_RANGE);
+		grid_step_x->set_allow_greater(true);
 		grid_step_x->set_suffix("px");
 		grid_step_x->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_x);
@@ -122,6 +127,7 @@ public:
 		grid_step_y = memnew(SpinBox);
 		grid_step_y->set_min(0.01);
 		grid_step_y->set_max(SPIN_BOX_GRID_RANGE);
+		grid_step_y->set_allow_greater(true);
 		grid_step_y->set_suffix("px");
 		grid_step_y->set_h_size_flags(SIZE_EXPAND_FILL);
 		child_container->add_child(grid_step_y);
