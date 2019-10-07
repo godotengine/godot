@@ -31,6 +31,7 @@
 #ifndef WEBSOCKET_CLIENT_H
 #define WEBSOCKET_CLIENT_H
 
+#include "core/crypto/crypto.h"
 #include "core/error_list.h"
 #include "websocket_multiplayer_peer.h"
 #include "websocket_peer.h"
@@ -43,6 +44,7 @@ class WebSocketClient : public WebSocketMultiplayerPeer {
 protected:
 	Ref<WebSocketPeer> _peer;
 	bool verify_ssl;
+	Ref<X509Certificate> ssl_cert;
 
 	static void _bind_methods();
 
@@ -51,6 +53,8 @@ public:
 
 	void set_verify_ssl_enabled(bool p_verify_ssl);
 	bool is_verify_ssl_enabled() const;
+	Ref<X509Certificate> get_trusted_ssl_certificate() const;
+	void set_trusted_ssl_certificate(Ref<X509Certificate> p_cert);
 
 	virtual void poll() = 0;
 	virtual Error connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocol = PoolVector<String>()) = 0;

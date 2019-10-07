@@ -69,8 +69,12 @@ Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port,
 	String proto_string = p_protocols.join(",");
 	String str = "ws://";
 
-	if (p_ssl)
+	if (p_ssl) {
 		str = "wss://";
+		if (ssl_cert.is_valid()) {
+			WARN_PRINT_ONCE("Custom SSL certificate is not supported in HTML5 platform.");
+		}
+	}
 	str += p_host + ":" + itos(p_port) + p_path;
 
 	_is_connecting = true;

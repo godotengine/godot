@@ -237,7 +237,7 @@ void WSLClient::poll() {
 					ssl = Ref<StreamPeerSSL>(StreamPeerSSL::create());
 					ERR_FAIL_COND_MSG(ssl.is_null(), "SSL is not available in this build.");
 					ssl->set_blocking_handshake_enabled(false);
-					if (ssl->connect_to_stream(_tcp, verify_ssl, _host) != OK) {
+					if (ssl->connect_to_stream(_tcp, verify_ssl, _host, ssl_cert) != OK) {
 						disconnect_from_host();
 						_on_error();
 						return;

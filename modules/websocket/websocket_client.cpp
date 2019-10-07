@@ -85,6 +85,17 @@ bool WebSocketClient::is_verify_ssl_enabled() const {
 	return verify_ssl;
 }
 
+Ref<X509Certificate> WebSocketClient::get_trusted_ssl_certificate() const {
+
+	return ssl_cert;
+}
+
+void WebSocketClient::set_trusted_ssl_certificate(Ref<X509Certificate> p_cert) {
+
+	ERR_FAIL_COND(get_connection_status() != CONNECTION_DISCONNECTED);
+	ssl_cert = p_cert;
+}
+
 bool WebSocketClient::is_server() const {
 
 	return false;
@@ -140,6 +151,11 @@ void WebSocketClient::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("is_verify_ssl_enabled"), &WebSocketClient::is_verify_ssl_enabled);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "verify_ssl", PROPERTY_HINT_NONE, "", 0), "set_verify_ssl_enabled", "is_verify_ssl_enabled");
+
+	ClassDB::bind_method(D_METHOD("get_trusted_ssl_certificate"), &WebSocketClient::get_trusted_ssl_certificate);
+	ClassDB::bind_method(D_METHOD("set_trusted_ssl_certificate"), &WebSocketClient::set_trusted_ssl_certificate);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "trusted_ssl_certificate", PROPERTY_HINT_RESOURCE_TYPE, "X509Certificate", 0), "set_trusted_ssl_certificate", "get_trusted_ssl_certificate");
 
 	ADD_SIGNAL(MethodInfo("data_received"));
 	ADD_SIGNAL(MethodInfo("connection_established", PropertyInfo(Variant::STRING, "protocol")));
