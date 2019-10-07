@@ -4071,6 +4071,7 @@ void TextEdit::_insert_text_at_cursor(const String &p_text) {
 
 	int new_column, new_line;
 	_insert_text(cursor.line, cursor.column, p_text, &new_line, &new_column);
+	_update_scrollbars();
 	cursor_set_line(new_line);
 	cursor_set_column(new_column);
 
