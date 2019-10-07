@@ -117,6 +117,7 @@ void ImageTexture::reload_from_file() {
 	} else {
 		Resource::reload_from_file();
 		_change_notify();
+		emit_changed();
 	}
 }
 
@@ -180,6 +181,7 @@ void ImageTexture::_reload_hook(const RID &p_hook) {
 	VisualServer::get_singleton()->texture_set_data(texture, img);
 
 	_change_notify();
+	emit_changed();
 }
 
 void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uint32_t p_flags) {
@@ -190,6 +192,7 @@ void ImageTexture::create(int p_width, int p_height, Image::Format p_format, uin
 	w = p_width;
 	h = p_height;
 	_change_notify();
+	emit_changed();
 }
 void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags) {
 
@@ -202,23 +205,23 @@ void ImageTexture::create_from_image(const Ref<Image> &p_image, uint32_t p_flags
 	VisualServer::get_singleton()->texture_allocate(texture, p_image->get_width(), p_image->get_height(), 0, p_image->get_format(), VS::TEXTURE_TYPE_2D, p_flags);
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 	_change_notify();
+	emit_changed();
 
 	image_stored = true;
 }
 
 void ImageTexture::set_flags(uint32_t p_flags) {
 
-	/*	uint32_t cube = flags & FLAG_CUBEMAP;
-	if (flags == p_flags&cube)
+	if (flags == p_flags)
 		return;
 
-	flags=p_flags|cube;	*/
 	flags = p_flags;
 	if (w == 0 || h == 0) {
 		return; //uninitialized, do not set to texture
 	}
 	VisualServer::get_singleton()->texture_set_flags(texture, p_flags);
 	_change_notify("flags");
+	emit_changed();
 }
 
 uint32_t ImageTexture::get_flags() const {
@@ -250,6 +253,8 @@ void ImageTexture::set_data(const Ref<Image> &p_image) {
 	VisualServer::get_singleton()->texture_set_data(texture, p_image);
 
 	_change_notify();
+	emit_changed();
+
 	alpha_cache.unref();
 	image_stored = true;
 }
@@ -736,6 +741,7 @@ Error StreamTexture::load(const String &p_path) {
 	format = image->get_format();
 
 	_change_notify();
+	emit_changed();
 	return OK;
 }
 String StreamTexture::get_load_path() const {
@@ -827,6 +833,7 @@ void StreamTexture::set_flags(uint32_t p_flags) {
 	flags = p_flags;
 	VS::get_singleton()->texture_set_flags(texture, flags);
 	_change_notify("flags");
+	emit_changed();
 }
 
 void StreamTexture::reload_from_file() {

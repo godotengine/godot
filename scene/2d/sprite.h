@@ -57,14 +57,14 @@ class Sprite : public Node2D {
 
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const;
 
+	void _texture_changed();
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 	virtual void _validate_property(PropertyInfo &property) const;
-
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
 	virtual Dictionary _edit_get_state() const;
