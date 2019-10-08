@@ -44,7 +44,7 @@ void GridContainer::_notification(int p_what) {
 			int hsep = get_constant("hseparation");
 			int vsep = get_constant("vseparation");
 			int max_col = MIN(get_child_count(), columns);
-			int max_row = get_child_count() / columns;
+			int max_row = ceil((float)get_child_count() / (float)columns);
 
 			// Compute the per-column/per-row data.
 			int valid_controls_index = 0;
