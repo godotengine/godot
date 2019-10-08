@@ -15,7 +15,7 @@ The golden rule is to **always open *one* issue for *one* bug**. If you notice
 several bugs and want to report them, make sure to create one new issue for
 each of them.
 
-Everything referred to hereafter as "bug" also applies for feature requests.
+Everything referred to as "bug" hereafter also applies for feature requests.
 
 If you are reporting a new issue, you will make our life much simpler (and the
 fix come much sooner) by following these guidelines:
@@ -86,7 +86,7 @@ also have important information on the PR workflow and the code style we use.
 #### Be nice to the git history
 
 Try to make simple PRs that handle one specific topic. Just like for reporting
-issues, it's better to open 3 different PRs that each address a different issue
+issues, it's better to open 3 different PRs that each addresses a different issue
 than one big PR with three commits.
 
 When updating your fork with upstream changes, please use ``git pull --rebase``
@@ -115,7 +115,7 @@ log is formatted as a short title (first line) and an extended description
 The short title is the most important part, as it is what will appear in the
 `shortlog` changelog (one line per commit, so no description shown) or in the
 GitHub interface unless you click the "expand" button. As the name tells it,
-try to keep that first line relatively short (ideally <= 50 chars, though it's
+try to keep that first line relatively short (ideally <= 50 characters, though it's
 rare to be able to tell enough in so few characters, so you can go a bit
 higher) - it should describe what the commit does globally, while details would
 go in the description. Typically, if you can't keep the title short because you
@@ -123,7 +123,7 @@ have too much stuff to mention, it means that you should probably split your
 changes in several commits :)
 
 Here's an example of a well-formatted commit log (note how the extended
-description is also manually wrapped at 80 chars for readability):
+description is also manually wrapped in 80 chars for readability):
 
 ```
 Prevent French fries carbonization by fixing heat regulation
@@ -156,9 +156,9 @@ on Weblate.
 
 ## Communicating with developers
 
-The Godot Engine community has [many communication
-channels](https://godotengine.org/community), some used more for user-level
-discussions and support, others more for development discussions.
+The Godot Engine community has many communication
+channels (https://godotengine.org/community), some used for user-level
+discussions and support, others for development discussions.
 
 To communicate with developers (e.g. to discuss a feature you want to implement
 or a bug you want to fix), the following channels can be used:
