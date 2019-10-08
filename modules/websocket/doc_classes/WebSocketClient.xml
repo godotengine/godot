@@ -21,10 +21,13 @@
 			</argument>
 			<argument index="2" name="gd_mp_api" type="bool" default="false">
 			</argument>
+			<argument index="3" name="custom_headers" type="PoolStringArray" default="PoolStringArray(  )">
+			</argument>
 			<description>
 				Connects to the given URL requesting one of the given [code]protocols[/code] as sub-protocol. If the list empty (default), no sub-protocol will be requested.
 				If [code]true[/code] is passed as [code]gd_mp_api[/code], the client will behave like a network peer for the [MultiplayerAPI], connections to non-Godot servers will not work, and [signal data_received] will not be emitted.
 				If [code]false[/code] is passed instead (default), you must call [PacketPeer] functions ([code]put_packet[/code], [code]get_packet[/code], etc.) on the [WebSocketPeer] returned via [code]get_peer(1)[/code] and not on this object directly (e.g. [code]get_peer(1).put_packet(data)[/code]).
+				You can optionally pass a list of [code]custom_headers[/code] to be added to the handshake HTTP request (not supported in HTML5 platform).
 			</description>
 		</method>
 		<method name="disconnect_from_host">
@@ -38,8 +41,25 @@
 				Disconnects this client from the connected host. See [method WebSocketPeer.close] for more information.
 			</description>
 		</method>
+		<method name="get_connected_host" qualifiers="const">
+			<return type="String">
+			</return>
+			<description>
+				Return the IP address of the currently connected host.
+			</description>
+		</method>
+		<method name="get_connected_port" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+				Return the IP port of the currently connected host.
+			</description>
+		</method>
 	</methods>
 	<members>
+		<member name="trusted_ssl_certificate" type="X509Certificate" setter="set_trusted_ssl_certificate" getter="get_trusted_ssl_certificate">
+			If specified, this [X509Certificate] will be the only one accepted when connecting to an SSL host. Any other certificate provided by the server will be regarded as invalid.
+		</member>
 		<member name="verify_ssl" type="bool" setter="set_verify_ssl_enabled" getter="is_verify_ssl_enabled">
 			If [code]true[/code], SSL certificate verification is enabled.
 			[b]Note:[/b] You must specify the certificates to be used in the Project Settings for it to work when exported.
