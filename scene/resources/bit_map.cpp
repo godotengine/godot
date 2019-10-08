@@ -197,16 +197,14 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 			| 4 | 8 | <- current pixel (curx,cury)
 			+---+---+
 			*/
-			//NOTE: due to the way we pick points from texture, rect needs to be smaller, otherwise it goes outside 1 pixel
-			Rect2i fixed_rect = Rect2i(rect.position, rect.size - Size2i(2, 2));
 			Point2i tl = Point2i(curx - 1, cury - 1);
-			sv += (fixed_rect.has_point(tl) && get_bit(tl)) ? 1 : 0;
+			sv += (rect.has_point(tl) && get_bit(tl)) ? 1 : 0;
 			Point2i tr = Point2i(curx, cury - 1);
-			sv += (fixed_rect.has_point(tr) && get_bit(tr)) ? 2 : 0;
+			sv += (rect.has_point(tr) && get_bit(tr)) ? 2 : 0;
 			Point2i bl = Point2i(curx - 1, cury);
-			sv += (fixed_rect.has_point(bl) && get_bit(bl)) ? 4 : 0;
+			sv += (rect.has_point(bl) && get_bit(bl)) ? 4 : 0;
 			Point2i br = Point2i(curx, cury);
-			sv += (fixed_rect.has_point(br) && get_bit(br)) ? 8 : 0;
+			sv += (rect.has_point(br) && get_bit(br)) ? 8 : 0;
 			ERR_FAIL_COND_V(sv == 0 || sv == 15, Vector<Vector2>());
 		}
 
@@ -300,15 +298,15 @@ Vector<Vector2> BitMap::_march_square(const Rect2i &rect, const Point2i &start) 
 				+---+---+
 				| 4 |   |
 				+---+---+
-				this normally go RIGHT, but if its coming from UP, it should go LEFT
+				this normally go RIGHT, but if its coming from RIGHT, it should go LEFT
 				*/
 				if (case6s.has(Point2i(curx, cury))) {
-					//found, so we go down, and delete from case6s;
+					//found, so we go left, and delete from case6s;
 					stepx = -1;
 					stepy = 0;
 					case6s.erase(Point2i(curx, cury));
 				} else {
-					//not found, we go up, and add to case6s;
+					//not found, we go right, and add to case6s;
 					stepx = 1;
 					stepy = 0;
 					case6s.insert(Point2i(curx, cury));
@@ -510,12 +508,19 @@ Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, fl
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
 			if (!fill->get_bit(Point2(j, i)) && get_bit(Point2(j, i))) {
 
+				fill_bits(this, fill, Point2i(j, i), r);
+
 				Vector<Vector2> polygon = _march_square(r, Point2i(j, i));
 				print_verbose("BitMap: Pre reduce: " + itos(polygon.size()));
 				polygon = reduce(polygon, r, p_epsilon);
 				print_verbose("BitMap: Post reduce: " + itos(polygon.size()));
+
+				if (polygon.size() < 3) {
+					print_verbose("Invalid polygon, skipped");
+					continue;
+				}
+
 				polygons.push_back(polygon);
-				fill_bits(this, fill, Point2i(j, i), r);
 			}
 		}
 	}
@@ -524,6 +529,13 @@ Vector<Vector<Vector2> > BitMap::clip_opaque_to_polygons(const Rect2 &p_rect, fl
 }
 
 void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
+
+	if (p_pixels == 0) {
+		return;
+	}
+
+	bool bit_value = (p_pixels > 0) ? true : false;
+	p_pixels = Math::abs(p_pixels);
 
 	Rect2i r = Rect2i(0, 0, width, height).clip(p_rect);
 
@@ -534,7 +546,7 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 
 	for (int i = r.position.y; i < r.position.y + r.size.height; i++) {
 		for (int j = r.position.x; j < r.position.x + r.size.width; j++) {
-			if (copy->get_bit(Point2(j, i)))
+			if (bit_value == get_bit(Point2(j, i)))
 				continue;
 
 			bool found = false;
@@ -542,16 +554,21 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 			for (int y = i - p_pixels; y <= i + p_pixels; y++) {
 				for (int x = j - p_pixels; x <= j + p_pixels; x++) {
 
-					if (x < p_rect.position.x || x >= p_rect.position.x + p_rect.size.x)
-						continue;
-					if (y < p_rect.position.y || y >= p_rect.position.y + p_rect.size.y)
-						continue;
+					bool outside = false;
+
+					if ((x < p_rect.position.x) || (x >= p_rect.position.x + p_rect.size.x) || (y < p_rect.position.y) || (y >= p_rect.position.y + p_rect.size.y)) {
+						// outside of rectangle counts as bit not set
+						if (!bit_value)
+							outside = true;
+						else
+							continue;
+					}
 
 					float d = Point2(j, i).distance_to(Point2(x, y)) - CMP_EPSILON;
 					if (d > p_pixels)
 						continue;
 
-					if (copy->get_bit(Point2(x, y))) {
+					if (outside || (bit_value == copy->get_bit(Point2(x, y)))) {
 						found = true;
 						break;
 					}
@@ -561,10 +578,15 @@ void BitMap::grow_mask(int p_pixels, const Rect2 &p_rect) {
 			}
 
 			if (found) {
-				set_bit(Point2(j, i), true);
+				set_bit(Point2(j, i), bit_value);
 			}
 		}
 	}
+}
+
+void BitMap::shrink_mask(int p_pixels, const Rect2 &p_rect) {
+
+	grow_mask(-p_pixels, p_rect);
 }
 
 Array BitMap::_opaque_to_polygons_bind(const Rect2 &p_rect, float p_epsilon) const {
