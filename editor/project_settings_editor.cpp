@@ -845,13 +845,9 @@ void ProjectSettingsEditor::_item_adds(String) {
 
 void ProjectSettingsEditor::_item_add() {
 
-	Variant value;
-	switch (type->get_selected()) {
-		case 0: value = false; break;
-		case 1: value = 0; break;
-		case 2: value = 0.0; break;
-		case 3: value = ""; break;
-	}
+	// Initialize the property with the default value for the given type
+	Variant::CallError ce;
+	const Variant value = Variant::construct(Variant::Type(type->get_selected()), NULL, 0, ce);
 
 	String catname = category->get_text().strip_edges();
 	String propname = property->get_text().strip_edges();
@@ -1834,10 +1830,11 @@ ProjectSettingsEditor::ProjectSettingsEditor(EditorData *p_data) {
 	type = memnew(OptionButton);
 	type->set_h_size_flags(Control::SIZE_EXPAND_FILL);
 	add_prop_bar->add_child(type);
-	type->add_item("bool");
-	type->add_item("int");
-	type->add_item("float");
-	type->add_item("string");
+
+	// Start at 1 to avoid adding "Nil" as an option
+	for (int i = 1; i < Variant::VARIANT_MAX; i++) {
+		type->add_item(Variant::get_type_name(Variant::Type(i)), i);
+	}
 
 	Button *add = memnew(Button);
 	add_prop_bar->add_child(add);
