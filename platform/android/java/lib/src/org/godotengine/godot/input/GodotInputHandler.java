@@ -188,7 +188,18 @@ public class GodotInputHandler implements InputDeviceListener {
 				}
 				return true;
 			}
-		};
+		} else if ((event.getSource() & InputDevice.SOURCE_STYLUS) == InputDevice.SOURCE_STYLUS) {
+			final int x = Math.round(event.getX());
+			final int y = Math.round(event.getY());
+			final int type = event.getAction();
+			queueEvent(new Runnable() {
+				@Override
+				public void run() {
+					GodotLib.hover(type, x, y);
+				}
+			});
+			return true;
+		}
 
 		return false;
 	}
