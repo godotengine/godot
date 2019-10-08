@@ -39,7 +39,7 @@
 			[b]Note:[/b] If the library defines tool scripts that run inside the editor, [code]reloadable[/code] must be [code]false[/code]. Otherwise, the editor will attempt to unload the tool scripts while they're in use and crash.
 		</member>
 		<member name="singleton" type="bool" setter="set_singleton" getter="is_singleton" default="false">
-			If [code]true[/code], Godot loads the library at startup rather than the first time a script uses the library, calling [code]gdnative_singleton[/code] after initializing the library. The library remains loaded as long as Godot is running.
+			If [code]true[/code], Godot loads the library at startup rather than the first time a script uses the library, calling [code]{prefix}gdnative_singleton[/code] after initializing the library (where [code]{prefix}[/code] is the value of [member symbol_prefix]). The library remains loaded as long as Godot is running.
 			[b]Note:[/b] A singleton library cannot be [member reloadable].
 		</member>
 		<member name="symbol_prefix" type="String" setter="set_symbol_prefix" getter="get_symbol_prefix" default="&quot;godot_&quot;">
