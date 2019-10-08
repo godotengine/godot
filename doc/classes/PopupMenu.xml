@@ -89,6 +89,36 @@
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
 			</description>
 		</method>
+		<method name="add_icon_radio_check_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="label" type="String">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<argument index="3" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				Same as [method add_icon_check_item], but uses a radio check button.
+			</description>
+		</method>
+		<method name="add_icon_radio_check_shortcut">
+			<return type="void">
+			</return>
+			<argument index="0" name="texture" type="Texture">
+			</argument>
+			<argument index="1" name="shortcut" type="ShortCut">
+			</argument>
+			<argument index="2" name="id" type="int" default="-1">
+			</argument>
+			<argument index="3" name="global" type="bool" default="false">
+			</argument>
+			<description>
+				Same as [method add_icon_check_shortcut], but uses a radio check button.
+			</description>
+		</method>
 		<method name="add_icon_shortcut">
 			<return type="void">
 			</return>
@@ -119,6 +149,25 @@
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
 			</description>
 		</method>
+		<method name="add_multistate_item">
+			<return type="void">
+			</return>
+			<argument index="0" name="label" type="String">
+			</argument>
+			<argument index="1" name="max_states" type="int">
+			</argument>
+			<argument index="2" name="default_state" type="int">
+			</argument>
+			<argument index="3" name="id" type="int" default="-1">
+			</argument>
+			<argument index="4" name="accel" type="int" default="0">
+			</argument>
+			<description>
+				Adds a new multistate item with text [code]label[/code].
+				Contrarily to normal binary items, multistate items can have more than two states, as defined by [code]max_states[/code]. Each press or activate of the item will increase the state by one. The default value is defined by [code]default_state[/code].
+				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
+			</description>
+		</method>
 		<method name="add_radio_check_item">
 			<return type="void">
 			</return>
@@ -129,7 +178,7 @@
 			<argument index="2" name="accel" type="int" default="0">
 			</argument>
 			<description>
-				Adds a new radio button with text [code]label[/code].
+				Adds a new radio check button with text [code]label[/code].
 				An [code]id[/code] can optionally be provided, as well as an accelerator ([code]accel[/code]). If no [code]id[/code] is provided, one will be created from the index. If no [code]accel[/code] is provided then the default [code]0[/code] will be assigned to it. See [method get_item_accelerator] for more info on accelerators.
 				[b]Note:[/b] Checkable items just display a checkmark, but don't have any built-in checking behavior and must be checked/unchecked manually. See [method set_item_checked] for more info on how to control it.
 			</description>
