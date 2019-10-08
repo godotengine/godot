@@ -5419,7 +5419,7 @@ Error ShaderLanguage::complete(const String &p_code, const Map<StringName, Funct
 					if (block->parent_function) {
 						if (comp_ident) {
 							for (int i = 0; i < block->parent_function->arguments.size(); i++) {
-								matches.insert(block->parent_function->arguments[i].name, ScriptCodeCompletionOption::KIND_FUNCTION);
+								matches.insert(block->parent_function->arguments[i].name, ScriptCodeCompletionOption::KIND_VARIABLE);
 							}
 						}
 						skip_function = block->parent_function->name;
