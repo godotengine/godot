@@ -1753,6 +1753,12 @@ void ProjectManager::_notification(int p_what) {
 
 			Engine::get_singleton()->set_editor_hint(false);
 		} break;
+		case NOTIFICATION_RESIZED: {
+
+			if (open_templates->is_visible()) {
+				open_templates->popup_centered_minsize();
+			}
+		} break;
 		case NOTIFICATION_READY: {
 
 			if (_project_list->get_project_count() == 0 && StreamPeerSSL::is_available())
