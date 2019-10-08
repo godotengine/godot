@@ -627,18 +627,10 @@ void PopupMenu::_notification(int p_what) {
 	}
 }
 
-void PopupMenu::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+/* Methods to add items with or without icon, checkbox, shortcut.
+ * Be sure to keep them in sync when adding new properties in the Item struct.
+ */
 
-	Item item;
-	item.icon = p_icon;
-	item.text = p_label;
-	item.xl_text = tr(p_label);
-	item.accel = p_accel;
-	item.id = p_id;
-	items.push_back(item);
-	update();
-	minimum_size_changed();
-}
 void PopupMenu::add_item(const String &p_label, int p_id, uint32_t p_accel) {
 
 	Item item;
@@ -651,13 +643,27 @@ void PopupMenu::add_item(const String &p_label, int p_id, uint32_t p_accel) {
 	minimum_size_changed();
 }
 
-void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
+void PopupMenu::add_icon_item(const Ref<Texture> &p_icon, const String &p_label, int p_id, uint32_t p_accel) {
+
+	Item item;
+	item.icon = p_icon;
+	item.text = p_label;
+	item.xl_text = tr(p_label);
+	item.accel = p_accel;
+	item.id = p_id;
+	items.push_back(item);
+	update();
+	minimum_size_changed();
+}
+
+void PopupMenu::add_check_item(const String &p_label, int p_id, uint32_t p_accel) {
 
 	Item item;
 	item.text = p_label;
 	item.xl_text = tr(p_label);
-	item.id = p_id;
-	item.submenu = p_submenu;
+	item.accel = p_accel;
+	item.id = p_id == -1 ? items.size() : p_id;
+	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	items.push_back(item);
 	update();
 	minimum_size_changed();
@@ -671,19 +677,6 @@ void PopupMenu::add_icon_check_item(const Ref<Texture> &p_icon, const String &p_
 	item.xl_text = tr(p_label);
 	item.accel = p_accel;
 	item.id = p_id;
-	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
-	items.push_back(item);
-	update();
-	minimum_size_changed();
-}
-
-void PopupMenu::add_check_item(const String &p_label, int p_id, uint32_t p_accel) {
-
-	Item item;
-	item.text = p_label;
-	item.xl_text = tr(p_label);
-	item.accel = p_accel;
-	item.id = p_id == -1 ? items.size() : p_id;
 	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	items.push_back(item);
 	update();
@@ -706,17 +699,15 @@ void PopupMenu::add_icon_radio_check_item(const Ref<Texture> &p_icon, const Stri
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
-
-	ERR_FAIL_COND(p_shortcut.is_null());
-
-	_ref_shortcut(p_shortcut);
+void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_id, uint32_t p_accel) {
 
 	Item item;
+	item.text = p_label;
+	item.xl_text = tr(p_label);
+	item.accel = p_accel;
 	item.id = p_id;
-	item.icon = p_icon;
-	item.shortcut = p_shortcut;
-	item.shortcut_is_global = p_global;
+	item.max_states = p_max_states;
+	item.state = p_default_state;
 	items.push_back(item);
 	update();
 	minimum_size_changed();
@@ -737,7 +728,7 @@ void PopupMenu::add_shortcut(const Ref<ShortCut> &p_shortcut, int p_id, bool p_g
 	minimum_size_changed();
 }
 
-void PopupMenu::add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+void PopupMenu::add_icon_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
 
 	ERR_FAIL_COND(p_shortcut.is_null());
 
@@ -745,9 +736,8 @@ void PopupMenu::add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<Sh
 
 	Item item;
 	item.id = p_id;
-	item.shortcut = p_shortcut;
-	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
 	item.icon = p_icon;
+	item.shortcut = p_shortcut;
 	item.shortcut_is_global = p_global;
 	items.push_back(item);
 	update();
@@ -770,6 +760,23 @@ void PopupMenu::add_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id, bo
 	minimum_size_changed();
 }
 
+void PopupMenu::add_icon_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+
+	ERR_FAIL_COND(p_shortcut.is_null());
+
+	_ref_shortcut(p_shortcut);
+
+	Item item;
+	item.id = p_id;
+	item.shortcut = p_shortcut;
+	item.checkable_type = Item::CHECKABLE_TYPE_CHECK_BOX;
+	item.icon = p_icon;
+	item.shortcut_is_global = p_global;
+	items.push_back(item);
+	update();
+	minimum_size_changed();
+}
+
 void PopupMenu::add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
 
 	add_check_shortcut(p_shortcut, p_id, p_global);
@@ -778,19 +785,27 @@ void PopupMenu::add_radio_check_shortcut(const Ref<ShortCut> &p_shortcut, int p_
 	minimum_size_changed();
 }
 
-void PopupMenu::add_multistate_item(const String &p_label, int p_max_states, int p_default_state, int p_id, uint32_t p_accel) {
+void PopupMenu::add_icon_radio_check_shortcut(const Ref<Texture> &p_icon, const Ref<ShortCut> &p_shortcut, int p_id, bool p_global) {
+
+	add_icon_check_shortcut(p_icon, p_shortcut, p_id, p_global);
+	items.write[items.size() - 1].checkable_type = Item::CHECKABLE_TYPE_RADIO_BUTTON;
+	update();
+	minimum_size_changed();
+}
+
+void PopupMenu::add_submenu_item(const String &p_label, const String &p_submenu, int p_id) {
 
 	Item item;
 	item.text = p_label;
 	item.xl_text = tr(p_label);
-	item.accel = p_accel;
 	item.id = p_id;
-	item.max_states = p_max_states;
-	item.state = p_default_state;
+	item.submenu = p_submenu;
 	items.push_back(item);
 	update();
 	minimum_size_changed();
 }
+
+/* Methods to modify existing items. */
 
 void PopupMenu::set_item_text(int p_idx, const String &p_text) {
 
@@ -1380,18 +1395,24 @@ void PopupMenu::clear_autohide_areas() {
 void PopupMenu::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_gui_input"), &PopupMenu::_gui_input);
-	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("add_icon_check_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_check_item, DEFVAL(-1), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("add_check_item", "label", "id", "accel"), &PopupMenu::add_check_item, DEFVAL(-1), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("add_radio_check_item", "label", "id", "accel"), &PopupMenu::add_radio_check_item, DEFVAL(-1), DEFVAL(0));
-	ClassDB::bind_method(D_METHOD("add_submenu_item", "label", "submenu", "id"), &PopupMenu::add_submenu_item, DEFVAL(-1));
 
-	ClassDB::bind_method(D_METHOD("add_icon_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::add_icon_shortcut, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_item", "label", "id", "accel"), &PopupMenu::add_item, DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_icon_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_item, DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_check_item", "label", "id", "accel"), &PopupMenu::add_check_item, DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_icon_check_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_check_item, DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_radio_check_item", "label", "id", "accel"), &PopupMenu::add_radio_check_item, DEFVAL(-1), DEFVAL(0));
+	ClassDB::bind_method(D_METHOD("add_icon_radio_check_item", "texture", "label", "id", "accel"), &PopupMenu::add_icon_radio_check_item, DEFVAL(-1), DEFVAL(0));
+
+	ClassDB::bind_method(D_METHOD("add_multistate_item", "label", "max_states", "default_state", "id", "accel"), &PopupMenu::add_multistate_item, DEFVAL(0), DEFVAL(-1), DEFVAL(0));
+
 	ClassDB::bind_method(D_METHOD("add_shortcut", "shortcut", "id", "global"), &PopupMenu::add_shortcut, DEFVAL(-1), DEFVAL(false));
-	ClassDB::bind_method(D_METHOD("add_icon_check_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::add_icon_check_shortcut, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_icon_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::add_icon_shortcut, DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_check_shortcut", "shortcut", "id", "global"), &PopupMenu::add_check_shortcut, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_icon_check_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::add_icon_check_shortcut, DEFVAL(-1), DEFVAL(false));
 	ClassDB::bind_method(D_METHOD("add_radio_check_shortcut", "shortcut", "id", "global"), &PopupMenu::add_radio_check_shortcut, DEFVAL(-1), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("add_icon_radio_check_shortcut", "texture", "shortcut", "id", "global"), &PopupMenu::add_icon_radio_check_shortcut, DEFVAL(-1), DEFVAL(false));
+
+	ClassDB::bind_method(D_METHOD("add_submenu_item", "label", "submenu", "id"), &PopupMenu::add_submenu_item, DEFVAL(-1));
 
 	ClassDB::bind_method(D_METHOD("set_item_text", "idx", "text"), &PopupMenu::set_item_text);
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon"), &PopupMenu::set_item_icon);
