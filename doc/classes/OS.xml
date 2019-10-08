@@ -326,7 +326,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the dots per inch density of the specified screen.
+				Returns the dots per inch density of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 				On Android devices, the actual screen densities are grouped into six generalized densities:
 				[codeblock]
 				   ldpi - 120 dpi
@@ -344,7 +344,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the position of the specified screen by index. If no screen index is provided, the current screen will be used.
+				Returns the position of the specified screen by index. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_screen_size" qualifiers="const">
@@ -353,7 +353,7 @@
 			<argument index="0" name="screen" type="int" default="-1">
 			</argument>
 			<description>
-				Returns the dimensions in pixels of the specified screen.
+				Returns the dimensions in pixels of the specified screen. If [code]screen[/code] is [/code]-1[/code] (the default value), the current screen will be used.
 			</description>
 		</method>
 		<method name="get_splash_tick_msec" qualifiers="const">
