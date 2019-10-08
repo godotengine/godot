@@ -926,7 +926,7 @@ void ItemList::_notification(int p_what) {
 				current_columns = max_columns;
 
 			while (true) {
-				//repeat util all fits
+				//repeat until all fits
 				bool all_fit = true;
 				Vector2 ofs;
 				int col = 0;
