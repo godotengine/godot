@@ -844,6 +844,12 @@
 				Shows the virtual keyboard if the platform has one. The [code]existing_text[/code] parameter is useful for implementing your own LineEdit, as it tells the virtual keyboard what text has already been typed (the virtual keyboard uses it for auto-correct and predictions).
 			</description>
 		</method>
+		<method name="is_debugger_present">
+		<return type="bool"></return>
+		<description>
+			Detects third party debuggers for windows platform. If detected any third party debugger, it's returns true else it's returns false.
+		</description>
+		</method>
 	</methods>
 	<members>
 		<member name="clipboard" type="String" setter="set_clipboard" getter="get_clipboard" default="&quot;&quot;">
