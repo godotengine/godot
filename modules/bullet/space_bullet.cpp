@@ -42,6 +42,7 @@
 #include "servers/physics_server.h"
 #include "soft_body_bullet.h"
 
+#include <BulletCollision/BroadphaseCollision/btBroadphaseProxy.h>
 #include <BulletCollision/CollisionDispatch/btCollisionObject.h>
 #include <BulletCollision/CollisionDispatch/btGhostObject.h>
 #include <BulletCollision/NarrowPhaseCollision/btGjkEpaPenetrationDepthSolver.h>
@@ -459,9 +460,13 @@ void SpaceBullet::remove_area(AreaBullet *p_area) {
 }
 
 void SpaceBullet::reload_collision_filters(AreaBullet *p_area) {
-	// This is necessary to change collision filter
-	dynamicsWorld->removeCollisionObject(p_area->get_bt_ghost());
-	dynamicsWorld->addCollisionObject(p_area->get_bt_ghost(), p_area->get_collision_layer(), p_area->get_collision_mask());
+	btGhostObject *ghost_object = p_area->get_bt_ghost();
+
+	btBroadphaseProxy *ghost_proxy = ghost_object->getBroadphaseHandle();
+	ghost_proxy->m_collisionFilterGroup = p_area->get_collision_layer();
+	ghost_proxy->m_collisionFilterMask = p_area->get_collision_mask();
+
+	dynamicsWorld->refreshBroadphaseProxy(ghost_object);
 }
 
 void SpaceBullet::add_rigid_body(RigidBodyBullet *p_body) {
@@ -482,9 +487,13 @@ void SpaceBullet::remove_rigid_body(RigidBodyBullet *p_body) {
 }
 
 void SpaceBullet::reload_collision_filters(RigidBodyBullet *p_body) {
-	// This is necessary to change collision filter
-	remove_rigid_body(p_body);
-	add_rigid_body(p_body);
+	btRigidBody *rigid_body = p_body->get_bt_rigid_body();
+
+	btBroadphaseProxy *body_proxy = rigid_body->getBroadphaseProxy();
+	body_proxy->m_collisionFilterGroup = p_body->get_collision_layer();
+	body_proxy->m_collisionFilterMask = p_body->get_collision_mask();
+
+	dynamicsWorld->refreshBroadphaseProxy(rigid_body);
 }
 
 void SpaceBullet::add_soft_body(SoftBodyBullet *p_body) {
