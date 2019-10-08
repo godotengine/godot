@@ -1465,18 +1465,19 @@ void Viewport::_gui_show_tooltip() {
 	rp->add_child(gui.tooltip_popup);
 	gui.tooltip_popup->force_parent_owned();
 	gui.tooltip_popup->set_as_toplevel(true);
-	//gui.tooltip_popup->hide();
+	if (gui.tooltip) // Avoids crash when rapidly switching controls.
+		gui.tooltip_popup->set_scale(gui.tooltip->get_global_transform().get_scale());
 
 	Point2 tooltip_offset = ProjectSettings::get_singleton()->get("display/mouse_cursor/tooltip_position_offset");
 	Rect2 r(gui.tooltip_pos + tooltip_offset, gui.tooltip_popup->get_minimum_size());
 	Rect2 vr = gui.tooltip_popup->get_viewport_rect();
-	if (r.size.x + r.position.x > vr.size.x)
-		r.position.x = vr.size.x - r.size.x;
+	if (r.size.x * gui.tooltip_popup->get_scale().x + r.position.x > vr.size.x)
+		r.position.x = vr.size.x - r.size.x * gui.tooltip_popup->get_scale().x;
 	else if (r.position.x < 0)
 		r.position.x = 0;
 
-	if (r.size.y + r.position.y > vr.size.y)
-		r.position.y = vr.size.y - r.size.y;
+	if (r.size.y * gui.tooltip_popup->get_scale().y + r.position.y > vr.size.y)
+		r.position.y = vr.size.y - r.size.y * gui.tooltip_popup->get_scale().y;
 	else if (r.position.y < 0)
 		r.position.y = 0;
 
