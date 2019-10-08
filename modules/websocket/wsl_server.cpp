@@ -43,7 +43,7 @@ WSLServer::PendingPeer::PendingPeer() {
 	memset(req_buf, 0, sizeof(req_buf));
 }
 
-bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
+bool WSLServer::PendingPeer::_parse_request(const Vector<String> p_protocols) {
 	Vector<String> psa = String((char *)req_buf).split("\r\n");
 	int len = psa.size();
 	ERR_FAIL_COND_V_MSG(len < 4, false, "Not enough response headers, got: " + itos(len) + ", expected >= 4.");
@@ -98,7 +98,7 @@ bool WSLServer::PendingPeer::_parse_request(const PoolStringArray p_protocols) {
 	return true;
 }
 
-Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
+Error WSLServer::PendingPeer::do_handshake(const Vector<String> p_protocols) {
 	if (OS::get_singleton()->get_ticks_msec() - time > WSL_SERVER_TIMEOUT)
 		return ERR_TIMEOUT;
 	if (use_ssl) {
@@ -154,11 +154,11 @@ Error WSLServer::PendingPeer::do_handshake(PoolStringArray p_protocols) {
 	return OK;
 }
 
-Error WSLServer::listen(int p_port, PoolVector<String> p_protocols, bool gd_mp_api) {
+Error WSLServer::listen(int p_port, const Vector<String> p_protocols, bool gd_mp_api) {
 	ERR_FAIL_COND_V(is_listening(), ERR_ALREADY_IN_USE);
 
 	_is_multiplayer = gd_mp_api;
-	_protocols = p_protocols;
+	_protocols.append_array(p_protocols);
 	_server->listen(p_port);
 
 	return OK;
@@ -252,6 +252,7 @@ void WSLServer::stop() {
 	}
 	_pending.clear();
 	_peer_map.clear();
+	_protocols.clear();
 }
 
 bool WSLServer::has_peer(int p_id) const {

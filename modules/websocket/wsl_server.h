@@ -50,7 +50,7 @@ private:
 	class PendingPeer : public Reference {
 
 	private:
-		bool _parse_request(const PoolStringArray p_protocols);
+		bool _parse_request(const Vector<String> p_protocols);
 
 	public:
 		Ref<StreamPeerTCP> tcp;
@@ -68,7 +68,7 @@ private:
 
 		PendingPeer();
 
-		Error do_handshake(const PoolStringArray p_protocols);
+		Error do_handshake(const Vector<String> p_protocols);
 	};
 
 	int _in_buf_size;
@@ -78,11 +78,11 @@ private:
 
 	List<Ref<PendingPeer> > _pending;
 	Ref<TCP_Server> _server;
-	PoolStringArray _protocols;
+	Vector<String> _protocols;
 
 public:
 	Error set_buffers(int p_in_buffer, int p_in_packets, int p_out_buffer, int p_out_packets);
-	Error listen(int p_port, PoolVector<String> p_protocols = PoolVector<String>(), bool gd_mp_api = false);
+	Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false);
 	void stop();
 	bool is_listening() const;
 	int get_max_packet_size() const;

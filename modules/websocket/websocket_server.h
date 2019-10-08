@@ -50,7 +50,7 @@ protected:
 
 public:
 	virtual void poll() = 0;
-	virtual Error listen(int p_port, PoolVector<String> p_protocols = PoolVector<String>(), bool gd_mp_api = false) = 0;
+	virtual Error listen(int p_port, const Vector<String> p_protocols = Vector<String>(), bool gd_mp_api = false) = 0;
 	virtual void stop() = 0;
 	virtual bool is_listening() const = 0;
 	virtual bool has_peer(int p_id) const = 0;

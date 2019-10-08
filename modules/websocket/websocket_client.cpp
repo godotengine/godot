@@ -40,7 +40,7 @@ WebSocketClient::WebSocketClient() {
 WebSocketClient::~WebSocketClient() {
 }
 
-Error WebSocketClient::connect_to_url(String p_url, PoolVector<String> p_protocols, bool gd_mp_api) {
+Error WebSocketClient::connect_to_url(String p_url, const Vector<String> p_protocols, bool gd_mp_api, const Vector<String> p_custom_headers) {
 	_is_multiplayer = gd_mp_api;
 
 	String host = p_url;
@@ -72,7 +72,7 @@ Error WebSocketClient::connect_to_url(String p_url, PoolVector<String> p_protoco
 		host = host.substr(0, p_len);
 	}
 
-	return connect_to_host(host, path, port, ssl, p_protocols);
+	return connect_to_host(host, path, port, ssl, p_protocols, p_custom_headers);
 }
 
 void WebSocketClient::set_verify_ssl_enabled(bool p_verify_ssl) {
@@ -143,7 +143,7 @@ void WebSocketClient::_on_error() {
 }
 
 void WebSocketClient::_bind_methods() {
-	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "protocols", "gd_mp_api"), &WebSocketClient::connect_to_url, DEFVAL(PoolVector<String>()), DEFVAL(false));
+	ClassDB::bind_method(D_METHOD("connect_to_url", "url", "protocols", "gd_mp_api", "custom_headers"), &WebSocketClient::connect_to_url, DEFVAL(Vector<String>()), DEFVAL(false), DEFVAL(Vector<String>()));
 	ClassDB::bind_method(D_METHOD("disconnect_from_host", "code", "reason"), &WebSocketClient::disconnect_from_host, DEFVAL(1000), DEFVAL(""));
 	ClassDB::bind_method(D_METHOD("get_connected_host"), &WebSocketClient::get_connected_host);
 	ClassDB::bind_method(D_METHOD("get_connected_port"), &WebSocketClient::get_connected_port);

@@ -152,7 +152,7 @@ bool WSLClient::_verify_headers(String &r_protocol) {
 	return true;
 }
 
-Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
+Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const Vector<String> p_protocols, const Vector<String> p_custom_headers) {
 
 	ERR_FAIL_COND_V(_connection.is_valid(), ERR_ALREADY_IN_USE);
 
@@ -181,7 +181,8 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 	_connection = _tcp;
 	_use_ssl = p_ssl;
 	_host = p_host;
-	_protocols = p_protocols;
+	_protocols.clear();
+	_protocols.append_array(p_protocols);
 
 	_key = WSLPeer::generate_key();
 	// TODO custom extra headers (allow overriding this too?)
@@ -199,6 +200,9 @@ Error WSLClient::connect_to_host(String p_host, String p_path, uint16_t p_port, 
 			request += p_protocols[i];
 		}
 		request += "\r\n";
+	}
+	for (int i = 0; i < p_custom_headers.size(); i++) {
+		request += p_custom_headers[i] + "\r\n";
 	}
 	request += "\r\n";
 	_request = request.utf8();
@@ -294,7 +298,7 @@ void WSLClient::disconnect_from_host(int p_code, String p_reason) {
 
 	_key = "";
 	_host = "";
-	_protocols.resize(0);
+	_protocols.clear();
 	_use_ssl = false;
 
 	_request = "";

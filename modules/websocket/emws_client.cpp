@@ -64,11 +64,14 @@ EMSCRIPTEN_KEEPALIVE void _esws_on_close(void *obj, int code, char *reason, int 
 }
 }
 
-Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, PoolVector<String> p_protocols) {
+Error EMWSClient::connect_to_host(String p_host, String p_path, uint16_t p_port, bool p_ssl, const PoolVector<String> p_protocols, const Vector<String> p_custom_headers) {
 
 	String proto_string = p_protocols.join(",");
 	String str = "ws://";
 
+	if (p_custom_headers.size()) {
+		WARN_PRINT_ONCE("Custom headers are not supported in in HTML5 platform.");
+	}
 	if (p_ssl) {
 		str = "wss://";
 		if (ssl_cert.is_valid()) {
