@@ -31,7 +31,9 @@
 #ifndef GODOT_LSP_H
 #define GODOT_LSP_H
 
-#include "core/variant.h"
+#include "core/class_db.h"
+#include "core/list.h"
+#include "editor/doc/doc_data.h"
 
 namespace lsp {
 
@@ -1563,6 +1565,39 @@ struct InitializeResult {
 	_FORCE_INLINE_ Dictionary to_json() {
 		Dictionary dict;
 		dict["capabilities"] = capabilities.to_json();
+		return dict;
+	}
+};
+
+struct GodotNativeClassInfo {
+
+	String name;
+	const DocData::ClassDoc *class_doc = NULL;
+	const ClassDB::ClassInfo *class_info = NULL;
+
+	Dictionary to_json() {
+		Dictionary dict;
+		dict["name"] = name;
+		dict["inherits"] = class_doc->inherits;
+		return dict;
+	}
+};
+
+/** Features not included in the standart lsp specifications */
+struct GodotCapabilities {
+
+	/**
+	 * Native class list
+	*/
+	List<GodotNativeClassInfo> native_classes;
+
+	Dictionary to_json() {
+		Dictionary dict;
+		Array classes;
+		for (List<GodotNativeClassInfo>::Element *E = native_classes.front(); E; E = E->next()) {
+			classes.push_back(E->get().to_json());
+		}
+		dict["native_classes"] = classes;
 		return dict;
 	}
 };
