@@ -91,7 +91,7 @@ bool Plane::intersect_3(const Plane &p_plane1, const Plane &p_plane2, Vector3 *r
 
 	real_t denom = vec3_cross(normal0, normal1).dot(normal2);
 
-	if (ABS(denom) <= CMP_EPSILON)
+	if (Math::is_zero_approx(denom))
 		return false;
 
 	if (r_result) {
