@@ -1217,6 +1217,17 @@ void ScriptEditor::_menu_option(int p_option) {
 				editor->save_resource_as(current->get_edited_resource());
 
 			} break;
+			case FILE_OPEN_EXTERNAL: {
+				ScriptTextEditor *editor = Object::cast_to<ScriptTextEditor>(_get_current_editor());
+				if (!editor) return;
+				Dictionary state = editor->get_edit_state();
+				// state["row"] and state["column"] seem to start at 0,0.
+				// Most editors start at 1,1, *including* Godot's.
+				open_script_in_external_editor(
+						_get_current_script(),
+						(int)state["row"] + 1,
+						(int)state["column"] + 1);
+			} break;
 
 			case FILE_TOOL_RELOAD:
 			case FILE_TOOL_RELOAD_SOFT: {
@@ -2033,7 +2044,82 @@ Error ScriptEditor::_save_text_file(Ref<TextFile> p_text_file, const String &p_p
 	return OK;
 }
 
+bool ScriptEditor::open_script_in_external_editor(const RES &p_resource, int p_line, int p_col) {
+
+	if (!p_resource->get_path().is_resource_file()) {
+		WARN_PRINT("Can't edit builtin script in external editor; opening in Godot");
+		return false;
+	}
+	if (p_resource->get_class_name() == StringName("VisualScript")) {
+		WARN_PRINT("Can't edit VisualScript in external editor; opening in Godot");
+		return false;
+	}
+
+	String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
+	String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
+
+	List<String> args;
+	bool has_file_flag = false;
+	String script_path = ProjectSettings::get_singleton()->globalize_path(p_resource->get_path());
+
+	if (flags.size()) {
+		String project_path = ProjectSettings::get_singleton()->get_resource_path();
+
+		flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
+		flags = flags.replacen("{col}", itos(p_col));
+		flags = flags.strip_edges().replace("\\\\", "\\");
+
+		int from = 0;
+		int num_chars = 0;
+		bool inside_quotes = false;
+
+		for (int i = 0; i < flags.size(); i++) {
+
+			if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
+
+				if (!inside_quotes) {
+					from++;
+				}
+				inside_quotes = !inside_quotes;
+
+			} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
+
+				String arg = flags.substr(from, num_chars);
+				if (arg.find("{file}") != -1) {
+					has_file_flag = true;
+				}
+
+				// do path replacement here, else there will be issues with spaces and quotes
+				arg = arg.replacen("{project}", project_path);
+				arg = arg.replacen("{file}", script_path);
+				args.push_back(arg);
+
+				from = i + 1;
+				num_chars = 0;
+			} else {
+				num_chars++;
+			}
+		}
+	}
+
+	// Default to passing script path if no {file} flag is specified.
+	if (!has_file_flag) {
+		args.push_back(script_path);
+	}
+
+	Error err = OS::get_singleton()->execute(path, args, false);
+	if (err == OK)
+		return true;
+	return false;
+}
+
 bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_grab_focus) {
+	// Attempts to open a script in the internal editor, opening it in the
+	// external editor instead if it's configured.
+
+	// Should return `true` only if it successfully opened in the internal
+	// editor.  If it failed for any reason or if it opened in the external
+	// editor, it should return `false`.
 
 	if (p_resource.is_null())
 		return false;
@@ -2058,65 +2144,10 @@ bool ScriptEditor::edit(const RES &p_resource, int p_line, int p_col, bool p_gra
 	}
 
 	if ((debugger->get_dump_stack_script() != p_resource || debugger->get_debug_with_external_editor()) &&
-			p_resource->get_path().is_resource_file() &&
-			p_resource->get_class_name() != StringName("VisualScript") &&
 			bool(EditorSettings::get_singleton()->get("text_editor/external/use_external_editor"))) {
-
-		String path = EditorSettings::get_singleton()->get("text_editor/external/exec_path");
-		String flags = EditorSettings::get_singleton()->get("text_editor/external/exec_flags");
-
-		List<String> args;
-		bool has_file_flag = false;
-		String script_path = ProjectSettings::get_singleton()->globalize_path(p_resource->get_path());
-
-		if (flags.size()) {
-			String project_path = ProjectSettings::get_singleton()->get_resource_path();
-
-			flags = flags.replacen("{line}", itos(p_line > 0 ? p_line : 0));
-			flags = flags.replacen("{col}", itos(p_col));
-			flags = flags.strip_edges().replace("\\\\", "\\");
-
-			int from = 0;
-			int num_chars = 0;
-			bool inside_quotes = false;
-
-			for (int i = 0; i < flags.size(); i++) {
-
-				if (flags[i] == '"' && (!i || flags[i - 1] != '\\')) {
-
-					if (!inside_quotes) {
-						from++;
-					}
-					inside_quotes = !inside_quotes;
-
-				} else if (flags[i] == '\0' || (!inside_quotes && flags[i] == ' ')) {
-
-					String arg = flags.substr(from, num_chars);
-					if (arg.find("{file}") != -1) {
-						has_file_flag = true;
-					}
-
-					// do path replacement here, else there will be issues with spaces and quotes
-					arg = arg.replacen("{project}", project_path);
-					arg = arg.replacen("{file}", script_path);
-					args.push_back(arg);
-
-					from = i + 1;
-					num_chars = 0;
-				} else {
-					num_chars++;
-				}
-			}
-		}
-
-		// Default to passing script path if no {file} flag is specified.
-		if (!has_file_flag) {
-			args.push_back(script_path);
-		}
-
-		Error err = OS::get_singleton()->execute(path, args, false);
-		if (err == OK)
+		if (open_script_in_external_editor(p_resource, p_line, p_col)) {
 			return false;
+		}
 		WARN_PRINT("Couldn't open external text editor, using internal");
 	}
 
@@ -3293,7 +3324,6 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_child(recent_scripts);
 	recent_scripts->connect("id_pressed", this, "_open_recent_script");
 	_update_recent_scripts();
-
 	file_menu->get_popup()->add_separator();
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save", TTR("Save"), KEY_MASK_ALT | KEY_MASK_CMD | KEY_S), FILE_SAVE);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/save_as", TTR("Save As...")), FILE_SAVE_AS);
@@ -3302,6 +3332,7 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/reload_script_soft", TTR("Soft Reload Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_R), FILE_TOOL_RELOAD_SOFT);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/copy_path", TTR("Copy Script Path")), FILE_COPY_PATH);
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/show_in_file_system", TTR("Show in FileSystem")), SHOW_IN_FILE_SYSTEM);
+	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/open_external", TTR("Edit in External Editor")), FILE_OPEN_EXTERNAL);
 	file_menu->get_popup()->add_separator();
 
 	file_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/history_previous", TTR("History Previous"), KEY_MASK_ALT | KEY_LEFT), WINDOW_PREV);
@@ -3624,6 +3655,7 @@ ScriptEditorPlugin::ScriptEditorPlugin(EditorNode *p_node) {
 
 	ED_SHORTCUT("script_editor/reopen_closed_script", TTR("Reopen Closed Script"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_T);
 	ED_SHORTCUT("script_editor/clear_recent", TTR("Clear Recent Scripts"));
+	ED_SHORTCUT("script_editor/open_external", TTR("Edit in External Editor"));
 }
 
 ScriptEditorPlugin::~ScriptEditorPlugin() {

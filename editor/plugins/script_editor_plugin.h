@@ -141,6 +141,7 @@ class ScriptEditor : public PanelContainer {
 		FILE_OPEN,
 		FILE_REOPEN_CLOSED,
 		FILE_OPEN_RECENT,
+		FILE_OPEN_EXTERNAL,
 		FILE_SAVE,
 		FILE_SAVE_AS,
 		FILE_SAVE_ALL,
@@ -428,8 +429,8 @@ public:
 	void ensure_select_current();
 
 	_FORCE_INLINE_ bool edit(const RES &p_resource, bool p_grab_focus = true) { return edit(p_resource, -1, 0, p_grab_focus); }
+	bool open_script_in_external_editor(const RES &p_resource, int p_line, int p_col);
 	bool edit(const RES &p_resource, int p_line, int p_col, bool p_grab_focus = true);
-
 	void get_breakpoints(List<String> *p_breakpoints);
 
 	void save_all_scripts();
