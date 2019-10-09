@@ -269,7 +269,11 @@ Error GDScriptWorkspace::initialize() {
 				params += params.empty() ? "..." : ", ...";
 			}
 
-			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + data.return_type;
+			String return_type = data.return_type;
+			if (return_type.empty()) {
+				return_type = "void";
+			}
+			symbol.detail = "func " + class_name + "." + data.name + "(" + params + ") -> " + return_type;
 			symbol.documentation = data.description;
 			class_symbol.children.push_back(symbol);
 		}
