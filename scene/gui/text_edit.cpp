@@ -1104,7 +1104,7 @@ void TextEdit::_notification(int p_what) {
 					}
 
 					const String &str = wrap_rows[line_wrap_index];
-					int indent_px = line_wrap_index != 0 ? get_indent_level(line) * cache.font->get_char_size(' ').width : 0;
+					int indent_px = line_wrap_index != 0 ? (get_indent_level(line) + 2) * cache.font->get_char_size(' ').width : 0;
 					if (indent_px >= wrap_at) {
 						indent_px = 0;
 					}
