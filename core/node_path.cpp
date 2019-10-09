@@ -269,7 +269,7 @@ NodePath NodePath::rel_path_to(const NodePath &p_np) const {
 
 NodePath NodePath::get_as_property_path() const {
 
-	if (!data->path.size()) {
+	if (!data || !data->path.size()) {
 		return *this;
 	} else {
 		Vector<StringName> new_path = data->subpath;
