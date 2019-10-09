@@ -1325,6 +1325,9 @@ void ScriptEditor::_menu_option(int p_option) {
 				case HELP_SEARCH_FIND_NEXT: {
 					help->search_again();
 				} break;
+				case HELP_SEARCH_FIND_PREVIOUS: {
+					help->search_again(true);
+				} break;
 				case FILE_CLOSE: {
 					_close_current_tab();
 				} break;
@@ -2827,6 +2830,7 @@ void ScriptEditor::_update_selected_editor_menu() {
 
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find", TTR("Find..."), KEY_MASK_CMD | KEY_F), HELP_SEARCH_FIND);
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_next", TTR("Find Next"), KEY_F3), HELP_SEARCH_FIND_NEXT);
+		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_previous", TTR("Find Previous"), KEY_MASK_SHIFT | KEY_F3), HELP_SEARCH_FIND_PREVIOUS);
 		script_search_menu->get_popup()->add_separator();
 		script_search_menu->get_popup()->add_shortcut(ED_SHORTCUT("script_editor/find_in_files", TTR("Find in Files"), KEY_MASK_CMD | KEY_MASK_SHIFT | KEY_F), SEARCH_IN_FILES);
 		script_search_menu->show();

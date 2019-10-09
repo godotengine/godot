@@ -158,7 +158,7 @@ class EditorHelp : public VBoxContainer {
 	void _update_doc();
 
 	void _request_help(const String &p_string);
-	void _search(const String &p_str);
+	void _search(bool p_search_previous = false);
 
 	void _unhandled_key_input(const Ref<InputEvent> &p_ev);
 
@@ -179,7 +179,7 @@ public:
 	void scroll_to_section(int p_section_index);
 
 	void popup_search();
-	void search_again();
+	void search_again(bool p_search_previous = false);
 
 	String get_class();
 
