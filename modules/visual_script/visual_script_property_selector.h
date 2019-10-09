@@ -31,8 +31,8 @@
 #ifndef VISUALSCRIPT_PROPERTYSELECTOR_H
 #define VISUALSCRIPT_PROPERTYSELECTOR_H
 
+#include "editor/editor_help.h"
 #include "editor/property_editor.h"
-#include "editor_help.h"
 #include "scene/gui/rich_text_label.h"
 
 class VisualScriptPropertySelector : public ConfirmationDialog {

@@ -32,8 +32,8 @@
 
 #include "core/io/json.h"
 #include "core/version.h"
-#include "editor_node.h"
-#include "editor_settings.h"
+#include "editor/editor_node.h"
+#include "editor/editor_settings.h"
 
 void EditorAssetLibraryItem::configure(const String &p_title, int p_asset_id, const String &p_category, int p_category_id, const String &p_author, int p_author_id, const String &p_cost) {
 
