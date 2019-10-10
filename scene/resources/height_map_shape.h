@@ -46,8 +46,6 @@ protected:
 	static void _bind_methods();
 	virtual void _update_shape();
 
-	virtual Vector<Vector3> _gen_debug_mesh_lines();
-
 public:
 	void set_map_width(int p_new);
 	int get_map_width() const;
@@ -55,6 +53,8 @@ public:
 	int get_map_depth() const;
 	void set_map_data(PoolRealArray p_new);
 	PoolRealArray get_map_data() const;
+
+	virtual Vector<Vector3> get_debug_mesh_lines();
 
 	HeightMapShape();
 };

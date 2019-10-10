@@ -3730,6 +3730,7 @@ void CollisionShapeSpatialGizmoPlugin::redraw(EditorSpatialGizmo *p_gizmo) {
 		Ref<ConcavePolygonShape> cs2 = s;
 		Ref<ArrayMesh> mesh = cs2->get_debug_mesh();
 		p_gizmo->add_mesh(mesh, false, Ref<SkinReference>(), material);
+		p_gizmo->add_collision_segments(cs2->get_debug_mesh_lines());
 	}
 
 	if (Object::cast_to<RayShape>(*s)) {
