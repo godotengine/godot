@@ -145,12 +145,6 @@
 			<description>
 			</description>
 		</method>
-		<method name="rebuild">
-			<return type="void">
-			</return>
-			<description>
-			</description>
-		</method>
 		<method name="remove_node">
 			<return type="void">
 			</return>
