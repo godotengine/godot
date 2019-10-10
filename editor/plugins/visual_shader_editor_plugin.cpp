@@ -178,6 +178,9 @@ bool VisualShaderEditor::_is_available(int p_mode) {
 }
 
 void VisualShaderEditor::update_custom_nodes() {
+	if (members_dialog->is_visible()) {
+		return;
+	}
 	clear_custom_types();
 	List<StringName> class_list;
 	ScriptServer::get_global_class_list(&class_list);
