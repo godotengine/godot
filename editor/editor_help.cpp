@@ -72,9 +72,12 @@ void EditorHelp::_unhandled_key_input(const Ref<InputEvent> &p_ev) {
 	}
 }
 
-void EditorHelp::_search(const String &) {
+void EditorHelp::_search(bool p_search_previous) {
 
-	find_bar->search_next();
+	if (p_search_previous)
+		find_bar->search_prev();
+	else
+		find_bar->search_next();
 }
 
 void EditorHelp::_class_list_select(const String &p_select) {
@@ -1502,8 +1505,8 @@ String EditorHelp::get_class() {
 	return edited_class;
 }
 
-void EditorHelp::search_again() {
-	_search(prev_search);
+void EditorHelp::search_again(bool p_search_previous) {
+	_search(p_search_previous);
 }
 
 int EditorHelp::get_scroll() const {
