@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,24 +31,21 @@
 #ifndef MESH_H
 #define MESH_H
 
-#include "resource.h"
+#include "core/math/face3.h"
+#include "core/math/triangle_mesh.h"
+#include "core/resource.h"
 #include "scene/resources/material.h"
 #include "scene/resources/shape.h"
 #include "servers/visual_server.h"
-#include "triangle_mesh.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Mesh : public Resource {
 	GDCLASS(Mesh, Resource);
 
 	mutable Ref<TriangleMesh> triangle_mesh; //cached
+	mutable Vector<Vector3> debug_lines;
 	Size2 lightmap_size_hint;
 
 protected:
-	void _clear_triangle_mesh() const;
-
 	static void _bind_methods();
 
 public:
@@ -128,6 +125,7 @@ public:
 	virtual Array surface_get_blend_shape_arrays(int p_surface) const = 0;
 	virtual uint32_t surface_get_format(int p_idx) const = 0;
 	virtual PrimitiveType surface_get_primitive_type(int p_idx) const = 0;
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material) = 0;
 	virtual Ref<Material> surface_get_material(int p_idx) const = 0;
 	virtual int get_blend_shape_count() const = 0;
 	virtual StringName get_blend_shape_name(int p_index) const = 0;
@@ -146,7 +144,13 @@ public:
 
 	void set_lightmap_size_hint(const Vector2 &p_size);
 	Size2 get_lightmap_size_hint() const;
-	void clear_cache();
+	void clear_cache() const;
+
+	typedef Vector<Vector<Face3> > (*ConvexDecompositionFunc)(const Vector<Face3> &);
+
+	static ConvexDecompositionFunc convex_composition_function;
+
+	Vector<Ref<Shape> > convex_decompose() const;
 
 	Mesh();
 };
@@ -209,8 +213,8 @@ public:
 	PrimitiveType surface_get_primitive_type(int p_idx) const;
 	bool surface_is_alpha_sorting_enabled(int p_idx) const;
 
-	void surface_set_material(int p_idx, const Ref<Material> &p_material);
-	Ref<Material> surface_get_material(int p_idx) const;
+	virtual void surface_set_material(int p_idx, const Ref<Material> &p_material);
+	virtual Ref<Material> surface_get_material(int p_idx) const;
 
 	int surface_find_by_name(const String &p_name) const;
 	void surface_set_name(int p_idx, const String &p_name);
@@ -224,7 +228,6 @@ public:
 	AABB get_aabb() const;
 	virtual RID get_rid() const;
 
-	void center_geometry();
 	void regen_normalmaps();
 
 	Error lightmap_unwrap(const Transform &p_base_transform = Transform(), float p_texel_size = 0.05);

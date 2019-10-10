@@ -182,4 +182,4 @@ static WEBP_INLINE void VP8LFillBitWindow(VP8LBitReader* const br) {
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_UTILS_BIT_READER_UTILS_H_ */
+#endif  // WEBP_UTILS_BIT_READER_UTILS_H_

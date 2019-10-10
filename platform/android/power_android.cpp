@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -98,7 +98,7 @@ ANativeWindow *Android_JNI_GetNativeWindow(void) {
 	return anw;
 }
 
-/* 
+/*
  *  CODE CHUNK IMPORTED FROM SDL 2.0
  * returns 0 on success or -1 on error (others undefined then)
  * returns truthy or falsy value in plugged, charged and battery
@@ -190,7 +190,7 @@ int Android_JNI_GetPowerInfo(int *plugged, int *charged, int *battery, int *seco
 	return 0;
 }
 
-bool power_android::GetPowerInfo_Android() {
+bool PowerAndroid::GetPowerInfo_Android() {
 	int battery;
 	int plugged;
 	int charged;
@@ -218,7 +218,7 @@ bool power_android::GetPowerInfo_Android() {
 	return true;
 }
 
-OS::PowerState power_android::get_power_state() {
+OS::PowerState PowerAndroid::get_power_state() {
 	if (GetPowerInfo_Android()) {
 		return power_state;
 	} else {
@@ -227,7 +227,7 @@ OS::PowerState power_android::get_power_state() {
 	}
 }
 
-int power_android::get_power_seconds_left() {
+int PowerAndroid::get_power_seconds_left() {
 	if (GetPowerInfo_Android()) {
 		return nsecs_left;
 	} else {
@@ -236,7 +236,7 @@ int power_android::get_power_seconds_left() {
 	}
 }
 
-int power_android::get_power_percent_left() {
+int PowerAndroid::get_power_percent_left() {
 	if (GetPowerInfo_Android()) {
 		return percent_left;
 	} else {
@@ -245,11 +245,11 @@ int power_android::get_power_percent_left() {
 	}
 }
 
-power_android::power_android() :
+PowerAndroid::PowerAndroid() :
 		nsecs_left(-1),
 		percent_left(-1),
 		power_state(OS::POWERSTATE_UNKNOWN) {
 }
 
-power_android::~power_android() {
+PowerAndroid::~PowerAndroid() {
 }

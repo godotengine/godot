@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -157,7 +157,7 @@ class GridMap : public Spatial {
 
 	Vector3::Axis clip_axis;
 
-	Ref<MeshLibrary> theme;
+	Ref<MeshLibrary> mesh_library;
 
 	Map<OctantKey, Octant *> octant_map;
 	Map<IndexKey, Cell> cell_map;
@@ -227,8 +227,13 @@ public:
 	void set_collision_mask_bit(int p_bit, bool p_value);
 	bool get_collision_mask_bit(int p_bit) const;
 
+#ifndef DISABLE_DEPRECATED
 	void set_theme(const Ref<MeshLibrary> &p_theme);
 	Ref<MeshLibrary> get_theme() const;
+#endif // DISABLE_DEPRECATED
+
+	void set_mesh_library(const Ref<MeshLibrary> &p_mesh_library);
+	Ref<MeshLibrary> get_mesh_library() const;
 
 	void set_cell_size(const Vector3 &p_size);
 	Vector3 get_cell_size() const;

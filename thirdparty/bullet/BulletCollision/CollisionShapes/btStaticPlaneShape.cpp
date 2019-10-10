@@ -17,24 +17,18 @@ subject to the following restrictions:
 
 #include "LinearMath/btTransformUtil.h"
 
-
-btStaticPlaneShape::btStaticPlaneShape(const btVector3& planeNormal,btScalar planeConstant)
-: btConcaveShape (), m_planeNormal(planeNormal.normalized()),
-m_planeConstant(planeConstant),
-m_localScaling(btScalar(1.),btScalar(1.),btScalar(1.))
+btStaticPlaneShape::btStaticPlaneShape(const btVector3& planeNormal, btScalar planeConstant)
+	: btConcaveShape(), m_planeNormal(planeNormal.normalized()), m_planeConstant(planeConstant), m_localScaling(btScalar(1.), btScalar(1.), btScalar(1.))
 {
 	m_shapeType = STATIC_PLANE_PROXYTYPE;
 	//	btAssert( btFuzzyZero(m_planeNormal.length() - btScalar(1.)) );
 }
 
-
 btStaticPlaneShape::~btStaticPlaneShape()
 {
 }
 
-
-
-void btStaticPlaneShape::getAabb(const btTransform& t,btVector3& aabbMin,btVector3& aabbMax) const
+void btStaticPlaneShape::getAabb(const btTransform& t, btVector3& aabbMin, btVector3& aabbMax) const
 {
 	(void)t;
 	/*
@@ -47,57 +41,49 @@ void btStaticPlaneShape::getAabb(const btTransform& t,btVector3& aabbMin,btVecto
 	aabbMax.setMax(center - infvec*m_planeNormal); 
 	*/
 
-	aabbMin.setValue(btScalar(-BT_LARGE_FLOAT),btScalar(-BT_LARGE_FLOAT),btScalar(-BT_LARGE_FLOAT));
-	aabbMax.setValue(btScalar(BT_LARGE_FLOAT),btScalar(BT_LARGE_FLOAT),btScalar(BT_LARGE_FLOAT));
-
+	aabbMin.setValue(btScalar(-BT_LARGE_FLOAT), btScalar(-BT_LARGE_FLOAT), btScalar(-BT_LARGE_FLOAT));
+	aabbMax.setValue(btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT), btScalar(BT_LARGE_FLOAT));
 }
 
-
-
-
-void	btStaticPlaneShape::processAllTriangles(btTriangleCallback* callback,const btVector3& aabbMin,const btVector3& aabbMax) const
+void btStaticPlaneShape::processAllTriangles(btTriangleCallback* callback, const btVector3& aabbMin, const btVector3& aabbMax) const
 {
-
 	btVector3 halfExtents = (aabbMax - aabbMin) * btScalar(0.5);
 	btScalar radius = halfExtents.length();
 	btVector3 center = (aabbMax + aabbMin) * btScalar(0.5);
-	
+
 	//this is where the triangles are generated, given AABB and plane equation (normal/constant)
 
-	btVector3 tangentDir0,tangentDir1;
+	btVector3 tangentDir0, tangentDir1;
 
 	//tangentDir0/tangentDir1 can be precalculated
-	btPlaneSpace1(m_planeNormal,tangentDir0,tangentDir1);
+	btPlaneSpace1(m_planeNormal, tangentDir0, tangentDir1);
 
-	btVector3 supVertex0,supVertex1;
+	btVector3 projectedCenter = center - (m_planeNormal.dot(center) - m_planeConstant) * m_planeNormal;
 
-	btVector3 projectedCenter = center - (m_planeNormal.dot(center) - m_planeConstant)*m_planeNormal;
-	
 	btVector3 triangle[3];
-	triangle[0] = projectedCenter + tangentDir0*radius + tangentDir1*radius;
-	triangle[1] = projectedCenter + tangentDir0*radius - tangentDir1*radius;
-	triangle[2] = projectedCenter - tangentDir0*radius - tangentDir1*radius;
+	triangle[0] = projectedCenter + tangentDir0 * radius + tangentDir1 * radius;
+	triangle[1] = projectedCenter + tangentDir0 * radius - tangentDir1 * radius;
+	triangle[2] = projectedCenter - tangentDir0 * radius - tangentDir1 * radius;
 
-	callback->processTriangle(triangle,0,0);
+	callback->processTriangle(triangle, 0, 0);
 
-	triangle[0] = projectedCenter - tangentDir0*radius - tangentDir1*radius;
-	triangle[1] = projectedCenter - tangentDir0*radius + tangentDir1*radius;
-	triangle[2] = projectedCenter + tangentDir0*radius + tangentDir1*radius;
+	triangle[0] = projectedCenter - tangentDir0 * radius - tangentDir1 * radius;
+	triangle[1] = projectedCenter - tangentDir0 * radius + tangentDir1 * radius;
+	triangle[2] = projectedCenter + tangentDir0 * radius + tangentDir1 * radius;
 
-	callback->processTriangle(triangle,0,1);
-
+	callback->processTriangle(triangle, 0, 1);
 }
 
-void	btStaticPlaneShape::calculateLocalInertia(btScalar mass,btVector3& inertia) const
+void btStaticPlaneShape::calculateLocalInertia(btScalar mass, btVector3& inertia) const
 {
 	(void)mass;
 
 	//moving concave objects not supported
-	
-	inertia.setValue(btScalar(0.),btScalar(0.),btScalar(0.));
+
+	inertia.setValue(btScalar(0.), btScalar(0.), btScalar(0.));
 }
 
-void	btStaticPlaneShape::setLocalScaling(const btVector3& scaling)
+void btStaticPlaneShape::setLocalScaling(const btVector3& scaling)
 {
 	m_localScaling = scaling;
 }

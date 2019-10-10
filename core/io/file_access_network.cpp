@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,10 +29,11 @@
 /*************************************************************************/
 
 #include "file_access_network.h"
-#include "io/ip.h"
-#include "marshalls.h"
-#include "os/os.h"
-#include "project_settings.h"
+
+#include "core/io/ip.h"
+#include "core/io/marshalls.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 //#define DEBUG_PRINT(m_p) print_line(m_p)
 //#define DEBUG_TIME(m_what) printf("MS: %s - %lli\n",m_what,OS::get_singleton()->get_ticks_usec());
@@ -93,8 +94,6 @@ void FileAccessNetworkClient::_thread_func() {
 		DEBUG_TIME("sem_unlock");
 		//DEBUG_PRINT("semwait returned "+itos(werr));
 		DEBUG_PRINT("MUTEX LOCK " + itos(lockcount));
-		DEBUG_PRINT("POPO");
-		DEBUG_PRINT("PEPE");
 		lock_mutex();
 		DEBUG_PRINT("MUTEX PASS");
 
@@ -119,7 +118,10 @@ void FileAccessNetworkClient::_thread_func() {
 		FileAccessNetwork *fa = NULL;
 
 		if (response != FileAccessNetwork::RESPONSE_DATA) {
-			ERR_FAIL_COND(!accesses.has(id));
+			if (!accesses.has(id)) {
+				unlock_mutex();
+				ERR_FAIL_COND(!accesses.has(id));
+			}
 		}
 
 		if (accesses.has(id))
@@ -193,7 +195,7 @@ Error FileAccessNetworkClient::connect(const String &p_host, int p_port, const S
 
 	DEBUG_PRINT("IP: " + String(ip) + " port " + itos(p_port));
 	Error err = client->connect_to_host(ip, p_port);
-	ERR_FAIL_COND_V(err, err);
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot connect to host with IP: " + String(ip) + " and port: " + itos(p_port));
 	while (client->get_status() == StreamPeerTCP::STATUS_CONNECTING) {
 		//DEBUG_PRINT("trying to connect....");
 		OS::get_singleton()->delay_usec(1000);
@@ -228,7 +230,7 @@ FileAccessNetworkClient::FileAccessNetworkClient() {
 	quit = false;
 	singleton = this;
 	last_id = 0;
-	client = Ref<StreamPeerTCP>(StreamPeerTCP::create_ref());
+	client.instance();
 	sem = Semaphore::create();
 	lockcount = 0;
 }
@@ -337,7 +339,7 @@ bool FileAccessNetwork::is_open() const {
 
 void FileAccessNetwork::seek(size_t p_position) {
 
-	ERR_FAIL_COND(!opened);
+	ERR_FAIL_COND_MSG(!opened, "File must be opened before use.");
 	eof_flag = p_position > total_size;
 
 	if (p_position >= total_size) {
@@ -353,18 +355,18 @@ void FileAccessNetwork::seek_end(int64_t p_position) {
 }
 size_t FileAccessNetwork::get_position() const {
 
-	ERR_FAIL_COND_V(!opened, 0);
+	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return pos;
 }
 size_t FileAccessNetwork::get_len() const {
 
-	ERR_FAIL_COND_V(!opened, 0);
+	ERR_FAIL_COND_V_MSG(!opened, 0, "File must be opened before use.");
 	return total_size;
 }
 
 bool FileAccessNetwork::eof_reached() const {
 
-	ERR_FAIL_COND_V(!opened, false);
+	ERR_FAIL_COND_V_MSG(!opened, false, "File must be opened before use.");
 	return eof_flag;
 }
 
@@ -433,7 +435,6 @@ int FileAccessNetwork::get_buffer(uint8_t *p_dst, int p_length) const {
 
 					_queue_page(page + j);
 				}
-				buff = pages.write[page].buffer.ptrw();
 				//queue pages
 				buffer_mutex->unlock();
 			}
@@ -498,11 +499,22 @@ uint64_t FileAccessNetwork::_get_modified_time(const String &p_file) {
 	return exists_modtime;
 }
 
+uint32_t FileAccessNetwork::_get_unix_permissions(const String &p_file) {
+	ERR_PRINT("Getting UNIX permissions from network drives is not implemented yet");
+	return 0;
+}
+
+Error FileAccessNetwork::_set_unix_permissions(const String &p_file, uint32_t p_permissions) {
+	ERR_PRINT("Setting UNIX permissions on network drives is not implemented yet");
+	return ERR_UNAVAILABLE;
+}
+
 void FileAccessNetwork::configure() {
 
 	GLOBAL_DEF("network/remote_fs/page_size", 65536);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/remote_fs/page_size", PropertyInfo(Variant::INT, "network/remote_fs/page_size", PROPERTY_HINT_RANGE, "1,65536,1,or_greater")); //is used as denominator and can't be zero
 	GLOBAL_DEF("network/remote_fs/page_read_ahead", 4);
-	GLOBAL_DEF("network/remote_fs/max_pages", 20);
+	ProjectSettings::get_singleton()->set_custom_property_info("network/remote_fs/page_read_ahead", PropertyInfo(Variant::INT, "network/remote_fs/page_read_ahead", PROPERTY_HINT_RANGE, "0,8,1,or_greater"));
 }
 
 FileAccessNetwork::FileAccessNetwork() {
@@ -520,7 +532,6 @@ FileAccessNetwork::FileAccessNetwork() {
 	nc->unlock_mutex();
 	page_size = GLOBAL_GET("network/remote_fs/page_size");
 	read_ahead = GLOBAL_GET("network/remote_fs/page_read_ahead");
-	max_pages = GLOBAL_GET("network/remote_fs/max_pages");
 	last_activity_val = 0;
 	waiting_on_page = -1;
 	last_page = -1;

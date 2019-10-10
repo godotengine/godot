@@ -18,13 +18,11 @@ subject to the following restrictions:
 
 #include "Bullet3Common/b3Vector3.h"
 
-
 ///The b3TriangleCallback provides a callback for each overlapping triangle when calling processAllTriangles.
 ///This callback is called by processAllTriangles for all b3ConcaveShape derived class, such as  b3BvhTriangleMeshShape, b3StaticPlaneShape and b3HeightfieldTerrainShape.
 class b3TriangleCallback
 {
 public:
-
 	virtual ~b3TriangleCallback();
 	virtual void processTriangle(b3Vector3* triangle, int partId, int triangleIndex) = 0;
 };
@@ -32,11 +30,8 @@ public:
 class b3InternalTriangleIndexCallback
 {
 public:
-
 	virtual ~b3InternalTriangleIndexCallback();
-	virtual void internalProcessTriangleIndex(b3Vector3* triangle,int partId,int  triangleIndex) = 0;
+	virtual void internalProcessTriangleIndex(b3Vector3* triangle, int partId, int triangleIndex) = 0;
 };
 
-
-
-#endif //B3_TRIANGLE_CALLBACK_H
+#endif  //B3_TRIANGLE_CALLBACK_H

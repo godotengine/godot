@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -38,6 +38,16 @@ class MultiplayerAPI : public Reference {
 
 	GDCLASS(MultiplayerAPI, Reference);
 
+public:
+	struct ProfilingInfo {
+		ObjectID node;
+		String node_path;
+		int incoming_rpc;
+		int incoming_rset;
+		int outgoing_rpc;
+		int outgoing_rset;
+	};
+
 private:
 	//path sent caches
 	struct PathSentCache {
@@ -55,6 +65,23 @@ private:
 		Map<int, NodeInfo> nodes;
 	};
 
+#ifdef DEBUG_ENABLED
+	struct BandwidthFrame {
+		uint32_t timestamp;
+		int packet_size;
+	};
+
+	int bandwidth_incoming_pointer;
+	Vector<BandwidthFrame> bandwidth_incoming_data;
+	int bandwidth_outgoing_pointer;
+	Vector<BandwidthFrame> bandwidth_outgoing_data;
+	Map<ObjectID, ProfilingInfo> profiler_frame_data;
+	bool profiling;
+
+	void _init_node_profile(ObjectID p_node);
+	int _get_bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer);
+#endif
+
 	Ref<NetworkedMultiplayerPeer> network_peer;
 	int rpc_sender_id;
 	Set<int> connected_peers;
@@ -63,6 +90,7 @@ private:
 	int last_send_cache_id;
 	Vector<uint8_t> packet_cache;
 	Node *root_node;
+	bool allow_object_decoding;
 
 protected:
 	static void _bind_methods();
@@ -76,7 +104,7 @@ protected:
 	void _process_raw(int p_from, const uint8_t *p_packet, int p_packet_len);
 
 	void _send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount);
-	bool _send_confirm_path(NodePath p_path, PathSentCache *psc, int p_from);
+	bool _send_confirm_path(NodePath p_path, PathSentCache *psc, int p_target);
 
 public:
 	enum NetworkCommands {
@@ -91,12 +119,13 @@ public:
 
 		RPC_MODE_DISABLED, // No rpc for this method, calls to this will be blocked (default)
 		RPC_MODE_REMOTE, // Using rpc() on it will call method / set property in all remote peers
-		RPC_MODE_SYNC, // Using rpc() on it will call method / set property in all remote peers and locally
 		RPC_MODE_MASTER, // Using rpc() on it will call method on wherever the master is, be it local or remote
-		RPC_MODE_SLAVE, // Using rpc() on it will call method for all slaves
-		RPC_MODE_REMOTESYNC, // Same as RPC_MODE_SYNC, compatibility
+		RPC_MODE_PUPPET, // Using rpc() on it will call method for all puppets
+		RPC_MODE_SLAVE = RPC_MODE_PUPPET, // Deprecated, same as puppet
+		RPC_MODE_REMOTESYNC, // Using rpc() on it will call method / set property in all remote peers and locally
+		RPC_MODE_SYNC = RPC_MODE_REMOTESYNC, // Deprecated. Same as RPC_MODE_REMOTESYNC
 		RPC_MODE_MASTERSYNC, // Using rpc() on it will call method / set property in the master peer and locally
-		RPC_MODE_SLAVESYNC, // Using rpc() on it will call method / set property in all slave peers and locally
+		RPC_MODE_PUPPETSYNC, // Using rpc() on it will call method / set property in all puppets peers and locally
 	};
 
 	void poll();
@@ -124,6 +153,16 @@ public:
 	bool is_network_server() const;
 	void set_refuse_new_network_connections(bool p_refuse);
 	bool is_refusing_new_network_connections() const;
+
+	void set_allow_object_decoding(bool p_enable);
+	bool is_object_decoding_allowed() const;
+
+	void profiling_start();
+	void profiling_end();
+
+	int get_profiling_frame(ProfilingInfo *r_info);
+	int get_incoming_bandwidth_usage();
+	int get_outgoing_bandwidth_usage();
 
 	MultiplayerAPI();
 	~MultiplayerAPI();

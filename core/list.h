@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #ifndef GLOBALS_LIST_H
 #define GLOBALS_LIST_H
 
-#include "os/memory.h"
-#include "sort.h"
+#include "core/error_macros.h"
+#include "core/os/memory.h"
+#include "core/sort_array.h"
 
 /**
  * Generic Templatized Linked List Implementation.
@@ -503,8 +504,7 @@ public:
 		if (p_I->prev_ptr)
 			p_I->prev_ptr->next_ptr = p_I->next_ptr;
 
-		if (p_I->next_ptr)
-			p_I->next_ptr->prev_ptr = p_I->prev_ptr;
+		p_I->next_ptr->prev_ptr = p_I->prev_ptr;
 
 		_data->last->next_ptr = p_I;
 		p_I->prev_ptr = _data->last;
@@ -538,8 +538,7 @@ public:
 		if (_data->last == p_I)
 			_data->last = p_I->prev_ptr;
 
-		if (p_I->prev_ptr)
-			p_I->prev_ptr->next_ptr = p_I->next_ptr;
+		p_I->prev_ptr->next_ptr = p_I->next_ptr;
 
 		if (p_I->next_ptr)
 			p_I->next_ptr->prev_ptr = p_I->prev_ptr;
@@ -603,9 +602,6 @@ public:
 		while (current) {
 
 			Element *next = current->next_ptr;
-
-			//disconnect
-			current->next_ptr = NULL;
 
 			if (from != current) {
 
@@ -689,6 +685,10 @@ public:
 		}
 
 		memdelete_arr(aux_buffer);
+	}
+
+	const void *id() const {
+		return (void *)_data;
 	}
 
 	/**

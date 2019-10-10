@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,9 +32,10 @@
 
 #include "os_iphone.h"
 
+#include "drivers/gles2/rasterizer_gles2.h"
 #include "drivers/gles3/rasterizer_gles3.h"
 #include "servers/visual/visual_server_raster.h"
-//#include "servers/visual/visual_server_wrap_mt.h"
+#include "servers/visual/visual_server_wrap_mt.h"
 
 #include "main/main.h"
 
@@ -44,19 +45,26 @@
 #include "core/project_settings.h"
 #include "drivers/unix/syslog_logger.h"
 
-#include "sem_iphone.h"
+#include "semaphore_iphone.h"
 
 #include "ios.h"
+
 #include <dlfcn.h>
 
 int OSIPhone::get_video_driver_count() const {
 
-	return 1;
+	return 2;
 };
 
 const char *OSIPhone::get_video_driver_name(int p_driver) const {
 
-	return "GLES3";
+	switch (p_driver) {
+		case VIDEO_DRIVER_GLES3:
+			return "GLES3";
+		case VIDEO_DRIVER_GLES2:
+			return "GLES2";
+	}
+	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 };
 
 OSIPhone *OSIPhone::get_singleton() {
@@ -75,14 +83,14 @@ void OSIPhone::set_data_dir(String p_dir) {
 	memdelete(da);
 };
 
-void OSIPhone::set_unique_id(String p_ID) {
+void OSIPhone::set_unique_id(String p_id) {
 
-	unique_ID = p_ID;
+	unique_id = p_id;
 };
 
 String OSIPhone::get_unique_id() const {
 
-	return unique_ID;
+	return unique_id;
 };
 
 void OSIPhone::initialize_core() {
@@ -97,30 +105,68 @@ int OSIPhone::get_current_video_driver() const {
 	return video_driver_index;
 }
 
+extern bool gles3_available; // from gl_view.mm
+
 Error OSIPhone::initialize(const VideoMode &p_desired, int p_video_driver, int p_audio_driver) {
 
-	video_driver_index = p_video_driver; //this may be misleading
+	bool use_gl3 = GLOBAL_GET("rendering/quality/driver/driver_name") == "GLES3";
+	bool gl_initialization_error = false;
 
-	RasterizerGLES3::register_config();
-	RasterizerGLES3::make_current();
+	while (true) {
+		if (use_gl3) {
+			if (RasterizerGLES3::is_viable() == OK && gles3_available) {
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					use_gl3 = false;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		} else {
+			if (RasterizerGLES2::is_viable() == OK) {
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
 
-	visual_server = memnew(VisualServerRaster());
-	/*
-		FIXME: Reimplement threaded rendering? Or remove?
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your device does not support any of the supported OpenGL versions.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
+	}
+
+	video_driver_index = p_video_driver;
+	visual_server = memnew(VisualServerRaster);
+	// FIXME: Reimplement threaded rendering
 	if (get_render_thread_mode() != RENDER_THREAD_UNSAFE) {
 		visual_server = memnew(VisualServerWrapMT(visual_server, false));
-	};
-	*/
+	}
 
 	visual_server->init();
 	//visual_server->cursor_set_visible(false, 0);
 
 	// reset this to what it should be, it will have been set to 0 after visual_server->init() is called
-	RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
+	if (use_gl3)
+		RasterizerStorageGLES3::system_fbo = gl_view_base_fb;
+	else
+		RasterizerStorageGLES2::system_fbo = gl_view_base_fb;
 
 	AudioDriverManager::initialize(p_audio_driver);
 
 	input = memnew(InputDefault);
+
+	camera_server = memnew(CameraIOS);
 
 #ifdef GAME_CENTER_ENABLED
 	game_center = memnew(GameCenter);
@@ -316,6 +362,11 @@ void OSIPhone::finalize() {
 	if (main_loop) // should not happen?
 		memdelete(main_loop);
 
+	if (camera_server) {
+		memdelete(camera_server);
+		camera_server = NULL;
+	}
+
 	visual_server->finish();
 	memdelete(visual_server);
 	//	memdelete(rasterizer);
@@ -419,6 +470,7 @@ extern void _show_keyboard(String p_existing);
 extern void _hide_keyboard();
 extern Error _shell_open(String p_uri);
 extern void _set_keep_screen_on(bool p_enabled);
+extern void _vibrate();
 
 void OSIPhone::show_virtual_keyboard(const String &p_existing_text, const Rect2 &p_screen_rect) {
 	_show_keyboard(p_existing_text);
@@ -445,18 +497,12 @@ void OSIPhone::set_keep_screen_on(bool p_enabled) {
 	_set_keep_screen_on(p_enabled);
 };
 
-void OSIPhone::set_cursor_shape(CursorShape p_shape){
-
-};
-
 String OSIPhone::get_user_data_dir() const {
 
 	return data_dir;
 };
 
-void OSIPhone::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot){};
-
-String OSIPhone::get_name() {
+String OSIPhone::get_name() const {
 
 	return "iOS";
 };
@@ -540,9 +586,14 @@ void OSIPhone::native_video_stop() {
 		_stop_video();
 }
 
+void OSIPhone::vibrate_handheld(int p_duration_ms) {
+	// iOS does not support duration for vibration
+	_vibrate();
+}
+
 bool OSIPhone::_check_internal_feature_support(const String &p_feature) {
 
-	return p_feature == "mobile" || p_feature == "etc" || p_feature == "pvrtc" || p_feature == "etc2";
+	return p_feature == "mobile";
 }
 
 // Initialization order between compilation units is not guaranteed,

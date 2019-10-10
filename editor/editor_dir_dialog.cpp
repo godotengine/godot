@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "editor_dir_dialog.h"
 
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_settings.h"
 #include "editor_scale.h"
-#include "os/keyboard.h"
-#include "os/os.h"
 void EditorDirDialog::_update_dir(TreeItem *p_item, EditorFileSystemDirectory *p_dir, const String &p_select_path) {
 
 	updating = true;
@@ -133,7 +133,7 @@ void EditorDirDialog::_make_dir() {
 
 	TreeItem *ti = tree->get_selected();
 	if (!ti) {
-		mkdirerr->set_text(TTR("Please select a base directory first"));
+		mkdirerr->set_text(TTR("Please select a base directory first."));
 		mkdirerr->popup_centered_minsize();
 		return;
 	}
@@ -151,7 +151,7 @@ void EditorDirDialog::_make_dir_confirm() {
 	String dir = ti->get_metadata(0);
 
 	DirAccessRef d = DirAccess::open(dir);
-	ERR_FAIL_COND(!d);
+	ERR_FAIL_COND_MSG(!d, "Cannot open directory '" + dir + "'.");
 	Error err = d->make_dir(makedirname->get_text());
 
 	if (err != OK) {
@@ -186,7 +186,7 @@ EditorDirDialog::EditorDirDialog() {
 
 	tree->connect("item_activated", this, "_ok");
 
-	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel() ? true : false, "makedir");
+	makedir = add_button(TTR("Create Folder"), OS::get_singleton()->get_swap_ok_cancel(), "makedir");
 	makedir->connect("pressed", this, "_make_dir");
 
 	makedialog = memnew(ConfirmationDialog);

@@ -1,11 +1,41 @@
+/*************************************************************************/
+/*  resource_importer_layered_texture.cpp                                */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "resource_importer_layered_texture.h"
 
 #include "resource_importer_texture.h"
 
+#include "core/io/config_file.h"
+#include "core/io/image_loader.h"
 #include "editor/editor_file_system.h"
 #include "editor/editor_node.h"
-#include "io/config_file.h"
-#include "io/image_loader.h"
 #include "scene/resources/texture.h"
 
 String ResourceImporterLayeredTexture::get_importer_name() const {
@@ -52,6 +82,7 @@ String ResourceImporterLayeredTexture::get_preset_name(int p_idx) const {
 void ResourceImporterLayeredTexture::get_import_options(List<ImportOption> *r_options, int p_preset) const {
 
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "compress/mode", PROPERTY_HINT_ENUM, "Lossless,Video RAM,Uncompressed", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_UPDATE_ALL_IF_MODIFIED), p_preset == PRESET_3D ? 1 : 0));
+	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "compress/no_bptc_if_rgb"), false));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::INT, "flags/repeat", PROPERTY_HINT_ENUM, "Disabled,Enabled,Mirrored"), 0));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/filter"), true));
 	r_options->push_back(ImportOption(PropertyInfo(Variant::BOOL, "flags/mipmaps"), p_preset == PRESET_COLOR_CORRECT ? 0 : 1));
@@ -101,9 +132,9 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 				int mmc = image->get_mipmap_count() + 1;
 				f->store_32(mmc);
 
-				for (int i = 0; i < mmc; i++) {
+				for (int j = 0; j < mmc; j++) {
 
-					if (i > 0) {
+					if (j > 0) {
 						image->shrink_x2();
 					}
 
@@ -160,9 +191,10 @@ void ResourceImporterLayeredTexture::_save_tex(const Vector<Ref<Image> > &p_imag
 	memdelete(f);
 }
 
-Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files) {
+Error ResourceImporterLayeredTexture::import(const String &p_source_file, const String &p_save_path, const Map<StringName, Variant> &p_options, List<String> *r_platform_variants, List<String> *r_gen_files, Variant *r_metadata) {
 
 	int compress_mode = p_options["compress/mode"];
+	int no_bptc_if_rgb = p_options["compress/no_bptc_if_rgb"];
 	int repeat = p_options["flags/repeat"];
 	bool filter = p_options["flags/filter"];
 	bool mipmaps = p_options["flags/mipmaps"];
@@ -220,46 +252,143 @@ Error ResourceImporterLayeredTexture::import(const String &p_source_file, const 
 	}
 
 	String extension = get_save_extension();
+	Array formats_imported;
 
 	if (compress_mode == COMPRESS_VIDEO_RAM) {
 		//must import in all formats, in order of priority (so platform choses the best supported one. IE, etc2 over etc).
 		//Android, GLES 2.x
 
 		bool ok_on_pc = false;
+		bool encode_bptc = false;
+
+		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_bptc")) {
+
+			encode_bptc = true;
+
+			if (no_bptc_if_rgb) {
+				Image::DetectChannels channels = image->get_detected_channels();
+				if (channels != Image::DETECTED_LA && channels != Image::DETECTED_RGBA) {
+					encode_bptc = false;
+				}
+			}
+
+			formats_imported.push_back("bptc");
+		}
+
+		if (encode_bptc) {
+
+			_save_tex(slices, p_save_path + ".bptc." + extension, compress_mode, Image::COMPRESS_BPTC, mipmaps, tex_flags);
+			r_platform_variants->push_back("bptc");
+			ok_on_pc = true;
+		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_s3tc")) {
 
 			_save_tex(slices, p_save_path + ".s3tc." + extension, compress_mode, Image::COMPRESS_S3TC, mipmaps, tex_flags);
 			r_platform_variants->push_back("s3tc");
 			ok_on_pc = true;
+			formats_imported.push_back("s3tc");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc2")) {
 
 			_save_tex(slices, p_save_path + ".etc2." + extension, compress_mode, Image::COMPRESS_ETC2, mipmaps, tex_flags);
 			r_platform_variants->push_back("etc2");
+			formats_imported.push_back("etc2");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_etc")) {
 			_save_tex(slices, p_save_path + ".etc." + extension, compress_mode, Image::COMPRESS_ETC, mipmaps, tex_flags);
 			r_platform_variants->push_back("etc");
+			formats_imported.push_back("etc");
 		}
 
 		if (ProjectSettings::get_singleton()->get("rendering/vram_compression/import_pvrtc")) {
 
 			_save_tex(slices, p_save_path + ".pvrtc." + extension, compress_mode, Image::COMPRESS_PVRTC4, mipmaps, tex_flags);
 			r_platform_variants->push_back("pvrtc");
+			formats_imported.push_back("pvrtc");
 		}
 
 		if (!ok_on_pc) {
-			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correcly on PC.");
+			EditorNode::add_io_error("Warning, no suitable PC VRAM compression enabled in Project Settings. This texture will not display correctly on PC.");
 		}
 	} else {
 		//import normally
 		_save_tex(slices, p_save_path + "." + extension, compress_mode, Image::COMPRESS_S3TC /*this is ignored */, mipmaps, tex_flags);
 	}
 
+	if (r_metadata) {
+		Dictionary metadata;
+		metadata["vram_texture"] = compress_mode == COMPRESS_VIDEO_RAM;
+		if (formats_imported.size()) {
+			metadata["imported_formats"] = formats_imported;
+		}
+		*r_metadata = metadata;
+	}
+
 	return OK;
+}
+
+const char *ResourceImporterLayeredTexture::compression_formats[] = {
+	"bptc",
+	"s3tc",
+	"etc",
+	"etc2",
+	"pvrtc",
+	NULL
+};
+String ResourceImporterLayeredTexture::get_import_settings_string() const {
+
+	String s;
+
+	int index = 0;
+	while (compression_formats[index]) {
+		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		if (test) {
+			s += String(compression_formats[index]);
+		}
+		index++;
+	}
+
+	return s;
+}
+
+bool ResourceImporterLayeredTexture::are_import_settings_valid(const String &p_path) const {
+
+	//will become invalid if formats are missing to import
+	Dictionary metadata = ResourceFormatImporter::get_singleton()->get_resource_metadata(p_path);
+
+	if (!metadata.has("vram_texture")) {
+		return false;
+	}
+
+	bool vram = metadata["vram_texture"];
+	if (!vram) {
+		return true; //do not care about non vram
+	}
+
+	Vector<String> formats_imported;
+	if (metadata.has("imported_formats")) {
+		formats_imported = metadata["imported_formats"];
+	}
+
+	int index = 0;
+	bool valid = true;
+	while (compression_formats[index]) {
+		String setting_path = "rendering/vram_compression/import_" + String(compression_formats[index]);
+		bool test = ProjectSettings::get_singleton()->get(setting_path);
+		if (test) {
+			if (formats_imported.find(compression_formats[index]) == -1) {
+				valid = false;
+				break;
+			}
+		}
+		index++;
+	}
+
+	return valid;
 }
 
 ResourceImporterLayeredTexture *ResourceImporterLayeredTexture::singleton = NULL;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #ifndef AUDIO_STREAM_OPUS_H
 #define AUDIO_STREAM_OPUS_H
 
-#include "io/resource_loader.h"
-#include "os/file_access.h"
+#include "core/io/resource_loader.h"
+#include "core/os/file_access.h"
 #include "scene/resources/audio_stream.h"
 
 #include <opus/opusfile.h>
@@ -43,7 +43,7 @@
 
 class AudioStreamPlaybackOpus : public AudioStreamPlayback {
 
-	GDCLASS(AudioStreamPlaybackOpus, AudioStreamPlayback)
+	GDCLASS(AudioStreamPlaybackOpus, AudioStreamPlayback);
 
 	enum {
 		MIN_MIX = 1024
@@ -117,7 +117,7 @@ public:
 
 class AudioStreamOpus : public AudioStream {
 
-	GDCLASS(AudioStreamOpus, AudioStream)
+	GDCLASS(AudioStreamOpus, AudioStream);
 
 	String file;
 

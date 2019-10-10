@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,15 +30,16 @@
 
 #include "os_javascript.h"
 
-#include "gles2/rasterizer_gles2.h"
-#include "gles3/rasterizer_gles3.h"
-#include "io/file_access_buffered_fa.h"
+#include "core/io/file_access_buffered_fa.h"
+#include "drivers/gles2/rasterizer_gles2.h"
+#include "drivers/gles3/rasterizer_gles3.h"
+#include "drivers/unix/dir_access_unix.h"
+#include "drivers/unix/file_access_unix.h"
 #include "main/main.h"
 #include "servers/visual/visual_server_raster.h"
-#include "unix/dir_access_unix.h"
-#include "unix/file_access_unix.h"
 
 #include <emscripten.h>
+#include <png.h>
 #include <stdlib.h>
 
 #include "dom_keys.inc"
@@ -69,15 +70,21 @@ static bool is_canvas_focused() {
 	/* clang-format on */
 }
 
-static bool cursor_inside_canvas = true;
+static Point2 correct_canvas_position(int x, int y) {
+	int canvas_width;
+	int canvas_height;
+	emscripten_get_canvas_element_size(NULL, &canvas_width, &canvas_height);
 
-EM_BOOL OS_JavaScript::browser_resize_callback(int p_event_type, const EmscriptenUiEvent *p_event, void *p_user_data) {
+	double element_width;
+	double element_height;
+	emscripten_get_element_css_size(NULL, &element_width, &element_height);
 
-	// The order of the fullscreen change event and the window size change
-	// event varies, even within just one browser, so defer handling.
-	get_singleton()->canvas_size_adjustment_requested = true;
-	return false;
+	x = (int)(canvas_width / element_width * x);
+	y = (int)(canvas_height / element_height * y);
+	return Point2(x, y);
 }
+
+static bool cursor_inside_canvas = true;
 
 EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const EmscriptenFullscreenChangeEvent *p_event, void *p_user_data) {
 
@@ -88,7 +95,13 @@ EM_BOOL OS_JavaScript::fullscreen_change_callback(int p_event_type, const Emscri
 		// This event property is the only reliable data on
 		// browser fullscreen state.
 		os->video_mode.fullscreen = p_event->isFullscreen;
-		os->canvas_size_adjustment_requested = true;
+		if (os->video_mode.fullscreen) {
+			os->entering_fullscreen = false;
+		} else {
+			// Restoring maximized window now will cause issues,
+			// so delay until main_loop_iterate.
+			os->just_exited_fullscreen = true;
+		}
 	}
 	return false;
 }
@@ -114,52 +127,43 @@ Size2 OS_JavaScript::get_screen_size(int p_screen) const {
 void OS_JavaScript::set_window_size(const Size2 p_size) {
 
 	windowed_size = p_size;
-	if (is_window_fullscreen()) {
+	if (video_mode.fullscreen) {
 		window_maximized = false;
 		set_window_fullscreen(false);
-	} else if (is_window_maximized()) {
-		set_window_maximized(false);
 	} else {
-		video_mode.width = p_size.x;
-		video_mode.height = p_size.y;
-		emscripten_set_canvas_size(p_size.x, p_size.y);
+		if (window_maximized) {
+			emscripten_exit_soft_fullscreen();
+			window_maximized = false;
+		}
+		emscripten_set_canvas_element_size(NULL, p_size.x, p_size.y);
 	}
 }
 
 Size2 OS_JavaScript::get_window_size() const {
 
-	int canvas[3];
-	emscripten_get_canvas_size(canvas, canvas + 1, canvas + 2);
+	int canvas[2];
+	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
 	return Size2(canvas[0], canvas[1]);
 }
 
 void OS_JavaScript::set_window_maximized(bool p_enabled) {
 
-	window_maximized = p_enabled;
-	if (is_window_fullscreen()) {
+	if (video_mode.fullscreen) {
+		window_maximized = p_enabled;
 		set_window_fullscreen(false);
-		return;
-	}
-	// Calling emscripten_enter_soft_fullscreen mutltiple times hides all
-	// page elements except the canvas permanently, so track state.
-	if (p_enabled && !soft_fullscreen_enabled) {
-
+	} else if (!p_enabled) {
+		emscripten_exit_soft_fullscreen();
+		window_maximized = false;
+	} else if (!window_maximized) {
+		// Prevent calling emscripten_enter_soft_fullscreen mutltiple times,
+		// this would hide page elements permanently.
 		EmscriptenFullscreenStrategy strategy;
 		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
 		emscripten_enter_soft_fullscreen(NULL, &strategy);
-		soft_fullscreen_enabled = true;
-		video_mode.width = get_window_size().width;
-		video_mode.height = get_window_size().height;
-	} else if (!p_enabled) {
-
-		emscripten_exit_soft_fullscreen();
-		soft_fullscreen_enabled = false;
-		video_mode.width = windowed_size.width;
-		video_mode.height = windowed_size.height;
-		emscripten_set_canvas_size(video_mode.width, video_mode.height);
+		window_maximized = p_enabled;
 	}
 }
 
@@ -170,30 +174,32 @@ bool OS_JavaScript::is_window_maximized() const {
 
 void OS_JavaScript::set_window_fullscreen(bool p_enabled) {
 
-	if (p_enabled == is_window_fullscreen()) {
+	if (p_enabled == video_mode.fullscreen) {
 		return;
 	}
 
-	// Just request changes here, if successful, canvas is resized in
-	// _browser_resize_callback or _fullscreen_change_callback.
-	EMSCRIPTEN_RESULT result;
+	// Just request changes here, if successful, logic continues in
+	// fullscreen_change_callback.
 	if (p_enabled) {
 		if (window_maximized) {
-			// Soft fullsreen during real fulllscreen can cause issues.
-			set_window_maximized(false);
-			window_maximized = true;
+			// Soft fullsreen during real fullscreen can cause issues, so exit.
+			// This must be called before requesting full screen.
+			emscripten_exit_soft_fullscreen();
 		}
 		EmscriptenFullscreenStrategy strategy;
 		strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
 		strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
 		strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
 		strategy.canvasResizedCallback = NULL;
-		emscripten_request_fullscreen_strategy(NULL, false, &strategy);
+		EMSCRIPTEN_RESULT result = emscripten_request_fullscreen_strategy(NULL, false, &strategy);
+		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
+		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "Enabling fullscreen is only possible from an input callback for the HTML5 platform.");
+		// Not fullscreen yet, so prevent "windowed" canvas dimensions from
+		// being overwritten.
+		entering_fullscreen = true;
 	} else {
-		result = emscripten_exit_fullscreen();
-		if (result != EMSCRIPTEN_RESULT_SUCCESS) {
-			ERR_PRINTS("Failed to exit fullscreen: Code " + itos(result));
-		}
+		// No logic allowed here, since exiting w/ ESC key won't use this function.
+		ERR_FAIL_COND(emscripten_exit_fullscreen() != EMSCRIPTEN_RESULT_SUCCESS);
 	}
 }
 
@@ -252,6 +258,8 @@ EM_BOOL OS_JavaScript::keydown_callback(int p_event_type, const EmscriptenKeyboa
 		return false;
 	}
 	os->input->parse_input_event(ev);
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	return true;
 }
 
@@ -290,7 +298,7 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
 	ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_MOUSEDOWN);
-	ev->set_position(Point2(p_event->canvasX, p_event->canvasY));
+	ev->set_position(correct_canvas_position(p_event->canvasX, p_event->canvasY));
 	ev->set_global_position(ev->get_position());
 	dom2godot_mod(p_event, ev);
 	switch (p_event->button) {
@@ -300,6 +308,30 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 		case DOM_BUTTON_XBUTTON1: ev->set_button_index(BUTTON_XBUTTON1); break;
 		case DOM_BUTTON_XBUTTON2: ev->set_button_index(BUTTON_XBUTTON2); break;
 		default: return false;
+	}
+
+	if (ev->is_pressed()) {
+
+		uint64_t diff = p_event->timestamp - os->last_click_ms;
+
+		if (ev->get_button_index() == os->last_click_button_index) {
+
+			if (diff < 400 && Point2(os->last_click_pos).distance_to(ev->get_position()) < 5) {
+
+				os->last_click_ms = 0;
+				os->last_click_pos = Point2(-100, -100);
+				os->last_click_button_index = -1;
+				ev->set_doubleclick(true);
+			}
+
+		} else {
+			os->last_click_button_index = ev->get_button_index();
+		}
+
+		if (!ev->is_doubleclick()) {
+			os->last_click_ms += diff;
+			os->last_click_pos = ev->get_position();
+		}
 	}
 
 	int mask = os->input->get_mouse_button_mask();
@@ -318,6 +350,8 @@ EM_BOOL OS_JavaScript::mouse_button_callback(int p_event_type, const EmscriptenM
 	ev->set_button_mask(mask);
 
 	os->input->parse_input_event(ev);
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	// Prevent multi-click text selection and wheel-click scrolling anchor.
 	// Context menu is prevented through contextmenu event.
 	return true;
@@ -328,7 +362,7 @@ EM_BOOL OS_JavaScript::mousemove_callback(int p_event_type, const EmscriptenMous
 	OS_JavaScript *os = get_singleton();
 
 	int input_mask = os->input->get_mouse_button_mask();
-	Point2 pos = Point2(p_event->canvasX, p_event->canvasY);
+	Point2 pos = correct_canvas_position(p_event->canvasX, p_event->canvasY);
 	// For motion outside the canvas, only read mouse movement if dragging
 	// started inside the canvas; imitating desktop app behaviour.
 	if (!cursor_inside_canvas && !input_mask)
@@ -385,39 +419,179 @@ static void set_css_cursor(const char *p_cursor) {
 	/* clang-format on */
 }
 
-static const char *get_css_cursor() {
+static bool is_css_cursor_hidden() {
 
-	char cursor[16];
 	/* clang-format off */
-	EM_ASM_INT({
-		stringToUTF8(Module.canvas.style.cursor ? Module.canvas.style.cursor : 'auto', $0, 16);
-	}, cursor);
+	return EM_ASM_INT({
+		return Module.canvas.style.cursor === 'none';
+	});
 	/* clang-format on */
-	return cursor;
 }
 
 void OS_JavaScript::set_cursor_shape(CursorShape p_shape) {
 
 	ERR_FAIL_INDEX(p_shape, CURSOR_MAX);
 
+	if (get_mouse_mode() == MOUSE_MODE_VISIBLE) {
+		if (cursors[p_shape] != "") {
+			Vector<String> url = cursors[p_shape].split("?");
+			set_css_cursor(("url(\"" + url[0] + "\") " + url[1] + ", auto").utf8());
+		} else {
+			set_css_cursor(godot2dom_cursor(p_shape));
+		}
+	}
+
 	cursor_shape = p_shape;
-	if (get_mouse_mode() != MOUSE_MODE_HIDDEN)
-		set_css_cursor(godot2dom_cursor(cursor_shape));
 }
 
 void OS_JavaScript::set_custom_mouse_cursor(const RES &p_cursor, CursorShape p_shape, const Vector2 &p_hotspot) {
+
+	if (p_cursor.is_valid()) {
+
+		Map<CursorShape, Vector<Variant> >::Element *cursor_c = cursors_cache.find(p_shape);
+
+		if (cursor_c) {
+			if (cursor_c->get()[0] == p_cursor && cursor_c->get()[1] == p_hotspot) {
+				set_cursor_shape(p_shape);
+				return;
+			}
+
+			cursors_cache.erase(p_shape);
+		}
+
+		Ref<Texture> texture = p_cursor;
+		Ref<AtlasTexture> atlas_texture = p_cursor;
+		Ref<Image> image;
+		Size2 texture_size;
+		Rect2 atlas_rect;
+
+		if (texture.is_valid()) {
+			image = texture->get_data();
+			if (image.is_valid()) {
+				image->duplicate();
+			}
+		}
+
+		if (!image.is_valid() && atlas_texture.is_valid()) {
+			texture = atlas_texture->get_atlas();
+
+			atlas_rect.size.width = texture->get_width();
+			atlas_rect.size.height = texture->get_height();
+			atlas_rect.position.x = atlas_texture->get_region().position.x;
+			atlas_rect.position.y = atlas_texture->get_region().position.y;
+
+			texture_size.width = atlas_texture->get_region().size.x;
+			texture_size.height = atlas_texture->get_region().size.y;
+		} else if (image.is_valid()) {
+			texture_size.width = texture->get_width();
+			texture_size.height = texture->get_height();
+		}
+
+		ERR_FAIL_COND(!texture.is_valid());
+		ERR_FAIL_COND(p_hotspot.x < 0 || p_hotspot.y < 0);
+		ERR_FAIL_COND(texture_size.width > 256 || texture_size.height > 256);
+		ERR_FAIL_COND(p_hotspot.x > texture_size.width || p_hotspot.y > texture_size.height);
+
+		image = texture->get_data();
+
+		ERR_FAIL_COND(!image.is_valid());
+
+		image = image->duplicate();
+
+		if (atlas_texture.is_valid())
+			image->crop_from_point(
+					atlas_rect.position.x,
+					atlas_rect.position.y,
+					texture_size.width,
+					texture_size.height);
+
+		if (image->get_format() != Image::FORMAT_RGBA8) {
+			image->convert(Image::FORMAT_RGBA8);
+		}
+
+		png_image png_meta;
+		memset(&png_meta, 0, sizeof png_meta);
+		png_meta.version = PNG_IMAGE_VERSION;
+		png_meta.width = texture_size.width;
+		png_meta.height = texture_size.height;
+		png_meta.format = PNG_FORMAT_RGBA;
+
+		PoolByteArray png;
+		size_t len;
+		PoolByteArray::Read r = image->get_data().read();
+		ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+
+		png.resize(len);
+		PoolByteArray::Write w = png.write();
+		ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
+		w = PoolByteArray::Write();
+
+		r = png.read();
+
+		char *object_url;
+		/* clang-format off */
+		EM_ASM({
+			var PNG_PTR = $0;
+			var PNG_LEN = $1;
+			var PTR = $2;
+
+			var png = new Blob([HEAPU8.slice(PNG_PTR, PNG_PTR + PNG_LEN)], { type: 'image/png' });
+			var url = URL.createObjectURL(png);
+			var length_bytes = lengthBytesUTF8(url) + 1;
+			var string_on_wasm_heap = _malloc(length_bytes);
+			setValue(PTR, string_on_wasm_heap, '*');
+			stringToUTF8(url, string_on_wasm_heap, length_bytes);
+		}, r.ptr(), len, &object_url);
+		/* clang-format on */
+		r = PoolByteArray::Read();
+
+		String url = String::utf8(object_url) + "?" + itos(p_hotspot.x) + " " + itos(p_hotspot.y);
+
+		/* clang-format off */
+		EM_ASM({ _free($0); }, object_url);
+		/* clang-format on */
+
+		if (cursors[p_shape] != "") {
+			/* clang-format off */
+			EM_ASM({
+				URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
+			}, cursors[p_shape].utf8().get_data());
+			/* clang-format on */
+			cursors[p_shape] = "";
+		}
+
+		cursors[p_shape] = url;
+
+		Vector<Variant> params;
+		params.push_back(p_cursor);
+		params.push_back(p_hotspot);
+		cursors_cache.insert(p_shape, params);
+
+	} else if (cursors[p_shape] != "") {
+		/* clang-format off */
+		EM_ASM({
+			URL.revokeObjectURL(UTF8ToString($0).split('?')[0]);
+		}, cursors[p_shape].utf8().get_data());
+		/* clang-format on */
+		cursors[p_shape] = "";
+
+		cursors_cache.erase(p_shape);
+	}
+
+	set_cursor_shape(cursor_shape);
 }
 
 void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 
-	ERR_EXPLAIN("MOUSE_MODE_CONFINED is not supported for the HTML5 platform");
-	ERR_FAIL_COND(p_mode == MOUSE_MODE_CONFINED);
+	ERR_FAIL_COND_MSG(p_mode == MOUSE_MODE_CONFINED, "MOUSE_MODE_CONFINED is not supported for the HTML5 platform.");
 	if (p_mode == get_mouse_mode())
 		return;
 
 	if (p_mode == MOUSE_MODE_VISIBLE) {
 
+		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
 		set_css_cursor(godot2dom_cursor(cursor_shape));
+		set_cursor_shape(cursor_shape);
 		emscripten_exit_pointerlock();
 
 	} else if (p_mode == MOUSE_MODE_HIDDEN) {
@@ -428,16 +602,17 @@ void OS_JavaScript::set_mouse_mode(OS::MouseMode p_mode) {
 	} else if (p_mode == MOUSE_MODE_CAPTURED) {
 
 		EMSCRIPTEN_RESULT result = emscripten_request_pointerlock("canvas", false);
-		ERR_EXPLAIN("MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback");
-		ERR_FAIL_COND(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED);
-		ERR_FAIL_COND(result != EMSCRIPTEN_RESULT_SUCCESS);
+		ERR_FAIL_COND_MSG(result == EMSCRIPTEN_RESULT_FAILED_NOT_DEFERRED, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
+		ERR_FAIL_COND_MSG(result != EMSCRIPTEN_RESULT_SUCCESS, "MOUSE_MODE_CAPTURED can only be entered from within an appropriate input callback.");
+		// set_css_cursor must be called before set_cursor_shape to make the cursor visible
 		set_css_cursor(godot2dom_cursor(cursor_shape));
+		set_cursor_shape(cursor_shape);
 	}
 }
 
 OS::MouseMode OS_JavaScript::get_mouse_mode() const {
 
-	if (String::utf8(get_css_cursor()) == "none")
+	if (is_css_cursor_hidden())
 		return MOUSE_MODE_HIDDEN;
 
 	EmscriptenPointerlockChangeEvent ev;
@@ -461,7 +636,6 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	InputDefault *input = get_singleton()->input;
 	Ref<InputEventMouseButton> ev;
 	ev.instance();
-	ev->set_button_mask(input->get_mouse_button_mask());
 	ev->set_position(input->get_mouse_position());
 	ev->set_global_position(ev->get_position());
 
@@ -484,10 +658,14 @@ EM_BOOL OS_JavaScript::wheel_callback(int p_event_type, const EmscriptenWheelEve
 	// Different browsers give wildly different delta values, and we can't
 	// interpret deltaMode, so use default value for wheel events' factor.
 
+	int button_flag = 1 << (ev->get_button_index() - 1);
+
 	ev->set_pressed(true);
+	ev->set_button_mask(input->get_mouse_button_mask() | button_flag);
 	input->parse_input_event(ev);
 
 	ev->set_pressed(false);
+	ev->set_button_mask(input->get_mouse_button_mask() & ~button_flag);
 	input->parse_input_event(ev);
 
 	return true;
@@ -518,12 +696,14 @@ EM_BOOL OS_JavaScript::touch_press_callback(int p_event_type, const EmscriptenTo
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		os->touches[i] = ev->get_position();
 		ev->set_pressed(p_event_type == EMSCRIPTEN_EVENT_TOUCHSTART);
 
 		os->input->parse_input_event(ev);
 	}
+	// Resume audio context after input in case autoplay was denied.
+	os->audio_driver_javascript.resume();
 	return true;
 }
 
@@ -541,7 +721,7 @@ EM_BOOL OS_JavaScript::touchmove_callback(int p_event_type, const EmscriptenTouc
 		if (!touch.isChanged)
 			continue;
 		ev->set_index(touch.identifier);
-		ev->set_position(Point2(touch.canvasX, touch.canvasY));
+		ev->set_position(correct_canvas_position(touch.canvasX, touch.canvasY));
 		Point2 &prev = os->touches[i];
 		ev->set_relative(ev->get_position() - prev);
 		prev = ev->get_position();
@@ -573,8 +753,11 @@ void OS_JavaScript::process_joypads() {
 	int joypad_count = emscripten_get_num_gamepads();
 	for (int joypad = 0; joypad < joypad_count; joypad++) {
 		EmscriptenGamepadEvent state;
-		emscripten_get_gamepad_status(joypad, &state);
-		if (state.connected) {
+		EMSCRIPTEN_RESULT query_result = emscripten_get_gamepad_status(joypad, &state);
+		// Chromium reserves gamepads slots, so NO_DATA is an expected result.
+		ERR_CONTINUE(query_result != EMSCRIPTEN_RESULT_SUCCESS &&
+					 query_result != EMSCRIPTEN_RESULT_NO_DATA);
+		if (query_result == EMSCRIPTEN_RESULT_SUCCESS && state.connected) {
 
 			int button_count = MIN(state.numButtons, 18);
 			int axis_count = MIN(state.numAxes, 8);
@@ -626,8 +809,7 @@ const char *OS_JavaScript::get_video_driver_name(int p_driver) const {
 		case VIDEO_DRIVER_GLES2:
 			return "GLES2";
 	}
-	ERR_EXPLAIN("Invalid video driver index " + itos(p_driver));
-	ERR_FAIL_V(NULL);
+	ERR_FAIL_V_MSG(NULL, "Invalid video driver index: " + itos(p_driver) + ".");
 }
 
 // Audio
@@ -640,6 +822,46 @@ int OS_JavaScript::get_audio_driver_count() const {
 const char *OS_JavaScript::get_audio_driver_name(int p_driver) const {
 
 	return "JavaScript";
+}
+
+// Clipboard
+extern "C" EMSCRIPTEN_KEEPALIVE void update_clipboard(const char *p_text) {
+	// Only call set_clipboard from OS (sets local clipboard)
+	OS::get_singleton()->OS::set_clipboard(p_text);
+}
+
+void OS_JavaScript::set_clipboard(const String &p_text) {
+	OS::set_clipboard(p_text);
+	/* clang-format off */
+	int err = EM_ASM_INT({
+		var text = UTF8ToString($0);
+		if (!navigator.clipboard || !navigator.clipboard.writeText)
+			return 1;
+		navigator.clipboard.writeText(text).catch(e => {
+			// Setting OS clipboard is only possible from an input callback.
+			console.error("Setting OS clipboard is only possible from an input callback for the HTML5 plafrom. Exception:", e);
+		});
+		return 0;
+	}, p_text.utf8().get_data());
+	/* clang-format on */
+	ERR_FAIL_COND_MSG(err, "Clipboard API is not supported.");
+}
+
+String OS_JavaScript::get_clipboard() const {
+	/* clang-format off */
+	EM_ASM({
+		try {
+			navigator.clipboard.readText().then(function (result) {
+				ccall('update_clipboard', 'void', ['string'], [result]);
+			}).catch(function (e) {
+				// Fail graciously.
+			});
+		} catch (e) {
+			// Fail graciously.
+		}
+	});
+	/* clang-format on */
+	return this->OS::get_clipboard();
 }
 
 // Lifecycle
@@ -660,27 +882,74 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	attributes.alpha = false;
 	attributes.antialias = false;
 	ERR_FAIL_INDEX_V(p_video_driver, VIDEO_DRIVER_MAX, ERR_INVALID_PARAMETER);
-	switch (p_video_driver) {
-		case VIDEO_DRIVER_GLES3:
-			attributes.majorVersion = 2;
-			RasterizerGLES3::register_config();
-			RasterizerGLES3::make_current();
-			break;
-		case VIDEO_DRIVER_GLES2:
-			attributes.majorVersion = 1;
-			RasterizerGLES2::register_config();
-			RasterizerGLES2::make_current();
-			break;
+
+	bool gles3 = true;
+	if (p_video_driver == VIDEO_DRIVER_GLES2) {
+		gles3 = false;
+	}
+
+	bool gl_initialization_error = false;
+
+	while (true) {
+		if (gles3) {
+			if (RasterizerGLES3::is_viable() == OK) {
+				attributes.majorVersion = 2;
+				RasterizerGLES3::register_config();
+				RasterizerGLES3::make_current();
+				break;
+			} else {
+				if (GLOBAL_GET("rendering/quality/driver/fallback_to_gles2")) {
+					p_video_driver = VIDEO_DRIVER_GLES2;
+					gles3 = false;
+					continue;
+				} else {
+					gl_initialization_error = true;
+					break;
+				}
+			}
+		} else {
+			if (RasterizerGLES2::is_viable() == OK) {
+				attributes.majorVersion = 1;
+				RasterizerGLES2::register_config();
+				RasterizerGLES2::make_current();
+				break;
+			} else {
+				gl_initialization_error = true;
+				break;
+			}
+		}
+	}
+
+	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
+	if (emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS) {
+		gl_initialization_error = true;
+	}
+
+	if (gl_initialization_error) {
+		OS::get_singleton()->alert("Your browser does not support any of the supported WebGL versions.\n"
+								   "Please update your browser version.",
+				"Unable to initialize Video driver");
+		return ERR_UNAVAILABLE;
 	}
 
 	video_driver_index = p_video_driver;
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_create_context(NULL, &attributes);
-	ERR_EXPLAIN("WebGL " + itos(attributes.majorVersion) + ".0 not available");
-	ERR_FAIL_COND_V(emscripten_webgl_make_context_current(ctx) != EMSCRIPTEN_RESULT_SUCCESS, ERR_UNAVAILABLE);
 
 	video_mode = p_desired;
-	// Can't fulfil fullscreen request during start-up due to browser security.
+	// fullscreen_change_callback will correct this if the request is successful.
 	video_mode.fullscreen = false;
+	// Emscripten only attempts fullscreen requests if the user input callback
+	// was registered through one its own functions, so request manually for
+	// start-up fullscreen.
+	if (p_desired.fullscreen) {
+		/* clang-format off */
+		EM_ASM({
+			(canvas.requestFullscreen || canvas.msRequestFullscreen ||
+				canvas.mozRequestFullScreen || canvas.mozRequestFullscreen ||
+				canvas.webkitRequestFullscreen
+			).call(canvas);
+		});
+		/* clang-format on */
+	}
 	/* clang-format off */
 	if (EM_ASM_INT_V({ return Module.resizeCanvasOnStart })) {
 		/* clang-format on */
@@ -700,6 +969,8 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	AudioDriverManager::initialize(p_audio_driver);
 	VisualServer *visual_server = memnew(VisualServerRaster());
 	input = memnew(InputDefault);
+
+	camera_server = memnew(CameraServer);
 
 	EMSCRIPTEN_RESULT result;
 #define EM_CHECK(ev)                         \
@@ -725,7 +996,6 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 	SET_EM_CALLBACK("#canvas", keydown, keydown_callback)
 	SET_EM_CALLBACK("#canvas", keypress, keypress_callback)
 	SET_EM_CALLBACK("#canvas", keyup, keyup_callback)
-	SET_EM_CALLBACK(NULL, resize, browser_resize_callback)
 	SET_EM_CALLBACK(NULL, fullscreenchange, fullscreen_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepadconnected, gamepad_change_callback)
 	SET_EM_CALLBACK_NOTARGET(gamepaddisconnected, gamepad_change_callback)
@@ -740,6 +1010,11 @@ Error OS_JavaScript::initialize(const VideoMode &p_desired, int p_video_driver, 
 		(['mouseover', 'mouseleave', 'focus', 'blur']).forEach(function(event, index) {
 			Module.canvas.addEventListener(event, send_notification.bind(null, notifications[index]));
 		});
+		// Clipboard
+		const update_clipboard = cwrap('update_clipboard', null, ['string']);
+		window.addEventListener('paste', function(evt) {
+			update_clipboard(evt.clipboardData.getData('text'));
+		}, true);
 	},
 		MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
 		MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
@@ -787,25 +1062,40 @@ bool OS_JavaScript::main_loop_iterate() {
 		if (sync_wait_time < 0) {
 			/* clang-format off */
 			EM_ASM(
-				FS.syncfs(function(err) {
-					if (err) { Module.printErr('Failed to save IDB file system: ' + err.message); }
+				FS.syncfs(function(error) {
+					if (error) { err('Failed to save IDB file system: ' + error.message); }
 				});
 			);
 			/* clang-format on */
 		}
 	}
-	process_joypads();
-	if (canvas_size_adjustment_requested) {
 
-		if (video_mode.fullscreen || window_maximized) {
-			video_mode.width = get_window_size().width;
-			video_mode.height = get_window_size().height;
+	if (emscripten_sample_gamepad_data() == EMSCRIPTEN_RESULT_SUCCESS)
+		process_joypads();
+
+	if (just_exited_fullscreen) {
+		if (window_maximized) {
+			EmscriptenFullscreenStrategy strategy;
+			strategy.scaleMode = EMSCRIPTEN_FULLSCREEN_SCALE_STRETCH;
+			strategy.canvasResolutionScaleMode = EMSCRIPTEN_FULLSCREEN_CANVAS_SCALE_STDDEF;
+			strategy.filteringMode = EMSCRIPTEN_FULLSCREEN_FILTERING_DEFAULT;
+			strategy.canvasResizedCallback = NULL;
+			emscripten_enter_soft_fullscreen(NULL, &strategy);
+		} else {
+			emscripten_set_canvas_element_size(NULL, windowed_size.width, windowed_size.height);
 		}
-		if (!video_mode.fullscreen) {
-			set_window_maximized(window_maximized);
-		}
-		canvas_size_adjustment_requested = false;
+		just_exited_fullscreen = false;
 	}
+
+	int canvas[2];
+	emscripten_get_canvas_element_size(NULL, canvas, canvas + 1);
+	video_mode.width = canvas[0];
+	video_mode.height = canvas[1];
+	if (!window_maximized && !video_mode.fullscreen && !just_exited_fullscreen && !entering_fullscreen) {
+		windowed_size.width = canvas[0];
+		windowed_size.height = canvas[1];
+	}
+
 	return Main::iteration();
 }
 
@@ -816,10 +1106,26 @@ void OS_JavaScript::delete_main_loop() {
 
 void OS_JavaScript::finalize() {
 
+	memdelete(camera_server);
 	memdelete(input);
 }
 
 // Miscellaneous
+
+Error OS_JavaScript::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
+
+	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "OS::execute() is not available on the HTML5 platform.");
+}
+
+Error OS_JavaScript::kill(const ProcessID &p_pid) {
+
+	ERR_FAIL_V_MSG(ERR_UNAVAILABLE, "OS::kill() is not available on the HTML5 platform.");
+}
+
+int OS_JavaScript::get_process_id() const {
+
+	ERR_FAIL_V_MSG(0, "OS::get_process_id() is not available on the HTML5 platform.");
+}
 
 extern "C" EMSCRIPTEN_KEEPALIVE void send_notification(int p_notification) {
 
@@ -838,16 +1144,6 @@ bool OS_JavaScript::_check_internal_feature_support(const String &p_feature) {
 	if (p_feature == "JavaScript")
 		return true;
 #endif
-
-	EMSCRIPTEN_WEBGL_CONTEXT_HANDLE ctx = emscripten_webgl_get_current_context();
-	// All extensions are already automatically enabled, this function allows
-	// checking WebGL extension support without inline JavaScript
-	if (p_feature == "s3tc")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_s3tc_srgb");
-	if (p_feature == "etc")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc1");
-	if (p_feature == "etc2")
-		return emscripten_webgl_enable_extension(ctx, "WEBGL_compressed_texture_etc");
 
 	return false;
 }
@@ -870,6 +1166,57 @@ void OS_JavaScript::set_window_title(const String &p_title) {
 	/* clang-format on */
 }
 
+void OS_JavaScript::set_icon(const Ref<Image> &p_icon) {
+
+	ERR_FAIL_COND(p_icon.is_null());
+	Ref<Image> icon = p_icon;
+	if (icon->is_compressed()) {
+		icon = icon->duplicate();
+		ERR_FAIL_COND(icon->decompress() != OK);
+	}
+	if (icon->get_format() != Image::FORMAT_RGBA8) {
+		if (icon == p_icon)
+			icon = icon->duplicate();
+		icon->convert(Image::FORMAT_RGBA8);
+	}
+
+	png_image png_meta;
+	memset(&png_meta, 0, sizeof png_meta);
+	png_meta.version = PNG_IMAGE_VERSION;
+	png_meta.width = icon->get_width();
+	png_meta.height = icon->get_height();
+	png_meta.format = PNG_FORMAT_RGBA;
+
+	PoolByteArray png;
+	size_t len;
+	PoolByteArray::Read r = icon->get_data().read();
+	ERR_FAIL_COND(!png_image_write_get_memory_size(png_meta, len, 0, r.ptr(), 0, NULL));
+
+	png.resize(len);
+	PoolByteArray::Write w = png.write();
+	ERR_FAIL_COND(!png_image_write_to_memory(&png_meta, w.ptr(), &len, 0, r.ptr(), 0, NULL));
+	w = PoolByteArray::Write();
+
+	r = png.read();
+	/* clang-format off */
+	EM_ASM_ARGS({
+		var PNG_PTR = $0;
+		var PNG_LEN = $1;
+
+		var png = new Blob([HEAPU8.slice(PNG_PTR, PNG_PTR + PNG_LEN)], { type: "image/png" });
+		var url = URL.createObjectURL(png);
+		var link = document.getElementById('-gd-engine-icon');
+		if (link === null) {
+			link = document.createElement('link');
+			link.rel = 'icon';
+			link.id = '-gd-engine-icon';
+			document.head.appendChild(link);
+		}
+		link.href = url;
+	}, r.ptr(), len);
+	/* clang-format on */
+}
+
 String OS_JavaScript::get_executable_path() const {
 
 	return OS::get_executable_path();
@@ -886,7 +1233,7 @@ Error OS_JavaScript::shell_open(String p_uri) {
 	return OK;
 }
 
-String OS_JavaScript::get_name() {
+String OS_JavaScript::get_name() const {
 
 	return "HTML5";
 }
@@ -957,9 +1304,13 @@ OS_JavaScript::OS_JavaScript(int p_argc, char *p_argv[]) {
 	}
 	set_cmdline(p_argv[0], arguments);
 
+	last_click_button_index = -1;
+	last_click_ms = 0;
+	last_click_pos = Point2(-100, -100);
+
 	window_maximized = false;
-	soft_fullscreen_enabled = false;
-	canvas_size_adjustment_requested = false;
+	entering_fullscreen = false;
+	just_exited_fullscreen = false;
 
 	main_loop = NULL;
 

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,11 @@
 #ifndef IMAGE_COMPRESS_SQUISH_H
 #define IMAGE_COMPRESS_SQUISH_H
 
-#include "image.h"
+#include "core/image.h"
 
-void image_compress_squish(Image *p_image, Image::CompressSource p_source);
+#ifdef TOOLS_ENABLED
+void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source);
+#endif
 void image_decompress_squish(Image *p_image);
 
 #endif // IMAGE_COMPRESS_SQUISH_H

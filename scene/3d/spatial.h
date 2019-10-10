@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -34,10 +34,6 @@
 #include "scene/main/node.h"
 #include "scene/main/scene_tree.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
-
 class SpatialGizmo : public Reference {
 
 	GDCLASS(SpatialGizmo, Reference);
@@ -48,9 +44,9 @@ public:
 	virtual void clear() = 0;
 	virtual void redraw() = 0;
 	virtual void free() = 0;
-	virtual bool can_draw() const = 0;
 
 	SpatialGizmo();
+	virtual ~SpatialGizmo() {}
 };
 
 class Spatial : public Node {
@@ -201,6 +197,8 @@ public:
 	void show();
 	void hide();
 	bool is_visible_in_tree() const;
+
+	void force_update_transform();
 
 	Spatial();
 	~Spatial();

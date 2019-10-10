@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +29,14 @@
 /*************************************************************************/
 
 #include "item_list.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 void ItemList::add_item(const String &p_item, const Ref<Texture> &p_texture, bool p_selectable) {
 
 	Item item;
 	item.icon = p_texture;
+	item.icon_transposed = false;
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
 	item.text = p_item;
@@ -54,6 +55,7 @@ void ItemList::add_icon_item(const Ref<Texture> &p_item, bool p_selectable) {
 
 	Item item;
 	item.icon = p_item;
+	item.icon_transposed = false;
 	item.icon_region = Rect2i();
 	item.icon_modulate = Color(1, 1, 1, 1);
 	//item.text=p_item;
@@ -122,6 +124,22 @@ Ref<Texture> ItemList::get_item_icon(int p_idx) const {
 	ERR_FAIL_INDEX_V(p_idx, items.size(), Ref<Texture>());
 
 	return items[p_idx].icon;
+}
+
+void ItemList::set_item_icon_transposed(int p_idx, const bool p_transposed) {
+
+	ERR_FAIL_INDEX(p_idx, items.size());
+
+	items.write[p_idx].icon_transposed = p_transposed;
+	update();
+	shape_changed = true;
+}
+
+bool ItemList::is_item_icon_transposed(int p_idx) const {
+
+	ERR_FAIL_INDEX_V(p_idx, items.size(), false);
+
+	return items[p_idx].icon_transposed;
 }
 
 void ItemList::set_item_icon_region(int p_idx, const Rect2 &p_region) {
@@ -412,10 +430,12 @@ ItemList::SelectMode ItemList::get_select_mode() const {
 
 void ItemList::set_icon_mode(IconMode p_mode) {
 
+	ERR_FAIL_INDEX((int)p_mode, 2);
 	icon_mode = p_mode;
 	update();
 	shape_changed = true;
 }
+
 ItemList::IconMode ItemList::get_icon_mode() const {
 
 	return icon_mode;
@@ -435,13 +455,23 @@ Size2 ItemList::Item::get_icon_size() const {
 
 	if (icon.is_null())
 		return Size2();
-	if (icon_region.has_no_area())
-		return icon->get_size();
 
-	return icon_region.size;
+	Size2 size_result = Size2(icon_region.size).abs();
+	if (icon_region.size.x == 0 || icon_region.size.y == 0)
+		size_result = icon->get_size();
+
+	if (icon_transposed) {
+		Size2 size_tmp = size_result;
+		size_result.x = size_tmp.y;
+		size_result.y = size_tmp.x;
+	}
+
+	return size_result;
 }
 
 void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
+
+	double prev_scroll = scroll_bar->get_value();
 
 	Ref<InputEventMouseMotion> mm = p_event;
 	if (defer_select_single >= 0 && mm.is_valid()) {
@@ -502,7 +532,7 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					bool selected = !items[j].selected;
 					select(j, false);
 					if (selected)
-						emit_signal("multi_selected", i, true);
+						emit_signal("multi_selected", j, true);
 				}
 
 				if (mb->get_button_index() == BUTTON_RIGHT) {
@@ -688,9 +718,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 			}
 		} else if (p_event->is_action("ui_cancel")) {
 			search_string = "";
-		} else if (p_event->is_action("ui_select")) {
+		} else if (p_event->is_action("ui_select") && select_mode == SELECT_MULTI) {
 
-			if (select_mode == SELECT_MULTI && current >= 0 && current < items.size()) {
+			if (current >= 0 && current < items.size()) {
 				if (items[current].selectable && !items[current].disabled && !items[current].selected) {
 					select(current, false);
 					emit_signal("multi_selected", current, true);
@@ -720,9 +750,21 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 					search_string = "";
 				}
 
-				search_string += String::chr(k->get_unicode());
-				for (int i = 0; i < items.size(); i++) {
-					if (items[i].text.begins_with(search_string)) {
+				if (String::chr(k->get_unicode()) != search_string)
+					search_string += String::chr(k->get_unicode());
+
+				for (int i = current + 1; i <= items.size(); i++) {
+					if (i == items.size()) {
+						if (current == 0 || current == -1)
+							break;
+						else
+							i = 0;
+					}
+
+					if (i == current)
+						break;
+
+					if (items[i].text.findn(search_string) == 0) {
 						set_current(i);
 						ensure_current_is_visible();
 						if (select_mode == SELECT_SINGLE) {
@@ -740,6 +782,9 @@ void ItemList::_gui_input(const Ref<InputEvent> &p_event) {
 
 		scroll_bar->set_value(scroll_bar->get_value() + scroll_bar->get_page() * pan_gesture->get_delta().y / 8);
 	}
+
+	if (scroll_bar->get_value() != prev_scroll)
+		accept_event(); //accept event if scroll changed
 }
 
 void ItemList::ensure_current_is_visible() {
@@ -881,7 +926,7 @@ void ItemList::_notification(int p_what) {
 				current_columns = max_columns;
 
 			while (true) {
-				//repeat util all fits
+				//repeat until all fits
 				bool all_fit = true;
 				Vector2 ofs;
 				int col = 0;
@@ -1067,10 +1112,15 @@ void ItemList::_notification(int p_what) {
 				if (items[i].disabled)
 					modulate.a *= 0.5;
 
-				if (items[i].icon_region.has_no_area())
-					draw_texture_rect(items[i].icon, draw_rect, false, modulate);
-				else
-					draw_texture_rect_region(items[i].icon, draw_rect, items[i].icon_region, modulate);
+				// If the icon is transposed, we have to switch the size so that it is drawn correctly
+				if (items[i].icon_transposed) {
+					Size2 size_tmp = draw_rect.size;
+					draw_rect.size.x = size_tmp.y;
+					draw_rect.size.y = size_tmp.x;
+				}
+
+				Rect2 region = (items[i].icon_region.size.x == 0 || items[i].icon_region.size.y == 0) ? Rect2(Vector2(), items[i].icon->get_size()) : Rect2(items[i].icon_region);
+				draw_texture_rect_region(items[i].icon, draw_rect, region, modulate, items[i].icon_transposed);
 			}
 
 			if (items[i].tag_icon.is_valid()) {
@@ -1082,13 +1132,13 @@ void ItemList::_notification(int p_what) {
 
 				int max_len = -1;
 
-				Vector2 size = font->get_string_size(items[i].text);
+				Vector2 size2 = font->get_string_size(items[i].text);
 				if (fixed_column_width)
 					max_len = fixed_column_width;
 				else if (same_column_width)
 					max_len = items[i].rect_cache.size.x;
 				else
-					max_len = size.x;
+					max_len = size2.x;
 
 				Color modulate = items[i].selected ? font_color_selected : (items[i].custom_fg != Color() ? items[i].custom_fg : font_color);
 				if (items[i].disabled)
@@ -1138,12 +1188,12 @@ void ItemList::_notification(int p_what) {
 				} else {
 
 					if (fixed_column_width > 0)
-						size.x = MIN(size.x, fixed_column_width);
+						size2.x = MIN(size2.x, fixed_column_width);
 
 					if (icon_mode == ICON_MODE_TOP) {
-						text_ofs.x += (items[i].rect_cache.size.width - size.x) / 2;
+						text_ofs.x += (items[i].rect_cache.size.width - size2.x) / 2;
 					} else {
-						text_ofs.y += (items[i].rect_cache.size.height - size.y) / 2;
+						text_ofs.y += (items[i].rect_cache.size.height - size2.y) / 2;
 					}
 
 					text_ofs.y += font->get_ascent();
@@ -1211,7 +1261,7 @@ int ItemList::get_item_at_position(const Point2 &p_pos, bool p_exact) const {
 
 		Rect2 rc = items[i].rect_cache;
 		if (i % current_columns == current_columns - 1) {
-			rc.size.width = get_size().width; //not right but works
+			rc.size.width = get_size().width - rc.position.x; //make sure you can still select the last item when clicking past the column
 		}
 
 		if (rc.has_point(pos)) {
@@ -1405,6 +1455,9 @@ void ItemList::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_item_icon", "idx", "icon"), &ItemList::set_item_icon);
 	ClassDB::bind_method(D_METHOD("get_item_icon", "idx"), &ItemList::get_item_icon);
 
+	ClassDB::bind_method(D_METHOD("set_item_icon_transposed", "idx", "rect"), &ItemList::set_item_icon_transposed);
+	ClassDB::bind_method(D_METHOD("is_item_icon_transposed", "idx"), &ItemList::is_item_icon_transposed);
+
 	ClassDB::bind_method(D_METHOD("set_item_icon_region", "idx", "rect"), &ItemList::set_item_icon_region);
 	ClassDB::bind_method(D_METHOD("get_item_icon_region", "idx"), &ItemList::get_item_icon_region);
 
@@ -1422,6 +1475,9 @@ void ItemList::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("set_item_custom_bg_color", "idx", "custom_bg_color"), &ItemList::set_item_custom_bg_color);
 	ClassDB::bind_method(D_METHOD("get_item_custom_bg_color", "idx"), &ItemList::get_item_custom_bg_color);
+
+	ClassDB::bind_method(D_METHOD("set_item_custom_fg_color", "idx", "custom_fg_color"), &ItemList::set_item_custom_fg_color);
+	ClassDB::bind_method(D_METHOD("get_item_custom_fg_color", "idx"), &ItemList::get_item_custom_fg_color);
 
 	ClassDB::bind_method(D_METHOD("set_item_tooltip_enabled", "idx", "enable"), &ItemList::set_item_tooltip_enabled);
 	ClassDB::bind_method(D_METHOD("is_item_tooltip_enabled", "idx"), &ItemList::is_item_tooltip_enabled);
@@ -1495,17 +1551,17 @@ void ItemList::_bind_methods() {
 
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "select_mode", PROPERTY_HINT_ENUM, "Single,Multi"), "set_select_mode", "get_select_mode");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_reselect"), "set_allow_reselect", "get_allow_reselect");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "max_text_lines"), "set_max_text_lines", "get_max_text_lines");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_rmb_select"), "set_allow_rmb_select", "get_allow_rmb_select");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_text_lines"), "set_max_text_lines", "get_max_text_lines");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "auto_height"), "set_auto_height", "has_auto_height");
 	ADD_GROUP("Columns", "");
-	ADD_PROPERTYNO(PropertyInfo(Variant::INT, "max_columns"), "set_max_columns", "get_max_columns");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::INT, "fixed_column_width"), "set_fixed_column_width", "get_fixed_column_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "max_columns"), "set_max_columns", "get_max_columns");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "same_column_width"), "set_same_column_width", "is_same_column_width");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "fixed_column_width"), "set_fixed_column_width", "get_fixed_column_width");
 	ADD_GROUP("Icon", "");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "icon_mode", PROPERTY_HINT_ENUM, "Top,Left"), "set_icon_mode", "get_icon_mode");
-	ADD_PROPERTYNO(PropertyInfo(Variant::REAL, "icon_scale"), "set_icon_scale", "get_icon_scale");
-	ADD_PROPERTYNO(PropertyInfo(Variant::VECTOR2, "fixed_icon_size"), "set_fixed_icon_size", "get_fixed_icon_size");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "icon_scale"), "set_icon_scale", "get_icon_scale");
+	ADD_PROPERTY(PropertyInfo(Variant::VECTOR2, "fixed_icon_size"), "set_fixed_icon_size", "get_fixed_icon_size");
 
 	BIND_ENUM_CONSTANT(ICON_MODE_TOP);
 	BIND_ENUM_CONSTANT(ICON_MODE_LEFT);
@@ -1521,6 +1577,7 @@ void ItemList::_bind_methods() {
 	ADD_SIGNAL(MethodInfo("nothing_selected"));
 
 	GLOBAL_DEF("gui/timers/incremental_search_max_interval_msec", 2000);
+	ProjectSettings::get_singleton()->set_custom_property_info("gui/timers/incremental_search_max_interval_msec", PropertyInfo(Variant::INT, "gui/timers/incremental_search_max_interval_msec", PROPERTY_HINT_RANGE, "0,10000,1,or_greater")); // No negative numbers
 }
 
 ItemList::ItemList() {

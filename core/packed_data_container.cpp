@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "packed_data_container.h"
 
-#include "core_string_names.h"
-#include "io/marshalls.h"
+#include "core/core_string_names.h"
+#include "core/io/marshalls.h"
 
 Variant PackedDataContainer::getvar(const Variant &p_key, bool *r_valid) const {
 
@@ -114,12 +114,12 @@ Variant PackedDataContainer::_get_at_ofs(uint32_t p_ofs, const uint8_t *p_buf, b
 	} else {
 
 		Variant v;
-		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, NULL);
+		Error rerr = decode_variant(v, p_buf + p_ofs, datalen - p_ofs, NULL, false);
 
 		if (rerr != OK) {
 
 			err = true;
-			ERR_FAIL_COND_V(err != OK, Variant());
+			ERR_FAIL_COND_V_MSG(err != OK, Variant(), "Error when trying to decode Variant.");
 		}
 		return v;
 	}
@@ -224,7 +224,8 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			string_cache[s] = tmpdata.size();
 
-		}; //fallthrough
+			FALLTHROUGH;
+		};
 		case Variant::NIL:
 		case Variant::BOOL:
 		case Variant::INT:
@@ -249,9 +250,9 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 			uint32_t pos = tmpdata.size();
 			int len;
-			encode_variant(p_data, NULL, len);
+			encode_variant(p_data, NULL, len, false);
 			tmpdata.resize(tmpdata.size() + len);
-			encode_variant(p_data, &tmpdata.write[pos], len);
+			encode_variant(p_data, &tmpdata.write[pos], len, false);
 			return pos;
 
 		} break;
@@ -319,7 +320,8 @@ uint32_t PackedDataContainer::_pack(const Variant &p_data, Vector<uint8_t> &tmpd
 
 		} break;
 
-		default: {}
+		default: {
+		}
 	}
 
 	return OK;

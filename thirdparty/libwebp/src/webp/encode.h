@@ -542,4 +542,4 @@ WEBP_EXTERN int WebPEncode(const WebPConfig* config, WebPPicture* picture);
 }    // extern "C"
 #endif
 
-#endif  /* WEBP_WEBP_ENCODE_H_ */
+#endif  // WEBP_WEBP_ENCODE_H_

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,17 +32,18 @@
 
 #if defined(UNIX_ENABLED) || defined(LIBC_FILEIO_ENABLED)
 
-#ifndef ANDROID_ENABLED
-#include <sys/statvfs.h>
-#endif
-
 #include "core/list.h"
-#include "os/memory.h"
-#include "print_string.h"
+#include "core/os/memory.h"
+#include "core/print_string.h"
+
 #include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+
+#ifndef ANDROID_ENABLED
+#include <sys/statvfs.h>
+#endif
 
 #ifdef HAVE_MNTENT
 #include <mntent.h>
@@ -59,7 +60,7 @@ Error DirAccessUnix::list_dir_begin() {
 
 	//char real_current_dir_name[2048]; //is this enough?!
 	//getcwd(real_current_dir_name,2048);
-	//chdir(curent_path.utf8().get_data());
+	//chdir(current_path.utf8().get_data());
 	dir_stream = opendir(current_dir.utf8().get_data());
 	//chdir(real_current_dir_name);
 	if (!dir_stream)
@@ -99,10 +100,7 @@ bool DirAccessUnix::dir_exists(String p_dir) {
 	struct stat flags;
 	bool success = (stat(p_dir.utf8().get_data(), &flags) == 0);
 
-	if (success && S_ISDIR(flags.st_mode))
-		return true;
-
-	return false;
+	return (success && S_ISDIR(flags.st_mode));
 }
 
 uint64_t DirAccessUnix::get_modified_time(String p_file) {
@@ -128,37 +126,32 @@ String DirAccessUnix::get_next() {
 
 	if (!dir_stream)
 		return "";
-	dirent *entry;
 
-	entry = readdir(dir_stream);
+	dirent *entry = readdir(dir_stream);
 
 	if (entry == NULL) {
-
 		list_dir_end();
 		return "";
 	}
 
-	//typedef struct stat Stat;
-	struct stat flags;
-
 	String fname = fix_unicode_name(entry->d_name);
 
-	String f = current_dir.plus_file(fname);
+	// Look at d_type to determine if the entry is a directory, unless
+	// its type is unknown (the file system does not support it) or if
+	// the type is a link, in that case we want to resolve the link to
+	// known if it points to a directory. stat() will resolve the link
+	// for us.
+	if (entry->d_type == DT_UNKNOWN || entry->d_type == DT_LNK) {
+		String f = current_dir.plus_file(fname);
 
-	if (stat(f.utf8().get_data(), &flags) == 0) {
-
-		if (S_ISDIR(flags.st_mode)) {
-
-			_cisdir = true;
-
+		struct stat flags;
+		if (stat(f.utf8().get_data(), &flags) == 0) {
+			_cisdir = S_ISDIR(flags.st_mode);
 		} else {
-
 			_cisdir = false;
 		}
-
 	} else {
-
-		_cisdir = false;
+		_cisdir = (entry->d_type == DT_DIR);
 	}
 
 	_cishidden = (fname != "." && fname != ".." && fname.begins_with("."));
@@ -308,14 +301,14 @@ Error DirAccessUnix::change_dir(String p_dir) {
 	// prev_dir is the directory we are changing out of
 	String prev_dir;
 	char real_current_dir_name[2048];
-	getcwd(real_current_dir_name, 2048);
+	ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
 	if (prev_dir.parse_utf8(real_current_dir_name))
 		prev_dir = real_current_dir_name; //no utf8, maybe latin?
 
 	// try_dir is the directory we are trying to change into
 	String try_dir = "";
 	if (p_dir.is_rel_path()) {
-		String next_dir = current_dir + "/" + p_dir;
+		String next_dir = current_dir.plus_file(p_dir);
 		next_dir = next_dir.simplify_path();
 		try_dir = next_dir;
 	} else {
@@ -327,9 +320,20 @@ Error DirAccessUnix::change_dir(String p_dir) {
 		return ERR_INVALID_PARAMETER;
 	}
 
+	String base = _get_root_path();
+	if (base != String() && !try_dir.begins_with(base)) {
+		ERR_FAIL_COND_V(getcwd(real_current_dir_name, 2048) == NULL, ERR_BUG);
+		String new_dir;
+		new_dir.parse_utf8(real_current_dir_name);
+
+		if (!new_dir.begins_with(base)) {
+			try_dir = current_dir; //revert
+		}
+	}
+
 	// the directory exists, so set current_dir to try_dir
 	current_dir = try_dir;
-	chdir(prev_dir.utf8().get_data());
+	ERR_FAIL_COND_V(chdir(prev_dir.utf8().get_data()) != 0, ERR_BUG);
 	return OK;
 }
 
@@ -390,10 +394,14 @@ size_t DirAccessUnix::get_space_left() {
 
 	return vfs.f_bfree * vfs.f_bsize;
 #else
-#warning THIS IS BROKEN
+	// FIXME: Implement this.
 	return 0;
 #endif
 };
+
+String DirAccessUnix::get_filesystem_type() const {
+	return ""; //TODO this should be implemented
+}
 
 DirAccessUnix::DirAccessUnix() {
 
@@ -404,7 +412,7 @@ DirAccessUnix::DirAccessUnix() {
 
 	// set current directory to an absolute path of the current directory
 	char real_current_dir_name[2048];
-	getcwd(real_current_dir_name, 2048);
+	ERR_FAIL_COND(getcwd(real_current_dir_name, 2048) == NULL);
 	if (current_dir.parse_utf8(real_current_dir_name))
 		current_dir = real_current_dir_name;
 

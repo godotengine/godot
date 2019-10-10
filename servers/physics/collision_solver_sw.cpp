@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,6 @@
 #include "collision_solver_sw.h"
 #include "collision_solver_sat.h"
 
-#include "collision_solver_sat.h"
 #include "gjk_epa.h"
 
 #define collision_solver sat_calculate_penetration
@@ -176,7 +175,6 @@ bool CollisionSolverSW::solve_concave(const ShapeSW *p_shape_A, const Transform 
 	}
 
 	concave_B->cull(local_aabb, concave_callback, &cinfo);
-	//print_line("COL AABB TESTS: "+itos(cinfo.aabb_tests));
 
 	return cinfo.collided;
 }
@@ -235,8 +233,6 @@ bool CollisionSolverSW::solve_static(const ShapeSW *p_shape_A, const Transform &
 
 		return collision_solver(p_shape_A, p_transform_A, p_shape_B, p_transform_B, p_result_callback, p_userdata, false, r_sep_axis, p_margin_A, p_margin_B);
 	}
-
-	return false;
 }
 
 void CollisionSolverSW::concave_distance_callback(void *p_userdata, ShapeSW *p_convex) {
@@ -364,18 +360,13 @@ bool CollisionSolverSW::solve_distance(const ShapeSW *p_shape_A, const Transform
 
 		concave_B->cull(local_aabb, concave_distance_callback, &cinfo);
 		if (!cinfo.collided) {
-			//print_line(itos(cinfo.tested));
 			r_point_A = cinfo.close_A;
 			r_point_B = cinfo.close_B;
 		}
-
-		//print_line("DIST AABB TESTS: "+itos(cinfo.aabb_tests));
 
 		return !cinfo.collided;
 	} else {
 
 		return gjk_epa_calculate_distance(p_shape_A, p_transform_A, p_shape_B, p_transform_B, r_point_A, r_point_B); //should pass sepaxis..
 	}
-
-	return false;
 }

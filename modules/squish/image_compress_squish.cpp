@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +29,6 @@
 /*************************************************************************/
 
 #include "image_compress_squish.h"
-
-#include "print_string.h"
-
-#if defined(__SSE2__)
-#define SQUISH_USE_SSE 2
-#elif defined(__SSE__)
-#define SQUISH_USE_SSE 1
-#endif
 
 #include <squish.h>
 
@@ -65,23 +57,24 @@ void image_decompress_squish(Image *p_image) {
 	} else if (p_image->get_format() == Image::FORMAT_RGTC_RG) {
 		squish_flags = squish::kBc5;
 	} else {
-		print_line("Can't decompress unknown format: " + itos(p_image->get_format()));
-		ERR_FAIL_COND(true);
+		ERR_FAIL_MSG("Squish: Can't decompress unknown format: " + itos(p_image->get_format()) + ".");
 		return;
 	}
-
-	int dst_ofs = 0;
 
 	for (int i = 0; i <= mm_count; i++) {
 		int src_ofs = 0, mipmap_size = 0, mipmap_w = 0, mipmap_h = 0;
 		p_image->get_mipmap_offset_size_and_dimensions(i, src_ofs, mipmap_size, mipmap_w, mipmap_h);
-		squish::DecompressImage(&wb[dst_ofs], mipmap_w, mipmap_h, &rb[src_ofs], squish_flags);
+		int dst_ofs = Image::get_image_mipmap_offset(p_image->get_width(), p_image->get_height(), target_format, i);
+		squish::DecompressImage(&wb[dst_ofs], w, h, &rb[src_ofs], squish_flags);
+		w >>= 1;
+		h >>= 1;
 	}
 
 	p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 }
 
-void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
+#ifdef TOOLS_ENABLED
+void image_compress_squish(Image *p_image, float p_lossy_quality, Image::CompressSource p_source) {
 
 	if (p_image->get_format() >= Image::FORMAT_DXT1)
 		return; //do not compress, already compressed
@@ -92,6 +85,12 @@ void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
 	if (p_image->get_format() <= Image::FORMAT_RGBA8) {
 
 		int squish_comp = squish::kColourRangeFit;
+
+		if (p_lossy_quality > 0.85)
+			squish_comp = squish::kColourIterativeClusterFit;
+		else if (p_lossy_quality > 0.75)
+			squish_comp = squish::kColourClusterFit;
+
 		Image::Format target_format = Image::FORMAT_RGBA8;
 
 		Image::DetectChannels dc = p_image->get_detected_channels();
@@ -119,7 +118,8 @@ void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
 				case Image::FORMAT_RGBA5551: {
 					dc = Image::DETECTED_RGBA;
 				} break;
-				default: {}
+				default: {
+				}
 			}
 		}
 
@@ -193,13 +193,14 @@ void image_compress_squish(Image *p_image, Image::CompressSource p_source) {
 			int src_ofs = p_image->get_mipmap_offset(i);
 			squish::CompressImage(&rb[src_ofs], w, h, &wb[dst_ofs], squish_comp);
 			dst_ofs += (MAX(4, bw) * MAX(4, bh)) >> shift;
-			w >>= 1;
-			h >>= 1;
+			w = MAX(w / 2, 1);
+			h = MAX(h / 2, 1);
 		}
 
-		rb = PoolVector<uint8_t>::Read();
-		wb = PoolVector<uint8_t>::Write();
+		rb.release();
+		wb.release();
 
 		p_image->create(p_image->get_width(), p_image->get_height(), p_image->has_mipmaps(), target_format, data);
 	}
 }
+#endif

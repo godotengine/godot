@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,17 +36,19 @@
 #include "scene/gui/rich_text_label.h"
 #include "scene/gui/texture_button.h"
 //#include "scene/gui/empty_control.h"
-#include "os/thread.h"
+#include "core/os/thread.h"
 #include "pane_drag.h"
 #include "scene/gui/box_container.h"
 #include "scene/gui/panel_container.h"
 #include "scene/gui/texture_rect.h"
 #include "scene/gui/tool_button.h"
+
 class EditorLog : public VBoxContainer {
 
 	GDCLASS(EditorLog, VBoxContainer);
 
 	Button *clearbutton;
+	Button *copybutton;
 	Label *title;
 	RichTextLabel *log;
 	HBoxContainer *title_hb;
@@ -61,6 +63,7 @@ class EditorLog : public VBoxContainer {
 
 	//void _dragged(const Point2& p_ofs);
 	void _clear_request();
+	void _copy_request();
 	static void _undo_redo_cbk(void *p_self, const String &p_name);
 
 protected:
@@ -68,11 +71,19 @@ protected:
 	void _notification(int p_what);
 
 public:
-	void add_message(const String &p_msg, bool p_error = false);
+	enum MessageType {
+		MSG_TYPE_STD,
+		MSG_TYPE_ERROR,
+		MSG_TYPE_WARNING,
+		MSG_TYPE_EDITOR
+	};
+
+	void add_message(const String &p_msg, MessageType p_type = MSG_TYPE_STD);
 	void set_tool_button(ToolButton *p_tool_button);
 	void deinit();
 
 	void clear();
+	void copy();
 	EditorLog();
 	~EditorLog();
 };

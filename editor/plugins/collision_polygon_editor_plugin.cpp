@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #include "collision_polygon_editor_plugin.h"
 
 #include "canvas_item_editor_plugin.h"
+#include "core/os/file_access.h"
+#include "core/os/input.h"
+#include "core/os/keyboard.h"
 #include "editor/editor_settings.h"
-#include "os/file_access.h"
-#include "os/input.h"
-#include "os/keyboard.h"
 #include "scene/3d/camera.h"
 #include "spatial_editor_plugin.h"
 
@@ -95,7 +95,7 @@ void Polygon3DEditor::_menu_option(int p_option) {
 
 void Polygon3DEditor::_wip_close() {
 
-	undo_redo->create_action(TTR("Create Poly3D"));
+	undo_redo->create_action(TTR("Create Polygon3D"));
 	undo_redo->add_undo_method(node, "set_polygon", node->call("get_polygon"));
 	undo_redo->add_do_method(node, "set_polygon", wip);
 	undo_redo->add_do_method(this, "_polygon_draw");
@@ -144,7 +144,7 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 		Vector<Vector2> poly = node->call("get_polygon");
 
 		//first check if a point is to be added (segment split)
-		real_t grab_threshold = EDITOR_DEF("editors/poly_editor/point_grab_radius", 8);
+		real_t grab_threshold = EDITOR_GET("editors/poly_editor/point_grab_radius");
 
 		switch (mode) {
 
@@ -346,8 +346,10 @@ bool Polygon3DEditor::forward_spatial_gui_input(Camera *p_camera, const Ref<Inpu
 				snap_ignore = false;
 			}
 
-			if (!snap_ignore) {
-				cpoint = CanvasItemEditor::get_singleton()->snap_point(cpoint);
+			if (!snap_ignore && SpatialEditor::get_singleton()->is_snap_enabled()) {
+				cpoint = cpoint.snapped(Vector2(
+						SpatialEditor::get_singleton()->get_translate_snap(),
+						SpatialEditor::get_singleton()->get_translate_snap()));
 			}
 			edited_point_pos = cpoint;
 
@@ -527,7 +529,7 @@ Polygon3DEditor::Polygon3DEditor(EditorNode *p_editor) {
 
 	node = NULL;
 	editor = p_editor;
-	undo_redo = editor->get_undo_redo();
+	undo_redo = EditorNode::get_undo_redo();
 
 	add_child(memnew(VSeparator));
 	button_create = memnew(ToolButton);

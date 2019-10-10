@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,9 @@
 /*************************************************************************/
 
 #include "xml_parser.h"
-#include "print_string.h"
+
+#include "core/print_string.h"
+
 //#define DEBUG_XML
 
 VARIANT_ENUM_CAST(XMLParser::NodeType);
@@ -346,7 +348,7 @@ uint64_t XMLParser::get_node_offset() const {
 
 Error XMLParser::seek(uint64_t p_pos) {
 
-	ERR_FAIL_COND_V(!data, ERR_FILE_EOF)
+	ERR_FAIL_COND_V(!data, ERR_FILE_EOF);
 	ERR_FAIL_COND_V(p_pos >= length, ERR_FILE_EOF);
 
 	P = data + p_pos;
@@ -441,10 +443,8 @@ String XMLParser::get_attribute_value(const String &p_name) const {
 		}
 	}
 
-	if (idx < 0) {
-		ERR_EXPLAIN("Attribute not found: " + p_name);
-	}
-	ERR_FAIL_COND_V(idx < 0, "");
+	ERR_FAIL_COND_V_MSG(idx < 0, "", "Attribute not found: " + p_name + ".");
+
 	return attributes[idx].value;
 }
 
@@ -484,9 +484,7 @@ Error XMLParser::open(const String &p_path) {
 	Error err;
 	FileAccess *file = FileAccess::open(p_path, FileAccess::READ, &err);
 
-	if (err) {
-		ERR_FAIL_COND_V(err != OK, err);
-	}
+	ERR_FAIL_COND_V_MSG(err != OK, err, "Cannot open file '" + p_path + "'.");
 
 	length = file->get_len();
 	ERR_FAIL_COND_V(length < 1, ERR_FILE_CORRUPT);

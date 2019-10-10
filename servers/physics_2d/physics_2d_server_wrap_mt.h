@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,9 @@
 #ifndef PHYSICS2DSERVERWRAPMT_H
 #define PHYSICS2DSERVERWRAPMT_H
 
-#include "command_queue_mt.h"
-#include "os/thread.h"
-#include "project_settings.h"
+#include "core/command_queue_mt.h"
+#include "core/os/thread.h"
+#include "core/project_settings.h"
 #include "servers/physics_2d_server.h"
 
 #ifdef DEBUG_SYNC
@@ -140,7 +140,7 @@ public:
 	FUNC2(area_set_space_override_mode, RID, AreaSpaceOverrideMode);
 	FUNC1RC(AreaSpaceOverrideMode, area_get_space_override_mode, RID);
 
-	FUNC3(area_add_shape, RID, RID, const Transform2D &);
+	FUNC4(area_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(area_set_shape, RID, int, RID);
 	FUNC3(area_set_shape_transform, RID, int, const Transform2D &);
 	FUNC3(area_set_shape_disabled, RID, int, bool);
@@ -153,6 +153,9 @@ public:
 
 	FUNC2(area_attach_object_instance_id, RID, ObjectID);
 	FUNC1RC(ObjectID, area_get_object_instance_id, RID);
+
+	FUNC2(area_attach_canvas_instance_id, RID, ObjectID);
+	FUNC1RC(ObjectID, area_get_canvas_instance_id, RID);
 
 	FUNC3(area_set_param, RID, AreaParameter, const Variant &);
 	FUNC2(area_set_transform, RID, const Transform2D &);
@@ -180,7 +183,7 @@ public:
 	FUNC2(body_set_mode, RID, BodyMode);
 	FUNC1RC(BodyMode, body_get_mode, RID);
 
-	FUNC3(body_add_shape, RID, RID, const Transform2D &);
+	FUNC4(body_add_shape, RID, RID, const Transform2D &, bool);
 	FUNC3(body_set_shape, RID, int, RID);
 	FUNC3(body_set_shape_transform, RID, int, const Transform2D &);
 	FUNC3(body_set_shape_metadata, RID, int, const Variant &);
@@ -191,13 +194,16 @@ public:
 	FUNC2RC(RID, body_get_shape, RID, int);
 
 	FUNC3(body_set_shape_disabled, RID, int, bool);
-	FUNC3(body_set_shape_as_one_way_collision, RID, int, bool);
+	FUNC4(body_set_shape_as_one_way_collision, RID, int, bool, float);
 
 	FUNC2(body_remove_shape, RID, int);
 	FUNC1(body_clear_shapes, RID);
 
 	FUNC2(body_attach_object_instance_id, RID, uint32_t);
 	FUNC1RC(uint32_t, body_get_object_instance_id, RID);
+
+	FUNC2(body_attach_canvas_instance_id, RID, uint32_t);
+	FUNC1RC(uint32_t, body_get_canvas_instance_id, RID);
 
 	FUNC2(body_set_continuous_collision_detection_mode, RID, CCDMode);
 	FUNC1RC(CCDMode, body_get_continuous_collision_detection_mode, RID);
@@ -306,6 +312,10 @@ public:
 	virtual void flush_queries();
 	virtual void finish();
 
+	virtual bool is_flushing_queries() const {
+		return physics_2d_server->is_flushing_queries();
+	}
+
 	int get_process_info(ProcessInfo p_info) {
 		return physics_2d_server->get_process_info(p_info);
 	}
@@ -317,11 +327,11 @@ public:
 	static Physics2DServer *init_server() {
 
 		int tm = GLOBAL_DEF("physics/2d/thread_model", 1);
-		if (tm == 0) //single unsafe
+		if (tm == 0) // single unsafe
 			return memnew(T);
-		else if (tm == 1) //single saef
+		else if (tm == 1) // single safe
 			return memnew(Physics2DServerWrapMT(memnew(T), false));
-		else //single unsafe
+		else // multi threaded
 			return memnew(Physics2DServerWrapMT(memnew(T), true));
 	}
 

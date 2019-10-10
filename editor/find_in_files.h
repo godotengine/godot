@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,13 @@
 #ifndef FIND_IN_FILES_H
 #define FIND_IN_FILES_H
 
+#include "core/hash_map.h"
 #include "scene/gui/dialogs.h"
 
 // Performs the actual search
 class FindInFiles : public Node {
-	GDCLASS(FindInFiles, Node)
+	GDCLASS(FindInFiles, Node);
+
 public:
 	static const char *SIGNAL_RESULT_FOUND;
 	static const char *SIGNAL_FINISHED;
@@ -73,7 +75,6 @@ private:
 	// Config
 	String _pattern;
 	Set<String> _extension_filter;
-	String _root_prefix;
 	String _root_dir;
 	bool _whole_words;
 	bool _match_case;
@@ -89,10 +90,12 @@ private:
 class LineEdit;
 class CheckBox;
 class FileDialog;
+class HBoxContainer;
 
 // Prompts search parameters
-class FindInFilesDialog : public WindowDialog {
-	GDCLASS(FindInFilesDialog, WindowDialog)
+class FindInFilesDialog : public AcceptDialog {
+	GDCLASS(FindInFilesDialog, AcceptDialog);
+
 public:
 	static const char *SIGNAL_FIND_REQUESTED;
 	static const char *SIGNAL_REPLACE_REQUESTED;
@@ -111,32 +114,34 @@ protected:
 	static void _bind_methods();
 
 	void _notification(int p_what);
+	void custom_action(const String &p_action);
 
 private:
 	void _on_folder_button_pressed();
-	void _on_find_button_pressed();
-	void _on_replace_button_pressed();
 	void _on_folder_selected(String path);
 	void _on_search_text_modified(String text);
 	void _on_search_text_entered(String text);
 
 	LineEdit *_search_text_line_edit;
 	LineEdit *_folder_line_edit;
-	Vector<CheckBox *> _filters;
 	CheckBox *_match_case_checkbox;
 	CheckBox *_whole_words_checkbox;
 	Button *_find_button;
 	Button *_replace_button;
 	FileDialog *_folder_dialog;
+	HBoxContainer *_filters_container;
+	HashMap<String, bool> _filters_preferences;
 };
 
 class Button;
-class ItemList;
+class Tree;
+class TreeItem;
 class ProgressBar;
 
 // Display search results
 class FindInFilesPanel : public Control {
-	GDCLASS(FindInFilesPanel, Control)
+	GDCLASS(FindInFilesPanel, Control);
+
 public:
 	static const char *SIGNAL_RESULT_SELECTED;
 	static const char *SIGNAL_FILES_MODIFIED;
@@ -159,22 +164,37 @@ private:
 	void _on_result_found(String fpath, int line_number, int begin, int end, String text);
 	void _on_finished();
 	void _on_cancel_button_clicked();
-	void _on_result_selected(int i);
+	void _on_result_selected();
+	void _on_item_edited();
 	void _on_replace_text_changed(String text);
 	void _on_replace_all_clicked();
 
-	void apply_replaces_in_file(String fpath, PoolIntArray locations, String text);
+	struct Result {
+		int line_number;
+		int begin;
+		int end;
+		float draw_begin;
+		float draw_width;
+	};
 
+	void apply_replaces_in_file(String fpath, const Vector<Result> &locations, String new_text);
 	void update_replace_buttons();
 	String get_replace_text();
+
+	void draw_result_text(Object *item_obj, Rect2 rect);
+
 	void set_progress_visible(bool visible);
+	void clear();
 
 	FindInFiles *_finder;
 	Label *_search_text_label;
-	ItemList *_results_display;
+	Tree *_results_display;
 	Label *_status_label;
 	Button *_cancel_button;
 	ProgressBar *_progress_bar;
+	Map<String, TreeItem *> _file_items;
+	Map<TreeItem *, Result> _result_items;
+	bool _with_replace;
 
 	HBoxContainer *_replace_container;
 	LineEdit *_replace_line_edit;

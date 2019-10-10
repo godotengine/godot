@@ -1,36 +1,36 @@
-/***************************************************************************/
-/*                                                                         */
-/*  t1parse.c                                                              */
-/*                                                                         */
-/*    Type 1 parser (body).                                                */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * t1parse.c
+ *
+ *   Type 1 parser (body).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The Type 1 parser is in charge of the following:                      */
-  /*                                                                       */
-  /*  - provide an implementation of a growing sequence of objects called  */
-  /*    a `T1_Table' (used to build various tables needed by the loader).  */
-  /*                                                                       */
-  /*  - opening .pfb and .pfa files to extract their top-level and private */
-  /*    dictionaries.                                                      */
-  /*                                                                       */
-  /*  - read numbers, arrays & strings from any dictionary.                */
-  /*                                                                       */
-  /* See `t1load.c' to see how data is loaded from the font file.          */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * The Type 1 parser is in charge of the following:
+   *
+   * - provide an implementation of a growing sequence of objects called
+   *   a `T1_Table' (used to build various tables needed by the loader).
+   *
+   * - opening .pfb and .pfa files to extract their top-level and private
+   *   dictionaries.
+   *
+   * - read numbers, arrays & strings from any dictionary.
+   *
+   * See `t1load.c' to see how data is loaded from the font file.
+   *
+   */
 
 
 #include <ft2build.h>
@@ -43,14 +43,14 @@
 #include "t1errors.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_t1parse
+#define FT_COMPONENT  t1parse
 
 
   /*************************************************************************/
@@ -169,21 +169,21 @@
       }
     }
 
-    /******************************************************************/
-    /*                                                                */
-    /* Here a short summary of what is going on:                      */
-    /*                                                                */
-    /*   When creating a new Type 1 parser, we try to locate and load */
-    /*   the base dictionary if this is possible (i.e., for PFB       */
-    /*   files).  Otherwise, we load the whole font into memory.      */
-    /*                                                                */
-    /*   When `loading' the base dictionary, we only setup pointers   */
-    /*   in the case of a memory-based stream.  Otherwise, we         */
-    /*   allocate and load the base dictionary in it.                 */
-    /*                                                                */
-    /*   parser->in_pfb is set if we are in a binary (`.pfb') font.   */
-    /*   parser->in_memory is set if we have a memory stream.         */
-    /*                                                                */
+    /*******************************************************************
+     *
+     * Here a short summary of what is going on:
+     *
+     *   When creating a new Type 1 parser, we try to locate and load
+     *   the base dictionary if this is possible (i.e., for PFB
+     *   files).  Otherwise, we load the whole font into memory.
+     *
+     *   When `loading' the base dictionary, we only setup pointers
+     *   in the case of a memory-based stream.  Otherwise, we
+     *   allocate and load the base dictionary in it.
+     *
+     *   parser->in_pfb is set if we are in a binary (`.pfb') font.
+     *   parser->in_memory is set if we have a memory stream.
+     */
 
     /* try to compute the size of the base dictionary;     */
     /* look for a Postscript binary file tag, i.e., 0x8001 */

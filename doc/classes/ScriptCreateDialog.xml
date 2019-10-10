@@ -1,21 +1,19 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ScriptCreateDialog" inherits="ConfirmationDialog" category="Core" version="3.1">
+<class name="ScriptCreateDialog" inherits="ConfirmationDialog" category="Core" version="3.2">
 	<brief_description>
 		The Editor's popup dialog for creating new [Script] files.
 	</brief_description>
 	<description>
-		The ScriptCreateDialog creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling a [method popup]() method.
+		The [ScriptCreateDialog] creates script files according to a given template for a given scripting language. The standard use is to configure its fields prior to calling one of the [method Popup.popup] methods.
 		[codeblock]
 		func _ready():
-			dialog.config("Node", "res://new_node.gd") # for in-engine types
-			dialog.config("\"res://base_node.gd\"", "res://derived_node.gd") # for script types
-			dialog.popup_centered()
+		    dialog.config("Node", "res://new_node.gd") # For in-engine types
+		    dialog.config("\"res://base_node.gd\"", "res://derived_node.gd") # For script types
+		    dialog.popup_centered()
 		[/codeblock]
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="config">
 			<return type="void">
@@ -24,14 +22,23 @@
 			</argument>
 			<argument index="1" name="path" type="String">
 			</argument>
+			<argument index="2" name="built_in_enabled" type="bool" default="true">
+			</argument>
 			<description>
 				Prefills required fields to configure the ScriptCreateDialog for use.
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="dialog_hide_on_ok" type="bool" setter="set_hide_on_ok" getter="get_hide_on_ok" override="true" default="false" />
+		<member name="margin_bottom" type="float" setter="set_margin" getter="get_margin" override="true" default="76.0" />
+		<member name="margin_right" type="float" setter="set_margin" getter="get_margin" override="true" default="200.0" />
+		<member name="rect_size" type="Vector2" setter="_set_size" getter="get_size" override="true" default="Vector2( 200, 76 )" />
+		<member name="window_title" type="String" setter="set_title" getter="get_title" override="true" default="&quot;Attach Node Script&quot;" />
+	</members>
 	<signals>
 		<signal name="script_created">
-			<argument index="0" name="script" type="Object">
+			<argument index="0" name="script" type="Script">
 			</argument>
 			<description>
 				Emitted when the user clicks the OK button.

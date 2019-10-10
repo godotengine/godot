@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,21 +31,18 @@
 #ifndef METHOD_BIND_H
 #define METHOD_BIND_H
 
-#include "list.h"
-#include "method_ptrcall.h"
-#include "object.h"
-#include "variant.h"
-#include <stdio.h>
+#include "core/list.h"
+#include "core/method_ptrcall.h"
+#include "core/object.h"
+#include "core/variant.h"
 
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+#include <stdio.h>
 
 #ifdef DEBUG_ENABLED
 #define DEBUG_METHODS_ENABLED
 #endif
 
-#include "type_info.h"
+#include "core/type_info.h"
 
 enum MethodFlags {
 
@@ -272,6 +269,8 @@ public:
 	void set_argument_names(const Vector<StringName> &p_names); //set by class, db, can't be inferred otherwise
 	Vector<StringName> get_argument_names() const;
 
+	virtual GodotTypeInfo::Metadata get_argument_meta(int p_arg) const = 0;
+
 #endif
 	void set_hint_flags(uint32_t p_hint) { hint_flags = p_hint; }
 	uint32_t get_hint_flags() const { return hint_flags | (is_const() ? METHOD_FLAG_CONST : 0) | (is_vararg() ? METHOD_FLAG_VARARG : 0); }
@@ -326,6 +325,10 @@ public:
 
 	virtual Variant::Type _gen_argument_type(int p_arg) const {
 		return _gen_argument_type_info(p_arg).type;
+	}
+
+	virtual GodotTypeInfo::Metadata get_argument_meta(int) const {
+		return GodotTypeInfo::METADATA_NONE;
 	}
 
 #else

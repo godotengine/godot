@@ -25,41 +25,56 @@ name is available.
 
 ## Developers
 
-(in alphabetical order, with 10 commits or more excluding merges)
+(in alphabetical order, with over 10 commits excluding merges)
 
+    Aaron Franke (aaronfranke)
     Alexander Holland (AlexHolly)
-    Alexey Velikiy (jonyrock)
     Alket Rexhepi (alketii)
     Andrea Catania (AndreaCatania)
     Andreas Haas (Hinsbart)
+    Andrii Doroshenko (Xrayez)
     Andy Moss (MillionOstrich)
+    Anish Bhobe (KidRigger)
     Anton Yabchinskiy (a12n)
+    Anutrix
     Aren Villanueva (kurikaesu)
     Ariel Manzur (punto-)
     Bastiaan Olij (BastiaanOlij)
     Ben Brookshire (sheepandshepherd)
-    Benjamin (Nallebeorn)
+    Benjamin Larsson (Nallebeorn)
     Bernard Liebl (poke1024)
     Błażej Szczygieł (zaps166)
     Bojidar Marinov (bojidar-bg)
     bruvzg
+    Cameron Reikes (creikey)
+    Camille Mohr-Daurat (pouleyKetchoupp)
     Carl Olsson (not-surt)
+    Carter Anderson (cart)
+    Chris Bradfield (cbscribe)
+    Clay John (clayjohn)
     Dana Olson (adolson)
     Daniel J. Ramirez (djrm)
+    Daniel Rakos (aqnuep)
+    Dharkael (lupoDharkael)
     Dmitry Koteroff (Krakean)
+    DualMatrix
+    Emmanuel Barroga (codecustard)
     Emmanuel Leblond (touilleMan)
+    Eric Lasota (elasota)
     est31
+    Fabian Mathews (supagu)
     Fabio Alessandrelli (Faless)
     Ferenc Arn (tagcup)
     Franklin Sobrinho (TheHX)
     Geequlim
-    Gen (dbsGen)
     George Marques (vnen)
     Gerrit Großkopf (Grosskopf)
     Gilles Roudiere (groud)
     Guilherme Felipe de C. G. da Silva (guilhermefelipecgs)
-    Hein-Pieter van Braam (hpvb)
+    Hanif Bin Ariffin (hbina)
+    Hein-Pieter van Braam-Stewart (hpvb)
     Hiroshi Ogawa (hi-ogawa)
+    homer666
     Hubert Jarosz (Marqin)
     Hugo Locurcio (Calinou)
     Ian Bishop (ianb96)
@@ -68,8 +83,8 @@ name is available.
     Indah Sylvia (ISylvox)
     J08nY
     Jakub Grzesik (kubecz3k)
-    Jérôme GULLY (Nutriz)
-    JFonS
+    Jérôme Gully (Nutriz)
+    Joan Fons Sanchez (JFonS)
     Johan Manuel (29jm)
     Joshua Grams (JoshuaGrams)
     Juan Linietsky (reduz)
@@ -77,20 +92,28 @@ name is available.
     Justo Delgado (mrcdk)
     Kelly Thomas (KellyThomas)
     Kostadin Damyanov (Max-Might)
+    K. S. Ernest (iFire) Lee (fire)
     Leon Krause (eska014)
+    Lucien Menassol (Kanabenki)
     m4nu3lf
     Marcelo Fernandez (marcelofg55)
     Marc Gilleron (Zylann)
+    Marcin Zawiejski (dragmz)
     Mariano Javier Suligoy (MarianoGnu)
     Mario Schlack (hurikhan)
+    Martin Capitanio (capnm)
+    Martin Liška (marxin)
     Martin Sjursen (binbitten)
     marynate
     Masoud BH (masoudbh3)
     Matthias Hölzl (hoelzl)
     Max Hilbrunner (mhilbrunner)
+    merumelu
     Michael Alexsander Silva Dias (YeldhamDev)
+    MichiRecRoom (LikeLakers2)
     mrezai
     Nathan Warden (NathanWarden)
+    Nils André-Chang (NilsIrl)
     Nuno Donato (nunodonato)
     Ovnuniarchos
     Pascal Richter (ShyRed)
@@ -102,20 +125,29 @@ name is available.
     Pieter-Jan Briers (PJB3005)
     Poommetee Ketson (Noshyaar)
     Przemysław Gołąb (n-pigeon)
+    Rafał Mikrut (qarmin)
     Ralf Hölzemer (rollenrolm)
     Ramesh Ravone (RameshRavone)
+    raphael10241024
     Ray Koopa (RayKoopa)
     Rémi Verschelde (akien-mga)
+    Rhody Lugo (rraallvv)
     Roberto F. Arroyo (robfram)
+    Robin Hübner (profan)
     romulox-x
-    rraallvv
     Ruslan Mustakov (endragor)
     Saniko (sanikoyes)
+    santouits
     SaracenOne
     sersoong
+    Simon Wenner (swenner)
+    Swarnim Arun (minraws)
     Theo Hallenius (TheoXD)
     Thomas Herzog (karroffel)
     Timo (toger5)
+    Timo Schwarzer (timoschwarzer)
+    Tomasz Chabora (KoBeWi)
+    Twarit Waikar (IronicallySerious)
     Vinzenz Feenstra (vinzenz)
     박한얼 (volzhs)
     V. Vamsi Krishna (vkbsb)
@@ -124,7 +156,6 @@ name is available.
     Wilson E. Alvarez (Rubonnek)
     Xavier Cho (mysticfall)
     yg2f (SuperUserNameMan)
-    Yuri Roubinski (Chaosus)
+    Yuri Roubinsky (Chaosus)
     Zher Huei Lee (leezh)
     ZuBsPaCe
-    Дмитрий Сальников (DmitriySalnikov)

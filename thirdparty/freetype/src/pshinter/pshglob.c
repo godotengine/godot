@@ -1,25 +1,26 @@
-/***************************************************************************/
-/*                                                                         */
-/*  pshglob.c                                                              */
-/*                                                                         */
-/*    PostScript hinter global hinting management (body).                  */
-/*    Inspired by the new auto-hinter module.                              */
-/*                                                                         */
-/*  Copyright 2001-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used        */
-/*  modified and distributed under the terms of the FreeType project       */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * pshglob.c
+ *
+ *   PostScript hinter global hinting management (body).
+ *   Inspired by the new auto-hinter module.
+ *
+ * Copyright (C) 2001-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used
+ * modified and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
 #include FT_FREETYPE_H
 #include FT_INTERNAL_OBJECTS_H
+#include FT_INTERNAL_CALC_H
 #include "pshglob.h"
 
 #ifdef DEBUG_HINTER
@@ -568,7 +569,7 @@
 
     for ( ; count > 0; count--, zone++ )
     {
-      delta = stem_top - zone->org_bottom;
+      delta = SUB_LONG( stem_top, zone->org_bottom );
       if ( delta < -blues->blue_fuzz )
         break;
 
@@ -590,7 +591,7 @@
 
     for ( ; count > 0; count--, zone-- )
     {
-      delta = zone->org_top - stem_bot;
+      delta = SUB_LONG( zone->org_top, stem_bot );
       if ( delta < -blues->blue_fuzz )
         break;
 

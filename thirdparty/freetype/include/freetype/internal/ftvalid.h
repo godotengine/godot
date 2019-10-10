@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ftvalid.h                                                              */
-/*                                                                         */
-/*    FreeType validation support (specification).                         */
-/*                                                                         */
-/*  Copyright 2004-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ftvalid.h
+ *
+ *   FreeType validation support (specification).
+ *
+ * Copyright (C) 2004-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef FTVALID_H_
@@ -42,31 +42,31 @@ FT_BEGIN_HEADER
   typedef struct FT_ValidatorRec_ volatile*  FT_Validator;
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* There are three distinct validation levels defined here:              */
-  /*                                                                       */
-  /* FT_VALIDATE_DEFAULT ::                                                */
-  /*   A table that passes this validation level can be used reliably by   */
-  /*   FreeType.  It generally means that all offsets have been checked to */
-  /*   prevent out-of-bound reads, that array counts are correct, etc.     */
-  /*                                                                       */
-  /* FT_VALIDATE_TIGHT ::                                                  */
-  /*   A table that passes this validation level can be used reliably and  */
-  /*   doesn't contain invalid data.  For example, a charmap table that    */
-  /*   returns invalid glyph indices will not pass, even though it can     */
-  /*   be used with FreeType in default mode (the library will simply      */
-  /*   return an error later when trying to load the glyph).               */
-  /*                                                                       */
-  /*   It also checks that fields which must be a multiple of 2, 4, or 8,  */
-  /*   don't have incorrect values, etc.                                   */
-  /*                                                                       */
-  /* FT_VALIDATE_PARANOID ::                                               */
-  /*   Only for font debugging.  Checks that a table follows the           */
-  /*   specification by 100%.  Very few fonts will be able to pass this    */
-  /*   level anyway but it can be useful for certain tools like font       */
-  /*   editors/converters.                                                 */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * There are three distinct validation levels defined here:
+   *
+   * FT_VALIDATE_DEFAULT ::
+   *   A table that passes this validation level can be used reliably by
+   *   FreeType.  It generally means that all offsets have been checked to
+   *   prevent out-of-bound reads, that array counts are correct, etc.
+   *
+   * FT_VALIDATE_TIGHT ::
+   *   A table that passes this validation level can be used reliably and
+   *   doesn't contain invalid data.  For example, a charmap table that
+   *   returns invalid glyph indices will not pass, even though it can be
+   *   used with FreeType in default mode (the library will simply return an
+   *   error later when trying to load the glyph).
+   *
+   *   It also checks that fields which must be a multiple of 2, 4, or 8,
+   *   don't have incorrect values, etc.
+   *
+   * FT_VALIDATE_PARANOID ::
+   *   Only for font debugging.  Checks that a table follows the
+   *   specification by 100%.  Very few fonts will be able to pass this level
+   *   anyway but it can be useful for certain tools like font
+   *   editors/converters.
+   */
   typedef enum  FT_ValidationLevel_
   {
     FT_VALIDATE_DEFAULT = 0,

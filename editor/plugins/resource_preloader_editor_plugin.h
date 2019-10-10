@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -43,11 +43,12 @@ class ResourcePreloaderEditor : public PanelContainer {
 	GDCLASS(ResourcePreloaderEditor, PanelContainer);
 
 	enum {
-		BUTTON_SUBSCENE = 0,
+		BUTTON_OPEN_SCENE,
+		BUTTON_EDIT_RESOURCE,
+		BUTTON_REMOVE
 	};
 
 	Button *load;
-	Button *_delete;
 	Button *paste;
 	Tree *tree;
 	bool loading_scene;
@@ -62,8 +63,7 @@ class ResourcePreloaderEditor : public PanelContainer {
 	void _load_scene_pressed();
 	void _files_load_request(const Vector<String> &p_paths);
 	void _paste_pressed();
-	void _delete_pressed();
-	void _delete_confirm_pressed();
+	void _remove_resource(const String &p_to_remove);
 	void _update_library();
 	void _cell_button_pressed(Object *p_item, int p_column, int p_id);
 	void _item_edited();

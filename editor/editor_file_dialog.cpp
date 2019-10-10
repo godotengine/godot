@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,14 +29,16 @@
 /*************************************************************************/
 
 #include "editor_file_dialog.h"
+
+#include "core/os/file_access.h"
+#include "core/os/keyboard.h"
+#include "core/os/os.h"
+#include "core/print_string.h"
 #include "dependency_editor.h"
+#include "editor_file_system.h"
 #include "editor_resource_preview.h"
 #include "editor_scale.h"
 #include "editor_settings.h"
-#include "os/file_access.h"
-#include "os/keyboard.h"
-#include "os/os.h"
-#include "print_string.h"
 #include "scene/gui/center_container.h"
 #include "scene/gui/label.h"
 #include "scene/gui/margin_container.h"
@@ -63,6 +65,7 @@ void EditorFileDialog::_notification(int p_what) {
 		dir_up->set_icon(get_icon("ArrowUp", "EditorIcons"));
 		refresh->set_icon(get_icon("Reload", "EditorIcons"));
 		favorite->set_icon(get_icon("Favorites", "EditorIcons"));
+		show_hidden->set_icon(get_icon("GuiVisibilityVisible", "EditorIcons"));
 
 		fav_up->set_icon(get_icon("MoveUp", "EditorIcons"));
 		fav_down->set_icon(get_icon("MoveDown", "EditorIcons"));
@@ -75,7 +78,7 @@ void EditorFileDialog::_notification(int p_what) {
 				preview_wheel_index++;
 				if (preview_wheel_index >= 8)
 					preview_wheel_index = 0;
-				Ref<Texture> frame = get_icon("WaitPreview" + itos(preview_wheel_index + 1), "EditorIcons");
+				Ref<Texture> frame = get_icon("Progress" + itos(preview_wheel_index + 1), "EditorIcons");
 				preview->set_texture(frame);
 				preview_wheel_timeout = 0.1;
 			}
@@ -86,9 +89,9 @@ void EditorFileDialog::_notification(int p_what) {
 
 	} else if (p_what == EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED) {
 
-		bool show_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
-		if (show_hidden_files != show_hidden)
-			set_show_hidden_files(show_hidden);
+		bool is_showing_hidden = EditorSettings::get_singleton()->get("filesystem/file_dialog/show_hidden_files");
+		if (show_hidden_files != is_showing_hidden)
+			set_show_hidden_files(is_showing_hidden);
 		set_display_mode((DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 
 		// update icons
@@ -140,7 +143,7 @@ void EditorFileDialog::_unhandled_input(const Ref<InputEvent> &p_event) {
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_favorite", p_event)) {
-				_favorite_toggled(favorite->is_pressed());
+				_favorite_pressed();
 				handled = true;
 			}
 			if (ED_IS_SHORTCUT("file_dialog/toggle_mode", p_event)) {
@@ -198,8 +201,22 @@ void EditorFileDialog::update_dir() {
 
 	dir->set_text(dir_access->get_current_dir());
 
-	// Disable "Open" button only when we in selecting file(s) mode or open dir mode.
+	// Disable "Open" button only when selecting file(s) mode.
 	get_ok()->set_disabled(_is_open_should_be_disabled());
+	switch (mode) {
+
+		case MODE_OPEN_FILE:
+		case MODE_OPEN_FILES:
+			get_ok()->set_text(TTR("Open"));
+			break;
+		case MODE_OPEN_DIR:
+			get_ok()->set_text(TTR("Select Current Folder"));
+			break;
+		case MODE_OPEN_ANY:
+		case MODE_SAVE_FILE:
+			// FIXME: Implement, or refactor to avoid duplication with set_mode
+			break;
+	}
 }
 
 void EditorFileDialog::_dir_entered(String p_dir) {
@@ -217,10 +234,11 @@ void EditorFileDialog::_file_entered(const String &p_file) {
 }
 
 void EditorFileDialog::_save_confirm_pressed() {
+
 	String f = dir_access->get_current_dir().plus_file(file->get_text());
 	_save_to_recent();
-	emit_signal("file_selected", f);
 	hide();
+	emit_signal("file_selected", f);
 }
 
 void EditorFileDialog::_post_popup() {
@@ -240,6 +258,7 @@ void EditorFileDialog::_post_popup() {
 
 	if (is_visible_in_tree()) {
 		Ref<Texture> folder = get_icon("folder", "FileDialog");
+		const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 		recent->clear();
 
 		bool res = access == ACCESS_RESOURCES;
@@ -257,6 +276,7 @@ void EditorFileDialog::_post_popup() {
 
 			recent->add_item(name, folder);
 			recent->set_item_metadata(recent->get_item_count() - 1, recentd[i]);
+			recent->set_item_icon_modulate(recent->get_item_count() - 1, folder_color);
 		}
 
 		local_history.clear();
@@ -269,7 +289,7 @@ void EditorFileDialog::_post_popup() {
 	set_process_unhandled_input(true);
 }
 
-void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
 
 	if (display_mode == DISPLAY_LIST || p_preview.is_null())
 		return;
@@ -284,7 +304,7 @@ void EditorFileDialog::_thumbnail_result(const String &p_path, const Ref<Texture
 	}
 }
 
-void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Variant &p_udata) {
+void EditorFileDialog::_thumbnail_done(const String &p_path, const Ref<Texture> &p_preview, const Ref<Texture> &p_small_preview, const Variant &p_udata) {
 
 	set_process(false);
 	preview_waiting = false;
@@ -309,11 +329,10 @@ void EditorFileDialog::_request_single_thumbnail(const String &p_path) {
 	if (!FileAccess::exists(p_path))
 		return;
 
-	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", p_path);
-
 	set_process(true);
 	preview_waiting = true;
 	preview_wheel_timeout = 0;
+	EditorResourcePreview::get_singleton()->queue_resource_preview(p_path, this, "_thumbnail_done", p_path);
 }
 
 void EditorFileDialog::_action_pressed() {
@@ -330,8 +349,8 @@ void EditorFileDialog::_action_pressed() {
 
 		if (files.size()) {
 			_save_to_recent();
-			emit_signal("files_selected", files);
 			hide();
+			emit_signal("files_selected", files);
 		}
 
 		return;
@@ -341,8 +360,8 @@ void EditorFileDialog::_action_pressed() {
 
 	if ((mode == MODE_OPEN_ANY || mode == MODE_OPEN_FILE) && dir_access->file_exists(f)) {
 		_save_to_recent();
-		emit_signal("file_selected", f);
 		hide();
+		emit_signal("file_selected", f);
 	} else if (mode == MODE_OPEN_ANY || mode == MODE_OPEN_DIR) {
 
 		String path = dir_access->get_current_dir();
@@ -361,8 +380,8 @@ void EditorFileDialog::_action_pressed() {
 		}
 
 		_save_to_recent();
-		emit_signal("dir_selected", path);
 		hide();
+		emit_signal("dir_selected", path);
 	}
 
 	if (mode == MODE_SAVE_FILE) {
@@ -428,8 +447,8 @@ void EditorFileDialog::_action_pressed() {
 		} else {
 
 			_save_to_recent();
-			emit_signal("file_selected", f);
 			hide();
+			emit_signal("file_selected", f);
 		}
 	}
 }
@@ -453,6 +472,8 @@ void EditorFileDialog::_item_selected(int p_item) {
 
 		file->set_text(d["name"]);
 		_request_single_thumbnail(get_current_dir().plus_file(get_current_file()));
+	} else if (mode == MODE_OPEN_DIR) {
+		get_ok()->set_text(TTR("Select This Folder"));
 	}
 
 	get_ok()->set_disabled(_is_open_should_be_disabled());
@@ -485,12 +506,17 @@ void EditorFileDialog::_items_clear_selection() {
 		case MODE_OPEN_FILE:
 		case MODE_OPEN_FILES:
 			get_ok()->set_text(TTR("Open"));
-			get_ok()->set_disabled(item_list->is_anything_selected() == false);
+			get_ok()->set_disabled(!item_list->is_anything_selected());
 			break;
 
 		case MODE_OPEN_DIR:
 			get_ok()->set_disabled(false);
 			get_ok()->set_text(TTR("Select Current Folder"));
+			break;
+
+		case MODE_OPEN_ANY:
+		case MODE_SAVE_FILE:
+			// FIXME: Implement, or refactor to avoid duplication with set_mode
 			break;
 	}
 }
@@ -558,7 +584,9 @@ void EditorFileDialog::_item_list_item_rmb_selected(int p_item, const Vector2 &p
 	}
 	if (single_item_selected) {
 		item_menu->add_separator();
-		item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Show In File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+		Dictionary item_meta = item_list->get_item_metadata(p_item);
+		String item_text = item_meta["dir"] ? TTR("Open in File Manager") : TTR("Show in File Manager");
+		item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), item_text, ITEM_MENU_SHOW_IN_EXPLORER);
 	}
 
 	if (item_menu->get_item_count() > 0) {
@@ -582,7 +610,7 @@ void EditorFileDialog::_item_list_rmb_clicked(const Vector2 &p_pos) {
 	}
 	item_menu->add_icon_item(get_icon("Reload", "EditorIcons"), TTR("Refresh"), ITEM_MENU_REFRESH, KEY_F5);
 	item_menu->add_separator();
-	item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Show In File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
+	item_menu->add_icon_item(get_icon("Filesystem", "EditorIcons"), TTR("Open in File Manager"), ITEM_MENU_SHOW_IN_EXPLORER);
 
 	item_menu->set_position(item_list->get_global_position() + p_pos);
 	item_menu->popup();
@@ -635,7 +663,7 @@ bool EditorFileDialog::_is_open_should_be_disabled() {
 
 	Vector<int> items = item_list->get_selected_items();
 	if (items.size() == 0)
-		return true;
+		return mode != MODE_OPEN_DIR; // In "Open folder" mode, having nothing selected picks the current folder.
 
 	for (int i = 0; i < items.size(); i++) {
 
@@ -646,6 +674,23 @@ bool EditorFileDialog::_is_open_should_be_disabled() {
 	}
 
 	return false;
+}
+
+void EditorFileDialog::update_file_name() {
+	int idx = filter->get_selected() - 1;
+	if ((idx == -1 && filter->get_item_count() == 2) || (filter->get_item_count() > 2 && idx >= 0 && idx < filter->get_item_count() - 2)) {
+		if (idx == -1) idx += 1;
+		String filter_str = filters[idx];
+		String file_str = file->get_text();
+		String base_name = file_str.get_basename();
+		Vector<String> filter_substr = filter_str.split(";");
+		if (filter_substr.size() >= 2) {
+			file_str = base_name + "." + filter_substr[1].strip_edges().to_lower();
+		} else {
+			file_str = base_name + "." + filter_str.get_extension().strip_edges().to_lower();
+		}
+		file->set_text(file_str);
+	}
 }
 
 // DO NOT USE THIS FUNCTION UNLESS NEEDED, CALL INVALIDATE() INSTEAD.
@@ -688,30 +733,25 @@ void EditorFileDialog::update_file_list() {
 	}
 
 	String cdir = dir_access->get_current_dir();
-	bool skip_pp = access == ACCESS_RESOURCES && cdir == "res://";
 
 	dir_access->list_dir_begin();
 
 	Ref<Texture> folder = get_icon("folder", "FileDialog");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	List<String> files;
 	List<String> dirs;
 
-	bool isdir;
-	bool ishidden;
-	bool show_hidden = show_hidden_files;
 	String item;
 
-	while ((item = dir_access->get_next(&isdir)) != "") {
+	while ((item = dir_access->get_next()) != "") {
 
 		if (item == "." || item == "..")
 			continue;
 
-		ishidden = dir_access->current_is_hidden();
-
-		if (show_hidden || !ishidden) {
-			if (!isdir)
+		if (show_hidden_files || !dir_access->current_is_hidden()) {
+			if (!dir_access->current_is_dir())
 				files.push_back(item);
-			else if (item != ".." || !skip_pp)
+			else
 				dirs.push_back(item);
 		}
 	}
@@ -738,11 +778,10 @@ void EditorFileDialog::update_file_list() {
 		d["dir"] = true;
 
 		item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+		item_list->set_item_icon_modulate(item_list->get_item_count() - 1, folder_color);
 
 		dirs.pop_front();
 	}
-
-	dirs.clear();
 
 	List<String> patterns;
 	// build filter
@@ -807,11 +846,12 @@ void EditorFileDialog::update_file_list() {
 			d["name"] = files.front()->get();
 			d["dir"] = false;
 			String fullpath = cdir.plus_file(files.front()->get());
+			d["path"] = fullpath;
+			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
+
 			if (display_mode == DISPLAY_THUMBNAILS) {
 				EditorResourcePreview::get_singleton()->queue_resource_preview(fullpath, this, "_thumbnail_result", fullpath);
 			}
-			d["path"] = fullpath;
-			item_list->set_item_metadata(item_list->get_item_count() - 1, d);
 
 			if (file->get_text() == files.front()->get())
 				item_list->set_current(item_list->get_item_count() - 1);
@@ -829,7 +869,7 @@ void EditorFileDialog::update_file_list() {
 	fav_down->set_disabled(true);
 	get_ok()->set_disabled(_is_open_should_be_disabled());
 	for (int i = 0; i < favorites->get_item_count(); i++) {
-		if (favorites->get_item_metadata(i) == cdir) {
+		if (favorites->get_item_metadata(i) == cdir || favorites->get_item_metadata(i) == cdir + "/") {
 			favorites->select(i);
 			favorite->set_pressed(true);
 			if (i > 0) {
@@ -841,12 +881,10 @@ void EditorFileDialog::update_file_list() {
 			break;
 		}
 	}
-
-	files.clear();
 }
 
 void EditorFileDialog::_filter_selected(int) {
-
+	update_file_name();
 	update_file_list();
 }
 
@@ -1048,7 +1086,7 @@ void EditorFileDialog::_make_dir_confirm() {
 		update_filters();
 		update_dir();
 		_push_history();
-
+		EditorFileSystem::get_singleton()->scan_changes(); //we created a dir, so rescan changes
 	} else {
 		mkdirerr->popup_centered_minsize(Size2(250, 50) * EDSCALE);
 	}
@@ -1113,13 +1151,10 @@ void EditorFileDialog::_update_drives() {
 
 void EditorFileDialog::_favorite_selected(int p_idx) {
 
-	Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
-	ERR_FAIL_INDEX(p_idx, favorited.size());
-
-	dir_access->change_dir(favorited[p_idx]);
+	dir_access->change_dir(favorites->get_item_metadata(p_idx));
 	file->set_text("");
-	invalidate();
 	update_dir();
+	invalidate();
 	_push_history();
 }
 
@@ -1128,7 +1163,7 @@ void EditorFileDialog::_favorite_move_up() {
 	int current = favorites->get_current();
 
 	if (current > 0 && current < favorites->get_item_count()) {
-		Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+		Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
 
 		int a_idx = favorited.find(String(favorites->get_item_metadata(current - 1)));
 		int b_idx = favorited.find(String(favorites->get_item_metadata(current)));
@@ -1137,7 +1172,7 @@ void EditorFileDialog::_favorite_move_up() {
 			return;
 		SWAP(favorited.write[a_idx], favorited.write[b_idx]);
 
-		EditorSettings::get_singleton()->set_favorite_dirs(favorited);
+		EditorSettings::get_singleton()->set_favorites(favorited);
 
 		_update_favorites();
 		update_file_list();
@@ -1148,7 +1183,7 @@ void EditorFileDialog::_favorite_move_down() {
 	int current = favorites->get_current();
 
 	if (current >= 0 && current < favorites->get_item_count() - 1) {
-		Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+		Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
 
 		int a_idx = favorited.find(String(favorites->get_item_metadata(current + 1)));
 		int b_idx = favorited.find(String(favorites->get_item_metadata(current)));
@@ -1157,7 +1192,7 @@ void EditorFileDialog::_favorite_move_down() {
 			return;
 		SWAP(favorited.write[a_idx], favorited.write[b_idx]);
 
-		EditorSettings::get_singleton()->set_favorite_dirs(favorited);
+		EditorSettings::get_singleton()->set_favorites(favorited);
 
 		_update_favorites();
 		update_file_list();
@@ -1169,42 +1204,56 @@ void EditorFileDialog::_update_favorites() {
 	bool res = access == ACCESS_RESOURCES;
 
 	String current = get_current_dir();
-	Ref<Texture> star = get_icon("Favorites", "EditorIcons");
+	Ref<Texture> folder_icon = get_icon("Folder", "EditorIcons");
+	const Color folder_color = get_color("folder_icon_modulate", "FileDialog");
 	favorites->clear();
 
 	favorite->set_pressed(false);
 
-	Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
 	for (int i = 0; i < favorited.size(); i++) {
 		bool cres = favorited[i].begins_with("res://");
 		if (cres != res)
 			continue;
 		String name = favorited[i];
-
-		bool setthis = name == current;
+		bool setthis = false;
 
 		if (res && name == "res://") {
+			if (name == current)
+				setthis = true;
 			name = "/";
+
+			favorites->add_item(name, folder_icon);
+		} else if (name.ends_with("/")) {
+			if (name == current || name == current + "/")
+				setthis = true;
+			name = name.substr(0, name.length() - 1);
+			name = name.get_file();
+
+			favorites->add_item(name, folder_icon);
 		} else {
-			name = name.get_file() + "/";
+			continue; // We don't handle favorite files here.
 		}
 
-		favorites->add_item(name, star);
 		favorites->set_item_metadata(favorites->get_item_count() - 1, favorited[i]);
+		favorites->set_item_icon_modulate(favorites->get_item_count() - 1, folder_color);
 
 		if (setthis) {
 			favorite->set_pressed(true);
 			favorites->set_current(favorites->get_item_count() - 1);
+			recent->unselect_all();
 		}
 	}
 }
 
-void EditorFileDialog::_favorite_toggled(bool p_toggle) {
+void EditorFileDialog::_favorite_pressed() {
 	bool res = access == ACCESS_RESOURCES;
 
 	String cd = get_current_dir();
+	if (!cd.ends_with("/"))
+		cd += "/";
 
-	Vector<String> favorited = EditorSettings::get_singleton()->get_favorite_dirs();
+	Vector<String> favorited = EditorSettings::get_singleton()->get_favorites();
 
 	bool found = false;
 	for (int i = 0; i < favorited.size(); i++) {
@@ -1218,15 +1267,12 @@ void EditorFileDialog::_favorite_toggled(bool p_toggle) {
 		}
 	}
 
-	if (found) {
+	if (found)
 		favorited.erase(cd);
-		favorite->set_pressed(false);
-	} else {
+	else
 		favorited.push_back(cd);
-		favorite->set_pressed(true);
-	}
 
-	EditorSettings::get_singleton()->set_favorite_dirs(favorited);
+	EditorSettings::get_singleton()->set_favorites(favorited);
 
 	_update_favorites();
 }
@@ -1339,6 +1385,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_select_drive"), &EditorFileDialog::_select_drive);
 	ClassDB::bind_method(D_METHOD("_make_dir"), &EditorFileDialog::_make_dir);
 	ClassDB::bind_method(D_METHOD("_make_dir_confirm"), &EditorFileDialog::_make_dir_confirm);
+	ClassDB::bind_method(D_METHOD("_update_file_name"), &EditorFileDialog::update_file_name);
 	ClassDB::bind_method(D_METHOD("_update_file_list"), &EditorFileDialog::update_file_list);
 	ClassDB::bind_method(D_METHOD("_update_dir"), &EditorFileDialog::update_dir);
 	ClassDB::bind_method(D_METHOD("_thumbnail_done"), &EditorFileDialog::_thumbnail_done);
@@ -1353,7 +1400,7 @@ void EditorFileDialog::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_go_forward"), &EditorFileDialog::_go_forward);
 	ClassDB::bind_method(D_METHOD("_go_up"), &EditorFileDialog::_go_up);
 
-	ClassDB::bind_method(D_METHOD("_favorite_toggled"), &EditorFileDialog::_favorite_toggled);
+	ClassDB::bind_method(D_METHOD("_favorite_pressed"), &EditorFileDialog::_favorite_pressed);
 	ClassDB::bind_method(D_METHOD("_favorite_selected"), &EditorFileDialog::_favorite_selected);
 	ClassDB::bind_method(D_METHOD("_favorite_move_up"), &EditorFileDialog::_favorite_move_up);
 	ClassDB::bind_method(D_METHOD("_favorite_move_down"), &EditorFileDialog::_favorite_move_down);
@@ -1389,6 +1436,7 @@ void EditorFileDialog::_bind_methods() {
 
 void EditorFileDialog::set_show_hidden_files(bool p_show) {
 	show_hidden_files = p_show;
+	show_hidden->set_pressed(p_show);
 	invalidate();
 }
 
@@ -1468,9 +1516,11 @@ EditorFileDialog::EditorFileDialog() {
 	HBoxContainer *pathhb = memnew(HBoxContainer);
 
 	dir_prev = memnew(ToolButton);
+	dir_prev->set_tooltip(TTR("Go to previous folder."));
 	dir_next = memnew(ToolButton);
+	dir_next->set_tooltip(TTR("Go to next folder."));
 	dir_up = memnew(ToolButton);
-	dir_up->set_tooltip(TTR("Go to parent folder"));
+	dir_up->set_tooltip(TTR("Go to parent folder."));
 
 	pathhb->add_child(dir_prev);
 	pathhb->add_child(dir_next);
@@ -1487,25 +1537,34 @@ EditorFileDialog::EditorFileDialog() {
 	dir->set_h_size_flags(SIZE_EXPAND_FILL);
 
 	refresh = memnew(ToolButton);
+	refresh->set_tooltip(TTR("Refresh files."));
 	refresh->connect("pressed", this, "_update_file_list");
 	pathhb->add_child(refresh);
 
 	favorite = memnew(ToolButton);
-	favorite->set_flat(true);
 	favorite->set_toggle_mode(true);
-	favorite->connect("toggled", this, "_favorite_toggled");
+	favorite->set_tooltip(TTR("(Un)favorite current folder."));
+	favorite->connect("pressed", this, "_favorite_pressed");
 	pathhb->add_child(favorite);
+
+	show_hidden = memnew(ToolButton);
+	show_hidden->set_toggle_mode(true);
+	show_hidden->set_pressed(is_showing_hidden_files());
+	show_hidden->set_tooltip(TTR("Toggle the visibility of hidden files."));
+	show_hidden->connect("toggled", this, "set_show_hidden_files");
+	pathhb->add_child(show_hidden);
+
+	pathhb->add_child(memnew(VSeparator));
 
 	Ref<ButtonGroup> view_mode_group;
 	view_mode_group.instance();
-
-	pathhb->add_child(memnew(VSeparator));
 
 	mode_thumbnails = memnew(ToolButton);
 	mode_thumbnails->connect("pressed", this, "set_display_mode", varray(DISPLAY_THUMBNAILS));
 	mode_thumbnails->set_toggle_mode(true);
 	mode_thumbnails->set_pressed(display_mode == DISPLAY_THUMBNAILS);
 	mode_thumbnails->set_button_group(view_mode_group);
+	mode_thumbnails->set_tooltip(TTR("View items as a grid of thumbnails."));
 	pathhb->add_child(mode_thumbnails);
 
 	mode_list = memnew(ToolButton);
@@ -1513,6 +1572,7 @@ EditorFileDialog::EditorFileDialog() {
 	mode_list->set_toggle_mode(true);
 	mode_list->set_pressed(display_mode == DISPLAY_LIST);
 	mode_list->set_button_group(view_mode_group);
+	mode_list->set_tooltip(TTR("View items as a list."));
 	pathhb->add_child(mode_list);
 
 	drives = memnew(OptionButton);
@@ -1558,6 +1618,7 @@ EditorFileDialog::EditorFileDialog() {
 	rec_vb->set_custom_minimum_size(Size2(150, 100) * EDSCALE);
 	rec_vb->set_v_size_flags(SIZE_EXPAND_FILL);
 	recent = memnew(ItemList);
+	recent->set_allow_reselect(true);
 	rec_vb->add_margin_child(TTR("Recent:"), recent, true);
 	recent->connect("item_selected", this, "_recent_selected");
 
@@ -1574,7 +1635,7 @@ EditorFileDialog::EditorFileDialog() {
 	list_vb->add_child(memnew(Label(TTR("Directories & Files:"))));
 	preview_hb->add_child(list_vb);
 
-	// Item (files and folders) list with context menu
+	// Item (files and folders) list with context menu.
 
 	item_list = memnew(ItemList);
 	item_list->set_v_size_flags(SIZE_EXPAND_FILL);
@@ -1587,7 +1648,7 @@ EditorFileDialog::EditorFileDialog() {
 	item_menu->connect("id_pressed", this, "_item_menu_id_pressed");
 	add_child(item_menu);
 
-	// Other stuff
+	// Other stuff.
 
 	preview_vb = memnew(VBoxContainer);
 	preview_hb->add_child(preview_vb);
@@ -1606,7 +1667,7 @@ EditorFileDialog::EditorFileDialog() {
 	filter = memnew(OptionButton);
 	filter->set_stretch_ratio(3);
 	filter->set_h_size_flags(SIZE_EXPAND_FILL);
-	filter->set_clip_text(true); // too many extensions overflow it
+	filter->set_clip_text(true); // Too many extensions overflow it.
 	filename_hbc->add_child(filter);
 	filename_hbc->set_h_size_flags(SIZE_EXPAND_FILL);
 	item_vb->add_child(filename_hbc);
@@ -1672,6 +1733,12 @@ EditorFileDialog::~EditorFileDialog() {
 	memdelete(dir_access);
 }
 
+void EditorLineEditFileChooser::_notification(int p_what) {
+
+	if (p_what == NOTIFICATION_ENTER_TREE || p_what == NOTIFICATION_THEME_CHANGED)
+		button->set_icon(get_icon("Folder", "EditorIcons"));
+}
+
 void EditorLineEditFileChooser::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_browse"), &EditorLineEditFileChooser::_browse);
@@ -1698,7 +1765,6 @@ EditorLineEditFileChooser::EditorLineEditFileChooser() {
 	add_child(line_edit);
 	line_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	button = memnew(Button);
-	button->set_text(" .. ");
 	add_child(button);
 	button->connect("pressed", this, "_browse");
 	dialog = memnew(EditorFileDialog);

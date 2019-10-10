@@ -1,12 +1,42 @@
+/*************************************************************************/
+/*  expression.cpp                                                       */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "expression.h"
 
-#include "class_db.h"
-#include "func_ref.h"
-#include "io/marshalls.h"
-#include "math_funcs.h"
-#include "os/os.h"
-#include "reference.h"
-#include "variant_parser.h"
+#include "core/class_db.h"
+#include "core/func_ref.h"
+#include "core/io/marshalls.h"
+#include "core/math/math_funcs.h"
+#include "core/os/os.h"
+#include "core/reference.h"
+#include "core/variant_parser.h"
 
 const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"sin",
@@ -22,6 +52,7 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"sqrt",
 	"fmod",
 	"fposmod",
+	"posmod",
 	"floor",
 	"ceil",
 	"round",
@@ -34,10 +65,14 @@ const char *Expression::func_name[Expression::FUNC_MAX] = {
 	"is_inf",
 	"ease",
 	"decimals",
+	"step_decimals",
 	"stepify",
 	"lerp",
+	"lerp_angle",
 	"inverse_lerp",
 	"range_lerp",
+	"smoothstep",
+	"move_toward",
 	"dectime",
 	"randomize",
 	"randi",
@@ -118,6 +153,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case MATH_ISNAN:
 		case MATH_ISINF:
 		case MATH_DECIMALS:
+		case MATH_STEP_DECIMALS:
 		case MATH_SEED:
 		case MATH_RANDSEED:
 		case MATH_DEG2RAD:
@@ -134,13 +170,14 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case TEXT_PRINTRAW:
 		case VAR_TO_STR:
 		case STR_TO_VAR:
-		case VAR_TO_BYTES:
-		case BYTES_TO_VAR:
 		case TYPE_EXISTS:
 			return 1;
+		case VAR_TO_BYTES:
+		case BYTES_TO_VAR:
 		case MATH_ATAN2:
 		case MATH_FMOD:
 		case MATH_FPOSMOD:
+		case MATH_POSMOD:
 		case MATH_POW:
 		case MATH_EASE:
 		case MATH_STEPIFY:
@@ -154,7 +191,10 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 		case COLORN:
 			return 2;
 		case MATH_LERP:
+		case MATH_LERP_ANGLE:
 		case MATH_INVERSE_LERP:
+		case MATH_SMOOTHSTEP:
+		case MATH_MOVE_TOWARD:
 		case MATH_DECTIME:
 		case MATH_WRAP:
 		case MATH_WRAPF:
@@ -177,7 +217,7 @@ int Expression::get_func_argument_count(BuiltinFunc p_func) {
 	}
 
 void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant *r_return, Variant::CallError &r_error, String &r_error_str) {
-
+	r_error.error = Variant::CallError::CALL_OK;
 	switch (p_func) {
 		case MATH_SIN: {
 
@@ -246,6 +286,12 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(0);
 			VALIDATE_ARG_NUM(1);
 			*r_return = Math::fposmod((double)*p_inputs[0], (double)*p_inputs[1]);
+		} break;
+		case MATH_POSMOD: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			*r_return = Math::posmod((int)*p_inputs[0], (int)*p_inputs[1]);
 		} break;
 		case MATH_FLOOR: {
 
@@ -333,6 +379,11 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(0);
 			*r_return = Math::step_decimals((double)*p_inputs[0]);
 		} break;
+		case MATH_STEP_DECIMALS: {
+
+			VALIDATE_ARG_NUM(0);
+			*r_return = Math::step_decimals((double)*p_inputs[0]);
+		} break;
 		case MATH_STEPIFY: {
 
 			VALIDATE_ARG_NUM(0);
@@ -345,6 +396,13 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(1);
 			VALIDATE_ARG_NUM(2);
 			*r_return = Math::lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case MATH_LERP_ANGLE: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::lerp_angle((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case MATH_INVERSE_LERP: {
 
@@ -361,6 +419,19 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			VALIDATE_ARG_NUM(3);
 			VALIDATE_ARG_NUM(4);
 			*r_return = Math::range_lerp((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2], (double)*p_inputs[3], (double)*p_inputs[4]);
+		} break;
+		case MATH_SMOOTHSTEP: {
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::smoothstep((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
+		} break;
+		case MATH_MOVE_TOWARD: {
+
+			VALIDATE_ARG_NUM(0);
+			VALIDATE_ARG_NUM(1);
+			VALIDATE_ARG_NUM(2);
+			*r_return = Math::move_toward((double)*p_inputs[0], (double)*p_inputs[1], (double)*p_inputs[2]);
 		} break;
 		case MATH_DECTIME: {
 
@@ -622,15 +693,12 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 		case TEXT_PRINTERR: {
 
 			String str = *p_inputs[0];
-
-			//str+="\n";
 			print_error(str);
 
 		} break;
 		case TEXT_PRINTRAW: {
-			String str = *p_inputs[0];
 
-			//str+="\n";
+			String str = *p_inputs[0];
 			OS::get_singleton()->print("%s", str.utf8().get_data());
 
 		} break;
@@ -669,8 +737,9 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 		case VAR_TO_BYTES: {
 
 			PoolByteArray barr;
+			bool full_objects = *p_inputs[1];
 			int len;
-			Error err = encode_variant(*p_inputs[0], NULL, len);
+			Error err = encode_variant(*p_inputs[0], NULL, len, full_objects);
 			if (err) {
 				r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
 				r_error.argument = 0;
@@ -682,7 +751,7 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			barr.resize(len);
 			{
 				PoolByteArray::Write w = barr.write();
-				encode_variant(*p_inputs[0], w.ptr(), len);
+				encode_variant(*p_inputs[0], w.ptr(), len, full_objects);
 			}
 			*r_return = barr;
 		} break;
@@ -697,10 +766,11 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			}
 
 			PoolByteArray varr = *p_inputs[0];
+			bool allow_objects = *p_inputs[1];
 			Variant ret;
 			{
 				PoolByteArray::Read r = varr.read();
-				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL);
+				Error err = decode_variant(ret, r.ptr(), varr.size(), NULL, allow_objects);
 				if (err != OK) {
 					r_error_str = RTR("Not enough bytes for decoding bytes, or invalid format.");
 					r_error.error = Variant::CallError::CALL_ERROR_INVALID_ARGUMENT;
@@ -723,11 +793,16 @@ void Expression::exec_func(BuiltinFunc p_func, const Variant **p_inputs, Variant
 			*r_return = String(color);
 
 		} break;
-		default: {}
+		default: {
+		}
 	}
 }
 
 ////////
+
+static bool _is_number(CharType c) {
+	return (c >= '0' && c <= '9');
+}
 
 Error Expression::_get_token(Token &r_token) {
 
@@ -735,17 +810,13 @@ Error Expression::_get_token(Token &r_token) {
 #define GET_CHAR() (str_ofs >= expression.length() ? 0 : expression[str_ofs++])
 
 		CharType cchar = GET_CHAR();
-		if (cchar == 0) {
-			r_token.type = TK_EOF;
-			return OK;
-		}
 
 		switch (cchar) {
 
 			case 0: {
 				r_token.type = TK_EOF;
 				return OK;
-			} break;
+			};
 			case '{': {
 
 				r_token.type = TK_CURLY_BRACKET_OPEN;
@@ -786,17 +857,12 @@ Error Expression::_get_token(Token &r_token) {
 				r_token.type = TK_COLON;
 				return OK;
 			};
-			case '.': {
-
-				r_token.type = TK_PERIOD;
-				return OK;
-			};
 			case '$': {
 
 				r_token.type = TK_INPUT;
 				int index = 0;
 				do {
-					if (expression[str_ofs] < '0' || expression[str_ofs] > '9') {
+					if (!_is_number(expression[str_ofs])) {
 						_set_error("Expected number after '$'");
 						r_token.type = TK_ERROR;
 						return ERR_PARSE_ERROR;
@@ -805,7 +871,7 @@ Error Expression::_get_token(Token &r_token) {
 					index += expression[str_ofs] - '0';
 					str_ofs++;
 
-				} while (expression[str_ofs] >= '0' && expression[str_ofs] <= '9');
+				} while (_is_number(expression[str_ofs]));
 
 				r_token.value = index;
 				return OK;
@@ -952,14 +1018,14 @@ Error Expression::_get_token(Token &r_token) {
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
-									if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
+									if (!(_is_number(c) || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F'))) {
 
 										_set_error("Malformed hex constant in string");
 										r_token.type = TK_ERROR;
 										return ERR_PARSE_ERROR;
 									}
 									CharType v;
-									if (c >= '0' && c <= '9') {
+									if (_is_number(c)) {
 										v = c - '0';
 									} else if (c >= 'a' && c <= 'f') {
 										v = c - 'a';
@@ -1005,7 +1071,8 @@ Error Expression::_get_token(Token &r_token) {
 					break;
 				}
 
-				if (cchar >= '0' && cchar <= '9') {
+				CharType next_char = (str_ofs >= expression.length()) ? 0 : expression[str_ofs];
+				if (_is_number(cchar) || (cchar == '.' && _is_number(next_char))) {
 					//a number
 
 					String num;
@@ -1026,7 +1093,7 @@ Error Expression::_get_token(Token &r_token) {
 						switch (reading) {
 							case READING_INT: {
 
-								if (c >= '0' && c <= '9') {
+								if (_is_number(c)) {
 									//pass
 								} else if (c == '.') {
 									reading = READING_DEC;
@@ -1040,7 +1107,7 @@ Error Expression::_get_token(Token &r_token) {
 							} break;
 							case READING_DEC: {
 
-								if (c >= '0' && c <= '9') {
+								if (_is_number(c)) {
 
 								} else if (c == 'e') {
 									reading = READING_EXP;
@@ -1052,7 +1119,7 @@ Error Expression::_get_token(Token &r_token) {
 							} break;
 							case READING_EXP: {
 
-								if (c >= '0' && c <= '9') {
+								if (_is_number(c)) {
 									exp_beg = true;
 
 								} else if ((c == '-' || c == '+') && !exp_sign && !exp_beg) {
@@ -1087,7 +1154,7 @@ Error Expression::_get_token(Token &r_token) {
 					String id;
 					bool first = true;
 
-					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && cchar >= '0' && cchar <= '9')) {
+					while ((cchar >= 'A' && cchar <= 'Z') || (cchar >= 'a' && cchar <= 'z') || cchar == '_' || (!first && _is_number(cchar))) {
 
 						id += String::chr(cchar);
 						cchar = GET_CHAR();
@@ -1149,6 +1216,12 @@ Error Expression::_get_token(Token &r_token) {
 					}
 
 					return OK;
+
+				} else if (cchar == '.') {
+					// Handled down there as we support '.[0-9]' as numbers above
+					r_token.type = TK_PERIOD;
+					return OK;
+
 				} else {
 					_set_error("Unexpected character.");
 					r_token.type = TK_ERROR;
@@ -1156,6 +1229,7 @@ Error Expression::_get_token(Token &r_token) {
 				}
 			}
 		}
+#undef GET_CHAR
 	}
 
 	r_token.type = TK_ERROR;
@@ -1230,10 +1304,10 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
-					dn->dict.push_back(expr);
+					dn->dict.push_back(subexpr);
 
 					_get_token(tk);
 					if (tk.type != TK_COLON) {
@@ -1241,11 +1315,11 @@ Expression::ENode *Expression::_parse_expression() {
 						return NULL;
 					}
 
-					expr = _parse_expression();
-					if (!expr)
+					subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
 
-					dn->dict.push_back(expr);
+					dn->dict.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1274,10 +1348,10 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
-					an->array.push_back(expr);
+					an->array.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1321,25 +1395,25 @@ Expression::ENode *Expression::_parse_expression() {
 
 					while (true) {
 
-						int cofs = str_ofs;
+						int cofs2 = str_ofs;
 						_get_token(tk);
 						if (tk.type == TK_PARENTHESIS_CLOSE) {
 							break;
 						}
-						str_ofs = cofs; //revert
+						str_ofs = cofs2; //revert
 						//parse an expression
-						ENode *expr = _parse_expression();
-						if (!expr)
+						ENode *subexpr = _parse_expression();
+						if (!subexpr)
 							return NULL;
 
-						func_call->arguments.push_back(expr);
+						func_call->arguments.push_back(subexpr);
 
-						cofs = str_ofs;
+						cofs2 = str_ofs;
 						_get_token(tk);
 						if (tk.type == TK_COMMA) {
 							//all good
 						} else if (tk.type == TK_PARENTHESIS_CLOSE) {
-							str_ofs = cofs;
+							str_ofs = cofs2;
 						} else {
 							_set_error("Expected ',' or ')'");
 						}
@@ -1410,11 +1484,11 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
 
-					constructor->arguments.push_back(expr);
+					constructor->arguments.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1451,11 +1525,11 @@ Expression::ENode *Expression::_parse_expression() {
 					}
 					str_ofs = cofs; //revert
 					//parse an expression
-					ENode *expr = _parse_expression();
-					if (!expr)
+					ENode *subexpr = _parse_expression();
+					if (!subexpr)
 						return NULL;
 
-					bifunc->arguments.push_back(expr);
+					bifunc->arguments.push_back(subexpr);
 
 					cofs = str_ofs;
 					_get_token(tk);
@@ -1550,25 +1624,25 @@ Expression::ENode *Expression::_parse_expression() {
 
 						while (true) {
 
-							int cofs = str_ofs;
+							int cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_PARENTHESIS_CLOSE) {
 								break;
 							}
-							str_ofs = cofs; //revert
+							str_ofs = cofs3; //revert
 							//parse an expression
-							ENode *expr = _parse_expression();
-							if (!expr)
+							ENode *subexpr = _parse_expression();
+							if (!subexpr)
 								return NULL;
 
-							func_call->arguments.push_back(expr);
+							func_call->arguments.push_back(subexpr);
 
-							cofs = str_ofs;
+							cofs3 = str_ofs;
 							_get_token(tk);
 							if (tk.type == TK_COMMA) {
 								//all good
 							} else if (tk.type == TK_PARENTHESIS_CLOSE) {
-								str_ofs = cofs;
+								str_ofs = cofs3;
 							} else {
 								_set_error("Expected ',' or ')'");
 							}
@@ -1635,7 +1709,8 @@ Expression::ENode *Expression::_parse_expression() {
 			case TK_OP_BIT_OR: op = Variant::OP_BIT_OR; break;
 			case TK_OP_BIT_XOR: op = Variant::OP_BIT_XOR; break;
 			case TK_OP_BIT_INVERT: op = Variant::OP_BIT_NEGATE; break;
-			default: {};
+			default: {
+			};
 		}
 
 		if (op == Variant::OP_MAX) { //stop appending stuff
@@ -1732,7 +1807,7 @@ Expression::ENode *Expression::_parse_expression() {
 		if (next_op == -1) {
 
 			_set_error("Yet another parser bug....");
-			ERR_FAIL_COND_V(next_op == -1, NULL);
+			ERR_FAIL_V(NULL);
 		}
 
 		// OK! create operator..
@@ -1868,7 +1943,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			Variant b;
 
 			if (op->nodes[1]) {
-				bool ret = _execute(p_inputs, p_instance, op->nodes[1], b, r_error_str);
+				ret = _execute(p_inputs, p_instance, op->nodes[1], b, r_error_str);
 				if (ret)
 					return true;
 			}
@@ -1916,7 +1991,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			bool valid;
 			r_ret = base.get_named(index->name, &valid);
 			if (!valid) {
-				r_error_str = vformat(RTR("Invalid named index '%s' for base type "), String(index->name), Variant::get_type_name(base.get_type()));
+				r_error_str = vformat(RTR("Invalid named index '%s' for base type %s"), String(index->name), Variant::get_type_name(base.get_type()));
 				return true;
 			}
 
@@ -2036,7 +2111,7 @@ bool Expression::_execute(const Array &p_inputs, Object *p_instance, Expression:
 			for (int i = 0; i < call->arguments.size(); i++) {
 
 				Variant value;
-				bool ret = _execute(p_inputs, p_instance, call->arguments[i], value, r_error_str);
+				ret = _execute(p_inputs, p_instance, call->arguments[i], value, r_error_str);
 
 				if (ret)
 					return true;
@@ -2087,6 +2162,8 @@ Error Expression::parse(const String &p_expression, const Vector<String> &p_inpu
 
 Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
 
+	ERR_FAIL_COND_V_MSG(error_set, Variant(), "There was previously a parse error: " + error_str + ".");
+
 	execution_error = false;
 	Variant output;
 	String error_txt;
@@ -2094,10 +2171,7 @@ Variant Expression::execute(Array p_inputs, Object *p_base, bool p_show_error) {
 	if (err) {
 		execution_error = true;
 		error_str = error_txt;
-		if (p_show_error) {
-			ERR_EXPLAIN(error_str);
-			ERR_FAIL_V(Variant());
-		}
+		ERR_FAIL_COND_V_MSG(p_show_error, Variant(), error_str);
 	}
 
 	return output;
@@ -2114,18 +2188,18 @@ String Expression::get_error_text() const {
 void Expression::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("parse", "expression", "input_names"), &Expression::parse, DEFVAL(Vector<String>()));
-	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error"), &Expression::execute, DEFVAL(Array()), DEFVAL(NULL), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("execute", "inputs", "base_instance", "show_error"), &Expression::execute, DEFVAL(Array()), DEFVAL(Variant()), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("has_execute_failed"), &Expression::has_execute_failed);
 	ClassDB::bind_method(D_METHOD("get_error_text"), &Expression::get_error_text);
 }
 
-Expression::Expression() {
-	output_type = Variant::NIL;
-	error_set = true;
-	root = NULL;
-	nodes = NULL;
-	sequenced = false;
-	execution_error = false;
+Expression::Expression() :
+		output_type(Variant::NIL),
+		sequenced(false),
+		error_set(true),
+		root(NULL),
+		nodes(NULL),
+		execution_error(false) {
 }
 
 Expression::~Expression() {

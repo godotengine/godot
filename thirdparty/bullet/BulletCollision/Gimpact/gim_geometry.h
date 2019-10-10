@@ -39,4 +39,4 @@ email: projectileman@yahoo.com
 #include "gim_box_collision.h"
 #include "gim_tri_collision.h"
 
-#endif // GIM_VECTOR_H_INCLUDED
+#endif  // GIM_VECTOR_H_INCLUDED

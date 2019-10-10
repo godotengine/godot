@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,10 +30,10 @@
 
 #include "array.h"
 
-#include "hashfuncs.h"
-#include "object.h"
-#include "variant.h"
-#include "vector.h"
+#include "core/hashfuncs.h"
+#include "core/object.h"
+#include "core/variant.h"
+#include "core/vector.h"
 
 class ArrayPrivate {
 public:
@@ -133,12 +133,12 @@ void Array::erase(const Variant &p_value) {
 }
 
 Variant Array::front() const {
-	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
 	return operator[](0);
 }
 
 Variant Array::back() const {
-	ERR_FAIL_COND_V(_p->array.size() == 0, Variant());
+	ERR_FAIL_COND_V_MSG(_p->array.size() == 0, Variant(), "Can't take value from empty array.");
 	return operator[](_p->array.size() - 1);
 }
 
@@ -165,8 +165,8 @@ int Array::rfind(const Variant &p_value, int p_from) const {
 
 		if (_p->array[i] == p_value) {
 			return i;
-		};
-	};
+		}
+	}
 
 	return -1;
 }
@@ -186,8 +186,8 @@ int Array::count(const Variant &p_value) const {
 
 		if (_p->array[i] == p_value) {
 			amount++;
-		};
-	};
+		}
+	}
 
 	return amount;
 }
@@ -222,6 +222,66 @@ Array Array::duplicate(bool p_deep) const {
 
 	return new_arr;
 }
+
+int Array::_fix_slice_index(int p_index, int p_arr_len, int p_top_mod) {
+	p_index = CLAMP(p_index, -p_arr_len, p_arr_len + p_top_mod);
+	if (p_index < 0) {
+		p_index = (p_index % p_arr_len + p_arr_len) % p_arr_len; // positive modulo
+	}
+	return p_index;
+}
+
+int Array::_clamp_index(int p_index) const {
+	return CLAMP(p_index, -size() + 1, size() - 1);
+}
+
+#define ARRAY_GET_DEEP(idx, is_deep) is_deep ? get(idx).duplicate(is_deep) : get(idx)
+
+Array Array::slice(int p_begin, int p_end, int p_step, bool p_deep) const { // like python, but inclusive on upper bound
+	Array new_arr;
+
+	if (empty()) // Don't try to slice empty arrays.
+		return new_arr;
+
+	p_begin = Array::_fix_slice_index(p_begin, size(), -1); // can't start out of range
+	p_end = Array::_fix_slice_index(p_end, size(), 0);
+
+	int x = p_begin;
+	int new_arr_i = 0;
+
+	ERR_FAIL_COND_V(p_step == 0, new_arr);
+	if (Array::_clamp_index(p_begin) == Array::_clamp_index(p_end)) { // don't include element twice
+		new_arr.resize(1);
+		// new_arr[0] = 1;
+		new_arr[0] = ARRAY_GET_DEEP(Array::_clamp_index(p_begin), p_deep);
+		return new_arr;
+	} else {
+		int element_count = ceil((int)MAX(0, (p_end - p_begin) / p_step)) + 1;
+		if (element_count == 1) { // delta going in wrong direction to reach end
+			new_arr.resize(0);
+			return new_arr;
+		}
+		new_arr.resize(element_count);
+	}
+
+	// if going backwards, have to have a different terminating condition
+	if (p_step < 0) {
+		while (x >= p_end) {
+			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
+			x += p_step;
+			new_arr_i += 1;
+		}
+	} else if (p_step > 0) {
+		while (x <= p_end) {
+			new_arr[new_arr_i] = ARRAY_GET_DEEP(Array::_clamp_index(x), p_deep);
+			x += p_step;
+			new_arr_i += 1;
+		}
+	}
+
+	return new_arr;
+}
+
 struct _ArrayVariantSort {
 
 	_FORCE_INLINE_ bool operator()(const Variant &p_l, const Variant &p_r) const {
@@ -259,7 +319,7 @@ Array &Array::sort_custom(Object *p_obj, const StringName &p_function) {
 
 	ERR_FAIL_NULL_V(p_obj, *this);
 
-	SortArray<Variant, _ArrayVariantSortCustom> avs;
+	SortArray<Variant, _ArrayVariantSortCustom, true> avs;
 	avs.compare.obj = p_obj;
 	avs.compare.func = p_function;
 	avs.sort(_p->array.ptrw(), _p->array.size());
@@ -355,11 +415,62 @@ Variant Array::pop_front() {
 	return Variant();
 }
 
+Variant Array::min() const {
+
+	Variant minval;
+	for (int i = 0; i < size(); i++) {
+		if (i == 0) {
+			minval = get(i);
+		} else {
+			bool valid;
+			Variant ret;
+			Variant test = get(i);
+			Variant::evaluate(Variant::OP_LESS, test, minval, ret, valid);
+			if (!valid) {
+				return Variant(); //not a valid comparison
+			}
+			if (bool(ret)) {
+				//is less
+				minval = test;
+			}
+		}
+	}
+	return minval;
+}
+
+Variant Array::max() const {
+
+	Variant maxval;
+	for (int i = 0; i < size(); i++) {
+		if (i == 0) {
+			maxval = get(i);
+		} else {
+			bool valid;
+			Variant ret;
+			Variant test = get(i);
+			Variant::evaluate(Variant::OP_GREATER, test, maxval, ret, valid);
+			if (!valid) {
+				return Variant(); //not a valid comparison
+			}
+			if (bool(ret)) {
+				//is less
+				maxval = test;
+			}
+		}
+	}
+	return maxval;
+}
+
+const void *Array::id() const {
+	return _p->array.ptr();
+}
+
 Array::Array(const Array &p_from) {
 
 	_p = NULL;
 	_ref(p_from);
 }
+
 Array::Array() {
 
 	_p = memnew(ArrayPrivate);

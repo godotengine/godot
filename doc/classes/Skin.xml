@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<class name="Skin" inherits="Resource" category="Core" version="3.2">
+	<brief_description>
+	</brief_description>
+	<description>
+	</description>
+	<tutorials>
+	</tutorials>
+	<methods>
+		<method name="add_bind">
+			<return type="void">
+			</return>
+			<argument index="0" name="bone" type="int">
+			</argument>
+			<argument index="1" name="pose" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="clear_binds">
+			<return type="void">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bind_bone" qualifiers="const">
+			<return type="int">
+			</return>
+			<argument index="0" name="bind_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="get_bind_count" qualifiers="const">
+			<return type="int">
+			</return>
+			<description>
+			</description>
+		</method>
+		<method name="get_bind_pose" qualifiers="const">
+			<return type="Transform">
+			</return>
+			<argument index="0" name="bind_index" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bind_bone">
+			<return type="void">
+			</return>
+			<argument index="0" name="bind_index" type="int">
+			</argument>
+			<argument index="1" name="bone" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bind_count">
+			<return type="void">
+			</return>
+			<argument index="0" name="bind_count" type="int">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="set_bind_pose">
+			<return type="void">
+			</return>
+			<argument index="0" name="bind_index" type="int">
+			</argument>
+			<argument index="1" name="pose" type="Transform">
+			</argument>
+			<description>
+			</description>
+		</method>
+	</methods>
+	<constants>
+	</constants>
+</class>

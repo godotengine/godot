@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,11 +30,11 @@
 
 #include "gdnative.h"
 
-#include "global_constants.h"
-#include "io/file_access_encrypted.h"
-#include "os/file_access.h"
-#include "os/os.h"
-#include "project_settings.h"
+#include "core/global_constants.h"
+#include "core/io/file_access_encrypted.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
+#include "core/project_settings.h"
 
 #include "scene/main/scene_tree.h"
 
@@ -48,7 +48,7 @@ static const bool default_reloadable = true;
 // Defined in gdnative_api_struct.gen.cpp
 extern const godot_gdnative_core_api_struct api_struct;
 
-Map<String, Vector<Ref<GDNative> > > *GDNativeLibrary::loaded_libraries = NULL;
+Map<String, Vector<Ref<GDNative> > > GDNativeLibrary::loaded_libraries;
 
 GDNativeLibrary::GDNativeLibrary() {
 	config_file.instance();
@@ -57,10 +57,6 @@ GDNativeLibrary::GDNativeLibrary() {
 	load_once = default_load_once;
 	singleton = default_singleton;
 	reloadable = default_reloadable;
-
-	if (GDNativeLibrary::loaded_libraries == NULL) {
-		GDNativeLibrary::loaded_libraries = memnew((Map<String, Vector<Ref<GDNative> > >));
-	}
 }
 
 GDNativeLibrary::~GDNativeLibrary() {
@@ -243,12 +239,12 @@ void GDNativeLibrary::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_symbol_prefix", "symbol_prefix"), &GDNativeLibrary::set_symbol_prefix);
 	ClassDB::bind_method(D_METHOD("set_reloadable", "reloadable"), &GDNativeLibrary::set_reloadable);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "config_file", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile"), "set_config_file", "get_config_file");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "config_file", PROPERTY_HINT_RESOURCE_TYPE, "ConfigFile", 0), "set_config_file", "get_config_file");
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "load_once"), "set_load_once", "should_load_once");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "singleton"), "set_singleton", "is_singleton");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "symbol_prefix"), "set_symbol_prefix", "get_symbol_prefix");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::BOOL, "reloadable"), "set_reloadable", "is_reloadable");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "load_once"), "set_load_once", "should_load_once");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "singleton"), "set_singleton", "is_singleton");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "symbol_prefix"), "set_symbol_prefix", "get_symbol_prefix");
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "reloadable"), "set_reloadable", "is_reloadable");
 }
 
 GDNative::GDNative() {
@@ -268,12 +264,11 @@ void GDNative::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("call_native", "calling_type", "procedure_name", "arguments"), &GDNative::call_native);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
 }
 
 void GDNative::set_library(Ref<GDNativeLibrary> p_library) {
-	ERR_EXPLAIN("Tried to change library of GDNative when it is already set");
-	ERR_FAIL_COND(library.is_valid());
+	ERR_FAIL_COND_MSG(library.is_valid(), "Tried to change library of GDNative when it is already set.");
 	library = p_library;
 }
 
@@ -306,15 +301,22 @@ bool GDNative::initialize() {
 #elif defined(UWP_ENABLED)
 	// On UWP we use a relative path from the app
 	String path = lib_path.replace("res://", "");
+#elif defined(OSX_ENABLED)
+	// On OSX the exported libraries are located under the Frameworks directory.
+	// So we need to replace the library path.
+	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
+	if (!FileAccess::exists(path)) {
+		path = OS::get_singleton()->get_executable_path().get_base_dir().plus_file("../Frameworks").plus_file(lib_path.get_file());
+	}
 #else
 	String path = ProjectSettings::get_singleton()->globalize_path(lib_path);
 #endif
 
 	if (library->should_load_once()) {
-		if (GDNativeLibrary::loaded_libraries->has(lib_path)) {
+		if (GDNativeLibrary::loaded_libraries.has(lib_path)) {
 			// already loaded. Don't load again.
 			// copy some of the stuff instead
-			this->native_handle = (*GDNativeLibrary::loaded_libraries)[lib_path][0]->native_handle;
+			this->native_handle = GDNativeLibrary::loaded_libraries[lib_path][0]->native_handle;
 			initialized = true;
 			return true;
 		}
@@ -337,7 +339,7 @@ bool GDNative::initialize() {
 	if (err || !library_init) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
-		ERR_PRINT("Failed to obtain godot_gdnative_init symbol");
+		ERR_PRINTS("Failed to obtain " + library->get_symbol_prefix() + "gdnative_init symbol");
 		return false;
 	}
 
@@ -370,11 +372,11 @@ bool GDNative::initialize() {
 
 	initialized = true;
 
-	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries->has(lib_path)) {
+	if (library->should_load_once() && !GDNativeLibrary::loaded_libraries.has(lib_path)) {
 		Vector<Ref<GDNative> > gdnatives;
 		gdnatives.resize(1);
 		gdnatives.write[0] = Ref<GDNative>(this);
-		GDNativeLibrary::loaded_libraries->insert(lib_path, gdnatives);
+		GDNativeLibrary::loaded_libraries.insert(lib_path, gdnatives);
 	}
 
 	return true;
@@ -388,17 +390,17 @@ bool GDNative::terminate() {
 	}
 
 	if (library->should_load_once()) {
-		Vector<Ref<GDNative> > *gdnatives = &(*GDNativeLibrary::loaded_libraries)[library->get_current_library_path()];
+		Vector<Ref<GDNative> > *gdnatives = &GDNativeLibrary::loaded_libraries[library->get_current_library_path()];
 		if (gdnatives->size() > 1) {
-			// there are other GDNative's still using this library, so we actually don't terminte
+			// there are other GDNative's still using this library, so we actually don't terminate
 			gdnatives->erase(Ref<GDNative>(this));
 			initialized = false;
 			return true;
 		} else if (gdnatives->size() == 1) {
 			// we're the last one, terminate!
 			gdnatives->clear();
-			// wew this looks scary, but all it does is remove the entry completely
-			GDNativeLibrary::loaded_libraries->erase(GDNativeLibrary::loaded_libraries->find(library->get_current_library_path()));
+			// whew this looks scary, but all it does is remove the entry completely
+			GDNativeLibrary::loaded_libraries.erase(GDNativeLibrary::loaded_libraries.find(library->get_current_library_path()));
 		}
 	}
 
@@ -407,6 +409,7 @@ bool GDNative::terminate() {
 	if (error || !library_terminate) {
 		OS::get_singleton()->close_dynamic_library(native_handle);
 		native_handle = NULL;
+		initialized = false;
 		return true;
 	}
 

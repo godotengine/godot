@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,11 @@
 
 #include "input_event.h"
 
-#include "input_map.h"
-#include "os/keyboard.h"
+#include "core/input_map.h"
+#include "core/os/keyboard.h"
+
+const int InputEvent::DEVICE_ID_TOUCH_MOUSE = -1;
+const int InputEvent::DEVICE_ID_INTERNAL = -2;
 
 void InputEvent::set_device(int p_device) {
 	device = p_device;
@@ -121,6 +124,8 @@ void InputEvent::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("shortcut_match", "event"), &InputEvent::shortcut_match);
 
 	ClassDB::bind_method(D_METHOD("is_action_type"), &InputEvent::is_action_type);
+
+	ClassDB::bind_method(D_METHOD("accumulate", "with_event"), &InputEvent::accumulate);
 
 	ClassDB::bind_method(D_METHOD("xformed_by", "xform", "local_ofs"), &InputEvent::xformed_by, DEFVAL(Vector2()));
 
@@ -309,7 +314,7 @@ bool InputEventKey::action_match(const Ref<InputEvent> &p_event, bool *p_pressed
 		if (p_pressed != NULL)
 			*p_pressed = key->is_pressed();
 		if (p_strength != NULL)
-			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
 	}
 	return match;
 }
@@ -445,7 +450,7 @@ bool InputEventMouseButton::is_doubleclick() const {
 
 Ref<InputEvent> InputEventMouseButton::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 
-	Vector2 g = p_xform.xform(get_global_position());
+	Vector2 g = get_global_position();
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 
 	Ref<InputEventMouseButton> mb;
@@ -478,7 +483,7 @@ bool InputEventMouseButton::action_match(const Ref<InputEvent> &p_event, bool *p
 		if (p_pressed != NULL)
 			*p_pressed = mb->is_pressed();
 		if (p_strength != NULL)
-			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
 	}
 
 	return match;
@@ -572,7 +577,7 @@ Vector2 InputEventMouseMotion::get_speed() const {
 
 Ref<InputEvent> InputEventMouseMotion::xformed_by(const Transform2D &p_xform, const Vector2 &p_local_ofs) const {
 
-	Vector2 g = p_xform.xform(get_global_position());
+	Vector2 g = get_global_position();
 	Vector2 l = p_xform.xform(get_position() + p_local_ofs);
 	Vector2 r = p_xform.basis_xform(get_relative());
 	Vector2 s = p_xform.basis_xform(get_speed());
@@ -618,6 +623,44 @@ String InputEventMouseMotion::as_text() const {
 			break;
 	}
 	return "InputEventMouseMotion : button_mask=" + button_mask_string + ", position=(" + String(get_position()) + "), relative=(" + String(get_relative()) + "), speed=(" + String(get_speed()) + ")";
+}
+
+bool InputEventMouseMotion::accumulate(const Ref<InputEvent> &p_event) {
+
+	Ref<InputEventMouseMotion> motion = p_event;
+	if (motion.is_null())
+		return false;
+
+	if (is_pressed() != motion->is_pressed()) {
+		return false;
+	}
+
+	if (get_button_mask() != motion->get_button_mask()) {
+		return false;
+	}
+
+	if (get_shift() != motion->get_shift()) {
+		return false;
+	}
+
+	if (get_control() != motion->get_control()) {
+		return false;
+	}
+
+	if (get_alt() != motion->get_alt()) {
+		return false;
+	}
+
+	if (get_metakey() != motion->get_metakey()) {
+		return false;
+	}
+
+	set_position(motion->get_position());
+	set_global_position(motion->get_global_position());
+	set_speed(motion->get_speed());
+	relative += motion->get_relative();
+
+	return true;
 }
 
 void InputEventMouseMotion::_bind_methods() {
@@ -674,8 +717,17 @@ bool InputEventJoypadMotion::action_match(const Ref<InputEvent> &p_event, bool *
 		bool pressed = same_direction ? Math::abs(jm->get_axis_value()) >= p_deadzone : false;
 		if (p_pressed != NULL)
 			*p_pressed = pressed;
-		if (p_strength != NULL)
-			*p_strength = pressed ? CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f) : 0.0f;
+		if (p_strength != NULL) {
+			if (pressed) {
+				if (p_deadzone == 1.0f) {
+					*p_strength = 1.0f;
+				} else {
+					*p_strength = CLAMP(Math::inverse_lerp(p_deadzone, 1.0f, Math::abs(jm->get_axis_value())), 0.0f, 1.0f);
+				}
+			} else {
+				*p_strength = 0.0f;
+			}
+		}
 	}
 	return match;
 }
@@ -743,10 +795,19 @@ bool InputEventJoypadButton::action_match(const Ref<InputEvent> &p_event, bool *
 		if (p_pressed != NULL)
 			*p_pressed = jb->is_pressed();
 		if (p_strength != NULL)
-			*p_strength = (*p_pressed) ? 1.0f : 0.0f;
+			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
 	}
 
 	return match;
+}
+
+bool InputEventJoypadButton::shortcut_match(const Ref<InputEvent> &p_event) const {
+
+	Ref<InputEventJoypadButton> button = p_event;
+	if (button.is_null())
+		return false;
+
+	return button_index == button->button_index;
 }
 
 String InputEventJoypadButton::as_text() const {
@@ -949,17 +1010,40 @@ bool InputEventAction::is_pressed() const {
 	return pressed;
 }
 
+void InputEventAction::set_strength(float p_strength) {
+	strength = CLAMP(p_strength, 0.0f, 1.0f);
+}
+
+float InputEventAction::get_strength() const {
+	return strength;
+}
+
 bool InputEventAction::shortcut_match(const Ref<InputEvent> &p_event) const {
-	Ref<InputEventKey> event = p_event;
-	if (event.is_null())
+	if (p_event.is_null())
 		return false;
 
-	return event->is_action(action);
+	return p_event->is_action(action);
 }
 
 bool InputEventAction::is_action(const StringName &p_action) const {
 
 	return action == p_action;
+}
+
+bool InputEventAction::action_match(const Ref<InputEvent> &p_event, bool *p_pressed, float *p_strength, float p_deadzone) const {
+
+	Ref<InputEventAction> act = p_event;
+	if (act.is_null())
+		return false;
+
+	bool match = action == act->action;
+	if (match) {
+		if (p_pressed != NULL)
+			*p_pressed = act->pressed;
+		if (p_strength != NULL)
+			*p_strength = (p_pressed != NULL && *p_pressed) ? 1.0f : 0.0f;
+	}
+	return match;
 }
 
 String InputEventAction::as_text() const {
@@ -975,14 +1059,19 @@ void InputEventAction::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_pressed", "pressed"), &InputEventAction::set_pressed);
 	//ClassDB::bind_method(D_METHOD("is_pressed"), &InputEventAction::is_pressed);
 
+	ClassDB::bind_method(D_METHOD("set_strength", "strength"), &InputEventAction::set_strength);
+	ClassDB::bind_method(D_METHOD("get_strength"), &InputEventAction::get_strength);
+
 	//	ClassDB::bind_method(D_METHOD("is_action", "name"), &InputEventAction::is_action);
 
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "action"), "set_action", "get_action");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "pressed"), "set_pressed", "is_pressed");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "strength", PROPERTY_HINT_RANGE, "0,1,0.01"), "set_strength", "get_strength");
 }
 
 InputEventAction::InputEventAction() {
 	pressed = false;
+	strength = 1.0f;
 }
 /////////////////////////////
 

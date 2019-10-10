@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,8 +32,8 @@
 #define BULLET_PHYSICS_SERVER_H
 
 #include "area_bullet.h"
+#include "core/rid.h"
 #include "joint_bullet.h"
-#include "rid.h"
 #include "rigid_body_bullet.h"
 #include "servers/physics_server.h"
 #include "shape_bullet.h"
@@ -45,7 +45,7 @@
 */
 
 class BulletPhysicsServer : public PhysicsServer {
-	GDCLASS(BulletPhysicsServer, PhysicsServer)
+	GDCLASS(BulletPhysicsServer, PhysicsServer);
 
 	friend class BulletPhysicsDirectSpaceState;
 
@@ -59,13 +59,6 @@ class BulletPhysicsServer : public PhysicsServer {
 	mutable RID_Owner<RigidBodyBullet> rigid_body_owner;
 	mutable RID_Owner<SoftBodyBullet> soft_body_owner;
 	mutable RID_Owner<JointBullet> joint_owner;
-
-private:
-	/// This is used when a collision shape is not active, so the bullet compound shapes index are always sync with godot index
-	static btEmptyShape *emptyShape;
-
-public:
-	static btEmptyShape *get_empty_shape();
 
 protected:
 	static void _bind_methods();
@@ -98,6 +91,9 @@ public:
 	virtual void shape_set_data(RID p_shape, const Variant &p_data);
 	virtual ShapeType shape_get_type(RID p_shape) const;
 	virtual Variant shape_get_data(RID p_shape) const;
+
+	virtual void shape_set_margin(RID p_shape, real_t p_margin);
+	virtual real_t shape_get_margin(RID p_shape) const;
 
 	/// Not supported
 	virtual void shape_set_custom_solver_bias(RID p_shape, real_t p_bias);
@@ -137,7 +133,7 @@ public:
 	virtual void area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode);
 	virtual AreaSpaceOverrideMode area_get_space_override_mode(RID p_area) const;
 
-	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform());
+	virtual void area_add_shape(RID p_area, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	virtual void area_set_shape(RID p_area, int p_shape_idx, RID p_shape);
 	virtual void area_set_shape_transform(RID p_area, int p_shape_idx, const Transform &p_transform);
 	virtual int area_get_shape_count(RID p_area) const;
@@ -146,7 +142,7 @@ public:
 	virtual void area_remove_shape(RID p_area, int p_shape_idx);
 	virtual void area_clear_shapes(RID p_area);
 	virtual void area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled);
-	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_ID);
+	virtual void area_attach_object_instance_id(RID p_area, ObjectID p_id);
 	virtual ObjectID area_get_object_instance_id(RID p_area) const;
 
 	/// If you pass as p_area the SpaceBullet you can set some parameters as specified below
@@ -178,7 +174,7 @@ public:
 	virtual void body_set_mode(RID p_body, BodyMode p_mode);
 	virtual BodyMode body_get_mode(RID p_body) const;
 
-	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform());
+	virtual void body_add_shape(RID p_body, RID p_shape, const Transform &p_transform = Transform(), bool p_disabled = false);
 	// Not supported, Please remove and add new shape
 	virtual void body_set_shape(RID p_body, int p_shape_idx, RID p_shape);
 	virtual void body_set_shape_transform(RID p_body, int p_shape_idx, const Transform &p_transform);
@@ -193,7 +189,7 @@ public:
 	virtual void body_clear_shapes(RID p_body);
 
 	// Used for Rigid and Soft Bodies
-	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_ID);
+	virtual void body_attach_object_instance_id(RID p_body, uint32_t p_id);
 	virtual uint32_t body_get_object_instance_id(RID p_body) const;
 
 	virtual void body_set_enable_continuous_collision_detection(RID p_body, bool p_enable);
@@ -258,7 +254,8 @@ public:
 	// this function only works on physics process, errors and returns null otherwise
 	virtual PhysicsDirectBodyState *body_get_direct_state(RID p_body);
 
-	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL);
+	virtual bool body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result = NULL, bool p_exclude_raycast_shapes = true);
+	virtual int body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin = 0.001);
 
 	/* SOFT BODY API */
 
@@ -378,6 +375,9 @@ public:
 	virtual void generic_6dof_joint_set_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag, bool p_enable);
 	virtual bool generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis p_axis, G6DOFJointAxisFlag p_flag);
 
+	virtual void generic_6dof_joint_set_precision(RID p_joint, int precision);
+	virtual int generic_6dof_joint_get_precision(RID p_joint);
+
 	/* MISC */
 
 	virtual void free(RID p_rid);
@@ -399,6 +399,8 @@ public:
 	virtual void sync();
 	virtual void flush_queries();
 	virtual void finish();
+
+	virtual bool is_flushing_queries() const { return false; }
 
 	virtual int get_process_info(ProcessInfo p_info);
 

@@ -1,22 +1,22 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttsbit.c                                                               */
-/*                                                                         */
-/*    TrueType and OpenType embedded bitmap support (body).                */
-/*                                                                         */
-/*  Copyright 2005-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  Copyright 2013 by Google, Inc.                                         */
-/*  Google Author(s): Behdad Esfahbod.                                     */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttsbit.c
+ *
+ *   TrueType and OpenType embedded bitmap support (body).
+ *
+ * Copyright (C) 2005-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * Copyright 2013 by Google, Inc.
+ * Google Author(s): Behdad Esfahbod.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #include <ft2build.h>
@@ -36,14 +36,14 @@
 #include "pngshim.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_ttsbit
+#define FT_COMPONENT  ttsbit
 
 
   FT_LOCAL_DEF( FT_Error )
@@ -129,8 +129,8 @@
         }
 
         /*
-         *  Count the number of strikes available in the table.  We are a bit
-         *  paranoid there and don't trust the data.
+         * Count the number of strikes available in the table.  We are a bit
+         * paranoid there and don't trust the data.
          */
         count = (FT_UInt)num_strikes;
         if ( 8 + 48UL * count > table_size )
@@ -182,8 +182,8 @@
                       " expect bad rendering results\n" ));
 
         /*
-         *  Count the number of strikes available in the table.  We are a bit
-         *  paranoid there and don't trust the data.
+         * Count the number of strikes available in the table.  We are a bit
+         * paranoid there and don't trust the data.
          */
         count = (FT_UInt)num_strikes;
         if ( 8 + 4UL * count > table_size )
@@ -1014,8 +1014,8 @@
     for ( nn = 0; nn < num_components; nn++ )
     {
       FT_UInt  gindex = FT_NEXT_USHORT( p );
-      FT_Byte  dx     = FT_NEXT_BYTE( p );
-      FT_Byte  dy     = FT_NEXT_BYTE( p );
+      FT_Char  dx     = FT_NEXT_CHAR( p );
+      FT_Char  dy     = FT_NEXT_CHAR( p );
 
 
       /* NB: a recursive call */

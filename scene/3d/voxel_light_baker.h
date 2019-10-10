@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -92,6 +92,16 @@ private:
 		float accum[6][3]; //rgb anisotropic
 		float direct_accum[6][3]; //for direct bake
 		int next_leaf;
+		Light() {
+			x = y = z = 0;
+			for (int i = 0; i < 6; i++) {
+				for (int j = 0; j < 3; j++) {
+					accum[i][j] = 0;
+					direct_accum[i][j] = 0;
+				}
+			}
+			next_leaf = 0;
+		}
 	};
 
 	int first_leaf;
@@ -167,7 +177,7 @@ public:
 		PoolVector<float> light;
 	};
 
-	Error make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float) = NULL, void *p_bake_time_ud = NULL);
+	Error make_lightmap(const Transform &p_xform, Ref<Mesh> &p_mesh, float default_texels_per_unit, LightMapData &r_lightmap, bool (*p_bake_time_func)(void *, float, float) = NULL, void *p_bake_time_ud = NULL);
 
 	PoolVector<int> create_gi_probe_data();
 	Ref<MultiMesh> create_debug_multimesh(DebugMode p_mode = DEBUG_ALBEDO);

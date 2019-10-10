@@ -1,5 +1,4 @@
 import os
-import sys
 
 
 def is_active():
@@ -25,7 +24,6 @@ def get_opts():
 def get_flags():
     return [
         ('tools', False),
-        ('module_theora_enabled', False),
         # Disabling the mbedtls module reduces file size.
         # The module has little use due to the limited networking functionality
         # in this platform. For the available networking methods, the browser
@@ -71,9 +69,14 @@ def configure(env):
             exec(f.read(), em_config)
         except StandardError as e:
             raise RuntimeError("Emscripten configuration file '%s' is invalid:\n%s" % (em_config_file, e))
-    if 'EMSCRIPTEN_ROOT' not in em_config:
-        raise RuntimeError("'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
-    env.PrependENVPath('PATH', em_config['EMSCRIPTEN_ROOT'])
+    if 'BINARYEN_ROOT' in em_config and os.path.isdir(os.path.join(em_config.get('BINARYEN_ROOT'), 'emscripten')):
+        # New style, emscripten path as a subfolder of BINARYEN_ROOT
+        env.PrependENVPath('PATH', os.path.join(em_config.get('BINARYEN_ROOT'), 'emscripten'))
+    elif 'EMSCRIPTEN_ROOT' in em_config:
+        # Old style (but can be there as a result from previous activation, so do last)
+        env.PrependENVPath('PATH', em_config.get('EMSCRIPTEN_ROOT'))
+    else:
+        raise RuntimeError("'BINARYEN_ROOT' or 'EMSCRIPTEN_ROOT' missing in Emscripten configuration file '%s'" % em_config_file)
 
     env['CC'] = 'emcc'
     env['CXX'] = 'em++'
@@ -105,17 +108,19 @@ def configure(env):
 
     ## Compile flags
 
-    env.Append(CPPPATH=['#platform/javascript'])
+    env.Prepend(CPPPATH=['#platform/javascript'])
     env.Append(CPPDEFINES=['JAVASCRIPT_ENABLED', 'UNIX_ENABLED'])
 
     # No multi-threading (SharedArrayBuffer) available yet,
     # once feasible also consider memory buffer size issues.
     env.Append(CPPDEFINES=['NO_THREADS'])
 
-    # These flags help keep the file size down.
-    env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
-    # Don't use dynamic_cast, necessary with no-rtti.
-    env.Append(CPPDEFINES=['NO_SAFE_CAST'])
+    # Disable exceptions and rtti on non-tools (template) builds
+    if not env['tools']:
+        # These flags help keep the file size down.
+        env.Append(CCFLAGS=['-fno-exceptions', '-fno-rtti'])
+        # Don't use dynamic_cast, necessary with no-rtti.
+        env.Append(CPPDEFINES=['NO_SAFE_CAST'])
 
     if env['javascript_eval']:
         env.Append(CPPDEFINES=['JAVASCRIPT_EVAL_ENABLED'])
@@ -137,6 +142,5 @@ def configure(env):
     # TODO: Reevaluate usage of this setting now that engine.js manages engine runtime.
     env.Append(LINKFLAGS=['-s', 'NO_EXIT_RUNTIME=1'])
 
-    # TODO: Move that to opus module's config.
-    if 'module_opus_enabled' in env and env['module_opus_enabled']:
-        env.opus_fixed_point = 'yes'
+    #adding flag due to issue with emscripten 1.38.41 callMain method https://github.com/emscripten-core/emscripten/blob/incoming/ChangeLog.md#v13841-08072019
+    env.Append(LINKFLAGS=['-s', 'EXTRA_EXPORTED_RUNTIME_METHODS=["callMain"]'])

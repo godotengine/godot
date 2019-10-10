@@ -1,18 +1,15 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Basis" category="Built-In Types" version="3.1">
+<class name="Basis" category="Built-In Types" version="3.2">
 	<brief_description>
-		3x3 matrix datatype.
+		3×3 matrix datatype.
 	</brief_description>
 	<description>
-		3x3 matrix used for 3D rotation and scale. Contains 3 vector fields x,y and z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized (due to scaling). Almost always used as orthogonal basis for a [Transform].
+		3×3 matrix used for 3D rotation and scale. Contains 3 vector fields X, Y and Z as its columns, which can be interpreted as the local basis vectors of a transformation. Can also be accessed as array of 3D vectors. These vectors are orthogonal to each other, but are not necessarily normalized (due to scaling). Almost always used as an orthogonal basis for a [Transform].
 		For such use, it is composed of a scaling and a rotation matrix, in that order (M = R.S).
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
-		<link>http://docs.godotengine.org/en/latest/tutorials/math/rotations.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/3d/using_transforms.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Basis">
 			<return type="Basis">
@@ -29,7 +26,7 @@
 			<argument index="0" name="from" type="Vector3">
 			</argument>
 			<description>
-				Create a rotation matrix (in the YXZ convention: first Z, then X, and Y last) from the specified Euler angles, given in the vector format as (X-angle, Y-angle, Z-angle).
+				Create a rotation matrix (in the YXZ convention: first Z, then X, and Y last) from the specified Euler angles, given in the vector format as (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="Basis">
@@ -60,14 +57,14 @@
 			<return type="float">
 			</return>
 			<description>
-				Return the determinant of the matrix.
+				Returns the determinant of the matrix.
 			</description>
 		</method>
 		<method name="get_euler">
 			<return type="Vector3">
 			</return>
 			<description>
-				Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles (in the YXZ convention: first Z, then X, and Y last). Returned vector contains the rotation angles in the format (X-angle, Y-angle, Z-angle).
+				Assuming that the matrix is a proper rotation matrix (orthonormal matrix with determinant +1), return Euler angles (in the YXZ convention: first Z, then X, and Y last). Returned vector contains the rotation angles in the format (X angle, Y angle, Z angle).
 			</description>
 		</method>
 		<method name="get_orthogonal_index">
@@ -75,6 +72,12 @@
 			</return>
 			<description>
 				This function considers a discretization of rotations into 24 points on unit sphere, lying along the vectors (x,y,z) with each component being either -1,0 or 1, and returns the index of the point best representing the orientation of the object. It is mainly used by the grid map editor. For further details, refer to Godot source code.
+			</description>
+		</method>
+		<method name="get_rotation_quat">
+			<return type="Quat">
+			</return>
+			<description>
 			</description>
 		</method>
 		<method name="get_scale">
@@ -88,14 +91,24 @@
 			<return type="Basis">
 			</return>
 			<description>
-				Return the inverse of the matrix.
+				Returns the inverse of the matrix.
+			</description>
+		</method>
+		<method name="is_equal_approx">
+			<return type="bool">
+			</return>
+			<argument index="0" name="b" type="Basis">
+			</argument>
+			<argument index="1" name="epsilon" type="float" default="0.00001">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="orthonormalized">
 			<return type="Basis">
 			</return>
 			<description>
-				Return the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
+				Returns the orthonormalized version of the matrix (useful to call from time to time to avoid rounding error for orthogonal matrices). This performs a Gram-Schmidt orthonormalization on the basis of the matrix.
 			</description>
 		</method>
 		<method name="rotated">
@@ -135,7 +148,7 @@
 			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
-				Transposed dot product with the x axis of the matrix.
+				Transposed dot product with the X axis of the matrix.
 			</description>
 		</method>
 		<method name="tdoty">
@@ -144,7 +157,7 @@
 			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
-				Transposed dot product with the y axis of the matrix.
+				Transposed dot product with the Y axis of the matrix.
 			</description>
 		</method>
 		<method name="tdotz">
@@ -153,14 +166,14 @@
 			<argument index="0" name="with" type="Vector3">
 			</argument>
 			<description>
-				Transposed dot product with the z axis of the matrix.
+				Transposed dot product with the Z axis of the matrix.
 			</description>
 		</method>
 		<method name="transposed">
 			<return type="Basis">
 			</return>
 			<description>
-				Return the transposed version of the matrix.
+				Returns the transposed version of the matrix.
 			</description>
 		</method>
 		<method name="xform">
@@ -169,7 +182,7 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed (multiplied) by the matrix.
+				Returns a vector transformed (multiplied) by the matrix.
 			</description>
 		</method>
 		<method name="xform_inv">
@@ -178,21 +191,30 @@
 			<argument index="0" name="v" type="Vector3">
 			</argument>
 			<description>
-				Return a vector transformed (multiplied) by the transposed matrix. Note that this results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
+				Returns a vector transformed (multiplied) by the transposed matrix.
+				[b]Note:[/b] This results in a multiplication by the inverse of the matrix only if it represents a rotation-reflection.
 			</description>
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="Vector3" setter="" getter="">
-			The basis matrix's x vector.
+		<member name="x" type="Vector3" setter="" getter="" default="Vector3( 1, 0, 0 )">
+			The basis matrix's X vector.
 		</member>
-		<member name="y" type="Vector3" setter="" getter="">
-			The basis matrix's y vector.
+		<member name="y" type="Vector3" setter="" getter="" default="Vector3( 0, 1, 0 )">
+			The basis matrix's Y vector.
 		</member>
-		<member name="z" type="Vector3" setter="" getter="">
-			The basis matrix's z vector.
+		<member name="z" type="Vector3" setter="" getter="" default="Vector3( 0, 0, 1 )">
+			The basis matrix's Z vector.
 		</member>
 	</members>
 	<constants>
+		<constant name="IDENTITY" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+		</constant>
+		<constant name="FLIP_X" value="Basis( -1, 0, 0, 0, 1, 0, 0, 0, 1 )">
+		</constant>
+		<constant name="FLIP_Y" value="Basis( 1, 0, 0, 0, -1, 0, 0, 0, 1 )">
+		</constant>
+		<constant name="FLIP_Z" value="Basis( 1, 0, 0, 0, 1, 0, 0, 0, -1 )">
+		</constant>
 	</constants>
 </class>

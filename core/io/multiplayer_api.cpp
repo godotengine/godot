@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,33 +28,41 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#include "core/io/multiplayer_api.h"
+#include "multiplayer_api.h"
+
 #include "core/io/marshalls.h"
 #include "scene/main/node.h"
+
+#ifdef DEBUG_ENABLED
+#include "core/os/os.h"
+#endif
 
 _FORCE_INLINE_ bool _should_call_local(MultiplayerAPI::RPCMode mode, bool is_master, bool &r_skip_rpc) {
 
 	switch (mode) {
 
 		case MultiplayerAPI::RPC_MODE_DISABLED: {
-			//do nothing
+			// Do nothing.
 		} break;
 		case MultiplayerAPI::RPC_MODE_REMOTE: {
-			//do nothing also, no need to call local
+			// Do nothing also. Remote cannot produce a local call.
 		} break;
+		case MultiplayerAPI::RPC_MODE_MASTERSYNC: {
+			if (is_master)
+				r_skip_rpc = true; // I am the master, so skip remote call.
+			FALLTHROUGH;
+		}
 		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
-		case MultiplayerAPI::RPC_MODE_MASTERSYNC:
-		case MultiplayerAPI::RPC_MODE_SLAVESYNC:
-		case MultiplayerAPI::RPC_MODE_SYNC: {
-			//call it, sync always results in call
+		case MultiplayerAPI::RPC_MODE_PUPPETSYNC: {
+			// Call it, sync always results in a local call.
 			return true;
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTER: {
 			if (is_master)
-				r_skip_rpc = true; //no other master so..
+				r_skip_rpc = true; // I am the master, so skip remote call.
 			return is_master;
 		} break;
-		case MultiplayerAPI::RPC_MODE_SLAVE: {
+		case MultiplayerAPI::RPC_MODE_PUPPET: {
 			return !is_master;
 		} break;
 	}
@@ -67,19 +75,16 @@ _FORCE_INLINE_ bool _can_call_mode(Node *p_node, MultiplayerAPI::RPCMode mode, i
 		case MultiplayerAPI::RPC_MODE_DISABLED: {
 			return false;
 		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTE: {
-			return true;
-		} break;
-		case MultiplayerAPI::RPC_MODE_REMOTESYNC:
-		case MultiplayerAPI::RPC_MODE_SYNC: {
+		case MultiplayerAPI::RPC_MODE_REMOTE:
+		case MultiplayerAPI::RPC_MODE_REMOTESYNC: {
 			return true;
 		} break;
 		case MultiplayerAPI::RPC_MODE_MASTERSYNC:
 		case MultiplayerAPI::RPC_MODE_MASTER: {
 			return p_node->is_network_master();
 		} break;
-		case MultiplayerAPI::RPC_MODE_SLAVESYNC:
-		case MultiplayerAPI::RPC_MODE_SLAVE: {
+		case MultiplayerAPI::RPC_MODE_PUPPETSYNC:
+		case MultiplayerAPI::RPC_MODE_PUPPET: {
 			return !p_node->is_network_master() && p_remote_id == p_node->get_network_master();
 		} break;
 	}
@@ -94,7 +99,7 @@ void MultiplayerAPI::poll() {
 
 	network_peer->poll();
 
-	if (!network_peer.is_valid()) //it's possible that polling might have resulted in a disconnection, so check here
+	if (!network_peer.is_valid()) // It's possible that polling might have resulted in a disconnection, so check here.
 		return;
 
 	while (network_peer->get_available_packet_count()) {
@@ -113,7 +118,7 @@ void MultiplayerAPI::poll() {
 		rpc_sender_id = 0;
 
 		if (!network_peer.is_valid()) {
-			break; //it's also possible that a packet or RPC caused a disconnection, so also check here
+			break; // It's also possible that a packet or RPC caused a disconnection, so also check here.
 		}
 	}
 }
@@ -122,6 +127,7 @@ void MultiplayerAPI::clear() {
 	connected_peers.clear();
 	path_get_cache.clear();
 	path_send_cache.clear();
+	packet_cache.clear();
 	last_send_cache_id = 1;
 }
 
@@ -130,6 +136,8 @@ void MultiplayerAPI::set_root_node(Node *p_node) {
 }
 
 void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_peer) {
+
+	if (p_peer == network_peer) return; // Nothing to do
 
 	if (network_peer.is_valid()) {
 		network_peer->disconnect("peer_connected", this, "_add_peer");
@@ -142,8 +150,7 @@ void MultiplayerAPI::set_network_peer(const Ref<NetworkedMultiplayerPeer> &p_pee
 
 	network_peer = p_peer;
 
-	ERR_EXPLAIN("Supplied NetworkedNetworkPeer must be connecting or connected.");
-	ERR_FAIL_COND(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED);
+	ERR_FAIL_COND_MSG(p_peer.is_valid() && p_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED, "Supplied NetworkedNetworkPeer must be connecting or connected.");
 
 	if (network_peer.is_valid()) {
 		network_peer->connect("peer_connected", this, "_add_peer");
@@ -160,8 +167,16 @@ Ref<NetworkedMultiplayerPeer> MultiplayerAPI::get_network_peer() const {
 
 void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND(root_node == NULL);
-	ERR_FAIL_COND(p_packet_len < 1);
+	ERR_FAIL_COND_MSG(root_node == NULL, "Multiplayer root node was not initialized. If you are using custom multiplayer, remember to set the root node via MultiplayerAPI.set_root_node before using it.");
+	ERR_FAIL_COND_MSG(p_packet_len < 1, "Invalid packet received. Size too small.");
+
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		bandwidth_incoming_data.write[bandwidth_incoming_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
+		bandwidth_incoming_data.write[bandwidth_incoming_pointer].packet_size = p_packet_len;
+		bandwidth_incoming_pointer = (bandwidth_incoming_pointer + 1) % bandwidth_incoming_data.size();
+	}
+#endif
 
 	uint8_t packet_type = p_packet[0];
 
@@ -180,13 +195,13 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 		case NETWORK_COMMAND_REMOTE_CALL:
 		case NETWORK_COMMAND_REMOTE_SET: {
 
-			ERR_FAIL_COND(p_packet_len < 6);
+			ERR_FAIL_COND_MSG(p_packet_len < 6, "Invalid packet received. Size too small.");
 
 			Node *node = _process_get_node(p_from, p_packet, p_packet_len);
 
-			ERR_FAIL_COND(node == NULL);
+			ERR_FAIL_COND_MSG(node == NULL, "Invalid packet received. Requested node was not found.");
 
-			//detect cstring end
+			// Detect cstring end.
 			int len_end = 5;
 			for (; len_end < p_packet_len; len_end++) {
 				if (p_packet[len_end] == 0) {
@@ -194,7 +209,7 @@ void MultiplayerAPI::_process_packet(int p_from, const uint8_t *p_packet, int p_
 				}
 			}
 
-			ERR_FAIL_COND(len_end >= p_packet_len);
+			ERR_FAIL_COND_MSG(len_end >= p_packet_len, "Invalid packet received. Size too small.");
 
 			StringName name = String::utf8((const char *)&p_packet[5]);
 
@@ -222,10 +237,11 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 	Node *node = NULL;
 
 	if (target & 0x80000000) {
-		//use full path (not cached yet)
+		// Use full path (not cached yet).
 
 		int ofs = target & 0x7FFFFFFF;
-		ERR_FAIL_COND_V(ofs >= p_packet_len, NULL);
+
+		ERR_FAIL_COND_V_MSG(ofs >= p_packet_len, NULL, "Invalid packet received. Size smaller than declared.");
 
 		String paths;
 		paths.parse_utf8((const char *)&p_packet[ofs], p_packet_len - ofs);
@@ -235,32 +251,32 @@ Node *MultiplayerAPI::_process_get_node(int p_from, const uint8_t *p_packet, int
 		node = root_node->get_node(np);
 
 		if (!node)
-			ERR_PRINTS("Failed to get path from RPC: " + String(np));
+			ERR_PRINTS("Failed to get path from RPC: " + String(np) + ".");
 	} else {
-		//use cached path
+		// Use cached path.
 		int id = target;
 
 		Map<int, PathGetCache>::Element *E = path_get_cache.find(p_from);
-		ERR_FAIL_COND_V(!E, NULL);
+		ERR_FAIL_COND_V_MSG(!E, NULL, "Invalid packet received. Requests invalid peer cache.");
 
 		Map<int, PathGetCache::NodeInfo>::Element *F = E->get().nodes.find(id);
-		ERR_FAIL_COND_V(!F, NULL);
+		ERR_FAIL_COND_V_MSG(!F, NULL, "Invalid packet received. Unabled to find requested cached node.");
 
 		PathGetCache::NodeInfo *ni = &F->get();
-		//do proper caching later
+		// Do proper caching later.
 
 		node = root_node->get_node(ni->path);
 		if (!node)
-			ERR_PRINTS("Failed to get cached path from RPC: " + String(ni->path));
+			ERR_PRINTS("Failed to get cached path from RPC: " + String(ni->path) + ".");
 	}
 	return node;
 }
 
 void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
 
-	ERR_FAIL_COND(p_offset >= p_packet_len);
+	ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
 
-	// Check that remote can call the RPC on this node
+	// Check that remote can call the RPC on this node.
 	RPCMode rpc_mode = RPC_MODE_DISABLED;
 	const Map<StringName, RPCMode>::Element *E = p_node->get_node_rpc_mode(p_name);
 	if (E) {
@@ -268,7 +284,9 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 	} else if (p_node->get_script_instance()) {
 		rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_name);
 	}
-	ERR_FAIL_COND(!_can_call_mode(p_node, rpc_mode, p_from));
+
+	bool can_call = _can_call_mode(p_node, rpc_mode, p_from);
+	ERR_FAIL_COND_MSG(!can_call, "RPC '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rpc_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
 
 	int argc = p_packet[p_offset];
 	Vector<Variant> args;
@@ -278,13 +296,22 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 
 	p_offset++;
 
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		ObjectID id = p_node->get_instance_id();
+		_init_node_profile(id);
+		profiler_frame_data[id].incoming_rpc += 1;
+	}
+#endif
+
 	for (int i = 0; i < argc; i++) {
 
-		ERR_FAIL_COND(p_offset >= p_packet_len);
+		ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
+
 		int vlen;
-		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen);
-		ERR_FAIL_COND(err != OK);
-		//args[i]=p_packet[3+i];
+		Error err = decode_variant(args.write[i], &p_packet[p_offset], p_packet_len - p_offset, &vlen, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RPC argument.");
+
 		argp.write[i] = &args[i];
 		p_offset += vlen;
 	}
@@ -301,9 +328,9 @@ void MultiplayerAPI::_process_rpc(Node *p_node, const StringName &p_name, int p_
 
 void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p_from, const uint8_t *p_packet, int p_packet_len, int p_offset) {
 
-	ERR_FAIL_COND(p_offset >= p_packet_len);
+	ERR_FAIL_COND_MSG(p_offset >= p_packet_len, "Invalid packet received. Size too small.");
 
-	// Check that remote can call the RSET on this node
+	// Check that remote can call the RSET on this node.
 	RPCMode rset_mode = RPC_MODE_DISABLED;
 	const Map<StringName, RPCMode>::Element *E = p_node->get_node_rset_mode(p_name);
 	if (E) {
@@ -311,23 +338,35 @@ void MultiplayerAPI::_process_rset(Node *p_node, const StringName &p_name, int p
 	} else if (p_node->get_script_instance()) {
 		rset_mode = p_node->get_script_instance()->get_rset_mode(p_name);
 	}
-	ERR_FAIL_COND(!_can_call_mode(p_node, rset_mode, p_from));
+
+	bool can_call = _can_call_mode(p_node, rset_mode, p_from);
+	ERR_FAIL_COND_MSG(!can_call, "RSET '" + String(p_name) + "' is not allowed on node " + p_node->get_path() + " from: " + itos(p_from) + ". Mode is " + itos((int)rset_mode) + ", master is " + itos(p_node->get_network_master()) + ".");
+
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		ObjectID id = p_node->get_instance_id();
+		_init_node_profile(id);
+		profiler_frame_data[id].incoming_rset += 1;
+	}
+#endif
 
 	Variant value;
-	decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset);
+	Error err = decode_variant(value, &p_packet[p_offset], p_packet_len - p_offset, NULL, allow_object_decoding || network_peer->is_object_decoding_allowed());
+
+	ERR_FAIL_COND_MSG(err != OK, "Invalid packet received. Unable to decode RSET value.");
 
 	bool valid;
 
 	p_node->set(p_name, value, &valid);
 	if (!valid) {
-		String error = "Error setting remote property '" + String(p_name) + "', not found in object of type " + p_node->get_class();
+		String error = "Error setting remote property '" + String(p_name) + "', not found in object of type " + p_node->get_class() + ".";
 		ERR_PRINTS(error);
 	}
 }
 
 void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND(p_packet_len < 5);
+	ERR_FAIL_COND_MSG(p_packet_len < 5, "Invalid packet received. Size too small.");
 	int id = decode_uint32(&p_packet[1]);
 
 	String paths;
@@ -345,9 +384,7 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 
 	path_get_cache[p_from].nodes[id] = ni;
 
-	//send ack
-
-	//encode path
+	// Encode path to send ack.
 	CharString pname = String(path).utf8();
 	int len = encode_cstring(pname.get_data(), NULL);
 
@@ -364,7 +401,7 @@ void MultiplayerAPI::_process_simplify_path(int p_from, const uint8_t *p_packet,
 
 void MultiplayerAPI::_process_confirm_path(int p_from, const uint8_t *p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND(p_packet_len < 2);
+	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
 
 	String paths;
 	paths.parse_utf8((const char *)&p_packet[1], p_packet_len - 1);
@@ -372,31 +409,31 @@ void MultiplayerAPI::_process_confirm_path(int p_from, const uint8_t *p_packet, 
 	NodePath path = paths;
 
 	PathSentCache *psc = path_send_cache.getptr(path);
-	ERR_FAIL_COND(!psc);
+	ERR_FAIL_COND_MSG(!psc, "Invalid packet received. Tries to confirm a path which was not found in cache.");
 
 	Map<int, bool>::Element *E = psc->confirmed_peers.find(p_from);
-	ERR_FAIL_COND(!E);
+	ERR_FAIL_COND_MSG(!E, "Invalid packet received. Source peer was not found in cache for the given path.");
 	E->get() = true;
 }
 
 bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int p_target) {
 	bool has_all_peers = true;
-	List<int> peers_to_add; //if one is missing, take note to add it
+	List<int> peers_to_add; // If one is missing, take note to add it.
 
 	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
 
 		if (p_target < 0 && E->get() == -p_target)
-			continue; //continue, excluded
+			continue; // Continue, excluded.
 
 		if (p_target > 0 && E->get() != p_target)
-			continue; //continue, not for this peer
+			continue; // Continue, not for this peer.
 
 		Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
 
-		if (!F || F->get() == false) {
-			//path was not cached, or was cached but is unconfirmed
+		if (!F || !F->get()) {
+			// Path was not cached, or was cached but is unconfirmed.
 			if (!F) {
-				//not cached at all, take note
+				// Not cached at all, take note.
 				peers_to_add.push_back(E->get());
 			}
 
@@ -404,11 +441,11 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 		}
 	}
 
-	//those that need to be added, send a message for this
+	// Those that need to be added, send a message for this.
 
 	for (List<int>::Element *E = peers_to_add.front(); E; E = E->next()) {
 
-		//encode function name
+		// Encode function name.
 		CharString pname = String(p_path).utf8();
 		int len = encode_cstring(pname.get_data(), NULL);
 
@@ -419,11 +456,11 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 		encode_uint32(psc->id, &packet.write[1]);
 		encode_cstring(pname.get_data(), &packet.write[5]);
 
-		network_peer->set_target_peer(E->get()); //to all of you
+		network_peer->set_target_peer(E->get()); // To all of you.
 		network_peer->set_transfer_mode(NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 		network_peer->put_packet(packet.ptr(), packet.size());
 
-		psc->confirmed_peers.insert(E->get(), false); //insert into confirmed, but as false since it was not confirmed
+		psc->confirmed_peers.insert(E->get(), false); // Insert into confirmed, but as false since it was not confirmed.
 	}
 
 	return has_all_peers;
@@ -431,66 +468,50 @@ bool MultiplayerAPI::_send_confirm_path(NodePath p_path, PathSentCache *psc, int
 
 void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p_set, const StringName &p_name, const Variant **p_arg, int p_argcount) {
 
-	if (network_peer.is_null()) {
-		ERR_EXPLAIN("Attempt to remote call/set when networking is not active in SceneTree.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(network_peer.is_null(), "Attempt to remote call/set when networking is not active in SceneTree.");
 
-	if (network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_CONNECTING) {
-		ERR_EXPLAIN("Attempt to remote call/set when networking is not connected yet in SceneTree.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_CONNECTING, "Attempt to remote call/set when networking is not connected yet in SceneTree.");
 
-	if (network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED) {
-		ERR_EXPLAIN("Attempt to remote call/set when networking is disconnected.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(network_peer->get_connection_status() == NetworkedMultiplayerPeer::CONNECTION_DISCONNECTED, "Attempt to remote call/set when networking is disconnected.");
 
-	if (p_argcount > 255) {
-		ERR_EXPLAIN("Too many arguments >255.");
-		ERR_FAIL();
-	}
+	ERR_FAIL_COND_MSG(p_argcount > 255, "Too many arguments >255.");
 
 	if (p_to != 0 && !connected_peers.has(ABS(p_to))) {
-		if (p_to == network_peer->get_unique_id()) {
-			ERR_EXPLAIN("Attempt to remote call/set yourself! unique ID: " + itos(network_peer->get_unique_id()));
-		} else {
-			ERR_EXPLAIN("Attempt to remote call unexisting ID: " + itos(p_to));
-		}
+		ERR_FAIL_COND_MSG(p_to == network_peer->get_unique_id(), "Attempt to remote call/set yourself! unique ID: " + itos(network_peer->get_unique_id()) + ".");
 
-		ERR_FAIL();
+		ERR_FAIL_MSG("Attempt to remote call unexisting ID: " + itos(p_to) + ".");
 	}
 
 	NodePath from_path = (root_node->get_path()).rel_path_to(p_from->get_path());
-	ERR_FAIL_COND(from_path.is_empty());
+	ERR_FAIL_COND_MSG(from_path.is_empty(), "Unable to send RPC. Relative path is empty. THIS IS LIKELY A BUG IN THE ENGINE!");
 
-	//see if the path is cached
+	// See if the path is cached.
 	PathSentCache *psc = path_send_cache.getptr(from_path);
 	if (!psc) {
-		//path is not cached, create
+		// Path is not cached, create.
 		path_send_cache[from_path] = PathSentCache();
 		psc = path_send_cache.getptr(from_path);
 		psc->id = last_send_cache_id++;
 	}
 
-	//create base packet, lots of hardcode because it must be tight
+	// Create base packet, lots of hardcode because it must be tight.
 
 	int ofs = 0;
 
 #define MAKE_ROOM(m_amount) \
 	if (packet_cache.size() < m_amount) packet_cache.resize(m_amount);
 
-	//encode type
+	// Encode type.
 	MAKE_ROOM(1);
 	packet_cache.write[0] = p_set ? NETWORK_COMMAND_REMOTE_SET : NETWORK_COMMAND_REMOTE_CALL;
 	ofs += 1;
 
-	//encode ID
+	// Encode ID.
 	MAKE_ROOM(ofs + 4);
 	encode_uint32(psc->id, &(packet_cache.write[ofs]));
 	ofs += 4;
 
-	//encode function name
+	// Encode function name.
 	CharString name = String(p_name).utf8();
 	int len = encode_cstring(name.get_data(), NULL);
 	MAKE_ROOM(ofs + len);
@@ -498,42 +519,50 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 	ofs += len;
 
 	if (p_set) {
-		//set argument
-		Error err = encode_variant(*p_arg[0], NULL, len);
-		ERR_FAIL_COND(err != OK);
+		// Set argument.
+		Error err = encode_variant(*p_arg[0], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+		ERR_FAIL_COND_MSG(err != OK, "Unable to encode RSET value. THIS IS LIKELY A BUG IN THE ENGINE!");
 		MAKE_ROOM(ofs + len);
-		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len);
+		encode_variant(*p_arg[0], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 		ofs += len;
 
 	} else {
-		//call arguments
+		// Call arguments.
 		MAKE_ROOM(ofs + 1);
 		packet_cache.write[ofs] = p_argcount;
 		ofs += 1;
 		for (int i = 0; i < p_argcount; i++) {
-			Error err = encode_variant(*p_arg[i], NULL, len);
-			ERR_FAIL_COND(err != OK);
+			Error err = encode_variant(*p_arg[i], NULL, len, allow_object_decoding || network_peer->is_object_decoding_allowed());
+			ERR_FAIL_COND_MSG(err != OK, "Unable to encode RPC argument. THIS IS LIKELY A BUG IN THE ENGINE!");
 			MAKE_ROOM(ofs + len);
-			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len);
+			encode_variant(*p_arg[i], &(packet_cache.write[ofs]), len, allow_object_decoding || network_peer->is_object_decoding_allowed());
 			ofs += len;
 		}
 	}
 
-	//see if all peers have cached path (is so, call can be fast)
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		bandwidth_outgoing_data.write[bandwidth_outgoing_pointer].timestamp = OS::get_singleton()->get_ticks_msec();
+		bandwidth_outgoing_data.write[bandwidth_outgoing_pointer].packet_size = ofs;
+		bandwidth_outgoing_pointer = (bandwidth_outgoing_pointer + 1) % bandwidth_outgoing_data.size();
+	}
+#endif
+
+	// See if all peers have cached path (is so, call can be fast).
 	bool has_all_peers = _send_confirm_path(from_path, psc, p_to);
 
-	//take chance and set transfer mode, since all send methods will use it
+	// Take chance and set transfer mode, since all send methods will use it.
 	network_peer->set_transfer_mode(p_unreliable ? NetworkedMultiplayerPeer::TRANSFER_MODE_UNRELIABLE : NetworkedMultiplayerPeer::TRANSFER_MODE_RELIABLE);
 
 	if (has_all_peers) {
 
-		//they all have verified paths, so send fast
-		network_peer->set_target_peer(p_to); //to all of you
-		network_peer->put_packet(packet_cache.ptr(), ofs); //a message with love
+		// They all have verified paths, so send fast.
+		network_peer->set_target_peer(p_to); // To all of you.
+		network_peer->put_packet(packet_cache.ptr(), ofs); // A message with love.
 	} else {
-		//not all verified path, so send one by one
+		// Not all verified path, so send one by one.
 
-		//apend path at the end, since we will need it for some packets
+		// Append path at the end, since we will need it for some packets.
 		CharString pname = String(from_path).utf8();
 		int path_len = encode_cstring(pname.get_data(), NULL);
 		MAKE_ROOM(ofs + path_len);
@@ -542,23 +571,23 @@ void MultiplayerAPI::_send_rpc(Node *p_from, int p_to, bool p_unreliable, bool p
 		for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
 
 			if (p_to < 0 && E->get() == -p_to)
-				continue; //continue, excluded
+				continue; // Continue, excluded.
 
 			if (p_to > 0 && E->get() != p_to)
-				continue; //continue, not for this peer
+				continue; // Continue, not for this peer.
 
 			Map<int, bool>::Element *F = psc->confirmed_peers.find(E->get());
-			ERR_CONTINUE(!F); //should never happen
+			ERR_CONTINUE(!F); // Should never happen.
 
-			network_peer->set_target_peer(E->get()); //to this one specifically
+			network_peer->set_target_peer(E->get()); // To this one specifically.
 
-			if (F->get() == true) {
-				//this one confirmed path, so use id
+			if (F->get()) {
+				// This one confirmed path, so use id.
 				encode_uint32(psc->id, &(packet_cache.write[1]));
 				network_peer->put_packet(packet_cache.ptr(), ofs);
 			} else {
-				//this one did not confirm path yet, so use entire path (sorry!)
-				encode_uint32(0x80000000 | ofs, &(packet_cache.write[1])); //offset to path and flag
+				// This one did not confirm path yet, so use entire path (sorry!).
+				encode_uint32(0x80000000 | ofs, &(packet_cache.write[1])); // Offset to path and flag.
 				network_peer->put_packet(packet_cache.ptr(), ofs + path_len);
 			}
 		}
@@ -573,7 +602,7 @@ void MultiplayerAPI::_add_peer(int p_id) {
 
 void MultiplayerAPI::_del_peer(int p_id) {
 	connected_peers.erase(p_id);
-	path_get_cache.erase(p_id); //I no longer need your cache, sorry
+	path_get_cache.erase(p_id); // I no longer need your cache, sorry.
 	emit_signal("network_peer_disconnected", p_id);
 }
 
@@ -594,17 +623,18 @@ void MultiplayerAPI::_server_disconnected() {
 
 void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_method, const Variant **p_arg, int p_argcount) {
 
-	ERR_FAIL_COND(!p_node->is_inside_tree());
-	ERR_FAIL_COND(!network_peer.is_valid());
+	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to call an RPC while no network peer is active.");
+	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to call an RPC on a node which is not inside SceneTree.");
+	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to call an RPC via a network peer which is not connected.");
 
 	int node_id = network_peer->get_unique_id();
-	bool skip_rpc = false;
+	bool skip_rpc = node_id == p_peer_id;
 	bool call_local_native = false;
 	bool call_local_script = false;
 	bool is_master = p_node->is_network_master();
 
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
-		//check that send mode can use local call
+		// Check that send mode can use local call.
 
 		const Map<StringName, RPCMode>::Element *E = p_node->get_node_rpc_mode(p_method);
 		if (E) {
@@ -612,56 +642,72 @@ void MultiplayerAPI::rpcp(Node *p_node, int p_peer_id, bool p_unreliable, const 
 		}
 
 		if (call_local_native) {
-			// done below
+			// Done below.
 		} else if (p_node->get_script_instance()) {
-			//attempt with script
+			// Attempt with script.
 			RPCMode rpc_mode = p_node->get_script_instance()->get_rpc_mode(p_method);
 			call_local_script = _should_call_local(rpc_mode, is_master, skip_rpc);
 		}
 	}
 
 	if (!skip_rpc) {
+
+#ifdef DEBUG_ENABLED
+		if (profiling) {
+			ObjectID id = p_node->get_instance_id();
+			_init_node_profile(id);
+			profiler_frame_data[id].outgoing_rpc += 1;
+		}
+#endif
+
 		_send_rpc(p_node, p_peer_id, p_unreliable, false, p_method, p_arg, p_argcount);
 	}
 
 	if (call_local_native) {
+		int temp_id = rpc_sender_id;
+		rpc_sender_id = get_network_unique_id();
 		Variant::CallError ce;
 		p_node->call(p_method, p_arg, p_argcount, ce);
+		rpc_sender_id = temp_id;
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in local call:  - " + error;
+			error = "rpc() aborted in local call:  - " + error + ".";
 			ERR_PRINTS(error);
 			return;
 		}
 	}
 
 	if (call_local_script) {
+		int temp_id = rpc_sender_id;
+		rpc_sender_id = get_network_unique_id();
 		Variant::CallError ce;
 		ce.error = Variant::CallError::CALL_OK;
 		p_node->get_script_instance()->call(p_method, p_arg, p_argcount, ce);
+		rpc_sender_id = temp_id;
 		if (ce.error != Variant::CallError::CALL_OK) {
 			String error = Variant::get_call_error_text(p_node, p_method, p_arg, p_argcount, ce);
-			error = "rpc() aborted in script local call:  - " + error;
+			error = "rpc() aborted in script local call:  - " + error + ".";
 			ERR_PRINTS(error);
 			return;
 		}
 	}
+
+	ERR_FAIL_COND_MSG(skip_rpc && !(call_local_native || call_local_script), "RPC '" + p_method + "' on yourself is not allowed by selected mode.");
 }
 
 void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const StringName &p_property, const Variant &p_value) {
 
-	ERR_FAIL_COND(!p_node->is_inside_tree());
-	ERR_FAIL_COND(!network_peer.is_valid());
+	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "Trying to RSET while no network peer is active.");
+	ERR_FAIL_COND_MSG(!p_node->is_inside_tree(), "Trying to RSET on a node which is not inside SceneTree.");
+	ERR_FAIL_COND_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, "Trying to send an RSET via a network peer which is not connected.");
 
 	int node_id = network_peer->get_unique_id();
 	bool is_master = p_node->is_network_master();
-	bool skip_rset = false;
+	bool skip_rset = node_id == p_peer_id;
+	bool set_local = false;
 
 	if (p_peer_id == 0 || p_peer_id == node_id || (p_peer_id < 0 && p_peer_id != -node_id)) {
-		//check that send mode can use local call
-
-		bool set_local = false;
-
+		// Check that send mode can use local call.
 		const Map<StringName, RPCMode>::Element *E = p_node->get_node_rset_mode(p_property);
 		if (E) {
 
@@ -670,25 +716,32 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 		if (set_local) {
 			bool valid;
+			int temp_id = rpc_sender_id;
+
+			rpc_sender_id = get_network_unique_id();
 			p_node->set(p_property, p_value, &valid);
+			rpc_sender_id = temp_id;
 
 			if (!valid) {
-				String error = "rset() aborted in local set, property not found:  - " + String(p_property);
+				String error = "rset() aborted in local set, property not found:  - " + String(p_property) + ".";
 				ERR_PRINTS(error);
 				return;
 			}
 		} else if (p_node->get_script_instance()) {
-			//attempt with script
+			// Attempt with script.
 			RPCMode rpc_mode = p_node->get_script_instance()->get_rset_mode(p_property);
 
 			set_local = _should_call_local(rpc_mode, is_master, skip_rset);
 
 			if (set_local) {
+				int temp_id = rpc_sender_id;
 
+				rpc_sender_id = get_network_unique_id();
 				bool valid = p_node->get_script_instance()->set(p_property, p_value);
+				rpc_sender_id = temp_id;
 
 				if (!valid) {
-					String error = "rset() aborted in local script set, property not found:  - " + String(p_property);
+					String error = "rset() aborted in local script set, property not found:  - " + String(p_property) + ".";
 					ERR_PRINTS(error);
 					return;
 				}
@@ -696,8 +749,18 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 		}
 	}
 
-	if (skip_rset)
+	if (skip_rset) {
+		ERR_FAIL_COND_MSG(!set_local, "RSET for '" + p_property + "' on yourself is not allowed by selected mode.");
 		return;
+	}
+
+#ifdef DEBUG_ENABLED
+	if (profiling) {
+		ObjectID id = p_node->get_instance_id();
+		_init_node_profile(id);
+		profiler_frame_data[id].outgoing_rset += 1;
+	}
+#endif
 
 	const Variant *vptr = &p_value;
 
@@ -706,9 +769,9 @@ void MultiplayerAPI::rsetp(Node *p_node, int p_peer_id, bool p_unreliable, const
 
 Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, NetworkedMultiplayerPeer::TransferMode p_mode) {
 
-	ERR_FAIL_COND_V(p_data.size() < 1, ERR_INVALID_DATA);
-	ERR_FAIL_COND_V(!network_peer.is_valid(), ERR_UNCONFIGURED);
-	ERR_FAIL_COND_V(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED);
+	ERR_FAIL_COND_V_MSG(p_data.size() < 1, ERR_INVALID_DATA, "Trying to send an empty raw packet.");
+	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), ERR_UNCONFIGURED, "Trying to send a raw packet while no network peer is active.");
+	ERR_FAIL_COND_V_MSG(network_peer->get_connection_status() != NetworkedMultiplayerPeer::CONNECTION_CONNECTED, ERR_UNCONFIGURED, "Trying to send a raw packet via a network peer which is not connected.");
 
 	MAKE_ROOM(p_data.size() + 1);
 	PoolVector<uint8_t>::Read r = p_data.read();
@@ -723,7 +786,7 @@ Error MultiplayerAPI::send_bytes(PoolVector<uint8_t> p_data, int p_to, Networked
 
 void MultiplayerAPI::_process_raw(int p_from, const uint8_t *p_packet, int p_packet_len) {
 
-	ERR_FAIL_COND(p_packet_len < 2);
+	ERR_FAIL_COND_MSG(p_packet_len < 2, "Invalid packet received. Size too small.");
 
 	PoolVector<uint8_t> out;
 	int len = p_packet_len - 1;
@@ -737,31 +800,32 @@ void MultiplayerAPI::_process_raw(int p_from, const uint8_t *p_packet, int p_pac
 
 int MultiplayerAPI::get_network_unique_id() const {
 
-	ERR_FAIL_COND_V(!network_peer.is_valid(), 0);
+	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), 0, "No network peer is assigned. Unable to get unique network ID.");
 	return network_peer->get_unique_id();
 }
 
 bool MultiplayerAPI::is_network_server() const {
 
-	ERR_FAIL_COND_V(!network_peer.is_valid(), false);
+	// XXX Maybe fail silently? Maybe should actually return true to make development of both local and online multiplayer easier?
+	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), false, "No network peer is assigned. I can't be a server.");
 	return network_peer->is_server();
 }
 
 void MultiplayerAPI::set_refuse_new_network_connections(bool p_refuse) {
 
-	ERR_FAIL_COND(!network_peer.is_valid());
+	ERR_FAIL_COND_MSG(!network_peer.is_valid(), "No network peer is assigned. Unable to set 'refuse_new_connections'.");
 	network_peer->set_refuse_new_connections(p_refuse);
 }
 
 bool MultiplayerAPI::is_refusing_new_network_connections() const {
 
-	ERR_FAIL_COND_V(!network_peer.is_valid(), false);
+	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), false, "No network peer is assigned. Unable to get 'refuse_new_connections'.");
 	return network_peer->is_refusing_new_connections();
 }
 
 Vector<int> MultiplayerAPI::get_network_connected_peers() const {
 
-	ERR_FAIL_COND_V(!network_peer.is_valid(), Vector<int>());
+	ERR_FAIL_COND_V_MSG(!network_peer.is_valid(), Vector<int>(), "No network peer is assigned. Assume no peers are connected.");
 
 	Vector<int> ret;
 	for (Set<int>::Element *E = connected_peers.front(); E; E = E->next()) {
@@ -770,6 +834,105 @@ Vector<int> MultiplayerAPI::get_network_connected_peers() const {
 
 	return ret;
 }
+
+void MultiplayerAPI::set_allow_object_decoding(bool p_enable) {
+
+	allow_object_decoding = p_enable;
+}
+
+bool MultiplayerAPI::is_object_decoding_allowed() const {
+
+	return allow_object_decoding;
+}
+
+void MultiplayerAPI::profiling_start() {
+#ifdef DEBUG_ENABLED
+	profiling = true;
+	profiler_frame_data.clear();
+
+	bandwidth_incoming_pointer = 0;
+	bandwidth_incoming_data.resize(16384); // ~128kB
+	for (int i = 0; i < bandwidth_incoming_data.size(); ++i) {
+		bandwidth_incoming_data.write[i].packet_size = -1;
+	}
+
+	bandwidth_outgoing_pointer = 0;
+	bandwidth_outgoing_data.resize(16384); // ~128kB
+	for (int i = 0; i < bandwidth_outgoing_data.size(); ++i) {
+		bandwidth_outgoing_data.write[i].packet_size = -1;
+	}
+#endif
+}
+
+void MultiplayerAPI::profiling_end() {
+#ifdef DEBUG_ENABLED
+	profiling = false;
+	bandwidth_incoming_data.clear();
+	bandwidth_outgoing_data.clear();
+#endif
+}
+
+int MultiplayerAPI::get_profiling_frame(ProfilingInfo *r_info) {
+	int i = 0;
+#ifdef DEBUG_ENABLED
+	for (Map<ObjectID, ProfilingInfo>::Element *E = profiler_frame_data.front(); E; E = E->next()) {
+		r_info[i] = E->get();
+		++i;
+	}
+	profiler_frame_data.clear();
+#endif
+	return i;
+}
+
+int MultiplayerAPI::get_incoming_bandwidth_usage() {
+#ifdef DEBUG_ENABLED
+	return _get_bandwidth_usage(bandwidth_incoming_data, bandwidth_incoming_pointer);
+#else
+	return 0;
+#endif
+}
+
+int MultiplayerAPI::get_outgoing_bandwidth_usage() {
+#ifdef DEBUG_ENABLED
+	return _get_bandwidth_usage(bandwidth_outgoing_data, bandwidth_outgoing_pointer);
+#else
+	return 0;
+#endif
+}
+
+#ifdef DEBUG_ENABLED
+int MultiplayerAPI::_get_bandwidth_usage(const Vector<BandwidthFrame> &p_buffer, int p_pointer) {
+	int total_bandwidth = 0;
+
+	uint32_t timestamp = OS::get_singleton()->get_ticks_msec();
+	uint32_t final_timestamp = timestamp - 1000;
+
+	int i = (p_pointer + p_buffer.size() - 1) % p_buffer.size();
+
+	while (i != p_pointer && p_buffer[i].packet_size > 0) {
+		if (p_buffer[i].timestamp < final_timestamp) {
+			return total_bandwidth;
+		}
+		total_bandwidth += p_buffer[i].packet_size;
+		i = (i + p_buffer.size() - 1) % p_buffer.size();
+	}
+
+	ERR_FAIL_COND_V_MSG(i == p_pointer, total_bandwidth, "Reached the end of the bandwidth profiler buffer, values might be inaccurate.");
+	return total_bandwidth;
+}
+
+void MultiplayerAPI::_init_node_profile(ObjectID p_node) {
+	if (profiler_frame_data.has(p_node))
+		return;
+	profiler_frame_data.insert(p_node, ProfilingInfo());
+	profiler_frame_data[p_node].node = p_node;
+	profiler_frame_data[p_node].node_path = Object::cast_to<Node>(ObjectDB::get_instance(p_node))->get_path();
+	profiler_frame_data[p_node].incoming_rpc = 0;
+	profiler_frame_data[p_node].incoming_rset = 0;
+	profiler_frame_data[p_node].outgoing_rpc = 0;
+	profiler_frame_data[p_node].outgoing_rset = 0;
+}
+#endif
 
 void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_root_node", "node"), &MultiplayerAPI::set_root_node);
@@ -791,8 +954,13 @@ void MultiplayerAPI::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("get_network_connected_peers"), &MultiplayerAPI::get_network_connected_peers);
 	ClassDB::bind_method(D_METHOD("set_refuse_new_network_connections", "refuse"), &MultiplayerAPI::set_refuse_new_network_connections);
 	ClassDB::bind_method(D_METHOD("is_refusing_new_network_connections"), &MultiplayerAPI::is_refusing_new_network_connections);
+	ClassDB::bind_method(D_METHOD("set_allow_object_decoding", "enable"), &MultiplayerAPI::set_allow_object_decoding);
+	ClassDB::bind_method(D_METHOD("is_object_decoding_allowed"), &MultiplayerAPI::is_object_decoding_allowed);
+
+	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "allow_object_decoding"), "set_allow_object_decoding", "is_object_decoding_allowed");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "refuse_new_network_connections"), "set_refuse_new_network_connections", "is_refusing_new_network_connections");
 	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "network_peer", PROPERTY_HINT_RESOURCE_TYPE, "NetworkedMultiplayerPeer", 0), "set_network_peer", "get_network_peer");
+	ADD_PROPERTY_DEFAULT("refuse_new_network_connections", false);
 
 	ADD_SIGNAL(MethodInfo("network_peer_connected", PropertyInfo(Variant::INT, "id")));
 	ADD_SIGNAL(MethodInfo("network_peer_disconnected", PropertyInfo(Variant::INT, "id")));
@@ -803,15 +971,22 @@ void MultiplayerAPI::_bind_methods() {
 
 	BIND_ENUM_CONSTANT(RPC_MODE_DISABLED);
 	BIND_ENUM_CONSTANT(RPC_MODE_REMOTE);
-	BIND_ENUM_CONSTANT(RPC_MODE_SYNC);
 	BIND_ENUM_CONSTANT(RPC_MODE_MASTER);
-	BIND_ENUM_CONSTANT(RPC_MODE_SLAVE);
+	BIND_ENUM_CONSTANT(RPC_MODE_PUPPET);
+	BIND_ENUM_CONSTANT(RPC_MODE_SLAVE); // Deprecated.
 	BIND_ENUM_CONSTANT(RPC_MODE_REMOTESYNC);
+	BIND_ENUM_CONSTANT(RPC_MODE_SYNC); // Deprecated.
 	BIND_ENUM_CONSTANT(RPC_MODE_MASTERSYNC);
-	BIND_ENUM_CONSTANT(RPC_MODE_SLAVESYNC);
+	BIND_ENUM_CONSTANT(RPC_MODE_PUPPETSYNC);
 }
 
-MultiplayerAPI::MultiplayerAPI() {
+MultiplayerAPI::MultiplayerAPI() :
+		allow_object_decoding(false) {
+	rpc_sender_id = 0;
+	root_node = NULL;
+#ifdef DEBUG_ENABLED
+	profiling = false;
+#endif
 	clear();
 }
 

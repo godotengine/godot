@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,13 @@
 #ifndef NODE_H
 #define NODE_H
 
-#include "class_db.h"
-#include "map.h"
-#include "node_path.h"
-#include "object.h"
-#include "project_settings.h"
+#include "core/class_db.h"
+#include "core/map.h"
+#include "core/node_path.h"
+#include "core/object.h"
+#include "core/project_settings.h"
+#include "core/script_language.h"
 #include "scene/main/scene_tree.h"
-#include "script_language.h"
 
 class Viewport;
 class SceneState;
@@ -74,6 +74,8 @@ public:
 
 		bool operator()(const Node *p_a, const Node *p_b) const { return p_b->data.process_priority == p_a->data.process_priority ? p_b->is_greater_than(p_a) : p_b->data.process_priority > p_a->data.process_priority; }
 	};
+
+	static int orphan_node_count;
 
 private:
 	struct GroupData {
@@ -150,22 +152,22 @@ private:
 
 	Ref<MultiplayerAPI> multiplayer;
 
-	void _print_tree_pretty(const String prefix, const bool last);
+	void _print_tree_pretty(const String &prefix, const bool last);
 	void _print_tree(const Node *p_node);
 
-	Node *_get_node(const NodePath &p_path) const;
 	Node *_get_child_by_name(const StringName &p_name) const;
 
 	void _replace_connections_target(Node *p_new_target);
 
 	void _validate_child_name(Node *p_child, bool p_force_human_readable = false);
-	String _generate_serial_child_name(Node *p_child);
+	void _generate_serial_child_name(const Node *p_child, StringName &name) const;
 
 	void _propagate_reverse_notification(int p_notification);
 	void _propagate_deferred_notification(int p_notification, bool p_reverse);
 	void _propagate_enter_tree();
 	void _propagate_ready();
 	void _propagate_exit_tree();
+	void _propagate_after_exit_tree();
 	void _propagate_validate_owner();
 	void _print_stray_nodes();
 	void _propagate_pause_owner(Node *p_owner);
@@ -216,6 +218,7 @@ protected:
 
 public:
 	enum {
+
 		// you can make your own, but don't use the same numbers as other notifications in other nodes
 		NOTIFICATION_ENTER_TREE = 10,
 		NOTIFICATION_EXIT_TREE = 11,
@@ -231,10 +234,25 @@ public:
 		NOTIFICATION_DRAG_BEGIN = 21,
 		NOTIFICATION_DRAG_END = 22,
 		NOTIFICATION_PATH_CHANGED = 23,
-		NOTIFICATION_TRANSLATION_CHANGED = 24,
+		//NOTIFICATION_TRANSLATION_CHANGED = 24, moved below
 		NOTIFICATION_INTERNAL_PROCESS = 25,
 		NOTIFICATION_INTERNAL_PHYSICS_PROCESS = 26,
 		NOTIFICATION_POST_ENTER_TREE = 27,
+		//keep these linked to node
+		NOTIFICATION_WM_MOUSE_ENTER = MainLoop::NOTIFICATION_WM_MOUSE_ENTER,
+		NOTIFICATION_WM_MOUSE_EXIT = MainLoop::NOTIFICATION_WM_MOUSE_EXIT,
+		NOTIFICATION_WM_FOCUS_IN = MainLoop::NOTIFICATION_WM_FOCUS_IN,
+		NOTIFICATION_WM_FOCUS_OUT = MainLoop::NOTIFICATION_WM_FOCUS_OUT,
+		NOTIFICATION_WM_QUIT_REQUEST = MainLoop::NOTIFICATION_WM_QUIT_REQUEST,
+		NOTIFICATION_WM_GO_BACK_REQUEST = MainLoop::NOTIFICATION_WM_GO_BACK_REQUEST,
+		NOTIFICATION_WM_UNFOCUS_REQUEST = MainLoop::NOTIFICATION_WM_UNFOCUS_REQUEST,
+		NOTIFICATION_OS_MEMORY_WARNING = MainLoop::NOTIFICATION_OS_MEMORY_WARNING,
+		NOTIFICATION_TRANSLATION_CHANGED = MainLoop::NOTIFICATION_TRANSLATION_CHANGED,
+		NOTIFICATION_WM_ABOUT = MainLoop::NOTIFICATION_WM_ABOUT,
+		NOTIFICATION_CRASH = MainLoop::NOTIFICATION_CRASH,
+		NOTIFICATION_OS_IME_UPDATE = MainLoop::NOTIFICATION_OS_IME_UPDATE,
+		NOTIFICATION_APP_RESUMED = MainLoop::NOTIFICATION_APP_RESUMED,
+		NOTIFICATION_APP_PAUSED = MainLoop::NOTIFICATION_APP_PAUSED
 
 	};
 
@@ -251,11 +269,14 @@ public:
 	Node *get_child(int p_index) const;
 	bool has_node(const NodePath &p_path) const;
 	Node *get_node(const NodePath &p_path) const;
+	Node *get_node_or_null(const NodePath &p_path) const;
 	Node *find_node(const String &p_mask, bool p_recursive = true, bool p_owned = true) const;
 	bool has_node_and_resource(const NodePath &p_path) const;
 	Node *get_node_and_resource(const NodePath &p_path, RES &r_res, Vector<StringName> &r_leftover_subpath, bool p_last_is_property = true) const;
 
 	Node *get_parent() const;
+	Node *find_parent(const String &p_mask) const;
+
 	_FORCE_INLINE_ SceneTree *get_tree() const {
 		ERR_FAIL_COND_V(!data.tree, NULL);
 		return data.tree;
@@ -281,7 +302,7 @@ public:
 	};
 
 	void get_groups(List<GroupInfo> *p_groups) const;
-	bool has_persistent_groups() const;
+	int get_persistent_group_count() const;
 
 	void move_child(Node *p_child, int p_pos);
 	void raise();
@@ -299,8 +320,11 @@ public:
 	void set_filename(const String &p_filename);
 	String get_filename() const;
 
+	void set_editor_description(const String &p_editor_description);
+	String get_editor_description() const;
+
 	void set_editable_instance(Node *p_node, bool p_editable);
-	bool is_editable_instance(Node *p_node) const;
+	bool is_editable_instance(const Node *p_node) const;
 	void set_editable_instances(const HashMap<NodePath, int> &p_editable_instances);
 	HashMap<NodePath, int> get_editable_instances() const;
 
@@ -343,8 +367,6 @@ public:
 #ifdef TOOLS_ENABLED
 	Node *duplicate_from_editor(Map<const Node *, Node *> &r_duplimap) const;
 #endif
-
-	//Node *clone_tree() const;
 
 	// used by editors, to save what has changed only
 	void set_scene_instance_state(const Ref<SceneState> &p_state);

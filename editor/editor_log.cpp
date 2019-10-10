@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,10 @@
 #include "editor_log.h"
 
 #include "core/os/keyboard.h"
+#include "core/version.h"
 #include "editor_node.h"
 #include "scene/gui/center_container.h"
 #include "scene/resources/dynamic_font.h"
-#include "version.h"
 
 void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_file, int p_line, const char *p_error, const char *p_errorexp, ErrorHandlerType p_type) {
 
@@ -49,12 +49,11 @@ void EditorLog::_error_handler(void *p_self, const char *p_func, const char *p_f
 		err_str = String(p_file) + ":" + itos(p_line) + " - " + String(p_error);
 	}
 
-	/*
-	if (!self->is_visible_in_tree())
-		self->emit_signal("show_request");
-	*/
-
-	self->add_message(err_str, true);
+	if (p_type == ERR_HANDLER_WARNING) {
+		self->add_message(err_str, MSG_TYPE_WARNING);
+	} else {
+		self->add_message(err_str, MSG_TYPE_ERROR);
+	}
 }
 
 void EditorLog::_notification(int p_what) {
@@ -66,23 +65,11 @@ void EditorLog::_notification(int p_what) {
 	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
 		Ref<DynamicFont> df_output_code = get_font("output_source", "EditorFonts");
 		if (df_output_code.is_valid()) {
-			df_output_code->set_size(int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
 			if (log != NULL) {
 				log->add_font_override("normal_font", get_font("output_source", "EditorFonts"));
 			}
 		}
 	}
-
-	/*if (p_what==NOTIFICATION_DRAW) {
-
-		RID ci = get_canvas_item();
-		get_stylebox("panel","PopupMenu")->draw(ci,Rect2(Point2(),get_size()));
-		int top_ofs = 20;
-		int border_ofs=4;
-		Ref<StyleBox> style = get_stylebox("normal","TextEdit");
-
-		style->draw(ci,Rect2( Point2(border_ofs,top_ofs),get_size()-Size2(border_ofs*2,top_ofs+border_ofs)));
-	}*/
 }
 
 void EditorLog::_clear_request() {
@@ -91,26 +78,50 @@ void EditorLog::_clear_request() {
 	tool_button->set_icon(Ref<Texture>());
 }
 
+void EditorLog::_copy_request() {
+
+	log->selection_copy();
+}
+
 void EditorLog::clear() {
 	_clear_request();
 }
 
-void EditorLog::add_message(const String &p_msg, bool p_error) {
+void EditorLog::copy() {
+	_copy_request();
+}
+
+void EditorLog::add_message(const String &p_msg, MessageType p_type) {
 
 	log->add_newline();
 
-	if (p_error) {
-		log->push_color(get_color("error_color", "Editor"));
-		Ref<Texture> icon = get_icon("Error", "EditorIcons");
-		log->add_image(icon);
-		log->add_text(" ");
-		tool_button->set_icon(icon);
+	bool restore = p_type != MSG_TYPE_STD;
+	switch (p_type) {
+		case MSG_TYPE_STD: {
+		} break;
+		case MSG_TYPE_ERROR: {
+			log->push_color(get_color("error_color", "Editor"));
+			Ref<Texture> icon = get_icon("Error", "EditorIcons");
+			log->add_image(icon);
+			log->add_text(" ");
+			tool_button->set_icon(icon);
+		} break;
+		case MSG_TYPE_WARNING: {
+			log->push_color(get_color("warning_color", "Editor"));
+			Ref<Texture> icon = get_icon("Warning", "EditorIcons");
+			log->add_image(icon);
+			log->add_text(" ");
+			tool_button->set_icon(icon);
+		} break;
+		case MSG_TYPE_EDITOR: {
+			// Distinguish editor messages from messages printed by the project
+			log->push_color(get_color("font_color", "Editor") * Color(1, 1, 1, 0.6));
+		} break;
 	}
 
 	log->add_text(p_msg);
-	//button->set_text(p_msg);
 
-	if (p_error)
+	if (restore)
 		log->pop();
 }
 
@@ -118,38 +129,23 @@ void EditorLog::set_tool_button(ToolButton *p_tool_button) {
 	tool_button = p_tool_button;
 }
 
-/*
-void EditorLog::_dragged(const Point2& p_ofs) {
-
-	int ofs = ec->get_minsize().height;
-	ofs = ofs-p_ofs.y;
-	if (ofs<50)
-		ofs=50;
-	if (ofs>300)
-		ofs=300;
-	ec->set_minsize(Size2(ec->get_minsize().width,ofs));
-	minimum_size_changed();
-
-}
-*/
-
 void EditorLog::_undo_redo_cbk(void *p_self, const String &p_name) {
 
 	EditorLog *self = (EditorLog *)p_self;
-	self->add_message(p_name);
+	self->add_message(p_name, EditorLog::MSG_TYPE_EDITOR);
 }
 
 void EditorLog::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("_clear_request"), &EditorLog::_clear_request);
-	//ClassDB::bind_method(D_METHOD("_dragged"),&EditorLog::_dragged );
+	ClassDB::bind_method(D_METHOD("_copy_request"), &EditorLog::_copy_request);
 	ADD_SIGNAL(MethodInfo("clear_request"));
+	ADD_SIGNAL(MethodInfo("copy_request"));
 }
 
 EditorLog::EditorLog() {
 
 	VBoxContainer *vb = this;
-	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 
 	HBoxContainer *hb = memnew(HBoxContainer);
 	vb->add_child(hb);
@@ -157,6 +153,12 @@ EditorLog::EditorLog() {
 	title->set_text(TTR("Output:"));
 	title->set_h_size_flags(SIZE_EXPAND_FILL);
 	hb->add_child(title);
+
+	copybutton = memnew(Button);
+	hb->add_child(copybutton);
+	copybutton->set_text(TTR("Copy"));
+	copybutton->set_shortcut(ED_SHORTCUT("editor/copy_output", TTR("Copy Selection"), KEY_MASK_CMD | KEY_C));
+	copybutton->connect("pressed", this, "_copy_request");
 
 	clearbutton = memnew(Button);
 	hb->add_child(clearbutton);
@@ -172,14 +174,15 @@ EditorLog::EditorLog() {
 	log->set_v_size_flags(SIZE_EXPAND_FILL);
 	log->set_h_size_flags(SIZE_EXPAND_FILL);
 	vb->add_child(log);
-	add_message(VERSION_FULL_NAME " (c) 2007-2018 Juan Linietsky, Ariel Manzur & Godot Contributors.");
-	//log->add_text("Initialization Complete.\n"); //because it looks cool.
+	add_message(VERSION_FULL_NAME " (c) 2007-2019 Juan Linietsky, Ariel Manzur & Godot Contributors.");
 
 	eh.errfunc = _error_handler;
 	eh.userdata = this;
 	add_error_handler(&eh);
 
 	current = Thread::get_caller_id();
+
+	add_constant_override("separation", get_constant("separation", "VBoxContainer"));
 
 	EditorNode::get_undo_redo()->set_commit_notify_callback(_undo_redo_cbk, this);
 }

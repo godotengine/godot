@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,25 +31,27 @@
 #ifndef PROJECT_EXPORT_SETTINGS_H
 #define PROJECT_EXPORT_SETTINGS_H
 
+#include "core/os/dir_access.h"
+#include "core/os/thread.h"
+#include "editor/editor_export.h"
 #include "editor/editor_file_dialog.h"
-#include "os/dir_access.h"
-#include "os/thread.h"
+#include "editor/editor_file_system.h"
+#include "editor/editor_inspector.h"
+#include "editor/editor_properties.h"
 #include "scene/gui/button.h"
+#include "scene/gui/check_button.h"
 #include "scene/gui/control.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/file_dialog.h"
 #include "scene/gui/label.h"
 #include "scene/gui/link_button.h"
+#include "scene/gui/menu_button.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/rich_text_label.h"
+#include "scene/gui/slider.h"
 #include "scene/gui/tab_container.h"
 #include "scene/gui/tree.h"
 #include "scene/main/timer.h"
-
-#include "editor/editor_file_system.h"
-#include "editor_export.h"
-#include "property_editor.h"
-#include "scene/gui/slider.h"
 
 class EditorNode;
 
@@ -60,15 +62,14 @@ private:
 	TabContainer *sections;
 
 	MenuButton *add_preset;
+	Button *duplicate_preset;
 	Button *delete_preset;
 	ItemList *presets;
 
 	LineEdit *name;
-	PropertyEditor *parameters;
+	EditorPropertyPath *export_path;
+	EditorInspector *parameters;
 	CheckButton *runnable;
-
-	//EditorFileDialog *pck_export;
-	//EditorFileDialog *file_export;
 
 	Button *button_export;
 	bool updating;
@@ -89,13 +90,19 @@ private:
 	Tree *patches;
 	Button *patch_export;
 	int patch_index;
-	FileDialog *patch_dialog;
+	EditorFileDialog *patch_dialog;
 	ConfirmationDialog *patch_erase;
 
 	Button *export_button;
+	Button *export_all_button;
+	AcceptDialog *export_all_dialog;
 
 	LineEdit *custom_features;
 	RichTextLabel *custom_feature_display;
+
+	OptionButton *script_mode;
+	LineEdit *script_key;
+	Label *script_key_error;
 
 	Label *export_error;
 	HBoxContainer *export_templates_error;
@@ -108,11 +115,15 @@ private:
 	void _runnable_pressed();
 	void _update_parameters(const String &p_edited_property);
 	void _name_changed(const String &p_string);
+	void _export_path_changed(const StringName &p_property, const Variant &p_value, const String &p_field, bool p_changing);
 	void _add_preset(int p_platform);
 	void _edit_preset(int p_index);
+	void _duplicate_preset();
 	void _delete_preset();
 	void _delete_preset_confirm();
+	void _update_export_all();
 
+	void _update_current_preset();
 	void _update_presets();
 
 	void _export_type_changed(int p_which);
@@ -128,21 +139,30 @@ private:
 	bool can_drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from) const;
 	void drop_data_fw(const Point2 &p_point, const Variant &p_data, Control *p_from);
 
-	FileDialog *export_pck_zip;
-	FileDialog *export_project;
-	CheckButton *export_debug;
-	CheckButton *export_pck_zip_debug;
+	EditorFileDialog *export_pck_zip;
+	EditorFileDialog *export_project;
+	CheckBox *export_debug;
+	CheckBox *export_pck_zip_debug;
 
 	void _open_export_template_manager();
 
 	void _export_pck_zip();
 	void _export_pck_zip_selected(const String &p_path);
 
+	void _validate_export_path(const String &p_path);
 	void _export_project();
 	void _export_project_to_path(const String &p_path);
+	void _export_all_dialog();
+	void _export_all_dialog_action(const String &p_str);
+	void _export_all(bool p_debug);
 
 	void _update_feature_list();
 	void _custom_features_changed(const String &p_text);
+
+	bool updating_script_key;
+	void _script_export_mode_changed(int p_mode);
+	void _script_encryption_key_changed(const String &p_key);
+	bool _validate_script_encryption_key(const String &p_key);
 
 	void _tab_changed(int);
 
@@ -152,6 +172,11 @@ protected:
 
 public:
 	void popup_export();
+
+	void set_export_path(const String &p_value);
+	String get_export_path();
+
+	Ref<EditorExportPreset> get_current_preset() const;
 
 	ProjectExportDialog();
 	~ProjectExportDialog();

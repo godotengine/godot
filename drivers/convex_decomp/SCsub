@@ -11,6 +11,7 @@ thirdparty_sources = [
 	"b2Triangle.cpp",
 ]
 thirdparty_sources = [thirdparty_dir + file for file in thirdparty_sources]
-env.add_source_files(env.drivers_sources, thirdparty_sources)
 
-Export('env')
+env_thirdparty = env.Clone()
+env_thirdparty.disable_warnings()
+env_thirdparty.add_source_files(env.drivers_sources, thirdparty_sources)

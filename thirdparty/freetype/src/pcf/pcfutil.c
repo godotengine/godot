@@ -37,7 +37,7 @@ in this Software without prior written authorization from The Open Group.
 
 
   /*
-   *  Invert bit order within each BYTE of an array.
+   * Invert bit order within each BYTE of an array.
    */
 
   FT_LOCAL_DEF( void )
@@ -59,7 +59,7 @@ in this Software without prior written authorization from The Open Group.
 
 
   /*
-   *  Invert byte order within each 16-bits of an array.
+   * Invert byte order within each 16-bits of an array.
    */
 
   FT_LOCAL_DEF( void )
@@ -78,7 +78,7 @@ in this Software without prior written authorization from The Open Group.
   }
 
   /*
-   *  Invert byte order within each 32-bits of an array.
+   * Invert byte order within each 32-bits of an array.
    */
 
   FT_LOCAL_DEF( void )

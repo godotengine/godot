@@ -21,11 +21,11 @@
 #ifndef TRIANGULATOR_H
 #define TRIANGULATOR_H
 
-#include "math_2d.h"
-#include "list.h"
-#include "set.h"
-//2D point structure
+#include "core/list.h"
+#include "core/math/vector2.h"
+#include "core/set.h"
 
+//2D point structure
 
 #define TRIANGULATOR_CCW 1
 #define TRIANGULATOR_CW -1

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,30 +32,27 @@
 
 #ifdef UNIX_ENABLED
 
-#include "servers/visual_server.h"
-
 #include "core/os/thread_dummy.h"
-#include "mutex_posix.h"
-#include "rw_lock_posix.h"
-#include "semaphore_posix.h"
-#include "thread_posix.h"
-
-//#include "core/io/file_access_buffered_fa.h"
-#include "dir_access_unix.h"
-#include "file_access_unix.h"
-#include "packet_peer_udp_posix.h"
-#include "stream_peer_tcp_posix.h"
-#include "tcp_server_posix.h"
+#include "core/project_settings.h"
+#include "drivers/unix/dir_access_unix.h"
+#include "drivers/unix/file_access_unix.h"
+#include "drivers/unix/mutex_posix.h"
+#include "drivers/unix/net_socket_posix.h"
+#include "drivers/unix/rw_lock_posix.h"
+#include "drivers/unix/semaphore_posix.h"
+#include "drivers/unix/thread_posix.h"
+#include "servers/visual_server.h"
 
 #ifdef __APPLE__
 #include <mach-o/dyld.h>
+#include <mach/mach_time.h>
 #endif
 
 #if defined(__FreeBSD__) || defined(__OpenBSD__)
 #include <sys/param.h>
 #include <sys/sysctl.h>
 #endif
-#include "project_settings.h"
+
 #include <assert.h>
 #include <dlfcn.h>
 #include <errno.h>
@@ -67,6 +64,30 @@
 #include <sys/time.h>
 #include <sys/wait.h>
 #include <unistd.h>
+
+/// Clock Setup function (used by get_ticks_usec)
+static uint64_t _clock_start = 0;
+#if defined(__APPLE__)
+static double _clock_scale = 0;
+static void _setup_clock() {
+	mach_timebase_info_data_t info;
+	kern_return_t ret = mach_timebase_info(&info);
+	ERR_FAIL_COND_MSG(ret != 0, "OS CLOCK IS NOT WORKING!");
+	_clock_scale = ((double)info.numer / (double)info.denom) / 1000.0;
+	_clock_start = mach_absolute_time() * _clock_scale;
+}
+#else
+#if defined(CLOCK_MONOTONIC_RAW) && !defined(JAVASCRIPT_ENABLED) // This is a better clock on Linux.
+#define GODOT_CLOCK CLOCK_MONOTONIC_RAW
+#else
+#define GODOT_CLOCK CLOCK_MONOTONIC
+#endif
+static void _setup_clock() {
+	struct timespec tv_now = { 0, 0 };
+	ERR_FAIL_COND_MSG(clock_gettime(GODOT_CLOCK, &tv_now) != 0, "OS CLOCK IS NOT WORKING!");
+	_clock_start = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
+}
+#endif
 
 void OS_Unix::debug_break() {
 
@@ -85,6 +106,7 @@ void OS_Unix::initialize_debugging() {
 
 	if (ScriptDebugger::get_singleton() != NULL) {
 		struct sigaction action;
+		memset(&action, 0, sizeof(action));
 		action.sa_handler = handle_interrupt;
 		sigaction(SIGINT, &action, NULL);
 	}
@@ -93,15 +115,6 @@ void OS_Unix::initialize_debugging() {
 int OS_Unix::unix_initialize_audio(int p_audio_driver) {
 
 	return 0;
-}
-
-// Very simple signal handler to reap processes where ::execute was called with
-// !p_blocking
-void handle_sigchld(int sig) {
-	int saved_errno = errno;
-	while (waitpid((pid_t)(-1), 0, WNOHANG) > 0) {
-	}
-	errno = saved_errno;
 }
 
 void OS_Unix::initialize_core() {
@@ -126,25 +139,16 @@ void OS_Unix::initialize_core() {
 	DirAccess::make_default<DirAccessUnix>(DirAccess::ACCESS_FILESYSTEM);
 
 #ifndef NO_NETWORK
-	TCPServerPosix::make_default();
-	StreamPeerTCPPosix::make_default();
-	PacketPeerUDPPosix::make_default();
+	NetSocketPosix::make_default();
 	IP_Unix::make_default();
 #endif
 
-	ticks_start = 0;
-	ticks_start = get_ticks_usec();
-
-	struct sigaction sa;
-	sa.sa_handler = &handle_sigchld;
-	sigemptyset(&sa.sa_mask);
-	sa.sa_flags = SA_RESTART | SA_NOCLDSTOP;
-	if (sigaction(SIGCHLD, &sa, 0) == -1) {
-		perror("ERROR sigaction() failed:");
-	}
+	_setup_clock();
 }
 
 void OS_Unix::finalize_core() {
+
+	NetSocketPosix::cleanup();
 }
 
 void OS_Unix::alert(const String &p_alert, const String &p_title) {
@@ -164,7 +168,7 @@ String OS_Unix::get_stdin_string(bool p_block) {
 	return "";
 }
 
-String OS_Unix::get_name() {
+String OS_Unix::get_name() const {
 
 	return "Unix";
 }
@@ -178,6 +182,12 @@ uint64_t OS_Unix::get_system_time_secs() const {
 	struct timeval tv_now;
 	gettimeofday(&tv_now, NULL);
 	return uint64_t(tv_now.tv_sec);
+}
+
+uint64_t OS_Unix::get_system_time_msecs() const {
+	struct timeval tv_now;
+	gettimeofday(&tv_now, NULL);
+	return uint64_t(tv_now.tv_sec) * 1000 + uint64_t(tv_now.tv_usec) / 1000;
 }
 
 OS::Date OS_Unix::get_date(bool utc) const {
@@ -244,23 +254,33 @@ OS::TimeZoneInfo OS_Unix::get_time_zone_info() const {
 
 void OS_Unix::delay_usec(uint32_t p_usec) const {
 
-	struct timespec rem = { static_cast<time_t>(p_usec / 1000000), static_cast<long>((p_usec % 1000000) * 1000) };
+	struct timespec rem = { static_cast<time_t>(p_usec / 1000000), (static_cast<long>(p_usec) % 1000000) * 1000 };
 	while (nanosleep(&rem, &rem) == EINTR) {
 	}
 }
 uint64_t OS_Unix::get_ticks_usec() const {
 
-	struct timeval tv_now;
-	gettimeofday(&tv_now, NULL);
-
-	uint64_t longtime = (uint64_t)tv_now.tv_usec + (uint64_t)tv_now.tv_sec * 1000000L;
-	longtime -= ticks_start;
+#if defined(__APPLE__)
+	uint64_t longtime = mach_absolute_time() * _clock_scale;
+#else
+	// Unchecked return. Static analyzers might complain.
+	// If _setup_clock() succeeded, we assume clock_gettime() works.
+	struct timespec tv_now = { 0, 0 };
+	clock_gettime(GODOT_CLOCK, &tv_now);
+	uint64_t longtime = ((uint64_t)tv_now.tv_nsec / 1000L) + (uint64_t)tv_now.tv_sec * 1000000L;
+#endif
+	longtime -= _clock_start;
 
 	return longtime;
 }
 
-Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr) {
+Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bool p_blocking, ProcessID *r_child_id, String *r_pipe, int *r_exitcode, bool read_stderr, Mutex *p_pipe_mutex) {
 
+#ifdef __EMSCRIPTEN__
+	// Don't compile this code at all to avoid undefined references.
+	// Actual virtual call goes to OS_JavaScript.
+	ERR_FAIL_V(ERR_BUG);
+#else
 	if (p_blocking && r_pipe) {
 
 		String argss;
@@ -278,17 +298,23 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		}
 		FILE *f = popen(argss.utf8().get_data(), "r");
 
-		ERR_FAIL_COND_V(!f, ERR_CANT_OPEN);
+		ERR_FAIL_COND_V_MSG(!f, ERR_CANT_OPEN, "Cannot pipe stream from process running with following arguments '" + argss + "'.");
 
 		char buf[65535];
+
 		while (fgets(buf, 65535, f)) {
 
+			if (p_pipe_mutex) {
+				p_pipe_mutex->lock();
+			}
 			(*r_pipe) += buf;
+			if (p_pipe_mutex) {
+				p_pipe_mutex->unlock();
+			}
 		}
-
 		int rv = pclose(f);
 		if (r_exitcode)
-			*r_exitcode = rv;
+			*r_exitcode = WEXITSTATUS(rv);
 
 		return OK;
 	}
@@ -298,6 +324,13 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 
 	if (pid == 0) {
 		// is child
+
+		if (!p_blocking) {
+			// For non blocking calls, create a new session-ID so parent won't wait for it.
+			// This ensures the process won't go zombie at end.
+			setsid();
+		}
+
 		Vector<CharString> cs;
 		cs.push_back(p_path.utf8());
 		for (int i = 0; i < p_arguments.size(); i++)
@@ -320,6 +353,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 		waitpid(pid, &status, 0);
 		if (r_exitcode)
 			*r_exitcode = WEXITSTATUS(status);
+
 	} else {
 
 		if (r_child_id)
@@ -327,6 +361,7 @@ Error OS_Unix::execute(const String &p_path, const List<String> &p_arguments, bo
 	}
 
 	return OK;
+#endif
 }
 
 Error OS_Unix::kill(const ProcessID &p_pid) {
@@ -383,10 +418,7 @@ Error OS_Unix::open_dynamic_library(const String p_path, void *&p_library_handle
 	}
 
 	p_library_handle = dlopen(path.utf8().get_data(), RTLD_NOW);
-	if (!p_library_handle) {
-		ERR_EXPLAIN("Can't open dynamic library: " + p_path + ". Error: " + dlerror());
-		ERR_FAIL_V(ERR_CANT_OPEN);
-	}
+	ERR_FAIL_COND_V_MSG(!p_library_handle, ERR_CANT_OPEN, "Can't open dynamic library: " + p_path + ". Error: " + dlerror());
 	return OK;
 }
 
@@ -405,12 +437,9 @@ Error OS_Unix::get_dynamic_library_symbol_handle(void *p_library_handle, const S
 
 	error = dlerror();
 	if (error != NULL) {
-		if (!p_optional) {
-			ERR_EXPLAIN("Can't resolve symbol " + p_name + ". Error: " + error);
-			ERR_FAIL_V(ERR_CANT_RESOLVE);
-		} else {
-			return ERR_CANT_RESOLVE;
-		}
+		ERR_FAIL_COND_V_MSG(!p_optional, ERR_CANT_RESOLVE, "Can't resolve symbol " + p_name + ". Error: " + error + ".");
+
+		return ERR_CANT_RESOLVE;
 	}
 	return OK;
 }
@@ -428,6 +457,11 @@ String OS_Unix::get_environment(const String &p_var) const {
 	if (getenv(p_var.utf8().get_data()))
 		return getenv(p_var.utf8().get_data());
 	return "";
+}
+
+bool OS_Unix::set_environment(const String &p_var, const String &p_value) const {
+
+	return setenv(p_var.utf8().get_data(), p_value.utf8().get_data(), /* overwrite: */ true) == 0;
 }
 
 int OS_Unix::get_processor_count() const {
@@ -460,9 +494,11 @@ String OS_Unix::get_executable_path() const {
 	//fix for running from a symlink
 	char buf[256];
 	memset(buf, 0, 256);
-	readlink("/proc/self/exe", buf, sizeof(buf));
+	ssize_t len = readlink("/proc/self/exe", buf, sizeof(buf));
 	String b;
-	b.parse_utf8(buf);
+	if (len > 0) {
+		b.parse_utf8(buf, len);
+	}
 	if (b == "") {
 		WARN_PRINT("Couldn't get executable path from /proc/self/exe, using argv[0]");
 		return OS::get_executable_path();

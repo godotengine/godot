@@ -18,10 +18,10 @@ to set the macro values. In this case, you do not have to set -DHAVE_CONFIG_H,
 but if you do, default values will be taken from config.h for non-boolean
 macros that are not defined on the command line.
 
-Boolean macros such as HAVE_STDLIB_H and SUPPORT_PCRE2_8 should either be defined
-(conventionally to 1) for TRUE, and not defined at all for FALSE. All such
-macros are listed as a commented #undef in config.h.generic. Macros such as
-MATCH_LIMIT, whose actual value is relevant, have defaults defined, but are
+Boolean macros such as HAVE_STDLIB_H and SUPPORT_PCRE2_8 should either be
+defined (conventionally to 1) for TRUE, and not defined at all for FALSE. All
+such macros are listed as a commented #undef in config.h.generic. Macros such
+as MATCH_LIMIT, whose actual value is relevant, have defaults defined, but are
 surrounded by #ifndef/#endif lines so that the value can be overridden by -D.
 
 PCRE2 uses memmove() if HAVE_MEMMOVE is defined; otherwise it uses bcopy() if
@@ -34,6 +34,10 @@ sure both macros are undefined; an emulation function will then be used. */
    The build-time default can be overridden by the user of PCRE2 at runtime.
    */
 /* #undef BSR_ANYCRLF */
+
+/* Define to any value to disable the use of the z and t modifiers in
+   formatting settings such as %zu or %td (this is rarely needed). */
+/* #undef DISABLE_PERCENT_ZT */
 
 /* If you are compiling for a system that uses EBCDIC instead of ASCII
    character codes, define this macro to any value. When EBCDIC is set, PCRE2
@@ -132,17 +136,18 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to 1 if you have the <zlib.h> header file. */
 /* #undef HAVE_ZLIB_H */
 
-/* This limits the amount of memory that pcre2_match() may use while matching
-   a pattern. The value is in kilobytes. */
+/* This limits the amount of memory that may be used while matching a pattern.
+   It applies to both pcre2_match() and pcre2_dfa_match(). It does not apply
+   to JIT matching. The value is in kibibytes (units of 1024 bytes). */
 #ifndef HEAP_LIMIT
 #define HEAP_LIMIT 20000000
 #endif
 
 /* The value of LINK_SIZE determines the number of bytes used to store links
    as offsets within the compiled regex. The default is 2, which allows for
-   compiled patterns up to 64K long. This covers the vast majority of cases.
-   However, PCRE2 can also be compiled to use 3 or 4 bytes instead. This
-   allows for longer patterns in extreme cases. */
+   compiled patterns up to 65535 code units long. This covers the vast
+   majority of cases. However, PCRE2 can also be compiled to use 3 or 4 bytes
+   instead. This allows for longer patterns in extreme cases. */
 #ifndef LINK_SIZE
 #define LINK_SIZE 2
 #endif
@@ -155,7 +160,8 @@ sure both macros are undefined; an emulation function will then be used. */
 
 /* The value of MATCH_LIMIT determines the default number of times the
    pcre2_match() function can record a backtrack position during a single
-   matching attempt. There is a runtime interface for setting a different
+   matching attempt. The value is also used to limit a loop counter in
+   pcre2_dfa_match(). There is a runtime interface for setting a different
    limit. The limit exists in order to catch runaway regular expressions that
    take for ever to determine that they do not match. The default is set very
    large so that it does not accidentally catch legitimate cases. */
@@ -170,7 +176,9 @@ sure both macros are undefined; an emulation function will then be used. */
    MATCH_LIMIT_DEPTH provides this facility. To have any useful effect, it
    must be less than the value of MATCH_LIMIT. The default is to use the same
    value as MATCH_LIMIT. There is a runtime method for setting a different
-   limit. */
+   limit. In the case of pcre2_dfa_match(), this limit controls the depth of
+   the internal nested function calls that are used for pattern recursions,
+   lookarounds, and atomic groups. */
 #ifndef MATCH_LIMIT_DEPTH
 #define MATCH_LIMIT_DEPTH MATCH_LIMIT
 #endif
@@ -210,7 +218,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_NAME "PCRE2"
 
 /* Define to the full name and version of this package. */
-#define PACKAGE_STRING "PCRE2 10.31"
+#define PACKAGE_STRING "PCRE2 10.33"
 
 /* Define to the one symbol short name of this package. */
 #define PACKAGE_TARNAME "pcre2"
@@ -219,7 +227,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #define PACKAGE_URL ""
 
 /* Define to the version of this package. */
-#define PACKAGE_VERSION "10.31"
+#define PACKAGE_VERSION "10.33"
 
 /* The value of PARENS_NEST_LIMIT specifies the maximum depth of nested
    parentheses (of any kind) in a pattern. This limits the amount of system
@@ -295,6 +303,11 @@ sure both macros are undefined; an emulation function will then be used. */
 /* Define to any value to enable callout script support in pcre2grep. */
 /* #undef SUPPORT_PCRE2GREP_CALLOUT */
 
+/* Define to any value to enable fork support in pcre2grep callout scripts.
+   This will have no effect unless SUPPORT_PCRE2GREP_CALLOUT is also defined.
+   */
+/* #undef SUPPORT_PCRE2GREP_CALLOUT_FORK */
+
 /* Define to any value to enable JIT support in pcre2grep. Note that this will
    have no effect unless SUPPORT_JIT is also defined. */
 /* #undef SUPPORT_PCRE2GREP_JIT */
@@ -339,7 +352,7 @@ sure both macros are undefined; an emulation function will then be used. */
 #endif
 
 /* Version number of package */
-#define VERSION "10.31"
+#define VERSION "10.33"
 
 /* Define to 1 if on MINIX. */
 /* #undef _MINIX */

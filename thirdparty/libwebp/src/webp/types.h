@@ -49,4 +49,4 @@ typedef long long int int64_t;
 // Macro to check ABI compatibility (same major revision number)
 #define WEBP_ABI_IS_INCOMPATIBLE(a, b) (((a) >> 8) != ((b) >> 8))
 
-#endif  /* WEBP_WEBP_TYPES_H_ */
+#endif  // WEBP_WEBP_TYPES_H_

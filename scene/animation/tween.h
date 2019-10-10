@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -100,6 +100,7 @@ private:
 		real_t delay;
 		int args;
 		Variant arg[5];
+		int uid;
 	};
 
 	String autoplay;
@@ -107,6 +108,7 @@ private:
 	bool repeat;
 	float speed_scale;
 	mutable int pending_update;
+	int uid;
 
 	List<InterpolateData> interpolates;
 
@@ -131,7 +133,9 @@ private:
 	bool _apply_tween_value(InterpolateData &p_data, Variant &value);
 
 	void _tween_process(float p_delta);
-	void _remove(Object *p_object, StringName p_key, bool first_only);
+	void _remove_by_uid(int uid);
+	void _push_interpolate_data(InterpolateData &p_data);
+	bool _build_interpolation(InterpolateType p_interpolation_type, Object *p_object, NodePath *p_property, StringName *p_method, Variant p_initial_val, Variant p_final_val, real_t p_duration, TransitionType p_trans_type, EaseType p_ease_type, real_t p_delay);
 
 protected:
 	bool _set(const StringName &p_name, const Variant &p_value);

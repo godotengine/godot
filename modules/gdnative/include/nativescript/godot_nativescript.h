@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -40,12 +40,13 @@ extern "C" {
 typedef enum {
 	GODOT_METHOD_RPC_MODE_DISABLED,
 	GODOT_METHOD_RPC_MODE_REMOTE,
-	GODOT_METHOD_RPC_MODE_SYNC,
 	GODOT_METHOD_RPC_MODE_MASTER,
-	GODOT_METHOD_RPC_MODE_SLAVE,
+	GODOT_METHOD_RPC_MODE_PUPPET,
+	GODOT_METHOD_RPC_MODE_SLAVE = GODOT_METHOD_RPC_MODE_PUPPET,
 	GODOT_METHOD_RPC_MODE_REMOTESYNC,
+	GODOT_METHOD_RPC_MODE_SYNC = GODOT_METHOD_RPC_MODE_REMOTESYNC,
 	GODOT_METHOD_RPC_MODE_MASTERSYNC,
-	GODOT_METHOD_RPC_MODE_SLAVESYNC,
+	GODOT_METHOD_RPC_MODE_PUPPETSYNC,
 } godot_method_rpc_mode;
 
 typedef enum {
@@ -55,7 +56,7 @@ typedef enum {
 	GODOT_PROPERTY_HINT_ENUM, ///< hint_text= "val1,val2,val3,etc"
 	GODOT_PROPERTY_HINT_EXP_EASING, /// exponential easing function (Math::ease)
 	GODOT_PROPERTY_HINT_LENGTH, ///< hint_text= "length" (as integer)
-	GODOT_PROPERTY_HINT_SPRITE_FRAME,
+	GODOT_PROPERTY_HINT_SPRITE_FRAME, // FIXME: Obsolete: drop whenever we can break compat
 	GODOT_PROPERTY_HINT_KEY_ACCEL, ///< hint_text= "length" (as integer)
 	GODOT_PROPERTY_HINT_FLAGS, ///< hint_text= "flag1,flag2,etc" (as bit flags)
 	GODOT_PROPERTY_HINT_LAYERS_2D_RENDER,
@@ -63,11 +64,12 @@ typedef enum {
 	GODOT_PROPERTY_HINT_LAYERS_3D_RENDER,
 	GODOT_PROPERTY_HINT_LAYERS_3D_PHYSICS,
 	GODOT_PROPERTY_HINT_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
-	GODOT_PROPERTY_HINT_DIR, ///< a directort path must be passed
+	GODOT_PROPERTY_HINT_DIR, ///< a directory path must be passed
 	GODOT_PROPERTY_HINT_GLOBAL_FILE, ///< a file path must be passed, hint_text (optionally) is a filter "*.png,*.wav,*.doc,"
-	GODOT_PROPERTY_HINT_GLOBAL_DIR, ///< a directort path must be passed
+	GODOT_PROPERTY_HINT_GLOBAL_DIR, ///< a directory path must be passed
 	GODOT_PROPERTY_HINT_RESOURCE_TYPE, ///< a resource object type
 	GODOT_PROPERTY_HINT_MULTILINE_TEXT, ///< used for string properties that can contain multiple lines
+	GODOT_PROPERTY_HINT_PLACEHOLDER_TEXT, ///< used to set a placeholder text for string properties
 	GODOT_PROPERTY_HINT_COLOR_NO_ALPHA, ///< used for ignoring alpha component when editing a color
 	GODOT_PROPERTY_HINT_IMAGE_COMPRESS_LOSSY,
 	GODOT_PROPERTY_HINT_IMAGE_COMPRESS_LOSSLESS,
@@ -96,8 +98,8 @@ typedef enum {
 	GODOT_PROPERTY_USAGE_INTERNATIONALIZED = 64, //hint for internationalized strings
 	GODOT_PROPERTY_USAGE_GROUP = 128, //used for grouping props in the editor
 	GODOT_PROPERTY_USAGE_CATEGORY = 256,
-	GODOT_PROPERTY_USAGE_STORE_IF_NONZERO = 512, //only store if nonzero
-	GODOT_PROPERTY_USAGE_STORE_IF_NONONE = 1024, //only store if false
+	GODOT_PROPERTY_USAGE_STORE_IF_NONZERO = 512, // FIXME: Obsolete: drop whenever we can break compat
+	GODOT_PROPERTY_USAGE_STORE_IF_NONONE = 1024, // FIXME: Obsolete: drop whenever we can break compat
 	GODOT_PROPERTY_USAGE_NO_INSTANCE_STATE = 2048,
 	GODOT_PROPERTY_USAGE_RESTART_IF_CHANGED = 4096,
 	GODOT_PROPERTY_USAGE_SCRIPT_VARIABLE = 8192,
@@ -228,6 +230,8 @@ const void GDAPI *godot_nativescript_get_type_tag(const godot_object *p_object);
 typedef struct {
 	GDCALLINGCONV void *(*alloc_instance_binding_data)(void *, const void *, godot_object *);
 	GDCALLINGCONV void (*free_instance_binding_data)(void *, void *);
+	GDCALLINGCONV void (*refcount_incremented_instance_binding)(void *, godot_object *);
+	GDCALLINGCONV bool (*refcount_decremented_instance_binding)(void *, godot_object *);
 	void *data;
 	GDCALLINGCONV void (*free_func)(void *);
 } godot_instance_binding_functions;
@@ -236,6 +240,8 @@ int GDAPI godot_nativescript_register_instance_binding_data_functions(godot_inst
 void GDAPI godot_nativescript_unregister_instance_binding_data_functions(int p_idx);
 
 void GDAPI *godot_nativescript_get_instance_binding_data(int p_idx, godot_object *p_object);
+
+void GDAPI godot_nativescript_profiling_add_data(const char *p_signature, uint64_t p_time);
 
 #ifdef __cplusplus
 }

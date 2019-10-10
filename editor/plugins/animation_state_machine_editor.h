@@ -1,8 +1,39 @@
+/*************************************************************************/
+/*  animation_state_machine_editor.h                                     */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #ifndef ANIMATION_STATE_MACHINE_EDITOR_H
 #define ANIMATION_STATE_MACHINE_EDITOR_H
 
 #include "editor/editor_node.h"
 #include "editor/editor_plugin.h"
+#include "editor/plugins/animation_tree_editor_plugin.h"
 #include "editor/property_editor.h"
 #include "scene/animation/animation_node_state_machine.h"
 #include "scene/gui/button.h"
@@ -10,9 +41,9 @@
 #include "scene/gui/popup.h"
 #include "scene/gui/tree.h"
 
-class AnimationNodeStateMachineEditor : public VBoxContainer {
+class AnimationNodeStateMachineEditor : public AnimationTreeNodeEditorPlugin {
 
-	GDCLASS(AnimationNodeStateMachineEditor, VBoxContainer);
+	GDCLASS(AnimationNodeStateMachineEditor, AnimationTreeNodeEditorPlugin);
 
 	Ref<AnimationNodeStateMachine> state_machine;
 
@@ -28,9 +59,6 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 
 	OptionButton *transition_mode;
 	OptionButton *play_mode;
-
-	HBoxContainer *goto_parent_hbox;
-	ToolButton *goto_parent;
 
 	PanelContainer *panel;
 
@@ -79,8 +107,6 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 	void _add_menu_type(int p_index);
 	void _add_animation_type(int p_index);
 
-	void _goto_parent();
-
 	void _removed_from_graph();
 
 	struct NodeRect {
@@ -99,6 +125,8 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 		Vector2 from;
 		Vector2 to;
 		AnimationNodeStateMachineTransition::SwitchMode mode;
+		StringName advance_condition_name;
+		bool advance_condition_state;
 		bool disabled;
 		bool auto_advance;
 		float width;
@@ -115,6 +143,7 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 
 	String prev_name;
 	void _name_edited(const String &p_text);
+	void _name_edited_focus_out();
 	void _open_editor(const String &p_name);
 	void _scroll_changed(double);
 
@@ -131,9 +160,21 @@ class AnimationNodeStateMachineEditor : public VBoxContainer {
 	StringName last_current_node;
 	Vector<StringName> last_travel_path;
 	float last_play_pos;
+	float play_pos;
+	float current_length;
 
 	float error_time;
 	String error_text;
+
+	EditorFileDialog *open_file;
+	Ref<AnimationNode> file_loaded;
+	void _file_opened(const String &p_file);
+
+	enum {
+		MENU_LOAD_FILE = 1000,
+		MENU_PASTE = 1001,
+		MENU_LOAD_FILE_CONFIRM = 1002
+	};
 
 protected:
 	void _notification(int p_what);
@@ -141,27 +182,9 @@ protected:
 
 public:
 	static AnimationNodeStateMachineEditor *get_singleton() { return singleton; }
-	void edit(AnimationNodeStateMachine *p_state_machine);
+	virtual bool can_edit(const Ref<AnimationNode> &p_node);
+	virtual void edit(const Ref<AnimationNode> &p_node);
 	AnimationNodeStateMachineEditor();
-};
-
-class AnimationNodeStateMachineEditorPlugin : public EditorPlugin {
-
-	GDCLASS(AnimationNodeStateMachineEditorPlugin, EditorPlugin);
-
-	AnimationNodeStateMachineEditor *anim_tree_editor;
-	EditorNode *editor;
-	Button *button;
-
-public:
-	virtual String get_name() const { return "StateMachine"; }
-	bool has_main_screen() const { return false; }
-	virtual void edit(Object *p_object);
-	virtual bool handles(Object *p_object) const;
-	virtual void make_visible(bool p_visible);
-
-	AnimationNodeStateMachineEditorPlugin(EditorNode *p_node);
-	~AnimationNodeStateMachineEditorPlugin();
 };
 
 #endif // ANIMATION_STATE_MACHINE_EDITOR_H

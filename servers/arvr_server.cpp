@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "arvr_server.h"
 #include "arvr/arvr_interface.h"
 #include "arvr/arvr_positional_tracker.h"
-#include "project_settings.h"
+#include "core/project_settings.h"
 
 ARVRServer *ARVRServer::singleton = NULL;
 
@@ -87,11 +87,11 @@ real_t ARVRServer::get_world_scale() const {
 };
 
 void ARVRServer::set_world_scale(real_t p_world_scale) {
-	if (world_scale < 0.01) {
-		world_scale = 0.01;
-	} else if (world_scale > 1000.0) {
-		world_scale = 1000.0;
-	};
+	if (p_world_scale < 0.01) {
+		p_world_scale = 0.01;
+	} else if (p_world_scale > 1000.0) {
+		p_world_scale = 1000.0;
+	}
 
 	world_scale = p_world_scale;
 };
@@ -100,7 +100,7 @@ Transform ARVRServer::get_world_origin() const {
 	return world_origin;
 };
 
-void ARVRServer::set_world_origin(const Transform p_world_origin) {
+void ARVRServer::set_world_origin(const Transform &p_world_origin) {
 	world_origin = p_world_origin;
 };
 
@@ -178,7 +178,7 @@ void ARVRServer::remove_interface(const Ref<ARVRInterface> &p_interface) {
 
 	ERR_FAIL_COND(idx == -1);
 
-	print_line("Removed interface" + p_interface->get_name());
+	print_verbose("ARVR: Removed interface" + p_interface->get_name());
 
 	emit_signal("interface_removed", p_interface->get_name());
 	interfaces.remove(idx);
@@ -320,12 +320,12 @@ Ref<ARVRInterface> ARVRServer::get_primary_interface() const {
 void ARVRServer::set_primary_interface(const Ref<ARVRInterface> &p_primary_interface) {
 	primary_interface = p_primary_interface;
 
-	print_line("Primary interface set to: " + primary_interface->get_name());
+	print_verbose("ARVR: Primary interface set to: " + primary_interface->get_name());
 };
 
 void ARVRServer::clear_primary_interface_if(const Ref<ARVRInterface> &p_primary_interface) {
 	if (primary_interface == p_primary_interface) {
-		print_line("Clearing primary interface");
+		print_verbose("ARVR: Clearing primary interface");
 		primary_interface.unref();
 	};
 };

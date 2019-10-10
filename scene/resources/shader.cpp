@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,7 @@
 /*************************************************************************/
 
 #include "shader.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include "scene/scene_string_names.h"
 #include "servers/visual/shader_language.h"
 #include "servers/visual_server.h"
@@ -126,6 +126,11 @@ void Shader::get_default_texture_param_list(List<StringName> *r_textures) const 
 		r_textures->push_back(E->key());
 	}
 }
+
+bool Shader::is_text_shader() const {
+	return true;
+}
+
 bool Shader::has_param(const StringName &p_param) const {
 
 	return params_cache.has(p_param);
@@ -217,10 +222,7 @@ Error ResourceFormatSaverShader::save(const String &p_path, const RES &p_resourc
 	Error err;
 	FileAccess *file = FileAccess::open(p_path, FileAccess::WRITE, &err);
 
-	if (err) {
-
-		ERR_FAIL_COND_V(err, err);
-	}
+	ERR_FAIL_COND_V_MSG(err, err, "Cannot save shader '" + p_path + "'.");
 
 	file->store_string(source);
 	if (file->get_error() != OK && file->get_error() != ERR_FILE_EOF) {
@@ -235,8 +237,10 @@ Error ResourceFormatSaverShader::save(const String &p_path, const RES &p_resourc
 
 void ResourceFormatSaverShader::get_recognized_extensions(const RES &p_resource, List<String> *p_extensions) const {
 
-	if (Object::cast_to<Shader>(*p_resource)) {
-		p_extensions->push_back("shader");
+	if (const Shader *shader = Object::cast_to<Shader>(*p_resource)) {
+		if (shader->is_text_shader()) {
+			p_extensions->push_back("shader");
+		}
 	}
 }
 bool ResourceFormatSaverShader::recognize(const RES &p_resource) const {

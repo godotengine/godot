@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -57,14 +57,14 @@ class Sprite : public Node2D {
 
 	void _get_rects(Rect2 &r_src_rect, Rect2 &r_dst_rect, bool &r_filter_clip) const;
 
+	void _texture_changed();
+
 protected:
 	void _notification(int p_what);
 
 	static void _bind_methods();
 
 	virtual void _validate_property(PropertyInfo &property) const;
-
-	virtual void _changed_callback(Object *p_changed, const char *p_prop);
 
 public:
 	virtual Dictionary _edit_get_state() const;
@@ -74,6 +74,8 @@ public:
 	virtual Point2 _edit_get_pivot() const;
 	virtual bool _edit_use_pivot() const;
 	virtual bool _edit_is_selected_on_click(const Point2 &p_point, double p_tolerance) const;
+
+	bool is_pixel_opaque(const Point2 &p_point) const;
 
 	virtual Rect2 _edit_get_rect() const;
 	virtual bool _edit_use_rect() const;
@@ -107,6 +109,9 @@ public:
 
 	void set_frame(int p_frame);
 	int get_frame() const;
+
+	void set_frame_coords(const Vector2 &p_coord);
+	Vector2 get_frame_coords() const;
 
 	void set_vframes(int p_amount);
 	int get_vframes() const;

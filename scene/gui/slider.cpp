@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,13 +29,20 @@
 /*************************************************************************/
 
 #include "slider.h"
-#include "os/keyboard.h"
+#include "core/os/keyboard.h"
 
 Size2 Slider::get_minimum_size() const {
 
 	Ref<StyleBox> style = get_stylebox("slider");
-	Size2i ms = style->get_minimum_size() + style->get_center_size();
-	return ms;
+	Size2i ss = style->get_minimum_size() + style->get_center_size();
+
+	Ref<Texture> grabber = get_icon("grabber");
+	Size2i rs = grabber->get_size();
+
+	if (orientation == HORIZONTAL)
+		return Size2i(ss.width, MAX(ss.height, rs.height));
+	else
+		return Size2i(MAX(ss.width, rs.width), ss.height);
 }
 
 void Slider::_gui_input(Ref<InputEvent> p_event) {
@@ -134,7 +141,11 @@ void Slider::_gui_input(Ref<InputEvent> p_event) {
 void Slider::_notification(int p_what) {
 
 	switch (p_what) {
+		case NOTIFICATION_THEME_CHANGED: {
 
+			minimum_size_changed();
+			update();
+		} break;
 		case NOTIFICATION_MOUSE_ENTER: {
 
 			mouse_inside = true;
@@ -276,7 +287,6 @@ void Slider::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "scrollable"), "set_scrollable", "is_scrollable");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "tick_count", PROPERTY_HINT_RANGE, "0,4096,1"), "set_ticks", "get_ticks");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "ticks_on_borders"), "set_ticks_on_borders", "get_ticks_on_borders");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "focus_mode", PROPERTY_HINT_ENUM, "None,Click,All"), "set_focus_mode", "get_focus_mode");
 }
 
 Slider::Slider(Orientation p_orientation) {
@@ -284,6 +294,7 @@ Slider::Slider(Orientation p_orientation) {
 	mouse_inside = false;
 	grab.active = false;
 	ticks = 0;
+	ticks_on_borders = false;
 	custom_step = -1;
 	editable = true;
 	scrollable = true;

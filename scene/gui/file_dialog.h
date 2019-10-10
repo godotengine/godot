@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,15 +32,13 @@
 #define FILE_DIALOG_H
 
 #include "box_container.h"
-#include "os/dir_access.h"
+#include "core/os/dir_access.h"
 #include "scene/gui/dialogs.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/option_button.h"
 #include "scene/gui/tool_button.h"
 #include "scene/gui/tree.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
+
 class FileDialog : public ConfirmationDialog {
 
 	GDCLASS(FileDialog, ConfirmationDialog);
@@ -90,6 +88,7 @@ private:
 	ToolButton *dir_up;
 
 	ToolButton *refresh;
+	ToolButton *show_hidden;
 
 	Vector<String> filters;
 
@@ -101,9 +100,11 @@ private:
 	bool invalidated;
 
 	void update_dir();
+	void update_file_name();
 	void update_file_list();
 	void update_filters();
 
+	void _tree_multi_selected(Object *p_object, int p_cell, bool p_selected);
 	void _tree_selected();
 
 	void _select_drive(int p_idx);

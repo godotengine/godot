@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "vector3.h"
-#include "matrix3.h"
+
+#include "core/math/basis.h"
 
 void Vector3::rotate(const Vector3 &p_axis, real_t p_phi) {
 
@@ -124,6 +125,28 @@ Vector3 Vector3::cubic_interpolate(const Vector3 &p_b, const Vector3 &p_pre_a, c
 						(2.0 * p0 - 5.0 * p1 + 4 * p2 - p3) * t2 +
 						(-p0 + 3.0 * p1 - 3.0 * p2 + p3) * t3);
 	return out;
+}
+
+Vector3 Vector3::move_toward(const Vector3 &p_to, const real_t p_delta) const {
+	Vector3 v = *this;
+	Vector3 vd = p_to - v;
+	real_t len = vd.length();
+	return len <= p_delta || len < CMP_EPSILON ? p_to : v + vd / len * p_delta;
+}
+
+Basis Vector3::outer(const Vector3 &p_b) const {
+
+	Vector3 row0(x * p_b.x, x * p_b.y, x * p_b.z);
+	Vector3 row1(y * p_b.x, y * p_b.y, y * p_b.z);
+	Vector3 row2(z * p_b.x, z * p_b.y, z * p_b.z);
+
+	return Basis(row0, row1, row2);
+}
+
+Basis Vector3::to_diagonal_matrix() const {
+	return Basis(x, 0, 0,
+			0, y, 0,
+			0, 0, z);
 }
 
 Vector3::operator String() const {

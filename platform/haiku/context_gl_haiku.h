@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -33,12 +33,10 @@
 
 #if defined(OPENGL_ENABLED)
 
-#include "drivers/gl_context/context_gl.h"
-
 #include "haiku_direct_window.h"
 #include "haiku_gl_view.h"
 
-class ContextGL_Haiku : public ContextGL {
+class ContextGL_Haiku {
 private:
 	HaikuGLView *view;
 	HaikuDirectWindow *window;
@@ -46,18 +44,18 @@ private:
 	bool use_vsync;
 
 public:
+	Error initialize();
+	void release_current();
+	void make_current();
+	void swap_buffers();
+	int get_window_width();
+	int get_window_height();
+
+	void set_use_vsync(bool p_use);
+	bool is_using_vsync() const;
+
 	ContextGL_Haiku(HaikuDirectWindow *p_window);
 	~ContextGL_Haiku();
-
-	virtual Error initialize();
-	virtual void release_current();
-	virtual void make_current();
-	virtual void swap_buffers();
-	virtual int get_window_width();
-	virtual int get_window_height();
-
-	virtual void set_use_vsync(bool p_use);
-	virtual bool is_using_vsync() const;
 };
 
 #endif

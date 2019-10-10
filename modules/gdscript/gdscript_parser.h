@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,13 +31,14 @@
 #ifndef GDSCRIPT_PARSER_H
 #define GDSCRIPT_PARSER_H
 
+#include "core/map.h"
+#include "core/object.h"
+#include "core/script_language.h"
 #include "gdscript_functions.h"
 #include "gdscript_tokenizer.h"
-#include "map.h"
-#include "object.h"
-#include "script_language.h"
 
 struct GDScriptDataType;
+struct GDScriptWarning;
 
 class GDScriptParser {
 public:
@@ -57,6 +58,7 @@ public:
 		bool is_constant;
 		bool is_meta_type; // Whether the value can be used as a type
 		bool infer_type;
+		bool may_yield; // For function calls
 
 		Variant::Type builtin_type;
 		StringName native_type;
@@ -86,15 +88,19 @@ public:
 				case CLASS: {
 					return class_type == other.class_type;
 				} break;
+				case UNRESOLVED: {
+				} break;
 			}
 			return false;
 		}
 
 		DataType() :
+				kind(UNRESOLVED),
 				has_type(false),
 				is_constant(false),
 				is_meta_type(false),
 				infer_type(false),
+				may_yield(false),
 				builtin_type(Variant::NIL),
 				class_type(NULL) {}
 	};
@@ -143,9 +149,11 @@ public:
 		bool tool;
 		StringName name;
 		bool extends_used;
+		bool classname_used;
 		StringName extends_file;
 		Vector<StringName> extends_class;
 		DataType base_type;
+		String icon_path;
 
 		struct Member {
 			PropertyInfo _export;
@@ -160,7 +168,9 @@ public:
 			Node *expression;
 			OperatorNode *initial_assignment;
 			MultiplayerAPI::RPCMode rpc_mode;
+			int usages;
 		};
+
 		struct Constant {
 			Node *expression;
 			DataType type;
@@ -169,6 +179,8 @@ public:
 		struct Signal {
 			StringName name;
 			Vector<StringName> arguments;
+			int emissions;
+			int line;
 		};
 
 		Vector<ClassNode *> subclasses;
@@ -187,6 +199,7 @@ public:
 			tool = false;
 			type = TYPE_CLASS;
 			extends_used = false;
+			classname_used = false;
 			end_line = -1;
 			owner = NULL;
 		}
@@ -197,21 +210,27 @@ public:
 		bool _static;
 		MultiplayerAPI::RPCMode rpc_mode;
 		bool has_yield;
+		bool has_unreachable_code;
 		StringName name;
 		DataType return_type;
 		Vector<StringName> arguments;
 		Vector<DataType> argument_types;
 		Vector<Node *> default_values;
 		BlockNode *body;
+#ifdef DEBUG_ENABLED
+		Vector<int> arguments_usage;
+#endif // DEBUG_ENABLED
 
 		virtual DataType get_datatype() const { return return_type; }
 		virtual void set_datatype(const DataType &p_datatype) { return_type = p_datatype; }
+		int get_required_argument_count() { return arguments.size() - default_values.size(); }
 
 		FunctionNode() {
 			type = TYPE_FUNCTION;
 			_static = false;
 			rpc_mode = MultiplayerAPI::RPC_MODE_DISABLED;
 			has_yield = false;
+			has_unreachable_code = false;
 		}
 	};
 
@@ -267,6 +286,7 @@ public:
 		Node *assign;
 		OperatorNode *assign_op;
 		int assignments;
+		int usages;
 		DataType datatype;
 		virtual DataType get_datatype() const { return datatype; }
 		virtual void set_datatype(const DataType &p_datatype) { datatype = p_datatype; }
@@ -275,6 +295,7 @@ public:
 			assign = NULL;
 			assign_op = NULL;
 			assignments = 0;
+			usages = 0;
 		}
 	};
 
@@ -331,6 +352,7 @@ public:
 			OP_PARENT_CALL,
 			OP_YIELD,
 			OP_IS,
+			OP_IS_BUILTIN,
 			//indexing operator
 			OP_INDEX,
 			OP_INDEX_NAMED,
@@ -426,7 +448,6 @@ public:
 			CF_IF,
 			CF_FOR,
 			CF_WHILE,
-			CF_SWITCH,
 			CF_BREAK,
 			CF_CONTINUE,
 			CF_RETURN,
@@ -460,7 +481,12 @@ public:
 
 	struct AssertNode : public Node {
 		Node *condition;
-		AssertNode() { type = TYPE_ASSERT; }
+		Node *message;
+		AssertNode() :
+				condition(0),
+				message(0) {
+			type = TYPE_ASSERT;
+		}
 	};
 
 	struct BreakpointNode : public Node {
@@ -514,8 +540,14 @@ private:
 	int error_line;
 	int error_column;
 	bool check_types;
+	bool dependencies_only;
+	List<String> dependencies;
 #ifdef DEBUG_ENABLED
 	Set<int> *safe_lines;
+#endif // DEBUG_ENABLED
+
+#ifdef DEBUG_ENABLED
+	List<GDScriptWarning> warnings;
 #endif // DEBUG_ENABLED
 
 	int pending_newline;
@@ -534,7 +566,6 @@ private:
 
 	CompletionType completion_type;
 	StringName completion_cursor;
-	bool completion_static;
 	Variant::Type completion_built_in_constant;
 	Node *completion_node;
 	ClassNode *completion_class;
@@ -550,9 +581,13 @@ private:
 	MultiplayerAPI::RPCMode rpc_mode;
 
 	void _set_error(const String &p_error, int p_line = -1, int p_column = -1);
+#ifdef DEBUG_ENABLED
+	void _add_warning(int p_code, int p_line = -1, const String &p_symbol1 = String(), const String &p_symbol2 = String(), const String &p_symbol3 = String(), const String &p_symbol4 = String());
+	void _add_warning(int p_code, int p_line, const Vector<String> &p_symbols);
+#endif // DEBUG_ENABLED
 	bool _recover_from_completion();
 
-	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false);
+	bool _parse_arguments(Node *p_parent, Vector<Node *> &p_args, bool p_static, bool p_can_codecomplete = false, bool p_parsing_constant = false);
 	bool _enter_indent_block(BlockNode *p_block = NULL);
 	bool _parse_newline();
 	Node *_parse_expression(Node *p_parent, bool p_static, bool p_allow_assign = false, bool p_parsing_constant = false);
@@ -569,7 +604,7 @@ private:
 	void _parse_class(ClassNode *p_class);
 	bool _end_statement();
 
-	void _determine_inheritance(ClassNode *p_class);
+	void _determine_inheritance(ClassNode *p_class, bool p_recursive = true);
 	bool _parse_type(DataType &r_type, bool p_can_be_void = false);
 	DataType _resolve_type(const DataType &p_source, int p_line);
 	DataType _type_from_variant(const Variant &p_value) const;
@@ -580,10 +615,11 @@ private:
 	bool _get_function_signature(DataType &p_base_type, const StringName &p_function, DataType &r_return_type, List<DataType> &r_arg_types, int &r_default_arg_count, bool &r_static, bool &r_vararg) const;
 	bool _get_member_type(const DataType &p_base_type, const StringName &p_member, DataType &r_member_type) const;
 	bool _is_type_compatible(const DataType &p_container, const DataType &p_expression, bool p_allow_implicit_conversion = false) const;
+	Node *_get_default_value_for_type(const DataType &p_type, int p_line = -1);
 
 	DataType _reduce_node_type(Node *p_node);
 	DataType _reduce_function_call_type(const OperatorNode *p_call);
-	DataType _reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line);
+	DataType _reduce_identifier_type(const DataType *p_base_type, const StringName &p_identifier, int p_line, bool p_is_indexing);
 	void _check_class_level_types(ClassNode *p_class);
 	void _check_class_blocks_types(ClassNode *p_class);
 	void _check_function_types(FunctionNode *p_function);
@@ -602,10 +638,14 @@ private:
 	Error _parse(const String &p_base_path);
 
 public:
+	bool has_error() const;
 	String get_error() const;
 	int get_error_line() const;
 	int get_error_column() const;
-	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = NULL);
+#ifdef DEBUG_ENABLED
+	const List<GDScriptWarning> &get_warnings() const { return warnings; }
+#endif // DEBUG_ENABLED
+	Error parse(const String &p_code, const String &p_base_path = "", bool p_just_validate = false, const String &p_self_path = "", bool p_for_completion = false, Set<int> *r_safe_lines = NULL, bool p_dependencies_only = false);
 	Error parse_bytecode(const Vector<uint8_t> &p_bytecode, const String &p_base_path = "", const String &p_self_path = "");
 
 	bool is_tool_script() const;
@@ -623,6 +663,8 @@ public:
 	FunctionNode *get_completion_function();
 	int get_completion_argument_index();
 	int get_completion_identifier_is_function();
+
+	const List<String> &get_dependencies() const { return dependencies; }
 
 	void clear();
 	GDScriptParser();

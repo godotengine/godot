@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -91,9 +91,10 @@ public:
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
-	virtual void dispatch_callbacks();
-	virtual void on_collision_filters_change();
-	virtual void on_collision_checker_start();
+	virtual void dispatch_callbacks() {}
+	virtual void on_collision_filters_change() {}
+	virtual void on_collision_checker_start() {}
+	virtual void on_collision_checker_end() {}
 	virtual void on_enter_area(AreaBullet *p_area);
 	virtual void on_exit_area(AreaBullet *p_area);
 

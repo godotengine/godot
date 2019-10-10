@@ -1,10 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Array" category="Built-In Types" version="3.1">
+<class name="Array" category="Built-In Types" version="3.2">
 	<brief_description>
 		Generic array datatype.
 	</brief_description>
 	<description>
-		Generic array, contains several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.). Example:
+		Generic array which can contain several elements of any type, accessible by a numerical index starting at 0. Negative indices can be used to count from the back, like in Python (-1 is the last element, -2 the second to last, etc.).
+		[b]Example:[/b]
 		[codeblock]
 		var array = ["One", 2, 3, "Four"]
 		print(array[0])   # One
@@ -17,8 +18,6 @@
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Array">
 			<return type="Array">
@@ -26,7 +25,7 @@
 			<argument index="0" name="from" type="PoolColorArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolColorArray].
+				Constructs an array from a [PoolColorArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -35,7 +34,7 @@
 			<argument index="0" name="from" type="PoolVector3Array">
 			</argument>
 			<description>
-				Construct an array from a [PoolVector3Array].
+				Constructs an array from a [PoolVector3Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -44,7 +43,7 @@
 			<argument index="0" name="from" type="PoolVector2Array">
 			</argument>
 			<description>
-				Construct an array from a [PoolVector2Array].
+				Constructs an array from a [PoolVector2Array].
 			</description>
 		</method>
 		<method name="Array">
@@ -53,7 +52,7 @@
 			<argument index="0" name="from" type="PoolStringArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolStringArray].
+				Constructs an array from a [PoolStringArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -62,7 +61,7 @@
 			<argument index="0" name="from" type="PoolRealArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolRealArray].
+				Constructs an array from a [PoolRealArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -71,7 +70,7 @@
 			<argument index="0" name="from" type="PoolIntArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolIntArray].
+				Constructs an array from a [PoolIntArray].
 			</description>
 		</method>
 		<method name="Array">
@@ -80,38 +79,39 @@
 			<argument index="0" name="from" type="PoolByteArray">
 			</argument>
 			<description>
-				Construct an array from a [PoolByteArray].
+				Constructs an array from a [PoolByteArray].
 			</description>
 		</method>
 		<method name="append">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Append an element at the end of the array (alias of [method push_back]).
+				Appends an element at the end of the array (alias of [method push_back]).
 			</description>
 		</method>
 		<method name="back">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
-				Returns the last element of the array if the array is not empty (size&gt;0).
+				Returns the last element of the array if the array is not empty.
 			</description>
 		</method>
 		<method name="bsearch">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<argument index="1" name="before" type="bool" default="True">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a before specifier can be passed. If false, the returned index comes after all existing entries of the value in the array. Note that calling bsearch on an unsorted array results in unexpected behavior.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="bsearch_custom">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<argument index="1" name="obj" type="Object">
 			</argument>
@@ -120,21 +120,22 @@
 			<argument index="3" name="before" type="bool" default="True">
 			</argument>
 			<description>
-				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a before specifier can be passed. If false, the returned index comes after all existing entries of the value in the array.  The custom method receives two arguments (an element from the array and the value searched for) and must return true if the first argument is less than the second, and return false otherwise. Note that calling bsearch on an unsorted array results in unexpected behavior.
+				Finds the index of an existing value (or the insertion index that maintains sorting order, if the value is not yet present in the array) using binary search and a custom comparison method. Optionally, a [code]before[/code] specifier can be passed. If [code]false[/code], the returned index comes after all existing entries of the value in the array. The custom method receives two arguments (an element from the array and the value searched for) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				[b]Note:[/b] Calling [method bsearch] on an unsorted array results in unexpected behavior.
 			</description>
 		</method>
 		<method name="clear">
 			<description>
-				Clear the array (resize to 0).
+				Clears the array. This is equivalent to using [method resize] with a size of [code]0[/code].
 			</description>
 		</method>
 		<method name="count">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Return the amount of times an element is in the array.
+				Returns the number of times an element is in the array.
 			</description>
 		</method>
 		<method name="duplicate">
@@ -144,27 +145,27 @@
 			</argument>
 			<description>
 				Returns a copy of the array.
-				If [code]deep[/code] is [code]true[/code], a deep copy is be performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
+				If [code]deep[/code] is [code]true[/code], a deep copy is performed: all nested arrays and dictionaries are duplicated and will not be shared with the original array. If [code]false[/code], a shallow copy is made and references to the original nested arrays and dictionaries are kept, so that modifying a sub-array or dictionary in the copy will also impact those referenced in the source array.
 			</description>
 		</method>
 		<method name="empty">
 			<return type="bool">
 			</return>
 			<description>
-				Return true if the array is empty (size==0).
+				Returns [code]true[/code] if the array is empty.
 			</description>
 		</method>
 		<method name="erase">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Remove the first occurrence of a value from the array.
+				Removes the first occurrence of a value from the array.
 			</description>
 		</method>
 		<method name="find">
 			<return type="int">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
 			<argument index="1" name="from" type="int" default="0">
 			</argument>
@@ -175,31 +176,31 @@
 		<method name="find_last">
 			<return type="int">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
 				Searches the array in reverse order for a value and returns its index or -1 if not found.
 			</description>
 		</method>
 		<method name="front">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
-				Returns the first element of the array if the array is not empty (size&gt;0).
+				Returns the first element of the array if the array is not empty.
 			</description>
 		</method>
 		<method name="has">
 			<return type="bool">
 			</return>
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Return true if the array contains given value.
+				Returns [code]true[/code] if the array contains the given value.
 				[codeblock]
-				[ "inside", 7 ].has("inside") == true
-				[ "inside", 7 ].has("outside") == false
-				[ "inside", 7 ].has(7) == true
-				[ "inside", 7 ].has("7") == false
+				["inside", 7].has("inside") == true
+				["inside", 7].has("outside") == false
+				["inside", 7].has(7) == true
+				["inside", 7].has("7") == false
 				[/codeblock]
 			</description>
 		</method>
@@ -207,69 +208,83 @@
 			<return type="int">
 			</return>
 			<description>
-				Return a hashed integer value representing the array contents.
+				Returns a hashed integer value representing the array contents.
 			</description>
 		</method>
 		<method name="insert">
 			<argument index="0" name="position" type="int">
 			</argument>
-			<argument index="1" name="value" type="var">
+			<argument index="1" name="value" type="Variant">
 			</argument>
 			<description>
-				Insert a new element at a given position in the array. The position must be valid, or at the end of the array (pos==size()).
+				Inserts a new element at a given position in the array. The position must be valid, or at the end of the array ([code]pos == size()[/code]).
 			</description>
 		</method>
 		<method name="invert">
 			<description>
-				Reverse the order of the elements in the array (so first element will now be the last) and return reference to the array.
+				Reverses the order of the elements in the array.
+			</description>
+		</method>
+		<method name="max">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the maximum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
+			</description>
+		</method>
+		<method name="min">
+			<return type="Variant">
+			</return>
+			<description>
+				Returns the minimum value contained in the array if all elements are of comparable types. If the elements can't be compared, [code]null[/code] is returned.
 			</description>
 		</method>
 		<method name="pop_back">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
-				Remove the last element of the array.
+				Removes the last element of the array.
 			</description>
 		</method>
 		<method name="pop_front">
-			<return type="var">
+			<return type="Variant">
 			</return>
 			<description>
-				Remove the first element of the array.
+				Removes the first element of the array.
 			</description>
 		</method>
 		<method name="push_back">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Append an element at the end of the array.
+				Appends an element at the end of the array.
 			</description>
 		</method>
 		<method name="push_front">
-			<argument index="0" name="value" type="var">
+			<argument index="0" name="value" type="Variant">
 			</argument>
 			<description>
-				Add an element at the beginning of the array.
+				Adds an element at the beginning of the array.
 			</description>
 		</method>
 		<method name="remove">
 			<argument index="0" name="position" type="int">
 			</argument>
 			<description>
-				Remove an element from the array by index.
+				Removes an element from the array by index.
 			</description>
 		</method>
 		<method name="resize">
 			<argument index="0" name="size" type="int">
 			</argument>
 			<description>
-				Resize the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are Null.
+				Resizes the array to contain a different number of elements. If the array size is smaller, elements are cleared, if bigger, new elements are [code]null[/code].
 			</description>
 		</method>
 		<method name="rfind">
 			<return type="int">
 			</return>
-			<argument index="0" name="what" type="var">
+			<argument index="0" name="what" type="Variant">
 			</argument>
 			<argument index="1" name="from" type="int" default="-1">
 			</argument>
@@ -279,19 +294,35 @@
 		</method>
 		<method name="shuffle">
 			<description>
-				Shuffle the array such that the items will have a random order.
+				Shuffles the array such that the items will have a random order. This method uses the global random number generator common to methods such as [method @GDScript.randi]. Call [method @GDScript.randomize] to ensure that a new seed will be used each time if you want non-reproducible shuffling.
 			</description>
 		</method>
 		<method name="size">
 			<return type="int">
 			</return>
 			<description>
-				Return the amount of elements in the array.
+				Returns the number of elements in the array.
+			</description>
+		</method>
+		<method name="slice">
+			<return type="Array">
+			</return>
+			<argument index="0" name="begin" type="int">
+			</argument>
+			<argument index="1" name="end" type="int">
+			</argument>
+			<argument index="2" name="step" type="int" default="1">
+			</argument>
+			<argument index="3" name="deep" type="bool" default="False">
+			</argument>
+			<description>
+				Duplicates the subset described in the function and returns it in an array, deeply copying the array if [code]deep[/code] is true. Lower and upper index are inclusive, with the [code]step[/code] describing the change between indices while slicing.
 			</description>
 		</method>
 		<method name="sort">
 			<description>
-				Sort the array using natural order.
+				Sorts the array.
+				[b]Note:[/b] strings are sorted in alphabetical, not natural order.
 			</description>
 		</method>
 		<method name="sort_custom">
@@ -300,13 +331,14 @@
 			<argument index="1" name="func" type="String">
 			</argument>
 			<description>
-				Sort the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return true if the first argument is less than the second, and return false otherwise. Note: you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
+				Sorts the array using a custom method. The arguments are an object that holds the method and the name of such method. The custom method receives two arguments (a pair of elements from the array) and must return [code]true[/code] if the first argument is less than the second, and return [code]false[/code] otherwise.
+				[b]Note:[/b] you cannot randomize the return value as the heapsort algorithm expects a deterministic result. Doing so will result in unexpected behavior.
 				[codeblock]
 				class MyCustomSorter:
 				    static func sort(a, b):
 				        if a[0] &lt; b[0]:
 				            return true
-				    return false
+				        return false
 
 				var my_items = [[5, "Potato"], [9, "Rice"], [4, "Tomato"]]
 				my_items.sort_custom(MyCustomSorter, "sort")

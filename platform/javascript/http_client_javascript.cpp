@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,8 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
+#include "core/io/http_client.h"
 #include "http_request.h"
-#include "io/http_client.h"
 
 Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, bool p_verify_host) {
 
@@ -68,21 +68,18 @@ Error HTTPClient::connect_to_host(const String &p_host, int p_port, bool p_ssl, 
 
 void HTTPClient::set_connection(const Ref<StreamPeer> &p_connection) {
 
-	ERR_EXPLAIN("Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform");
-	ERR_FAIL();
+	ERR_FAIL_MSG("Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
 Ref<StreamPeer> HTTPClient::get_connection() const {
 
-	ERR_EXPLAIN("Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform");
-	ERR_FAIL_V(REF());
+	ERR_FAIL_V_MSG(REF(), "Accessing an HTTPClient's StreamPeer is not supported for the HTML5 platform.");
 }
 
 Error HTTPClient::prepare_request(Method p_method, const String &p_url, const Vector<String> &p_headers) {
 
 	ERR_FAIL_INDEX_V(p_method, METHOD_MAX, ERR_INVALID_PARAMETER);
-	ERR_EXPLAIN("HTTP methods TRACE and CONNECT are not supported for the HTML5 platform");
-	ERR_FAIL_COND_V(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE);
+	ERR_FAIL_COND_V_MSG(p_method == METHOD_TRACE || p_method == METHOD_CONNECT, ERR_UNAVAILABLE, "HTTP methods TRACE and CONNECT are not supported for the HTML5 platform.");
 	ERR_FAIL_COND_V(status != STATUS_CONNECTED, ERR_INVALID_PARAMETER);
 	ERR_FAIL_COND_V(host.empty(), ERR_UNCONFIGURED);
 	ERR_FAIL_COND_V(port < 0, ERR_UNCONFIGURED);
@@ -201,8 +198,7 @@ PoolByteArray HTTPClient::read_response_body_chunk() {
 
 void HTTPClient::set_blocking_mode(bool p_enable) {
 
-	ERR_EXPLAIN("HTTPClient blocking mode is not supported for the HTML5 platform");
-	ERR_FAIL_COND(p_enable);
+	ERR_FAIL_COND_MSG(p_enable, "HTTPClient blocking mode is not supported for the HTML5 platform.");
 }
 
 bool HTTPClient::is_blocking_mode_enabled() const {
@@ -237,7 +233,7 @@ Error HTTPClient::poll() {
 		case STATUS_CONNECTION_ERROR:
 			return ERR_CONNECTION_ERROR;
 
-		case STATUS_REQUESTING:
+		case STATUS_REQUESTING: {
 
 #ifdef DEBUG_ENABLED
 			if (!has_polled) {
@@ -281,6 +277,10 @@ Error HTTPClient::poll() {
 			godot_xhr_get_response(xhr_id, write.ptr(), polled_response.size());
 			write = PoolByteArray::Write();
 			break;
+		}
+
+		default:
+			ERR_FAIL_V(ERR_BUG);
 	}
 	return OK;
 }

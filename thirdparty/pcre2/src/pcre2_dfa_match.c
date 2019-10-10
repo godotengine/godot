@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-          New API code Copyright (c) 2016-2018 University of Cambridge
+          New API code Copyright (c) 2016-2019 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -85,7 +85,8 @@ in others, so I abandoned this code. */
 #define PUBLIC_DFA_MATCH_OPTIONS \
   (PCRE2_ANCHORED|PCRE2_ENDANCHORED|PCRE2_NOTBOL|PCRE2_NOTEOL|PCRE2_NOTEMPTY| \
    PCRE2_NOTEMPTY_ATSTART|PCRE2_NO_UTF_CHECK|PCRE2_PARTIAL_HARD| \
-   PCRE2_PARTIAL_SOFT|PCRE2_DFA_SHORTEST|PCRE2_DFA_RESTART)
+   PCRE2_PARTIAL_SOFT|PCRE2_DFA_SHORTEST|PCRE2_DFA_RESTART| \
+   PCRE2_COPY_MATCHED_SUBJECT)
 
 
 /*************************************************
@@ -173,6 +174,7 @@ static const uint8_t coptable[] = {
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
   0,                             /* ONCE                                   */
+  0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
   0, 0, 0, 0, 0,                 /* SBRA, SBRAPOS, SCBRA, SCBRAPOS, SCOND  */
   0, 0,                          /* CREF, DNCREF                           */
@@ -181,7 +183,8 @@ static const uint8_t coptable[] = {
   0, 0, 0,                       /* BRAZERO, BRAMINZERO, BRAPOSZERO        */
   0, 0, 0,                       /* MARK, PRUNE, PRUNE_ARG                 */
   0, 0, 0, 0,                    /* SKIP, SKIP_ARG, THEN, THEN_ARG         */
-  0, 0, 0, 0,                    /* COMMIT, FAIL, ACCEPT, ASSERT_ACCEPT    */
+  0, 0,                          /* COMMIT, COMMIT_ARG                     */
+  0, 0, 0,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */
   0, 0, 0                        /* CLOSE, SKIPZERO, DEFINE                */
 };
 
@@ -246,6 +249,7 @@ static const uint8_t poptable[] = {
   0,                             /* Assert behind                          */
   0,                             /* Assert behind not                      */
   0,                             /* ONCE                                   */
+  0,                             /* SCRIPT_RUN                             */
   0, 0, 0, 0, 0,                 /* BRA, BRAPOS, CBRA, CBRAPOS, COND       */
   0, 0, 0, 0, 0,                 /* SBRA, SBRAPOS, SCBRA, SCBRAPOS, SCOND  */
   0, 0,                          /* CREF, DNCREF                           */
@@ -254,7 +258,8 @@ static const uint8_t poptable[] = {
   0, 0, 0,                       /* BRAZERO, BRAMINZERO, BRAPOSZERO        */
   0, 0, 0,                       /* MARK, PRUNE, PRUNE_ARG                 */
   0, 0, 0, 0,                    /* SKIP, SKIP_ARG, THEN, THEN_ARG         */
-  0, 0, 0, 0,                    /* COMMIT, FAIL, ACCEPT, ASSERT_ACCEPT    */
+  0, 0,                          /* COMMIT, COMMIT_ARG                     */
+  0, 0, 0,                       /* FAIL, ACCEPT, ASSERT_ACCEPT            */
   0, 0, 0                        /* CLOSE, SKIPZERO, DEFINE                */
 };
 
@@ -290,6 +295,35 @@ typedef struct stateblock {
 } stateblock;
 
 #define INTS_PER_STATEBLOCK  (int)(sizeof(stateblock)/sizeof(int))
+
+
+/* Before version 10.32 the recursive calls of internal_dfa_match() were passed
+local working space and output vectors that were created on the stack. This has
+caused issues for some patterns, especially in small-stack environments such as
+Windows. A new scheme is now in use which sets up a vector on the stack, but if
+this is too small, heap memory is used, up to the heap_limit. The main
+parameters are all numbers of ints because the workspace is a vector of ints.
+
+The size of the starting stack vector, DFA_START_RWS_SIZE, is in bytes, and is
+defined in pcre2_internal.h so as to be available to pcre2test when it is
+finding the minimum heap requirement for a match. */
+
+#define OVEC_UNIT  (sizeof(PCRE2_SIZE)/sizeof(int))
+
+#define RWS_BASE_SIZE   (DFA_START_RWS_SIZE/sizeof(int))  /* Stack vector */
+#define RWS_RSIZE       1000                    /* Work size for recursion */
+#define RWS_OVEC_RSIZE  (1000*OVEC_UNIT)        /* Ovector for recursion */
+#define RWS_OVEC_OSIZE  (2*OVEC_UNIT)           /* Ovector in other cases */
+
+/* This structure is at the start of each workspace block. */
+
+typedef struct RWS_anchor {
+  struct RWS_anchor *next;
+  uint32_t size;  /* Number of ints */
+  uint32_t free;  /* Number of ints */
+} RWS_anchor;
+
+#define RWS_ANCHOR_SIZE (sizeof(RWS_anchor)/sizeof(int))
 
 
 
@@ -349,6 +383,65 @@ else
   }
 
 return (mb->callout)(cb, mb->callout_data);
+}
+
+
+
+/*************************************************
+*         Expand local workspace memory          *
+*************************************************/
+
+/* This function is called when internal_dfa_match() is about to be called
+recursively and there is insufficient working space left in the current
+workspace block. If there's an existing next block, use it; otherwise get a new
+block unless the heap limit is reached.
+
+Arguments:
+  rwsptr     pointer to block pointer (updated)
+  ovecsize   space needed for an ovector
+  mb         the match block
+
+Returns:     0 rwsptr has been updated
+            !0 an error code
+*/
+
+static int
+more_workspace(RWS_anchor **rwsptr, unsigned int ovecsize, dfa_match_block *mb)
+{
+RWS_anchor *rws = *rwsptr;
+RWS_anchor *new;
+
+if (rws->next != NULL)
+  {
+  new = rws->next;
+  }
+
+/* Sizes in the RWS_anchor blocks are in units of sizeof(int), but
+mb->heap_limit and mb->heap_used are in kibibytes. Play carefully, to avoid
+overflow. */
+
+else
+  {
+  uint32_t newsize = (rws->size >= UINT32_MAX/2)? UINT32_MAX/2 : rws->size * 2;
+  uint32_t newsizeK = newsize/(1024/sizeof(int));
+
+  if (newsizeK + mb->heap_used > mb->heap_limit)
+    newsizeK = (uint32_t)(mb->heap_limit - mb->heap_used);
+  newsize = newsizeK*(1024/sizeof(int));
+
+  if (newsize < RWS_RSIZE + ovecsize + RWS_ANCHOR_SIZE)
+    return PCRE2_ERROR_HEAPLIMIT;
+  new = mb->memctl.malloc(newsize*sizeof(int), mb->memctl.memory_data);
+  if (new == NULL) return PCRE2_ERROR_NOMEMORY;
+  mb->heap_used += newsizeK;
+  new->next = NULL;
+  new->size = newsize;
+  rws->next = new;
+  }
+
+new->free = new->size - RWS_ANCHOR_SIZE;
+*rwsptr = new;
+return 0;
 }
 
 
@@ -431,7 +524,8 @@ internal_dfa_match(
   uint32_t offsetcount,
   int *workspace,
   int wscount,
-  uint32_t  rlevel)
+  uint32_t rlevel,
+  int *RWS)
 {
 stateblock *active_states, *new_states, *temp_states;
 stateblock *next_active_state, *next_new_state;
@@ -788,7 +882,7 @@ for (;;)
             else if (match_count > 0 && ++match_count * 2 > (int)offsetcount)
               match_count = 0;
           count = ((match_count == 0)? (int)offsetcount : match_count * 2) - 2;
-          if (count > 0) memmove(offsets + 2, offsets,
+          if (count > 0) (void)memmove(offsets + 2, offsets,
             (size_t)count * sizeof(PCRE2_SIZE));
           if (offsetcount >= 2)
             {
@@ -2473,7 +2567,7 @@ for (;;)
           if (clen > 0)
             {
             isinclass = (c > 255)? (codevalue == OP_NCLASS) :
-              ((((uint8_t *)(code + 1))[c/8] & (1 << (c&7))) != 0);
+              ((((uint8_t *)(code + 1))[c/8] & (1u << (c&7))) != 0);
             }
           }
 
@@ -2587,10 +2681,22 @@ for (;;)
       case OP_ASSERTBACK:
       case OP_ASSERTBACK_NOT:
         {
-        PCRE2_SPTR endasscode = code + GET(code, 1);
-        PCRE2_SIZE local_offsets[2];
         int rc;
-        int local_workspace[1000];
+        int *local_workspace;
+        PCRE2_SIZE *local_offsets;
+        PCRE2_SPTR endasscode = code + GET(code, 1);
+        RWS_anchor *rws = (RWS_anchor *)RWS;
+
+        if (rws->free < RWS_RSIZE + RWS_OVEC_OSIZE)
+          {
+          rc = more_workspace(&rws, RWS_OVEC_OSIZE, mb);
+          if (rc != 0) return rc;
+          RWS = (int *)rws;
+          }
+
+        local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
+        local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+        rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
 
         while (*endasscode == OP_ALT) endasscode += GET(endasscode, 1);
 
@@ -2600,10 +2706,13 @@ for (;;)
           ptr,                                  /* where we currently are */
           (PCRE2_SIZE)(ptr - start_subject),    /* start offset */
           local_offsets,                        /* offset vector */
-          sizeof(local_offsets)/sizeof(PCRE2_SIZE), /* size of same */
+          RWS_OVEC_OSIZE/OVEC_UNIT,             /* size of same */
           local_workspace,                      /* workspace vector */
-          sizeof(local_workspace)/sizeof(int),  /* size of same */
-          rlevel);                              /* function recursion level */
+          RWS_RSIZE,                            /* size of same */
+          rlevel,                               /* function recursion level */
+          RWS);                                 /* recursion workspace */
+
+        rws->free += RWS_RSIZE + RWS_OVEC_OSIZE;
 
         if (rc < 0 && rc != PCRE2_ERROR_NOMATCH) return rc;
         if ((rc >= 0) == (codevalue == OP_ASSERT || codevalue == OP_ASSERTBACK))
@@ -2615,8 +2724,6 @@ for (;;)
       case OP_COND:
       case OP_SCOND:
         {
-        PCRE2_SIZE local_offsets[1000];
-        int local_workspace[1000];
         int codelink = (int)GET(code, 1);
         PCRE2_UCHAR condcode;
 
@@ -2653,7 +2760,7 @@ for (;;)
         /* There is also an always-true condition */
 
         else if (condcode == OP_TRUE)
-          { ADD_ACTIVE(state_offset + LINK_SIZE + 2 + IMM2_SIZE, 0); }
+          { ADD_ACTIVE(state_offset + LINK_SIZE + 2, 0); }
 
         /* The only supported version of OP_RREF is for the value RREF_ANY,
         which means "test if in any recursion". We can't test for specifically
@@ -2673,8 +2780,22 @@ for (;;)
         else
           {
           int rc;
+          int *local_workspace;
+          PCRE2_SIZE *local_offsets;
           PCRE2_SPTR asscode = code + LINK_SIZE + 1;
           PCRE2_SPTR endasscode = asscode + GET(asscode, 1);
+          RWS_anchor *rws = (RWS_anchor *)RWS;
+
+          if (rws->free < RWS_RSIZE + RWS_OVEC_OSIZE)
+            {
+            rc = more_workspace(&rws, RWS_OVEC_OSIZE, mb);
+            if (rc != 0) return rc;
+            RWS = (int *)rws;
+            }
+
+          local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
+          local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+          rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
 
           while (*endasscode == OP_ALT) endasscode += GET(endasscode, 1);
 
@@ -2684,10 +2805,13 @@ for (;;)
             ptr,                                  /* where we currently are */
             (PCRE2_SIZE)(ptr - start_subject),    /* start offset */
             local_offsets,                        /* offset vector */
-            sizeof(local_offsets)/sizeof(PCRE2_SIZE), /* size of same */
+            RWS_OVEC_OSIZE/OVEC_UNIT,             /* size of same */
             local_workspace,                      /* workspace vector */
-            sizeof(local_workspace)/sizeof(int),  /* size of same */
-            rlevel);                              /* function recursion level */
+            RWS_RSIZE,                            /* size of same */
+            rlevel,                               /* function recursion level */
+            RWS);                                 /* recursion workspace */
+
+          rws->free += RWS_RSIZE + RWS_OVEC_OSIZE;
 
           if (rc < 0 && rc != PCRE2_ERROR_NOMATCH) return rc;
           if ((rc >= 0) ==
@@ -2702,13 +2826,25 @@ for (;;)
       /*-----------------------------------------------------------------*/
       case OP_RECURSE:
         {
+        int rc;
+        int *local_workspace;
+        PCRE2_SIZE *local_offsets;
+        RWS_anchor *rws = (RWS_anchor *)RWS;
         dfa_recursion_info *ri;
-        PCRE2_SIZE local_offsets[1000];
-        int local_workspace[1000];
         PCRE2_SPTR callpat = start_code + GET(code, 1);
         uint32_t recno = (callpat == mb->start_code)? 0 :
           GET2(callpat, 1 + LINK_SIZE);
-        int rc;
+
+        if (rws->free < RWS_RSIZE + RWS_OVEC_RSIZE)
+          {
+          rc = more_workspace(&rws, RWS_OVEC_RSIZE, mb);
+          if (rc != 0) return rc;
+          RWS = (int *)rws;
+          }
+
+        local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
+        local_workspace = ((int *)local_offsets) + RWS_OVEC_RSIZE;
+        rws->free -= RWS_RSIZE + RWS_OVEC_RSIZE;
 
         /* Check for repeating a recursion without advancing the subject
         pointer. This should catch convoluted mutual recursions. (Some simple
@@ -2732,11 +2868,13 @@ for (;;)
           ptr,                                  /* where we currently are */
           (PCRE2_SIZE)(ptr - start_subject),    /* start offset */
           local_offsets,                        /* offset vector */
-          sizeof(local_offsets)/sizeof(PCRE2_SIZE), /* size of same */
+          RWS_OVEC_RSIZE/OVEC_UNIT,             /* size of same */
           local_workspace,                      /* workspace vector */
-          sizeof(local_workspace)/sizeof(int),  /* size of same */
-          rlevel);                              /* function recursion level */
+          RWS_RSIZE,                            /* size of same */
+          rlevel,                               /* function recursion level */
+          RWS);                                 /* recursion workspace */
 
+        rws->free += RWS_RSIZE + RWS_OVEC_RSIZE;
         mb->recursive = new_recursive.prevrec;  /* Done this recursion */
 
         /* Ran out of internal offsets */
@@ -2782,9 +2920,24 @@ for (;;)
       case OP_SCBRAPOS:
       case OP_BRAPOSZERO:
         {
+        int rc;
+        int *local_workspace;
+        PCRE2_SIZE *local_offsets;
         PCRE2_SIZE charcount, matched_count;
         PCRE2_SPTR local_ptr = ptr;
+        RWS_anchor *rws = (RWS_anchor *)RWS;
         BOOL allow_zero;
+
+        if (rws->free < RWS_RSIZE + RWS_OVEC_OSIZE)
+          {
+          rc = more_workspace(&rws, RWS_OVEC_OSIZE, mb);
+          if (rc != 0) return rc;
+          RWS = (int *)rws;
+          }
+
+        local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
+        local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+        rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
 
         if (codevalue == OP_BRAPOSZERO)
           {
@@ -2798,19 +2951,17 @@ for (;;)
 
         for (matched_count = 0;; matched_count++)
           {
-          PCRE2_SIZE local_offsets[2];
-          int local_workspace[1000];
-
-          int rc = internal_dfa_match(
+          rc = internal_dfa_match(
             mb,                                   /* fixed match data */
             code,                                 /* this subexpression's code */
             local_ptr,                            /* where we currently are */
             (PCRE2_SIZE)(ptr - start_subject),    /* start offset */
             local_offsets,                        /* offset vector */
-            sizeof(local_offsets)/sizeof(PCRE2_SIZE), /* size of same */
+            RWS_OVEC_OSIZE/OVEC_UNIT,             /* size of same */
             local_workspace,                      /* workspace vector */
-            sizeof(local_workspace)/sizeof(int),  /* size of same */
-            rlevel);                              /* function recursion level */
+            RWS_RSIZE,                            /* size of same */
+            rlevel,                               /* function recursion level */
+            RWS);                                 /* recursion workspace */
 
           /* Failed to match */
 
@@ -2826,6 +2977,8 @@ for (;;)
           if (charcount == 0) break;
           local_ptr += charcount;    /* Advance temporary position ptr */
           }
+
+        rws->free += RWS_RSIZE + RWS_OVEC_OSIZE;
 
         /* At this point we have matched the subpattern matched_count
         times, and local_ptr is pointing to the character after the end of the
@@ -2869,19 +3022,35 @@ for (;;)
       /*-----------------------------------------------------------------*/
       case OP_ONCE:
         {
-        PCRE2_SIZE local_offsets[2];
-        int local_workspace[1000];
+        int rc;
+        int *local_workspace;
+        PCRE2_SIZE *local_offsets;
+        RWS_anchor *rws = (RWS_anchor *)RWS;
 
-        int rc = internal_dfa_match(
+        if (rws->free < RWS_RSIZE + RWS_OVEC_OSIZE)
+          {
+          rc = more_workspace(&rws, RWS_OVEC_OSIZE, mb);
+          if (rc != 0) return rc;
+          RWS = (int *)rws;
+          }
+
+        local_offsets = (PCRE2_SIZE *)(RWS + rws->size - rws->free);
+        local_workspace = ((int *)local_offsets) + RWS_OVEC_OSIZE;
+        rws->free -= RWS_RSIZE + RWS_OVEC_OSIZE;
+
+        rc = internal_dfa_match(
           mb,                                   /* fixed match data */
           code,                                 /* this subexpression's code */
           ptr,                                  /* where we currently are */
           (PCRE2_SIZE)(ptr - start_subject),    /* start offset */
           local_offsets,                        /* offset vector */
-          sizeof(local_offsets)/sizeof(PCRE2_SIZE), /* size of same */
+          RWS_OVEC_OSIZE/OVEC_UNIT,             /* size of same */
           local_workspace,                      /* workspace vector */
-          sizeof(local_workspace)/sizeof(int),  /* size of same */
-          rlevel);                              /* function recursion level */
+          RWS_RSIZE,                            /* size of same */
+          rlevel,                               /* function recursion level */
+          RWS);                                 /* recursion workspace */
+
+        rws->free += RWS_RSIZE + RWS_OVEC_OSIZE;
 
         if (rc >= 0)
           {
@@ -3063,6 +3232,9 @@ pcre2_dfa_match(const pcre2_code *code, PCRE2_SPTR subject, PCRE2_SIZE length,
   PCRE2_SIZE start_offset, uint32_t options, pcre2_match_data *match_data,
   pcre2_match_context *mcontext, int *workspace, PCRE2_SIZE wscount)
 {
+int rc;
+int was_zero_terminated = 0;
+
 const pcre2_real_code *re = (const pcre2_real_code *)code;
 
 PCRE2_SPTR start_match;
@@ -3071,9 +3243,9 @@ PCRE2_SPTR bumpalong_limit;
 PCRE2_SPTR req_cu_ptr;
 
 BOOL utf, anchored, startline, firstline;
-
 BOOL has_first_cu = FALSE;
 BOOL has_req_cu = FALSE;
+
 PCRE2_UCHAR first_cu = 0;
 PCRE2_UCHAR first_cu2 = 0;
 PCRE2_UCHAR req_cu = 0;
@@ -3088,10 +3260,25 @@ pcre2_callout_block cb;
 dfa_match_block actual_match_block;
 dfa_match_block *mb = &actual_match_block;
 
+/* Set up a starting block of memory for use during recursive calls to
+internal_dfa_match(). By putting this on the stack, it minimizes resource use
+in the case when it is not needed. If this is too small, more memory is
+obtained from the heap. At the start of each block is an anchor structure.*/
+
+int base_recursion_workspace[RWS_BASE_SIZE];
+RWS_anchor *rws = (RWS_anchor *)base_recursion_workspace;
+rws->next = NULL;
+rws->size = RWS_BASE_SIZE;
+rws->free = RWS_BASE_SIZE - RWS_ANCHOR_SIZE;
+
 /* A length equal to PCRE2_ZERO_TERMINATED implies a zero-terminated
 subject string. */
 
-if (length == PCRE2_ZERO_TERMINATED) length = PRIV(strlen)(subject);
+if (length == PCRE2_ZERO_TERMINATED)
+  {
+  length = PRIV(strlen)(subject);
+  was_zero_terminated = 1;
+  }
 
 /* Plausibility checks */
 
@@ -3184,6 +3371,7 @@ if (mcontext == NULL)
   mb->memctl = re->memctl;
   mb->match_limit = PRIV(default_match_context).match_limit;
   mb->match_limit_depth = PRIV(default_match_context).depth_limit;
+  mb->heap_limit = PRIV(default_match_context).heap_limit;
   }
 else
   {
@@ -3198,6 +3386,7 @@ else
   mb->memctl = mcontext->memctl;
   mb->match_limit = mcontext->match_limit;
   mb->match_limit_depth = mcontext->depth_limit;
+  mb->heap_limit = mcontext->heap_limit;
   }
 
 if (mb->match_limit > re->limit_match)
@@ -3205,6 +3394,9 @@ if (mb->match_limit > re->limit_match)
 
 if (mb->match_limit_depth > re->limit_depth)
   mb->match_limit_depth = re->limit_depth;
+
+if (mb->heap_limit > re->limit_heap)
+  mb->heap_limit = re->limit_heap;
 
 mb->start_code = (PCRE2_UCHAR *)((uint8_t *)re + sizeof(pcre2_real_code)) +
   re->name_count * re->name_entry_size;
@@ -3215,6 +3407,7 @@ mb->start_offset = start_offset;
 mb->moptions = options;
 mb->poptions = re->overall_options;
 mb->match_call_count = 0;
+mb->heap_used = 0;
 
 /* Process the \R and newline settings. */
 
@@ -3338,10 +3531,20 @@ if ((re->flags & PCRE2_LASTSET) != 0)
     }
   }
 
+/* If the match data block was previously used with PCRE2_COPY_MATCHED_SUBJECT,
+free the memory that was obtained. */
+
+if ((match_data->flags & PCRE2_MD_COPIED_SUBJECT) != 0)
+  {
+  match_data->memctl.free((void *)match_data->subject,
+    match_data->memctl.memory_data);
+  match_data->flags &= ~PCRE2_MD_COPIED_SUBJECT;
+  }
+
 /* Fill in fields that are always returned in the match data. */
 
 match_data->code = re;
-match_data->subject = subject;
+match_data->subject = NULL;  /* Default for no match */
 match_data->mark = NULL;
 match_data->matchedby = PCRE2_MATCHEDBY_DFA_INTERPRETER;
 
@@ -3351,8 +3554,6 @@ a match. */
 
 for (;;)
   {
-  int rc;
-
   /* ----------------- Start of match optimizations ---------------- */
 
   /* There are some optimizations that avoid running the match if a known
@@ -3408,7 +3609,7 @@ for (;;)
 #if PCRE2_CODE_UNIT_WIDTH != 8
             if (c > 255) c = 255;
 #endif
-            ok = (start_bits[c/8] & (1 << (c&7))) != 0;
+            ok = (start_bits[c/8] & (1u << (c&7))) != 0;
             }
           }
         if (!ok) break;
@@ -3519,7 +3720,7 @@ for (;;)
 #if PCRE2_CODE_UNIT_WIDTH != 8
           if (c > 255) c = 255;
 #endif
-          if ((start_bits[c/8] & (1 << (c&7))) != 0) break;
+          if ((start_bits[c/8] & (1u << (c&7))) != 0) break;
           start_match++;
           }
 
@@ -3544,7 +3745,7 @@ for (;;)
       in characters, we treat it as code units to avoid spending too much time
       in this optimization. */
 
-      if (end_subject - start_match < re->minlength) return PCRE2_ERROR_NOMATCH;
+      if (end_subject - start_match < re->minlength) goto NOMATCH_EXIT;
 
       /* If req_cu is set, we know that that code unit must appear in the
       subject for the match to succeed. If the first code unit is set, req_cu
@@ -3621,7 +3822,8 @@ for (;;)
     (uint32_t)match_data->oveccount * 2,  /* actual size of same */
     workspace,                    /* workspace vector */
     (int)wscount,                 /* size of same */
-    0);                           /* function recurse level */
+    0,                            /* function recurse level */
+    base_recursion_workspace);    /* initial workspace for recursion */
 
   /* Anything other than "no match" means we are done, always; otherwise, carry
   on only if not anchored. */
@@ -3637,7 +3839,21 @@ for (;;)
     match_data->rightchar = (PCRE2_SIZE)( mb->last_used_ptr - subject);
     match_data->startchar = (PCRE2_SIZE)(start_match - subject);
     match_data->rc = rc;
-    return rc;
+
+    if (rc >= 0 &&(options & PCRE2_COPY_MATCHED_SUBJECT) != 0)
+      {
+      length = CU2BYTES(length + was_zero_terminated);
+      match_data->subject = match_data->memctl.malloc(length,
+        match_data->memctl.memory_data);
+      if (match_data->subject == NULL) return PCRE2_ERROR_NOMEMORY;
+      memcpy((void *)match_data->subject, subject, length);
+      match_data->flags |= PCRE2_MD_COPIED_SUBJECT;
+      }
+    else
+      {
+      if (rc >= 0 || rc == PCRE2_ERROR_PARTIAL) match_data->subject = subject;
+      }
+    goto EXIT;
     }
 
   /* Advance to the next subject character unless we are at the end of a line
@@ -3668,8 +3884,18 @@ for (;;)
 
   }   /* "Bumpalong" loop */
 
+NOMATCH_EXIT:
+rc = PCRE2_ERROR_NOMATCH;
 
-return PCRE2_ERROR_NOMATCH;
+EXIT:
+while (rws->next != NULL)
+  {
+  RWS_anchor *next = rws->next;
+  rws->next = next->next;
+  mb->memctl.free(next, mb->memctl.memory_data);
+  }
+
+return rc;
 }
 
 /* End of pcre2_dfa_match.c */

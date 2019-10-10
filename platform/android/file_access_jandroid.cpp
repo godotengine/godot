@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -28,10 +28,8 @@
 /* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
 /*************************************************************************/
 
-#ifndef ANDROID_NATIVE_ACTIVITY
-
 #include "file_access_jandroid.h"
-#include "os/os.h"
+#include "core/os/os.h"
 #include "thread_jandroid.h"
 #include <unistd.h>
 
@@ -64,7 +62,7 @@ Error FileAccessJAndroid::_open(const String &p_path, int p_mode_flags) {
 	JNIEnv *env = ThreadAndroid::get_env();
 
 	jstring js = env->NewStringUTF(path.utf8().get_data());
-	int res = env->CallIntMethod(io, _file_open, js, p_mode_flags & WRITE ? true : false);
+	int res = env->CallIntMethod(io, _file_open, js, (p_mode_flags & WRITE) ? true : false);
 	env->DeleteLocalRef(js);
 
 	OS::get_singleton()->print("fopen: '%s' ret %i\n", path.utf8().get_data(), res);
@@ -96,13 +94,13 @@ void FileAccessJAndroid::seek(size_t p_position) {
 
 	JNIEnv *env = ThreadAndroid::get_env();
 
-	ERR_FAIL_COND(!is_open());
+	ERR_FAIL_COND_MSG(!is_open(), "File must be opened before use.");
 	env->CallVoidMethod(io, _file_seek, id, p_position);
 }
 
 void FileAccessJAndroid::seek_end(int64_t p_position) {
 
-	ERR_FAIL_COND(!is_open());
+	ERR_FAIL_COND_MSG(!is_open(), "File must be opened before use.");
 
 	seek(get_len());
 }
@@ -110,34 +108,34 @@ void FileAccessJAndroid::seek_end(int64_t p_position) {
 size_t FileAccessJAndroid::get_position() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	ERR_FAIL_COND_V(!is_open(), 0);
+	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	return env->CallIntMethod(io, _file_tell, id);
 }
 
 size_t FileAccessJAndroid::get_len() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	ERR_FAIL_COND_V(!is_open(), 0);
+	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	return env->CallIntMethod(io, _file_get_size, id);
 }
 
 bool FileAccessJAndroid::eof_reached() const {
 
 	JNIEnv *env = ThreadAndroid::get_env();
-	ERR_FAIL_COND_V(!is_open(), 0);
+	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	return env->CallIntMethod(io, _file_eof, id);
 }
 
 uint8_t FileAccessJAndroid::get_8() const {
 
-	ERR_FAIL_COND_V(!is_open(), 0);
+	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	uint8_t byte;
 	get_buffer(&byte, 1);
 	return byte;
 }
 int FileAccessJAndroid::get_buffer(uint8_t *p_dst, int p_length) const {
 
-	ERR_FAIL_COND_V(!is_open(), 0);
+	ERR_FAIL_COND_V_MSG(!is_open(), 0, "File must be opened before use.");
 	if (p_length == 0)
 		return 0;
 	JNIEnv *env = ThreadAndroid::get_env();
@@ -212,5 +210,3 @@ FileAccessJAndroid::~FileAccessJAndroid() {
 	if (is_open())
 		close();
 }
-
-#endif

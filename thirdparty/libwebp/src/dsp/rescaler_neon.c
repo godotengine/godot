@@ -22,6 +22,7 @@
 
 #define ROUNDER (WEBP_RESCALER_ONE >> 1)
 #define MULT_FIX_C(x, y) (((uint64_t)(x) * (y) + ROUNDER) >> WEBP_RESCALER_RFIX)
+#define MULT_FIX_FLOOR_C(x, y) (((uint64_t)(x) * (y)) >> WEBP_RESCALER_RFIX)
 
 #define LOAD_32x4(SRC, DST) const uint32x4_t DST = vld1q_u32((SRC))
 #define LOAD_32x8(SRC, DST0, DST1)                                    \
@@ -35,8 +36,11 @@
 
 #if (WEBP_RESCALER_RFIX == 32)
 #define MAKE_HALF_CST(C) vdupq_n_s32((int32_t)((C) >> 1))
-#define MULT_FIX(A, B) /* note: B is actualy scale>>1. See MAKE_HALF_CST */ \
+// note: B is actualy scale>>1. See MAKE_HALF_CST
+#define MULT_FIX(A, B) \
     vreinterpretq_u32_s32(vqrdmulhq_s32(vreinterpretq_s32_u32((A)), (B)))
+#define MULT_FIX_FLOOR(A, B) \
+    vreinterpretq_u32_s32(vqdmulhq_s32(vreinterpretq_s32_u32((A)), (B)))
 #else
 #error "MULT_FIX/WEBP_RESCALER_RFIX need some more work"
 #endif
@@ -135,8 +139,8 @@ static void RescalerExportRowShrink_NEON(WebPRescaler* const wrk) {
       const uint32x4_t A1 = MULT_FIX(in1, yscale_half);
       const uint32x4_t B0 = vqsubq_u32(in2, A0);
       const uint32x4_t B1 = vqsubq_u32(in3, A1);
-      const uint32x4_t C0 = MULT_FIX(B0, fxy_scale_half);
-      const uint32x4_t C1 = MULT_FIX(B1, fxy_scale_half);
+      const uint32x4_t C0 = MULT_FIX_FLOOR(B0, fxy_scale_half);
+      const uint32x4_t C1 = MULT_FIX_FLOOR(B1, fxy_scale_half);
       const uint16x4_t D0 = vmovn_u32(C0);
       const uint16x4_t D1 = vmovn_u32(C1);
       const uint8x8_t E = vmovn_u16(vcombine_u16(D0, D1));
@@ -145,7 +149,7 @@ static void RescalerExportRowShrink_NEON(WebPRescaler* const wrk) {
     }
     for (; x_out < x_out_max; ++x_out) {
       const uint32_t frac = (uint32_t)MULT_FIX_C(frow[x_out], yscale);
-      const int v = (int)MULT_FIX_C(irow[x_out] - frac, wrk->fxy_scale);
+      const int v = (int)MULT_FIX_FLOOR_C(irow[x_out] - frac, fxy_scale);
       assert(v >= 0 && v <= 255);
       dst[x_out] = v;
       irow[x_out] = frac;   // new fractional start
@@ -169,6 +173,12 @@ static void RescalerExportRowShrink_NEON(WebPRescaler* const wrk) {
     }
   }
 }
+
+#undef MULT_FIX_FLOOR_C
+#undef MULT_FIX_C
+#undef MULT_FIX_FLOOR
+#undef MULT_FIX
+#undef ROUNDER
 
 //------------------------------------------------------------------------------
 

@@ -1,9 +1,91 @@
+/*************************************************************************/
+/*  animation_tree.cpp                                                   */
+/*************************************************************************/
+/*                       This file is part of:                           */
+/*                           GODOT ENGINE                                */
+/*                      https://godotengine.org                          */
+/*************************************************************************/
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
+/*                                                                       */
+/* Permission is hereby granted, free of charge, to any person obtaining */
+/* a copy of this software and associated documentation files (the       */
+/* "Software"), to deal in the Software without restriction, including   */
+/* without limitation the rights to use, copy, modify, merge, publish,   */
+/* distribute, sublicense, and/or sell copies of the Software, and to    */
+/* permit persons to whom the Software is furnished to do so, subject to */
+/* the following conditions:                                             */
+/*                                                                       */
+/* The above copyright notice and this permission notice shall be        */
+/* included in all copies or substantial portions of the Software.       */
+/*                                                                       */
+/* THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND,       */
+/* EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF    */
+/* MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT.*/
+/* IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY  */
+/* CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT,  */
+/* TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE     */
+/* SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.                */
+/*************************************************************************/
+
 #include "animation_tree.h"
+
 #include "animation_blend_tree.h"
+#include "core/engine.h"
 #include "core/method_bind_ext.gen.inc"
-#include "engine.h"
 #include "scene/scene_string_names.h"
 #include "servers/audio/audio_stream.h"
+
+void AnimationNode::get_parameter_list(List<PropertyInfo> *r_list) const {
+	if (get_script_instance()) {
+		Array parameters = get_script_instance()->call("get_parameter_list");
+		for (int i = 0; i < parameters.size(); i++) {
+			Dictionary d = parameters[i];
+			ERR_CONTINUE(d.empty());
+			r_list->push_back(PropertyInfo::from_dict(d));
+		}
+	}
+}
+
+Variant AnimationNode::get_parameter_default_value(const StringName &p_parameter) const {
+	if (get_script_instance()) {
+		return get_script_instance()->call("get_parameter_default_value");
+	}
+	return Variant();
+}
+
+void AnimationNode::set_parameter(const StringName &p_name, const Variant &p_value) {
+	ERR_FAIL_COND(!state);
+	ERR_FAIL_COND(!state->tree->property_parent_map.has(base_path));
+	ERR_FAIL_COND(!state->tree->property_parent_map[base_path].has(p_name));
+	StringName path = state->tree->property_parent_map[base_path][p_name];
+
+	state->tree->property_map[path] = p_value;
+}
+
+Variant AnimationNode::get_parameter(const StringName &p_name) const {
+	ERR_FAIL_COND_V(!state, Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map.has(base_path), Variant());
+	ERR_FAIL_COND_V(!state->tree->property_parent_map[base_path].has(p_name), Variant());
+
+	StringName path = state->tree->property_parent_map[base_path][p_name];
+	return state->tree->property_map[path];
+}
+
+void AnimationNode::get_child_nodes(List<ChildNode> *r_child_nodes) {
+
+	if (get_script_instance()) {
+		Dictionary cn = get_script_instance()->call("get_child_nodes");
+		List<Variant> keys;
+		cn.get_key_list(&keys);
+		for (List<Variant>::Element *E = keys.front(); E; E = E->next()) {
+			ChildNode child;
+			child.name = E->get();
+			child.node = cn[E->get()];
+			r_child_nodes->push_back(child);
+		}
+	}
+}
 
 void AnimationNode::blend_animation(const StringName &p_animation, float p_time, float p_delta, bool p_seeked, float p_blend) {
 
@@ -14,8 +96,8 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 
 	if (animation.is_null()) {
 
-		Ref<AnimationNodeBlendTree> btree = get_parent();
-		if (btree.is_valid()) {
+		AnimationNodeBlendTree *btree = Object::cast_to<AnimationNodeBlendTree>(parent);
+		if (btree) {
 			String name = btree->get_node_name(Ref<AnimationNodeAnimation>(this));
 			make_invalid(vformat(RTR("In node '%s', invalid animation: '%s'."), name, p_animation));
 		} else {
@@ -37,10 +119,20 @@ void AnimationNode::blend_animation(const StringName &p_animation, float p_time,
 	state->animation_states.push_back(anim_state);
 }
 
-float AnimationNode::_pre_process(State *p_state, float p_time, bool p_seek) {
+float AnimationNode::_pre_process(const StringName &p_base_path, AnimationNode *p_parent, State *p_state, float p_time, bool p_seek, const Vector<StringName> &p_connections) {
+
+	base_path = p_base_path;
+	parent = p_parent;
+	connections = p_connections;
 	state = p_state;
+
 	float t = process(p_time, p_seek);
+
 	state = NULL;
+	parent = NULL;
+	base_path = StringName();
+	connections.clear();
+
 	return t;
 }
 
@@ -56,39 +148,39 @@ void AnimationNode::make_invalid(const String &p_reason) {
 float AnimationNode::blend_input(int p_input, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
 	ERR_FAIL_COND_V(!state, 0);
-	ERR_FAIL_COND_V(!get_tree(), 0); //should not happen, but used to catch bugs
 
-	Ref<AnimationNodeBlendTree> tree = get_parent();
+	AnimationNodeBlendTree *blend_tree = Object::cast_to<AnimationNodeBlendTree>(parent);
+	ERR_FAIL_COND_V(!blend_tree, 0);
 
-	if (!tree.is_valid() && get_tree()->get_tree_root().ptr() != this) {
-		make_invalid(RTR("Can't blend input because node is not in a tree"));
-		return 0;
-	}
+	StringName node_name = connections[p_input];
 
-	ERR_FAIL_COND_V(!tree.is_valid(), 0); //should not happen
-
-	StringName anim_name = inputs[p_input].connected_to;
-
-	Ref<AnimationNode> node = tree->get_node(anim_name);
-
-	if (node.is_null()) {
-
-		String name = tree->get_node_name(Ref<AnimationNodeAnimation>(this));
+	if (!blend_tree->has_node(node_name)) {
+		String name = blend_tree->get_node_name(Ref<AnimationNode>(this));
 		make_invalid(vformat(RTR("Nothing connected to input '%s' of node '%s'."), get_input_name(p_input), name));
 		return 0;
 	}
 
-	inputs.write[p_input].last_pass = state->last_pass;
+	Ref<AnimationNode> node = blend_tree->get_node(node_name);
 
-	return _blend_node(node, p_time, p_seek, p_blend, p_filter, p_optimize, &inputs.write[p_input].activity);
+	//inputs.write[p_input].last_pass = state->last_pass;
+	float activity = 0;
+	float ret = _blend_node(node_name, blend_tree->get_node_connection_array(node_name), NULL, node, p_time, p_seek, p_blend, p_filter, p_optimize, &activity);
+
+	Vector<AnimationTree::Activity> *activity_ptr = state->tree->input_activity_map.getptr(base_path);
+
+	if (activity_ptr && p_input < activity_ptr->size()) {
+		activity_ptr->write[p_input].last_pass = state->last_pass;
+		activity_ptr->write[p_input].activity = activity;
+	}
+	return ret;
 }
 
-float AnimationNode::blend_node(Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
+float AnimationNode::blend_node(const StringName &p_sub_path, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize) {
 
-	return _blend_node(p_node, p_time, p_seek, p_blend, p_filter, p_optimize);
+	return _blend_node(p_sub_path, Vector<StringName>(), this, p_node, p_time, p_seek, p_blend, p_filter, p_optimize);
 }
 
-float AnimationNode::_blend_node(Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max) {
+float AnimationNode::_blend_node(const StringName &p_subpath, const Vector<StringName> &p_connections, AnimationNode *p_new_parent, Ref<AnimationNode> p_node, float p_time, bool p_seek, float p_blend, FilterAction p_filter, bool p_optimize, float *r_max) {
 
 	ERR_FAIL_COND_V(!p_node.is_valid(), 0);
 	ERR_FAIL_COND_V(!state, 0);
@@ -123,7 +215,7 @@ float AnimationNode::_blend_node(Ref<AnimationNode> p_node, float p_time, bool p
 			case FILTER_IGNORE:
 				break; //will not happen anyway
 			case FILTER_PASS: {
-				//values filtered pass, the rest dont
+				//values filtered pass, the rest don't
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] == 0) //not filtered, does not pass
 						continue;
@@ -137,7 +229,7 @@ float AnimationNode::_blend_node(Ref<AnimationNode> p_node, float p_time, bool p
 			} break;
 			case FILTER_STOP: {
 
-				//values filtered dont pass, the rest are blended
+				//values filtered don't pass, the rest are blended
 
 				for (int i = 0; i < blend_count; i++) {
 					if (blendw[i] > 0) //filtered, does not pass
@@ -189,7 +281,19 @@ float AnimationNode::_blend_node(Ref<AnimationNode> p_node, float p_time, bool p
 	if (!p_seek && p_optimize && !any_valid) //pointless to go on, all are zero
 		return 0;
 
-	return p_node->_pre_process(state, p_time, p_seek);
+	String new_path;
+	AnimationNode *new_parent;
+
+	//this is the slowest part of processing, but as strings process in powers of 2, and the paths always exist, it will not result in that many allocations
+	if (p_new_parent) {
+		new_parent = p_new_parent;
+		new_path = String(base_path) + String(p_subpath) + "/";
+	} else {
+		ERR_FAIL_COND_V(!parent, 0);
+		new_parent = parent;
+		new_path = String(parent->base_path) + String(p_subpath) + "/";
+	}
+	return p_node->_pre_process(new_path, new_parent, state, p_time, p_seek, p_connections);
 }
 
 int AnimationNode::get_input_count() const {
@@ -199,29 +303,6 @@ int AnimationNode::get_input_count() const {
 String AnimationNode::get_input_name(int p_input) {
 	ERR_FAIL_INDEX_V(p_input, inputs.size(), String());
 	return inputs[p_input].name;
-}
-
-float AnimationNode::get_input_activity(int p_input) const {
-
-	ERR_FAIL_INDEX_V(p_input, inputs.size(), 0);
-	if (!get_tree())
-		return 0;
-
-	if (get_tree()->get_last_process_pass() != inputs[p_input].last_pass) {
-		return 0;
-	}
-	return inputs[p_input].activity;
-}
-StringName AnimationNode::get_input_connection(int p_input) {
-
-	ERR_FAIL_INDEX_V(p_input, inputs.size(), StringName());
-	return inputs[p_input].connected_to;
-}
-
-void AnimationNode::set_input_connection(int p_input, const StringName &p_connection) {
-
-	ERR_FAIL_INDEX(p_input, inputs.size());
-	inputs.write[p_input].connected_to = p_connection;
 }
 
 String AnimationNode::get_caption() const {
@@ -234,13 +315,11 @@ String AnimationNode::get_caption() const {
 }
 
 void AnimationNode::add_input(const String &p_name) {
-	//root nodes cant add inputs
-	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL)
+	//root nodes can't add inputs
+	ERR_FAIL_COND(Object::cast_to<AnimationRootNode>(this) != NULL);
 	Input input;
 	ERR_FAIL_COND(p_name.find(".") != -1 || p_name.find("/") != -1);
 	input.name = p_name;
-	input.activity = 0;
-	input.last_pass = 0;
 	inputs.push_back(input);
 	emit_changed();
 }
@@ -256,35 +335,6 @@ void AnimationNode::remove_input(int p_index) {
 	ERR_FAIL_INDEX(p_index, inputs.size());
 	inputs.remove(p_index);
 	emit_changed();
-}
-
-void AnimationNode::_set_parent(Object *p_parent) {
-	set_parent(Object::cast_to<AnimationNode>(p_parent));
-}
-
-void AnimationNode::set_parent(AnimationNode *p_parent) {
-	parent = p_parent; //do not use ref because parent contains children
-	if (get_script_instance()) {
-		get_script_instance()->call("_parent_set", p_parent);
-	}
-}
-
-Ref<AnimationNode> AnimationNode::get_parent() const {
-	if (parent) {
-		return Ref<AnimationNode>(parent);
-	}
-
-	return Ref<AnimationNode>();
-}
-
-AnimationTree *AnimationNode::get_tree() const {
-
-	return player;
-}
-
-AnimationPlayer *AnimationNode::get_player() const {
-	ERR_FAIL_COND_V(!state, NULL);
-	return state->player;
 }
 
 float AnimationNode::process(float p_time, bool p_seek) {
@@ -320,22 +370,6 @@ bool AnimationNode::has_filter() const {
 	return false;
 }
 
-void AnimationNode::set_position(const Vector2 &p_position) {
-	position = p_position;
-}
-
-Vector2 AnimationNode::get_position() const {
-	return position;
-}
-
-void AnimationNode::set_tree(AnimationTree *p_player) {
-
-	if (player != NULL && p_player == NULL) {
-		emit_signal("removed_from_graph");
-	}
-	player = p_player;
-}
-
 Array AnimationNode::_get_filters() const {
 
 	Array paths;
@@ -361,12 +395,17 @@ void AnimationNode::_validate_property(PropertyInfo &property) const {
 	}
 }
 
+Ref<AnimationNode> AnimationNode::get_child_by_name(const StringName &p_name) {
+	if (get_script_instance()) {
+		return get_script_instance()->call("get_child_by_name");
+	}
+	return Ref<AnimationNode>();
+}
+
 void AnimationNode::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_input_count"), &AnimationNode::get_input_count);
 	ClassDB::bind_method(D_METHOD("get_input_name", "input"), &AnimationNode::get_input_name);
-	ClassDB::bind_method(D_METHOD("get_input_connection", "input"), &AnimationNode::get_input_connection);
-	ClassDB::bind_method(D_METHOD("get_input_activity", "input"), &AnimationNode::get_input_activity);
 
 	ClassDB::bind_method(D_METHOD("add_input", "name"), &AnimationNode::add_input);
 	ClassDB::bind_method(D_METHOD("remove_input", "index"), &AnimationNode::remove_input);
@@ -377,29 +416,35 @@ void AnimationNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_filter_enabled", "enable"), &AnimationNode::set_filter_enabled);
 	ClassDB::bind_method(D_METHOD("is_filter_enabled"), &AnimationNode::is_filter_enabled);
 
-	ClassDB::bind_method(D_METHOD("set_position", "position"), &AnimationNode::set_position);
-	ClassDB::bind_method(D_METHOD("get_position"), &AnimationNode::get_position);
-
 	ClassDB::bind_method(D_METHOD("_set_filters", "filters"), &AnimationNode::_set_filters);
 	ClassDB::bind_method(D_METHOD("_get_filters"), &AnimationNode::_get_filters);
 
 	ClassDB::bind_method(D_METHOD("blend_animation", "animation", "time", "delta", "seeked", "blend"), &AnimationNode::blend_animation);
-	ClassDB::bind_method(D_METHOD("blend_node", "node", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
+	ClassDB::bind_method(D_METHOD("blend_node", "name", "node", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_node, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 	ClassDB::bind_method(D_METHOD("blend_input", "input_index", "time", "seek", "blend", "filter", "optimize"), &AnimationNode::blend_input, DEFVAL(FILTER_IGNORE), DEFVAL(true));
 
-	ClassDB::bind_method(D_METHOD("set_parent", "parent"), &AnimationNode::_set_parent);
-	ClassDB::bind_method(D_METHOD("get_parent"), &AnimationNode::get_parent);
-	ClassDB::bind_method(D_METHOD("get_tree"), &AnimationNode::get_tree);
+	ClassDB::bind_method(D_METHOD("set_parameter", "name", "value"), &AnimationNode::set_parameter);
+	ClassDB::bind_method(D_METHOD("get_parameter", "name"), &AnimationNode::get_parameter);
 
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "filter_enabled", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_filter_enabled", "is_filter_enabled");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "filters", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_filters", "_get_filters");
 
+	BIND_VMETHOD(MethodInfo(Variant::DICTIONARY, "get_child_nodes"));
+	BIND_VMETHOD(MethodInfo(Variant::ARRAY, "get_parameter_list"));
+	BIND_VMETHOD(MethodInfo(Variant::OBJECT, "get_child_by_name", PropertyInfo(Variant::STRING, "name")));
+	{
+		MethodInfo mi = MethodInfo(Variant::NIL, "get_parameter_default_value", PropertyInfo(Variant::STRING, "name"));
+		mi.return_val.usage = PROPERTY_USAGE_NIL_IS_VARIANT;
+		BIND_VMETHOD(mi);
+	}
 	BIND_VMETHOD(MethodInfo("process", PropertyInfo(Variant::REAL, "time"), PropertyInfo(Variant::BOOL, "seek")));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "get_caption"));
 	BIND_VMETHOD(MethodInfo(Variant::STRING, "has_filter"));
-	BIND_VMETHOD(MethodInfo("_parent_set", PropertyInfo(Variant::OBJECT, "parent")));
 
 	ADD_SIGNAL(MethodInfo("removed_from_graph"));
+
+	ADD_SIGNAL(MethodInfo("tree_changed"));
+
 	BIND_ENUM_CONSTANT(FILTER_IGNORE);
 	BIND_ENUM_CONSTANT(FILTER_PASS);
 	BIND_ENUM_CONSTANT(FILTER_STOP);
@@ -410,8 +455,6 @@ AnimationNode::AnimationNode() {
 
 	state = NULL;
 	parent = NULL;
-	player = NULL;
-	set_local_to_scene(true);
 	filter_enabled = false;
 }
 
@@ -420,17 +463,16 @@ AnimationNode::AnimationNode() {
 void AnimationTree::set_tree_root(const Ref<AnimationNode> &p_root) {
 
 	if (root.is_valid()) {
-		root->set_tree(NULL);
+		root->disconnect("tree_changed", this, "_tree_changed");
 	}
-	if (p_root.is_valid()) {
-		ERR_EXPLAIN("root node already set to another player");
-		ERR_FAIL_COND(p_root->player);
-	}
+
 	root = p_root;
 
 	if (root.is_valid()) {
-		root->set_tree(this);
+		root->connect("tree_changed", this, "_tree_changed");
 	}
+
+	properties_dirty = true;
 
 	update_configuration_warning();
 }
@@ -580,7 +622,7 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 
 							Skeleton *sk = Object::cast_to<Skeleton>(spatial);
 							int bone_idx = sk->find_bone(path.get_subname(0));
-							if (bone_idx != -1 && !sk->is_bone_ignore_animation(bone_idx)) {
+							if (bone_idx != -1) {
 
 								track_xform->skeleton = sk;
 								track_xform->bone_idx = bone_idx;
@@ -643,6 +685,10 @@ bool AnimationTree::_update_caches(AnimationPlayer *player) {
 						track = track_animation;
 
 					} break;
+					default: {
+						ERR_PRINT("Animation corrupted (invalid track type)");
+						continue;
+					}
 				}
 
 				track_cache[path] = track;
@@ -699,7 +745,10 @@ void AnimationTree::_clear_caches() {
 
 void AnimationTree::_process_graph(float p_delta) {
 
+	_update_properties(); //if properties need updating, update them
+
 	//check all tracks, see if they need modification
+
 	root_motion_transform = Transform();
 
 	if (!root.is_valid()) {
@@ -717,6 +766,28 @@ void AnimationTree::_process_graph(float p_delta) {
 	}
 
 	AnimationPlayer *player = Object::cast_to<AnimationPlayer>(get_node(animation_player));
+
+	ObjectID current_animation_player = 0;
+
+	if (player) {
+		current_animation_player = player->get_instance_id();
+	}
+
+	if (last_animation_player != current_animation_player) {
+
+		if (last_animation_player) {
+			Object *old_player = ObjectDB::get_instance(last_animation_player);
+			if (old_player) {
+				old_player->disconnect("caches_cleared", this, "_clear_caches");
+			}
+		}
+
+		if (player) {
+			player->connect("caches_cleared", this, "_clear_caches");
+		}
+
+		last_animation_player = current_animation_player;
+	}
 
 	if (!player) {
 		ERR_PRINT("AnimationTree: path points to a node not an AnimationPlayer, disabling playback");
@@ -741,6 +812,7 @@ void AnimationTree::_process_graph(float p_delta) {
 		state.valid = true;
 		state.player = player;
 		state.last_pass = process_pass;
+		state.tree = this;
 
 		// root source blends
 
@@ -757,11 +829,11 @@ void AnimationTree::_process_graph(float p_delta) {
 
 		if (started) {
 			//if started, seek
-			root->_pre_process(&state, 0, true);
+			root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, NULL, &state, 0, true, Vector<StringName>());
 			started = false;
 		}
 
-		root->_pre_process(&state, p_delta, false);
+		root->_pre_process(SceneStringNames::get_singleton()->parameters_base_path, NULL, &state, p_delta, false, Vector<StringName>());
 	}
 
 	if (!state.valid) {
@@ -785,6 +857,9 @@ void AnimationTree::_process_graph(float p_delta) {
 			for (int i = 0; i < a->get_track_count(); i++) {
 
 				NodePath path = a->track_get_path(i);
+
+				ERR_CONTINUE(!track_cache.has(path));
+
 				TrackCache *track = track_cache[path];
 				if (track->type != a->track_get_type(i)) {
 					continue; //may happen should not
@@ -808,16 +883,16 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						TrackCacheTransform *t = static_cast<TrackCacheTransform *>(track);
 
-						if (t->process_pass != process_pass) {
-
-							t->process_pass = process_pass;
-							t->loc = Vector3();
-							t->rot = Quat();
-							t->rot_blend_accum = 0;
-							t->scale = Vector3();
-						}
-
 						if (track->root_motion) {
+
+							if (t->process_pass != process_pass) {
+
+								t->process_pass = process_pass;
+								t->loc = Vector3();
+								t->rot = Quat();
+								t->rot_blend_accum = 0;
+								t->scale = Vector3(1, 1, 1);
+							}
 
 							float prev_time = time - delta;
 							if (prev_time < 0) {
@@ -871,7 +946,14 @@ void AnimationTree::_process_graph(float p_delta) {
 							Error err = a->transform_track_interpolate(i, time, &loc, &rot, &scale);
 							//ERR_CONTINUE(err!=OK); //used for testing, should be removed
 
-							scale -= Vector3(1.0, 1.0, 1.0); //helps make it work properly with Add nodes
+							if (t->process_pass != process_pass) {
+
+								t->process_pass = process_pass;
+								t->loc = loc;
+								t->rot = rot;
+								t->rot_blend_accum = 0;
+								t->scale = scale;
+							}
 
 							if (err != OK)
 								continue;
@@ -903,8 +985,7 @@ void AnimationTree::_process_graph(float p_delta) {
 								continue;
 
 							if (t->process_pass != process_pass) {
-								Variant::CallError ce;
-								t->value = Variant::construct(value.get_type(), NULL, 0, ce); //reset
+								t->value = value;
 								t->process_pass = process_pass;
 							}
 
@@ -934,10 +1015,10 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						a->method_track_get_key_indices(i, time, delta, &indices);
 
-						for (List<int>::Element *E = indices.front(); E; E = E->next()) {
+						for (List<int>::Element *F = indices.front(); F; F = F->next()) {
 
-							StringName method = a->method_track_get_name(i, E->get());
-							Vector<Variant> params = a->method_track_get_params(i, E->get());
+							StringName method = a->method_track_get_name(i, F->get());
+							Vector<Variant> params = a->method_track_get_params(i, F->get());
 
 							int s = params.size();
 
@@ -961,7 +1042,7 @@ void AnimationTree::_process_graph(float p_delta) {
 						float bezier = a->bezier_track_interpolate(i, time);
 
 						if (t->process_pass != process_pass) {
-							t->value = 0;
+							t->value = bezier;
 							t->process_pass = process_pass;
 						}
 
@@ -1076,9 +1157,9 @@ void AnimationTree::_process_graph(float p_delta) {
 
 						TrackCacheAnimation *t = static_cast<TrackCacheAnimation *>(track);
 
-						AnimationPlayer *player = Object::cast_to<AnimationPlayer>(t->object);
+						AnimationPlayer *player2 = Object::cast_to<AnimationPlayer>(t->object);
 
-						if (!player)
+						if (!player2)
 							continue;
 
 						if (delta == 0 || seeked) {
@@ -1090,10 +1171,10 @@ void AnimationTree::_process_graph(float p_delta) {
 							float pos = a->track_get_key_time(i, idx);
 
 							StringName anim_name = a->animation_track_get_key_animation(i, idx);
-							if (String(anim_name) == "[stop]" || !player->has_animation(anim_name))
+							if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name))
 								continue;
 
-							Ref<Animation> anim = player->get_animation(anim_name);
+							Ref<Animation> anim = player2->get_animation(anim_name);
 
 							float at_anim_pos;
 
@@ -1103,14 +1184,14 @@ void AnimationTree::_process_graph(float p_delta) {
 								at_anim_pos = MAX(anim->get_length(), time - pos); //seek to end
 							}
 
-							if (player->is_playing() || seeked) {
-								player->play(anim_name);
-								player->seek(at_anim_pos);
+							if (player2->is_playing() || seeked) {
+								player2->play(anim_name);
+								player2->seek(at_anim_pos);
 								t->playing = true;
 								playing_caches.insert(t);
 							} else {
-								player->set_assigned_animation(anim_name);
-								player->seek(at_anim_pos, true);
+								player2->set_assigned_animation(anim_name);
+								player2->seek(at_anim_pos, true);
 							}
 						} else {
 							//find stuff to play
@@ -1120,15 +1201,15 @@ void AnimationTree::_process_graph(float p_delta) {
 								int idx = to_play.back()->get();
 
 								StringName anim_name = a->animation_track_get_key_animation(i, idx);
-								if (String(anim_name) == "[stop]" || !player->has_animation(anim_name)) {
+								if (String(anim_name) == "[stop]" || !player2->has_animation(anim_name)) {
 
 									if (playing_caches.has(t)) {
 										playing_caches.erase(t);
-										player->stop();
+										player2->stop();
 										t->playing = false;
 									}
 								} else {
-									player->play(anim_name);
+									player2->play(anim_name);
 									t->playing = true;
 									playing_caches.insert(t);
 								}
@@ -1157,8 +1238,6 @@ void AnimationTree::_process_graph(float p_delta) {
 
 					Transform xform;
 					xform.origin = t->loc;
-
-					t->scale += Vector3(1.0, 1.0, 1.0); //helps make it work properly with Add nodes and root motion
 
 					xform.basis.set_quat_scale(t->rot, t->scale);
 
@@ -1193,10 +1272,16 @@ void AnimationTree::_process_graph(float p_delta) {
 					t->object->set_indexed(t->subpath, t->value);
 
 				} break;
-				default: {} //the rest dont matter
+				default: {
+				} //the rest don't matter
 			}
 		}
 	}
+}
+
+void AnimationTree::advance(float p_time) {
+
+	_process_graph(p_time);
 }
 
 void AnimationTree::_notification(int p_what) {
@@ -1211,6 +1296,21 @@ void AnimationTree::_notification(int p_what) {
 
 	if (p_what == NOTIFICATION_EXIT_TREE) {
 		_clear_caches();
+		if (last_animation_player) {
+
+			Object *player = ObjectDB::get_instance(last_animation_player);
+			if (player) {
+				player->disconnect("caches_cleared", this, "_clear_caches");
+			}
+		}
+	} else if (p_what == NOTIFICATION_ENTER_TREE) {
+		if (last_animation_player) {
+
+			Object *player = ObjectDB::get_instance(last_animation_player);
+			if (player) {
+				player->connect("caches_cleared", this, "_clear_caches");
+			}
+		}
 	}
 }
 
@@ -1242,15 +1342,15 @@ String AnimationTree::get_configuration_warning() const {
 
 	if (!root.is_valid()) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
-		warning += TTR("A root AnimationNode for the graph is not set.");
+		warning += TTR("No root AnimationNode for the graph is set.");
 	}
 
 	if (!has_node(animation_player)) {
 
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
 
 		warning += TTR("Path to an AnimationPlayer node containing animations is not set.");
@@ -1261,7 +1361,7 @@ String AnimationTree::get_configuration_warning() const {
 
 	if (!player) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
 
 		warning += TTR("Path set for AnimationPlayer does not lead to an AnimationPlayer node.");
@@ -1270,10 +1370,10 @@ String AnimationTree::get_configuration_warning() const {
 
 	if (!player->has_node(player->get_root())) {
 		if (warning != String()) {
-			warning += "\n";
+			warning += "\n\n";
 		}
 
-		warning += TTR("AnimationPlayer root is not a valid node.");
+		warning += TTR("The AnimationPlayer root node is not a valid node.");
 		return warning;
 	}
 
@@ -1290,6 +1390,149 @@ NodePath AnimationTree::get_root_motion_track() const {
 
 Transform AnimationTree::get_root_motion_transform() const {
 	return root_motion_transform;
+}
+
+void AnimationTree::_tree_changed() {
+	if (properties_dirty) {
+		return;
+	}
+
+	call_deferred("_update_properties");
+	properties_dirty = true;
+}
+
+void AnimationTree::_update_properties_for_node(const String &p_base_path, Ref<AnimationNode> node) {
+
+	if (!property_parent_map.has(p_base_path)) {
+		property_parent_map[p_base_path] = HashMap<StringName, StringName>();
+	}
+
+	if (node->get_input_count() && !input_activity_map.has(p_base_path)) {
+
+		Vector<Activity> activity;
+		for (int i = 0; i < node->get_input_count(); i++) {
+			Activity a;
+			a.activity = 0;
+			a.last_pass = 0;
+			activity.push_back(a);
+		}
+		input_activity_map[p_base_path] = activity;
+		input_activity_map_get[String(p_base_path).substr(0, String(p_base_path).length() - 1)] = &input_activity_map[p_base_path];
+	}
+
+	List<PropertyInfo> plist;
+	node->get_parameter_list(&plist);
+	for (List<PropertyInfo>::Element *E = plist.front(); E; E = E->next()) {
+		PropertyInfo pinfo = E->get();
+
+		StringName key = pinfo.name;
+
+		if (!property_map.has(p_base_path + key)) {
+			property_map[p_base_path + key] = node->get_parameter_default_value(key);
+		}
+
+		property_parent_map[p_base_path][key] = p_base_path + key;
+
+		pinfo.name = p_base_path + key;
+		properties.push_back(pinfo);
+	}
+
+	List<AnimationNode::ChildNode> children;
+	node->get_child_nodes(&children);
+
+	for (List<AnimationNode::ChildNode>::Element *E = children.front(); E; E = E->next()) {
+		_update_properties_for_node(p_base_path + E->get().name + "/", E->get().node);
+	}
+}
+
+void AnimationTree::_update_properties() {
+	if (!properties_dirty) {
+		return;
+	}
+
+	properties.clear();
+	property_parent_map.clear();
+	input_activity_map.clear();
+	input_activity_map_get.clear();
+
+	if (root.is_valid()) {
+		_update_properties_for_node(SceneStringNames::get_singleton()->parameters_base_path, root);
+	}
+
+	properties_dirty = false;
+
+	_change_notify();
+}
+
+bool AnimationTree::_set(const StringName &p_name, const Variant &p_value) {
+	if (properties_dirty) {
+		_update_properties();
+	}
+
+	if (property_map.has(p_name)) {
+		property_map[p_name] = p_value;
+#ifdef TOOLS_ENABLED
+		_change_notify(p_name.operator String().utf8().get_data());
+#endif
+		return true;
+	}
+
+	return false;
+}
+
+bool AnimationTree::_get(const StringName &p_name, Variant &r_ret) const {
+	if (properties_dirty) {
+		const_cast<AnimationTree *>(this)->_update_properties();
+	}
+
+	if (property_map.has(p_name)) {
+		r_ret = property_map[p_name];
+		return true;
+	}
+
+	return false;
+}
+void AnimationTree::_get_property_list(List<PropertyInfo> *p_list) const {
+	if (properties_dirty) {
+		const_cast<AnimationTree *>(this)->_update_properties();
+	}
+
+	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+		p_list->push_back(E->get());
+	}
+}
+
+void AnimationTree::rename_parameter(const String &p_base, const String &p_new_base) {
+
+	//rename values first
+	for (const List<PropertyInfo>::Element *E = properties.front(); E; E = E->next()) {
+		if (E->get().name.begins_with(p_base)) {
+			String new_name = E->get().name.replace_first(p_base, p_new_base);
+			property_map[new_name] = property_map[E->get().name];
+		}
+	}
+
+	//update tree second
+	properties_dirty = true;
+	_update_properties();
+}
+
+float AnimationTree::get_connection_activity(const StringName &p_path, int p_connection) const {
+
+	if (!input_activity_map_get.has(p_path)) {
+		return 0;
+	}
+	const Vector<Activity> *activity = input_activity_map_get[p_path];
+
+	if (!activity || p_connection < 0 || p_connection >= activity->size()) {
+		return 0;
+	}
+
+	if ((*activity)[p_connection].last_pass != process_pass) {
+		return 0;
+	}
+
+	return (*activity)[p_connection].activity;
 }
 
 void AnimationTree::_bind_methods() {
@@ -1310,17 +1553,26 @@ void AnimationTree::_bind_methods() {
 
 	ClassDB::bind_method(D_METHOD("get_root_motion_transform"), &AnimationTree::get_root_motion_transform);
 
-	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
+	ClassDB::bind_method(D_METHOD("_tree_changed"), &AnimationTree::_tree_changed);
+	ClassDB::bind_method(D_METHOD("_update_properties"), &AnimationTree::_update_properties);
 
-	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode", PROPERTY_USAGE_DEFAULT | PROPERTY_USAGE_DO_NOT_SHARE_ON_DUPLICATE), "set_tree_root", "get_tree_root");
+	ClassDB::bind_method(D_METHOD("rename_parameter", "old_name", "new_name"), &AnimationTree::rename_parameter);
+
+	ClassDB::bind_method(D_METHOD("advance", "delta"), &AnimationTree::advance);
+
+	ClassDB::bind_method(D_METHOD("_node_removed"), &AnimationTree::_node_removed);
+	ClassDB::bind_method(D_METHOD("_clear_caches"), &AnimationTree::_clear_caches);
+
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "tree_root", PROPERTY_HINT_RESOURCE_TYPE, "AnimationRootNode"), "set_tree_root", "get_tree_root");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "anim_player", PROPERTY_HINT_NODE_PATH_VALID_TYPES, "AnimationPlayer"), "set_animation_player", "get_animation_player");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "active"), "set_active", "is_active");
-	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle"), "set_process_mode", "get_process_mode");
+	ADD_PROPERTY(PropertyInfo(Variant::INT, "process_mode", PROPERTY_HINT_ENUM, "Physics,Idle,Manual"), "set_process_mode", "get_process_mode");
 	ADD_GROUP("Root Motion", "root_motion_");
 	ADD_PROPERTY(PropertyInfo(Variant::NODE_PATH, "root_motion_track"), "set_root_motion_track", "get_root_motion_track");
 
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_PHYSICS);
 	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_IDLE);
+	BIND_ENUM_CONSTANT(ANIMATION_PROCESS_MANUAL);
 }
 
 AnimationTree::AnimationTree() {
@@ -1329,11 +1581,11 @@ AnimationTree::AnimationTree() {
 	active = false;
 	cache_valid = false;
 	setup_pass = 1;
+	process_pass = 1;
 	started = true;
+	properties_dirty = true;
+	last_animation_player = 0;
 }
 
 AnimationTree::~AnimationTree() {
-	if (root.is_valid()) {
-		root->player = NULL;
-	}
 }

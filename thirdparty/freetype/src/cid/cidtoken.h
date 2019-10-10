@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cidtoken.h                                                             */
-/*                                                                         */
-/*    CID token definitions (specification only).                          */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cidtoken.h
+ *
+ *   CID token definitions (specification only).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #undef  FT_STRUCTURE
@@ -21,17 +21,20 @@
 #undef  T1CODE
 #define T1CODE        T1_FIELD_LOCATION_CID_INFO
 
-  T1_FIELD_KEY   ( "CIDFontName",    cid_font_name, 0 )
-  T1_FIELD_FIXED ( "CIDFontVersion", cid_version,   0 )
-  T1_FIELD_NUM   ( "CIDFontType",    cid_font_type, 0 )
-  T1_FIELD_STRING( "Registry",       registry,      0 )
-  T1_FIELD_STRING( "Ordering",       ordering,      0 )
-  T1_FIELD_NUM   ( "Supplement",     supplement,    0 )
-  T1_FIELD_NUM   ( "UIDBase",        uid_base,      0 )
-  T1_FIELD_NUM   ( "CIDMapOffset",   cidmap_offset, 0 )
-  T1_FIELD_NUM   ( "FDBytes",        fd_bytes,      0 )
-  T1_FIELD_NUM   ( "GDBytes",        gd_bytes,      0 )
-  T1_FIELD_NUM   ( "CIDCount",       cid_count,     0 )
+  T1_FIELD_KEY      ( "CIDFontName",    cid_font_name, 0 )
+  T1_FIELD_FIXED    ( "CIDFontVersion", cid_version,   0 )
+  T1_FIELD_NUM      ( "CIDFontType",    cid_font_type, 0 )
+  T1_FIELD_STRING   ( "Registry",       registry,      0 )
+  T1_FIELD_STRING   ( "Ordering",       ordering,      0 )
+  T1_FIELD_NUM      ( "Supplement",     supplement,    0 )
+  T1_FIELD_NUM      ( "UIDBase",        uid_base,      0 )
+
+  T1_FIELD_NUM_TABLE( "XUID",           xuid,          16, 0 )
+
+  T1_FIELD_NUM      ( "CIDMapOffset",   cidmap_offset, 0 )
+  T1_FIELD_NUM      ( "FDBytes",        fd_bytes,      0 )
+  T1_FIELD_NUM      ( "GDBytes",        gd_bytes,      0 )
+  T1_FIELD_NUM      ( "CIDCount",       cid_count,     0 )
 
 
 #undef  FT_STRUCTURE

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -142,6 +142,7 @@ public:
 	_FORCE_INLINE_ void set_spOv_priority(int p_priority) { spOv_priority = p_priority; }
 	_FORCE_INLINE_ int get_spOv_priority() { return spOv_priority; }
 
+	virtual void main_shape_changed();
 	virtual void reload_body();
 	virtual void set_space(SpaceBullet *p_space);
 
@@ -156,6 +157,7 @@ public:
 
 	virtual void on_collision_filters_change();
 	virtual void on_collision_checker_start() {}
+	virtual void on_collision_checker_end() { isTransformChanged = false; }
 
 	void add_overlap(CollisionObjectBullet *p_otherObject);
 	void put_overlap_as_exit(int p_index);

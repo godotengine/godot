@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #ifndef GD_MONO_LOG_H
 #define GD_MONO_LOG_H
 
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 
 class GDMonoLog {
 
@@ -41,7 +41,6 @@ class GDMonoLog {
 	String log_file_path;
 
 	bool _try_create_logs_dir(const String &p_logs_dir);
-	void _open_log_file(const String &p_file_path);
 	void _delete_old_log_files(const String &p_logs_dir);
 
 	static GDMonoLog *singleton;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,7 +30,7 @@
 
 #include "gdnative/string.h"
 
-#include "core/string_db.h"
+#include "core/string_name.h"
 #include "core/ustring.h"
 #include "core/variant.h"
 
@@ -74,7 +74,7 @@ void GDAPI godot_string_new_with_wide_string(godot_string *r_dest, const wchar_t
 	memnew_placement(dest, String(p_contents, p_size));
 }
 
-wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx) {
+const wchar_t GDAPI *godot_string_operator_index(godot_string *p_self, const godot_int p_idx) {
 	String *self = (String *)p_self;
 	return &(self->operator[](p_idx));
 }
@@ -184,6 +184,20 @@ godot_bool GDAPI godot_string_ends_with(const godot_string *p_self, const godot_
 	const String *string = (const String *)p_string;
 
 	return self->ends_with(*string);
+}
+
+godot_int GDAPI godot_string_count(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to) {
+	const String *self = (const String *)p_self;
+	String *what = (String *)&p_what;
+
+	return self->count(*what, p_from, p_to);
+}
+
+godot_int GDAPI godot_string_countn(const godot_string *p_self, godot_string p_what, godot_int p_from, godot_int p_to) {
+	const String *self = (const String *)p_self;
+	String *what = (String *)&p_what;
+
+	return self->countn(*what, p_from, p_to);
 }
 
 godot_int GDAPI godot_string_find(const godot_string *p_self, godot_string p_what) {
@@ -1283,6 +1297,64 @@ godot_bool GDAPI godot_string_is_valid_ip_address(const godot_string *p_self) {
 	const String *self = (const String *)p_self;
 
 	return self->is_valid_ip_address();
+}
+
+godot_string GDAPI godot_string_dedent(const godot_string *p_self) {
+	const String *self = (const String *)p_self;
+	godot_string result;
+	String return_value = self->dedent();
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_trim_prefix(const godot_string *p_self, const godot_string *p_prefix) {
+	const String *self = (const String *)p_self;
+	String *prefix = (String *)p_prefix;
+	godot_string result;
+	String return_value = self->trim_prefix(*prefix);
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_trim_suffix(const godot_string *p_self, const godot_string *p_suffix) {
+	const String *self = (const String *)p_self;
+	String *suffix = (String *)p_suffix;
+	godot_string result;
+	String return_value = self->trim_suffix(*suffix);
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_string GDAPI godot_string_rstrip(const godot_string *p_self, const godot_string *p_chars) {
+	const String *self = (const String *)p_self;
+	String *chars = (String *)p_chars;
+	godot_string result;
+	String return_value = self->rstrip(*chars);
+	memnew_placement(&result, String(return_value));
+
+	return result;
+}
+
+godot_pool_string_array GDAPI godot_string_rsplit(const godot_string *p_self, const godot_string *p_divisor,
+		const godot_bool p_allow_empty, const godot_int p_maxsplit) {
+	const String *self = (const String *)p_self;
+	String *divisor = (String *)p_divisor;
+
+	godot_pool_string_array result;
+	memnew_placement(&result, PoolStringArray);
+	PoolStringArray *proxy = (PoolStringArray *)&result;
+	PoolStringArray::Write proxy_writer = proxy->write();
+	Vector<String> tmp_result = self->rsplit(*divisor, p_allow_empty, p_maxsplit);
+	proxy->resize(tmp_result.size());
+
+	for (int i = 0; i < tmp_result.size(); i++) {
+		proxy_writer[i] = tmp_result[i];
+	}
+
+	return result;
 }
 
 #ifdef __cplusplus

@@ -1,13 +1,11 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="EditorInspector" inherits="ScrollContainer" category="Core" version="3.1">
+<class name="EditorInspector" inherits="ScrollContainer" category="Core" version="3.2">
 	<brief_description>
 	</brief_description>
 	<description>
 	</description>
 	<tutorials>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="refresh">
 			<return type="void">
@@ -16,6 +14,9 @@
 			</description>
 		</method>
 	</methods>
+	<members>
+		<member name="scroll_horizontal_enabled" type="bool" setter="set_enable_h_scroll" getter="is_h_scroll_enabled" override="true" default="false" />
+	</members>
 	<signals>
 		<signal name="object_id_selected">
 			<argument index="0" name="id" type="int">
@@ -37,6 +38,14 @@
 		</signal>
 		<signal name="property_selected">
 			<argument index="0" name="property" type="String">
+			</argument>
+			<description>
+			</description>
+		</signal>
+		<signal name="property_toggled">
+			<argument index="0" name="property" type="String">
+			</argument>
+			<argument index="1" name="checked" type="bool">
 			</argument>
 			<description>
 			</description>

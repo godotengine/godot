@@ -20,3 +20,4 @@ if 'GLES3_GLSL' in env['BUILDERS']:
     env.GLES3_GLSL('exposure.glsl');
     env.GLES3_GLSL('tonemap.glsl');
     env.GLES3_GLSL('particles.glsl');
+    env.GLES3_GLSL('lens_distorted.glsl');

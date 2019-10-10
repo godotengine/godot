@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,9 +31,9 @@
 #ifndef SHADER_H
 #define SHADER_H
 
-#include "io/resource_loader.h"
-#include "io/resource_saver.h"
-#include "resource.h"
+#include "core/io/resource_loader.h"
+#include "core/io/resource_saver.h"
+#include "core/resource.h"
 #include "scene/resources/texture.h"
 
 class Shader : public Resource {
@@ -78,6 +78,8 @@ public:
 	void set_default_texture_param(const StringName &p_param, const Ref<Texture> &p_texture);
 	Ref<Texture> get_default_texture_param(const StringName &p_param) const;
 	void get_default_texture_param_list(List<StringName> *r_textures) const;
+
+	virtual bool is_text_shader() const;
 
 	_FORCE_INLINE_ StringName remap_param(const StringName &p_param) const {
 		if (params_cache_dirty)

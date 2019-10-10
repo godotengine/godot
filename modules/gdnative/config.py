@@ -6,6 +6,7 @@ def configure(env):
 
 def get_doc_classes():
     return [
+        "@NativeScript",
         "ARVRInterfaceGDNative",
         "GDNative",
         "GDNativeLibrary",
@@ -14,6 +15,9 @@ def get_doc_classes():
         "PacketPeerGDNative",
         "PluginScript",
         "StreamPeerGDNative",
+        "VideoStreamGDNative",
+        "WebRTCPeerConnectionGDNative",
+        "WebRTCDataChannelGDNative",
     ]
 
 def get_doc_path():

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,11 +31,12 @@
 #ifndef GDSCRIPT_TOKENIZER_H
 #define GDSCRIPT_TOKENIZER_H
 
+#include "core/pair.h"
+#include "core/string_name.h"
+#include "core/ustring.h"
+#include "core/variant.h"
+#include "core/vmap.h"
 #include "gdscript_functions.h"
-#include "string_db.h"
-#include "ustring.h"
-#include "variant.h"
-#include "vmap.h"
 
 class GDScriptTokenizer {
 public:
@@ -85,10 +86,7 @@ public:
 		TK_CF_ELIF,
 		TK_CF_ELSE,
 		TK_CF_FOR,
-		TK_CF_DO,
 		TK_CF_WHILE,
-		TK_CF_SWITCH,
-		TK_CF_CASE,
 		TK_CF_BREAK,
 		TK_CF_CONTINUE,
 		TK_CF_PASS,
@@ -117,10 +115,11 @@ public:
 		TK_PR_REMOTE,
 		TK_PR_SYNC,
 		TK_PR_MASTER,
-		TK_PR_SLAVE,
+		TK_PR_SLAVE, // Deprecated by TK_PR_PUPPET, to remove in 4.0
+		TK_PR_PUPPET,
 		TK_PR_REMOTESYNC,
 		TK_PR_MASTERSYNC,
-		TK_PR_SLAVESYNC,
+		TK_PR_PUPPETSYNC,
 		TK_BRACKET_OPEN,
 		TK_BRACKET_CLOSE,
 		TK_CURLY_BRACKET_OPEN,
@@ -171,6 +170,11 @@ public:
 	virtual int get_token_line_indent(int p_offset = 0) const = 0;
 	virtual String get_token_error(int p_offset = 0) const = 0;
 	virtual void advance(int p_amount = 1) = 0;
+#ifdef DEBUG_ENABLED
+	virtual const Vector<Pair<int, String> > &get_warning_skips() const = 0;
+	virtual const Set<String> &get_warning_global_skips() const = 0;
+	virtual bool is_ignoring_warnings() const = 0;
+#endif // DEBUG_ENABLED
 
 	virtual ~GDScriptTokenizer(){};
 };
@@ -190,6 +194,7 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 		union {
 			Variant::Type vtype; //for type types
 			GDScriptFunctions::Function func; //function for built in functions
+			int warning_code; //for warning skip
 		};
 		int line, col;
 		TokenData() {
@@ -217,6 +222,17 @@ class GDScriptTokenizerText : public GDScriptTokenizer {
 	int tk_rb_pos;
 	String last_error;
 	bool error_flag;
+	enum {
+		INDENT_NONE,
+		INDENT_SPACES,
+		INDENT_TABS,
+	} file_indent_type;
+
+#ifdef DEBUG_ENABLED
+	Vector<Pair<int, String> > warning_skips;
+	Set<String> warning_global_skips;
+	bool ignore_warnings;
+#endif // DEBUG_ENABLED
 
 	void _advance();
 
@@ -232,6 +248,11 @@ public:
 	virtual const Variant &get_token_constant(int p_offset = 0) const;
 	virtual String get_token_error(int p_offset = 0) const;
 	virtual void advance(int p_amount = 1);
+#ifdef DEBUG_ENABLED
+	virtual const Vector<Pair<int, String> > &get_warning_skips() const { return warning_skips; }
+	virtual const Set<String> &get_warning_global_skips() const { return warning_global_skips; }
+	virtual bool is_ignoring_warnings() const { return ignore_warnings; }
+#endif // DEBUG_ENABLED
 };
 
 class GDScriptTokenizerBuffer : public GDScriptTokenizer {
@@ -265,6 +286,17 @@ public:
 	virtual const Variant &get_token_constant(int p_offset = 0) const;
 	virtual String get_token_error(int p_offset = 0) const;
 	virtual void advance(int p_amount = 1);
+#ifdef DEBUG_ENABLED
+	virtual const Vector<Pair<int, String> > &get_warning_skips() const {
+		static Vector<Pair<int, String> > v;
+		return v;
+	}
+	virtual const Set<String> &get_warning_global_skips() const {
+		static Set<String> s;
+		return s;
+	}
+	virtual bool is_ignoring_warnings() const { return true; }
+#endif // DEBUG_ENABLED
 	GDScriptTokenizerBuffer();
 };
 

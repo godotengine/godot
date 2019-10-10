@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,7 +29,8 @@
 /*************************************************************************/
 
 #include "triangle_mesh.h"
-#include "sort.h"
+
+#include "core/sort_array.h"
 
 int TriangleMesh::_create_bvh(BVH *p_bvh, BVH **p_bb, int p_from, int p_size, int p_depth, int &max_depth, int &max_alloc) {
 
@@ -181,7 +182,7 @@ void TriangleMesh::create(const PoolVector<Vector3> &p_faces) {
 	int max_alloc = fc;
 	_create_bvh(bw.ptr(), bwp.ptr(), 0, fc, 1, max_depth, max_alloc);
 
-	bw = PoolVector<BVH>::Write(); //clearup
+	bw.release(); //clearup
 	bvh.resize(max_alloc); //resize back
 
 	valid = true;
@@ -750,7 +751,7 @@ PoolVector<Face3> TriangleMesh::get_faces() const {
 		}
 	}
 
-	w = PoolVector<Face3>::Write();
+	w.release();
 	return faces;
 }
 

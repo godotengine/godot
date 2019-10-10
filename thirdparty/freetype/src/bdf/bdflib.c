@@ -22,13 +22,13 @@
  * THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
-  /*************************************************************************/
-  /*                                                                       */
-  /*  This file is based on bdf.c,v 1.22 2000/03/16 20:08:50               */
-  /*                                                                       */
-  /*  taken from Mark Leisher's xmbdfed package                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * This file is based on bdf.c,v 1.22 2000/03/16 20:08:50
+   *
+   * taken from Mark Leisher's xmbdfed package
+   *
+   */
 
 
 #include <ft2build.h>
@@ -42,21 +42,21 @@
 #include "bdferror.h"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* The macro FT_COMPONENT is used in trace mode.  It is an implicit      */
-  /* parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log  */
-  /* messages during execution.                                            */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * The macro FT_COMPONENT is used in trace mode.  It is an implicit
+   * parameter of the FT_TRACE() and FT_ERROR() macros, used to print/log
+   * messages during execution.
+   */
 #undef  FT_COMPONENT
-#define FT_COMPONENT  trace_bdflib
+#define FT_COMPONENT  bdflib
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Default BDF font options.                                             */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Default BDF font options.
+   *
+   */
 
 
   static const bdf_options_t  _bdf_opts =
@@ -68,100 +68,100 @@
   };
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Builtin BDF font properties.                                          */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Builtin BDF font properties.
+   *
+   */
 
   /* List of most properties that might appear in a font.  Doesn't include */
   /* the RAW_* and AXIS_* properties in X11R6 polymorphic fonts.           */
 
   static const bdf_property_t  _bdf_properties[] =
   {
-    { (char *)"ADD_STYLE_NAME",          BDF_ATOM,     1, { 0 } },
-    { (char *)"AVERAGE_WIDTH",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"AVG_CAPITAL_WIDTH",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"AVG_LOWERCASE_WIDTH",     BDF_INTEGER,  1, { 0 } },
-    { (char *)"CAP_HEIGHT",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"CHARSET_COLLECTIONS",     BDF_ATOM,     1, { 0 } },
-    { (char *)"CHARSET_ENCODING",        BDF_ATOM,     1, { 0 } },
-    { (char *)"CHARSET_REGISTRY",        BDF_ATOM,     1, { 0 } },
-    { (char *)"COMMENT",                 BDF_ATOM,     1, { 0 } },
-    { (char *)"COPYRIGHT",               BDF_ATOM,     1, { 0 } },
-    { (char *)"DEFAULT_CHAR",            BDF_CARDINAL, 1, { 0 } },
-    { (char *)"DESTINATION",             BDF_CARDINAL, 1, { 0 } },
-    { (char *)"DEVICE_FONT_NAME",        BDF_ATOM,     1, { 0 } },
-    { (char *)"END_SPACE",               BDF_INTEGER,  1, { 0 } },
-    { (char *)"FACE_NAME",               BDF_ATOM,     1, { 0 } },
-    { (char *)"FAMILY_NAME",             BDF_ATOM,     1, { 0 } },
-    { (char *)"FIGURE_WIDTH",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"FONT",                    BDF_ATOM,     1, { 0 } },
-    { (char *)"FONTNAME_REGISTRY",       BDF_ATOM,     1, { 0 } },
-    { (char *)"FONT_ASCENT",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"FONT_DESCENT",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"FOUNDRY",                 BDF_ATOM,     1, { 0 } },
-    { (char *)"FULL_NAME",               BDF_ATOM,     1, { 0 } },
-    { (char *)"ITALIC_ANGLE",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"MAX_SPACE",               BDF_INTEGER,  1, { 0 } },
-    { (char *)"MIN_SPACE",               BDF_INTEGER,  1, { 0 } },
-    { (char *)"NORM_SPACE",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"NOTICE",                  BDF_ATOM,     1, { 0 } },
-    { (char *)"PIXEL_SIZE",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"POINT_SIZE",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"QUAD_WIDTH",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_ASCENT",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_AVERAGE_WIDTH",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_AVG_CAPITAL_WIDTH",   BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_AVG_LOWERCASE_WIDTH", BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_CAP_HEIGHT",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_DESCENT",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_END_SPACE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_FIGURE_WIDTH",        BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_MAX_SPACE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_MIN_SPACE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_NORM_SPACE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_PIXEL_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_POINT_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_PIXELSIZE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_POINTSIZE",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_QUAD_WIDTH",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SMALL_CAP_SIZE",      BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_STRIKEOUT_ASCENT",    BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_STRIKEOUT_DESCENT",   BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUBSCRIPT_SIZE",      BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUBSCRIPT_X",         BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUBSCRIPT_Y",         BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUPERSCRIPT_SIZE",    BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUPERSCRIPT_X",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_SUPERSCRIPT_Y",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_UNDERLINE_POSITION",  BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_UNDERLINE_THICKNESS", BDF_INTEGER,  1, { 0 } },
-    { (char *)"RAW_X_HEIGHT",            BDF_INTEGER,  1, { 0 } },
-    { (char *)"RELATIVE_SETWIDTH",       BDF_CARDINAL, 1, { 0 } },
-    { (char *)"RELATIVE_WEIGHT",         BDF_CARDINAL, 1, { 0 } },
-    { (char *)"RESOLUTION",              BDF_INTEGER,  1, { 0 } },
-    { (char *)"RESOLUTION_X",            BDF_CARDINAL, 1, { 0 } },
-    { (char *)"RESOLUTION_Y",            BDF_CARDINAL, 1, { 0 } },
-    { (char *)"SETWIDTH_NAME",           BDF_ATOM,     1, { 0 } },
-    { (char *)"SLANT",                   BDF_ATOM,     1, { 0 } },
-    { (char *)"SMALL_CAP_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"SPACING",                 BDF_ATOM,     1, { 0 } },
-    { (char *)"STRIKEOUT_ASCENT",        BDF_INTEGER,  1, { 0 } },
-    { (char *)"STRIKEOUT_DESCENT",       BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUBSCRIPT_SIZE",          BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUBSCRIPT_X",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUBSCRIPT_Y",             BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUPERSCRIPT_SIZE",        BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUPERSCRIPT_X",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"SUPERSCRIPT_Y",           BDF_INTEGER,  1, { 0 } },
-    { (char *)"UNDERLINE_POSITION",      BDF_INTEGER,  1, { 0 } },
-    { (char *)"UNDERLINE_THICKNESS",     BDF_INTEGER,  1, { 0 } },
-    { (char *)"WEIGHT",                  BDF_CARDINAL, 1, { 0 } },
-    { (char *)"WEIGHT_NAME",             BDF_ATOM,     1, { 0 } },
-    { (char *)"X_HEIGHT",                BDF_INTEGER,  1, { 0 } },
-    { (char *)"_MULE_BASELINE_OFFSET",   BDF_INTEGER,  1, { 0 } },
-    { (char *)"_MULE_RELATIVE_COMPOSE",  BDF_INTEGER,  1, { 0 } },
+    { "ADD_STYLE_NAME",          BDF_ATOM,     1, { 0 } },
+    { "AVERAGE_WIDTH",           BDF_INTEGER,  1, { 0 } },
+    { "AVG_CAPITAL_WIDTH",       BDF_INTEGER,  1, { 0 } },
+    { "AVG_LOWERCASE_WIDTH",     BDF_INTEGER,  1, { 0 } },
+    { "CAP_HEIGHT",              BDF_INTEGER,  1, { 0 } },
+    { "CHARSET_COLLECTIONS",     BDF_ATOM,     1, { 0 } },
+    { "CHARSET_ENCODING",        BDF_ATOM,     1, { 0 } },
+    { "CHARSET_REGISTRY",        BDF_ATOM,     1, { 0 } },
+    { "COMMENT",                 BDF_ATOM,     1, { 0 } },
+    { "COPYRIGHT",               BDF_ATOM,     1, { 0 } },
+    { "DEFAULT_CHAR",            BDF_CARDINAL, 1, { 0 } },
+    { "DESTINATION",             BDF_CARDINAL, 1, { 0 } },
+    { "DEVICE_FONT_NAME",        BDF_ATOM,     1, { 0 } },
+    { "END_SPACE",               BDF_INTEGER,  1, { 0 } },
+    { "FACE_NAME",               BDF_ATOM,     1, { 0 } },
+    { "FAMILY_NAME",             BDF_ATOM,     1, { 0 } },
+    { "FIGURE_WIDTH",            BDF_INTEGER,  1, { 0 } },
+    { "FONT",                    BDF_ATOM,     1, { 0 } },
+    { "FONTNAME_REGISTRY",       BDF_ATOM,     1, { 0 } },
+    { "FONT_ASCENT",             BDF_INTEGER,  1, { 0 } },
+    { "FONT_DESCENT",            BDF_INTEGER,  1, { 0 } },
+    { "FOUNDRY",                 BDF_ATOM,     1, { 0 } },
+    { "FULL_NAME",               BDF_ATOM,     1, { 0 } },
+    { "ITALIC_ANGLE",            BDF_INTEGER,  1, { 0 } },
+    { "MAX_SPACE",               BDF_INTEGER,  1, { 0 } },
+    { "MIN_SPACE",               BDF_INTEGER,  1, { 0 } },
+    { "NORM_SPACE",              BDF_INTEGER,  1, { 0 } },
+    { "NOTICE",                  BDF_ATOM,     1, { 0 } },
+    { "PIXEL_SIZE",              BDF_INTEGER,  1, { 0 } },
+    { "POINT_SIZE",              BDF_INTEGER,  1, { 0 } },
+    { "QUAD_WIDTH",              BDF_INTEGER,  1, { 0 } },
+    { "RAW_ASCENT",              BDF_INTEGER,  1, { 0 } },
+    { "RAW_AVERAGE_WIDTH",       BDF_INTEGER,  1, { 0 } },
+    { "RAW_AVG_CAPITAL_WIDTH",   BDF_INTEGER,  1, { 0 } },
+    { "RAW_AVG_LOWERCASE_WIDTH", BDF_INTEGER,  1, { 0 } },
+    { "RAW_CAP_HEIGHT",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_DESCENT",             BDF_INTEGER,  1, { 0 } },
+    { "RAW_END_SPACE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_FIGURE_WIDTH",        BDF_INTEGER,  1, { 0 } },
+    { "RAW_MAX_SPACE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_MIN_SPACE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_NORM_SPACE",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_PIXEL_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_POINT_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_PIXELSIZE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_POINTSIZE",           BDF_INTEGER,  1, { 0 } },
+    { "RAW_QUAD_WIDTH",          BDF_INTEGER,  1, { 0 } },
+    { "RAW_SMALL_CAP_SIZE",      BDF_INTEGER,  1, { 0 } },
+    { "RAW_STRIKEOUT_ASCENT",    BDF_INTEGER,  1, { 0 } },
+    { "RAW_STRIKEOUT_DESCENT",   BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUBSCRIPT_SIZE",      BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUBSCRIPT_X",         BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUBSCRIPT_Y",         BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUPERSCRIPT_SIZE",    BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUPERSCRIPT_X",       BDF_INTEGER,  1, { 0 } },
+    { "RAW_SUPERSCRIPT_Y",       BDF_INTEGER,  1, { 0 } },
+    { "RAW_UNDERLINE_POSITION",  BDF_INTEGER,  1, { 0 } },
+    { "RAW_UNDERLINE_THICKNESS", BDF_INTEGER,  1, { 0 } },
+    { "RAW_X_HEIGHT",            BDF_INTEGER,  1, { 0 } },
+    { "RELATIVE_SETWIDTH",       BDF_CARDINAL, 1, { 0 } },
+    { "RELATIVE_WEIGHT",         BDF_CARDINAL, 1, { 0 } },
+    { "RESOLUTION",              BDF_INTEGER,  1, { 0 } },
+    { "RESOLUTION_X",            BDF_CARDINAL, 1, { 0 } },
+    { "RESOLUTION_Y",            BDF_CARDINAL, 1, { 0 } },
+    { "SETWIDTH_NAME",           BDF_ATOM,     1, { 0 } },
+    { "SLANT",                   BDF_ATOM,     1, { 0 } },
+    { "SMALL_CAP_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "SPACING",                 BDF_ATOM,     1, { 0 } },
+    { "STRIKEOUT_ASCENT",        BDF_INTEGER,  1, { 0 } },
+    { "STRIKEOUT_DESCENT",       BDF_INTEGER,  1, { 0 } },
+    { "SUBSCRIPT_SIZE",          BDF_INTEGER,  1, { 0 } },
+    { "SUBSCRIPT_X",             BDF_INTEGER,  1, { 0 } },
+    { "SUBSCRIPT_Y",             BDF_INTEGER,  1, { 0 } },
+    { "SUPERSCRIPT_SIZE",        BDF_INTEGER,  1, { 0 } },
+    { "SUPERSCRIPT_X",           BDF_INTEGER,  1, { 0 } },
+    { "SUPERSCRIPT_Y",           BDF_INTEGER,  1, { 0 } },
+    { "UNDERLINE_POSITION",      BDF_INTEGER,  1, { 0 } },
+    { "UNDERLINE_THICKNESS",     BDF_INTEGER,  1, { 0 } },
+    { "WEIGHT",                  BDF_CARDINAL, 1, { 0 } },
+    { "WEIGHT_NAME",             BDF_ATOM,     1, { 0 } },
+    { "X_HEIGHT",                BDF_INTEGER,  1, { 0 } },
+    { "_MULE_BASELINE_OFFSET",   BDF_INTEGER,  1, { 0 } },
+    { "_MULE_RELATIVE_COMPOSE",  BDF_INTEGER,  1, { 0 } },
   };
 
   static const unsigned long
@@ -196,11 +196,10 @@
 #define ACMSG9   "SWIDTH field missing at line %ld.  Set automatically.\n"
 #define ACMSG10  "DWIDTH field missing at line %ld.  Set to glyph width.\n"
 #define ACMSG11  "SIZE bits per pixel field adjusted to %hd.\n"
-#define ACMSG12  "Duplicate encoding %ld (%s) changed to unencoded.\n"
-#define ACMSG13  "Glyph %ld extra rows removed.\n"
-#define ACMSG14  "Glyph %ld extra columns removed.\n"
+#define ACMSG13  "Glyph %lu extra rows removed.\n"
+#define ACMSG14  "Glyph %lu extra columns removed.\n"
 #define ACMSG15  "Incorrect glyph count: %ld indicated but %ld found.\n"
-#define ACMSG16  "Glyph %ld missing columns padded with zero bits.\n"
+#define ACMSG16  "Glyph %lu missing columns padded with zero bits.\n"
 #define ACMSG17  "Adjusting number of glyphs to %ld.\n"
 
   /* Error messages. */
@@ -219,11 +218,11 @@
 #define DBGMSG2  " (0x%lX)\n"
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* Utility types and functions.                                          */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * Utility types and functions.
+   *
+   */
 
 
   /* Function type for parsing lines of a BDF font. */
@@ -270,8 +269,6 @@
     bdf_font_t*     font;
     bdf_options_t*  opts;
 
-    unsigned long   have[34816]; /* must be in sync with `nmod' and `umod' */
-                                 /* arrays from `bdf_font_t' structure     */
     _bdf_list_t     list;
 
     FT_Memory       memory;
@@ -367,7 +364,7 @@
 
   /* An empty string for empty fields. */
 
-  static const char  empty[1] = { 0 };      /* XXX eliminate this */
+  static const char  empty[] = "";      /* XXX eliminate this */
 
 
   static char *
@@ -410,13 +407,14 @@
 
   static FT_Error
   _bdf_list_split( _bdf_list_t*   list,
-                   char*          separators,
+                   const char*    separators,
                    char*          line,
                    unsigned long  linelen )
   {
     unsigned long  final_empty;
     int            mult;
-    char           *sp, *ep, *end;
+    const char     *sp, *end;
+    char           *ep;
     char           seps[32];
     FT_Error       error = FT_Err_Ok;
 
@@ -476,7 +474,7 @@
       }
 
       /* Assign the field appropriately. */
-      list->field[list->used++] = ( ep > sp ) ? sp : (char*)empty;
+      list->field[list->used++] = ( ep > sp ) ? (char*)sp : (char*)empty;
 
       sp = ep;
 
@@ -695,7 +693,7 @@
 
   /* Routine to convert a decimal ASCII string to an unsigned long integer. */
   static unsigned long
-  _bdf_atoul( char*  s )
+  _bdf_atoul( const char*  s )
   {
     unsigned long  v;
 
@@ -720,7 +718,7 @@
 
   /* Routine to convert a decimal ASCII string to a signed long integer. */
   static long
-  _bdf_atol( char*  s )
+  _bdf_atol( const char*  s )
   {
     long  v, neg;
 
@@ -753,7 +751,7 @@
 
   /* Routine to convert a decimal ASCII string to an unsigned short integer. */
   static unsigned short
-  _bdf_atous( char*  s )
+  _bdf_atous( const char*  s )
   {
     unsigned short  v;
 
@@ -778,7 +776,7 @@
 
   /* Routine to convert a decimal ASCII string to a signed short integer. */
   static short
-  _bdf_atos( char*  s )
+  _bdf_atos( const char*  s )
   {
     short  v, neg;
 
@@ -831,7 +829,7 @@
 
 
   static FT_Error
-  bdf_create_property( char*        name,
+  bdf_create_property( const char*  name,
                        int          format,
                        bdf_font_t*  font )
   {
@@ -900,11 +898,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* BDF font file parsing flags and functions.                            */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * BDF font file parsing flags and functions.
+   *
+   */
 
 
   /* Parse flags. */
@@ -1001,7 +999,7 @@
 
     FT_MEM_COPY( name, font->name, len );
 
-    error = _bdf_list_split( &list, (char *)"-", name, (unsigned long)len );
+    error = _bdf_list_split( &list, "-", name, (unsigned long)len );
     if ( error )
       goto Fail;
 
@@ -1100,7 +1098,7 @@
 
   static FT_Error
   _bdf_add_property( bdf_font_t*    font,
-                     char*          name,
+                     const char*    name,
                      char*          value,
                      unsigned long  lineno )
   {
@@ -1232,7 +1230,7 @@
     /* present, and the SPACING property should override the default       */
     /* spacing.                                                            */
     if ( _bdf_strncmp( name, "DEFAULT_CHAR", 12 ) == 0 )
-      font->default_char = fp->value.l;
+      font->default_char = fp->value.ul;
     else if ( _bdf_strncmp( name, "FONT_ASCENT", 11 ) == 0 )
       font->font_ascent = fp->value.l;
     else if ( _bdf_strncmp( name, "FONT_DESCENT", 12 ) == 0 )
@@ -1265,6 +1263,25 @@
   };
 
 
+  static FT_Error
+  _bdf_parse_end( char*          line,
+                  unsigned long  linelen,
+                  unsigned long  lineno,
+                  void*          call_data,
+                  void*          client_data )
+  {
+    /* a no-op; we ignore everything after `ENDFONT' */
+
+    FT_UNUSED( line );
+    FT_UNUSED( linelen );
+    FT_UNUSED( lineno );
+    FT_UNUSED( call_data );
+    FT_UNUSED( client_data );
+
+    return FT_Err_Ok;
+  }
+
+
   /* Actually parse the glyph info and bitmaps. */
   static FT_Error
   _bdf_parse_glyphs( char*          line,
@@ -1278,6 +1295,7 @@
     unsigned char*     bp;
     unsigned long      i, slen, nibbles;
 
+    _bdf_line_func_t*  next;
     _bdf_parse_t*      p;
     bdf_glyph_t*       glyph;
     bdf_font_t*        font;
@@ -1285,11 +1303,11 @@
     FT_Memory          memory;
     FT_Error           error = FT_Err_Ok;
 
-    FT_UNUSED( call_data );
     FT_UNUSED( lineno );        /* only used in debug mode */
 
 
-    p = (_bdf_parse_t *)client_data;
+    next = (_bdf_line_func_t *)call_data;
+    p    = (_bdf_parse_t *)    client_data;
 
     font   = p->font;
     memory = font->memory;
@@ -1319,7 +1337,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
       p->cnt = font->glyphs_size = _bdf_atoul( p->list.field[1] );
@@ -1370,6 +1388,7 @@
                 by_encoding );
 
       p->flags &= ~BDF_START_;
+      *next     = _bdf_parse_end;
 
       goto Exit;
     }
@@ -1405,7 +1424,7 @@
       /* encoding can be checked for an unencoded character.      */
       FT_FREE( p->glyph_name );
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1443,7 +1462,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1458,39 +1477,10 @@
       if ( p->glyph_enc == -1 && p->list.used > 2 )
         p->glyph_enc = _bdf_atol( p->list.field[2] );
 
-      if ( p->glyph_enc < -1 )
+      if ( p->glyph_enc < -1 || p->glyph_enc >= 0x110000L )
         p->glyph_enc = -1;
 
       FT_TRACE4(( DBGMSG2, p->glyph_enc ));
-
-      /* Check that the encoding is in the Unicode range because  */
-      /* otherwise p->have (a bitmap with static size) overflows. */
-      if ( p->glyph_enc > 0                                      &&
-           (size_t)p->glyph_enc >= sizeof ( p->have ) /
-                                   sizeof ( unsigned long ) * 32 )
-      {
-        FT_ERROR(( "_bdf_parse_glyphs: " ERRMSG5, lineno, "ENCODING" ));
-        error = FT_THROW( Invalid_File_Format );
-        goto Exit;
-      }
-
-      /* Check whether this encoding has already been encountered. */
-      /* If it has then change it to unencoded so it gets added if */
-      /* indicated.                                                */
-      if ( p->glyph_enc >= 0 )
-      {
-        if ( _bdf_glyph_modified( p->have, p->glyph_enc ) )
-        {
-          /* Emit a message saying a glyph has been moved to the */
-          /* unencoded area.                                     */
-          FT_TRACE2(( "_bdf_parse_glyphs: " ACMSG12,
-                      p->glyph_enc, p->glyph_name ));
-          p->glyph_enc = -1;
-          font->modified = 1;
-        }
-        else
-          _bdf_set_glyph_modified( p->have, p->glyph_enc );
-      }
 
       if ( p->glyph_enc >= 0 )
       {
@@ -1508,7 +1498,7 @@
 
         glyph           = font->glyphs + font->glyphs_used++;
         glyph->name     = p->glyph_name;
-        glyph->encoding = p->glyph_enc;
+        glyph->encoding = (unsigned long)p->glyph_enc;
 
         /* Reset the initial glyph info. */
         p->glyph_name = NULL;
@@ -1532,7 +1522,7 @@
 
           glyph           = font->unencoded + font->unencoded_used;
           glyph->name     = p->glyph_name;
-          glyph->encoding = (long)font->unencoded_used++;
+          glyph->encoding = font->unencoded_used++;
 
           /* Reset the initial glyph info. */
           p->glyph_name = NULL;
@@ -1556,6 +1546,9 @@
       goto Exit;
     }
 
+    if ( !( p->flags & BDF_ENCODING_ ) )
+      goto Missing_Encoding;
+
     /* Point at the glyph being constructed. */
     if ( p->glyph_enc == -1 )
       glyph = font->unencoded + ( font->unencoded_used - 1 );
@@ -1573,7 +1566,6 @@
         {
           FT_TRACE2(( "_bdf_parse_glyphs: " ACMSG13, glyph->encoding ));
           p->flags |= BDF_GLYPH_HEIGHT_CHECK_;
-          font->modified = 1;
         }
 
         goto Exit;
@@ -1601,7 +1593,6 @@
       {
         FT_TRACE2(( "_bdf_parse_glyphs: " ACMSG16, glyph->encoding ));
         p->flags       |= BDF_GLYPH_WIDTH_CHECK_;
-        font->modified  = 1;
       }
 
       /* Remove possible garbage at the right. */
@@ -1616,7 +1607,6 @@
       {
         FT_TRACE2(( "_bdf_parse_glyphs: " ACMSG14, glyph->encoding ));
         p->flags       |= BDF_GLYPH_WIDTH_CHECK_;
-        font->modified  = 1;
       }
 
       p->row++;
@@ -1626,10 +1616,7 @@
     /* Expect the SWIDTH (scalable width) field next. */
     if ( _bdf_strncmp( line, "SWIDTH", 6 ) == 0 )
     {
-      if ( !( p->flags & BDF_ENCODING_ ) )
-        goto Missing_Encoding;
-
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1642,10 +1629,7 @@
     /* Expect the DWIDTH (scalable width) field next. */
     if ( _bdf_strncmp( line, "DWIDTH", 6 ) == 0 )
     {
-      if ( !( p->flags & BDF_ENCODING_ ) )
-        goto Missing_Encoding;
-
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1670,10 +1654,7 @@
     /* Expect the BBX field next. */
     if ( _bdf_strncmp( line, "BBX", 3 ) == 0 )
     {
-      if ( !( p->flags & BDF_ENCODING_ ) )
-        goto Missing_Encoding;
-
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -1720,14 +1701,7 @@
         {
           glyph->swidth = sw;
 
-          if ( p->glyph_enc == -1 )
-            _bdf_set_glyph_modified( font->umod,
-                                     font->unencoded_used - 1 );
-          else
-            _bdf_set_glyph_modified( font->nmod, glyph->encoding );
-
           p->flags       |= BDF_SWIDTH_ADJ_;
-          font->modified  = 1;
         }
       }
 
@@ -1823,26 +1797,24 @@
       {
         p->font->font_ascent = p->font->bbx.ascent;
         ft_sprintf( nbuf, "%hd", p->font->bbx.ascent );
-        error = _bdf_add_property( p->font, (char *)"FONT_ASCENT",
+        error = _bdf_add_property( p->font, "FONT_ASCENT",
                                    nbuf, lineno );
         if ( error )
           goto Exit;
 
         FT_TRACE2(( "_bdf_parse_properties: " ACMSG1, p->font->bbx.ascent ));
-        p->font->modified = 1;
       }
 
       if ( bdf_get_font_property( p->font, "FONT_DESCENT" ) == 0 )
       {
         p->font->font_descent = p->font->bbx.descent;
         ft_sprintf( nbuf, "%hd", p->font->bbx.descent );
-        error = _bdf_add_property( p->font, (char *)"FONT_DESCENT",
+        error = _bdf_add_property( p->font, "FONT_DESCENT",
                                    nbuf, lineno );
         if ( error )
           goto Exit;
 
         FT_TRACE2(( "_bdf_parse_properties: " ACMSG2, p->font->bbx.descent ));
-        p->font->modified = 1;
       }
 
       p->flags &= ~BDF_PROPS_;
@@ -1875,7 +1847,7 @@
     }
     else
     {
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
       name = p->list.field[0];
@@ -1989,7 +1961,7 @@
       if ( error )
         goto Exit;
       p->font->spacing      = p->opts->font_spacing;
-      p->font->default_char = -1;
+      p->font->default_char = ~0UL;
 
       goto Exit;
     }
@@ -2005,7 +1977,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -2044,7 +2016,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -2067,7 +2039,7 @@
     /* The next thing to check for is the FONT field. */
     if ( _bdf_strncmp( line, "FONT", 4 ) == 0 )
     {
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
       _bdf_list_shift( &p->list, 1 );
@@ -2110,7 +2082,7 @@
         goto Exit;
       }
 
-      error = _bdf_list_split( &p->list, (char *)" +", line, linelen );
+      error = _bdf_list_split( &p->list, " +", line, linelen );
       if ( error )
         goto Exit;
 
@@ -2165,7 +2137,7 @@
       /* for compiling fonts.                                   */
       p->font->font_ascent = p->font->bbx.ascent;
       ft_sprintf( nbuf, "%hd", p->font->bbx.ascent );
-      error = _bdf_add_property( p->font, (char *)"FONT_ASCENT",
+      error = _bdf_add_property( p->font, "FONT_ASCENT",
                                  nbuf, lineno );
       if ( error )
         goto Exit;
@@ -2173,13 +2145,11 @@
 
       p->font->font_descent = p->font->bbx.descent;
       ft_sprintf( nbuf, "%hd", p->font->bbx.descent );
-      error = _bdf_add_property( p->font, (char *)"FONT_DESCENT",
+      error = _bdf_add_property( p->font, "FONT_DESCENT",
                                  nbuf, lineno );
       if ( error )
         goto Exit;
       FT_TRACE2(( "_bdf_parse_properties: " ACMSG2, p->font->bbx.descent ));
-
-      p->font->modified = 1;
 
       *next = _bdf_parse_glyphs;
 
@@ -2196,11 +2166,11 @@
   }
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* API.                                                                  */
-  /*                                                                       */
-  /*************************************************************************/
+  /**************************************************************************
+   *
+   * API.
+   *
+   */
 
 
   FT_LOCAL_DEF( FT_Error )
@@ -2246,7 +2216,6 @@
       {
         FT_TRACE2(( "bdf_load_font: " ACMSG15, p->cnt,
                     p->font->glyphs_used + p->font->unencoded_used ));
-        p->font->modified = 1;
       }
 
       /* Once the font has been loaded, adjust the overall font metrics if */
@@ -2259,7 +2228,6 @@
           FT_TRACE2(( "bdf_load_font: " ACMSG3,
                       p->font->bbx.width, p->maxrb - p->minlb ));
           p->font->bbx.width = (unsigned short)( p->maxrb - p->minlb );
-          p->font->modified  = 1;
         }
 
         if ( p->font->bbx.x_offset != p->minlb )
@@ -2267,7 +2235,6 @@
           FT_TRACE2(( "bdf_load_font: " ACMSG4,
                       p->font->bbx.x_offset, p->minlb ));
           p->font->bbx.x_offset = p->minlb;
-          p->font->modified     = 1;
         }
 
         if ( p->font->bbx.ascent != p->maxas )
@@ -2275,7 +2242,6 @@
           FT_TRACE2(( "bdf_load_font: " ACMSG5,
                       p->font->bbx.ascent, p->maxas ));
           p->font->bbx.ascent = p->maxas;
-          p->font->modified   = 1;
         }
 
         if ( p->font->bbx.descent != p->maxds )
@@ -2284,7 +2250,6 @@
                       p->font->bbx.descent, p->maxds ));
           p->font->bbx.descent  = p->maxds;
           p->font->bbx.y_offset = (short)( -p->maxds );
-          p->font->modified     = 1;
         }
 
         if ( p->maxas + p->maxds != p->font->bbx.height )
@@ -2414,16 +2379,6 @@
 
     FT_FREE( font->glyphs );
     FT_FREE( font->unencoded );
-
-    /* Free up the overflow storage if it was used. */
-    for ( i = 0, glyphs = font->overflow.glyphs;
-          i < font->overflow.glyphs_used; i++, glyphs++ )
-    {
-      FT_FREE( glyphs->name );
-      FT_FREE( glyphs->bitmap );
-    }
-
-    FT_FREE( font->overflow.glyphs );
 
     /* bdf_cleanup */
     ft_hash_str_free( &(font->proptbl), memory );

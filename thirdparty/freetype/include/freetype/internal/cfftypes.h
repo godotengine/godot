@@ -1,20 +1,20 @@
-/***************************************************************************/
-/*                                                                         */
-/*  cfftypes.h                                                             */
-/*                                                                         */
-/*    Basic OpenType/CFF type definitions and interface (specification     */
-/*    only).                                                               */
-/*                                                                         */
-/*  Copyright 1996-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * cfftypes.h
+ *
+ *   Basic OpenType/CFF type definitions and interface (specification
+ *   only).
+ *
+ * Copyright (C) 1996-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef CFFTYPES_H_
@@ -33,34 +33,39 @@
 FT_BEGIN_HEADER
 
 
-  /*************************************************************************/
-  /*                                                                       */
-  /* <Struct>                                                              */
-  /*    CFF_IndexRec                                                       */
-  /*                                                                       */
-  /* <Description>                                                         */
-  /*    A structure used to model a CFF Index table.                       */
-  /*                                                                       */
-  /* <Fields>                                                              */
-  /*    stream      :: The source input stream.                            */
-  /*                                                                       */
-  /*    start       :: The position of the first index byte in the         */
-  /*                   input stream.                                       */
-  /*                                                                       */
-  /*    count       :: The number of elements in the index.                */
-  /*                                                                       */
-  /*    off_size    :: The size in bytes of object offsets in index.       */
-  /*                                                                       */
-  /*    data_offset :: The position of first data byte in the index's      */
-  /*                   bytes.                                              */
-  /*                                                                       */
-  /*    data_size   :: The size of the data table in this index.           */
-  /*                                                                       */
-  /*    offsets     :: A table of element offsets in the index.  Must be   */
-  /*                   loaded explicitly.                                  */
-  /*                                                                       */
-  /*    bytes       :: If the index is loaded in memory, its bytes.        */
-  /*                                                                       */
+  /**************************************************************************
+   *
+   * @struct:
+   *   CFF_IndexRec
+   *
+   * @description:
+   *   A structure used to model a CFF Index table.
+   *
+   * @fields:
+   *   stream ::
+   *     The source input stream.
+   *
+   *   start ::
+   *     The position of the first index byte in the input stream.
+   *
+   *   count ::
+   *     The number of elements in the index.
+   *
+   *   off_size ::
+   *     The size in bytes of object offsets in index.
+   *
+   *   data_offset ::
+   *     The position of first data byte in the index's bytes.
+   *
+   *   data_size ::
+   *     The size of the data table in this index.
+   *
+   *   offsets ::
+   *     A table of element offsets in the index.  Must be loaded explicitly.
+   *
+   *   bytes ::
+   *     If the index is loaded in memory, its bytes.
+   */
   typedef struct  CFF_IndexRec_
   {
     FT_Stream  stream;

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -35,7 +35,7 @@
 
 class Line2D : public Node2D {
 
-	GDCLASS(Line2D, Node2D)
+	GDCLASS(Line2D, Node2D);
 
 public:
 	enum LineJointMode {
@@ -70,11 +70,16 @@ public:
 
 	int get_point_count() const;
 
-	void add_point(Vector2 pos);
+	void clear_points();
+
+	void add_point(Vector2 pos, int atpos = -1);
 	void remove_point(int i);
 
 	void set_width(float width);
 	float get_width() const;
+
+	void set_curve(const Ref<Curve> &curve);
+	Ref<Curve> get_curve() const;
 
 	void set_default_color(Color color);
 	Color get_default_color() const;
@@ -111,6 +116,7 @@ protected:
 
 private:
 	void _gradient_changed();
+	void _curve_changed();
 
 private:
 	PoolVector<Vector2> _points;
@@ -118,6 +124,7 @@ private:
 	LineCapMode _begin_cap_mode;
 	LineCapMode _end_cap_mode;
 	float _width;
+	Ref<Curve> _curve;
 	Color _default_color;
 	Ref<Gradient> _gradient;
 	Ref<Texture> _texture;

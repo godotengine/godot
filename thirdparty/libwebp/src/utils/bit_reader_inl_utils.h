@@ -187,4 +187,4 @@ static WEBP_INLINE int VP8GetBitAlt(VP8BitReader* const br, int prob) {
 }    // extern "C"
 #endif
 
-#endif   // WEBP_UTILS_BIT_READER_INL_UTILS_H_
+#endif  // WEBP_UTILS_BIT_READER_INL_UTILS_H_

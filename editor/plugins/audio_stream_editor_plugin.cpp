@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,9 +30,9 @@
 
 #include "audio_stream_editor_plugin.h"
 
+#include "core/io/resource_loader.h"
+#include "core/project_settings.h"
 #include "editor/editor_settings.h"
-#include "io/resource_loader.h"
-#include "project_settings.h"
 
 void AudioStreamEditor::_notification(int p_what) {
 
@@ -53,7 +53,6 @@ void AudioStreamEditor::_notification(int p_what) {
 	if (p_what == NOTIFICATION_PROCESS) {
 		_current = _player->get_playback_position();
 		_indicator->update();
-		_preview->update();
 	}
 
 	if (p_what == NOTIFICATION_VISIBILITY_CHANGED) {
@@ -121,15 +120,19 @@ void AudioStreamEditor::_play() {
 void AudioStreamEditor::_stop() {
 
 	_player->stop();
-	_on_finished();
+	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
+	_current = 0;
+	_indicator->update();
+	set_process(false);
 }
 
 void AudioStreamEditor::_on_finished() {
 
 	_play_button->set_icon(get_icon("MainPlay", "EditorIcons"));
-	_current = 0;
-	_indicator->update();
-	set_process(false);
+	if (_current == _player->get_stream()->get_length()) {
+		_current = 0;
+		_indicator->update();
+	}
 }
 
 void AudioStreamEditor::_draw_indicator() {

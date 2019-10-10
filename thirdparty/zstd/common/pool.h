@@ -30,40 +30,50 @@ typedef struct POOL_ctx_s POOL_ctx;
 */
 POOL_ctx* POOL_create(size_t numThreads, size_t queueSize);
 
-POOL_ctx* POOL_create_advanced(size_t numThreads, size_t queueSize, ZSTD_customMem customMem);
+POOL_ctx* POOL_create_advanced(size_t numThreads, size_t queueSize,
+                               ZSTD_customMem customMem);
 
 /*! POOL_free() :
-    Free a thread pool returned by POOL_create().
-*/
+ *  Free a thread pool returned by POOL_create().
+ */
 void POOL_free(POOL_ctx* ctx);
 
+/*! POOL_resize() :
+ *  Expands or shrinks pool's number of threads.
+ *  This is more efficient than releasing + creating a new context,
+ *  since it tries to preserve and re-use existing threads.
+ * `numThreads` must be at least 1.
+ * @return : 0 when resize was successful,
+ *           !0 (typically 1) if there is an error.
+ *    note : only numThreads can be resized, queueSize remains unchanged.
+ */
+int POOL_resize(POOL_ctx* ctx, size_t numThreads);
+
 /*! POOL_sizeof() :
-    return memory usage of pool returned by POOL_create().
-*/
+ * @return threadpool memory usage
+ *  note : compatible with NULL (returns 0 in this case)
+ */
 size_t POOL_sizeof(POOL_ctx* ctx);
 
 /*! POOL_function :
-    The function type that can be added to a thread pool.
-*/
+ *  The function type that can be added to a thread pool.
+ */
 typedef void (*POOL_function)(void*);
-/*! POOL_add_function :
-    The function type for a generic thread pool add function.
-*/
-typedef void (*POOL_add_function)(void*, POOL_function, void*);
 
 /*! POOL_add() :
-    Add the job `function(opaque)` to the thread pool. `ctx` must be valid.
-    Possibly blocks until there is room in the queue.
-    Note : The function may be executed asynchronously, so `opaque` must live until the function has been completed.
-*/
+ *  Add the job `function(opaque)` to the thread pool. `ctx` must be valid.
+ *  Possibly blocks until there is room in the queue.
+ *  Note : The function may be executed asynchronously,
+ *         therefore, `opaque` must live until function has been completed.
+ */
 void POOL_add(POOL_ctx* ctx, POOL_function function, void* opaque);
 
 
 /*! POOL_tryAdd() :
-    Add the job `function(opaque)` to the thread pool if a worker is available.
-    return immediately otherwise.
-   @return : 1 if successful, 0 if not.
-*/
+ *  Add the job `function(opaque)` to thread pool _if_ a worker is available.
+ *  Returns immediately even if not (does not block).
+ * @return : 1 if successful, 0 if not.
+ */
 int POOL_tryAdd(POOL_ctx* ctx, POOL_function function, void* opaque);
 
 

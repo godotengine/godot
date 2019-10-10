@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  ttcmap.h                                                               */
-/*                                                                         */
-/*    TrueType character mapping table (cmap) support (specification).     */
-/*                                                                         */
-/*  Copyright 2002-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * ttcmap.h
+ *
+ *   TrueType character mapping table (cmap) support (specification).
+ *
+ * Copyright (C) 2002-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef TTCMAP_H_
@@ -56,8 +56,6 @@ FT_BEGIN_HEADER
   } TT_CMap_ClassRec;
 
 
-#ifndef FT_CONFIG_OPTION_PIC
-
 #define FT_DEFINE_TT_CMAP( class_,             \
                            size_,              \
                            init_,              \
@@ -91,42 +89,6 @@ FT_BEGIN_HEADER
     validate_,                                 \
     get_cmap_info_                             \
   };
-
-#else /* FT_CONFIG_OPTION_PIC */
-
-#define FT_DEFINE_TT_CMAP( class_,                      \
-                           size_,                       \
-                           init_,                       \
-                           done_,                       \
-                           char_index_,                 \
-                           char_next_,                  \
-                           char_var_index_,             \
-                           char_var_default_,           \
-                           variant_list_,               \
-                           charvariant_list_,           \
-                           variantchar_list_,           \
-                           format_,                     \
-                           validate_,                   \
-                           get_cmap_info_ )             \
-  void                                                  \
-  FT_Init_Class_ ## class_( TT_CMap_ClassRec*  clazz )  \
-  {                                                     \
-    clazz->clazz.size             = size_;              \
-    clazz->clazz.init             = init_;              \
-    clazz->clazz.done             = done_;              \
-    clazz->clazz.char_index       = char_index_;        \
-    clazz->clazz.char_next        = char_next_;         \
-    clazz->clazz.char_var_index   = char_var_index_;    \
-    clazz->clazz.char_var_default = char_var_default_;  \
-    clazz->clazz.variant_list     = variant_list_;      \
-    clazz->clazz.charvariant_list = charvariant_list_;  \
-    clazz->clazz.variantchar_list = variantchar_list_;  \
-    clazz->format                 = format_;            \
-    clazz->validate               = validate_;          \
-    clazz->get_cmap_info          = get_cmap_info_;     \
-  }
-
-#endif /* FT_CONFIG_OPTION_PIC */
 
 
   typedef struct  TT_ValidatorRec_

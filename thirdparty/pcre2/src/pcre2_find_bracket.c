@@ -7,7 +7,7 @@ and semantics are as close as possible to those of the Perl 5 language.
 
                        Written by Philip Hazel
      Original API code Copyright (c) 1997-2012 University of Cambridge
-         New API code Copyright (c) 2016 University of Cambridge
+          New API code Copyright (c) 2016-2018 University of Cambridge
 
 -----------------------------------------------------------------------------
 Redistribution and use in source and binary forms, with or without
@@ -131,6 +131,7 @@ for (;;)
       break;
 
       case OP_MARK:
+      case OP_COMMIT_ARG:
       case OP_PRUNE_ARG:
       case OP_SKIP_ARG:
       case OP_THEN_ARG:

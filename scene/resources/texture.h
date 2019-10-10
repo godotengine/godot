@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,17 +31,16 @@
 #ifndef TEXTURE_H
 #define TEXTURE_H
 
-#include "curve.h"
-#include "io/resource_loader.h"
-#include "math_2d.h"
-#include "os/mutex.h"
-#include "os/thread_safe.h"
-#include "resource.h"
-#include "scene/resources/color_ramp.h"
+#include "core/io/resource_loader.h"
+#include "core/math/rect2.h"
+#include "core/os/mutex.h"
+#include "core/os/rw_lock.h"
+#include "core/os/thread_safe.h"
+#include "core/resource.h"
+#include "scene/resources/curve.h"
+#include "scene/resources/gradient.h"
+#include "servers/camera_server.h"
 #include "servers/visual_server.h"
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Texture : public Resource {
 
@@ -67,6 +66,8 @@ public:
 	virtual Size2 get_size() const;
 	virtual RID get_rid() const = 0;
 
+	virtual bool is_pixel_opaque(int p_x, int p_y) const;
+
 	virtual bool has_alpha() const = 0;
 
 	virtual void set_flags(uint32_t p_flags) = 0;
@@ -83,6 +84,8 @@ public:
 };
 
 VARIANT_ENUM_CAST(Texture::Flags);
+
+class BitMap;
 
 class ImageTexture : public Texture {
 
@@ -104,6 +107,8 @@ private:
 	Storage storage;
 	Size2 size_override;
 	float lossy_storage_quality;
+	mutable Ref<BitMap> alpha_cache;
+	bool image_stored;
 
 protected:
 	virtual void reload_from_file();
@@ -125,7 +130,9 @@ public:
 	void set_flags(uint32_t p_flags);
 	uint32_t get_flags() const;
 	Image::Format get_format() const;
+#ifndef DISABLE_DEPRECATED
 	Error load(const String &p_path);
+#endif
 	void set_data(const Ref<Image> &p_image);
 	Ref<Image> get_data() const;
 
@@ -140,6 +147,8 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
 	void set_storage(Storage p_storage);
 	Storage get_storage() const;
+
+	bool is_pixel_opaque(int p_x, int p_y) const;
 
 	void set_lossy_storage_quality(float p_lossy_storage_quality);
 	float get_lossy_storage_quality() const;
@@ -175,12 +184,13 @@ public:
 	};
 
 private:
-	Error _load_data(const String &p_path, int &tw, int &th, int &flags, Ref<Image> &image, int p_size_limit = 0);
+	Error _load_data(const String &p_path, int &tw, int &th, int &tw_custom, int &th_custom, int &flags, Ref<Image> &image, int p_size_limit = 0);
 	String path_to_file;
 	RID texture;
 	Image::Format format;
 	uint32_t flags;
 	int w, h;
+	mutable Ref<BitMap> alpha_cache;
 
 	virtual void reload_from_file();
 
@@ -190,6 +200,7 @@ private:
 
 protected:
 	static void _bind_methods();
+	void _validate_property(PropertyInfo &property) const;
 
 public:
 	typedef void (*TextureFormatRequestCallback)(const Ref<StreamTexture> &);
@@ -207,12 +218,15 @@ public:
 	int get_height() const;
 	virtual RID get_rid() const;
 
+	virtual void set_path(const String &p_path, bool p_take_over);
+
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
 
 	virtual bool has_alpha() const;
 	virtual void set_flags(uint32_t p_flags);
+	bool is_pixel_opaque(int p_x, int p_y) const;
 
 	virtual Ref<Image> get_data() const;
 
@@ -270,7 +284,52 @@ public:
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
 	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
 
+	bool is_pixel_opaque(int p_x, int p_y) const;
+
 	AtlasTexture();
+};
+
+class Mesh;
+
+class MeshTexture : public Texture {
+
+	GDCLASS(MeshTexture, Texture);
+	RES_BASE_EXTENSION("meshtex");
+
+	Ref<Texture> base_texture;
+	Ref<Mesh> mesh;
+	Size2i size;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual RID get_rid() const;
+
+	virtual bool has_alpha() const;
+
+	virtual void set_flags(uint32_t p_flags);
+	virtual uint32_t get_flags() const;
+
+	void set_mesh(const Ref<Mesh> &p_mesh);
+	Ref<Mesh> get_mesh() const;
+
+	void set_image_size(const Size2 &p_size);
+	Size2 get_image_size() const;
+
+	void set_base_texture(const Ref<Texture> &p_texture);
+	Ref<Texture> get_base_texture() const;
+
+	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
+	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
+	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
+	virtual bool get_rect_region(const Rect2 &p_rect, const Rect2 &p_src_rect, Rect2 &r_rect, Rect2 &r_src_rect) const;
+
+	bool is_pixel_opaque(int p_x, int p_y) const;
+
+	MeshTexture();
 };
 
 class LargeTexture : public Texture {
@@ -312,10 +371,13 @@ public:
 	int get_piece_count() const;
 	Vector2 get_piece_offset(int p_idx) const;
 	Ref<Texture> get_piece_texture(int p_idx) const;
+	Ref<Image> to_image() const;
 
 	virtual void draw(RID p_canvas_item, const Point2 &p_pos, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
 	virtual void draw_rect(RID p_canvas_item, const Rect2 &p_rect, bool p_tile = false, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>()) const;
 	virtual void draw_rect_region(RID p_canvas_item, const Rect2 &p_rect, const Rect2 &p_src_rect, const Color &p_modulate = Color(1, 1, 1), bool p_transpose = false, const Ref<Texture> &p_normal_map = Ref<Texture>(), bool p_clip_uv = true) const;
+
+	bool is_pixel_opaque(int p_x, int p_y) const;
 
 	LargeTexture();
 };
@@ -403,7 +465,7 @@ VARIANT_ENUM_CAST(CubeMap::Storage)
 
 class TextureLayered : public Resource {
 
-	GDCLASS(TextureLayered, Resource)
+	GDCLASS(TextureLayered, Resource);
 
 public:
 	enum Flags {
@@ -455,7 +517,8 @@ VARIANT_ENUM_CAST(TextureLayered::Flags)
 
 class Texture3D : public TextureLayered {
 
-	GDCLASS(Texture3D, TextureLayered)
+	GDCLASS(Texture3D, TextureLayered);
+
 public:
 	Texture3D() :
 			TextureLayered(true) {}
@@ -463,7 +526,8 @@ public:
 
 class TextureArray : public TextureLayered {
 
-	GDCLASS(TextureArray, TextureLayered)
+	GDCLASS(TextureArray, TextureLayered);
+
 public:
 	TextureArray() :
 			TextureLayered(false) {}
@@ -485,7 +549,7 @@ public:
 
 class CurveTexture : public Texture {
 
-	GDCLASS(CurveTexture, Texture)
+	GDCLASS(CurveTexture, Texture);
 	RES_BASE_EXTENSION("curvetex")
 
 private:
@@ -533,7 +597,7 @@ public:
 //VARIANT_ENUM_CAST( Texture::CubeMapSide );
 
 class GradientTexture : public Texture {
-	GDCLASS(GradientTexture, Texture)
+	GDCLASS(GradientTexture, Texture);
 
 public:
 	struct Point {
@@ -578,7 +642,7 @@ public:
 };
 
 class ProxyTexture : public Texture {
-	GDCLASS(ProxyTexture, Texture)
+	GDCLASS(ProxyTexture, Texture);
 
 private:
 	RID proxy;
@@ -605,9 +669,10 @@ public:
 };
 
 class AnimatedTexture : public Texture {
-	GDCLASS(AnimatedTexture, Texture)
+	GDCLASS(AnimatedTexture, Texture);
 
-	_THREAD_SAFE_CLASS_
+	//use readers writers lock for this, since its far more times read than written to
+	RWLock *rw_lock;
 
 private:
 	enum {
@@ -666,8 +731,44 @@ public:
 
 	virtual Ref<Image> get_data() const;
 
+	bool is_pixel_opaque(int p_x, int p_y) const;
+
 	AnimatedTexture();
 	~AnimatedTexture();
+};
+
+class CameraTexture : public Texture {
+	GDCLASS(CameraTexture, Texture);
+
+private:
+	int camera_feed_id;
+	CameraServer::FeedImage which_feed;
+
+protected:
+	static void _bind_methods();
+
+public:
+	virtual int get_width() const;
+	virtual int get_height() const;
+	virtual RID get_rid() const;
+	virtual bool has_alpha() const;
+
+	virtual void set_flags(uint32_t p_flags);
+	virtual uint32_t get_flags() const;
+
+	virtual Ref<Image> get_data() const;
+
+	void set_camera_feed_id(int p_new_id);
+	int get_camera_feed_id() const;
+
+	void set_which_feed(CameraServer::FeedImage p_which);
+	CameraServer::FeedImage get_which_feed() const;
+
+	void set_camera_active(bool p_active);
+	bool get_camera_active() const;
+
+	CameraTexture();
+	~CameraTexture();
 };
 
 #endif

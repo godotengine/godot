@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,10 +31,11 @@
 #ifndef HTTPREQUEST_H
 #define HTTPREQUEST_H
 
-#include "io/http_client.h"
+#include "core/io/http_client.h"
+#include "core/os/file_access.h"
+#include "core/os/thread.h"
 #include "node.h"
-#include "os/file_access.h"
-#include "os/thread.h"
+#include "scene/main/timer.h"
 
 class HTTPRequest : public Node {
 
@@ -53,7 +54,8 @@ public:
 		RESULT_REQUEST_FAILED,
 		RESULT_DOWNLOAD_FILE_CANT_OPEN,
 		RESULT_DOWNLOAD_FILE_WRITE_ERROR,
-		RESULT_REDIRECT_LIMIT_REACHED
+		RESULT_REDIRECT_LIMIT_REACHED,
+		RESULT_TIMEOUT
 
 	};
 
@@ -88,11 +90,11 @@ private:
 
 	int redirections;
 
-	HTTPClient::Status status;
-
 	bool _update_connection();
 
 	int max_redirects;
+
+	int timeout;
 
 	void _redirect_request(const String &p_new_url);
 
@@ -129,6 +131,13 @@ public:
 
 	void set_max_redirects(int p_max);
 	int get_max_redirects() const;
+
+	Timer *timer;
+
+	void set_timeout(int p_timeout);
+	int get_timeout();
+
+	void _timeout();
 
 	int get_downloaded_bytes() const;
 	int get_body_size() const;

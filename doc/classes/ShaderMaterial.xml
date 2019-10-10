@@ -1,5 +1,5 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="ShaderMaterial" inherits="Material" category="Core" version="3.1">
+<class name="ShaderMaterial" inherits="Material" category="Core" version="3.2">
 	<brief_description>
 		A material that uses a custom [Shader] program.
 	</brief_description>
@@ -7,9 +7,8 @@
 		A material that uses a custom [Shader] program to render either items to screen or process particles. You can create multiple materials for the same shader but configure different values for the uniforms defined in the shader.
 	</description>
 	<tutorials>
+		<link>http://docs.godotengine.org/en/latest/tutorials/shading/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="get_shader_param" qualifiers="const">
 			<return type="Variant">
@@ -18,6 +17,22 @@
 			</argument>
 			<description>
 				Returns the current value set for this material of a uniform in the shader.
+			</description>
+		</method>
+		<method name="property_can_revert">
+			<return type="bool">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
+			</description>
+		</method>
+		<method name="property_get_revert">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="name" type="String">
+			</argument>
+			<description>
 			</description>
 		</method>
 		<method name="set_shader_param">

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,9 @@
 #include "texture_loader_pvr.h"
 #include "PvrTcEncoder.h"
 #include "RgbaBitmap.h"
-#include "os/file_access.h"
+#include "core/os/file_access.h"
 #include <string.h>
+#include <new>
 
 static void _pvrtc_decompress(Image *p_img);
 
@@ -93,7 +94,7 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 	print_line("bmask: "+itos(bmask));
 	print_line("amask: "+itos(amask));
 	print_line("surfcount: "+itos(surfcount));
-*/
+	*/
 
 	PoolVector<uint8_t> data;
 	data.resize(surfsize);
@@ -148,18 +149,15 @@ RES ResourceFormatPVR::load(const String &p_path, const String &p_original_path,
 			format = Image::FORMAT_ETC;
 			break;
 		default:
-			ERR_EXPLAIN("Unsupported format in PVR texture: " + itos(flags & 0xFF));
-			ERR_FAIL_V(RES());
+			ERR_FAIL_V_MSG(RES(), "Unsupported format in PVR texture: " + itos(flags & 0xFF) + ".");
 	}
 
-	w = PoolVector<uint8_t>::Write();
+	w.release();
 
 	int tex_flags = Texture::FLAG_FILTER | Texture::FLAG_REPEAT;
 
 	if (mipmaps)
 		tex_flags |= Texture::FLAG_MIPMAPS;
-
-	print_line("flip: " + itos(flags & PVR_VFLIP));
 
 	Ref<Image> image = memnew(Image(width, height, mipmaps, format, data));
 	ERR_FAIL_COND_V(image->empty(), RES());
@@ -193,9 +191,9 @@ static void _compress_pvrtc4(Image *p_img) {
 	Ref<Image> img = p_img->duplicate();
 
 	bool make_mipmaps = false;
-	if (img->get_width() % 8 || img->get_height() % 8) {
+	if (!img->is_size_po2() || img->get_width() != img->get_height()) {
 		make_mipmaps = img->has_mipmaps();
-		img->resize(img->get_width() + (8 - (img->get_width() % 8)), img->get_height() + (8 - (img->get_height() % 8)));
+		img->resize_to_po2(true);
 	}
 	img->convert(Image::FORMAT_RGBA8);
 	if (!img->has_mipmaps() && make_mipmaps)
@@ -205,7 +203,7 @@ static void _compress_pvrtc4(Image *p_img) {
 
 	Ref<Image> new_img;
 	new_img.instance();
-	new_img->create(img->get_width(), img->get_height(), true, use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
+	new_img->create(img->get_width(), img->get_height(), img->has_mipmaps(), use_alpha ? Image::FORMAT_PVRTC4A : Image::FORMAT_PVRTC4);
 
 	PoolVector<uint8_t> data = new_img->get_data();
 	{
@@ -217,14 +215,11 @@ static void _compress_pvrtc4(Image *p_img) {
 			int ofs, size, w, h;
 			img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::RgbaBitmap bm(w, h);
-			copymem(bm.GetData(), &r[ofs], size);
-			{
+			for (int j = 0; j < size / 4; j++) {
 				Javelin::ColorRgba<unsigned char> *dp = bm.GetData();
-				for (int j = 0; j < size / 4; j++) {
-					SWAP(dp[j].r, dp[j].b);
-				}
+				/* red and Green colors are swapped.  */
+				new (dp) Javelin::ColorRgba<unsigned char>(r[ofs + 4 * j + 2], r[ofs + 4 * j + 1], r[ofs + 4 * j], r[ofs + 4 * j + 3]);
 			}
-
 			new_img->get_mipmap_offset_size_and_dimensions(i, ofs, size, w, h);
 			Javelin::PvrTcEncoder::EncodeRgba4Bpp(&wr[ofs], bm);
 		}
@@ -646,12 +641,6 @@ static void decompress_pvrtc(PVRTCBlock *p_comp_img, const int p_2bit, const int
 
 static void _pvrtc_decompress(Image *p_img) {
 
-	/*
-	static void decompress_pvrtc(const void *p_comp_img, const int p_2bit, const int p_width, const int p_height, unsigned char* p_dst) {
-		decompress_pvrtc((PVRTCBlock*)p_comp_img,p_2bit,p_width,p_height,1,p_dst);
-	}
-	*/
-
 	ERR_FAIL_COND(p_img->get_format() != Image::FORMAT_PVRTC2 && p_img->get_format() != Image::FORMAT_PVRTC2A && p_img->get_format() != Image::FORMAT_PVRTC4 && p_img->get_format() != Image::FORMAT_PVRTC4A);
 
 	bool _2bit = (p_img->get_format() == Image::FORMAT_PVRTC2 || p_img->get_format() == Image::FORMAT_PVRTC2A);
@@ -665,14 +654,8 @@ static void _pvrtc_decompress(Image *p_img) {
 
 	decompress_pvrtc((PVRTCBlock *)r.ptr(), _2bit, p_img->get_width(), p_img->get_height(), 0, (unsigned char *)w.ptr());
 
-	/*
-	for(int i=0;i<newdata.size();i++) {
-		print_line(itos(w[i]));
-	}
-	*/
-
-	w = PoolVector<uint8_t>::Write();
-	r = PoolVector<uint8_t>::Read();
+	w.release();
+	r.release();
 
 	bool make_mipmaps = p_img->has_mipmaps();
 	p_img->create(p_img->get_width(), p_img->get_height(), false, Image::FORMAT_RGBA8, newdata);

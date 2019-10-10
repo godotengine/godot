@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,13 +30,14 @@
 
 #include "theme_editor_plugin.h"
 
-#include "os/file_access.h"
-#include "version.h"
+#include "core/os/file_access.h"
+#include "core/version.h"
 
 void ThemeEditor::edit(const Ref<Theme> &p_theme) {
 
 	theme = p_theme;
-	main_vb->set_theme(p_theme);
+	main_panel->set_theme(p_theme);
+	main_container->set_theme(p_theme);
 }
 
 void ThemeEditor::_propagate_redraw(Control *p_at) {
@@ -53,7 +54,8 @@ void ThemeEditor::_propagate_redraw(Control *p_at) {
 
 void ThemeEditor::_refresh_interval() {
 
-	_propagate_redraw(main_vb);
+	_propagate_redraw(main_panel);
+	_propagate_redraw(main_container);
 }
 
 void ThemeEditor::_type_menu_cbk(int p_option) {
@@ -86,7 +88,7 @@ void ThemeEditor::_name_menu_about_to_show() {
 	}
 
 	name_menu->get_popup()->clear();
-
+	name_menu->get_popup()->set_size(Size2());
 	for (List<StringName>::Element *E = names.front(); E; E = E->next()) {
 
 		name_menu->get_popup()->add_item(E->get());
@@ -130,14 +132,14 @@ void ThemeEditor::_save_template_cbk(String fname) {
 
 	Map<String, _TECategory> categories;
 
-	//fill types
+	// Fill types.
 	List<StringName> type_list;
 	Theme::get_default()->get_type_list(&type_list);
 	for (List<StringName>::Element *E = type_list.front(); E; E = E->next()) {
 		categories.insert(E->get(), _TECategory());
 	}
 
-	//fill default theme
+	// Fill default theme.
 	for (Map<String, _TECategory>::Element *E = categories.front(); E; E = E->next()) {
 
 		_TECategory &tc = E->get();
@@ -189,11 +191,9 @@ void ThemeEditor::_save_template_cbk(String fname) {
 	}
 
 	FileAccess *file = FileAccess::open(filename, FileAccess::WRITE);
-	if (!file) {
 
-		ERR_EXPLAIN(TTR("Can't save theme to file:") + " " + filename);
-		return;
-	}
+	ERR_FAIL_COND_MSG(!file, "Can't save theme to file '" + filename + "'.");
+
 	file->store_line("; ******************* ");
 	file->store_line("; Template Theme File ");
 	file->store_line("; ******************* ");
@@ -256,7 +256,7 @@ void ThemeEditor::_save_template_cbk(String fname) {
 	file->store_line("");
 	file->store_line("");
 
-	//write default theme
+	// Write default theme.
 	for (Map<String, _TECategory>::Element *E = categories.front(); E; E = E->next()) {
 
 		_TECategory &tc = E->get();
@@ -501,7 +501,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 	type_select_label->show();
 	type_select->show();
 
-	if (p_option == POPUP_ADD) { //add
+	if (p_option == POPUP_ADD) { // Add.
 
 		add_del_dialog->set_title(TTR("Add Item"));
 		add_del_dialog->get_ok()->set_text(TTR("Add"));
@@ -509,7 +509,7 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 		base_theme = Theme::get_default();
 
-	} else if (p_option == POPUP_CLASS_ADD) { //add
+	} else if (p_option == POPUP_CLASS_ADD) { // Add.
 
 		add_del_dialog->set_title(TTR("Add All Items"));
 		add_del_dialog->get_ok()->set_text(TTR("Add All"));
@@ -552,12 +552,10 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 	type_menu->get_popup()->clear();
 
-	if (p_option == 0 || p_option == 1) { //add
+	if (p_option == 0 || p_option == 1) { // Add.
 
 		List<StringName> new_types;
 		theme->get_type_list(&new_types);
-
-		//uh kind of sucks
 		for (List<StringName>::Element *F = new_types.front(); F; F = F->next()) {
 
 			bool found = false;
@@ -574,7 +572,6 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 		}
 	}
 
-	//types.sort();
 	types.sort_custom<StringName::AlphCompare>();
 	for (List<StringName>::Element *E = types.front(); E; E = E->next()) {
 
@@ -584,15 +581,17 @@ void ThemeEditor::_theme_menu_cbk(int p_option) {
 
 void ThemeEditor::_notification(int p_what) {
 
-	if (p_what == NOTIFICATION_PROCESS) {
-
-		time_left -= get_process_delta_time();
-		if (time_left < 0) {
-			time_left = 1.5;
-			_refresh_interval();
-		}
-	} else if (p_what == NOTIFICATION_THEME_CHANGED) {
-		theme_menu->set_icon(get_icon("Theme", "EditorIcons"));
+	switch (p_what) {
+		case NOTIFICATION_PROCESS: {
+			time_left -= get_process_delta_time();
+			if (time_left < 0) {
+				time_left = 1.5;
+				_refresh_interval();
+			}
+		} break;
+		case NOTIFICATION_THEME_CHANGED: {
+			theme_menu->set_icon(get_icon("Theme", "EditorIcons"));
+		} break;
 	}
 }
 
@@ -610,30 +609,14 @@ ThemeEditor::ThemeEditor() {
 
 	time_left = 0;
 
-	scroll = memnew(ScrollContainer);
-	add_child(scroll);
-	scroll->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 3);
-	scroll->set_margin(MARGIN_TOP, 30 * EDSCALE);
-	//scroll->set_enable_h_scroll(true);
-	scroll->set_enable_v_scroll(true);
-	scroll->set_enable_h_scroll(false);
+	HBoxContainer *top_menu = memnew(HBoxContainer);
+	add_child(top_menu);
 
-	Panel *panel = memnew(Panel);
-	scroll->add_child(panel);
-	panel->set_custom_minimum_size(Size2(500, 800) * EDSCALE);
-	panel->set_theme(Theme::get_default());
-	panel->set_h_size_flags(SIZE_EXPAND_FILL);
-
-	main_vb = memnew(VBoxContainer);
-	panel->add_child(main_vb);
-	main_vb->set_anchors_and_margins_preset(Control::PRESET_WIDE, Control::PRESET_MODE_MINSIZE, 4 * EDSCALE);
-
-	HBoxContainer *hb_menu = memnew(HBoxContainer);
-	main_vb->add_child(hb_menu);
+	top_menu->add_child(memnew(Label(TTR("Preview:"))));
+	top_menu->add_spacer(false);
 
 	theme_menu = memnew(MenuButton);
-	theme_menu->set_text(TTR("Edit theme..."));
-	theme_menu->set_flat(false);
+	theme_menu->set_text(TTR("Edit Theme"));
 	theme_menu->set_tooltip(TTR("Theme editing menu."));
 	theme_menu->get_popup()->add_item(TTR("Add Item"), POPUP_ADD);
 	theme_menu->get_popup()->add_item(TTR("Add Class Items"), POPUP_CLASS_ADD);
@@ -643,27 +626,59 @@ ThemeEditor::ThemeEditor() {
 	theme_menu->get_popup()->add_item(TTR("Create Empty Template"), POPUP_CREATE_EMPTY);
 	theme_menu->get_popup()->add_item(TTR("Create Empty Editor Template"), POPUP_CREATE_EDITOR_EMPTY);
 	theme_menu->get_popup()->add_item(TTR("Create From Current Editor Theme"), POPUP_IMPORT_EDITOR_THEME);
-	add_child(theme_menu);
-	theme_menu->set_position(Vector2(3, 3) * EDSCALE);
+	top_menu->add_child(theme_menu);
 	theme_menu->get_popup()->connect("id_pressed", this, "_theme_menu_cbk");
 
+	ScrollContainer *scroll = memnew(ScrollContainer);
+	add_child(scroll);
+	scroll->set_enable_v_scroll(true);
+	scroll->set_enable_h_scroll(false);
+	scroll->set_v_size_flags(SIZE_EXPAND_FILL);
+
+	MarginContainer *root_container = memnew(MarginContainer);
+	scroll->add_child(root_container);
+	root_container->set_theme(Theme::get_default());
+	root_container->set_clip_contents(true);
+	root_container->set_custom_minimum_size(Size2(700, 0) * EDSCALE);
+	root_container->set_v_size_flags(SIZE_EXPAND_FILL);
+	root_container->set_h_size_flags(SIZE_EXPAND_FILL);
+
+	//// Preview Controls ////
+
+	main_panel = memnew(Panel);
+	root_container->add_child(main_panel);
+
+	main_container = memnew(MarginContainer);
+	root_container->add_child(main_container);
+	main_container->add_constant_override("margin_right", 4 * EDSCALE);
+	main_container->add_constant_override("margin_top", 4 * EDSCALE);
+	main_container->add_constant_override("margin_left", 4 * EDSCALE);
+	main_container->add_constant_override("margin_bottom", 4 * EDSCALE);
+
 	HBoxContainer *main_hb = memnew(HBoxContainer);
-	main_vb->add_child(main_hb);
+	main_container->add_child(main_hb);
 
 	VBoxContainer *first_vb = memnew(VBoxContainer);
-	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
 	main_hb->add_child(first_vb);
-
-	//main_panel->add_child(panel);
-	//panel->set_anchors_and_margins_preset(Control::PRESET_WIDE);
-	//panel->set_margin( MARGIN_TOP,20 );
+	first_vb->set_h_size_flags(SIZE_EXPAND_FILL);
+	first_vb->add_constant_override("separation", 10 * EDSCALE);
 
 	first_vb->add_child(memnew(Label("Label")));
 
 	first_vb->add_child(memnew(Button("Button")));
+	Button *bt = memnew(Button);
+	bt->set_text(TTR("Toggle Button"));
+	bt->set_toggle_mode(true);
+	bt->set_pressed(true);
+	first_vb->add_child(bt);
+	bt = memnew(Button);
+	bt->set_text(TTR("Disabled Button"));
+	bt->set_disabled(true);
+	first_vb->add_child(bt);
 	ToolButton *tb = memnew(ToolButton);
 	tb->set_text("ToolButton");
 	first_vb->add_child(tb);
+
 	CheckButton *cb = memnew(CheckButton);
 	cb->set_text("CheckButton");
 	first_vb->add_child(cb);
@@ -671,31 +686,27 @@ ThemeEditor::ThemeEditor() {
 	cbx->set_text("CheckBox");
 	first_vb->add_child(cbx);
 
-	VBoxContainer *bg = memnew(VBoxContainer);
-	bg->set_v_size_flags(SIZE_EXPAND_FILL);
-	VBoxContainer *gbvb = memnew(VBoxContainer);
-	gbvb->set_v_size_flags(SIZE_EXPAND_FILL);
-	CheckBox *rbx1 = memnew(CheckBox);
-	rbx1->set_text(TTR("CheckBox Radio1"));
-	rbx1->set_pressed(true);
-	gbvb->add_child(rbx1);
-	CheckBox *rbx2 = memnew(CheckBox);
-	rbx2->set_text(TTR("CheckBox Radio2"));
-	gbvb->add_child(rbx2);
-	bg->add_child(gbvb);
-	first_vb->add_child(bg);
-
 	MenuButton *test_menu_button = memnew(MenuButton);
 	test_menu_button->set_text("MenuButton");
 	test_menu_button->get_popup()->add_item(TTR("Item"));
+	test_menu_button->get_popup()->add_item(TTR("Disabled Item"));
+	test_menu_button->get_popup()->set_item_disabled(1, true);
 	test_menu_button->get_popup()->add_separator();
 	test_menu_button->get_popup()->add_check_item(TTR("Check Item"));
 	test_menu_button->get_popup()->add_check_item(TTR("Checked Item"));
-	test_menu_button->get_popup()->set_item_checked(3, true);
+	test_menu_button->get_popup()->set_item_checked(4, true);
 	test_menu_button->get_popup()->add_separator();
 	test_menu_button->get_popup()->add_radio_check_item(TTR("Radio Item"));
 	test_menu_button->get_popup()->add_radio_check_item(TTR("Checked Radio Item"));
-	test_menu_button->get_popup()->set_item_checked(6, true);
+	test_menu_button->get_popup()->set_item_checked(7, true);
+	test_menu_button->get_popup()->add_separator(TTR("Named Sep."));
+
+	PopupMenu *test_submenu = memnew(PopupMenu);
+	test_menu_button->get_popup()->add_child(test_submenu);
+	test_submenu->set_name("submenu");
+	test_menu_button->get_popup()->add_submenu_item(TTR("Submenu"), "submenu");
+	test_submenu->add_item(TTR("Subitem 1"));
+	test_submenu->add_item(TTR("Subitem 2"));
 	first_vb->add_child(test_menu_button);
 
 	OptionButton *test_option_button = memnew(OptionButton);
@@ -705,21 +716,7 @@ ThemeEditor::ThemeEditor() {
 	test_option_button->add_item(TTR("Many"));
 	test_option_button->add_item(TTR("Options"));
 	first_vb->add_child(test_option_button);
-
-	ColorPickerButton *cpb = memnew(ColorPickerButton);
-	first_vb->add_child(cpb);
-
-	first_vb->add_child(memnew(HSeparator));
-	first_vb->add_child(memnew(HSlider));
-	first_vb->add_child(memnew(HScrollBar));
-	first_vb->add_child(memnew(SpinBox));
-	ProgressBar *pb = memnew(ProgressBar);
-	pb->set_value(50);
-	first_vb->add_child(pb);
-	Panel *pn = memnew(Panel);
-	pn->set_custom_minimum_size(Size2(40, 40) * EDSCALE);
-	first_vb->add_child(pn);
-	first_vb->add_constant_override("separation", 10 * EDSCALE);
+	first_vb->add_child(memnew(ColorPickerButton));
 
 	VBoxContainer *second_vb = memnew(VBoxContainer);
 	second_vb->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -728,50 +725,48 @@ ThemeEditor::ThemeEditor() {
 	LineEdit *le = memnew(LineEdit);
 	le->set_text("LineEdit");
 	second_vb->add_child(le);
+	le = memnew(LineEdit);
+	le->set_text(TTR("Disabled LineEdit"));
+	le->set_editable(false);
+	second_vb->add_child(le);
 	TextEdit *te = memnew(TextEdit);
 	te->set_text("TextEdit");
-	//te->set_v_size_flags(SIZE_EXPAND_FILL);
-	te->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
+	te->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
 	second_vb->add_child(te);
+	second_vb->add_child(memnew(SpinBox));
 
-	Tree *test_tree = memnew(Tree);
-	second_vb->add_child(test_tree);
-	test_tree->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
-
-	TreeItem *item = test_tree->create_item();
-	item->set_editable(0, true);
-	item->set_text(0, "Tree");
-	item = test_tree->create_item(test_tree->get_root());
-	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
-	item->set_editable(0, true);
-	item->set_text(0, "Check");
-	item = test_tree->create_item(test_tree->get_root());
-	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
-	item->set_editable(0, true);
-	item->set_range_config(0, 0, 20, 0.1);
-	item->set_range(0, 2);
-	item = test_tree->create_item(test_tree->get_root());
-	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
-	item->set_editable(0, true);
-	item->set_text(0, TTR("Has,Many,Options"));
-	item->set_range(0, 2);
+	HBoxContainer *vhb = memnew(HBoxContainer);
+	second_vb->add_child(vhb);
+	vhb->set_custom_minimum_size(Size2(0, 100) * EDSCALE);
+	vhb->add_child(memnew(VSlider));
+	VScrollBar *vsb = memnew(VScrollBar);
+	vsb->set_page(25);
+	vhb->add_child(vsb);
+	vhb->add_child(memnew(VSeparator));
+	VBoxContainer *hvb = memnew(VBoxContainer);
+	vhb->add_child(hvb);
+	hvb->set_alignment(ALIGN_CENTER);
+	hvb->set_h_size_flags(SIZE_EXPAND_FILL);
+	hvb->add_child(memnew(HSlider));
+	HScrollBar *hsb = memnew(HScrollBar);
+	hsb->set_page(25);
+	hvb->add_child(hsb);
+	HSlider *hs = memnew(HSlider);
+	hs->set_editable(false);
+	hvb->add_child(hs);
+	hvb->add_child(memnew(HSeparator));
+	ProgressBar *pb = memnew(ProgressBar);
+	pb->set_value(50);
+	hvb->add_child(pb);
 
 	VBoxContainer *third_vb = memnew(VBoxContainer);
 	third_vb->set_h_size_flags(SIZE_EXPAND_FILL);
-	third_vb->add_constant_override("separation", 10);
-
+	third_vb->add_constant_override("separation", 10 * EDSCALE);
 	main_hb->add_child(third_vb);
-
-	HBoxContainer *vhb = memnew(HBoxContainer);
-	vhb->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
-	vhb->add_child(memnew(VSeparator));
-	vhb->add_child(memnew(VSlider));
-	vhb->add_child(memnew(VScrollBar));
-	third_vb->add_child(vhb);
 
 	TabContainer *tc = memnew(TabContainer);
 	third_vb->add_child(tc);
-	tc->set_custom_minimum_size(Size2(0, 160) * EDSCALE);
+	tc->set_custom_minimum_size(Size2(0, 135) * EDSCALE);
 	Control *tcc = memnew(Control);
 	tcc->set_name(TTR("Tab 1"));
 	tc->add_child(tcc);
@@ -781,8 +776,40 @@ ThemeEditor::ThemeEditor() {
 	tcc = memnew(Control);
 	tcc->set_name(TTR("Tab 3"));
 	tc->add_child(tcc);
+	tc->set_tab_disabled(2, true);
+
+	Tree *test_tree = memnew(Tree);
+	third_vb->add_child(test_tree);
+	test_tree->set_custom_minimum_size(Size2(0, 175) * EDSCALE);
+	test_tree->add_constant_override("draw_relationship_lines", 1);
+
+	TreeItem *item = test_tree->create_item();
+	item->set_text(0, "Tree");
+	item = test_tree->create_item(test_tree->get_root());
+	item->set_text(0, "Item");
+	item = test_tree->create_item(test_tree->get_root());
+	item->set_editable(0, true);
+	item->set_text(0, TTR("Editable Item"));
+	TreeItem *sub_tree = test_tree->create_item(test_tree->get_root());
+	sub_tree->set_text(0, TTR("Subtree"));
+	item = test_tree->create_item(sub_tree);
+	item->set_cell_mode(0, TreeItem::CELL_MODE_CHECK);
+	item->set_editable(0, true);
+	item->set_text(0, "Check Item");
+	item = test_tree->create_item(sub_tree);
+	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
+	item->set_editable(0, true);
+	item->set_range_config(0, 0, 20, 0.1);
+	item->set_range(0, 2);
+	item = test_tree->create_item(sub_tree);
+	item->set_cell_mode(0, TreeItem::CELL_MODE_RANGE);
+	item->set_editable(0, true);
+	item->set_text(0, TTR("Has,Many,Options"));
+	item->set_range(0, 2);
 
 	main_hb->add_constant_override("separation", 20 * EDSCALE);
+
+	////////
 
 	add_del_dialog = memnew(ConfirmationDialog);
 	add_del_dialog->hide();
@@ -802,6 +829,7 @@ ThemeEditor::ThemeEditor() {
 	type_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	type_hbc->add_child(type_edit);
 	type_menu = memnew(MenuButton);
+	type_menu->set_flat(false);
 	type_menu->set_text("..");
 	type_hbc->add_child(type_menu);
 
@@ -819,6 +847,7 @@ ThemeEditor::ThemeEditor() {
 	name_edit->set_h_size_flags(SIZE_EXPAND_FILL);
 	name_hbc->add_child(name_edit);
 	name_menu = memnew(MenuButton);
+	type_menu->set_flat(false);
 	name_menu->set_text("..");
 	name_hbc->add_child(name_menu);
 
@@ -844,19 +873,14 @@ ThemeEditor::ThemeEditor() {
 	file_dialog->add_filter("*.theme ; Theme File");
 	add_child(file_dialog);
 	file_dialog->connect("file_selected", this, "_save_template_cbk");
-
-	//MenuButton *name_menu;
-	//LineEdit *name_edit;
 }
 
 void ThemeEditorPlugin::edit(Object *p_node) {
 
 	if (Object::cast_to<Theme>(p_node)) {
-		theme_editor->show();
 		theme_editor->edit(Object::cast_to<Theme>(p_node));
 	} else {
 		theme_editor->edit(Ref<Theme>());
-		theme_editor->hide();
 	}
 }
 
@@ -871,11 +895,11 @@ void ThemeEditorPlugin::make_visible(bool p_visible) {
 		theme_editor->set_process(true);
 		button->show();
 		editor->make_bottom_panel_item_visible(theme_editor);
-
 	} else {
 		theme_editor->set_process(false);
 		if (theme_editor->is_visible_in_tree())
 			editor->hide_bottom_panel();
+
 		button->hide();
 	}
 }
@@ -886,7 +910,6 @@ ThemeEditorPlugin::ThemeEditorPlugin(EditorNode *p_node) {
 	theme_editor = memnew(ThemeEditor);
 	theme_editor->set_custom_minimum_size(Size2(0, 200));
 
-	//p_node->get_viewport()->add_child(theme_editor);
 	button = editor->add_bottom_panel_item(TTR("Theme"), theme_editor);
 	button->hide();
 }

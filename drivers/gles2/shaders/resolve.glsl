@@ -1,11 +1,11 @@
+/* clang-format off */
 [vertex]
 
-
-layout(location=0) in highp vec4 vertex_attrib;
-layout(location=4) in vec2 uv_in;
+layout(location = 0) in highp vec4 vertex_attrib;
+/* clang-format on */
+layout(location = 4) in vec2 uv_in;
 
 out vec2 uv_interp;
-
 
 void main() {
 
@@ -13,6 +13,7 @@ void main() {
 	gl_Position = vertex_attrib;
 }
 
+/* clang-format off */
 [fragment]
 
 #if !defined(GLES_OVER_GL)
@@ -20,6 +21,7 @@ precision mediump float;
 #endif
 
 in vec2 uv_interp;
+/* clang-format on */
 uniform sampler2D source_specular; //texunit:0
 uniform sampler2D source_ssr; //texunit:1
 
@@ -31,14 +33,12 @@ layout(location = 0) out vec4 frag_color;
 
 void main() {
 
-	vec4 specular = texture( source_specular,  uv_interp );
+	vec4 specular = texture(source_specular, uv_interp);
 
 #ifdef USE_SSR
-
-	vec4 ssr = textureLod(source_ssr,uv_interp,0.0);
-	specular.rgb = mix(specular.rgb,ssr.rgb*specular.a,ssr.a);
+	vec4 ssr = textureLod(source_ssr, uv_interp, 0.0);
+	specular.rgb = mix(specular.rgb, ssr.rgb * specular.a, ssr.a);
 #endif
 
-	frag_color = vec4(specular.rgb,1.0);
+	frag_color = vec4(specular.rgb, 1.0);
 }
-

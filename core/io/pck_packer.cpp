@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,8 +29,9 @@
 /*************************************************************************/
 
 #include "pck_packer.h"
+
 #include "core/os/file_access.h"
-#include "version.h"
+#include "core/version.h"
 
 static uint64_t _align(uint64_t p_n, int p_alignment) {
 
@@ -62,10 +63,8 @@ void PCKPacker::_bind_methods() {
 Error PCKPacker::pck_start(const String &p_file, int p_alignment) {
 
 	file = FileAccess::open(p_file, FileAccess::WRITE);
-	if (file == NULL) {
 
-		return ERR_CANT_CREATE;
-	};
+	ERR_FAIL_COND_V_MSG(!file, ERR_CANT_CREATE, "Can't open file to write: " + String(p_file) + ".");
 
 	alignment = p_alignment;
 
@@ -108,10 +107,7 @@ Error PCKPacker::add_file(const String &p_file, const String &p_src) {
 
 Error PCKPacker::flush(bool p_verbose) {
 
-	if (!file) {
-		ERR_FAIL_COND_V(!file, ERR_INVALID_PARAMETER);
-		return ERR_INVALID_PARAMETER;
-	};
+	ERR_FAIL_COND_V_MSG(!file, ERR_INVALID_PARAMETER, "File must be opened before use.");
 
 	// write the index
 
@@ -174,7 +170,7 @@ Error PCKPacker::flush(bool p_verbose) {
 		printf("\n");
 
 	file->close();
-	memdelete(buf);
+	memdelete_arr(buf);
 
 	return OK;
 };

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,14 +30,14 @@
 
 #include "export_template_manager.h"
 
+#include "core/io/json.h"
+#include "core/io/zip_io.h"
+#include "core/os/dir_access.h"
 #include "core/os/input.h"
 #include "core/os/keyboard.h"
+#include "core/version.h"
 #include "editor_node.h"
 #include "editor_scale.h"
-#include "io/json.h"
-#include "io/zip_io.h"
-#include "os/dir_access.h"
-#include "version.h"
 
 void ExportTemplateManager::_update_template_list() {
 
@@ -52,18 +52,16 @@ void ExportTemplateManager::_update_template_list() {
 	DirAccess *d = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
 	Error err = d->change_dir(EditorSettings::get_singleton()->get_templates_dir());
 
-	d->list_dir_begin();
 	Set<String> templates;
-
+	d->list_dir_begin();
 	if (err == OK) {
 
-		bool isdir;
-		String c = d->get_next(&isdir);
+		String c = d->get_next();
 		while (c != String()) {
-			if (isdir && !c.begins_with(".")) {
+			if (d->current_is_dir() && !c.begins_with(".")) {
 				templates.insert(c);
 			}
-			c = d->get_next(&isdir);
+			c = d->get_next();
 		}
 	}
 	d->list_dir_end();
@@ -71,6 +69,9 @@ void ExportTemplateManager::_update_template_list() {
 	memdelete(d);
 
 	String current_version = VERSION_FULL_CONFIG;
+	// Downloadable export templates are only available for stable, alpha, beta and RC versions.
+	// Therefore, don't display download-related features when using a development version
+	const bool downloads_available = String(VERSION_STATUS) != String("dev");
 
 	Label *current = memnew(Label);
 	current->set_h_size_flags(SIZE_EXPAND_FILL);
@@ -78,10 +79,14 @@ void ExportTemplateManager::_update_template_list() {
 
 	if (templates.has(current_version)) {
 		current->add_color_override("font_color", get_color("success_color", "Editor"));
-		Button *redownload = memnew(Button);
-		redownload->set_text(TTR("Re-Download"));
-		current_hb->add_child(redownload);
-		redownload->connect("pressed", this, "_download_template", varray(current_version));
+
+		// Only display a redownload button if it can be downloaded in the first place
+		if (downloads_available) {
+			Button *redownload = memnew(Button);
+			redownload->set_text(TTR("Redownload"));
+			current_hb->add_child(redownload);
+			redownload->connect("pressed", this, "_download_template", varray(current_version));
+		}
 
 		Button *uninstall = memnew(Button);
 		uninstall->set_text(TTR("Uninstall"));
@@ -93,6 +98,12 @@ void ExportTemplateManager::_update_template_list() {
 		current->add_color_override("font_color", get_color("error_color", "Editor"));
 		Button *redownload = memnew(Button);
 		redownload->set_text(TTR("Download"));
+
+		if (!downloads_available) {
+			redownload->set_disabled(true);
+			redownload->set_tooltip(TTR("Official export templates aren't available for development builds."));
+		}
+
 		redownload->connect("pressed", this, "_download_template", varray(current_version));
 		current_hb->add_child(redownload);
 		current->set_text(current_version + " " + TTR("(Missing)"));
@@ -154,18 +165,14 @@ void ExportTemplateManager::_uninstall_template_confirm() {
 	ERR_FAIL_COND(err != OK);
 
 	Vector<String> files;
-
 	d->list_dir_begin();
-
-	bool isdir;
-	String c = d->get_next(&isdir);
+	String c = d->get_next();
 	while (c != String()) {
-		if (!isdir) {
+		if (!d->current_is_dir()) {
 			files.push_back(c);
 		}
-		c = d->get_next(&isdir);
+		c = d->get_next();
 	}
-
 	d->list_dir_end();
 
 	for (int i = 0; i < files.size(); i++) {
@@ -178,7 +185,7 @@ void ExportTemplateManager::_uninstall_template_confirm() {
 	_update_template_list();
 }
 
-void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_progress) {
+bool ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_progress) {
 
 	FileAccess *fa = NULL;
 	zlib_filefunc_def io = zipio_create_io_from_file(&fa);
@@ -187,12 +194,13 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	if (!pkg) {
 
 		EditorNode::get_singleton()->show_warning(TTR("Can't open export templates zip."));
-		return;
+		return false;
 	}
 	int ret = unzGoToFirstFile(pkg);
 
 	int fc = 0; //count them and find version
 	String version;
+	String contents_dir;
 
 	while (ret == UNZ_OK) {
 
@@ -221,10 +229,11 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 			if (data_str.get_slice_count(".") < 3) {
 				EditorNode::get_singleton()->show_warning(vformat(TTR("Invalid version.txt format inside templates: %s."), data_str));
 				unzClose(pkg);
-				return;
+				return false;
 			}
 
 			version = data_str;
+			contents_dir = file.get_base_dir().trim_suffix("/").trim_suffix("\\");
 		}
 
 		if (file.get_file().size() != 0) {
@@ -237,7 +246,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	if (version == String()) {
 		EditorNode::get_singleton()->show_warning(TTR("No version.txt found inside templates."));
 		unzClose(pkg);
-		return;
+		return false;
 	}
 
 	String template_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(version);
@@ -247,7 +256,7 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	if (err != OK) {
 		EditorNode::get_singleton()->show_warning(TTR("Error creating path for templates:") + "\n" + template_path);
 		unzClose(pkg);
-		return;
+		return false;
 	}
 
 	memdelete(d);
@@ -268,7 +277,9 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		char fname[16384];
 		unzGetCurrentFileInfo(pkg, &info, fname, 16384, NULL, 0, NULL, 0);
 
-		String file = String(fname).get_file();
+		String file_path(String(fname).simplify_path());
+
+		String file = file_path.get_file();
 
 		if (file.size() == 0) {
 			ret = unzGoToNextFile(pkg);
@@ -283,21 +294,43 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 		unzReadCurrentFile(pkg, data.ptrw(), data.size());
 		unzCloseCurrentFile(pkg);
 
+		String base_dir = file_path.get_base_dir().trim_suffix("/");
+
+		if (base_dir != contents_dir && base_dir.begins_with(contents_dir)) {
+			base_dir = base_dir.substr(contents_dir.length(), file_path.length()).trim_prefix("/");
+			file = base_dir.plus_file(file);
+
+			DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+			ERR_CONTINUE(!da);
+
+			String output_dir = template_path.plus_file(base_dir);
+
+			if (!DirAccess::exists(output_dir)) {
+				Error mkdir_err = da->make_dir_recursive(output_dir);
+				ERR_CONTINUE(mkdir_err != OK);
+			}
+		}
+
 		if (p) {
 			p->step(TTR("Importing:") + " " + file, fc);
 		}
 
-		FileAccess *f = FileAccess::open(template_path.plus_file(file), FileAccess::WRITE);
+		String to_write = template_path.plus_file(file);
+		FileAccess *f = FileAccess::open(to_write, FileAccess::WRITE);
 
 		if (!f) {
 			ret = unzGoToNextFile(pkg);
 			fc++;
-			ERR_CONTINUE(!f);
+			ERR_CONTINUE_MSG(true, "Can't open file from path '" + String(to_write) + "'.");
 		}
 
 		f->store_buffer(data.ptr(), data.size());
 
 		memdelete(f);
+
+#ifndef WINDOWS_ENABLED
+		FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+#endif
 
 		ret = unzGoToNextFile(pkg);
 		fc++;
@@ -310,6 +343,8 @@ void ExportTemplateManager::_install_from_file(const String &p_file, bool p_use_
 	unzClose(pkg);
 
 	_update_template_list();
+
+	return true;
 }
 
 void ExportTemplateManager::popup_manager() {
@@ -378,9 +413,7 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 		} break;
 		case HTTPRequest::RESULT_BODY_SIZE_LIMIT_EXCEEDED:
 		case HTTPRequest::RESULT_CONNECTION_ERROR:
-		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH: {
-			template_list_state->set_text(TTR("Can't connect."));
-		} break;
+		case HTTPRequest::RESULT_CHUNKED_BODY_SIZE_MISMATCH:
 		case HTTPRequest::RESULT_SSL_HANDSHAKE_ERROR:
 		case HTTPRequest::RESULT_CANT_CONNECT: {
 			template_list_state->set_text(TTR("Can't connect."));
@@ -401,7 +434,17 @@ void ExportTemplateManager::_http_download_templates_completed(int p_status, int
 				String path = download_templates->get_download_file();
 				template_list_state->set_text(TTR("Download Complete."));
 				template_downloader->hide();
-				_install_from_file(path, false);
+				bool ret = _install_from_file(path, false);
+				if (ret) {
+					// Clean up downloaded file.
+					DirAccessRef da = DirAccess::create(DirAccess::ACCESS_FILESYSTEM);
+					Error err = da->remove(path);
+					if (err != OK) {
+						EditorNode::get_singleton()->add_io_error(TTR("Cannot remove temporary file:") + "\n" + path + "\n");
+					}
+				} else {
+					EditorNode::get_singleton()->add_io_error(vformat(TTR("Templates installation failed.\nThe problematic templates archives can be found at '%s'."), path));
+				}
 			}
 		} break;
 	}
@@ -429,7 +472,7 @@ void ExportTemplateManager::_begin_template_download(const String &p_url) {
 
 	Error err = download_templates->request(p_url);
 	if (err != OK) {
-		EditorNode::get_singleton()->show_warning(TTR("Error requesting url: ") + p_url);
+		EditorNode::get_singleton()->show_warning(TTR("Error requesting URL:") + " " + p_url);
 		return;
 	}
 
@@ -499,7 +542,6 @@ void ExportTemplateManager::_notification(int p_what) {
 		template_list_state->set_text(status);
 		if (errored) {
 			set_process(false);
-			;
 		}
 	}
 
@@ -508,6 +550,116 @@ void ExportTemplateManager::_notification(int p_what) {
 			set_process(false);
 		}
 	}
+}
+
+bool ExportTemplateManager::can_install_android_template() {
+
+	const String templates_dir = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
+	return FileAccess::exists(templates_dir.plus_file("android_source.zip")) &&
+		   FileAccess::exists(templates_dir.plus_file("android_release.apk")) &&
+		   FileAccess::exists(templates_dir.plus_file("android_debug.apk"));
+}
+
+Error ExportTemplateManager::install_android_template() {
+
+	// To support custom Android builds, we install the Java source code and buildsystem
+	// from android_source.zip to the project's res://android folder.
+
+	DirAccessRef da = DirAccess::open("res://");
+	ERR_FAIL_COND_V(!da, ERR_CANT_CREATE);
+
+	// Make res://android dir (if it does not exist).
+	da->make_dir("android");
+	{
+		// Add an empty .gdignore file to avoid scan.
+		FileAccessRef f = FileAccess::open("res://android/.gdignore", FileAccess::WRITE);
+		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		f->store_line("");
+		f->close();
+	}
+	{
+		// Add version, to ensure building won't work if template and Godot version don't match.
+		FileAccessRef f = FileAccess::open("res://android/.build_version", FileAccess::WRITE);
+		ERR_FAIL_COND_V(!f, ERR_CANT_CREATE);
+		f->store_line(VERSION_FULL_CONFIG);
+		f->close();
+	}
+
+	Error err = da->make_dir_recursive("android/build");
+	ERR_FAIL_COND_V(err != OK, err);
+
+	// Uncompress source template.
+
+	const String &templates_path = EditorSettings::get_singleton()->get_templates_dir().plus_file(VERSION_FULL_CONFIG);
+	const String &source_zip = templates_path.plus_file("android_source.zip");
+	ERR_FAIL_COND_V(!FileAccess::exists(source_zip), ERR_CANT_OPEN);
+
+	FileAccess *src_f = NULL;
+	zlib_filefunc_def io = zipio_create_io_from_file(&src_f);
+
+	unzFile pkg = unzOpen2(source_zip.utf8().get_data(), &io);
+	ERR_FAIL_COND_V_MSG(!pkg, ERR_CANT_OPEN, "Android sources not in ZIP format.");
+
+	int ret = unzGoToFirstFile(pkg);
+	int total_files = 0;
+	// Count files to unzip.
+	while (ret == UNZ_OK) {
+		total_files++;
+		ret = unzGoToNextFile(pkg);
+	}
+	ret = unzGoToFirstFile(pkg);
+
+	ProgressDialog::get_singleton()->add_task("uncompress_src", TTR("Uncompressing Android Build Sources"), total_files);
+
+	Set<String> dirs_tested;
+	int idx = 0;
+	while (ret == UNZ_OK) {
+
+		// Get file path.
+		unz_file_info info;
+		char fpath[16384];
+		ret = unzGetCurrentFileInfo(pkg, &info, fpath, 16384, NULL, 0, NULL, 0);
+
+		String path = fpath;
+		String base_dir = path.get_base_dir();
+
+		if (!path.ends_with("/")) {
+			Vector<uint8_t> data;
+			data.resize(info.uncompressed_size);
+
+			// Read.
+			unzOpenCurrentFile(pkg);
+			unzReadCurrentFile(pkg, data.ptrw(), data.size());
+			unzCloseCurrentFile(pkg);
+
+			if (!dirs_tested.has(base_dir)) {
+				da->make_dir_recursive(String("android/build").plus_file(base_dir));
+				dirs_tested.insert(base_dir);
+			}
+
+			String to_write = String("res://android/build").plus_file(path);
+			FileAccess *f = FileAccess::open(to_write, FileAccess::WRITE);
+			if (f) {
+				f->store_buffer(data.ptr(), data.size());
+				memdelete(f);
+#ifndef WINDOWS_ENABLED
+				FileAccess::set_unix_permissions(to_write, (info.external_fa >> 16) & 0x01FF);
+#endif
+			} else {
+				ERR_PRINTS("Can't uncompress file: " + to_write);
+			}
+		}
+
+		ProgressDialog::get_singleton()->task_step("uncompress_src", path, idx);
+
+		idx++;
+		ret = unzGoToNextFile(pkg);
+	}
+
+	ProgressDialog::get_singleton()->end_task("uncompress_src");
+	unzClose(pkg);
+
+	return OK;
 }
 
 void ExportTemplateManager::_bind_methods() {
@@ -548,7 +700,7 @@ ExportTemplateManager::ExportTemplateManager() {
 	remove_confirm->connect("confirmed", this, "_uninstall_template_confirm");
 
 	template_open = memnew(FileDialog);
-	template_open->set_title(TTR("Select template file"));
+	template_open->set_title(TTR("Select Template File"));
 	template_open->add_filter("*.tpz ; Godot Export Templates");
 	template_open->set_access(FileDialog::ACCESS_FILESYSTEM);
 	template_open->set_mode(FileDialog::MODE_OPEN_FILE);

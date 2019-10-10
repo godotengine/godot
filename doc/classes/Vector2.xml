@@ -1,16 +1,14 @@
 <?xml version="1.0" encoding="UTF-8" ?>
-<class name="Vector2" category="Built-In Types" version="3.1">
+<class name="Vector2" category="Built-In Types" version="3.2">
 	<brief_description>
 		Vector used for 2D math.
 	</brief_description>
 	<description>
-		2-element structure that can be used to represent positions in 2d space or any other pair of numeric values.
+		2-element structure that can be used to represent positions in 2D space or any other pair of numeric values.
 	</description>
 	<tutorials>
-		<link>http://docs.godotengine.org/en/3.0/tutorials/math/index.html</link>
+		<link>https://docs.godotengine.org/en/latest/tutorials/math/index.html</link>
 	</tutorials>
-	<demos>
-	</demos>
 	<methods>
 		<method name="Vector2">
 			<return type="Vector2">
@@ -20,7 +18,7 @@
 			<argument index="1" name="y" type="float">
 			</argument>
 			<description>
-				Constructs a new Vector2 from the given x and y.
+				Constructs a new Vector2 from the given [code]x[/code] and [code]y[/code].
 			</description>
 		</method>
 		<method name="abs">
@@ -34,8 +32,8 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the vector's angle in radians with respect to the x-axis, or [code](1, 0)[/code] vector.
-				Equivalent to the result of atan2 when called with the vector's x and y as parameters: [code]atan2(x, y)[/code].
+				Returns the vector's angle in radians with respect to the X axis, or [code](1, 0)[/code] vector.
+				Equivalent to the result of [method @GDScript.atan2] when called with the vector's [member x] and [member y] as parameters: [code]atan2(x, y)[/code].
 			</description>
 		</method>
 		<method name="angle_to">
@@ -53,14 +51,14 @@
 			<argument index="0" name="to" type="Vector2">
 			</argument>
 			<description>
-				Returns the angle in radians between the line connecting the two points and the x coordinate.
+				Returns the angle in radians between the line connecting the two points and the X coordinate.
 			</description>
 		</method>
 		<method name="aspect">
 			<return type="float">
 			</return>
 			<description>
-				Returns the ratio of x to y.
+				Returns the ratio of [member x] to [member y].
 			</description>
 		</method>
 		<method name="bounce">
@@ -94,7 +92,7 @@
 			<argument index="0" name="with" type="Vector2">
 			</argument>
 			<description>
-				Returns the 2 dimensional analog of the cross product with the given vector.
+				Returns the 2-dimensional analog of the cross product with the given vector.
 			</description>
 		</method>
 		<method name="cubic_interpolate">
@@ -109,7 +107,16 @@
 			<argument index="3" name="t" type="float">
 			</argument>
 			<description>
-				Cubicly interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], or a percentage of how far along the interpolation is.
+				Cubically interpolates between this vector and [code]b[/code] using [code]pre_a[/code] and [code]post_b[/code] as handles, and returns the result at position [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="direction_to">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<description>
+				Returns the normalized vector pointing from this vector to [code]b[/code].
 			</description>
 		</method>
 		<method name="distance_squared_to">
@@ -164,7 +171,7 @@
 			<return type="float">
 			</return>
 			<description>
-				Returns the vector's length squared. Prefer this function over [member length] if you need to sort vectors or need the squared length for some formula.
+				Returns the vector's length squared. Prefer this method over [method length] if you need to sort vectors or need the squared length for some formula.
 			</description>
 		</method>
 		<method name="linear_interpolate">
@@ -175,7 +182,18 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], a percentage of how far along the interpolation is.
+				Returns the result of the linear interpolation between this vector and [code]b[/code] by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+			</description>
+		</method>
+		<method name="move_toward">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="to" type="Vector2">
+			</argument>
+			<argument index="1" name="delta" type="float">
+			</argument>
+			<description>
+				Moves the vector toward [code]to[/code] by the fixed [code]delta[/code] amount.
 			</description>
 		</method>
 		<method name="normalized">
@@ -183,6 +201,33 @@
 			</return>
 			<description>
 				Returns the vector scaled to unit length. Equivalent to [code]v / v.length()[/code].
+			</description>
+		</method>
+		<method name="posmod">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="mod" type="float">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]mod[/code].
+			</description>
+		</method>
+		<method name="posmodv">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="modv" type="Vector2">
+			</argument>
+			<description>
+				Returns a vector composed of the [code]fposmod[/code] of this vector's components and [code]modv[/code]'s components.
+			</description>
+		</method>
+		<method name="project">
+			<return type="Vector2">
+			</return>
+			<argument index="0" name="b" type="Vector2">
+			</argument>
+			<description>
+				Returns the vector projected onto the vector [code]b[/code].
 			</description>
 		</method>
 		<method name="reflect">
@@ -200,7 +245,7 @@
 			<argument index="0" name="phi" type="float">
 			</argument>
 			<description>
-				Returns the vector rotated by [code]phi[/code] radians.
+				Returns the vector rotated by [code]phi[/code] radians. See also [method @GDScript.deg2rad].
 			</description>
 		</method>
 		<method name="round">
@@ -208,6 +253,13 @@
 			</return>
 			<description>
 				Returns the vector with all components rounded to the nearest integer, with halfway cases rounded away from zero.
+			</description>
+		</method>
+		<method name="sign">
+			<return type="Vector2">
+			</return>
+			<description>
+				Returns the vector with each component set to one or negative one, depending on the signs of the components.
 			</description>
 		</method>
 		<method name="slerp">
@@ -218,8 +270,8 @@
 			<argument index="1" name="t" type="float">
 			</argument>
 			<description>
-				Returns the result of SLERP between this vector and "b", by amount "t". "t" should be a float of 0.0-1.0, a percentage of how far along the interpolation is.
-				Both vectors need to be normalized.
+				Returns the result of spherical linear interpolation between this vector and [code]b[/code], by amount [code]t[/code]. [code]t[/code] is in the range of [code]0.0 - 1.0[/code], representing the amount of interpolation.
+				[b]Note:[/b] Both vectors must be normalized.
 			</description>
 		</method>
 		<method name="slide">
@@ -249,13 +301,40 @@
 		</method>
 	</methods>
 	<members>
-		<member name="x" type="float" setter="" getter="">
-			The vector's x component.
+		<member name="x" type="float" setter="" getter="" default="0.0">
+			The vector's X component. Also accessible by using the index position [code][0][/code].
 		</member>
-		<member name="y" type="float" setter="" getter="">
-			The vector's y component.
+		<member name="y" type="float" setter="" getter="" default="0.0">
+			The vector's Y component. Also accessible by using the index position [code][1][/code].
 		</member>
 	</members>
 	<constants>
+		<constant name="AXIS_X" value="0">
+			Enumerated value for the X axis.
+		</constant>
+		<constant name="AXIS_Y" value="1">
+			Enumerated value for the Y axis.
+		</constant>
+		<constant name="ZERO" value="Vector2( 0, 0 )">
+			Zero vector.
+		</constant>
+		<constant name="ONE" value="Vector2( 1, 1 )">
+			One vector.
+		</constant>
+		<constant name="INF" value="Vector2( inf, inf )">
+			Infinity vector.
+		</constant>
+		<constant name="LEFT" value="Vector2( -1, 0 )">
+			Left unit vector.
+		</constant>
+		<constant name="RIGHT" value="Vector2( 1, 0 )">
+			Right unit vector.
+		</constant>
+		<constant name="UP" value="Vector2( 0, -1 )">
+			Up unit vector.
+		</constant>
+		<constant name="DOWN" value="Vector2( 0, 1 )">
+			Down unit vector.
+		</constant>
 	</constants>
 </class>

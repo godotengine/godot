@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -32,19 +32,20 @@
 
 #include "gdnative/gdnative.h"
 
+#include "core/core_string_names.h"
 #include "core/global_constants.h"
+#include "core/io/file_access_encrypted.h"
+#include "core/os/file_access.h"
+#include "core/os/os.h"
 #include "core/project_settings.h"
-#include "io/file_access_encrypted.h"
-#include "os/file_access.h"
-#include "os/os.h"
 
 #include "scene/main/scene_tree.h"
-#include "scene/resources/scene_format_text.h"
+#include "scene/resources/resource_format_text.h"
 
 #include <stdlib.h>
 
 #ifndef NO_THREADS
-#include "os/thread.h"
+#include "core/os/thread.h"
 #endif
 
 #if defined(TOOLS_ENABLED) && defined(DEBUG_METHODS_ENABLED)
@@ -62,15 +63,23 @@ void NativeScript::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_library", "library"), &NativeScript::set_library);
 	ClassDB::bind_method(D_METHOD("get_library"), &NativeScript::get_library);
 
+	ClassDB::bind_method(D_METHOD("set_script_class_name", "class_name"), &NativeScript::set_script_class_name);
+	ClassDB::bind_method(D_METHOD("get_script_class_name"), &NativeScript::get_script_class_name);
+	ClassDB::bind_method(D_METHOD("set_script_class_icon_path", "icon_path"), &NativeScript::set_script_class_icon_path);
+	ClassDB::bind_method(D_METHOD("get_script_class_icon_path"), &NativeScript::get_script_class_icon_path);
+
 	ClassDB::bind_method(D_METHOD("get_class_documentation"), &NativeScript::get_class_documentation);
 	ClassDB::bind_method(D_METHOD("get_method_documentation", "method"), &NativeScript::get_method_documentation);
 	ClassDB::bind_method(D_METHOD("get_signal_documentation", "signal_name"), &NativeScript::get_signal_documentation);
 	ClassDB::bind_method(D_METHOD("get_property_documentation", "path"), &NativeScript::get_property_documentation);
 
-	ADD_PROPERTYNZ(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
-	ADD_PROPERTYNZ(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "class_name"), "set_class_name", "get_class_name");
+	ADD_PROPERTY(PropertyInfo(Variant::OBJECT, "library", PROPERTY_HINT_RESOURCE_TYPE, "GDNativeLibrary"), "set_library", "get_library");
+	ADD_GROUP("Script Class", "script_class_");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_name"), "set_script_class_name", "get_script_class_name");
+	ADD_PROPERTY(PropertyInfo(Variant::STRING, "script_class_icon_path", PROPERTY_HINT_FILE), "set_script_class_icon_path", "get_script_class_icon_path");
 
-	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo(Variant::OBJECT, "new"));
+	ClassDB::bind_vararg_method(METHOD_FLAGS_DEFAULT, "new", &NativeScript::_new, MethodInfo("new"));
 }
 
 #define NSL NativeScriptLanguage::get_singleton()
@@ -131,13 +140,31 @@ Ref<GDNativeLibrary> NativeScript::get_library() const {
 	return library;
 }
 
+void NativeScript::set_script_class_name(String p_type) {
+	script_class_name = p_type;
+}
+
+String NativeScript::get_script_class_name() const {
+	return script_class_name;
+}
+
+void NativeScript::set_script_class_icon_path(String p_icon_path) {
+	script_class_icon_path = p_icon_path;
+}
+
+String NativeScript::get_script_class_icon_path() const {
+	return script_class_icon_path;
+}
+
 bool NativeScript::can_instance() const {
 
 	NativeScriptDesc *script_data = get_script_desc();
 
 #ifdef TOOLS_ENABLED
-
-	return script_data || (!is_tool() && !ScriptServer::is_scripting_enabled());
+	// Only valid if this is either a tool script or a "regular" script.
+	// (so an environment whre scripting is disabled (and not the editor) would not
+	// create objects).
+	return script_data && (is_tool() || ScriptServer::is_scripting_enabled());
 #else
 	return script_data;
 #endif
@@ -175,25 +202,6 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 		return NULL;
 	}
 
-#ifdef TOOLS_ENABLED
-	if (!ScriptServer::is_scripting_enabled() && !is_tool()) {
-		// placeholder for nodes. For tools we want the rool thing.
-
-		PlaceHolderScriptInstance *sins = memnew(PlaceHolderScriptInstance(NSL, Ref<Script>(this), p_this));
-		placeholders.insert(sins);
-
-		if (script_data->create_func.create_func) {
-			script_data->create_func.create_func(
-					(godot_object *)p_this,
-					script_data->create_func.method_data);
-		}
-
-		_update_placeholder(sins);
-
-		return sins;
-	}
-#endif
-
 	NativeScriptInstance *nsi = memnew(NativeScriptInstance);
 
 	nsi->owner = p_this;
@@ -220,6 +228,19 @@ ScriptInstance *NativeScript::instance_create(Object *p_this) {
 #endif
 
 	return nsi;
+}
+
+PlaceHolderScriptInstance *NativeScript::placeholder_instance_create(Object *p_this) {
+#ifdef TOOLS_ENABLED
+	PlaceHolderScriptInstance *sins = memnew(PlaceHolderScriptInstance(NSL, Ref<Script>(this), p_this));
+	placeholders.insert(sins);
+
+	_update_placeholder(sins);
+
+	return sins;
+#else
+	return NULL;
+#endif
 }
 
 bool NativeScript::instance_has(const Object *p_this) const {
@@ -268,6 +289,10 @@ MethodInfo NativeScript::get_method_info(const StringName &p_method) const {
 		script_data = script_data->base_data;
 	}
 	return MethodInfo();
+}
+
+bool NativeScript::is_valid() const {
+	return true;
 }
 
 bool NativeScript::is_tool() const {
@@ -377,10 +402,7 @@ void NativeScript::get_script_property_list(List<PropertyInfo> *p_list) const {
 String NativeScript::get_class_documentation() const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get class documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get class documentation on invalid NativeScript.");
 
 	return script_data->documentation;
 }
@@ -388,10 +410,7 @@ String NativeScript::get_class_documentation() const {
 String NativeScript::get_method_documentation(const StringName &p_method) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get method documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get method documentation on invalid NativeScript.");
 
 	while (script_data) {
 
@@ -404,17 +423,13 @@ String NativeScript::get_method_documentation(const StringName &p_method) const 
 		script_data = script_data->base_data;
 	}
 
-	ERR_EXPLAIN("Attempt to get method documentation for non-existent method");
-	ERR_FAIL_V("");
+	ERR_FAIL_V_MSG("", "Attempt to get method documentation for non-existent method.");
 }
 
 String NativeScript::get_signal_documentation(const StringName &p_signal_name) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get signal documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get signal documentation on invalid NativeScript.");
 
 	while (script_data) {
 
@@ -427,17 +442,13 @@ String NativeScript::get_signal_documentation(const StringName &p_signal_name) c
 		script_data = script_data->base_data;
 	}
 
-	ERR_EXPLAIN("Attempt to get signal documentation for non-existent signal");
-	ERR_FAIL_V("");
+	ERR_FAIL_V_MSG("", "Attempt to get signal documentation for non-existent signal.");
 }
 
 String NativeScript::get_property_documentation(const StringName &p_path) const {
 	NativeScriptDesc *script_data = get_script_desc();
 
-	if (!script_data) {
-		ERR_EXPLAIN("Attempt to get property documentation on invalid NativeScript");
-		ERR_FAIL_V("");
-	}
+	ERR_FAIL_COND_V_MSG(!script_data, "", "Attempt to get property documentation on invalid NativeScript.");
 
 	while (script_data) {
 
@@ -450,8 +461,7 @@ String NativeScript::get_property_documentation(const StringName &p_path) const 
 		script_data = script_data->base_data;
 	}
 
-	ERR_EXPLAIN("Attempt to get property documentation for non-existent signal");
-	ERR_FAIL_V("");
+	ERR_FAIL_V_MSG("", "Attempt to get property documentation for non-existent signal.");
 }
 
 Variant NativeScript::_new(const Variant **p_args, int p_argcount, Variant::CallError &r_error) {
@@ -630,10 +640,7 @@ void NativeScriptInstance::get_property_list(List<PropertyInfo> *p_properties) c
 			Variant res = *(Variant *)&result;
 			godot_variant_destroy(&result);
 
-			if (res.get_type() != Variant::ARRAY) {
-				ERR_EXPLAIN("_get_property_list must return an array of dictionaries");
-				ERR_FAIL();
-			}
+			ERR_FAIL_COND_MSG(res.get_type() != Variant::ARRAY, "_get_property_list must return an array of dictionaries.");
 
 			Array arr = res;
 			for (int i = 0; i < arr.size(); i++) {
@@ -747,6 +754,26 @@ void NativeScriptInstance::notification(int p_notification) {
 	call_multilevel("_notification", args, 1);
 }
 
+String NativeScriptInstance::to_string(bool *r_valid) {
+	if (has_method(CoreStringNames::get_singleton()->_to_string)) {
+		Variant::CallError ce;
+		Variant ret = call(CoreStringNames::get_singleton()->_to_string, NULL, 0, ce);
+		if (ce.error == Variant::CallError::CALL_OK) {
+			if (ret.get_type() != Variant::STRING) {
+				if (r_valid)
+					*r_valid = false;
+				ERR_FAIL_V_MSG(String(), "Wrong type for " + CoreStringNames::get_singleton()->_to_string + ", must be a String.");
+			}
+			if (r_valid)
+				*r_valid = true;
+			return ret.operator String();
+		}
+	}
+	if (r_valid)
+		*r_valid = false;
+	return String();
+}
+
 void NativeScriptInstance::refcount_incremented() {
 	Variant::CallError err;
 	call("_refcount_incremented", NULL, 0, err);
@@ -786,18 +813,16 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rpc_mode(const StringName &p_m
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
 					return MultiplayerAPI::RPC_MODE_REMOTE;
-				case GODOT_METHOD_RPC_MODE_SYNC:
-					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
 					return MultiplayerAPI::RPC_MODE_MASTER;
-				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_PUPPET:
+					return MultiplayerAPI::RPC_MODE_PUPPET;
 				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
 					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
 				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
 					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
-				case GODOT_METHOD_RPC_MODE_SLAVESYNC:
-					return MultiplayerAPI::RPC_MODE_SLAVESYNC;
+				case GODOT_METHOD_RPC_MODE_PUPPETSYNC:
+					return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
 				default:
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}
@@ -822,12 +847,16 @@ MultiplayerAPI::RPCMode NativeScriptInstance::get_rset_mode(const StringName &p_
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 				case GODOT_METHOD_RPC_MODE_REMOTE:
 					return MultiplayerAPI::RPC_MODE_REMOTE;
-				case GODOT_METHOD_RPC_MODE_SYNC:
-					return MultiplayerAPI::RPC_MODE_SYNC;
 				case GODOT_METHOD_RPC_MODE_MASTER:
 					return MultiplayerAPI::RPC_MODE_MASTER;
-				case GODOT_METHOD_RPC_MODE_SLAVE:
-					return MultiplayerAPI::RPC_MODE_SLAVE;
+				case GODOT_METHOD_RPC_MODE_PUPPET:
+					return MultiplayerAPI::RPC_MODE_PUPPET;
+				case GODOT_METHOD_RPC_MODE_REMOTESYNC:
+					return MultiplayerAPI::RPC_MODE_REMOTESYNC;
+				case GODOT_METHOD_RPC_MODE_MASTERSYNC:
+					return MultiplayerAPI::RPC_MODE_MASTERSYNC;
+				case GODOT_METHOD_RPC_MODE_PUPPETSYNC:
+					return MultiplayerAPI::RPC_MODE_PUPPETSYNC;
 				default:
 					return MultiplayerAPI::RPC_MODE_DISABLED;
 			}
@@ -986,14 +1015,36 @@ NativeScriptLanguage::NativeScriptLanguage() {
 	has_objects_to_register = false;
 	mutex = Mutex::create();
 #endif
+
+#ifdef DEBUG_ENABLED
+	profiling = false;
+#endif
+
+	_init_call_type = "nativescript_init";
+	_init_call_name = "nativescript_init";
+	_terminate_call_name = "nativescript_terminate";
+	_noarg_call_type = "nativescript_no_arg";
+	_frame_call_name = "nativescript_frame";
+#ifndef NO_THREADS
+	_thread_enter_call_name = "nativescript_thread_enter";
+	_thread_exit_call_name = "nativescript_thread_exit";
+#endif
 }
 
 NativeScriptLanguage::~NativeScriptLanguage() {
 
 	for (Map<String, Ref<GDNative> >::Element *L = NSL->library_gdnatives.front(); L; L = L->next()) {
 
-		if (L->get().is_valid())
-			L->get()->terminate();
+		Ref<GDNative> lib = L->get();
+		// only shut down valid libs, duh!
+		if (lib.is_valid()) {
+
+			// If it's a singleton-library then the gdnative module
+			// manages the destruction at engine shutdown, not NativeScript.
+			if (!lib->get_library()->is_singleton()) {
+				lib->terminate();
+			}
+		}
 	}
 
 	NSL->library_classes.clear();
@@ -1060,7 +1111,7 @@ Ref<Script> NativeScriptLanguage::get_template(const String &p_class_name, const
 	s->set_class_name(p_class_name);
 	return Ref<NativeScript>(s);
 }
-bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, Set<int> *r_safe_lines) const {
+bool NativeScriptLanguage::validate(const String &p_script, int &r_line_error, int &r_col_error, String &r_test_error, const String &p_path, List<String> *r_functions, List<ScriptLanguage::Warning> *r_warnings, Set<int> *r_safe_lines) const {
 	return true;
 }
 
@@ -1128,17 +1179,105 @@ void NativeScriptLanguage::get_public_constants(List<Pair<String, Variant> > *p_
 }
 
 void NativeScriptLanguage::profiling_start() {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+
+	profile_data.clear();
+	profiling = true;
+#endif
 }
 
 void NativeScriptLanguage::profiling_stop() {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+
+	profiling = false;
+#endif
 }
 
 int NativeScriptLanguage::profiling_get_accumulated_data(ProfilingInfo *p_info_arr, int p_info_max) {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+	int current = 0;
+
+	for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+		if (current >= p_info_max)
+			break;
+
+		p_info_arr[current].call_count = d->get().call_count;
+		p_info_arr[current].self_time = d->get().self_time;
+		p_info_arr[current].total_time = d->get().total_time;
+		p_info_arr[current].signature = d->get().signature;
+		current++;
+	}
+
+	return current;
+#else
 	return 0;
+#endif
 }
 
 int NativeScriptLanguage::profiling_get_frame_data(ProfilingInfo *p_info_arr, int p_info_max) {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+	int current = 0;
+
+	for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+		if (current >= p_info_max)
+			break;
+
+		if (d->get().last_frame_call_count) {
+			p_info_arr[current].call_count = d->get().last_frame_call_count;
+			p_info_arr[current].self_time = d->get().last_frame_self_time;
+			p_info_arr[current].total_time = d->get().last_frame_total_time;
+			p_info_arr[current].signature = d->get().signature;
+			current++;
+		}
+	}
+
+	return current;
+#else
 	return 0;
+#endif
+}
+
+void NativeScriptLanguage::profiling_add_data(StringName p_signature, uint64_t p_time) {
+#ifdef DEBUG_ENABLED
+#ifndef NO_THREADS
+	MutexLock lock(mutex);
+#endif
+
+	Map<StringName, ProfileData>::Element *d = profile_data.find(p_signature);
+	if (d) {
+		d->get().call_count += 1;
+		d->get().total_time += p_time;
+		d->get().frame_call_count += 1;
+		d->get().frame_total_time += p_time;
+	} else {
+		ProfileData data;
+
+		data.signature = p_signature;
+		data.call_count = 1;
+		data.self_time = 0;
+		data.total_time = p_time;
+		data.frame_call_count = 1;
+		data.frame_self_time = 0;
+		data.frame_total_time = p_time;
+		data.last_frame_call_count = 0;
+		data.last_frame_self_time = 0;
+		data.last_frame_total_time = 0;
+
+		profile_data.insert(p_signature, data);
+	}
+#endif
 }
 
 int NativeScriptLanguage::register_binding_functions(godot_instance_binding_functions p_binding_functions) {
@@ -1173,7 +1312,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 	for (Set<Vector<void *> *>::Element *E = binding_instances.front(); E; E = E->next()) {
 		Vector<void *> &binding_data = *E->get();
 
-		if (binding_data[p_idx] && binding_functions[p_idx].second.free_instance_binding_data)
+		if (p_idx < binding_data.size() && binding_data[p_idx] && binding_functions[p_idx].second.free_instance_binding_data)
 			binding_functions[p_idx].second.free_instance_binding_data(binding_functions[p_idx].second.data, binding_data[p_idx]);
 	}
 
@@ -1186,10 +1325,7 @@ void NativeScriptLanguage::unregister_binding_functions(int p_idx) {
 void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_object) {
 	ERR_FAIL_INDEX_V(p_idx, binding_functions.size(), NULL);
 
-	if (!binding_functions[p_idx].first) {
-		ERR_EXPLAIN("Tried to get binding data for a nativescript binding that does not exist");
-		ERR_FAIL_V(NULL);
-	}
+	ERR_FAIL_COND_V_MSG(!binding_functions[p_idx].first, NULL, "Tried to get binding data for a nativescript binding that does not exist.");
 
 	Vector<void *> *binding_data = (Vector<void *> *)p_object->get_script_instance_binding(lang_idx);
 
@@ -1209,7 +1345,7 @@ void *NativeScriptLanguage::get_instance_binding_data(int p_idx, Object *p_objec
 
 	if (!(*binding_data)[p_idx]) {
 
-		const void *global_type_tag = global_type_tags[p_idx].get(p_object->get_class_name());
+		const void *global_type_tag = get_global_type_tag(p_idx, p_object->get_class_name());
 
 		// no binding data yet, soooooo alloc new one \o/
 		(*binding_data).write[p_idx] = binding_functions[p_idx].second.alloc_instance_binding_data(binding_functions[p_idx].second.data, global_type_tag, (godot_object *)p_object);
@@ -1254,6 +1390,54 @@ void NativeScriptLanguage::free_instance_binding_data(void *p_data) {
 	delete &binding_data;
 }
 
+void NativeScriptLanguage::refcount_incremented_instance_binding(Object *p_object) {
+
+	void *data = p_object->get_script_instance_binding(lang_idx);
+
+	if (!data)
+		return;
+
+	Vector<void *> &binding_data = *(Vector<void *> *)data;
+
+	for (int i = 0; i < binding_data.size(); i++) {
+		if (!binding_data[i])
+			continue;
+
+		if (!binding_functions[i].first)
+			continue;
+
+		if (binding_functions[i].second.refcount_incremented_instance_binding) {
+			binding_functions[i].second.refcount_incremented_instance_binding(binding_data[i], p_object);
+		}
+	}
+}
+
+bool NativeScriptLanguage::refcount_decremented_instance_binding(Object *p_object) {
+
+	void *data = p_object->get_script_instance_binding(lang_idx);
+
+	if (!data)
+		return true;
+
+	Vector<void *> &binding_data = *(Vector<void *> *)data;
+
+	bool can_die = true;
+
+	for (int i = 0; i < binding_data.size(); i++) {
+		if (!binding_data[i])
+			continue;
+
+		if (!binding_functions[i].first)
+			continue;
+
+		if (binding_functions[i].second.refcount_decremented_instance_binding) {
+			can_die = can_die && binding_functions[i].second.refcount_decremented_instance_binding(binding_data[i], p_object);
+		}
+	}
+
+	return can_die;
+}
+
 void NativeScriptLanguage::set_global_type_tag(int p_idx, StringName p_class_name, const void *p_type_tag) {
 	if (!global_type_tags.has(p_idx)) {
 		global_type_tags.insert(p_idx, HashMap<StringName, const void *>());
@@ -1269,6 +1453,9 @@ const void *NativeScriptLanguage::get_global_type_tag(int p_idx, StringName p_cl
 		return NULL;
 
 	const HashMap<StringName, const void *> &tags = global_type_tags[p_idx];
+
+	if (!tags.has(p_class_name))
+		return NULL;
 
 	const void *tag = tags.get(p_class_name);
 
@@ -1290,8 +1477,7 @@ void NativeScriptLanguage::init_library(const Ref<GDNativeLibrary> &lib) {
 #endif
 	// See if this library was "registered" already.
 	const String &lib_path = lib->get_current_library_path();
-	ERR_EXPLAIN(lib->get_name() + " does not have a library for the current platform");
-	ERR_FAIL_COND(lib_path.length() == 0);
+	ERR_FAIL_COND_MSG(lib_path.length() == 0, lib->get_name() + " does not have a library for the current platform.");
 	Map<String, Ref<GDNative> >::Element *E = library_gdnatives.find(lib_path);
 
 	if (!E) {
@@ -1381,6 +1567,24 @@ void NativeScriptLanguage::frame() {
 		has_objects_to_register = false;
 	}
 #endif
+
+#ifdef DEBUG_ENABLED
+	{
+#ifndef NO_THREADS
+		MutexLock lock(mutex);
+#endif
+
+		for (Map<StringName, ProfileData>::Element *d = profile_data.front(); d; d = d->next()) {
+			d->get().last_frame_call_count = d->get().frame_call_count;
+			d->get().last_frame_self_time = d->get().frame_self_time;
+			d->get().last_frame_total_time = d->get().frame_total_time;
+			d->get().frame_call_count = 0;
+			d->get().frame_self_time = 0;
+			d->get().frame_total_time = 0;
+		}
+	}
+#endif
+
 	call_libraries_cb(_frame_call_name);
 }
 
@@ -1395,6 +1599,28 @@ void NativeScriptLanguage::thread_exit() {
 }
 
 #endif // NO_THREADS
+
+bool NativeScriptLanguage::handles_global_class_type(const String &p_type) const {
+	return p_type == "NativeScript";
+}
+
+String NativeScriptLanguage::get_global_class_name(const String &p_path, String *r_base_type, String *r_icon_path) const {
+	if (!p_path.empty()) {
+		Ref<NativeScript> script = ResourceLoader::load(p_path, "NativeScript");
+		if (script.is_valid()) {
+			if (r_base_type)
+				*r_base_type = script->get_instance_base_type();
+			if (r_icon_path)
+				*r_icon_path = script->get_script_class_icon_path();
+			return script->get_script_class_name();
+		}
+		if (r_base_type)
+			*r_base_type = String();
+		if (r_icon_path)
+			*r_icon_path = String();
+	}
+	return String();
+}
 
 void NativeReloadNode::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("_notification"), &NativeReloadNode::_notification);
@@ -1421,7 +1647,16 @@ void NativeReloadNode::_notification(int p_what) {
 					continue;
 				}
 
+				// Don't unload what should not be reloaded!
 				if (!gdn->get_library()->is_reloadable()) {
+					continue;
+				}
+
+				// singleton libraries might have alive pointers living inside the
+				// editor. Also reloading a singleton library would mean that
+				// the singleton entry will not be called again, as this only
+				// happens at engine startup.
+				if (gdn->get_library()->is_singleton()) {
 					continue;
 				}
 
@@ -1449,6 +1684,12 @@ void NativeReloadNode::_notification(int p_what) {
 				}
 
 				if (!gdn->get_library()->is_reloadable()) {
+					continue;
+				}
+
+				// since singleton libraries are not unloaded there is no point
+				// in loading them again.
+				if (gdn->get_library()->is_singleton()) {
 					continue;
 				}
 
@@ -1497,8 +1738,7 @@ void NativeReloadNode::_notification(int p_what) {
 }
 
 RES ResourceFormatLoaderNativeScript::load(const String &p_path, const String &p_original_path, Error *r_error) {
-	ResourceFormatLoaderText rsflt;
-	return rsflt.load(p_path, p_original_path, r_error);
+	return ResourceFormatLoaderText::singleton->load(p_path, p_original_path, r_error);
 }
 
 void ResourceFormatLoaderNativeScript::get_recognized_extensions(List<String> *p_extensions) const {

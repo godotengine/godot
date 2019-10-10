@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -30,8 +30,8 @@
 
 #include "midi_driver.h"
 
+#include "core/os/os.h"
 #include "main/input_default.h"
-#include "os/os.h"
 
 MIDIDriver *MIDIDriver::singleton = NULL;
 MIDIDriver *MIDIDriver::get_singleton() {
@@ -75,6 +75,11 @@ void MIDIDriver::receive_input_packet(uint64_t timestamp, uint8_t *data, uint32_
 			if (length >= 3) {
 				event->set_pitch(data[1]);
 				event->set_velocity(data[2]);
+
+				if (event->get_message() == MIDI_MESSAGE_NOTE_ON && event->get_velocity() == 0) {
+					// https://www.midi.org/forum/228-writing-midi-software-send-note-off,-or-zero-velocity-note-on
+					event->set_message(MIDI_MESSAGE_NOTE_OFF);
+				}
 			}
 			break;
 

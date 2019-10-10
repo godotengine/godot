@@ -1,12 +1,12 @@
 /*************************************************************************/
-/*  mobile_interface.cpp                                                 */
+/*  mobile_vr_interface.cpp                                              */
 /*************************************************************************/
 /*                       This file is part of:                           */
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,7 +31,7 @@
 #include "mobile_vr_interface.h"
 #include "core/os/input.h"
 #include "core/os/os.h"
-#include "servers/visual/visual_server_global.h"
+#include "servers/visual/visual_server_globals.h"
 
 StringName MobileVRInterface::get_name() const {
 	return "Native mobile";
@@ -200,6 +200,9 @@ void MobileVRInterface::set_position_from_sensors() {
 };
 
 void MobileVRInterface::_bind_methods() {
+	ClassDB::bind_method(D_METHOD("set_eye_height", "eye_height"), &MobileVRInterface::set_eye_height);
+	ClassDB::bind_method(D_METHOD("get_eye_height"), &MobileVRInterface::get_eye_height);
+
 	ClassDB::bind_method(D_METHOD("set_iod", "iod"), &MobileVRInterface::set_iod);
 	ClassDB::bind_method(D_METHOD("get_iod"), &MobileVRInterface::get_iod);
 
@@ -218,12 +221,21 @@ void MobileVRInterface::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_k2", "k"), &MobileVRInterface::set_k2);
 	ClassDB::bind_method(D_METHOD("get_k2"), &MobileVRInterface::get_k2);
 
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "eye_height", PROPERTY_HINT_RANGE, "0.0,3.0,0.1"), "set_eye_height", "get_eye_height");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "iod", PROPERTY_HINT_RANGE, "4.0,10.0,0.1"), "set_iod", "get_iod");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "display_width", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_width", "get_display_width");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "display_to_lens", PROPERTY_HINT_RANGE, "5.0,25.0,0.1"), "set_display_to_lens", "get_display_to_lens");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "oversample", PROPERTY_HINT_RANGE, "1.0,2.0,0.1"), "set_oversample", "get_oversample");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "k1", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k1", "get_k1");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "k2", PROPERTY_HINT_RANGE, "0.1,10.0,0.0001"), "set_k2", "get_k2");
+}
+
+void MobileVRInterface::set_eye_height(const real_t p_eye_height) {
+	eye_height = p_eye_height;
+}
+
+real_t MobileVRInterface::get_eye_height() const {
+	return eye_height;
 }
 
 void MobileVRInterface::set_iod(const real_t p_iod) {
@@ -304,7 +316,7 @@ bool MobileVRInterface::initialize() {
 		arvr_server->set_primary_interface(this);
 
 		last_ticks = OS::get_singleton()->get_ticks_usec();
-		;
+
 		initialized = true;
 	};
 
@@ -328,6 +340,7 @@ Size2 MobileVRInterface::get_render_targetsize() {
 
 	// we use half our window size
 	Size2 target_size = OS::get_singleton()->get_window_size();
+
 	target_size.x *= 0.5 * oversample;
 	target_size.y *= oversample;
 
@@ -397,40 +410,26 @@ void MobileVRInterface::commit_for_eye(ARVRInterface::Eyes p_eye, RID p_render_t
 	// Because we are rendering to our device we must use our main viewport!
 	ERR_FAIL_COND(p_screen_rect == Rect2());
 
-	float offset_x = 0.0;
-	float aspect_ratio = 0.5 * p_screen_rect.size.x / p_screen_rect.size.y;
+	Rect2 dest = p_screen_rect;
 	Vector2 eye_center;
 
+	// we output half a screen
+	dest.size.x *= 0.5;
+
 	if (p_eye == ARVRInterface::EYE_LEFT) {
-		offset_x = -1.0;
 		eye_center.x = ((-intraocular_dist / 2.0) + (display_width / 4.0)) / (display_width / 2.0);
 	} else if (p_eye == ARVRInterface::EYE_RIGHT) {
+		dest.position.x = dest.size.x;
 		eye_center.x = ((intraocular_dist / 2.0) - (display_width / 4.0)) / (display_width / 2.0);
 	}
+	// we don't offset the eye center vertically (yet)
+	eye_center.y = 0.0;
 
 	// unset our render target so we are outputting to our main screen by making RasterizerStorageGLES3::system_fbo our current FBO
 	VSG::rasterizer->set_current_render_target(RID());
 
-	// now output to screen
-	//	VSG::rasterizer->blit_render_target_to_screen(p_render_target, screen_rect, 0);
-
-	// get our render target
-	RID eye_texture = VSG::storage->render_target_get_texture(p_render_target);
-	uint32_t texid = VS::get_singleton()->texture_get_texid(eye_texture);
-	glActiveTexture(GL_TEXTURE0);
-	glBindTexture(GL_TEXTURE_2D, texid);
-
-	lens_shader.bind();
-	lens_shader.set_uniform(LensDistortedShaderGLES3::OFFSET_X, offset_x);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::K1, k1);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::K2, k2);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::EYE_CENTER, eye_center);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::UPSCALE, oversample);
-	lens_shader.set_uniform(LensDistortedShaderGLES3::ASPECT_RATIO, aspect_ratio);
-
-	glBindVertexArray(half_screen_array);
-	glDrawArrays(GL_TRIANGLE_FAN, 0, 4);
-	glBindVertexArray(0);
+	// and output
+	VSG::rasterizer->output_lens_distorted_to_screen(p_render_target, dest, k1, k2, eye_center, oversample);
 };
 
 void MobileVRInterface::process() {
@@ -440,6 +439,12 @@ void MobileVRInterface::process() {
 		set_position_from_sensors();
 	};
 };
+
+void MobileVRInterface::notification(int p_what){
+	_THREAD_SAFE_METHOD_
+
+	// nothing to do here, I guess we could pauze our sensors...
+}
 
 MobileVRInterface::MobileVRInterface() {
 	initialized = false;
@@ -453,42 +458,6 @@ MobileVRInterface::MobileVRInterface() {
 	k1 = 0.215;
 	k2 = 0.215;
 	last_ticks = 0;
-
-	// create our shader stuff
-	lens_shader.init();
-
-	{
-		glGenBuffers(1, &half_screen_quad);
-		glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
-		{
-			/* clang-format off */
-			const float qv[16] = {
-				0, -1,
-				-1, -1,
-				0, 1,
-				-1, 1,
-				1, 1,
-				1, 1,
-				1, -1,
-				1, -1,
-			};
-			/* clang-format on */
-
-			glBufferData(GL_ARRAY_BUFFER, sizeof(float) * 16, qv, GL_STATIC_DRAW);
-		}
-
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
-
-		glGenVertexArrays(1, &half_screen_array);
-		glBindVertexArray(half_screen_array);
-		glBindBuffer(GL_ARRAY_BUFFER, half_screen_quad);
-		glVertexAttribPointer(VS::ARRAY_VERTEX, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, 0);
-		glEnableVertexAttribArray(0);
-		glVertexAttribPointer(VS::ARRAY_TEX_UV, 2, GL_FLOAT, GL_FALSE, sizeof(float) * 4, ((uint8_t *)NULL) + 8);
-		glEnableVertexAttribArray(4);
-		glBindVertexArray(0);
-		glBindBuffer(GL_ARRAY_BUFFER, 0); //unbind
-	}
 };
 
 MobileVRInterface::~MobileVRInterface() {

@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -69,7 +69,7 @@ struct ThreadLocalStorage::Impl {
 #define _CALLBACK_FUNC_
 #endif
 
-	Impl(void (_CALLBACK_FUNC_ *p_destr_callback_func)(void *)) {
+	Impl(void(_CALLBACK_FUNC_ *p_destr_callback_func)(void *)) {
 #ifdef WINDOWS_ENABLED
 		dwFlsIndex = FlsAlloc(p_destr_callback_func);
 		ERR_FAIL_COND(dwFlsIndex == FLS_OUT_OF_INDEXES);
@@ -95,7 +95,7 @@ void ThreadLocalStorage::set_value(void *p_value) const {
 	pimpl->set_value(p_value);
 }
 
-void ThreadLocalStorage::alloc(void (_CALLBACK_FUNC_ *p_destr_callback)(void *)) {
+void ThreadLocalStorage::alloc(void(_CALLBACK_FUNC_ *p_destr_callback)(void *)) {
 	pimpl = memnew(ThreadLocalStorage::Impl(p_destr_callback));
 }
 

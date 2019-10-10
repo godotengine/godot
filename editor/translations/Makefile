@@ -7,7 +7,7 @@ LANGS = $(POFILES:%.po=%)
 all: update merge
 
 update:
-	@cd ../..; python2 editor/translations/extract.py
+	@cd ../..; python3 editor/translations/extract.py
 
 merge:
 	@for po in $(POFILES); do \

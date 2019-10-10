@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -37,37 +37,11 @@
 #include "scene/resources/default_theme/default_theme.h"
 #include "scene/resources/dynamic_font.h"
 
-static Ref<BitmapFont> make_font(int p_height, int p_ascent, int p_valign, int p_charcount, const int *p_chars, const Ref<Texture> &p_texture) {
-
-	Ref<BitmapFont> font(memnew(BitmapFont));
-	font->add_texture(p_texture);
-
-	for (int i = 0; i < p_charcount; i++) {
-
-		const int *c = &p_chars[i * 8];
-
-		int chr = c[0];
-		Rect2 frect;
-		frect.position.x = c[1];
-		frect.position.y = c[2];
-		frect.size.x = c[3];
-		frect.size.y = c[4];
-		Point2 align(c[5], c[6] + p_valign);
-		int advance = c[7];
-
-		font->add_char(chr, 0, frect, align, advance);
-	}
-
-	font->set_height(p_height);
-	font->set_ascent(p_ascent);
-
-	return font;
-}
-
 #define MAKE_FALLBACKS(m_name)          \
 	m_name->add_fallback(FontArabic);   \
 	m_name->add_fallback(FontHebrew);   \
 	m_name->add_fallback(FontThai);     \
+	m_name->add_fallback(FontHindi);    \
 	m_name->add_fallback(FontJapanese); \
 	m_name->add_fallback(FontFallback);
 
@@ -119,12 +93,38 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	/* Custom font */
 
-	DynamicFontData::Hinting font_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/main_font_hinting");
+	bool font_antialiased = (bool)EditorSettings::get_singleton()->get("interface/editor/font_antialiased");
+	int font_hinting_setting = (int)EditorSettings::get_singleton()->get("interface/editor/font_hinting");
+
+	DynamicFontData::Hinting font_hinting;
+	switch (font_hinting_setting) {
+		case 0:
+			// The "Auto" setting uses the setting that best matches the OS' font rendering:
+			// - macOS doesn't use font hinting.
+			// - Windows uses ClearType, which is in between "Light" and "Normal" hinting.
+			// - Linux has configurable font hinting, but most distributions including Ubuntu default to "Light".
+#ifdef OSX_ENABLED
+			font_hinting = DynamicFontData::HINTING_NONE;
+#else
+			font_hinting = DynamicFontData::HINTING_LIGHT;
+#endif
+			break;
+		case 1:
+			font_hinting = DynamicFontData::HINTING_NONE;
+			break;
+		case 2:
+			font_hinting = DynamicFontData::HINTING_LIGHT;
+			break;
+		default:
+			font_hinting = DynamicFontData::HINTING_NORMAL;
+			break;
+	}
 
 	String custom_font_path = EditorSettings::get_singleton()->get("interface/editor/main_font");
 	Ref<DynamicFontData> CustomFont;
 	if (custom_font_path.length() > 0 && dir->file_exists(custom_font_path)) {
 		CustomFont.instance();
+		CustomFont->set_antialiased(font_antialiased);
 		CustomFont->set_hinting(font_hinting);
 		CustomFont->set_font_path(custom_font_path);
 		CustomFont->set_force_autohinter(true); //just looks better..i think?
@@ -138,6 +138,7 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	Ref<DynamicFontData> CustomFontBold;
 	if (custom_font_path_bold.length() > 0 && dir->file_exists(custom_font_path_bold)) {
 		CustomFontBold.instance();
+		CustomFontBold->set_antialiased(font_antialiased);
 		CustomFontBold->set_hinting(font_hinting);
 		CustomFontBold->set_font_path(custom_font_path_bold);
 		CustomFontBold->set_force_autohinter(true); //just looks better..i think?
@@ -148,11 +149,11 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	/* Custom source code font */
 
 	String custom_font_path_source = EditorSettings::get_singleton()->get("interface/editor/code_font");
-	DynamicFontData::Hinting font_source_hinting = (DynamicFontData::Hinting)(int)EditorSettings::get_singleton()->get("interface/editor/code_font_hinting");
 	Ref<DynamicFontData> CustomFontSource;
 	if (custom_font_path_source.length() > 0 && dir->file_exists(custom_font_path_source)) {
 		CustomFontSource.instance();
-		CustomFontSource->set_hinting(font_source_hinting);
+		CustomFontSource->set_antialiased(font_antialiased);
+		CustomFontSource->set_hinting(font_hinting);
 		CustomFontSource->set_font_path(custom_font_path_source);
 	} else {
 		EditorSettings::get_singleton()->set_manually("interface/editor/code_font", "");
@@ -164,59 +165,74 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 
 	Ref<DynamicFontData> DefaultFont;
 	DefaultFont.instance();
+	DefaultFont->set_antialiased(font_antialiased);
 	DefaultFont->set_hinting(font_hinting);
 	DefaultFont->set_font_ptr(_font_NotoSansUI_Regular, _font_NotoSansUI_Regular_size);
 	DefaultFont->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> DefaultFontBold;
 	DefaultFontBold.instance();
-	DefaultFont->set_hinting(font_hinting);
+	DefaultFontBold->set_antialiased(font_antialiased);
+	DefaultFontBold->set_hinting(font_hinting);
 	DefaultFontBold->set_font_ptr(_font_NotoSansUI_Bold, _font_NotoSansUI_Bold_size);
 	DefaultFontBold->set_force_autohinter(true); // just looks better..i think?
 
 	Ref<DynamicFontData> FontFallback;
 	FontFallback.instance();
+	FontFallback->set_antialiased(font_antialiased);
 	FontFallback->set_hinting(font_hinting);
 	FontFallback->set_font_ptr(_font_DroidSansFallback, _font_DroidSansFallback_size);
 	FontFallback->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontJapanese;
 	FontJapanese.instance();
+	FontJapanese->set_antialiased(font_antialiased);
 	FontJapanese->set_hinting(font_hinting);
 	FontJapanese->set_font_ptr(_font_DroidSansJapanese, _font_DroidSansJapanese_size);
 	FontJapanese->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontArabic;
 	FontArabic.instance();
+	FontArabic->set_antialiased(font_antialiased);
 	FontArabic->set_hinting(font_hinting);
 	FontArabic->set_font_ptr(_font_NotoNaskhArabicUI_Regular, _font_NotoNaskhArabicUI_Regular_size);
 	FontArabic->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontHebrew;
 	FontHebrew.instance();
+	FontHebrew->set_antialiased(font_antialiased);
 	FontHebrew->set_hinting(font_hinting);
 	FontHebrew->set_font_ptr(_font_NotoSansHebrew_Regular, _font_NotoSansHebrew_Regular_size);
 	FontHebrew->set_force_autohinter(true); //just looks better..i think?
 
 	Ref<DynamicFontData> FontThai;
 	FontThai.instance();
+	FontThai->set_antialiased(font_antialiased);
 	FontThai->set_hinting(font_hinting);
 	FontThai->set_font_ptr(_font_NotoSansThaiUI_Regular, _font_NotoSansThaiUI_Regular_size);
 	FontThai->set_force_autohinter(true); //just looks better..i think?
+
+	Ref<DynamicFontData> FontHindi;
+	FontHindi.instance();
+	FontHindi->set_antialiased(font_antialiased);
+	FontHindi->set_hinting(font_hinting);
+	FontHindi->set_font_ptr(_font_NotoSansDevanagariUI_Regular, _font_NotoSansDevanagariUI_Regular_size);
+	FontHindi->set_force_autohinter(true); //just looks better..i think?
 
 	/* Hack */
 
 	Ref<DynamicFontData> dfmono;
 	dfmono.instance();
-	dfmono->set_hinting(font_source_hinting);
+	dfmono->set_antialiased(font_antialiased);
+	dfmono->set_hinting(font_hinting);
 	dfmono->set_font_ptr(_font_Hack_Regular, _font_Hack_Regular_size);
-	//dfd->set_force_autohinter(true); //just looks better..i think?
 
-	int default_font_size = int(EditorSettings::get_singleton()->get("interface/editor/main_font_size")) * EDSCALE;
+	int default_font_size = int(EDITOR_GET("interface/editor/main_font_size")) * EDSCALE;
 
 	// Default font
 	MAKE_DEFAULT_FONT(df, default_font_size);
 	p_theme->set_default_theme_font(df);
+	p_theme->set_font("main", "EditorFonts", df);
 
 	// Bold font
 	MAKE_BOLD_FONT(df_bold, default_font_size);
@@ -226,15 +242,14 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	MAKE_BOLD_FONT(df_title, default_font_size + 2 * EDSCALE);
 	p_theme->set_font("title", "EditorFonts", df_title);
 
-	// Doc font
-	MAKE_BOLD_FONT(df_doc_title, int(EDITOR_DEF("text_editor/help/help_title_font_size", 23)) * EDSCALE);
-
-	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_DEF("text_editor/help/help_font_size", 15)) * EDSCALE);
-
+	// Documentation fonts
+	MAKE_DEFAULT_FONT(df_doc, int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	MAKE_BOLD_FONT(df_doc_bold, int(EDITOR_GET("text_editor/help/help_font_size")) * EDSCALE);
+	MAKE_BOLD_FONT(df_doc_title, int(EDITOR_GET("text_editor/help/help_title_font_size")) * EDSCALE);
+	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_GET("text_editor/help/help_source_font_size")) * EDSCALE);
 	p_theme->set_font("doc", "EditorFonts", df_doc);
+	p_theme->set_font("doc_bold", "EditorFonts", df_doc_bold);
 	p_theme->set_font("doc_title", "EditorFonts", df_doc_title);
-
-	MAKE_SOURCE_FONT(df_doc_code, int(EDITOR_DEF("text_editor/help/help_source_font_size", 14)) * EDSCALE);
 	p_theme->set_font("doc_source", "EditorFonts", df_doc_code);
 
 	// Ruler font
@@ -242,12 +257,15 @@ void editor_register_fonts(Ref<Theme> p_theme) {
 	p_theme->set_font("rulers", "EditorFonts", df_rulers);
 
 	// Code font
-	MAKE_SOURCE_FONT(df_code, int(EditorSettings::get_singleton()->get("interface/editor/code_font_size")) * EDSCALE);
+	MAKE_SOURCE_FONT(df_code, int(EDITOR_GET("interface/editor/code_font_size")) * EDSCALE);
 	p_theme->set_font("source", "EditorFonts", df_code);
 
-	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_DEF("run/output/font_size", 13)) * EDSCALE);
+	MAKE_SOURCE_FONT(df_expression, (int(EDITOR_GET("interface/editor/code_font_size")) - 1) * EDSCALE);
+	p_theme->set_font("expression", "EditorFonts", df_expression);
+
+	MAKE_SOURCE_FONT(df_output_code, int(EDITOR_GET("run/output/font_size")) * EDSCALE);
 	p_theme->set_font("output_source", "EditorFonts", df_output_code);
 
-	MAKE_SOURCE_FONT(df_text_editor_status_code, 14 * EDSCALE);
+	MAKE_SOURCE_FONT(df_text_editor_status_code, default_font_size);
 	p_theme->set_font("status_source", "EditorFonts", df_text_editor_status_code);
 }

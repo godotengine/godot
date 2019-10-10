@@ -1,19 +1,19 @@
-/***************************************************************************/
-/*                                                                         */
-/*  afwarp.h                                                               */
-/*                                                                         */
-/*    Auto-fitter warping algorithm (specification).                       */
-/*                                                                         */
-/*  Copyright 2006-2018 by                                                 */
-/*  David Turner, Robert Wilhelm, and Werner Lemberg.                      */
-/*                                                                         */
-/*  This file is part of the FreeType project, and may only be used,       */
-/*  modified, and distributed under the terms of the FreeType project      */
-/*  license, LICENSE.TXT.  By continuing to use, modify, or distribute     */
-/*  this file you indicate that you have read the license and              */
-/*  understand and accept it fully.                                        */
-/*                                                                         */
-/***************************************************************************/
+/****************************************************************************
+ *
+ * afwarp.h
+ *
+ *   Auto-fitter warping algorithm (specification).
+ *
+ * Copyright (C) 2006-2019 by
+ * David Turner, Robert Wilhelm, and Werner Lemberg.
+ *
+ * This file is part of the FreeType project, and may only be used,
+ * modified, and distributed under the terms of the FreeType project
+ * license, LICENSE.TXT.  By continuing to use, modify, or distribute
+ * this file you indicate that you have read the license and
+ * understand and accept it fully.
+ *
+ */
 
 
 #ifndef AFWARP_H_
@@ -47,12 +47,14 @@ FT_BEGIN_HEADER
   } AF_WarperRec, *AF_Warper;
 
 
+#ifdef AF_CONFIG_OPTION_USE_WARPER
   FT_LOCAL( void )
   af_warper_compute( AF_Warper      warper,
                      AF_GlyphHints  hints,
                      AF_Dimension   dim,
                      FT_Fixed      *a_scale,
-                     FT_Fixed      *a_delta );
+                     FT_Pos        *a_delta );
+#endif
 
 
 FT_END_HEADER

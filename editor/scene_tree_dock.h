@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -36,6 +36,7 @@
 #include "editor/editor_data.h"
 #include "editor/editor_sub_scene.h"
 #include "editor/groups_editor.h"
+#include "editor/quick_open.h"
 #include "editor/rename_dialog.h"
 #include "editor/reparent_dialog.h"
 #include "editor/script_create_dialog.h"
@@ -59,6 +60,7 @@ class SceneTreeDock : public VBoxContainer {
 
 		TOOL_NEW,
 		TOOL_INSTANCE,
+		TOOL_EXPAND_COLLAPSE,
 		TOOL_RENAME,
 		TOOL_BATCH_RENAME,
 		TOOL_REPLACE,
@@ -68,6 +70,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_MOVE_DOWN,
 		TOOL_DUPLICATE,
 		TOOL_REPARENT,
+		TOOL_REPARENT_TO_NEW_NODE,
 		TOOL_MAKE_ROOT,
 		TOOL_NEW_SCENE_FROM,
 		TOOL_MERGE_FROM_SCENE,
@@ -75,6 +78,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_ERASE,
 		TOOL_COPY_NODE_PATH,
 		TOOL_BUTTON_MAX,
+		TOOL_OPEN_DOCUMENTATION,
 		TOOL_SCENE_EDITABLE_CHILDREN,
 		TOOL_SCENE_USE_PLACEHOLDER,
 		TOOL_SCENE_MAKE_LOCAL,
@@ -86,6 +90,7 @@ class SceneTreeDock : public VBoxContainer {
 		TOOL_CREATE_2D_SCENE,
 		TOOL_CREATE_3D_SCENE,
 		TOOL_CREATE_USER_INTERFACE,
+		TOOL_CREATE_FAVORITE,
 
 	};
 
@@ -113,6 +118,7 @@ class SceneTreeDock : public VBoxContainer {
 
 	HBoxContainer *tool_hbc;
 	void _tool_selected(int p_tool, bool p_confirm_override = false);
+	void _node_collapsed(Object *p_obj);
 
 	EditorData *editor_data;
 	EditorSelection *editor_selection;
@@ -120,9 +126,11 @@ class SceneTreeDock : public VBoxContainer {
 	ScriptCreateDialog *script_create_dialog;
 	AcceptDialog *accept;
 	ConfirmationDialog *delete_dialog;
+	ConfirmationDialog *editable_instance_remove_dialog;
+	ConfirmationDialog *placeholder_editable_instance_remove_dialog;
 
 	ReparentDialog *reparent_dialog;
-	EditorFileDialog *file;
+	EditorQuickOpen *quick_open;
 	EditorSubScene *import_subscene_dialog;
 	EditorFileDialog *new_scene_from_dialog;
 
@@ -136,16 +144,21 @@ class SceneTreeDock : public VBoxContainer {
 	bool first_enter;
 
 	void _create();
+	void _do_create(Node *p_parent);
 	Node *scene_root;
 	Node *edited_scene;
 	EditorNode *editor;
 
 	VBoxContainer *create_root_dialog;
+	String selected_favorite_root;
 
 	void _add_children_to_popup(Object *p_obj, int p_depth);
 
 	void _node_reparent(NodePath p_path, bool p_keep_global_xform);
 	void _do_reparent(Node *p_new_parent, int p_position_in_parent, Vector<Node *> p_nodes, bool p_keep_global_xform);
+
+	bool _is_collapsed_recursive(TreeItem *p_item) const;
+	void _set_collapsed_recursive(TreeItem *p_item, bool p_collapsed);
 
 	void _set_owners(Node *p_owner, const Array &p_nodes);
 
@@ -160,12 +173,19 @@ class SceneTreeDock : public VBoxContainer {
 	void _script_open_request(const Ref<Script> &p_script);
 
 	bool _cyclical_dependency_exists(const String &p_target_scene_path, Node *p_desired_node);
+	bool _track_inherit(const String &p_target_scene_path, Node *p_desired_node);
 
 	void _node_selected();
 	void _node_renamed();
 	void _script_created(Ref<Script> p_script);
+	void _script_creation_closed();
 
 	void _delete_confirm();
+
+	void _toggle_editable_children_from_selection();
+	void _toggle_editable_children(Node *p_node);
+
+	void _toggle_placeholder_from_selection();
 
 	void _node_prerenamed(Node *p_node, const String &p_new_name);
 
@@ -180,6 +200,7 @@ class SceneTreeDock : public VBoxContainer {
 	bool _validate_no_foreign();
 	void _selection_changed();
 	void _update_script_button();
+	Node *_get_selection_group_tail(Node *p_node, List<Node *> p_list);
 
 	void _fill_path_renames(Vector<StringName> base_path, Vector<StringName> new_base_path, Node *p_node, List<Pair<NodePath, NodePath> > *p_renames);
 
@@ -188,6 +209,7 @@ class SceneTreeDock : public VBoxContainer {
 	void _nodes_dragged(Array p_nodes, NodePath p_to, int p_type);
 	void _files_dropped(Vector<String> p_files, NodePath p_to, int p_type);
 	void _script_dropped(String p_file, NodePath p_to);
+	void _quick_open();
 
 	void _tree_rmb(const Vector2 &p_menu_pos);
 
@@ -200,6 +222,14 @@ class SceneTreeDock : public VBoxContainer {
 
 	void _remote_tree_selected();
 	void _local_tree_selected();
+
+	void _update_create_root_dialog();
+	void _favorite_root_selected(const String &p_class);
+
+	void _feature_profile_changed();
+
+	bool profile_allow_editing;
+	bool profile_allow_script_editing;
 
 protected:
 	void _notification(int p_what);
@@ -227,7 +257,7 @@ public:
 	void show_tab_buttons();
 	void hide_tab_buttons();
 
-	void replace_node(Node *p_node, Node *p_by_node);
+	void replace_node(Node *p_node, Node *p_by_node, bool p_keep_properties = true, bool p_remove_old = true);
 
 	void open_script_dialog(Node *p_for_node);
 

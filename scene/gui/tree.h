@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,16 +31,11 @@
 #ifndef TREE_H
 #define TREE_H
 
-#include "core/helper/value_evaluator.h"
 #include "scene/gui/control.h"
 #include "scene/gui/line_edit.h"
 #include "scene/gui/popup_menu.h"
 #include "scene/gui/scroll_bar.h"
 #include "scene/gui/slider.h"
-
-/**
-	@author Juan Linietsky <reduzio@gmail.com>
-*/
 
 class Tree;
 
@@ -54,7 +49,6 @@ public:
 		CELL_MODE_STRING, ///< just a string
 		CELL_MODE_CHECK, ///< string + check
 		CELL_MODE_RANGE, ///< Contains a range
-		CELL_MODE_RANGE_EXPRESSION, ///< Contains a range
 		CELL_MODE_ICON, ///< Contains an icon, not editable
 		CELL_MODE_CUSTOM, ///< Contains a custom value, show a string, and an edit button
 	};
@@ -178,6 +172,8 @@ protected:
 		remove_child(Object::cast_to<TreeItem>(p_child));
 	}
 
+	Variant _call_recursive_bind(const Variant **p_args, int p_argcount, Variant::CallError &r_error);
+
 public:
 	/* cell mode */
 	void set_cell_mode(int p_column, TreeCellMode p_mode);
@@ -199,21 +195,23 @@ public:
 	void set_icon_region(int p_column, const Rect2 &p_icon_region);
 	Rect2 get_icon_region(int p_column) const;
 
-	void set_icon_color(int p_column, const Color &p_icon_color);
-	Color get_icon_color(int p_column) const;
+	void set_icon_modulate(int p_column, const Color &p_modulate);
+	Color get_icon_modulate(int p_column) const;
 
 	void set_icon_max_width(int p_column, int p_max);
 	int get_icon_max_width(int p_column) const;
 
 	void add_button(int p_column, const Ref<Texture> &p_button, int p_id = -1, bool p_disabled = false, const String &p_tooltip = "");
 	int get_button_count(int p_column) const;
+	String get_button_tooltip(int p_column, int p_idx) const;
 	Ref<Texture> get_button(int p_column, int p_idx) const;
 	int get_button_id(int p_column, int p_idx) const;
 	void erase_button(int p_column, int p_idx);
 	int get_button_by_id(int p_column, int p_id) const;
-	bool is_button_disabled(int p_column, int p_idx) const;
 	void set_button(int p_column, int p_idx, const Ref<Texture> &p_button);
 	void set_button_color(int p_column, int p_idx, const Color &p_color);
+	void set_button_disabled(int p_column, int p_idx, bool p_disabled);
+	bool is_button_disabled(int p_column, int p_idx) const;
 
 	/* range works for mode number or mode combo */
 
@@ -240,8 +238,8 @@ public:
 	TreeItem *get_parent();
 	TreeItem *get_children();
 
-	TreeItem *get_prev_visible();
-	TreeItem *get_next_visible();
+	TreeItem *get_prev_visible(bool p_wrap = false);
+	TreeItem *get_next_visible(bool p_wrap = false);
 
 	void remove_child(TreeItem *p_item);
 
@@ -283,6 +281,8 @@ public:
 
 	void set_disable_folding(bool p_disable);
 	bool is_folding_disabled() const;
+
+	void call_recursive(const StringName &p_method, const Variant **p_args, int p_argcount, Variant::CallError &r_error);
 
 	~TreeItem();
 };
@@ -330,6 +330,8 @@ private:
 	float range_drag_base;
 	bool range_drag_enabled;
 	Vector2 range_drag_capture_pos;
+
+	bool propagate_mouse_activated;
 
 	//TreeItem *cursor_item;
 	//int cursor_column;
@@ -419,7 +421,6 @@ private:
 		Ref<Texture> arrow_collapsed;
 		Ref<Texture> arrow;
 		Ref<Texture> select_arrow;
-		Ref<Texture> select_option;
 		Ref<Texture> updown;
 
 		Color font_color;
@@ -432,10 +433,10 @@ private:
 		int hseparation;
 		int vseparation;
 		int item_margin;
-		int guide_width;
 		int button_margin;
 		Point2 offset;
 		int draw_relationship_lines;
+		int draw_guides;
 		int scroll_border;
 		int scroll_speed;
 
@@ -457,6 +458,8 @@ private:
 
 		TreeItem *hover_item;
 		int hover_cell;
+
+		Point2i text_editor_position;
 
 	} cache;
 
@@ -504,8 +507,6 @@ private:
 
 	bool hide_folding;
 
-	ValueEvaluator *evaluator;
-
 	int _count_selected_items(TreeItem *p_from) const;
 	void _go_left();
 	void _go_right();
@@ -516,7 +517,7 @@ protected:
 	static void _bind_methods();
 
 	//bind helpers
-	Object *_create_item(Object *p_parent, int p_idx = -1) {
+	TreeItem *_create_item(Object *p_parent, int p_idx = -1) {
 		return create_item(Object::cast_to<TreeItem>(p_parent), p_idx);
 	}
 
@@ -600,8 +601,6 @@ public:
 
 	void set_allow_reselect(bool p_allow);
 	bool get_allow_reselect() const;
-
-	void set_value_evaluator(ValueEvaluator *p_evaluator);
 
 	Tree();
 	~Tree();

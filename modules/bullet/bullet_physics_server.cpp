@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -31,8 +31,8 @@
 #include "bullet_physics_server.h"
 
 #include "bullet_utilities.h"
-#include "class_db.h"
 #include "cone_twist_joint_bullet.h"
+#include "core/class_db.h"
 #include "core/error_macros.h"
 #include "core/ustring.h"
 #include "generic_6dof_joint_bullet.h"
@@ -74,12 +74,6 @@
 	body->get_space()->add_constraint(joint, joint->is_disabled_collisions_between_bodies());
 // <--------------- Joint creation asserts
 
-btEmptyShape *BulletPhysicsServer::emptyShape(ShapeBullet::create_shape_empty());
-
-btEmptyShape *BulletPhysicsServer::get_empty_shape() {
-	return emptyShape;
-}
-
 void BulletPhysicsServer::_bind_methods() {
 	//ClassDB::bind_method(D_METHOD("DoTest"), &BulletPhysicsServer::DoTest);
 }
@@ -89,9 +83,7 @@ BulletPhysicsServer::BulletPhysicsServer() :
 		active(true),
 		active_spaces_count(0) {}
 
-BulletPhysicsServer::~BulletPhysicsServer() {
-	bulletdelete(emptyShape);
-}
+BulletPhysicsServer::~BulletPhysicsServer() {}
 
 RID BulletPhysicsServer::shape_create(ShapeType p_shape) {
 	ShapeBullet *shape = NULL;
@@ -161,6 +153,18 @@ Variant BulletPhysicsServer::shape_get_data(RID p_shape) const {
 	ShapeBullet *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND_V(!shape, Variant());
 	return shape->get_data();
+}
+
+void BulletPhysicsServer::shape_set_margin(RID p_shape, real_t p_margin) {
+	ShapeBullet *shape = shape_owner.get(p_shape);
+	ERR_FAIL_COND(!shape);
+	shape->set_margin(p_margin);
+}
+
+real_t BulletPhysicsServer::shape_get_margin(RID p_shape) const {
+	ShapeBullet *shape = shape_owner.get(p_shape);
+	ERR_FAIL_COND_V(!shape, 0.0);
+	return shape->get_margin();
 }
 
 real_t BulletPhysicsServer::shape_get_custom_solver_bias(RID p_shape) const {
@@ -263,7 +267,7 @@ RID BulletPhysicsServer::area_get_space(RID p_area) const {
 
 void BulletPhysicsServer::area_set_space_override_mode(RID p_area, AreaSpaceOverrideMode p_mode) {
 	AreaBullet *area = area_owner.get(p_area);
-	ERR_FAIL_COND(!area)
+	ERR_FAIL_COND(!area);
 
 	area->set_spOv_mode(p_mode);
 }
@@ -275,14 +279,14 @@ PhysicsServer::AreaSpaceOverrideMode BulletPhysicsServer::area_get_space_overrid
 	return area->get_spOv_mode();
 }
 
-void BulletPhysicsServer::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform) {
+void BulletPhysicsServer::area_add_shape(RID p_area, RID p_shape, const Transform &p_transform, bool p_disabled) {
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
 
 	ShapeBullet *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	area->add_shape(shape, p_transform);
+	area->add_shape(shape, p_transform, p_disabled);
 }
 
 void BulletPhysicsServer::area_set_shape(RID p_area, int p_shape_idx, RID p_shape) {
@@ -326,7 +330,7 @@ Transform BulletPhysicsServer::area_get_shape_transform(RID p_area, int p_shape_
 void BulletPhysicsServer::area_remove_shape(RID p_area, int p_shape_idx) {
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
-	return area->remove_shape(p_shape_idx);
+	return area->remove_shape_full(p_shape_idx);
 }
 
 void BulletPhysicsServer::area_clear_shapes(RID p_area) {
@@ -334,7 +338,7 @@ void BulletPhysicsServer::area_clear_shapes(RID p_area) {
 	ERR_FAIL_COND(!area);
 
 	for (int i = area->get_shape_count(); 0 < i; --i)
-		area->remove_shape(0);
+		area->remove_shape_full(0);
 }
 
 void BulletPhysicsServer::area_set_shape_disabled(RID p_area, int p_shape_idx, bool p_disabled) {
@@ -344,13 +348,13 @@ void BulletPhysicsServer::area_set_shape_disabled(RID p_area, int p_shape_idx, b
 	area->set_shape_disabled(p_shape_idx, p_disabled);
 }
 
-void BulletPhysicsServer::area_attach_object_instance_id(RID p_area, ObjectID p_ID) {
+void BulletPhysicsServer::area_attach_object_instance_id(RID p_area, ObjectID p_id) {
 	if (space_owner.owns(p_area)) {
 		return;
 	}
 	AreaBullet *area = area_owner.get(p_area);
 	ERR_FAIL_COND(!area);
-	area->set_instance_id(p_ID);
+	area->set_instance_id(p_id);
 }
 
 ObjectID BulletPhysicsServer::area_get_object_instance_id(RID p_area) const {
@@ -494,7 +498,7 @@ PhysicsServer::BodyMode BulletPhysicsServer::body_get_mode(RID p_body) const {
 	return body->get_mode();
 }
 
-void BulletPhysicsServer::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform) {
+void BulletPhysicsServer::body_add_shape(RID p_body, RID p_shape, const Transform &p_transform, bool p_disabled) {
 
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
@@ -502,7 +506,7 @@ void BulletPhysicsServer::body_add_shape(RID p_body, RID p_shape, const Transfor
 	ShapeBullet *shape = shape_owner.get(p_shape);
 	ERR_FAIL_COND(!shape);
 
-	body->add_shape(shape, p_transform);
+	body->add_shape(shape, p_transform, p_disabled);
 }
 
 void BulletPhysicsServer::body_set_shape(RID p_body, int p_shape_idx, RID p_shape) {
@@ -555,7 +559,7 @@ void BulletPhysicsServer::body_remove_shape(RID p_body, int p_shape_idx) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->remove_shape(p_shape_idx);
+	body->remove_shape_full(p_shape_idx);
 }
 
 void BulletPhysicsServer::body_clear_shapes(RID p_body) {
@@ -565,11 +569,11 @@ void BulletPhysicsServer::body_clear_shapes(RID p_body) {
 	body->remove_all_shapes();
 }
 
-void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_ID) {
+void BulletPhysicsServer::body_attach_object_instance_id(RID p_body, uint32_t p_id) {
 	CollisionObjectBullet *body = get_collisin_object(p_body);
 	ERR_FAIL_COND(!body);
 
-	body->set_instance_id(p_ID);
+	body->set_instance_id(p_id);
 }
 
 uint32_t BulletPhysicsServer::body_get_object_instance_id(RID p_body) const {
@@ -861,12 +865,20 @@ PhysicsDirectBodyState *BulletPhysicsServer::body_get_direct_state(RID p_body) {
 	return BulletPhysicsDirectBodyState::get_singleton(body);
 }
 
-bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result) {
+bool BulletPhysicsServer::body_test_motion(RID p_body, const Transform &p_from, const Vector3 &p_motion, bool p_infinite_inertia, MotionResult *r_result, bool p_exclude_raycast_shapes) {
 	RigidBodyBullet *body = rigid_body_owner.get(p_body);
 	ERR_FAIL_COND_V(!body, false);
 	ERR_FAIL_COND_V(!body->get_space(), false);
 
-	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, r_result);
+	return body->get_space()->test_body_motion(body, p_from, p_motion, p_infinite_inertia, r_result, p_exclude_raycast_shapes);
+}
+
+int BulletPhysicsServer::body_test_ray_separation(RID p_body, const Transform &p_transform, bool p_infinite_inertia, Vector3 &r_recover_motion, SeparationResult *r_results, int p_result_max, float p_margin) {
+	RigidBodyBullet *body = rigid_body_owner.get(p_body);
+	ERR_FAIL_COND_V(!body, 0);
+	ERR_FAIL_COND_V(!body->get_space(), 0);
+
+	return body->get_space()->test_ray_separation(body, p_transform, p_infinite_inertia, r_recover_motion, r_results, p_result_max, p_margin);
 }
 
 RID BulletPhysicsServer::soft_body_create(bool p_init_sleeping) {
@@ -981,11 +993,13 @@ void BulletPhysicsServer::soft_body_get_collision_exceptions(RID p_body, List<RI
 }
 
 void BulletPhysicsServer::soft_body_set_state(RID p_body, BodyState p_state, const Variant &p_variant) {
-	print_line("TODO MUST BE IMPLEMENTED");
+	// FIXME: Must be implemented.
+	WARN_PRINT("soft_body_state is not implemented yet in Bullet backend.");
 }
 
 Variant BulletPhysicsServer::soft_body_get_state(RID p_body, BodyState p_state) const {
-	print_line("TODO MUST BE IMPLEMENTED");
+	// FIXME: Must be implemented.
+	WARN_PRINT("soft_body_state is not implemented yet in Bullet backend.");
 	return Variant();
 }
 
@@ -1419,7 +1433,7 @@ RID BulletPhysicsServer::joint_create_generic_6dof(RID p_body_A, const Transform
 
 	ERR_FAIL_COND_V(body_A == body_B, RID());
 
-	JointBullet *joint = bulletnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B, true));
+	JointBullet *joint = bulletnew(Generic6DOFJointBullet(body_A, body_B, p_local_frame_A, p_local_frame_B));
 	AddJointToSpace(body_A, joint);
 
 	CreateThenReturnRID(joint_owner, joint);
@@ -1457,6 +1471,22 @@ bool BulletPhysicsServer::generic_6dof_joint_get_flag(RID p_joint, Vector3::Axis
 	return generic_6dof_joint->get_flag(p_axis, p_flag);
 }
 
+void BulletPhysicsServer::generic_6dof_joint_set_precision(RID p_joint, int p_precision) {
+	JointBullet *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND(!joint);
+	ERR_FAIL_COND(joint->get_type() != JOINT_6DOF);
+	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
+	generic_6dof_joint->set_precision(p_precision);
+}
+
+int BulletPhysicsServer::generic_6dof_joint_get_precision(RID p_joint) {
+	JointBullet *joint = joint_owner.get(p_joint);
+	ERR_FAIL_COND_V(!joint, 0);
+	ERR_FAIL_COND_V(joint->get_type() != JOINT_6DOF, 0);
+	Generic6DOFJointBullet *generic_6dof_joint = static_cast<Generic6DOFJointBullet *>(joint);
+	return generic_6dof_joint->get_precision();
+}
+
 void BulletPhysicsServer::free(RID p_rid) {
 	if (shape_owner.owns(p_rid)) {
 
@@ -1464,7 +1494,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 		// Notify the shape is configured
 		for (Map<ShapeOwnerBullet *, int>::Element *element = shape->get_owners().front(); element; element = element->next()) {
-			static_cast<ShapeOwnerBullet *>(element->key())->remove_shape(shape);
+			static_cast<ShapeOwnerBullet *>(element->key())->remove_shape_full(shape);
 		}
 
 		shape_owner.free(p_rid);
@@ -1475,7 +1505,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 		body->set_space(NULL);
 
-		body->remove_all_shapes(true);
+		body->remove_all_shapes(true, true);
 
 		rigid_body_owner.free(p_rid);
 		bulletdelete(body);
@@ -1495,7 +1525,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 
 		area->set_space(NULL);
 
-		area->remove_all_shapes(true);
+		area->remove_all_shapes(true, true);
 
 		area_owner.free(p_rid);
 		bulletdelete(area);
@@ -1518,8 +1548,7 @@ void BulletPhysicsServer::free(RID p_rid) {
 		bulletdelete(space);
 	} else {
 
-		ERR_EXPLAIN("Invalid ID");
-		ERR_FAIL();
+		ERR_FAIL_MSG("Invalid ID.");
 	}
 }
 

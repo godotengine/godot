@@ -458,7 +458,7 @@ static void MergeJobs(const SegmentJob* const src, SegmentJob* const dst) {
   dst->uv_alpha += src->uv_alpha;
 }
 
-// initialize the job struct with some TODOs
+// initialize the job struct with some tasks to perform
 static void InitSegmentJob(VP8Encoder* const enc, SegmentJob* const job,
                            int start_row, int end_row) {
   WebPGetWorkerInterface()->Init(&job->worker);

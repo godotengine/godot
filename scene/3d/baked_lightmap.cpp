@@ -5,8 +5,8 @@
 /*                           GODOT ENGINE                                */
 /*                      https://godotengine.org                          */
 /*************************************************************************/
-/* Copyright (c) 2007-2018 Juan Linietsky, Ariel Manzur.                 */
-/* Copyright (c) 2014-2018 Godot Engine contributors (cf. AUTHORS.md)    */
+/* Copyright (c) 2007-2019 Juan Linietsky, Ariel Manzur.                 */
+/* Copyright (c) 2014-2019 Godot Engine contributors (cf. AUTHORS.md)    */
 /*                                                                       */
 /* Permission is hereby granted, free of charge, to any person obtaining */
 /* a copy of this software and associated documentation files (the       */
@@ -29,9 +29,10 @@
 /*************************************************************************/
 
 #include "baked_lightmap.h"
-#include "io/resource_saver.h"
-#include "os/dir_access.h"
-#include "os/os.h"
+#include "core/io/config_file.h"
+#include "core/io/resource_saver.h"
+#include "core/os/dir_access.h"
+#include "core/os/os.h"
 #include "voxel_light_baker.h"
 
 void BakedLightmapData::set_bounds(const AABB &p_bounds) {
@@ -87,7 +88,7 @@ float BakedLightmapData::get_energy() const {
 
 void BakedLightmapData::add_user(const NodePath &p_path, const Ref<Texture> &p_lightmap, int p_instance) {
 
-	ERR_FAIL_COND(p_lightmap.is_null());
+	ERR_FAIL_COND_MSG(p_lightmap.is_null(), "It's not a reference to a valid Texture object.");
 	User user;
 	user.path = p_path;
 	user.lightmap = p_lightmap;
@@ -172,7 +173,7 @@ void BakedLightmapData::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::AABB, "bounds", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_bounds", "get_bounds");
 	ADD_PROPERTY(PropertyInfo(Variant::TRANSFORM, "cell_space_transform", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_cell_space_transform", "get_cell_space_transform");
 	ADD_PROPERTY(PropertyInfo(Variant::INT, "cell_subdiv", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_cell_subdiv", "get_cell_subdiv");
-	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0,16,0.01"), "set_energy", "get_energy");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "energy", PROPERTY_HINT_RANGE, "0,16,0.01,or_greater"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::POOL_BYTE_ARRAY, "octree", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR), "set_octree", "get_octree");
 	ADD_PROPERTY(PropertyInfo(Variant::ARRAY, "user_data", PROPERTY_HINT_NONE, "", PROPERTY_USAGE_NOEDITOR | PROPERTY_USAGE_INTERNAL), "_set_user_data", "_get_user_data");
 }
@@ -214,10 +215,20 @@ float BakedLightmap::get_capture_cell_size() const {
 void BakedLightmap::set_extents(const Vector3 &p_extents) {
 	extents = p_extents;
 	update_gizmo();
+	_change_notify("bake_extents");
 }
 
 Vector3 BakedLightmap::get_extents() const {
 	return extents;
+}
+
+void BakedLightmap::set_bake_default_texels_per_unit(const float &p_bake_texels_per_unit) {
+	bake_default_texels_per_unit = p_bake_texels_per_unit;
+	update_gizmo();
+}
+
+float BakedLightmap::get_bake_default_texels_per_unit() const {
+	return bake_default_texels_per_unit;
 }
 
 void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, List<PlotMesh> &plot_meshes, List<PlotLight> &plot_lights) {
@@ -235,7 +246,7 @@ void BakedLightmap::_find_meshes_and_lights(Node *p_at_node, List<PlotMesh> &plo
 				}
 			}
 
-			if (all_have_uv2 && mesh->get_lightmap_size_hint() != Size2()) {
+			if (all_have_uv2) {
 				//READY TO BAKE! size hint could be computed if not found, actually..
 
 				AABB aabb = mesh->get_aabb();
@@ -349,7 +360,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 		//check for valid save path
 		DirAccessRef d = DirAccess::open(save_path);
 		if (!d) {
-			ERR_PRINTS("Invalid Save Path: " + save_path);
+			ERR_PRINTS("Invalid Save Path '" + save_path + "'.");
 			return BAKE_ERROR_NO_SAVE_PATH;
 		}
 	}
@@ -365,7 +376,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 	{
 		bake_bounds = AABB(-extents, extents * 2.0);
 		int subdiv = nearest_power_of_2_templated(int(bake_bounds.get_longest_axis_size() / bake_cell_size));
-		bake_bounds.size[bake_bounds.get_longest_axis_size()] = subdiv * bake_cell_size;
+		bake_bounds.size[bake_bounds.get_longest_axis_index()] = subdiv * bake_cell_size;
 		bake_subdiv = nearest_shift(subdiv) + 1;
 
 		capture_subdiv = bake_subdiv;
@@ -374,9 +385,6 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			capture_subdiv--;
 			css *= 2.0;
 		}
-
-		print_line("bake subdiv: " + itos(bake_subdiv));
-		print_line("capture subdiv: " + itos(capture_subdiv));
 	}
 
 	baker.begin_bake(bake_subdiv, bake_bounds);
@@ -465,7 +473,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			btd.text = RTR("Lighting Meshes: ") + mesh_name + " (" + itos(pmc) + "/" + itos(mesh_list.size()) + ")";
 			btd.pass = step;
 			btd.last_step = 0;
-			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, lm, _bake_time, &btd);
+			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, bake_default_texels_per_unit, lm, _bake_time, &btd);
 			if (err != OK) {
 				bake_end_function();
 				if (err == ERR_SKIP)
@@ -475,7 +483,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 			step += 100;
 		} else {
 
-			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, lm);
+			err = baker.make_lightmap(E->get().local_xform, E->get().mesh, bake_default_texels_per_unit, lm);
 		}
 
 		if (err == OK) {
@@ -529,21 +537,60 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 				tex_flags |= Texture::FLAG_CONVERT_TO_LINEAR;
 			}
 
-			Ref<ImageTexture> tex;
-			String image_path = save_path.plus_file(mesh_name + ".tex");
-			bool set_path = true;
-			if (ResourceCache::has(image_path)) {
-				tex = Ref<Resource>((Resource *)ResourceCache::get(image_path));
-				set_path = false;
+			String image_path = save_path.plus_file(mesh_name);
+			Ref<Texture> texture;
+
+			if (ResourceLoader::import) {
+
+				bool srgb = false;
+				if (false && hdr) {
+					//save hdr
+				} else {
+					image_path += ".png";
+					print_line("image path saving png: " + image_path);
+					image->save_png(image_path);
+					srgb = true;
+				}
+
+				if (!FileAccess::exists(image_path + ".import")) {
+					Ref<ConfigFile> config;
+					config.instance();
+					config->set_value("remap", "importer", "texture");
+					config->set_value("remap", "type", "StreamTexture");
+					config->set_value("params", "compress/mode", 2);
+					config->set_value("params", "detect_3d", false);
+					config->set_value("params", "flags/repeat", false);
+					config->set_value("params", "flags/filter", true);
+					config->set_value("params", "flags/mipmaps", false);
+					config->set_value("params", "flags/srgb", srgb);
+
+					config->save(image_path + ".import");
+				}
+
+				ResourceLoader::import(image_path);
+				texture = ResourceLoader::load(image_path); //if already loaded, it will be updated on refocus?
+			} else {
+
+				image_path += ".text";
+				Ref<ImageTexture> tex;
+				bool set_path = true;
+				if (ResourceCache::has(image_path)) {
+					tex = Ref<Resource>((Resource *)ResourceCache::get(image_path));
+					set_path = false;
+				}
+
+				if (!tex.is_valid()) {
+					tex.instance();
+				}
+
+				tex->create_from_image(image, tex_flags);
+
+				err = ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
+				if (set_path) {
+					tex->set_path(image_path);
+				}
+				texture = tex;
 			}
-
-			if (!tex.is_valid()) {
-				tex.instance();
-			}
-
-			tex->create_from_image(image, tex_flags);
-
-			err = ResourceSaver::save(image_path, tex, ResourceSaver::FLAG_CHANGE_PATH);
 			if (err != OK) {
 				if (bake_end_function) {
 					bake_end_function();
@@ -551,10 +598,7 @@ BakedLightmap::BakeError BakedLightmap::bake(Node *p_from_node, bool p_create_vi
 				ERR_FAIL_COND_V(err != OK, BAKE_ERROR_CANT_CREATE_IMAGE);
 			}
 
-			if (set_path) {
-				tex->set_path(image_path);
-			}
-			new_light_data->add_user(E->get().path, tex, E->get().instance_idx);
+			new_light_data->add_user(E->get().path, texture, E->get().instance_idx);
 		}
 	}
 
@@ -756,6 +800,9 @@ void BakedLightmap::_bind_methods() {
 	ClassDB::bind_method(D_METHOD("set_extents", "extents"), &BakedLightmap::set_extents);
 	ClassDB::bind_method(D_METHOD("get_extents"), &BakedLightmap::get_extents);
 
+	ClassDB::bind_method(D_METHOD("set_bake_default_texels_per_unit", "texels"), &BakedLightmap::set_bake_default_texels_per_unit);
+	ClassDB::bind_method(D_METHOD("get_bake_default_texels_per_unit"), &BakedLightmap::get_bake_default_texels_per_unit);
+
 	ClassDB::bind_method(D_METHOD("set_propagation", "propagation"), &BakedLightmap::set_propagation);
 	ClassDB::bind_method(D_METHOD("get_propagation"), &BakedLightmap::get_propagation);
 
@@ -780,6 +827,7 @@ void BakedLightmap::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_energy", PROPERTY_HINT_RANGE, "0,32,0.01"), "set_energy", "get_energy");
 	ADD_PROPERTY(PropertyInfo(Variant::BOOL, "bake_hdr"), "set_hdr", "is_hdr");
 	ADD_PROPERTY(PropertyInfo(Variant::VECTOR3, "bake_extents"), "set_extents", "get_extents");
+	ADD_PROPERTY(PropertyInfo(Variant::REAL, "bake_default_texels_per_unit"), "set_bake_default_texels_per_unit", "get_bake_default_texels_per_unit");
 	ADD_GROUP("Capture", "capture_");
 	ADD_PROPERTY(PropertyInfo(Variant::REAL, "capture_cell_size", PROPERTY_HINT_RANGE, "0.01,64,0.01"), "set_capture_cell_size", "get_capture_cell_size");
 	ADD_GROUP("Data", "");
@@ -802,6 +850,7 @@ void BakedLightmap::_bind_methods() {
 BakedLightmap::BakedLightmap() {
 
 	extents = Vector3(10, 10, 10);
+	bake_default_texels_per_unit = 20;
 	bake_cell_size = 0.25;
 	capture_cell_size = 0.5;
 
