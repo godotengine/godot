@@ -40,8 +40,7 @@ namespace GodotTools.Ides
 
         protected ILogger Logger
         {
-            get => logger ?? (logger = new ConsoleLogger());
-            set => logger = value;
+            get => logger ?? (logger = new GodotLogger());
         }
 
         private void StartServer()

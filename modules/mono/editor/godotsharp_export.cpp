@@ -32,8 +32,12 @@
 
 #include <mono/metadata/image.h>
 
+#include "core/os/os.h"
+
 #include "../mono_gd/gd_mono.h"
 #include "../mono_gd/gd_mono_assembly.h"
+
+namespace GodotSharpExport {
 
 String get_assemblyref_name(MonoImage *p_image, int index) {
 	const MonoTableInfo *table_info = mono_image_get_table_info(p_image, MONO_TABLE_ASSEMBLYREF);
@@ -45,7 +49,7 @@ String get_assemblyref_name(MonoImage *p_image, int index) {
 	return String::utf8(mono_metadata_string_heap(p_image, cols[MONO_ASSEMBLYREF_NAME]));
 }
 
-Error GodotSharpExport::get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Dictionary &r_dependencies) {
+Error get_assembly_dependencies(GDMonoAssembly *p_assembly, const Vector<String> &p_search_dirs, Dictionary &r_dependencies) {
 	MonoImage *image = p_assembly->get_image();
 
 	for (int i = 0; i < mono_image_get_table_rows(image, MONO_TABLE_ASSEMBLYREF); i++) {
@@ -96,8 +100,8 @@ Error GodotSharpExport::get_assembly_dependencies(GDMonoAssembly *p_assembly, co
 	return OK;
 }
 
-Error GodotSharpExport::get_exported_assembly_dependencies(const String &p_project_dll_name, const String &p_project_dll_src_path, const String &p_build_config, const String &p_custom_lib_dir, Dictionary &r_dependencies) {
-	MonoDomain *export_domain = GDMonoUtils::create_domain("GodotEngine.ProjectExportDomain");
+Error get_exported_assembly_dependencies(const String &p_project_dll_name, const String &p_project_dll_src_path, const String &p_build_config, const String &p_custom_bcl_dir, Dictionary &r_dependencies) {
+	MonoDomain *export_domain = GDMonoUtils::create_domain("GodotEngine.Domain.ProjectExport");
 	ERR_FAIL_NULL_V(export_domain, FAILED);
 	_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(export_domain);
 
@@ -110,7 +114,9 @@ Error GodotSharpExport::get_exported_assembly_dependencies(const String &p_proje
 	ERR_FAIL_COND_V_MSG(!load_success, ERR_CANT_RESOLVE, "Cannot load assembly (refonly): '" + p_project_dll_name + "'.");
 
 	Vector<String> search_dirs;
-	GDMonoAssembly::fill_search_dirs(search_dirs, p_build_config, p_custom_lib_dir);
+	GDMonoAssembly::fill_search_dirs(search_dirs, p_build_config, p_custom_bcl_dir);
 
 	return get_assembly_dependencies(scripts_assembly, search_dirs, r_dependencies);
 }
+
+} // namespace GodotSharpExport

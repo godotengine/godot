@@ -550,6 +550,8 @@ MonoObject *create_managed_from(const Dictionary &p_from, GDMonoClass *p_class) 
 }
 
 MonoDomain *create_domain(const String &p_friendly_name) {
+	print_verbose("Mono: Creating domain '" + p_friendly_name + "'...");
+
 	MonoDomain *domain = mono_domain_create_appdomain((char *)p_friendly_name.utf8().get_data(), NULL);
 
 	if (domain) {
