@@ -56,8 +56,9 @@ void GDScriptLanguageServer::_notification(int p_what) {
 void GDScriptLanguageServer::thread_main(void *p_userdata) {
 	GDScriptLanguageServer *self = static_cast<GDScriptLanguageServer *>(p_userdata);
 	while (!self->thread_exit) {
+		// Poll 20 times per second
 		self->protocol.poll();
-		OS::get_singleton()->delay_usec(10);
+		OS::get_singleton()->delay_usec(50000);
 	}
 }
 
