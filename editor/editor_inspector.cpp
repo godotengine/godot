@@ -1566,11 +1566,11 @@ void EditorInspector::update_tree() {
 			if (dot != -1) {
 				String ov = name.right(dot);
 				name = name.substr(0, dot);
-				name = name.camelcase_to_underscore().capitalize();
+				name = name.capitalize();
 				name += ov;
 
 			} else {
-				name = name.camelcase_to_underscore().capitalize();
+				name = name.capitalize();
 			}
 		}
 
