@@ -31,7 +31,7 @@
 #include "text_editor.h"
 
 #include "core/os/keyboard.h"
-#include "editor_node.h"
+#include "editor/editor_node.h"
 
 void TextEditor::add_syntax_highlighter(SyntaxHighlighter *p_highlighter) {
 	highlighters[p_highlighter->get_name()] = p_highlighter;

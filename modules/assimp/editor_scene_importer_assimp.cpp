@@ -29,11 +29,12 @@
 /*************************************************************************/
 
 #include "editor_scene_importer_assimp.h"
+
 #include "core/bind/core_bind.h"
 #include "core/io/image_loader.h"
 #include "editor/editor_file_system.h"
+#include "editor/editor_settings.h"
 #include "editor/import/resource_importer_scene.h"
-#include "editor_settings.h"
 #include "import_utils.h"
 #include "scene/3d/camera.h"
 #include "scene/3d/light.h"
