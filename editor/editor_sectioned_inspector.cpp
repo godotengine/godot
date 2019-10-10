@@ -30,6 +30,7 @@
 
 #include "editor_sectioned_inspector.h"
 
+#include "editor_node.h"
 #include "editor_scale.h"
 
 class SectionedInspectorFilter : public Object {
@@ -261,7 +262,7 @@ void SectionedInspector::update_category_list() {
 			if (!section_map.has(metasection)) {
 				TreeItem *ms = sections->create_item(parent);
 				section_map[metasection] = ms;
-				ms->set_text(0, sectionarr[i].capitalize());
+				ms->set_text(0, EditorNode::get_singleton()->capitalize_string(sectionarr[i]));
 				ms->set_metadata(0, metasection);
 				ms->set_selectable(0, false);
 			}

@@ -218,7 +218,7 @@ void EditorSettingsDialog::_update_shortcuts() {
 		} else {
 			section = shortcuts->create_item(root);
 
-			String item_name = section_name.capitalize();
+			String item_name = EditorNode::get_singleton()->capitalize_string(section_name);
 			section->set_text(0, item_name);
 
 			if (collapsed.has(item_name)) {

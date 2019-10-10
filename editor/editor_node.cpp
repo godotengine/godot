@@ -4824,6 +4824,17 @@ void EditorNode::_scene_tab_changed(int p_tab) {
 	editor_data.get_undo_redo().commit_action();
 }
 
+String EditorNode::capitalize_string(const String &p_string) const {
+	String capitalized_string = p_string.capitalize();
+
+	// Fix the casing of a few strings commonly found in editor property/setting names
+	for (Map<String, String>::Element *E = capitalize_string_remaps.front(); E; E = E->next()) {
+		capitalized_string = capitalized_string.replace(E->key(), E->value());
+	}
+
+	return capitalized_string;
+}
+
 Button *EditorNode::add_bottom_panel_item(String p_text, Control *p_item) {
 	Button *tb = memnew(Button);
 	tb->set_flat(true);
@@ -5637,6 +5648,46 @@ EditorNode::EditorNode() {
 	EditorFileDialog::set_default_display_mode((EditorFileDialog::DisplayMode)EditorSettings::get_singleton()->get("filesystem/file_dialog/display_mode").operator int());
 	ResourceLoader::set_error_notify_func(this, _load_error_notify);
 	ResourceLoader::set_dependency_error_notify_func(this, _dependency_error_report);
+
+	// The map is initialized here to avoid initializing it every time a string is replaced.
+	capitalize_string_remaps["2d"] = "2D";
+	capitalize_string_remaps["3d"] = "3D";
+	capitalize_string_remaps["Adb"] = "ADB";
+	capitalize_string_remaps["Bptc"] = "BPTC";
+	capitalize_string_remaps["Csg"] = "CSG";
+	capitalize_string_remaps["Db"] = "dB";
+	capitalize_string_remaps["Dof"] = "DoF";
+	capitalize_string_remaps["Dpi"] = "DPI";
+	capitalize_string_remaps["Etc"] = "ETC";
+	capitalize_string_remaps["Fbx"] = "FBX";
+	capitalize_string_remaps["Fps"] = "FPS";
+	capitalize_string_remaps["Fov"] = "FOV";
+	capitalize_string_remaps["Fs"] = "FS";
+	capitalize_string_remaps["Fxaa"] = "FXAA";
+	capitalize_string_remaps["Ggx"] = "GGX";
+	capitalize_string_remaps["Gdscript"] = "GDScript";
+	capitalize_string_remaps["Gles 2"] = "GLES2";
+	capitalize_string_remaps["Gles 3"] = "GLES3";
+	capitalize_string_remaps["Hdr"] = "HDR";
+	capitalize_string_remaps["Hidpi"] = "hiDPI";
+	capitalize_string_remaps["Ios"] = "iOS";
+	capitalize_string_remaps["Kb"] = "KB";
+	capitalize_string_remaps["Msaa"] = "MSAA";
+	capitalize_string_remaps["Macos"] = "macOS";
+	capitalize_string_remaps["Opentype"] = "OpenType";
+	capitalize_string_remaps["Pvrtc"] = "PVRTC";
+	capitalize_string_remaps["S 3 Tc"] = "S3TC";
+	capitalize_string_remaps["Sdfgi"] = "SDFGI";
+	capitalize_string_remaps["Srgb"] = "sRGB";
+	capitalize_string_remaps["Ssao"] = "SSAO";
+	capitalize_string_remaps["Ssl"] = "SSL";
+	capitalize_string_remaps["Tcp"] = "TCP";
+	capitalize_string_remaps["Uv 1"] = "UV1";
+	capitalize_string_remaps["Uv 2"] = "UV2";
+	capitalize_string_remaps["Vram"] = "VRAM";
+	capitalize_string_remaps["Vsync"] = "V-Sync";
+	capitalize_string_remaps["Webrtc"] = "WebRTC";
+	capitalize_string_remaps["Websocket"] = "WebSocket";
 
 	{ //register importers at the beginning, so dialogs are created with the right extensions
 		Ref<ResourceImporterTexture> import_texture;

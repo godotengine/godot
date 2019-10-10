@@ -421,6 +421,7 @@ private:
 	VBoxContainer *bottom_panel_vb;
 	Label *version_label;
 	Button *bottom_panel_raise;
+	Map<String, String> capitalize_string_remaps;
 
 	void _bottom_panel_raise_toggled(bool);
 
@@ -822,6 +823,8 @@ public:
 	bool is_exiting() const { return exiting; }
 
 	Button *get_pause_button() { return pause_button; }
+
+	String capitalize_string(const String &p_string) const;
 
 	Button *add_bottom_panel_item(String p_text, Control *p_item);
 	void make_bottom_panel_item_visible(Control *p_item);
