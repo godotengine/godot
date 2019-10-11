@@ -43,6 +43,7 @@
 #include "editor/plugins/shader_editor_plugin.h"
 #include "editor/script_editor_debugger.h"
 #include "scene/main/viewport.h"
+#include "scene/scene_string_names.h"
 #include "script_text_editor.h"
 #include "text_editor.h"
 
@@ -1420,16 +1421,6 @@ void ScriptEditor::_notification(int p_what) {
 			members_overview->connect("item_selected", this, "_members_overview_selected");
 			help_overview->connect("item_selected", this, "_help_overview_selected");
 			script_split->connect("dragged", this, "_script_split_dragged");
-			autosave_timer->connect("timeout", this, "_autosave_scripts");
-			{
-				float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
-				if (autosave_time > 0) {
-					autosave_timer->set_wait_time(autosave_time);
-					autosave_timer->start();
-				} else {
-					autosave_timer->stop();
-				}
-			}
 
 			EditorSettings::get_singleton()->connect("settings_changed", this, "_editor_settings_changed");
 			FALLTHROUGH;
@@ -2335,13 +2326,7 @@ void ScriptEditor::_editor_settings_changed() {
 	_update_members_overview_visibility();
 	_update_help_overview_visibility();
 
-	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
-	if (autosave_time > 0) {
-		autosave_timer->set_wait_time(autosave_time);
-		autosave_timer->start();
-	} else {
-		autosave_timer->stop();
-	}
+	_update_autosave_timer();
 
 	if (current_theme == "") {
 		current_theme = EditorSettings::get_singleton()->get("text_editor/theme/color_theme");
@@ -2367,6 +2352,21 @@ void ScriptEditor::_editor_settings_changed() {
 void ScriptEditor::_autosave_scripts() {
 
 	save_all_scripts();
+}
+
+void ScriptEditor::_update_autosave_timer() {
+
+	if (!autosave_timer->is_inside_tree()) {
+		return;
+	}
+
+	float autosave_time = EditorSettings::get_singleton()->get("text_editor/files/autosave_interval_secs");
+	if (autosave_time > 0) {
+		autosave_timer->set_wait_time(autosave_time);
+		autosave_timer->start();
+	} else {
+		autosave_timer->stop();
+	}
 }
 
 void ScriptEditor::_tree_changed() {
@@ -3092,6 +3092,7 @@ void ScriptEditor::_bind_methods() {
 	ClassDB::bind_method("_show_debugger", &ScriptEditor::_show_debugger);
 	ClassDB::bind_method("_get_debug_tooltip", &ScriptEditor::_get_debug_tooltip);
 	ClassDB::bind_method("_autosave_scripts", &ScriptEditor::_autosave_scripts);
+	ClassDB::bind_method("_update_autosave_timer", &ScriptEditor::_update_autosave_timer);
 	ClassDB::bind_method("_editor_settings_changed", &ScriptEditor::_editor_settings_changed);
 	ClassDB::bind_method("_update_script_names", &ScriptEditor::_update_script_names);
 	ClassDB::bind_method("_update_script_connections", &ScriptEditor::_update_script_connections);
@@ -3428,6 +3429,8 @@ ScriptEditor::ScriptEditor(EditorNode *p_editor) {
 
 	autosave_timer = memnew(Timer);
 	autosave_timer->set_one_shot(false);
+	autosave_timer->connect(SceneStringNames::get_singleton()->tree_entered, this, "_update_autosave_timer");
+	autosave_timer->connect("timeout", this, "_autosave_scripts");
 	add_child(autosave_timer);
 
 	grab_focus_block = false;
