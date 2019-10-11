@@ -316,6 +316,10 @@ struct _VariantCall {
 	static void _call_String_to_ascii(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
 		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
 		CharString charstr = s->ascii();
 
 		PoolByteArray retval;
@@ -331,6 +335,10 @@ struct _VariantCall {
 	static void _call_String_to_utf8(Variant &r_ret, Variant &p_self, const Variant **p_args) {
 
 		String *s = reinterpret_cast<String *>(p_self._data._mem);
+		if (s->empty()) {
+			r_ret = PoolByteArray();
+			return;
+		}
 		CharString charstr = s->utf8();
 
 		PoolByteArray retval;
