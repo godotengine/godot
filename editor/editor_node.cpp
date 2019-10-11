@@ -371,7 +371,7 @@ void EditorNode::_notification(int p_what) {
 
 		case EditorSettings::NOTIFICATION_EDITOR_SETTINGS_CHANGED: {
 			scene_tabs->set_tab_close_display_policy((bool(EDITOR_GET("interface/scene_tabs/always_show_close_button")) ? Tabs::CLOSE_BUTTON_SHOW_ALWAYS : Tabs::CLOSE_BUTTON_SHOW_ACTIVE_ONLY));
-			Ref<Theme> theme = create_editor_theme(theme_base->get_theme());
+			theme = create_editor_theme(theme_base->get_theme());
 
 			theme_base->set_theme(theme);
 			gui_base->set_theme(theme);
@@ -5640,6 +5640,9 @@ EditorNode::EditorNode() {
 	editor_export = memnew(EditorExport);
 	add_child(editor_export);
 
+	// Exporters might need the theme
+	theme = create_custom_theme();
+
 	register_exporters();
 
 	GLOBAL_DEF("editor/main_run_args", "");
@@ -5681,7 +5684,6 @@ EditorNode::EditorNode() {
 	theme_base->add_child(gui_base);
 	gui_base->set_anchors_and_margins_preset(Control::PRESET_WIDE);
 
-	Ref<Theme> theme = create_custom_theme();
 	theme_base->set_theme(theme);
 	gui_base->set_theme(theme);
 	gui_base->add_style_override("panel", gui_base->get_stylebox("Background", "EditorStyles"));
