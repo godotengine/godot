@@ -75,7 +75,7 @@ bool generate_api_solution(const String &p_solution_dir, const String &p_core_pr
 				p_editor_proj_dir, p_editor_compile_items,
 				GDMono::get_singleton()->get_tools_project_editor_assembly());
 	} else {
-		MonoDomain *temp_domain = GDMonoUtils::create_domain("GodotEngine.ApiSolutionGenerationDomain");
+		MonoDomain *temp_domain = GDMonoUtils::create_domain("GodotEngine.Domain.ApiSolutionGeneration");
 		CRASH_COND(temp_domain == NULL);
 		_GDMONO_SCOPE_EXIT_DOMAIN_UNLOAD_(temp_domain);
 
