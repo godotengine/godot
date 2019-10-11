@@ -61,11 +61,11 @@ public:
 	virtual List<String> get_binary_extensions(const Ref<EditorExportPreset> &p_preset) const;
 	virtual Error export_project(const Ref<EditorExportPreset> &p_preset, bool p_debug, const String &p_path, int p_flags = 0);
 
-	virtual bool poll_devices();
-	virtual int get_device_count() const;
-	virtual String get_device_name(int p_device) const { return TTR("Run in Browser"); }
-	virtual String get_device_info(int p_device) const { return TTR("Run exported HTML in the system's default browser."); }
-	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags);
+	virtual bool poll_export();
+	virtual int get_options_count() const;
+	virtual String get_options_name(int p_index) const { return p_index ? TTR("Stop HTTP Server") : TTR("Run in Browser"); }
+	virtual String get_option_tooltip(int p_index) const { return p_index ? TTR("Stop HTTP Server") : TTR("Run exported HTML in the system's default browser."); }
+	virtual Error run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags);
 	virtual Ref<Texture> get_run_icon() const;
 
 	virtual void get_platform_features(List<String> *r_features) {
@@ -337,7 +337,7 @@ Error EditorExportPlatformJavaScript::export_project(const Ref<EditorExportPrese
 	return OK;
 }
 
-bool EditorExportPlatformJavaScript::poll_devices() {
+bool EditorExportPlatformJavaScript::poll_export() {
 
 	Ref<EditorExportPreset> preset;
 
@@ -355,12 +355,12 @@ bool EditorExportPlatformJavaScript::poll_devices() {
 	return runnable_when_last_polled != prev;
 }
 
-int EditorExportPlatformJavaScript::get_device_count() const {
+int EditorExportPlatformJavaScript::get_options_count() const {
 
 	return runnable_when_last_polled;
 }
 
-Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_device, int p_debug_flags) {
+Error EditorExportPlatformJavaScript::run(const Ref<EditorExportPreset> &p_preset, int p_option, int p_debug_flags) {
 
 	String basepath = EditorSettings::get_singleton()->get_cache_dir().plus_file("tmp_js_export");
 	String path = basepath + ".html";
