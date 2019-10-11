@@ -259,6 +259,11 @@ class VisualShaderNodeCubeMap : public VisualShaderNode {
 	Ref<CubeMap> cube_map;
 
 public:
+	enum Source {
+		SOURCE_TEXTURE,
+		SOURCE_PORT
+	};
+
 	enum TextureType {
 		TYPE_DATA,
 		TYPE_COLOR,
@@ -266,6 +271,7 @@ public:
 	};
 
 private:
+	Source source;
 	TextureType texture_type;
 
 protected:
@@ -287,6 +293,9 @@ public:
 	virtual String generate_global(Shader::Mode p_mode, VisualShader::Type p_type, int p_id) const;
 	virtual String generate_code(Shader::Mode p_mode, VisualShader::Type p_type, int p_id, const String *p_input_vars, const String *p_output_vars, bool p_for_preview = false) const; //if no output is connected, the output var passed will be empty. if no input is connected and input is NIL, the input var passed will be empty
 
+	void set_source(Source p_source);
+	Source get_source() const;
+
 	void set_cube_map(Ref<CubeMap> p_value);
 	Ref<CubeMap> get_cube_map() const;
 
@@ -299,6 +308,7 @@ public:
 };
 
 VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::TextureType)
+VARIANT_ENUM_CAST(VisualShaderNodeCubeMap::Source)
 
 ///////////////////////////////////////
 /// OPS

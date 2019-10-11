@@ -353,16 +353,8 @@ public:
 class VisualShaderNodeUniform : public VisualShaderNode {
 	GDCLASS(VisualShaderNodeUniform, VisualShaderNode);
 
-public:
-	enum UniformType {
-		UTYPE_NONE,
-		UTYPE_CUBEMAP,
-		UTYPE_SAMPLER2D,
-	};
-
 private:
 	String uniform_name;
-	UniformType uniform_type;
 
 protected:
 	static void _bind_methods();
@@ -370,9 +362,6 @@ protected:
 public:
 	void set_uniform_name(const String &p_name);
 	String get_uniform_name() const;
-
-	int get_uniform_type() const;
-	void set_uniform_type(int p_type);
 
 	VisualShaderNodeUniform();
 };
