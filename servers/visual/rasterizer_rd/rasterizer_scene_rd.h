@@ -26,6 +26,7 @@ protected:
 
 	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool use_dp_flip) = 0;
+	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
 
 	virtual void _debug_giprobe(RID p_gi_probe, RenderingDevice::DrawListID p_draw_list, RID p_framebuffer, const CameraMatrix &p_camera_with_transform, bool p_lighting, bool p_emission, float p_alpha);
 
@@ -155,6 +156,26 @@ private:
 		uint32_t pad;
 	};
 
+	struct GIProbeDynamicPushConstant {
+
+		int32_t limits[3];
+		uint32_t light_count;
+		int32_t x_dir[3];
+		float z_base;
+		int32_t y_dir[3];
+		float z_sign;
+		int32_t z_dir[3];
+		float pos_multiplier;
+		uint32_t rect_pos[2];
+		uint32_t rect_size[2];
+		uint32_t prev_rect_ofs[2];
+		uint32_t prev_rect_size[2];
+		uint32_t flip_x;
+		uint32_t flip_y;
+		float dynamic_range;
+		uint32_t keep_downsample_color;
+	};
+
 	struct GIProbeInstance {
 
 		RID probe;
@@ -174,12 +195,29 @@ private:
 		};
 		Vector<Mipmap> mipmaps;
 
+		struct DynamicMap {
+			RID texture; //color normally, or emission on first pass
+			RID fb_depth; //actual depth buffer for the first pass, float depth for later passes
+			RID depth; //actual depth buffer for the first pass, float depth for later passes
+			RID normal; //normal buffer for the first pass
+			RID albedo; //emission buffer for the first pass
+			RID orm; //orm buffer for the first pass
+			RID fb; //used for rendering, only valid on first map
+			RID uniform_set;
+			uint32_t size;
+			int mipmap; // mipmap to write to, -1 if no mipmap assigned
+		};
+
+		Vector<DynamicMap> dynamic_maps;
+
 		int slot = -1;
 		uint32_t last_probe_version = 0;
 		uint32_t last_probe_data_version = 0;
 
 		uint64_t last_pass = 0;
 		uint32_t render_index = 0;
+
+		bool has_dynamic_object_data = false;
 
 		Transform transform;
 	};
@@ -198,6 +236,10 @@ private:
 		GI_PROBE_SHADER_VERSION_COMPUTE_SECOND_BOUNCE,
 		GI_PROBE_SHADER_VERSION_COMPUTE_MIPMAP,
 		GI_PROBE_SHADER_VERSION_WRITE_TEXTURE,
+		GI_PROBE_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING,
+		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE,
+		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT,
+		GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT,
 		GI_PROBE_SHADER_VERSION_MAX
 	};
 	GiprobeShaderRD giprobe_shader;
@@ -211,6 +253,7 @@ private:
 		GI_PROBE_DEBUG_COLOR,
 		GI_PROBE_DEBUG_LIGHT,
 		GI_PROBE_DEBUG_EMISSION,
+		GI_PROBE_DEBUG_LIGHT_FULL,
 		GI_PROBE_DEBUG_MAX
 	};
 
@@ -220,6 +263,8 @@ private:
 		float dynamic_range;
 		float alpha;
 		uint32_t level;
+		int32_t bounds[3];
+		uint32_t pad;
 	};
 
 	GiprobeDebugShaderRD giprobe_debug_shader;
@@ -662,7 +707,8 @@ public:
 	RID gi_probe_instance_create(RID p_base);
 	void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform);
 	bool gi_probe_needs_update(RID p_probe) const;
-	void gi_probe_update(RID p_probe, const Vector<RID> &p_light_instances);
+	void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects);
+
 	_FORCE_INLINE_ uint32_t gi_probe_instance_get_slot(RID p_probe) {
 		GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
 		return gi_probe->slot;
@@ -725,6 +771,8 @@ public:
 	void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 
 	void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count);
+
+	void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 
 	virtual void set_scene_pass(uint64_t p_pass) { scene_pass = p_pass; }
 	_FORCE_INLINE_ uint64_t get_scene_pass() { return scene_pass; }

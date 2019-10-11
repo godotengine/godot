@@ -45,6 +45,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		SHADER_VERSION_DEPTH_PASS_DP,
 		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL,
 		SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS,
+		SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL,
 		SHADER_VERSION_COLOR_PASS,
 		SHADER_VERSION_COLOR_PASS_WITH_SEPARATE_SPECULAR,
 		SHADER_VERSION_VCT_COLOR_PASS,
@@ -519,14 +520,15 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 		PASS_MODE_DEPTH,
 		PASS_MODE_DEPTH_NORMAL,
 		PASS_MODE_DEPTH_NORMAL_ROUGHNESS,
+		PASS_MODE_DEPTH_MATERIAL,
 	};
 
-	void _setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas);
+	void _setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y);
 	void _setup_lights(RID *p_light_cull_result, int p_light_cull_count, const Transform &p_camera_inverse_transform, RID p_shadow_atlas, bool p_using_shadows);
 	void _setup_reflections(RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, const Transform &p_camera_inverse_transform, RID p_environment);
 	void _setup_gi_probes(RID *p_gi_probe_probe_cull_result, int p_gi_probe_probe_cull_count, const Transform &p_camera_transform);
 
-	void _fill_instances(RenderList::Element **p_elements, int p_element_count);
+	void _fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth);
 	void _render_list(RenderingDevice::DrawListID p_draw_list, RenderingDevice::FramebufferFormatID p_framebuffer_Format, RenderList::Element **p_elements, int p_element_count, bool p_reverse_cull, PassMode p_pass_mode, bool p_no_gi);
 	_FORCE_INLINE_ void _add_geometry(InstanceBase *p_instance, uint32_t p_surface, RID p_material, PassMode p_pass_mode, uint32_t p_geometry_index);
 	_FORCE_INLINE_ void _add_geometry_with_material(InstanceBase *p_instance, uint32_t p_surface, MaterialData *p_material, RID p_material_rid, PassMode p_pass_mode, uint32_t p_geometry_index);
@@ -540,6 +542,7 @@ class RasterizerSceneForwardRD : public RasterizerSceneRD {
 protected:
 	virtual void _render_scene(RenderBufferData *p_buffer_data, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass);
 	virtual void _render_shadow(RID p_framebuffer, InstanceBase **p_cull_result, int p_cull_count, const CameraMatrix &p_projection, const Transform &p_transform, float p_zfar, float p_bias, float p_normal_bias, bool p_use_dp, bool p_use_dp_flip);
+	virtual void _render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region);
 
 public:
 	virtual void set_time(double p_time);

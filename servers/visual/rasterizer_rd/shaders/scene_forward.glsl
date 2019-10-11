@@ -344,17 +344,30 @@ FRAGMENT_SHADER_GLOBALS
 
 /* clang-format on */
 
+#ifdef MODE_RENDER_DEPTH
+
+#ifdef MODE_RENDER_MATERIAL
+
+layout(location = 0) out vec4 albedo_output_buffer;
+layout(location = 1) out vec4 normal_output_buffer;
+layout(location = 2) out vec4 orm_output_buffer;
+layout(location = 3) out vec4 emission_output_buffer;
+layout(location = 4) out float depth_output_buffer;
+
+#endif
+
+#else // RENDER DEPTH
+
 #ifdef MODE_MULTIPLE_RENDER_TARGETS
 
 layout(location = 0) out vec4 diffuse_buffer; //diffuse (rgb) and roughness
 layout(location = 1) out vec4 specular_buffer; //specular and SSS (subsurface scatter)
 #else
 
-#ifndef MODE_RENDER_DEPTH
 layout(location = 0) out vec4 frag_color;
 #endif
 
-#endif
+#endif // RENDER DEPTH
 
 
 
@@ -1668,6 +1681,29 @@ FRAGMENT_SHADER_CODE
 
 
 #ifdef MODE_RENDER_DEPTH
+
+#ifdef MODE_RENDER_MATERIAL
+
+	albedo_output_buffer.rgb = albedo;
+	albedo_output_buffer.a = alpha;
+
+	normal_output_buffer.rgb = normal * 0.5 + 0.5;
+	normal_output_buffer.a = 0.0;
+	depth_output_buffer.r = -vertex.z;
+
+#if defined(AO_USED)
+	orm_output_buffer.r = ao;
+#else
+	orm_output_buffer.r = 0.0;
+#endif
+	orm_output_buffer.g = roughness;
+	orm_output_buffer.b = metallic;
+	orm_output_buffer.a = sss_strength;
+
+	emission_output_buffer.rgb = emission;
+	emission_output_buffer.a = 0.0;
+#endif
+
 //nothing happens, so a tree-ssa optimizer will result in no fragment shader :)
 #else
 
