@@ -453,6 +453,8 @@ public:
 
 	struct ConstantNode : public Node {
 		DataType datatype = TYPE_VOID;
+		String struct_name = "";
+		int array_size = 0;
 
 		union Value {
 			bool boolean;
@@ -462,7 +464,9 @@ public:
 		};
 
 		Vector<Value> values;
+		Vector<ArrayDeclarationNode::Declaration> array_declarations;
 		virtual DataType get_datatype() const { return datatype; }
+		virtual String get_datatype_name() const { return struct_name; }
 
 		ConstantNode() :
 				Node(TYPE_CONSTANT) {}
@@ -573,6 +577,7 @@ public:
 			StringName type_str;
 			DataPrecision precision;
 			ConstantNode *initializer;
+			int array_size;
 		};
 
 		struct Function {
