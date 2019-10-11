@@ -711,6 +711,11 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 					gcode += _typestr(cnode.type);
 				}
 				gcode += " " + _mkid(String(cnode.name));
+				if (cnode.array_size > 0) {
+					gcode += "[";
+					gcode += itos(cnode.array_size);
+					gcode += "]";
+				}
 				gcode += "=";
 				gcode += _dump_node_code(cnode.initializer, p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
 				gcode += ";\n";
@@ -988,7 +993,29 @@ String ShaderCompilerRD::_dump_node_code(const SL::Node *p_node, int p_level, Ge
 		} break;
 		case SL::Node::TYPE_CONSTANT: {
 			SL::ConstantNode *cnode = (SL::ConstantNode *)p_node;
-			return get_constant_text(cnode->datatype, cnode->values);
+
+			if (cnode->array_size == 0) {
+				return get_constant_text(cnode->datatype, cnode->values);
+			} else {
+				if (cnode->get_datatype() == SL::TYPE_STRUCT) {
+					code += _mkid(cnode->struct_name);
+				} else {
+					code += _typestr(cnode->datatype);
+				}
+				code += "[";
+				code += itos(cnode->array_size);
+				code += "]";
+				code += "(";
+				for (int i = 0; i < cnode->array_size; i++) {
+					if (i > 0) {
+						code += ",";
+					} else {
+						code += "";
+					}
+					code += _dump_node_code(cnode->array_declarations[0].initializer[i], p_level, r_gen_code, p_actions, p_default_actions, p_assigning);
+				}
+				code += ")";
+			}
 
 		} break;
 		case SL::Node::TYPE_OPERATOR: {
