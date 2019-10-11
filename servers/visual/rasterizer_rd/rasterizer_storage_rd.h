@@ -35,6 +35,7 @@
 #include "servers/visual/rasterizer.h"
 #include "servers/visual/rasterizer_rd/rasterizer_effects_rd.h"
 #include "servers/visual/rasterizer_rd/shader_compiler_rd.h"
+#include "servers/visual/rasterizer_rd/shaders/giprobe_sdf.glsl.gen.h"
 #include "servers/visual/rendering_device.h"
 
 class RasterizerStorageRD : public RasterizerStorage {
@@ -407,6 +408,7 @@ private:
 
 		RID octree_buffer;
 		RID data_buffer;
+		RID sdf_texture;
 
 		uint32_t octree_buffer_size = 0;
 		uint32_t data_buffer_size = 0;
@@ -434,6 +436,11 @@ private:
 
 		RasterizerScene::InstanceDependency instance_dependency;
 	};
+
+	GiprobeSdfShaderRD giprobe_sdf_shader;
+	RID giprobe_sdf_shader_version;
+	RID giprobe_sdf_shader_version_shader;
+	RID giprobe_sdf_shader_pipeline;
 
 	mutable RID_Owner<GIProbe> gi_probe_owner;
 
@@ -998,6 +1005,8 @@ public:
 
 	RID gi_probe_get_octree_buffer(RID p_gi_probe) const;
 	RID gi_probe_get_data_buffer(RID p_gi_probe) const;
+
+	RID gi_probe_get_sdf_texture(RID p_gi_probe);
 
 	/* LIGHTMAP CAPTURE */
 

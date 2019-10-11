@@ -156,8 +156,6 @@ public:
 
 		SelfList<Instance> update_item;
 
-		AABB aabb;
-		AABB transformed_aabb;
 		AABB *custom_aabb; // <Zylann> would using aabb directly with a bool be better?
 		float extra_margin;
 		uint32_t object_id;
@@ -316,6 +314,7 @@ public:
 		};
 
 		List<PairInfo> geometries;
+		List<PairInfo> dynamic_geometries;
 
 		Set<Instance *> lights;
 

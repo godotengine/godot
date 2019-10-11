@@ -170,7 +170,12 @@ void *VisualServerScene::_instance_pair(void *p_self, OctreeElementID, Instance 
 		pinfo.geometry = A;
 		pinfo.L = geom->gi_probes.push_back(B);
 
-		List<InstanceGIProbeData::PairInfo>::Element *E = gi_probe->geometries.push_back(pinfo);
+		List<InstanceGIProbeData::PairInfo>::Element *E;
+		if (A->dynamic_gi) {
+			E = gi_probe->dynamic_geometries.push_back(pinfo);
+		} else {
+			E = gi_probe->geometries.push_back(pinfo);
+		}
 
 		geom->gi_probes_dirty = true;
 
@@ -240,7 +245,11 @@ void VisualServerScene::_instance_unpair(void *p_self, OctreeElementID, Instance
 		List<InstanceGIProbeData::PairInfo>::Element *E = reinterpret_cast<List<InstanceGIProbeData::PairInfo>::Element *>(udata);
 
 		geom->gi_probes.erase(E->get().L);
-		gi_probe->geometries.erase(E);
+		if (A->dynamic_gi) {
+			gi_probe->dynamic_geometries.erase(E);
+		} else {
+			gi_probe->geometries.erase(E);
+		}
 
 		geom->gi_probes_dirty = true;
 
@@ -842,11 +851,31 @@ void VisualServerScene::instance_geometry_set_flag(RID p_instance, VS::InstanceF
 	Instance *instance = instance_owner.getornull(p_instance);
 	ERR_FAIL_COND(!instance);
 
+	ERR_FAIL_COND(((1 << instance->base_type) & VS::INSTANCE_GEOMETRY_MASK));
+
 	switch (p_flags) {
 
 		case VS::INSTANCE_FLAG_USE_BAKED_LIGHT: {
 
 			instance->baked_light = p_enabled;
+
+		} break;
+		case VS::INSTANCE_FLAG_USE_DYNAMIC_GI: {
+
+			if (p_enabled == instance->dynamic_gi) {
+				//bye, redundant
+				return;
+			}
+
+			if (instance->octree_id != 0) {
+				//remove from octree, it needs to be re-paired
+				instance->scenario->octree.erase(instance->octree_id);
+				instance->octree_id = 0;
+				_instance_queue_update(instance, true, true);
+			}
+
+			//once out of octree, can be changed
+			instance->dynamic_gi = p_enabled;
 
 		} break;
 		case VS::INSTANCE_FLAG_DRAW_NEXT_FRAME_IF_VISIBLE: {
@@ -2431,7 +2460,7 @@ void VisualServerScene::render_probes() {
 			cache_count = idx;
 		}
 
-		bool update_probe = VSG::scene_render->gi_probe_needs_update(probe->probe_instance);
+		bool update_lights = VSG::scene_render->gi_probe_needs_update(probe->probe_instance);
 
 		if (cache_dirty) {
 			probe->light_cache.resize(cache_count);
@@ -2490,12 +2519,36 @@ void VisualServerScene::render_probes() {
 				}
 			}
 
-			update_probe = true;
+			update_lights = true;
 		}
 
-		if (update_probe) {
-			VSG::scene_render->gi_probe_update(probe->probe_instance, probe->light_instances);
+		instance_cull_count = 0;
+		for (List<InstanceGIProbeData::PairInfo>::Element *E = probe->dynamic_geometries.front(); E; E = E->next()) {
+			if (instance_cull_count < MAX_INSTANCE_CULL) {
+				Instance *ins = E->get().geometry;
+				InstanceGeometryData *geom = (InstanceGeometryData *)ins->base_data;
+
+				if (geom->gi_probes_dirty) {
+					//giprobes may be dirty, so update
+					int l = 0;
+					//only called when reflection probe AABB enter/exit this geometry
+					ins->gi_probe_instances.resize(geom->gi_probes.size());
+
+					for (List<Instance *>::Element *F = geom->gi_probes.front(); F; F = F->next()) {
+
+						InstanceGIProbeData *gi_probe2 = static_cast<InstanceGIProbeData *>(F->get()->base_data);
+
+						ins->gi_probe_instances.write[l++] = gi_probe2->probe_instance;
+					}
+
+					geom->gi_probes_dirty = false;
+				}
+
+				instance_cull_result[instance_cull_count++] = E->get().geometry;
+			}
 		}
+
+		VSG::scene_render->gi_probe_update(probe->probe_instance, update_lights, probe->light_instances, instance_cull_count, (RasterizerScene::InstanceBase **)instance_cull_result);
 
 		gi_probe_update_list.remove(gi_probe);
 

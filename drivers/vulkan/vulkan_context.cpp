@@ -60,6 +60,9 @@ VKAPI_ATTR VkBool32 VKAPI_CALL VulkanContext::_debug_messenger_callback(VkDebugU
 			strstr(pCallbackData->pMessage, "must be a memory object") != NULL) {
 		return VK_FALSE;
 	}
+	if (strstr(pCallbackData->pMessageIdName, "UNASSIGNED-CoreValidation-DrawState-ClearCmdBeforeDraw") != NULL) {
+		return VK_FALSE;
+	}
 
 	if (messageSeverity & VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT) {
 		strcat(prefix, "VERBOSE : ");
