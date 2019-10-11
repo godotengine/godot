@@ -805,9 +805,10 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 			while (ogg_stream_packetout(&to, &op) > 0) {
 				ogg_int64_t videobuf_granulepos;
 				th_decode_packetin(td, &op, &videobuf_granulepos);
-				videobuf_time = th_granule_time(td, videobuf_granulepos);
-				if (op.granulepos > 0)
+				if (op.granulepos > 0) {
 					th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
+					videobuf_time = th_granule_time(td, videobuf_granulepos);
+				}
 				th_ycbcr_buffer yuv;
 				th_decode_ycbcr_out(td, yuv); //dump frames
 			}
