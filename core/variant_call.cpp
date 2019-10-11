@@ -591,9 +591,9 @@ struct _VariantCall {
 
 		int buffer_size = (int)(*p_args[0]);
 
-		if (buffer_size < 0) {
+		if (buffer_size <= 0) {
 			r_ret = decompressed;
-			ERR_FAIL_MSG("Decompression buffer size is less than zero.");
+			ERR_FAIL_MSG("Decompression buffer size must be greater than zero.");
 		}
 
 		decompressed.resize(buffer_size);
