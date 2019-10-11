@@ -1245,7 +1245,7 @@ bool RasterizerSceneRD::gi_probe_needs_update(RID p_probe) const {
 	return gi_probe->last_probe_version != storage->gi_probe_get_version(gi_probe->probe);
 }
 
-void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_instances) {
+void RasterizerSceneRD::gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) {
 
 	GIProbeInstance *gi_probe = gi_probe_instance_owner.getornull(p_probe);
 	ERR_FAIL_COND(!gi_probe);
@@ -1265,6 +1265,13 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 			RD::get_singleton()->free(gi_probe->write_buffer);
 			gi_probe->mipmaps.clear();
 		}
+
+		for (int i = 0; i < gi_probe->dynamic_maps.size(); i++) {
+			RD::get_singleton()->free(gi_probe->dynamic_maps[i].texture);
+			RD::get_singleton()->free(gi_probe->dynamic_maps[i].depth);
+		}
+
+		gi_probe->dynamic_maps.clear();
 
 		Vector3i octree_size = storage->gi_probe_get_octree_size(gi_probe->probe);
 
@@ -1355,6 +1362,21 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 					uniforms.push_back(u);
 				}
 				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_TEXTURE;
+					u.binding = 9;
+					u.ids.push_back(storage->gi_probe_get_sdf_texture(gi_probe->probe));
+					uniforms.push_back(u);
+				}
+				{
+					RD::Uniform u;
+					u.type = RD::UNIFORM_TYPE_SAMPLER;
+					u.binding = 10;
+					u.ids.push_back(storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+					uniforms.push_back(u);
+				}
+
+				{
 					Vector<RD::Uniform> copy_uniforms = uniforms;
 					if (i == 0) {
 						{
@@ -1374,13 +1396,6 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 							u.type = RD::UNIFORM_TYPE_TEXTURE;
 							u.binding = 5;
 							u.ids.push_back(gi_probe->texture);
-							copy_uniforms.push_back(u);
-						}
-						{
-							RD::Uniform u;
-							u.type = RD::UNIFORM_TYPE_SAMPLER;
-							u.binding = 6;
-							u.ids.push_back(storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
 							copy_uniforms.push_back(u);
 						}
 
@@ -1436,138 +1451,579 @@ void RasterizerSceneRD::gi_probe_update(RID p_probe, const Vector<RID> &p_light_
 
 				gi_probe->mipmaps.push_back(mipmap);
 			}
+
+			{
+				uint32_t dynamic_map_size = MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
+				uint32_t oversample = nearest_power_of_2_templated(4);
+				int mipmap_index = 0;
+
+				while (mipmap_index < gi_probe->mipmaps.size()) {
+					GIProbeInstance::DynamicMap dmap;
+
+					if (oversample > 0) {
+						dmap.size = dynamic_map_size * (1 << oversample);
+						dmap.mipmap = -1;
+						oversample--;
+					} else {
+						dmap.size = dynamic_map_size >> mipmap_index;
+						dmap.mipmap = mipmap_index;
+						mipmap_index++;
+					}
+
+					RD::TextureFormat dtf;
+					dtf.width = dmap.size;
+					dtf.height = dmap.size;
+					dtf.format = RD::DATA_FORMAT_R16G16B16A16_SFLOAT;
+					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT;
+
+					if (gi_probe->dynamic_maps.size() == 0) {
+						dtf.usage_bits |= RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+					}
+					dmap.texture = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+
+					if (gi_probe->dynamic_maps.size() == 0) {
+						//render depth for first one
+						dtf.format = RD::get_singleton()->texture_is_format_supported_for_usage(RD::DATA_FORMAT_D32_SFLOAT, RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT) ? RD::DATA_FORMAT_D32_SFLOAT : RD::DATA_FORMAT_X8_D24_UNORM_PACK32;
+						dtf.usage_bits = RD::TEXTURE_USAGE_DEPTH_STENCIL_ATTACHMENT_BIT;
+						dmap.fb_depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+					}
+
+					//just use depth as-is
+					dtf.format = RD::DATA_FORMAT_R32_SFLOAT;
+					dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+
+					dmap.depth = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+
+					if (gi_probe->dynamic_maps.size() == 0) {
+
+						dtf.format = RD::DATA_FORMAT_R8G8B8A8_UNORM;
+						dtf.usage_bits = RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_COLOR_ATTACHMENT_BIT;
+						dmap.albedo = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+						dmap.normal = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+						dmap.orm = RD::get_singleton()->texture_create(dtf, RD::TextureView());
+
+						Vector<RID> fb;
+						fb.push_back(dmap.albedo);
+						fb.push_back(dmap.normal);
+						fb.push_back(dmap.orm);
+						fb.push_back(dmap.texture); //emission
+						fb.push_back(dmap.depth);
+						fb.push_back(dmap.fb_depth);
+
+						dmap.fb = RD::get_singleton()->framebuffer_create(fb);
+
+						{
+							Vector<RD::Uniform> uniforms;
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_UNIFORM_BUFFER;
+								u.binding = 3;
+								u.ids.push_back(gi_probe_lights_uniform);
+								uniforms.push_back(u);
+							}
+
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 5;
+								u.ids.push_back(dmap.albedo);
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 6;
+								u.ids.push_back(dmap.normal);
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 7;
+								u.ids.push_back(dmap.orm);
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_TEXTURE;
+								u.binding = 8;
+								u.ids.push_back(dmap.fb_depth);
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_TEXTURE;
+								u.binding = 9;
+								u.ids.push_back(storage->gi_probe_get_sdf_texture(gi_probe->probe));
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_SAMPLER;
+								u.binding = 10;
+								u.ids.push_back(storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 11;
+								u.ids.push_back(dmap.texture);
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 12;
+								u.ids.push_back(dmap.depth);
+								uniforms.push_back(u);
+							}
+
+							dmap.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_lighting_shader_version_shaders[GI_PROBE_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING], 0);
+						}
+					} else {
+						bool plot = dmap.mipmap >= 0;
+						bool write = dmap.mipmap < (gi_probe->mipmaps.size() - 1);
+
+						Vector<RD::Uniform> uniforms;
+
+						{
+							RD::Uniform u;
+							u.type = RD::UNIFORM_TYPE_IMAGE;
+							u.binding = 5;
+							u.ids.push_back(gi_probe->dynamic_maps[gi_probe->dynamic_maps.size() - 1].texture);
+							uniforms.push_back(u);
+						}
+						{
+							RD::Uniform u;
+							u.type = RD::UNIFORM_TYPE_IMAGE;
+							u.binding = 6;
+							u.ids.push_back(gi_probe->dynamic_maps[gi_probe->dynamic_maps.size() - 1].depth);
+							uniforms.push_back(u);
+						}
+
+						if (write) {
+
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 7;
+								u.ids.push_back(dmap.texture);
+								uniforms.push_back(u);
+							}
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 8;
+								u.ids.push_back(dmap.depth);
+								uniforms.push_back(u);
+							}
+						}
+
+						{
+							RD::Uniform u;
+							u.type = RD::UNIFORM_TYPE_TEXTURE;
+							u.binding = 9;
+							u.ids.push_back(storage->gi_probe_get_sdf_texture(gi_probe->probe));
+							uniforms.push_back(u);
+						}
+						{
+							RD::Uniform u;
+							u.type = RD::UNIFORM_TYPE_SAMPLER;
+							u.binding = 10;
+							u.ids.push_back(storage->sampler_rd_get_default(VS::CANVAS_ITEM_TEXTURE_FILTER_LINEAR_WITH_MIPMAPS, VS::CANVAS_ITEM_TEXTURE_REPEAT_DISABLED));
+							uniforms.push_back(u);
+						}
+
+						if (plot) {
+
+							{
+								RD::Uniform u;
+								u.type = RD::UNIFORM_TYPE_IMAGE;
+								u.binding = 11;
+								u.ids.push_back(gi_probe->mipmaps[dmap.mipmap].texture);
+								uniforms.push_back(u);
+							}
+							if (gi_probe_is_anisotropic()) {
+								{
+									RD::Uniform u;
+									u.type = RD::UNIFORM_TYPE_IMAGE;
+									u.binding = 12;
+									u.ids.push_back(gi_probe->mipmaps[dmap.mipmap].anisotropy[0]);
+									uniforms.push_back(u);
+								}
+								{
+									RD::Uniform u;
+									u.type = RD::UNIFORM_TYPE_IMAGE;
+									u.binding = 13;
+									u.ids.push_back(gi_probe->mipmaps[dmap.mipmap].anisotropy[1]);
+									uniforms.push_back(u);
+								}
+							}
+						}
+
+						dmap.uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_lighting_shader_version_shaders[(write && plot) ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT : write ? GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE : GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT], 0);
+					}
+
+					gi_probe->dynamic_maps.push_back(dmap);
+				}
+			}
 		}
 
 		gi_probe->last_probe_data_version = data_version;
 		gi_probe_slots_dirty = true;
+		p_update_light_instances = true; //just in case
 	}
 
 	// UDPDATE TIME
 
-	uint32_t light_count = MIN(gi_probe_max_lights, (uint32_t)p_light_instances.size());
-	{
-		Transform to_cell = storage->gi_probe_get_to_cell_xform(gi_probe->probe);
-		Transform to_probe_xform = (gi_probe->transform * to_cell.affine_inverse()).affine_inverse();
-		//update lights
-
-		for (uint32_t i = 0; i < light_count; i++) {
-			GIProbeLight &l = gi_probe_lights[i];
-			RID light_instance = p_light_instances[i];
-			RID light = light_instance_get_base_light(light_instance);
-
-			l.type = storage->light_get_type(light);
-			l.attenuation = storage->light_get_param(light, VS::LIGHT_PARAM_ATTENUATION);
-			l.energy = storage->light_get_param(light, VS::LIGHT_PARAM_ENERGY) * storage->light_get_param(light, VS::LIGHT_PARAM_INDIRECT_ENERGY);
-			l.radius = to_cell.basis.xform(Vector3(storage->light_get_param(light, VS::LIGHT_PARAM_RANGE), 0, 0)).length();
-			Color color = storage->light_get_color(light).to_linear();
-			l.color[0] = color.r;
-			l.color[1] = color.g;
-			l.color[2] = color.b;
-
-			l.spot_angle_radians = Math::deg2rad(storage->light_get_param(light, VS::LIGHT_PARAM_SPOT_ANGLE));
-			l.spot_attenuation = storage->light_get_param(light, VS::LIGHT_PARAM_SPOT_ATTENUATION);
-
-			Transform xform = light_instance_get_base_transform(light_instance);
-
-			Vector3 pos = to_probe_xform.xform(xform.origin);
-			Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_axis(2)).normalized();
-
-			l.position[0] = pos.x;
-			l.position[1] = pos.y;
-			l.position[2] = pos.z;
-
-			l.direction[0] = dir.x;
-			l.direction[1] = dir.y;
-			l.direction[2] = dir.z;
-
-			l.has_shadow = storage->light_has_shadow(light);
-		}
-
-		RD::get_singleton()->buffer_update(gi_probe_lights_uniform, 0, sizeof(GIProbeLight) * light_count, gi_probe_lights, true);
+	if (gi_probe->has_dynamic_object_data) {
+		//if it has dynamic object data, it needs to be cleared
+		RD::get_singleton()->texture_clear(gi_probe->texture, Color(0, 0, 0, 0), 0, gi_probe->mipmaps.size(), 0, 1, true);
 	}
 
-	// PROCESS MIPMAPS
-	if (gi_probe->mipmaps.size()) {
-		//can update mipmaps
+	uint32_t light_count = 0;
 
-		Vector3i probe_size = storage->gi_probe_get_octree_size(gi_probe->probe);
+	if (p_update_light_instances || p_dynamic_object_count > 0) {
 
-		GIProbePushConstant push_constant;
+		light_count = MIN(gi_probe_max_lights, (uint32_t)p_light_instances.size());
 
-		push_constant.limits[0] = probe_size.x;
-		push_constant.limits[1] = probe_size.y;
-		push_constant.limits[2] = probe_size.z;
-		push_constant.stack_size = gi_probe->mipmaps.size();
-		push_constant.emission_scale = 1.0;
-		push_constant.propagation = storage->gi_probe_get_propagation(gi_probe->probe);
-		push_constant.dynamic_range = storage->gi_probe_get_dynamic_range(gi_probe->probe);
-		push_constant.light_count = light_count;
-		push_constant.aniso_strength = storage->gi_probe_get_anisotropy_strength(gi_probe->probe);
+		{
+			Transform to_cell = storage->gi_probe_get_to_cell_xform(gi_probe->probe);
+			Transform to_probe_xform = (gi_probe->transform * to_cell.affine_inverse()).affine_inverse();
+			//update lights
 
-		/*		print_line("probe update to version " + itos(gi_probe->last_probe_version));
-		print_line("propagation " + rtos(push_constant.propagation));
-		print_line("dynrange " + rtos(push_constant.dynamic_range));
-*/
-		RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+			for (uint32_t i = 0; i < light_count; i++) {
+				GIProbeLight &l = gi_probe_lights[i];
+				RID light_instance = p_light_instances[i];
+				RID light = light_instance_get_base_light(light_instance);
 
-		int passes = storage->gi_probe_is_using_two_bounces(gi_probe->probe) ? 2 : 1;
-		int wg_size = 64;
-		int wg_limit_x = RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X);
+				l.type = storage->light_get_type(light);
+				l.attenuation = storage->light_get_param(light, VS::LIGHT_PARAM_ATTENUATION);
+				l.energy = storage->light_get_param(light, VS::LIGHT_PARAM_ENERGY) * storage->light_get_param(light, VS::LIGHT_PARAM_INDIRECT_ENERGY);
+				l.radius = to_cell.basis.xform(Vector3(storage->light_get_param(light, VS::LIGHT_PARAM_RANGE), 0, 0)).length();
+				Color color = storage->light_get_color(light).to_linear();
+				l.color[0] = color.r;
+				l.color[1] = color.g;
+				l.color[2] = color.b;
 
-		for (int pass = 0; pass < passes; pass++) {
+				l.spot_angle_radians = Math::deg2rad(storage->light_get_param(light, VS::LIGHT_PARAM_SPOT_ANGLE));
+				l.spot_attenuation = storage->light_get_param(light, VS::LIGHT_PARAM_SPOT_ATTENUATION);
 
-			for (int i = 0; i < gi_probe->mipmaps.size(); i++) {
-				if (i == 0) {
-					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[pass == 0 ? GI_PROBE_SHADER_VERSION_COMPUTE_LIGHT : GI_PROBE_SHADER_VERSION_COMPUTE_SECOND_BOUNCE]);
-				} else if (i == 1) {
-					RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_COMPUTE_MIPMAP]);
-				}
+				Transform xform = light_instance_get_base_transform(light_instance);
 
-				if (pass == 1 || i > 0) {
+				Vector3 pos = to_probe_xform.xform(xform.origin);
+				Vector3 dir = to_probe_xform.basis.xform(-xform.basis.get_axis(2)).normalized();
+
+				l.position[0] = pos.x;
+				l.position[1] = pos.y;
+				l.position[2] = pos.z;
+
+				l.direction[0] = dir.x;
+				l.direction[1] = dir.y;
+				l.direction[2] = dir.z;
+
+				l.has_shadow = storage->light_has_shadow(light);
+			}
+
+			RD::get_singleton()->buffer_update(gi_probe_lights_uniform, 0, sizeof(GIProbeLight) * light_count, gi_probe_lights, true);
+		}
+	}
+
+	if (gi_probe->has_dynamic_object_data || p_update_light_instances || p_dynamic_object_count) {
+		// PROCESS MIPMAPS
+		if (gi_probe->mipmaps.size()) {
+			//can update mipmaps
+
+			Vector3i probe_size = storage->gi_probe_get_octree_size(gi_probe->probe);
+
+			GIProbePushConstant push_constant;
+
+			push_constant.limits[0] = probe_size.x;
+			push_constant.limits[1] = probe_size.y;
+			push_constant.limits[2] = probe_size.z;
+			push_constant.stack_size = gi_probe->mipmaps.size();
+			push_constant.emission_scale = 1.0;
+			push_constant.propagation = storage->gi_probe_get_propagation(gi_probe->probe);
+			push_constant.dynamic_range = storage->gi_probe_get_dynamic_range(gi_probe->probe);
+			push_constant.light_count = light_count;
+			push_constant.aniso_strength = storage->gi_probe_get_anisotropy_strength(gi_probe->probe);
+
+			/*		print_line("probe update to version " + itos(gi_probe->last_probe_version));
+			print_line("propagation " + rtos(push_constant.propagation));
+			print_line("dynrange " + rtos(push_constant.dynamic_range));
+	*/
+			RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+
+			int passes;
+			if (p_update_light_instances) {
+				passes = storage->gi_probe_is_using_two_bounces(gi_probe->probe) ? 2 : 1;
+			} else {
+				passes = 1; //only re-blitting is necessary
+			}
+			int wg_size = 64;
+			int wg_limit_x = RD::get_singleton()->limit_get(RD::LIMIT_MAX_COMPUTE_WORKGROUP_COUNT_X);
+
+			for (int pass = 0; pass < passes; pass++) {
+
+				if (p_update_light_instances) {
+
+					for (int i = 0; i < gi_probe->mipmaps.size(); i++) {
+						if (i == 0) {
+							RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[pass == 0 ? GI_PROBE_SHADER_VERSION_COMPUTE_LIGHT : GI_PROBE_SHADER_VERSION_COMPUTE_SECOND_BOUNCE]);
+						} else if (i == 1) {
+							RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_COMPUTE_MIPMAP]);
+						}
+
+						if (pass == 1 || i > 0) {
+							RD::get_singleton()->compute_list_add_barrier(compute_list); //wait til previous step is done
+						}
+						if (pass == 0 || i > 0) {
+							RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->mipmaps[i].uniform_set, 0);
+						} else {
+							RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->mipmaps[i].second_bounce_uniform_set, 0);
+						}
+
+						push_constant.cell_offset = gi_probe->mipmaps[i].cell_offset;
+						push_constant.cell_count = gi_probe->mipmaps[i].cell_count;
+
+						int wg_todo = (gi_probe->mipmaps[i].cell_count - 1) / wg_size + 1;
+						while (wg_todo) {
+							int wg_count = MIN(wg_todo, wg_limit_x);
+							RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
+							RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
+							wg_todo -= wg_count;
+							push_constant.cell_offset += wg_count * wg_size;
+						}
+					}
+
 					RD::get_singleton()->compute_list_add_barrier(compute_list); //wait til previous step is done
 				}
-				if (pass == 0 || i > 0) {
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->mipmaps[i].uniform_set, 0);
-				} else {
-					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->mipmaps[i].second_bounce_uniform_set, 0);
-				}
 
-				push_constant.cell_offset = gi_probe->mipmaps[i].cell_offset;
-				push_constant.cell_count = gi_probe->mipmaps[i].cell_count;
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_WRITE_TEXTURE]);
 
-				int wg_todo = (gi_probe->mipmaps[i].cell_count - 1) / wg_size + 1;
-				while (wg_todo) {
-					int wg_count = MIN(wg_todo, wg_limit_x);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
-					RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
-					wg_todo -= wg_count;
-					push_constant.cell_offset += wg_count * wg_size;
+				for (int i = 0; i < gi_probe->mipmaps.size(); i++) {
+
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->mipmaps[i].write_uniform_set, 0);
+
+					push_constant.cell_offset = gi_probe->mipmaps[i].cell_offset;
+					push_constant.cell_count = gi_probe->mipmaps[i].cell_count;
+
+					int wg_todo = (gi_probe->mipmaps[i].cell_count - 1) / wg_size + 1;
+					while (wg_todo) {
+						int wg_count = MIN(wg_todo, wg_limit_x);
+						RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
+						RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
+						wg_todo -= wg_count;
+						push_constant.cell_offset += wg_count * wg_size;
+					}
 				}
 			}
 
-			RD::get_singleton()->compute_list_add_barrier(compute_list); //wait til previous step is done
+			RD::get_singleton()->compute_list_end();
+		}
+	}
 
-			RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_WRITE_TEXTURE]);
+	gi_probe->has_dynamic_object_data = false; //clear until dynamic object data is used again
 
-			for (int i = 0; i < gi_probe->mipmaps.size(); i++) {
+	if (p_dynamic_object_count && gi_probe->dynamic_maps.size()) {
 
-				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->mipmaps[i].write_uniform_set, 0);
+		Vector3i octree_size = storage->gi_probe_get_octree_size(gi_probe->probe);
+		int multiplier = gi_probe->dynamic_maps[0].size / MAX(MAX(octree_size.x, octree_size.y), octree_size.z);
 
-				push_constant.cell_offset = gi_probe->mipmaps[i].cell_offset;
-				push_constant.cell_count = gi_probe->mipmaps[i].cell_count;
+		Transform oversample_scale;
+		oversample_scale.basis.scale(Vector3(multiplier, multiplier, multiplier));
 
-				int wg_todo = (gi_probe->mipmaps[i].cell_count - 1) / wg_size + 1;
-				while (wg_todo) {
-					int wg_count = MIN(wg_todo, wg_limit_x);
-					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbePushConstant));
-					RD::get_singleton()->compute_list_dispatch(compute_list, wg_count, 1, 1);
-					wg_todo -= wg_count;
-					push_constant.cell_offset += wg_count * wg_size;
+		Transform to_cell = oversample_scale * storage->gi_probe_get_to_cell_xform(gi_probe->probe);
+		Transform to_world_xform = gi_probe->transform * to_cell.affine_inverse();
+		Transform to_probe_xform = to_world_xform.affine_inverse();
+
+		AABB probe_aabb(Vector3(), octree_size);
+
+		//this could probably be better parallelized in compute..
+		for (int i = 0; i < p_dynamic_object_count; i++) {
+
+			InstanceBase *instance = p_dynamic_objects[i];
+			//not used, so clear
+			instance->depth_layer = 0;
+			instance->depth = 0;
+
+			//transform aabb to giprobe
+			AABB aabb = (to_probe_xform * instance->transform).xform(instance->aabb);
+
+			//this needs to wrap to grid resolution to avoid jitter
+			//also extend margin a bit just in case
+			Vector3i begin = aabb.position - Vector3i(1, 1, 1);
+			Vector3i end = aabb.position + aabb.size + Vector3i(1, 1, 1);
+
+			for (int j = 0; j < 3; j++) {
+				if ((end[j] - begin[j]) & 1) {
+					end[j]++; //for half extents split, it needs to be even
 				}
+				begin[j] = MAX(begin[j], 0);
+				end[j] = MIN(end[j], octree_size[j] * multiplier);
+			}
+
+			//aabb = aabb.intersection(probe_aabb); //intersect
+			aabb.position = begin;
+			aabb.size = end - begin;
+
+			//print_line("aabb: " + aabb);
+
+			for (int j = 0; j < 6; j++) {
+
+				//if (j != 0 && j != 3) {
+				//	continue;
+				//}
+				static const Vector3 render_z[6] = {
+					Vector3(1, 0, 0),
+					Vector3(0, 1, 0),
+					Vector3(0, 0, 1),
+					Vector3(-1, 0, 0),
+					Vector3(0, -1, 0),
+					Vector3(0, 0, -1),
+				};
+				static const Vector3 render_up[6] = {
+					Vector3(0, 1, 0),
+					Vector3(0, 0, 1),
+					Vector3(0, 1, 0),
+					Vector3(0, 1, 0),
+					Vector3(0, 0, 1),
+					Vector3(0, 1, 0),
+				};
+
+				Vector3 render_dir = render_z[j];
+				Vector3 up_dir = render_up[j];
+
+				Vector3 center = aabb.position + aabb.size * 0.5;
+				Transform xform;
+				xform.set_look_at(center - aabb.size * 0.5 * render_dir, center, up_dir);
+
+				Vector3 x_dir = xform.basis.get_axis(0).abs();
+				int x_axis = int(Vector3(0, 1, 2).dot(x_dir));
+				Vector3 y_dir = xform.basis.get_axis(1).abs();
+				int y_axis = int(Vector3(0, 1, 2).dot(y_dir));
+				Vector3 z_dir = -xform.basis.get_axis(2);
+				int z_axis = int(Vector3(0, 1, 2).dot(z_dir.abs()));
+
+				Rect2i rect(aabb.position[x_axis], aabb.position[y_axis], aabb.size[x_axis], aabb.size[y_axis]);
+				bool x_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(0)) < 0);
+				bool y_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(1)) < 0);
+				bool z_flip = bool(Vector3(1, 1, 1).dot(xform.basis.get_axis(2)) > 0);
+
+				CameraMatrix cm;
+				cm.set_orthogonal(-rect.size.width / 2, rect.size.width / 2, -rect.size.height / 2, rect.size.height / 2, 0.0001, aabb.size[z_axis]);
+
+				_render_material(to_world_xform * xform, cm, true, &instance, 1, gi_probe->dynamic_maps[0].fb, Rect2i(Vector2i(), rect.size));
+
+				GIProbeDynamicPushConstant push_constant;
+				zeromem(&push_constant, sizeof(GIProbeDynamicPushConstant));
+				push_constant.limits[0] = octree_size.x;
+				push_constant.limits[1] = octree_size.y;
+				push_constant.limits[2] = octree_size.z;
+				push_constant.light_count = p_light_instances.size();
+				push_constant.x_dir[0] = x_dir[0];
+				push_constant.x_dir[1] = x_dir[1];
+				push_constant.x_dir[2] = x_dir[2];
+				push_constant.y_dir[0] = y_dir[0];
+				push_constant.y_dir[1] = y_dir[1];
+				push_constant.y_dir[2] = y_dir[2];
+				push_constant.z_dir[0] = z_dir[0];
+				push_constant.z_dir[1] = z_dir[1];
+				push_constant.z_dir[2] = z_dir[2];
+				push_constant.z_base = xform.origin[z_axis];
+				push_constant.z_sign = (z_flip ? -1.0 : 1.0);
+				push_constant.pos_multiplier = float(1.0) / multiplier;
+				push_constant.dynamic_range = storage->gi_probe_get_dynamic_range(gi_probe->probe);
+				push_constant.flip_x = x_flip;
+				push_constant.flip_y = y_flip;
+				push_constant.rect_pos[0] = rect.position[0];
+				push_constant.rect_pos[1] = rect.position[1];
+				push_constant.rect_size[0] = rect.size[0];
+				push_constant.rect_size[1] = rect.size[1];
+				push_constant.prev_rect_ofs[0] = 0;
+				push_constant.prev_rect_ofs[1] = 0;
+				push_constant.prev_rect_size[0] = 0;
+				push_constant.prev_rect_size[1] = 0;
+				push_constant.keep_downsample_color = true;
+
+				//process lighting
+				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_DYNAMIC_OBJECT_LIGHTING]);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->dynamic_maps[0].uniform_set, 0);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbeDynamicPushConstant));
+				RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
+				//print_line("rect: " + itos(i) + ": " + rect);
+
+				for (int k = 1; k < gi_probe->dynamic_maps.size(); k++) {
+
+					// enlarge the rect if needed so all pixels fit when downscaled,
+					// this ensures downsampling is smooth and optimal because no pixels are left behind
+
+					//x
+					if (rect.position.x & 1) {
+						rect.size.x++;
+						push_constant.prev_rect_ofs[0] = 1; //this is used to ensure reading is also optimal
+					} else {
+						push_constant.prev_rect_ofs[0] = 0;
+					}
+					if (rect.size.x & 1) {
+						rect.size.x++;
+					}
+
+					rect.position.x >>= 1;
+					rect.size.x = MAX(1, rect.size.x >> 1);
+
+					//y
+					if (rect.position.y & 1) {
+						rect.size.y++;
+						push_constant.prev_rect_ofs[1] = 1;
+					} else {
+						push_constant.prev_rect_ofs[1] = 0;
+					}
+					if (rect.size.y & 1) {
+						rect.size.y++;
+					}
+
+					rect.position.y >>= 1;
+					rect.size.y = MAX(1, rect.size.y >> 1);
+
+					//shrink limits to ensure plot does not go outside map
+					if (gi_probe->dynamic_maps[i].mipmap > 0) {
+						for (int l = 0; l < 3; l++) {
+							push_constant.limits[l] = MAX(1, push_constant.limits[l] >> 1);
+						}
+					}
+
+					//print_line("rect: " + itos(i) + ": " + rect);
+					push_constant.rect_pos[0] = rect.position[0];
+					push_constant.rect_pos[1] = rect.position[1];
+					push_constant.prev_rect_size[0] = push_constant.rect_size[0];
+					push_constant.prev_rect_size[1] = push_constant.rect_size[1];
+					push_constant.rect_size[0] = rect.size[0];
+					push_constant.rect_size[1] = rect.size[1];
+					push_constant.keep_downsample_color = gi_probe->dynamic_maps[i].mipmap <= 0;
+					;
+
+					RD::get_singleton()->compute_list_add_barrier(compute_list);
+
+					if (gi_probe->dynamic_maps[k].mipmap < 0) {
+						RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE]);
+					} else if (k < gi_probe->dynamic_maps.size() - 1) {
+						RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_WRITE_PLOT]);
+					} else {
+						RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_lighting_shader_version_pipelines[GI_PROBE_SHADER_VERSION_DYNAMIC_SHRINK_PLOT]);
+					}
+					RD::get_singleton()->compute_list_bind_uniform_set(compute_list, gi_probe->dynamic_maps[k].uniform_set, 0);
+					RD::get_singleton()->compute_list_set_push_constant(compute_list, &push_constant, sizeof(GIProbeDynamicPushConstant));
+					RD::get_singleton()->compute_list_dispatch(compute_list, (rect.size.x - 1) / 8 + 1, (rect.size.y - 1) / 8 + 1, 1);
+				}
+
+				RD::get_singleton()->compute_list_end();
 			}
 		}
 
-		RD::get_singleton()->compute_list_end();
+		gi_probe->has_dynamic_object_data = true; //clear until dynamic object data is used again
 	}
 
 	gi_probe->last_probe_version = storage->gi_probe_get_version(gi_probe->probe);
@@ -1584,6 +2040,7 @@ void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_lis
 	CameraMatrix transform = (p_camera_with_transform * CameraMatrix(gi_probe->transform)) * CameraMatrix(storage->gi_probe_get_to_cell_xform(gi_probe->probe).affine_inverse());
 
 	int level = 0;
+	Vector3i octree_size = storage->gi_probe_get_octree_size(gi_probe->probe);
 
 	GIProbeDebugPushConstant push_constant;
 	push_constant.alpha = p_alpha;
@@ -1591,7 +2048,10 @@ void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_lis
 	push_constant.cell_offset = gi_probe->mipmaps[level].cell_offset;
 	push_constant.level = level;
 
-	int cell_count = gi_probe->mipmaps[level].cell_count;
+	push_constant.bounds[0] = octree_size.x >> level;
+	push_constant.bounds[1] = octree_size.y >> level;
+	push_constant.bounds[2] = octree_size.z >> level;
+	push_constant.pad = 0;
 
 	for (int i = 0; i < 4; i++) {
 		for (int j = 0; j < 4; j++) {
@@ -1643,8 +2103,15 @@ void RasterizerSceneRD::_debug_giprobe(RID p_gi_probe, RD::DrawListID p_draw_lis
 		}
 	}
 
+	int cell_count;
+	if (!p_emission && p_lighting && gi_probe->has_dynamic_object_data) {
+		cell_count = push_constant.bounds[0] * push_constant.bounds[1] * push_constant.bounds[2];
+	} else {
+		cell_count = gi_probe->mipmaps[level].cell_count;
+	}
+
 	giprobe_debug_uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_debug_shader_version_shaders[0], 0);
-	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, giprobe_debug_shader_version_pipelines[p_emission ? GI_PROBE_DEBUG_EMISSION : p_lighting ? GI_PROBE_DEBUG_LIGHT : GI_PROBE_DEBUG_COLOR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
+	RD::get_singleton()->draw_list_bind_render_pipeline(p_draw_list, giprobe_debug_shader_version_pipelines[p_emission ? GI_PROBE_DEBUG_EMISSION : p_lighting ? (gi_probe->has_dynamic_object_data ? GI_PROBE_DEBUG_LIGHT_FULL : GI_PROBE_DEBUG_LIGHT) : GI_PROBE_DEBUG_COLOR].get_render_pipeline(RD::INVALID_ID, RD::get_singleton()->framebuffer_get_format(p_framebuffer)));
 	RD::get_singleton()->draw_list_bind_uniform_set(p_draw_list, giprobe_debug_uniform_set, 0);
 	RD::get_singleton()->draw_list_set_push_constant(p_draw_list, &push_constant, sizeof(GIProbeDebugPushConstant));
 	RD::get_singleton()->draw_list_draw(p_draw_list, false, cell_count, 36);
@@ -1875,6 +2342,11 @@ void RasterizerSceneRD::render_shadow(RID p_light, RID p_shadow_atlas, int p_pas
 	}
 }
 
+void RasterizerSceneRD::render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
+
+	_render_material(p_cam_transform, p_cam_projection, p_cam_ortogonal, p_cull_result, p_cull_count, p_framebuffer, p_region);
+}
+
 bool RasterizerSceneRD::free(RID p_rid) {
 
 	if (render_buffers_owner.owns(p_rid)) {
@@ -1901,6 +2373,11 @@ bool RasterizerSceneRD::free(RID p_rid) {
 		if (gi_probe->anisotropy[0].is_valid()) {
 			RD::get_singleton()->free(gi_probe->anisotropy[0]);
 			RD::get_singleton()->free(gi_probe->anisotropy[1]);
+		}
+
+		for (int i = 0; i < gi_probe->dynamic_maps.size(); i++) {
+			RD::get_singleton()->free(gi_probe->dynamic_maps[i].texture);
+			RD::get_singleton()->free(gi_probe->dynamic_maps[i].depth);
 		}
 
 		gi_probe_slots.write[gi_probe->slot] = RID();
@@ -2002,6 +2479,10 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		versions.push_back("\n#define MODE_SECOND_BOUNCE\n");
 		versions.push_back("\n#define MODE_UPDATE_MIPMAPS\n");
 		versions.push_back("\n#define MODE_WRITE_TEXTURE\n");
+		versions.push_back("\n#define MODE_DYNAMIC\n#define MODE_DYNAMIC_LIGHTING\n");
+		versions.push_back("\n#define MODE_DYNAMIC\n#define MODE_DYNAMIC_SHRINK\n#define MODE_DYNAMIC_SHRINK_WRITE\n");
+		versions.push_back("\n#define MODE_DYNAMIC\n#define MODE_DYNAMIC_SHRINK\n#define MODE_DYNAMIC_SHRINK_PLOT\n");
+		versions.push_back("\n#define MODE_DYNAMIC\n#define MODE_DYNAMIC_SHRINK\n#define MODE_DYNAMIC_SHRINK_PLOT\n#define MODE_DYNAMIC_SHRINK_WRITE\n");
 
 		giprobe_shader.initialize(versions, defines);
 		giprobe_lighting_shader_version = giprobe_shader.version_create();
@@ -2021,6 +2502,7 @@ RasterizerSceneRD::RasterizerSceneRD(RasterizerStorageRD *p_storage) {
 		versions.push_back("\n#define MODE_DEBUG_COLOR\n");
 		versions.push_back("\n#define MODE_DEBUG_LIGHT\n");
 		versions.push_back("\n#define MODE_DEBUG_EMISSION\n");
+		versions.push_back("\n#define MODE_DEBUG_LIGHT\n#define MODE_DEBUG_LIGHT_FULL\n");
 
 		giprobe_debug_shader.initialize(versions, defines);
 		giprobe_debug_shader_version = giprobe_debug_shader.version_create();
