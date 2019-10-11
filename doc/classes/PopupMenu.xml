@@ -156,7 +156,7 @@
 			</argument>
 			<argument index="1" name="max_states" type="int">
 			</argument>
-			<argument index="2" name="default_state" type="int">
+			<argument index="2" name="default_state" type="int" default="0">
 			</argument>
 			<argument index="3" name="id" type="int" default="-1">
 			</argument>

@@ -26,6 +26,15 @@
 				Adds a button with [Texture] [code]button[/code] at column [code]column[/code]. The [code]button_idx[/code] index is used to identify the button when calling other methods. If not specified, the next available index is used, which may be retrieved by calling [method get_button_count] immediately after this method. Optionally, the button can be [code]disabled[/code] and have a [code]tooltip[/code].
 			</description>
 		</method>
+		<method name="call_recursive" qualifiers="vararg">
+			<return type="Variant">
+			</return>
+			<argument index="0" name="method" type="String">
+			</argument>
+			<description>
+				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
+			</description>
+		</method>
 		<method name="clear_custom_bg_color">
 			<return type="void">
 			</return>
@@ -592,15 +601,6 @@
 			</argument>
 			<description>
 				Sets the given column's tooltip text.
-			</description>
-		</method>
-		<method name="call_recursive" qualifiers="vararg">
-			<return type="Variant">
-			</return>
-			<argument index="0" name="method" type="String">
-			</argument>
-			<description>
-				Calls the [code]method[/code] on the actual TreeItem and its children recursively. Pass parameters as a comma separated list.
 			</description>
 		</method>
 	</methods>
