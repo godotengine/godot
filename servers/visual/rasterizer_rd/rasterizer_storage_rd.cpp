@@ -3558,41 +3558,19 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 
 	bool data_version_changed = false;
 
-	if (gi_probe->octree_buffer_size != p_octree_cells.size() || gi_probe->data_buffer_size != p_data_cells.size()) {
-		//buffer size changed, clear if needed
-		if (gi_probe->octree_buffer.is_valid()) {
-			RD::get_singleton()->free(gi_probe->octree_buffer);
-			RD::get_singleton()->free(gi_probe->data_buffer);
-
-			gi_probe->octree_buffer = RID();
-			gi_probe->data_buffer = RID();
-			gi_probe->octree_buffer_size = 0;
-			gi_probe->data_buffer_size = 0;
-			gi_probe->cell_count = 0;
+	if (gi_probe->octree_buffer.is_valid()) {
+		RD::get_singleton()->free(gi_probe->octree_buffer);
+		RD::get_singleton()->free(gi_probe->data_buffer);
+		if (gi_probe->sdf_texture.is_valid()) {
+			RD::get_singleton()->free(gi_probe->sdf_texture);
 		}
 
-		data_version_changed = true;
-
-	} else if (gi_probe->octree_buffer_size) {
-		//they are the same and size did not change..
-		//update
-
-		PoolVector<uint8_t>::Read rc = p_octree_cells.read();
-		PoolVector<uint8_t>::Read rd = p_data_cells.read();
-
-		RD::get_singleton()->buffer_update(gi_probe->octree_buffer, 0, gi_probe->octree_buffer_size, rc.ptr());
-		RD::get_singleton()->buffer_update(gi_probe->data_buffer, 0, gi_probe->data_buffer_size, rd.ptr());
-	}
-
-	if (gi_probe->level_counts.size() != p_level_counts.size()) {
-		data_version_changed = true;
-	} else {
-		for (int i = 0; i < p_level_counts.size(); i++) {
-			if (gi_probe->level_counts[i] != p_level_counts[i]) {
-				data_version_changed = true;
-				break;
-			}
-		}
+		gi_probe->sdf_texture = RID();
+		gi_probe->octree_buffer = RID();
+		gi_probe->data_buffer = RID();
+		gi_probe->octree_buffer_size = 0;
+		gi_probe->data_buffer_size = 0;
+		gi_probe->cell_count = 0;
 	}
 
 	gi_probe->to_cell_xform = p_to_cell_xform;
@@ -3600,7 +3578,7 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 	gi_probe->octree_size = p_octree_size;
 	gi_probe->level_counts = p_level_counts;
 
-	if (p_octree_cells.size() && gi_probe->octree_buffer.is_null()) {
+	if (p_octree_cells.size()) {
 		ERR_FAIL_COND(p_octree_cells.size() % 32 != 0); //cells size must be a multiple of 32
 
 		uint32_t cell_count = p_octree_cells.size() / 32;
@@ -3612,13 +3590,80 @@ void RasterizerStorageRD::gi_probe_allocate(RID p_gi_probe, const Transform &p_t
 		gi_probe->octree_buffer_size = p_octree_cells.size();
 		gi_probe->data_buffer = RD::get_singleton()->storage_buffer_create(p_data_cells.size(), p_data_cells);
 		gi_probe->data_buffer_size = p_data_cells.size();
-		data_version_changed = true;
+
+		{
+			{
+				RD::TextureFormat tf;
+				tf.format = RD::DATA_FORMAT_R8_UNORM;
+				tf.width = gi_probe->octree_size.x;
+				tf.height = gi_probe->octree_size.y;
+				tf.depth = gi_probe->octree_size.z;
+				tf.type = RD::TEXTURE_TYPE_3D;
+				tf.usage_bits = RD::TEXTURE_USAGE_SAMPLING_BIT | RD::TEXTURE_USAGE_STORAGE_BIT | RD::TEXTURE_USAGE_CAN_COPY_TO_BIT;
+				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UNORM);
+				tf.shareable_formats.push_back(RD::DATA_FORMAT_R8_UINT);
+				gi_probe->sdf_texture = RD::get_singleton()->texture_create(tf, RD::TextureView());
+			}
+			RID shared_tex;
+			{
+
+				RD::TextureView tv;
+				tv.format_override = RD::DATA_FORMAT_R8_UINT;
+				shared_tex = RD::get_singleton()->texture_create_shared(tv, gi_probe->sdf_texture);
+			}
+			//update SDF texture
+			Vector<RD::Uniform> uniforms;
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 1;
+				u.ids.push_back(gi_probe->octree_buffer);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_STORAGE_BUFFER;
+				u.binding = 2;
+				u.ids.push_back(gi_probe->data_buffer);
+				uniforms.push_back(u);
+			}
+			{
+				RD::Uniform u;
+				u.type = RD::UNIFORM_TYPE_IMAGE;
+				u.binding = 3;
+				u.ids.push_back(shared_tex);
+				uniforms.push_back(u);
+			}
+
+			RID uniform_set = RD::get_singleton()->uniform_set_create(uniforms, giprobe_sdf_shader_version_shader, 0);
+
+			{
+				uint32_t push_constant[4] = { 0, 0, 0, 0 };
+
+				for (int i = 0; i < gi_probe->level_counts.size() - 1; i++) {
+					push_constant[0] += gi_probe->level_counts[i];
+				}
+				push_constant[1] = push_constant[0] + gi_probe->level_counts[gi_probe->level_counts.size() - 1];
+
+				print_line("offset: " + itos(push_constant[0]));
+				print_line("size: " + itos(push_constant[1]));
+				//create SDF
+				RD::ComputeListID compute_list = RD::get_singleton()->compute_list_begin();
+				RD::get_singleton()->compute_list_bind_compute_pipeline(compute_list, giprobe_sdf_shader_pipeline);
+				RD::get_singleton()->compute_list_bind_uniform_set(compute_list, uniform_set, 0);
+				RD::get_singleton()->compute_list_set_push_constant(compute_list, push_constant, sizeof(uint32_t) * 4);
+				RD::get_singleton()->compute_list_dispatch(compute_list, gi_probe->octree_size.x / 4, gi_probe->octree_size.y / 4, gi_probe->octree_size.z / 4);
+				RD::get_singleton()->compute_list_end();
+			}
+
+			RD::get_singleton()->free(uniform_set);
+			RD::get_singleton()->free(shared_tex);
+		}
 	}
 
 	gi_probe->version++;
-	if (data_version_changed) {
-		gi_probe->data_version++;
-	}
+	gi_probe->data_version++;
+
 	gi_probe->instance_dependency.instance_notify_changed(true, false);
 }
 
@@ -3792,6 +3837,13 @@ RID RasterizerStorageRD::gi_probe_get_data_buffer(RID p_gi_probe) const {
 	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
 	ERR_FAIL_COND_V(!gi_probe, RID());
 	return gi_probe->data_buffer;
+}
+
+RID RasterizerStorageRD::gi_probe_get_sdf_texture(RID p_gi_probe) {
+	GIProbe *gi_probe = gi_probe_owner.getornull(p_gi_probe);
+	ERR_FAIL_COND_V(!gi_probe, RID());
+
+	return gi_probe->sdf_texture;
 }
 
 /* RENDER TARGET API */
@@ -4583,110 +4635,121 @@ RasterizerStorageRD::RasterizerStorageRD() {
 	{
 
 		{ //vertex
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(float) * 3);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 0.0;
-				fptr[1] = 0.0;
-				fptr[2] = 0.0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_VERTEX] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
 
-		{ //normal
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(float) * 3);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 1.0;
-				fptr[1] = 0.0;
-				fptr[2] = 0.0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_NORMAL] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
-
-		{ //tangent
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(float) * 4);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 1.0;
-				fptr[1] = 0.0;
-				fptr[2] = 0.0;
-				fptr[3] = 0.0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TANGENT] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
-
-		{ //color
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(float) * 4);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 1.0;
-				fptr[1] = 1.0;
-				fptr[2] = 1.0;
-				fptr[3] = 1.0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_COLOR] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
-
-		{ //tex uv 1
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(float) * 2);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 0.0;
-				fptr[1] = 0.0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
-		{ //tex uv 2
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(float) * 2);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 0.0;
-				fptr[1] = 0.0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
-
-		{ //bones
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(uint32_t) * 4);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				uint32_t *fptr = (uint32_t *)w.ptr();
-				fptr[0] = 0;
-				fptr[1] = 0;
-				fptr[2] = 0;
-				fptr[3] = 0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_BONES] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
-
-		{ //weights
-			PoolVector<uint8_t> buffer;
-			buffer.resize(sizeof(float) * 4);
-			{
-				PoolVector<uint8_t>::Write w = buffer.write();
-				float *fptr = (float *)w.ptr();
-				fptr[0] = 0.0;
-				fptr[1] = 0.0;
-				fptr[2] = 0.0;
-				fptr[3] = 0.0;
-			}
-			mesh_default_rd_buffers[DEFAULT_RD_BUFFER_WEIGHTS] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
-		}
+				PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(float) * 3);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		float *fptr = (float *)w.ptr();
+		fptr[0] = 0.0;
+		fptr[1] = 0.0;
+		fptr[2] = 0.0;
 	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_VERTEX] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+
+{ //normal
+	PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(float) * 3);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		float *fptr = (float *)w.ptr();
+		fptr[0] = 1.0;
+		fptr[1] = 0.0;
+		fptr[2] = 0.0;
+	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_NORMAL] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+
+{ //tangent
+	PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(float) * 4);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		float *fptr = (float *)w.ptr();
+		fptr[0] = 1.0;
+		fptr[1] = 0.0;
+		fptr[2] = 0.0;
+		fptr[3] = 0.0;
+	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TANGENT] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+
+{ //color
+	PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(float) * 4);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		float *fptr = (float *)w.ptr();
+		fptr[0] = 1.0;
+		fptr[1] = 1.0;
+		fptr[2] = 1.0;
+		fptr[3] = 1.0;
+	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_COLOR] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+
+{ //tex uv 1
+	PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(float) * 2);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		float *fptr = (float *)w.ptr();
+		fptr[0] = 0.0;
+		fptr[1] = 0.0;
+	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+{ //tex uv 2
+	PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(float) * 2);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		float *fptr = (float *)w.ptr();
+		fptr[0] = 0.0;
+		fptr[1] = 0.0;
+	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_TEX_UV2] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+
+{ //bones
+	PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(uint32_t) * 4);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		uint32_t *fptr = (uint32_t *)w.ptr();
+		fptr[0] = 0;
+		fptr[1] = 0;
+		fptr[2] = 0;
+		fptr[3] = 0;
+	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_BONES] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+
+{ //weights
+	PoolVector<uint8_t> buffer;
+	buffer.resize(sizeof(float) * 4);
+	{
+		PoolVector<uint8_t>::Write w = buffer.write();
+		float *fptr = (float *)w.ptr();
+		fptr[0] = 0.0;
+		fptr[1] = 0.0;
+		fptr[2] = 0.0;
+		fptr[3] = 0.0;
+	}
+	mesh_default_rd_buffers[DEFAULT_RD_BUFFER_WEIGHTS] = RD::get_singleton()->vertex_buffer_create(buffer.size(), buffer);
+}
+}
+
+{
+	Vector<String> sdf_versions;
+	sdf_versions.push_back(""); //one only
+	giprobe_sdf_shader.initialize(sdf_versions);
+	giprobe_sdf_shader_version = giprobe_sdf_shader.version_create();
+	giprobe_sdf_shader.version_set_compute_code(giprobe_sdf_shader_version, "", "", "", Vector<String>());
+	giprobe_sdf_shader_version_shader = giprobe_sdf_shader.version_get_shader(giprobe_sdf_shader_version, 0);
+	giprobe_sdf_shader_pipeline = RD::get_singleton()->compute_pipeline_create(giprobe_sdf_shader_version_shader);
+}
 }
 
 RasterizerStorageRD::~RasterizerStorageRD() {

@@ -140,7 +140,8 @@ public:
 		bool mirror : 8;
 		bool receive_shadows : 8;
 		bool visible : 8;
-		bool baked_light : 4; //this flag is only to know if it actually did use baked light
+		bool baked_light : 2; //this flag is only to know if it actually did use baked light
+		bool dynamic_gi : 2; //this flag is only to know if it actually did use baked light
 		bool redraw_if_visible : 4;
 
 		float depth; //used for sorting
@@ -150,6 +151,9 @@ public:
 		InstanceBase *lightmap_capture;
 		RID lightmap;
 		Vector<Color> lightmap_capture_data; //in a array (12 values) to avoid wasting space if unused. Alpha is unused, but needed to send to shader
+
+		AABB aabb;
+		AABB transformed_aabb;
 
 		virtual void dependency_deleted(RID p_dependency) = 0;
 		virtual void dependency_changed(bool p_aabb, bool p_dependencies) = 0;
@@ -204,6 +208,7 @@ public:
 			layer_mask = 1;
 			instance_version = 0;
 			baked_light = false;
+			dynamic_gi = false;
 			redraw_if_visible = false;
 			lightmap_capture = NULL;
 		}
@@ -233,11 +238,12 @@ public:
 	virtual RID gi_probe_instance_create(RID p_gi_probe) = 0;
 	virtual void gi_probe_instance_set_transform_to_data(RID p_probe, const Transform &p_xform) = 0;
 	virtual bool gi_probe_needs_update(RID p_probe) const = 0;
-	virtual void gi_probe_update(RID p_probe, const Vector<RID> &p_light_instances) = 0;
+	virtual void gi_probe_update(RID p_probe, bool p_update_light_instances, const Vector<RID> &p_light_instances, int p_dynamic_object_count, InstanceBase **p_dynamic_objects) = 0;
 
 	virtual void render_scene(RID p_render_buffers, const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID *p_light_cull_result, int p_light_cull_count, RID *p_reflection_probe_cull_result, int p_reflection_probe_cull_count, RID *p_gi_probe_cull_result, int p_gi_probe_cull_count, RID p_environment, RID p_shadow_atlas, RID p_reflection_atlas, RID p_reflection_probe, int p_reflection_probe_pass) = 0;
 
 	virtual void render_shadow(RID p_light, RID p_shadow_atlas, int p_pass, InstanceBase **p_cull_result, int p_cull_count) = 0;
+	virtual void render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) = 0;
 
 	virtual void set_scene_pass(uint64_t p_pass) = 0;
 	virtual void set_time(double p_time) = 0;

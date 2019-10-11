@@ -308,9 +308,11 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 						if (depth_draw == DEPTH_DRAW_OPAQUE) {
 							depth_stencil.enable_depth_write = false; //alpha does not draw depth
 						}
-					} else if (uses_depth_pre_pass && (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS)) {
+					} else if (uses_depth_pre_pass && (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS || k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL)) {
 						if (k == SHADER_VERSION_DEPTH_PASS || k == SHADER_VERSION_DEPTH_PASS_DP) {
 							//none, blend state contains nothing
+						} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
+							blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
 						} else {
 							blend_state = blend_state_opaque; //writes to normal and roughness in opaque way
 						}
@@ -326,6 +328,9 @@ void RasterizerSceneForwardRD::ShaderData::set_code(const String &p_code) {
 						//none, leave empty
 					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL || k == SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS) {
 						blend_state = blend_state_opaque; //writes to normal and roughness in opaque way
+					} else if (k == SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL) {
+						blend_state = RD::PipelineColorBlendState::create_disabled(5); //writes to normal and roughness in opaque way
+
 					} else {
 						//specular write
 						blend_state = blend_state_opaque_specular;
@@ -601,7 +606,7 @@ bool RasterizerSceneForwardRD::free(RID p_rid) {
 	return false;
 }
 
-void RasterizerSceneForwardRD::_fill_instances(RenderList::Element **p_elements, int p_element_count) {
+void RasterizerSceneForwardRD::_fill_instances(RenderList::Element **p_elements, int p_element_count, bool p_for_depth) {
 
 	for (int i = 0; i < p_element_count; i++) {
 
@@ -637,6 +642,10 @@ void RasterizerSceneForwardRD::_fill_instances(RenderList::Element **p_elements,
 			}
 		}
 
+		if (p_for_depth) {
+			id.gi_offset = 0xFFFFFFFF;
+			continue;
+		}
 		//forward
 
 		uint32_t reflection_count = 0;
@@ -850,6 +859,9 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 			case PASS_MODE_DEPTH_NORMAL_ROUGHNESS: {
 				shader_version = SHADER_VERSION_DEPTH_PASS_WITH_NORMAL_AND_ROUGHNESS;
 			} break;
+			case PASS_MODE_DEPTH_MATERIAL: {
+				shader_version = SHADER_VERSION_DEPTH_PASS_WITH_MATERIAL;
+			} break;
 		}
 
 		RenderPipelineVertexFormatCacheRD *pipeline = nullptr;
@@ -939,12 +951,12 @@ void RasterizerSceneForwardRD::_render_list(RenderingDevice::DrawListID p_draw_l
 	}
 }
 
-void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas) {
+void RasterizerSceneForwardRD::_setup_environment(RID p_render_target, RID p_environment, const CameraMatrix &p_cam_projection, const Transform &p_cam_transform, RID p_reflection_probe, bool p_no_fog, const Size2 &p_screen_pixel_size, RID p_shadow_atlas, bool p_flip_y) {
 
 	//CameraMatrix projection = p_cam_projection;
 	//projection.flip_y(); // Vulkan and modern APIs use Y-Down
 	CameraMatrix correction;
-	correction.set_depth_correction(!p_reflection_probe.is_valid());
+	correction.set_depth_correction(p_flip_y);
 	CameraMatrix projection = correction * p_cam_projection;
 
 	//store camera into ubo
@@ -1236,7 +1248,7 @@ void RasterizerSceneForwardRD::_add_geometry_with_material(InstanceBase *p_insta
 			return;
 		}
 
-		if (!p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
+		if (p_pass_mode != PASS_MODE_DEPTH_MATERIAL && !p_material->shader_data->writes_modelview_or_projection && !p_material->shader_data->uses_vertex && !p_material->shader_data->uses_discard && !p_material->shader_data->uses_depth_pre_pass) {
 			//shader does not use discard and does not write a vertex position, use generic material
 			if (p_pass_mode == PASS_MODE_SHADOW || p_pass_mode == PASS_MODE_DEPTH) {
 				p_material = (MaterialData *)storage->material_get_data(default_material, RasterizerStorageRD::SHADER_TYPE_3D);
@@ -1835,7 +1847,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 	_setup_lights(p_light_cull_result, p_light_cull_count, p_cam_transform.affine_inverse(), p_shadow_atlas, using_shadows);
 	_setup_reflections(p_reflection_probe_cull_result, p_reflection_probe_cull_count, p_cam_transform.affine_inverse(), p_environment);
 	_setup_gi_probes(p_gi_probe_cull_result, p_gi_probe_cull_count, p_cam_transform);
-	_setup_environment(render_target, p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas);
+	_setup_environment(render_target, p_environment, p_cam_projection, p_cam_transform, p_reflection_probe, p_reflection_probe.is_valid(), screen_pixel_size, p_shadow_atlas, !p_reflection_probe.is_valid());
 
 	render_list.clear();
 	_fill_render_list(p_cull_result, p_cull_count, PASS_MODE_COLOR, render_buffer == nullptr);
@@ -1894,7 +1906,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	render_list.sort_by_key(false);
 
-	_fill_instances(render_list.elements, render_list.element_count);
+	_fill_instances(render_list.elements, render_list.element_count, false);
 
 	bool can_continue = true; //unless the middle buffers are needed
 	bool debug_giprobes = debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_ALBEDO || debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_LIGHTING || debug_draw == VS::VIEWPORT_DEBUG_DRAW_GI_PROBE_EMISSION;
@@ -1950,7 +1962,7 @@ void RasterizerSceneForwardRD::_render_scene(RenderBufferData *p_buffer_data, co
 
 	render_list.sort_by_reverse_depth_and_priority(true);
 
-	_fill_instances(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count);
+	_fill_instances(&render_list.elements[render_list.max_elements - render_list.alpha_element_count], render_list.alpha_element_count, false);
 
 	{
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(alpha_framebuffer, can_continue ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ, can_continue ? RD::INITIAL_ACTION_CONTINUE : RD::INITIAL_ACTION_KEEP, RD::FINAL_ACTION_READ);
@@ -2085,7 +2097,7 @@ void RasterizerSceneForwardRD::_render_shadow(RID p_framebuffer, InstanceBase **
 	scene_state.ubo.z_far = p_zfar;
 	scene_state.ubo.dual_paraboloid_side = p_use_dp_flip ? -1 : 1;
 
-	_setup_environment(RID(), RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID());
+	_setup_environment(RID(), RID(), p_projection, p_transform, RID(), true, Vector2(1, 1), RID(), true);
 
 	render_list.clear();
 
@@ -2099,12 +2111,53 @@ void RasterizerSceneForwardRD::_render_shadow(RID p_framebuffer, InstanceBase **
 
 	render_list.sort_by_key(false);
 
-	_fill_instances(render_list.elements, render_list.element_count);
+	_fill_instances(render_list.elements, render_list.element_count, true);
 
 	{
 		//regular forward for now
 		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ);
 		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, p_use_dp_flip, pass_mode, true);
+		RD::get_singleton()->draw_list_end();
+	}
+}
+
+void RasterizerSceneForwardRD::_render_material(const Transform &p_cam_transform, const CameraMatrix &p_cam_projection, bool p_cam_ortogonal, InstanceBase **p_cull_result, int p_cull_count, RID p_framebuffer, const Rect2i &p_region) {
+	RENDER_TIMESTAMP("Setup Rendering Shadow");
+
+	_update_render_base_uniform_set();
+
+	render_pass++;
+
+	scene_state.ubo.shadow_z_offset = 0;
+	scene_state.ubo.shadow_z_slope_scale = 0;
+	scene_state.ubo.z_far = 0;
+	scene_state.ubo.dual_paraboloid_side = 0;
+
+	_setup_environment(RID(), RID(), p_cam_projection, p_cam_transform, RID(), true, Vector2(1, 1), RID(), false);
+
+	render_list.clear();
+
+	PassMode pass_mode = PASS_MODE_DEPTH_MATERIAL;
+	_fill_render_list(p_cull_result, p_cull_count, pass_mode, true);
+
+	_setup_render_pass_uniform_set(RID(), RID(), RID(), RID(), RID(), RID(), RID());
+
+	RENDER_TIMESTAMP("Render Material");
+
+	render_list.sort_by_key(false);
+
+	_fill_instances(render_list.elements, render_list.element_count, true);
+
+	{
+		//regular forward for now
+		Vector<Color> clear;
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		clear.push_back(Color(0, 0, 0, 0));
+		RD::DrawListID draw_list = RD::get_singleton()->draw_list_begin(p_framebuffer, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, RD::INITIAL_ACTION_CLEAR, RD::FINAL_ACTION_READ, clear, 1.0, 0, p_region);
+		_render_list(draw_list, RD::get_singleton()->framebuffer_get_format(p_framebuffer), render_list.elements, render_list.element_count, true, pass_mode, true);
 		RD::get_singleton()->draw_list_end();
 	}
 }
@@ -2423,6 +2476,7 @@ RasterizerSceneForwardRD::RasterizerSceneForwardRD(RasterizerStorageRD *p_storag
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_DUAL_PARABOLOID\n");
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define ENABLE_WRITE_NORMAL_BUFFER\n");
 		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define ENABLE_WRITE_NORMAL_ROUGHNESS_BUFFER\n");
+		shader_versions.push_back("\n#define MODE_RENDER_DEPTH\n#define MODE_RENDER_MATERIAL\n");
 		shader_versions.push_back("");
 		shader_versions.push_back("\n#define MODE_MULTIPLE_RENDER_TARGETS\n");
 		shader_versions.push_back("\n#define USE_VOXEL_CONE_TRACING\n");
