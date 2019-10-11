@@ -623,7 +623,8 @@ float VideoStreamPlaybackTheora::get_playback_position() const {
 };
 
 void VideoStreamPlaybackTheora::seek(float p_time) {
-
+	bool play_state = playing;
+	playing = false;
 	struct _page_info {
 		size_t block_number;
 		double_t time;
@@ -793,31 +794,32 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 		}
 		current_block--;
 	}
-	ogg_packet audio_op;
+	ogg_int64_t audio_granulepos = 0;
+	ogg_int64_t total_packets = 0;
 	vorbis_synthesis_restart(&vd);
 	//decode video until the proper time is found
 	th_decode_ctl(td, TH_DECCTL_SET_PPLEVEL, &pp_level, sizeof(pp_level));
 	while (videobuf_time <= p_time) {
-		queue_page(&og);
-		while (ogg_stream_packetout(&to, &op) > 0) {
-			ogg_int64_t videobuf_granulepos;
-			th_decode_packetin(td, &op, &videobuf_granulepos);
-			videobuf_time = th_granule_time(td, videobuf_granulepos);
-			if (op.granulepos > 0)
-				th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
-			th_ycbcr_buffer yuv;
-			th_decode_ycbcr_out(td, yuv); //dump frames
-		}
-		//Needed to calculate the time without extra memory allocation
-
-		//We have to clear the vorbis buffer
-		ogg_int64_t total_packets = ogg_page_packets(&og); //Trick to figure out the time
-		while (ogg_stream_packetout(&vo, &audio_op) > 0) {
-			double music_time = vorbis_granule_time(&vd, ogg_page_granulepos(&og) + ogg_page_packets(&og) - total_packets--);
-			if (music_time > videobuf_time) {
-				if (vorbis_synthesis(&vb, &audio_op) == 0) { /* test for success! */
-					vorbis_synthesis_blockin(&vd, &vb);
-				}
+		if(ogg_page_serialno(&og) == to.serialno) {
+			queue_page(&og);
+			while (ogg_stream_packetout(&to, &op) > 0) {
+				ogg_int64_t videobuf_granulepos;
+				th_decode_packetin(td, &op, &videobuf_granulepos);
+				videobuf_time = th_granule_time(td, videobuf_granulepos);
+				if (op.granulepos > 0)
+					th_decode_ctl(td, TH_DECCTL_SET_GRANPOS, &op.granulepos, sizeof(op.granulepos));
+				th_ycbcr_buffer yuv;
+				th_decode_ycbcr_out(td, yuv); //dump frames
+			}
+			//Needed to calculate the time without extra memory allocation
+		} else {
+			//Drop pages behind the seek
+			double end_music_time = vorbis_granule_time(&vd, ogg_page_granulepos(&og));
+			if (end_music_time > p_time) {
+				queue_page(&og);
+				//Queue the page which music time is greater than the seek time.
+				audio_granulepos = ogg_page_granulepos(&og);
+				total_packets = ogg_page_packets(&og);
 			}
 		}
 		int ogg_sync_state = ogg_sync_pageout(&oy, &og);
@@ -826,7 +828,26 @@ void VideoStreamPlaybackTheora::seek(float p_time) {
 			ogg_sync_state = ogg_sync_pageout(&oy, &og);
 		}
 	}
+	//Update the audioframes time
+	audio_frames_wrote = videobuf_time * vi.rate;
+	
+	while(ogg_stream_packetout(&vo, &op) > 0) {
+		double current_audio_time = vorbis_granule_time(&vd, audio_granulepos + op.packetno - total_packets--);
+		double diff = current_audio_time - videobuf_time;
+		if( diff > 0 ) {
+			int blank_frames = diff * vi.rate * vi.channels;
+			const int AUXBUF_LEN = 4096;
+			float aux_buffer[AUXBUF_LEN];
+			int m = MIN(AUXBUF_LEN / vi.channels, blank_frames);
+			for(int i = 0; i < m; i++)
+				aux_buffer[i] = 0;
+			int mixed = mix_callback(mix_udata, aux_buffer, m);
+			audio_frames_wrote = m + videobuf_time * vi.rate;
+			break;
+		}
+	}
 	time = videobuf_time;
+	playing = play_state;
 };
 
 void VideoStreamPlaybackTheora::set_mix_callback(AudioMixCallback p_callback, void *p_userdata) {
