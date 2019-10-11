@@ -756,7 +756,7 @@ bool GDMono::_load_core_api_assembly(LoadedApiAssembly &r_loaded_api_assembly, c
 	bool success = FileAccess::exists(assembly_path) &&
 				   load_assembly_from(CORE_API_ASSEMBLY_NAME, assembly_path, &r_loaded_api_assembly.assembly, p_refonly);
 #else
-	bool success = load_assembly(CORE_API_ASSEMBLY_NAME, &core_api_assembly, p_refonly);
+	bool success = load_assembly(CORE_API_ASSEMBLY_NAME, &r_loaded_api_assembly.assembly, p_refonly);
 #endif
 
 	if (success) {
