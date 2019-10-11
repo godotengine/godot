@@ -31,7 +31,7 @@
 #include "capsule_shape.h"
 #include "servers/physics_server.h"
 
-Vector<Vector3> CapsuleShape::_gen_debug_mesh_lines() {
+Vector<Vector3> CapsuleShape::get_debug_mesh_lines() {
 
 	float radius = get_radius();
 	float height = get_height();
