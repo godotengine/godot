@@ -1067,16 +1067,7 @@ Error VisualShader::_write_node(Type type, StringBuilder &global_code, StringBui
 
 				VisualShaderNodeUniform *uniform = (VisualShaderNodeUniform *)graph[type].nodes[from_node].node.ptr();
 				if (uniform) {
-					inputs[i] = "";
-					switch (uniform->get_uniform_type()) {
-						case VisualShaderNodeUniform::UTYPE_CUBEMAP:
-							inputs[i] += "cube_";
-							break;
-						case VisualShaderNodeUniform::UTYPE_SAMPLER2D:
-							inputs[i] += "s2d_";
-							break;
-					}
-					inputs[i] += uniform->get_uniform_name();
+					inputs[i] = uniform->get_uniform_name();
 				} else {
 					inputs[i] = "";
 				}
@@ -1981,16 +1972,7 @@ void VisualShaderNodeUniform::_bind_methods() {
 	ADD_PROPERTY(PropertyInfo(Variant::STRING, "uniform_name"), "set_uniform_name", "get_uniform_name");
 }
 
-int VisualShaderNodeUniform::get_uniform_type() const {
-	return (int)uniform_type;
-}
-
-void VisualShaderNodeUniform::set_uniform_type(int p_type) {
-	uniform_type = (UniformType)p_type;
-}
-
 VisualShaderNodeUniform::VisualShaderNodeUniform() {
-	uniform_type = UTYPE_NONE;
 }
 
 ////////////// GroupBase
