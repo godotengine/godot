@@ -988,6 +988,11 @@ Error GDMono::_unload_scripts_domain() {
 
 	_domain_assemblies_cleanup(mono_domain_get_id(scripts_domain));
 
+	core_api_assembly.assembly = NULL;
+#ifdef TOOLS_ENABLED
+	editor_api_assembly.assembly = NULL;
+#endif
+
 	project_assembly = NULL;
 #ifdef TOOLS_ENABLED
 	tools_assembly = NULL;
