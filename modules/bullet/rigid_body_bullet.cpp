@@ -411,6 +411,8 @@ void RigidBodyBullet::on_collision_filters_change() {
 	if (space) {
 		space->reload_collision_filters(this);
 	}
+
+	set_activation_state(true);
 }
 
 void RigidBodyBullet::on_collision_checker_start() {
