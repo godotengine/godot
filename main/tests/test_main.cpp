@@ -44,7 +44,7 @@
 #include "test_shader_lang.h"
 #include "test_string.h"
 
-#ifdef GDSCRIPT_ENABLED
+#ifdef MODULE_GDSCRIPT_ENABLED
 #include "test_gdscript.h"
 #endif
 
@@ -115,7 +115,7 @@ MainLoop *test_main(String p_test, const List<String> &p_args) {
 		return TestShaderLang::test();
 	}
 
-#ifdef GDSCRIPT_ENABLED
+#ifdef MODULE_GDSCRIPT_ENABLED
 	if (p_test == "gd_tokenizer") {
 
 		return TestGDScript::test(TestGDScript::TEST_TOKENIZER);
